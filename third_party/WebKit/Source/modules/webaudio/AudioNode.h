@@ -300,8 +300,8 @@ public:
     void setChannelInterpretation(const String&, ExceptionState&);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override final;
-    virtual ExecutionContext* executionContext() const override final;
+    const AtomicString& interfaceName() const final;
+    ExecutionContext* executionContext() const final;
 
     // Called inside AudioHandler constructors.
     void didAddOutput(unsigned numberOfOutputs);

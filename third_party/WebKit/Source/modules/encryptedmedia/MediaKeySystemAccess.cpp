@@ -41,12 +41,12 @@ public:
     {
     }
 
-    virtual ~NewCdmResultPromise()
+    ~NewCdmResultPromise() override
     {
     }
 
     // ContentDecryptionModuleResult implementation.
-    virtual void completeWithContentDecryptionModule(WebContentDecryptionModule* cdm) override
+    void completeWithContentDecryptionModule(WebContentDecryptionModule* cdm) override
     {
         // NOTE: Continued from step 2.8 of createMediaKeys().
         // 2.9. Let media keys be a new MediaKeys object.

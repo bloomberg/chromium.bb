@@ -108,17 +108,17 @@ public:
         return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new CreateFileHelper(result, name, url, type)));
     }
 
-    virtual void didFail(int code) override
+    void didFail(int code) override
     {
         m_result->m_failed = true;
         m_result->m_code = code;
     }
 
-    virtual ~CreateFileHelper()
+    ~CreateFileHelper() override
     {
     }
 
-    virtual void didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot) override
+    void didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot) override
     {
         // We can't directly use the snapshot blob data handle because the content type on it hasn't been set.
         // The |snapshot| param is here to provide a a chain of custody thru thread bridging that is held onto until
@@ -128,7 +128,7 @@ public:
         m_result->m_file = DOMFileSystemBase::createFile(metadata, m_url, m_type, m_name);
     }
 
-    virtual bool shouldBlockUntilCompletion() const override
+    bool shouldBlockUntilCompletion() const override
     {
         return true;
     }
@@ -171,7 +171,7 @@ public:
         return new ReceiveFileWriterCallback();
     }
 
-    virtual void handleEvent(FileWriterBase*) override
+    void handleEvent(FileWriterBase*) override
     {
     }
 
@@ -188,7 +188,7 @@ public:
         return new LocalErrorCallback(errorCode);
     }
 
-    virtual void handleEvent(FileError* error) override
+    void handleEvent(FileError* error) override
     {
         ASSERT(error->code() != FileError::OK);
         m_errorCode = error->code();

@@ -24,7 +24,7 @@ class MODULES_EXPORT StashedPortCollection final
     WTF_MAKE_NONCOPYABLE(StashedPortCollection);
 public:
     static StashedPortCollection* create(ExecutionContext*);
-    virtual ~StashedPortCollection();
+    ~StashedPortCollection() override;
 
     void addPorts(const StashedMessagePortArray&);
 

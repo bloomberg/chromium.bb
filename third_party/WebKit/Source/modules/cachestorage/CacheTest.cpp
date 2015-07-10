@@ -105,7 +105,7 @@ public:
     void setExpectedBatchOperations(const WebVector<BatchOperation>* expectedBatchOperations) { m_expectedBatchOperations = expectedBatchOperations; }
 
     // From WebServiceWorkerCache:
-    virtual void dispatchMatch(CacheMatchCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
+    void dispatchMatch(CacheMatchCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
         m_lastErrorWebCacheMethodCalled = "dispatchMatch";
         checkUrlIfProvided(webRequest.url());
@@ -115,7 +115,7 @@ public:
         return callbacks->onError(new WebServiceWorkerCacheError(m_error));
     }
 
-    virtual void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
+    void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
         m_lastErrorWebCacheMethodCalled = "dispatchMatchAll";
         checkUrlIfProvided(webRequest.url());
@@ -125,7 +125,7 @@ public:
         return callbacks->onError(new WebServiceWorkerCacheError(m_error));
     }
 
-    virtual void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
+    void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
     {
         m_lastErrorWebCacheMethodCalled = "dispatchKeys";
         if (webRequest) {
@@ -137,7 +137,7 @@ public:
         return callbacks->onError(new WebServiceWorkerCacheError(m_error));
     }
 
-    virtual void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
+    void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
     {
         m_lastErrorWebCacheMethodCalled = "dispatchBatch";
         checkBatchOperationsIfProvided(batchOperations);
@@ -268,7 +268,7 @@ private:
             return self->bindToV8Function();
         }
 
-        virtual ScriptValue call(ScriptValue value) override
+        ScriptValue call(ScriptValue value) override
         {
             ADD_FAILURE() << "Unexpected call to a null ScriptFunction.";
             return value;
@@ -287,7 +287,7 @@ private:
             return self->bindToV8Function();
         }
 
-        virtual ScriptValue call(ScriptValue value) override
+        ScriptValue call(ScriptValue value) override
         {
             ASSERT(!value.isEmpty());
             *m_value = value;
@@ -301,7 +301,7 @@ private:
     };
 
     // From ::testing::Test:
-    virtual void SetUp() override
+    void SetUp() override
     {
         EXPECT_FALSE(m_scopedFetcherForTests);
         m_scopedFetcherForTests = adoptPtr(new ScopedFetcherForTests());
@@ -309,7 +309,7 @@ private:
         m_scriptScope = adoptPtr(new ScriptState::Scope(scriptState()));
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         m_scopedFetcherForTests = nullptr;
         m_scriptScope = 0;
@@ -486,7 +486,7 @@ public:
         : m_response(response) { }
 
     // From WebServiceWorkerCache:
-    virtual void dispatchMatch(CacheMatchCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
+    void dispatchMatch(CacheMatchCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
         OwnPtr<CacheMatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onSuccess(&m_response);
@@ -520,7 +520,7 @@ public:
     KeysTestCache(WebVector<WebServiceWorkerRequest>& requests)
         : m_requests(requests) { }
 
-    virtual void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
+    void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
     {
         OwnPtr<CacheWithRequestsCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onSuccess(&m_requests);
@@ -563,13 +563,13 @@ public:
     MatchAllAndBatchTestCache(WebVector<WebServiceWorkerResponse>& responses)
         : m_responses(responses) { }
 
-    virtual void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
+    void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
         OwnPtr<CacheWithResponsesCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onSuccess(&m_responses);
     }
 
-    virtual void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
+    void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
     {
         OwnPtr<CacheBatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
         return callbacks->onSuccess();

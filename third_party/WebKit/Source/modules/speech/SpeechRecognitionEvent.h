@@ -41,7 +41,7 @@ class SpeechRecognitionEvent final : public Event {
 public:
     static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create();
     static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);
-    virtual ~SpeechRecognitionEvent();
+    ~SpeechRecognitionEvent() override;
 
     static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results);
     static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> createNoMatch(SpeechRecognitionResult*);
@@ -54,7 +54,7 @@ public:
     Document* emma() { return nullptr; }
 
     // Event
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

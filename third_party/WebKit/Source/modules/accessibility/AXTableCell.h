@@ -42,22 +42,22 @@ protected:
 
 public:
     static PassRefPtrWillBeRawPtr<AXTableCell> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXTableCell();
+    ~AXTableCell() override;
 
-    virtual bool isTableCell() const override final;
+    bool isTableCell() const final;
 
     // fills in the start location and row span of cell
     virtual void rowIndexRange(pair<unsigned, unsigned>& rowRange);
     // fills in the start location and column span of cell
     virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange);
     // In the case of cells that act as row or column headers.
-    virtual SortDirection sortDirection() const override final;
+    SortDirection sortDirection() const final;
     virtual AccessibilityRole scanToDecideHeaderRole();
 
 protected:
     virtual AXObject* parentTable() const;
     int m_rowIndex;
-    virtual AccessibilityRole determineAccessibilityRole() override final;
+    AccessibilityRole determineAccessibilityRole() final;
 
 private:
     bool isTableHeaderCell() const;
@@ -65,9 +65,9 @@ private:
     bool isColumnHeaderCell() const;
 
     // If a table cell is not exposed as a table cell, a TH element can serve as its title UI element.
-    virtual AXObject* deprecatedTitleUIElement() const override final;
-    virtual bool deprecatedExposesTitleUIElement() const override final { return true; }
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override final;
+    AXObject* deprecatedTitleUIElement() const final;
+    bool deprecatedExposesTitleUIElement() const final { return true; }
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, isTableCell());

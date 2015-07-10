@@ -40,11 +40,11 @@ public:
     static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create();
     static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create(AudioBuffer* renderedBuffer);
 
-    virtual ~OfflineAudioCompletionEvent();
+    ~OfflineAudioCompletionEvent() override;
 
     AudioBuffer* renderedBuffer() { return m_renderedBuffer.get(); }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

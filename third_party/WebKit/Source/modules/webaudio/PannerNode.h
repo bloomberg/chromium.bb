@@ -53,12 +53,12 @@ public:
     };
 
     static PassRefPtr<PannerHandler> create(AudioNode&, float sampleRate);
-    virtual ~PannerHandler();
+    ~PannerHandler() override;
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
-    virtual void initialize() override;
-    virtual void uninitialize() override;
+    void process(size_t framesToProcess) override;
+    void initialize() override;
+    void uninitialize() override;
 
     // Panning model
     String panningModel() const;
@@ -97,11 +97,11 @@ public:
     // It must be called on audio thread, currently called only process() in AudioBufferSourceNode.
     double dopplerRate();
 
-    virtual double tailTime() const override { return m_panner ? m_panner->tailTime() : 0; }
-    virtual double latencyTime() const override { return m_panner ? m_panner->latencyTime() : 0; }
+    double tailTime() const override { return m_panner ? m_panner->tailTime() : 0; }
+    double latencyTime() const override { return m_panner ? m_panner->latencyTime() : 0; }
 
-    virtual void setChannelCount(unsigned long, ExceptionState&) final;
-    virtual void setChannelCountMode(const String&, ExceptionState&) final;
+    void setChannelCount(unsigned long, ExceptionState&) final;
+    void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
     PannerHandler(AudioNode&, float sampleRate);

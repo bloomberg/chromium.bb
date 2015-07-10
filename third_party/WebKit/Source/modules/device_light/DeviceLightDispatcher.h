@@ -16,12 +16,12 @@ class DeviceLightDispatcher final : public GarbageCollectedFinalized<DeviceLight
     USING_GARBAGE_COLLECTED_MIXIN(DeviceLightDispatcher);
 public:
     static DeviceLightDispatcher& instance();
-    virtual ~DeviceLightDispatcher();
+    ~DeviceLightDispatcher() override;
 
     double latestDeviceLightData() const;
 
     // Inherited from WebDeviceLightListener.
-    virtual void didChangeDeviceLight(double) override;
+    void didChangeDeviceLight(double) override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -29,8 +29,8 @@ private:
     DeviceLightDispatcher();
 
     // Inherited from PlatformEventDispatcher.
-    virtual void startListening() override;
-    virtual void stopListening() override;
+    void startListening() override;
+    void stopListening() override;
 
     double m_lastDeviceLightData;
 };

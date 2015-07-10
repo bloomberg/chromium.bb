@@ -36,30 +36,30 @@ class AXObjectCacheImpl;
 class AXMenuListOption final : public AXMockObject {
 public:
     static PassRefPtrWillBeRawPtr<AXMenuListOption> create(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache) { return adoptRefWillBeNoop(new AXMenuListOption(element, axObjectCache)); }
-    virtual ~AXMenuListOption();
+    ~AXMenuListOption() override;
 
 private:
     AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
     DECLARE_VIRTUAL_TRACE();
 
-    virtual bool isMenuListOption() const override { return true; }
+    bool isMenuListOption() const override { return true; }
 
-    virtual Node* node() const override { return m_element; }
-    virtual void detach() override;
-    virtual bool isDetached() const override { return !m_element; }
-    virtual AccessibilityRole roleValue() const override { return MenuListOptionRole; }
-    virtual bool canHaveChildren() const override { return false; }
+    Node* node() const override { return m_element; }
+    void detach() override;
+    bool isDetached() const override { return !m_element; }
+    AccessibilityRole roleValue() const override { return MenuListOptionRole; }
+    bool canHaveChildren() const override { return false; }
 
-    virtual Element* actionElement() const override;
-    virtual bool isEnabled() const override;
-    virtual bool isVisible() const override;
-    virtual bool isOffScreen() const override;
-    virtual bool isSelected() const override;
-    virtual void setSelected(bool) override;
-    virtual bool canSetSelectedAttribute() const override;
-    virtual LayoutRect elementRect() const override;
-    virtual String stringValue() const override;
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    Element* actionElement() const override;
+    bool isEnabled() const override;
+    bool isVisible() const override;
+    bool isOffScreen() const override;
+    bool isSelected() const override;
+    void setSelected(bool) override;
+    bool canSetSelectedAttribute() const override;
+    LayoutRect elementRect() const override;
+    String stringValue() const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     RawPtrWillBeMember<HTMLOptionElement> m_element;
 };

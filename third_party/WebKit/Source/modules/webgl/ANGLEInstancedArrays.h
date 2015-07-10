@@ -44,8 +44,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~ANGLEInstancedArrays();
-    virtual WebGLExtensionName name() const override;
+    ~ANGLEInstancedArrays() override;
+    WebGLExtensionName name() const override;
 
     void drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
     void drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei primcount);

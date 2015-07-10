@@ -25,7 +25,7 @@ class PermissionQueryCallback final
     : public WebCallbacks<WebPermissionStatus, void> {
 public:
     explicit PermissionQueryCallback(PassRefPtr<ScriptPromiseResolver>, WebPermissionType);
-    virtual ~PermissionQueryCallback();
+    ~PermissionQueryCallback() override;
 
     void onSuccess(WebPermissionStatus*) override;
     void onError() override;

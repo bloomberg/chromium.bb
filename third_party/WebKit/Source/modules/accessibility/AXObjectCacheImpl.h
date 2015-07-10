@@ -65,55 +65,55 @@ public:
 
     AXObject* focusedUIElementForPage(const Page*);
 
-    virtual void dispose() override;
+    void dispose() override;
 
-    virtual void selectionChanged(Node*) override;
-    virtual void childrenChanged(Node*) override;
-    virtual void childrenChanged(LayoutObject*) override;
-    virtual void checkedStateChanged(Node*) override;
+    void selectionChanged(Node*) override;
+    void childrenChanged(Node*) override;
+    void childrenChanged(LayoutObject*) override;
+    void checkedStateChanged(Node*) override;
     virtual void listboxOptionStateChanged(HTMLOptionElement*);
     virtual void listboxSelectedChildrenChanged(HTMLSelectElement*);
     virtual void listboxActiveIndexChanged(HTMLSelectElement*);
 
-    virtual void remove(LayoutObject*) override;
-    virtual void remove(Node*) override;
-    virtual void remove(Widget*) override;
-    virtual void remove(AbstractInlineTextBox*) override;
+    void remove(LayoutObject*) override;
+    void remove(Node*) override;
+    void remove(Widget*) override;
+    void remove(AbstractInlineTextBox*) override;
 
-    virtual const Element* rootAXEditableElement(const Node*) override;
+    const Element* rootAXEditableElement(const Node*) override;
 
     // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
-    virtual void textChanged(LayoutObject*) override;
+    void textChanged(LayoutObject*) override;
     // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
-    virtual void updateCacheAfterNodeIsAttached(Node*) override;
+    void updateCacheAfterNodeIsAttached(Node*) override;
 
-    virtual void handleAttributeChanged(const QualifiedName& attrName, Element*) override;
-    virtual void handleFocusedUIElementChanged(Node* oldFocusedNode, Node* newFocusedNode) override;
-    virtual void handleInitialFocus() override;
-    virtual void handleTextFormControlChanged(Node*) override;
-    virtual void handleEditableTextContentChanged(Node*) override;
-    virtual void handleValueChanged(Node*) override;
-    virtual void handleUpdateActiveMenuOption(LayoutMenuList*, int optionIndex) override;
-    virtual void didShowMenuListPopup(LayoutMenuList*) override;
-    virtual void didHideMenuListPopup(LayoutMenuList*) override;
-    virtual void handleLoadComplete(Document*) override;
-    virtual void handleLayoutComplete(Document*) override;
+    void handleAttributeChanged(const QualifiedName& attrName, Element*) override;
+    void handleFocusedUIElementChanged(Node* oldFocusedNode, Node* newFocusedNode) override;
+    void handleInitialFocus() override;
+    void handleTextFormControlChanged(Node*) override;
+    void handleEditableTextContentChanged(Node*) override;
+    void handleValueChanged(Node*) override;
+    void handleUpdateActiveMenuOption(LayoutMenuList*, int optionIndex) override;
+    void didShowMenuListPopup(LayoutMenuList*) override;
+    void didHideMenuListPopup(LayoutMenuList*) override;
+    void handleLoadComplete(Document*) override;
+    void handleLayoutComplete(Document*) override;
 
-    virtual void setCanvasObjectBounds(Element*, const LayoutRect&) override;
+    void setCanvasObjectBounds(Element*, const LayoutRect&) override;
 
-    virtual void inlineTextBoxesUpdated(LayoutObject*) override;
+    void inlineTextBoxesUpdated(LayoutObject*) override;
 
     // Called when the scroll offset changes.
-    virtual void handleScrollPositionChanged(FrameView*) override;
-    virtual void handleScrollPositionChanged(LayoutObject*) override;
+    void handleScrollPositionChanged(FrameView*) override;
+    void handleScrollPositionChanged(LayoutObject*) override;
 
     // Called when scroll bars are added / removed (as the view resizes).
     void handleScrollbarUpdate(FrameView*) override;
     void handleLayoutComplete(LayoutObject*) override;
     void handleScrolledToAnchor(const Node* anchorNode) override;
 
-    virtual const AtomicString& computedRoleForNode(Node*) override;
-    virtual String computedNameForNode(Node*) override;
+    const AtomicString& computedRoleForNode(Node*) override;
+    String computedNameForNode(Node*) override;
 
     // Returns the root object for the entire document.
     AXObject* rootObject();

@@ -25,7 +25,7 @@ class MODULES_EXPORT RespondWithObserver final : public GarbageCollectedFinalize
 public:
     static RespondWithObserver* create(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);
 
-    virtual void contextDestroyed() override;
+    void contextDestroyed() override;
 
     void didDispatchEvent(bool defaultPrevented);
 

@@ -40,10 +40,10 @@ class Reverb;
 class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
 public:
     static PassRefPtr<ConvolverHandler> create(AudioNode&, float sampleRate);
-    virtual ~ConvolverHandler();
+    ~ConvolverHandler() override;
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
+    void process(size_t framesToProcess) override;
 
     // Impulse responses
     void setBuffer(AudioBuffer*, ExceptionState&);
@@ -54,8 +54,8 @@ public:
 
 private:
     ConvolverHandler(AudioNode&, float sampleRate);
-    virtual double tailTime() const override;
-    virtual double latencyTime() const override;
+    double tailTime() const override;
+    double latencyTime() const override;
 
     OwnPtr<Reverb> m_reverb;
     // This Persistent doesn't make a reference cycle including the owner

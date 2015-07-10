@@ -69,7 +69,7 @@ public:
     // hasPendingActivity() returns true.
     static DOMWebSocket* create(ExecutionContext*, const String& url, ExceptionState&);
     static DOMWebSocket* create(ExecutionContext*, const String& url, const StringOrStringSequence& protocols, ExceptionState&);
-    virtual ~DOMWebSocket();
+    ~DOMWebSocket() override;
 
     enum State {
         CONNECTING = 0,
@@ -110,26 +110,26 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
 
     // EventTarget functions.
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject functions.
-    virtual void contextDestroyed() override;
+    void contextDestroyed() override;
     // Prevent this instance from being collected while it's not in CLOSED
     // state.
-    virtual bool hasPendingActivity() const override;
-    virtual void suspend() override;
-    virtual void resume() override;
-    virtual void stop() override;
+    bool hasPendingActivity() const override;
+    void suspend() override;
+    void resume() override;
+    void stop() override;
 
     // WebSocketChannelClient functions.
-    virtual void didConnect(const String& subprotocol, const String& extensions) override;
-    virtual void didReceiveTextMessage(const String& message) override;
-    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char>>) override;
-    virtual void didError() override;
-    virtual void didConsumeBufferedAmount(uint64_t) override;
-    virtual void didStartClosingHandshake() override;
-    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
+    void didConnect(const String& subprotocol, const String& extensions) override;
+    void didReceiveTextMessage(const String& message) override;
+    void didReceiveBinaryMessage(PassOwnPtr<Vector<char>>) override;
+    void didError() override;
+    void didConsumeBufferedAmount(uint64_t) override;
+    void didStartClosingHandshake() override;
+    void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
 
     DECLARE_VIRTUAL_TRACE();
 

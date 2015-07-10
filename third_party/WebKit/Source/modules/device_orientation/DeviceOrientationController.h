@@ -17,7 +17,7 @@ class Event;
 class MODULES_EXPORT DeviceOrientationController final : public DeviceSingleWindowEventController, public WillBeHeapSupplement<Document> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
 public:
-    virtual ~DeviceOrientationController();
+    ~DeviceOrientationController() override;
 
     static const char* supplementName();
     static DeviceOrientationController& from(Document&);
@@ -35,14 +35,14 @@ private:
     explicit DeviceOrientationController(Document&);
 
     // Inherited from DeviceEventControllerBase.
-    virtual void registerWithDispatcher() override;
-    virtual void unregisterWithDispatcher() override;
-    virtual bool hasLastData() override;
+    void registerWithDispatcher() override;
+    void unregisterWithDispatcher() override;
+    bool hasLastData() override;
 
     // Inherited from DeviceSingleWindowEventController.
-    virtual PassRefPtrWillBeRawPtr<Event> lastEvent() const override;
-    virtual const AtomicString& eventTypeName() const override;
-    virtual bool isNullEvent(Event*) const override;
+    PassRefPtrWillBeRawPtr<Event> lastEvent() const override;
+    const AtomicString& eventTypeName() const override;
+    bool isNullEvent(Event*) const override;
 
     DeviceOrientationData* lastData() const;
 

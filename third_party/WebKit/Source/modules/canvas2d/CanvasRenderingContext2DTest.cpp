@@ -42,7 +42,7 @@ public:
     FloatSize elementSize() const override { return FloatSize(m_size); }
     bool isOpaque() const override { return m_isOpaque; }
 
-    virtual ~FakeImageSource() { }
+    ~FakeImageSource() override { }
 
 private:
     IntSize m_size;
@@ -166,7 +166,7 @@ void CanvasRenderingContext2DTest::SetUp()
 class MockImageBufferSurfaceForOverwriteTesting : public UnacceleratedImageBufferSurface {
 public:
     MockImageBufferSurfaceForOverwriteTesting(const IntSize& size, OpacityMode mode) : UnacceleratedImageBufferSurface(size, mode) { }
-    virtual ~MockImageBufferSurfaceForOverwriteTesting() { }
+    ~MockImageBufferSurfaceForOverwriteTesting() override { }
     bool isRecording() const override { return true; } // otherwise overwrites are not tracked
 
     MOCK_METHOD0(willOverwriteCanvas, void());
@@ -260,7 +260,7 @@ public:
         return adoptPtr(new UnacceleratedImageBufferSurface(size, mode));
     }
 
-    virtual ~MockSurfaceFactory()
+    ~MockSurfaceFactory() override
     {
         if (m_expectation == ExpectFallback) {
             EXPECT_TRUE(m_didFallback);

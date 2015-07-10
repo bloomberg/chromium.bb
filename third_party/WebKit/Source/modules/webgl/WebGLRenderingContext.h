@@ -47,12 +47,12 @@ public:
         void onError(HTMLCanvasElement*, const String& error) override;
     };
 
-    virtual ~WebGLRenderingContext();
+    ~WebGLRenderingContext() override;
 
     CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::ContextWebgl; }
-    virtual unsigned version() const override { return 1; }
-    virtual String contextName() const override { return "WebGLRenderingContext"; }
-    virtual void registerContextExtensions() override;
+    unsigned version() const override { return 1; }
+    String contextName() const override { return "WebGLRenderingContext"; }
+    void registerContextExtensions() override;
 
     EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();

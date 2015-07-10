@@ -19,7 +19,7 @@ class DefaultSessionStartEventInit;
 class DefaultSessionStartEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~DefaultSessionStartEvent();
+    ~DefaultSessionStartEvent() override;
 
     static PassRefPtrWillBeRawPtr<DefaultSessionStartEvent> create()
     {
@@ -36,7 +36,7 @@ public:
 
     PresentationSession* session() { return m_session.get(); }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

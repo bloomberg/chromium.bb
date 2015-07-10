@@ -40,14 +40,14 @@ public:
     ~DynamicsCompressorHandler();
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
-    virtual void initialize() override;
-    virtual void clearInternalStateWhenDisabled() override;
+    void process(size_t framesToProcess) override;
+    void initialize() override;
+    void clearInternalStateWhenDisabled() override;
 
 private:
     DynamicsCompressorHandler(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
-    virtual double tailTime() const override;
-    virtual double latencyTime() const override;
+    double tailTime() const override;
+    double latencyTime() const override;
 
     OwnPtr<DynamicsCompressor> m_dynamicsCompressor;
     RefPtr<AudioParamHandler> m_threshold;

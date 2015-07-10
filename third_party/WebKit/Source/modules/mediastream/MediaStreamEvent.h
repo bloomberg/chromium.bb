@@ -35,7 +35,7 @@ namespace blink {
 class MediaStreamEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~MediaStreamEvent();
+    ~MediaStreamEvent() override;
 
     static PassRefPtrWillBeRawPtr<MediaStreamEvent> create();
     static PassRefPtrWillBeRawPtr<MediaStreamEvent> create(const AtomicString& type, bool canBubble, bool cancelable, MediaStream*);
@@ -44,7 +44,7 @@ public:
     MediaStream* stream() const;
     MediaStream* stream(bool&) const;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -45,29 +45,29 @@ private:
 
 public:
     static PassRefPtrWillBeRawPtr<AXTableColumn> create(AXObjectCacheImpl&);
-    virtual ~AXTableColumn();
+    ~AXTableColumn() override;
 
     // retrieves the topmost "column" header (th)
     AXObject* headerObject();
     // retrieves the "column" headers (th, scope) from top to bottom
     void headerObjectsForColumn(AccessibilityChildrenVector&);
 
-    virtual AccessibilityRole roleValue() const override { return ColumnRole; }
+    AccessibilityRole roleValue() const override { return ColumnRole; }
 
     void setColumnIndex(int columnIndex) { m_columnIndex = columnIndex; }
     int columnIndex() const { return m_columnIndex; }
 
-    virtual void addChildren() override;
-    virtual void setParent(AXObject*) override;
+    void addChildren() override;
+    void setParent(AXObject*) override;
 
-    virtual LayoutRect elementRect() const override;
+    LayoutRect elementRect() const override;
 
 private:
     unsigned m_columnIndex;
     LayoutRect m_columnRect;
 
-    virtual bool isTableCol() const override { return true; }
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool isTableCol() const override { return true; }
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, isTableCol());

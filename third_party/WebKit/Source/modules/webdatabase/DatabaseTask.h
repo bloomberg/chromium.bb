@@ -82,9 +82,9 @@ public:
 private:
     DatabaseOpenTask(Database*, bool setVersionInNewDatabase, TaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
 
-    virtual void doPerformTask() override;
+    void doPerformTask() override;
 #if !LOG_DISABLED
-    virtual const char* debugTaskName() const override;
+    const char* debugTaskName() const override;
 #endif
 
     bool m_setVersionInNewDatabase;
@@ -103,15 +103,15 @@ public:
 private:
     DatabaseCloseTask(Database*, TaskSynchronizer*);
 
-    virtual void doPerformTask() override;
+    void doPerformTask() override;
 #if !LOG_DISABLED
-    virtual const char* debugTaskName() const override;
+    const char* debugTaskName() const override;
 #endif
 };
 
 class Database::DatabaseTransactionTask final : public DatabaseTask {
 public:
-    virtual ~DatabaseTransactionTask();
+    ~DatabaseTransactionTask() override;
 
     // Transaction task is never synchronous, so no 'synchronizer' parameter.
     static PassOwnPtr<DatabaseTransactionTask> create(SQLTransactionBackend* transaction)
@@ -124,10 +124,10 @@ public:
 private:
     explicit DatabaseTransactionTask(SQLTransactionBackend*);
 
-    virtual void doPerformTask() override;
-    virtual void taskCancelled() override;
+    void doPerformTask() override;
+    void taskCancelled() override;
 #if !LOG_DISABLED
-    virtual const char* debugTaskName() const override;
+    const char* debugTaskName() const override;
 #endif
 
     CrossThreadPersistent<SQLTransactionBackend> m_transaction;
@@ -143,9 +143,9 @@ public:
 private:
     DatabaseTableNamesTask(Database*, TaskSynchronizer*, Vector<String>& names);
 
-    virtual void doPerformTask() override;
+    void doPerformTask() override;
 #if !LOG_DISABLED
-    virtual const char* debugTaskName() const override;
+    const char* debugTaskName() const override;
 #endif
 
     Vector<String>& m_tableNames;

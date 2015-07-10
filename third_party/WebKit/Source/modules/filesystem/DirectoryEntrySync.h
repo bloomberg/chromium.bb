@@ -48,7 +48,7 @@ public:
     {
         return new DirectoryEntrySync(fileSystem, fullPath);
     }
-    virtual bool isDirectory() const override { return true; }
+    bool isDirectory() const override { return true; }
 
     DirectoryReaderSync* createReader();
     FileEntrySync* getFile(const String& path, const FileSystemFlags&, ExceptionState&);

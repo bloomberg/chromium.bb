@@ -47,7 +47,7 @@ class GeolocationPosition;
 class GeolocationClientMock : public GeolocationClient {
 public:
     GeolocationClientMock();
-    virtual ~GeolocationClientMock();
+    ~GeolocationClientMock() override;
 
     void setPosition(GeolocationPosition*);
     void setPositionUnavailableError(const String& errorMessage);
@@ -55,12 +55,12 @@ public:
     int numberOfPendingPermissionRequests() const;
 
     // GeolocationClient
-    virtual void startUpdating() override;
-    virtual void stopUpdating() override;
-    virtual void setEnableHighAccuracy(bool) override;
-    virtual GeolocationPosition* lastPosition() override;
-    virtual void requestPermission(Geolocation*) override;
-    virtual void cancelPermissionRequest(Geolocation*) override;
+    void startUpdating() override;
+    void stopUpdating() override;
+    void setEnableHighAccuracy(bool) override;
+    GeolocationPosition* lastPosition() override;
+    void requestPermission(Geolocation*) override;
+    void cancelPermissionRequest(Geolocation*) override;
     void controllerForTestAdded(GeolocationController*) override;
     void controllerForTestRemoved(GeolocationController*) override;
 

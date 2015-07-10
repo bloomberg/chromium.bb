@@ -42,17 +42,17 @@ private:
 
 public:
     static PassRefPtrWillBeRawPtr<AXARIAGrid> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXARIAGrid();
+    ~AXARIAGrid() override;
 
-    virtual bool isAriaTable() const override { return true; }
+    bool isAriaTable() const override { return true; }
 
-    virtual void addChildren() override;
+    void addChildren() override;
 
 private:
     // ARIA treegrids and grids support selected rows.
-    virtual bool supportsSelectedRows() override { return true; }
-    virtual bool isMultiSelectable() const override { return true; }
-    virtual bool isTableExposableThroughAccessibility() const override { return true; }
+    bool supportsSelectedRows() override { return true; }
+    bool isMultiSelectable() const override { return true; }
+    bool isTableExposableThroughAccessibility() const override { return true; }
 
     bool addTableCellChild(AXObject*, HashSet<AXObject*>& appendedRows, unsigned& columnCount);
 };

@@ -46,23 +46,23 @@ class AudioContext;
 class ScriptProcessorHandler final : public AudioHandler {
 public:
     static PassRefPtr<ScriptProcessorHandler> create(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
-    virtual ~ScriptProcessorHandler();
+    ~ScriptProcessorHandler() override;
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
-    virtual void initialize() override;
+    void process(size_t framesToProcess) override;
+    void initialize() override;
 
     size_t bufferSize() const { return m_bufferSize; }
 
-    virtual void setChannelCount(unsigned long, ExceptionState&) override;
-    virtual void setChannelCountMode(const String&, ExceptionState&) override;
+    void setChannelCount(unsigned long, ExceptionState&) override;
+    void setChannelCountMode(const String&, ExceptionState&) override;
 
     virtual unsigned numberOfOutputChannels() const { return m_numberOfOutputChannels; }
 
 private:
     ScriptProcessorHandler(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
-    virtual double tailTime() const override;
-    virtual double latencyTime() const override;
+    double tailTime() const override;
+    double latencyTime() const override;
 
     void fireProcessEvent();
 

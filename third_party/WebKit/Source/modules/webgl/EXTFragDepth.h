@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~EXTFragDepth();
-    virtual WebGLExtensionName name() const override;
+    ~EXTFragDepth() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit EXTFragDepth(WebGLRenderingContextBase*);

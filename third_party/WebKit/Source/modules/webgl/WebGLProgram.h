@@ -36,7 +36,7 @@ namespace blink {
 class WebGLProgram final : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~WebGLProgram();
+    ~WebGLProgram() override;
 
     static PassRefPtrWillBeRawPtr<WebGLProgram> create(WebGLRenderingContextBase*);
 

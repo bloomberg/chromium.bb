@@ -71,7 +71,7 @@ public:
         return resolver.release();
     }
 
-    virtual void stop() override
+    void stop() override
     {
         m_result->cancel();
         m_result->clearResolver();

@@ -60,7 +60,7 @@ class FileWriter final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:
     static FileWriter* create(ExecutionContext*);
-    virtual ~FileWriter();
+    ~FileWriter() override;
 
     enum ReadyState {
         INIT = 0,
@@ -76,17 +76,17 @@ public:
     FileError* error() const { return m_error.get(); }
 
     // WebFileWriterClient
-    virtual void didWrite(long long bytes, bool complete) override;
-    virtual void didTruncate() override;
-    virtual void didFail(WebFileError) override;
+    void didWrite(long long bytes, bool complete) override;
+    void didTruncate() override;
+    void didFail(WebFileError) override;
 
     // ActiveDOMObject
-    virtual void stop() override;
-    virtual bool hasPendingActivity() const override;
+    void stop() override;
+    bool hasPendingActivity() const override;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);

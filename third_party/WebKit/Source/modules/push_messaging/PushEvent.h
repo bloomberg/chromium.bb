@@ -32,9 +32,9 @@ public:
         return adoptRefWillBeNoop(new PushEvent(type, initializer));
     }
 
-    virtual ~PushEvent();
+    ~PushEvent() override;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     PushMessageData* data();
 

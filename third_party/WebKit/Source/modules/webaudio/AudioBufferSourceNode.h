@@ -45,10 +45,10 @@ class AudioContext;
 class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
 public:
     static PassRefPtr<AudioBufferSourceHandler> create(AudioNode&, float sampleRate, AudioParamHandler& playbackRate, AudioParamHandler& detune);
-    virtual ~AudioBufferSourceHandler();
+    ~AudioBufferSourceHandler() override;
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
+    void process(size_t framesToProcess) override;
 
     // setBuffer() is called on the main thread. This is the buffer we use for playback.
     void setBuffer(AudioBuffer*, ExceptionState&);
@@ -80,10 +80,10 @@ public:
     void clearPannerNode();
 
     // If we are no longer playing, propogate silence ahead to downstream nodes.
-    virtual bool propagatesSilence() const override;
+    bool propagatesSilence() const override;
 
     // AudioScheduledSourceNode
-    virtual void finish() override;
+    void finish() override;
 
     void handleStoppableSourceNode();
 

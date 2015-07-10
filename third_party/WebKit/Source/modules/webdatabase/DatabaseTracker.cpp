@@ -113,7 +113,7 @@ public:
         return adoptPtr(new NotifyDatabaseObserverOnCloseTask(database));
     }
 
-    virtual void performTask(ExecutionContext*) override
+    void performTask(ExecutionContext*) override
     {
         databaseClosed(m_database.get());
     }
@@ -200,7 +200,7 @@ public:
         return adoptPtr(new CloseOneDatabaseImmediatelyTask(originIdentifier, name, database));
     }
 
-    virtual void performTask(ExecutionContext*) override
+    void performTask(ExecutionContext*) override
     {
         DatabaseTracker::tracker().closeOneDatabaseImmediately(m_originIdentifier, m_name, m_database);
     }

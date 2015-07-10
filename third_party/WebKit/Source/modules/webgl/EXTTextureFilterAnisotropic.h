@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~EXTTextureFilterAnisotropic();
-    virtual WebGLExtensionName name() const override;
+    ~EXTTextureFilterAnisotropic() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit EXTTextureFilterAnisotropic(WebGLRenderingContextBase*);

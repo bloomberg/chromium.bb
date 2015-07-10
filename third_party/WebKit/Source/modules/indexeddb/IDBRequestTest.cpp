@@ -58,13 +58,13 @@ public:
     {
     }
 
-    virtual void SetUp() override
+    void SetUp() override
     {
         m_executionContext = adoptRefWillBeNoop(new NullExecutionContext());
         m_scope.scriptState()->setExecutionContext(m_executionContext.get());
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         m_executionContext->notifyContextDestroyed();
         m_scope.scriptState()->setExecutionContext(nullptr);
@@ -121,16 +121,16 @@ public:
     {
         return adoptPtr(new MockWebIDBDatabase());
     }
-    virtual ~MockWebIDBDatabase()
+    ~MockWebIDBDatabase() override
     {
         EXPECT_TRUE(m_closeCalled);
     }
 
-    virtual void close() override
+    void close() override
     {
         m_closeCalled = true;
     }
-    virtual void abort(long long transactionId) override { }
+    void abort(long long transactionId) override { }
 
 private:
     MockWebIDBDatabase()

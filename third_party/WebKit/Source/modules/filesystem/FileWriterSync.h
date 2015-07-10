@@ -58,7 +58,7 @@ public:
     {
         return new FileWriterSync();
     }
-    virtual ~FileWriterSync();
+    ~FileWriterSync() override;
     DECLARE_VIRTUAL_TRACE();
 
     // FileWriterBase
@@ -67,9 +67,9 @@ public:
     void truncate(long long length, ExceptionState&);
 
     // WebFileWriterClient, via FileWriterBase
-    virtual void didWrite(long long bytes, bool complete) override;
-    virtual void didTruncate() override;
-    virtual void didFail(WebFileError) override;
+    void didWrite(long long bytes, bool complete) override;
+    void didTruncate() override;
+    void didFail(WebFileError) override;
 
 private:
     FileWriterSync();

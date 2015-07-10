@@ -91,7 +91,7 @@ public:
         return new CallbackDispatcher(handler, handlingMethod);
     }
 
-    virtual void handleEvent(Argument argument) override
+    void handleEvent(Argument argument) override
     {
         (m_handler.get()->*m_handlingMethod)(argument);
     }
@@ -382,19 +382,19 @@ public:
         return adoptRef(new FileContentRequest(requestCallback, url, readAsText, start, end, charset));
     }
 
-    virtual ~FileContentRequest()
+    ~FileContentRequest() override
     {
         reportResult(FileError::ABORT_ERR);
     }
 
     void start(ExecutionContext*);
 
-    virtual bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) override
     {
         return this == &other;
     }
 
-    virtual void handleEvent(ExecutionContext*, Event* event) override
+    void handleEvent(ExecutionContext*, Event* event) override
     {
         if (event->type() == EventTypeNames::load)
             didRead();
@@ -523,7 +523,7 @@ private:
         {
         }
 
-        virtual void handleEvent() override
+        void handleEvent() override
         {
             m_handler->didDeleteEntry();
         }

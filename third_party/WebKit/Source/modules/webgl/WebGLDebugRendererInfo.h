@@ -43,8 +43,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~WebGLDebugRendererInfo();
-    virtual WebGLExtensionName name() const override;
+    ~WebGLDebugRendererInfo() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit WebGLDebugRendererInfo(WebGLRenderingContextBase*);

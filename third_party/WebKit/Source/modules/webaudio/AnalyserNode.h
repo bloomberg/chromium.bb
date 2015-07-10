@@ -36,10 +36,10 @@ class ExceptionState;
 class AnalyserHandler final : public AudioBasicInspectorHandler {
 public:
     static PassRefPtr<AnalyserHandler> create(AudioNode&, float sampleRate);
-    virtual ~AnalyserHandler();
+    ~AnalyserHandler() override;
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
+    void process(size_t framesToProcess) override;
 
     unsigned fftSize() const { return m_analyser.fftSize(); }
     void setFftSize(unsigned size, ExceptionState&);

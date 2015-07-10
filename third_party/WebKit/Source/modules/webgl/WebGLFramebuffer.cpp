@@ -46,16 +46,16 @@ namespace {
         explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
         WebGLRenderbufferAttachment() { }
 
-        virtual GLsizei width() const override;
-        virtual GLsizei height() const override;
-        virtual GLenum format() const override;
-        virtual GLenum type() const override;
-        virtual WebGLSharedObject* object() const override;
-        virtual bool isSharedObject(WebGLSharedObject*) const override;
-        virtual bool valid() const override;
-        virtual void onDetached(WebGraphicsContext3D*) override;
-        virtual void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
-        virtual void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
+        GLsizei width() const override;
+        GLsizei height() const override;
+        GLenum format() const override;
+        GLenum type() const override;
+        WebGLSharedObject* object() const override;
+        bool isSharedObject(WebGLSharedObject*) const override;
+        bool valid() const override;
+        void onDetached(WebGraphicsContext3D*) override;
+        void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
+        void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
 
         RefPtrWillBeMember<WebGLRenderbuffer> m_renderbuffer;
     };
@@ -154,16 +154,16 @@ namespace {
         WebGLTextureAttachment(WebGLTexture*, GLenum target, GLint level);
         WebGLTextureAttachment() { }
 
-        virtual GLsizei width() const override;
-        virtual GLsizei height() const override;
-        virtual GLenum format() const override;
-        virtual GLenum type() const override;
-        virtual WebGLSharedObject* object() const override;
-        virtual bool isSharedObject(WebGLSharedObject*) const override;
-        virtual bool valid() const override;
-        virtual void onDetached(WebGraphicsContext3D*) override;
-        virtual void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
-        virtual void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
+        GLsizei width() const override;
+        GLsizei height() const override;
+        GLenum format() const override;
+        GLenum type() const override;
+        WebGLSharedObject* object() const override;
+        bool isSharedObject(WebGLSharedObject*) const override;
+        bool valid() const override;
+        void onDetached(WebGraphicsContext3D*) override;
+        void attach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
+        void unattach(WebGraphicsContext3D*, GLenum target, GLenum attachment) override;
 
         RefPtrWillBeMember<WebGLTexture> m_texture;
         GLenum m_target;

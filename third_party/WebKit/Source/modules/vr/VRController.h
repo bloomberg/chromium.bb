@@ -38,7 +38,7 @@ private:
     VRController(LocalFrame&, WebVRClient*);
 
     // Inherited from LocalFrameLifecycleObserver.
-    virtual void willDetachFrameHost() override;
+    void willDetachFrameHost() override;
 
     WebVRClient* m_client;
 };

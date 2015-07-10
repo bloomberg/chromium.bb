@@ -22,11 +22,11 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final : public InspectorBas
 public:
     static PassOwnPtrWillBeRawPtr<DeviceOrientationInspectorAgent> create(Page*);
 
-    virtual ~DeviceOrientationInspectorAgent();
+    ~DeviceOrientationInspectorAgent() override;
 
     // Protocol methods.
-    virtual void setDeviceOrientationOverride(ErrorString*, double, double, double) override;
-    virtual void clearDeviceOrientationOverride(ErrorString*) override;
+    void setDeviceOrientationOverride(ErrorString*, double, double, double) override;
+    void clearDeviceOrientationOverride(ErrorString*) override;
 
     // Inspector Controller API.
     void disable(ErrorString*) override;

@@ -21,7 +21,7 @@ class HMDVRDevice final : public VRDevice {
 public:
     HMDVRDevice(VRHardwareUnit*, unsigned);
 
-    virtual void updateFromWebVRDevice(const WebVRDevice&) override;
+    void updateFromWebVRDevice(const WebVRDevice&) override;
 
     VREyeParameters* getEyeParameters(const String&);
     void setFieldOfView(VRFieldOfView* leftFov = 0, VRFieldOfView* rightFov = 0);

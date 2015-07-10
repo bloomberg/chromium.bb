@@ -33,14 +33,14 @@ public:
     CacheMatchCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebServiceWorkerResponse* webResponse) override
+    void onSuccess(WebServiceWorkerResponse* webResponse) override
     {
         m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), *webResponse));
         m_resolver.clear();
     }
 
     // Ownership of |rawReason| must be passed.
-    virtual void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError* rawReason) override
     {
         OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (*reason == WebServiceWorkerCacheErrorNotFound)
@@ -61,7 +61,7 @@ public:
     CacheWithResponsesCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
+    void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
     {
         HeapVector<Member<Response>> responses;
         for (size_t i = 0; i < webResponses->size(); ++i)
@@ -71,7 +71,7 @@ public:
     }
 
     // Ownership of |rawReason| must be passed.
-    virtual void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError* rawReason) override
     {
         OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         m_resolver->reject(CacheStorageError::createException(*reason));
@@ -96,7 +96,7 @@ public:
     }
 
     // Ownership of |rawReason| must be passed.
-    virtual void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError* rawReason) override
     {
         OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (*reason == WebServiceWorkerCacheErrorNotFound)
@@ -117,7 +117,7 @@ public:
     CacheWithRequestsCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebVector<WebServiceWorkerRequest>* webRequests) override
+    void onSuccess(WebVector<WebServiceWorkerRequest>* webRequests) override
     {
         HeapVector<Member<Request>> requests;
         for (size_t i = 0; i < webRequests->size(); ++i)
@@ -127,7 +127,7 @@ public:
     }
 
     // Ownership of |rawReason| must be passed.
-    virtual void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError* rawReason) override
     {
         OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         m_resolver->reject(CacheStorageError::createException(*reason));

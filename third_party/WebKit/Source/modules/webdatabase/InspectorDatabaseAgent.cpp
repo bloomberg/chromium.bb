@@ -75,7 +75,7 @@ public:
         return new StatementCallback(requestCallback);
     }
 
-    virtual ~StatementCallback() { }
+    ~StatementCallback() override { }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -83,7 +83,7 @@ public:
         SQLStatementCallback::trace(visitor);
     }
 
-    virtual bool handleEvent(SQLTransaction*, SQLResultSet* resultSet) override
+    bool handleEvent(SQLTransaction*, SQLResultSet* resultSet) override
     {
         SQLResultSetRowList* rowList = resultSet->rows();
 
@@ -119,7 +119,7 @@ public:
         return new StatementErrorCallback(requestCallback);
     }
 
-    virtual ~StatementErrorCallback() { }
+    ~StatementErrorCallback() override { }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -127,7 +127,7 @@ public:
         SQLStatementErrorCallback::trace(visitor);
     }
 
-    virtual bool handleEvent(SQLTransaction*, SQLError* error) override
+    bool handleEvent(SQLTransaction*, SQLError* error) override
     {
         reportTransactionFailed(m_requestCallback.get(), error);
         return true;
@@ -146,7 +146,7 @@ public:
         return new TransactionCallback(sqlStatement, requestCallback);
     }
 
-    virtual ~TransactionCallback() { }
+    ~TransactionCallback() override { }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -154,7 +154,7 @@ public:
         SQLTransactionCallback::trace(visitor);
     }
 
-    virtual bool handleEvent(SQLTransaction* transaction) override
+    bool handleEvent(SQLTransaction* transaction) override
     {
         if (!m_requestCallback->isActive())
             return true;
@@ -180,7 +180,7 @@ public:
         return new TransactionErrorCallback(requestCallback);
     }
 
-    virtual ~TransactionErrorCallback() { }
+    ~TransactionErrorCallback() override { }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -188,7 +188,7 @@ public:
         SQLTransactionErrorCallback::trace(visitor);
     }
 
-    virtual bool handleEvent(SQLError* error) override
+    bool handleEvent(SQLError* error) override
     {
         reportTransactionFailed(m_requestCallback.get(), error);
         return true;
@@ -206,9 +206,9 @@ public:
         return new TransactionSuccessCallback();
     }
 
-    virtual ~TransactionSuccessCallback() { }
+    ~TransactionSuccessCallback() override { }
 
-    virtual void handleEvent() override { }
+    void handleEvent() override { }
 
 private:
     TransactionSuccessCallback() { }

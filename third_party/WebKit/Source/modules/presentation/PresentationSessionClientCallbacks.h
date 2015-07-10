@@ -28,11 +28,11 @@ class PresentationSessionClientCallbacks final : public WebPresentationSessionCl
     WTF_MAKE_NONCOPYABLE(PresentationSessionClientCallbacks);
 public:
     PresentationSessionClientCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, Presentation*);
-    virtual ~PresentationSessionClientCallbacks();
+    ~PresentationSessionClientCallbacks() override;
 
     // WebPresentationSessionClientCallbacks implementation.
-    virtual void onSuccess(WebPresentationSessionClient*) override;
-    virtual void onError(WebPresentationError*) override;
+    void onSuccess(WebPresentationSessionClient*) override;
+    void onError(WebPresentationError*) override;
 
 private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;

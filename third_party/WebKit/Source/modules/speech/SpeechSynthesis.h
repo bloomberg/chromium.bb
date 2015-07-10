@@ -63,7 +63,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
 
-    virtual ExecutionContext* executionContext() const override;
+    ExecutionContext* executionContext() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -71,13 +71,13 @@ private:
     explicit SpeechSynthesis(ExecutionContext*);
 
     // PlatformSpeechSynthesizerClient override methods.
-    virtual void voicesDidChange() override;
-    virtual void didStartSpeaking(PlatformSpeechSynthesisUtterance*) override;
-    virtual void didPauseSpeaking(PlatformSpeechSynthesisUtterance*) override;
-    virtual void didResumeSpeaking(PlatformSpeechSynthesisUtterance*) override;
-    virtual void didFinishSpeaking(PlatformSpeechSynthesisUtterance*) override;
-    virtual void speakingErrorOccurred(PlatformSpeechSynthesisUtterance*) override;
-    virtual void boundaryEventOccurred(PlatformSpeechSynthesisUtterance*, SpeechBoundary, unsigned charIndex) override;
+    void voicesDidChange() override;
+    void didStartSpeaking(PlatformSpeechSynthesisUtterance*) override;
+    void didPauseSpeaking(PlatformSpeechSynthesisUtterance*) override;
+    void didResumeSpeaking(PlatformSpeechSynthesisUtterance*) override;
+    void didFinishSpeaking(PlatformSpeechSynthesisUtterance*) override;
+    void speakingErrorOccurred(PlatformSpeechSynthesisUtterance*) override;
+    void boundaryEventOccurred(PlatformSpeechSynthesisUtterance*, SpeechBoundary, unsigned charIndex) override;
 
     void startSpeakingImmediately();
     void handleSpeakingCompleted(SpeechSynthesisUtterance*, bool errorOccurred);
@@ -92,7 +92,7 @@ private:
     bool m_isPaused;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 };
 
 } // namespace blink

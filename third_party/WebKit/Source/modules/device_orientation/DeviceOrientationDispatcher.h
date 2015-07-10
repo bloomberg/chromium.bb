@@ -46,14 +46,14 @@ class DeviceOrientationDispatcher final : public GarbageCollectedFinalized<Devic
     USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationDispatcher);
 public:
     static DeviceOrientationDispatcher& instance();
-    virtual ~DeviceOrientationDispatcher();
+    ~DeviceOrientationDispatcher() override;
 
     // Note that the returned object is owned by this class.
     // FIXME: make the return value const, see crbug.com/233174.
     DeviceOrientationData* latestDeviceOrientationData();
 
     // Inherited from WebDeviceOrientationListener.
-    virtual void didChangeDeviceOrientation(const WebDeviceOrientationData&) override;
+    void didChangeDeviceOrientation(const WebDeviceOrientationData&) override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -61,8 +61,8 @@ private:
     DeviceOrientationDispatcher();
 
     // Inherited from PlatformEventDispatcher.
-    virtual void startListening() override;
-    virtual void stopListening() override;
+    void startListening() override;
+    void stopListening() override;
 
     Member<DeviceOrientationData> m_lastDeviceOrientationData;
 };

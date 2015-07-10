@@ -41,42 +41,42 @@ class AXSlider : public AXLayoutObject {
 
 public:
     static PassRefPtrWillBeRawPtr<AXSlider> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXSlider() { }
+    ~AXSlider() override { }
 
 protected:
     AXSlider(LayoutObject*, AXObjectCacheImpl&);
 
 private:
     HTMLInputElement* element() const;
-    virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const override final;
+    AXObject* elementAccessibilityHitTest(const IntPoint&) const final;
 
-    virtual AccessibilityRole determineAccessibilityRole() override final;
-    virtual bool isSlider() const override final { return true; }
-    virtual bool isControl() const override final { return true; }
+    AccessibilityRole determineAccessibilityRole() final;
+    bool isSlider() const final { return true; }
+    bool isControl() const final { return true; }
 
-    virtual void addChildren() override final;
+    void addChildren() final;
 
-    virtual bool canSetValueAttribute() const override final { return true; }
+    bool canSetValueAttribute() const final { return true; }
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
-    virtual void setValue(const String&) override final;
-    virtual AccessibilityOrientation orientation() const override final;
+    void setValue(const String&) final;
+    AccessibilityOrientation orientation() const final;
 };
 
 class AXSliderThumb final : public AXMockObject {
 
 public:
     static PassRefPtrWillBeRawPtr<AXSliderThumb> create(AXObjectCacheImpl&);
-    virtual ~AXSliderThumb() { }
+    ~AXSliderThumb() override { }
 
-    virtual AccessibilityRole roleValue() const override { return SliderThumbRole; }
+    AccessibilityRole roleValue() const override { return SliderThumbRole; }
 
-    virtual LayoutRect elementRect() const override;
+    LayoutRect elementRect() const override;
 
 private:
     explicit AXSliderThumb(AXObjectCacheImpl&);
 
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 

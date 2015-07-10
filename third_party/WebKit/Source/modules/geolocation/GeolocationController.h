@@ -64,7 +64,7 @@ public:
     GeolocationClient* client() { return m_client; }
 
     // Inherited from PageLifecycleObserver.
-    virtual void pageVisibilityChanged() override;
+    void pageVisibilityChanged() override;
 
     static const char* supplementName();
     static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }

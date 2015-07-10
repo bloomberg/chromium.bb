@@ -38,7 +38,7 @@ class DeviceRotationRate;
 class DeviceMotionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~DeviceMotionEvent();
+    ~DeviceMotionEvent() override;
     static PassRefPtrWillBeRawPtr<DeviceMotionEvent> create()
     {
         return adoptRefWillBeNoop(new DeviceMotionEvent);
@@ -57,7 +57,7 @@ public:
     DeviceRotationRate* rotationRate();
     double interval(bool& isNull) const;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

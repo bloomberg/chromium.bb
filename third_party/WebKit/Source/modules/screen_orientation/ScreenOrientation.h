@@ -30,11 +30,11 @@ class ScreenOrientation final
 public:
     static ScreenOrientation* create(LocalFrame*);
 
-    virtual ~ScreenOrientation();
+    ~ScreenOrientation() override;
 
     // EventTarget implementation.
-    virtual const WTF::AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const WTF::AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     String type() const;
     unsigned short angle() const;

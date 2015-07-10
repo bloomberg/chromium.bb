@@ -49,7 +49,7 @@ public:
     {
     }
 
-    virtual void handleEvent(const EntryHeapVector& entries) override
+    void handleEvent(const EntryHeapVector& entries) override
     {
         EntrySyncHeapVector syncEntries;
         syncEntries.reserveInitialCapacity(entries.size());
@@ -75,7 +75,7 @@ public:
     {
     }
 
-    virtual void handleEvent(FileError* error) override
+    void handleEvent(FileError* error) override
     {
         m_reader->setError(error->code());
     }

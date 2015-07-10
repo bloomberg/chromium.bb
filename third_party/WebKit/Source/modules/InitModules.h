@@ -12,7 +12,7 @@ namespace blink {
 
 class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
 public:
-    virtual void init() override;
+    void init() override;
     static void terminateThreads();
 };
 

@@ -38,25 +38,25 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBOpenDBRequest* create(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
-    virtual ~IDBOpenDBRequest();
+    ~IDBOpenDBRequest() override;
     DECLARE_VIRTUAL_TRACE();
 
     using IDBRequest::onSuccess;
 
-    virtual void onBlocked(int64_t existingVersion) override;
-    virtual void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) override;
-    virtual void onSuccess(PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&) override;
-    virtual void onSuccess(int64_t oldVersion) override;
+    void onBlocked(int64_t existingVersion) override;
+    void onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) override;
+    void onSuccess(PassOwnPtr<WebIDBDatabase>, const IDBDatabaseMetadata&) override;
+    void onSuccess(int64_t oldVersion) override;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
+    const AtomicString& interfaceName() const override;
+    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(blocked);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(upgradeneeded);
 
 protected:
-    virtual bool shouldEnqueueEvent() const override;
+    bool shouldEnqueueEvent() const override;
 
 private:
     IDBOpenDBRequest(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);

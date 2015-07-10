@@ -23,10 +23,10 @@ class LockOrientationCallback final : public WebLockOrientationCallback {
     WTF_MAKE_NONCOPYABLE(LockOrientationCallback);
 public:
     explicit LockOrientationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>);
-    virtual ~LockOrientationCallback();
+    ~LockOrientationCallback() override;
 
-    virtual void onSuccess() override;
-    virtual void onError(WebLockOrientationError) override;
+    void onSuccess() override;
+    void onError(WebLockOrientationError) override;
 
 private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;

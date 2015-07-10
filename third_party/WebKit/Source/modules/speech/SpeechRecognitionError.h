@@ -57,7 +57,7 @@ public:
     const String& error() { return m_error; }
     const String& message() { return m_message; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

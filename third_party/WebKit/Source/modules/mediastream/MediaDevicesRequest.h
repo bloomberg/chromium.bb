@@ -45,7 +45,7 @@ class MODULES_EXPORT MediaDevicesRequest final : public GarbageCollectedFinalize
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaDevicesRequest);
 public:
     static MediaDevicesRequest* create(ScriptState*, UserMediaController*);
-    virtual ~MediaDevicesRequest();
+    ~MediaDevicesRequest() override;
 
     Document* ownerDocument();
 
@@ -54,7 +54,7 @@ public:
     void succeed(const MediaDeviceInfoVector&);
 
     // ActiveDOMObject
-    virtual void stop() override;
+    void stop() override;
 
     DECLARE_VIRTUAL_TRACE();
 

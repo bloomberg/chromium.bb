@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~OESStandardDerivatives();
-    virtual WebGLExtensionName name() const override;
+    ~OESStandardDerivatives() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit OESStandardDerivatives(WebGLRenderingContextBase*);

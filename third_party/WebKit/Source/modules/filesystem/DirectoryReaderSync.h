@@ -52,7 +52,7 @@ public:
         return new DirectoryReaderSync(fileSystem, fullPath);
     }
 
-    virtual ~DirectoryReaderSync();
+    ~DirectoryReaderSync() override;
 
     EntrySyncHeapVector readEntries(ExceptionState&);
 

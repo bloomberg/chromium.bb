@@ -44,7 +44,7 @@ private:
 
 public:
     static PassRefPtrWillBeRawPtr<AXImageMapLink> create(AXObjectCacheImpl&);
-    virtual ~AXImageMapLink();
+    ~AXImageMapLink() override;
     DECLARE_VIRTUAL_TRACE();
 
     void setHTMLAreaElement(HTMLAreaElement* element) { m_areaElement = element; }
@@ -53,30 +53,30 @@ public:
     void setHTMLMapElement(HTMLMapElement* element) { m_mapElement = element; }
     HTMLMapElement* mapElement() const { return m_mapElement.get(); }
 
-    virtual Node* node() const override { return m_areaElement.get(); }
+    Node* node() const override { return m_areaElement.get(); }
 
-    virtual AccessibilityRole roleValue() const override;
-    virtual bool isEnabled() const override { return true; }
+    AccessibilityRole roleValue() const override;
+    bool isEnabled() const override { return true; }
 
-    virtual Element* anchorElement() const override;
-    virtual Element* actionElement() const override;
-    virtual KURL url() const override;
-    virtual bool isLink() const override { return true; }
-    virtual bool isLinked() const override { return true; }
-    virtual String deprecatedTitle(TextUnderElementMode) const override;
-    virtual String deprecatedAccessibilityDescription() const override;
-    virtual AXObject* computeParent() const override;
+    Element* anchorElement() const override;
+    Element* actionElement() const override;
+    KURL url() const override;
+    bool isLink() const override { return true; }
+    bool isLinked() const override { return true; }
+    String deprecatedTitle(TextUnderElementMode) const override;
+    String deprecatedAccessibilityDescription() const override;
+    AXObject* computeParent() const override;
 
-    virtual LayoutRect elementRect() const override;
+    LayoutRect elementRect() const override;
 
 private:
     RefPtrWillBeMember<HTMLAreaElement> m_areaElement;
     RefPtrWillBeMember<HTMLMapElement> m_mapElement;
 
-    virtual void detach() override;
-    virtual void detachFromParent() override;
+    void detach() override;
+    void detachFromParent() override;
 
-    virtual bool isImageMapLink() const override { return true; }
+    bool isImageMapLink() const override { return true; }
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, isImageMapLink());

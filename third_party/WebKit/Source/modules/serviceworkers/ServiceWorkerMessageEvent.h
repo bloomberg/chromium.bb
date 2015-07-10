@@ -31,7 +31,7 @@ public:
         return adoptRefWillBeNoop(new ServiceWorkerMessageEvent(data, String(), String(), source, ports));
     }
 
-    virtual ~ServiceWorkerMessageEvent();
+    ~ServiceWorkerMessageEvent() override;
 
     ScriptValue data() const { return m_data; }
     SerializedScriptValue* serializedData() const { return m_serializedData.get(); }
@@ -41,7 +41,7 @@ public:
     MessagePortArray ports() const;
     void source(ServiceWorkerOrMessagePort& result) const;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

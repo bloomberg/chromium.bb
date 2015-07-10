@@ -16,7 +16,7 @@ class WorkerObjectProxy;
 class MODULES_EXPORT CompositorWorkerThread : public WorkerThread {
 public:
     static PassRefPtr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
-    virtual ~CompositorWorkerThread();
+    ~CompositorWorkerThread() override;
 
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 

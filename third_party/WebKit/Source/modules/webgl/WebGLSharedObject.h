@@ -37,7 +37,7 @@ class WebGLRenderingContextBase;
 // WebGLRenderingContexts.
 class WebGLSharedObject : public WebGLObject {
 public:
-    virtual ~WebGLSharedObject();
+    ~WebGLSharedObject() override;
 
     WebGLContextGroup* contextGroup() const { return m_contextGroup; }
 
@@ -51,7 +51,7 @@ public:
     virtual bool isTexture() const { return false; }
     virtual bool isTransformFeedback() const { return false; }
 
-    virtual bool validate(const WebGLContextGroup* contextGroup, const WebGLRenderingContextBase*) const override final
+    bool validate(const WebGLContextGroup* contextGroup, const WebGLRenderingContextBase*) const final
     {
         return contextGroup == m_contextGroup;
     }
@@ -61,12 +61,12 @@ public:
 protected:
     explicit WebGLSharedObject(WebGLRenderingContextBase*);
 
-    virtual bool hasGroupOrContext() const override final
+    bool hasGroupOrContext() const final
     {
         return m_contextGroup;
     }
 
-    virtual WebGraphicsContext3D* getAWebGraphicsContext3D() const override final;
+    WebGraphicsContext3D* getAWebGraphicsContext3D() const final;
 
 private:
     WebGLContextGroup* m_contextGroup;

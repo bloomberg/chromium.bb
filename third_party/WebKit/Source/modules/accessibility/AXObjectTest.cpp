@@ -17,7 +17,7 @@ protected:
     Document& document() { return m_pageHolder->document(); }
 
 private:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     OwnPtr<DummyPageHolder> m_pageHolder;
 };

@@ -64,15 +64,15 @@ namespace blink {
 class DocumentWebSocketChannel::BlobLoader final : public GarbageCollectedFinalized<DocumentWebSocketChannel::BlobLoader>, public FileReaderLoaderClient {
 public:
     BlobLoader(PassRefPtr<BlobDataHandle>, DocumentWebSocketChannel*);
-    virtual ~BlobLoader() { }
+    ~BlobLoader() override { }
 
     void cancel();
 
     // FileReaderLoaderClient functions.
-    virtual void didStartLoading() override { }
-    virtual void didReceiveData() override { }
-    virtual void didFinishLoading() override;
-    virtual void didFail(FileError::ErrorCode) override;
+    void didStartLoading() override { }
+    void didReceiveData() override { }
+    void didFinishLoading() override;
+    void didFail(FileError::ErrorCode) override;
 
     DEFINE_INLINE_TRACE()
     {

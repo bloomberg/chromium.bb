@@ -34,14 +34,14 @@ class ServiceWorkerRegistration final
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
 public:
     // EventTarget overrides.
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
 
     // WebServiceWorkerRegistrationProxy overrides.
-    virtual void dispatchUpdateFoundEvent() override;
-    virtual void setInstalling(WebServiceWorker*) override;
-    virtual void setWaiting(WebServiceWorker*) override;
-    virtual void setActive(WebServiceWorker*) override;
+    void dispatchUpdateFoundEvent() override;
+    void setInstalling(WebServiceWorker*) override;
+    void setWaiting(WebServiceWorker*) override;
+    void setActive(WebServiceWorker*) override;
 
     // For CallbackPromiseAdapter.
     typedef WebServiceWorkerRegistration WebType;
@@ -62,7 +62,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound);
 
-    virtual ~ServiceWorkerRegistration() override;
+    ~ServiceWorkerRegistration() override;
 
     // Eager finalization needed to promptly release owned WebServiceWorkerRegistration.
     EAGERLY_FINALIZE();
@@ -73,8 +73,8 @@ private:
     ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
 
     // ActiveDOMObject overrides.
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override;
+    bool hasPendingActivity() const override;
+    void stop() override;
 
     OwnPtr<WebServiceWorkerRegistration> m_outerRegistration;
     WebServiceWorkerProvider* m_provider;

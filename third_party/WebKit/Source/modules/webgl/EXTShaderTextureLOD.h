@@ -17,8 +17,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~EXTShaderTextureLOD();
-    virtual WebGLExtensionName name() const override;
+    ~EXTShaderTextureLOD() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit EXTShaderTextureLOD(WebGLRenderingContextBase*);

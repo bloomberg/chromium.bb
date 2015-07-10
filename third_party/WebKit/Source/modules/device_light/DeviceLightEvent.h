@@ -14,7 +14,7 @@ namespace blink {
 class DeviceLightEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~DeviceLightEvent();
+    ~DeviceLightEvent() override;
 
     static PassRefPtrWillBeRawPtr<DeviceLightEvent> create()
     {
@@ -31,7 +31,7 @@ public:
 
     double value() const { return m_value; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
 private:
     DeviceLightEvent();

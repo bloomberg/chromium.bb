@@ -49,7 +49,7 @@ public:
         return new FileEntrySync(fileSystem, fullPath);
     }
 
-    virtual bool isFile() const override { return true; }
+    bool isFile() const override { return true; }
 
     File* file(ExceptionState&);
     FileWriterSync* createWriter(ExceptionState&);

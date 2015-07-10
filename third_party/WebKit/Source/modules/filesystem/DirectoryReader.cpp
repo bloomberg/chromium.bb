@@ -45,7 +45,7 @@ public:
     {
     }
 
-    virtual void handleEvent(const EntryHeapVector& entries) override
+    void handleEvent(const EntryHeapVector& entries) override
     {
         m_reader->addEntries(entries);
     }
@@ -68,7 +68,7 @@ public:
     {
     }
 
-    virtual void handleEvent(FileError* error) override
+    void handleEvent(FileError* error) override
     {
         m_reader->onError(error);
     }

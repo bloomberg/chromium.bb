@@ -37,18 +37,18 @@ class ExceptionState;
 class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
 public:
     static PassRefPtr<DefaultAudioDestinationHandler> create(AudioNode&);
-    virtual ~DefaultAudioDestinationHandler();
+    ~DefaultAudioDestinationHandler() override;
 
     // AudioHandler
-    virtual void dispose() override;
-    virtual void initialize() override;
-    virtual void uninitialize() override;
-    virtual void setChannelCount(unsigned long, ExceptionState&) override;
+    void dispose() override;
+    void initialize() override;
+    void uninitialize() override;
+    void setChannelCount(unsigned long, ExceptionState&) override;
 
     // AudioDestinationHandler
-    virtual void startRendering() override;
-    virtual void stopRendering() override;
-    virtual unsigned long maxChannelCount() const override;
+    void startRendering() override;
+    void stopRendering() override;
+    unsigned long maxChannelCount() const override;
 
 private:
     explicit DefaultAudioDestinationHandler(AudioNode&);

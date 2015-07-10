@@ -30,7 +30,7 @@ class MODULES_EXPORT PresentationController final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
     WTF_MAKE_NONCOPYABLE(PresentationController);
 public:
-    virtual ~PresentationController();
+    ~PresentationController() override;
 
     static PassOwnPtrWillBeRawPtr<PresentationController> create(LocalFrame&, WebPresentationClient*);
 
@@ -45,10 +45,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Implementation of WebPresentationController.
-    virtual void didStartDefaultSession(WebPresentationSessionClient*) override;
-    virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
-    virtual void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
-    virtual void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length) override;
+    void didStartDefaultSession(WebPresentationSessionClient*) override;
+    void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
+    void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
+    void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length) override;
 
     // Connects the |Presentation| object with this controller.
     void setPresentation(Presentation*);
@@ -57,7 +57,7 @@ private:
     PresentationController(LocalFrame&, WebPresentationClient*);
 
     // Implementation of LocalFrameLifecycleObserver.
-    virtual void willDetachFrameHost() override;
+    void willDetachFrameHost() override;
 
     WebPresentationClient* m_client;
     PersistentWillBeMember<Presentation> m_presentation;

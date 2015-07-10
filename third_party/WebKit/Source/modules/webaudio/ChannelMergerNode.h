@@ -40,9 +40,9 @@ class ChannelMergerHandler final : public AudioHandler {
 public:
     static PassRefPtr<ChannelMergerHandler> create(AudioNode&, float sampleRate, unsigned numberOfInputs);
 
-    virtual void process(size_t framesToProcess) override;
-    virtual void setChannelCount(unsigned long, ExceptionState&) final;
-    virtual void setChannelCountMode(const String&, ExceptionState&) final;
+    void process(size_t framesToProcess) override;
+    void setChannelCount(unsigned long, ExceptionState&) final;
+    void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
     ChannelMergerHandler(AudioNode&, float sampleRate, unsigned numberOfInputs);

@@ -225,12 +225,12 @@ public:
     {
     }
 
-    virtual ~NewSessionResultPromise()
+    ~NewSessionResultPromise() override
     {
     }
 
     // ContentDecryptionModuleResult implementation.
-    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
+    void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
     {
         if (status != WebContentDecryptionModuleResult::NewSession) {
             ASSERT_NOT_REACHED();
@@ -264,12 +264,12 @@ public:
     {
     }
 
-    virtual ~LoadSessionResultPromise()
+    ~LoadSessionResultPromise() override
     {
     }
 
     // ContentDecryptionModuleResult implementation.
-    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
+    void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
     {
         switch (status) {
         case WebContentDecryptionModuleResult::NewSession:

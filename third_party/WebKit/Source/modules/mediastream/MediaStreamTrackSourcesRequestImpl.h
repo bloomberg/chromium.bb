@@ -41,8 +41,8 @@ public:
     static MediaStreamTrackSourcesRequestImpl* create(ExecutionContext&, MediaStreamTrackSourcesCallback*);
     ~MediaStreamTrackSourcesRequestImpl();
 
-    virtual String origin() override;
-    virtual void requestSucceeded(const WebVector<WebSourceInfo>&) override;
+    String origin() override;
+    void requestSucceeded(const WebVector<WebSourceInfo>&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

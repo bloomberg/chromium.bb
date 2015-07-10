@@ -61,9 +61,9 @@ class RegistrationCallback : public WebServiceWorkerProvider::WebServiceWorkerRe
 public:
     explicit RegistrationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
-    virtual ~RegistrationCallback() { }
+    ~RegistrationCallback() override { }
 
-    virtual void onSuccess(WebServiceWorkerRegistration* registration) override
+    void onSuccess(WebServiceWorkerRegistration* registration) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
@@ -71,7 +71,7 @@ public:
     }
 
     // Takes ownership of |errorRaw|.
-    virtual void onError(WebServiceWorkerError* errorRaw) override
+    void onError(WebServiceWorkerError* errorRaw) override
     {
         OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
@@ -88,9 +88,9 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::WebServiceWorke
 public:
     explicit GetRegistrationCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
-    virtual ~GetRegistrationCallback() { }
+    ~GetRegistrationCallback() override { }
 
-    virtual void onSuccess(WebServiceWorkerRegistration* registration) override
+    void onSuccess(WebServiceWorkerRegistration* registration) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
@@ -103,7 +103,7 @@ public:
     }
 
     // Takes ownership of |errorRaw|.
-    virtual void onError(WebServiceWorkerError* errorRaw) override
+    void onError(WebServiceWorkerError* errorRaw) override
     {
         OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
@@ -120,10 +120,10 @@ class GetRegistrationsCallback : public WebServiceWorkerProvider::WebServiceWork
 public:
     explicit GetRegistrationsCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
-    virtual ~GetRegistrationsCallback() { }
+    ~GetRegistrationsCallback() override { }
 
     // Takes ownership of |registrationsRaw|.
-    virtual void onSuccess(WebVector<WebServiceWorkerRegistration*>* registrationsRaw) override
+    void onSuccess(WebVector<WebServiceWorkerRegistration*>* registrationsRaw) override
     {
         OwnPtr<WebVector<WebServiceWorkerRegistration*>> registrations = adoptPtr(registrationsRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
@@ -132,7 +132,7 @@ public:
     }
 
     // Takes ownership of |errorRaw|.
-    virtual void onError(WebServiceWorkerError* errorRaw) override
+    void onError(WebServiceWorkerError* errorRaw) override
     {
         OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())

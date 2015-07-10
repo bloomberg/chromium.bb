@@ -54,7 +54,7 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ActiveDOMO
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaKeys* create(ExecutionContext*, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
-    virtual ~MediaKeys();
+    ~MediaKeys() override;
 
     MediaKeySession* createSession(ScriptState*, const String& sessionTypeString, ExceptionState&);
 
@@ -75,9 +75,9 @@ public:
     // FIXME: This class could derive from ContextLifecycleObserver
     // again once hasPendingActivity() is moved to ScriptWrappable
     // (http://crbug.com/483722).
-    virtual void contextDestroyed() override;
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override;
+    void contextDestroyed() override;
+    bool hasPendingActivity() const override;
+    void stop() override;
 
 private:
     MediaKeys(ExecutionContext*, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);

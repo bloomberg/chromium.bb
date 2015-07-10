@@ -16,10 +16,10 @@ namespace blink {
 class SimpleContentDecryptionModuleResultPromise : public ContentDecryptionModuleResultPromise {
 public:
     explicit SimpleContentDecryptionModuleResultPromise(ScriptState*);
-    virtual ~SimpleContentDecryptionModuleResultPromise();
+    ~SimpleContentDecryptionModuleResultPromise() override;
 
     // ContentDecryptionModuleResultPromise implementation.
-    virtual void complete() override;
+    void complete() override;
 };
 
 } // namespace blink

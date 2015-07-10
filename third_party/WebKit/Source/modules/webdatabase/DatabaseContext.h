@@ -47,12 +47,12 @@ public:
 
     static DatabaseContext* create(ExecutionContext*);
 
-    virtual ~DatabaseContext();
+    ~DatabaseContext() override;
     DECLARE_VIRTUAL_TRACE();
 
     // For life-cycle management (inherited from ActiveDOMObject):
-    virtual void contextDestroyed() override;
-    virtual void stop() override;
+    void contextDestroyed() override;
+    void stop() override;
 
     DatabaseContext* backend();
     DatabaseThread* databaseThread();

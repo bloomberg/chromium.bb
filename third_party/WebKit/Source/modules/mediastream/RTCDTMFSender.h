@@ -47,7 +47,7 @@ class RTCDTMFSender final
     DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCDTMFSender* create(ExecutionContext*, WebRTCPeerConnectionHandler*, MediaStreamTrack*, ExceptionState&);
-    virtual ~RTCDTMFSender();
+    ~RTCDTMFSender() override;
 
     bool canInsertDTMF() const;
     MediaStreamTrack* track() const;
@@ -62,11 +62,11 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(tonechange);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
-    virtual void stop() override;
+    void stop() override;
 
     // Oilpan: need to eagerly finalize m_handler
     EAGERLY_FINALIZE();
@@ -79,7 +79,7 @@ private:
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
 
     // WebRTCDTMFSenderHandlerClient
-    virtual void didPlayTone(const WebString&) override;
+    void didPlayTone(const WebString&) override;
 
     Member<MediaStreamTrack> m_track;
     int m_duration;

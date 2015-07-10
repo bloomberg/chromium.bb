@@ -51,7 +51,7 @@ public:
     static MediaStream* create(ExecutionContext*, MediaStream*);
     static MediaStream* create(ExecutionContext*, const MediaStreamTrackVector&);
     static MediaStream* create(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
-    virtual ~MediaStream();
+    ~MediaStream() override;
 
     // DEPRECATED
     String label() const { return m_descriptor->id(); }
@@ -80,16 +80,16 @@ public:
     void trackEnded();
 
     // MediaStreamDescriptorClient
-    virtual void streamEnded() override;
+    void streamEnded() override;
 
     MediaStreamDescriptor* descriptor() const { return m_descriptor.get(); }
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // URLRegistrable
-    virtual URLRegistry& registry() const override;
+    URLRegistry& registry() const override;
 
     // Oilpan: need to eagerly unregister as m_descriptor client.
     EAGERLY_FINALIZE();
@@ -100,11 +100,11 @@ private:
     MediaStream(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
 
     // ContextLifecycleObserver
-    virtual void contextDestroyed() override;
+    void contextDestroyed() override;
 
     // MediaStreamDescriptorClient
-    virtual void addRemoteTrack(MediaStreamComponent*) override;
-    virtual void removeRemoteTrack(MediaStreamComponent*) override;
+    void addRemoteTrack(MediaStreamComponent*) override;
+    void removeRemoteTrack(MediaStreamComponent*) override;
 
     bool emptyOrOnlyEndedTracks();
 

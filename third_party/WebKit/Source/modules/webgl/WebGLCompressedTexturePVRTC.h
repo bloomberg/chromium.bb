@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~WebGLCompressedTexturePVRTC();
-    virtual WebGLExtensionName name() const override;
+    ~WebGLCompressedTexturePVRTC() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit WebGLCompressedTexturePVRTC(WebGLRenderingContextBase*);

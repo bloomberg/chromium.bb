@@ -26,7 +26,7 @@ class PushPermissionStatusCallbacks final : public WebPushPermissionStatusCallba
 
 public:
     explicit PushPermissionStatusCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>);
-    virtual ~PushPermissionStatusCallbacks();
+    ~PushPermissionStatusCallbacks() override;
 
     void onSuccess(WebPushPermissionStatus*) override;
 

@@ -47,11 +47,11 @@ public:
     {
         return adoptRefWillBeNoop(new WebGLContextEvent(type, initializer));
     }
-    virtual ~WebGLContextEvent();
+    ~WebGLContextEvent() override;
 
     const String& statusMessage() const { return m_statusMessage; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

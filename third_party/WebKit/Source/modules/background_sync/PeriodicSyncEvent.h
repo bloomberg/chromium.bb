@@ -30,9 +30,9 @@ public:
         return adoptRefWillBeNoop(new PeriodicSyncEvent(type, init));
     }
 
-    virtual ~PeriodicSyncEvent();
+    ~PeriodicSyncEvent() override;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     PeriodicSyncRegistration* registration();
 

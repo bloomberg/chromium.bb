@@ -39,14 +39,14 @@ class AudioContext;
 class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
 public:
     AudioDestinationHandler(AudioNode&, float sampleRate);
-    virtual ~AudioDestinationHandler();
+    ~AudioDestinationHandler() override;
 
     // AudioHandler
-    virtual void process(size_t) override final { } // we're pulled by hardware so this is never called
+    void process(size_t) final { } // we're pulled by hardware so this is never called
 
     // The audio hardware calls render() to get the next render quantum of audio into destinationBus.
     // It will optionally give us local/live audio input in sourceBus (if it's not 0).
-    virtual void render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames) override final;
+    void render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames) final;
 
     size_t currentSampleFrame() const { return acquireLoad(&m_currentSampleFrame); }
     double currentTime() const { return currentSampleFrame() / static_cast<double>(sampleRate()); }
@@ -73,7 +73,7 @@ protected:
         }
 
         // AudioSourceProvider.
-        virtual void provideInput(AudioBus* destinationBus, size_t numberOfFrames) override
+        void provideInput(AudioBus* destinationBus, size_t numberOfFrames) override
         {
             bool isGood = destinationBus && destinationBus->length() == numberOfFrames && m_sourceBus->length() == numberOfFrames;
             ASSERT(isGood);

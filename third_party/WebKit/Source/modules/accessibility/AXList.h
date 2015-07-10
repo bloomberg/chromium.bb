@@ -42,14 +42,14 @@ private:
 
 public:
     static PassRefPtrWillBeRawPtr<AXList> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXList();
+    ~AXList() override;
 
-    virtual bool isList() const override { return true; }
+    bool isList() const override { return true; }
 
-    virtual AccessibilityRole roleValue() const override final;
+    AccessibilityRole roleValue() const final;
 private:
     bool isDescriptionList() const;
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 } // namespace blink

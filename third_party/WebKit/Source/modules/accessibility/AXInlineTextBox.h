@@ -44,25 +44,25 @@ private:
 public:
     static PassRefPtrWillBeRawPtr<AXInlineTextBox> create(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
-    virtual void init() override;
-    virtual void detach() override;
+    void init() override;
+    void detach() override;
 
     void setInlineTextBox(AbstractInlineTextBox* inlineTextBox) { m_inlineTextBox = inlineTextBox; }
 
-    virtual AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
-    virtual String stringValue() const override;
-    virtual void textCharacterOffsets(Vector<int>&) const override;
-    virtual void wordBoundaries(Vector<PlainTextRange>& words) const override;
-    virtual LayoutRect elementRect() const override;
-    virtual AXObject* computeParent() const override;
-    virtual AccessibilityTextDirection textDirection() const override;
-    virtual AXObject* nextOnLine() const override;
-    virtual AXObject* previousOnLine() const override;
+    AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
+    String stringValue() const override;
+    void textCharacterOffsets(Vector<int>&) const override;
+    void wordBoundaries(Vector<PlainTextRange>& words) const override;
+    LayoutRect elementRect() const override;
+    AXObject* computeParent() const override;
+    AccessibilityTextDirection textDirection() const override;
+    AXObject* nextOnLine() const override;
+    AXObject* previousOnLine() const override;
 
 private:
     RefPtr<AbstractInlineTextBox> m_inlineTextBox;
 
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 } // namespace blink

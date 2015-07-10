@@ -44,14 +44,14 @@ class NotificationCallbacks : public WebCredentialManagerClient::NotificationCal
     WTF_MAKE_NONCOPYABLE(NotificationCallbacks);
 public:
     explicit NotificationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
-    virtual ~NotificationCallbacks() { }
+    ~NotificationCallbacks() override { }
 
-    virtual void onSuccess() override
+    void onSuccess() override
     {
         m_resolver->resolve();
     }
 
-    virtual void onError(WebCredentialManagerError* reason) override
+    void onError(WebCredentialManagerError* reason) override
     {
         rejectDueToCredentialManagerError(m_resolver, reason);
     }
@@ -64,9 +64,9 @@ class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
     WTF_MAKE_NONCOPYABLE(RequestCallbacks);
 public:
     explicit RequestCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
-    virtual ~RequestCallbacks() { }
+    ~RequestCallbacks() override { }
 
-    virtual void onSuccess(WebCredential* credential) override
+    void onSuccess(WebCredential* credential) override
     {
         if (!credential) {
             m_resolver->resolve();
@@ -80,7 +80,7 @@ public:
             m_resolver->resolve(FederatedCredential::create(static_cast<WebFederatedCredential*>(credential)));
     }
 
-    virtual void onError(WebCredentialManagerError* reason) override
+    void onError(WebCredentialManagerError* reason) override
     {
         rejectDueToCredentialManagerError(m_resolver, reason);
     }

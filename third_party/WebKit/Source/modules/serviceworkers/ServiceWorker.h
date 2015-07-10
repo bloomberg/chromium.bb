@@ -68,10 +68,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // WebServiceWorkerProxy overrides.
-    virtual void dispatchStateChangeEvent() override;
+    void dispatchStateChangeEvent() override;
 
     // AbstractWorker overrides.
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     void internalsTerminate();
 private:
@@ -79,8 +79,8 @@ private:
     ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker>);
 
     // ActiveDOMObject overrides.
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override;
+    bool hasPendingActivity() const override;
+    void stop() override;
 
     OwnPtr<WebServiceWorker> m_outerWorker;
     bool m_wasStopped;

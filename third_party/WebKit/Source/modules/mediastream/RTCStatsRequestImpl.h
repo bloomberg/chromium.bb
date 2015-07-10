@@ -42,16 +42,16 @@ class RTCStatsRequestImpl final : public RTCStatsRequest, public ActiveDOMObject
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
 public:
     static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
-    virtual ~RTCStatsRequestImpl();
+    ~RTCStatsRequestImpl() override;
 
-    virtual RTCStatsResponseBase* createResponse() override;
-    virtual bool hasSelector() override;
-    virtual MediaStreamComponent* component() override;
+    RTCStatsResponseBase* createResponse() override;
+    bool hasSelector() override;
+    MediaStreamComponent* component() override;
 
-    virtual void requestSucceeded(RTCStatsResponseBase*) override;
+    void requestSucceeded(RTCStatsResponseBase*) override;
 
     // ActiveDOMObject
-    virtual void stop() override;
+    void stop() override;
 
     DECLARE_VIRTUAL_TRACE();
 

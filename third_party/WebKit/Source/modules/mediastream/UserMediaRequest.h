@@ -71,7 +71,7 @@ public:
     WebMediaConstraints videoConstraints() const;
 
     // ContextLifecycleObserver
-    virtual void contextDestroyed() override;
+    void contextDestroyed() override;
 
     DECLARE_VIRTUAL_TRACE();
 

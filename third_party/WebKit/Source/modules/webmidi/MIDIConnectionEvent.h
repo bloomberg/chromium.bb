@@ -58,7 +58,7 @@ public:
 
     MIDIPort* port() { return m_port; }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::MIDIConnectionEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::MIDIConnectionEvent; }
 
     DECLARE_VIRTUAL_TRACE();
 

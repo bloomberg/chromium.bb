@@ -21,11 +21,11 @@ class MODULES_EXPORT ScreenOrientationInspectorAgent final : public InspectorBas
 public:
     static PassOwnPtrWillBeRawPtr<ScreenOrientationInspectorAgent> create(LocalFrame&);
 
-    virtual ~ScreenOrientationInspectorAgent();
+    ~ScreenOrientationInspectorAgent() override;
 
     // Protocol methods.
-    virtual void setScreenOrientationOverride(ErrorString*, int, const String&) override;
-    virtual void clearScreenOrientationOverride(ErrorString*) override;
+    void setScreenOrientationOverride(ErrorString*, int, const String&) override;
+    void clearScreenOrientationOverride(ErrorString*) override;
 
     // InspectorBaseAgent overrides.
     void disable(ErrorString*) override;

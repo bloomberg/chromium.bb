@@ -26,7 +26,7 @@ class WebGLVertexArrayObject;
 class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebGL2RenderingContextBase);
 public:
-    virtual ~WebGL2RenderingContextBase();
+    ~WebGL2RenderingContextBase() override;
 
     /* Buffer objects */
     void copyBufferSubData(GLenum, GLenum, GLintptr, GLintptr, GLsizeiptr);

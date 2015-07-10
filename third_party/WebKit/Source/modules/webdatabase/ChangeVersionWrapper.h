@@ -40,10 +40,10 @@ class ChangeVersionWrapper final : public SQLTransactionWrapper {
 public:
     static ChangeVersionWrapper* create(const String& oldVersion, const String& newVersion) { return new ChangeVersionWrapper(oldVersion, newVersion); }
 
-    virtual bool performPreflight(SQLTransactionBackend*) override;
-    virtual bool performPostflight(SQLTransactionBackend*) override;
-    virtual SQLErrorData* sqlError() const override { return m_sqlError.get(); }
-    virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) override;
+    bool performPreflight(SQLTransactionBackend*) override;
+    bool performPostflight(SQLTransactionBackend*) override;
+    SQLErrorData* sqlError() const override { return m_sqlError.get(); }
+    void handleCommitFailedAfterPostflight(SQLTransactionBackend*) override;
 
 private:
     ChangeVersionWrapper(const String& oldVersion, const String& newVersion);

@@ -37,7 +37,7 @@ class DeviceOrientationData;
 class DeviceOrientationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~DeviceOrientationEvent();
+    ~DeviceOrientationEvent() override;
     static PassRefPtrWillBeRawPtr<DeviceOrientationEvent> create()
     {
         return adoptRefWillBeNoop(new DeviceOrientationEvent);
@@ -56,7 +56,7 @@ public:
     double gamma(bool& isNull) const;
     bool absolute(bool& isNull) const;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

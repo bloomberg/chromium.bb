@@ -46,14 +46,14 @@ class DeviceMotionDispatcher final : public GarbageCollectedFinalized<DeviceMoti
     USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionDispatcher);
 public:
     static DeviceMotionDispatcher& instance();
-    virtual ~DeviceMotionDispatcher();
+    ~DeviceMotionDispatcher() override;
 
     // Note that the returned object is owned by this class.
     // FIXME: make the return value const, see crbug.com/233174.
     DeviceMotionData* latestDeviceMotionData();
 
     // Inherited from WebDeviceMotionListener.
-    virtual void didChangeDeviceMotion(const WebDeviceMotionData&) override;
+    void didChangeDeviceMotion(const WebDeviceMotionData&) override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -61,8 +61,8 @@ private:
     DeviceMotionDispatcher();
 
     // Inherited from PlatformEventDispatcher.
-    virtual void startListening() override;
-    virtual void stopListening() override;
+    void startListening() override;
+    void stopListening() override;
 
     Member<DeviceMotionData> m_lastDeviceMotionData;
 };

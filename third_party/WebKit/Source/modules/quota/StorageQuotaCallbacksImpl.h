@@ -48,11 +48,11 @@ public:
         return new StorageQuotaCallbacksImpl(resolver);
     }
 
-    virtual ~StorageQuotaCallbacksImpl();
+    ~StorageQuotaCallbacksImpl() override;
 
-    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) override;
-    virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) override;
-    virtual void didFail(WebStorageQuotaError) override;
+    void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) override;
+    void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) override;
+    void didFail(WebStorageQuotaError) override;
 
     DECLARE_VIRTUAL_TRACE();
 

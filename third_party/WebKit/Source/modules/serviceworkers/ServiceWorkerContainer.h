@@ -77,12 +77,12 @@ public:
     ScriptPromise getRegistrations(ScriptState*);
 
     // WebServiceWorkerProviderClient overrides.
-    virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) override;
-    virtual void dispatchMessageEvent(WebServiceWorker*, const WebString& message, const WebMessagePortChannelArray&) override;
+    void setController(WebServiceWorker*, bool shouldNotifyControllerChange) override;
+    void dispatchMessageEvent(WebServiceWorker*, const WebString& message, const WebMessagePortChannelArray&) override;
 
     // EventTarget overrides.
-    virtual ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
-    virtual const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    const AtomicString& interfaceName() const override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);

@@ -52,7 +52,7 @@ public:
     {
         return new DirectoryEntry(fileSystem, fullPath);
     }
-    virtual bool isDirectory() const override { return true; }
+    bool isDirectory() const override { return true; }
 
     DirectoryReader* createReader();
     void getFile(const String& path, const FileSystemFlags&, EntryCallback* = nullptr, ErrorCallback* = nullptr);

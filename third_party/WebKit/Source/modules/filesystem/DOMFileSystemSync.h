@@ -53,9 +53,9 @@ public:
 
     static DOMFileSystemSync* create(DOMFileSystemBase*);
 
-    virtual ~DOMFileSystemSync();
+    ~DOMFileSystemSync() override;
 
-    virtual void reportError(ErrorCallback*, FileError*) override;
+    void reportError(ErrorCallback*, FileError*) override;
 
     DirectoryEntrySync* root();
 

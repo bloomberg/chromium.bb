@@ -35,7 +35,7 @@ class MediaStreamTrack;
 class MediaStreamTrackEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~MediaStreamTrackEvent();
+    ~MediaStreamTrackEvent() override;
 
     static PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> create();
     static PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack*);
@@ -43,7 +43,7 @@ public:
     MediaStreamTrack* track() const;
 
     // Event
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

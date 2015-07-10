@@ -34,7 +34,7 @@ namespace blink {
 class MediaEncryptedEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~MediaEncryptedEvent();
+    ~MediaEncryptedEvent() override;
 
     static PassRefPtrWillBeRawPtr<MediaEncryptedEvent> create()
     {
@@ -46,7 +46,7 @@ public:
         return adoptRefWillBeNoop(new MediaEncryptedEvent(type, initializer));
     }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     String initDataType() const { return m_initDataType; }
     DOMArrayBuffer* initData() const { return m_initData.get(); }

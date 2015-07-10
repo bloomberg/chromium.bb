@@ -17,13 +17,13 @@ namespace blink {
 class StereoPannerHandler final : public AudioHandler {
 public:
     static PassRefPtr<StereoPannerHandler> create(AudioNode&, float sampleRate, AudioParamHandler& pan);
-    virtual ~StereoPannerHandler();
+    ~StereoPannerHandler() override;
 
-    virtual void process(size_t framesToProcess) override;
-    virtual void initialize() override;
+    void process(size_t framesToProcess) override;
+    void initialize() override;
 
-    virtual void setChannelCount(unsigned long, ExceptionState&) final;
-    virtual void setChannelCountMode(const String&, ExceptionState&) final;
+    void setChannelCount(unsigned long, ExceptionState&) final;
+    void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
     StereoPannerHandler(AudioNode&, float sampleRate, AudioParamHandler& pan);

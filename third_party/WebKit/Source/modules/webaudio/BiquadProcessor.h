@@ -50,11 +50,11 @@ public:
     };
 
     BiquadProcessor(float sampleRate, size_t numberOfChannels, AudioParamHandler& frequency, AudioParamHandler& q, AudioParamHandler& gain, AudioParamHandler& detune);
-    virtual ~BiquadProcessor();
+    ~BiquadProcessor() override;
 
-    virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
+    PassOwnPtr<AudioDSPKernel> createKernel() override;
 
-    virtual void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
+    void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
 
     // Get the magnitude and phase response of the filter at the given
     // set of frequencies (in Hz). The phase response is in radians.

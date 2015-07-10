@@ -53,7 +53,7 @@ class SetMediaKeysHandler : public ScriptPromiseResolver {
 
 public:
     static ScriptPromise create(ScriptState*, HTMLMediaElement&, MediaKeys*);
-    virtual ~SetMediaKeysHandler();
+    ~SetMediaKeysHandler() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -91,24 +91,24 @@ public:
     }
 
     // ContentDecryptionModuleResult implementation.
-    virtual void complete() override
+    void complete() override
     {
         (*m_successCallback)();
     }
 
-    virtual void completeWithContentDecryptionModule(WebContentDecryptionModule*) override
+    void completeWithContentDecryptionModule(WebContentDecryptionModule*) override
     {
         ASSERT_NOT_REACHED();
         (*m_failureCallback)(InvalidStateError, "Unexpected completion.");
     }
 
-    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
+    void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
     {
         ASSERT_NOT_REACHED();
         (*m_failureCallback)(InvalidStateError, "Unexpected completion.");
     }
 
-    virtual void completeWithError(WebContentDecryptionModuleException code, unsigned long systemCode, const WebString& message) override
+    void completeWithError(WebContentDecryptionModuleException code, unsigned long systemCode, const WebString& message) override
     {
         // Non-zero |systemCode| is appended to the |message|. If the |message|
         // is empty, we'll report "Rejected with system code (systemCode)".

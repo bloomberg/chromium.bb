@@ -59,7 +59,7 @@ public:
     double receivedTime() { return m_receivedTime; }
     PassRefPtr<DOMUint8Array> data() { return m_data; }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::MIDIMessageEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::MIDIMessageEvent; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 

@@ -45,18 +45,18 @@ protected:
 
 public:
     static PassRefPtrWillBeRawPtr<AXTable> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXTable();
+    ~AXTable() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void init() override final;
+    void init() final;
 
-    virtual bool isAXTable() const override final;
-    virtual bool isDataTable() const override final;
+    bool isAXTable() const final;
+    bool isDataTable() const final;
 
-    virtual AccessibilityRole roleValue() const override final;
+    AccessibilityRole roleValue() const final;
 
-    virtual void addChildren() override;
-    virtual void clearChildren() override final;
+    void addChildren() override;
+    void clearChildren() final;
 
     // To be overridden by AXARIAGrid.
     virtual bool isAriaTable() const { return false; }
@@ -68,7 +68,7 @@ public:
     unsigned columnCount();
     unsigned rowCount();
 
-    virtual String deprecatedTitle(TextUnderElementMode) const override final;
+    String deprecatedTitle(TextUnderElementMode) const final;
 
     // all the cells in the table
     void cells(AccessibilityChildrenVector&);
@@ -89,7 +89,7 @@ protected:
 
     bool hasARIARole() const;
     virtual bool isTableExposableThroughAccessibility() const;
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override final;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, isAXTable());

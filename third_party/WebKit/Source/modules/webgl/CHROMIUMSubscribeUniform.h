@@ -19,8 +19,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~CHROMIUMSubscribeUniform();
-    virtual WebGLExtensionName name() const override;
+    ~CHROMIUMSubscribeUniform() override;
+    WebGLExtensionName name() const override;
 
     PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> createValuebufferCHROMIUM();
     void deleteValuebufferCHROMIUM(CHROMIUMValuebuffer*);

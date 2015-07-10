@@ -66,7 +66,7 @@ public:
     String reason() const { return m_reason; }
 
     // Event function.
-    virtual const AtomicString& interfaceName() const override { return EventNames::CloseEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::CloseEvent; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 

@@ -17,7 +17,7 @@ class WebAppBannerClient;
 class BeforeInstallPromptEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~BeforeInstallPromptEvent();
+    ~BeforeInstallPromptEvent() override;
 
     // For EventModules.cpp
     static PassRefPtrWillBeRawPtr<BeforeInstallPromptEvent> create()
@@ -38,7 +38,7 @@ public:
     Vector<String> platforms() const;
     ScriptPromise userChoice(ScriptState*);
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     ScriptPromise prompt(ScriptState*);
 

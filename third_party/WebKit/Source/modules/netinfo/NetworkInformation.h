@@ -23,22 +23,22 @@ class NetworkInformation final
     DEFINE_WRAPPERTYPEINFO();
 public:
     static NetworkInformation* create(ExecutionContext*);
-    virtual ~NetworkInformation();
+    ~NetworkInformation() override;
 
     String type() const;
 
-    virtual void connectionTypeChange(WebConnectionType) override;
+    void connectionTypeChange(WebConnectionType) override;
 
     // EventTarget overrides.
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
-    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
-    virtual void removeAllEventListeners() override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
+    bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    void removeAllEventListeners() override;
 
     // ActiveDOMObject overrides.
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override;
+    bool hasPendingActivity() const override;
+    void stop() override;
 
     DECLARE_VIRTUAL_TRACE();
 

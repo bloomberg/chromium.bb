@@ -19,7 +19,7 @@ class MODULES_EXPORT CircularGeofencingRegion final : public GeofencingRegion {
 public:
     static CircularGeofencingRegion* create(const CircularGeofencingRegionInit&);
     static CircularGeofencingRegion* create(const WebString& id, const WebCircularGeofencingRegion&);
-    virtual ~CircularGeofencingRegion() { }
+    ~CircularGeofencingRegion() override { }
 
     double latitude() const { return m_webRegion.latitude; }
     double longitude() const { return m_webRegion.longitude; }
@@ -29,7 +29,7 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE() { GeofencingRegion::trace(visitor); }
 
-    virtual bool isCircularGeofencingRegion() const override { return true; }
+    bool isCircularGeofencingRegion() const override { return true; }
 
 private:
     explicit CircularGeofencingRegion(const String& id, const WebCircularGeofencingRegion&);

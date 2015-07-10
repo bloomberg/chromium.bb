@@ -45,14 +45,14 @@ class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 public:
     static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, VoidCallback*, RTCErrorCallback*);
-    virtual ~RTCVoidRequestImpl();
+    ~RTCVoidRequestImpl() override;
 
     // RTCVoidRequest
-    virtual void requestSucceeded() override;
-    virtual void requestFailed(const String& error) override;
+    void requestSucceeded() override;
+    void requestFailed(const String& error) override;
 
     // ActiveDOMObject
-    virtual void stop() override;
+    void stop() override;
 
     DECLARE_VIRTUAL_TRACE();
 

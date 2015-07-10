@@ -42,12 +42,12 @@ private:
 
 public:
     static PassRefPtrWillBeRawPtr<AXARIAGridRow> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXARIAGridRow();
+    ~AXARIAGridRow() override;
 
-    virtual void headerObjectsForRow(AccessibilityChildrenVector&) override;
+    void headerObjectsForRow(AccessibilityChildrenVector&) override;
 
 private:
-    virtual bool isARIATreeGridRow() const override;
+    bool isARIATreeGridRow() const override;
 };
 
 } // namespace blink

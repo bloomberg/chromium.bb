@@ -58,7 +58,7 @@ public:
         TypeOutput
     };
 
-    virtual ~MIDIPort() { }
+    ~MIDIPort() override { }
 
     String connection() const;
     String id() const { return m_id; }
@@ -82,7 +82,7 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const override { return EventTargetNames::MIDIPort; }
-    ExecutionContext* executionContext() const override final;
+    ExecutionContext* executionContext() const final;
 
     // ActiveDOMObject
     bool hasPendingActivity() const override;

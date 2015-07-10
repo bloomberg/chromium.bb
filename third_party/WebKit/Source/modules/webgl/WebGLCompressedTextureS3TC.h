@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~WebGLCompressedTextureS3TC();
-    virtual WebGLExtensionName name() const override;
+    ~WebGLCompressedTextureS3TC() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit WebGLCompressedTextureS3TC(WebGLRenderingContextBase*);

@@ -40,17 +40,17 @@ class AudioContext;
 class MediaStreamAudioDestinationHandler final : public AudioBasicInspectorHandler {
 public:
     static PassRefPtr<MediaStreamAudioDestinationHandler> create(AudioNode&, size_t numberOfChannels);
-    virtual ~MediaStreamAudioDestinationHandler();
+    ~MediaStreamAudioDestinationHandler() override;
 
     MediaStream* stream() { return m_stream.get(); }
 
     // AudioHandler.
-    virtual void process(size_t framesToProcess) override;
+    void process(size_t framesToProcess) override;
 
 private:
     MediaStreamAudioDestinationHandler(AudioNode&, size_t numberOfChannels);
     // As an audio source, we will never propagate silence.
-    virtual bool propagatesSilence() const override { return false; }
+    bool propagatesSilence() const override { return false; }
 
     // This Persistent doesn't make a reference cycle.
     Persistent<MediaStream> m_stream;

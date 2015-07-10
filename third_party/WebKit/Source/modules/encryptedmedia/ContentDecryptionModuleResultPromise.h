@@ -20,13 +20,13 @@ ExceptionCode WebCdmExceptionToExceptionCode(WebContentDecryptionModuleException
 // method overridden to resolve the promise as needed.
 class ContentDecryptionModuleResultPromise : public ContentDecryptionModuleResult {
 public:
-    virtual ~ContentDecryptionModuleResultPromise();
+    ~ContentDecryptionModuleResultPromise() override;
 
     // ContentDecryptionModuleResult implementation.
-    virtual void complete() override;
-    virtual void completeWithContentDecryptionModule(WebContentDecryptionModule*) override;
-    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus) override;
-    virtual void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString&) final;
+    void complete() override;
+    void completeWithContentDecryptionModule(WebContentDecryptionModule*) override;
+    void completeWithSession(WebContentDecryptionModuleResult::SessionStatus) override;
+    void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString&) final;
 
     // It is only valid to call this before completion.
     ScriptPromise promise();

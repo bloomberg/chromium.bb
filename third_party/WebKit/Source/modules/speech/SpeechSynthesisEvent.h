@@ -42,7 +42,7 @@ public:
     float elapsedTime() const { return m_elapsedTime; }
     const String& name() const { return m_name; }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::SpeechSynthesisEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::SpeechSynthesisEvent; }
 
     DECLARE_VIRTUAL_TRACE();
 

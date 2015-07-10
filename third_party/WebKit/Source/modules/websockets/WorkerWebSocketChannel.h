@@ -60,24 +60,24 @@ public:
     {
         return new WorkerWebSocketChannel(workerGlobalScope, client, sourceURL, lineNumber);
     }
-    virtual ~WorkerWebSocketChannel();
+    ~WorkerWebSocketChannel() override;
 
     // WebSocketChannel functions.
-    virtual bool connect(const KURL&, const String& protocol) override;
-    virtual void send(const CString&) override;
-    virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
-    virtual void send(PassRefPtr<BlobDataHandle>) override;
-    virtual void sendTextAsCharVector(PassOwnPtr<Vector<char>>) override
+    bool connect(const KURL&, const String& protocol) override;
+    void send(const CString&) override;
+    void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
+    void send(PassRefPtr<BlobDataHandle>) override;
+    void sendTextAsCharVector(PassOwnPtr<Vector<char>>) override
     {
         ASSERT_NOT_REACHED();
     }
-    virtual void sendBinaryAsCharVector(PassOwnPtr<Vector<char>>) override
+    void sendBinaryAsCharVector(PassOwnPtr<Vector<char>>) override
     {
         ASSERT_NOT_REACHED();
     }
-    virtual void close(int code, const String& reason) override;
-    virtual void fail(const String& reason, MessageLevel, const String&, unsigned) override;
-    virtual void disconnect() override; // Will suppress didClose().
+    void close(int code, const String& reason) override;
+    void fail(const String& reason, MessageLevel, const String&, unsigned) override;
+    void disconnect() override; // Will suppress didClose().
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -88,7 +88,7 @@ public:
         WTF_MAKE_NONCOPYABLE(Peer);
     public:
         Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WebSocketChannelSyncHelper*);
-        virtual ~Peer();
+        ~Peer() override;
 
         // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
@@ -105,13 +105,13 @@ public:
         DECLARE_VIRTUAL_TRACE();
 
         // WebSocketChannelClient functions.
-        virtual void didConnect(const String& subprotocol, const String& extensions) override;
-        virtual void didReceiveTextMessage(const String& payload) override;
-        virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char>>) override;
-        virtual void didConsumeBufferedAmount(uint64_t) override;
-        virtual void didStartClosingHandshake() override;
-        virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
-        virtual void didError() override;
+        void didConnect(const String& subprotocol, const String& extensions) override;
+        void didReceiveTextMessage(const String& payload) override;
+        void didReceiveBinaryMessage(PassOwnPtr<Vector<char>>) override;
+        void didConsumeBufferedAmount(uint64_t) override;
+        void didStartClosingHandshake() override;
+        void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
+        void didError() override;
 
     private:
         Member<Bridge> m_bridge;

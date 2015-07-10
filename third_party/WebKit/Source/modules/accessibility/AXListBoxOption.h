@@ -45,21 +45,21 @@ private:
 
 public:
     static PassRefPtrWillBeRawPtr<AXListBoxOption> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXListBoxOption();
+    ~AXListBoxOption() override;
 
-    virtual bool isAXListBoxOption() const override { return true; }
-    virtual AccessibilityRole determineAccessibilityRole() override final;
-    virtual bool isSelected() const override;
-    virtual bool isEnabled() const override;
-    virtual bool isSelectedOptionActive() const override;
-    virtual void setSelected(bool) override;
-    virtual bool canSetSelectedAttribute() const override;
-    virtual String stringValue() const override;
-    virtual String deprecatedTitle(TextUnderElementMode) const override { return String(); }
+    bool isAXListBoxOption() const override { return true; }
+    AccessibilityRole determineAccessibilityRole() final;
+    bool isSelected() const override;
+    bool isEnabled() const override;
+    bool isSelectedOptionActive() const override;
+    void setSelected(bool) override;
+    bool canSetSelectedAttribute() const override;
+    String stringValue() const override;
+    String deprecatedTitle(TextUnderElementMode) const override { return String(); }
 
 private:
-    virtual bool canHaveChildren() const override { return false; }
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool canHaveChildren() const override { return false; }
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     HTMLSelectElement* listBoxOptionParentNode() const;
     int listBoxOptionIndex() const;

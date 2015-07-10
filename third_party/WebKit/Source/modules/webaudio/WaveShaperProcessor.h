@@ -46,11 +46,11 @@ public:
 
     WaveShaperProcessor(float sampleRate, size_t numberOfChannels);
 
-    virtual ~WaveShaperProcessor();
+    ~WaveShaperProcessor() override;
 
-    virtual PassOwnPtr<AudioDSPKernel> createKernel() override;
+    PassOwnPtr<AudioDSPKernel> createKernel() override;
 
-    virtual void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
+    void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
 
     void setCurve(DOMFloat32Array*);
     DOMFloat32Array* curve() { return m_curve.get(); }

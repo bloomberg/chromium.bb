@@ -69,7 +69,7 @@ public:
     // Used for embedder-created Notification objects. Will initialize the Notification's state as showing.
     static Notification* create(ExecutionContext*, int64_t persistentId, const WebNotificationData&);
 
-    virtual ~Notification();
+    ~Notification() override;
 
     void close();
 
@@ -104,13 +104,13 @@ public:
     static void requestPermission(ExecutionContext*, NotificationPermissionCallback* = nullptr);
 
     // EventTarget interface.
-    virtual ExecutionContext* executionContext() const override final { return ActiveDOMObject::executionContext(); }
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override final;
-    virtual const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
+    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) final;
+    const AtomicString& interfaceName() const override;
 
     // ActiveDOMObject interface.
-    virtual void stop() override;
-    virtual bool hasPendingActivity() const override;
+    void stop() override;
+    bool hasPendingActivity() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

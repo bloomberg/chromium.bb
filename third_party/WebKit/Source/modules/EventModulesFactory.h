@@ -21,7 +21,7 @@ public:
         return adoptPtr(new EventModulesFactory());
     }
 
-    virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) override;
+    PassRefPtrWillBeRawPtr<Event> create(const String& eventType) override;
 };
 
 }

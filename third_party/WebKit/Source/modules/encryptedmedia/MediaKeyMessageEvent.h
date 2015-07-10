@@ -38,7 +38,7 @@ class DOMArrayBuffer;
 class MediaKeyMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~MediaKeyMessageEvent();
+    ~MediaKeyMessageEvent() override;
 
     static PassRefPtrWillBeRawPtr<MediaKeyMessageEvent> create()
     {
@@ -50,7 +50,7 @@ public:
         return adoptRefWillBeNoop(new MediaKeyMessageEvent(type, initializer));
     }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     String messageType() const { return m_messageType; }
     DOMArrayBuffer* message() const { return m_message.get(); }

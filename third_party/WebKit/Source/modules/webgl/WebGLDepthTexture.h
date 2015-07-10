@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~WebGLDepthTexture();
-    virtual WebGLExtensionName name() const override;
+    ~WebGLDepthTexture() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit WebGLDepthTexture(WebGLRenderingContextBase*);

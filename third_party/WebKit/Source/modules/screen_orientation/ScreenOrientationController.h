@@ -28,7 +28,7 @@ class MODULES_EXPORT ScreenOrientationController final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
     WTF_MAKE_NONCOPYABLE(ScreenOrientationController);
 public:
-    virtual ~ScreenOrientationController();
+    ~ScreenOrientationController() override;
 
     void setOrientation(ScreenOrientation*);
     void notifyOrientationChanged();
@@ -51,14 +51,14 @@ private:
     static WebScreenOrientationType computeOrientation(const IntRect&, uint16_t);
 
     // Inherited from PlatformEventController.
-    virtual void didUpdateData() override;
-    virtual void registerWithDispatcher() override;
-    virtual void unregisterWithDispatcher() override;
-    virtual bool hasLastData() override;
-    virtual void pageVisibilityChanged() override;
+    void didUpdateData() override;
+    void registerWithDispatcher() override;
+    void unregisterWithDispatcher() override;
+    bool hasLastData() override;
+    void pageVisibilityChanged() override;
 
     // Inherited from LocalFrameLifecycleObserver.
-    virtual void willDetachFrameHost() override;
+    void willDetachFrameHost() override;
 
     unsigned short effectiveAngle(ChromeClient&);
     WebScreenOrientationType effectiveType(ChromeClient&);

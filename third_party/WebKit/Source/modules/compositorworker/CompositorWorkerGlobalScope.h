@@ -18,7 +18,7 @@ class CompositorWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CompositorWorkerGlobalScope> create(CompositorWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
-    virtual ~CompositorWorkerGlobalScope();
+    ~CompositorWorkerGlobalScope() override;
 
     // EventTarget
     const AtomicString& interfaceName() const override;

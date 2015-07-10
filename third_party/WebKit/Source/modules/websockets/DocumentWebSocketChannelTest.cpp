@@ -50,11 +50,11 @@ public:
 
     MockWebSocketChannelClient() { }
 
-    virtual ~MockWebSocketChannelClient() { }
+    ~MockWebSocketChannelClient() override { }
 
     MOCK_METHOD2(didConnect, void(const String&, const String&));
     MOCK_METHOD1(didReceiveTextMessage, void(const String&));
-    virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload) override
+    void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload) override
     {
         didReceiveBinaryMessageMock(*payload);
     }
@@ -80,7 +80,7 @@ public:
 
     MockWebSocketHandle() { }
 
-    virtual ~MockWebSocketHandle() { }
+    ~MockWebSocketHandle() override { }
 
     MOCK_METHOD4(connect, void(const WebURL&, const WebVector<WebString>&, const WebSerializedOrigin&, WebSocketHandleClient*));
     MOCK_METHOD4(send, void(bool, WebSocketHandle::MessageType, const char*, size_t));

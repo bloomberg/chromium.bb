@@ -42,10 +42,10 @@ public:
     static PassRefPtr<GainHandler> create(AudioNode&, float sampleRate, AudioParamHandler& gain);
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
+    void process(size_t framesToProcess) override;
 
     // Called in the main thread when the number of channels for the input may have changed.
-    virtual void checkNumberOfChannelsForInput(AudioNodeInput*) override;
+    void checkNumberOfChannelsForInput(AudioNodeInput*) override;
 
 private:
     GainHandler(AudioNode&, float sampleRate, AudioParamHandler& gain);

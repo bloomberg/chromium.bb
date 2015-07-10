@@ -30,10 +30,10 @@ public:
         return adoptRefWillBeNoop(new GeofencingEvent(type, id, region));
     }
 
-    virtual ~GeofencingEvent();
+    ~GeofencingEvent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     String id() const { return m_id; }
 

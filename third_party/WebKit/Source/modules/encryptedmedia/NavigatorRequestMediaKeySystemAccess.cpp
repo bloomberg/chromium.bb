@@ -84,14 +84,14 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
 
 public:
     MediaKeySystemAccessInitializer(ScriptState*, const String& keySystem, const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations);
-    virtual ~MediaKeySystemAccessInitializer() { }
+    ~MediaKeySystemAccessInitializer() override { }
 
     // EncryptedMediaRequest implementation.
-    virtual WebString keySystem() const override { return m_keySystem; }
-    virtual const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const override { return m_supportedConfigurations; }
-    virtual SecurityOrigin* securityOrigin() const override { return m_resolver->executionContext()->securityOrigin(); }
-    virtual void requestSucceeded(WebContentDecryptionModuleAccess*) override;
-    virtual void requestNotSupported(const WebString& errorMessage) override;
+    WebString keySystem() const override { return m_keySystem; }
+    const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const override { return m_supportedConfigurations; }
+    SecurityOrigin* securityOrigin() const override { return m_resolver->executionContext()->securityOrigin(); }
+    void requestSucceeded(WebContentDecryptionModuleAccess*) override;
+    void requestNotSupported(const WebString& errorMessage) override;
 
     ScriptPromise promise() { return m_resolver->promise(); }
 

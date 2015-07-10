@@ -55,10 +55,10 @@ class VoidCallback;
 
 class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
 public:
-    virtual ~FileSystemCallbacksBase();
+    ~FileSystemCallbacksBase() override;
 
     // For ErrorCallback.
-    virtual void didFail(int code) override final;
+    void didFail(int code) final;
 
     // Other callback methods are implemented by each subclass.
 
@@ -84,7 +84,7 @@ protected:
 class EntryCallbacks final : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(EntryCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*, const String& expectedPath, bool isDirectory);
-    virtual void didSucceed() override;
+    void didSucceed() override;
 
 private:
     EntryCallbacks(EntryCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*, const String& expectedPath, bool isDirectory);
@@ -96,8 +96,8 @@ private:
 class EntriesCallbacks final : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(EntriesCallback*, ErrorCallback*, ExecutionContext*, DirectoryReaderBase*, const String& basePath);
-    virtual void didReadDirectoryEntry(const String& name, bool isDirectory) override;
-    virtual void didReadDirectoryEntries(bool hasMore) override;
+    void didReadDirectoryEntry(const String& name, bool isDirectory) override;
+    void didReadDirectoryEntries(bool hasMore) override;
 
 private:
     EntriesCallbacks(EntriesCallback*, ErrorCallback*, ExecutionContext*, DirectoryReaderBase*, const String& basePath);
@@ -110,7 +110,7 @@ private:
 class FileSystemCallbacks final : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(FileSystemCallback*, ErrorCallback*, ExecutionContext*, FileSystemType);
-    virtual void didOpenFileSystem(const String& name, const KURL& rootURL) override;
+    void didOpenFileSystem(const String& name, const KURL& rootURL) override;
 
 private:
     FileSystemCallbacks(FileSystemCallback*, ErrorCallback*, ExecutionContext*, FileSystemType);
@@ -121,7 +121,7 @@ private:
 class ResolveURICallbacks final : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(EntryCallback*, ErrorCallback*, ExecutionContext*);
-    virtual void didResolveURL(const String& name, const KURL& rootURL, FileSystemType, const String& filePath, bool isDirectry) override;
+    void didResolveURL(const String& name, const KURL& rootURL, FileSystemType, const String& filePath, bool isDirectry) override;
 
 private:
     ResolveURICallbacks(EntryCallback*, ErrorCallback*, ExecutionContext*);
@@ -131,7 +131,7 @@ private:
 class MetadataCallbacks final : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(MetadataCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
-    virtual void didReadMetadata(const FileMetadata&) override;
+    void didReadMetadata(const FileMetadata&) override;
 
 private:
     MetadataCallbacks(MetadataCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
@@ -141,7 +141,7 @@ private:
 class FileWriterBaseCallbacks final : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(FileWriterBase*, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
-    virtual void didCreateFileWriter(PassOwnPtr<WebFileWriter>, long long length) override;
+    void didCreateFileWriter(PassOwnPtr<WebFileWriter>, long long length) override;
 
 private:
     FileWriterBaseCallbacks(FileWriterBase*, FileWriterBaseCallback*, ErrorCallback*, ExecutionContext*);
@@ -164,7 +164,7 @@ private:
 class VoidCallbacks final : public FileSystemCallbacksBase {
 public:
     static PassOwnPtr<AsyncFileSystemCallbacks> create(VoidCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);
-    virtual void didSucceed() override;
+    void didSucceed() override;
 
 private:
     VoidCallbacks(VoidCallback*, ErrorCallback*, ExecutionContext*, DOMFileSystemBase*);

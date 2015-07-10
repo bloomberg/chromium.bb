@@ -41,8 +41,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~OESVertexArrayObject();
-    virtual WebGLExtensionName name() const override;
+    ~OESVertexArrayObject() override;
+    WebGLExtensionName name() const override;
 
     PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> createVertexArrayOES();
     void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);

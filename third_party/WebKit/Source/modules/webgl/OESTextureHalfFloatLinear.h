@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~OESTextureHalfFloatLinear();
-    virtual WebGLExtensionName name() const override;
+    ~OESTextureHalfFloatLinear() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit OESTextureHalfFloatLinear(WebGLRenderingContextBase*);

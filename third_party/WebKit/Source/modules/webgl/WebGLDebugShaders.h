@@ -40,8 +40,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~WebGLDebugShaders();
-    virtual WebGLExtensionName name() const override;
+    ~WebGLDebugShaders() override;
+    WebGLExtensionName name() const override;
 
     String getTranslatedShaderSource(WebGLShader*);
 

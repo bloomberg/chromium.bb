@@ -42,12 +42,12 @@ class AudioContext;
 class MediaStreamAudioSourceHandler final : public AudioHandler {
 public:
     static PassRefPtr<MediaStreamAudioSourceHandler> create(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
-    virtual ~MediaStreamAudioSourceHandler();
+    ~MediaStreamAudioSourceHandler() override;
 
     MediaStream* mediaStream() { return m_mediaStream.get(); }
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
+    void process(size_t framesToProcess) override;
 
     // A helper for AudioSourceProviderClient implementation of
     // MediaStreamAudioSourceNode.
@@ -58,7 +58,7 @@ public:
 private:
     MediaStreamAudioSourceHandler(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     // As an audio source, we will never propagate silence.
-    virtual bool propagatesSilence() const override { return false; }
+    bool propagatesSilence() const override { return false; }
 
     // These Persistents don't make reference cycles including the owner
     // MediaStreamAudioSourceNode.

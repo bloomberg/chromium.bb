@@ -52,7 +52,7 @@ public:
     void createWriter(FileWriterCallback*, ErrorCallback* = nullptr);
     void file(FileCallback*, ErrorCallback* = nullptr);
 
-    virtual bool isFile() const override { return true; }
+    bool isFile() const override { return true; }
 
     DECLARE_VIRTUAL_TRACE();
 

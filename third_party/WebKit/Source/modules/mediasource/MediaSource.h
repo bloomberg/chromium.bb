@@ -60,7 +60,7 @@ public:
     static const AtomicString& endedKeyword();
 
     static MediaSource* create(ExecutionContext*);
-    virtual ~MediaSource();
+    ~MediaSource() override;
 
     // MediaSource.idl methods
     SourceBufferList* sourceBuffers() { return m_sourceBuffers.get(); }
@@ -74,28 +74,28 @@ public:
     static bool isTypeSupported(const String& type);
 
     // HTMLMediaSource
-    virtual bool attachToElement(HTMLMediaElement*) override;
-    virtual void setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource>) override;
-    virtual void close() override;
-    virtual bool isClosed() const override;
-    virtual double duration() const override;
-    virtual PassRefPtrWillBeRawPtr<TimeRanges> buffered() const override;
-    virtual PassRefPtrWillBeRawPtr<TimeRanges> seekable() const override;
+    bool attachToElement(HTMLMediaElement*) override;
+    void setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource>) override;
+    void close() override;
+    bool isClosed() const override;
+    double duration() const override;
+    PassRefPtrWillBeRawPtr<TimeRanges> buffered() const override;
+    PassRefPtrWillBeRawPtr<TimeRanges> seekable() const override;
 #if !ENABLE(OILPAN)
-    virtual void refHTMLMediaSource() override { ref(); }
-    virtual void derefHTMLMediaSource() override { deref(); }
+    void refHTMLMediaSource() override { ref(); }
+    void derefHTMLMediaSource() override { deref(); }
 #endif
 
     // EventTarget interface
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject interface
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override;
+    bool hasPendingActivity() const override;
+    void stop() override;
 
     // URLRegistrable interface
-    virtual URLRegistry& registry() const override;
+    URLRegistry& registry() const override;
 
     // Used by SourceBuffer.
     void openIfInEndedState();

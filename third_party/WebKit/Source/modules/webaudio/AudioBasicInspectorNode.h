@@ -39,8 +39,8 @@ public:
     AudioBasicInspectorHandler(NodeType, AudioNode&, float sampleRate, unsigned outputChannelCount);
 
     // AudioHandler
-    virtual void pullInputs(size_t framesToProcess) override final;
-    virtual void checkNumberOfChannelsForInput(AudioNodeInput*) override final;
+    void pullInputs(size_t framesToProcess) final;
+    void checkNumberOfChannelsForInput(AudioNodeInput*) final;
 
     void updatePullStatus();
 

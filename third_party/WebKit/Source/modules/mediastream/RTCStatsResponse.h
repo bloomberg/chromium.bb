@@ -44,8 +44,8 @@ public:
 
     RTCStatsReport* namedItem(const AtomicString& name);
 
-    virtual size_t addReport(const String& id, const String& type, double timestamp) override;
-    virtual void addStatistic(size_t report, const String& name, const String& value) override;
+    size_t addReport(const String& id, const String& type, double timestamp) override;
+    void addStatistic(size_t report, const String& name, const String& value) override;
 
     DECLARE_VIRTUAL_TRACE();
 

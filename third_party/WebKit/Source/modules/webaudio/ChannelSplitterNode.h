@@ -37,7 +37,7 @@ public:
     static PassRefPtr<ChannelSplitterHandler> create(AudioNode&, float sampleRate, unsigned numberOfOutputs);
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
+    void process(size_t framesToProcess) override;
 
 private:
     ChannelSplitterHandler(AudioNode&, float sampleRate, unsigned numberOfOutputs);

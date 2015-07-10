@@ -34,18 +34,18 @@ public:
     static PassRefPtrWillBeRawPtr<AXProgressIndicator> create(LayoutProgress*, AXObjectCacheImpl&);
 
 private:
-    virtual AccessibilityRole determineAccessibilityRole() override final;
+    AccessibilityRole determineAccessibilityRole() final;
 
-    virtual bool isProgressIndicator() const override { return true; }
+    bool isProgressIndicator() const override { return true; }
 
-    virtual float valueForRange() const override;
-    virtual float maxValueForRange() const override;
-    virtual float minValueForRange() const override;
+    float valueForRange() const override;
+    float maxValueForRange() const override;
+    float minValueForRange() const override;
 
     AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl&);
 
     HTMLProgressElement* element() const;
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 

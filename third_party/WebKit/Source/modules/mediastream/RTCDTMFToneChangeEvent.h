@@ -35,7 +35,7 @@ namespace blink {
 class RTCDTMFToneChangeEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~RTCDTMFToneChangeEvent();
+    ~RTCDTMFToneChangeEvent() override;
 
     static PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> create();
     static PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> create(const String& tone);
@@ -43,7 +43,7 @@ public:
 
     const String& tone() const;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

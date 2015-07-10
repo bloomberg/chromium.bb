@@ -42,9 +42,9 @@ public:
     static MediaStreamRegistry& registry();
 
     // Registers a blob URL referring to the specified stream data.
-    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
-    virtual void unregisterURL(const KURL&) override;
-    virtual bool contains(const String&) override;
+    void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
+    void unregisterURL(const KURL&) override;
+    bool contains(const String&) override;
 
     MediaStreamDescriptor* lookupMediaStreamDescriptor(const String& url);
 

@@ -66,7 +66,7 @@ public:
     static const AtomicString& segmentsKeyword();
     static const AtomicString& sequenceKeyword();
 
-    virtual ~SourceBuffer();
+    ~SourceBuffer() override;
 
     // SourceBuffer.idl methods
     const AtomicString& mode() const { return m_mode; }
@@ -92,17 +92,17 @@ public:
     void removedFromMediaSource();
 
     // ActiveDOMObject interface
-    virtual bool hasPendingActivity() const override;
-    virtual void suspend() override;
-    virtual void resume() override;
-    virtual void stop() override;
+    bool hasPendingActivity() const override;
+    void suspend() override;
+    void resume() override;
+    void stop() override;
 
     // EventTarget interface
-    virtual ExecutionContext* executionContext() const override;
-    virtual const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
 
     // WebSourceBufferClient interface
-    virtual void initializationSegmentReceived() override;
+    void initializationSegmentReceived() override;
 
     // Oilpan: eagerly release owned m_webSourceBuffer
     EAGERLY_FINALIZE();
@@ -125,10 +125,10 @@ private:
     void clearAppendStreamState();
 
     // FileReaderLoaderClient interface
-    virtual void didStartLoading() override;
-    virtual void didReceiveDataForClient(const char* data, unsigned dataLength) override;
-    virtual void didFinishLoading() override;
-    virtual void didFail(FileError::ErrorCode) override;
+    void didStartLoading() override;
+    void didReceiveDataForClient(const char* data, unsigned dataLength) override;
+    void didFinishLoading() override;
+    void didFail(FileError::ErrorCode) override;
 
     OwnPtr<WebSourceBuffer> m_webSourceBuffer;
     Member<MediaSource> m_source;

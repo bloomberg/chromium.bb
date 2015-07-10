@@ -44,7 +44,7 @@ class MIDIAccessor final : public WebMIDIAccessorClient {
 public:
     static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
 
-    virtual ~MIDIAccessor() { }
+    ~MIDIAccessor() override { }
 
     void startSession();
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
@@ -54,12 +54,12 @@ public:
     void setClient(MIDIAccessorClient* client) { m_client = client; }
 
     // WebMIDIAccessorClient
-    virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState) override;
-    virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState) override;
-    virtual void didSetInputPortState(unsigned portIndex, MIDIPortState) override;
-    virtual void didSetOutputPortState(unsigned portIndex, MIDIPortState) override;
-    virtual void didStartSession(bool success, const WebString& error, const WebString& message) override;
-    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
+    void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState) override;
+    void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState) override;
+    void didSetInputPortState(unsigned portIndex, MIDIPortState) override;
+    void didSetOutputPortState(unsigned portIndex, MIDIPortState) override;
+    void didStartSession(bool success, const WebString& error, const WebString& message) override;
+    void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
 
 private:
     explicit MIDIAccessor(MIDIAccessorClient*);

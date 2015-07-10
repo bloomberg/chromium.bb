@@ -38,8 +38,8 @@ class AXMenuListPopup final : public AXMockObject {
 public:
     static PassRefPtrWillBeRawPtr<AXMenuListPopup> create(AXObjectCacheImpl& axObjectCache) { return adoptRefWillBeNoop(new AXMenuListPopup(axObjectCache)); }
 
-    virtual bool isEnabled() const override;
-    virtual bool isOffScreen() const override;
+    bool isEnabled() const override;
+    bool isOffScreen() const override;
 
     void didUpdateActiveOption(int optionIndex);
     void didShow();
@@ -49,16 +49,16 @@ public:
 private:
     explicit AXMenuListPopup(AXObjectCacheImpl&);
 
-    virtual bool isMenuListPopup() const override { return true; }
+    bool isMenuListPopup() const override { return true; }
 
-    virtual LayoutRect elementRect() const override { return LayoutRect(); }
-    virtual AccessibilityRole roleValue() const override { return MenuListPopupRole; }
+    LayoutRect elementRect() const override { return LayoutRect(); }
+    AccessibilityRole roleValue() const override { return MenuListPopupRole; }
 
-    virtual bool isVisible() const override;
-    virtual bool press() const override;
-    virtual void addChildren() override;
-    virtual void updateChildrenIfNecessary() override;
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool isVisible() const override;
+    bool press() const override;
+    void addChildren() override;
+    void updateChildrenIfNecessary() override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     AXMenuListOption* menuListOptionAXObject(HTMLElement*) const;
     int getSelectedIndex() const;

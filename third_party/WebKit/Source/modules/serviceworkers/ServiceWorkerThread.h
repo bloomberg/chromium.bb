@@ -41,7 +41,7 @@ class WorkerThreadStartupData;
 class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
 public:
     static PassRefPtr<ServiceWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
-    virtual ~ServiceWorkerThread();
+    ~ServiceWorkerThread() override;
 
 protected:
     PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;

@@ -34,7 +34,7 @@ private:
     PermissionController(LocalFrame&, WebPermissionClient*);
 
     // Inherited from LocalFrameLifecycleObserver.
-    virtual void willDetachFrameHost() override;
+    void willDetachFrameHost() override;
 
     WebPermissionClient* m_client;
 };

@@ -26,11 +26,11 @@ public:
     {
         return adoptRefWillBeNoop(new GamepadEvent(type, initializer));
     }
-    virtual ~GamepadEvent();
+    ~GamepadEvent() override;
 
     Gamepad* gamepad() const { return m_gamepad.get(); }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

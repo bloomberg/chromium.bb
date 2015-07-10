@@ -49,8 +49,8 @@ public:
     void timerStopFired(Timer<NavigatorVibration>*);
 
     // Inherited from PageLifecycleObserver
-    virtual void pageVisibilityChanged() override;
-    virtual void didCommitLoad(LocalFrame*) override;
+    void pageVisibilityChanged() override;
+    void didCommitLoad(LocalFrame*) override;
 
     static bool vibrate(Navigator&, unsigned time);
     static bool vibrate(Navigator&, const VibrationPattern&);

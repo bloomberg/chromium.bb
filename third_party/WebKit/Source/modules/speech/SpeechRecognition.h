@@ -51,7 +51,7 @@ class MODULES_EXPORT SpeechRecognition final : public RefCountedGarbageCollected
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SpeechRecognition* create(ExecutionContext*);
-    virtual ~SpeechRecognition();
+    ~SpeechRecognition() override;
 
     // SpeechRecognition.idl implemementation.
     // Attributes.
@@ -89,12 +89,12 @@ public:
     void didEnd();
 
     // EventTarget.
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject.
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override;
+    bool hasPendingActivity() const override;
+    void stop() override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart);
@@ -111,7 +111,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // PageLifecycleObserver
-    virtual void contextDestroyed() override;
+    void contextDestroyed() override;
 
 private:
     SpeechRecognition(Page*, ExecutionContext*);

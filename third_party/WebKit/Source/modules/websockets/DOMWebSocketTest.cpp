@@ -44,7 +44,7 @@ public:
         return new testing::StrictMock<MockWebSocketChannel>();
     }
 
-    virtual ~MockWebSocketChannel()
+    ~MockWebSocketChannel() override
     {
     }
 
@@ -75,7 +75,7 @@ public:
 
     MockWebSocketChannel* channel() { return m_channel.get(); }
 
-    virtual WebSocketChannel* createChannel(ExecutionContext*, WebSocketChannelClient*) override
+    WebSocketChannel* createChannel(ExecutionContext*, WebSocketChannelClient*) override
     {
         ASSERT(!m_hasCreatedChannel);
         m_hasCreatedChannel = true;

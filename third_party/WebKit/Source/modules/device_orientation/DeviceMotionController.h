@@ -16,7 +16,7 @@ class Event;
 class MODULES_EXPORT DeviceMotionController final : public DeviceSingleWindowEventController, public WillBeHeapSupplement<Document> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionController);
 public:
-    virtual ~DeviceMotionController();
+    ~DeviceMotionController() override;
 
     static const char* supplementName();
     static DeviceMotionController& from(Document&);
@@ -30,14 +30,14 @@ private:
     explicit DeviceMotionController(Document&);
 
     // Inherited from DeviceEventControllerBase.
-    virtual void registerWithDispatcher() override;
-    virtual void unregisterWithDispatcher() override;
-    virtual bool hasLastData() override;
+    void registerWithDispatcher() override;
+    void unregisterWithDispatcher() override;
+    bool hasLastData() override;
 
     // Inherited from DeviceSingleWindowEventController.
-    virtual PassRefPtrWillBeRawPtr<Event> lastEvent() const override;
-    virtual const AtomicString& eventTypeName() const override;
-    virtual bool isNullEvent(Event*) const override;
+    PassRefPtrWillBeRawPtr<Event> lastEvent() const override;
+    const AtomicString& eventTypeName() const override;
+    bool isNullEvent(Event*) const override;
 };
 
 } // namespace blink

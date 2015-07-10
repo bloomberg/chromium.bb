@@ -56,7 +56,7 @@ public:
             return adoptPtr(new CallbackTask(callback, ec));
         }
 
-        virtual void performTask(ExecutionContext*) override;
+        void performTask(ExecutionContext*) override;
 
     private:
         CallbackTask(StorageErrorCallback*, ExceptionCode);

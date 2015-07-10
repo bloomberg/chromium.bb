@@ -19,7 +19,7 @@ public:
         VaoTypeUser,
     };
 
-    virtual ~WebGLVertexArrayObjectBase();
+    ~WebGLVertexArrayObjectBase() override;
 
     Platform3DObject object() const { return m_object; }
 

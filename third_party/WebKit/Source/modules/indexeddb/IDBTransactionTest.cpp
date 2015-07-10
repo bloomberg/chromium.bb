@@ -51,13 +51,13 @@ public:
     {
     }
 
-    virtual void SetUp() override
+    void SetUp() override
     {
         m_executionContext = Document::create();
         m_scope.scriptState()->setExecutionContext(m_executionContext.get());
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         m_executionContext->notifyContextDestroyed();
         m_scope.scriptState()->setExecutionContext(nullptr);
@@ -81,9 +81,9 @@ class FakeWebIDBDatabase final : public WebIDBDatabase {
 public:
     static PassOwnPtr<FakeWebIDBDatabase> create() { return adoptPtr(new FakeWebIDBDatabase()); }
 
-    virtual void commit(long long transactionId) override { }
-    virtual void abort(long long transactionId) override { }
-    virtual void close() override { }
+    void commit(long long transactionId) override { }
+    void abort(long long transactionId) override { }
+    void close() override { }
 
 private:
     FakeWebIDBDatabase() { }
@@ -92,10 +92,10 @@ private:
 class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
 public:
     static FakeIDBDatabaseCallbacks* create() { return new FakeIDBDatabaseCallbacks(); }
-    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) override { }
-    virtual void onForcedClose() override { }
-    virtual void onAbort(int64_t transactionId, DOMError* error) override { }
-    virtual void onComplete(int64_t transactionId) override { }
+    void onVersionChange(int64_t oldVersion, int64_t newVersion) override { }
+    void onForcedClose() override { }
+    void onAbort(int64_t transactionId, DOMError* error) override { }
+    void onComplete(int64_t transactionId) override { }
 private:
     FakeIDBDatabaseCallbacks() { }
 };

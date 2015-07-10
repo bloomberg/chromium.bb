@@ -63,7 +63,7 @@ public:
     AudioContext* context() const;
 
     // AudioSummingJunction
-    virtual void didUpdate() override { }
+    void didUpdate() override { }
 
     AudioParamTimeline& timeline() { return m_timeline; }
 

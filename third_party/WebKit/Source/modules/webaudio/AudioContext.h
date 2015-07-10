@@ -95,7 +95,7 @@ public:
     // Create an AudioContext for rendering to the audio hardware.
     static AudioContext* create(Document&, ExceptionState&);
 
-    virtual ~AudioContext();
+    ~AudioContext() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -103,8 +103,8 @@ public:
     bool isOfflineContext() { return m_isOfflineContext; }
 
     // Document notification
-    virtual void stop() override final;
-    virtual bool hasPendingActivity() const override;
+    void stop() final;
+    bool hasPendingActivity() const override;
 
     AudioDestinationNode* destination() { return m_destinationNode.get(); }
 
@@ -216,8 +216,8 @@ public:
     static unsigned maxNumberOfChannels() { return MaxNumberOfChannels;}
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override final;
-    virtual ExecutionContext* executionContext() const override final;
+    const AtomicString& interfaceName() const final;
+    ExecutionContext* executionContext() const final;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);

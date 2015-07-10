@@ -34,14 +34,14 @@ namespace blink {
 class RTCDataChannelEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~RTCDataChannelEvent();
+    ~RTCDataChannelEvent() override;
 
     static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create();
     static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
 
     RTCDataChannel* channel() const;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -40,9 +40,9 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~WebGLLoseContext();
-    virtual WebGLExtensionName name() const override;
-    virtual void lose(bool) override;
+    ~WebGLLoseContext() override;
+    WebGLExtensionName name() const override;
+    void lose(bool) override;
 
     void loseContext();
     void restoreContext();

@@ -47,7 +47,7 @@ class MODULES_EXPORT NavigatorGamepad final : public GarbageCollectedFinalized<N
 public:
     static NavigatorGamepad* from(Document&);
     static NavigatorGamepad& from(Navigator&);
-    virtual ~NavigatorGamepad();
+    ~NavigatorGamepad() override;
 
     static GamepadList* getGamepads(Navigator&);
     GamepadList* gamepads();
@@ -66,20 +66,20 @@ private:
     bool startUpdatingIfAttached();
 
     // DOMWindowProperty
-    virtual void willDestroyGlobalObjectInFrame() override;
-    virtual void willDetachGlobalObjectFromFrame() override;
+    void willDestroyGlobalObjectInFrame() override;
+    void willDetachGlobalObjectFromFrame() override;
 
     // PlatformEventController
-    virtual void registerWithDispatcher() override;
-    virtual void unregisterWithDispatcher() override;
-    virtual bool hasLastData() override;
-    virtual void didUpdateData() override;
-    virtual void pageVisibilityChanged() override;
+    void registerWithDispatcher() override;
+    void unregisterWithDispatcher() override;
+    bool hasLastData() override;
+    void didUpdateData() override;
+    void pageVisibilityChanged() override;
 
     // DOMWindowLifecycleObserver
-    virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
-    virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
-    virtual void didRemoveAllEventListeners(LocalDOMWindow*) override;
+    void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+    void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
+    void didRemoveAllEventListeners(LocalDOMWindow*) override;
 
     Member<GamepadList> m_gamepads;
     HeapDeque<Member<Gamepad>> m_pendingEvents;

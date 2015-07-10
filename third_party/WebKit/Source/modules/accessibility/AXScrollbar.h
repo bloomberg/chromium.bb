@@ -39,7 +39,7 @@ class Scrollbar;
 class AXScrollbar final : public AXMockObject {
 public:
     static PassRefPtrWillBeRawPtr<AXScrollbar> create(Scrollbar*, AXObjectCacheImpl&);
-    virtual ~AXScrollbar();
+    ~AXScrollbar() override;
     DECLARE_VIRTUAL_TRACE();
 
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
@@ -47,22 +47,22 @@ public:
 private:
     AXScrollbar(Scrollbar*, AXObjectCacheImpl&);
 
-    virtual void detachFromParent() override;
+    void detachFromParent() override;
 
-    virtual bool canSetValueAttribute() const override { return true; }
+    bool canSetValueAttribute() const override { return true; }
 
-    virtual bool isAXScrollbar() const override { return true; }
-    virtual LayoutRect elementRect() const override;
+    bool isAXScrollbar() const override { return true; }
+    LayoutRect elementRect() const override;
 
-    virtual AccessibilityRole roleValue() const override { return ScrollBarRole; }
-    virtual AccessibilityOrientation orientation() const override;
-    virtual Document* document() const override;
+    AccessibilityRole roleValue() const override { return ScrollBarRole; }
+    AccessibilityOrientation orientation() const override;
+    Document* document() const override;
 
-    virtual bool isEnabled() const override;
+    bool isEnabled() const override;
 
     // Assumes float [0..1]
-    virtual void setValue(float) override;
-    virtual float valueForRange() const override;
+    void setValue(float) override;
+    float valueForRange() const override;
 
     RefPtrWillBeMember<Scrollbar> m_scrollbar;
 };

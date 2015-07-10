@@ -47,11 +47,11 @@ public:
     static PassRefPtrWillBeRawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&);
     static PassRefPtrWillBeRawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
-    virtual ~ExtendableEvent();
+    ~ExtendableEvent() override;
 
     void waitUntil(ScriptState*, const ScriptValue&, ExceptionState&);
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
     DECLARE_VIRTUAL_TRACE();
 
 protected:

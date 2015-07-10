@@ -40,7 +40,7 @@ namespace blink {
 
 class KeyAlgorithm : public GarbageCollectedFinalized<KeyAlgorithm>, public ScriptWrappable {
 public:
-    virtual ~KeyAlgorithm();
+    ~KeyAlgorithm() override;
 
     static KeyAlgorithm* create(const WebCryptoKeyAlgorithm&);
     static KeyAlgorithm* createHash(const WebCryptoAlgorithm&);

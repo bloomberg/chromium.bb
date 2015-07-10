@@ -49,7 +49,7 @@ public:
         PassBody,
     };
     explicit Body(ExecutionContext*);
-    virtual ~Body() { }
+    ~Body() override { }
 
     ScriptPromise arrayBuffer(ScriptState*);
     ScriptPromise blob(ScriptState*);
@@ -66,7 +66,7 @@ public:
     PassOwnPtr<DrainingBodyStreamBuffer> createDrainingStream();
 
     // ActiveDOMObject override.
-    virtual bool hasPendingActivity() const override;
+    bool hasPendingActivity() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -129,7 +129,7 @@ private:
             return new ErrorCallbackImpl(helper);
         }
 
-        virtual void handleEvent(FileError* error) override
+        void handleEvent(FileError* error) override
         {
             ASSERT(error);
             m_helper->setError(error->code());

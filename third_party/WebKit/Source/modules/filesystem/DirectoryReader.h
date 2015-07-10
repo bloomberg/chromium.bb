@@ -50,7 +50,7 @@ public:
         return new DirectoryReader(fileSystem, fullPath);
     }
 
-    virtual ~DirectoryReader();
+    ~DirectoryReader() override;
 
     void readEntries(EntriesCallback*, ErrorCallback* = nullptr);
 

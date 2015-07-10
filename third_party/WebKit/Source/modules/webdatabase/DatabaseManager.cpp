@@ -83,12 +83,12 @@ public:
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
 
-    virtual void performTask(ExecutionContext*) override
+    void performTask(ExecutionContext*) override
     {
         m_creationCallback->handleEvent(m_database.get());
     }
 
-    virtual String taskNameForInstrumentation() const override
+    String taskNameForInstrumentation() const override
     {
         return "openDatabase";
     }

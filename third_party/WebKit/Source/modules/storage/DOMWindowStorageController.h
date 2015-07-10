@@ -26,7 +26,7 @@ public:
     static DOMWindowStorageController& from(Document&);
 
     // Inherited from DOMWindowLifecycleObserver
-    virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+    void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
 
 protected:
     explicit DOMWindowStorageController(Document&);

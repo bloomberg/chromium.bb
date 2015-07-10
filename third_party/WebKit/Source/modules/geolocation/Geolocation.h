@@ -55,10 +55,10 @@ class MODULES_EXPORT Geolocation final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
 public:
     static Geolocation* create(ExecutionContext*);
-    virtual ~Geolocation();
+    ~Geolocation() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void stop() override;
+    void stop() override;
     Document* document() const;
     LocalFrame* frame() const;
 

@@ -51,23 +51,23 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
 public:
     static PassOwnPtr<WebIDBCallbacksImpl> create(IDBRequest*);
 
-    virtual ~WebIDBCallbacksImpl();
+    ~WebIDBCallbacksImpl() override;
 
     // Pointers transfer ownership.
-    virtual void onError(const WebIDBDatabaseError&) override;
-    virtual void onSuccess(const WebVector<WebString>&) override;
-    virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) override;
-    virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) override;
-    virtual void onSuccess(const WebIDBKey&) override;
-    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) override;
-    virtual void onSuccess(const WebIDBValue&) override;
-    virtual void onSuccess(const WebVector<WebIDBValue>&) override;
-    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) override;
-    virtual void onSuccess(long long) override;
-    virtual void onSuccess() override;
-    virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) override;
-    virtual void onBlocked(long long oldVersion) override;
-    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) override;
+    void onError(const WebIDBDatabaseError&) override;
+    void onSuccess(const WebVector<WebString>&) override;
+    void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) override;
+    void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) override;
+    void onSuccess(const WebIDBKey&) override;
+    void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) override;
+    void onSuccess(const WebIDBValue&) override;
+    void onSuccess(const WebVector<WebIDBValue>&) override;
+    void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) override;
+    void onSuccess(long long) override;
+    void onSuccess() override;
+    void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) override;
+    void onBlocked(long long oldVersion) override;
+    void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) override;
 
 private:
     explicit WebIDBCallbacksImpl(IDBRequest*);

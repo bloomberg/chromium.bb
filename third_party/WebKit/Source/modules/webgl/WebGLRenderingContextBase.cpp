@@ -508,7 +508,7 @@ public:
         return adoptPtrWillBeNoop(new WebGLRenderingContextLostCallback(context));
     }
 
-    virtual ~WebGLRenderingContextLostCallback() { }
+    ~WebGLRenderingContextLostCallback() override { }
 
     virtual void onContextLost() { m_context->forceLostContext(WebGLRenderingContextBase::RealLostContext, WebGLRenderingContextBase::Auto); }
 
@@ -532,7 +532,7 @@ public:
         return adoptPtrWillBeNoop(new WebGLRenderingContextErrorMessageCallback(context));
     }
 
-    virtual ~WebGLRenderingContextErrorMessageCallback() { }
+    ~WebGLRenderingContextErrorMessageCallback() override { }
 
     virtual void onErrorMessage(const WebString& message, WGC3Dint)
     {

@@ -17,8 +17,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~EXTBlendMinMax();
-    virtual WebGLExtensionName name() const override;
+    ~EXTBlendMinMax() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit EXTBlendMinMax(WebGLRenderingContextBase*);

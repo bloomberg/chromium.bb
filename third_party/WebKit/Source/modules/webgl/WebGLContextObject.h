@@ -40,11 +40,11 @@ class WebGLRenderingContextBase;
 // WebGLRenderingContextBase.
 class WebGLContextObject : public WebGLObject {
 public:
-    virtual ~WebGLContextObject();
+    ~WebGLContextObject() override;
 
     WebGLRenderingContextBase* context() const { return m_context; }
 
-    virtual bool validate(const WebGLContextGroup*, const WebGLRenderingContextBase* context) const override final
+    bool validate(const WebGLContextGroup*, const WebGLRenderingContextBase* context) const final
     {
         return context == m_context;
     }
@@ -56,12 +56,12 @@ public:
 protected:
     explicit WebGLContextObject(WebGLRenderingContextBase*);
 
-    virtual bool hasGroupOrContext() const override final
+    bool hasGroupOrContext() const final
     {
         return m_context;
     }
 
-    virtual WebGraphicsContext3D* getAWebGraphicsContext3D() const override final;
+    WebGraphicsContext3D* getAWebGraphicsContext3D() const final;
 
 private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;

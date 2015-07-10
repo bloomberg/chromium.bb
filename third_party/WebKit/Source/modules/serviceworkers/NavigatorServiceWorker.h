@@ -37,7 +37,7 @@ private:
     static const char* supplementName();
 
     // DOMWindowProperty override.
-    virtual void willDetachGlobalObjectFromFrame() override;
+    void willDetachGlobalObjectFromFrame() override;
 
     Member<ServiceWorkerContainer> m_serviceWorker;
 };

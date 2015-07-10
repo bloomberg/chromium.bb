@@ -114,7 +114,7 @@ public:
     {
     }
 
-    virtual ~RequestCacheNames() { }
+    ~RequestCacheNames() override { }
 
     void onSuccess(WebVector<WebString>* caches)
     {
@@ -221,7 +221,7 @@ public:
         , m_callback(callback)
     {
     }
-    virtual ~GetCacheResponsesForRequestData() { }
+    ~GetCacheResponsesForRequestData() override { }
 
     void onSuccess(WebServiceWorkerResponse* response)
     {
@@ -250,7 +250,7 @@ public:
         , m_callback(callback)
     {
     }
-    virtual ~GetCacheKeysForRequestData() { }
+    ~GetCacheKeysForRequestData() override { }
 
     void onSuccess(WebVector<WebServiceWorkerRequest>* requests)
     {
@@ -289,7 +289,7 @@ public:
         , m_callback(callback)
     {
     }
-    virtual ~GetCacheForRequestData() { }
+    ~GetCacheForRequestData() override { }
 
     void onSuccess(WebServiceWorkerCache* cache)
     {
@@ -315,7 +315,7 @@ public:
         : m_callback(callback)
     {
     }
-    virtual ~DeleteCache() { }
+    ~DeleteCache() override { }
 
     void onSuccess()
     {
@@ -339,7 +339,7 @@ public:
         : m_callback(callback)
     {
     }
-    virtual ~DeleteCacheEntry() { }
+    ~DeleteCacheEntry() override { }
 
     void onSuccess()
     {
@@ -366,7 +366,7 @@ public:
         , m_callback(callback)
     {
     }
-    virtual ~GetCacheForDeleteEntry() { }
+    ~GetCacheForDeleteEntry() override { }
 
     void onSuccess(WebServiceWorkerCache* cache)
     {

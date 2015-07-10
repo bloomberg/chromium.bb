@@ -43,7 +43,7 @@ public:
     static PassOwnPtr<AudioNodeInput> create(AudioHandler&);
 
     // AudioSummingJunction
-    virtual void didUpdate() override;
+    void didUpdate() override;
 
     // Can be called from any thread.
     AudioHandler& handler() const { return m_handler; }

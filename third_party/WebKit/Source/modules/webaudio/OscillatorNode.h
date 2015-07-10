@@ -54,10 +54,10 @@ public:
     };
 
     static PassRefPtr<OscillatorHandler> create(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
-    virtual ~OscillatorHandler();
+    ~OscillatorHandler() override;
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override;
+    void process(size_t framesToProcess) override;
 
     String type() const;
     void setType(const String&, ExceptionState&);
@@ -71,7 +71,7 @@ private:
     // Returns true if there are sample-accurate timeline parameter changes.
     bool calculateSampleAccuratePhaseIncrements(size_t framesToProcess);
 
-    virtual bool propagatesSilence() const override;
+    bool propagatesSilence() const override;
 
     // One of the waveform types defined in the enum.
     unsigned short m_type;

@@ -64,15 +64,15 @@ public:
 
     // (Empty) WorkerReportingProxy implementation:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) { }
-    virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
-    virtual void postMessageToPageInspector(const String&) override { }
-    virtual void postWorkerConsoleAgentEnabled() override { }
+    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
+    void postMessageToPageInspector(const String&) override { }
+    void postWorkerConsoleAgentEnabled() override { }
 
-    virtual void didEvaluateWorkerScript(bool success) override { }
-    virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override { }
-    virtual void workerGlobalScopeClosed() override { }
-    virtual void workerThreadTerminated() override { }
-    virtual void willDestroyWorkerGlobalScope() override { }
+    void didEvaluateWorkerScript(bool success) override { }
+    void workerGlobalScopeStarted(WorkerGlobalScope*) override { }
+    void workerGlobalScopeClosed() override { }
+    void workerThreadTerminated() override { }
+    void willDestroyWorkerGlobalScope() override { }
 private:
     TestCompositorWorkerObjectProxy(ExecutionContext* context)
         : WorkerObjectProxy(context, nullptr)

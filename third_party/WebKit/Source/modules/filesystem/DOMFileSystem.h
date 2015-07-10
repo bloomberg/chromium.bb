@@ -60,12 +60,12 @@ public:
     DirectoryEntry* root() const;
 
     // DOMFileSystemBase overrides.
-    virtual void addPendingCallbacks() override;
-    virtual void removePendingCallbacks() override;
-    virtual void reportError(ErrorCallback*, FileError*) override;
+    void addPendingCallbacks() override;
+    void removePendingCallbacks() override;
+    void reportError(ErrorCallback*, FileError*) override;
 
     // ActiveDOMObject overrides.
-    virtual bool hasPendingActivity() const override;
+    bool hasPendingActivity() const override;
 
     void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallback*);
     void createFile(const FileEntry*, FileCallback*, ErrorCallback*);
@@ -106,7 +106,7 @@ private:
 
     class DispatchCallbackTaskBase : public ExecutionContextTask {
     public:
-        virtual String taskNameForInstrumentation() const override
+        String taskNameForInstrumentation() const override
         {
             return "FileSystem";
         }
@@ -121,7 +121,7 @@ private:
         {
         }
 
-        virtual void performTask(ExecutionContext*) override
+        void performTask(ExecutionContext*) override
         {
             m_callback->handleEvent(m_callbackArg.get());
         }
@@ -140,7 +140,7 @@ private:
         {
         }
 
-        virtual void performTask(ExecutionContext*) override
+        void performTask(ExecutionContext*) override
         {
             m_callback->handleEvent(m_callbackArg);
         }
@@ -158,7 +158,7 @@ private:
         {
         }
 
-        virtual void performTask(ExecutionContext*) override
+        void performTask(ExecutionContext*) override
         {
             m_callback->handleEvent();
         }

@@ -88,7 +88,7 @@ private:
     void clearCallbacks();
 
     // State Machine functions:
-    virtual StateFunction stateFunctionFor(SQLTransactionState) override;
+    StateFunction stateFunctionFor(SQLTransactionState) override;
     bool computeNextStateAndCleanupIfNeeded();
 
     // State functions:

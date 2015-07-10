@@ -59,13 +59,13 @@ public:
 
     static PassRefPtrWillBeRawPtr<CryptoResultImpl> create(ScriptState*);
 
-    virtual void completeWithError(WebCryptoErrorType, const WebString&) override;
-    virtual void completeWithBuffer(const void* bytes, unsigned bytesSize) override;
-    virtual void completeWithJson(const char* utf8Data, unsigned length) override;
-    virtual void completeWithBoolean(bool) override;
-    virtual void completeWithKey(const WebCryptoKey&) override;
-    virtual void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey) override;
-    virtual bool cancelled() const override;
+    void completeWithError(WebCryptoErrorType, const WebString&) override;
+    void completeWithBuffer(const void* bytes, unsigned bytesSize) override;
+    void completeWithJson(const char* utf8Data, unsigned length) override;
+    void completeWithBoolean(bool) override;
+    void completeWithKey(const WebCryptoKey&) override;
+    void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey) override;
+    bool cancelled() const override;
 
     // If called after completion (including cancellation) will return an empty
     // ScriptPromise.

@@ -50,7 +50,7 @@ class MODULES_EXPORT MediaStreamTrack final
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaStreamTrack* create(ExecutionContext*, MediaStreamComponent*);
-    virtual ~MediaStreamTrack();
+    ~MediaStreamTrack() override;
 
     String kind() const;
     String id() const;
@@ -80,11 +80,11 @@ public:
     void unregisterMediaStream(MediaStream*);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
-    virtual void stop() override;
+    void stop() override;
 
     PassOwnPtr<AudioSourceProvider> createWebAudioSource();
 
@@ -96,7 +96,7 @@ private:
     MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
 
     // MediaStreamSourceObserver
-    virtual void sourceChangedState() override;
+    void sourceChangedState() override;
 
     void propagateTrackEnded();
 

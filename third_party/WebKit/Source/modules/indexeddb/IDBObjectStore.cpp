@@ -424,7 +424,7 @@ public:
         return adoptRef(new IndexPopulator(scriptState, database, transactionId, objectStoreId, indexMetadata));
     }
 
-    virtual bool operator==(const EventListener& other) override
+    bool operator==(const EventListener& other) override
     {
         return this == &other;
     }
@@ -440,7 +440,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ExecutionContext* executionContext, Event* event) override
+    void handleEvent(ExecutionContext* executionContext, Event* event) override
     {
         ASSERT(m_scriptState->executionContext() == executionContext);
         ASSERT(event->type() == EventTypeNames::success);

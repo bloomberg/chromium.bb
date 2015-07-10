@@ -39,16 +39,16 @@ protected:
     explicit AXMockObject(AXObjectCacheImpl&);
 
 public:
-    virtual ~AXMockObject();
+    ~AXMockObject() override;
 
     // AXObject overrides.
-    virtual AXObject* computeParent() const override { return m_parent; }
-    virtual bool isEnabled() const override { return true; }
+    AXObject* computeParent() const override { return m_parent; }
+    bool isEnabled() const override { return true; }
 
 private:
-    virtual bool isMockObject() const override final { return true; }
+    bool isMockObject() const final { return true; }
 
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMockObject, isMockObject());

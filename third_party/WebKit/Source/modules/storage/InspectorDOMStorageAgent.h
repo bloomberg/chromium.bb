@@ -53,7 +53,7 @@ public:
         return adoptPtrWillBeNoop(new InspectorDOMStorageAgent(page));
     }
 
-    virtual ~InspectorDOMStorageAgent();
+    ~InspectorDOMStorageAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     void didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*);

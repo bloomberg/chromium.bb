@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~WebGLDrawBuffers();
-    virtual WebGLExtensionName name() const override;
+    ~WebGLDrawBuffers() override;
+    WebGLExtensionName name() const override;
 
     void drawBuffersWEBGL(const Vector<GLenum>& buffers);
 

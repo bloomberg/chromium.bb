@@ -24,7 +24,7 @@ class PresentationAvailabilityCallback final
     WTF_MAKE_NONCOPYABLE(PresentationAvailabilityCallback);
 public:
     explicit PresentationAvailabilityCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>);
-    virtual ~PresentationAvailabilityCallback() = default;
+    ~PresentationAvailabilityCallback() override = default;
 
     void onSuccess(bool*) override;
     void onError(WebPresentationError*) override;

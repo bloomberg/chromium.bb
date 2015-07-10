@@ -31,9 +31,9 @@ public:
         return adoptRefWillBeNoop(new SyncEvent(type, init));
     }
 
-    virtual ~SyncEvent();
+    ~SyncEvent() override;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     SyncRegistration* registration();
 

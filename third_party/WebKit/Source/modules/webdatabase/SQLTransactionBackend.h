@@ -60,7 +60,7 @@ class SQLTransactionBackend final : public GarbageCollectedFinalized<SQLTransact
 public:
     static SQLTransactionBackend* create(Database*, SQLTransaction*, SQLTransactionWrapper*, bool readOnly);
 
-    virtual ~SQLTransactionBackend();
+    ~SQLTransactionBackend() override;
     DECLARE_TRACE();
 
     void lockAcquired();
@@ -85,7 +85,7 @@ private:
     void enqueueStatementBackend(SQLStatementBackend*);
 
     // State Machine functions:
-    virtual StateFunction stateFunctionFor(SQLTransactionState) override;
+    StateFunction stateFunctionFor(SQLTransactionState) override;
     void computeNextStateAndCleanupIfNeeded();
 
     // State functions:

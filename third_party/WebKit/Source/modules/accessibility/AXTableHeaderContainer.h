@@ -43,18 +43,18 @@ private:
 
 public:
     static PassRefPtrWillBeRawPtr<AXTableHeaderContainer> create(AXObjectCacheImpl&);
-    virtual ~AXTableHeaderContainer();
+    ~AXTableHeaderContainer() override;
 
-    virtual AccessibilityRole roleValue() const override { return TableHeaderContainerRole; }
+    AccessibilityRole roleValue() const override { return TableHeaderContainerRole; }
 
-    virtual void addChildren() override;
+    void addChildren() override;
 
-    virtual LayoutRect elementRect() const override;
+    LayoutRect elementRect() const override;
 
 private:
     LayoutRect m_headerRect;
 
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 } // namespace blink

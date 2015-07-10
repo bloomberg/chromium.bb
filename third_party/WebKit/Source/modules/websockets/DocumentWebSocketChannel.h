@@ -73,20 +73,20 @@ public:
     {
         return new DocumentWebSocketChannel(context, client, sourceURL, lineNumber, handle);
     }
-    virtual ~DocumentWebSocketChannel();
+    ~DocumentWebSocketChannel() override;
 
     // WebSocketChannel functions.
-    virtual bool connect(const KURL&, const String& protocol) override;
-    virtual void send(const CString& message) override;
-    virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
-    virtual void send(PassRefPtr<BlobDataHandle>) override;
-    virtual void sendTextAsCharVector(PassOwnPtr<Vector<char>> data) override;
-    virtual void sendBinaryAsCharVector(PassOwnPtr<Vector<char>> data) override;
+    bool connect(const KURL&, const String& protocol) override;
+    void send(const CString& message) override;
+    void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
+    void send(PassRefPtr<BlobDataHandle>) override;
+    void sendTextAsCharVector(PassOwnPtr<Vector<char>> data) override;
+    void sendBinaryAsCharVector(PassOwnPtr<Vector<char>> data) override;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
-    virtual void close(int code, const String& reason) override;
-    virtual void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) override;
-    virtual void disconnect() override;
+    void close(int code, const String& reason) override;
+    void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) override;
+    void disconnect() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -136,14 +136,14 @@ private:
     Document* document(); // can be called only when m_identifier > 0.
 
     // WebSocketHandleClient functions.
-    virtual void didConnect(WebSocketHandle*, const WebString& selectedProtocol, const WebString& extensions) override;
-    virtual void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) override;
-    virtual void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) override;
-    virtual void didFail(WebSocketHandle*, const WebString& message) override;
-    virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) override;
-    virtual void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const WebString& reason) override;
-    virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
-    virtual void didStartClosingHandshake(WebSocketHandle*) override;
+    void didConnect(WebSocketHandle*, const WebString& selectedProtocol, const WebString& extensions) override;
+    void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) override;
+    void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) override;
+    void didFail(WebSocketHandle*, const WebString& message) override;
+    void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) override;
+    void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const WebString& reason) override;
+    void didReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
+    void didStartClosingHandshake(WebSocketHandle*) override;
 
     // Methods for BlobLoader.
     void didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer>);

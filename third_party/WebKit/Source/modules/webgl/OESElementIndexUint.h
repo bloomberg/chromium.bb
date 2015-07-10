@@ -38,8 +38,8 @@ public:
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
-    virtual ~OESElementIndexUint();
-    virtual WebGLExtensionName name() const override;
+    ~OESElementIndexUint() override;
+    WebGLExtensionName name() const override;
 
 private:
     explicit OESElementIndexUint(WebGLRenderingContextBase*);

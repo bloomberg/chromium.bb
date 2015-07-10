@@ -106,7 +106,7 @@ class WebGLRenderingContextErrorMessageCallback;
 class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext, public Page::MultisamplingChangedObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebGLRenderingContextBase);
 public:
-    virtual ~WebGLRenderingContextBase();
+    ~WebGLRenderingContextBase() override;
 
     virtual unsigned version() const = 0;
     virtual String contextName() const = 0;
@@ -406,11 +406,11 @@ protected:
     void setupFlags();
 
     // CanvasRenderingContext implementation.
-    virtual bool is3d() const override { return true; }
-    virtual bool isAccelerated() const override { return true; }
-    virtual void setIsHidden(bool) override;
+    bool is3d() const override { return true; }
+    bool isAccelerated() const override { return true; }
+    void setIsHidden(bool) override;
     bool paintRenderingResultsToCanvas(SourceDrawingBuffer) override;
-    virtual WebLayer* platformLayer() const override;
+    WebLayer* platformLayer() const override;
     void stop() override;
 
     void addSharedObject(WebGLSharedObject*);
@@ -640,7 +640,7 @@ protected:
         }
 
 #if !ENABLE(OILPAN)
-        virtual ~TypedExtensionTracker()
+        ~TypedExtensionTracker() override
         {
             if (m_extension) {
                 m_extension->lose(true);
@@ -649,7 +649,7 @@ protected:
         }
 #endif
 
-        virtual PassRefPtrWillBeRawPtr<WebGLExtension> getExtension(WebGLRenderingContextBase* context) override
+        PassRefPtrWillBeRawPtr<WebGLExtension> getExtension(WebGLRenderingContextBase* context) override
         {
             if (!m_extension) {
                 m_extension = T::create(context);
@@ -659,17 +659,17 @@ protected:
             return m_extension;
         }
 
-        virtual bool supported(WebGLRenderingContextBase* context) const override
+        bool supported(WebGLRenderingContextBase* context) const override
         {
             return T::supported(context);
         }
 
-        virtual const char* extensionName() const override
+        const char* extensionName() const override
         {
             return T::extensionName();
         }
 
-        virtual void loseExtension() override
+        void loseExtension() override
         {
             if (m_extension) {
                 m_extension->lose(false);
@@ -986,7 +986,7 @@ protected:
     virtual void restoreCurrentFramebuffer();
     void restoreCurrentTexture2D();
 
-    virtual void multisamplingChanged(bool) override;
+    void multisamplingChanged(bool) override;
 
     void findNewMaxNonDefaultTextureUnit();
 

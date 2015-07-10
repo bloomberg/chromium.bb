@@ -17,7 +17,7 @@ class KURL;
 class NavigatorContentUtilsClientMock : public NavigatorContentUtilsClient {
 public:
     NavigatorContentUtilsClientMock() { }
-    virtual ~NavigatorContentUtilsClientMock() { }
+    ~NavigatorContentUtilsClientMock() override { }
 
     virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title);
 

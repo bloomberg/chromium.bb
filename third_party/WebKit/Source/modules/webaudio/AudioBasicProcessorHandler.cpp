@@ -49,7 +49,7 @@ PassRefPtr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::create(NodeTy
 
 AudioBasicProcessorHandler::~AudioBasicProcessorHandler()
 {
-    // Safe to call the virtual uninitialize() because it's final.
+    // Safe to call the uninitialize() because it's final.
     uninitialize();
 }
 

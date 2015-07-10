@@ -22,7 +22,7 @@ class MODULES_EXPORT StashedMessagePort final : public MessagePort {
     WTF_MAKE_NONCOPYABLE(StashedMessagePort);
 public:
     static StashedMessagePort* create(ExecutionContext&, PassOwnPtr<WebMessagePortChannel>, const String& name);
-    virtual ~StashedMessagePort();
+    ~StashedMessagePort() override;
 
     static StashedMessagePortArray* toStashedMessagePortArray(ExecutionContext*, const WebMessagePortChannelArray&, const WebVector<WebString>& channelKeys);
 

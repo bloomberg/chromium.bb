@@ -39,16 +39,16 @@ class AudioProcessor;
 class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
 public:
     static PassRefPtr<AudioBasicProcessorHandler> create(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
-    virtual ~AudioBasicProcessorHandler();
+    ~AudioBasicProcessorHandler() override;
 
     // AudioHandler
-    virtual void process(size_t framesToProcess) override final;
-    virtual void pullInputs(size_t framesToProcess) override final;
-    virtual void initialize() override final;
-    virtual void uninitialize() override final;
+    void process(size_t framesToProcess) final;
+    void pullInputs(size_t framesToProcess) final;
+    void initialize() final;
+    void uninitialize() final;
 
     // Called in the main thread when the number of channels for the input may have changed.
-    virtual void checkNumberOfChannelsForInput(AudioNodeInput*) override final;
+    void checkNumberOfChannelsForInput(AudioNodeInput*) final;
 
     // Returns the number of channels for both the input and the output.
     unsigned numberOfChannels();
@@ -56,8 +56,8 @@ public:
 
 private:
     AudioBasicProcessorHandler(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
-    virtual double tailTime() const override final;
-    virtual double latencyTime() const override final;
+    double tailTime() const final;
+    double latencyTime() const final;
 
     OwnPtr<AudioProcessor> m_processor;
 };

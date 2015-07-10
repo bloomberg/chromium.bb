@@ -42,18 +42,18 @@ private:
 
 public:
     static PassRefPtrWillBeRawPtr<AXARIAGridCell> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXARIAGridCell();
+    ~AXARIAGridCell() override;
 
     // fills in the start location and row span of cell
-    virtual void rowIndexRange(pair<unsigned, unsigned>& rowRange) override;
+    void rowIndexRange(pair<unsigned, unsigned>& rowRange) override;
     // fills in the start location and column span of cell
-    virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange) override;
-    virtual AccessibilityRole scanToDecideHeaderRole() override final;
+    void columnIndexRange(pair<unsigned, unsigned>& columnRange) override;
+    AccessibilityRole scanToDecideHeaderRole() final;
 
 protected:
     bool isAriaColumnHeader() const;
     bool isAriaRowHeader() const;
-    virtual AXObject* parentTable() const override;
+    AXObject* parentTable() const override;
 };
 
 } // namespace blink

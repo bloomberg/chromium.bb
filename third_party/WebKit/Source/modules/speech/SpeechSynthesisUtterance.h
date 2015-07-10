@@ -41,7 +41,7 @@ class SpeechSynthesisUtterance final : public RefCountedGarbageCollectedEventTar
 public:
     static SpeechSynthesisUtterance* create(ExecutionContext*, const String&);
 
-    virtual ~SpeechSynthesisUtterance();
+    ~SpeechSynthesisUtterance() override;
 
     const String& text() const { return m_platformUtterance->text(); }
     void setText(const String& text) { m_platformUtterance->setText(text); }
@@ -72,7 +72,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
 
-    virtual ExecutionContext* executionContext() const override;
+    ExecutionContext* executionContext() const override;
 
     PlatformSpeechSynthesisUtterance* platformUtterance() const { return m_platformUtterance; }
 
@@ -82,7 +82,7 @@ private:
     SpeechSynthesisUtterance(ExecutionContext*, const String&);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     Member<PlatformSpeechSynthesisUtterance> m_platformUtterance;
     Member<SpeechSynthesisVoice> m_voice;

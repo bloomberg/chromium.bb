@@ -52,18 +52,18 @@ protected:
 
 public:
     static PassRefPtrWillBeRawPtr<AXLayoutObject> create(LayoutObject*, AXObjectCacheImpl&);
-    virtual ~AXLayoutObject();
+    ~AXLayoutObject() override;
 
     // Public, overridden from AXObject.
-    virtual LayoutObject* layoutObject() const override final { return m_layoutObject; }
-    virtual LayoutRect elementRect() const override;
+    LayoutObject* layoutObject() const final { return m_layoutObject; }
+    LayoutRect elementRect() const override;
 
     void setLayoutObject(LayoutObject*);
     LayoutBoxModelObject* layoutBoxModelObject() const;
     Document* topDocument() const;
     bool shouldNotifyActiveDescendant() const;
-    virtual ScrollableArea* getScrollableAreaIfScrollable() const override final;
-    virtual AccessibilityRole determineAccessibilityRole() override;
+    ScrollableArea* getScrollableAreaIfScrollable() const final;
+    AccessibilityRole determineAccessibilityRole() override;
     void checkCachedElementRect() const;
     void updateCachedElementRect() const;
 
@@ -78,127 +78,127 @@ protected:
     // Overridden from AXObject.
     //
 
-    virtual void init() override;
-    virtual void detach() override;
-    virtual bool isDetached() const override { return !m_layoutObject; }
-    virtual bool isAXLayoutObject() const override { return true; }
+    void init() override;
+    void detach() override;
+    bool isDetached() const override { return !m_layoutObject; }
+    bool isAXLayoutObject() const override { return true; }
 
     // Check object role or purpose.
-    virtual bool isAttachment() const override;
-    virtual bool isRichlyEditable() const override;
-    virtual bool isLinked() const override;
-    virtual bool isLoaded() const override;
-    virtual bool isOffScreen() const override;
-    virtual bool isReadOnly() const override;
-    virtual bool isVisited() const override;
+    bool isAttachment() const override;
+    bool isRichlyEditable() const override;
+    bool isLinked() const override;
+    bool isLoaded() const override;
+    bool isOffScreen() const override;
+    bool isReadOnly() const override;
+    bool isVisited() const override;
 
     // Check object state.
-    virtual bool isFocused() const override;
-    virtual bool isSelected() const override;
+    bool isFocused() const override;
+    bool isSelected() const override;
 
     // Whether objects are ignored, i.e. not included in the tree.
-    virtual AXObjectInclusion defaultObjectInclusion(IgnoredReasons* = nullptr) const override;
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    AXObjectInclusion defaultObjectInclusion(IgnoredReasons* = nullptr) const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     // Properties of static elements.
-    virtual const AtomicString& accessKey() const override;
-    virtual RGBA32 backgroundColor() const override final;
-    virtual RGBA32 color() const override final;
+    const AtomicString& accessKey() const override;
+    RGBA32 backgroundColor() const final;
+    RGBA32 color() const final;
     // Font size is in pixels.
-    virtual float fontSize() const override final;
-    virtual AccessibilityOrientation orientation() const override;
-    virtual String text() const override;
-    virtual AccessibilityTextDirection textDirection() const override final;
-    virtual int textLength() const override;
-    virtual TextStyle textStyle() const override final;
-    virtual KURL url() const override;
+    float fontSize() const final;
+    AccessibilityOrientation orientation() const override;
+    String text() const override;
+    AccessibilityTextDirection textDirection() const final;
+    int textLength() const override;
+    TextStyle textStyle() const final;
+    KURL url() const override;
 
     // Inline text boxes.
-    virtual void loadInlineTextBoxes() override;
-    virtual AXObject* nextOnLine() const override;
-    virtual AXObject* previousOnLine() const override;
+    void loadInlineTextBoxes() override;
+    AXObject* nextOnLine() const override;
+    AXObject* previousOnLine() const override;
 
     // Properties of interactive elements.
-    virtual String actionVerb() const override;
-    virtual String stringValue() const override;
+    String actionVerb() const override;
+    String stringValue() const override;
 
     // ARIA attributes.
-    virtual AXObject* activeDescendant() const override;
-    virtual void ariaFlowToElements(AccessibilityChildrenVector&) const override;
-    virtual void ariaControlsElements(AccessibilityChildrenVector&) const override;
-    virtual void deprecatedAriaDescribedbyElements(AccessibilityChildrenVector&) const override;
-    virtual void deprecatedAriaLabelledbyElements(AccessibilityChildrenVector&) const override;
-    virtual void ariaOwnsElements(AccessibilityChildrenVector&) const override;
+    AXObject* activeDescendant() const override;
+    void ariaFlowToElements(AccessibilityChildrenVector&) const override;
+    void ariaControlsElements(AccessibilityChildrenVector&) const override;
+    void deprecatedAriaDescribedbyElements(AccessibilityChildrenVector&) const override;
+    void deprecatedAriaLabelledbyElements(AccessibilityChildrenVector&) const override;
+    void ariaOwnsElements(AccessibilityChildrenVector&) const override;
 
-    virtual bool ariaHasPopup() const override;
-    virtual bool ariaRoleHasPresentationalChildren() const override;
-    virtual AXObject* ancestorForWhichThisIsAPresentationalChild() const override;
-    virtual bool shouldFocusActiveDescendant() const override;
-    virtual bool supportsARIADragging() const override;
-    virtual bool supportsARIADropping() const override;
-    virtual bool supportsARIAFlowTo() const override;
-    virtual bool supportsARIAOwns() const override;
+    bool ariaHasPopup() const override;
+    bool ariaRoleHasPresentationalChildren() const override;
+    AXObject* ancestorForWhichThisIsAPresentationalChild() const override;
+    bool shouldFocusActiveDescendant() const override;
+    bool supportsARIADragging() const override;
+    bool supportsARIADropping() const override;
+    bool supportsARIAFlowTo() const override;
+    bool supportsARIAOwns() const override;
 
     // ARIA live-region features.
-    virtual const AtomicString& liveRegionStatus() const override;
-    virtual const AtomicString& liveRegionRelevant() const override;
-    virtual bool liveRegionAtomic() const override;
-    virtual bool liveRegionBusy() const override;
+    const AtomicString& liveRegionStatus() const override;
+    const AtomicString& liveRegionRelevant() const override;
+    bool liveRegionAtomic() const override;
+    bool liveRegionBusy() const override;
 
     // Accessibility Text.
-    virtual String deprecatedTextUnderElement(TextUnderElementMode) const override;
+    String deprecatedTextUnderElement(TextUnderElementMode) const override;
 
     // Accessibility Text - (To be deprecated).
-    virtual String deprecatedHelpText() const override;
+    String deprecatedHelpText() const override;
 
     // Location and click point in frame-relative coordinates.
-    virtual void markCachedElementRectDirty() const override;
-    virtual IntPoint clickPoint() override;
+    void markCachedElementRectDirty() const override;
+    IntPoint clickPoint() override;
 
     // Hit testing.
-    virtual AXObject* accessibilityHitTest(const IntPoint&) const override;
-    virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const override;
+    AXObject* accessibilityHitTest(const IntPoint&) const override;
+    AXObject* elementAccessibilityHitTest(const IntPoint&) const override;
 
     // High-level accessibility tree access. Other modules should only use these functions.
-    virtual AXObject* computeParent() const override;
-    virtual AXObject* computeParentIfExists() const override;
+    AXObject* computeParent() const override;
+    AXObject* computeParentIfExists() const override;
 
     // Low-level accessibility tree exploration, only for use within the accessibility module.
-    virtual AXObject* firstChild() const override;
-    virtual AXObject* nextSibling() const override;
-    virtual void addChildren() override;
-    virtual bool canHaveChildren() const override;
-    virtual void updateChildrenIfNecessary() override;
-    virtual bool needsToUpdateChildren() const override { return m_childrenDirty; }
-    virtual void setNeedsToUpdateChildren() override { m_childrenDirty = true; }
-    virtual void clearChildren() override;
+    AXObject* firstChild() const override;
+    AXObject* nextSibling() const override;
+    void addChildren() override;
+    bool canHaveChildren() const override;
+    void updateChildrenIfNecessary() override;
+    bool needsToUpdateChildren() const override { return m_childrenDirty; }
+    void setNeedsToUpdateChildren() override { m_childrenDirty = true; }
+    void clearChildren() override;
 
     // Properties of the object's owning document or page.
-    virtual double estimatedLoadingProgress() const override;
+    double estimatedLoadingProgress() const override;
 
     // DOM and layout tree access.
-    virtual Node* node() const override;
-    virtual Document* document() const override;
-    virtual FrameView* documentFrameView() const override;
-    virtual Element* anchorElement() const override;
-    virtual Widget* widgetForAttachmentView() const override;
+    Node* node() const override;
+    Document* document() const override;
+    FrameView* documentFrameView() const override;
+    Element* anchorElement() const override;
+    Widget* widgetForAttachmentView() const override;
 
     // Selected text.
-    virtual PlainTextRange selectedTextRange() const override;
+    PlainTextRange selectedTextRange() const override;
 
     // Modify or take an action on an object.
-    virtual void setSelectedTextRange(const PlainTextRange&) override;
-    virtual void setValue(const String&) override;
+    void setSelectedTextRange(const PlainTextRange&) override;
+    void setValue(const String&) override;
 
     // Notifications that this object may have changed.
-    virtual void handleActiveDescendantChanged() override;
-    virtual void handleAriaExpandedChanged() override;
-    virtual void textChanged() override;
+    void handleActiveDescendantChanged() override;
+    void handleAriaExpandedChanged() override;
+    void textChanged() override;
 
     // Text metrics. Most of these should be deprecated, needs major cleanup.
-    virtual int index(const VisiblePosition&) const override;
-    virtual VisiblePosition visiblePositionForIndex(int) const override;
-    virtual void lineBreaks(Vector<int>&) const override;
+    int index(const VisiblePosition&) const override;
+    VisiblePosition visiblePositionForIndex(int) const override;
+    void lineBreaks(Vector<int>&) const override;
 
 private:
     AXObject* treeAncestorDisallowingChild() const;

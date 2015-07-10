@@ -47,7 +47,7 @@ protected:
 
 public:
     static PassRefPtrWillBeRawPtr<AXNodeObject> create(Node*, AXObjectCacheImpl&);
-    virtual ~AXNodeObject();
+    ~AXNodeObject() override;
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -58,8 +58,8 @@ protected:
     bool m_initialized;
 #endif
 
-    virtual bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
-    virtual const AXObject* inheritsPresentationalRoleFrom() const override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+    const AXObject* inheritsPresentationalRoleFrom() const override;
     virtual AccessibilityRole determineAccessibilityRole();
     AccessibilityRole determineAccessibilityRoleUtil();
     String accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element>> &elements) const;
@@ -92,119 +92,119 @@ protected:
     // Overridden from AXObject.
     //
 
-    virtual void init() override;
-    virtual void detach() override;
-    virtual bool isDetached() const override { return !m_node; }
-    virtual bool isAXNodeObject() const override final { return true; }
+    void init() override;
+    void detach() override;
+    bool isDetached() const override { return !m_node; }
+    bool isAXNodeObject() const final { return true; }
 
     // Check object role or purpose.
-    virtual bool isAnchor() const override final;
-    virtual bool isControl() const override;
+    bool isAnchor() const final;
+    bool isControl() const override;
     bool isControllingVideoElement() const;
-    virtual bool isEmbeddedObject() const override final;
-    virtual bool isFieldset() const override final;
-    virtual bool isHeading() const override final;
-    virtual bool isHovered() const override final;
-    virtual bool isImage() const override final;
+    bool isEmbeddedObject() const final;
+    bool isFieldset() const final;
+    bool isHeading() const final;
+    bool isHovered() const final;
+    bool isImage() const final;
     bool isImageButton() const;
-    virtual bool isInputImage() const override final;
-    virtual bool isLink() const override final;
-    virtual bool isMenu() const override final;
-    virtual bool isMenuButton() const override final;
-    virtual bool isMeter() const override final;
-    virtual bool isMultiSelectable() const override;
+    bool isInputImage() const final;
+    bool isLink() const final;
+    bool isMenu() const final;
+    bool isMenuButton() const final;
+    bool isMeter() const final;
+    bool isMultiSelectable() const override;
     bool isNativeImage() const;
-    virtual bool isNativeTextControl() const override final;
-    virtual bool isNonNativeTextControl() const override final;
-    virtual bool isPasswordField() const override final;
-    virtual bool isProgressIndicator() const override;
-    virtual bool isSlider() const override;
-    virtual bool isNativeSlider() const override;
+    bool isNativeTextControl() const final;
+    bool isNonNativeTextControl() const final;
+    bool isPasswordField() const final;
+    bool isProgressIndicator() const override;
+    bool isSlider() const override;
+    bool isNativeSlider() const override;
 
     // Check object state.
-    virtual bool isChecked() const override final;
-    virtual bool isClickable() const override final;
-    virtual bool isEnabled() const override;
-    virtual AccessibilityExpanded isExpanded() const override;
-    virtual bool isIndeterminate() const override final;
-    virtual bool isPressed() const override final;
-    virtual bool isReadOnly() const override;
-    virtual bool isRequired() const override final;
+    bool isChecked() const final;
+    bool isClickable() const final;
+    bool isEnabled() const override;
+    AccessibilityExpanded isExpanded() const override;
+    bool isIndeterminate() const final;
+    bool isPressed() const final;
+    bool isReadOnly() const override;
+    bool isRequired() const final;
 
     // Check whether certain properties can be modified.
-    virtual bool canSetFocusAttribute() const override;
-    virtual bool canSetValueAttribute() const override;
+    bool canSetFocusAttribute() const override;
+    bool canSetValueAttribute() const override;
 
     // Properties of static elements.
-    virtual RGBA32 colorValue() const override final;
-    virtual bool canvasHasFallbackContent() const override final;
-    virtual bool deprecatedExposesTitleUIElement() const override;
-    virtual int headingLevel() const override final;
-    virtual unsigned hierarchicalLevel() const override final;
-    virtual String text() const override;
-    virtual AXObject* deprecatedTitleUIElement() const override;
+    RGBA32 colorValue() const final;
+    bool canvasHasFallbackContent() const final;
+    bool deprecatedExposesTitleUIElement() const override;
+    int headingLevel() const final;
+    unsigned hierarchicalLevel() const final;
+    String text() const override;
+    AXObject* deprecatedTitleUIElement() const override;
 
     // Properties of interactive elements.
-    virtual AccessibilityButtonState checkboxOrRadioValue() const override final;
-    virtual InvalidState invalidState() const override final;
+    AccessibilityButtonState checkboxOrRadioValue() const final;
+    InvalidState invalidState() const final;
     // Only used when invalidState() returns InvalidStateOther.
-    virtual String ariaInvalidValue() const override final;
-    virtual String valueDescription() const override;
-    virtual float valueForRange() const override;
-    virtual float maxValueForRange() const override;
-    virtual float minValueForRange() const override;
-    virtual String stringValue() const override;
+    String ariaInvalidValue() const final;
+    String valueDescription() const override;
+    float valueForRange() const override;
+    float maxValueForRange() const override;
+    float minValueForRange() const override;
+    String stringValue() const override;
 
     // ARIA attributes.
-    virtual String ariaDescribedByAttribute() const override final;
-    virtual String ariaLabeledByAttribute() const override final;
-    virtual AccessibilityRole ariaRoleAttribute() const override final;
+    String ariaDescribedByAttribute() const final;
+    String ariaLabeledByAttribute() const final;
+    AccessibilityRole ariaRoleAttribute() const final;
 
     // Accessibility Text.
-    virtual String deprecatedTextUnderElement(TextUnderElementMode) const override;
-    virtual String deprecatedAccessibilityDescription() const override;
-    virtual String deprecatedTitle(TextUnderElementMode) const override;
-    virtual String deprecatedHelpText() const override;
-    virtual String computedName() const override;
+    String deprecatedTextUnderElement(TextUnderElementMode) const override;
+    String deprecatedAccessibilityDescription() const override;
+    String deprecatedTitle(TextUnderElementMode) const override;
+    String deprecatedHelpText() const override;
+    String computedName() const override;
 
     // New AX name calculation.
-    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom*, WillBeHeapVector<RawPtrWillBeMember<AXObject>>* nameObjects) override;
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom*, WillBeHeapVector<RawPtrWillBeMember<AXObject>>* nameObjects) override;
 
     // Location and click point in frame-relative coordinates.
-    virtual LayoutRect elementRect() const override;
+    LayoutRect elementRect() const override;
 
     // High-level accessibility tree access.
-    virtual AXObject* computeParent() const override;
-    virtual AXObject* computeParentIfExists() const override;
+    AXObject* computeParent() const override;
+    AXObject* computeParentIfExists() const override;
 
     // Low-level accessibility tree exploration.
-    virtual AXObject* firstChild() const override;
-    virtual AXObject* nextSibling() const override;
-    virtual void addChildren() override;
-    virtual bool canHaveChildren() const override;
+    AXObject* firstChild() const override;
+    AXObject* nextSibling() const override;
+    void addChildren() override;
+    bool canHaveChildren() const override;
     void addChild(AXObject*);
     void insertChild(AXObject*, unsigned index);
 
     // DOM and Render tree access.
-    virtual Element* actionElement() const override final;
-    virtual Element* anchorElement() const override;
-    virtual Document* document() const override;
-    virtual Node* node() const override { return m_node; }
+    Element* actionElement() const final;
+    Element* anchorElement() const override;
+    Document* document() const override;
+    Node* node() const override { return m_node; }
 
     // Modify or take an action on an object.
-    virtual void setFocused(bool) override final;
-    virtual void increment() override final;
-    virtual void decrement() override final;
+    void setFocused(bool) final;
+    void increment() final;
+    void decrement() final;
 
     // Notifications that this object may have changed.
-    virtual void childrenChanged() override;
-    virtual void selectionChanged() override final;
-    virtual void textChanged() override;
-    virtual void updateAccessibilityRole() override final;
+    void childrenChanged() override;
+    void selectionChanged() final;
+    void textChanged() override;
+    void updateAccessibilityRole() final;
 
     // Position in set and Size of set
-    virtual int posInSet() const override;
-    virtual int setSize() const override;
+    int posInSet() const override;
+    int setSize() const override;
 
     // Aria-owns.
     void computeAriaOwnsChildren(Vector<AXObject*>& ownedChildren);
