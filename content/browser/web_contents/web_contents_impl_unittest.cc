@@ -9,6 +9,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/media/audio_state_provider.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -922,15 +923,25 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
   popup->SetOpener(contents());
   contents()->GetRenderManager()->CreateOpenerProxies(instance);
 
-  // If swapped out is allowed, we should find the pending RFH and not create a
-  // new one.  Otherwise, a new proxy should be created for the opener in
-  // |instance|, and we should ensure that its routing ID is returned here.
-  //
-  // TODO(alexmos): Add the latter check once CreateOpenerProxies is fixed to
-  // create a proxy in this case.
-  if (!RenderFrameHostManager::IsSwappedOutStateForbidden()) {
-    int opener_frame_routing_id =
-        popup->GetRenderManager()->GetOpenerRoutingID(instance);
+  // If swapped out is forbidden, a new proxy should be created for the opener
+  // in |instance|, and we should ensure that its routing ID is returned here.
+  // Otherwise, we should find the pending RFH and not create a new proxy.
+  int opener_frame_routing_id =
+      popup->GetRenderManager()->GetOpenerRoutingID(instance);
+  RenderFrameProxyHost* proxy =
+      contents()->GetRenderManager()->GetRenderFrameProxyHost(instance);
+  if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
+    EXPECT_TRUE(proxy);
+    EXPECT_EQ(proxy->GetRoutingID(), opener_frame_routing_id);
+
+    // Ensure that committing the navigation removes the proxy.
+    int entry_id = controller().GetPendingEntry()->GetUniqueID();
+    contents()->TestDidNavigate(pending_rfh, 2, entry_id, true, url2,
+                                ui::PAGE_TRANSITION_TYPED);
+    EXPECT_FALSE(
+        contents()->GetRenderManager()->GetRenderFrameProxyHost(instance));
+  } else {
+    EXPECT_FALSE(proxy);
     EXPECT_EQ(pending_rfh->GetRoutingID(), opener_frame_routing_id);
   }
 }

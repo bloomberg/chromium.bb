@@ -2300,13 +2300,19 @@ void RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
   if (opener)
     opener->render_manager()->CreateOpenerProxies(instance);
 
-  // If any of the RenderViews (current, pending, or swapped out) for this
+  // If any of the RenderViewHosts (current, pending, or swapped out) for this
   // FrameTree has the same SiteInstance, then we can return early, since
   // proxies for other nodes in the tree should also exist (when in
-  // site-per-process mode).
+  // site-per-process mode).  An exception is if we are in
+  // IsSwappedOutStateForbidden mode and find a pending RenderViewHost: in this
+  // case, we should still create a proxy, which will allow communicating with
+  // the opener until the pending RenderView commits, or if the pending
+  // navigation is canceled.
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
   RenderViewHostImpl* rvh = frame_tree->GetRenderViewHost(instance);
-  if (rvh && rvh->IsRenderViewLive())
+  bool need_proxy_for_pending_rvh =
+      IsSwappedOutStateForbidden() && (rvh == pending_render_view_host());
+  if (rvh && rvh->IsRenderViewLive() && !need_proxy_for_pending_rvh)
     return;
 
   if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
