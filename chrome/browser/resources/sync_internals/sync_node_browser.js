@@ -14,17 +14,22 @@
    */
   var isTypeRootNode = function(node) {
     return node.PARENT_ID == 'r' && node.UNIQUE_SERVER_TAG != '';
-  }
+  };
 
   /**
    * A helper function to determine if a node is a child of the given parent.
    *
-   * @param {string} parentId The ID of the parent.
+   * @param {!Object} parent node.
    * @param {!Object} node The node to check.
    */
-  var isChildOf = function(parentId, node) {
-    return node.PARENT_ID == parentId;
-  }
+  var isChildOf = function(parentNode, node) {
+    if (node.PARENT_ID != '') {
+      return node.PARENT_ID == parentNode.ID;
+    }
+    else {
+      return node.modelType == parentNode.modelType;
+    }
+  };
 
   /**
    * A helper function to sort sync nodes.
@@ -44,7 +49,7 @@
     } else {
       return nodeA.METAHANDLE - nodeB.METAHANDLE;
     }
-  }
+  };
 
   /**
    * Updates the node detail view with the details for the given node.
@@ -106,7 +111,7 @@
       treeItem.expanded_ = true;
 
       var children = treeItem.tree.allNodes.filter(
-          isChildOf.bind(undefined, treeItem.entry_.ID));
+          isChildOf.bind(undefined, treeItem.entry_));
       children.sort(nodeComparator);
 
       children.forEach(function(node) {

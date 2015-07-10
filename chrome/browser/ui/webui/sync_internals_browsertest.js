@@ -102,7 +102,7 @@ var HARD_CODED_ALL_NODES = [{
     'UNIQUE_POSITION': 'INVALID[]',
     'UNIQUE_SERVER_TAG': 'google_chrome_autofill',
     'isDirty': false,
-    'serverModelType': 'Autofill'
+    'modelType': 'Autofill'
   }, {
     'ATTACHMENT_METADATA': '',
     'BASE_SERVER_SPECIFICS': {},
@@ -150,7 +150,7 @@ var HARD_CODED_ALL_NODES = [{
     'UNIQUE_POSITION': 'INVALID[]',
     'UNIQUE_SERVER_TAG': '',
     'isDirty': false,
-    'serverModelType': 'Autofill'
+    'modelType': 'Autofill'
   }],
   'type': 'Autofill'
 }];

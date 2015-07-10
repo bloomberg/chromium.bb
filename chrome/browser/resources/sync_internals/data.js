@@ -44,7 +44,7 @@ var allFields = [
   'SERVER_PARENT_ID',
   'IS_DEL',
   'SERVER_IS_DEL',
-  'serverModelType',
+  'modelType',
   'SERVER_SPECIFICS',
   'SPECIFICS',
 ];

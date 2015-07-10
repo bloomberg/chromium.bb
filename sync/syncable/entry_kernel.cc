@@ -52,16 +52,16 @@ ModelType EntryKernel::GetServerModelType() const {
 bool EntryKernel::ShouldMaintainPosition() const {
   // We maintain positions for all bookmarks, except those that are
   // server-created top-level folders.
-  return (GetModelTypeFromSpecifics(ref(SPECIFICS)) == syncer::BOOKMARKS)
-      && !(!ref(UNIQUE_SERVER_TAG).empty() && ref(IS_DIR));
+  return TypeSupportsOrdering(GetModelTypeFromSpecifics(ref(SPECIFICS))) &&
+         !(!ref(UNIQUE_SERVER_TAG).empty() && ref(IS_DIR));
 }
 
 bool EntryKernel::ShouldMaintainHierarchy() const {
   // We maintain hierarchy for bookmarks and top-level folders,
   // but no other types.  Note that the Nigori node consists of a single
   // top-level folder, so it's included in this set.
-  return (GetModelTypeFromSpecifics(ref(SPECIFICS)) == syncer::BOOKMARKS)
-      || (!ref(UNIQUE_SERVER_TAG).empty());
+  return TypeSupportsHierarchy(GetModelTypeFromSpecifics(ref(SPECIFICS))) ||
+         (!ref(UNIQUE_SERVER_TAG).empty());
 }
 
 namespace {
@@ -148,7 +148,10 @@ base::DictionaryValue* EntryKernel::ToValue(
     Cryptographer* cryptographer) const {
   base::DictionaryValue* kernel_info = new base::DictionaryValue();
   kernel_info->SetBoolean("isDirty", is_dirty());
-  kernel_info->Set("serverModelType", ModelTypeToValue(GetServerModelType()));
+  ModelType dataType = GetServerModelType();
+  if (!IsRealDataType(dataType))
+    dataType = GetModelType();
+  kernel_info->Set("modelType", ModelTypeToValue(dataType));
 
   // Int64 fields.
   SetFieldValues(*this, kernel_info,

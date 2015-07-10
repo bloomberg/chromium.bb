@@ -339,6 +339,12 @@ SYNC_EXPORT bool IsTypeWithServerGeneratedRoot(ModelType model_type);
 // that type is initially synced.
 SYNC_EXPORT bool IsTypeWithClientGeneratedRoot(ModelType model_type);
 
+// Returns true if |model_type| supports parent-child hierarchy or entries.
+SYNC_EXPORT bool TypeSupportsHierarchy(ModelType model_type);
+
+// Returns true if |model_type| supports ordering of sibling entries.
+SYNC_EXPORT bool TypeSupportsOrdering(ModelType model_type);
+
 // Returns set of model types that should be backed up before first sync.
 SYNC_EXPORT ModelTypeSet BackupTypes();
 

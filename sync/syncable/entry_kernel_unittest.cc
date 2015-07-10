@@ -18,7 +18,7 @@ TEST_F(EntryKernelTest, ToValue) {
   if (value) {
     // Not much to check without repeating the ToValue() code.
     EXPECT_TRUE(value->HasKey("isDirty"));
-    // The extra +2 is for "isDirty" and "serverModelType".
+    // The extra +2 is for "isDirty" and "modelType".
     EXPECT_EQ(BIT_TEMPS_END - BEGIN_FIELDS + 2,
               static_cast<int>(value->size()));
   } else {

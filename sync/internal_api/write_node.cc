@@ -385,8 +385,8 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
   // We don't support directory and tag combinations.
   entry_->PutIsDir(false);
 
-  if (!parent_id.IsNull()) {
-    if (!PutPredecessor(NULL))
+  if (entry_->ShouldMaintainPosition()) {
+    if (!entry_->PutPredecessor(syncable::Id()))
       return INIT_FAILED_SET_PREDECESSOR;
   }
 

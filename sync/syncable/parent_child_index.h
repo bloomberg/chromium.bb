@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_vector.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/syncable/syncable_id.h"
@@ -60,14 +61,23 @@ class SYNC_EXPORT_PRIVATE ParentChildIndex {
 
  private:
   friend class ParentChildIndexTest;
+
   typedef std::map<Id, OrderedChildSet*> ParentChildrenMap;
+  typedef std::vector<Id> TypeRootIds;
+  typedef ScopedVector<OrderedChildSet> TypeRootChildSets;
 
-  // Determines entry's model type.
-  static ModelType GetModelType(EntryKernel* e);
+  static bool ShouldUseParentId(const Id& parent_id, ModelType model_type);
 
-  // Returns parent ID for the entry which is either its PARENT_ID value
-  // or derived from its model type.
-  const Id& GetParentId(EntryKernel* e) const;
+  // Returns OrderedChildSet that should contain the specified entry
+  // based on the entry's Parent ID or model type.
+  const OrderedChildSet* GetChildSet(EntryKernel* e) const;
+
+  // Returns OrderedChildSet that contain entries of the |model_type| type.
+  const OrderedChildSet* GetModelTypeChildSet(ModelType model_type) const;
+
+  // Returns mutable OrderedChildSet that contain entries of the |model_type|
+  // type. Create one as necessary.
+  OrderedChildSet* GetOrCreateModelTypeChildSet(ModelType model_type);
 
   // Returns previously cached model type root ID for the given |model_type|.
   const Id& GetModelTypeRootId(ModelType model_type) const;
@@ -77,7 +87,12 @@ class SYNC_EXPORT_PRIVATE ParentChildIndex {
   ParentChildrenMap parent_children_map_;
 
   // This array tracks model type roots IDs.
-  Id model_type_root_ids_[MODEL_TYPE_COUNT];
+  TypeRootIds model_type_root_ids_;
+
+  // This array contains pre-defined child sets for
+  // non-hierarchical types (types with flat hierarchy) that support entries
+  // with implicit parent.
+  TypeRootChildSets type_root_child_sets_;
 
   DISALLOW_COPY_AND_ASSIGN(ParentChildIndex);
 };

@@ -173,10 +173,10 @@ int64 MakeTypeRoot(UserShare* share, ModelType model_type) {
   entry.PutServerIsDir(true);
   entry.PutIsDir(true);
   entry.PutServerSpecifics(specifics);
+  entry.PutSpecifics(specifics);
   entry.PutUniqueServerTag(type_tag);
   entry.PutNonUniqueName(type_tag);
   entry.PutIsDel(false);
-  entry.PutSpecifics(specifics);
   return entry.GetMetahandle();
 }
 
@@ -202,10 +202,10 @@ int64 MakeServerNode(UserShare* share, ModelType model_type,
   entry.PutServerIsDir(false);
   entry.PutIsDir(false);
   entry.PutServerSpecifics(specifics);
+  entry.PutSpecifics(specifics);
   entry.PutNonUniqueName(client_tag);
   entry.PutUniqueClientTag(hashed_tag);
   entry.PutIsDel(false);
-  entry.PutSpecifics(specifics);
   return entry.GetMetahandle();
 }
 

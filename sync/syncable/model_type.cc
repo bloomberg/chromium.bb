@@ -1216,4 +1216,13 @@ bool IsTypeWithClientGeneratedRoot(ModelType model_type) {
          !IsTypeWithServerGeneratedRoot(model_type);
 }
 
+bool TypeSupportsHierarchy(ModelType model_type) {
+  // TODO(stanisc): crbug/438313: Should this also include TOP_LEVEL_FOLDER?
+  return model_type == BOOKMARKS;
+}
+
+bool TypeSupportsOrdering(ModelType model_type) {
+  return model_type == BOOKMARKS;
+}
+
 }  // namespace syncer
