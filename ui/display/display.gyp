@@ -221,4 +221,23 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'display_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'display_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'display_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }

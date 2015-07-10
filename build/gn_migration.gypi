@@ -558,6 +558,7 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../sandbox/sandbox.gyp:sandbox_linux_unittests_run',
+                '../ui/display/display.gyp:display_unittests_run',
               ],
             }],
             ['OS=="mac"', {
