@@ -316,10 +316,8 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
     if (!needsCompositingUpdate)
         return;
 
-#if ENABLE(OILPAN)
     if (!m_element)
         return;
-#endif
 
     m_element->setNeedsCompositingUpdate();
     // Being composited or not affects the self painting layer bit
@@ -727,6 +725,11 @@ void WebPluginContainerImpl::dispose()
 
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();
+
+    // Clear m_element before destroying the plugin to ensure re-entrant callbacks
+    // do not have access to the element state.
+    m_element = nullptr;
+
     m_webPlugin->destroy();
     m_webPlugin = nullptr;
 
@@ -734,7 +737,6 @@ void WebPluginContainerImpl::dispose()
         GraphicsLayer::unregisterContentsLayer(m_webLayer);
 
     m_pluginLoadObservers.clear();
-    m_element = nullptr;
 }
 
 #if ENABLE(OILPAN)
