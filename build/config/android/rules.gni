@@ -1449,9 +1449,13 @@ template("android_apk") {
       _enable_relocation_packing = true
     }
 
-    _native_lib_version_name = ""
-    if (defined(invoker.native_lib_version_name)) {
-      _native_lib_version_name = invoker.native_lib_version_name
+    _native_lib_version_rule = ""
+    if (defined(invoker.native_lib_version_rule)) {
+      _native_lib_version_rule = invoker.native_lib_version_rule
+    }
+    _native_lib_version_arg = "\"\""
+    if (defined(invoker.native_lib_version_arg)) {
+      _native_lib_version_arg = invoker.native_lib_version_arg
     }
   }
 
@@ -1532,11 +1536,14 @@ template("android_apk") {
       deps = [
         ":$build_config_target",
       ]
+      if (_native_lib_version_rule != "") {
+        deps += [ _native_lib_version_rule ]
+      }
 
       defines = [
         "NATIVE_LIBRARIES_LIST=" +
             "@FileArg($_rebased_build_config:native:java_libraries_list)",
-        "NATIVE_LIBRARIES_VERSION_NUMBER=\"$_native_lib_version_name\"",
+        "NATIVE_LIBRARIES_VERSION_NUMBER=$_native_lib_version_arg",
       ]
       if (_use_chromium_linker) {
         defines += [ "ENABLE_CHROMIUM_LINKER" ]
