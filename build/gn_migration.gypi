@@ -565,6 +565,11 @@
                 '../sandbox/sandbox.gyp:sandbox_mac_unittests_run',
               ],
             }],
+            ['OS=="win"', {
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sbox_integration_tests',
+              ],
+            }],
             ['use_ash==1', {
               'dependencies': [
                 '../ash/ash.gyp:ash_unittests_run',

@@ -367,5 +367,22 @@
         },
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'sbox_integration_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'sbox_integration_tests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            '../sbox_integration_tests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
