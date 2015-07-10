@@ -7633,7 +7633,7 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
     popupView->mainFrame()->executeScript(WebScriptSource("opener.frames[1].location.href='data:text/html,foo'"));
     EXPECT_TRUE(webFrameClient.messages.empty());
     ASSERT_EQ(1u, popupWebFrameClient.messages.size());
-    EXPECT_TRUE(std::string::npos != popupWebFrameClient.messages[0].text.utf8().find("Unsafe JavaScript attempt to initiate navigation"));
+    EXPECT_TRUE(std::string::npos != popupWebFrameClient.messages[0].text.utf8().find("Uncaught SecurityError: Blocked a frame with origin"));
 
     // Try setting a cross-origin iframe element's source to a javascript: URL,
     // and check that this error is also printed on the calling window.

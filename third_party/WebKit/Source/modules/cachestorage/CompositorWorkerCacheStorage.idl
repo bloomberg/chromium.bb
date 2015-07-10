@@ -6,7 +6,7 @@
 [
     RuntimeEnabled=GlobalCacheStorage,
     ImplementedAs=GlobalCacheStorage,
-] partial interface WorkerGlobalScope {
+] partial interface CompositorWorkerGlobalScope {
     // Inheritance of [Unforgeable] attributes is not supported.  So we have to
     // define the same unforgeable attributes in derived interfaces as well.
     // See that {,Dedicated,Shared,Compositor,Service}WorkerGlobalScope redefine

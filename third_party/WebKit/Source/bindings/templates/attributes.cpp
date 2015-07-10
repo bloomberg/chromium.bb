@@ -5,10 +5,10 @@
 {% macro attribute_getter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeGetter{{world_suffix}}(
-{%- if attribute.is_expose_js_accessors %}
-const v8::FunctionCallbackInfo<v8::Value>& info
-{%- else %}
+{%- if attribute.is_data_type_property %}
 const v8::PropertyCallbackInfo<v8::Value>& info
+{%- else %}
+const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
     {% if attribute.is_reflect and not attribute.is_url
@@ -55,7 +55,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {% if ((attribute.is_check_security_for_frame or
             attribute.is_check_security_for_window) and
-           attribute.is_expose_js_accessors) or
+           not attribute.is_data_type_property) or
           attribute.is_check_security_for_node or
           attribute.is_getter_raises_exception %}
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
@@ -76,7 +76,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         return;
     {% endif %}
     {# Security checks #}
-    {% if attribute.is_expose_js_accessors %}
+    {% if not attribute.is_data_type_property %}
     {% if attribute.is_check_security_for_window %}
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
@@ -140,6 +140,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 {% endfilter %}
 {% endmacro %}
 
+
 {######################################}
 {% macro release_only_check(reflect_only_values, reflect_missing,
                             reflect_invalid, reflect_empty, cpp_value) %}
@@ -178,10 +179,10 @@ if ({{cpp_value}}.isEmpty()) {
 {% macro attribute_getter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
-{%- if attribute.is_expose_js_accessors %}
-const v8::FunctionCallbackInfo<v8::Value>& info
-{%- else %}
+{%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
+{%- else %}
+const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
@@ -215,12 +216,7 @@ v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
 {##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
-static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(
-{%- if attribute.is_expose_js_accessors %}
-const v8::FunctionCallbackInfo<v8::Value>& info
-{%- else %}
-v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info
-{%- endif %})
+static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if attribute.deprecate_as %}
@@ -240,10 +236,10 @@ v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info
 {% macro attribute_setter(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetter{{world_suffix}}(
-{%- if attribute.is_expose_js_accessors %}
-v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
-{%- else %}
+{%- if attribute.is_data_type_property %}
 v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
+{%- else %}
+v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
     {% if attribute.is_reflect and attribute.idl_type == 'DOMString'
@@ -253,7 +249,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.has_setter_exception_state or
           ((not attribute.is_replaceable and
             not attribute.constructor_type and
-            attribute.is_expose_js_accessors) and
+            not attribute.is_data_type_property) and
            (attribute.is_check_security_for_frame or
             attribute.is_check_security_for_node or
             attribute.is_check_security_for_window)) %}
@@ -301,7 +297,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {# Security checks #}
     {% if not attribute.is_replaceable and
           not attribute.constructor_type %}
-    {% if attribute.is_expose_js_accessors %}
+    {% if not attribute.is_data_type_property %}
     {% if attribute.is_check_security_for_window %}
     if (LocalDOMWindow* window = impl->toDOMWindow()) {
         if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
@@ -327,7 +323,8 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
         return;
     }
     {% endif %}
-    {% endif %}{# not attribute.is_replaceable #}
+    {% endif %}{# not attribute.is_replaceable and
+                  not attribute.constructor_type #}
     {# Convert JS value to C++ value #}
     {% if attribute.idl_type != 'EventHandler' %}
     {% if v8_value_to_local_cpp_value(attribute) %}
@@ -392,13 +389,13 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {% macro attribute_setter_callback(attribute, world_suffix) %}
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
-{%- if attribute.is_expose_js_accessors %}
-const v8::FunctionCallbackInfo<v8::Value>& info
-{%- else %}
+{%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
+{%- else %}
+const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    {% if attribute.is_expose_js_accessors %}
+    {% if not attribute.is_data_type_property %}
     v8::Local<v8::Value> v8Value = info[0];
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
@@ -518,8 +515,12 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
        'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
            attribute.constructor_type
        if attribute.constructor_type else '0' %}
+{% if attribute.is_data_type_property %}
 {% set access_control = 'static_cast<v8::AccessControl>(%s)' %
                         ' | '.join(attribute.access_control_list) %}
+{% else %}
+{% set access_control = 'v8::DEFAULT' %}
+{% endif %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
 {% set only_exposed_to_private_script =
