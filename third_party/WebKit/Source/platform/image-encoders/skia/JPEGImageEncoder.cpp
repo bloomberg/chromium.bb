@@ -119,6 +119,9 @@ static void disableSubsamplingForHighQuality(jpeg_compress_struct* cinfo, int qu
 
 static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bool premultiplied, int quality, Vector<unsigned char>* output)
 {
+    if (imageSize.width() <= 0 || imageSize.height() <= 0)
+        return false;
+
     JPEGOutputBuffer destination;
     destination.output = output;
     Vector<JSAMPLE> row;
@@ -141,7 +144,6 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bo
     cinfo.dest->empty_output_buffer = writeOutput;
     cinfo.dest->term_destination = finishOutput;
 
-    imageSize.clampNegativeToZero();
     cinfo.image_height = imageSize.height();
     cinfo.image_width = imageSize.width();
 

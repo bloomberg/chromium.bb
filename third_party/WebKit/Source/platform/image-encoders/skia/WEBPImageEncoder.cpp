@@ -93,6 +93,11 @@ static bool platformPremultipliedImportPicture(const unsigned char* pixels, WebP
 
 static bool encodePixels(IntSize imageSize, const unsigned char* pixels, bool premultiplied, int quality, Vector<unsigned char>* output)
 {
+    if (imageSize.width() <= 0 || imageSize.width() > WEBP_MAX_DIMENSION)
+        return false;
+    if (imageSize.height() <= 0 || imageSize.height() > WEBP_MAX_DIMENSION)
+        return false;
+
     WebPConfig config;
     if (!WebPConfigInit(&config))
         return false;
@@ -100,12 +105,7 @@ static bool encodePixels(IntSize imageSize, const unsigned char* pixels, bool pr
     if (!WebPPictureInit(&picture))
         return false;
 
-    imageSize.clampNegativeToZero();
-    if (!imageSize.width() || imageSize.width() > WEBP_MAX_DIMENSION)
-        return false;
     picture.width = imageSize.width();
-    if (!imageSize.height() || imageSize.height() > WEBP_MAX_DIMENSION)
-        return false;
     picture.height = imageSize.height();
 
     if (premultiplied && !platformPremultipliedImportPicture(pixels, &picture))
