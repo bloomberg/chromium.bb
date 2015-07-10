@@ -34,7 +34,11 @@
         hidden$="[[computeCastModeHidden_(currentView_)]]">
       <template is="dom-repeat" id="castModeList" items="[[castModeList]]">
         <paper-item class="cast-mode" on-click="onCastModeClick_">
-          <span>[[item.description]]</span>
+          <!-- TODO(apacible): Show icon based on cast mode. -->
+          <iron-icon icon="tab"></iron-icon>
+          <div>
+            <span>[[item.description]]</span>
+          </div>
         </paper-item>
       </template>
     </paper-menu>

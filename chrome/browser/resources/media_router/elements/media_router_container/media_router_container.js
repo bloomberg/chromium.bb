@@ -258,11 +258,11 @@ Polymer({
    * @param {!string} sinkId A sink ID.
    * @param {!Object<!string, ?media_router.Route>} sinkToRouteMap
    *     Maps media_router.Sink.id to corresponding media_router.Route.
-   * @return {string} The class(es) for the sink icon.
+   * @return {string} The class for the sink icon.
    * @private
    */
   computeSinkIconClass_: function(sinkId, sinkToRouteMap) {
-    return sinkToRouteMap[sinkId] ? 'sink-icon active-sink' : 'sink-icon';
+    return sinkToRouteMap[sinkId] ? 'active-sink' : '';
   },
 
   /**
