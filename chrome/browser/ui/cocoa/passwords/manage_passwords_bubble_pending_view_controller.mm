@@ -80,9 +80,7 @@ using namespace password_manager::mac::ui;
 
   // -----------------------------------
   // |  Title                          |
-  // |  -----------------------------  | (1 px border)
-  // |    username   password          |
-  // |  -----------------------------  | (1 px border)
+  // |  username   password            |
   // |                [Save] [Nope v]  |
   // -----------------------------------
 
@@ -129,6 +127,7 @@ using namespace password_manager::mac::ui;
   [titleView_ setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2 * kFramePadding,
                                       MAXFLOAT)];
   [titleView_ sizeToFit];
+  [[titleView_ textContainer] setLineFragmentPadding:0];
 
   [view addSubview:titleView_];
 

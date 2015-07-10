@@ -14,7 +14,7 @@ namespace ui {
 const CGFloat kDesiredBubbleWidth = 370;
 const CGFloat kFramePadding = 16;
 const CGFloat kRelatedControlHorizontalPadding = 2;
-const CGFloat kUnrelatedControlVerticalPadding = 20;
+const CGFloat kUnrelatedControlVerticalPadding = 15;
 }  // namespace ui
 }  // namespace mac
 }  // namespace password_manager
