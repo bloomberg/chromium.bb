@@ -357,6 +357,7 @@ the bold/italic fonts are displayed correctly.</p>
 <ul>
     <li>Open <a href="repros/bbPreWrapText.html">this link</a> for <code>-bb-pre-wrap-text</code> repro.</li>
     <li>Open <a href="repros/bbDirectCompositingDisabled.html">this link</a> in Chrome.  The text should be rendered using cleartype, but it isn't in Chrome (m43).</li>
+    <li>Open <a href="repros/wordBreakKeepAll.html">this link</a> and resize the window for <code>-bb-keep-all-if-korean</code> repro.</li>
 </ul>
 
 <h3>
@@ -586,23 +587,18 @@ selection extends outside the table cell.</p>
 <p>Open <a href="repros/tableEditing.html">this link</a> and compare the
 behavior with and without the patch applied.</p>
 
-<h3>
-    <a name="feature-wordBreakKeepAll">feature/wordBreakKeepAll</a>
-    (Shezan Baig; D41784575; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=43917">43917</a>)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FwordBreakKeepAll">view changes</a>]</span>
-</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.  Note: we may upstream <code>word-break: keep-all</code>,
-but probably not <code>word-break: -bb-keep-all-if-korean</code>.</p>
-<p>Open <a href="repros/wordBreakKeepAll.html">this link</a> and resize the
-window, and observe the word-break between Korean, Japanese, and English
-text.</p>
-
 </div>
 
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
+
+<h2><a name="retired-44.0.2403.61">Retired at 44.0.2403.61</a></h2>
+
+<h3><a name="feature-wordBreakKeepAll">feature/wordBreakKeepAll</a> (Shezan Baig; D41784575)</h3>
+<p>Retired because <code>keep-all</code> has been implemented upstream.  However, the
+<code>-bb-keep-all-if-korean</code> functionality has been merged into <code><a
+        href="#feature-bbEnhancements">feature/bbEnhancements</a></code>.</p>
 
 <h2><a name="retired-40.0.2214.115">Retired at 40.0.2214.115</a></h2>
 
