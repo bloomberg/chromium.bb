@@ -1455,18 +1455,27 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, Directoi
     if (!range || !range->startContainer() || !range->endContainer())
         return false;
     ASSERT(range->startContainer()->document() == range->endContainer()->document());
+    return setSelectedRange(EphemeralRange(range), affinity, directional, options);
+}
+
+bool FrameSelection::setSelectedRange(const EphemeralRange& range, EAffinity affinity, DirectoinalOption directional, SetSelectionOptions options)
+{
+    if (range.isNull())
+        return false;
 
     // Non-collapsed ranges are not allowed to start at the end of a line that is wrapped,
     // they start at the beginning of the next line instead
     m_logicalRange = nullptr;
     stopObservingVisibleSelectionChangeIfNecessary();
 
-    VisibleSelection newSelection(range, affinity, directional == Directional);
+    // Since |FrameSeleciton::setSelection()| dispatches events and DOM tree
+    // can be modified by event handlers, we should create |Range| object before
+    // calling it.
+    m_logicalRange = Range::create(range.document(), range.startPosition(), range.endPosition());
+
+    VisibleSelection newSelection(range.startPosition(), range.endPosition(), affinity, directional == Directional);
     setSelection(newSelection, options);
-
-    m_logicalRange = range->cloneRange();
     startObservingVisibleSelectionChange();
-
     return true;
 }
 
