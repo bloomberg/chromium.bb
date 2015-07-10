@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 # Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,6 +9,7 @@ from __future__ import print_function
 
 import cherrypy
 import json
+import sys
 
 from chromite.lib import remote_access
 from chromite.lib import commandline
@@ -98,3 +100,7 @@ def main(argv):
   checkfile_manager.StartCollectionExecution()
 
   cherrypy.quickstart(mobmonitor)
+
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

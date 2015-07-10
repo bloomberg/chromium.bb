@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 # Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -5,6 +6,8 @@
 """Command-line interface for the Mob* Monitor."""
 
 from __future__ import print_function
+
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import remote_access
@@ -68,3 +71,7 @@ def main(argv):
                               options.action)
 
   print(result)
+
+
+if __name__ == '__main__':
+  main(sys.argv[1:])

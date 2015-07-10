@@ -10,7 +10,7 @@ import json
 
 from chromite.lib import cros_test_lib
 from chromite.mobmonitor.checkfile import manager
-from chromite.scripts import mobmonitor
+from chromite.mobmonitor.scripts import mobmonitor
 
 
 class MockCheckFileManager(object):

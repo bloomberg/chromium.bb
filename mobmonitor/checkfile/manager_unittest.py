@@ -758,8 +758,8 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
 class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for checking when live changes are made to a checkfile."""
 
-  MOBMONITOR_BASENAME = 'chromite'
-  MOBMONITOR_REL_CMD = 'bin/mobmonitor'
+  MOBMONITOR_BASENAME = 'mobmonitor'
+  MOBMONITOR_REL_CMD = 'scripts/mobmonitor.py'
   SERVICE_DIR = 'test_service'
   CHECKFILE_REL_PATH = 'test_check.py'
   NOTACHECK_REL_PATH = 'notacheck.py'
@@ -835,7 +835,7 @@ class CheckFileModificationTest(cros_test_lib.MockTempDirTestCase):
     while os.path.basename(path) != self.MOBMONITOR_BASENAME:
       path = os.path.dirname(path)
     path = os.path.join(path, self.MOBMONITOR_REL_CMD)
-    self.cmd = [path, '-d', self.checkdir]
+    self.cmd = ['python', path, '-d', self.checkdir]
 
     # Setup an rpc client for communicating with the Mob* Monitor.
     self.rpc = rpc.RpcExecutor()
