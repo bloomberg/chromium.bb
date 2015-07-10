@@ -17,6 +17,7 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/push_messaging_service.h"
+#include "content/public/common/permission_status.mojom.h"
 #include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
@@ -134,7 +135,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingAppIdentifier& app_identifier,
       const std::string& sender_id,
       const content::PushMessagingService::RegisterCallback& callback,
-      ContentSetting content_setting);
+      content::PermissionStatus permission_status);
 
   // Unsubscribe methods -------------------------------------------------------
 
@@ -158,7 +159,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // Helper methods ------------------------------------------------------------
 
   // Checks if a given origin is allowed to use Push.
-  bool HasPermission(const GURL& origin);
+  bool IsPermissionSet(const GURL& origin);
 
   gcm::GCMDriver* GetGCMDriver() const;
 

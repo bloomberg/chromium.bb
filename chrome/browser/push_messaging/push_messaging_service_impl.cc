@@ -14,12 +14,10 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
-#include "chrome/browser/push_messaging/push_messaging_permission_context.h"
-#include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -30,6 +28,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -55,13 +54,14 @@ void RecordDeliveryStatus(content::PushDeliveryStatus status) {
                             content::PUSH_DELIVERY_STATUS_LAST + 1);
 }
 
-blink::WebPushPermissionStatus ToPushPermission(ContentSetting setting) {
-  switch (setting) {
-    case CONTENT_SETTING_ALLOW:
+blink::WebPushPermissionStatus ToPushPermission(
+    content::PermissionStatus permission_status) {
+  switch (permission_status) {
+    case content::PERMISSION_STATUS_GRANTED:
       return blink::WebPushPermissionStatusGranted;
-    case CONTENT_SETTING_BLOCK:
+    case content::PERMISSION_STATUS_DENIED:
       return blink::WebPushPermissionStatusDenied;
-    case CONTENT_SETTING_ASK:
+    case content::PERMISSION_STATUS_ASK:
       return blink::WebPushPermissionStatusPrompt;
     default:
       NOTREACHED();
@@ -182,7 +182,7 @@ void PushMessagingServiceImpl::OnMessage(
     return;
   }
   // Drop message and unregister if |origin| has lost push permission.
-  if (!HasPermission(app_identifier.origin())) {
+  if (!IsPermissionSet(app_identifier.origin())) {
     DeliverMessageCallback(app_id, app_identifier.origin(),
                            app_identifier.service_worker_registration_id(),
                            message, message_handled_closure,
@@ -344,17 +344,6 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   if (!web_contents)
     return;
 
-  // TODO(miguelg) need to send this over IPC when bubble support is
-  // implemented.
-  int request_id = -1;
-
-  const PermissionRequestID id(
-      renderer_id, render_frame_id, request_id, GURL());
-
-  PushMessagingPermissionContext* permission_context =
-      PushMessagingPermissionContextFactory::GetForProfile(profile_);
-  DCHECK(permission_context);
-
   if (!user_visible) {
     web_contents->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
@@ -366,13 +355,13 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
     return;
   }
 
-  // TODO(miguelg): Consider the value of |user_visible| when making the
-  // permission request.
-  // TODO(mlamouri): Move requesting Push permission over to using Mojo, and
-  // re-introduce the ability of |user_gesture| when bubbles require this.
-  // https://crbug.com/423770.
-  permission_context->RequestPermission(
-      web_contents, id, requesting_origin, true /* user_gesture */,
+  // TODO(miguelg) need to send this over IPC when bubble support is
+  // implemented.
+  int request_id = -1;
+
+  profile_->GetPermissionManager()->RequestPermission(
+      content::PermissionType::PUSH_MESSAGING, web_contents->GetMainFrame(),
+      request_id, requesting_origin, true /* user_gesture */,
       base::Bind(&PushMessagingServiceImpl::DidRequestPermission,
                  weak_factory_.GetWeakPtr(), app_identifier, sender_id,
                  callback));
@@ -423,10 +412,9 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
     bool user_visible) {
   // TODO(peter): Consider |user_visible| when checking Push permission.
 
-  PushMessagingPermissionContext* permission_context =
-      PushMessagingPermissionContextFactory::GetForProfile(profile_);
-  return ToPushPermission(permission_context->GetPermissionStatus(
-      requesting_origin, embedding_origin));
+  return ToPushPermission(profile_->GetPermissionManager()->GetPermissionStatus(
+      content::PermissionType::PUSH_MESSAGING, requesting_origin,
+      embedding_origin));
 }
 
 bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
@@ -473,8 +461,8 @@ void PushMessagingServiceImpl::DidRequestPermission(
     const PushMessagingAppIdentifier& app_identifier,
     const std::string& sender_id,
     const content::PushMessagingService::RegisterCallback& register_callback,
-    ContentSetting content_setting) {
-  if (content_setting != CONTENT_SETTING_ALLOW) {
+    content::PermissionStatus permission_status) {
+  if (permission_status != content::PERMISSION_STATUS_GRANTED) {
     SubscribeEnd(register_callback,
                  std::string(),
                  content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
@@ -607,7 +595,7 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
       continue;
     }
 
-    if (HasPermission(app_identifier.origin())) {
+    if (IsPermissionSet(app_identifier.origin())) {
       barrier_closure.Run();
       continue;
     }
@@ -658,13 +646,11 @@ void PushMessagingServiceImpl::Shutdown() {
 
 // Helper methods --------------------------------------------------------------
 
-bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {
-  PushMessagingPermissionContext* permission_context =
-      PushMessagingPermissionContextFactory::GetForProfile(profile_);
-  DCHECK(permission_context);
-
-  return permission_context->GetPermissionStatus(origin, origin) ==
-      CONTENT_SETTING_ALLOW;
+// Assumes user_visible always since this is just meant to check
+// if the permission was previously granted and not revoked.
+bool PushMessagingServiceImpl::IsPermissionSet(const GURL& origin) {
+  return GetPermissionStatus(origin, origin, true /* user_visible */) ==
+         blink::WebPushPermissionStatusGranted;
 }
 
 gcm::GCMDriver* PushMessagingServiceImpl::GetGCMDriver() const {
