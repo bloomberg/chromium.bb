@@ -218,7 +218,12 @@ def LoadConfig():
   build_config_dir = _MigrateAndGetConfigDir(use_build_dir=True)
   cr.auto.build.__path__.append(build_config_dir)
   cr.loader.Scan()
-  return hasattr(cr.auto.build, 'config')
+
+  if not hasattr(cr.auto.build, 'config'):
+    return False
+
+  cr.context.derived.Set(CR_BUILD_CONFIG_PATH=_GetConfigFile(build_config_dir))
+  return True
 
 
 def WriteConfig(use_build_dir, data):
