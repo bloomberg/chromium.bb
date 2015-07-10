@@ -162,7 +162,6 @@ class IPC_MOJO_EXPORT ChannelMojo
                               mojo::embedder::ChannelInfo* channel_info);
 
   scoped_ptr<MojoBootstrap> bootstrap_;
-  Mode mode_;
   Listener* listener_;
   base::ProcessId peer_pid_;
   scoped_refptr<base::TaskRunner> io_runner_;
