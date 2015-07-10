@@ -38,6 +38,8 @@
 #include "public/web/WebFrameWidget.h"
 #include "public/web/WebInputEvent.h"
 #include "web/PageWidgetDelegate.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -52,10 +54,8 @@ class UserGestureToken;
 class WebCompositorAnimationTimeline;
 class WebLayer;
 class WebLayerTreeView;
-class WebLocalFrameImpl;
 class WebMouseEvent;
 class WebMouseWheelEvent;
-class WebViewImpl;
 
 class WebFrameWidgetImpl final : public WebFrameWidget
     , public PageWidgetEventHandler
@@ -138,7 +138,7 @@ public:
 
     // Returns the page object associated with this widget. This may be null when
     // the page is shutting down, but will be valid at all other times.
-    Page* page() const { return m_page; }
+    Page* page() const { return view()->page(); }
 
     WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
 
@@ -179,6 +179,8 @@ private:
     bool handleKeyEvent(const WebKeyboardEvent&) override;
     bool handleCharEvent(const WebKeyboardEvent&) override;
 
+    WebViewImpl* view() const { return m_localRoot->viewImpl(); }
+
     WebWidgetClient* m_client;
 
     // WebFrameWidget is associated with a subtree of the frame tree, corresponding to a maximal
@@ -196,11 +198,6 @@ private:
     GraphicsLayer* m_rootGraphicsLayer;
     bool m_isAcceleratedCompositingActive;
     bool m_layerTreeViewClosed;
-
-    // FIXME: The lifetimes of these objects relative to the WebFrameWidget are not clear,
-    // and it might be better to replace them with lookups based on the localRoot.
-    WebViewImpl* m_webView;
-    Page* m_page;
 
     bool m_suppressNextKeypressEvent;
 

@@ -85,8 +85,6 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* l
     , m_rootGraphicsLayer(nullptr)
     , m_isAcceleratedCompositingActive(false)
     , m_layerTreeViewClosed(false)
-    , m_webView(m_localRoot->viewImpl())
-    , m_page(m_webView->page())
     , m_suppressNextKeypressEvent(false)
     , m_ignoreInputEvents(false)
 {
@@ -108,6 +106,8 @@ void WebFrameWidgetImpl::close()
     ASSERT(allInstances().contains(this));
     allInstances().remove(this);
 
+    m_localRoot->setFrameWidget(nullptr);
+    m_localRoot = nullptr;
     // Reset the delegate to prevent notifications being sent as we're being
     // deleted.
     m_client = nullptr;
@@ -230,7 +230,7 @@ void WebFrameWidgetImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     if (!validFrameTime.lastFrameTimeMonotonic)
         validFrameTime.lastFrameTimeMonotonic = monotonicallyIncreasingTime();
 
-    PageWidgetDelegate::animate(*m_page, validFrameTime.lastFrameTimeMonotonic, *m_localRoot->frame());
+    PageWidgetDelegate::animate(*page(), validFrameTime.lastFrameTimeMonotonic, *m_localRoot->frame());
 }
 
 void WebFrameWidgetImpl::layout()
@@ -239,7 +239,7 @@ void WebFrameWidgetImpl::layout()
     if (!m_localRoot)
         return;
 
-    PageWidgetDelegate::layout(*m_page, *m_localRoot->frame());
+    PageWidgetDelegate::layout(*page(), *m_localRoot->frame());
     updateLayerTreeBackgroundColor();
 }
 
@@ -264,7 +264,7 @@ void WebFrameWidgetImpl::updateLayerTreeBackgroundColor()
     if (!m_layerTreeView)
         return;
 
-    m_layerTreeView->setBackgroundColor(alphaChannel(m_webView->backgroundColorOverride()) ? m_webView->backgroundColorOverride() : m_webView->backgroundColor());
+    m_layerTreeView->setBackgroundColor(alphaChannel(view()->backgroundColorOverride()) ? view()->backgroundColorOverride() : view()->backgroundColor());
 }
 
 void WebFrameWidgetImpl::updateLayerTreeDeviceScaleFactor()
@@ -412,7 +412,7 @@ bool WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& inputEvent)
 
 void WebFrameWidgetImpl::setCursorVisibilityState(bool isVisible)
 {
-    m_page->setIsCursorVisible(isVisible);
+    page()->setIsCursorVisible(isVisible);
 }
 
 bool WebFrameWidgetImpl::hasTouchEventHandlersAt(const WebPoint& point)
@@ -449,10 +449,10 @@ void WebFrameWidgetImpl::mouseCaptureLost()
 
 void WebFrameWidgetImpl::setFocus(bool enable)
 {
-    m_page->focusController().setFocused(enable);
+    page()->focusController().setFocused(enable);
     if (enable) {
-        m_page->focusController().setActive(true);
-        RefPtrWillBeRawPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
+        page()->focusController().setActive(true);
+        RefPtrWillBeRawPtr<Frame> focusedFrame = page()->focusController().focusedFrame();
         if (focusedFrame && focusedFrame->isLocalFrame()) {
             LocalFrame* localFrame = toLocalFrame(focusedFrame.get());
             Element* element = localFrame->document()->focusedElement();
@@ -521,7 +521,7 @@ WebColor WebFrameWidgetImpl::backgroundColor() const
     if (isTransparent())
         return Color::transparent;
     if (!m_localRoot->frameView())
-        return m_webView->backgroundColor();
+        return view()->backgroundColor();
     FrameView* view = m_localRoot->frameView();
     return view->documentBackgroundColor().rgb();
 }
@@ -911,12 +911,12 @@ bool WebFrameWidgetImpl::mapKeyCodeForScroll(
 
 Frame* WebFrameWidgetImpl::focusedCoreFrame() const
 {
-    return m_page ? m_page->focusController().focusedOrMainFrame() : nullptr;
+    return page() ? page()->focusController().focusedOrMainFrame() : nullptr;
 }
 
 Element* WebFrameWidgetImpl::focusedElement() const
 {
-    Frame* frame = m_page->focusController().focusedFrame();
+    Frame* frame = page()->focusController().focusedFrame();
     if (!frame || !frame->isLocalFrame())
         return nullptr;
 
@@ -937,7 +937,7 @@ void WebFrameWidgetImpl::initializeLayerTreeView()
     if (WebDevToolsAgentImpl* devTools = m_localRoot->devToolsAgentImpl())
         devTools->layerTreeViewChanged(m_layerTreeView);
 
-    m_page->settings().setAcceleratedCompositingEnabled(m_layerTreeView);
+    page()->settings().setAcceleratedCompositingEnabled(m_layerTreeView);
 
     // FIXME: only unittests, click to play, Android priting, and printing (for headers and footers)
     // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
@@ -1033,12 +1033,12 @@ void WebFrameWidgetImpl::detachCompositorAnimationTimeline(WebCompositorAnimatio
 
 void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState)
 {
-    if (!m_page)
+    if (!page())
         return;
 
     // FIXME: This is not correct, since Show and Hide messages for a frame's Widget do not necessarily
     // correspond to Page visibility, but is necessary until we properly sort out OOPIF visibility.
-    m_page->setVisibilityState(static_cast<PageVisibilityState>(visibilityState), isInitialState);
+    page()->setVisibilityState(static_cast<PageVisibilityState>(visibilityState), isInitialState);
 
     if (m_layerTreeView) {
         bool visible = visibilityState == WebPageVisibilityStateVisible;
