@@ -27,6 +27,8 @@ class BluetoothPairingDialog : public ui::WebDialogDelegate {
 
   void Show();
 
+  content::WebUI* GetWebUIForTest() { return webui_; }
+
  protected:
   // ui::WebDialogDelegate implementation.
   ui::ModalType GetDialogModalType() const override;
@@ -36,6 +38,8 @@ class BluetoothPairingDialog : public ui::WebDialogDelegate {
       std::vector<content::WebUIMessageHandler*>* handlers) const override;
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
+  void OnDialogShown(content::WebUI* webui,
+                     content::RenderViewHost* render_view_host) override;
   // NOTE: This function deletes this object at the end.
   void OnDialogClosed(const std::string& json_retval) override;
   void OnCloseContents(content::WebContents* source,
@@ -46,6 +50,7 @@ class BluetoothPairingDialog : public ui::WebDialogDelegate {
  private:
   gfx::NativeWindow parent_window_;
   base::DictionaryValue device_data_;
+  content::WebUI* webui_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPairingDialog);
 };

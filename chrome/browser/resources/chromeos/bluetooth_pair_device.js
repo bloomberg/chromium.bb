@@ -18,6 +18,23 @@ window.onbeforeunload = function() {
   PageManager.willClose();
 };
 
+/*
+ * Override calls from BluetoothOptionsHandler.
+ */
+cr.define('options', function() {
+  function BluetoothOptions() {}
+
+  BluetoothOptions.startDeviceDiscovery = function() {};
+  BluetoothOptions.updateDiscoveryState = function() {};
+  BluetoothOptions.dismissOverlay = function() {
+    PageManager.closeOverlay();
+  };
+
+  return {
+    BluetoothOptions: BluetoothOptions
+  };
+});
+
 /**
  * DOMContentLoaded handler, sets up the page.
  */

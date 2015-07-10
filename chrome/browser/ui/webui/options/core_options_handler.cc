@@ -644,14 +644,14 @@ void CoreOptionsHandler::UpdateClearPluginLSOData() {
   base::FundamentalValue enabled(
           plugin_status_pref_setter_.IsClearPluginLSODataEnabled());
   web_ui()->CallJavascriptFunction(
-      "OptionsPage.setClearPluginLSODataEnabled", enabled);
+      "options.OptionsPage.setClearPluginLSODataEnabled", enabled);
 }
 
 void CoreOptionsHandler::UpdatePepperFlashSettingsEnabled() {
   base::FundamentalValue enabled(
           plugin_status_pref_setter_.IsPepperFlashSettingsEnabled());
   web_ui()->CallJavascriptFunction(
-      "OptionsPage.setPepperFlashSettingsEnabled", enabled);
+      "options.OptionsPage.setPepperFlashSettingsEnabled", enabled);
 }
 
 bool CoreOptionsHandler::IsUserUnsupervised(const base::Value* to_value) {

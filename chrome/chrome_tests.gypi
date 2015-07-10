@@ -522,6 +522,7 @@
       'browser/ui/webui/bidi_checker_web_ui_test.cc',
       'browser/ui/webui/bidi_checker_web_ui_test.h',
       'browser/ui/webui/bookmarks_ui_browsertest.cc',
+      'browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest-inl.h',
       'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
       'browser/ui/webui/constrained_web_dialog_ui_browsertest.cc',
       'browser/ui/webui/downloads_dom_handler_browsertest.cc',
@@ -882,6 +883,7 @@
     'chrome_browser_tests_webui_js_sources': [
       'browser/devtools/device/webrtc/devtools_bridge_client_browsertest.js',
       'browser/ui/webui/app_list/start_page_browsertest.js',
+      'browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest.js',
       'browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js',
       'browser/ui/webui/chromeos/set_time_ui_browsertest.js',
       'browser/ui/webui/downloads_ui_browsertest.js',
