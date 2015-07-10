@@ -4,11 +4,14 @@
 
 #import "chrome/browser/chrome_browser_application_mac.h"
 
+#include <objc/objc-exception.h>
+
 #import "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
 #import "base/logging.h"
+#include "base/mac/call_with_eh_frame.h"
 #import "base/mac/scoped_nsexception_enabler.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
@@ -24,154 +27,6 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-
-namespace {
-
-// Tracking for cases being hit by -crInitWithName:reason:userInfo:.
-enum ExceptionEventType {
-  EXCEPTION_ACCESSIBILITY = 0,
-  EXCEPTION_MENU_ITEM_BOUNDS_CHECK,
-  EXCEPTION_VIEW_NOT_IN_WINDOW,
-  EXCEPTION_NSURL_INIT_NIL,
-  EXCEPTION_NSDATADETECTOR_NIL_STRING,
-  EXCEPTION_NSREGULAREXPRESSION_NIL_STRING,
-
-  // Always keep this at the end.
-  EXCEPTION_MAX,
-};
-
-void RecordExceptionEvent(ExceptionEventType event_type) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.ExceptionHandlerEvents",
-                            event_type, EXCEPTION_MAX);
-}
-
-}  // namespace
-
-// The implementation of NSExceptions break various assumptions in the
-// Chrome code.  This category defines a replacement for
-// -initWithName:reason:userInfo: for purposes of forcing a break in
-// the debugger when an exception is raised.  -raise sounds more
-// obvious to intercept, but it doesn't catch the original throw
-// because the objc runtime doesn't use it.
-@interface NSException (CrNSExceptionSwizzle)
-- (id)crInitWithName:(NSString*)aName
-              reason:(NSString*)aReason
-            userInfo:(NSDictionary*)someUserInfo;
-@end
-
-static IMP gOriginalInitIMP = NULL;
-
-@implementation NSException (CrNSExceptionSwizzle)
-- (id)crInitWithName:(NSString*)aName
-              reason:(NSString*)aReason
-            userInfo:(NSDictionary*)someUserInfo {
-  // Method only called when swizzled.
-  DCHECK(_cmd == @selector(initWithName:reason:userInfo:));
-  DCHECK(gOriginalInitIMP);
-
-  // Parts of Cocoa rely on creating and throwing exceptions. These are not
-  // worth bugging-out over. It is very important that there be zero chance that
-  // any Chromium code is on the stack; these must be created by Apple code and
-  // then immediately consumed by Apple code.
-  static NSString* const kAcceptableNSExceptionNames[] = {
-    // If an object does not support an accessibility attribute, this will
-    // get thrown.
-    NSAccessibilityException,
-  };
-
-  BOOL found = NO;
-  for (size_t i = 0; i < arraysize(kAcceptableNSExceptionNames); ++i) {
-    if (aName == kAcceptableNSExceptionNames[i]) {
-      found = YES;
-      RecordExceptionEvent(EXCEPTION_ACCESSIBILITY);
-      break;
-    }
-  }
-
-  if (!found) {
-    // Update breakpad with the exception info.
-    std::string value = base::StringPrintf("%s reason %s",
-        [aName UTF8String], [aReason UTF8String]);
-    base::debug::SetCrashKeyValue(crash_keys::mac::kNSException, value);
-    base::debug::SetCrashKeyToStackTrace(crash_keys::mac::kNSExceptionTrace,
-                                         base::debug::StackTrace());
-
-    // Force crash for selected exceptions to generate crash dumps.
-    BOOL fatal = NO;
-    if (aName == NSInternalInconsistencyException) {
-      NSString* const kNSMenuItemArrayBoundsCheck =
-          @"Invalid parameter not satisfying: (index >= 0) && "
-          @"(index < [_itemArray count])";
-      if ([aReason isEqualToString:kNSMenuItemArrayBoundsCheck]) {
-        RecordExceptionEvent(EXCEPTION_MENU_ITEM_BOUNDS_CHECK);
-        fatal = YES;
-      }
-
-      NSString* const kNoWindowCheck = @"View is not in any window";
-      if ([aReason isEqualToString:kNoWindowCheck]) {
-        RecordExceptionEvent(EXCEPTION_VIEW_NOT_IN_WINDOW);
-        fatal = YES;
-      }
-    }
-
-    // Mostly "unrecognized selector sent to (instance|class)".  A
-    // very small number of things like inappropriate nil being passed.
-    if (aName == NSInvalidArgumentException) {
-      fatal = YES;
-
-      // TODO(shess): http://crbug.com/85463 throws this exception
-      // from ImageKit.  Our code is not on the stack, so it needs to
-      // be whitelisted for now.
-      NSString* const kNSURLInitNilCheck =
-          @"*** -[NSURL initFileURLWithPath:isDirectory:]: "
-          @"nil string parameter";
-      if ([aReason isEqualToString:kNSURLInitNilCheck]) {
-        RecordExceptionEvent(EXCEPTION_NSURL_INIT_NIL);
-        fatal = NO;
-      }
-
-      // <http://crbug.com/316759> OSX 10.9 fails trying to extract
-      // structure from a string.
-      NSString* const kNSDataDetectorNilCheck =
-          @"*** -[NSDataDetector enumerateMatchesInString:"
-          @"options:range:usingBlock:]: nil argument";
-      if ([aReason isEqualToString:kNSDataDetectorNilCheck]) {
-        RecordExceptionEvent(EXCEPTION_NSDATADETECTOR_NIL_STRING);
-        fatal = NO;
-      }
-
-      // <http://crbug.com/466076> OSX 10.10 moved the method.
-      NSString* const kNSRegularExpressionNilCheck =
-          @"*** -[NSRegularExpression enumerateMatchesInString:"
-          @"options:range:usingBlock:]: nil argument";
-      if ([aReason isEqualToString:kNSRegularExpressionNilCheck]) {
-        RecordExceptionEvent(EXCEPTION_NSREGULAREXPRESSION_NIL_STRING);
-        fatal = NO;
-      }
-    }
-
-    // Dear reader: Something you just did provoked an NSException.
-    // NSException is implemented in terms of setjmp()/longjmp(),
-    // which does poor things when combined with C++ scoping
-    // (destructors are skipped).  Chrome should be NSException-free,
-    // please check your backtrace and see if you can't file a bug
-    // with a repro case.
-    const bool allow = base::mac::GetNSExceptionsAllowed();
-    if (fatal && !allow) {
-      LOG(FATAL) << "Someone is trying to raise an exception!  "
-                 << value;
-    } else {
-      // Make sure that developers see when their code throws
-      // exceptions.
-      DCHECK(allow) << "Someone is trying to raise an exception!  "
-                    << value;
-    }
-  }
-
-  // Forward to the original version.
-  return gOriginalInitIMP(self, _cmd, aName, aReason, someUserInfo);
-}
-@end
 
 namespace chrome_browser_application_mac {
 
@@ -229,6 +84,40 @@ void RecordExceptionWithUma(NSException* exception) {
       BinForException(exception), kUnknownNSException);
 }
 
+namespace {
+
+objc_exception_preprocessor g_next_preprocessor = nullptr;
+
+id ExceptionPreprocessor(id exception) {
+  static bool seen_first_exception = false;
+
+  RecordExceptionWithUma(exception);
+
+  const char* const kExceptionKey =
+      seen_first_exception ? crash_keys::mac::kLastNSException
+                           : crash_keys::mac::kFirstNSException;
+  NSString* value = [NSString stringWithFormat:@"%@ reason %@",
+      [exception name], [exception reason]];
+  base::debug::SetCrashKeyValue(kExceptionKey, [value UTF8String]);
+
+  const char* const kExceptionTraceKey =
+      seen_first_exception ? crash_keys::mac::kLastNSExceptionTrace
+                           : crash_keys::mac::kFirstNSExceptionTrace;
+  // This exception preprocessor runs prior to the one in libobjc, which sets
+  // the -[NSException callStackReturnAddresses].
+  base::debug::SetCrashKeyToStackTrace(kExceptionTraceKey,
+                                       base::debug::StackTrace());
+
+  seen_first_exception = true;
+
+  // Forward to the original version.
+  if (g_next_preprocessor)
+    return g_next_preprocessor(exception);
+  return exception;
+}
+
+}  // namespace
+
 void RegisterBrowserCrApp() {
   [BrowserCrApplication sharedApplication];
 };
@@ -242,22 +131,6 @@ void CancelTerminate() {
 }
 
 }  // namespace chrome_browser_application_mac
-
-namespace {
-
-void SwizzleInit() {
-  // Do-nothing wrapper so that we can arrange to only swizzle
-  // -[NSException raise] when DCHECK() is turned on (as opposed to
-  // replicating the preprocess logic which turns DCHECK() on).
-  CR_DEFINE_STATIC_LOCAL(base::mac::ScopedObjCClassSwizzler,
-                         swizzle_exception,
-                         ([NSException class],
-                          @selector(initWithName:reason:userInfo:),
-                          @selector(crInitWithName:reason:userInfo:)));
-  gOriginalInitIMP = swizzle_exception.GetOriginalImplementation();
-}
-
-}  // namespace
 
 // These methods are being exposed for the purposes of overriding.
 // Used to determine when a Panel window can become the key window.
@@ -280,10 +153,15 @@ void SwizzleInit() {
   // Turn all deallocated Objective-C objects into zombies, keeping
   // the most recent 10,000 of them on the treadmill.
   ObjcEvilDoers::ZombieEnable(true, 10000);
+
+  if (!chrome_browser_application_mac::g_next_preprocessor) {
+    chrome_browser_application_mac::g_next_preprocessor =
+        objc_setExceptionPreprocessor(
+            &chrome_browser_application_mac::ExceptionPreprocessor);
+  }
 }
 
 - (id)init {
-  SwizzleInit();
   self = [super init];
 
   // Sanity check to alert if overridden methods are not supported.
@@ -471,172 +349,101 @@ void SwizzleInit() {
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  // tracked_objects::ScopedTracker does not support parameterized
-  // instrumentations, so a big switch with each bunch instrumented is required.
-  switch (event.type) {
-    case NSLeftMouseDown:
-    case NSRightMouseDown: {
-      // In kiosk mode, we want to prevent context menus from appearing,
-      // so simply discard menu-generating events instead of passing them along.
-      bool kioskMode = base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kKioskMode);
-      bool ctrlDown = [event modifierFlags] & NSControlKeyMask;
-      if (kioskMode && ([event type] == NSRightMouseDown || ctrlDown))
-        break;
-    }
-    // FALL THROUGH
-    case NSLeftMouseUp:
-    case NSRightMouseUp:
-    case NSMouseMoved:
-    case NSLeftMouseDragged:
-    case NSRightMouseDragged:
-    case NSMouseEntered:
-    case NSMouseExited:
-    case NSOtherMouseDown:
-    case NSOtherMouseUp:
-    case NSOtherMouseDragged: {
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "463272 -[BrowserCrApplication sendEvent:] Mouse"));
-      base::mac::ScopedSendingEvent sendingEventScoper;
-      [super sendEvent:event];
-      break;
-    }
-
-    case NSKeyDown:
-    case NSKeyUp: {
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "463272 -[BrowserCrApplication sendEvent:] Key"));
-      base::mac::ScopedSendingEvent sendingEventScoper;
-      [super sendEvent:event];
-      break;
-    }
-
-    case NSScrollWheel: {
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "463272 -[BrowserCrApplication sendEvent:] ScrollWheel"));
-      base::mac::ScopedSendingEvent sendingEventScoper;
-      [super sendEvent:event];
-      break;
-    }
-
-    case NSEventTypeGesture:
-    case NSEventTypeMagnify:
-    case NSEventTypeSwipe:
-    case NSEventTypeRotate:
-    case NSEventTypeBeginGesture:
-    case NSEventTypeEndGesture: {
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "463272 -[BrowserCrApplication sendEvent:] Gesture"));
-      base::mac::ScopedSendingEvent sendingEventScoper;
-      [super sendEvent:event];
-      break;
-    }
-
-    case NSAppKitDefined: {
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "463272 -[BrowserCrApplication sendEvent:] AppKit"));
-      base::mac::ScopedSendingEvent sendingEventScoper;
-      [super sendEvent:event];
-      break;
-    }
-
-    case NSSystemDefined: {
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "463272 -[BrowserCrApplication sendEvent:] System"));
-      base::mac::ScopedSendingEvent sendingEventScoper;
-      [super sendEvent:event];
-      break;
-    }
-
-    default: {
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "463272 -[BrowserCrApplication sendEvent:] Other"));
-      base::mac::ScopedSendingEvent sendingEventScoper;
-      [super sendEvent:event];
-    }
-  }
-}
-
-// NSExceptions which are caught by the event loop are logged here.
-// NSException uses setjmp/longjmp, which can be very bad for C++, so
-// we attempt to track and report them.
-- (void)reportException:(NSException *)anException {
-  // If we throw an exception in this code, we can create an infinite
-  // loop.  If we throw out of the if() without resetting
-  // |reportException|, we'll stop reporting exceptions for this run.
-  static BOOL reportingException = NO;
-  DCHECK(!reportingException);
-  if (!reportingException) {
-    reportingException = YES;
-    chrome_browser_application_mac::RecordExceptionWithUma(anException);
-
-    // http://crbug.com/45928 is a bug about needing to double-close
-    // windows sometimes.  One theory is that |-isHandlingSendEvent|
-    // gets latched to always return |YES|.  Since scopers are used to
-    // manipulate that value, that should not be possible.  One way to
-    // sidestep scopers is setjmp/longjmp (see above).  The following
-    // is to "fix" this while the more fundamental concern is
-    // addressed elsewhere.
-    [self setHandlingSendEvent:NO];
-
-    // If |ScopedNSExceptionEnabler| is used to allow exceptions, and an
-    // uncaught exception is thrown, it will throw past all of the scopers.
-    // Reset the flag so that future exceptions are not masked.
-    base::mac::SetNSExceptionsAllowed(false);
-
-    // Store some human-readable information in breakpad keys in case
-    // there is a crash.  Since breakpad does not provide infinite
-    // storage, we track two exceptions.  The first exception thrown
-    // is tracked because it may be the one which caused the system to
-    // go off the rails.  The last exception thrown is tracked because
-    // it may be the one most directly associated with the crash.
-    static BOOL trackedFirstException = NO;
-
-    const char* const kExceptionKey =
-        trackedFirstException ? crash_keys::mac::kLastNSException
-                              : crash_keys::mac::kFirstNSException;
-    NSString* value = [NSString stringWithFormat:@"%@ reason %@",
-                                [anException name], [anException reason]];
-    base::debug::SetCrashKeyValue(kExceptionKey, [value UTF8String]);
-
-    // Encode the callstack from point of throw.
-    // TODO(shess): Our swizzle plus the 23-frame limit plus Cocoa
-    // overhead may make this less than useful.  If so, perhaps skip
-    // some items and/or use two keys.
-    const char* const kExceptionBtKey =
-        trackedFirstException ? crash_keys::mac::kLastNSExceptionTrace
-                              : crash_keys::mac::kFirstNSExceptionTrace;
-    NSArray* addressArray = [anException callStackReturnAddresses];
-    NSUInteger addressCount = [addressArray count];
-    if (addressCount) {
-      // SetCrashKeyFromAddresses() only encodes 23, so that's a natural limit.
-      const NSUInteger kAddressCountMax = 23;
-      void* addresses[kAddressCountMax];
-      if (addressCount > kAddressCountMax)
-        addressCount = kAddressCountMax;
-
-      for (NSUInteger i = 0; i < addressCount; ++i) {
-        addresses[i] = reinterpret_cast<void*>(
-            [[addressArray objectAtIndex:i] unsignedIntegerValue]);
+  base::mac::CallWithEHFrame(^{
+    // tracked_objects::ScopedTracker does not support parameterized
+    // instrumentations, so a big switch with each bunch instrumented is
+    // required.
+    switch (event.type) {
+      case NSLeftMouseDown:
+      case NSRightMouseDown: {
+        // In kiosk mode, we want to prevent context menus from appearing,
+        // so simply discard menu-generating events instead of passing them
+        // along.
+        bool kioskMode = base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kKioskMode);
+        bool ctrlDown = [event modifierFlags] & NSControlKeyMask;
+        if (kioskMode && ([event type] == NSRightMouseDown || ctrlDown))
+          break;
       }
-      base::debug::SetCrashKeyFromAddresses(
-          kExceptionBtKey, addresses, static_cast<size_t>(addressCount));
-    } else {
-      base::debug::ClearCrashKey(kExceptionBtKey);
+      // FALL THROUGH
+      case NSLeftMouseUp:
+      case NSRightMouseUp:
+      case NSMouseMoved:
+      case NSLeftMouseDragged:
+      case NSRightMouseDragged:
+      case NSMouseEntered:
+      case NSMouseExited:
+      case NSOtherMouseDown:
+      case NSOtherMouseUp:
+      case NSOtherMouseDragged: {
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "463272 -[BrowserCrApplication sendEvent:] Mouse"));
+        base::mac::ScopedSendingEvent sendingEventScoper;
+        [super sendEvent:event];
+        break;
+      }
+
+      case NSKeyDown:
+      case NSKeyUp: {
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "463272 -[BrowserCrApplication sendEvent:] Key"));
+        base::mac::ScopedSendingEvent sendingEventScoper;
+        [super sendEvent:event];
+        break;
+      }
+
+      case NSScrollWheel: {
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "463272 -[BrowserCrApplication sendEvent:] ScrollWheel"));
+        base::mac::ScopedSendingEvent sendingEventScoper;
+        [super sendEvent:event];
+        break;
+      }
+
+      case NSEventTypeGesture:
+      case NSEventTypeMagnify:
+      case NSEventTypeSwipe:
+      case NSEventTypeRotate:
+      case NSEventTypeBeginGesture:
+      case NSEventTypeEndGesture: {
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "463272 -[BrowserCrApplication sendEvent:] Gesture"));
+        base::mac::ScopedSendingEvent sendingEventScoper;
+        [super sendEvent:event];
+        break;
+      }
+
+      case NSAppKitDefined: {
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "463272 -[BrowserCrApplication sendEvent:] AppKit"));
+        base::mac::ScopedSendingEvent sendingEventScoper;
+        [super sendEvent:event];
+        break;
+      }
+
+      case NSSystemDefined: {
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "463272 -[BrowserCrApplication sendEvent:] System"));
+        base::mac::ScopedSendingEvent sendingEventScoper;
+        [super sendEvent:event];
+        break;
+      }
+
+      default: {
+        tracked_objects::ScopedTracker tracking_profile(
+            FROM_HERE_WITH_EXPLICIT_FUNCTION(
+                "463272 -[BrowserCrApplication sendEvent:] Other"));
+        base::mac::ScopedSendingEvent sendingEventScoper;
+        [super sendEvent:event];
+      }
     }
-    trackedFirstException = YES;
-
-    reportingException = NO;
-  }
-
-  [super reportException:anException];
+  });
 }
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {

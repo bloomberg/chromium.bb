@@ -502,6 +502,7 @@
         'lazy_instance_unittest.cc',
         'logging_unittest.cc',
         'mac/bind_objc_block_unittest.mm',
+        'mac/call_with_eh_frame_unittest.mm',
         'mac/dispatch_source_mach_unittest.cc',
         'mac/foundation_util_unittest.mm',
         'mac/libdispatch_task_runner_unittest.cc',
