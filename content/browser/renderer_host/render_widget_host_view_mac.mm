@@ -3123,9 +3123,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // menu handler, neither is true.
   // Explicitly call SelectAll() here to make sure the renderer returns
   // selection results.
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (web_contents)
-    web_contents->SelectAll();
+  content::RenderWidgetHostDelegate* render_widget_host_delegate =
+      renderWidgetHostView_->render_widget_host_->delegate();
+  if (render_widget_host_delegate)
+    render_widget_host_delegate->SelectAll();
 }
 
 - (void)startSpeaking:(id)sender {

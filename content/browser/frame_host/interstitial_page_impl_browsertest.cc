@@ -30,21 +30,28 @@ class TestInterstitialPageDelegate : public InterstitialPageDelegate {
     return "<html>"
            "<head>"
            "<script>"
+           "function create_input_and_set_text(text) {"
+           "  var input = document.createElement('input');"
+           "  input.id = 'input';"
+           "  document.body.appendChild(input);"
+           "  document.getElementById('input').value = text;"
+           "  input.addEventListener('input',"
+           "      function() { document.title='TEXT_CHANGED'; });"
+           "}"
            "function focus_select_input() {"
            "  document.getElementById('input').select();"
-           "}"
-           "function set_input_text(text) {"
-           "  document.getElementById('input').value = text;"
            "}"
            "function get_input_text() {"
            "  window.domAutomationController.send("
            "      document.getElementById('input').value);"
            "}"
+           "function get_selection() {"
+           "  window.domAutomationController.send("
+           "      window.getSelection().toString());"
+           "}"
            "</script>"
            "</head>"
-           "<body>"
-           "  <input id='input' oninput='document.title=\"TEXT_CHANGED\"'>"
-           "</body>"
+           "<body>original body text</body>"
            "</html>";
   }
 };
@@ -259,9 +266,14 @@ class InterstitialPageImplTest : public ContentBrowserTest {
                                          "get_input_text()", input_text);
   }
 
-  bool SetInputText(const std::string& text) {
+  bool GetSelection(std::string* input_text) {
+    return ExecuteScriptAndExtractString(interstitial_->GetMainFrame(),
+                                         "get_selection()", input_text);
+  }
+
+  bool CreateInputAndSetText(const std::string& text) {
     return ExecuteScript(interstitial_->GetMainFrame(),
-                         "set_input_text('" + text + "')");
+                         "create_input_and_set_text('" + text + "')");
   }
 
   std::string PerformCut() {
@@ -292,6 +304,12 @@ class InterstitialPageImplTest : public ContentBrowserTest {
     title_update_watcher_->Wait();
   }
 
+  void PerformSelectAll() {
+    RenderFrameHostImpl* rfh =
+        static_cast<RenderFrameHostImpl*>(interstitial_->GetMainFrame());
+    rfh->GetRenderWidgetHost()->delegate()->SelectAll();
+  }
+
  private:
   void RunTaskOnIOThreadAndWait(const base::Closure& task) {
     base::WaitableEvent completion(false, false);
@@ -316,7 +334,7 @@ class InterstitialPageImplTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Cut) {
   SetUpInterstitialPage();
 
-  ASSERT_TRUE(SetInputText("text-to-cut"));
+  ASSERT_TRUE(CreateInputAndSetText("text-to-cut"));
   ASSERT_TRUE(FocusInputAndSelectText());
 
   std::string clipboard_text = PerformCut();
@@ -332,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Cut) {
 IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Copy) {
   SetUpInterstitialPage();
 
-  ASSERT_TRUE(SetInputText("text-to-copy"));
+  ASSERT_TRUE(CreateInputAndSetText("text-to-copy"));
   ASSERT_TRUE(FocusInputAndSelectText());
 
   std::string clipboard_text = PerformCopy();
@@ -351,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Paste) {
 
   SetClipboardText("text-to-paste");
 
-  ASSERT_TRUE(SetInputText(std::string()));
+  ASSERT_TRUE(CreateInputAndSetText(std::string()));
   ASSERT_TRUE(FocusInputAndSelectText());
 
   PerformPaste();
@@ -362,6 +380,20 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Paste) {
 
   TearDownInterstitialPage();
   TearDownTestClipboard();
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, SelectAll) {
+  SetUpInterstitialPage();
+
+  std::string input_text;
+  ASSERT_TRUE(GetSelection(&input_text));
+  EXPECT_EQ(std::string(), input_text);
+
+  PerformSelectAll();
+  ASSERT_TRUE(GetSelection(&input_text));
+  EXPECT_EQ("original body text", input_text);
+
+  TearDownInterstitialPage();
 }
 
 }  // namespace content

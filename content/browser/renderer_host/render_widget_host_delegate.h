@@ -83,6 +83,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void Cut() = 0;
   virtual void Copy() = 0;
   virtual void Paste() = 0;
+  virtual void SelectAll() = 0;
 
   // Requests the renderer to move the selection extent to a new position.
   virtual void MoveRangeSelectionExtent(const gfx::Point& extent) {}

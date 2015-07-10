@@ -372,6 +372,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
+  void SelectAll() override {}
 
  private:
   bool prehandle_keyboard_event_;

@@ -567,10 +567,11 @@ class CONTENT_EXPORT WebContentsImpl
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
   BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager()
       override;
-  // Following three functions are already listed under WebContents overrides.
+  // The following 4 functions are already listed under WebContents overrides:
   // void Cut() override;
   // void Copy() override;
   // void Paste() override;
+  // void SelectAll() override;
   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
 

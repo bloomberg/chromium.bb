@@ -152,6 +152,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
+  void SelectAll() override {}
+
  private:
   scoped_ptr<NativeWebKeyboardEvent> last_event_;
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);

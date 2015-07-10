@@ -108,6 +108,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   void Cut() override;
   void Copy() override;
   void Paste() override;
+  void SelectAll() override;
 
   // RenderViewHostDelegate implementation:
   RenderViewHostDelegateView* GetDelegateView() override;

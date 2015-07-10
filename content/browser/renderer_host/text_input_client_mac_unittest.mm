@@ -32,6 +32,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
+  void SelectAll() override {}
 };
 
 // This test does not test the WebKit side of the dictionary system (which

@@ -459,6 +459,16 @@ void InterstitialPageImpl::Paste() {
   RecordAction(base::UserMetricsAction("Paste"));
 }
 
+void InterstitialPageImpl::SelectAll() {
+  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  if (!focused_node)
+    return;
+
+  focused_node->current_frame_host()->Send(new InputMsg_SelectAll(
+      focused_node->current_frame_host()->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("SelectAll"));
+}
+
 RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {
   return rvh_delegate_view_.get();
 }

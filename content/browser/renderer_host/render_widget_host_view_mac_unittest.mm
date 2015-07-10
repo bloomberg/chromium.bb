@@ -122,6 +122,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
+  void SelectAll() override {}
 };
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
