@@ -154,6 +154,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
     private WebContentsObserver mDistilledContentObserver;
     private boolean mDidFirstNonEmptyDistilledPaint;
     private ReaderModePanelLayoutDelegate mLayoutDelegate;
+    private WebContents mOriginalWebContent;
+    private WebContentsObserver mOriginalContentObserver;
 
     private float mLayoutWidth;
     private float mLayoutHeight;
@@ -546,7 +548,9 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
     public boolean isReaderModeCurrentlyAllowed() {
         return !mIsReaderModePanelHidden && !mIsReaderModePanelDismissed
                 && !mIsFullscreenModeEntered && !mIsInfobarContainerShown
+                && mReaderModeHost.getTab() != null
                 && mReaderModeHost.getTab().getContentViewCore() != null
+                && mReaderModeHost.getTab().getContentViewCore().getContext() != null
                 && mReaderModeHost.getTab().getWebContents() != null;
     }
 
@@ -607,6 +611,7 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
                 && (status != ReaderModeManager.POSSIBLE || !isReaderModeCurrentlyAllowed())) {
             animateTo(0.0f, -1.0f, true);
             mReaderModeHost.destroyReaderModeControl();
+            destroyCachedOriginalWebContent();
             destroyDistilledContentViewCore();
             requestUpdate();
             return;
@@ -654,12 +659,17 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         mDidFirstNonEmptyDistilledPaint = false;
         mDidStartLoad = false;
         mDidFinishLoad = false;
+
+        destroyCachedOriginalWebContent();
+        mOriginalWebContent = mReaderModeHost.getTab().getWebContents();
+        mOriginalContentObserver = new WebContentsObserver(mOriginalWebContent) {
+        };
+
         mDistilledContentViewCore = createDistillerContentViewCore(
                 mReaderModeHost.getTab().getContentViewCore().getContext(),
                 mReaderModeHost.getTab().getWindowAndroid());
 
-        mergeNavigationHistory(mDistilledContentViewCore.getWebContents(),
-                mReaderModeHost.getTab().getWebContents());
+        mergeNavigationHistory(mDistilledContentViewCore.getWebContents(), mOriginalWebContent);
 
         mDistilledContentObserver = new WebContentsObserver(
                 mDistilledContentViewCore.getWebContents()) {
@@ -723,7 +733,7 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         mDistilledContentObserver = null;
 
         mDistilledContentViewCore.setContentViewClient(new ContentViewClient());
-        mReaderModeHost.getTab().swapContentViewCore(mDistilledContentViewCore, true,
+        mReaderModeHost.getTab().swapContentViewCore(mDistilledContentViewCore, false,
                 mDidStartLoad, mDidFinishLoad);
         mDistilledContentViewCore.getContentViewClient().onOffsetsForFullscreenChanged(
                 mTopControlsOffsetYPix, mContentOffsetYPix, mOverdrawBottomHeightPix);
@@ -737,6 +747,17 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         }
 
         updateBottomButtonBar();
+    }
+
+    private void destroyCachedOriginalWebContent() {
+        if (mOriginalContentObserver != null) {
+            mOriginalContentObserver.destroy();
+            mOriginalContentObserver = null;
+        }
+        if (mOriginalWebContent != null) {
+            mOriginalWebContent.destroy();
+            mOriginalWebContent = null;
+        }
     }
 
     private void destroyDistilledContentViewCore() {
