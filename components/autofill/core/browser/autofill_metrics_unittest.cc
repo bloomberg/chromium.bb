@@ -25,7 +25,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/rappor/test_rappor_service.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -288,7 +287,6 @@ class AutofillMetricsTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   TestAutofillClient autofill_client_;
-  scoped_ptr<AccountFetcherService> account_fetcher_;
   scoped_ptr<AccountTrackerService> account_tracker_;
   scoped_ptr<TestSigninClient> signin_client_;
   scoped_ptr<TestAutofillDriver> autofill_driver_;
@@ -314,12 +312,6 @@ void AutofillMetricsTest::SetUp() {
   account_tracker_.reset(new AccountTrackerService());
   account_tracker_->Initialize(signin_client_.get());
 
-  account_fetcher_.reset(new AccountFetcherService());
-  account_fetcher_->Initialize(
-      signin_client_.get(),
-      autofill_client_.GetIdentityProvider()->GetTokenService(),
-      account_tracker_.get());
-
   personal_data_.reset(new TestPersonalDataManager());
   personal_data_->set_database(autofill_client_.GetDatabase());
   personal_data_->SetPrefService(autofill_client_.GetPrefs());
@@ -340,8 +332,6 @@ void AutofillMetricsTest::TearDown() {
   autofill_manager_.reset();
   autofill_driver_.reset();
   personal_data_.reset();
-  account_fetcher_->Shutdown();
-  account_fetcher_.reset();
   account_tracker_->Shutdown();
   account_tracker_.reset();
   signin_client_.reset();

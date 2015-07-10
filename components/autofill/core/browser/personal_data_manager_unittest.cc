@@ -26,13 +26,11 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,14 +100,8 @@ class PersonalDataManagerTest : public testing::Test {
 
     // Setup account tracker.
     signin_client_.reset(new TestSigninClient(prefs_.get()));
-    fake_oauth2_token_service_.reset(new FakeOAuth2TokenService());
     account_tracker_.reset(new AccountTrackerService());
     account_tracker_->Initialize(signin_client_.get());
-
-    account_fetcher_.reset(new AccountFetcherService());
-    account_fetcher_->Initialize(signin_client_.get(),
-                                 fake_oauth2_token_service_.get(),
-                                 account_tracker_.get());
 
     // Hacky: hold onto a pointer but pass ownership.
     autofill_table_ = new AutofillTable("en-US");
@@ -128,9 +120,7 @@ class PersonalDataManagerTest : public testing::Test {
   void TearDown() override {
     // Order of destruction is important as AutofillManager relies on
     // PersonalDataManager to be around when it gets destroyed.
-    account_fetcher_->Shutdown();
     account_tracker_->Shutdown();
-    fake_oauth2_token_service_.reset();
     account_tracker_.reset();
     signin_client_.reset();
   }
@@ -165,9 +155,7 @@ class PersonalDataManagerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::MessageLoopForUI message_loop_;
   scoped_ptr<PrefService> prefs_;
-  scoped_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
   scoped_ptr<AccountTrackerService> account_tracker_;
-  scoped_ptr<AccountFetcherService> account_fetcher_;
   scoped_ptr<TestSigninClient> signin_client_;
   scoped_refptr<AutofillWebDataService> autofill_database_service_;
   scoped_refptr<WebDatabaseService> web_database_;
