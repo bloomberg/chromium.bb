@@ -113,13 +113,6 @@ void PresentationDispatcher::updateAvailableChangeWatched(bool watched) {
 
 void PresentationDispatcher::startSession(
     const blink::WebString& presentationUrl,
-    const blink::WebString& presentationId,
-    blink::WebPresentationSessionClientCallbacks* callback) {
-  startSession(presentationUrl, callback);
-}
-
-void PresentationDispatcher::startSession(
-    const blink::WebString& presentationUrl,
     blink::WebPresentationSessionClientCallbacks* callback) {
   DCHECK(callback);
   ConnectToPresentationServiceIfNeeded();
@@ -352,6 +345,9 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
 
   if (listening_state_ == ListeningState::Waiting)
     listening_state_ = ListeningState::Active;
+
+  for (auto observer : availability_observers_)
+    observer->availabilityChanged(available);
 
   for (auto observer : availability_observers_)
     observer->availabilityChanged(available);
