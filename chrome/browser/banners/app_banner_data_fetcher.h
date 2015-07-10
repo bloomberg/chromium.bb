@@ -141,6 +141,11 @@ class AppBannerDataFetcher
   void OnDidCheckHasServiceWorker(bool has_service_worker);
   void OnFetchComplete(const GURL& url, const SkBitmap* icon) override;
 
+  // Returns whether the given web app has already been installed.
+  // Implemented on desktop platforms only.
+  virtual bool IsWebAppInstalled(content::BrowserContext* browser_context,
+                                 const GURL& start_url);
+
   // Shows a banner for the app, if the given |icon| is valid.
   virtual void RequestShowBanner(const SkBitmap* icon);
 

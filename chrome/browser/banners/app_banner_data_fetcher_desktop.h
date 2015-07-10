@@ -22,8 +22,6 @@ class AppBannerDataFetcherDesktop : public AppBannerDataFetcher {
                               base::WeakPtr<Delegate> weak_delegate,
                               int ideal_icon_size);
 
-  void ShowBanner(const SkBitmap* icon, const base::string16& title) override;
-
   // Callback for finishing bookmark app creation
   void FinishCreateBookmarkApp(const extensions::Extension* extension,
                                const WebApplicationInfo& web_app_info);
@@ -31,7 +29,14 @@ class AppBannerDataFetcherDesktop : public AppBannerDataFetcher {
  protected:
   ~AppBannerDataFetcherDesktop() override;
 
+  // AppBannerDataFetcher override.
+  void ShowBanner(const SkBitmap* icon, const base::string16& title) override;
+
  private:
+  // AppBannerDataFetcher override.
+  bool IsWebAppInstalled(content::BrowserContext* browser_context,
+                         const GURL& start_url) override;
+
   scoped_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerDataFetcherDesktop);

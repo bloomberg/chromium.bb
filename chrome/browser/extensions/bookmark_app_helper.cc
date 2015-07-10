@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/notification_types.h"
@@ -364,6 +365,29 @@ void BookmarkAppHelper::GenerateIcon(
       new GeneratedIconImageSource(letter, color, output_size),
       gfx::Size(output_size, output_size));
   icon_image.bitmap()->deepCopyTo(&(*bitmaps)[output_size].bitmap);
+}
+
+// static
+bool BookmarkAppHelper::BookmarkOrHostedAppInstalled(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
+  const ExtensionSet& extensions = registry->enabled_extensions();
+
+  // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
+  // or check the web extent (hosted apps).
+  for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end(); ++iter) {
+    const Extension* extension = iter->get();
+    if (!extension->is_hosted_app())
+      continue;
+
+    if (extension->web_extent().MatchesURL(url) ||
+        AppLaunchInfo::GetLaunchWebURL(extension) == url) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // static

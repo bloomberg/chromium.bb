@@ -278,10 +278,17 @@ void AppBannerDataFetcher::OnDidGetManifest(
     return;
   }
 
-  banners::TrackDisplayEvent(DISPLAY_EVENT_BANNER_REQUESTED);
-
   web_app_data_ = manifest;
   app_title_ = web_app_data_.name.string();
+
+  if (IsWebAppInstalled(web_contents->GetBrowserContext(),
+                        manifest.start_url)) {
+    OutputDeveloperNotShownMessage(web_contents, kBannerAlreadyAdded);
+    Cancel();
+    return;
+  }
+
+  banners::TrackDisplayEvent(DISPLAY_EVENT_BANNER_REQUESTED);
 
   // Check to see if there is a single service worker controlling this page
   // and the manifest's start url.
@@ -332,6 +339,12 @@ void AppBannerDataFetcher::OnFetchComplete(const GURL& url,
     RequestShowBanner(icon);
 
   Release();
+}
+
+bool AppBannerDataFetcher::IsWebAppInstalled(
+    content::BrowserContext* browser_context,
+    const GURL& start_url) {
+  return false;
 }
 
 void AppBannerDataFetcher::RequestShowBanner(const SkBitmap* icon) {

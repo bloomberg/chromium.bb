@@ -77,6 +77,11 @@ class BookmarkAppHelper : public content::NotificationObserver {
                            SkColor color,
                            char letter);
 
+  // Returns true if a bookmark or hosted app from a given URL is already
+  // installed and enabled.
+  static bool BookmarkOrHostedAppInstalled(
+      content::BrowserContext* browser_context, const GURL& url);
+
   // Resize icons to the accepted sizes, and generate any that are missing. Does
   // not update |web_app_info| except to update |generated_icon_color|.
   static std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(

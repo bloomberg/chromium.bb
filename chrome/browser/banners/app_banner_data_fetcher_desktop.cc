@@ -28,6 +28,13 @@ AppBannerDataFetcherDesktop::AppBannerDataFetcherDesktop(
 AppBannerDataFetcherDesktop::~AppBannerDataFetcherDesktop() {
 }
 
+bool AppBannerDataFetcherDesktop::IsWebAppInstalled(
+    content::BrowserContext* browser_context,
+    const GURL& start_url) {
+  return extensions::BookmarkAppHelper::BookmarkOrHostedAppInstalled(
+      browser_context, start_url);
+}
+
 void AppBannerDataFetcherDesktop::ShowBanner(const SkBitmap* icon,
                                              const base::string16& title) {
   content::WebContents* web_contents = GetWebContents();
