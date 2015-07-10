@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -16,6 +17,8 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "remoting/test/access_token_fetcher.h"
+#include "remoting/test/host_info.h"
+#include "remoting/test/host_list_fetcher.h"
 #include "remoting/test/refresh_token_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,17 +62,23 @@ void PrintUsage() {
   printf("************************************\n");
 
   printf("\nUsage:\n");
-  printf("  chromoting_test_driver --username=<example@gmail.com> [options]\n");
+  printf("  chromoting_test_driver --username=<example@gmail.com> [options]"
+         " --hostname=<example hostname>\n");
   printf("\nRequired Parameters:\n");
   printf("  %s: Specifies which account to use when running tests\n",
          switches::kUserNameSwitchName);
+  printf("  %s: Specifies which host to connect to when running tests\n",
+         switches::kHostNameSwitchName);
   printf("\nOptional Parameters:\n");
   printf("  %s: Exchanged for a refresh and access token for authentication\n",
          switches::kAuthCodeSwitchName);
-  printf("  %s: Path to a JSON file containing username/refresh_token KVPs\n",
-         switches::kRefreshTokenPathSwitchName);
   printf("  %s: Displays additional usage information\n",
          switches::kHelpSwitchName);
+  printf("  %s: Path to a JSON file containing username/refresh_token KVPs\n",
+         switches::kRefreshTokenPathSwitchName);
+  printf("  %s: Specifies the optional logging level of the tool (0-3)."
+         " [default: off]\n",
+      switches::kLoggingLevelSwitchName);
 }
 
 void PrintAuthCodeInfo() {
@@ -88,24 +97,25 @@ void PrintAuthCodeInfo() {
   printf("\n      has been revoked or expired.\n");
   printf("      Passing in the same auth code twice will result in an error\n");
 
-  printf(
-      "\nFollow these steps to produce an auth code:\n"
-      " - Open the Authorization URL link shown below in your browser\n"
-      " - Approve the requested permissions for the tool\n"
-      " - Copy the 'code' value in the redirected URL\n"
-      " - Run the tool and pass in copied auth code as a parameter\n");
+  printf("\nFollow these steps to produce an auth code:\n"
+         " - Open the Authorization URL link shown below in your browser\n"
+         " - Approve the requested permissions for the tool\n"
+         " - Copy the 'code' value in the redirected URL\n"
+         " - Run the tool and pass in copied auth code as a parameter\n");
 
   printf("\nAuthorization URL:\n");
   printf("%s\n", GetAuthorizationCodeUri().c_str());
 
   printf("\nRedirected URL Example:\n");
-  printf(
-      "https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
-      "chrome-remote-desktop/dev?code=4/AKtf...\n");
+  printf("https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
+         "chrome-remote-desktop/dev?code=4/AKtf...\n");
 
   printf("\nTool usage example with the newly created auth code:\n");
-  printf("chromoting_test_driver --%s=example@gmail.com --%s=4/AKtf...\n\n",
-         switches::kUserNameSwitchName, switches::kAuthCodeSwitchName);
+  printf("chromoting_test_driver --%s=example@gmail.com --%s=example_host_name"
+         " --%s=4/AKtf...\n\n",
+         switches::kUserNameSwitchName,
+         switches::kHostNameSwitchName,
+         switches::kAuthCodeSwitchName);
 }
 
 void PrintJsonFileInfo() {
@@ -122,21 +132,40 @@ void PrintJsonFileInfo() {
   printf("}\n\n");
 
   printf("\nTool usage example:\n");
-  printf("chromoting_test_driver --%s=%s --%s=./example_file.json\n\n",
+  printf("chromoting_test_driver --%s=%s --%s=example_host_name"
+         " --%s=./example_file.json\n\n",
          switches::kUserNameSwitchName, "username1@fauxdomain.com",
-         switches::kRefreshTokenPathSwitchName);
+         switches::kHostNameSwitchName, switches::kRefreshTokenPathSwitchName);
 }
 
-} // namespace
+}  // namespace
+
+void OnHostlistRetrieved(
+    base::Closure done_closure,
+    std::vector<remoting::test::HostInfo>* hostlist,
+    const std::vector<remoting::test::HostInfo>& retrieved_hostlist) {
+
+  VLOG(1) << "OnHostlistRetrieved() Called";
+
+  DCHECK(hostlist);
+
+  *hostlist = retrieved_hostlist;
+
+  VLOG(1) << "There are " << hostlist->size() << " hosts in the hostlist";
+
+  done_closure.Run();
+}
 
 void OnAccessTokenRetrieved(
     base::Closure done_closure,
-    const std::string& access_token,
-    const std::string& refresh_token) {
+    std::string* access_token,
+    const std::string& retrieved_access_token,
+    const std::string& retrieved_refresh_token) {
 
-  DVLOG(1) << "OnAccessTokenRetrieved() Called";
+  VLOG(1) << "OnAccessTokenRetrieved() Called";
+  VLOG(1) << "Access Token: " << retrieved_access_token;
 
-  DVLOG(1) << "Access Token: " << access_token;
+  *access_token = retrieved_access_token;
 
   done_closure.Run();
 }
@@ -183,7 +212,7 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "No username passed in, can't authenticate or run tests!";
     return -1;
   }
-  DVLOG(1) << "Running chromoting tests as: " << username;
+  VLOG(1) << "Running chromoting tests as: " << username;
 
   // Check to see if the user passed in a one time use auth_code for
   // refreshing their credentials.
@@ -194,7 +223,7 @@ int main(int argc, char* argv[]) {
      command_line->GetSwitchValuePath(switches::kRefreshTokenPathSwitchName);
 
   // The hostname determines which host to initiate a session with from the list
-  // returned from the Directory service.
+  // returned from the directory service.
   std::string hostname =
       command_line->GetSwitchValueASCII(switches::kHostNameSwitchName);
 
@@ -202,7 +231,7 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "No hostname passed in, connect to host requires hostname!";
     return -1;
   }
-  DVLOG(1) << "Chromoting tests will connect to: " << hostname;
+  VLOG(1) << "Chromoting tests will connect to: " << hostname;
 
   // TODO(TonyChun): Move this logic into a shared environment class.
   scoped_ptr<remoting::test::RefreshTokenStore> refresh_token_store =
@@ -221,10 +250,17 @@ int main(int argc, char* argv[]) {
   // Uses the refresh token to get the access token from GAIA.
   remoting::test::AccessTokenFetcher access_token_fetcher;
 
-  base::RunLoop run_loop;
+  // A RunLoop that yields to the thread's MessageLoop.
+  scoped_ptr<base::RunLoop> run_loop;
 
+  // RunLoop to handle callback from GAIA.
+  run_loop.reset(new base::RunLoop());
+
+  std::string access_token;
   remoting::test::AccessTokenCallback access_token_callback =
-      base::Bind(&OnAccessTokenRetrieved, run_loop.QuitClosure());
+      base::Bind(&OnAccessTokenRetrieved,
+                 run_loop->QuitClosure(),
+                 &access_token);
 
   if (!auth_code.empty()) {
     access_token_fetcher.GetAccessTokenFromAuthCode(auth_code,
@@ -235,7 +271,20 @@ int main(int argc, char* argv[]) {
                                                         access_token_callback);
   }
 
-  run_loop.Run();
+  run_loop->Run();
+
+  // RunLoop to handle callback from directory service.
+  run_loop.reset(new base::RunLoop());
+
+  std::vector<remoting::test::HostInfo> hostlist;
+  remoting::test::HostListFetcher::HostlistCallback hostlist_request_callback =
+      base::Bind(&OnHostlistRetrieved, run_loop->QuitClosure(), &hostlist);
+
+  // Uses the access token to get the hostlist from the directory service.
+  remoting::test::HostListFetcher hostlist_fetcher;
+  hostlist_fetcher.RetrieveHostlist(access_token, hostlist_request_callback);
+
+  run_loop->Run();
 
   return 0;
 }
