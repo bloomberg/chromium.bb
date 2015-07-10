@@ -54,6 +54,8 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "ui/compositor/compositor_switches.h"
+#include "ui/gl/gl_switches.h"
 
 using app_modal::AppModalDialog;
 using app_modal::JavaScriptAppModalDialog;
@@ -976,3 +978,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, PolicyTrue) {
   DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
   ASSERT_FALSE(window);
 }
+
+class DevToolsPixelOutputTests : public DevToolsSanityTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
+    command_line->AppendSwitch(switches::kUseGpuInTests);
+  }
+};
+
+// Tests raw headers text.
+IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests, TestScreenshotRecording) {
+  RunTest("testScreenshotRecording", std::string());
+}
+
