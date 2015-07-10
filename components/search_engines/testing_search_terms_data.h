@@ -16,7 +16,6 @@ class TestingSearchTermsData : public SearchTermsData {
   base::string16 GetRlzParameterValue(bool from_app_list) const override;
   std::string GetSearchClient() const override;
   std::string GoogleImageSearchSource() const override;
-  bool EnableAnswersInSuggest() const override;
   bool IsShowingSearchTermsOnSearchResultsPages() const override;
   int OmniboxStartMargin() const override;
 
@@ -25,9 +24,6 @@ class TestingSearchTermsData : public SearchTermsData {
   }
   void set_search_client(const std::string& search_client) {
     search_client_ = search_client;
-  }
-  void set_enable_answers_in_suggest(bool enable_answers_in_suggest) {
-    enable_answers_in_suggest_ = enable_answers_in_suggest;
   }
   void set_is_showing_search_terms_on_search_results_pages(bool value) {
     is_showing_search_terms_on_search_results_pages_ = value;
@@ -39,7 +35,6 @@ class TestingSearchTermsData : public SearchTermsData {
  private:
   std::string google_base_url_;
   std::string search_client_;
-  bool enable_answers_in_suggest_;
   bool is_showing_search_terms_on_search_results_pages_;
   int omnibox_start_margin_;
 

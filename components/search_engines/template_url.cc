@@ -1083,8 +1083,7 @@ std::string TemplateURLRef::HandleReplacements(
         break;
 
       case GOOGLE_SEARCH_VERSION:
-        if (search_terms_data.EnableAnswersInSuggest())
-          HandleReplacement("gs_rn", "42", *i, &url);
+        HandleReplacement("gs_rn", "42", *i, &url);
         break;
 
       case GOOGLE_SESSION_TOKEN: {

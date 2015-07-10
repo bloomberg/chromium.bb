@@ -301,18 +301,6 @@ bool OmniboxFieldTrial::HQPAllowMatchInSchemeValue() {
       kHQPAllowMatchInSchemeRule) == "true";
 }
 
-bool OmniboxFieldTrial::EnableAnswersInSuggest() {
-  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kDisableAnswersInSuggest))
-    return false;
-  if (cl->HasSwitch(switches::kEnableAnswersInSuggest))
-    return true;
-
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kAnswersInSuggestRule) == "true";
-}
-
 bool OmniboxFieldTrial::DisableResultsCaching() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -410,7 +398,6 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
-const char OmniboxFieldTrial::kAnswersInSuggestRule[] = "AnswersInSuggest";
 const char OmniboxFieldTrial::kDisableResultsCachingRule[] =
     "DisableResultsCaching";
 const char

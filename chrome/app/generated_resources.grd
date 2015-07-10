@@ -6858,12 +6858,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_HARFBUZZ_RENDERTEXT_DESCRIPTION" desc="Description of the about:flags HarfBuzz RenderText experiment.">
         Enable cross-platform HarfBuzz layout engine for UI text. Doesn't affect web content.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_NAME" desc="Name of the about:flags Answers in Suggest experiment.">
-        Answers in Suggest
-      </message>
-      <message name="IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_DESCRIPTION" desc="Description of the about:flags Answers in Suggest experiment.">
-       If enabled, responses to certain types of queries will appear directly in the Omnibox suggestion list.
-      </message>
       <message name="IDS_FLAGS_ENABLE_EMBEDDED_EXTENSION_OPTIONS_NAME" desc="Name of the flag that enables embedding extension options in chrome://extensions.">
         Enable embedded extension options.
       </message>

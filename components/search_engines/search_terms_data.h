@@ -49,9 +49,6 @@ class SearchTermsData {
   // This implementation returns the empty string.
   virtual std::string GetSuggestRequestIdentifier() const;
 
-  // Returns true if the AnswersInSuggest feature should be enabled.
-  virtual bool EnableAnswersInSuggest() const;
-
   // Returns true if search terms are shown in the omnibox on search results
   // pages.
   virtual bool IsShowingSearchTermsOnSearchResultsPages() const;

@@ -278,7 +278,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   std::string GetApplicationLocale() const override;
   base::string16 GetRlzParameterValue(bool from_app_list) const override;
   std::string GetSearchClient() const override;
-  bool EnableAnswersInSuggest() const override;
   bool IsShowingSearchTermsOnSearchResultsPages() const override;
   std::string InstantExtendedEnabledParam(bool for_search) const override;
   std::string ForceInstantResultsParam(bool for_prerender) const override;
@@ -290,7 +289,6 @@ class SearchTermsDataSnapshot : public SearchTermsData {
   std::string application_locale_;
   base::string16 rlz_parameter_value_;
   std::string search_client_;
-  bool enable_answers_in_suggest_;
   bool is_showing_search_terms_on_search_results_pages_;
   std::string instant_extended_enabled_param_;
   std::string instant_extended_enabled_param_for_search_;
@@ -308,7 +306,6 @@ SearchTermsDataSnapshot::SearchTermsDataSnapshot(
       application_locale_(search_terms_data.GetApplicationLocale()),
       rlz_parameter_value_(search_terms_data.GetRlzParameterValue(false)),
       search_client_(search_terms_data.GetSearchClient()),
-      enable_answers_in_suggest_(search_terms_data.EnableAnswersInSuggest()),
       is_showing_search_terms_on_search_results_pages_(
           search_terms_data.IsShowingSearchTermsOnSearchResultsPages()),
       instant_extended_enabled_param_(
@@ -341,10 +338,6 @@ base::string16 SearchTermsDataSnapshot::GetRlzParameterValue(
 
 std::string SearchTermsDataSnapshot::GetSearchClient() const {
   return search_client_;
-}
-
-bool SearchTermsDataSnapshot::EnableAnswersInSuggest() const {
-  return enable_answers_in_suggest_;
 }
 
 bool SearchTermsDataSnapshot::IsShowingSearchTermsOnSearchResultsPages() const {

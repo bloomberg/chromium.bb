@@ -1654,12 +1654,6 @@ const Experiment kExperiments[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)},
 #endif
-    {"answers-in-suggest",
-     IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_NAME,
-     IDS_FLAGS_ENABLE_ANSWERS_IN_SUGGEST_DESCRIPTION,
-     kOsAndroid | kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAnswersInSuggest,
-                               switches::kDisableAnswersInSuggest)},
 #if defined(OS_ANDROID)
     {"enable-data-reduction-proxy-dev",
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_DEV_NAME,

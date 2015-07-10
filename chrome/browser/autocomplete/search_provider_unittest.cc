@@ -976,42 +976,6 @@ TEST_F(SearchProviderTest, ResetResultsBetweenRuns) {
   ASSERT_EQ(1u, provider_->matches().size());
 }
 
-// This test is identical to the previous one except that it enables the Answers
-// in Suggest field trial which triggers a different code path in
-// SearchProvider. When Answers launches, this can be removed.
-TEST_F(SearchProviderTest, ResetResultsBetweenRunsAnswersInSuggestEnabled) {
-  CreateFieldTrial(OmniboxFieldTrial::kAnswersInSuggestRule, true);
-
-  GURL term_url_a(AddSearchToHistory(default_t_url_,
-                                     ASCIIToUTF16("games"), 1));
-  GURL term_url_b(AddSearchToHistory(default_t_url_,
-                                     ASCIIToUTF16("gangnam style"), 1));
-  GURL term_url_c(AddSearchToHistory(default_t_url_,
-                                     ASCIIToUTF16("gundam"), 1));
-  profile_.BlockUntilHistoryProcessesPendingRequests();
-
-  AutocompleteMatch wyt_match;
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("f"),
-                                                      &wyt_match));
-  ASSERT_EQ(1u, provider_->matches().size());
-
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("g"),
-                                                      &wyt_match));
-  ASSERT_EQ(4u, provider_->matches().size());
-
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("ga"),
-                                                      &wyt_match));
-  ASSERT_EQ(3u, provider_->matches().size());
-
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("gan"),
-                                                      &wyt_match));
-  ASSERT_EQ(2u, provider_->matches().size());
-
-  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("gans"),
-                                                      &wyt_match));
-  ASSERT_EQ(1u, provider_->matches().size());
-}
-
 // An autocompleted multiword search should not be replaced by a different
 // autocompletion while the user is still typing a valid prefix unless the
 // user has typed the prefix as a query before.

@@ -312,19 +312,17 @@ void SearchProvider::Start(const AutocompleteInput& input,
   // Answers needs scored history results before any suggest query has been
   // started, since the query for answer-bearing results needs additional
   // prefetch information based on the highest-scored local history result.
-  if (OmniboxFieldTrial::EnableAnswersInSuggest()) {
-    ScoreHistoryResults(raw_default_history_results_,
-                        false,
-                        &transformed_default_history_results_);
-    ScoreHistoryResults(raw_keyword_history_results_,
-                        true,
-                        &transformed_keyword_history_results_);
-    prefetch_data_ = FindAnswersPrefetchData();
+  ScoreHistoryResults(raw_default_history_results_,
+                      false,
+                      &transformed_default_history_results_);
+  ScoreHistoryResults(raw_keyword_history_results_,
+                      true,
+                      &transformed_keyword_history_results_);
+  prefetch_data_ = FindAnswersPrefetchData();
 
-    // Raw results are not needed any more.
-    raw_default_history_results_.clear();
-    raw_keyword_history_results_.clear();
-  }
+  // Raw results are not needed any more.
+  raw_default_history_results_.clear();
+  raw_keyword_history_results_.clear();
 
   StartOrStopSuggestQuery(minimal_changes);
   UpdateMatches();
@@ -834,20 +832,20 @@ scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
   search_term_args.input_type = input.type();
   search_term_args.cursor_position = input.cursor_position();
   search_term_args.page_classification = input.current_page_classification();
-  if (OmniboxFieldTrial::EnableAnswersInSuggest()) {
-    search_term_args.session_token = GetSessionToken();
-    if (!prefetch_data_.full_query_text.empty()) {
-      search_term_args.prefetch_query =
-          base::UTF16ToUTF8(prefetch_data_.full_query_text);
-      search_term_args.prefetch_query_type =
-          base::UTF16ToUTF8(prefetch_data_.query_type);
-    }
+  // Session token and prefetch data required for answers.
+  search_term_args.session_token = GetSessionToken();
+  if (!prefetch_data_.full_query_text.empty()) {
+    search_term_args.prefetch_query =
+        base::UTF16ToUTF8(prefetch_data_.full_query_text);
+    search_term_args.prefetch_query_type =
+        base::UTF16ToUTF8(prefetch_data_.query_type);
   }
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
       search_term_args,
       client()->GetTemplateURLService()->search_terms_data()));
   if (!suggest_url.is_valid())
     return NULL;
+
   // Send the current page URL if user setting and URL requirements are met and
   // the user is in the field trial.
   TemplateURLService* template_url_service = client()->GetTemplateURLService();
@@ -1066,27 +1064,11 @@ void SearchProvider::AddNavigationResultsToMatches(
 void SearchProvider::AddRawHistoryResultsToMap(bool is_keyword,
                                                int did_not_accept_suggestion,
                                                MatchMap* map) {
-  const HistoryResults& raw_results =
-      is_keyword ? raw_keyword_history_results_ : raw_default_history_results_;
-  if (!OmniboxFieldTrial::EnableAnswersInSuggest() && raw_results.empty())
-    return;
-
   base::TimeTicks start_time(base::TimeTicks::Now());
 
-  // Until Answers becomes default, scoring of history results will still happen
-  // here for non-Answers Chrome, to prevent scoring performance regressions
-  // resulting from moving the scoring code before the suggest request is sent.
-  // For users with Answers enabled, the history results have already been
-  // scored earlier, right after calling DoHistoryQuery().
-  SearchSuggestionParser::SuggestResults local_transformed_results;
-  const SearchSuggestionParser::SuggestResults* transformed_results = NULL;
-  if (!OmniboxFieldTrial::EnableAnswersInSuggest()) {
-    ScoreHistoryResults(raw_results, is_keyword, &local_transformed_results);
-    transformed_results = &local_transformed_results;
-  } else {
-    transformed_results = is_keyword ? &transformed_keyword_history_results_
-                                     : &transformed_default_history_results_;
-  }
+  const SearchSuggestionParser::SuggestResults* transformed_results =
+      is_keyword ? &transformed_keyword_history_results_
+                 : &transformed_default_history_results_;
   DCHECK(transformed_results);
   AddTransformedHistoryResultsToMap(
       *transformed_results, did_not_accept_suggestion, map);

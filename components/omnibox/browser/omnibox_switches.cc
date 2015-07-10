@@ -6,12 +6,6 @@
 
 namespace switches {
 
-// Disables the experimental Answers in Suggest feature.
-const char kDisableAnswersInSuggest[] = "disable-answers-in-suggest";
-
-// Enables the experimental Answers in Suggest feature.
-const char kEnableAnswersInSuggest[] = "enable-answers-in-suggest";
-
 // Causes the omnibox dropdown to emphasize the titles of URL suggestions
 // for query-like inputs.
 const char kEmphasizeTitlesInOmniboxDropdown[] =

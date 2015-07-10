@@ -1631,7 +1631,7 @@ TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
   EXPECT_EQ("http://www.google.com/?bmbp=1&q=foo", result);
 }
 
-TEST_F(TemplateURLTest, AnswersHasVersion) {
+TEST_F(TemplateURLTest, SearchboxVersionIncludedForAnswers) {
   TemplateURLData data;
   search_terms_data_.set_google_base_url("http://bar/");
   data.SetURL("http://bar/search?q={searchTerms}&{google:searchVersion}xssi=t");
@@ -1640,12 +1640,6 @@ TEST_F(TemplateURLTest, AnswersHasVersion) {
   TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
   std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                                         search_terms_data_);
-  EXPECT_EQ("http://bar/search?q=foo&xssi=t", result);
-
-  search_terms_data_.set_enable_answers_in_suggest(true);
-  TemplateURL url2(data);
-  result = url2.url_ref().ReplaceSearchTerms(search_terms_args,
-                                             search_terms_data_);
   EXPECT_EQ("http://bar/search?q=foo&gs_rn=42&xssi=t", result);
 }
 

@@ -118,17 +118,10 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
       BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(OS_ANDROID)
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE) {
-    return OmniboxFieldTrial::EnableAnswersInSuggest() ?
-        "chrome-mobile-ext-ansg" : "chrome-mobile-ext";
-  }
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE)
+    return "chrome-mobile-ext-ansg";
 #endif
-  return OmniboxFieldTrial::EnableAnswersInSuggest() ?
-      "chrome-ext-ansg" : "chrome-ext";
-}
-
-bool UIThreadSearchTermsData::EnableAnswersInSuggest() const {
-  return OmniboxFieldTrial::EnableAnswersInSuggest();
+  return "chrome-ext-ansg";
 }
 
 bool UIThreadSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {

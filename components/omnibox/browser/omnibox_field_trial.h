@@ -240,16 +240,6 @@ class OmniboxFieldTrial {
   static bool HQPAllowMatchInSchemeValue();
 
   // ---------------------------------------------------------
-  // For the AnswersInSuggest experiment that's part of the bundled omnibox
-  // field trial.
-
-  // Returns true if the AnswersInSuggest feature should be enabled causing
-  // query responses such as current weather conditions or stock quotes
-  // to be provided in the Omnibox suggestion list. Considers both the
-  // field trial state as well as the overriding command-line flags.
-  static bool EnableAnswersInSuggest();
-
-  // ---------------------------------------------------------
   // For SearchProvider related experiments.
 
   // Returns true if the search provider should not be caching results.
@@ -334,7 +324,6 @@ class OmniboxFieldTrial {
   static const char kHQPAllowMatchInSchemeRule[];
   static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
-  static const char kAnswersInSuggestRule[];
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
   static const char kSuggestPollingDelayMsRule[];

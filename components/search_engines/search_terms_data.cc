@@ -54,10 +54,6 @@ std::string SearchTermsData::GetSuggestRequestIdentifier() const {
   return std::string();
 }
 
-bool SearchTermsData::EnableAnswersInSuggest() const {
-  return false;
-}
-
 bool SearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
   return false;
 }
