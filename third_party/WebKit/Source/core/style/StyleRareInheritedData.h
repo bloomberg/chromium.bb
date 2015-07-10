@@ -122,6 +122,7 @@ public:
     unsigned m_textAlignLast : 3; // TextAlignLast
     unsigned m_textJustify : 2; // TextJustify
     unsigned m_textOrientation : 2; // TextOrientation
+    unsigned m_textCombine : 1; // CSS3 text-combine properties
     unsigned m_textIndentLine : 1; // TextIndentEachLine
     unsigned m_textIndentType : 1; // TextIndentHanging
     unsigned m_lineBoxContain: 7; // LineBoxContain

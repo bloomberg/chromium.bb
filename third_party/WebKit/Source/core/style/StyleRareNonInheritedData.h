@@ -165,7 +165,6 @@ public:
     unsigned marginBeforeCollapse : 2; // EMarginCollapse
     unsigned marginAfterCollapse : 2; // EMarginCollapse
     unsigned m_appearance : 6; // EAppearance
-    unsigned m_textCombine : 1; // CSS3 text-combine properties
 
     unsigned m_textDecorationStyle : 3; // TextDecorationStyle
     unsigned m_wrapFlow: 3; // WrapFlow

@@ -885,7 +885,7 @@ public:
     void applyTransform(TransformationMatrix&, const FloatRect& boundingBox, ApplyTransformOrigin, ApplyMotionPath, ApplyIndependentTransformProperties) const;
     bool hasMask() const { return rareNonInheritedData->m_mask.hasImage() || rareNonInheritedData->m_maskBoxImage.hasImage(); }
 
-    TextCombine textCombine() const { return static_cast<TextCombine>(rareNonInheritedData->m_textCombine); }
+    TextCombine textCombine() const { return static_cast<TextCombine>(rareInheritedData->m_textCombine); }
     bool hasTextCombine() const { return textCombine() != TextCombineNone; }
 
     TabSize tabSize() const { return rareInheritedData->m_tabSize; }
@@ -1352,7 +1352,7 @@ public:
     void setScale(PassRefPtr<ScaleTransformOperation> v) { rareNonInheritedData.access()->m_transform.access()->m_scale = v; }
 
     void setSpeak(ESpeak s) { SET_VAR(rareInheritedData, speak, s); }
-    void setTextCombine(TextCombine v) { SET_VAR(rareNonInheritedData, m_textCombine, v); }
+    void setTextCombine(TextCombine v) { SET_VAR(rareInheritedData, m_textCombine, v); }
     void setTextDecorationColor(const StyleColor& c) { SET_VAR(rareNonInheritedData, m_textDecorationColor, c); }
     void setTextEmphasisColor(const StyleColor& c) { SET_VAR_WITH_SETTER(rareInheritedData, textEmphasisColor, setTextEmphasisColor, c); }
     void setTextEmphasisFill(TextEmphasisFill fill) { SET_VAR(rareInheritedData, textEmphasisFill, fill); }

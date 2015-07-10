@@ -474,7 +474,6 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             || rareNonInheritedData->m_order != other.rareNonInheritedData->m_order
             || rareNonInheritedData->m_grid.get() != other.rareNonInheritedData->m_grid.get()
             || rareNonInheritedData->m_gridItem.get() != other.rareNonInheritedData->m_gridItem.get()
-            || rareNonInheritedData->m_textCombine != other.rareNonInheritedData->m_textCombine
             || rareNonInheritedData->hasFilters() != other.rareNonInheritedData->hasFilters())
             return true;
 
@@ -536,6 +535,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             || rareInheritedData->textEmphasisCustomMark != other.rareInheritedData->textEmphasisCustomMark
             || rareInheritedData->m_textJustify != other.rareInheritedData->m_textJustify
             || rareInheritedData->m_textOrientation != other.rareInheritedData->m_textOrientation
+            || rareInheritedData->m_textCombine != other.rareInheritedData->m_textCombine
             || rareInheritedData->m_tabSize != other.rareInheritedData->m_tabSize
             || rareInheritedData->m_lineBoxContain != other.rareInheritedData->m_lineBoxContain
             || rareInheritedData->listStyleImage != other.rareInheritedData->listStyleImage

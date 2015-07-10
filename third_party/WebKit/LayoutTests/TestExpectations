@@ -372,8 +372,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-002.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-004.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-005.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-inherit-all-001.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-inherit-all-002.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-stretch-001.html [ ImageOnlyFailure ]
 
