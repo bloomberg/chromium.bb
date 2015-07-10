@@ -155,6 +155,12 @@ void MockAppCacheStorage::MakeGroupObsolete(AppCacheGroup* group,
                  response_code));
 }
 
+void MockAppCacheStorage::StoreEvictionTimes(AppCacheGroup* group) {
+  stored_eviction_times_[group->group_id()] =
+      std::make_pair(group->last_full_update_check_time(),
+                     group->first_evictable_error_time());
+}
+
 AppCacheResponseReader* MockAppCacheStorage::CreateResponseReader(
     const GURL& manifest_url, int64 group_id, int64 response_id) {
   if (simulated_reader_)

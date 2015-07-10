@@ -28,6 +28,14 @@ class AppCacheUpdateJobTest;
 
 namespace {
 
+// Values should match values used in appcache_update_job.cc.
+const base::TimeDelta kFullUpdateInterval =
+    base::TimeDelta::FromHours(24);
+const base::TimeDelta kMaxEvictableErrorDuration =
+    base::TimeDelta::FromDays(14);
+const base::TimeDelta kOneHour =
+    base::TimeDelta::FromHours(1);
+
 const char kManifest1Contents[] =
     "CACHE MANIFEST\n"
     "explicit1\n"
@@ -591,6 +599,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         expect_group_obsolete_(false),
         expect_group_has_cache_(false),
         expect_group_is_being_deleted_(false),
+        expect_evictable_error_(false),
+        expect_eviction_(false),
         expect_old_cache_(NULL),
         expect_newest_cache_(NULL),
         expect_non_null_update_time_(false),
@@ -633,6 +643,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_EQ(AppCacheUpdateJob::CACHE_ATTEMPT, update->update_type_);
     EXPECT_EQ(AppCacheUpdateJob::FETCH_MANIFEST, update->internal_state_);
     EXPECT_EQ(AppCacheGroup::CHECKING, group_->update_status());
+    EXPECT_TRUE(update->doing_full_update_check_);
 
     // Verify notifications.
     MockFrontend::RaisedEvents& events = mock_frontend.raised_events_;
@@ -684,6 +695,7 @@ class AppCacheUpdateJobTest : public testing::Test,
       EXPECT_EQ(AppCacheUpdateJob::UPGRADE_ATTEMPT, update->update_type_);
       EXPECT_EQ(AppCacheUpdateJob::FETCH_MANIFEST, update->internal_state_);
       EXPECT_EQ(AppCacheGroup::CHECKING, group_->update_status());
+      EXPECT_FALSE(update->doing_full_update_check_);
 
       // Verify notifications.
       MockFrontend::RaisedEvents& events = mock_frontend1.raised_events_;
@@ -742,7 +754,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     ASSERT_TRUE(base::MessageLoopForIO::IsCurrent());
 
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(), GURL("http://failme"),
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/servererror"),
                                service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
@@ -756,13 +769,18 @@ class AppCacheUpdateJobTest : public testing::Test,
     host1->AssociateCompleteCache(cache);
     host2->AssociateCompleteCache(cache);
 
+    group_->set_last_full_update_check_time(
+        base::Time::Now() - kFullUpdateInterval - kOneHour);
     update->StartUpdate(NULL, GURL());
+    EXPECT_TRUE(update->doing_full_update_check_);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
+    expect_evictable_error_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
+    expect_full_update_time_equal_to_ = group_->last_full_update_check_time();
     MockFrontend::HostIds ids1(1, host1->host_id());
     frontend1->AddExpectedEvent(ids1, APPCACHE_CHECKING_EVENT);
     frontend1->AddExpectedEvent(ids1, APPCACHE_ERROR_EVENT);
@@ -944,13 +962,19 @@ class AppCacheUpdateJobTest : public testing::Test,
     host1->AssociateCompleteCache(cache);
     host2->AssociateCompleteCache(cache);
 
+    group_->set_last_full_update_check_time(
+        base::Time::Now() - kFullUpdateInterval - kOneHour);
+    group_->set_first_evictable_error_time(base::Time::Now());
     update->StartUpdate(NULL, GURL());
+    EXPECT_TRUE(update->doing_full_update_check_);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
+    expect_evictable_error_ = false;   // should be reset
+    expect_full_update_time_newer_than_ = group_->last_full_update_check_time();
     MockFrontend::HostIds ids1(1, host1->host_id());
     frontend1->AddExpectedEvent(ids1, APPCACHE_CHECKING_EVENT);
     frontend1->AddExpectedEvent(ids1, APPCACHE_NO_UPDATE_EVENT);
@@ -1064,6 +1088,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_->storage(), manifest_url,
         service_->storage()->NewGroupId());
+    ASSERT_TRUE(group_->last_full_update_check_time().is_null());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1076,6 +1101,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
+    expect_full_update_time_newer_than_ = base::Time::Now() - kOneHour;
     tested_manifest_ = MANIFEST1;
     frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
                                APPCACHE_CHECKING_EVENT);
@@ -1137,6 +1163,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     host2->AssociateCompleteCache(cache);
     frontend1->SetVerifyProgressEvents(true);
     frontend2->SetVerifyProgressEvents(true);
+    group_->set_last_full_update_check_time(
+        base::Time::Now() - kFullUpdateInterval - kOneHour);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1144,6 +1172,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     expect_group_has_cache_ = true;
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
+    expect_full_update_time_newer_than_ = group_->last_full_update_check_time();
     MockFrontend::HostIds ids1(1, host1->host_id());
     frontend1->AddExpectedEvent(ids1, APPCACHE_CHECKING_EVENT);
     frontend1->AddExpectedEvent(ids1, APPCACHE_DOWNLOADING_EVENT);
@@ -1442,6 +1471,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_->update_job_ = update;
 
     AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 99);
+    group_->set_first_evictable_error_time(
+        base::Time::Now() - kMaxEvictableErrorDuration - kOneHour);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     frontend1->SetIgnoreProgressEvents(true);
@@ -1458,6 +1489,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffectd by failed update
+    expect_eviction_ = true;
     MockFrontend::HostIds ids1(1, host1->host_id());
     frontend1->AddExpectedEvent(ids1, APPCACHE_CHECKING_EVENT);
     frontend1->AddExpectedEvent(ids1, APPCACHE_DOWNLOADING_EVENT);
@@ -2723,7 +2755,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     io_thread_->SetNewJobFactory(new_factory);
 
     MakeService();
-    group_ =new AppCacheGroup(
+    group_ = new AppCacheGroup(
         service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest1"),
         111);
@@ -3022,12 +3054,18 @@ class AppCacheUpdateJobTest : public testing::Test,
                               int64 manifest_response_id) {
     AppCache* cache = new AppCache(service_->storage(), cache_id);
     cache->set_complete(true);
-    cache->set_update_time(base::Time::Now());
+    cache->set_update_time(base::Time::Now() - kOneHour);
     group_->AddCache(cache);
+    group_->set_last_full_update_check_time(cache->update_time());
 
     // Add manifest entry to cache.
     cache->AddEntry(manifest_entry_url,
         AppCacheEntry(AppCacheEntry::MANIFEST, manifest_response_id));
+
+    // Specific tests that expect a newer time should set
+    // expect_full_update_time_newer_than_ which causes this
+    // equality expectation to be ignored.
+    expect_full_update_time_equal_to_ = cache->update_time();
 
     return cache;
   }
@@ -3063,7 +3101,27 @@ class AppCacheUpdateJobTest : public testing::Test,
     HttpHeadersRequestTestJob::Verify();
 
     EXPECT_EQ(expect_group_obsolete_, group_->is_obsolete());
-    EXPECT_EQ(expect_group_is_being_deleted_, group_->is_being_deleted());
+    EXPECT_EQ(expect_group_is_being_deleted_ || expect_eviction_,
+              group_->is_being_deleted());
+
+    if (!expect_eviction_) {
+      EXPECT_EQ(expect_evictable_error_,
+                !group_->first_evictable_error_time().is_null());
+      if (expect_evictable_error_) {
+        MockAppCacheStorage* storage =
+            reinterpret_cast<MockAppCacheStorage*>(service_->storage());
+        EXPECT_EQ(group_->first_evictable_error_time(),
+                  storage->stored_eviction_times_[group_->group_id()].second);
+      }
+    }
+
+    if (!expect_full_update_time_newer_than_.is_null()) {
+      EXPECT_LT(expect_full_update_time_newer_than_,
+                group_->last_full_update_check_time());
+    } else if (!expect_full_update_time_equal_to_.is_null()) {
+      EXPECT_EQ(expect_full_update_time_equal_to_,
+                group_->last_full_update_check_time());
+    }
 
     if (expect_group_has_cache_) {
       EXPECT_TRUE(group_->newest_complete_cache() != NULL);
@@ -3366,6 +3424,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   bool expect_group_obsolete_;
   bool expect_group_has_cache_;
   bool expect_group_is_being_deleted_;
+  bool expect_evictable_error_;
+  bool expect_eviction_;
+  base::Time expect_full_update_time_newer_than_;
+  base::Time expect_full_update_time_equal_to_;
   AppCache* expect_old_cache_;
   AppCache* expect_newest_cache_;
   bool expect_non_null_update_time_;

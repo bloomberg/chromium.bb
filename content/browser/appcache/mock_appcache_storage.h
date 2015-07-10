@@ -67,6 +67,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   void MakeGroupObsolete(AppCacheGroup* group,
                          Delegate* delegate,
                          int response_code) override;
+  void StoreEvictionTimes(AppCacheGroup* group) override;
   AppCacheResponseReader* CreateResponseReader(const GURL& manifest_url,
                                                int64 group_id,
                                                int64 response_id) override;
@@ -89,6 +90,8 @@ class MockAppCacheStorage : public AppCacheStorage {
   typedef base::hash_map<int64, scoped_refptr<AppCache> > StoredCacheMap;
   typedef std::map<GURL, scoped_refptr<AppCacheGroup> > StoredGroupMap;
   typedef std::set<int64> DoomedResponseIds;
+  typedef std::map<int64, std::pair<base::Time, base::Time>>
+      StoredEvictionTimesMap;
 
   void ProcessGetAllInfo(scoped_refptr<DelegateReference> delegate_ref);
   void ProcessLoadCache(
@@ -194,6 +197,7 @@ class MockAppCacheStorage : public AppCacheStorage {
 
   StoredCacheMap stored_caches_;
   StoredGroupMap stored_groups_;
+  StoredEvictionTimesMap stored_eviction_times_;
   DoomedResponseIds doomed_response_ids_;
   scoped_ptr<AppCacheDiskCache> disk_cache_;
   std::deque<base::Closure> pending_tasks_;

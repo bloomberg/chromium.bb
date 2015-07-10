@@ -31,14 +31,16 @@ FORWARD_DECLARE_TEST(AppCacheDatabaseTest, EntryRecords);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, QuickIntegrityCheck);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, NamespaceRecords);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, GroupRecords);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, GroupAccessAndEvictionTimes);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, LazyOpen);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ExperimentalFlags);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OnlineWhiteListRecords);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ReCreate);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, DeletableResponseIds);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OriginUsage);
-FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchema3to5);
-FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchema4to5);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchema3to7);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchema4to7);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchema5or6to7);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, WasCorrutionDetected);
 class AppCacheDatabaseTest;
 class AppCacheStorageImplTest;
@@ -54,6 +56,8 @@ class CONTENT_EXPORT AppCacheDatabase {
     GURL manifest_url;
     base::Time creation_time;
     base::Time last_access_time;
+    base::Time last_full_update_check_time;
+    base::Time first_evictable_error_time;
   };
 
   struct CONTENT_EXPORT CacheRecord {
@@ -116,13 +120,20 @@ class CONTENT_EXPORT AppCacheDatabase {
   bool FindGroupsForOrigin(
       const GURL& origin, std::vector<GroupRecord>* records);
   bool FindGroupForCache(int64 cache_id, GroupRecord* record);
-  bool UpdateLastAccessTime(
-      int64 group_id, base::Time last_access_time);
-  bool LazyUpdateLastAccessTime(
-      int64 group_id, base::Time last_access_time);
-  bool CommitLazyLastAccessTimes();  // The destructor calls this too.
   bool InsertGroup(const GroupRecord* record);
   bool DeleteGroup(int64 group_id);
+
+  // The access and eviction time update methods do not fail when
+  // given invalid group_ids. The return value only indicates whether
+  // the database is functioning.
+  bool UpdateLastAccessTime(int64 group_id,
+                            base::Time last_access_time);
+  bool LazyUpdateLastAccessTime(int64 group_id,
+                                base::Time last_access_time);
+  bool UpdateEvictionTimes(int64 group_id,
+                           base::Time last_full_update_check_time,
+                           base::Time first_evictable_error_time);
+  bool CommitLazyLastAccessTimes();  // The destructor calls this too.
 
   bool FindCache(int64 cache_id, CacheRecord* record);
   bool FindCacheForGroup(int64 group_id, CacheRecord* record);
@@ -236,6 +247,8 @@ class CONTENT_EXPORT AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, QuickIntegrityCheck);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, NamespaceRecords);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, GroupRecords);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
+                           GroupAccessAndEvictionTimes);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, LazyOpen);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, ExperimentalFlags);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
@@ -243,8 +256,9 @@ class CONTENT_EXPORT AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, ReCreate);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, DeletableResponseIds);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, OriginUsage);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, UpgradeSchema3to5);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, UpgradeSchema4to5);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, UpgradeSchema3to7);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, UpgradeSchema4to7);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, UpgradeSchema5or6to7);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, WasCorrutionDetected);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);

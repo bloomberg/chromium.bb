@@ -38,10 +38,10 @@ class CONTENT_EXPORT AppCacheGroup
  public:
 
   class CONTENT_EXPORT UpdateObserver {
-    public:
-      // Called just after an appcache update has completed.
-      virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
-      virtual ~UpdateObserver() {}
+   public:
+    // Called just after an appcache update has completed.
+    virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
+    virtual ~UpdateObserver() {}
   };
 
   enum UpdateAppCacheStatus {
@@ -60,13 +60,24 @@ class CONTENT_EXPORT AppCacheGroup
 
   int64 group_id() const { return group_id_; }
   const GURL& manifest_url() const { return manifest_url_; }
-  const base::Time& creation_time() const { return creation_time_; }
-  void set_creation_time(const base::Time& time) { creation_time_ = time; }
+  base::Time creation_time() const { return creation_time_; }
+  void set_creation_time(base::Time time) { creation_time_ = time; }
   bool is_obsolete() const { return is_obsolete_; }
   void set_obsolete(bool value) { is_obsolete_ = value; }
-
   bool is_being_deleted() const { return is_being_deleted_; }
   void set_being_deleted(bool value) { is_being_deleted_ = value; }
+  base::Time last_full_update_check_time() const {
+    return last_full_update_check_time_;
+  }
+  void set_last_full_update_check_time(base::Time time) {
+    last_full_update_check_time_ = time;
+  }
+  base::Time first_evictable_error_time() const {
+    return first_evictable_error_time_;
+  }
+  void set_first_evictable_error_time(base::Time time) {
+    first_evictable_error_time_ = time;
+  }
 
   AppCache* newest_complete_cache() const { return newest_complete_cache_; }
 
@@ -135,6 +146,15 @@ class CONTENT_EXPORT AppCacheGroup
   bool is_obsolete_;
   bool is_being_deleted_;
   std::vector<int64> newly_deletable_response_ids_;
+
+  // Most update checks respect the cache control headers of the manifest
+  // resource, but we bypass the http cache for a "full" update check after 24
+  // hours since the last full check was successfully performed.
+  base::Time last_full_update_check_time_;
+
+  // Groups that fail to update for a sufficiently long time are evicted. This
+  // value is reset after a successful update or update check.
+  base::Time first_evictable_error_time_;
 
   // Old complete app caches.
   Caches old_caches_;

@@ -60,6 +60,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void MakeGroupObsolete(AppCacheGroup* group,
                          Delegate* delegate,
                          int response_code) override;
+  void StoreEvictionTimes(AppCacheGroup* group) override;
   AppCacheResponseReader* CreateResponseReader(const GURL& manifest_url,
                                                int64 group_id,
                                                int64 response_id) override;
@@ -93,6 +94,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   class DeleteDeletableResponseIdsTask;
   class LazyUpdateLastAccessTimeTask;
   class CommitLastAccessTimesTask;
+  class UpdateEvictionTimesTask;
 
   typedef std::deque<DatabaseTask*> DatabaseTaskQueue;
   typedef std::map<int64, CacheLoadTask*> PendingCacheLoads;

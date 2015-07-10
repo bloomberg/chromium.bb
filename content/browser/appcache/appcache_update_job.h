@@ -279,6 +279,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
   UpdateType update_type_;
   InternalUpdateState internal_state_;
   base::Time last_progress_time_;
+  bool doing_full_update_check_;
 
   PendingMasters pending_master_entries_;
   size_t master_entries_completed_;

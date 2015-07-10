@@ -151,6 +151,10 @@ class CONTENT_EXPORT AppCacheStorage {
                                  Delegate* delegate,
                                  int response_code) = 0;
 
+  // Schedules a task to update persistent storage with the times of the first
+  // evictable error and last successful full update check.
+  virtual void StoreEvictionTimes(AppCacheGroup* group) = 0;
+
   // Cancels all pending callbacks for the delegate. The delegate callbacks
   // will not be invoked after, however any scheduled operations will still
   // take place. The callbacks for subsequently scheduled operations are

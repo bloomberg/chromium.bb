@@ -435,6 +435,79 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
 }
 
+TEST(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
+  const base::FilePath kEmptyPath;
+  AppCacheDatabase db(kEmptyPath);
+  EXPECT_TRUE(db.LazyOpen(true));
+
+  const GURL kManifestUrl("http://blah/manifest");
+  const GURL kOrigin(kManifestUrl.GetOrigin());
+  const base::Time kDayOne =
+      base::Time() + base::TimeDelta::FromDays(1);
+  const base::Time kDayTwo = kDayOne + base::TimeDelta::FromDays(1);
+
+  // See that the methods behave as expected with an empty db.
+  // To accomodate lazy updating, for consistency, none of them fail
+  // given ids not found in the db.
+  EXPECT_TRUE(db.UpdateEvictionTimes(1, kDayOne, kDayTwo));
+  EXPECT_TRUE(db.UpdateLastAccessTime(1, kDayOne));
+  EXPECT_TRUE(db.CommitLazyLastAccessTimes());
+  EXPECT_TRUE(db.LazyUpdateLastAccessTime(1, kDayTwo));
+  EXPECT_TRUE(db.CommitLazyLastAccessTimes());
+
+  // Insert a group at DAY1
+  AppCacheDatabase::GroupRecord record;
+  record.group_id = 1;
+  record.manifest_url = kManifestUrl;
+  record.origin = kOrigin;
+  record.creation_time = kDayOne;
+  record.last_access_time = kDayOne;
+  record.last_full_update_check_time = kDayOne;
+  record.first_evictable_error_time = kDayOne;
+  EXPECT_TRUE(db.InsertGroup(&record));
+
+  // Verify the round trip.
+  record = AppCacheDatabase::GroupRecord();
+  EXPECT_TRUE(db.FindGroup(1, &record));
+  EXPECT_EQ(kDayOne, record.last_access_time);
+  EXPECT_EQ(kDayOne, record.last_full_update_check_time);
+  EXPECT_EQ(kDayOne, record.first_evictable_error_time);
+
+  // Update the times to DAY2 and verify.
+  EXPECT_TRUE(db.UpdateEvictionTimes(1, kDayTwo, kDayTwo));
+  EXPECT_TRUE(db.UpdateLastAccessTime(1, kDayTwo));
+  record = AppCacheDatabase::GroupRecord();
+  EXPECT_TRUE(db.FindGroup(1, &record));
+  EXPECT_EQ(kDayTwo, record.last_access_time);
+  EXPECT_EQ(kDayTwo, record.last_full_update_check_time);
+  EXPECT_EQ(kDayTwo, record.first_evictable_error_time);
+
+  // Lazy update back to DAY1 and verify its reflected without having committed.
+  EXPECT_TRUE(db.lazy_last_access_times_.empty());
+  EXPECT_TRUE(db.LazyUpdateLastAccessTime(1, kDayOne));
+  EXPECT_FALSE(db.lazy_last_access_times_.empty());
+  record = AppCacheDatabase::GroupRecord();
+  EXPECT_TRUE(db.FindGroup(1, &record));
+  EXPECT_EQ(kDayOne, record.last_access_time);
+
+  // Commit the lazy value and verify it sticks.
+  EXPECT_TRUE(db.CommitLazyLastAccessTimes());
+  EXPECT_TRUE(db.lazy_last_access_times_.empty());
+  record = AppCacheDatabase::GroupRecord();
+  EXPECT_TRUE(db.FindGroup(1, &record));
+  EXPECT_EQ(kDayOne, record.last_access_time);
+
+  // Verify a bad lazy group id doesn't fail to commit the good ones on DAY2.
+  EXPECT_TRUE(db.LazyUpdateLastAccessTime(1, kDayTwo));
+  EXPECT_TRUE(db.LazyUpdateLastAccessTime(2, kDayTwo));
+  EXPECT_EQ(2u, db.lazy_last_access_times_.size());
+  EXPECT_TRUE(db.CommitLazyLastAccessTimes());
+  EXPECT_TRUE(db.lazy_last_access_times_.empty());
+  record = AppCacheDatabase::GroupRecord();
+  EXPECT_TRUE(db.FindGroup(1, &record));
+  EXPECT_EQ(kDayTwo, record.last_access_time);
+}
+
 TEST(AppCacheDatabaseTest, NamespaceRecords) {
   const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
@@ -745,230 +818,7 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
 #if defined(APPCACHE_USE_SIMPLE_CACHE)
 // There is no such upgrade path in this case.
 #else
-TEST(AppCacheDatabaseTest, UpgradeSchema3to5) {
-  // Real file on disk for this test.
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = temp_dir.path().AppendASCII("upgrade3.db");
-
-  const GURL kMockOrigin("http://mockorigin/");
-  const char kNamespaceUrlFormat[] = "namespace%d";
-  const char kTargetUrlFormat[] = "target%d";
-  const int kNumNamespaces = 10;
-
-  // Create a v3 schema based database containing some fallback records.
-  {
-    const int kVersion3 = 3;
-    const char kGroupsTable[] = "Groups";
-    const char kCachesTable[] = "Caches";
-    const char kEntriesTable[] = "Entries";
-    const char kFallbackNameSpacesTable[] = "FallbackNameSpaces";
-    const char kOnlineWhiteListsTable[] = "OnlineWhiteLists";
-    const char kDeletableResponseIdsTable[] = "DeletableResponseIds";
-
-    const struct {
-      const char* table_name;
-      const char* columns;
-    } kTables3[] = {
-      { kGroupsTable,
-        "(group_id INTEGER PRIMARY KEY,"
-        " origin TEXT,"
-        " manifest_url TEXT,"
-        " creation_time INTEGER,"
-        " last_access_time INTEGER)" },
-
-      { kCachesTable,
-        "(cache_id INTEGER PRIMARY KEY,"
-        " group_id INTEGER,"
-        " online_wildcard INTEGER CHECK(online_wildcard IN (0, 1)),"
-        " update_time INTEGER,"
-        " cache_size INTEGER)" },  // intentionally not normalized
-
-      { kEntriesTable,
-        "(cache_id INTEGER,"
-        " url TEXT,"
-        " flags INTEGER,"
-        " response_id INTEGER,"
-        " response_size INTEGER)" },
-
-      { kFallbackNameSpacesTable,
-        "(cache_id INTEGER,"
-        " origin TEXT,"  // intentionally not normalized
-        " namespace_url TEXT,"
-        " fallback_entry_url TEXT)" },
-
-      { kOnlineWhiteListsTable,
-        "(cache_id INTEGER,"
-        " namespace_url TEXT)" },
-
-      { kDeletableResponseIdsTable,
-        "(response_id INTEGER NOT NULL)" },
-    };
-
-    const struct {
-      const char* index_name;
-      const char* table_name;
-      const char* columns;
-      bool unique;
-    } kIndexes3[] = {
-      { "GroupsOriginIndex",
-        kGroupsTable,
-        "(origin)",
-        false },
-
-      { "GroupsManifestIndex",
-        kGroupsTable,
-        "(manifest_url)",
-        true },
-
-      { "CachesGroupIndex",
-        kCachesTable,
-        "(group_id)",
-        false },
-
-      { "EntriesCacheIndex",
-        kEntriesTable,
-        "(cache_id)",
-        false },
-
-      { "EntriesCacheAndUrlIndex",
-        kEntriesTable,
-        "(cache_id, url)",
-        true },
-
-      { "EntriesResponseIdIndex",
-        kEntriesTable,
-        "(response_id)",
-        true },
-
-      { "FallbackNameSpacesCacheIndex",
-        kFallbackNameSpacesTable,
-        "(cache_id)",
-        false },
-
-      { "FallbackNameSpacesOriginIndex",
-        kFallbackNameSpacesTable,
-        "(origin)",
-        false },
-
-      { "FallbackNameSpacesCacheAndUrlIndex",
-        kFallbackNameSpacesTable,
-        "(cache_id, namespace_url)",
-        true },
-
-      { "OnlineWhiteListCacheIndex",
-        kOnlineWhiteListsTable,
-        "(cache_id)",
-        false },
-
-      { "DeletableResponsesIdIndex",
-        kDeletableResponseIdsTable,
-        "(response_id)",
-        true },
-    };
-
-    const int kTableCount3 = arraysize(kTables3);
-    const int kIndexCount3 = arraysize(kIndexes3);
-
-    sql::Connection connection;
-    EXPECT_TRUE(connection.Open(kDbFile));
-
-    sql::Transaction transaction(&connection);
-    EXPECT_TRUE(transaction.Begin());
-
-    sql::MetaTable meta_table;
-    EXPECT_TRUE(meta_table.Init(&connection, kVersion3, kVersion3));
-
-    for (int i = 0; i < kTableCount3; ++i) {
-      std::string sql("CREATE TABLE ");
-      sql += kTables3[i].table_name;
-      sql += kTables3[i].columns;
-      EXPECT_TRUE(connection.Execute(sql.c_str()));
-    }
-
-    for (int i = 0; i < kIndexCount3; ++i) {
-      std::string sql;
-      if (kIndexes3[i].unique)
-        sql += "CREATE UNIQUE INDEX ";
-      else
-        sql += "CREATE INDEX ";
-      sql += kIndexes3[i].index_name;
-      sql += " ON ";
-      sql += kIndexes3[i].table_name;
-      sql += kIndexes3[i].columns;
-      EXPECT_TRUE(connection.Execute(sql.c_str()));
-    }
-
-    const char* kSql =
-        "INSERT INTO FallbackNameSpaces"
-        "  (cache_id, origin, namespace_url, fallback_entry_url)"
-        "  VALUES (?, ?, ?, ?)";
-
-    sql::Statement statement;
-    statement.Assign(connection.GetUniqueStatement(kSql));
-    EXPECT_TRUE(statement.is_valid());
-    for (int i = 0; i < kNumNamespaces; ++i) {
-      GURL namespace_url(
-          kMockOrigin.Resolve(base::StringPrintf(kNamespaceUrlFormat, i)));
-      GURL target_url(
-          kMockOrigin.Resolve(base::StringPrintf(kTargetUrlFormat, i)));
-      statement.BindInt64(0, i);
-      statement.BindString(1, kMockOrigin.spec().c_str());
-      statement.BindString(2, namespace_url.spec().c_str());
-      statement.BindString(3, target_url.spec().c_str());
-      ASSERT_TRUE(statement.Run());
-      statement.Reset(true);
-    }
-
-    EXPECT_TRUE(transaction.Commit());
-  }
-
-  // Open that database and verify that it got updated.
-  AppCacheDatabase db(kDbFile);
-  EXPECT_TRUE(db.LazyOpen(true));
-
-  EXPECT_FALSE(db.db_->DoesTableExist("FallbackNameSpaces"));
-  EXPECT_FALSE(db.db_->DoesIndexExist("FallbackNamesSpacesCacheIndex"));
-  EXPECT_FALSE(db.db_->DoesIndexExist("FallbackNameSpacesOriginIndex"));
-  EXPECT_FALSE(db.db_->DoesIndexExist("FallbackNameSpacesCacheAndUrlIndex"));
-
-  EXPECT_TRUE(db.db_->DoesTableExist("Namespaces"));
-  EXPECT_TRUE(db.db_->DoesIndexExist("NamespacesCacheIndex"));
-  EXPECT_TRUE(db.db_->DoesIndexExist("NamespacesOriginIndex"));
-  EXPECT_TRUE(db.db_->DoesIndexExist("NamespacesCacheAndUrlIndex"));
-  EXPECT_TRUE(db.db_->DoesColumnExist("Namespaces", "is_pattern"));
-  EXPECT_TRUE(db.db_->DoesColumnExist("OnlineWhiteLists", "is_pattern"));
-
-  EXPECT_EQ(5, db.meta_table_->GetVersionNumber());
-  EXPECT_EQ(5, db.meta_table_->GetCompatibleVersionNumber());
-
-  std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
-  std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
-  EXPECT_TRUE(db.FindNamespacesForOrigin(kMockOrigin, &intercepts,
-                                         &fallbacks));
-  EXPECT_TRUE(intercepts.empty());
-  EXPECT_EQ(kNumNamespaces, static_cast<int>(fallbacks.size()));
-
-  for (int i = 0; i < kNumNamespaces; ++i) {
-    GURL expected_namespace_url(
-        kMockOrigin.Resolve(base::StringPrintf(kNamespaceUrlFormat, i)));
-    GURL expected_target_url(
-        kMockOrigin.Resolve(base::StringPrintf(kTargetUrlFormat, i)));
-
-    EXPECT_EQ(i, fallbacks[i].cache_id);
-    EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[i].namespace_.type);
-    EXPECT_EQ(kMockOrigin, fallbacks[i].origin);
-    EXPECT_EQ(expected_namespace_url, fallbacks[i].namespace_.namespace_url);
-    EXPECT_EQ(expected_target_url, fallbacks[i].namespace_.target_url);
-    EXPECT_FALSE(fallbacks[i].namespace_.is_pattern);
-  }
-}
-#endif  // !APPCACHE_USE_SIMPLE_CACHE
-
-#if defined(APPCACHE_USE_SIMPLE_CACHE)
-// There is no such upgrade path in this case.
-#else
-TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
+TEST(AppCacheDatabaseTest, UpgradeSchema4to7) {
   // Real file on disk for this test.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -1168,13 +1018,17 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
     EXPECT_TRUE(transaction.Commit());
   }
 
-  // Open that database and verify that it got upgraded to v5.
+  // Open that database and verify that it got upgraded to v7.
   AppCacheDatabase db(kDbFile);
   EXPECT_TRUE(db.LazyOpen(true));
   EXPECT_TRUE(db.db_->DoesColumnExist("Namespaces", "is_pattern"));
   EXPECT_TRUE(db.db_->DoesColumnExist("OnlineWhiteLists", "is_pattern"));
-  EXPECT_EQ(5, db.meta_table_->GetVersionNumber());
-  EXPECT_EQ(5, db.meta_table_->GetCompatibleVersionNumber());
+  EXPECT_TRUE(db.db_->DoesColumnExist("Groups",
+                                      "last_full_update_check_time"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Groups",
+                                      "first_evictable_error_time"));
+  EXPECT_EQ(7, db.meta_table_->GetVersionNumber());
+  EXPECT_EQ(7, db.meta_table_->GetCompatibleVersionNumber());
 
   std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
   std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
@@ -1206,5 +1060,236 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to5) {
   }
 }
 #endif  // !APPCACHE_USE_SIMPLE_CACHE
+
+// Verify last_full_update_check_time and first_evictable_error_time.
+TEST(AppCacheDatabaseTest, UpgradeSchema5or6to7) {
+  // Real file on disk for this test.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath kDbFile =
+      temp_dir.path().AppendASCII("upgrade5or6to7.db");
+
+  const GURL kMockOrigin("http://mockorigin/");
+  const base::Time kMockTime = base::Time::Now();
+
+  // Create a v5or6 schema based database containing two groups, one
+  // that has an associated cache as expected, and one which erroneously
+  // is missing its cache record.
+  {
+    // The SQL schema is the same in these two cases.
+#if defined(APPCACHE_USE_SIMPLE_CACHE)
+    const int kVersionN = 6;
+#else
+    const int kVersionN = 5;
+#endif  // !APPCACHE_USE_SIMPLE_CACHE
+
+    const char kGroupsTable[] = "Groups";
+    const char kCachesTable[] = "Caches";
+    const char kEntriesTable[] = "Entries";
+    const char kNamespacesTable[] = "Namespaces";
+    const char kOnlineWhiteListsTable[] = "OnlineWhiteLists";
+    const char kDeletableResponseIdsTable[] = "DeletableResponseIds";
+
+    struct TableInfo {
+      const char* table_name;
+      const char* columns;
+    };
+
+    struct IndexInfo {
+      const char* index_name;
+      const char* table_name;
+      const char* columns;
+      bool unique;
+    };
+
+    const TableInfo kTables5[] = {
+      { kGroupsTable,
+        "(group_id INTEGER PRIMARY KEY,"
+        " origin TEXT,"
+        " manifest_url TEXT,"
+        " creation_time INTEGER,"
+        " last_access_time INTEGER)" },
+
+      { kCachesTable,
+        "(cache_id INTEGER PRIMARY KEY,"
+        " group_id INTEGER,"
+        " online_wildcard INTEGER CHECK(online_wildcard IN (0, 1)),"
+        " update_time INTEGER,"
+        " cache_size INTEGER)" },  // intentionally not normalized
+
+      { kEntriesTable,
+        "(cache_id INTEGER,"
+        " url TEXT,"
+        " flags INTEGER,"
+        " response_id INTEGER,"
+        " response_size INTEGER)" },
+
+      { kNamespacesTable,
+        "(cache_id INTEGER,"
+        " origin TEXT,"  // intentionally not normalized
+        " type INTEGER,"
+        " namespace_url TEXT,"
+        " target_url TEXT,"
+        " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))" },
+
+      { kOnlineWhiteListsTable,
+        "(cache_id INTEGER,"
+        " namespace_url TEXT,"
+        " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))" },
+
+      { kDeletableResponseIdsTable,
+        "(response_id INTEGER NOT NULL)" },
+    };
+
+    const IndexInfo kIndexes5[] = {
+      { "GroupsOriginIndex",
+        kGroupsTable,
+        "(origin)",
+        false },
+
+      { "GroupsManifestIndex",
+        kGroupsTable,
+        "(manifest_url)",
+        true },
+
+      { "CachesGroupIndex",
+        kCachesTable,
+        "(group_id)",
+        false },
+
+      { "EntriesCacheIndex",
+        kEntriesTable,
+        "(cache_id)",
+        false },
+
+      { "EntriesCacheAndUrlIndex",
+        kEntriesTable,
+        "(cache_id, url)",
+        true },
+
+      { "EntriesResponseIdIndex",
+        kEntriesTable,
+        "(response_id)",
+        true },
+
+      { "NamespacesCacheIndex",
+        kNamespacesTable,
+        "(cache_id)",
+        false },
+
+      { "NamespacesOriginIndex",
+        kNamespacesTable,
+        "(origin)",
+        false },
+
+      { "NamespacesCacheAndUrlIndex",
+        kNamespacesTable,
+        "(cache_id, namespace_url)",
+        true },
+
+      { "OnlineWhiteListCacheIndex",
+        kOnlineWhiteListsTable,
+        "(cache_id)",
+        false },
+
+      { "DeletableResponsesIdIndex",
+        kDeletableResponseIdsTable,
+        "(response_id)",
+        true },
+    };
+
+    const int kTableCount5 = arraysize(kTables5);
+    const int kIndexCount5 = arraysize(kIndexes5);
+
+    sql::Connection connection;
+    EXPECT_TRUE(connection.Open(kDbFile));
+
+    sql::Transaction transaction(&connection);
+    EXPECT_TRUE(transaction.Begin());
+
+    sql::MetaTable meta_table;
+    EXPECT_TRUE(meta_table.Init(&connection, kVersionN, kVersionN));
+
+    for (int i = 0; i < kTableCount5; ++i) {
+      std::string sql("CREATE TABLE ");
+      sql += kTables5[i].table_name;
+      sql += kTables5[i].columns;
+      EXPECT_TRUE(connection.Execute(sql.c_str()));
+    }
+
+    for (int i = 0; i < kIndexCount5; ++i) {
+      std::string sql;
+      if (kIndexes5[i].unique)
+        sql += "CREATE UNIQUE INDEX ";
+      else
+        sql += "CREATE INDEX ";
+      sql += kIndexes5[i].index_name;
+      sql += " ON ";
+      sql += kIndexes5[i].table_name;
+      sql += kIndexes5[i].columns;
+      EXPECT_TRUE(connection.Execute(sql.c_str()));
+    }
+
+    sql::Statement statement;
+
+    const GURL kMockManifestUrl(kMockOrigin.Resolve("mockmanifest"));
+    const GURL kMockManifest2Url(kMockOrigin.Resolve("mockmanifest2"));
+
+    const char* kInsertGroup =
+        "INSERT INTO Groups"
+        "  (group_id, origin, manifest_url, creation_time, last_access_time)"
+        "  VALUES (?, ?, ?, ?, ?)";
+    statement.Assign(connection.GetUniqueStatement(kInsertGroup));
+    EXPECT_TRUE(statement.is_valid());
+    statement.BindInt64(0, 1);
+    statement.BindString(1, kMockOrigin.spec().c_str());
+    statement.BindString(2, kMockManifestUrl.spec().c_str());
+    statement.BindInt64(3, kMockTime.ToInternalValue());
+    statement.BindInt64(4, kMockTime.ToInternalValue());
+    ASSERT_TRUE(statement.Run());
+    statement.Reset(true);
+    statement.BindInt64(0, 2);
+    statement.BindString(1, kMockOrigin.spec().c_str());
+    statement.BindString(2, kMockManifest2Url.spec().c_str());
+    statement.BindInt64(3, kMockTime.ToInternalValue());
+    statement.BindInt64(4, kMockTime.ToInternalValue());
+    ASSERT_TRUE(statement.Run());
+    statement.Reset(true);
+
+    const char* kInsertCache =
+        "INSERT INTO Caches"
+        "  (cache_id, group_id, online_wildcard, update_time, cache_size)"
+        "  VALUES (?, ?, ?, ?, ?)";
+    statement.Assign(connection.GetUniqueStatement(kInsertCache));
+    EXPECT_TRUE(statement.is_valid());
+    statement.BindInt64(0, 1);
+    statement.BindInt64(1, 1);
+    statement.BindInt(2, 0);
+    statement.BindInt64(3, kMockTime.ToInternalValue());
+    statement.BindInt64(4, 1000);
+    ASSERT_TRUE(statement.Run());
+    statement.Reset(true);
+
+    EXPECT_TRUE(transaction.Commit());
+  }
+
+  // Open that database and verify that it got upgraded to v7.
+  AppCacheDatabase db(kDbFile);
+  EXPECT_TRUE(db.LazyOpen(true));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Groups",
+                                      "last_full_update_check_time"));
+  EXPECT_TRUE(db.db_->DoesColumnExist("Groups",
+                                      "first_evictable_error_time"));
+  EXPECT_EQ(7, db.meta_table_->GetVersionNumber());
+  EXPECT_EQ(7, db.meta_table_->GetCompatibleVersionNumber());
+
+  AppCacheDatabase::GroupRecord group;
+  EXPECT_TRUE(db.FindGroup(1, &group));
+  EXPECT_EQ(kMockTime, group.last_full_update_check_time);
+  EXPECT_EQ(kZeroTime, group.first_evictable_error_time);
+  EXPECT_TRUE(db.FindGroup(2, &group));
+  EXPECT_EQ(kZeroTime, group.last_full_update_check_time);
+  EXPECT_EQ(kZeroTime, group.first_evictable_error_time);
+}
 
 }  // namespace content

@@ -470,6 +470,10 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
         storage_, group_record_.manifest_url,
         group_record_.group_id);
     group->get()->set_creation_time(group_record_.creation_time);
+    group->get()->set_last_full_update_check_time(
+        group_record_.last_full_update_check_time);
+    group->get()->set_first_evictable_error_time(
+        group_record_.first_evictable_error_time);
     group->get()->AddCache(cache->get());
 
     // TODO(michaeln): histogram is fishing for clues to crbug/95101
@@ -632,6 +636,10 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
   group_record_.group_id = group->group_id();
   group_record_.manifest_url = group->manifest_url();
   group_record_.origin = group_record_.manifest_url.GetOrigin();
+  group_record_.last_full_update_check_time =
+      group->last_full_update_check_time();
+  group_record_.first_evictable_error_time =
+      group->first_evictable_error_time();
   newest_cache->ToDatabaseRecords(
       group,
       &cache_record_, &entry_records_,
@@ -703,6 +711,11 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
 
     database_->UpdateLastAccessTime(group_record_.group_id,
                                     base::Time::Now());
+
+    database_->UpdateEvictionTimes(
+        group_record_.group_id,
+        group_record_.last_full_update_check_time,
+        group_record_.first_evictable_error_time);
 
     AppCacheDatabase::CacheRecord cache;
     if (database_->FindCacheForGroup(group_record_.group_id, &cache)) {
@@ -1355,6 +1368,39 @@ class AppCacheStorageImpl::CommitLastAccessTimesTask
   ~CommitLastAccessTimesTask() override {}
 };
 
+// UpdateEvictionTimes -------
+
+class AppCacheStorageImpl::UpdateEvictionTimesTask
+    : public DatabaseTask {
+ public:
+  UpdateEvictionTimesTask(
+      AppCacheStorageImpl* storage, AppCacheGroup* group)
+      : DatabaseTask(storage), group_id_(group->group_id()),
+        last_full_update_check_time_(group->last_full_update_check_time()),
+        first_evictable_error_time_(group->first_evictable_error_time()) {
+  }
+
+  // DatabaseTask:
+  void Run() override;
+
+ protected:
+  ~UpdateEvictionTimesTask() override {}
+
+ private:
+  int64 group_id_;
+  base::Time last_full_update_check_time_;
+  base::Time first_evictable_error_time_;
+};
+
+void AppCacheStorageImpl::UpdateEvictionTimesTask::Run() {
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "AppCacheStorageImpl::UpdateEvictionTimes"));
+  database_->UpdateEvictionTimes(group_id_,
+                                 last_full_update_check_time_,
+                                 first_evictable_error_time_);
+}
+
 // AppCacheStorageImpl ---------------------------------------------------
 
 AppCacheStorageImpl::AppCacheStorageImpl(AppCacheServiceImpl* service)
@@ -1671,6 +1717,12 @@ void AppCacheStorageImpl::MakeGroupObsolete(AppCacheGroup* group,
   scoped_refptr<MakeGroupObsoleteTask> task(
       new MakeGroupObsoleteTask(this, group, response_code));
   task->AddDelegate(GetOrCreateDelegateReference(delegate));
+  task->Schedule();
+}
+
+void AppCacheStorageImpl::StoreEvictionTimes(AppCacheGroup* group) {
+  scoped_refptr<UpdateEvictionTimesTask> task(
+      new UpdateEvictionTimesTask(this, group));
   task->Schedule();
 }
 
