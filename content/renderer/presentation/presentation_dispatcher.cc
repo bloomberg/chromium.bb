@@ -454,14 +454,32 @@ void PresentationDispatcher::OnSessionMessagesReceived(
   }
 
   for (size_t i = 0; i < messages.size(); ++i) {
-    if (messages[i]->type ==
-        presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT) {
-      controller_->didReceiveSessionTextMessage(
-          new PresentationSessionClient(messages[i]->presentation_url,
-                                        messages[i]->presentation_id),
-          blink::WebString::fromUTF8(messages[i]->message));
-    } else {
-      // TODO(haibinlu): handle binary message
+    // Note: Passing batches of messages to the Blink layer would be more
+    // efficient.
+    scoped_ptr<PresentationSessionClient> session_client(
+        new PresentationSessionClient(messages[i]->presentation_url,
+                                      messages[i]->presentation_id));
+    switch (messages[i]->type) {
+      case presentation::PresentationMessageType::
+          PRESENTATION_MESSAGE_TYPE_TEXT: {
+        controller_->didReceiveSessionTextMessage(
+            session_client.release(),
+            blink::WebString::fromUTF8(messages[i]->message));
+        break;
+      }
+      case presentation::PresentationMessageType::
+          PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER:
+      case presentation::PresentationMessageType::
+          PRESENTATION_MESSAGE_TYPE_BLOB: {
+        controller_->didReceiveSessionBinaryMessage(
+            session_client.release(), &(messages[i]->data.front()),
+            messages[i]->data.size());
+        break;
+      }
+      default: {
+        NOTREACHED();
+        break;
+      }
     }
   }
 
