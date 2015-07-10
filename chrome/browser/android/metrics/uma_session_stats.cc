@@ -54,7 +54,7 @@ void UmaSessionStats::UmaResumeSession(JNIEnv* env, jobject obj) {
 
 void UmaSessionStats::UmaEndSession(JNIEnv* env, jobject obj) {
   --active_session_count_;
-  DCHECK(active_session_count_ >= 0);
+  DCHECK_GE(active_session_count_, 0);
 
   if (active_session_count_ == 0) {
     base::TimeDelta duration = base::TimeTicks::Now() - session_start_time_;
