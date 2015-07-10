@@ -31,6 +31,12 @@
             android:exported="true">
         </activity>
         <activity
+            android:name=".TelemetryMemoryPressureActivity"
+            android:launchMode="singleTask"
+            android:label="@string/title_activity_telemetry"
+            android:exported="true">
+        </activity>
+        <activity
             android:name=".JankActivity"
             android:label="@string/title_activity_jank"
             android:noHistory="true"
