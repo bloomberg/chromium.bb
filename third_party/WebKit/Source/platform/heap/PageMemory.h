@@ -152,9 +152,7 @@ private:
         Address base = static_cast<Address>(WTF::allocPages(nullptr, size, blinkPageSize, WTF::PageInaccessible));
         if (!base)
             blinkGCOutOfMemory();
-        PageMemoryRegion* region = new PageMemoryRegion(base, size, numPages);
-        Heap::addPageMemoryRegion(region);
-        return region;
+        return new PageMemoryRegion(base, size, numPages);
     }
 
     bool m_isLargePage;

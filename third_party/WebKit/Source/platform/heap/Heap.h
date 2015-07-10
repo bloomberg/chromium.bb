@@ -91,7 +91,6 @@ class FreePagePool;
 class NormalPageHeap;
 class OrphanedPagePool;
 class PageMemory;
-class PageMemoryRegion;
 class WebProcessMemoryDump;
 
 #if ENABLE(GC_PROFILING)
