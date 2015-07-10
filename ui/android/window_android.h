@@ -6,6 +6,7 @@
 #define UI_ANDROID_WINDOW_ANDROID_H_
 
 #include <jni.h>
+#include <string>
 #include <vector>
 
 #include "base/android/jni_weak_ref.h"
@@ -62,6 +63,11 @@ class UI_ANDROID_EXPORT WindowAndroid {
   void Animate(base::TimeTicks begin_frame_time);
   void OnActivityPaused(JNIEnv* env, jobject obj);
   void OnActivityResumed(JNIEnv* env, jobject obj);
+
+  // Return whether the specified Android permission is granted.
+  bool HasPermission(const std::string& permission);
+  // Return whether the specified Android permission can be requested by Chrome.
+  bool CanRequestPermission(const std::string& permission);
 
  private:
   ~WindowAndroid();

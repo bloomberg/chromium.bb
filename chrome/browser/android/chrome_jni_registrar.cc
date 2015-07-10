@@ -266,7 +266,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      autofill::PersonalDataManagerAndroid::Register},
     {"PolicyManager", RegisterPolicyManager},
     {"PrecacheLauncher", RegisterPrecacheLauncher},
-    {"PrefServiceBridge", RegisterPrefServiceBridge},
+    {"PrefServiceBridge", PrefServiceBridge::RegisterPrefServiceBridge},
     {"ProfileAndroid", ProfileAndroid::RegisterProfileAndroid},
     {"ProfileDownloader", RegisterProfileDownloader},
     {"ProfileSyncService", ProfileSyncServiceAndroid::Register},

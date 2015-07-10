@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Process;
 
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
@@ -84,25 +84,10 @@ public class ConfirmInfoBar extends InfoBar {
         Context context = getContext();
         List<String> permissionsToRequest = new ArrayList<String>();
         for (int i = 0; i < mContentSettings.length; i++) {
-            switch (mContentSettings[i]) {
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                    if (!hasPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION);
-                    }
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                    if (!hasPermission(context, Manifest.permission.CAMERA)) {
-                        permissionsToRequest.add(Manifest.permission.CAMERA);
-                    }
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                    if (!hasPermission(context, Manifest.permission.RECORD_AUDIO)) {
-                        permissionsToRequest.add(Manifest.permission.RECORD_AUDIO);
-                    }
-                    break;
-                default:
-                    // No associated Android permission, so just skip it.
-                    break;
+            String permission = PrefServiceBridge.getAndroidPermissionForContentSetting(
+                    mContentSettings[i]);
+            if (permission != null) {
+                if (!hasPermission(context, permission)) permissionsToRequest.add(permission);
             }
         }
         return permissionsToRequest;

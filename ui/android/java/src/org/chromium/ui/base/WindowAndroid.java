@@ -221,6 +221,7 @@ public class WindowAndroid {
      * @param permission The permission whose access is to be checked.
      * @return Whether access to the permission is granted.
      */
+    @CalledByNative
     public boolean hasPermission(String permission) {
         return mApplicationContext.checkPermission(permission, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED;
@@ -238,6 +239,7 @@ public class WindowAndroid {
      * @param permission The permission name.
      * @return Whether the requesting the permission is allowed.
      */
+    @CalledByNative
     public boolean canRequestPermission(String permission) {
         Log.w(TAG, "Cannot determine the request permission state as the context "
                 + "is not an Activity");

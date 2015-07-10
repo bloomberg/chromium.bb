@@ -731,41 +731,9 @@ static void ResetAcceptLanguages(JNIEnv* env,
   std::string accept_languages(l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES));
   std::string locale_string(ConvertJavaStringToUTF8(env, default_locale));
 
-  PrependToAcceptLanguagesIfNecessary(locale_string, &accept_languages);
+  PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(locale_string,
+                                                         &accept_languages);
   GetPrefService()->SetString(prefs::kAcceptLanguages, accept_languages);
-}
-
-void PrependToAcceptLanguagesIfNecessary(std::string locale,
-                                         std::string* accept_languages) {
-  if (locale.size() != 5u || locale[2] != '_')  // not well-formed
-    return;
-
-  std::string language(locale.substr(0, 2));
-  std::string region(locale.substr(3, 2));
-
-  // Java mostly follows ISO-639-1 and ICU, except for the following three.
-  // See documentation on java.util.Locale constructor for more.
-  if (language == "iw") {
-    language = "he";
-  } else if (language == "ji") {
-    language = "yi";
-  } else if (language == "in") {
-    language = "id";
-  }
-
-  std::string language_region(language + "-" + region);
-
-  if (accept_languages->find(language_region) == std::string::npos) {
-    std::vector<std::string> parts;
-    parts.push_back(language_region);
-    // If language is not in the accept languages list, also add language code.
-    if (accept_languages->find(language + ",") == std::string::npos &&
-        !std::equal(language.rbegin(), language.rend(),
-                    accept_languages->rbegin()))
-      parts.push_back(language);
-    parts.push_back(*accept_languages);
-    *accept_languages = JoinString(parts, ',');
-  }
 }
 
 // Sends all information about the different versions to Java.
@@ -830,6 +798,56 @@ static jstring GetSupervisedUserSecondCustodianProfileImageURL(JNIEnv* env,
           prefs::kSupervisedUserSecondCustodianProfileImageURL)).Release();
 }
 
-bool RegisterPrefServiceBridge(JNIEnv* env) {
+// static
+bool PrefServiceBridge::RegisterPrefServiceBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+// static
+void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
+    const std::string& locale,
+    std::string* accept_languages) {
+  if (locale.size() != 5u || locale[2] != '_')  // not well-formed
+    return;
+
+  std::string language(locale.substr(0, 2));
+  std::string region(locale.substr(3, 2));
+
+  // Java mostly follows ISO-639-1 and ICU, except for the following three.
+  // See documentation on java.util.Locale constructor for more.
+  if (language == "iw") {
+    language = "he";
+  } else if (language == "ji") {
+    language = "yi";
+  } else if (language == "in") {
+    language = "id";
+  }
+
+  std::string language_region(language + "-" + region);
+
+  if (accept_languages->find(language_region) == std::string::npos) {
+    std::vector<std::string> parts;
+    parts.push_back(language_region);
+    // If language is not in the accept languages list, also add language code.
+    if (accept_languages->find(language + ",") == std::string::npos &&
+        !std::equal(language.rbegin(), language.rend(),
+                    accept_languages->rbegin())) {
+      parts.push_back(language);
+    }
+    parts.push_back(*accept_languages);
+    *accept_languages = JoinString(parts, ',');
+  }
+}
+
+// static
+std::string PrefServiceBridge::GetAndroidPermissionForContentSetting(
+    ContentSettingsType content_type) {
+  JNIEnv* env = AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> android_permission =
+      Java_PrefServiceBridge_getAndroidPermissionForContentSetting(
+          env, content_type);
+  if (android_permission.is_null())
+    return std::string();
+
+  return ConvertJavaStringToUTF8(android_permission);
 }

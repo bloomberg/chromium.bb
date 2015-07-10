@@ -83,12 +83,13 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   // and a user decision that has been made. If a user isn't being asked for one
   // of audio/video then we shouldn't change that setting, even if they accept
   // the dialog.
-  ContentSetting GetNewSetting(ContentSetting old_setting,
+  ContentSetting GetNewSetting(ContentSettingsType content_type,
+                               ContentSetting old_setting,
                                ContentSetting user_decision) const;
 
   // Returns true if clicking allow on the dialog should give access to the
   // requested devices.
-  bool IsUserAcceptAllowed() const;
+  bool IsUserAcceptAllowed(ContentSettingsType content_type) const;
 
   // The audio/video content settings BEFORE the user clicks accept/deny.
   ContentSetting old_audio_setting_;

@@ -47,6 +47,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
@@ -570,21 +571,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         return messageBuilder;
     }
 
-    private String getAndroidPermissionForContentSetting(int contentSettingType) {
-        switch(contentSettingType) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                return android.Manifest.permission.ACCESS_FINE_LOCATION;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                return android.Manifest.permission.RECORD_AUDIO;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                return android.Manifest.permission.CAMERA;
-            default:
-                return null;
-        }
-    }
-
     private boolean hasAndroidPermission(int contentSettingType) {
-        String androidPermission = getAndroidPermissionForContentSetting(contentSettingType);
+        String androidPermission = PrefServiceBridge.getAndroidPermissionForContentSetting(
+                contentSettingType);
         return androidPermission == null
                 || (mContext.checkPermission(androidPermission, Process.myPid(), Process.myUid())
                            == PackageManager.PERMISSION_GRANTED);
@@ -692,7 +681,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             } else if (!hasAndroidPermission(permission.type)) {
                 warningTextResource = R.string.page_info_android_permission_blocked;
                 permissionRow.setTag(R.id.permission_type,
-                        getAndroidPermissionForContentSetting(permission.type));
+                        PrefServiceBridge.getAndroidPermissionForContentSetting(permission.type));
             }
 
             if (warningTextResource != 0) {

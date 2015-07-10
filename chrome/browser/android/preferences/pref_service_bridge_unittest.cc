@@ -14,7 +14,8 @@ class PrefServiceBridgeTest : public testing::Test {
  public:
   std::string GetAcceptLanguages(std::string locale,
                                  std::string accept_languages) {
-    PrependToAcceptLanguagesIfNecessary(locale, &accept_languages);
+    PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(locale,
+                                                           &accept_languages);
     return accept_languages;
   }
 };

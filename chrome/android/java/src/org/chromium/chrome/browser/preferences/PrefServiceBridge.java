@@ -250,6 +250,27 @@ public final class PrefServiceBridge {
         list.add(exception);
     }
 
+    /**
+     * Return the android permission string for a given {@link ContentSettingsType}.  If there
+     * is no corresponding permission, then null will be returned.
+     *
+     * @param contentSettingType The content setting to get the android permission for.
+     * @return The android permission for the given content setting.
+     */
+    @CalledByNative
+    public static String getAndroidPermissionForContentSetting(int contentSettingType) {
+        switch(contentSettingType) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
+                return android.Manifest.permission.ACCESS_FINE_LOCATION;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return android.Manifest.permission.RECORD_AUDIO;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return android.Manifest.permission.CAMERA;
+            default:
+                return null;
+        }
+    }
+
     public boolean isAcceptCookiesEnabled() {
         return nativeGetAcceptCookiesEnabled();
     }

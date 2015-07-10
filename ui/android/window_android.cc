@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/WindowAndroid_jni.h"
@@ -111,6 +112,22 @@ void WindowAndroid::OnActivityResumed(JNIEnv* env, jobject obj) {
 
 void WindowAndroid::OnActivityPaused(JNIEnv* env, jobject obj) {
   FOR_EACH_OBSERVER(WindowAndroidObserver, observer_list_, OnActivityPaused());
+}
+
+bool WindowAndroid::HasPermission(const std::string& permission) {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_WindowAndroid_hasPermission(
+      env,
+      GetJavaObject().obj(),
+      base::android::ConvertUTF8ToJavaString(env, permission).obj());
+}
+
+bool WindowAndroid::CanRequestPermission(const std::string& permission) {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_WindowAndroid_canRequestPermission(
+      env,
+      GetJavaObject().obj(),
+      base::android::ConvertUTF8ToJavaString(env, permission).obj());
 }
 
 // ----------------------------------------------------------------------------

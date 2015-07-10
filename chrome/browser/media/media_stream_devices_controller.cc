@@ -27,6 +27,12 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/preferences/pref_service_bridge.h"
+#include "content/public/browser/android/content_view_core.h"
+#include "ui/android/window_android.h"
+#endif  // OS_ANDROID
+
 using content::BrowserThread;
 
 namespace {
@@ -155,16 +161,20 @@ void MediaStreamDevicesController::PermissionGranted() {
     UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
                               kAllowHttp, kPermissionActionsMax);
   }
-  RunCallback(GetNewSetting(old_audio_setting_, CONTENT_SETTING_ALLOW),
-              GetNewSetting(old_video_setting_, CONTENT_SETTING_ALLOW),
+  RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                            old_audio_setting_, CONTENT_SETTING_ALLOW),
+              GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                            old_video_setting_, CONTENT_SETTING_ALLOW),
               content::MEDIA_DEVICE_PERMISSION_DENIED);
 }
 
 void MediaStreamDevicesController::PermissionDenied() {
   UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
                             kDeny, kPermissionActionsMax);
-  RunCallback(GetNewSetting(old_audio_setting_, CONTENT_SETTING_BLOCK),
-              GetNewSetting(old_video_setting_, CONTENT_SETTING_BLOCK),
+  RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                            old_audio_setting_, CONTENT_SETTING_BLOCK),
+              GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                            old_video_setting_, CONTENT_SETTING_BLOCK),
               content::MEDIA_DEVICE_PERMISSION_DENIED);
 }
 
@@ -407,8 +417,10 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
   else if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
     requested_device_id = request.requested_video_device_id;
 
-  if (!IsUserAcceptAllowed())
+  if (!IsUserAcceptAllowed(content_type)) {
+    *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
     return CONTENT_SETTING_BLOCK;
+  }
 
   if (ContentTypeIsRequested(content_type, request)) {
     MediaPermission permission(content_type, request.request_type,
@@ -421,13 +433,15 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
 }
 
 ContentSetting MediaStreamDevicesController::GetNewSetting(
+    ContentSettingsType content_type,
     ContentSetting old_setting,
     ContentSetting user_decision) const {
   DCHECK(user_decision == CONTENT_SETTING_ALLOW ||
          user_decision == CONTENT_SETTING_BLOCK);
   ContentSetting result = old_setting;
   if (old_setting == CONTENT_SETTING_ASK) {
-    if (user_decision == CONTENT_SETTING_ALLOW && IsUserAcceptAllowed())
+    if (user_decision == CONTENT_SETTING_ALLOW &&
+        IsUserAcceptAllowed(content_type))
       result = CONTENT_SETTING_ALLOW;
     else if (user_decision == CONTENT_SETTING_BLOCK)
       result = CONTENT_SETTING_BLOCK;
@@ -435,8 +449,29 @@ ContentSetting MediaStreamDevicesController::GetNewSetting(
   return result;
 }
 
-bool MediaStreamDevicesController::IsUserAcceptAllowed() const {
+bool MediaStreamDevicesController::IsUserAcceptAllowed(
+    ContentSettingsType content_type) const {
 #if defined(OS_ANDROID)
+  content::ContentViewCore* cvc =
+      content::ContentViewCore::FromWebContents(web_contents_);
+  if (!cvc)
+    return false;
+
+  ui::WindowAndroid* window_android = cvc->GetWindowAndroid();
+  if (!window_android)
+    return false;
+
+  std::string android_permission =
+      PrefServiceBridge::GetAndroidPermissionForContentSetting(content_type);
+  bool android_permission_blocked = false;
+  if (!android_permission.empty()) {
+    android_permission_blocked =
+        !window_android->HasPermission(android_permission) &&
+        !window_android->CanRequestPermission(android_permission);
+  }
+  if (android_permission_blocked)
+    return false;
+
   // Don't approve device requests if the tab was hidden.
   // TODO(qinmin): Add a test for this. http://crbug.com/396869.
   // TODO(raymes): Shouldn't this apply to all permissions not just audio/video?
