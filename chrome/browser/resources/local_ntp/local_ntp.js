@@ -851,7 +851,10 @@ function init() {
   }
 
   var iframe = document.createElement('iframe');
+  // Change the order of tabbing the page to start with NTP tiles.
+  iframe.setAttribute('tabindex', '1');
   iframe.id = 'mv-single';
+
   var args = [];
 
   if (searchboxApiHandle.rtl)

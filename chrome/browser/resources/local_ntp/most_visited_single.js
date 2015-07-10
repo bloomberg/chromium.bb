@@ -361,6 +361,62 @@ var renderTile = function(data) {
                event.keyCode == 32 /* SPACE */) {
       event.preventDefault();
       tile.click();
+    } else if (event.keyCode >= 37 && event.keyCode <= 40 /* ARROWS */) {
+      var tiles = document.querySelectorAll('#mv-tiles .mv-tile');
+      var nextTile = null;
+      // Use the location of the tile to find the next one in the
+      // appropriate direction.
+      // For LEFT and UP we keep iterating until we find the last element
+      // that fulfills the conditions.
+      // For RIGHT and DOWN we accept the first element that works.
+      if (event.keyCode == 37 /* LEFT */) {
+        for (var i = 0; i < tiles.length; i++) {
+          var tile = tiles[i];
+          if (tile.offsetTop == this.offsetTop &&
+              tile.offsetLeft < this.offsetLeft) {
+            if (!nextTile || tile.offsetLeft > nextTile.offsetLeft) {
+              nextTile = tile;
+            }
+          }
+        }
+      }
+      if (event.keyCode == 38 /* UP */) {
+        for (var i = 0; i < tiles.length; i++) {
+          var tile = tiles[i];
+          if (tile.offsetTop < this.offsetTop &&
+              tile.offsetLeft == this.offsetLeft) {
+            if (!nextTile || tile.offsetTop > nextTile.offsetTop) {
+              nextTile = tile;
+            }
+          }
+        }
+      }
+      if (event.keyCode == 39 /* RIGHT */) {
+        for (var i = 0; i < tiles.length; i++) {
+          var tile = tiles[i];
+          if (tile.offsetTop == this.offsetTop &&
+              tile.offsetLeft > this.offsetLeft) {
+            if (!nextTile || tile.offsetLeft < nextTile.offsetLeft) {
+              nextTile = tile;
+            }
+          }
+        }
+      }
+      if (event.keyCode == 40 /* DOWN */) {
+        for (var i = 0; i < tiles.length; i++) {
+          var tile = tiles[i];
+          if (tile.offsetTop > this.offsetTop &&
+              tile.offsetLeft == this.offsetLeft) {
+            if (!nextTile || tile.offsetTop < nextTile.offsetTop) {
+              nextTile = tile;
+            }
+          }
+        }
+      }
+
+      if (nextTile) {
+        nextTile.focus();
+      }
     }
   });
   // TODO(fserb): remove this or at least change to mouseenter.
