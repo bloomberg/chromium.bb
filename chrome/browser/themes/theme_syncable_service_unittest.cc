@@ -306,7 +306,8 @@ TEST_F(ThemeSyncableServiceTest, SetCurrentThemeDefaultTheme) {
                     new syncer::SyncErrorFactoryMock()))
           .error();
   EXPECT_FALSE(error.IsSet()) << error.message();
-  EXPECT_TRUE(fake_theme_service_->UsingDefaultTheme());
+  EXPECT_FALSE(fake_theme_service_->UsingDefaultTheme());
+  EXPECT_EQ(fake_theme_service_->theme_extension(), theme_extension_.get());
 }
 
 TEST_F(ThemeSyncableServiceTest, SetCurrentThemeSystemTheme) {
@@ -327,7 +328,8 @@ TEST_F(ThemeSyncableServiceTest, SetCurrentThemeSystemTheme) {
                     new syncer::SyncErrorFactoryMock()))
           .error();
   EXPECT_FALSE(error.IsSet()) << error.message();
-  EXPECT_TRUE(fake_theme_service_->UsingSystemTheme());
+  EXPECT_FALSE(fake_theme_service_->UsingSystemTheme());
+  EXPECT_EQ(fake_theme_service_->theme_extension(), theme_extension_.get());
 }
 
 TEST_F(ThemeSyncableServiceTest, SetCurrentThemeCustomTheme) {
