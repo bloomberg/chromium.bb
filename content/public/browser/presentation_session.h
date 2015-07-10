@@ -11,6 +11,11 @@
 
 namespace content {
 
+enum CONTENT_EXPORT PresentationSessionState {
+  PRESENTATION_SESSION_STATE_CONNECTED,
+  PRESENTATION_SESSION_STATE_DISCONNECTED
+};
+
 // Represents a presentation session that has been established via either
 // browser actions or Presentation API.
 struct CONTENT_EXPORT PresentationSessionInfo {

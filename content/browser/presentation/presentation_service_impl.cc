@@ -423,7 +423,22 @@ void PresentationServiceImpl::CloseSession(
 }
 
 void PresentationServiceImpl::ListenForSessionStateChange() {
-  NOTIMPLEMENTED();
+  if (!delegate_)
+    return;
+
+  delegate_->ListenForSessionStateChange(
+      render_process_id_, render_frame_id_,
+      base::Bind(&PresentationServiceImpl::OnSessionStateChanged,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void PresentationServiceImpl::OnSessionStateChanged(
+    const PresentationSessionInfo& session_info,
+    PresentationSessionState session_state) {
+  DCHECK(client_.get());
+  client_->OnSessionStateChanged(
+      presentation::PresentationSessionInfo::From(session_info),
+      PresentationSessionStateToMojo(session_state));
 }
 
 bool PresentationServiceImpl::FrameMatches(

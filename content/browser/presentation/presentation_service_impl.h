@@ -86,7 +86,8 @@ class CONTENT_EXPORT PresentationServiceImpl
                            MaxPendingStartSessionRequests);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            MaxPendingJoinSessionRequests);
-
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           ListenForSessionStateChange);
   // Maximum number of pending JoinSession requests at any given time.
   static const int kMaxNumQueuedSessionRequests = 10;
 
@@ -257,6 +258,11 @@ class CONTENT_EXPORT PresentationServiceImpl
   // stores it in a map.
   // Returns a positive value on success.
   int RegisterJoinSessionCallback(const NewSessionMojoCallback& callback);
+
+  // Invoked by the embedder's PresentationServiceDelegate when a
+  // presentation session's state has changed.
+  void OnSessionStateChanged(const PresentationSessionInfo& session_info,
+                             PresentationSessionState session_state);
 
   // Returns true if this object is associated with |render_frame_host|.
   bool FrameMatches(content::RenderFrameHost* render_frame_host) const;

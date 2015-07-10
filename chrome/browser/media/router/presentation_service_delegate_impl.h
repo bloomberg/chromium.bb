@@ -33,6 +33,7 @@ namespace media_router {
 class MediaRoute;
 class MediaSinksObserver;
 class PresentationFrameManager;
+class PresentationSessionStateObserver;
 
 // Implementation of PresentationServiceDelegate that interfaces an
 // instance of WebContents with the Chrome Media Router. It uses the Media
@@ -97,6 +98,10 @@ class PresentationServiceDelegateImpl
       int render_frame_id,
       scoped_ptr<content::PresentationSessionMessage> message_request,
       const SendMessageCallback& send_message_cb) override;
+  void ListenForSessionStateChange(
+      int render_process_id,
+      int render_frame_id,
+      const content::SessionStateChangedCallback& state_changed_cb) override;
 
   // Callback invoked when a |route| has been created or joined outside of a
   // Presentation API request. The route could be due to

@@ -25,5 +25,13 @@ presentation::PresentationErrorType PresentationErrorTypeToMojo(
   }
 }
 
+presentation::PresentationSessionState PresentationSessionStateToMojo(
+    content::PresentationSessionState state) {
+  if (state == content::PRESENTATION_SESSION_STATE_CONNECTED)
+    return presentation::PRESENTATION_SESSION_STATE_CONNECTED;
+  else
+    return presentation::PRESENTATION_SESSION_STATE_DISCONNECTED;
+}
+
 }  // namespace content
 

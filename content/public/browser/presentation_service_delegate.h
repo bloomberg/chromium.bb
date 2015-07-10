@@ -18,6 +18,10 @@ namespace content {
 
 class PresentationScreenAvailabilityListener;
 
+using SessionStateChangedCallback =
+    base::Callback<void(const PresentationSessionInfo&,
+                        PresentationSessionState)>;
+
 // An interface implemented by embedders to handle presentation API calls
 // forwarded from PresentationServiceImpl.
 class CONTENT_EXPORT PresentationServiceDelegate {
@@ -159,6 +163,15 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_frame_id,
       scoped_ptr<PresentationSessionMessage> message_request,
       const SendMessageCallback& send_message_cb) = 0;
+
+  // Continuously listen for presentation session state changes for a frame.
+  // |render_process_id|, |render_frame_id|: ID of frame.
+  // |state_changed_cb|: Invoked with the session and its new state whenever
+  // there is a state change.
+  virtual void ListenForSessionStateChange(
+      int render_process_id,
+      int render_frame_id,
+      const SessionStateChangedCallback& state_changed_cb) = 0;
 };
 
 }  // namespace content

@@ -14,11 +14,13 @@ namespace content {
 CONTENT_EXPORT presentation::PresentationErrorType PresentationErrorTypeToMojo(
     PresentationErrorType input);
 
+CONTENT_EXPORT presentation::PresentationSessionState
+PresentationSessionStateToMojo(PresentationSessionState state);
+
 }  // namespace content
 
 namespace mojo {
 
-// MediaSink conversion helpers.
 template <>
 struct TypeConverter<presentation::PresentationSessionInfoPtr,
                      content::PresentationSessionInfo> {

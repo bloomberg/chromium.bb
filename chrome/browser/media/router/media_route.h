@@ -7,11 +7,13 @@
 
 #include <string>
 
+#include "base/containers/small_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "content/public/browser/presentation_session.h"
 #include "url/gurl.h"
 
 namespace media_router {
@@ -63,6 +65,28 @@ class MediaRoute {
   MediaSink media_sink_;
   std::string description_;
   bool is_local_;
+};
+
+class MediaRouteIdToPresentationSessionMapping {
+ public:
+  MediaRouteIdToPresentationSessionMapping();
+  ~MediaRouteIdToPresentationSessionMapping();
+
+  void Add(const MediaRoute::Id& route_id,
+           const content::PresentationSessionInfo& session_info);
+  void Remove(const MediaRoute::Id& route_id);
+  void Clear();
+
+  // Gets the PresentationSessionInfo corresponding to |route_id| or nullptr
+  // if it does not exist. Caller should not hold on to the returned pointer.
+  const content::PresentationSessionInfo* Get(
+      const MediaRoute::Id& route_id) const;
+
+ private:
+  base::SmallMap<std::map<MediaRoute::Id, content::PresentationSessionInfo>>
+      route_id_to_presentation_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaRouteIdToPresentationSessionMapping);
 };
 
 // Return a pair of Presentation ID and URL. If the input route ID is invalid,

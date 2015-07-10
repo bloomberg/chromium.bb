@@ -29,6 +29,11 @@ namespace content {
 
 namespace {
 
+// Matches mojo structs.
+MATCHER_P(Equals, expected, "") {
+  return expected.Equals(arg);
+}
+
 const char kPresentationId[] = "presentationId";
 const char kPresentationUrl[] = "http://foo.com/index.html";
 
@@ -102,31 +107,32 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
                void(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id));
-
   MOCK_METHOD3(ListenForSessionMessages,
       void(
           int render_process_id,
           int render_frame_id,
           const PresentationSessionMessageCallback& message_cb));
-
   MOCK_METHOD4(SendMessageRawPtr,
       void(
           int render_process_id,
           int render_frame_id,
           PresentationSessionMessage* message_request,
           const SendMessageCallback& send_message_cb));
-
-  void SendMessage(
-      int render_process_id,
-      int render_frame_id,
-      scoped_ptr<PresentationSessionMessage> message_request,
-      const SendMessageCallback& send_message_cb) override {
+  void SendMessage(int render_process_id,
+                   int render_frame_id,
+                   scoped_ptr<PresentationSessionMessage> message_request,
+                   const SendMessageCallback& send_message_cb) override {
     SendMessageRawPtr(
         render_process_id,
         render_frame_id,
         message_request.release(),
         send_message_cb);
   }
+  MOCK_METHOD3(
+      ListenForSessionStateChange,
+      void(int render_process_id,
+           int render_frame_id,
+           const content::SessionStateChangedCallback& state_changed_cb));
 };
 
 class MockPresentationServiceClient :
@@ -136,8 +142,11 @@ class MockPresentationServiceClient :
   void OnSessionStateChanged(
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationSessionState new_state) override {
-    NOTIMPLEMENTED();
+    OnSessionStateChanged(*session_info, new_state);
   }
+  MOCK_METHOD2(OnSessionStateChanged,
+               void(const presentation::PresentationSessionInfo& session_info,
+                    presentation::PresentationSessionState new_state));
   void OnScreenAvailabilityNotSupported() override {
     NOTIMPLEMENTED();
   }
@@ -832,6 +841,26 @@ TEST_F(PresentationServiceImplTest, MaxPendingJoinSessionRequests) {
             &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
             base::Unretained(this)));
   SaveQuitClosureAndRunLoop();
+}
+
+TEST_F(PresentationServiceImplTest, ListenForSessionStateChange) {
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_delegate_, ListenForSessionStateChange(_, _, _))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  service_ptr_->ListenForSessionStateChange();
+  run_loop.Run();
+
+  presentation::PresentationSessionInfo session_info;
+  session_info.url = kPresentationUrl;
+  session_info.id = kPresentationId;
+
+  EXPECT_CALL(mock_client_,
+              OnSessionStateChanged(
+                  Equals(session_info),
+                  presentation::PRESENTATION_SESSION_STATE_CONNECTED));
+  service_impl_->OnSessionStateChanged(
+      content::PresentationSessionInfo(kPresentationUrl, kPresentationId),
+      content::PRESENTATION_SESSION_STATE_CONNECTED);
 }
 
 }  // namespace content
