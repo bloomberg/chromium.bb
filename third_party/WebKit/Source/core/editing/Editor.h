@@ -95,8 +95,6 @@ public:
 
     void transpose();
 
-    bool shouldDeleteRange(Range*) const;
-
     void respondToChangedContents(const VisibleSelection& endingSelection);
 
     bool selectionStartHasStyle(CSSPropertyID, const String& value) const;
@@ -260,6 +258,7 @@ private:
     }
 
     bool canDeleteRange(const EphemeralRange&) const;
+    bool shouldDeleteRange(const EphemeralRange&) const;
 
     UndoStack* undoStack() const;
 

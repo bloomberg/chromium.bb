@@ -527,12 +527,12 @@ PassRefPtrWillBeRawPtr<Range> Editor::selectedRange()
     return frame().selection().toNormalizedRange();
 }
 
-bool Editor::shouldDeleteRange(Range* range) const
+bool Editor::shouldDeleteRange(const EphemeralRange& range) const
 {
-    if (!range || range->collapsed())
+    if (range.isCollapsed())
         return false;
 
-    return canDeleteRange(EphemeralRange(range));
+    return canDeleteRange(range);
 }
 
 void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
@@ -823,7 +823,7 @@ void Editor::cut()
     if (!canCut())
         return;
     RefPtrWillBeRawPtr<Range> selection = selectedRange();
-    if (shouldDeleteRange(selection.get())) {
+    if (shouldDeleteRange(EphemeralRange(selection.get()))) {
         spellChecker().updateMarkersForWordsAffectedByEditing(true);
         if (enclosingTextFormControl(frame().selection().start())) {
             String plainText = frame().selectedTextForClipboard();
