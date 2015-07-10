@@ -228,6 +228,24 @@ public class FakeServerHelper {
     }
 
     /**
+     * Injects a bookmark folder into the fake Sync server.
+     *
+     * @param title the title of the bookmark folder to inject
+     * @param parentId the ID of the desired parent bookmark folder
+     */
+    public void injectBookmarkFolderEntity(final String title, final String parentId) {
+        checkFakeServerInitialized("useFakeServer must be called before data injection.");
+        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                nativeInjectBookmarkFolderEntity(
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer, title, parentId);
+                return null;
+            }
+        });
+    }
+
+    /**
      * Modifies an existing bookmark on the fake Sync server.
      *
      * @param bookmarkId the ID of the bookmark to modify
@@ -244,6 +262,26 @@ public class FakeServerHelper {
             public Void call() {
                 nativeModifyBookmarkEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer,
                         bookmarkId, title, url, parentId);
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Modifies an existing bookmark folder on the fake Sync server.
+     *
+     * @param folderId the ID of the bookmark folder to modify
+     * @param title the new title of the bookmark folder
+     * @param parentId the ID of the new desired parent bookmark folder
+     */
+    public void modifyBookmarkFolderEntity(
+            final String folderId, final String title, final String parentId) {
+        checkFakeServerInitialized("useFakeServer must be called before data injection.");
+        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                nativeModifyBookmarkFolderEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer,
+                        folderId, title, parentId);
                 return null;
             }
         });
@@ -310,8 +348,12 @@ public class FakeServerHelper {
     private native void nativeInjectBookmarkEntity(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String title, String url,
             String parentId);
+    private native void nativeInjectBookmarkFolderEntity(long nativeFakeServerHelperAndroid,
+            long nativeFakeServer, String title, String parentId);
     private native void nativeModifyBookmarkEntity(long nativeFakeServerHelperAndroid,
             long nativeFakeServer, String bookmarkId, String title, String url, String parentId);
+    private native void nativeModifyBookmarkFolderEntity(long nativeFakeServerHelperAndroid,
+            long nativeFakeServer, String bookmarkId, String title, String parentId);
     private native String nativeGetBookmarkBarFolderId(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
     private native void nativeDeleteEntity(

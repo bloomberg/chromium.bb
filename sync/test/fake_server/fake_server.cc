@@ -556,6 +556,9 @@ bool FakeServer::ModifyEntitySpecifics(
 
   scoped_ptr<FakeServerEntity> entity = entities_.take_and_erase(iter);
   entity->SetSpecifics(updated_specifics);
+  if (updated_specifics.has_bookmark()) {
+    entity->SetName(updated_specifics.bookmark().title());
+  }
   UpdateEntityVersion(entity.get());
   entities_.insert(id, entity.Pass());
   return true;

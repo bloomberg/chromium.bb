@@ -70,6 +70,13 @@ class FakeServerHelperAndroid {
                             jstring url,
                             jstring parent_id);
 
+  // Injects a bookmark folder entity into |fake_server|.
+  void InjectBookmarkFolderEntity(JNIEnv* env,
+                                  jobject obj,
+                                  jlong fake_server,
+                                  jstring title,
+                                  jstring parent_id);
+
   // Modify the BookmarkEntity with |entity_id| on |fake_server|.
   void ModifyBookmarkEntity(JNIEnv* env,
                             jobject obj,
@@ -78,6 +85,14 @@ class FakeServerHelperAndroid {
                             jstring title,
                             jstring url,
                             jstring parent_id);
+
+  // Modify the bookmark folder with |entity_id| on |fake_server|.
+  void ModifyBookmarkFolderEntity(JNIEnv* env,
+                                  jobject obj,
+                                  jlong fake_server,
+                                  jstring entity_id,
+                                  jstring title,
+                                  jstring parent_id);
 
   // Returns the bookmark bar folder ID.
   base::android::ScopedJavaLocalRef<jstring> GetBookmarkBarFolderId(

@@ -32,7 +32,6 @@ public class BookmarksTest extends SyncTestBase {
     private static final String BOOKMARKS_TYPE_STRING = "Bookmarks";
 
     private static final String URL = "http://chromium.org/";
-    private static final String MODIFIED_URL = "http://www.chromium.org/Home";
     private static final String TITLE = "Chromium";
     private static final String MODIFIED_TITLE = "Chromium2";
 
@@ -48,6 +47,10 @@ public class BookmarksTest extends SyncTestBase {
             this.id = id;
             this.title = title;
             this.url = url;
+        }
+
+        public boolean isFolder() {
+            return url == null;
         }
     }
 
@@ -96,10 +99,10 @@ public class BookmarksTest extends SyncTestBase {
 
         // Modify on server, sync, and verify the modification locally.
         Bookmark bookmark = getClientBookmarks().get(0);
-        modifyServerBookmark(bookmark.id, TITLE, MODIFIED_URL);
+        modifyServerBookmark(bookmark.id, MODIFIED_TITLE, URL);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         bookmark = getClientBookmarks().get(0);
-        assertEquals("The bookmark title was not modified.", MODIFIED_URL, bookmark.url);
+        assertEquals("The bookmark title was not modified.", MODIFIED_TITLE, bookmark.title);
     }
 
     // Test syncing a bookmark tombstone from server to client.
@@ -115,6 +118,59 @@ public class BookmarksTest extends SyncTestBase {
         // Delete on server, sync, and verify deleted locally.
         Bookmark bookmark = getClientBookmarks().get(0);
         mFakeServerHelper.deleteEntity(bookmark.id);
+        waitForServerBookmarkCountWithName(0, TITLE);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        waitForClientBookmarkCount(0);
+    }
+
+    // Test syncing a new bookmark folder from server to client.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadBookmarkFolder() throws Exception {
+        addServerBookmarkFolder(TITLE);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        List<Bookmark> bookmarks = getClientBookmarks();
+        assertEquals("Only the injected bookmark folder should exist on the client.", 1,
+                bookmarks.size());
+        Bookmark folder = bookmarks.get(0);
+        assertEquals("The wrong title was found for the folder.", TITLE, folder.title);
+        assertEquals("Bookmark folders do not have a URL.", null, folder.url);
+    }
+
+    // Test syncing a bookmark folder modification from server to client.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadBookmarkFolderModification() throws Exception {
+        // Add the entity to test modifying.
+        addServerBookmarkFolder(TITLE);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        waitForServerBookmarkCountWithName(1, TITLE);
+        waitForClientBookmarkCount(1);
+
+        // Modify on server, sync, and verify the modification locally.
+        Bookmark folder = getClientBookmarks().get(0);
+        assertTrue(folder.isFolder());
+        modifyServerBookmarkFolder(folder.id, MODIFIED_TITLE);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        folder = getClientBookmarks().get(0);
+        assertTrue(folder.isFolder());
+        assertEquals("The folder title was not modified.", MODIFIED_TITLE, folder.title);
+    }
+
+    // Test syncing a bookmark folder tombstone from server to client.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadBookmarkFolderTombstone() throws Exception {
+        // Add the entity to test deleting.
+        addServerBookmarkFolder(TITLE);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        waitForServerBookmarkCountWithName(1, TITLE);
+        waitForClientBookmarkCount(1);
+
+        // Delete on server, sync, and verify deleted locally.
+        Bookmark folder = getClientBookmarks().get(0);
+        assertTrue(folder.isFolder());
+        mFakeServerHelper.deleteEntity(folder.id);
         waitForServerBookmarkCountWithName(0, TITLE);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         waitForClientBookmarkCount(0);
@@ -158,6 +214,43 @@ public class BookmarksTest extends SyncTestBase {
         assertServerBookmarkCountWithName(0, MODIFIED_TITLE);
     }
 
+    // Test syncing a new bookmark folder from client to server.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testUploadBookmarkFolder() throws Exception {
+        addClientBookmarkFolder(TITLE);
+        waitForClientBookmarkCount(1);
+        waitForServerBookmarkCountWithName(1, TITLE);
+    }
+
+    // Test syncing a bookmark folder modification from client to server.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testUploadBookmarkFolderModification() throws Exception {
+        // Add the entity to test modifying.
+        BookmarkId bookmarkId = addClientBookmarkFolder(TITLE);
+        waitForClientBookmarkCount(1);
+        waitForServerBookmarkCountWithName(1, TITLE);
+
+        setClientBookmarkTitle(bookmarkId, MODIFIED_TITLE);
+        waitForServerBookmarkCountWithName(1, MODIFIED_TITLE);
+        assertServerBookmarkCountWithName(0, TITLE);
+    }
+
+    // Test syncing a bookmark folder tombstone from client to server.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testUploadBookmarkFolderTombstone() throws Exception {
+        // Add the entity to test deleting.
+        BookmarkId bookmarkId = addClientBookmarkFolder(TITLE);
+        waitForClientBookmarkCount(1);
+        waitForServerBookmarkCountWithName(1, TITLE);
+
+        deleteClientBookmark(bookmarkId);
+        waitForClientBookmarkCount(0);
+        waitForServerBookmarkCountWithName(0, TITLE);
+    }
+
     // Test that bookmarks don't get downloaded if the data type is disabled.
     @LargeTest
     @Feature({"Sync"})
@@ -193,14 +286,37 @@ public class BookmarksTest extends SyncTestBase {
         return id.get();
     }
 
+    private BookmarkId addClientBookmarkFolder(final String title) {
+        final AtomicReference<BookmarkId> id = new AtomicReference<BookmarkId>();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                BookmarkId parentId = mBookmarksBridge.getMobileFolderId();
+                id.set(mBookmarksBridge.addFolder(parentId, 0, title));
+            }
+        });
+        assertNotNull("Failed to create bookmark folder.", id.get());
+        return id.get();
+    }
+
     private void addServerBookmark(String title, String url) throws InterruptedException {
         mFakeServerHelper.injectBookmarkEntity(
                 title, url, mFakeServerHelper.getBookmarkBarFolderId());
     }
 
+    private void addServerBookmarkFolder(String title) throws InterruptedException {
+        mFakeServerHelper.injectBookmarkFolderEntity(
+                title, mFakeServerHelper.getBookmarkBarFolderId());
+    }
+
     private void modifyServerBookmark(String bookmarkId, String title, String url) {
         mFakeServerHelper.modifyBookmarkEntity(
                 bookmarkId, title, url, mFakeServerHelper.getBookmarkBarFolderId());
+    }
+
+    private void modifyServerBookmarkFolder(String folderId, String title) {
+        mFakeServerHelper.modifyBookmarkFolderEntity(
+                folderId, title, mFakeServerHelper.getBookmarkBarFolderId());
     }
 
     private void deleteClientBookmark(final BookmarkId id) {
@@ -228,7 +344,7 @@ public class BookmarksTest extends SyncTestBase {
         for (Pair<String, JSONObject> rawBookmark : rawBookmarks) {
             String id = rawBookmark.first;
             JSONObject json = rawBookmark.second;
-            bookmarks.add(new Bookmark(id, json.getString("title"), json.getString("url")));
+            bookmarks.add(new Bookmark(id, json.getString("title"), json.optString("url", null)));
         }
         return bookmarks;
     }

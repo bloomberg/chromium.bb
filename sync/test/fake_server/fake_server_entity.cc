@@ -58,6 +58,10 @@ const std::string& FakeServerEntity::GetName() const {
   return name_;
 }
 
+void FakeServerEntity::SetName(std::string name) {
+  name_ = name;
+}
+
 void FakeServerEntity::SetSpecifics(
     const sync_pb::EntitySpecifics& updated_specifics) {
   specifics_ = updated_specifics;

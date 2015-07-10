@@ -171,6 +171,24 @@ void FakeServerHelperAndroid::InjectBookmarkEntity(
       CreateBookmarkEntity(env, title, url, parent_id));
 }
 
+void FakeServerHelperAndroid::InjectBookmarkFolderEntity(JNIEnv* env,
+                                                         jobject obj,
+                                                         jlong fake_server,
+                                                         jstring title,
+                                                         jstring parent_id) {
+  fake_server::FakeServer* fake_server_ptr =
+      reinterpret_cast<fake_server::FakeServer*>(fake_server);
+
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          base::android::ConvertJavaStringToUTF8(env, title));
+  bookmark_builder.SetParentId(
+      base::android::ConvertJavaStringToUTF8(env, parent_id));
+
+  fake_server_ptr->InjectEntity(bookmark_builder.BuildFolder());
+}
+
 void FakeServerHelperAndroid::ModifyBookmarkEntity(JNIEnv* env,
                                                    jobject obj,
                                                    jlong fake_server,
@@ -184,6 +202,29 @@ void FakeServerHelperAndroid::ModifyBookmarkEntity(JNIEnv* env,
       CreateBookmarkEntity(env, title, url, parent_id);
   sync_pb::SyncEntity proto;
   bookmark->SerializeAsProto(&proto);
+  fake_server_ptr->ModifyEntitySpecifics(
+      base::android::ConvertJavaStringToUTF8(env, entity_id),
+      proto.specifics());
+}
+
+void FakeServerHelperAndroid::ModifyBookmarkFolderEntity(JNIEnv* env,
+                                                         jobject obj,
+                                                         jlong fake_server,
+                                                         jstring entity_id,
+                                                         jstring title,
+                                                         jstring parent_id) {
+  fake_server::FakeServer* fake_server_ptr =
+      reinterpret_cast<fake_server::FakeServer*>(fake_server);
+
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(
+          base::android::ConvertJavaStringToUTF8(env, title));
+  bookmark_builder.SetParentId(
+      base::android::ConvertJavaStringToUTF8(env, parent_id));
+
+  sync_pb::SyncEntity proto;
+  bookmark_builder.BuildFolder()->SerializeAsProto(&proto);
   fake_server_ptr->ModifyEntitySpecifics(
       base::android::ConvertJavaStringToUTF8(env, entity_id),
       proto.specifics());

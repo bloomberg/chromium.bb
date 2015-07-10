@@ -75,10 +75,9 @@ class FakeServer {
   // |updated_specifics| does not match the entity, false is returned.
   // Otherwise, true is returned to represent a successful modification.
   //
-  // TODO(pvalenzuela): This method should support updating entity data beyond
-  // EntitySpecifics. For example, in the case of a bookmark, changing the
-  // BookmarkSpecifics title field currently does not modify the top-level
-  // entity's name field.
+  // This method sometimes updates entity data beyond EntitySpecifics. For
+  // example, in the case of a bookmark, changing the BookmarkSpecifics title
+  // field will modify the top-level entity's name field.
   bool ModifyEntitySpecifics(const std::string& id,
                              const sync_pb::EntitySpecifics& updated_specifics);
 
