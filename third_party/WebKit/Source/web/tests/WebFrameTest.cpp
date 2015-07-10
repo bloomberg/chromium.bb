@@ -7690,7 +7690,7 @@ public:
 
 class WebFrameOverscrollTest : public WebFrameTest {
 protected:
-    WebGestureEvent generateEvent(WebInputEvent::Type type, int deltaX = 0, int deltaY = 0)
+    WebGestureEvent generateEvent(WebInputEvent::Type type, float deltaX = 0.0, float deltaY = 0.0)
     {
         WebGestureEvent event;
         event.type = type;
@@ -7920,6 +7920,56 @@ TEST_F(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled)
     Mock::VerifyAndClearExpectations(&client);
 
     // Overscroll is not reported.
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
+    ScrollEnd(&webViewHelper);
+    Mock::VerifyAndClearExpectations(&client);
+}
+
+TEST_F(WebFrameOverscrollTest, NoOverscrollForSmallvalues)
+{
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("overscroll/overscroll.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "overscroll/overscroll.html", true, 0, &client, configureAndroid);
+
+    ScrollBegin(&webViewHelper);
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(-10, -10), WebFloatSize(-10, -10), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 10, 10);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, -0.10), WebFloatSize(-10, -10.10), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0, 0.10);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(-0.10, 0), WebFloatSize(-10.10, -10.10), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0.10, 0);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // For residual values overscrollDelta should be reset and didOverscroll shouldn't be called.
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
+    ScrollUpdate(&webViewHelper, 0, 0.09);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
+    ScrollUpdate(&webViewHelper, 0.09, 0.09);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
+    ScrollUpdate(&webViewHelper, 0.09, 0);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
+    ScrollUpdate(&webViewHelper, 0, -0.09);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
+    ScrollUpdate(&webViewHelper, -0.09, -0.09);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
+    ScrollUpdate(&webViewHelper, -0.09, 0);
+    Mock::VerifyAndClearExpectations(&client);
+
     EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollEnd(&webViewHelper);
     Mock::VerifyAndClearExpectations(&client);

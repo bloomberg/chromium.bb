@@ -132,6 +132,10 @@ static const double TextDragDelay = 0.15;
 static const double TextDragDelay = 0.0;
 #endif
 
+// Report Overscroll if OverscrollDelta is greater than minimumOverscrollDelta
+// to maintain consistency as did in compositor.
+static const float minimumOverscrollDelta = 0.1;
+
 enum NoCursorChangeType { NoCursorChange };
 
 enum class DragInitiator { Mouse, Touch };
@@ -2241,9 +2245,20 @@ void EventHandler::resetOverscroll(bool didScrollX, bool didScrollY)
         m_accumulatedRootOverscroll.setHeight(0);
 }
 
+static inline FloatSize adjustOverscoll(FloatSize unusedDelta)
+{
+    if (std::abs(unusedDelta.width()) < minimumOverscrollDelta)
+        unusedDelta.setWidth(0);
+    if (std::abs(unusedDelta.height()) < minimumOverscrollDelta)
+        unusedDelta.setHeight(0);
+
+    return unusedDelta;
+}
+
 void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const FloatPoint& position, const FloatSize& velocity)
 {
     FloatSize unusedDelta(scrollResult.unusedScrollDeltaX, scrollResult.unusedScrollDeltaY);
+    unusedDelta = adjustOverscoll(unusedDelta);
     resetOverscroll(scrollResult.didScrollX, scrollResult.didScrollY);
     if (unusedDelta != FloatSize()) {
         m_accumulatedRootOverscroll += unusedDelta;
