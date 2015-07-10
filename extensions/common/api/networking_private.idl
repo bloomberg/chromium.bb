@@ -121,7 +121,7 @@ namespace networkingPrivate {
 
   dictionary ProxyLocation {
     DOMString Host;
-    DOMString Port;
+    long Port;
   };
 
   dictionary ManualProxySettings {

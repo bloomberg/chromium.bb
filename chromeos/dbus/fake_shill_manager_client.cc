@@ -611,6 +611,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       shill::kPrefixlenProperty, 1);
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
       shill::kMethodProperty, shill::kTypeIPv4);
+  ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
+      shill::kWebProxyAutoDiscoveryUrlProperty, "http://wpad.com/wpad.dat");
   ip_configs->AddIPConfig("ipconfig_v4_path", ipconfig_v4_dictionary);
   base::DictionaryValue ipconfig_v6_dictionary;
   ipconfig_v6_dictionary.SetStringWithoutPathExpansion(

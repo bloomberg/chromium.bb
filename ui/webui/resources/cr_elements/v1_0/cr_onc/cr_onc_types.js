@@ -63,6 +63,33 @@ CrOnc.IPConfigProperties;
  */
 CrOnc.IPConfigUIProperties;
 
+// TODO(stevenjb): Update chrome_extensions.js to include ProxySettings
+// in chrome.networkingPrivate and use that.
+/** @typedef {{
+ *    Host: string,
+ *    Port: number
+ * }}
+ */
+CrOnc.ProxyLocation;
+
+/** @typedef {{
+ *    HTTPProxy: ?CrOnc.ProxyLocation,
+ *    SecureHTTPProxy: ?CrOnc.ProxyLocation,
+ *    FTPProxy: ?CrOnc.ProxyLocation,
+ *    SOCKS: ?CrOnc.ProxyLocation
+ * }}
+ */
+CrOnc.ManualProxySettings;
+
+/** @typedef {{
+ *    Type: !CrOnc.ProxySettingsType,
+ *    Manual: ?CrOnc.ManualProxySettings,
+ *    ExcludeDomains: ?Array<string>,
+ *    PAC: (string|undefined)
+ * }}
+ */
+CrOnc.ProxySettings;
+
 /** @enum {string} */
 CrOnc.Type = {
   CELLULAR: 'Cellular',
@@ -104,6 +131,14 @@ CrOnc.NetworkTechnology = {
   LTE_ADVANCED: 'LTEAdvanced',
   UMTS: 'UMTS',
   UNKNOWN: 'Unknown',
+};
+
+/** @enum {string} */
+CrOnc.ProxySettingsType = {
+  DIRECT: 'Direct',
+  MANUAL: 'Manual',
+  PAC: 'PAC',
+  WPAD: 'WPAD',
 };
 
 /** @enum {string} */

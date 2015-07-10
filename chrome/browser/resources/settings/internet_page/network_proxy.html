@@ -1,0 +1,81 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/paper-styles.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
+<link rel="import" href="network_property_list.html">
+<link rel="import" href="network_proxy_input.html">
+<link rel="import" href="network_proxy_exclusions.html">
+
+<dom-module id="network-proxy">
+  <link rel="import" type="css" href="network_proxy.css">
+  <template>
+    <div id="outer" class="layout vertical flex">
+      <!-- TODO(stevenjb): Use cr-dropdown-menu once available. -->
+      <div>
+        <select id="selectType" on-change="onTypeChange_">
+          <template is="dom-repeat" items="[[proxyTypes_]]">
+            <option value="[[item]]">[[proxyTypeDesc_(item)]]</option>
+          </template>
+        </select>
+      </div>
+
+      <div hidden$="[[!matches_(proxy.Type, ProxySettingsType.PAC)]]"
+          class="layout horizontal">
+        <span>Autoconfiguration URL:</span>
+        <cr-input no-label-float class="flex" value="{{proxy.PAC}}"
+            on-blur="onProxyInputChanged_">
+        </cr-input>
+      </div>
+
+      <div hidden$="[[!matches_(proxy.Type, ProxySettingsType.WPAD)]]"
+          class="layout horizontal">
+        <span>Web Proxy Auto Discovery URL:</span><span>[[WPAD]]</span>
+      </div>
+
+      <div hidden$="[[!matches_(proxy.Type, ProxySettingsType.MANUAL)]]"
+          class="layout vertical">
+        <cr-checkbox id="useUrl" checked="{{useSameProxy}}">
+            Use the same proxy for all protocols
+        </cr-checkbox>
+        <div hidden$="[[!useSameProxy]]" class="layout vertical">
+          <network-proxy-input editable="[[editable]]"
+              value="{{proxy.Manual.HTTPProxy}}"
+              label="Proxy" on-changed="onProxyInputChanged_">
+          </network-proxy-input>
+        </div>
+        <div hidden$="[[useSameProxy]]" class="layout vertical">
+          <network-proxy-input editable="[[editable]]"
+              value="{{proxy.Manual.HTTPProxy}}"
+              label="HTTP Proxy" on-changed="onProxyInputChanged_">
+          </network-proxy-input>
+          <network-proxy-input editable="[[editable]]"
+              value="{{proxy.Manual.SecureHTTPProxy}}"
+              label="Secure HTTP Proxy" on-changed="onProxyInputChanged_">
+          </network-proxy-input>
+          <network-proxy-input editable="[[editable]]"
+              value="{{proxy.Manual.FTPProxy}}"
+              label="FTP Proxy" on-changed="onProxyInputChanged_">
+          </network-proxy-input>
+          <network-proxy-input editable="[[editable]]"
+              value="{{proxy.Manual.SOCKS}}"
+              label="SOCKS host" on-changed="onProxyInputChanged_">
+          </network-proxy-input>
+        </div>
+
+        <span>Do not use the proxy settings for these hosts and domains:</span>
+        <network-proxy-exclusions exclusions="{{proxy.ExcludeDomains}}"
+             on-changed="onProxyExclusionsChanged_">
+        </network-proxy-exclusions>
+        <div class="layout horizontal baseline">
+          <cr-input id="proxyExclusion" class="flex" no-label-float>
+          </cr-input>
+          <cr-button on-click="onAddProxyExclusion_">
+            Add Exception
+          </cr-button>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script src="network_proxy.js"></script>
+</dom-module>

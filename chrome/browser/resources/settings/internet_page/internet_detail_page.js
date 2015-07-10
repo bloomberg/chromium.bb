@@ -356,6 +356,23 @@ Polymer({
   },
 
   /**
+   * Event triggered when the Proxy configuration element changes.
+   * @param {!{detail: { field: string, value: CrOnc.ProxySettings}}} event
+   *     The network-proxy changed event.
+   * @private
+   */
+  onProxyChanged_: function(event) {
+    var field = event.detail.field;
+    var value = event.detail.value;
+    console.debug('DetailPage.ProxyChanged: ' + field);
+    console.debug(value);
+    if (field != 'ProxySettings')
+      return;
+    var onc = { ProxySettings: value };
+    this.setNetworkProperties_(onc);
+  },
+
+  /**
    * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {boolean} True if the AutoConnect checkbox should be shown.
    * @private

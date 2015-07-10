@@ -34,6 +34,10 @@
   margin-bottom: 10px;
 }
 
+#proxyDiv {
+  max-width: 500px;
+}
+
 cr-collapse {
   margin: 10px;
 }

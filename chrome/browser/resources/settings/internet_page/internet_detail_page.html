@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
@@ -7,6 +8,7 @@
 <link rel="import" href="network_ip_config.html">
 <link rel="import" href="network_nameservers.html">
 <link rel="import" href="network_property_list.html">
+<link rel="import" href="network_proxy.html">
 
 <dom-module id="cr-settings-internet-detail-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
@@ -70,6 +72,21 @@
                   fields="[[getAdvancedFields_(networkState)]]"
                   network-state="[[networkState]]">
               </network-property-list>
+
+              <div class="layout vertical"
+                  hidden$="[[!hasNetworkSection_(networkState)]]">
+                <cr-button toggles active="{{proxyExpanded}}">
+                  Proxy
+                </cr-button>
+                <cr-collapse opened="[[proxyExpanded]]">
+                  <div id="proxyDiv" class="layout vertical flex">
+                    <network-proxy editable
+                        network-state="[[networkState]]"
+                        on-changed="onProxyChanged_">
+                    </network-proxy>
+                  </div>
+                </cr-collapse>
+              </div>
 
               <div class="layout vertical"
                   hidden$="[[!hasDeviceFields_(networkState)]]">
