@@ -221,6 +221,7 @@ def RevertPreviouslyPatchedFiles():
     '%(compiler_rt)s/test/tsan/signal_segv_handler.cc',
     '%(compiler_rt)s/lib/sanitizer_common/sanitizer_coverage_libcdep.cc',
     '%(compiler_rt)s/cmake/config-ix.cmake',
+    '%(compiler_rt)s/CMakeLists.txt',
     '%(compiler_rt)s/lib/ubsan/ubsan_platform.h',
     ]
   for f in files:
@@ -282,30 +283,16 @@ def ApplyLocalPatches():
   # The UBSan run-time, which is now bundled with the ASan run-time, doesn't
   # work on Mac OS X 10.8 (PR23539).
   compiler_rt_patches = [ r"""\
---- cmake/config-ix.cmake
-+++ cmake/config-ix.cmake
-@@ -319,7 +319,7 @@ else()
- endif()
- 
- if (COMPILER_RT_HAS_SANITIZER_COMMON AND UBSAN_SUPPORTED_ARCH AND
--    OS_NAME MATCHES "Darwin|Linux|FreeBSD")
-+    OS_NAME MATCHES "Linux|FreeBSD")
-   set(COMPILER_RT_HAS_UBSAN TRUE)
- else()
-   set(COMPILER_RT_HAS_UBSAN FALSE)
-diff --git a/lib/ubsan/ubsan_platform.h b/lib/ubsan/ubsan_platform.h
-index 8ba253b..d5dce8d 100644
---- lib/ubsan/ubsan_platform.h
-+++ lib/ubsan/ubsan_platform.h
-@@ -14,7 +14,7 @@
- #define UBSAN_PLATFORM_H
- 
- // Other platforms should be easy to add, and probably work as-is.
--#if (defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)) && \
-+#if (defined(__linux__) || defined(__FreeBSD__)) && \
-     (defined(__x86_64__) || defined(__i386__) || defined(__arm__) || \
-      defined(__aarch64__) || defined(__mips__) || defined(__powerpc64__))
- # define CAN_SANITIZE_UB 1
+--- CMakeLists.txt	(revision 241602)
++++ CMakeLists.txt	(working copy)
+@@ -305,6 +305,7 @@
+       list(APPEND SANITIZER_COMMON_SUPPORTED_OS iossim)
+     endif()
+   endif()
++  set(SANITIZER_MIN_OSX_VERSION "10.7")
+   if(SANITIZER_MIN_OSX_VERSION VERSION_LESS "10.7")
+     message(FATAL_ERROR "Too old OS X version: ${SANITIZER_MIN_OSX_VERSION}")
+   endif()
 """
       ]
 
@@ -537,6 +524,18 @@ def UpdateClang(args):
       os.remove('libc++.dylib')
     os.symlink('libc++.1.dylib', 'libc++.dylib')
     ldflags += ['-stdlib=libc++', '-L' + libcxxbuild]
+
+    if args.bootstrap:
+      # Now that the libc++ headers have been installed and libc++.dylib is
+      # built, delete the libc++ checkout again so that it's not part of the
+      # main build below -- the libc++(abi) tests don't pass on OS X in
+      # bootstrap builds (http://llvm.org/PR24068)
+      RmTree(LIBCXX_DIR)
+      RmTree(LIBCXXABI_DIR)
+      cxxflags = ['-stdlib=libc++', '-nostdinc++',
+                  '-I' + os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR,
+                                      'include/c++/v1')
+                  ] + cflags
 
   # Build clang.
   binutils_incdir = ''

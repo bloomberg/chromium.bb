@@ -75,6 +75,9 @@ def main():
            log, fail_hard=False)
     TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'tools', 'clang')],
            log, fail_hard=False)
+    # TODO(thakis): compiler-rt is in projects/compiler-rt on Windows but
+    # llvm/compiler-rt elsewhere. So this diff call is currently only right on
+    # Windows.
     Tee('Diff in llvm/compiler-rt:\n', log)
     TeeCmd(['svn', 'stat', os.path.join(LLVM_DIR, 'projects', 'compiler-rt')],
            log, fail_hard=False)

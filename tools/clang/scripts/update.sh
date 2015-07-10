@@ -8,10 +8,10 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=239765
+CLANG_REVISION=241602
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=2
 
 PACKAGE_VERSION="${CLANG_REVISION}-${CLANG_SUB_REVISION}"
 
@@ -317,6 +317,7 @@ for i in \
       "${COMPILER_RT_DIR}/test/tsan/signal_segv_handler.cc" \
       "${COMPILER_RT_DIR}/lib/sanitizer_common/sanitizer_coverage_libcdep.cc" \
       "${COMPILER_RT_DIR}/cmake/config-ix.cmake" \
+      "${COMPILER_RT_DIR}/CMakeLists.txt" \
       "${COMPILER_RT_DIR}/lib/ubsan/ubsan_platform.h" \
       ; do
   if [[ -e "${i}" ]]; then
@@ -418,30 +419,18 @@ EOF
   # on Mac OS X 10.8 (PR23539).
   pushd "${COMPILER_RT_DIR}"
   cat << 'EOF' |
---- cmake/config-ix.cmake
-+++ cmake/config-ix.cmake
-@@ -319,7 +319,7 @@ else()
- endif()
- 
- if (COMPILER_RT_HAS_SANITIZER_COMMON AND UBSAN_SUPPORTED_ARCH AND
--    OS_NAME MATCHES "Darwin|Linux|FreeBSD")
-+    OS_NAME MATCHES "Linux|FreeBSD")
-   set(COMPILER_RT_HAS_UBSAN TRUE)
- else()
-   set(COMPILER_RT_HAS_UBSAN FALSE)
-diff --git a/lib/ubsan/ubsan_platform.h b/lib/ubsan/ubsan_platform.h
-index 8ba253b..d5dce8d 100644
---- lib/ubsan/ubsan_platform.h
-+++ lib/ubsan/ubsan_platform.h
-@@ -14,7 +14,7 @@
- #define UBSAN_PLATFORM_H
- 
- // Other platforms should be easy to add, and probably work as-is.
--#if (defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)) && \
-+#if (defined(__linux__) || defined(__FreeBSD__)) && \
-     (defined(__x86_64__) || defined(__i386__) || defined(__arm__) || \
-      defined(__aarch64__) || defined(__mips__) || defined(__powerpc64__))
- # define CAN_SANITIZE_UB 1
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(revision 241602)
++++ CMakeLists.txt	(working copy)
+@@ -305,6 +305,7 @@
+       list(APPEND SANITIZER_COMMON_SUPPORTED_OS iossim)
+     endif()
+   endif()
++  set(SANITIZER_MIN_OSX_VERSION "10.7")
+   if(SANITIZER_MIN_OSX_VERSION VERSION_LESS "10.7")
+     message(FATAL_ERROR "Too old OS X version: ${SANITIZER_MIN_OSX_VERSION}")
+   endif()
 EOF
   patch -p0
   popd
@@ -567,6 +556,16 @@ if [ "${OS}" = "Darwin" ]; then
   ln -sf libc++.1.dylib libc++.dylib
   popd
   LDFLAGS+="-stdlib=libc++ -L${PWD}/libcxxbuild"
+
+  if [[ -n "${bootstrap}" ]]; then
+    # Now that the libc++ headers have been installed and libc++.dylib is built,
+    # delete the libc++ checkout again so that it's not part of the main
+    # build below -- the libc++(abi) tests don't pass on OS X in bootstrap
+    # builds (http://llvm.org/PR24068)
+    rm -rf "${ABS_LIBCXX_DIR}"
+    rm -rf "${ABS_LIBCXXABI_DIR}"
+    CXXFLAGS="-stdlib=libc++ -nostdinc++ -I${ABS_INSTALL_DIR}/include/c++/v1 ${CFLAGS}"
+  fi
 fi
 
 # Find the binutils include dir for the gold plugin.
