@@ -6409,8 +6409,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_SMART_LOCK_FOR_PASSWORDS" desc="The more descriptive brand name of the password manager when the user is signed in. Used in various UI elements, can be in link format.">
         Google Smart Lock for Passwords
       </message>
-      <message name="IDS_PASSWORD_MANAGER_SMART_LOCK_ARTICLE" desc="URL of help center page explaining what the 'Google Smart Lock' is.">
-        https://support.google.com/accounts/answer/6197437?hl=[GRITLANGCODE]
+      <message name="IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE" desc="URL of the passwords dashboard.">
+        https://passwords.google.com/?hl=[GRITLANGCODE]
       </message>
       <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_NO_THANKS_BUTTON" desc="Text for the button the user clicks to dismiss save password bubble.">
         No thanks

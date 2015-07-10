@@ -272,7 +272,7 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
 void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_BRAND_NAME;
   ManagePasswordsUIController::FromWebContents(web_contents())
-      ->NavigateToSmartLockHelpArticle();
+      ->NavigateToSmartLockPage();
 }
 
 void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {

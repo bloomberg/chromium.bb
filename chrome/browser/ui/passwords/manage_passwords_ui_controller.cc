@@ -185,13 +185,13 @@ void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
 #endif
 }
 
-void ManagePasswordsUIController::NavigateToSmartLockHelpArticle() {
+void ManagePasswordsUIController::NavigateToSmartLockPage() {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
   chrome::NavigateParams params(
       chrome::FindBrowserWithWebContents(web_contents()),
-      GURL(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_ARTICLE)),
+      GURL(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE)),
       ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);

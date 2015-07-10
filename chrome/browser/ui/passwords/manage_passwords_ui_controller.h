@@ -108,7 +108,7 @@ class ManagePasswordsUIController
   void NavigateToExternalPasswordManager();
 
   // Open a new tab, pointing to the Smart Lock help article.
-  void NavigateToSmartLockHelpArticle();
+  void NavigateToSmartLockPage();
 
   virtual const autofill::PasswordForm& PendingPassword() const;
 

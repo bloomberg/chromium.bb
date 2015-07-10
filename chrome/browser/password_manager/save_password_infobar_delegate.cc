@@ -158,7 +158,7 @@ bool SavePasswordInfoBarDelegate::LinkClicked(
   InfoBarService::WebContentsFromInfoBar(infobar())
       ->OpenURL(content::OpenURLParams(
           GURL(l10n_util::GetStringUTF16(
-              IDS_PASSWORD_MANAGER_SMART_LOCK_ARTICLE)),
+              IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE)),
           content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
           ui::PAGE_TRANSITION_LINK, false));
