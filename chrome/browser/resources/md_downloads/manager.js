@@ -24,7 +24,7 @@ cr.define('downloads', function() {
       this.searchText_ = searchText;
 
       $('downloads-summary-text').textContent = this.searchText_ ?
-          loadTimeData.getStringF('searchresultsfor', this.searchText_) : '';
+          loadTimeData.getStringF('searchResultsFor', this.searchText_) : '';
 
       // Split quoted terms (e.g., 'The "lazy" dog' => ['The', 'lazy', 'dog']).
       function trim(s) { return s.trim(); }
@@ -107,13 +107,13 @@ cr.define('downloads', function() {
 
       var noDownloadsOrResults = $('no-downloads-or-results');
       noDownloadsOrResults.textContent = loadTimeData.getString(
-          this.searchText_ ? 'no_search_results' : 'no_downloads');
+          this.searchText_ ? 'noSearchResults' : 'noDownloads');
 
       var hasDownloads = this.size_() > 0;
       this.node_.hidden = !hasDownloads;
       noDownloadsOrResults.hidden = hasDownloads;
 
-      if (loadTimeData.getBoolean('allow_deleting_history'))
+      if (loadTimeData.getBoolean('allowDeletingHistory'))
         $('clear-all').hidden = !hasDownloads || this.searchText_.length > 0;
     },
 
@@ -135,7 +135,7 @@ cr.define('downloads', function() {
 
     /** @private */
     clearAll_: function() {
-      if (loadTimeData.getBoolean('allow_deleting_history')) {
+      if (loadTimeData.getBoolean('allowDeletingHistory')) {
         chrome.send('clearAll');
         this.setSearchText_('');
       }

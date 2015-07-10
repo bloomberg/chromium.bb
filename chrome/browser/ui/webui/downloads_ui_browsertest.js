@@ -27,7 +27,7 @@ TEST_F('BaseDownloadsWebUITest', 'NoSearchResultsShown', function() {
   this.sendEmptyList();
 
   expectTrue($('downloads-display').hidden);
-  this.checkShowing(noResults, loadTimeData.getString('no_search_results'));
+  this.checkShowing(noResults, loadTimeData.getString('noSearchResults'));
 });
 
 TEST_F('BaseDownloadsWebUITest', 'NoDownloadsAfterClearAll', function() {
@@ -39,7 +39,7 @@ TEST_F('BaseDownloadsWebUITest', 'NoDownloadsAfterClearAll', function() {
   this.sendEmptyList();
 
   expectTrue($('downloads-display').hidden);
-  this.checkShowing(noResults, loadTimeData.getString('no_downloads'));
+  this.checkShowing(noResults, loadTimeData.getString('noDownloads'));
 });
 
 TEST_F('BaseDownloadsWebUITest', 'PauseResumeFocus', function() {
@@ -126,7 +126,7 @@ EmptyDownloadsWebUITest.prototype = {
 TEST_F('EmptyDownloadsWebUITest', 'NoDownloadsMessageShowing', function() {
   expectTrue($('downloads-display').hidden);
   var noResults = $('no-downloads-or-results');
-  this.checkShowing(noResults, loadTimeData.getString('no_downloads'));
+  this.checkShowing(noResults, loadTimeData.getString('noDownloads'));
 });
 
 TEST_F('EmptyDownloadsWebUITest', 'NoSearchResultsWithNoDownloads', function() {
@@ -135,7 +135,7 @@ TEST_F('EmptyDownloadsWebUITest', 'NoSearchResultsWithNoDownloads', function() {
 
   expectTrue($('downloads-display').hidden);
   var noResults = $('no-downloads-or-results');
-  this.checkShowing(noResults, loadTimeData.getString('no_search_results'));
+  this.checkShowing(noResults, loadTimeData.getString('noSearchResults'));
 });
 
 /**

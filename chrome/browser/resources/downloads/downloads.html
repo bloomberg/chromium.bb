@@ -26,15 +26,15 @@
   <header>
     <h1 i18n-content="downloads"></h1>
     <input id="term" type="search" tabindex=1
-        i18n-values="placeholder:searchbutton" autofocus incremental>
+        i18n-values="placeholder:searchButton" autofocus incremental>
   </header>
   <div class="main">
     <div class="summary" id="downloads-summary">
       <span id="downloads-summary-text"></span>
       <span id="downloads-actions">
         <a is="action-link" id="open-downloads-folder"
-            i18n-content="open_downloads_folder"></a>
-        <a is="action-link" id="clear-all" i18n-content="clear_all" hidden></a>
+            i18n-content="openDownloadsFolder"></a>
+        <a is="action-link" id="clear-all" i18n-content="clearAll" hidden></a>
       </span>
     </div>
     <div id="downloads-display"></div>
@@ -67,19 +67,19 @@
         </div>
         <div class="controls">
           <a is="action-link" class="show" column-type="show"
-              i18n-content="control_showinfolder"></a>
-          <a class="retry" column-type="retry" i18n-content="control_retry"
+              i18n-content="controlShowInFolder"></a>
+          <a class="retry" column-type="retry" i18n-content="controlRetry"
               download></a>
           <a is="action-link" class="pause" column-type="pause"
-              i18n-content="control_pause"></a>
+              i18n-content="controlPause"></a>
           <a is="action-link" class="resume" column-type="resume"
-              i18n-content="control_resume"></a>
+              i18n-content="controlResume"></a>
           <a is="action-link" class="remove" column-type="remove"
-              i18n-content="control_removefromlist"></a>
+              i18n-content="controlRemoveFromList"></a>
           <a is="action-link" class="cancel" column-type="cancel"
-              i18n-content="control_cancel"></a>
+              i18n-content="controlCancel"></a>
           <span class="controlled-by"
-              i18n-values=".innerHTML:control_by_extension"></span>
+              i18n-values=".innerHTML:controlByExtension"></span>
         </div>
       </div>
       <div class="dangerous">
@@ -87,14 +87,14 @@
         <div class="description"></div>
         <div class="controls">
           <a is="action-link" class="restore" column-type="save"
-              i18n-content="danger_restore"></a>
+              i18n-content="dangerRestore"></a>
           <a is="action-link" class="remove" column-type="discard"
-              i18n-content="control_removefromlist"></a>
+              i18n-content="controlRemoveFromList"></a>
         </div>
         <button class="save" column-type="save"
-            i18n-content="danger_save"></button>
+            i18n-content="dangerSave"></button>
         <button class="discard" column-type="discard"
-            i18n-content="danger_discard"></button>
+            i18n-content="dangerDiscard"></button>
       </div>
     </div>
   </div>

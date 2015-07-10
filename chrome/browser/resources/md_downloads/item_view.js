@@ -98,7 +98,7 @@ cr.define('downloads', function() {
         this.$.cancel.hidden = !showCancel;
 
         this.$['safe-remove'].hidden = showCancel ||
-            !loadTimeData.getBoolean('allow_deleting_history');
+            !loadTimeData.getBoolean('allowDeletingHistory');
 
         /** @const */ var controlledByExtension = data.by_ext_id &&
                                                   data.by_ext_name;
@@ -139,18 +139,16 @@ cr.define('downloads', function() {
     getDangerText_: function(data) {
       switch (data.danger_type) {
         case downloads.DangerType.DANGEROUS_FILE:
-          return loadTimeData.getStringF('danger_file_desc', data.file_name);
+          return loadTimeData.getStringF('dangerFileDesc', data.file_name);
         case downloads.DangerType.DANGEROUS_URL:
-          return loadTimeData.getString('danger_url_desc');
+          return loadTimeData.getString('dangerUrlDesc');
         case downloads.DangerType.DANGEROUS_CONTENT:  // Fall through.
         case downloads.DangerType.DANGEROUS_HOST:
-          return loadTimeData.getStringF('danger_content_desc', data.file_name);
+          return loadTimeData.getStringF('dangerContentDesc', data.file_name);
         case downloads.DangerType.UNCOMMON_CONTENT:
-          return loadTimeData.getStringF('danger_uncommon_desc',
-                                         data.file_name);
+          return loadTimeData.getStringF('dangerUncommonDesc', data.file_name);
         case downloads.DangerType.POTENTIALLY_UNWANTED:
-          return loadTimeData.getStringF('danger_settings_desc',
-                                         data.file_name);
+          return loadTimeData.getStringF('dangerSettingsDesc', data.file_name);
         default:
           return '';
       }
@@ -168,7 +166,7 @@ cr.define('downloads', function() {
           assert(typeof data.progress_status_text == 'string');
           return data.progress_status_text;
         case downloads.States.CANCELLED:
-          return loadTimeData.getString('status_cancelled');
+          return loadTimeData.getString('statusCancelled');
         case downloads.States.DANGEROUS:
           break;  // Intentionally hit assertNotReached(); at bottom.
         case downloads.States.INTERRUPTED:
@@ -176,7 +174,7 @@ cr.define('downloads', function() {
           return data.last_reason_text;
         case downloads.States.COMPLETE:
           return data.file_externally_removed ?
-              loadTimeData.getString('status_removed') : '';
+              loadTimeData.getString('statusRemoved') : '';
       }
       assertNotReached();
       return '';

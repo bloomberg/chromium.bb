@@ -41,51 +41,50 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
-  source->AddLocalizedString("searchbutton", IDS_DOWNLOAD_SEARCH_BUTTON);
-  source->AddLocalizedString("searchresultsfor", IDS_DOWNLOAD_SEARCHRESULTSFOR);
+  source->AddLocalizedString("searchButton", IDS_DOWNLOAD_SEARCH_BUTTON);
+  source->AddLocalizedString("searchResultsFor", IDS_DOWNLOAD_SEARCHRESULTSFOR);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
-  source->AddLocalizedString("clear_all", IDS_DOWNLOAD_LINK_CLEAR_ALL);
-  source->AddLocalizedString("open_downloads_folder",
+  source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);
+  source->AddLocalizedString("openDownloadsFolder",
                              IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
 
   // No results/downloads messages that show instead of the downloads list.
-  source->AddLocalizedString("no_downloads", IDS_DOWNLOAD_NO_DOWNLOADS);
-  source->AddLocalizedString("no_search_results",
+  source->AddLocalizedString("noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS);
+  source->AddLocalizedString("noSearchResults",
                              IDS_DOWNLOAD_NO_SEARCH_RESULTS);
 
   // Status.
-  source->AddLocalizedString("status_cancelled", IDS_DOWNLOAD_TAB_CANCELLED);
-  source->AddLocalizedString("status_removed", IDS_DOWNLOAD_FILE_REMOVED);
+  source->AddLocalizedString("statusCancelled", IDS_DOWNLOAD_TAB_CANCELLED);
+  source->AddLocalizedString("statusRemoved", IDS_DOWNLOAD_FILE_REMOVED);
 
   // Dangerous file.
-  source->AddLocalizedString("danger_file_desc", IDS_PROMPT_DANGEROUS_DOWNLOAD);
-  source->AddLocalizedString("danger_url_desc",
+  source->AddLocalizedString("dangerFileDesc", IDS_PROMPT_DANGEROUS_DOWNLOAD);
+  source->AddLocalizedString("dangerUrlDesc",
                              IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
-  source->AddLocalizedString("danger_content_desc",
+  source->AddLocalizedString("dangerContentDesc",
                              IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT);
-  source->AddLocalizedString("danger_uncommon_desc",
+  source->AddLocalizedString("dangerUncommonDesc",
                              IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT);
-  source->AddLocalizedString("danger_settings_desc",
+  source->AddLocalizedString("dangerSettingsDesc",
                              IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS);
-  source->AddLocalizedString("danger_save", IDS_CONFIRM_DOWNLOAD);
-  source->AddLocalizedString("danger_restore", IDS_CONFIRM_DOWNLOAD_RESTORE);
-  source->AddLocalizedString("danger_discard", IDS_DISCARD_DOWNLOAD);
+  source->AddLocalizedString("dangerSave", IDS_CONFIRM_DOWNLOAD);
+  source->AddLocalizedString("dangerRestore", IDS_CONFIRM_DOWNLOAD_RESTORE);
+  source->AddLocalizedString("dangerDiscard", IDS_DISCARD_DOWNLOAD);
 
   // Controls.
-  source->AddLocalizedString("control_pause", IDS_DOWNLOAD_LINK_PAUSE);
-  if (browser_defaults::kDownloadPageHasShowInFolder) {
-    source->AddLocalizedString("control_showinfolder", IDS_DOWNLOAD_LINK_SHOW);
-  }
-  source->AddLocalizedString("control_retry", IDS_DOWNLOAD_LINK_RETRY);
-  source->AddLocalizedString("control_cancel", IDS_DOWNLOAD_LINK_CANCEL);
-  source->AddLocalizedString("control_resume", IDS_DOWNLOAD_LINK_RESUME);
-  source->AddLocalizedString("control_removefromlist",
+  source->AddLocalizedString("controlPause", IDS_DOWNLOAD_LINK_PAUSE);
+  if (browser_defaults::kDownloadPageHasShowInFolder)
+    source->AddLocalizedString("controlShowInFolder", IDS_DOWNLOAD_LINK_SHOW);
+  source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
+  source->AddLocalizedString("controlCancel", IDS_DOWNLOAD_LINK_CANCEL);
+  source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
+  source->AddLocalizedString("controlRemoveFromList",
                              IDS_DOWNLOAD_LINK_REMOVE);
-  source->AddLocalizedString("control_by_extension",
+  source->AddLocalizedString("controlByExtension",
                              IDS_DOWNLOAD_BY_EXTENSION);
 
   PrefService* prefs = profile->GetPrefs();
-  source->AddBoolean("allow_deleting_history",
+  source->AddBoolean("allowDeletingHistory",
                      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory) &&
                      !profile->IsSupervised());
 
