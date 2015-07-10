@@ -87,10 +87,7 @@ FFMPEG_TEST_CASE(Cr110849,
                  "security/110849.mkv",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
-FFMPEG_TEST_CASE(Cr112384,
-                 "security/112384.webm",
-                 DEMUXER_ERROR_COULD_NOT_PARSE,
-                 DEMUXER_ERROR_COULD_NOT_PARSE);
+FFMPEG_TEST_CASE(Cr112384, "security/112384.webm", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr112976, "security/112976.ogg", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr116927,
                  "security/116927.ogv",
@@ -115,10 +112,7 @@ FFMPEG_TEST_CASE(Cr152691,
                  "security/152691.mp3",
                  PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
-FFMPEG_TEST_CASE(Cr161639,
-                 "security/161639.m4a",
-                 PIPELINE_OK,
-                 PIPELINE_ERROR_DECODE);
+FFMPEG_TEST_CASE(Cr161639, "security/161639.m4a", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr222754,
                  "security/222754.mp4",
                  PIPELINE_OK,
@@ -131,10 +125,7 @@ FFMPEG_TEST_CASE(Cr234630b,
 FFMPEG_TEST_CASE(Cr242786, "security/242786.webm", PIPELINE_OK, PIPELINE_OK);
 // Test for out-of-bounds access with slightly corrupt file (detection logic
 // thinks it's a MONO file, but actually contains STEREO audio).
-FFMPEG_TEST_CASE(Cr275590,
-                 "security/275590.m4a",
-                 DECODER_ERROR_NOT_SUPPORTED,
-                 DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(Cr275590, "security/275590.m4a", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr444522, "security/444522.mp4", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr444539,
                  "security/444539.m4a",
@@ -331,7 +322,7 @@ TEST_P(FFmpegRegressionTest, BasicPlayback) {
   if (GetParam().init_status == PIPELINE_OK) {
     ASSERT_EQ(PIPELINE_OK, Start(GetParam().filename, kClockless));
     Play();
-    ASSERT_EQ(WaitUntilEndedOrError(), GetParam().end_status);
+    ASSERT_EQ(GetParam().end_status, WaitUntilEndedOrError());
 
     // Check for ended if the pipeline is expected to finish okay.
     if (GetParam().end_status == PIPELINE_OK) {

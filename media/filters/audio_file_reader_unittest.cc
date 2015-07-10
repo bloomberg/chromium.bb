@@ -211,8 +211,8 @@ TEST_F(AudioFileReaderTest, CorruptMP3) {
           "-4.95,-2.95,-0.44,1.16,0.31,-2.21,",
           1,
           44100,
-          base::TimeDelta::FromMicroseconds(1018826),
-          44931,
+          base::TimeDelta::FromMicroseconds(1018801),
+          44930,
           44928);
 }
 

@@ -636,7 +636,7 @@ TEST_F(FFmpegDemuxerTest, Read_EndOfStream_NoDuration_VideoOnly) {
   CreateDemuxer("bear-320x240-video-only.webm");
   InitializeDemuxer();
   set_duration_known(false);
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2703)));
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2736)));
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::VIDEO));
 }
 

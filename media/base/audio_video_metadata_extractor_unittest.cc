@@ -188,9 +188,8 @@ TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
   EXPECT_EQ(0u, extractor->stream_infos()[1].tags.size());
 
   EXPECT_EQ("png", extractor->stream_infos()[2].type);
-  EXPECT_EQ(2u, extractor->stream_infos()[2].tags.size());
+  EXPECT_EQ(1u, extractor->stream_infos()[2].tags.size());
   EXPECT_EQ("Other", extractor->stream_infos()[2].tags.find("comment")->second);
-  EXPECT_EQ("", extractor->stream_infos()[2].tags.find("title")->second);
 
   EXPECT_EQ(1u, extractor->attached_images_bytes().size());
   EXPECT_EQ(155752u, extractor->attached_images_bytes()[0].size());

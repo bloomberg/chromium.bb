@@ -238,8 +238,15 @@ bool RendererImpl::GetWallClockTimes(
   // TODO(scherkus): Currently called from VideoRendererImpl's internal thread,
   // which should go away at some point http://crbug.com/110814
   if (clockless_video_playback_enabled_for_testing_) {
-    *wall_clock_times = std::vector<base::TimeTicks>(media_timestamps.size(),
-                                                     base::TimeTicks::Now());
+    if (media_timestamps.empty()) {
+      *wall_clock_times = std::vector<base::TimeTicks>(1,
+                                                       base::TimeTicks::Now());
+    } else {
+      *wall_clock_times = std::vector<base::TimeTicks>();
+      for (auto const &media_time : media_timestamps) {
+        wall_clock_times->push_back(base::TimeTicks() + media_time);
+      }
+    }
     return true;
   }
 
