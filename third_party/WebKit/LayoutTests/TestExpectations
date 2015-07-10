@@ -1602,6 +1602,8 @@ crbug.com/450493 [ Win ] http/tests/inspector/resource-tree/resource-tree-frame-
 crbug.com/450493 [ Win ] inspector/console/console-trace-arguments.html [ Failure Pass ]
 crbug.com/450493 [ Win ] virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 
+crbug.com/509036 fast/js/mozilla/strict/15.5.5.2.html [ NeedsManualRebaseline ]
+
 # Very flaky on Win Debug since it was last updated in r191233
 crbug.com/461903 [ Win Debug ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Failure ]
 
