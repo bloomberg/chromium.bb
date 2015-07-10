@@ -102,8 +102,6 @@ NotificationConstructor status=stable
 NotificationExperimental status=test
 Notifications status=stable
 OrientationEvent
-// The overflowchanged event is being removed. crbug.com/460822
-OverflowChangedEvent
 // Only enabled on Android, and for certain layout tests on Linux.
 OverlayFullscreenVideo
 OverlayScrollbars

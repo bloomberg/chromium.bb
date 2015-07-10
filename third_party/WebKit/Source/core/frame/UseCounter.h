@@ -212,7 +212,6 @@ public:
         DocumentUnloadFired = 203,
         SVGLocatableNearestViewportElement = 204,
         SVGLocatableFarthestViewportElement = 205,
-        OverflowChangedEvent = 208,
         SVGPointMatrixTransform = 209,
         DOMFocusInOutEvent = 211,
         FileGetLastModifiedDate = 212,

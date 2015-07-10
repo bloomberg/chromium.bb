@@ -86,7 +86,6 @@ public:
     BLINK_EXPORT bool isMessageEvent() const;
     BLINK_EXPORT bool isWheelEvent() const;
     BLINK_EXPORT bool isBeforeTextInsertedEvent() const;
-    BLINK_EXPORT bool isOverflowEvent() const;
     BLINK_EXPORT bool isPageTransitionEvent() const;
     BLINK_EXPORT bool isPopStateEvent() const;
     BLINK_EXPORT bool isProgressEvent() const;

@@ -655,13 +655,12 @@ public:
         DOMNODEREMOVEDFROMDOCUMENT_LISTENER  = 1 << 3,
         DOMNODEINSERTEDINTODOCUMENT_LISTENER = 1 << 4,
         DOMCHARACTERDATAMODIFIED_LISTENER    = 1 << 5,
-        OVERFLOWCHANGED_LISTENER             = 1 << 6,
-        ANIMATIONEND_LISTENER                = 1 << 7,
-        ANIMATIONSTART_LISTENER              = 1 << 8,
-        ANIMATIONITERATION_LISTENER          = 1 << 9,
-        TRANSITIONEND_LISTENER               = 1 << 10,
-        SCROLL_LISTENER                      = 1 << 12
-        // 4 bits remaining
+        ANIMATIONEND_LISTENER                = 1 << 6,
+        ANIMATIONSTART_LISTENER              = 1 << 7,
+        ANIMATIONITERATION_LISTENER          = 1 << 8,
+        TRANSITIONEND_LISTENER               = 1 << 9,
+        SCROLL_LISTENER                      = 1 << 10
+        // 5 bits remaining
     };
 
     bool hasListenerType(ListenerType listenerType) const { return (m_listenerTypes & listenerType); }

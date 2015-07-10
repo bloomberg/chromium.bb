@@ -629,7 +629,6 @@ private:
     bool contentsInCompositedLayer() const;
 
     void applyOverflowToViewport(LayoutObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
-    void updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow);
 
     void updateCounters();
     void forceLayoutParentViewIfNeeded();
@@ -761,10 +760,6 @@ private:
 
     AtomicString m_mediaType;
     AtomicString m_mediaTypeWhenNotPrinting;
-
-    bool m_overflowStatusDirty;
-    bool m_horizontalOverflow;
-    bool m_verticalOverflow;
 
     // TODO(skobes): Move this to DocumentLoader::InitialScrollState.
     bool m_wasScrolledByUser;
