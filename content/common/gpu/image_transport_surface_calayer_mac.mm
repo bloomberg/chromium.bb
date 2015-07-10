@@ -296,7 +296,8 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
 }
 
 - (void)_didCommitLayer:(CATransaction*)transaction {
-  storageProvider_->LayerUnblockBrowserIfNeeded();
+  if (storageProvider_)
+    storageProvider_->LayerUnblockBrowserIfNeeded();
   [super _didCommitLayer:transaction];
 }
 
