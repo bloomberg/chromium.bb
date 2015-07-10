@@ -11,12 +11,24 @@
 
         function testToDataURL()
         {
-            testMIMEType(document.getElementById("zero-Zero"), "0x0");
-            testMIMEType(document.getElementById("zero-oneHundred"), "0x100");
-            testMIMEType(document.getElementById("oneHundred-zero"), "100x0");
+            var canvas1 = document.getElementById("zero-Zero")
+            var canvas2 = document.getElementById("zero-oneHundred");
+            var canvas3 = document.getElementById("oneHundred-zero");
+
+            testMIMEType(canvas1, "0x0", undefined);
+            testMIMEType(canvas2, "0x100", undefined);
+            testMIMEType(canvas3, "100x0", undefined);
+
+            testMIMEType(canvas1, "0x0"  , "image/jpeg");
+            testMIMEType(canvas2, "0x100", "image/jpeg");
+            testMIMEType(canvas3, "100x0", "image/jpeg");
+
+            testMIMEType(canvas1, "0x0"  , "image/webp");
+            testMIMEType(canvas2, "0x100", "image/webp");
+            testMIMEType(canvas3, "100x0", "image/webp");
         }
 
-        function testMIMEType(canvas, description)
+        function testMIMEType(canvas, description, mimeType)
         {
             var ctx = canvas.getContext("2d");
 
@@ -26,7 +38,16 @@
             ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
             ctx.fillRect(30, 30, 55, 50);
 
-            var dataURL = canvas.toDataURL();
+            var dataURL;
+
+            if (mimeType == undefined) {
+                dataURL = canvas.toDataURL();
+                log("mimeType: unspecified");
+            } else {
+                dataURL = canvas.toDataURL(mimeType);
+                log("mimeType: " + mimeType);
+            }
+
             if (dataURL == "data:,")
                 log("PASS: Canvas of size " + description + " created data: url with no content - '" + dataURL + "'.");
             else
