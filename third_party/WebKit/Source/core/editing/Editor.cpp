@@ -295,7 +295,7 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
             revealSelectionAfterEditingOperation();
         } else {
             if (killRing)
-                addToKillRing(selectedRange().get(), false);
+                addToKillRing(selectedRange(), false);
             deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
             // Implicitly calls revealSelectionAfterEditingOperation().
         }
@@ -383,7 +383,6 @@ void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
 
 void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
 {
-    RefPtrWillBeRawPtr<Range> range = selectedRange();
     RefPtrWillBeRawPtr<DocumentFragment> fragment = nullptr;
     bool chosePlainText = false;
 
@@ -402,7 +401,7 @@ void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
         String text = pasteboard->plainText();
         if (!text.isEmpty()) {
             chosePlainText = true;
-            fragment = createFragmentFromText(range.get(), text);
+            fragment = createFragmentFromText(selectedRange(), text);
         }
     }
 
@@ -519,12 +518,14 @@ void Editor::replaceSelectionWithFragment(PassRefPtrWillBeRawPtr<DocumentFragmen
 
 void Editor::replaceSelectionWithText(const String& text, bool selectReplacement, bool smartReplace)
 {
-    replaceSelectionWithFragment(createFragmentFromText(selectedRange().get(), text), selectReplacement, smartReplace, true);
+    replaceSelectionWithFragment(createFragmentFromText(selectedRange(), text), selectReplacement, smartReplace, true);
 }
 
-PassRefPtrWillBeRawPtr<Range> Editor::selectedRange()
+EphemeralRange Editor::selectedRange()
 {
-    return frame().selection().toNormalizedRange();
+    // TODO(yosin) We should have |EphemeralRange| version of
+    // |VisibleSelection::toNormalizedRange()|.
+    return EphemeralRange(frame().selection().toNormalizedRange().get());
 }
 
 bool Editor::shouldDeleteRange(const EphemeralRange& range) const
@@ -822,8 +823,8 @@ void Editor::cut()
         return; // DHTML did the whole operation
     if (!canCut())
         return;
-    RefPtrWillBeRawPtr<Range> selection = selectedRange();
-    if (shouldDeleteRange(EphemeralRange(selection.get()))) {
+    // TODO(yosin) We should use early return style here.
+    if (shouldDeleteRange(selectedRange())) {
         spellChecker().updateMarkersForWordsAffectedByEditing(true);
         if (enclosingTextFormControl(frame().selection().start())) {
             String plainText = frame().selectedTextForClipboard();
@@ -884,7 +885,7 @@ void Editor::performDelete()
 {
     if (!canDelete())
         return;
-    addToKillRing(selectedRange().get(), false);
+    addToKillRing(selectedRange(), false);
     deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
 
     // clear the "start new kill ring sequence" setting, because it was set to true

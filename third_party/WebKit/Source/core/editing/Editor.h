@@ -190,7 +190,7 @@ public:
 
     EditingBehavior behavior() const;
 
-    PassRefPtrWillBeRawPtr<Range> selectedRange();
+    EphemeralRange selectedRange();
 
     // TODO(yosin) We should get rid of |addToKillRing()| with |Range| for
     // Oilpan.
