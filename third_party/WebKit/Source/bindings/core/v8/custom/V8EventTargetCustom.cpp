@@ -32,13 +32,30 @@
 #include "bindings/core/v8/V8EventTarget.h"
 
 #include "bindings/core/v8/V8Window.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
+
+void V8EventTarget::addEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
+{
+    if (info.Length() < 2) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
+            info.Length() == 0 ? UseCounter::AddEventListenerNoArguments : UseCounter::AddEventListenerOneArgument);
+    }
+}
 
 void V8EventTarget::addEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
 {
     if (info.Length() >= 2 && info[1]->IsObject() && !impl->toNode())
         addHiddenValueToArray(info.GetIsolate(), info.Holder(), info[1], V8EventTarget::eventListenerCacheIndex);
+}
+
+void V8EventTarget::removeEventListenerMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget*)
+{
+    if (info.Length() < 2) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()),
+            info.Length() == 0 ? UseCounter::RemoveEventListenerNoArguments : UseCounter::RemoveEventListenerOneArgument);
+    }
 }
 
 void V8EventTarget::removeEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)

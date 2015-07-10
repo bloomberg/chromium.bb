@@ -13,8 +13,14 @@ debug('void addEventListener(DOMString type, EventListener listener, optional bo
 // FIXME: should throw on missing arguments: http://crbug.com/353484
 // shouldThrow('document.addEventListener()');
 // shouldThrow('document.addEventListener("foo")');
+var AddEventListenerNoArguments = 656;
+shouldBeFalse('internals.isUseCounted(document, AddEventListenerNoArguments)');
 shouldBe('document.addEventListener()', 'undefined');
+shouldBeTrue('internals.isUseCounted(document, AddEventListenerNoArguments)');
+var AddEventListenerOneArgument = 657;
+shouldBeFalse('internals.isUseCounted(document, AddEventListenerOneArgument)');
 shouldBe('document.addEventListener("foo")', 'undefined');
+shouldBeTrue('internals.isUseCounted(document, AddEventListenerOneArgument)');
 shouldNotThrow('document.addEventListener("foo", listener)');
 shouldNotThrow('document.addEventListener("", listener)');
 shouldNotThrow('document.addEventListener("", function(){})');
@@ -44,8 +50,14 @@ debug('void removeEventListener(DOMString type, EventListener listener, optional
 // FIXME: should throw on missing arguments: http://crbug.com/353484
 // shouldThrow('document.removeEventListener()');
 // shouldThrow('document.removeEventListener("foo")');
+var RemoveEventListenerNoArguments = 658;
+shouldBeFalse('internals.isUseCounted(document, RemoveEventListenerNoArguments)');
 shouldBe('document.removeEventListener()', 'undefined');
+shouldBeTrue('internals.isUseCounted(document, RemoveEventListenerNoArguments)');
+var RemoveEventListenerOneArgument = 659;
+shouldBeFalse('internals.isUseCounted(document, RemoveEventListenerOneArgument)');
 shouldBe('document.removeEventListener("foo")', 'undefined');
+shouldBeTrue('internals.isUseCounted(document, RemoveEventListenerOneArgument)');
 shouldNotThrow('document.removeEventListener("foo", listener)');
 shouldNotThrow('document.removeEventListener("foo", listener, true)');
 shouldNotThrow('document.removeEventListener("bar", listener, false)');

@@ -216,6 +216,9 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
+{% if method.is_custom_call_prologue %}
+{{v8_class}}::{{method.name}}MethodPrologueCustom(info, impl);
+{% endif %}
 {# Local variables #}
 {% if method.is_call_with_script_state or method.is_call_with_this_value %}
 {# [ConstructorCallWith=ScriptState] #}

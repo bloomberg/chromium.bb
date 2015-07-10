@@ -122,13 +122,8 @@ public:
     virtual LocalDOMWindow* toDOMWindow();
     virtual MessagePort* toMessagePort();
 
-    // FIXME: first 2 args to addEventListener and removeEventListener should
-    // be required (per spec), but throwing TypeError breaks legacy content.
-    // http://crbug.com/353484
-    bool addEventListener();
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false);
-    bool removeEventListener();
-    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false);
+    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
+    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
     virtual void removeAllEventListeners();
     virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>, ExceptionState&); // DOM API

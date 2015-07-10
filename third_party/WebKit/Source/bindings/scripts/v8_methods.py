@@ -117,6 +117,7 @@ def method_context(interface, method, is_visible=True):
         not is_do_not_check_security)
 
     is_raises_exception = 'RaisesException' in extended_attributes
+    is_custom_call_prologue = has_extended_attribute_value(method, 'Custom', 'CallPrologue')
     is_custom_call_epilogue = has_extended_attribute_value(method, 'Custom', 'CallEpilogue')
     is_post_message = 'PostMessage' in extended_attributes
     if is_post_message:
@@ -164,7 +165,9 @@ def method_context(interface, method, is_visible=True):
         'is_check_security_for_frame': is_check_security_for_frame,
         'is_check_security_for_node': is_check_security_for_node,
         'is_check_security_for_window': is_check_security_for_window,
-        'is_custom': 'Custom' in extended_attributes and not is_custom_call_epilogue,
+        'is_custom': 'Custom' in extended_attributes and
+            not (is_custom_call_prologue or is_custom_call_epilogue),
+        'is_custom_call_prologue': is_custom_call_prologue,
         'is_custom_call_epilogue': is_custom_call_epilogue,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_do_not_check_security': is_do_not_check_security,

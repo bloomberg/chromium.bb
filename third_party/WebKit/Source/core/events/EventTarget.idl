@@ -28,8 +28,7 @@
     // FIXME: first 2 args should be required, but throwing TypeError breaks
     // legacy content.  http://crbug.com/353484
     // FIXME: type should not be nullable.
-    // FIXME: capture should have a default value false.
-    [Custom=CallEpilogue] void addEventListener(optional DOMString? type, optional EventListener? listener, optional boolean capture);
-    [Custom=CallEpilogue] void removeEventListener(optional DOMString? type, optional EventListener? listener, optional boolean capture);
+    [Custom=(CallPrologue,CallEpilogue)] void addEventListener(optional DOMString? type = null, optional EventListener? listener = null, optional boolean capture = false);
+    [Custom=(CallPrologue,CallEpilogue)] void removeEventListener(optional DOMString? type = null, optional EventListener? listener = null, optional boolean capture = false);
     [RaisesException] boolean dispatchEvent(Event event);
 };
