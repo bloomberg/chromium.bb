@@ -48,11 +48,10 @@
         on-close-route-click="showSinkList_"
         hidden$="[[computeRouteDetailsHidden_(currentView_, issue)]]">
     </route-details>
-   <!-- TODO(kdresner): Don't show this until we've given a little
+    <!-- TODO(kdresner): Don't show this until we've given a little
     bit of time to actually discover devices. Maybe show a spinner
     during this time. -->
-    <div
-        hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]">
+    <div hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]">
       <div id="device-missing"
            hidden$="[[!computeSinkListHidden_(sinkList)]]">
         <span>[[deviceMissingText_]]</span>
@@ -73,7 +72,7 @@
                   <span>[[item.name]]</span>
                 </div>
                 <div class="sink-text route"
-                     hidden$="[[computeRouteInSinkListHidden_(item.id)]]">
+                    hidden$="[[computeRouteInSinkListHidden_(item.id)]]">
                   <span>[[computeRouteInSinkListValue_(item.id)]]</span>
                 </div>
               </div>
