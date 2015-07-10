@@ -30,12 +30,6 @@ paper-dialog {
     font-size: 15px;
   };
 
-  /**
-   * TODO(dzhioev): remove when
-   * https://github.com/PolymerElements/iron-fit-behavior/issues/12 is fixed.
-   */
-  position: absolute !important;
-
   width: 384px;
 }
 
