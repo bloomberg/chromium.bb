@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
@@ -49,6 +50,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
     private final List<CurrentlyOpenTab> mCurrentlyOpenTabs;
     private final DocumentTabModel mTabModel;
     private final DocumentTabModel.InitializationObserver mUpdateOpenTabsObserver;
+    private TabModelObserver mTabModelObserver;
     private Dialog mDialog;
 
     private boolean mShowingAllInCurrentTabs;
@@ -79,7 +81,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
                     updateCurrentlyOpenTabsWhenDatabaseReady();
                 }
         };
-        mTabModel.addObserver(new EmptyTabModelObserver() {
+        mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didAddTab(Tab tab, TabLaunchType type) {
                 updateCurrentlyOpenTabsWhenDatabaseReady();
@@ -89,7 +91,8 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
             public void didCloseTab(Tab tab) {
                 updateCurrentlyOpenTabsWhenDatabaseReady();
             }
-        });
+        };
+        mTabModel.addObserver(mTabModelObserver);
         updateCurrentlyOpenTabs();
     }
 
@@ -104,6 +107,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
     @Override
     public void destroy() {
         super.destroy();
+        mTabModel.removeObserver(mTabModelObserver);
     }
 
     @Override
