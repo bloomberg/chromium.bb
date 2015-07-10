@@ -220,6 +220,7 @@ protected:
 
     RefPtrWillBeMember<WebGLQuery> m_currentBooleanOcclusionQuery;
     RefPtrWillBeMember<WebGLQuery> m_currentTransformFeedbackPrimitivesWrittenQuery;
+    WillBeHeapVector<RefPtrWillBeMember<WebGLSampler>> m_samplerUnits;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,

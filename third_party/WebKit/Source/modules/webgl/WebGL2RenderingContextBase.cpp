@@ -81,6 +81,11 @@ void WebGL2RenderingContextBase::initializeNewContext()
     webContext()->getIntegerv(GL_MAX_3D_TEXTURE_SIZE, &m_max3DTextureSize);
     m_max3DTextureLevel = WebGLTexture::computeLevelCount(m_max3DTextureSize, m_max3DTextureSize, m_max3DTextureSize);
 
+    GLint numCombinedTextureImageUnits = 0;
+    webContext()->getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &numCombinedTextureImageUnits);
+    m_samplerUnits.clear();
+    m_samplerUnits.resize(numCombinedTextureImageUnits);
+
     WebGLRenderingContextBase::initializeNewContext();
 }
 
@@ -1243,6 +1248,13 @@ PassRefPtrWillBeRawPtr<WebGLSampler> WebGL2RenderingContextBase::createSampler()
 
 void WebGL2RenderingContextBase::deleteSampler(WebGLSampler* sampler)
 {
+    for (size_t i = 0; i < m_samplerUnits.size(); ++i) {
+        if (sampler == m_samplerUnits[i]) {
+            m_samplerUnits[i] = nullptr;
+            webContext()->bindSampler(i, 0);
+        }
+    }
+
     deleteObject(sampler);
 }
 
@@ -1256,8 +1268,20 @@ GLboolean WebGL2RenderingContextBase::isSampler(WebGLSampler* sampler)
 
 void WebGL2RenderingContextBase::bindSampler(GLuint unit, WebGLSampler* sampler)
 {
-    if (isContextLost() || !validateWebGLObject("bindSampler", sampler))
+    bool deleted;
+    if (!checkObjectToBeBound("bindSampler", sampler, deleted))
         return;
+    if (deleted) {
+        synthesizeGLError(GL_INVALID_OPERATION, "bindSampler", "attempted to bind a deleted sampler");
+        return;
+    }
+
+    if (unit >= m_samplerUnits.size()) {
+        synthesizeGLError(GL_INVALID_VALUE, "bindSampler", "texture unit out of range");
+        return;
+    }
+
+    m_samplerUnits[unit] = sampler;
 
     webContext()->bindSampler(unit, objectOrZero(sampler));
 }
@@ -1826,7 +1850,8 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
         return getBooleanParameter(scriptState, pname);
     case GL_SAMPLE_COVERAGE:
         return getBooleanParameter(scriptState, pname);
-    // case GL_SAMPLER_BINDING WebGLSampler
+    case GL_SAMPLER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_samplerUnits[m_activeTextureUnit].get()));
     case GL_TEXTURE_BINDING_2D_ARRAY:
         return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding.get()));
     case GL_TEXTURE_BINDING_3D:
@@ -2126,6 +2151,7 @@ DEFINE_TRACE(WebGL2RenderingContextBase)
     visitor->trace(m_boundUniformBuffer);
     visitor->trace(m_currentBooleanOcclusionQuery);
     visitor->trace(m_currentTransformFeedbackPrimitivesWrittenQuery);
+    visitor->trace(m_samplerUnits);
     WebGLRenderingContextBase::trace(visitor);
 }
 
