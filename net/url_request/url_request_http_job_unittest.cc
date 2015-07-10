@@ -77,7 +77,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
     for (const std::string& token :
          base::SplitString(encoding_headers, ", ", base::KEEP_WHITESPACE,
                            base::SPLIT_WANT_NONEMPTY)) {
-      if (!base::strncasecmp(token.data(), "sdch", token.length()))
+      if (base::EqualsCaseInsensitiveASCII(token, "sdch"))
         return true;
     }
     return false;

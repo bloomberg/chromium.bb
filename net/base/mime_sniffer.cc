@@ -344,8 +344,10 @@ static bool MatchMagicNumber(const char* content,
   bool match = false;
   if (magic_entry.is_string) {
     if (content_strlen >= len) {
-      // String comparisons are case-insensitive
-      match = (base::strncasecmp(magic_entry.magic, content, len) == 0);
+      // Do a case-insensitive prefix comparison.
+      DCHECK_EQ(strlen(magic_entry.magic), len);
+      match = base::EqualsCaseInsensitiveASCII(magic_entry.magic,
+                                               base::StringPiece(content, len));
     }
   } else {
     if (size >= len) {
@@ -462,11 +464,12 @@ static bool SniffForOfficeDocs(const char* content,
     if (url_path.length() < kOfficeExtensionTypes[i].extension_len)
       continue;
 
-    const char* extension =
-        &url_path[url_path.length() - kOfficeExtensionTypes[i].extension_len];
-
-    if (0 == base::strncasecmp(extension, kOfficeExtensionTypes[i].extension,
-                               kOfficeExtensionTypes[i].extension_len)) {
+    base::StringPiece extension = base::StringPiece(url_path).substr(
+        url_path.length() - kOfficeExtensionTypes[i].extension_len);
+    if (base::EqualsCaseInsensitiveASCII(
+            extension,
+            base::StringPiece(kOfficeExtensionTypes[i].extension,
+                              kOfficeExtensionTypes[i].extension_len))) {
       type = kOfficeExtensionTypes[i].doc_type;
       break;
     }
@@ -608,14 +611,22 @@ static bool SniffXML(const char* content,
     if (!pos)
       return false;
 
-    if ((pos + sizeof("<?xml") - 1 <= end) &&
-        (base::strncasecmp(pos, "<?xml", sizeof("<?xml") - 1) == 0)) {
+    static const char kXmlPrefix[] = "<?xml";
+    static const size_t kXmlPrefixLength = arraysize(kXmlPrefix) - 1;
+    static const char kDocTypePrefix[] = "<!DOCTYPE";
+    static const size_t kDocTypePrefixLength = arraysize(kDocTypePrefix) - 1;
+
+    if ((pos + kXmlPrefixLength <= end) &&
+        base::EqualsCaseInsensitiveASCII(
+            base::StringPiece(pos, kXmlPrefixLength),
+            base::StringPiece(kXmlPrefix, kXmlPrefixLength))) {
       // Skip XML declarations.
       ++pos;
       continue;
-    } else if ((pos + sizeof("<!DOCTYPE") - 1 <= end) &&
-               (base::strncasecmp(pos, "<!DOCTYPE", sizeof("<!DOCTYPE") - 1) ==
-                0)) {
+    } else if ((pos + kDocTypePrefixLength <= end) &&
+               base::EqualsCaseInsensitiveASCII(
+                   base::StringPiece(pos, kDocTypePrefixLength),
+                   base::StringPiece(kDocTypePrefix, kDocTypePrefixLength))) {
       // Skip DOCTYPE declarations.
       ++pos;
       continue;

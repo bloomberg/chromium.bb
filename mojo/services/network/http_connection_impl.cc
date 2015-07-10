@@ -375,11 +375,12 @@ void HttpConnectionImpl::OnFinishedReadingResponseBody(
       //
       // TODO(yzshen): Consider adding to net::HttpServerResponseInfo a simple
       // setter for body which doesn't fiddle with headers.
-      if (base::strcasecmp(header.name.data(),
-                           net::HttpRequestHeaders::kContentLength) == 0) {
+      base::StringPiece name_piece(header.name.data(), header.name.size());
+      if (base::EqualsCaseInsensitiveASCII(
+              name_piece, net::HttpRequestHeaders::kContentLength)) {
         continue;
-      } else if (base::strcasecmp(header.name.data(),
-                                  net::HttpRequestHeaders::kContentType) == 0) {
+      } else if (base::EqualsCaseInsensitiveASCII(
+                     name_piece, net::HttpRequestHeaders::kContentType)) {
         content_type = header.value;
         continue;
       }

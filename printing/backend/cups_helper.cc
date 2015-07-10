@@ -49,48 +49,45 @@ void ParseLpOptions(const base::FilePath& filepath,
   const char kDefault[] = "default";
   const size_t kDestLen = sizeof(kDest) - 1;
   const size_t kDefaultLen = sizeof(kDefault) - 1;
-  std::vector<std::string> lines;
-  base::SplitString(content, '\n', &lines);
 
-  for (size_t i = 0; i < lines.size(); ++i) {
-    std::string line = lines[i];
-    if (line.empty())
-      continue;
-
-    if (base::strncasecmp (line.c_str(), kDefault, kDefaultLen) == 0 &&
+  for (base::StringPiece line :
+       base::SplitStringPiece(content, "\n", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    if (base::StartsWith(line, base::StringPiece(kDefault, kDefaultLen),
+                         base::CompareCase::INSENSITIVE_ASCII) &&
         isspace(line[kDefaultLen])) {
       line = line.substr(kDefaultLen);
-    } else if (base::strncasecmp (line.c_str(), kDest, kDestLen) == 0 &&
+    } else if (base::StartsWith(line, base::StringPiece(kDest, kDestLen),
+                                base::CompareCase::INSENSITIVE_ASCII) &&
                isspace(line[kDestLen])) {
       line = line.substr(kDestLen);
     } else {
       continue;
     }
 
-    base::TrimWhitespaceASCII(line, base::TRIM_ALL, &line);
+    line = base::TrimWhitespaceASCII(line, base::TRIM_ALL);
     if (line.empty())
       continue;
 
     size_t space_found = line.find(' ');
-    if (space_found == std::string::npos)
+    if (space_found == base::StringPiece::npos)
       continue;
 
-    std::string name = line.substr(0, space_found);
+    base::StringPiece name = line.substr(0, space_found);
     if (name.empty())
       continue;
 
-    if (base::strncasecmp(printer_name.c_str(), name.c_str(),
-                          name.length()) != 0) {
+    if (!base::EqualsCaseInsensitiveASCII(printer_name, name))
       continue;  // This is not the required printer.
-    }
 
     line = line.substr(space_found + 1);
     // Remove extra spaces.
-    base::TrimWhitespaceASCII(line, base::TRIM_ALL, &line);
+    line = base::TrimWhitespaceASCII(line, base::TRIM_ALL);
     if (line.empty())
       continue;
-    // Parse the selected printer custom options.
-    *num_options = cupsParseOptions(line.c_str(), 0, options);
+    // Parse the selected printer custom options. Need to pass a
+    // null-terminated string.
+    *num_options = cupsParseOptions(line.as_string().c_str(), 0, options);
   }
 }
 
@@ -157,9 +154,12 @@ bool GetBasicColorModelSettings(ppd_file_t* ppd,
 
   if (marked_choice) {
     *color_is_default =
-        (base::strcasecmp(marked_choice->choice, printing::kBlack) != 0) &&
-        (base::strcasecmp(marked_choice->choice, printing::kGray) != 0) &&
-        (base::strcasecmp(marked_choice->choice, printing::kGrayscale) != 0);
+        !base::EqualsCaseInsensitiveASCII(marked_choice->choice,
+                                          printing::kBlack) &&
+        !base::EqualsCaseInsensitiveASCII(marked_choice->choice,
+                                          printing::kGray) &&
+        !base::EqualsCaseInsensitiveASCII(marked_choice->choice,
+                                          printing::kGrayscale);
   }
   return true;
 }
@@ -190,10 +190,12 @@ bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
                                            printout_mode->defchoice);
   }
   if (printout_mode_choice) {
-    if ((base::strcasecmp(printout_mode_choice->choice,
-                          printing::kNormalGray) == 0) ||
-        (base::strcasecmp(printout_mode_choice->choice, kHighGray) == 0) ||
-        (base::strcasecmp(printout_mode_choice->choice, kDraftGray) == 0)) {
+    if (base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
+                                         printing::kNormalGray) ||
+        base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
+                                         kHighGray) ||
+        base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
+                                          kDraftGray)) {
       *color_model_for_black = printing::PRINTOUTMODE_NORMAL_GRAY;
       *color_is_default = false;
     }
@@ -223,8 +225,8 @@ bool GetColorModeSettings(ppd_file_t* ppd,
   }
 
   if (mode_choice) {
-    *color_is_default =
-        (base::strcasecmp(mode_choice->choice, printing::kColor) == 0);
+    *color_is_default = base::EqualsCaseInsensitiveASCII(
+        mode_choice->choice, printing::kColor);
   }
   return true;
 }
@@ -249,8 +251,8 @@ bool GetHPColorSettings(ppd_file_t* ppd,
                                 color_mode_option->defchoice);
   }
   if (mode_choice) {
-    *color_is_default =
-        (base::strcasecmp(mode_choice->choice, printing::kColor) == 0);
+    *color_is_default = base::EqualsCaseInsensitiveASCII(
+        mode_choice->choice, printing::kColor);
   }
   return true;
 }
@@ -279,8 +281,8 @@ bool GetProcessColorModelSettings(ppd_file_t* ppd,
   }
 
   if (mode_choice) {
-    *color_is_default =
-        (base::strcasecmp(mode_choice->choice, printing::kGreyscale) != 0);
+    *color_is_default = !base::EqualsCaseInsensitiveASCII(
+        mode_choice->choice, printing::kGreyscale);
   }
   return true;
 }
@@ -383,7 +385,7 @@ bool ParsePpdCapabilities(
 
   if (duplex_choice) {
     caps.duplex_capable = true;
-    if (base::strcasecmp(duplex_choice->choice, kDuplexNone) != 0)
+    if (!base::EqualsCaseInsensitiveASCII(duplex_choice->choice, kDuplexNone))
       caps.duplex_default = printing::LONG_EDGE;
     else
       caps.duplex_default = printing::SIMPLEX;

@@ -21,20 +21,10 @@
 
 namespace base {
 
-// C standard-library functions like "strncasecmp" and "snprintf" that aren't
-// cross-platform are provided as "base::strncasecmp", and their prototypes
-// are listed below.  These functions are then implemented as inline calls
-// to the platform-specific equivalents in the platform-specific headers.
-
-// Compares the two strings s1 and s2 without regard to case using
-// the current locale; returns 0 if they are equal, 1 if s1 > s2, and -1 if
-// s2 > s1 according to a lexicographic comparison.
-int strcasecmp(const char* s1, const char* s2);
-
-// Compares up to count characters of s1 and s2 without regard to case using
-// the current locale; returns 0 if they are equal, 1 if s1 > s2, and -1 if
-// s2 > s1 according to a lexicographic comparison.
-int strncasecmp(const char* s1, const char* s2, size_t count);
+// C standard-library functions that aren't cross-platform are provided as
+// "base::...", and their prototypes are listed below. These functions are
+// then implemented as inline calls to the platform-specific equivalents in the
+// platform-specific headers.
 
 // Wrapper for vsnprintf that always null-terminates and always returns the
 // number of characters that would be in an untruncated formatted
@@ -55,6 +45,19 @@ inline int snprintf(char* buffer, size_t size, const char* format, ...) {
   va_end(arguments);
   return result;
 }
+
+// TODO(mark) http://crbug.com/472900 crashpad shouldn't use base while
+// being DEPSed in. This backwards-compat hack is provided until crashpad is
+// updated.
+#if defined(OS_WIN)
+inline int strcasecmp(const char* s1, const char* s2) {
+  return _stricmp(s1, s2);
+}
+#else  // Posix
+inline int strcasecmp(const char* string1, const char* string2) {
+  return ::strcasecmp(string1, string2);
+}
+#endif
 
 // BSD-style safe and consistent string copy functions.
 // Copies |src| to |dst|, where |dst_size| is the total allocated size of |dst|.
@@ -102,10 +105,13 @@ template <class Char> inline Char ToUpperASCII(Char c) {
 
 // Function objects to aid in comparing/searching strings.
 
+// DO NOT USE. tolower() will given incorrect results for non-ASCII characters.
+// Use the ASCII version, base::i18n::ToLower, or base::i18n::FoldCase.
 template<typename Char> struct CaseInsensitiveCompare {
  public:
   bool operator()(Char x, Char y) const {
     // TODO(darin): Do we really want to do locale sensitive comparisons here?
+    // ANSWER(brettw): No.
     // See http://crbug.com/24917
     return tolower(x) == tolower(y);
   }
@@ -117,6 +123,22 @@ template<typename Char> struct CaseInsensitiveCompareASCII {
     return ToLowerASCII(x) == ToLowerASCII(y);
   }
 };
+
+// Like strcasecmp for case-insensitive ASCII characters only. Returns:
+//   -1  (a < b)
+//    0  (a == b)
+//    1  (a > b)
+// (unlike strcasecmp which can return values greater or less than 1/-1). For
+// full Unicode support, use base::i18n::ToLower or base::i18h::FoldCase
+// and then just call the normal string operators on the result.
+BASE_EXPORT int CompareCaseInsensitiveASCII(StringPiece a, StringPiece b);
+BASE_EXPORT int CompareCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b);
+
+// Equality for ASCII case-insensitive comparisons. For full Unicode support,
+// use base::i18n::ToLower or base::i18h::FoldCase and then compare with either
+// == or !=.
+BASE_EXPORT bool EqualsCaseInsensitiveASCII(StringPiece a, StringPiece b);
+BASE_EXPORT bool EqualsCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b);
 
 // These threadsafe functions return references to globally unique empty
 // strings.

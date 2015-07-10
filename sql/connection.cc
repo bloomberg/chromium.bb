@@ -992,7 +992,8 @@ bool Connection::DoesColumnExist(const char* table_name,
     return false;
 
   while (statement.Step()) {
-    if (!base::strcasecmp(statement.ColumnString(1).c_str(), column_name))
+    if (base::EqualsCaseInsensitiveASCII(statement.ColumnString(1),
+                                         column_name))
       return true;
   }
   return false;

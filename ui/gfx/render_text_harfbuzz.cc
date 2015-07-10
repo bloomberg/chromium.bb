@@ -530,7 +530,7 @@ class HarfBuzzLineBreaker {
 // Function object for case insensitive string comparison.
 struct CaseInsensitiveCompare {
   bool operator() (const std::string& a, const std::string& b) const {
-    return base::strncasecmp(a.c_str(), b.c_str(), b.length()) < 0;
+    return base::CompareCaseInsensitiveASCII(a, b) < 0;
   }
 };
 

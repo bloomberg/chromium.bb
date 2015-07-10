@@ -1056,6 +1056,26 @@ TEST(StringUtilTest, ContainsOnlyChars) {
                                   kWhitespaceUTF16));
 }
 
+TEST(StringUtilTest, CompareCaseInsensitiveASCII) {
+  EXPECT_EQ(0, CompareCaseInsensitiveASCII("", ""));
+  EXPECT_EQ(0, CompareCaseInsensitiveASCII("Asdf", "aSDf"));
+
+  // Differing lengths.
+  EXPECT_EQ(-1, CompareCaseInsensitiveASCII("Asdf", "aSDfA"));
+  EXPECT_EQ(1, CompareCaseInsensitiveASCII("AsdfA", "aSDf"));
+
+  // Differing values.
+  EXPECT_EQ(-1, CompareCaseInsensitiveASCII("AsdfA", "aSDfb"));
+  EXPECT_EQ(1, CompareCaseInsensitiveASCII("Asdfb", "aSDfA"));
+}
+
+TEST(StringUtilTest, EqualsCaseInsensitiveASCII) {
+  EXPECT_TRUE(EqualsCaseInsensitiveASCII("", ""));
+  EXPECT_TRUE(EqualsCaseInsensitiveASCII("Asdf", "aSDF"));
+  EXPECT_FALSE(EqualsCaseInsensitiveASCII("bsdf", "aSDF"));
+  EXPECT_FALSE(EqualsCaseInsensitiveASCII("Asdf", "aSDFz"));
+}
+
 class WriteIntoTest : public testing::Test {
  protected:
   static void WritesCorrectly(size_t num_chars) {

@@ -108,7 +108,7 @@ bool GetRequestHeader(const HttpRequestHeaderMap& map,
                       std::string* value) {
   for (HttpRequestHeaderMap::const_iterator it = map.begin();
        it != map.end(); ++it) {
-    if (!base::strcasecmp(it->first.c_str(), header)) {
+    if (base::EqualsCaseInsensitiveASCII(it->first, header)) {
       *value = it->second;
       return true;
     }
@@ -170,7 +170,7 @@ class SdchResponseHandler {
       return false;
     base::StringTokenizer tokenizer(value, " ,");
     while (tokenizer.GetNext()) {
-      if (base::strcasecmp(tokenizer.token().c_str(), "sdch"))
+      if (base::EqualsCaseInsensitiveASCII(tokenizer.token(), "sdch"))
         return true;
     }
     return false;

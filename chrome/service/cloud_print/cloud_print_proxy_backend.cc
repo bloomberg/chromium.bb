@@ -550,8 +550,8 @@ void CloudPrintProxyBackend::Core::OnIncomingNotification(
 
   DCHECK(base::MessageLoop::current() == backend_->core_thread_.message_loop());
   VLOG(1) << "CP_CONNECTOR: Incoming notification.";
-  if (0 == base::strcasecmp(kCloudPrintPushNotificationsSource,
-                            notification.channel.c_str()))
+  if (base::EqualsCaseInsensitiveASCII(kCloudPrintPushNotificationsSource,
+                                       notification.channel))
     HandlePrinterNotification(notification.data);
 }
 

@@ -45,15 +45,15 @@ std::string ElideHeaderValueForNetLog(NetLogCaptureMode capture_mode,
     // Note: this logic should be kept in sync with stripCookiesAndLoginInfo in
     // chrome/browser/resources/net_internals/log_view_painter.js.
 
-    if (!base::strcasecmp(header.c_str(), "set-cookie") ||
-        !base::strcasecmp(header.c_str(), "set-cookie2") ||
-        !base::strcasecmp(header.c_str(), "cookie") ||
-        !base::strcasecmp(header.c_str(), "authorization") ||
-        !base::strcasecmp(header.c_str(), "proxy-authorization")) {
+    if (base::EqualsCaseInsensitiveASCII(header, "set-cookie") ||
+        base::EqualsCaseInsensitiveASCII(header, "set-cookie2") ||
+        base::EqualsCaseInsensitiveASCII(header, "cookie") ||
+        base::EqualsCaseInsensitiveASCII(header, "authorization") ||
+        base::EqualsCaseInsensitiveASCII(header, "proxy-authorization")) {
       redact_begin = value.begin();
       redact_end = value.end();
-    } else if (!base::strcasecmp(header.c_str(), "www-authenticate") ||
-               !base::strcasecmp(header.c_str(), "proxy-authenticate")) {
+    } else if (base::EqualsCaseInsensitiveASCII(header, "www-authenticate") ||
+               base::EqualsCaseInsensitiveASCII(header, "proxy-authenticate")) {
       // Look for authentication information from data received from the server
       // in multi-round Negotiate authentication.
       HttpAuthChallengeTokenizer challenge(value.begin(), value.end());

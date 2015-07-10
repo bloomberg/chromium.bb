@@ -221,8 +221,8 @@ net::CertificateMimeType GetCertificateMimeTypeForMimeType(
   // Don't create a map, there is only one entry in the table,
   // except on Android.
   for (size_t i = 0; i < arraysize(kSupportedCertificateTypes); ++i) {
-    if (base::strcasecmp(mime_type.c_str(),
-                         kSupportedCertificateTypes[i].mime_type) == 0) {
+    if (base::EqualsCaseInsensitiveASCII(
+            mime_type, kSupportedCertificateTypes[i].mime_type)) {
       return kSupportedCertificateTypes[i].cert_type;
     }
   }

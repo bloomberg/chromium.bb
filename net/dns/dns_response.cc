@@ -303,7 +303,7 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
       if (!ip_addresses.empty())
         return DNS_CNAME_AFTER_ADDRESS;
 
-      if (base::strcasecmp(record.name.c_str(), expected_name.c_str()) != 0)
+      if (!base::EqualsCaseInsensitiveASCII(record.name, expected_name))
         return DNS_NAME_MISMATCH;
 
       if (record.rdata.size() !=
@@ -315,7 +315,7 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
       if (record.rdata.size() != expected_size)
         return DNS_SIZE_MISMATCH;
 
-      if (base::strcasecmp(record.name.c_str(), expected_name.c_str()) != 0)
+      if (!base::EqualsCaseInsensitiveASCII(record.name, expected_name))
         return DNS_NAME_MISMATCH;
 
       ttl_sec = std::min(ttl_sec, record.ttl);

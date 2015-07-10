@@ -83,7 +83,7 @@ bool AreAbsoluteWindowsPathsEqual(const base::StringPiece& a,
     return false;
 
   // For now, just do a case-insensitive ASCII comparison. We could convert to
-  // UTF-16 and use ICU if necessary. Or maybe base::strcasecmp is good enough?
+  // UTF-16 and use ICU if necessary.
   for (size_t i = 0; i < a.size(); i++) {
     if (NormalizeWindowsPathChar(a[i]) != NormalizeWindowsPathChar(b[i]))
       return false;

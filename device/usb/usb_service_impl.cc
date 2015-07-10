@@ -127,10 +127,9 @@ bool IsWinUsbInterface(const std::string& device_path) {
   }
 
   USB_LOG(DEBUG) << "Driver for " << device_path << " is " << buffer << ".";
-  if (base::strncasecmp("WinUSB", (const char*)&buffer[0], sizeof "WinUSB") ==
-      0) {
+  if (base::StartsWith(reinterpret_cast<const char*>(buffer), "WinUSB",
+                       base::CompareCase::INSENSITIVE_ASCII))
     return true;
-  }
   return false;
 }
 

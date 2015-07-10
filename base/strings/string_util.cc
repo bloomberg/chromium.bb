@@ -140,6 +140,53 @@ bool IsWprintfFormatPortable(const wchar_t* format) {
   return true;
 }
 
+template<class StringType>
+int CompareCaseInsensitiveASCIIT(BasicStringPiece<StringType> a,
+                                 BasicStringPiece<StringType> b) {
+  // Find the first characters that aren't equal and compare them.  If the end
+  // of one of the strings is found before a nonequal character, the lengths
+  // of the strings are compared.
+  size_t i = 0;
+  while (i < a.length() && i < b.length()) {
+    typename StringType::value_type lower_a = ToLowerASCII(a[i]);
+    typename StringType::value_type lower_b = ToLowerASCII(b[i]);
+    if (lower_a < lower_b)
+      return -1;
+    if (lower_a > lower_b)
+      return 1;
+    i++;
+  }
+
+  // End of one string hit before finding a different character. Expect the
+  // common case to be "strings equal" at this point so check that first.
+  if (a.length() == b.length())
+    return 0;
+
+  if (a.length() < b.length())
+    return -1;
+  return 1;
+}
+
+int CompareCaseInsensitiveASCII(base::StringPiece a, base::StringPiece b) {
+  return CompareCaseInsensitiveASCIIT<std::string>(a, b);
+}
+
+int CompareCaseInsensitiveASCII(base::StringPiece16 a, base::StringPiece16 b) {
+  return CompareCaseInsensitiveASCIIT<base::string16>(a, b);
+}
+
+bool EqualsCaseInsensitiveASCII(base::StringPiece a, base::StringPiece b) {
+  if (a.length() != b.length())
+    return false;
+  return CompareCaseInsensitiveASCIIT<std::string>(a, b) == 0;
+}
+
+bool EqualsCaseInsensitiveASCII(base::StringPiece16 a, base::StringPiece16 b) {
+  if (a.length() != b.length())
+    return false;
+  return CompareCaseInsensitiveASCIIT<base::string16>(a, b) == 0;
+}
+
 const std::string& EmptyString() {
   return EmptyStrings::GetInstance()->s;
 }

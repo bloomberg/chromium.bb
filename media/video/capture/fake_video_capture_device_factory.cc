@@ -26,7 +26,7 @@ scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
   FakeVideoCaptureDevice::FakeVideoCaptureDeviceType fake_vcd_type;
   if (option.empty())
     fake_vcd_type = FakeVideoCaptureDevice::USING_OWN_BUFFERS;
-  else if (base:: strcasecmp(option.c_str(), "triplanar") == 0)
+  else if (base::EqualsCaseInsensitiveASCII(option, "triplanar"))
     fake_vcd_type = FakeVideoCaptureDevice::USING_OWN_BUFFERS_TRIPLANAR;
   else
     fake_vcd_type = FakeVideoCaptureDevice::USING_CLIENT_BUFFERS;
