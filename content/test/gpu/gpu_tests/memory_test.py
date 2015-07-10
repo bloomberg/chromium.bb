@@ -5,11 +5,11 @@ import memory_test_expectations
 import page_sets
 
 from telemetry import benchmark
-from telemetry.core.platform import tracing_category_filter
-from telemetry.core.platform import tracing_options
 from telemetry.page import page_test
 from telemetry.timeline import counter
 from telemetry.timeline import model
+from telemetry.timeline import tracing_category_filter
+from telemetry.timeline import tracing_options
 
 MEMORY_LIMIT_MB = 192
 SINGLE_TAB_LIMIT_MB = 192

@@ -7,7 +7,7 @@ from core import perf_benchmark
 from benchmarks import silk_flags
 
 from telemetry import benchmark
-from telemetry.core.platform import tracing_category_filter
+from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf.metrics import gpu_timeline
 from telemetry.web_perf import timeline_based_measurement
 

@@ -5,7 +5,7 @@
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry.core.platform import tracing_category_filter
+from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 import page_sets
