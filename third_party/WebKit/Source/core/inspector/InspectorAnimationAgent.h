@@ -39,7 +39,7 @@ public:
     virtual void getPlaybackRate(ErrorString*, double* playbackRate) override;
     virtual void setPlaybackRate(ErrorString*, double playbackRate) override;
     virtual void setCurrentTime(ErrorString*, double currentTime) override;
-    virtual void setTiming(ErrorString*, const String& playerId, double duration, double delay) override;
+    virtual void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimation(Animation*);
@@ -57,10 +57,10 @@ public:
 private:
     InspectorAnimationAgent(InspectorPageAgent*, InspectorDOMAgent*);
 
-    typedef TypeBuilder::Animation::AnimationPlayer::Type::Enum AnimationType;
+    typedef TypeBuilder::Animation::Animation::Type::Enum AnimationType;
 
-    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(Animation&);
-    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(Animation&, AnimationType, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
+    PassRefPtr<TypeBuilder::Animation::Animation> buildObjectForAnimation(Animation&);
+    PassRefPtr<TypeBuilder::Animation::Animation> buildObjectForAnimation(Animation&, AnimationType, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
     double normalizedStartTime(Animation&);
     AnimationTimeline& referenceTimeline();
 

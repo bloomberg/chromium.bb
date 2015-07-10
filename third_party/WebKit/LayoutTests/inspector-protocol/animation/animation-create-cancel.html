@@ -18,8 +18,8 @@ function cancelAnimation()
 
 function test()
 {
-    InspectorTest.eventHandler["Animation.animationPlayerCreated"] = onCreated;
-    InspectorTest.eventHandler["Animation.animationPlayerCanceled"] = onCanceled;
+    InspectorTest.eventHandler["Animation.animationCreated"] = onCreated;
+    InspectorTest.eventHandler["Animation.animationCanceled"] = onCanceled;
     InspectorTest.sendCommand("Animation.enable", {});
     InspectorTest.evaluateInPage("startAnimation()", function() {});
 

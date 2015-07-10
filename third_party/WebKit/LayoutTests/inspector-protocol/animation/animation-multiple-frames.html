@@ -12,7 +12,7 @@ function appendIframe()
 
 function test()
 {
-    InspectorTest.eventHandler["Animation.animationPlayerCreated"] = onCreated;
+    InspectorTest.eventHandler["Animation.animationCreated"] = onCreated;
     InspectorTest.sendCommand("Animation.enable", {});
     InspectorTest.evaluateInPage("appendIframe()", frameAttached);
     var numberAnimationsCaptured = 0;
