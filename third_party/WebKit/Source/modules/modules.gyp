@@ -78,10 +78,16 @@
         'dependencies': [
           '../core/core.gyp:webcore',
         ],
+        'conditions': [
+          # Shard this target into parts to work around linker limitations.
+          ['OS=="win" and buildtype=="Official"', {
+            'msvs_shard': 4,
+          }],
+        ],
       }]
     ],
     # Disable c4267 warnings until we fix size_t to int truncations.
-    'msvs_disabled_warnings': [ 4267, 4334, ]
+    'msvs_disabled_warnings': [ 4267, 4334, ],
   },
   {
     # GN version: //third_party/WebKit/Source/modules:modules_testing
