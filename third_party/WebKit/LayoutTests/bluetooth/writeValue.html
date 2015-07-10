@@ -9,7 +9,7 @@ test(function(t) { assert_exists(window, 'testRunner'); t.done(); },
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice({
+  return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
@@ -30,7 +30,7 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice({
+  return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
@@ -53,7 +53,7 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice({
+  return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
@@ -73,7 +73,7 @@ sequential_promise_test(function() {
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
-  return navigator.bluetooth.requestDevice({
+  return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();

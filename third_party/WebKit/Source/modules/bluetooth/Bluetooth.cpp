@@ -14,6 +14,7 @@
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "modules/bluetooth/RequestDeviceOptions.h"
+#include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
@@ -49,17 +50,25 @@ static void convertRequestDeviceOptions(const RequestDeviceOptions& options, Web
     }
 }
 
+// https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetooth-requestdevice
 ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDeviceOptions& options, ExceptionState& exceptionState)
 {
+    // 2. If the algorithm is not allowed to show a popup, reject promise with a SecurityError and abort these steps.
+    if (!UserGestureIndicator::consumeUserGesture()) {
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "Must be handling a user gesture to show a permission request."));
+    }
+
     WebBluetooth* webbluetooth = Platform::current()->bluetooth();
     if (!webbluetooth)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
+    // 3. In order to convert the arguments from service names and aliases to just UUIDs, do the following substeps:
     WebRequestDeviceOptions webOptions;
     convertRequestDeviceOptions(options, webOptions, exceptionState);
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
 
+    // Subsequent steps are handled in the browser process.
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     webbluetooth->requestDevice(webOptions, new CallbackPromiseAdapter<BluetoothDevice, BluetoothError>(resolver));

@@ -38,3 +38,24 @@ var battery_service = {
     uuid: "00002a19-0000-1000-8000-00805f9b34fb"
   }
 };
+
+// TODO(jyasskin): Upstream this to testharness.js: https://crbug.com/509058.
+function callWithKeyDown(functionCalledOnKeyPress) {
+    "use strict";
+    return new Promise(resolve => {
+        function onKeyPress() {
+            document.removeEventListener("keypress", onKeyPress, false);
+            resolve(functionCalledOnKeyPress());
+        }
+        document.addEventListener("keypress", onKeyPress, false);
+
+        eventSender.keyDown(" ", []);
+    });
+}
+
+// Calls requestDevice() in a context that's "allowed to show a popup".
+function requestDeviceWithKeyDown() {
+    "use strict";
+    let args = arguments;
+    return callWithKeyDown(() => navigator.bluetooth.requestDevice.apply(navigator.bluetooth, args));
+}

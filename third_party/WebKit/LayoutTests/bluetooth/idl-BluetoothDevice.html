@@ -16,7 +16,7 @@ test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); }
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
-  return navigator.bluetooth.requestDevice({
+  return requestDeviceWithKeyDown({
     filters: [{services: ['generic_access']}]
   }).then(function(device) {
     assert_equals(device.constructor.name, "BluetoothDevice");
