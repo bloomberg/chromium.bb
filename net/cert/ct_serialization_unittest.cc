@@ -164,7 +164,7 @@ TEST_F(CtSerializationTest, FailsDecodingInvalidSignedCertificateTimestamp) {
 
 TEST_F(CtSerializationTest, EncodesValidSignedTreeHead) {
   ct::SignedTreeHead signed_tree_head;
-  GetSignedTreeHead(&signed_tree_head);
+  GetSampleSignedTreeHead(&signed_tree_head);
 
   std::string encoded;
   ct::EncodeTreeHeadSignature(signed_tree_head, &encoded);

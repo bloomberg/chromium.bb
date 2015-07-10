@@ -13,6 +13,7 @@ namespace net {
 
 namespace ct {
 
+struct DigitallySigned;
 struct LogEntry;
 struct SignedCertificateTimestamp;
 struct SignedTreeHead;
@@ -63,11 +64,27 @@ std::string GetDerEncodedFakeOCSPResponseCert();
 // The issuer of the previous cert.
 std::string GetDerEncodedFakeOCSPResponseIssuerCert();
 
-// A sample, valid STH
-void GetSignedTreeHead(SignedTreeHead* sth);
+// A sample, valid STH.
+void GetSampleSignedTreeHead(SignedTreeHead* sth);
 
-// The SHA256 root hash for the sample STH
+// The SHA256 root hash for the sample STH.
 std::string GetSampleSTHSHA256RootHash();
+
+// The tree head signature for the sample STH.
+std::string GetSampleSTHTreeHeadSignature();
+
+// The same signature as GetSampleSTHTreeHeadSignature, decoded.
+void GetSampleSTHTreeHeadDecodedSignature(DigitallySigned* signature);
+
+// The sample STH in JSON form.
+std::string GetSampleSTHAsJson();
+
+// Assembles, and returns, a sample STH in JSON format using
+// the provided parameters.
+std::string CreateSignedTreeHeadJsonString(size_t tree_size,
+                                           int64 timestamp,
+                                           std::string sha256_root_hash,
+                                           std::string tree_head_signature);
 
 }  // namespace ct
 

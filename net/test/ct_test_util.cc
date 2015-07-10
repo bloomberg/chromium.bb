@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_tree_head.h"
@@ -163,6 +165,8 @@ const char kSampleSTHTreeHeadSignature[] =
     "0403004730450220365a91a2a88f2b9332f41d8959fa7086da7e6d634b7b089bc9da066426"
     "6c7a20022100e38464f3c0fd066257b982074f7ac87655e0c8f714768a050b4be9a7b441cb"
     "d3";
+size_t kSampleSTHTreeSize = 21u;
+int64 kSampleSTHTimestamp = 1396877277237u;
 
 }  // namespace
 
@@ -250,22 +254,62 @@ std::string GetDerEncodedFakeOCSPResponseIssuerCert() {
   return HexToBytes(kFakeOCSPResponseIssuerCert);
 }
 
+// A sample, valid STH
+void GetSampleSignedTreeHead(SignedTreeHead* sth) {
+  sth->version = SignedTreeHead::V1;
+  sth->timestamp = base::Time::UnixEpoch() +
+                   base::TimeDelta::FromMilliseconds(kSampleSTHTimestamp);
+  sth->tree_size = kSampleSTHTreeSize;
+  std::string sha256_root_hash = GetSampleSTHSHA256RootHash();
+  memcpy(sth->sha256_root_hash, sha256_root_hash.c_str(), kSthRootHashLength);
+
+  GetSampleSTHTreeHeadDecodedSignature(&(sth->signature));
+}
+
 std::string GetSampleSTHSHA256RootHash() {
   return HexToBytes(kSampleSTHSHA256RootHash);
 }
 
-// A sample, valid STH
-void GetSignedTreeHead(SignedTreeHead* sth) {
-  sth->version = SignedTreeHead::V1;
-  sth->timestamp = base::Time::UnixEpoch() +
-                   base::TimeDelta::FromMilliseconds(1396877277237);
-  sth->tree_size = 21u;
-  std::string sha256_root_hash = GetSampleSTHSHA256RootHash();
-  memcpy(sth->sha256_root_hash, sha256_root_hash.c_str(), kSthRootHashLength);
+std::string GetSampleSTHTreeHeadSignature() {
+  return HexToBytes(kSampleSTHTreeHeadSignature);
+}
 
+void GetSampleSTHTreeHeadDecodedSignature(DigitallySigned* signature) {
   std::string tree_head_signature = HexToBytes(kSampleSTHTreeHeadSignature);
   base::StringPiece sp(tree_head_signature);
-  DecodeDigitallySigned(&sp, &(sth->signature));
+  CHECK(DecodeDigitallySigned(&sp, signature));
+  CHECK(sp.empty());
+}
+
+std::string GetSampleSTHAsJson() {
+  return CreateSignedTreeHeadJsonString(kSampleSTHTreeSize, kSampleSTHTimestamp,
+                                        GetSampleSTHSHA256RootHash(),
+                                        GetSampleSTHTreeHeadSignature());
+}
+
+std::string CreateSignedTreeHeadJsonString(size_t tree_size,
+                                           int64 timestamp,
+                                           std::string sha256_root_hash,
+                                           std::string tree_head_signature) {
+  std::string sth_json =
+      std::string("{\"tree_size\":") + base::SizeTToString(tree_size) +
+      std::string(",\"timestamp\":") + base::Int64ToString(timestamp);
+
+  if (!sha256_root_hash.empty()) {
+    std::string root_hash_b64;
+    base::Base64Encode(sha256_root_hash, &root_hash_b64);
+    sth_json += base::StringPrintf(",\"sha256_root_hash\":\"%s\"",
+                                   root_hash_b64.c_str());
+  }
+  if (!tree_head_signature.empty()) {
+    std::string tree_head_signature_b64;
+    base::Base64Encode(tree_head_signature, &tree_head_signature_b64);
+    sth_json += base::StringPrintf(",\"tree_head_signature\":\"%s\"",
+                                   tree_head_signature_b64.c_str());
+  }
+
+  sth_json += "}";
+  return sth_json;
 }
 
 }  // namespace ct

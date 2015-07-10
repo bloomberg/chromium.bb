@@ -94,7 +94,7 @@ bool IsJsonSTHStructurallyValid(const JsonSignedTreeHead& sth) {
   }
 
   if (sth.signature.signature_data.empty()) {
-    DVLOG(1) << "Missing SHA256 root hash from Signed Tree Head JSON.";
+    DVLOG(1) << "Missing signature from Signed Tree Head JSON.";
     return false;
   }
 
