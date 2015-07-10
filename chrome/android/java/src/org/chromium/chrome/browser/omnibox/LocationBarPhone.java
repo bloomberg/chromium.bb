@@ -310,8 +310,7 @@ public class LocationBarPhone extends LocationBarLayout {
     @Override
     public void updateMicButtonState() {
         mVoiceSearchEnabled = isVoiceSearchEnabled();
-        mMicButton.setVisibility(mVoiceSearchEnabled && mUrlBar.hasFocus()
-                && mDeleteButton.getVisibility() != VISIBLE ? VISIBLE : INVISIBLE);
+        updateDeleteButtonVisibility();
     }
 
     @Override
