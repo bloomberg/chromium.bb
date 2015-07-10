@@ -942,6 +942,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_RECENT_TABS" desc="Title for preference which enables sync'ing of open tabs. [CHAR-LIMT=32]">
         Open tabs
       </message>
+      <message name="IDS_SYNC_SETTINGS" desc="Title for preference which enables sync'ing of settings. [CHAR-LIMT=32]">
+        Settings
+      </message>
       <message name="IDS_SYNC_ENCRYPTION" desc="Preference category name for sync encryption. [CHAR-LIMT=32]">
         Encryption
       </message>

@@ -383,29 +383,11 @@ public class ProfileSyncService {
         if ((modelTypeSelection & ModelTypeSelection.BOOKMARK) != 0) {
             syncTypes.add(ModelType.BOOKMARK);
         }
-        if ((modelTypeSelection & ModelTypeSelection.EXPERIMENTS) != 0) {
-            syncTypes.add(ModelType.EXPERIMENTS);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.NIGORI) != 0) {
-            syncTypes.add(ModelType.NIGORI);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.PASSWORD) != 0) {
-            syncTypes.add(ModelType.PASSWORD);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.SESSION) != 0) {
-            syncTypes.add(ModelType.SESSION);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.TYPED_URL) != 0) {
-            syncTypes.add(ModelType.TYPED_URL);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.HISTORY_DELETE_DIRECTIVE) != 0) {
-            syncTypes.add(ModelType.HISTORY_DELETE_DIRECTIVE);
-        }
         if ((modelTypeSelection & ModelTypeSelection.DEVICE_INFO) != 0) {
             syncTypes.add(ModelType.DEVICE_INFO);
         }
-        if ((modelTypeSelection & ModelTypeSelection.PROXY_TABS) != 0) {
-            syncTypes.add(ModelType.PROXY_TABS);
+        if ((modelTypeSelection & ModelTypeSelection.EXPERIMENTS) != 0) {
+            syncTypes.add(ModelType.EXPERIMENTS);
         }
         if ((modelTypeSelection & ModelTypeSelection.FAVICON_IMAGE) != 0) {
             syncTypes.add(ModelType.FAVICON_IMAGE);
@@ -413,11 +395,35 @@ public class ProfileSyncService {
         if ((modelTypeSelection & ModelTypeSelection.FAVICON_TRACKING) != 0) {
             syncTypes.add(ModelType.FAVICON_TRACKING);
         }
+        if ((modelTypeSelection & ModelTypeSelection.HISTORY_DELETE_DIRECTIVE) != 0) {
+            syncTypes.add(ModelType.HISTORY_DELETE_DIRECTIVE);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.NIGORI) != 0) {
+            syncTypes.add(ModelType.NIGORI);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.PASSWORD) != 0) {
+            syncTypes.add(ModelType.PASSWORD);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.PREFERENCE) != 0) {
+            syncTypes.add(ModelType.PREFERENCE);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.PRIORITY_PREFERENCE) != 0) {
+            syncTypes.add(ModelType.PRIORITY_PREFERENCE);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.PROXY_TABS) != 0) {
+            syncTypes.add(ModelType.PROXY_TABS);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.SESSION) != 0) {
+            syncTypes.add(ModelType.SESSION);
+        }
         if ((modelTypeSelection & ModelTypeSelection.SUPERVISED_USER_SETTING) != 0) {
             syncTypes.add(ModelType.MANAGED_USER_SETTING);
         }
         if ((modelTypeSelection & ModelTypeSelection.SUPERVISED_USER_WHITELIST) != 0) {
             syncTypes.add(ModelType.MANAGED_USER_WHITELIST);
+        }
+        if ((modelTypeSelection & ModelTypeSelection.TYPED_URL) != 0) {
+            syncTypes.add(ModelType.TYPED_URL);
         }
         return syncTypes;
     }
@@ -444,6 +450,9 @@ public class ProfileSyncService {
         }
         if (syncEverything || enabledTypes.contains(ModelType.PASSWORD)) {
             modelTypeSelection |= ModelTypeSelection.PASSWORD;
+        }
+        if (syncEverything || enabledTypes.contains(ModelType.PREFERENCE)) {
+            modelTypeSelection |= ModelTypeSelection.PREFERENCE;
         }
         if (syncEverything || enabledTypes.contains(ModelType.PROXY_TABS)) {
             modelTypeSelection |= ModelTypeSelection.PROXY_TABS;

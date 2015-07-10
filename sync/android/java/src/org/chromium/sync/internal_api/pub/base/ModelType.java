@@ -46,6 +46,14 @@ public enum ModelType {
      */
     PASSWORD("PASSWORD"),
     /**
+     * An object representing a preference.
+     */
+    PREFERENCE("PREFERENCE"),
+    /**
+     * An object representing a priority preference.
+     */
+    PRIORITY_PREFERENCE("PRIORITY_PREFERENCE"),
+    /**
      * An object representing a browser session or tab.
      */
     SESSION("SESSION"),

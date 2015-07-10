@@ -315,6 +315,15 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new PasswordDataTypeController(this, profile_));
   }
 
+  if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+            base::Bind(&ChromeReportUnrecoverableError),
+            syncer::PRIORITY_PREFERENCES,
+            this));
+  }
+
   // Article sync is disabled by default.  Register only if explicitly enabled.
   if (IsEnableSyncArticlesSet()) {
     pss->RegisterDataTypeController(
@@ -367,15 +376,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
             base::Bind(&ChromeReportUnrecoverableError),
             syncer::PREFERENCES,
-            this));
-  }
-
-  if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
-    pss->RegisterDataTypeController(
-        new UIDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            base::Bind(&ChromeReportUnrecoverableError),
-            syncer::PRIORITY_PREFERENCES,
             this));
   }
 

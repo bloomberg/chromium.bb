@@ -78,6 +78,8 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     @VisibleForTesting
     public static final String PREFERENCE_SYNC_RECENT_TABS = "sync_recent_tabs";
     @VisibleForTesting
+    public static final String PREFERENCE_SYNC_SETTINGS = "sync_settings";
+    @VisibleForTesting
     public static final String PREFERENCE_ENCRYPTION = "encryption";
     @VisibleForTesting
     public static final String PREF_SYNC_SWITCH = "sync_switch";
@@ -99,6 +101,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         PREFERENCE_SYNC_OMNIBOX,
         PREFERENCE_SYNC_PASSWORDS,
         PREFERENCE_SYNC_RECENT_TABS,
+        PREFERENCE_SYNC_SETTINGS,
     };
 
     private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
@@ -109,6 +112,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     private CheckBoxPreference mSyncOmnibox;
     private CheckBoxPreference mSyncPasswords;
     private CheckBoxPreference mSyncRecentTabs;
+    private CheckBoxPreference mSyncSettings;
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
     private CheckBoxPreference[] mAllTypes;
@@ -132,13 +136,15 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         mSyncOmnibox = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_OMNIBOX);
         mSyncPasswords = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_PASSWORDS);
         mSyncRecentTabs = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_RECENT_TABS);
+        mSyncSettings = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_SETTINGS);
         mSyncEncryption = findPreference(PREFERENCE_ENCRYPTION);
         mSyncEncryption.setOnPreferenceClickListener(this);
         mManageSyncData = findPreference(PREFERENCE_SYNC_MANAGE_DATA);
         mManageSyncData.setOnPreferenceClickListener(this);
 
         mAllTypes = new CheckBoxPreference[]{
-            mSyncAutofill, mSyncBookmarks, mSyncOmnibox, mSyncPasswords, mSyncRecentTabs,
+            mSyncAutofill, mSyncBookmarks, mSyncOmnibox, mSyncPasswords,
+            mSyncRecentTabs, mSyncSettings
         };
 
         mSyncEverything.setOnPreferenceChangeListener(this);
@@ -326,6 +332,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         if (mSyncOmnibox.isChecked()) types.add(ModelType.TYPED_URL);
         if (mSyncPasswords.isChecked()) types.add(ModelType.PASSWORD);
         if (mSyncRecentTabs.isChecked()) types.add(ModelType.PROXY_TABS);
+        if (mSyncSettings.isChecked()) types.add(ModelType.PREFERENCE);
         return types;
     }
 
@@ -554,6 +561,9 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             mSyncPasswords.setChecked(passwordSyncConfigurable
                     && syncTypes.contains(ModelType.PASSWORD));
             mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
+            // TODO(zea): Switch this to PREFERENCE once that datatype is
+            // supported on Android.
+            mSyncSettings.setChecked(syncTypes.contains(ModelType.PRIORITY_PREFERENCE));
         }
     }
 

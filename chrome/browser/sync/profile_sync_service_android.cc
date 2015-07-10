@@ -67,6 +67,8 @@ enum ModelTypeSelection {
   SUPERVISED_USER_WHITELIST = 1 << 14,
   AUTOFILL_WALLET = 1 << 15,
   AUTOFILL_WALLET_METADATA = 1 << 16,
+  PREFERENCE = 1 << 17,
+  PRIORITY_PREFERENCE = 1 << 18,
 };
 
 // Native callback for the JNI GetAllNodes method. When
@@ -390,6 +392,8 @@ void ProfileSyncServiceAndroid::SetPreferredDataTypes(
     types.Put(syncer::PROXY_TABS);
   if (model_type_selection & TYPED_URL)
     types.Put(syncer::TYPED_URLS);
+  if (model_type_selection & PREFERENCE)
+    types.Put(syncer::PREFERENCES);
   DCHECK(syncer::UserSelectableTypes().HasAll(types));
   sync_service_->OnUserChoseDatatypes(sync_everything, types);
 }
@@ -493,6 +497,12 @@ jlong ProfileSyncServiceAndroid::ModelTypeSetToSelection(
   }
   if (types.Has(syncer::PASSWORDS)) {
     model_type_selection |= PASSWORD;
+  }
+  if (types.Has(syncer::PREFERENCES)) {
+    model_type_selection |= PREFERENCE;
+  }
+  if (types.Has(syncer::PRIORITY_PREFERENCES)) {
+    model_type_selection |= PRIORITY_PREFERENCE;
   }
   if (types.Has(syncer::TYPED_URLS)) {
     model_type_selection |= TYPED_URL;

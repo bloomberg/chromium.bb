@@ -37,6 +37,10 @@
             android:persistent="false"
             android:key="sync_recent_tabs"
             android:title="@string/sync_recent_tabs"/>
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+            android:persistent="false"
+            android:key="sync_settings"
+            android:title="@string/sync_settings"/>
     </PreferenceCategory>
     <Preference
         android:key="encryption"

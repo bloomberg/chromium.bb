@@ -1797,10 +1797,8 @@ void ProfileSyncService::ChangePreferredDataTypes(
 
   DVLOG(1) << "ChangePreferredDataTypes invoked";
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  const syncer::ModelTypeSet registered_preferred_types =
-      Intersection(registered_types, preferred_types);
-  sync_prefs_.SetPreferredDataTypes(registered_types,
-                                    registered_preferred_types);
+  // Will only enable those types that are registered and preferred.
+  sync_prefs_.SetPreferredDataTypes(registered_types, preferred_types);
 
   // Now reconfigure the DTM.
   ReconfigureDatatypeManager();

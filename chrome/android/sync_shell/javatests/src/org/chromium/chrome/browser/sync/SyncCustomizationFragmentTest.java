@@ -60,6 +60,8 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         UI_DATATYPES.put(ModelType.PASSWORD, SyncCustomizationFragment.PREFERENCE_SYNC_PASSWORDS);
         UI_DATATYPES.put(ModelType.PROXY_TABS,
                 SyncCustomizationFragment.PREFERENCE_SYNC_RECENT_TABS);
+        UI_DATATYPES.put(ModelType.PREFERENCE,
+                SyncCustomizationFragment.PREFERENCE_SYNC_SETTINGS);
     }
 
     private Activity mActivity;
@@ -149,12 +151,6 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
     }
 
-    /**
-     * Make sure that the encryption UI presents the correct options.
-     *
-     * By default it should show the CUSTOM and KEYSTORE options, in that order.
-     * KEYSTORE should be selected but both should be enabled.
-     */
     @SmallTest
     @Feature({"Sync"})
     public void testSettingDataTypes() throws Exception {
@@ -172,6 +168,9 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         }
 
         Set<ModelType> expectedTypes = EnumSet.copyOf(dataTypes.keySet());
+        // TODO(zea): update this once preferences are supported.
+        expectedTypes.remove(ModelType.PREFERENCE);
+        expectedTypes.add(ModelType.PRIORITY_PREFERENCE);
         assertDataTypesAre(expectedTypes);
         togglePreference(dataTypes.get(ModelType.AUTOFILL));
         togglePreference(dataTypes.get(ModelType.PASSWORD));
@@ -184,6 +183,12 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertDataTypesAre(expectedTypes);
     }
 
+    /**
+     * Make sure that the encryption UI presents the correct options.
+     *
+     * By default it should show the CUSTOM and KEYSTORE options, in that order.
+     * KEYSTORE should be selected but both should be enabled.
+     */
     @SmallTest
     @Feature({"Sync"})
     public void testDefaultEncryptionOptions() throws Exception {

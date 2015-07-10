@@ -200,8 +200,8 @@ syncer::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
 void SyncPrefs::SetPreferredDataTypes(syncer::ModelTypeSet registered_types,
                                       syncer::ModelTypeSet preferred_types) {
   DCHECK(CalledOnValidThread());
-  DCHECK(registered_types.HasAll(preferred_types));
   preferred_types = ResolvePrefGroups(registered_types, preferred_types);
+  DCHECK(registered_types.HasAll(preferred_types));
   for (syncer::ModelTypeSet::Iterator i = registered_types.First(); i.Good();
        i.Inc()) {
     SetDataTypePreferred(i.Get(), preferred_types.Has(i.Get()));
@@ -432,7 +432,6 @@ void SyncPrefs::SetDataTypePreferred(syncer::ModelType type,
 syncer::ModelTypeSet SyncPrefs::ResolvePrefGroups(
     syncer::ModelTypeSet registered_types,
     syncer::ModelTypeSet types) const {
-  DCHECK(registered_types.HasAll(types));
   syncer::ModelTypeSet types_with_groups = types;
   for (PrefGroupsMap::const_iterator i = pref_groups_.begin();
        i != pref_groups_.end();
