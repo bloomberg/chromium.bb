@@ -434,6 +434,11 @@ public class ChromeShellActivity extends AppCompatActivity implements AppMenuPro
     }
 
     @Override
+    public int getFooterResourceId() {
+        return 0;
+    }
+
+    @Override
     public void prepareMenu(Menu menu) {
         menu.setGroupVisible(R.id.MAIN_MENU, true);
         ChromeShellTab activeTab = getActiveTab();

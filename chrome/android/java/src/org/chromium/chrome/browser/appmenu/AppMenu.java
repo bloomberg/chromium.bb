@@ -133,13 +133,23 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      * @param screenRotation Current device screen rotation.
      * @param visibleDisplayFrame The display area rect in which AppMenu is supposed to fit in.
      * @param screenHeight Current device screen height.
+     * @param footerResourceId The resource id for a view to add to the end of the menu list.
+     *                         Can be 0 if no such view is required.
      */
     void show(Context context, View anchorView, boolean isByHardwareButton, int screenRotation,
-            Rect visibleDisplayFrame, int screenHeight) {
+            Rect visibleDisplayFrame, int screenHeight, int footerResourceId) {
         mPopup = new ListPopupWindow(context, null, android.R.attr.popupMenuStyle);
         mPopup.setModal(true);
         mPopup.setAnchorView(anchorView);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+
+        int footerHeight = 0;
+        if (footerResourceId != 0) {
+            mPopup.setPromptPosition(ListPopupWindow.POSITION_PROMPT_BELOW);
+            mPopup.setPromptView(LayoutInflater.from(context).inflate(footerResourceId, null));
+            footerHeight = context.getResources().getDimensionPixelSize(
+                    R.dimen.menu_footer_height);
+        }
         mPopup.setOnDismissListener(new OnDismissListener() {
             @Override
             public void onDismiss() {
@@ -207,7 +217,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mAdapter = new AppMenuAdapter(this, menuItems, LayoutInflater.from(context));
         mPopup.setAdapter(mAdapter);
 
-        setMenuHeight(menuItems.size(), visibleDisplayFrame, screenHeight, sizingPadding);
+        setMenuHeight(
+                menuItems.size(), visibleDisplayFrame, screenHeight, sizingPadding, footerHeight);
         setPopupOffset(mPopup, mCurrentScreenRotation, visibleDisplayFrame, sizingPadding);
         mPopup.setOnItemClickListener(this);
         mPopup.show();
@@ -339,8 +350,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         return mMenu;
     }
 
-    private void setMenuHeight(
-            int numMenuItems, Rect appDimensions, int screenHeight, Rect padding) {
+    private void setMenuHeight(int numMenuItems, Rect appDimensions,
+            int screenHeight, Rect padding, int footerHeight) {
         assert mPopup.getAnchorView() != null;
         View anchorView = mPopup.getAnchorView();
         int[] anchorViewLocation = new int[2];
@@ -355,7 +366,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         int availableScreenSpace = Math.max(anchorViewLocation[1],
                 appDimensions.height() - anchorViewLocation[1] - anchorViewImpactHeight);
 
-        availableScreenSpace -= padding.bottom;
+        availableScreenSpace -= padding.bottom + footerHeight;
         if (mIsByHardwareButton) availableScreenSpace -= padding.top;
 
         int numCanFit = availableScreenSpace / (mItemRowHeight + mItemDividerHeight);

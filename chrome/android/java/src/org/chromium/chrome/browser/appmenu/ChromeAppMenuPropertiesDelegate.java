@@ -220,4 +220,9 @@ public class ChromeAppMenuPropertiesDelegate implements AppMenuPropertiesDelegat
             }
         }
     }
+
+    @Override
+    public int getFooterResourceId() {
+        return 0;
+    }
 }

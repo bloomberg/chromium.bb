@@ -17,6 +17,11 @@ public interface AppMenuPropertiesDelegate {
     boolean shouldShowAppMenu();
 
     /**
+     * @return Resource layout id for the footer if there should be one. O otherwise.
+     */
+    int getFooterResourceId();
+
+    /**
      * Allows the delegate to show and hide items before the App Menu is shown.
      * @param mMenu Menu that will be used as the source for the App Menu pop up.
      */

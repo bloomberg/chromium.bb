@@ -70,6 +70,11 @@ public class CustomTabAppMenuPropertiesDelegate extends ChromeAppMenuPropertiesD
         return mItemToIndexMap.get(menuItem).intValue();
     }
 
+    @Override
+    public int getFooterResourceId() {
+        return R.layout.powered_by_chrome_footer;
+    }
+
     /**
      * Get the {@link MenuItem} object associated with the given title. If multiple menu items have
      * the same title, a random one will be returned. This method is for testing purpose _only_.

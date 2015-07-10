@@ -286,4 +286,5 @@
     <dimen name="min_toolbar_icon_side_padding">6dp</dimen>
     <dimen name="custom_tabs_url_text_size">12sp</dimen>
     <dimen name="custom_tabs_title_text_size">16sp</dimen>
+    <dimen name="menu_footer_height">28dp</dimen>
 </resources>
