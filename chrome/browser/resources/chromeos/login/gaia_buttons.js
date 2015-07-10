@@ -50,7 +50,6 @@ Polymer({
     disabled: {
       type: Boolean,
       value: false,
-      observer: 'disabledChanged_',
       reflectToAttribute: true
     },
 
@@ -66,16 +65,6 @@ Polymer({
   onClick_: function(e) {
     if (this.disabled)
       e.stopPropagation();
-  },
-
-  disabledChanged_: function(disabled) {
-    // TODO(dzhioev): remove after
-    // https://github.com/PolymerElements/paper-icon-button/issues/20 is fixed.
-    if (!disabled) {
-      this.async(function() {
-        this.$.iconButton.tabIndex = '0';
-      });
-    }
   }
 });
 
