@@ -125,7 +125,7 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
         return child;
     }
 
-    bool sameOriginRequest = master()->securityOrigin()->canRequest(request.url());
+    bool sameOriginRequest = master()->securityOrigin()->canRequestNoSuborigin(request.url());
     request.setCrossOriginAccessControl(
         master()->securityOrigin(), sameOriginRequest ? AllowStoredCredentials : DoNotAllowStoredCredentials,
         ClientDidNotRequestCredentials);
