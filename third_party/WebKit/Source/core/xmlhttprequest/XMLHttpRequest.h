@@ -66,19 +66,12 @@ class XMLHttpRequestUpload;
 
 typedef int ExceptionCode;
 
-class XMLHttpRequest final
-    : public XMLHttpRequestEventTarget
-    , public RefCountedWillBeNoBase<XMLHttpRequest>
-    , private ThreadableLoaderClient
-    , public DocumentParserClient
-    , public ActiveDOMObject {
+class XMLHttpRequest final : public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public DocumentParserClient, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(XMLHttpRequest);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 public:
-    static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ScriptState*);
-    static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*);
+    static XMLHttpRequest* create(ScriptState*);
+    static XMLHttpRequest* create(ExecutionContext*);
     ~XMLHttpRequest() override;
 
     // These exact numeric values are important because JS expects them.
@@ -251,7 +244,7 @@ private:
 
     XMLHttpRequestProgressEventThrottle& progressEventThrottle();
 
-    OwnPtrWillBeMember<XMLHttpRequestUpload> m_upload;
+    Member<XMLHttpRequestUpload> m_upload;
 
     KURL m_url;
     AtomicString m_method;
@@ -260,8 +253,8 @@ private:
     // using case insensitive comparison functions if needed.
     AtomicString m_mimeTypeOverride;
     unsigned long m_timeoutMilliseconds;
-    PersistentWillBeMember<Blob> m_responseBlob;
-    PersistentWillBeMember<Stream> m_responseLegacyStream;
+    Member<Blob> m_responseBlob;
+    Member<Stream> m_responseLegacyStream;
 
     RefPtr<ThreadableLoader> m_loader;
     State m_state;
@@ -288,7 +281,7 @@ private:
     // any.
     ExceptionCode m_exceptionCode;
 
-    OwnPtrWillBeMember<XMLHttpRequestProgressEventThrottle> m_progressEventThrottle;
+    Member<XMLHttpRequestProgressEventThrottle> m_progressEventThrottle;
 
     // An enum corresponding to the allowed string values for the responseType attribute.
     ResponseTypeCode m_responseTypeCode;
@@ -296,7 +289,7 @@ private:
 
     // This blob loader will be used if |m_downloadingToFile| is true and
     // |m_responseTypeCode| is NOT ResponseTypeBlob.
-    PersistentWillBeMember<BlobLoader> m_blobLoader;
+    Member<BlobLoader> m_blobLoader;
 
     // Positive if we are dispatching events.
     // This is an integer specifying the recursion level rather than a boolean

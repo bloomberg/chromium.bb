@@ -307,10 +307,11 @@ InspectorResourceAgent::~InspectorResourceAgent()
 DEFINE_TRACE(InspectorResourceAgent)
 {
     visitor->trace(m_pageAgent);
-#if ENABLE(OILPAN)
-    visitor->trace(m_pendingXHRReplayData);
     visitor->trace(m_replayXHRs);
     visitor->trace(m_replayXHRsToBeDeleted);
+
+#if ENABLE(OILPAN)
+    visitor->trace(m_pendingXHRReplayData);
 #endif
     InspectorBaseAgent::trace(visitor);
 }
@@ -813,7 +814,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
         return;
     }
 
-    RefPtrWillBeRawPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(executionContext);
+    XMLHttpRequest* xhr = XMLHttpRequest::create(executionContext);
 
     executionContext->removeURLFromMemoryCache(xhrReplayData->url());
 

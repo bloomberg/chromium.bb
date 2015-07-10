@@ -42,15 +42,10 @@ class ExecutionContext;
 class XMLHttpRequestUpload final : public XMLHttpRequestEventTarget {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassOwnPtrWillBeRawPtr<XMLHttpRequestUpload> create(XMLHttpRequest* xmlHttpRequest)
+    static XMLHttpRequestUpload* create(XMLHttpRequest* xmlHttpRequest)
     {
-        return adoptPtrWillBeNoop(new XMLHttpRequestUpload(xmlHttpRequest));
+        return new XMLHttpRequestUpload(xmlHttpRequest);
     }
-
-#if !ENABLE(OILPAN)
-    void ref() { m_xmlHttpRequest->ref(); }
-    void deref() { m_xmlHttpRequest->deref(); }
-#endif
 
     XMLHttpRequest* xmlHttpRequest() const { return m_xmlHttpRequest; }
 
@@ -67,12 +62,7 @@ public:
 private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);
 
-#if !ENABLE(OILPAN)
-    void refEventTarget() override { ref(); }
-    void derefEventTarget() override { deref(); }
-#endif
-
-    RawPtrWillBeMember<XMLHttpRequest> m_xmlHttpRequest;
+    Member<XMLHttpRequest> m_xmlHttpRequest;
 
     // Last progress event values; used when issuing the
     // required 'progress' event on a request error or abort.

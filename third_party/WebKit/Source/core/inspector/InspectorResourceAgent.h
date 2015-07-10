@@ -189,8 +189,8 @@ private:
     RefPtr<TypeBuilder::Network::Initiator> m_styleRecalculationInitiator;
     bool m_isRecalculatingStyle;
 
-    WillBeHeapHashSet<RefPtrWillBeMember<XMLHttpRequest> > m_replayXHRs;
-    WillBeHeapHashSet<RefPtrWillBeMember<XMLHttpRequest> > m_replayXHRsToBeDeleted;
+    PersistentHeapHashSetWillBeHeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;
+    PersistentHeapHashSetWillBeHeapHashSet<Member<XMLHttpRequest>> m_replayXHRsToBeDeleted;
     Timer<InspectorResourceAgent> m_removeFinishedReplayXHRTimer;
 };
 

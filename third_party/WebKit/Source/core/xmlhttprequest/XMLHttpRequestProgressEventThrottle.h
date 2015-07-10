@@ -49,11 +49,11 @@ class XMLHttpRequest;
 // - "progress" event means an event named "progress"
 // - ProgressEvent means an event using the ProgressEvent interface defined in
 //   the spec.
-class XMLHttpRequestProgressEventThrottle final : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequestProgressEventThrottle>, public TimerBase {
+class XMLHttpRequestProgressEventThrottle final : public GarbageCollectedFinalized<XMLHttpRequestProgressEventThrottle>, public TimerBase {
 public:
-    static PassOwnPtrWillBeRawPtr<XMLHttpRequestProgressEventThrottle> create(XMLHttpRequest* eventTarget)
+    static XMLHttpRequestProgressEventThrottle* create(XMLHttpRequest* eventTarget)
     {
-        return adoptPtrWillBeNoop(new XMLHttpRequestProgressEventThrottle(eventTarget));
+        return new XMLHttpRequestProgressEventThrottle(eventTarget);
     }
     ~XMLHttpRequestProgressEventThrottle() override;
 
@@ -99,7 +99,7 @@ private:
     // the one holding us. With Oilpan, a simple strong Member can be used -
     // this XMLHttpRequestProgressEventThrottle (part) object dies together
     // with the XMLHttpRequest object.
-    RawPtrWillBeMember<XMLHttpRequest> m_target;
+    Member<XMLHttpRequest> m_target;
 
     // A slot for the deferred "progress" ProgressEvent. When multiple events
     // arrive, only the last one is stored and others are discarded.

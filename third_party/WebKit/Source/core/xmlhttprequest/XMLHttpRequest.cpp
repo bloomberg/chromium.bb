@@ -177,27 +177,27 @@ private:
         m_loader.start(m_xhr->executionContext(), handle);
     }
 
-    RawPtrWillBeMember<XMLHttpRequest> m_xhr;
+    Member<XMLHttpRequest> m_xhr;
     FileReaderLoader m_loader;
 };
 
-PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ScriptState* scriptState)
+XMLHttpRequest* XMLHttpRequest::create(ScriptState* scriptState)
 {
     ExecutionContext* context = scriptState->executionContext();
     DOMWrapperWorld& world = scriptState->world();
     RefPtr<SecurityOrigin> securityOrigin = world.isIsolatedWorld() ? world.isolatedWorldSecurityOrigin() : nullptr;
-    RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = adoptRefWillBeNoop(new XMLHttpRequest(context, securityOrigin));
+    XMLHttpRequest* xmlHttpRequest = new XMLHttpRequest(context, securityOrigin);
     xmlHttpRequest->suspendIfNeeded();
 
-    return xmlHttpRequest.release();
+    return xmlHttpRequest;
 }
 
-PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* context)
+XMLHttpRequest* XMLHttpRequest::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = adoptRefWillBeNoop(new XMLHttpRequest(context, nullptr));
+    XMLHttpRequest* xmlHttpRequest = new XMLHttpRequest(context, nullptr);
     xmlHttpRequest->suspendIfNeeded();
 
-    return xmlHttpRequest.release();
+    return xmlHttpRequest;
 }
 
 XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
