@@ -116,7 +116,8 @@ cr.define('downloads', function() {
 
         this.$.progress.hidden = !isInProgress;
 
-        // TODO(dbeam): implement progress.
+        if (isInProgress)
+          this.$.progress.value = data.percent;
       }
     },
 

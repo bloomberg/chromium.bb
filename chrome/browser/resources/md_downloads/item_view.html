@@ -6,7 +6,6 @@
     </div>
 
     <div id="safe" hidden$="{{isDangerous}}">
-      <div id="progress"></div>
       <img id="safe-icon" alt="">
       <div id="title-area">
         <a is="action-link" id="file-link" column-type="name"></a>
@@ -32,6 +31,7 @@
         <span id="controlled-by"
             i18n-values=".innerHTML:controlByExtension"></span>
       </div>
+      <paper-progress id="progress"></paper-progress>
     </div>
 
     <div id="dangerous" hidden$="{{!isDangerous}}">
@@ -52,6 +52,7 @@
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/load_time_data.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
   <link rel="import" href="chrome://downloads/constants.html">
   <link rel="import" href="chrome://downloads/throttled_icon_loader.html">
   <script src="chrome://downloads/item_view.js"></script>
