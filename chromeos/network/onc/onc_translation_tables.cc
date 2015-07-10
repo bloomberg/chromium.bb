@@ -15,9 +15,6 @@ namespace onc {
 
 // CertificatePattern is converted with function CreateUIData(...) to UIData
 // stored in Shill.
-//
-// Proxy settings are converted to Shill by function
-// ConvertOncProxySettingsToProxyConfig(...).
 
 namespace {
 
@@ -198,6 +195,7 @@ const FieldTranslationEntry network_fields[] = {
 
     // Type is converted during translation, see onc_translator_*.
     // {::onc::network_config::kType, shill::kTypeProperty },
+    // {::onc::network_config::kProxySettings, shill::ProxyConfig},
 
     // These fields are converted during translation, see
     // onc_translator_shill_to_onc.cc. They are only converted when going from

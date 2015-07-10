@@ -16,5 +16,6 @@ component("proxy_config") {
 
   deps = [
     "//base",
+    "//net",
   ]
 }

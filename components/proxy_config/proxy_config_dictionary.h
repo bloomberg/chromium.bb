@@ -16,6 +16,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace net {
+class ProxyServer;
+}
+
 // Factory and wrapper for proxy config dictionaries that are stored
 // in the user preferences. The dictionary has the following structure:
 // {
@@ -43,11 +47,18 @@ class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
   static base::DictionaryValue* CreateDirect();
   static base::DictionaryValue* CreateAutoDetect();
   static base::DictionaryValue* CreatePacScript(const std::string& pac_url,
-                                          bool pac_mandatory);
+                                                bool pac_mandatory);
   static base::DictionaryValue* CreateFixedServers(
       const std::string& proxy_server,
       const std::string& bypass_list);
   static base::DictionaryValue* CreateSystem();
+
+  // Encodes the proxy server as "<url-scheme>=<proxy-scheme>://<proxy>".
+  // Used to generate the |proxy_server| arg for CreateFixedServers().
+  static void EncodeAndAppendProxyServer(const std::string& url_scheme,
+                                         const net::ProxyServer& server,
+                                         std::string* spec);
+
  private:
   static base::DictionaryValue* CreateDictionary(
       ProxyPrefs::ProxyMode mode,

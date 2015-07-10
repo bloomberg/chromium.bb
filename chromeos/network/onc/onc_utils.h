@@ -145,6 +145,18 @@ CHROMEOS_EXPORT NetworkTypePattern NetworkTypePatternFromOncType(
 CHROMEOS_EXPORT bool IsRecommendedValue(const base::DictionaryValue* onc,
                                         const std::string& property_key);
 
+// Translates |onc_proxy_settings|, which must be a valid ONC ProxySettings
+// dictionary, to a ProxyConfig dictionary (see proxy_config_dictionary.h).
+CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue>
+ConvertOncProxySettingsToProxyConfig(
+    const base::DictionaryValue& onc_proxy_settings);
+
+// Translates |proxy_config_value|, which must be a valid ProxyConfig dictionary
+// (see proxy_config_dictionary.h) to an ONC ProxySettings dictionary.
+CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue>
+ConvertProxyConfigToOncProxySettings(
+    const base::DictionaryValue& proxy_config_value);
+
 }  // namespace onc
 }  // namespace chromeos
 

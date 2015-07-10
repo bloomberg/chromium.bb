@@ -6,12 +6,38 @@
 
 #include <string>
 
+#include "base/json/json_file_value_serializer.h"
+#include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chromeos/chromeos_test_utils.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace {
+
+scoped_ptr<base::Value> ReadTestJson(const std::string& filename) {
+  base::Value* result = nullptr;
+  base::FilePath path;
+  if (!test_utils::GetTestDataPath("network", filename, &path)) {
+    NOTREACHED() << "Unable to get test file path for: " << filename;
+    return make_scoped_ptr(result);
+  }
+  JSONFileValueDeserializer deserializer(path);
+  deserializer.set_allow_trailing_comma(true);
+  std::string error_message;
+  result = deserializer.Deserialize(nullptr, &error_message);
+  CHECK(result != nullptr) << "Couldn't json-deserialize file: " << filename
+                           << ": " << error_message;
+  return make_scoped_ptr(result);
+}
+
+}  // namespace
+
 namespace onc {
 
 TEST(ONCDecrypterTest, BrokenEncryptionIterations) {
@@ -133,6 +159,62 @@ TEST(ONCResolveServerCertRefs, ResolveServerCertRefs) {
     EXPECT_EQ(expected_success, success);
     EXPECT_TRUE(test_utils::Equals(expected_resolved_onc,
                                    actual_resolved_onc.get()));
+  }
+}
+
+TEST(ONCUtils, ProxySettingsToProxyConfig) {
+  scoped_ptr<base::Value> test_data(ReadTestJson("proxy_config.json"));
+
+  base::ListValue* list_of_tests;
+  test_data->GetAsList(&list_of_tests);
+  ASSERT_TRUE(list_of_tests);
+
+  int index = 0;
+  for (base::ListValue::iterator it = list_of_tests->begin();
+       it != list_of_tests->end(); ++it, ++index) {
+    SCOPED_TRACE("Test case #" + base::IntToString(index));
+
+    base::DictionaryValue* test_case;
+    (*it)->GetAsDictionary(&test_case);
+
+    base::DictionaryValue* onc_proxy_settings;
+    test_case->GetDictionary("ONC_ProxySettings", &onc_proxy_settings);
+
+    base::DictionaryValue* expected_proxy_config;
+    test_case->GetDictionary("ProxyConfig", &expected_proxy_config);
+
+    scoped_ptr<base::DictionaryValue> actual_proxy_config =
+        ConvertOncProxySettingsToProxyConfig(*onc_proxy_settings);
+    EXPECT_TRUE(
+        test_utils::Equals(expected_proxy_config, actual_proxy_config.get()));
+  }
+}
+
+TEST(ONCUtils, ProxyConfigToOncProxySettings) {
+  scoped_ptr<base::Value> test_data(ReadTestJson("proxy_config.json"));
+
+  base::ListValue* list_of_tests;
+  test_data->GetAsList(&list_of_tests);
+  ASSERT_TRUE(list_of_tests);
+
+  int index = 0;
+  for (base::ListValue::iterator it = list_of_tests->begin();
+       it != list_of_tests->end(); ++it, ++index) {
+    SCOPED_TRACE("Test case #" + base::IntToString(index));
+
+    base::DictionaryValue* test_case;
+    (*it)->GetAsDictionary(&test_case);
+
+    base::DictionaryValue* shill_proxy_config;
+    test_case->GetDictionary("ProxyConfig", &shill_proxy_config);
+
+    base::DictionaryValue* onc_proxy_settings;
+    test_case->GetDictionary("ONC_ProxySettings", &onc_proxy_settings);
+
+    scoped_ptr<base::DictionaryValue> actual_proxy_settings =
+        ConvertProxyConfigToOncProxySettings(*shill_proxy_config);
+    EXPECT_TRUE(
+        test_utils::Equals(onc_proxy_settings, actual_proxy_settings.get()));
   }
 }
 

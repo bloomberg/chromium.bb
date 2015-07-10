@@ -545,6 +545,7 @@
         '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:device_event_log_component',
         '../components/components.gyp:onc_component',
+        '../components/components.gyp:proxy_config',
         '../crypto/crypto.gyp:crypto',
         '../dbus/dbus.gyp:dbus',
         '../google_apis/google_apis.gyp:google_apis',
@@ -569,6 +570,7 @@
       'type': 'static_library',
       'dependencies': [
         '../build/linux/system.gyp:dbus',
+	'../google_apis/google_apis.gyp:google_apis_test_support',
         '../testing/gmock.gyp:gmock',
         'chromeos',
         'chromeos_test_support_without_gmock',
@@ -666,6 +668,7 @@
         '../build/linux/system.gyp:dbus',
         '../build/linux/system.gyp:ssl',
         '../components/components.gyp:onc_component',
+        '../components/components.gyp:proxy_config',
         '../crypto/crypto.gyp:crypto',
         '../crypto/crypto.gyp:crypto_test_support',
         '../dbus/dbus.gyp:dbus_test_support',

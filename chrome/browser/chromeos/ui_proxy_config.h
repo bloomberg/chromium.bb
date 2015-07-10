@@ -79,11 +79,6 @@ struct UIProxyConfig {
   // ManualProxy.  Returns NULL if scheme is invalid.
   ManualProxy* MapSchemeToProxy(const std::string& scheme);
 
-  // Encodes the proxy server as "<url-scheme>=<proxy-scheme>://<proxy>"
-  static void EncodeAndAppendProxyServer(const std::string& url_scheme,
-                                         const net::ProxyServer& server,
-                                         std::string* spec);
-
   Mode mode;
 
   ProxyPrefs::ConfigState state;

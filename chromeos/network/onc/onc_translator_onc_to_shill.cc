@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -284,6 +285,18 @@ void LocalTranslator::TranslateNetworkConfiguration() {
     shill_dictionary_->SetWithoutPathExpansion(shill::kStaticIPConfigProperty,
                                                new base::DictionaryValue);
   }
+
+  const base::DictionaryValue* proxy_settings = nullptr;
+  if (onc_object_->GetDictionaryWithoutPathExpansion(
+          ::onc::network_config::kProxySettings, &proxy_settings)) {
+    scoped_ptr<base::DictionaryValue> proxy_config =
+        ConvertOncProxySettingsToProxyConfig(*proxy_settings);
+    std::string proxy_config_str;
+    base::JSONWriter::Write(*proxy_config.get(), &proxy_config_str);
+    shill_dictionary_->SetStringWithoutPathExpansion(
+        shill::kProxyConfigProperty, proxy_config_str);
+  }
+
   CopyFieldsAccordingToSignature();
 }
 

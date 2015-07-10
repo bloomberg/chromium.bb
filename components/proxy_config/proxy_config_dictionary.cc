@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "net/proxy/proxy_config.h"
 
 namespace {
 
@@ -140,4 +141,22 @@ base::DictionaryValue* ProxyConfigDictionary::CreateDictionary(
   if (!bypass_list.empty())
     dict->SetString(kProxyBypassList, bypass_list);
   return dict;
+}
+
+// static
+void ProxyConfigDictionary::EncodeAndAppendProxyServer(
+    const std::string& url_scheme,
+    const net::ProxyServer& server,
+    std::string* spec) {
+  if (!server.is_valid())
+    return;
+
+  if (!spec->empty())
+    *spec += ';';
+
+  if (!url_scheme.empty()) {
+    *spec += url_scheme;
+    *spec += "=";
+  }
+  *spec += server.ToURI();
 }

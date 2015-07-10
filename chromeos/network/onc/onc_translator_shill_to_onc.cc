@@ -17,6 +17,7 @@
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -560,6 +561,22 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     if (!ip_address.empty() || (name_servers && !name_servers->empty())) {
       TranslateAndAddNestedObject(::onc::network_config::kStaticIPConfig,
                                   *static_ipconfig);
+    }
+  }
+
+  std::string proxy_config_str;
+  if (shill_dictionary_->GetStringWithoutPathExpansion(
+          shill::kProxyConfigProperty, &proxy_config_str) &&
+      !proxy_config_str.empty()) {
+    scoped_ptr<base::DictionaryValue> proxy_config_value(
+        ReadDictionaryFromJson(proxy_config_str));
+    if (proxy_config_value) {
+      scoped_ptr<base::DictionaryValue> proxy_settings =
+          ConvertProxyConfigToOncProxySettings(*proxy_config_value);
+      if (proxy_settings) {
+        onc_object_->SetWithoutPathExpansion(
+            ::onc::network_config::kProxySettings, proxy_settings.release());
+      }
     }
   }
 }

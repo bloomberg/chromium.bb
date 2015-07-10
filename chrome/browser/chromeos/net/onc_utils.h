@@ -27,15 +27,6 @@ class NetworkState;
 
 namespace onc {
 
-// Translates |onc_proxy_settings|, which has to be a valid ONC ProxySettings
-// dictionary, to a ProxyConfig dictionary (see
-// components/proxy_config/proxy_config_dictionary.h).
-//
-// This function is used to translate ONC ProxySettings to the "ProxyConfig"
-// field of the Shill configuration.
-scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
-    const base::DictionaryValue& onc_proxy_settings);
-
 // Replaces string placeholders in |network_configs|, which must be a list of
 // ONC NetworkConfigurations. Currently only user name placeholders are
 // implemented, which are replaced by attributes of the logged-in user with

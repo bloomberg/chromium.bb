@@ -8,6 +8,11 @@
 #include "base/values.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "net/proxy/proxy_config.h"
+#include "url/url_constants.h"
+
+namespace {
+const char kSocksScheme[] = "socks";
+}
 
 namespace chromeos {
 
@@ -120,10 +125,14 @@ base::DictionaryValue* UIProxyConfig::ToPrefProxyConfig() const {
     }
     case MODE_PROXY_PER_SCHEME: {
       std::string spec;
-      EncodeAndAppendProxyServer("http", http_proxy.server, &spec);
-      EncodeAndAppendProxyServer("https", https_proxy.server, &spec);
-      EncodeAndAppendProxyServer("ftp", ftp_proxy.server, &spec);
-      EncodeAndAppendProxyServer("socks", socks_proxy.server, &spec);
+      ProxyConfigDictionary::EncodeAndAppendProxyServer(
+          url::kHttpScheme, http_proxy.server, &spec);
+      ProxyConfigDictionary::EncodeAndAppendProxyServer(
+          url::kHttpsScheme, https_proxy.server, &spec);
+      ProxyConfigDictionary::EncodeAndAppendProxyServer(
+          url::kFtpScheme, ftp_proxy.server, &spec);
+      ProxyConfigDictionary::EncodeAndAppendProxyServer(
+          kSocksScheme, socks_proxy.server, &spec);
       return ProxyConfigDictionary::CreateFixedServers(
           spec, bypass_rules.ToString());
     }
@@ -136,33 +145,16 @@ base::DictionaryValue* UIProxyConfig::ToPrefProxyConfig() const {
 
 UIProxyConfig::ManualProxy* UIProxyConfig::MapSchemeToProxy(
     const std::string& scheme) {
-  if (scheme == "http")
+  if (scheme == url::kHttpScheme)
     return &http_proxy;
-  if (scheme == "https")
+  if (scheme == url::kHttpsScheme)
     return &https_proxy;
-  if (scheme == "ftp")
+  if (scheme == url::kFtpScheme)
     return &ftp_proxy;
-  if (scheme == "socks")
+  if (scheme == kSocksScheme)
     return &socks_proxy;
   NOTREACHED() << "Invalid scheme: " << scheme;
   return NULL;
-}
-
-// static
-void UIProxyConfig::EncodeAndAppendProxyServer(const std::string& url_scheme,
-                                               const net::ProxyServer& server,
-                                               std::string* spec) {
-  if (!server.is_valid())
-    return;
-
-  if (!spec->empty())
-    *spec += ';';
-
-  if (!url_scheme.empty()) {
-    *spec += url_scheme;
-    *spec += "=";
-  }
-  *spec += server.ToURI();
 }
 
 }  // namespace chromeos

@@ -18,6 +18,7 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "dbus/object_path.h"

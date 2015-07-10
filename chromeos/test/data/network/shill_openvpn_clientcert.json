@@ -7,6 +7,7 @@
    "OpenVPN.User": "hans",
    "Provider.Host": "terminus.muc",
    "Provider.Type": "openvpn",
+   "ProxyConfig": "{\"mode\":\"direct\"}",
    "SaveCredentials": true,
    "Type": "vpn",
 }

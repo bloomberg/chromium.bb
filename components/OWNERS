@@ -221,6 +221,10 @@ per-file proximity_auth*=tbarzic@chromium.org
 per-file proximity_auth*=tengs@chromium.org
 per-file proximity_auth*=xiyuan@chromium.org
 
+per-file proxy_config*=mnissler@chromium.org
+per-file proxy_config*=pneubeck@chromium.org
+per-file proxy_config*=stevenjb@chromium.org
+
 per-file query_parser.gypi=sky@chromium.org
 
 per-file rappor*=asvitkine@chromium.org

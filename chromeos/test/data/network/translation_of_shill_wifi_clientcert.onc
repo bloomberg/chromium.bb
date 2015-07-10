@@ -1,6 +1,10 @@
 {
   "GUID":"{77db0089-0bc8-4358-929c-123xcv}",
   "Name":"",
+  "ProxySettings": {
+      "Type": "PAC",
+      "PAC": "https://proxycfg.my.domain.com/proxy.dat"
+  },
   "Type":"WiFi",
   "WiFi":{
     "EAP": {
