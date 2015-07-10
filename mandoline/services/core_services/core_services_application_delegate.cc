@@ -9,20 +9,23 @@
 #include "base/threading/simple_thread.h"
 #include "components/clipboard/clipboard_application_delegate.h"
 #include "components/filesystem/file_system_app.h"
-#include "components/resource_provider/resource_provider_app.h"
 #include "components/view_manager/surfaces/surfaces_service_application.h"
-#include "components/view_manager/view_manager_app.h"
 #include "mandoline/ui/browser/browser_manager.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/common/message_pump_mojo.h"
-#include "mojo/services/network/network_service_delegate.h"
 #include "mojo/services/tracing/tracing_app.h"
 #include "url/gurl.h"
 
 #if defined(USE_AURA)
 #include "mandoline/ui/omnibox/omnibox_impl.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "components/resource_provider/resource_provider_app.h"
+#include "components/view_manager/view_manager_app.h"
+#include "mojo/services/network/network_service_delegate.h"
 #endif
 
 namespace core_services {
@@ -127,20 +130,22 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
   else if (url == "mojo://filesystem_service/")
     delegate.reset(new filesystem::FileSystemApp);
-  else if (url == "mojo://network_service/")
-    delegate.reset(new NetworkServiceDelegate);
-#if defined(USE_AURA)
-  else if (url == "mojo://omnibox/")
-    delegate.reset(new mandoline::OmniboxImpl);
-#endif
-  else if (url == "mojo://resource_provider/")
-    delegate.reset(new resource_provider::ResourceProviderApp);
   else if (url == "mojo://surfaces_service/")
     delegate.reset(new surfaces::SurfacesServiceApplication);
   else if (url == "mojo://tracing/")
     delegate.reset(new tracing::TracingApp);
+#if defined(USE_AURA)
+  else if (url == "mojo://omnibox/")
+    delegate.reset(new mandoline::OmniboxImpl);
+#endif
+#if !defined(OS_ANDROID)
+  else if (url == "mojo://network_service/")
+    delegate.reset(new NetworkServiceDelegate);
+  else if (url == "mojo://resource_provider/")
+    delegate.reset(new resource_provider::ResourceProviderApp);
   else if (url == "mojo://view_manager/")
     delegate.reset(new view_manager::ViewManagerApp);
+#endif
   else
     NOTREACHED() << "This application package does not support " << url;
 

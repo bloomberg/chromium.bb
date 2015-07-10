@@ -55,6 +55,8 @@ copy_ex("copy_mandoline_assets") {
     "//components/devtools_service",
     "//components/html_viewer",
     "//mandoline/services/core_services",
+    "//mojo/services/network",
+    "//components/resource_provider",
     "//mojo/runner:bootstrap",
     "//mojo/runner:bootstrap_java",
   ]
@@ -66,6 +68,8 @@ copy_ex("copy_mandoline_assets") {
   # Directories can't be specified as sources so pass manually to the script.
   args = [
     "--files=" + rebase_path("$root_out_dir/core_services", root_build_dir),
+    "--files=" + rebase_path("$root_out_dir/network_service", root_build_dir),
+    "--files=" + rebase_path("$root_out_dir/resource_provider", root_build_dir),
     "--files=" + rebase_path("$root_out_dir/devtools_service", root_build_dir),
     "--files=" + rebase_path("$root_out_dir/html_viewer", root_build_dir),
   ]

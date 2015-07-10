@@ -16,19 +16,21 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
                                            GURL("mojo:core_services"), "Core");
   manager->RegisterApplicationPackageAlias(GURL("mojo:filesystem"),
                                            GURL("mojo:core_services"), "Files");
-#if defined(USE_AURA)
+#if !defined(OS_ANDROID)
+  // On Android, these are Java apps which are loaded in the shell process.
   manager->RegisterApplicationPackageAlias(GURL("mojo:view_manager"),
                                            GURL("mojo:core_services"),
                                            "Surfaces");
-#endif
   manager->RegisterApplicationPackageAlias(
       GURL("mojo:network_service"), GURL("mojo:core_services"), "Network");
+  manager->RegisterApplicationPackageAlias(
+      GURL("mojo:resource_provider"), GURL("mojo:core_services"), "Core");
+#endif
+
 #if defined(USE_AURA)
   manager->RegisterApplicationPackageAlias(
       GURL("mojo:omnibox"), GURL("mojo:core_services"), "Core");
 #endif
-  manager->RegisterApplicationPackageAlias(
-      GURL("mojo:resource_provider"), GURL("mojo:core_services"), "Core");
   manager->RegisterApplicationPackageAlias(
       GURL("mojo:surfaces_service"), GURL("mojo:core_services"), "Surfaces");
   manager->RegisterApplicationPackageAlias(GURL("mojo:tracing"),
