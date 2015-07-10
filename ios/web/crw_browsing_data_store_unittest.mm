@@ -19,13 +19,14 @@
 // An observer to observe the |mode| key changes to a CRWBrowsingDataStore.
 // Used for testing purposes.
 @interface CRWTestBrowsingDataStoreObserver : NSObject
-// Designated init. |browsingDataStore| cannot be null.
-- (instancetype)initWithBrowsingDataStore:
-        (CRWBrowsingDataStore*)browsingDataStore NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
 // The number of times that the mode of the underlying CRWBrowsingDataStore
 // changed.
 @property(nonatomic, assign) NSUInteger modeChangeCount;
+
+// |browsingDataStore| cannot be null.
+- (instancetype)initWithBrowsingDataStore:
+    (CRWBrowsingDataStore*)browsingDataStore NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 @end
 
 @implementation CRWTestBrowsingDataStoreObserver {
@@ -36,7 +37,7 @@
 @synthesize modeChangeCount = _modeChangeCount;
 
 - (instancetype)initWithBrowsingDataStore:
-        (CRWBrowsingDataStore*)browsingDataStore {
+    (CRWBrowsingDataStore*)browsingDataStore {
   self = [super init];
   if (self) {
     DCHECK(browsingDataStore);
@@ -49,9 +50,9 @@
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
+- (void)dealloc {
+  [_browsingDataStore removeObserver:self forKeyPath:@"mode"];
+  [super dealloc];
 }
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -62,11 +63,6 @@
   DCHECK_EQ(_browsingDataStore, object);
 
   ++self.modeChangeCount;
-}
-
-- (void)dealloc {
-  [_browsingDataStore removeObserver:self forKeyPath:@"mode"];
-  [super dealloc];
 }
 
 @end

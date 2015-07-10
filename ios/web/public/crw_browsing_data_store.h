@@ -37,16 +37,9 @@ typedef NS_ENUM(NSUInteger, BrowsingDataStoreMode) {
 
 }  // namespace web
 
-// A CRWBrowsingDataStore represents various types of data that a web view
-// (UIWebView and WKWebView) uses.
-// All methods must be called on the UI thread.
+// A CRWBrowsingDataStore represents various types of data that a web view uses.
+// All methods must be called on the main thread.
 @interface CRWBrowsingDataStore : NSObject
-
-// Designated initializer. |browserState| cannot be null.
-// The initial mode of the CRWBrowsingDataStore is obtained from the active
-// state of the |web::ActiveStateManager| associated with |browserState|.
-- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
-    NS_DESIGNATED_INITIALIZER;
 
 // The delegate that is consulted when the mode needs to change.
 @property(nonatomic, weak) id<CRWBrowsingDataStoreDelegate> delegate;
@@ -54,11 +47,20 @@ typedef NS_ENUM(NSUInteger, BrowsingDataStoreMode) {
 // The mode that the CRWBrowsingDataStore is in. KVO compliant.
 @property(nonatomic, assign, readonly) web::BrowsingDataStoreMode mode;
 
-// TODO(shreyasv): Verify the preconditions for the following 3 methods when
-// web::WebViewCounter class is implemented. crbug.com/480507
+// A BOOL indicating whether there is still a pending operation that has not
+// finished running. Creating web views with this CRWBrowsingDataStore when
+// there are pending operations results in undefined behavior.
+@property(nonatomic, assign, readonly) BOOL hasPendingOperations;
+
+// |browserState| cannot be null. The initial mode of the
+// CRWBrowsingDataStore is obtained from the active state of the
+// |web::ActiveStateManager| associated with |browserState|.
+- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Changes the mode to |ACTIVE|.
-// if there is no delegate present, the default behavior of this method is to
+// If there is no delegate present, the default behavior of this method is to
 // restore browsing data from |browserState|'s stash path to the canonical path
 // where web views read/write browsing data to.
 // |completionHandler| is called on the main thread. This block has no return
@@ -68,21 +70,20 @@ typedef NS_ENUM(NSUInteger, BrowsingDataStoreMode) {
 // |makeInactive| was enqueued after this call.
 // Precondition: There must be no web views associated with the BrowserState.
 - (void)makeActiveWithCompletionHandler:
-        (void (^)(BOOL success))completionHandler;
+    (void (^)(BOOL success))completionHandler;
 
 // Changes the mode to |INACTIVE|.
-// if there is no delegate present, the default behavior of this method is to
-// value and takes a single BOOL argument that indicates whether or not the
-// stash browsing data created by the web view in to |browserState|'s stash
+// If there is no delegate present, the default behavior of this method is to
+// stash browsing data created by the web view in to the |browserState|'s stash
 // path.
 // |completionHandler| is called on the main thread. This block has no return
 // value and takes a single BOOL argument that indicates whether or not the
 // the mode was successfully changed to |INACTIVE|.
-// The mode change to |ACTIVE| can fail if another |makeActive| or
+// The mode change to |INACTIVE| can fail if another |makeActive| or
 // |makeInactive| was enqueued after this call.
 // Precondition: There must be no web views associated with the BrowserState.
 - (void)makeInactiveWithCompletionHandler:
-        (void (^)(BOOL success))completionHandler;
+    (void (^)(BOOL success))completionHandler;
 
 // Removes all browsing data of the provided |browsingDataTypes|.
 // |completionHandler| is called on the main thread after the browsing data has
@@ -90,12 +91,6 @@ typedef NS_ENUM(NSUInteger, BrowsingDataStoreMode) {
 // Precondition: There must be no web views associated with the BrowserState.
 - (void)removeDataOfTypes:(web::BrowsingDataTypes)browsingDataTypes
         completionHandler:(ProceduralBlock)completionHandler;
-
-// Returns YES if there is still a pending operation that has not finished
-// running. Creating web views (UIWebViews and WKWebViews) with this
-// CRWBrowsingDataStore when there are pending operations is undefined
-// behavior.
-@property(nonatomic, assign, readonly) BOOL hasPendingOperations;
 
 @end
 
