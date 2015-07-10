@@ -74,6 +74,9 @@ class SharedMemIPCServer {
   // static method without worrying about converting back to a member function
   // call or about threading issues.
   struct ServerControl {
+    ServerControl();
+    ~ServerControl();
+
     // This channel server ping event.
     base::win::ScopedHandle ping_event;
     // This channel server pong event.

@@ -20,6 +20,12 @@ volatile HANDLE g_alive_mutex = NULL;
 
 namespace sandbox {
 
+SharedMemIPCServer::ServerControl::ServerControl() {
+}
+
+SharedMemIPCServer::ServerControl::~ServerControl() {
+}
+
 SharedMemIPCServer::SharedMemIPCServer(HANDLE target_process,
                                        DWORD target_process_id,
                                        HANDLE target_job,
