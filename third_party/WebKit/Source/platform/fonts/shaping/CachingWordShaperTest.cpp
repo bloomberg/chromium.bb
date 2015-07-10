@@ -154,4 +154,27 @@ TEST_F(CachingWordShaperTest, CommonAccentRightToLeftFillGlyphBuffer)
     ASSERT_EQ(referenceGlyphBuffer.glyphAt(4), glyphBuffer.glyphAt(4));
 }
 
+// Tests that runs with zero glyphs (the ZWJ non-printable character in this
+// case) are handled correctly. This test passes if it does not cause a crash.
+TEST_F(CachingWordShaperTest, SubRunWithZeroGlyphs)
+{
+    // "Foo &zwnj; bar"
+    const UChar str[] = {
+        0x46, 0x6F, 0x6F, 0x20, 0x200C, 0x20, 0x62, 0x61, 0x71, 0x0
+    };
+    TextRun textRun(str, 9);
+
+    CachingWordShaper shaper;
+    FloatRect glyphBounds;
+    ASSERT_GT(shaper.width(font, textRun, nullptr, &glyphBounds), 0);
+
+    GlyphBuffer glyphBuffer;
+    shaper.fillGlyphBuffer(font, textRun, fallbackFonts, &glyphBuffer, 0, 8);
+
+    FloatPoint point;
+    int height = 16;
+    shaper.selectionRect(font, textRun, point, height, 0, 8);
+}
+
+
 } // namespace blink
