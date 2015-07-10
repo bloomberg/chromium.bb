@@ -50,11 +50,6 @@ int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node)
     return 1;
 }
 
-ContainerNode* EditingInComposedTreeStrategy::parentOrShadowHostNode(const Node& node)
-{
-    return parent(node);
-}
-
 template class EditingAlgorithm<NodeTraversal>;
 template class EditingAlgorithm<ComposedTreeTraversal>;
 

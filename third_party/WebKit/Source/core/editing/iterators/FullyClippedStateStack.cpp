@@ -7,6 +7,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
+#include "core/editing/htmlediting.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 
@@ -34,7 +35,7 @@ template <typename Strategy>
 unsigned depthCrossingShadowBoundaries(const Node& node)
 {
     unsigned depth = 0;
-    for (ContainerNode* parent = Strategy::parentOrShadowHostNode(node); parent; parent = Strategy::parentOrShadowHostNode(*parent))
+    for (ContainerNode* parent = parentCrossingShadowBoundaries<Strategy>(node); parent; parent = parentCrossingShadowBoundaries<Strategy>(*parent))
         ++depth;
     return depth;
 }
@@ -75,7 +76,7 @@ void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(Node* nod
 {
     // Put the nodes in a vector so we can iterate in reverse order.
     WillBeHeapVector<RawPtrWillBeMember<ContainerNode>, 100> ancestry;
-    for (ContainerNode* parent = Strategy::parentOrShadowHostNode(*node); parent; parent = Strategy::parentOrShadowHostNode(*parent))
+    for (ContainerNode* parent = parentCrossingShadowBoundaries<Strategy>(*node); parent; parent = parentCrossingShadowBoundaries<Strategy>(*parent))
         ancestry.append(parent);
 
     // Call pushFullyClippedState on each node starting with the earliest ancestor.

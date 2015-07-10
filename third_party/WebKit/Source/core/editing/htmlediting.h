@@ -86,6 +86,19 @@ Node* nextAtomicLeafNode(const Node& start);
 // Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
 Node* previousAtomicLeafNode(const Node& start);
 
+template <typename Strategy>
+ContainerNode* parentCrossingShadowBoundaries(const Node&);
+template <>
+inline ContainerNode* parentCrossingShadowBoundaries<EditingStrategy>(const Node& node)
+{
+    return NodeTraversal::parentOrShadowHostNode(node);
+}
+template <>
+inline ContainerNode* parentCrossingShadowBoundaries<EditingInComposedTreeStrategy>(const Node& node)
+{
+    return ComposedTreeTraversal::parent(node);
+}
+
 // offset functions on Node
 
 int lastOffsetForEditing(const Node*);

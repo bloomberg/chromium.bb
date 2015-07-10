@@ -87,7 +87,7 @@ Node* pastLastNode(const Node& rangeEndContainer, int rangeEndOffset)
         if (Node* next = Strategy::childAt(rangeEndContainer, rangeEndOffset))
             return next;
     }
-    for (const Node* node = &rangeEndContainer; node; node = Strategy::parentOrShadowHostNode(*node)) {
+    for (const Node* node = &rangeEndContainer; node; node = parentCrossingShadowBoundaries<Strategy>(*node)) {
         if (Node* next = Strategy::nextSibling(*node))
             return next;
     }
