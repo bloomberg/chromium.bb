@@ -121,6 +121,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       ]
       deps += [
         "//cc",
+        "//gpu/command_buffer/common",
         "//ppapi/host",
         "//skia",
         "//ui/aura",
