@@ -11,7 +11,7 @@
 
 namespace content {
 
-enum CONTENT_EXPORT PresentationSessionState {
+enum PresentationSessionState {
   PRESENTATION_SESSION_STATE_CONNECTED,
   PRESENTATION_SESSION_STATE_DISCONNECTED
 };
