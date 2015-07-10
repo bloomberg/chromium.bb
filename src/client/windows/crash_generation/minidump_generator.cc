@@ -259,8 +259,9 @@ MinidumpGenerator::MinidumpGenerator(
     const MINIDUMP_TYPE dump_type,
     const bool is_client_pointers)
     : dbghelp_module_(NULL),
+      write_dump_(NULL),
       rpcrt4_module_(NULL),
-      dump_path_(dump_path),
+      create_uuid_(NULL),
       process_handle_(process_handle),
       process_id_(process_id),
       thread_id_(thread_id),
@@ -269,14 +270,13 @@ MinidumpGenerator::MinidumpGenerator(
       assert_info_(assert_info),
       dump_type_(dump_type),
       is_client_pointers_(is_client_pointers),
+      dump_path_(dump_path),
       dump_file_(INVALID_HANDLE_VALUE),
       full_dump_file_(INVALID_HANDLE_VALUE),
       dump_file_is_internal_(false),
       full_dump_file_is_internal_(false),
       additional_streams_(NULL),
-      callback_info_(NULL),
-      write_dump_(NULL),
-      create_uuid_(NULL) {
+      callback_info_(NULL) {
   InitializeCriticalSection(&module_load_sync_);
   InitializeCriticalSection(&get_proc_address_sync_);
 }
