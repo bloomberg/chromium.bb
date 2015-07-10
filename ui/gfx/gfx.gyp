@@ -411,7 +411,7 @@
             'vector_icons_public_h_file': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/vector_icons_public.h',
           },
           'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)>',
+            '<(SHARED_INTERMEDIATE_DIR)',
           ],
           'sources': [
             '<(vector_icons_cc_file)',
