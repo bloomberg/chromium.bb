@@ -625,7 +625,8 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, ControlsFrameless) {
 }
 
 // Test that the colored frames have the correct color when active and inactive.
-IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, FrameColor) {
+// TODO(tapted): Fix this test. http://crbug.com/508722
+IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, DISABLED_FrameColor) {
   // The hex values indicate an RGB color. When we get the NSColor later, the
   // components are CGFloats in the range [0, 1].
   extensions::AppWindow* app_window = CreateTestAppWindow(
