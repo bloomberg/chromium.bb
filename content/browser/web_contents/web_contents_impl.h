@@ -1093,6 +1093,10 @@ class CONTENT_EXPORT WebContentsImpl
   uint64 upload_size_;
   uint64 upload_position_;
 
+  // Tracks that this WebContents needs to unblock requests to the renderer.
+  // See ResumeLoadingCreatedWebContents.
+  bool is_resume_pending_;
+
   // Data for current page -----------------------------------------------------
 
   // When a title cannot be taken from any entry, this title will be used.

@@ -464,8 +464,7 @@ public class DocumentActivity extends ChromeActivity {
         TabState tabState = mTabModel.getTabStateForDocument(tabId);
         mDocumentTab = DocumentTab.create(DocumentActivity.this, isIncognito(),
                 getWindowAndroid(), determineLastKnownUrl(),
-                pendingData != null ? pendingData.webContents : null,
-                pendingData != null ? pendingData.webContentsPaused : false, tabState);
+                pendingData != null ? pendingData.webContents : null, tabState);
 
         if (pendingData != null && pendingData.webContents != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),

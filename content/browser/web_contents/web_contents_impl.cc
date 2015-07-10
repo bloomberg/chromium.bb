@@ -360,6 +360,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       load_state_(net::LOAD_STATE_IDLE, base::string16()),
       upload_size_(0),
       upload_position_(0),
+      is_resume_pending_(false),
       displayed_insecure_content_(false),
       has_accessed_initial_document_(false),
       theme_color_(SK_ColorTRANSPARENT),
@@ -1817,6 +1818,7 @@ void WebContentsImpl::ShowCreatedWindow(int route_id,
   WebContentsImpl* contents = GetCreatedWindow(route_id);
   if (contents) {
     WebContentsDelegate* delegate = GetDelegate();
+    contents->is_resume_pending_ = true;
     if (!delegate || delegate->ShouldResumeRequestsForCreatedWindow())
       contents->ResumeLoadingCreatedWebContents();
 
@@ -2667,8 +2669,11 @@ void WebContentsImpl::ExitFullscreen() {
 void WebContentsImpl::ResumeLoadingCreatedWebContents() {
   // Resume blocked requests for both the RenderViewHost and RenderFrameHost.
   // TODO(brettw): It seems bogus to reach into here and initialize the host.
-  GetRenderViewHost()->Init();
-  GetMainFrame()->Init();
+  if (is_resume_pending_) {
+    is_resume_pending_ = false;
+    GetRenderViewHost()->Init();
+    GetMainFrame()->Init();
+  }
 }
 
 bool WebContentsImpl::FocusLocationBarByDefault() {

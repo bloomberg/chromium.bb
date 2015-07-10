@@ -114,15 +114,12 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
             TraceEvent.begin("ChromeTabCreator.createNewTab");
             int parentId = parent != null ? parent.getId() : Tab.INVALID_TAB_ID;
             WebContents webContents = IntentHandler.getWebContentsFromIntent(intent);
-            boolean isWebContentsPaused = false;
             Intent parentIntent = null;
             if (webContents != null) {
                 // The WebContents comes with additional data, but it shouldn't be used if the
                 // WebContents itself couldn't be parsed out.
                 parentId = IntentUtils.safeGetIntExtra(
                         intent, IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
-                isWebContentsPaused = IntentUtils.safeGetBooleanExtra(
-                        intent, IntentHandler.EXTRA_WEB_CONTENTS_PAUSED, false);
                 parentIntent = IntentUtils.safeGetParcelableExtra(
                         intent, IntentHandler.EXTRA_PARENT_INTENT);
             }
@@ -140,8 +137,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
                 tab.initialize(webContents, mTabContentManager, !openInForeground);
                 tab.getTabRedirectHandler().updateIntent(intent);
                 tab.setParentIntent(parentIntent);
-
-                if (isWebContentsPaused) webContents.resumeLoadingCreatedWebContents();
+                webContents.resumeLoadingCreatedWebContents();
             } else if (!openInForeground && SysUtils.isLowEndDevice()) {
                 // On low memory devices the tabs opened in background are not loaded automatically
                 // to preserve resources (cpu, memory, strong renderer binding) for the foreground

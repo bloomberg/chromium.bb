@@ -200,13 +200,13 @@ public class DocumentTab extends ChromeTab {
      * @return The created {@link DocumentTab}.
      */
     static DocumentTab create(DocumentActivity activity, boolean incognito, WindowAndroid window,
-            String url, WebContents webContents, boolean webContentsPaused, TabState tabState) {
+            String url, WebContents webContents, TabState tabState) {
         int parentTabId = activity.getIntent().getIntExtra(
                 IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
         if (webContents != null) {
             DocumentTab tab = new DocumentTab(
                     activity, incognito, window, url, parentTabId, webContents);
-            if (webContentsPaused) webContents.resumeLoadingCreatedWebContents();
+            webContents.resumeLoadingCreatedWebContents();
             return tab;
         }
 

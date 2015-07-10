@@ -107,16 +107,12 @@ public class TabDelegate implements TabCreator {
         Context context = ApplicationStatus.getApplicationContext();
         int pageTransition = startedBy == DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS
                 ? PageTransition.RELOAD : PageTransition.AUTO_TOPLEVEL;
-        // TODO(dfalcantara): Pipe information about paused WebContents from native.
-        boolean isWebContentsPaused =
-                startedBy != DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS;
 
         Activity parentActivity = getActivityForTabId(parentId);
 
         if (FeatureUtilities.isDocumentMode(context)) {
             PendingDocumentData data = new PendingDocumentData();
             data.webContents = webContents;
-            data.webContentsPaused = isWebContentsPaused;
 
             ChromeLauncherActivity.launchDocumentInstance(parentActivity, mIsIncognito,
                     ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url, startedBy, pageTransition,
@@ -128,7 +124,6 @@ public class TabDelegate implements TabCreator {
             tabbedIntent.setClass(context, ChromeLauncherActivity.class);
             tabbedIntent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
             tabbedIntent.putExtra(IntentHandler.EXTRA_WEB_CONTENTS, webContents);
-            tabbedIntent.putExtra(IntentHandler.EXTRA_WEB_CONTENTS_PAUSED, isWebContentsPaused);
             tabbedIntent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, pageTransition);
             tabbedIntent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
 

@@ -74,11 +74,6 @@ public class IntentHandler {
     public static final String EXTRA_WEB_CONTENTS = "com.android.chrome.web_contents";
 
     /**
-     * Indicates whether a WebContents passed via the Intent has been paused.
-     */
-    public static final String EXTRA_WEB_CONTENTS_PAUSED = "com.android.chrome.web_contents_paused";
-
-    /**
      * The tab id of the parent tab, if any.
      */
     public static final String EXTRA_PARENT_TAB_ID = "com.android.chrome.parent_tab_id";
