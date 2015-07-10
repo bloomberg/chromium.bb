@@ -138,6 +138,12 @@
       '../../testing/gtest.gyp:gtest',
       'libphonenumber_without_metadata',
     ],
+    'variables': {
+      'clang_warning_flags': [
+        # https://github.com/googlei18n/libphonenumber/pull/741
+        '-Wno-unused-private-field',
+      ],
+    },
     'conditions': [
       ['OS=="win"', {
         'action': [

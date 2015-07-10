@@ -24,6 +24,15 @@ config("libphonenumber_config") {
   }
 }
 
+config("libphonenumber_config_internal") {
+  if (is_clang) {
+    cflags = [
+      # https://github.com/googlei18n/libphonenumber/pull/741
+      "-Wno-unused-private-field",
+    ]
+  }
+}
+
 # GYP version: third_party/libphonenumber/libphonenumber.gyp:libphonenumber_without_metadata
 static_library("libphonenumber_without_metadata") {
   sources = [
@@ -49,17 +58,10 @@ static_library("libphonenumber_without_metadata") {
   # do not consume their arguments. This leads to unused variable warnings in
   # release builds.
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  config("libphonenumber_without_metadata_warnings") {
-    if (is_clang) {
-      cflags = [
-        # https://github.com/googlei18n/libphonenumber/pull/741
-        "-Wno-unused-private-field",
-      ]
-    }
-  }
-  configs += [ ":libphonenumber_without_metadata_warnings" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":libphonenumber_config_internal",
+  ]
 
   public_configs = [ ":libphonenumber_config" ]
 
@@ -101,6 +103,8 @@ test("libphonenumber_unittests") {
     "src/test/phonenumbers/test_util.cc",
     "src/test/phonenumbers/unicodestring_test.cc",
   ]
+
+  configs += [ ":libphonenumber_config_internal" ]
 
   include_dirs = [ "src/test" ]
 
