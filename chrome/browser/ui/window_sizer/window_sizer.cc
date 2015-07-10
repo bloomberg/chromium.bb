@@ -75,6 +75,13 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       wp_pref->GetInteger("work_area_right", &work_area_right);
       if (*show_state == ui::SHOW_STATE_DEFAULT && maximized)
         *show_state = ui::SHOW_STATE_MAXIMIZED;
+      bool docked = false;
+      wp_pref->GetBoolean("docked", &docked);
+      if (*show_state == ui::SHOW_STATE_NORMAL && docked &&
+          !browser_->is_type_tabbed() &&
+          browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
+        *show_state = ui::SHOW_STATE_DOCKED;
+      }
     }
     work_area->SetRect(work_area_left, work_area_top,
                       std::max(0, work_area_right - work_area_left),

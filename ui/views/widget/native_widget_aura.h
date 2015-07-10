@@ -192,6 +192,7 @@ class VIEWS_EXPORT NativeWidgetAura
  private:
   class ActiveWindowObserver;
 
+  bool IsDocked() const;
   void SetInitialFocus(ui::WindowShowState show_state);
 
   internal::NativeWidgetDelegate* delegate_;

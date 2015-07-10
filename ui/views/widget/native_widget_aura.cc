@@ -364,9 +364,10 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
   if (!window_)
     return gfx::Rect();
 
-  // Restored bounds should only be relevant if the window is minimized or
-  // maximized. However, in some places the code expects GetRestoredBounds()
-  // to return the current window bounds if the window is not in either state.
+  // Restored bounds should only be relevant if the window is minimized,
+  // maximized, fullscreen or docked. However, in some places the code expects
+  // GetRestoredBounds() to return the current window bounds if the window is
+  // not in either state.
   if (IsMinimized() || IsMaximized() || IsFullscreen()) {
     // Restore bounds are in screen coordinates, no need to convert.
     gfx::Rect* restore_bounds =
@@ -374,7 +375,20 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
     if (restore_bounds)
       return *restore_bounds;
   }
-  return window_->GetBoundsInScreen();
+  gfx::Rect bounds = window_->GetBoundsInScreen();
+  if (IsDocked()) {
+    // Restore bounds are in screen coordinates, no need to convert.
+    gfx::Rect* restore_bounds =
+        window_->GetProperty(aura::client::kRestoreBoundsKey);
+    // Use current window horizontal offset origin in order to preserve docked
+    // alignment but preserve restored size and vertical offset for the time
+    // when the |window_| gets undocked.
+    if (restore_bounds) {
+      bounds.set_size(restore_bounds->size());
+      bounds.set_y(restore_bounds->y());
+    }
+  }
+  return bounds;
 }
 
 void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
@@ -467,8 +481,10 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
   if (!window_)
     return;
 
-  if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN)
+  if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN ||
+      state == ui::SHOW_STATE_DOCKED) {
     window_->SetProperty(aura::client::kShowStateKey, state);
+  }
   window_->Show();
   if (delegate_->CanActivate()) {
     if (state != ui::SHOW_STATE_INACTIVE)
@@ -957,6 +973,12 @@ NativeWidgetAura::~NativeWidgetAura() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, private:
+
+bool NativeWidgetAura::IsDocked() const {
+  return window_ &&
+         window_->GetProperty(aura::client::kShowStateKey) ==
+             ui::SHOW_STATE_DOCKED;
+}
 
 void NativeWidgetAura::SetInitialFocus(ui::WindowShowState show_state) {
   // The window does not get keyboard messages unless we focus it.

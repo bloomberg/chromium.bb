@@ -121,6 +121,20 @@ void BrowserFrameAsh::GetWindowPlacement(
       *show_state != ui::SHOW_STATE_MINIMIZED) {
     *show_state = ui::SHOW_STATE_NORMAL;
   }
+
+  if (ash::wm::GetWindowState(GetNativeWindow())->IsDocked()) {
+    if (browser_view_->browser()->is_app()) {
+      // Only web app windows (not tabbed browser windows) persist docked state.
+      *show_state = ui::SHOW_STATE_DOCKED;
+    } else {
+      // Restore original restore bounds for tabbed browser windows ignoring
+      // the docked origin.
+      gfx::Rect* restore_bounds = GetWidget()->GetNativeWindow()->GetProperty(
+          aura::client::kRestoreBoundsKey);
+      if (restore_bounds)
+        *bounds = *restore_bounds;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
