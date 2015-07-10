@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 
 #include "base/prefs/pref_service.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
@@ -70,6 +71,11 @@ void SetMetroBrowserFlowLauncher::Observe(
 namespace chrome {
 
 bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
+  // The behavior on Windows 10 is no good at the moment, since there is no
+  // known way to lead the user directly to a default browser picker.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return false;
+
   // If the only available mode of setting the default browser requires
   // user interaction, it means this couldn't have been done yet. Therefore,
   // we launch the dialog and inform the caller of it.
