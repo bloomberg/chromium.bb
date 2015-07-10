@@ -40,7 +40,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -434,7 +433,6 @@ public class ChromeApplication extends ContentApplication {
         GoogleServicesManager.get(this).onMainActivityStart();
         SyncController.get(this).onMainActivityStart();
         RevenueStats.getInstance();
-        ShortcutHelper.setFullScreenAction(ChromeLauncherActivity.ACTION_START_WEBAPP);
 
         getPKCS11AuthenticationManager().initialize(ChromeApplication.this);
 

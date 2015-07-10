@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.shell;
 
-import android.content.Intent;
-
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
@@ -21,8 +19,6 @@ import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.shell.preferences.ChromeShellPreferences;
 import org.chromium.ui.base.ResourceBundle;
 
-import java.util.ArrayList;
-
 /**
  * A basic test shell {@link android.app.Application}.  Handles setting up the native library and
  * loading the right resources.
@@ -34,8 +30,6 @@ public class ChromeShellApplication extends ChromeApplication {
 
     private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
 
-    ArrayList<ChromeShellApplicationObserver> mObservers;
-
     @Override
     public void onCreate() {
         // We want to do this at the earliest possible point in startup.
@@ -45,8 +39,6 @@ public class ChromeShellApplication extends ChromeApplication {
         // Assume that application start always leads to meaningful UMA startup metrics. This is not
         // the case for the official Chrome on Android.
         UmaUtils.setRunningApplicationStart(true);
-
-        mObservers = new ArrayList<ChromeShellApplicationObserver>();
 
         // Initialize the invalidations ID, just like we would in the downstream code.
         UniqueIdInvalidationClientNameGenerator.doInitializeAndInstallGenerator(this);
@@ -62,24 +54,6 @@ public class ChromeShellApplication extends ChromeApplication {
         ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
         ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
-    }
-
-    @Override
-    public void sendBroadcast(Intent intent) {
-        boolean shouldFire = true;
-        for (ChromeShellApplicationObserver observer : mObservers) {
-            shouldFire &= observer.onSendBroadcast(intent);
-        }
-
-        if (shouldFire) super.sendBroadcast(intent);
-    }
-
-    public void addObserver(ChromeShellApplicationObserver observer) {
-        mObservers.add(observer);
-    }
-
-    public void removeObserver(ChromeShellApplicationObserver observer) {
-        mObservers.remove(observer);
     }
 
     @Override
