@@ -24,7 +24,7 @@ class EventWaiter {
   // Unblocks a WaitForEvent() call if it was called with |event|. Otherwise,
   // has no effect.
   void NotifyEvent(Event event) {
-    if (event == expected_event_ && !quit_closure_.is_null()) {
+    if (!quit_closure_.is_null() && event == expected_event_) {
       quit_closure_.Run();
       quit_closure_.Reset();
     }

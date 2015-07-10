@@ -13,9 +13,10 @@
 
 namespace net {
 class HostResolver;
+class MojoProxyResolverFactory;
+class NetLog;
 class ProxyResolverErrorObserver;
 class ProxyResolverScriptData;
-class MojoProxyResolverFactory;
 
 // Implementation of ProxyResolverFactory that connects to a Mojo service to
 // create implementations of a Mojo proxy resolver to back a ProxyResolverMojo.
@@ -25,7 +26,8 @@ class ProxyResolverFactoryMojo : public ProxyResolverFactory {
       MojoProxyResolverFactory* mojo_proxy_factory,
       HostResolver* host_resolver,
       const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>&
-          error_observer_factory);
+          error_observer_factory,
+      NetLog* net_log);
   ~ProxyResolverFactoryMojo() override;
 
   // ProxyResolverFactory override.
@@ -42,6 +44,7 @@ class ProxyResolverFactoryMojo : public ProxyResolverFactory {
   HostResolver* const host_resolver_;
   const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>
       error_observer_factory_;
+  NetLog* const net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryMojo);
 };

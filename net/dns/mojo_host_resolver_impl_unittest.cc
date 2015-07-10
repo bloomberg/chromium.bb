@@ -14,6 +14,7 @@
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/mojo_host_type_converters.h"
+#include "net/log/net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
@@ -130,10 +131,8 @@ class MojoHostResolverImplTest : public testing::Test {
     mock_host_resolver_.rules()->AddRule("chromium.org", "8.8.8.8");
     mock_host_resolver_.rules()->AddSimulatedFailure("failure.fail");
 
-    resolver_service_.reset(new MojoHostResolverImpl(&mock_host_resolver_));
-    resolver_service_binding_.reset(
-        new mojo::Binding<interfaces::HostResolver>(resolver_service_.get()));
-    resolver_service_binding_->Bind(mojo::GetProxy(&resolver_service_ptr_));
+    resolver_service_.reset(
+        new MojoHostResolverImpl(&mock_host_resolver_, BoundNetLog()));
   }
 
   interfaces::HostResolverRequestInfoPtr CreateRequest(const std::string& host,
@@ -159,9 +158,6 @@ class MojoHostResolverImplTest : public testing::Test {
 
   CallbackMockHostResolver mock_host_resolver_;
   scoped_ptr<MojoHostResolverImpl> resolver_service_;
-
-  scoped_ptr<mojo::Binding<interfaces::HostResolver>> resolver_service_binding_;
-  interfaces::HostResolverPtr resolver_service_ptr_;
 };
 
 TEST_F(MojoHostResolverImplTest, Resolve) {
@@ -170,7 +166,7 @@ TEST_F(MojoHostResolverImplTest, Resolve) {
 
   interfaces::HostResolverRequestInfoPtr request =
       CreateRequest("example.com", 80, false);
-  resolver_service_ptr_->Resolve(request.Pass(), client_ptr.Pass());
+  resolver_service_->Resolve(request.Pass(), client_ptr.Pass());
   client.WaitForResult();
 
   EXPECT_EQ(net::OK, client.error_);
@@ -187,7 +183,7 @@ TEST_F(MojoHostResolverImplTest, ResolveSynchronous) {
 
   interfaces::HostResolverRequestInfoPtr request =
       CreateRequest("example.com", 80, false);
-  resolver_service_ptr_->Resolve(request.Pass(), client_ptr.Pass());
+  resolver_service_->Resolve(request.Pass(), client_ptr.Pass());
   client.WaitForResult();
 
   EXPECT_EQ(net::OK, client.error_);
@@ -206,10 +202,10 @@ TEST_F(MojoHostResolverImplTest, ResolveMultiple) {
 
   interfaces::HostResolverRequestInfoPtr request1 =
       CreateRequest("example.com", 80, false);
-  resolver_service_ptr_->Resolve(request1.Pass(), client1_ptr.Pass());
+  resolver_service_->Resolve(request1.Pass(), client1_ptr.Pass());
   interfaces::HostResolverRequestInfoPtr request2 =
       CreateRequest("chromium.org", 80, false);
-  resolver_service_ptr_->Resolve(request2.Pass(), client2_ptr.Pass());
+  resolver_service_->Resolve(request2.Pass(), client2_ptr.Pass());
   WaitForRequests(2);
   mock_host_resolver_.ResolveAllPending();
 
@@ -236,10 +232,10 @@ TEST_F(MojoHostResolverImplTest, ResolveDuplicate) {
 
   interfaces::HostResolverRequestInfoPtr request1 =
       CreateRequest("example.com", 80, false);
-  resolver_service_ptr_->Resolve(request1.Pass(), client1_ptr.Pass());
+  resolver_service_->Resolve(request1.Pass(), client1_ptr.Pass());
   interfaces::HostResolverRequestInfoPtr request2 =
       CreateRequest("example.com", 80, false);
-  resolver_service_ptr_->Resolve(request2.Pass(), client2_ptr.Pass());
+  resolver_service_->Resolve(request2.Pass(), client2_ptr.Pass());
   WaitForRequests(2);
   mock_host_resolver_.ResolveAllPending();
 
@@ -262,7 +258,7 @@ TEST_F(MojoHostResolverImplTest, ResolveFailure) {
 
   interfaces::HostResolverRequestInfoPtr request =
       CreateRequest("failure.fail", 80, false);
-  resolver_service_ptr_->Resolve(request.Pass(), client_ptr.Pass());
+  resolver_service_->Resolve(request.Pass(), client_ptr.Pass());
   client.WaitForResult();
 
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, client.error_);
@@ -278,7 +274,7 @@ TEST_F(MojoHostResolverImplTest, DestroyClient) {
 
   interfaces::HostResolverRequestInfoPtr request =
       CreateRequest("example.com", 80, false);
-  resolver_service_ptr_->Resolve(request.Pass(), client_ptr.Pass());
+  resolver_service_->Resolve(request.Pass(), client_ptr.Pass());
   WaitForRequests(1);
 
   client.reset();
@@ -286,23 +282,6 @@ TEST_F(MojoHostResolverImplTest, DestroyClient) {
 
   mock_host_resolver_.ResolveAllPending();
   base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(MojoHostResolverImplTest, DestroyService) {
-  interfaces::HostResolverRequestClientPtr client_ptr;
-  TestRequestClient client(mojo::GetProxy(&client_ptr));
-
-  mock_host_resolver_.set_ondemand_mode(true);
-
-  interfaces::HostResolverRequestInfoPtr request =
-      CreateRequest("example.com", 80, false);
-  resolver_service_ptr_->Resolve(request.Pass(), client_ptr.Pass());
-  WaitForRequests(1);
-
-  resolver_service_binding_.reset();
-  resolver_service_.reset();
-
-  client.WaitForConnectionError();
 }
 
 }  // namespace net

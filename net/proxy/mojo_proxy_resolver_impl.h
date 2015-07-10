@@ -15,10 +15,11 @@
 #include "net/proxy/proxy_resolver.h"
 
 namespace net {
+class ProxyResolverV8Tracing;
 
 class MojoProxyResolverImpl : public interfaces::ProxyResolver {
  public:
-  explicit MojoProxyResolverImpl(scoped_ptr<net::ProxyResolver> resolver);
+  explicit MojoProxyResolverImpl(scoped_ptr<ProxyResolverV8Tracing> resolver);
 
   ~MojoProxyResolverImpl() override;
 
@@ -32,7 +33,7 @@ class MojoProxyResolverImpl : public interfaces::ProxyResolver {
 
   void DeleteJob(Job* job);
 
-  scoped_ptr<net::ProxyResolver> resolver_;
+  scoped_ptr<ProxyResolverV8Tracing> resolver_;
   std::set<Job*> resolve_jobs_;
   std::map<net::ProxyResolver::RequestHandle, Job*> request_handle_to_job_;
 

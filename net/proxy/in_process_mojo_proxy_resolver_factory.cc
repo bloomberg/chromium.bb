@@ -29,11 +29,8 @@ scoped_ptr<base::ScopedClosureRunner>
 InProcessMojoProxyResolverFactory::CreateResolver(
     const mojo::String& pac_script,
     mojo::InterfaceRequest<interfaces::ProxyResolver> req,
-    interfaces::HostResolverPtr host_resolver,
-    interfaces::ProxyResolverErrorObserverPtr error_observer,
     interfaces::ProxyResolverFactoryRequestClientPtr client) {
-  factory_->CreateResolver(pac_script, req.Pass(), host_resolver.Pass(),
-                           error_observer.Pass(), client.Pass());
+  factory_->CreateResolver(pac_script, req.Pass(), client.Pass());
   return nullptr;
 }
 

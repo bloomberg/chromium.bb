@@ -327,7 +327,7 @@
               'dns/mojo_host_resolver_impl_unittest.cc',
               'proxy/mojo_proxy_resolver_factory_impl_unittest.cc',
               'proxy/mojo_proxy_resolver_impl_unittest.cc',
-              'proxy/proxy_resolver_error_observer_mojo_unittest.cc',
+              'proxy/mojo_proxy_resolver_v8_tracing_bindings_unittest.cc',
               'proxy/proxy_resolver_factory_mojo_unittest.cc',
               'proxy/proxy_service_mojo_unittest.cc',
             ],
@@ -943,8 +943,7 @@
             'proxy/mojo_proxy_resolver_factory_impl.h',
             'proxy/mojo_proxy_resolver_impl.cc',
             'proxy/mojo_proxy_resolver_impl.h',
-            'proxy/proxy_resolver_error_observer_mojo.cc',
-            'proxy/proxy_resolver_error_observer_mojo.h',
+            'proxy/mojo_proxy_resolver_v8_tracing_bindings.h',
           ],
           'dependencies': [
             'mojo_type_converters',
