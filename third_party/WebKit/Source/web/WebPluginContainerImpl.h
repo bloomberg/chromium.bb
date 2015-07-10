@@ -206,6 +206,7 @@ private:
     TouchEventRequestType m_touchEventRequestType;
     bool m_wantsWheelEvents;
 
+    bool m_inDispose;
 #if ENABLE(OILPAN)
     // Oilpan: if true, the plugin container must dispose
     // of its plugin when being finalized.

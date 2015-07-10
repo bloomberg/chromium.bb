@@ -519,7 +519,11 @@ void WebPluginContainerImpl::zoomLevelChanged(double zoomLevel)
 
 bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect)
 {
-    if (!m_element)
+    // Disallow access to the frame during dispose(), because it is not guaranteed to
+    // be valid memory once this object has started disposal. In particular, we might be being
+    // disposed because the frame has already be deleted and then something else dropped the
+    // last reference to the this object.
+    if (m_inDispose || !m_element)
         return false;
 
     LocalFrame* frame = m_element->document().frame();
@@ -702,6 +706,7 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPl
     , m_isInPaint(false)
     , m_touchEventRequestType(TouchEventRequestTypeNone)
     , m_wantsWheelEvents(false)
+    , m_inDispose(false)
 #if ENABLE(OILPAN)
     , m_shouldDisposePlugin(false)
 #endif
@@ -722,11 +727,14 @@ WebPluginContainerImpl::~WebPluginContainerImpl()
 
 void WebPluginContainerImpl::dispose()
 {
+    m_inDispose = true;
+
     if (m_element && m_touchEventRequestType != TouchEventRequestTypeNone && m_element->document().frameHost())
         m_element->document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
 
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();
+
     m_webPlugin->destroy();
     m_webPlugin = nullptr;
 
