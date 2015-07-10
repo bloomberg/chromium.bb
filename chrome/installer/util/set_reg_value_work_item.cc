@@ -120,9 +120,9 @@ SetRegValueWorkItem::SetRegValueWorkItem(
       get_value_callback_(get_value_callback),
       overwrite_(true),
       wow64_access_(wow64_access),
-      status_(SET_VALUE),
       type_(REG_SZ),
-      previous_type_(0) {
+      previous_type_(0),
+      status_(SET_VALUE) {
   DCHECK(wow64_access == 0 ||
          wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
