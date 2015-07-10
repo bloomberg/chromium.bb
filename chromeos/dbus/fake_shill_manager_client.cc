@@ -624,7 +624,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
   // Ethernet
   state = GetInitialStateForType(shill::kTypeEthernet, &enabled);
-  if (state == shill::kStateOnline) {
+  if (state == shill::kStateOnline || state == shill::kStateIdle) {
     AddTechnology(shill::kTypeEthernet, enabled);
     devices->AddDevice(
         "/device/eth1", shill::kTypeEthernet, "stub_eth_device1");
@@ -1142,11 +1142,9 @@ bool FakeShillManagerClient::SetInitialNetworkState(std::string type_arg,
     return false;
   }
 
-  // Unconnected or disabled ethernet is the same as unavailable.
-  if (type_arg == shill::kTypeEthernet &&
-      (state == shill::kStateIdle || state == kNetworkDisabled)) {
+  // Disabled ethernet is the same as unavailable.
+  if (type_arg == shill::kTypeEthernet && state == kNetworkDisabled)
     state = kTechnologyUnavailable;
-  }
 
   shill_initial_state_map_[type_arg] = state;
   return true;

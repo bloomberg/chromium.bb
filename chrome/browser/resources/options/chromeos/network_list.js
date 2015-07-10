@@ -1155,7 +1155,9 @@ cr.define('options.network', function() {
             cellularNetwork_ = cellularNetwork_ || entry;
             break;
           case 'Ethernet':
-            ethernetNetwork_ = ethernetNetwork_ || entry;
+            // Ignore any EAP Parameters networks (which lack ConnectionState).
+            if (entry.ConnectionState)
+              ethernetNetwork_ = ethernetNetwork_ || entry;
             break;
         }
         if (cellularNetwork_ && ethernetNetwork_)
@@ -1184,12 +1186,20 @@ cr.define('options.network', function() {
     updateControls: function(networkStates) {
       this.startBatchUpdates();
 
-      // Only show Ethernet control if connected.
-      if (ethernetNetwork_ && ethernetNetwork_.ConnectionState == 'Connected') {
+      // Only show Ethernet control if available.
+      if (ethernetNetwork_) {
         var ethernetOptions = showDetails.bind(null, ethernetNetwork_.GUID);
+        var state = ethernetNetwork_.ConnectionState;
+        var subtitle;
+        if (state == 'Connected')
+          subtitle = loadTimeData.getString('OncConnectionStateConnected');
+        else if (state == 'Connecting')
+          subtitle = loadTimeData.getString('OncConnectionStateConnecting');
+        else
+          subtitle = loadTimeData.getString('OncConnectionStateNotConnected');
         this.update(
           { key: 'Ethernet',
-            subtitle: loadTimeData.getString('OncConnectionStateConnected'),
+            subtitle: subtitle,
             iconData: ethernetNetwork_,
             command: ethernetOptions,
             Source: ethernetNetwork_.Source }
