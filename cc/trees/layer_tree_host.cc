@@ -1096,6 +1096,7 @@ Layer* LayerTreeHost::LayerById(int id) const {
 
 void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
+  DCHECK(!in_paint_layer_contents_);
   layer_id_map_[layer->id()] = layer;
   if (animation_host_)
     animation_host_->RegisterLayer(layer->id(), LayerTreeType::ACTIVE);
@@ -1103,6 +1104,7 @@ void LayerTreeHost::RegisterLayer(Layer* layer) {
 
 void LayerTreeHost::UnregisterLayer(Layer* layer) {
   DCHECK(LayerById(layer->id()));
+  DCHECK(!in_paint_layer_contents_);
   if (animation_host_)
     animation_host_->UnregisterLayer(layer->id(), LayerTreeType::ACTIVE);
   layer_id_map_.erase(layer->id());
