@@ -405,6 +405,8 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
     for (unsigned j = 0; j < results.size(); j++) {
         RefPtr<ShapeResult> result = results[j];
         for (unsigned i = 0; i < result->m_runs.size(); i++) {
+            if (!result->m_runs[i])
+                continue;
             if (direction == RTL)
                 currentX -= result->m_runs[i]->m_width;
             int numCharacters = result->m_runs[i]->m_numCharacters;
@@ -452,6 +454,8 @@ int ShapeResult::offsetForPosition(float targetX)
     if (m_direction == RTL) {
         charactersSoFar = m_numCharacters;
         for (unsigned i = 0; i < m_runs.size(); ++i) {
+            if (!m_runs[i])
+                continue;
             charactersSoFar -= m_runs[i]->m_numCharacters;
             float nextX = currentX + m_runs[i]->m_width;
             float offsetForRun = targetX - currentX;
@@ -464,6 +468,8 @@ int ShapeResult::offsetForPosition(float targetX)
         }
     } else {
         for (unsigned i = 0; i < m_runs.size(); ++i) {
+            if (!m_runs[i])
+                continue;
             float nextX = currentX + m_runs[i]->m_width;
             float offsetForRun = targetX - currentX;
             if (offsetForRun >= 0 && offsetForRun <= m_runs[i]->m_width) {
