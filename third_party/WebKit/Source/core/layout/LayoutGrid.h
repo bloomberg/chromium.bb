@@ -39,6 +39,7 @@ class GridTrack;
 
 enum TrackSizeComputationPhase {
     ResolveIntrinsicMinimums,
+    ResolveContentBasedMinimums,
     ResolveMaxContentMinimums,
     ResolveIntrinsicMaximums,
     ResolveMaxContentMaximums,
@@ -139,6 +140,7 @@ private:
     GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t) const;
 
     LayoutUnit logicalHeightForChild(LayoutBox&, Vector<GridTrack>&);
+    LayoutUnit minSizeForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     LayoutUnit minContentForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     LayoutUnit maxContentForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     GridAxisPosition columnAxisPositionForChild(const LayoutBox&) const;

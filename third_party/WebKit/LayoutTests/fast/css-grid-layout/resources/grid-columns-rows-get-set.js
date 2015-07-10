@@ -21,6 +21,7 @@ testGridDefinitionsValues(document.getElementById("gridWithCalcElement"), "150px
 testGridDefinitionsValues(document.getElementById("gridWithCalcComplexElement"), "550px", "465px");
 testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMaxElement"), "80px", "300px");
 testGridDefinitionsValues(document.getElementById("gridWithCalcComplexInsideMinMaxElement"), "415px", "300px");
+testGridDefinitionsValues(document.getElementById("gridWithAutoInsideMinMaxElement"), "20px", "11px");
 
 debug("");
 debug("Test getting wrong values for grid-template-columns and grid-template-rows through CSS (they should resolve to the default: 'none')");
@@ -54,6 +55,7 @@ testGridDefinitionsSetJSValues("minmax(22em, 8vh)", "minmax(10vw, 5em)", "220px"
 testGridDefinitionsSetJSValues("minmax(min-content, 8vh)", "minmax(10vw, min-content)", "48px", "80px");
 testGridDefinitionsSetJSValues("minmax(22em, max-content)", "minmax(max-content, 5em)", "220px", "50px");
 testGridDefinitionsSetJSValues("minmax(min-content, max-content)", "minmax(max-content, min-content)", "0px", "0px");
+testGridDefinitionsSetJSValues("minmax(auto, max-content)", "minmax(10vw, auto)", "0px", "80px");
 // Unit comparison should be case-insensitive.
 testGridDefinitionsSetJSValues("3600Fr", "154fR", "800px", "600px", "3600fr", "154fr");
 // Float values are allowed.
@@ -76,8 +78,6 @@ testGridDefinitionsSetBadJSValues("minmax(10px 20px)", "minmax(10px)")
 testGridDefinitionsSetBadJSValues("minmax(minmax(10px, 20px), 20px)", "minmax(10px, 20px, 30px)");
 // No breadth value and no comma.
 testGridDefinitionsSetBadJSValues("minmax()", "minmax(30px 30% 30em)");
-// Auto is not allowed inside minmax.
-testGridDefinitionsSetBadJSValues("minmax(auto, 8vh)", "minmax(10vw, auto)");
 testGridDefinitionsSetBadJSValues("-2fr", "3ffr");
 testGridDefinitionsSetBadJSValues("-2.05fr", "+-3fr");
 testGridDefinitionsSetBadJSValues("0fr", "1r");

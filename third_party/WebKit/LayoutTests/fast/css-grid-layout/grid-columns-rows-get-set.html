@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE html>
 <html>
 <head>
 <link href="resources/grid.css" rel="stylesheet">
@@ -85,6 +85,10 @@
     grid-template-columns: minmax(10%, calc(50% + 15px));
     grid-template-rows: minmax(calc(20px + 10%), 50%);
 }
+.gridWithAutoInsideMinMax {
+    grid-template-columns: minmax(auto, 20px);
+    grid-template-rows: minmax(max-content, auto);
+}
 </style>
 <script src="../../resources/js-test.js"></script>
 </head>
@@ -121,6 +125,9 @@
 <div class="grid gridWithCalcComplex" id="gridWithCalcComplexElement"></div>
 <div class="grid gridWithCalcInsideMinMax" id="gridWithCalcInsideMinMaxElement"></div>
 <div class="grid gridWithCalcComplexInsideMinMax" id="gridWithCalcComplexInsideMinMaxElement"></div>
+<div class="grid gridWithAutoInsideMinMax" id="gridWithAutoInsideMinMaxElement">
+    <div class="gridItem"></div>
+</div>
 <script src="resources/grid-definitions-parsing-utils.js"></script>
 <script src="resources/grid-columns-rows-get-set.js"></script>
 </body>

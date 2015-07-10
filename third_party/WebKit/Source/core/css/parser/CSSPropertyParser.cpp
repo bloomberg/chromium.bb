@@ -3779,7 +3779,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackSize(CSSParser
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseGridBreadth(CSSParserValue* currentValue)
 {
-    if (currentValue->id == CSSValueMinContent || currentValue->id == CSSValueMaxContent)
+    if (currentValue->id == CSSValueMinContent || currentValue->id == CSSValueMaxContent || currentValue->id == CSSValueAuto)
         return cssValuePool().createIdentifierValue(currentValue->id);
 
     if (currentValue->unit == CSSPrimitiveValue::CSS_FR) {

@@ -521,11 +521,10 @@ LayoutUnit LayoutGrid::computeUsedBreadthOfMinLength(GridTrackSizingDirection di
         return 0;
 
     const Length& trackLength = gridLength.length();
-    ASSERT(!trackLength.isAuto());
     if (trackLength.isSpecified())
         return computeUsedBreadthOfSpecifiedLength(direction, trackLength);
 
-    ASSERT(trackLength.isMinContent() || trackLength.isMaxContent());
+    ASSERT(trackLength.isMinContent() || trackLength.isAuto() || trackLength.isMaxContent());
     return 0;
 }
 
@@ -652,6 +651,25 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
     return (child.hasOverrideLogicalContentHeight() ? childIntrinsicHeight(child) : child.logicalHeight()) + child.marginLogicalHeight();
 }
 
+LayoutUnit LayoutGrid::minSizeForChild(LayoutBox& child, GridTrackSizingDirection direction, Vector<GridTrack>& columnTracks)
+{
+    bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
+    // TODO(svillar): Properly support orthogonal writing mode.
+    if (hasOrthogonalWritingMode)
+        return LayoutUnit();
+
+    const Length& childMinSize = direction == ForColumns ? child.style()->logicalMinWidth() : child.style()->logicalMinHeight();
+    if (childMinSize.isAuto()) {
+        // TODO(svillar): Implement intrinsic aspect ratio support (transferred size in specs).
+        return minContentForChild(child, direction, columnTracks);
+    }
+
+    if (direction == ForColumns)
+        return child.computeLogicalWidthUsing(MinSize, childMinSize, contentLogicalWidth(), this);
+
+    return child.computeContentLogicalHeight(MinSize, childMinSize, child.logicalHeight()) + child.scrollbarLogicalHeight();
+}
+
 LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child, GridTrackSizingDirection direction, Vector<GridTrack>& columnTracks)
 {
     bool hasOrthogonalWritingMode = child.isHorizontalWritingMode() != isHorizontalWritingMode();
@@ -767,6 +785,7 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirectio
     while (it != end) {
         GridItemsSpanGroupRange spanGroupRange = { it, std::upper_bound(it, end, *it) };
         resolveContentBasedTrackSizingFunctionsForItems<ResolveIntrinsicMinimums>(direction, sizingData, spanGroupRange);
+        resolveContentBasedTrackSizingFunctionsForItems<ResolveContentBasedMinimums>(direction, sizingData, spanGroupRange);
         resolveContentBasedTrackSizingFunctionsForItems<ResolveMaxContentMinimums>(direction, sizingData, spanGroupRange);
         resolveContentBasedTrackSizingFunctionsForItems<ResolveIntrinsicMaximums>(direction, sizingData, spanGroupRange);
         resolveContentBasedTrackSizingFunctionsForItems<ResolveMaxContentMaximums>(direction, sizingData, spanGroupRange);
@@ -789,6 +808,8 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForNonSpanningItems(Grid
         track.setBaseSize(std::max(track.baseSize(), minContentForChild(gridItem, direction, columnTracks)));
     else if (trackSize.hasMaxContentMinTrackBreadth())
         track.setBaseSize(std::max(track.baseSize(), maxContentForChild(gridItem, direction, columnTracks)));
+    else if (trackSize.hasAutoMinTrackBreadth())
+        track.setBaseSize(std::max(track.baseSize(), minSizeForChild(gridItem, direction, columnTracks)));
 
     if (trackSize.hasMinContentMaxTrackBreadth())
         track.setGrowthLimit(std::max(track.growthLimit(), minContentForChild(gridItem, direction, columnTracks)));
@@ -800,6 +821,7 @@ static const LayoutUnit& trackSizeForTrackSizeComputationPhase(TrackSizeComputat
 {
     switch (phase) {
     case ResolveIntrinsicMinimums:
+    case ResolveContentBasedMinimums:
     case ResolveMaxContentMinimums:
     case MaximizeTracks:
         return track.baseSize();
@@ -819,6 +841,8 @@ static bool shouldProcessTrackForTrackSizeComputationPhase(TrackSizeComputationP
 {
     switch (phase) {
     case ResolveIntrinsicMinimums:
+        return trackSize.hasIntrinsicMinTrackBreadth();
+    case ResolveContentBasedMinimums:
         return trackSize.hasMinOrMaxContentMinTrackBreadth();
     case ResolveMaxContentMinimums:
         return trackSize.hasMaxContentMinTrackBreadth();
@@ -839,7 +863,8 @@ static bool trackShouldGrowBeyondGrowthLimitsForTrackSizeComputationPhase(TrackS
 {
     switch (phase) {
     case ResolveIntrinsicMinimums:
-        return trackSize.hasMinContentMinTrackBreadthAndMinOrMaxContentMaxTrackBreadth();
+    case ResolveContentBasedMinimums:
+        return trackSize.hasAutoOrMinContentMinTrackBreadthAndIntrinsicMaxTrackBreadth();
     case ResolveMaxContentMinimums:
         return trackSize.hasMaxContentMinTrackBreadthAndMaxContentMaxTrackBreadth();
     case ResolveIntrinsicMaximums:
@@ -858,6 +883,7 @@ static void markAsInfinitelyGrowableForTrackSizeComputationPhase(TrackSizeComput
 {
     switch (phase) {
     case ResolveIntrinsicMinimums:
+    case ResolveContentBasedMinimums:
     case ResolveMaxContentMinimums:
         return;
     case ResolveIntrinsicMaximums:
@@ -880,6 +906,7 @@ static void updateTrackSizeForTrackSizeComputationPhase(TrackSizeComputationPhas
 {
     switch (phase) {
     case ResolveIntrinsicMinimums:
+    case ResolveContentBasedMinimums:
     case ResolveMaxContentMinimums:
         track.setBaseSize(track.plannedSize());
         return;
@@ -899,6 +926,8 @@ LayoutUnit LayoutGrid::currentItemSizeForTrackSizeComputationPhase(TrackSizeComp
 {
     switch (phase) {
     case ResolveIntrinsicMinimums:
+        return minSizeForChild(gridItem, direction, columnTracks);
+    case ResolveContentBasedMinimums:
     case ResolveIntrinsicMaximums:
         return minContentForChild(gridItem, direction, columnTracks);
     case ResolveMaxContentMinimums:

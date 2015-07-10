@@ -19,6 +19,7 @@ testGridDefinitionsValues(document.getElementById("gridWithCalcCalc"), "200px 10
 testGridDefinitionsValues(document.getElementById("gridWithCalcAndFixed"), "400px 80px", "88px 150px");
 testGridDefinitionsValues(document.getElementById("gridWithCalcAndMinMax"), "190px 80px", "150px 53px");
 testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMax"), "400px 120px", "150px 175px");
+testGridDefinitionsValues(document.getElementById("gridWithAutoInsideMinMax"), "0px 30px", "132px 60px");
 
 debug("");
 debug("Test the initial value");
@@ -38,6 +39,7 @@ testGridDefinitionsSetJSValues("16em 2fr", "14fr auto", "160px 640px", "600px 0p
 testGridDefinitionsSetJSValues("50% 12vw", "5% 85vh", "400px 96px", "30px 510px");
 testGridDefinitionsSetJSValues("calc(25px) calc(2em)", "auto calc(10%)", "25px 20px", "0px 60px", "calc(25px) calc(2em)", "auto calc(10%)");
 testGridDefinitionsSetJSValues("calc(25px + 40%) minmax(min-content, calc(10% + 12px))", "minmax(calc(75% - 350px), max-content) auto", "345px 92px", "100px 0px", "calc(25px + 40%) minmax(min-content, calc(10% + 12px))", "minmax(calc(75% - 350px), max-content) auto");
+testGridDefinitionsSetJSValues("auto minmax(16px, auto)", "minmax(auto, 15%) 10vw", "0px 16px", "90px 80px");
 
 debug("");
 debug("Test getting wrong values set from CSS");
@@ -57,7 +59,6 @@ testGridDefinitionsSetBadJSValues("none none", "none none");
 testGridDefinitionsSetBadJSValues("auto none", "auto none");
 testGridDefinitionsSetBadJSValues("auto none 16em", "auto 18em none");
 testGridDefinitionsSetBadJSValues("-webkit-fit-content -webkit-fit-content", "-webkit-fit-available -webkit-fit-available");
-testGridDefinitionsSetBadJSValues("auto minmax(16px, auto)", "minmax(auto, 15%) 10vw");
 // Negative values are not allowed.
 testGridDefinitionsSetBadJSValues("-10px minmax(16px, 32px)", "minmax(10%, 15%) -10vw");
 testGridDefinitionsSetBadJSValues("10px minmax(16px, -1vw)", "minmax(-1%, 15%) 10vw");

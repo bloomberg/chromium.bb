@@ -44,6 +44,8 @@ PASS window.getComputedStyle(gridWithCalcInsideMinMaxElement, '').getPropertyVal
 PASS window.getComputedStyle(gridWithCalcInsideMinMaxElement, '').getPropertyValue('grid-template-rows') is "300px"
 PASS window.getComputedStyle(gridWithCalcComplexInsideMinMaxElement, '').getPropertyValue('grid-template-columns') is "415px"
 PASS window.getComputedStyle(gridWithCalcComplexInsideMinMaxElement, '').getPropertyValue('grid-template-rows') is "300px"
+PASS window.getComputedStyle(gridWithAutoInsideMinMaxElement, '').getPropertyValue('grid-template-columns') is "20px"
+PASS window.getComputedStyle(gridWithAutoInsideMinMaxElement, '').getPropertyValue('grid-template-rows') is "11px"
 
 Test getting wrong values for grid-template-columns and grid-template-rows through CSS (they should resolve to the default: 'none')
 PASS window.getComputedStyle(gridWithFitContentElement, '').getPropertyValue('grid-template-columns') is "none"
@@ -104,6 +106,10 @@ PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is 
 PASS element.style.gridTemplateColumns is "minmax(min-content, max-content)"
 PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "0px"
 PASS element.style.gridTemplateRows is "minmax(max-content, min-content)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is "0px"
+PASS element.style.gridTemplateColumns is "minmax(auto, max-content)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "80px"
+PASS element.style.gridTemplateRows is "minmax(10vw, auto)"
 PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is "800px"
 PASS element.style.gridTemplateColumns is "3600fr"
 PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "600px"
@@ -136,8 +142,6 @@ PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "20
 PASS element.style.gridTemplateRows is "minmax(calc(25% - 50px), 200px)"
 
 Test setting grid-template-columns and grid-template-rows to bad values through JS
-PASS window.getComputedStyle(element, '').getPropertyValue('grid-template-columns') is "none"
-PASS window.getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "none"
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-template-columns') is "none"
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "none"
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-template-columns') is "none"
