@@ -239,6 +239,17 @@ Error UdpNode::SetSockOpt(int lvl,
                 PP_MakeInt32(bufsize),
                 PP_BlockUntilComplete());
     return PPERROR_TO_ERRNO(error);
+  } else if (lvl == SOL_SOCKET && optname == SO_BROADCAST) {
+    if (static_cast<size_t>(len) < sizeof(int))
+      return EINVAL;
+    AUTO_LOCK(node_lock_);
+    int broadcast = *static_cast<const int*>(optval);
+    int32_t error =
+        UDPInterface()->SetOption(socket_resource_,
+                PP_UDPSOCKET_OPTION_BROADCAST,
+                PP_MakeBool(broadcast ? PP_TRUE : PP_FALSE),
+                PP_BlockUntilComplete());
+    return PPERROR_TO_ERRNO(error);
   }
 
   return SocketNode::SetSockOpt(lvl, optname, optval, len);

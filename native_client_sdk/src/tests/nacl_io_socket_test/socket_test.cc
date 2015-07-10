@@ -608,6 +608,18 @@ TEST_F(SocketTestUDP, Sockopt_BUFSIZE) {
     << "failed with: " << strerror(errno);
 }
 
+TEST_F(SocketTestUDP, Sockopt_BROADCAST) {
+  int option = 1;
+  socklen_t len = sizeof(option);
+
+  ASSERT_EQ(0, Bind(sock1_, LOCAL_HOST, ANY_PORT));
+
+  // Modify the test to verify the change by calling getsockopt
+  // once UDPInterface supports GetOption() call
+  ASSERT_EQ(0, ki_setsockopt(sock1_, SOL_SOCKET, SO_BROADCAST, &option, len))
+    << "failed with: " << strerror(errno);
+}
+
 TEST_F(SocketTestTCP, AcceptNoParams) {
   sockaddr_in addr;
   socklen_t addrlen = sizeof(addr);
