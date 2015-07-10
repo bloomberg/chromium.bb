@@ -24,14 +24,6 @@
 // https://html.spec.whatwg.org/#the-window-object
 
 interface HTMLDocument : Document {
-    // Inheritance of [Unforgeable] attributes is not supported.  So we have to
-    // define the same unforgeable attributes in derived interfaces as well.
-    // See that Document already defined 'location' attribute and this interface
-    // redefine it.
-    // Keep all the definitions consistent.
-    // TODO(yukishiino): Support inheritance of attributes defined on instance.
-    [PutForwards=href, Unforgeable] readonly attribute Location? location;
-
     // https://html.spec.whatwg.org/#Document-partial
 
     // FIXME: *Color should have [TreatNullAs=EmptyString].

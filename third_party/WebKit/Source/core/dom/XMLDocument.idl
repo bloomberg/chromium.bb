@@ -26,11 +26,4 @@
 // https://dom.spec.whatwg.org/#xmldocument
 
 interface XMLDocument : Document {
-    // Inheritance of [Unforgeable] attributes is not supported.  So we have to
-    // define the same unforgeable attributes in derived interfaces as well.
-    // See that Document already defined 'location' attribute and this interface
-    // redefine it.
-    // Keep all the definitions consistent.
-    // TODO(yukishiino): Support inheritance of attributes defined on instance.
-    [PutForwards=href, Unforgeable] readonly attribute Location? location;
 };
