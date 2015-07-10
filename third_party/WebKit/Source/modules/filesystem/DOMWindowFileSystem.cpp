@@ -29,6 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
@@ -36,6 +37,7 @@
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/LocalFileSystem.h"
 #include "platform/FileSystemType.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
@@ -57,6 +59,9 @@ void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow& windowArg, int type
     Document* document = window.document();
     if (!document)
         return;
+
+    if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(document->securityOrigin()->protocol()))
+        UseCounter::count(document, UseCounter::RequestFileSystemNonWebbyOrigin);
 
     if (!document->securityOrigin()->canAccessFileSystem()) {
         DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::SECURITY_ERR));

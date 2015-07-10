@@ -771,6 +771,7 @@ public:
         V8UIEvent_InitUIEvent_Method = 873,
         V8Document_CreateTouch_Method = 874,
         V8HTMLFrameElement_GetSVGDocument_Method = 875,
+        RequestFileSystemNonWebbyOrigin = 876,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
