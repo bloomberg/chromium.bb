@@ -148,6 +148,7 @@ nptl/tst-attr3
 nptl/tst-basic6
 nptl/tst-cancel24
 nptl/tst-cleanupx3
+nptl/tst-cond23
 nptl/tst-execstack
 nptl/tst-fini1
 nptl/tst-flock1
