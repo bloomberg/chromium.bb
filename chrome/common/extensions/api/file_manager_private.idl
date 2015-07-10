@@ -687,14 +687,17 @@ interface Functions {
   static void getStrings(GetStringsCallback callback);
 
   // Adds file watch.
-  // |fileUrl| URL of file to watch
+  // |entry| Entry to watch
   // |callback|
-  static void addFileWatch(DOMString fileUrl, AddFileWatchCallback callback);
+  [nocompile]
+  static void addFileWatch([instanceof=Entry] object entry,
+                           AddFileWatchCallback callback);
 
   // Removes file watch.
-  // |fileUrl| URL of watched file to remove
+  // |entry| Watched entry
   // |callback|
-  static void removeFileWatch(DOMString fileUrl,
+  [nocompile]
+  static void removeFileWatch([instanceof=Entry] object entry,
                               RemoveFileWatchCallback callback);
 
   // Enables the extenal file scheme necessary to initiate drags to the browser

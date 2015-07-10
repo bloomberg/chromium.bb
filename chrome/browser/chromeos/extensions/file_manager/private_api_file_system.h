@@ -77,8 +77,9 @@ class FileManagerPrivateGrantAccessFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGrantAccessFunction);
 };
 
-// Base class for FileManagerPrivateAddFileWatchFunction and
-// FileManagerPrivateRemoveFileWatchFunction. Although it's called "FileWatch",
+// Base class for FileManagerPrivateInternalAddFileWatchFunction and
+// FileManagerPrivateInternalRemoveFileWatchFunction. Although it's called
+// "FileWatch",
 // the class and its sub classes are used only for watching changes in
 // directories.
 class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
@@ -101,13 +102,14 @@ class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
 
 // Implements the chrome.fileManagerPrivate.addFileWatch method.
 // Starts watching changes in directories.
-class FileManagerPrivateAddFileWatchFunction : public FileWatchFunctionBase {
+class FileManagerPrivateInternalAddFileWatchFunction
+    : public FileWatchFunctionBase {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.addFileWatch",
-                             FILEMANAGERPRIVATE_ADDFILEWATCH)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.addFileWatch",
+                             FILEMANAGERPRIVATEINTERNAL_ADDFILEWATCH)
 
  protected:
-  ~FileManagerPrivateAddFileWatchFunction() override {}
+  ~FileManagerPrivateInternalAddFileWatchFunction() override {}
 
   // FileWatchFunctionBase override.
   void PerformFileWatchOperation(
@@ -119,13 +121,14 @@ class FileManagerPrivateAddFileWatchFunction : public FileWatchFunctionBase {
 
 // Implements the chrome.fileManagerPrivate.removeFileWatch method.
 // Stops watching changes in directories.
-class FileManagerPrivateRemoveFileWatchFunction : public FileWatchFunctionBase {
+class FileManagerPrivateInternalRemoveFileWatchFunction
+    : public FileWatchFunctionBase {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.removeFileWatch",
-                             FILEMANAGERPRIVATE_REMOVEFILEWATCH)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.removeFileWatch",
+                             FILEMANAGERPRIVATEINTERNAL_REMOVEFILEWATCH)
 
  protected:
-  ~FileManagerPrivateRemoveFileWatchFunction() override {}
+  ~FileManagerPrivateInternalRemoveFileWatchFunction() override {}
 
   // FileWatchFunctionBase override.
   void PerformFileWatchOperation(

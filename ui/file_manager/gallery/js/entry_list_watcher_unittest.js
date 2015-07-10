@@ -5,17 +5,38 @@
 var chrome;
 var mockFileSystem;
 
+function webkitResolveLocalFileSystemURL(url, callback) {
+  var paths = Object.keys(mockFileSystem.entries);
+  for (var i = 0; i < paths.length; i++) {
+    var entry = mockFileSystem.entries[paths[i]];
+    if (url === entry.toURL()) {
+      delete chrome.runtime['lastError'];
+      callback(entry);
+      return;
+    }
+  }
+  chrome.runtime.lastError = {
+    name: 'Not found.'
+  };
+  callback(null);
+};
+
 function setUp() {
   chrome = {
     fileManagerPrivate: {
       onDirectoryChanged: new MockAPIEvent(),
-      addFileWatch: function(url) {
-        this.watchedURLs[url] = true;
+      addFileWatch: function(entry, callback) {
+        this.watchedURLs[entry.toURL()] = true;
+        callback();
       },
-      removeFileWatch: function(url) {
-        delete this.watchedURLs[url];
+      removeFileWatch: function(entry, callback) {
+        delete this.watchedURLs[entry.toURL()];
+        callback();
       },
       watchedURLs: {}
+    },
+    runtime: {
+      // For lastError.
     }
   };
 

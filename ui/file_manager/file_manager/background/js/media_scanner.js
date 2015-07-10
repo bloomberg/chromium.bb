@@ -722,7 +722,7 @@ importer.DefaultDirectoryWatcher.prototype.addDirectory = function(entry) {
         assert(this.listener_));
   }
   this.watchedDirectories_[entry.toURL()] = true;
-  chrome.fileManagerPrivate.addFileWatch(entry.toURL(), function() {});
+  chrome.fileManagerPrivate.addFileWatch(entry, function() {});
 };
 
 /**
@@ -735,7 +735,13 @@ importer.DefaultDirectoryWatcher.prototype.onWatchedDirectoryModified_ =
     return;
   this.triggered = true;
   for (var url in this.watchedDirectories_) {
-    chrome.fileManagerPrivate.removeFileWatch(url, function() {});
+    window.webkitResolveLocalFileSystemURL(url, function(entry) {
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError.name);
+        return;
+      }
+      chrome.fileManagerPrivate.removeFileWatch(entry, function() {});
+    });
   }
   chrome.fileManagerPrivate.onDirectoryChanged.removeListener(
       assert(this.listener_));

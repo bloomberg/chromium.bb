@@ -88,7 +88,7 @@ function runTests() {
                 chrome.test.callbackPass(function(externalEntry) {
                   chrome.test.assertTrue(!!externalEntry);
                   chrome.fileManagerPrivate.addFileWatch(
-                      externalEntry.toURL(),
+                      externalEntry,
                       chrome.test.callbackPass(function(result) {
                         chrome.test.assertTrue(result);
                         // Verify closure called when an even arrives.

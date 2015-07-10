@@ -279,20 +279,21 @@ chrome.fileManagerPrivate.getFileTasks = function(fileUrls, callback) {};
 chrome.fileManagerPrivate.getStrings = function(callback) {};
 
 /**
- * Adds file watch. |fileUrl| URL of file to watch |callback|
- * @param {string} fileUrl
- * @param {Function} callback |success| True when file watch is successfully
- * added.
+ * Adds file watch. |entry| Entry of file to watch |callback|
+ * @param {!Entry} entry
+ * @param {function(boolean)} callback |success| True when file watch is
+ *     successfully added.
  */
-chrome.fileManagerPrivate.addFileWatch = function(fileUrl, callback) {};
+chrome.fileManagerPrivate.addFileWatch = function(entry, callback) {};
 
 /**
- * Removes file watch. |fileUrl| URL of watched file to remove |callback|
- * @param {string} fileUrl
- * @param {Function} callback |success| True when file watch is successfully
+ * Removes file watch. |entry| Entry of watched file to remove |callback|
+ * @param {!Entry} entry
+ * @param {function(boolean)} callback |success| True when file watch is
+ *     successfully
  * removed.
  */
-chrome.fileManagerPrivate.removeFileWatch = function(fileUrl, callback) {};
+chrome.fileManagerPrivate.removeFileWatch = function(entry, callback) {};
 
 /**
  * Enables the extenal file scheme necessary to initiate drags to the browser

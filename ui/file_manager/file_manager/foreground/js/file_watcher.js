@@ -92,7 +92,7 @@ FileWatcher.prototype.resetWatchedEntry_ = function() {
       // Release the watched directory.
       if (this.watchedDirectoryEntry_) {
         chrome.fileManagerPrivate.removeFileWatch(
-            this.watchedDirectoryEntry_.toURL(),
+            this.watchedDirectoryEntry_,
             function(result) {
               if (chrome.runtime.lastError) {
                 console.error('Failed to remove the watcher because of: ' +
@@ -124,7 +124,7 @@ FileWatcher.prototype.changeWatchedEntry_ = function(entry) {
       // Run the tasks in the queue to avoid races.
       this.queue_.run(function(callback) {
         chrome.fileManagerPrivate.addFileWatch(
-            entry.toURL(),
+            entry,
             function(result) {
               if (chrome.runtime.lastError) {
                 // Most probably setting the watcher is not supported on the

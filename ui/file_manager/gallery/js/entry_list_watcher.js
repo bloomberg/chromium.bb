@@ -49,6 +49,9 @@ EntryListWatcher.prototype.getEntry = function(item) {
  * @private
  */
 EntryListWatcher.prototype.onSplice_ = function(event) {
+  // TODO(mtomasz, hirono): Remove operations on URLs as they won't work after
+  // switching to isolated entries.
+
   // Mark all existing watchers as candidates to be removed.
   var diff = {};
   for (var url in this.watchers_) {
@@ -74,15 +77,21 @@ EntryListWatcher.prototype.onSplice_ = function(event) {
   // 1: watcher does not exists in the old set, but exists in the new set.
   var reportError = function() {
     if (chrome.runtime.lastError)
-      console.error(chrome.runtime.lastError);
+      console.error(chrome.runtime.lastError.name);
   };
   for (var url in diff) {
     switch (diff[url]) {
       case 1:
-        chrome.fileManagerPrivate.addFileWatch(url, reportError);
+        window.webkitResolveLocalFileSystemURL(url, function(entry) {
+          reportError();
+          chrome.fileManagerPrivate.addFileWatch(entry, reportError);
+        });
         break;
       case -1:
-        chrome.fileManagerPrivate.removeFileWatch(url, reportError);
+        window.webkitResolveLocalFileSystemURL(url, function(entry) {
+          reportError();
+          chrome.fileManagerPrivate.removeFileWatch(entry, reportError);
+        });
         break;
       case 0:
         break;

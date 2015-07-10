@@ -17,6 +17,8 @@ namespace fileManagerPrivateInternal {
   callback ResolveIsolatedEntriesCallback = void(EntryDescription[] entries);
   callback GetEntryPropertiesCallback = void(
       fileManagerPrivate.EntryProperties[] entryProperties);
+  callback AddFileWatchCallback = void(optional boolean success);
+  callback RemoveFileWatchCallback = void(optional boolean success);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -25,5 +27,11 @@ namespace fileManagerPrivateInternal {
         DOMString[] urls,
         fileManagerPrivate.EntryPropertyName[] names,
         GetEntryPropertiesCallback callback);
+    static void addFileWatch(
+        DOMString url,
+        AddFileWatchCallback callback);
+    static void removeFileWatch(
+        DOMString url,
+        RemoveFileWatchCallback callback);
   };
 };

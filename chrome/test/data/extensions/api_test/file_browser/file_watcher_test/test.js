@@ -324,7 +324,7 @@ initTests(function(testParams, errorMessage) {
   chrome.test.runTests([
     function addFileWatch() {
       chrome.fileManagerPrivate.addFileWatch(
-          testParams.entries.file.toURL(),
+          testParams.entries.file,
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
           }));
@@ -332,7 +332,7 @@ initTests(function(testParams, errorMessage) {
 
     function addSubdirWatch() {
       chrome.fileManagerPrivate.addFileWatch(
-          testParams.entries.subdir.toURL(),
+          testParams.entries.subdir,
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
           }));
@@ -340,7 +340,7 @@ initTests(function(testParams, errorMessage) {
 
     function addDirWatch() {
       chrome.fileManagerPrivate.addFileWatch(
-          testParams.entries.dir.toURL(),
+          testParams.entries.dir,
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
           }));
@@ -498,7 +498,7 @@ initTests(function(testParams, errorMessage) {
 
     function removeFileWatch() {
       chrome.fileManagerPrivate.removeFileWatch(
-          testParams.entries.file.toURL(),
+          testParams.entries.file,
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
           }));
@@ -506,7 +506,7 @@ initTests(function(testParams, errorMessage) {
 
     function removeDirWatch() {
       chrome.fileManagerPrivate.removeFileWatch(
-          testParams.entries.dir.toURL(),
+          testParams.entries.dir,
           chrome.test.callbackPass(function(success) {
             chrome.test.assertTrue(success);
           }));

@@ -334,7 +334,7 @@ bool FileWatchFunctionBase::RunAsync() {
   return true;
 }
 
-void FileManagerPrivateAddFileWatchFunction::PerformFileWatchOperation(
+void FileManagerPrivateInternalAddFileWatchFunction::PerformFileWatchOperation(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const storage::FileSystemURL& file_system_url,
     const std::string& extension_id) {
@@ -350,7 +350,8 @@ void FileManagerPrivateAddFileWatchFunction::PerformFileWatchOperation(
         file_system_url, false /* recursive */,
         base::Bind(
             &StatusCallbackToResponseCallback,
-            base::Bind(&FileManagerPrivateAddFileWatchFunction::Respond, this)),
+            base::Bind(&FileManagerPrivateInternalAddFileWatchFunction::Respond,
+                       this)),
         base::Bind(&file_manager::EventRouter::OnWatcherManagerNotification,
                    event_router->GetWeakPtr(), file_system_url, extension_id));
     return;
@@ -359,13 +360,15 @@ void FileManagerPrivateAddFileWatchFunction::PerformFileWatchOperation(
   // Obsolete. Fallback code if storage::WatcherManager is not implemented.
   event_router->AddFileWatch(
       file_system_url.path(), file_system_url.virtual_path(), extension_id,
-      base::Bind(&FileManagerPrivateAddFileWatchFunction::Respond, this));
+      base::Bind(&FileManagerPrivateInternalAddFileWatchFunction::Respond,
+                 this));
 }
 
-void FileManagerPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
-    scoped_refptr<storage::FileSystemContext> file_system_context,
-    const storage::FileSystemURL& file_system_url,
-    const std::string& extension_id) {
+void FileManagerPrivateInternalRemoveFileWatchFunction::
+    PerformFileWatchOperation(
+        scoped_refptr<storage::FileSystemContext> file_system_context,
+        const storage::FileSystemURL& file_system_url,
+        const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_manager::EventRouter* const event_router =
