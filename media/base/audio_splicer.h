@@ -17,11 +17,13 @@ namespace media {
 class AudioBuffer;
 class AudioBus;
 class AudioStreamSanitizer;
+class MediaLog;
 
 // Helper class that handles filling gaps and resolving overlaps.
 class MEDIA_EXPORT AudioSplicer {
  public:
-  explicit AudioSplicer(int samples_per_second);
+  AudioSplicer(int samples_per_second,
+               const scoped_refptr<MediaLog>& media_log);
   ~AudioSplicer();
 
   enum {

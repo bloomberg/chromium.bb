@@ -395,7 +395,7 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
 
   if (expecting_config_changes_)
     buffer_converter_.reset(new AudioBufferConverter(audio_parameters_));
-  splicer_.reset(new AudioSplicer(audio_parameters_.sample_rate()));
+  splicer_.reset(new AudioSplicer(audio_parameters_.sample_rate(), media_log_));
 
   // We're all good! Continue initializing the rest of the audio renderer
   // based on the decoder format.

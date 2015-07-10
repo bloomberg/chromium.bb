@@ -12,27 +12,39 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/media_log.h"
 #include "media/base/vector_math.h"
 
 namespace media {
 
-// Minimum gap size needed before the splicer will take action to
-// fill a gap. This avoids periodically inserting and then dropping samples
-// when the buffer timestamps are slightly off because of timestamp rounding
-// in the source content. Unit is frames.
-static const int kMinGapSize = 2;
+namespace {
+
+enum {
+  // Minimum gap size needed before the splicer will take action to
+  // fill a gap. This avoids periodically inserting and then dropping samples
+  // when the buffer timestamps are slightly off because of timestamp rounding
+  // in the source content. Unit is frames.
+  kMinGapSize = 2,
+
+  // Limits the number of MEDIA_LOG() per sanitizer instance warning the user
+  // about splicer overlaps within |kMaxTimeDeltaInMilliseconds| or gaps larger
+  // than |kMinGapSize| and less than |kMaxTimeDeltaInMilliseconds|. These
+  // warnings may be frequent for some streams, and number of sanitizer
+  // instances may be high, so keep this limit low to help reduce log spam.
+  kMaxSanitizerWarningLogs = 5,
+};
 
 // AudioBuffer::TrimStart() is not as accurate as the timestamp helper, so
 // manually adjust the duration and timestamp after trimming.
-static void AccurateTrimStart(int frames_to_trim,
-                              const scoped_refptr<AudioBuffer> buffer,
-                              const AudioTimestampHelper& timestamp_helper) {
+void AccurateTrimStart(int frames_to_trim,
+                       const scoped_refptr<AudioBuffer> buffer,
+                       const AudioTimestampHelper& timestamp_helper) {
   buffer->TrimStart(frames_to_trim);
   buffer->set_timestamp(timestamp_helper.GetTimestamp());
 }
 
 // Returns an AudioBus whose frame buffer is backed by the provided AudioBuffer.
-static scoped_ptr<AudioBus> CreateAudioBufferWrapper(
+scoped_ptr<AudioBus> CreateAudioBufferWrapper(
     const scoped_refptr<AudioBuffer>& buffer) {
   scoped_ptr<AudioBus> wrapper =
       AudioBus::CreateWrapper(buffer->channel_count());
@@ -44,9 +56,12 @@ static scoped_ptr<AudioBus> CreateAudioBufferWrapper(
   return wrapper.Pass();
 }
 
+}  // namespace
+
 class AudioStreamSanitizer {
  public:
-  explicit AudioStreamSanitizer(int samples_per_second);
+  AudioStreamSanitizer(int samples_per_second,
+                       const scoped_refptr<MediaLog>& media_log);
   ~AudioStreamSanitizer();
 
   // Resets the sanitizer state by clearing the output buffers queue, and
@@ -89,12 +104,23 @@ class AudioStreamSanitizer {
   typedef std::deque<scoped_refptr<AudioBuffer> > BufferQueue;
   BufferQueue output_buffers_;
 
+  scoped_refptr<MediaLog> media_log_;
+
+  // To prevent log spam, counts the number of audio gap or overlaps warned in
+  // logs.
+  int num_warning_logs_;
+
   DISALLOW_ASSIGN(AudioStreamSanitizer);
 };
 
-AudioStreamSanitizer::AudioStreamSanitizer(int samples_per_second)
+AudioStreamSanitizer::AudioStreamSanitizer(
+    int samples_per_second,
+    const scoped_refptr<MediaLog>& media_log)
     : output_timestamp_helper_(samples_per_second),
-      received_end_of_stream_(false) {}
+      received_end_of_stream_(false),
+      media_log_(media_log),
+      num_warning_logs_(0) {
+}
 
 AudioStreamSanitizer::~AudioStreamSanitizer() {}
 
@@ -128,7 +154,12 @@ bool AudioStreamSanitizer::AddInput(const scoped_refptr<AudioBuffer>& input) {
     output_timestamp_helper_.SetBaseTimestamp(input->timestamp());
 
   if (output_timestamp_helper_.base_timestamp() > input->timestamp()) {
-    DVLOG(1) << "Input timestamp is before the base timestamp.";
+    MEDIA_LOG(ERROR, media_log_)
+        << "Audio splicing failed: unexpected timestamp sequence. base "
+           "timestamp="
+        << output_timestamp_helper_.base_timestamp().InMicroseconds()
+        << "us, input timestamp=" << input->timestamp().InMicroseconds()
+        << "us";
     return false;
   }
 
@@ -139,7 +170,13 @@ bool AudioStreamSanitizer::AddInput(const scoped_refptr<AudioBuffer>& input) {
 
   if (std::abs(delta.InMilliseconds()) >
       AudioSplicer::kMaxTimeDeltaInMilliseconds) {
-    DVLOG(1) << "Timestamp delta too large: " << delta.InMicroseconds() << "us";
+    MEDIA_LOG(ERROR, media_log_)
+        << "Audio splicing failed: coded frame timestamp differs from "
+           "expected timestamp " << expected_timestamp.InMicroseconds()
+        << "us by " << delta.InMicroseconds()
+        << "us, more than threshold of +/-"
+        << AudioSplicer::kMaxTimeDeltaInMilliseconds
+        << "ms. Expected timestamp is based on decoded frames and frame rate.";
     return false;
   }
 
@@ -153,6 +190,11 @@ bool AudioStreamSanitizer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   }
 
   if (frames_to_fill > 0) {
+    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_warning_logs_,
+                      kMaxSanitizerWarningLogs)
+        << "Audio splicer inserting silence for small gap of "
+        << delta.InMicroseconds() << "us at time "
+        << expected_timestamp.InMicroseconds() << "us.";
     DVLOG(1) << "Gap detected @ " << expected_timestamp.InMicroseconds()
              << " us: " << delta.InMicroseconds() << " us";
 
@@ -177,6 +219,11 @@ bool AudioStreamSanitizer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   //
   // A crossfade can't be done here because only the current buffer is available
   // at this point, not previous buffers.
+  LIMITED_MEDIA_LOG(DEBUG, media_log_, num_warning_logs_,
+                    kMaxSanitizerWarningLogs)
+      << "Audio splicer skipping frames for small overlap of "
+      << -delta.InMicroseconds() << "us at time "
+      << expected_timestamp.InMicroseconds() << "us.";
   DVLOG(1) << "Overlap detected @ " << expected_timestamp.InMicroseconds()
            << " us: " << -delta.InMicroseconds() << " us";
 
@@ -227,15 +274,20 @@ bool AudioStreamSanitizer::DrainInto(AudioStreamSanitizer* output) {
   return true;
 }
 
-AudioSplicer::AudioSplicer(int samples_per_second)
+AudioSplicer::AudioSplicer(int samples_per_second,
+                           const scoped_refptr<MediaLog>& media_log)
     : max_crossfade_duration_(
           base::TimeDelta::FromMilliseconds(kCrossfadeDurationInMilliseconds)),
       splice_timestamp_(kNoTimestamp()),
       max_splice_end_timestamp_(kNoTimestamp()),
-      output_sanitizer_(new AudioStreamSanitizer(samples_per_second)),
-      pre_splice_sanitizer_(new AudioStreamSanitizer(samples_per_second)),
-      post_splice_sanitizer_(new AudioStreamSanitizer(samples_per_second)),
-      have_all_pre_splice_buffers_(false) {}
+      output_sanitizer_(
+          new AudioStreamSanitizer(samples_per_second, media_log)),
+      pre_splice_sanitizer_(
+          new AudioStreamSanitizer(samples_per_second, media_log)),
+      post_splice_sanitizer_(
+          new AudioStreamSanitizer(samples_per_second, media_log)),
+      have_all_pre_splice_buffers_(false) {
+}
 
 AudioSplicer::~AudioSplicer() {}
 

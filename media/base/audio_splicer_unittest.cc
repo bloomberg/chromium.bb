@@ -25,7 +25,7 @@ static const int kDefaultBufferSize = 100;
 class AudioSplicerTest : public ::testing::Test {
  public:
   AudioSplicerTest()
-      : splicer_(kDefaultSampleRate),
+      : splicer_(kDefaultSampleRate, new MediaLog()),
         input_timestamp_helper_(kDefaultSampleRate) {
     input_timestamp_helper_.SetBaseTimestamp(base::TimeDelta());
   }
