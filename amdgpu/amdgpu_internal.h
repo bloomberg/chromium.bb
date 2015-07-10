@@ -109,11 +109,6 @@ struct amdgpu_context {
 	/** Mutex for accessing fences and to maintain command submissions
 	    in good sequence. */
 	pthread_mutex_t sequence_mutex;
-	/** Buffer for user fences */
-	struct amdgpu_bo *fence_bo;
-	void *fence_cpu;
-	/** The newest expired fence for the ring of the ip blocks. */
-	uint64_t expired_fences[AMDGPU_HW_IP_NUM][AMDGPU_HW_IP_INSTANCE_MAX_COUNT][AMDGPU_CS_MAX_RINGS];
 	/* context id*/
 	uint32_t id;
 };

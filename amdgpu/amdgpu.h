@@ -311,6 +311,20 @@ struct amdgpu_cs_ib_info {
 };
 
 /**
+ * Structure describing fence information
+ *
+ * \sa amdgpu_cs_request, amdgpu_cs_query_fence,
+ *     amdgpu_cs_submit(), amdgpu_cs_query_fence_status()
+*/
+struct amdgpu_cs_fence_info {
+	/** buffer object for the fence */
+	amdgpu_bo_handle handle;
+
+	/** fence offset in the unit of sizeof(uint64_t) */
+	uint64_t offset;
+};
+
+/**
  * Structure describing submission request
  *
  * \note We could have several IBs as packet. e.g. CE, CE, DE case for gfx
@@ -357,6 +371,16 @@ struct amdgpu_cs_request {
 	 * IBs to submit. Those IBs will be submit together as single entity
 	 */
 	struct amdgpu_cs_ib_info *ibs;
+
+	/**
+	 * The returned sequence number for the command submission 
+	 */
+	uint64_t seq_no;
+
+	/**
+	 * The fence information
+	 */
+	struct amdgpu_cs_fence_info fence_info;
 };
 
 /**
@@ -841,22 +865,20 @@ int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
  * from the same GPU context to the same ip:ip_instance:ring will be executed in
  * order.
  *
+ * The caller can specify the user fence buffer/location with the fence_info in the
+ * cs_request.The sequence number is returned via the 'seq_no' paramter
+ * in ibs_request structure.
+ *
  *
  * \param   dev		       - \c [in]  Device handle.
  *					  See #amdgpu_device_initialize()
  * \param   context            - \c [in]  GPU Context
  * \param   flags              - \c [in]  Global submission flags
- * \param   ibs_request        - \c [in]  Pointer to submission requests.
+ * \param   ibs_request        - \c [in/out] Pointer to submission requests.
  *					  We could submit to the several
  *					  engines/rings simulteniously as
  *					  'atomic' operation
  * \param   number_of_requests - \c [in]  Number of submission requests
- * \param   fences             - \c [out] Pointer to array of data to get
- *					  fences to identify submission
- *					  requests. Timestamps are valid
- *					  in this GPU context and could be used
- *					  to identify/detect completion of
- *					  submission request
  *
  * \return   0 on success\n
  *          <0 - Negative POSIX Error code
@@ -873,8 +895,7 @@ int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
 int amdgpu_cs_submit(amdgpu_context_handle context,
 		     uint64_t flags,
 		     struct amdgpu_cs_request *ibs_request,
-		     uint32_t number_of_requests,
-		     uint64_t *fences);
+		     uint32_t number_of_requests);
 
 /**
  *  Query status of Command Buffer Submission

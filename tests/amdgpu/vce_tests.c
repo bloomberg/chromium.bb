@@ -147,8 +147,7 @@ static int submit(unsigned ndw, unsigned ip)
 	ibs_request.number_of_ibs = 1;
 	ibs_request.ibs = &ib_info;
 
-	r = amdgpu_cs_submit(context_handle, 0,
-			     &ibs_request, 1, &fence_status.fence);
+	r = amdgpu_cs_submit(context_handle, 0, &ibs_request, 1);
 	if (r)
 		return r;
 

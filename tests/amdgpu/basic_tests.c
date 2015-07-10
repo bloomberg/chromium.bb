@@ -209,13 +209,15 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 	ibs_request.number_of_ibs = 2;
 	ibs_request.ibs = ib_info;
 	ibs_request.resources = bo_list;
+	ibs_request.fence_info.handle = NULL;
 
-	r = amdgpu_cs_submit(context_handle, 0,
-			     &ibs_request, 1, &fence_status.fence);
+	r = amdgpu_cs_submit(context_handle, 0,&ibs_request, 1);
+
 	CU_ASSERT_EQUAL(r, 0);
 
 	fence_status.context = context_handle;
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
+	fence_status.fence = ibs_request.seq_no;
 
 	r = amdgpu_cs_query_fence_status(&fence_status,
 					 AMDGPU_TIMEOUT_INFINITE,
@@ -233,6 +235,7 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
+
 }
 
 static void amdgpu_command_submission_gfx_shared_ib(void)
@@ -284,13 +287,15 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 	ibs_request.number_of_ibs = 2;
 	ibs_request.ibs = ib_info;
 	ibs_request.resources = bo_list;
+	ibs_request.fence_info.handle = NULL;
 
-	r = amdgpu_cs_submit(context_handle, 0,
-			&ibs_request, 1, &fence_status.fence);
+	r = amdgpu_cs_submit(context_handle, 0, &ibs_request, 1);
+
 	CU_ASSERT_EQUAL(r, 0);
 
 	fence_status.context = context_handle;
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
+	fence_status.fence = ibs_request.seq_no;
 
 	r = amdgpu_cs_query_fence_status(&fence_status,
 					 AMDGPU_TIMEOUT_INFINITE,
@@ -357,15 +362,16 @@ static void amdgpu_command_submission_compute(void)
 		ibs_request.number_of_ibs = 1;
 		ibs_request.ibs = &ib_info;
 		ibs_request.resources = bo_list;
+		ibs_request.fence_info.handle = NULL;
 
 		memset(&fence_status, 0, sizeof(struct amdgpu_cs_fence));
-		r = amdgpu_cs_submit(context_handle, 0,
-				     &ibs_request, 1, &fence_status.fence);
+		r = amdgpu_cs_submit(context_handle, 0,&ibs_request, 1);
 		CU_ASSERT_EQUAL(r, 0);
 
 		fence_status.context = context_handle;
 		fence_status.ip_type = AMDGPU_HW_IP_COMPUTE;
 		fence_status.ring = instance;
+		fence_status.fence = ibs_request.seq_no;
 
 		r = amdgpu_cs_query_fence_status(&fence_status,
 						 AMDGPU_TIMEOUT_INFINITE,
@@ -428,6 +434,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	ibs_request->ring = instance;
 	ibs_request->number_of_ibs = 1;
 	ibs_request->ibs = ib_info;
+	ibs_request->fence_info.handle = NULL;
 
 	memcpy(all_res, resources, sizeof(resources[0]) * res_cnt);
 	all_res[res_cnt] = ib_result_handle;
@@ -439,8 +446,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	CU_ASSERT_NOT_EQUAL(ibs_request, NULL);
 
 	/* submit CS */
-	r = amdgpu_cs_submit(context_handle, 0,
-			 ibs_request, 1, &fence_status.fence);
+	r = amdgpu_cs_submit(context_handle, 0, ibs_request, 1);
 	CU_ASSERT_EQUAL(r, 0);
 
 	r = amdgpu_bo_list_destroy(ibs_request->resources);
@@ -449,6 +455,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	fence_status.ip_type = AMDGPU_HW_IP_DMA;
 	fence_status.ring = ibs_request->ring;
 	fence_status.context = context_handle;
+	fence_status.fence = ibs_request->seq_no;
 
 	/* wait for IB accomplished */
 	r = amdgpu_cs_query_fence_status(&fence_status,

@@ -43,8 +43,6 @@
 int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 			 amdgpu_context_handle *context)
 {
-	struct amdgpu_bo_alloc_request alloc_buffer = {};
-	struct amdgpu_bo_alloc_result info = {};
 	struct amdgpu_context *gpu_context;
 	union drm_amdgpu_ctx args;
 	int r;
@@ -62,44 +60,22 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 
 	r = pthread_mutex_init(&gpu_context->sequence_mutex, NULL);
 	if (r)
-		goto error_mutex;
-
-	/* Create the fence BO */
-	alloc_buffer.alloc_size = 4 * 1024;
-	alloc_buffer.phys_alignment = 4 * 1024;
-	alloc_buffer.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
-
-	r = amdgpu_bo_alloc(dev, &alloc_buffer, &info);
-	if (r)
-		goto error_fence_alloc;
-	gpu_context->fence_bo = info.buf_handle;
-
-	r = amdgpu_bo_cpu_map(gpu_context->fence_bo, &gpu_context->fence_cpu);
-	if (r)
-		goto error_fence_map;
+		goto error;
 
 	/* Create the context */
 	memset(&args, 0, sizeof(args));
 	args.in.op = AMDGPU_CTX_OP_ALLOC_CTX;
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_CTX, &args, sizeof(args));
 	if (r)
-		goto error_kernel;
+		goto error;
 
 	gpu_context->id = args.out.alloc.ctx_id;
 	*context = (amdgpu_context_handle)gpu_context;
 
 	return 0;
 
-error_kernel:
-	amdgpu_bo_cpu_unmap(gpu_context->fence_bo);
-
-error_fence_map:
-	amdgpu_bo_free(gpu_context->fence_bo);
-
-error_fence_alloc:
+error:
 	pthread_mutex_destroy(&gpu_context->sequence_mutex);
-
-error_mutex:
 	free(gpu_context);
 	return r;
 }
@@ -119,14 +95,6 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 
 	if (NULL == context)
 		return -EINVAL;
-
-	r = amdgpu_bo_cpu_unmap(context->fence_bo);
-	if (r)
-		return r;
-
-	r = amdgpu_bo_free(context->fence_bo);
-	if (r)
-		return r;
 
 	pthread_mutex_destroy(&context->sequence_mutex);
 
@@ -163,11 +131,6 @@ int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
 	return r;
 }
 
-static uint32_t amdgpu_cs_fence_index(unsigned ip, unsigned ring)
-{
-	return ip * AMDGPU_CS_MAX_RINGS + ring;
-}
-
 /**
  * Submit command to kernel DRM
  * \param   dev - \c [in]  Device handle
@@ -179,8 +142,7 @@ static uint32_t amdgpu_cs_fence_index(unsigned ip, unsigned ring)
  * \sa amdgpu_cs_submit()
 */
 static int amdgpu_cs_submit_one(amdgpu_context_handle context,
-				struct amdgpu_cs_request *ibs_request,
-				uint64_t *fence)
+				struct amdgpu_cs_request *ibs_request)
 {
 	union drm_amdgpu_cs cs;
 	uint64_t *chunk_array;
@@ -188,6 +150,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	struct drm_amdgpu_cs_chunk_data *chunk_data;
 	struct drm_amdgpu_cs_chunk_dep *dependencies = NULL;
 	uint32_t i, size;
+	bool user_fence;
 	int r = 0;
 
 	if (ibs_request->ip_type >= AMDGPU_HW_IP_NUM)
@@ -196,13 +159,15 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		return -EINVAL;
 	if (ibs_request->number_of_ibs > AMDGPU_CS_MAX_IBS_PER_SUBMIT)
 		return -EINVAL;
+	user_fence = (ibs_request->fence_info.handle != NULL);
 
-	size = ibs_request->number_of_ibs + 2;
+	size = ibs_request->number_of_ibs + (user_fence ? 2 : 1);
 
 	chunk_array = alloca(sizeof(uint64_t) * size);
 	chunks = alloca(sizeof(struct drm_amdgpu_cs_chunk) * size);
 
-	size = ibs_request->number_of_ibs + 1;
+	size = ibs_request->number_of_ibs + (user_fence ? 1 : 0);
+
 	chunk_data = alloca(sizeof(struct drm_amdgpu_cs_chunk_data) * size);
 
 	memset(&cs, 0, sizeof(cs));
@@ -232,8 +197,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 
 	pthread_mutex_lock(&context->sequence_mutex);
 
-	if (ibs_request->ip_type != AMDGPU_HW_IP_UVD &&
-	    ibs_request->ip_type != AMDGPU_HW_IP_VCE) {
+	if (user_fence) {
 		i = cs.in.num_chunks++;
 
 		/* fence chunk */
@@ -243,11 +207,10 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		chunks[i].chunk_data = (uint64_t)(uintptr_t)&chunk_data[i];
 
 		/* fence bo handle */
-		chunk_data[i].fence_data.handle = context->fence_bo->handle;
+		chunk_data[i].fence_data.handle = ibs_request->fence_info.handle->handle;
 		/* offset */
-		chunk_data[i].fence_data.offset = amdgpu_cs_fence_index(
-			ibs_request->ip_type, ibs_request->ring);
-		chunk_data[i].fence_data.offset *= sizeof(uint64_t);
+		chunk_data[i].fence_data.offset = 
+			ibs_request->fence_info.offset * sizeof(uint64_t);
 	}
 
 	if (ibs_request->number_of_dependencies) {
@@ -283,7 +246,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	if (r)
 		goto error_unlock;
 
-	*fence = cs.out.handle;
+	ibs_request->seq_no = cs.out.handle;
 
 error_unlock:
 	pthread_mutex_unlock(&context->sequence_mutex);
@@ -294,25 +257,23 @@ error_unlock:
 int amdgpu_cs_submit(amdgpu_context_handle context,
 		     uint64_t flags,
 		     struct amdgpu_cs_request *ibs_request,
-		     uint32_t number_of_requests,
-		     uint64_t *fences)
+		     uint32_t number_of_requests)
 {
 	uint32_t i;
 	int r;
+	uint64_t bo_size;
+	uint64_t bo_offset;
 
 	if (NULL == context)
 		return -EINVAL;
 	if (NULL == ibs_request)
 		return -EINVAL;
-	if (NULL == fences)
-		return -EINVAL;
 
 	r = 0;
 	for (i = 0; i < number_of_requests; i++) {
-		r = amdgpu_cs_submit_one(context, ibs_request, fences);
+		r = amdgpu_cs_submit_one(context, ibs_request);
 		if (r)
 			break;
-		fences++;
 		ibs_request++;
 	}
 
@@ -380,10 +341,6 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 				 uint64_t flags,
 				 uint32_t *expired)
 {
-	amdgpu_context_handle context;
-	uint64_t *expired_fence;
-	unsigned ip_type, ip_instance;
-	uint32_t ring;
 	bool busy = true;
 	int r;
 
@@ -398,57 +355,14 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 	if (fence->ring >= AMDGPU_CS_MAX_RINGS)
 		return -EINVAL;
 
-	context = fence->context;
-	ip_type = fence->ip_type;
-	ip_instance = fence->ip_instance;
-	ring = fence->ring;
-	expired_fence = &context->expired_fences[ip_type][ip_instance][ring];
 	*expired = false;
 
-	pthread_mutex_lock(&context->sequence_mutex);
-	if (fence->fence <= *expired_fence) {
-		/* This fence value is expired already. */
-		pthread_mutex_unlock(&context->sequence_mutex);
+	r = amdgpu_ioctl_wait_cs(fence->context, fence->ip_type,
+				fence->ip_instance, fence->ring,
+			       	fence->fence, timeout_ns, flags, &busy);
+
+	if (!r && !busy)
 		*expired = true;
-		return 0;
-	}
-
-	/* Check the user fence only if the IP supports user fences. */
-	if (fence->ip_type != AMDGPU_HW_IP_UVD &&
-	    fence->ip_type != AMDGPU_HW_IP_VCE) {
-		uint64_t *signaled_fence = context->fence_cpu;
-		signaled_fence += amdgpu_cs_fence_index(ip_type, ring);
-
-		if (fence->fence <= *signaled_fence) {
-			/* This fence value is signaled already. */
-			*expired_fence = *signaled_fence;
-			pthread_mutex_unlock(&context->sequence_mutex);
-			*expired = true;
-			return 0;
-		}
-
-		/* Checking the user fence is enough. */
-		if (timeout_ns == 0) {
-			pthread_mutex_unlock(&context->sequence_mutex);
-			return 0;
-		}
-	}
-
-	pthread_mutex_unlock(&context->sequence_mutex);
-
-	r = amdgpu_ioctl_wait_cs(context, ip_type, ip_instance, ring,
-				 fence->fence, timeout_ns,
-				 flags, &busy);
-	if (!r && !busy) {
-		*expired = true;
-		pthread_mutex_lock(&context->sequence_mutex);
-		/* The thread doesn't hold sequence_mutex. Other thread could
-		   update *expired_fence already. Check whether there is a
-		   newerly expired fence. */
-		if (fence->fence > *expired_fence)
-			*expired_fence = fence->fence;
-		pthread_mutex_unlock(&context->sequence_mutex);
-	}
 
 	return r;
 }
