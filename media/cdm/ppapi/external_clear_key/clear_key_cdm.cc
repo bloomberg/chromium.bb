@@ -330,13 +330,7 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
 
   if (std::string(kLoadableSessionId) !=
       std::string(session_id, session_id_length)) {
-    // TODO(jrummell): This should be resolved with undefined, not rejected.
-    std::string message("Incorrect session id specified for LoadSession().");
-    host_->OnRejectPromise(promise_id,
-                           cdm::kInvalidAccessError,
-                           0,
-                           message.data(),
-                           message.length());
+    host_->OnResolveNewSessionPromise(promise_id, nullptr, 0);
     return;
   }
 

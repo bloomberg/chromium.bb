@@ -67,7 +67,12 @@ PlayerUtils.registerEMEEventListeners = function(player) {
             message.target.mediaKeys.createSession('persistent-license');
         addMediaKeySessionListeners(session);
         session.load(player.testConfig.sessionToLoad)
-            .catch(function(error) { Utils.failTest(error, EME_LOAD_FAILED); });
+            .then(
+                function(result) {
+                  if (!result)
+                    Utils.failTest('Session not found.', EME_SESSION_NOT_FOUND);
+                },
+                function(error) { Utils.failTest(error, EME_LOAD_FAILED); });
       } else {
         Utils.timeLog('Creating new media key session for initDataType: ' +
                       message.initDataType + ', initData: ' +

@@ -67,6 +67,7 @@ const char kUnknownSession[] = "UnknownSession";
 const char kFileIOTestSuccess[] = "FILE_IO_TEST_SUCCESS";
 const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
 const char kEmeGenerateRequestFailed[] = "EME_GENERATEREQUEST_FAILED";
+const char kEmeSessionNotFound[] = "EME_SESSION_NOT_FOUND";
 const char kEmeLoadFailed[] = "EME_LOAD_FAILED";
 const char kEmeUpdateFailed[] = "EME_UPDATE_FAILED";
 const char kEmeErrorEvent[] = "EME_ERROR_EVENT";
@@ -243,6 +244,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeNotSupportedError));
     title_watcher->AlsoWaitForTitle(
         base::ASCIIToUTF16(kEmeGenerateRequestFailed));
+    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeSessionNotFound));
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeLoadFailed));
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeUpdateFailed));
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeErrorEvent));
@@ -706,9 +708,7 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
-  // TODO(jrummell): Load should not fail -- it should return false instead.
-  // http://crbug.com/507736
-  TestPlaybackCase(kUnknownSession, kEmeLoadFailed);
+  TestPlaybackCase(kUnknownSession, kEmeSessionNotFound);
 }
 
 IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, InitializeCDMFail) {
