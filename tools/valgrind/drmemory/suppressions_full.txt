@@ -2001,3 +2001,14 @@ base.dll!base::Thread::Run
 base.dll!base::Thread::ThreadMain
 base.dll!base::`anonymous namespace'::ThreadFunc
 KERNEL32.dll!BaseThreadInitThunk
+
+UNINITIALIZED READ
+name=bug_508794
+MSVCR120.dll!mbtowc_l
+MSVCR120.dll!fputwc_nolock
+MSVCR120.dll!vsnwprintf_s_l
+MSVCR120.dll!vsnwprintf_s
+*!base::`anonymous namespace'::StringAppendVT<>
+*!base::StringPrintf
+*!content::AccessibilityTreeFormatter::ToString
+*!content::AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree
