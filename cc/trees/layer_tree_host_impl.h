@@ -265,7 +265,7 @@ class CC_EXPORT LayerTreeHostImpl
   void ScrollOffsetAnimationFinished() override;
   gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
 
-  virtual void PrepareTiles();
+  virtual bool PrepareTiles();
 
   // Returns DRAW_SUCCESS unless problems occured preparing the frame, and we
   // should try to avoid displaying the frame. If PrepareToDraw is called,
@@ -617,8 +617,8 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::Vector2dF& viewport_delta);
 
   void CreateAndSetRenderer();
-  void CreateAndSetTileManager();
-  void DestroyTileManager();
+  void CleanUpTileManager();
+  void CreateTileManagerResources();
   void ReleaseTreeResources();
   void RecreateTreeResources();
 
@@ -700,7 +700,6 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<OutputSurface> output_surface_;
 
   scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<TileManager> tile_manager_;
   bool content_is_suitable_for_gpu_rasterization_;
   bool has_gpu_rasterization_trigger_;
   bool use_gpu_rasterization_;
@@ -747,6 +746,8 @@ class CC_EXPORT LayerTreeHostImpl
   LayerTreeDebugState debug_state_;
   bool visible_;
   ManagedMemoryPolicy cached_managed_memory_policy_;
+
+  scoped_ptr<TileManager> tile_manager_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
 
