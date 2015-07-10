@@ -111,6 +111,8 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 				  0x1fffffff /* length */);
 
 	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
+	if (reply == NULL)
+		return;
 
 	dump_property(wm, wm->atom.wl_selection, reply);
 
@@ -184,6 +186,8 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 				  4096 /* length */);
 
 	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
+	if (reply == NULL)
+		return;
 
 	dump_property(wm, wm->atom.wl_selection, reply);
 
@@ -236,6 +240,8 @@ weston_wm_get_selection_data(struct weston_wm *wm)
 				  0x1fffffff /* length */);
 
 	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
+	if (reply == NULL)
+		return;
 
 	if (reply->type == wm->atom.incr) {
 		dump_property(wm, wm->atom.wl_selection, reply);
