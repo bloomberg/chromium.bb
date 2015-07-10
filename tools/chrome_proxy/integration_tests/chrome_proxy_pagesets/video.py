@@ -3,7 +3,16 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
+from telemetry.page import shared_page_state
 from telemetry import story
+
+
+class ControllableProxySharedState(shared_page_state.SharedPageState):
+
+  def WillRunStory(self, page):
+    if page.use_chrome_proxy:
+      self._finder_options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
+    super(ControllableProxySharedState, self).WillRunStory(page)
 
 
 class VideoPage(page_module.Page):
@@ -15,7 +24,9 @@ class VideoPage(page_module.Page):
   """
 
   def __init__(self, url, page_set, use_chrome_proxy):
-    super(VideoPage, self).__init__(url=url, page_set=page_set)
+    super(VideoPage, self).__init__(
+      url=url, page_set=page_set,
+      shared_page_state_class=ControllableProxySharedState)
     self.use_chrome_proxy = use_chrome_proxy
 
 

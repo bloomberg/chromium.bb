@@ -411,10 +411,6 @@ class ChromeProxyVideoValidation(page_test.PageTest):
     # where (metricName,value) is a metric computed by videowrapper.js.
     self._allMetrics = {}
 
-  def CustomizeBrowserOptionsForSinglePage(self, page, options):
-    if page.use_chrome_proxy:
-      options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
-
   def DidNavigateToPage(self, page, tab):
     self._currMetrics = metrics.ChromeProxyVideoMetric(tab)
     self._currMetrics.Start(page, tab)
