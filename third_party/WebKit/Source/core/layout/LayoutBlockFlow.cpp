@@ -728,52 +728,33 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
     return result;
 }
 
-static inline LayoutUnit calculateMinimumPageHeight(const ComputedStyle& style, RootInlineBox* lastLine, LayoutUnit lineTop, LayoutUnit lineBottom)
+static inline LayoutUnit calculateMinimumPageHeight(const ComputedStyle& style, const RootInlineBox& lastLine)
 {
     // We may require a certain minimum number of lines per page in order to satisfy
     // orphans and widows, and that may affect the minimum page height.
     unsigned lineCount = std::max<unsigned>(style.hasAutoOrphans() ? 1 : style.orphans(), style.widows());
-    if (lineCount > 1) {
-        RootInlineBox* line = lastLine;
-        for (unsigned i = 1; i < lineCount && line->prevRootBox(); i++)
-            line = line->prevRootBox();
-
-        // FIXME: Paginating using line overflow isn't all fine. See FIXME in
-        // adjustLinePositionForPagination() for more details.
-        LayoutRect overflow = line->logicalVisualOverflowRect(line->lineTop(), line->lineBottom());
-        lineTop = std::min(line->lineTopWithLeading(), overflow.y());
-    }
-    return lineBottom - lineTop;
+    const RootInlineBox* firstLine = &lastLine;
+    for (unsigned i = 1; i < lineCount && firstLine->prevRootBox(); i++)
+        firstLine = firstLine->prevRootBox();
+    return lastLine.lineBottomWithLeading() - firstLine->lineTopWithLeading();
 }
 
 void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta)
 {
-    // FIXME: For now we paginate using line overflow. This ensures that lines don't overlap at all when we
-    // put a strut between them for pagination purposes. However, this really isn't the desired layout, since
-    // the line on the top of the next page will appear too far down relative to the same kind of line at the top
-    // of the first column.
-    //
-    // The layout we would like to see is one where the lineTopWithLeading is at the top of the column, and any line overflow
-    // simply spills out above the top of the column. This effect would match what happens at the top of the first column.
-    // We can't achieve this layout, however, until we stop columns from clipping to the column bounds (thus allowing
-    // for overflow to occur), and then cache visible overflow for each column rect.
-    //
-    // Furthermore, the paint we have to do when a column has overflow has to be special. We need to exclude
+    // TODO(mstensho): Pay attention to line overflow. It should be painted in the same column as
+    // the rest of the line, possibly overflowing the column. We currently only allow overflow above
+    // the first column. We clip at all other column boundaries, and that's how it has to be for
+    // now. The paint we have to do when a column has overflow has to be special. We need to exclude
     // content that paints in a previous column (and content that paints in the following column).
-    //
-    // For now we'll at least honor the lineTopWithLeading when paginating if it is above the logical top overflow. This will
-    // at least make positive leading work in typical cases.
     //
     // FIXME: Another problem with simply moving lines is that the available line width may change (because of floats).
     // Technically if the location we move the line to has a different line width than our old position, then we need to dirty the
     // line and all following lines.
-    LayoutRect logicalVisualOverflow = lineBox.logicalVisualOverflowRect(lineBox.lineTop(), lineBox.lineBottom());
-    LayoutUnit logicalOffset = std::min(lineBox.lineTopWithLeading(), logicalVisualOverflow.y());
-    LayoutUnit logicalBottom = std::max(lineBox.lineBottomWithLeading(), logicalVisualOverflow.maxY());
-    LayoutUnit lineHeight = logicalBottom - logicalOffset;
-    updateMinimumPageHeight(logicalOffset, calculateMinimumPageHeight(styleRef(), &lineBox, logicalOffset, logicalBottom));
+    LayoutUnit logicalOffset = lineBox.lineTopWithLeading();
+    LayoutUnit lineHeight = lineBox.lineBottomWithLeading() - logicalOffset;
+    updateMinimumPageHeight(logicalOffset, calculateMinimumPageHeight(styleRef(), lineBox));
     logicalOffset += delta;
-    lineBox.setPaginationStrut(0);
+    lineBox.setPaginationStrut(LayoutUnit());
     lineBox.setIsFirstAfterPageBreak(false);
     LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
     if (!pageLogicalHeight)
@@ -785,10 +766,6 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         if (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex) {
             clearShouldBreakAtLineToAvoidWidow();
             setDidBreakAtLineToAvoidWidow();
-        }
-        if (lineHeight > pageLogicalHeight) {
-            // Split the top margin in order to avoid splitting the visible part of the line.
-            remainingLogicalHeight -= std::min(lineHeight - pageLogicalHeight, std::max<LayoutUnit>(0, logicalVisualOverflow.y() - lineBox.lineTopWithLeading()));
         }
         LayoutUnit totalLogicalHeight = lineHeight + std::max<LayoutUnit>(0, logicalOffset);
         LayoutUnit pageLogicalHeightAtNewOffset = pageLogicalHeightForOffset(logicalOffset + remainingLogicalHeight);
