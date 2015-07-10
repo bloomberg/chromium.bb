@@ -29,9 +29,14 @@ public interface ContextualSearchNetworkCommunicator {
      * @param displayText the text to display that describes the search term.
      * @param alternateTerm the alternate search term.
      * @param doPreventPreload whether to prevent preloading the search result.
+     * @param selectionStartAdjust The start offset adjustment of the selection to use to highlight
+     *        the search term.
+     * @param selectionEndAdjust The end offset adjustment of the selection to use to highlight
+     *        the search term.
      */
     void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
-            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload);
+            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
+            int selectionStartAdjust, int selectionEndAdjust);
 
     /**
      * Loads a URL in the search content view.

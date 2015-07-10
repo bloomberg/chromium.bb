@@ -55,6 +55,7 @@ public class ContextualSearchSelectionController {
     private boolean mWasLastTapValid;
     private boolean mIsWaitingForInvalidTapDetection;
     private boolean mShouldHandleSelectionModification;
+    private boolean mDidExpandSelection;
 
     private float mX;
     private float mY;
@@ -149,6 +150,11 @@ public class ContextualSearchSelectionController {
      * @param selection The selection portion of the context.
      */
     void handleSelectionChanged(String selection) {
+        if (mDidExpandSelection) {
+            mDidExpandSelection = false;
+            return;
+        }
+
         if (selection == null || selection.isEmpty()) {
             scheduleInvalidTapNotification();
             // When the user taps on the page it will place the caret in that position, which
@@ -278,6 +284,26 @@ public class ContextualSearchSelectionController {
     ContentViewCore getBaseContentView() {
         Tab currentTab = mActivity.getActivityTab();
         return currentTab != null ? currentTab.getContentViewCore() : null;
+    }
+
+    /**
+     * Expands the current selection by the specified amounts.
+     * @param selectionStartAdjust The start offset adjustment of the selection to use to highlight
+     *                             the search term.
+     * @param selectionEndAdjust The end offset adjustment of the selection to use to highlight
+     *                           the search term.
+     */
+    void adjustSelection(int selectionStartAdjust, int selectionEndAdjust) {
+        // TODO(donnd): add code to verify that the selection is still valid before changing it.
+        // crbug.com/508354
+
+        if (selectionStartAdjust == 0 && selectionEndAdjust == 0) return;
+        ContentViewCore basePageContentView = getBaseContentView();
+        if (basePageContentView != null && basePageContentView.getWebContents() != null) {
+            mDidExpandSelection = true;
+            basePageContentView.getWebContents().adjustSelectionByCharacterOffset(
+                    selectionStartAdjust, selectionEndAdjust);
+        }
     }
 
     /**

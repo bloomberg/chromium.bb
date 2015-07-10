@@ -53,9 +53,11 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator 
 
     @Override
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
-            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
+            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
+            int selectionStartAdjust, int selectionEndAdjust) {
         mBaseManager.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
-                searchTerm, displayText, alternateTerm, doPreventPreload);
+                searchTerm, displayText, alternateTerm, doPreventPreload, selectionStartAdjust,
+                selectionEndAdjust);
     }
 
     @Override

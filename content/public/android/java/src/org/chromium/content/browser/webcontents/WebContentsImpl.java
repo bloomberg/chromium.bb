@@ -267,6 +267,12 @@ import java.util.UUID;
     }
 
     @Override
+    public void adjustSelectionByCharacterOffset(int startAdjust, int endAdjust) {
+        nativeAdjustSelectionByCharacterOffset(
+                mNativeWebContentsAndroid, startAdjust, endAdjust);
+    }
+
+    @Override
     public String getUrl() {
         return nativeGetURL(mNativeWebContentsAndroid);
     }
@@ -405,6 +411,8 @@ import java.util.UUID;
     private native void nativeShowImeIfNeeded(long nativeWebContentsAndroid);
     private native void nativeScrollFocusedEditableNodeIntoView(long nativeWebContentsAndroid);
     private native void nativeSelectWordAroundCaret(long nativeWebContentsAndroid);
+    private native void nativeAdjustSelectionByCharacterOffset(
+            long nativeWebContentsAndroid, int startAdjust, int endAdjust);
     private native String nativeGetURL(long nativeWebContentsAndroid);
     private native String nativeGetLastCommittedURL(long nativeWebContentsAndroid);
     private native boolean nativeIsIncognito(long nativeWebContentsAndroid);

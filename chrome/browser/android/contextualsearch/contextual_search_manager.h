@@ -90,7 +90,9 @@ class ContextualSearchManager {
                                       const std::string& search_term,
                                       const std::string& display_text,
                                       const std::string& alternate_term,
-                                      bool prevent_preload);
+                                      bool prevent_preload,
+                                      int selection_start_adjust,
+                                      int selection_end_adjust);
 
   // Calls back to Java with the surrounding text to be displayed.
   void OnSurroundingTextAvailable(const std::string& before_text,

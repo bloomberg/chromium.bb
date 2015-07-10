@@ -417,6 +417,13 @@ class WebContents : public PageNavigator,
   virtual void SelectAll() = 0;
   virtual void Unselect() = 0;
 
+  // Adjust the selection starting and ending points in the focused frame by
+  // the given amounts. A negative amount moves the selection towards the
+  // beginning of the document, a positive amount moves the selection towards
+  // the end of the document.
+  virtual void AdjustSelectionByCharacterOffset(int start_adjust,
+                                                int end_adjust) = 0;
+
   // Replaces the currently selected word or a word around the cursor.
   virtual void Replace(const base::string16& word) = 0;
 

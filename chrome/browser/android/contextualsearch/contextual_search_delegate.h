@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -26,10 +27,14 @@ class ContextualSearchDelegate
     : public net::URLFetcherDelegate,
       public base::SupportsWeakPtr<ContextualSearchDelegate> {
  public:
-  typedef base::Callback<
-      void(bool, int, const std::string&, const std::string&,
-           const std::string&, bool)>
-      SearchTermResolutionCallback;
+  typedef base::Callback<void(bool,
+                              int,
+                              const std::string&,
+                              const std::string&,
+                              const std::string&,
+                              bool,
+                              int,
+                              int)> SearchTermResolutionCallback;
   typedef base::Callback<
       void(const std::string&, const std::string&)> SurroundingTextCallback;
   typedef base::Callback<
@@ -84,6 +89,8 @@ class ContextualSearchDelegate
                            SurroundingTextLowMaximum);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
                            SurroundingTextNoBeforeText);
+  FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
+                           ExtractMentionsStartEnd);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
                            SurroundingTextForIcing);
   FRIEND_TEST_ALL_PREFIXES(ContextualSearchDelegateTest,
@@ -148,7 +155,13 @@ class ContextualSearchDelegate
                                          std::string* search_term,
                                          std::string* display_text,
                                          std::string* alternate_term,
-                                         std::string* prevent_preload);
+                                         std::string* prevent_preload,
+                                         int* mention_start,
+                                         int* mention_end);
+
+  void ExtractMentionsStartEnd(const base::ListValue& mentions_list,
+                               int* startResult,
+                               int* endResult);
 
   // Returns the surrounding size to use for the search term resolution
   // request.

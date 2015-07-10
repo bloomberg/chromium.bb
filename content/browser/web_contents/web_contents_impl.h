@@ -574,6 +574,8 @@ class CONTENT_EXPORT WebContentsImpl
   // void SelectAll() override;
   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
+  void AdjustSelectionByCharacterOffset(int start_adjust, int end_adjust)
+      override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

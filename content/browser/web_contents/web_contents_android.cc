@@ -395,6 +395,13 @@ void WebContentsAndroid::SelectWordAroundCaret(JNIEnv* env, jobject obj) {
   host->SelectWordAroundCaret();
 }
 
+void WebContentsAndroid::AdjustSelectionByCharacterOffset(JNIEnv* env,
+                                                          jobject obj,
+                                                          jint start_adjust,
+                                                          jint end_adjust) {
+  web_contents_->AdjustSelectionByCharacterOffset(start_adjust, end_adjust);
+}
+
 void WebContentsAndroid::EvaluateJavaScript(JNIEnv* env,
                                             jobject obj,
                                             jstring script,

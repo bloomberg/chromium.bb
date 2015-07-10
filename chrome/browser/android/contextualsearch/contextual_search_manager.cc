@@ -109,7 +109,9 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
     const std::string& search_term,
     const std::string& display_text,
     const std::string& alternate_term,
-    bool prevent_preload) {
+    bool prevent_preload,
+    int selection_start_adjust,
+    int selection_end_adjust) {
   // Notify the Java UX of the result.
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_search_term =
@@ -119,14 +121,9 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
   base::android::ScopedJavaLocalRef<jstring> j_alternate_term =
       base::android::ConvertUTF8ToJavaString(env, alternate_term.c_str());
   Java_ContextualSearchManager_onSearchTermResolutionResponse(
-      env,
-      java_manager_.obj(),
-      is_invalid,
-      response_code,
-      j_search_term.obj(),
-      j_display_text.obj(),
-      j_alternate_term.obj(),
-      prevent_preload);
+      env, java_manager_.obj(), is_invalid, response_code, j_search_term.obj(),
+      j_display_text.obj(), j_alternate_term.obj(), prevent_preload,
+      selection_start_adjust, selection_end_adjust);
 }
 
 void ContextualSearchManager::OnSurroundingTextAvailable(

@@ -7,11 +7,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::ListValue;
 
 namespace {
 
@@ -63,11 +66,43 @@ class ContextualSearchDelegateTest : public testing::Test {
   }
 
   void CreateDefaultSearchContextAndRequestSearchTerm() {
+    base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+    CreateSearchContextAndRequestSearchTerm("Barack Obama", surrounding, 0, 6);
+  }
+
+  void CreateSearchContextAndRequestSearchTerm(
+      const std::string& selected_text,
+      const base::string16& surrounding_text,
+      int start_offset,
+      int end_offset) {
     test_context_ = new ContextualSearchContext(
-        "Barack Obama", true, GURL(kSomeSpecificBasePage), "utf-8");
+        selected_text, true, GURL(kSomeSpecificBasePage), "utf-8");
     // ContextualSearchDelegate class takes ownership of the context.
     delegate_->set_context_for_testing(test_context_);
-    RequestSearchTerm();
+
+    test_context_->start_offset = start_offset;
+    test_context_->end_offset = end_offset;
+    test_context_->surrounding_text = surrounding_text;
+    delegate_->ContinueSearchTermResolutionRequest();
+    fetcher_ = test_factory_.GetFetcherByID(
+        ContextualSearchDelegate::kContextualSearchURLFetcherID);
+    ASSERT_TRUE(fetcher_);
+    ASSERT_TRUE(fetcher());
+  }
+
+  void SetResponseStringAndFetch(const std::string& selected_text,
+                                 const std::string& mentions_start,
+                                 const std::string& mentions_end) {
+    fetcher()->set_response_code(200);
+      fetcher()->SetResponseString(
+          ")]}'\n"
+          "{\"mid\":\"/m/02mjmr\", \"search_term\":\"obama\","
+          "\"info_text\":\"44th U.S. President\","
+          "\"display_text\":\"Barack Obama\","
+          "\"mentions\":[" + mentions_start + ","+ mentions_end + "],"
+          "\"selected_text\":\"" + selected_text + "\","
+          "\"resolved_term\":\"barack obama\"}");
+      fetcher()->delegate()->OnURLFetchComplete(fetcher());
   }
 
   void SetSurroundingContext(const base::string16& surrounding_text,
@@ -80,18 +115,6 @@ class ContextualSearchDelegateTest : public testing::Test {
     test_context_->end_offset = end_offset;
     // ContextualSearchDelegate class takes ownership of the context.
     delegate_->set_context_for_testing(test_context_);
-  }
-
-  void RequestSearchTerm() {
-    test_context_->start_offset = 0;
-    test_context_->end_offset = 6;
-    test_context_->surrounding_text =
-        base::UTF8ToUTF16("Barack Obama just spoke.");
-    delegate_->ContinueSearchTermResolutionRequest();
-    fetcher_ = test_factory_.GetFetcherByID(
-        ContextualSearchDelegate::kContextualSearchURLFetcherID);
-    ASSERT_TRUE(fetcher_);
-    ASSERT_TRUE(fetcher());
   }
 
   bool DoesRequestContainOurSpecificBasePage() {
@@ -112,6 +135,8 @@ class ContextualSearchDelegateTest : public testing::Test {
   bool do_prevent_preload() { return prevent_preload_; }
   std::string before_text() { return before_text_; }
   std::string after_text() { return after_text_; }
+  int start_adjust() { return start_adjust_; }
+  int end_adjust() { return end_adjust_; }
 
   // The delegate under test.
   scoped_ptr<ContextualSearchDelegate> delegate_;
@@ -122,13 +147,17 @@ class ContextualSearchDelegateTest : public testing::Test {
                                           const std::string& search_term,
                                           const std::string& display_text,
                                           const std::string& alternate_term,
-                                          bool prevent_preload) {
+                                          bool prevent_preload,
+                                          int start_adjust,
+                                          int end_adjust) {
     is_invalid_ = is_invalid;
     response_code_ = response_code;
     search_term_ = search_term;
     display_text_ = display_text;
     alternate_term_ = alternate_term;
     prevent_preload_ = prevent_preload;
+    start_adjust_ = start_adjust;
+    end_adjust_ = end_adjust;
   }
 
   void recordSurroundingText(const std::string& before_text,
@@ -150,6 +179,8 @@ class ContextualSearchDelegateTest : public testing::Test {
   std::string display_text_;
   std::string alternate_term_;
   bool prevent_preload_;
+  int start_adjust_;
+  int end_adjust_;
   std::string before_text_;
   std::string after_text_;
 
@@ -257,6 +288,109 @@ TEST_F(ContextualSearchDelegateTest, InvalidResponse) {
   EXPECT_TRUE(is_invalid());
 }
 
+TEST_F(ContextualSearchDelegateTest, ExpandSelectionToEnd) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Barack";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 0, 6);
+  SetResponseStringAndFetch(selected_text, "0", "12");
+
+  EXPECT_EQ(0, start_adjust());
+  EXPECT_EQ(6, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ExpandSelectionToStart) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Obama";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 7, 12);
+  SetResponseStringAndFetch(selected_text, "0", "12");
+
+  EXPECT_EQ(-7, start_adjust());
+  EXPECT_EQ(0, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ExpandSelectionBothDirections) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Ob";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 7, 9);
+  SetResponseStringAndFetch(selected_text, "0", "12");
+
+  EXPECT_EQ(-7, start_adjust());
+  EXPECT_EQ(3, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ExpandSelectionInvalidRange) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Ob";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 7, 9);
+  SetResponseStringAndFetch(selected_text, "0", "200");
+
+  EXPECT_EQ(0, start_adjust());
+  EXPECT_EQ(0, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ExpandSelectionInvalidDistantStart) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Ob";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding,
+                                          0xffffffff, 0xffffffff - 2);
+  SetResponseStringAndFetch(selected_text, "0", "12");
+
+  EXPECT_EQ(0, start_adjust());
+  EXPECT_EQ(0, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ExpandSelectionInvalidNoOverlap) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Ob";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 0, 12);
+  SetResponseStringAndFetch(selected_text, "12", "14");
+
+  EXPECT_EQ(0, start_adjust());
+  EXPECT_EQ(0, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ExpandSelectionInvalidDistantEndAndRange) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Ob";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding,
+                                          0xffffffff, 0xffffffff - 2);
+  SetResponseStringAndFetch(selected_text, "0", "268435455");
+
+  EXPECT_EQ(0, start_adjust());
+  EXPECT_EQ(0, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ExpandSelectionLargeNumbers) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Ob";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding,
+                                          268435450, 268435455);
+  SetResponseStringAndFetch(selected_text, "268435440", "268435455");
+
+  EXPECT_EQ(-10, start_adjust());
+  EXPECT_EQ(0, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ContractSelectionValid) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Barack Obama just";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 0, 17);
+  SetResponseStringAndFetch(selected_text, "0", "12");
+
+  EXPECT_EQ(0, start_adjust());
+  EXPECT_EQ(-5, end_adjust());
+}
+
+TEST_F(ContextualSearchDelegateTest, ContractSelectionInvalid) {
+  base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
+  std::string selected_text = "Barack Obama just";
+  CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 0, 17);
+  SetResponseStringAndFetch(selected_text, "5", "5");
+
+  EXPECT_EQ(0, start_adjust());
+  EXPECT_EQ(0, end_adjust());
+}
+
 TEST_F(ContextualSearchDelegateTest, SurroundingTextHighMaximum) {
   base::string16 surrounding = base::ASCIIToUTF16("aa bb Bogus dd ee");
   SetSurroundingContext(surrounding, 6, 11);
@@ -280,6 +414,17 @@ TEST_F(ContextualSearchDelegateTest, SurroundingTextNoBeforeText) {
   delegate_->SendSurroundingText(5);
   EXPECT_EQ("", before_text());
   EXPECT_EQ("ee f", after_text());
+}
+
+TEST_F(ContextualSearchDelegateTest, ExtractMentionsStartEnd) {
+  ListValue mentions_list;
+  mentions_list.AppendInteger(1);
+  mentions_list.AppendInteger(2);
+  int start = 0;
+  int end = 0;
+  delegate_->ExtractMentionsStartEnd(mentions_list, &start, &end);
+  EXPECT_EQ(1, start);
+  EXPECT_EQ(2, end);
 }
 
 TEST_F(ContextualSearchDelegateTest, SurroundingTextForIcing) {
@@ -317,9 +462,12 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermsFromJsonResponse) {
   std::string display_text;
   std::string alternate_term;
   std::string prevent_preload;
+  int mention_start;
+  int mention_end;
   delegate_->DecodeSearchTermsFromJsonResponse(json_with_escape, &search_term,
                                                &display_text, &alternate_term,
-                                               &prevent_preload);
+                                               &prevent_preload, &mention_start,
+                                               &mention_end);
   EXPECT_EQ("obama", search_term);
   EXPECT_EQ("Barack Obama", display_text);
   EXPECT_EQ("barack obama", alternate_term);

@@ -41,6 +41,7 @@ const char kContextualSearchResponseSelectedTextParam[] = "selected_text";
 const char kContextualSearchResponseSearchTermParam[] = "search_term";
 const char kContextualSearchResponseResolvedTermParam[] = "resolved_term";
 const char kContextualSearchPreventPreload[] = "prevent_preload";
+const char kContextualSearchMentions[] = "mentions";
 const char kContextualSearchServerEndpoint[] = "_/contextualsearch?";
 const int kContextualSearchRequestVersion = 2;
 const char kContextualSearchResolverUrl[] =
@@ -49,6 +50,7 @@ const char kContextualSearchResolverUrl[] =
 // room for other parameters.
 const int kContextualSearchDefaultContentSize = 1536;
 const int kContextualSearchDefaultIcingSurroundingSize = 400;
+const int kContextualSearchMaxSelection = 100;
 // The maximum length of a URL to build.
 const int kMaxURLSize = 2048;
 const char kXssiEscape[] = ")]}'\n";
@@ -142,6 +144,10 @@ void ContextualSearchDelegate::OnURLFetchComplete(
   std::string display_text;
   std::string alternate_term;
   std::string prevent_preload;
+  int mention_start = 0;
+  int mention_end = 0;
+  int start_adjust = 0;
+  int end_adjust = 0;
 
   if (source->GetStatus().is_success() && response_code == 200) {
     std::string response;
@@ -149,13 +155,30 @@ void ContextualSearchDelegate::OnURLFetchComplete(
     DCHECK(has_string_response);
     if (has_string_response) {
       DecodeSearchTermsFromJsonResponse(response, &search_term, &display_text,
-                                        &alternate_term, &prevent_preload);
+                                        &alternate_term, &prevent_preload,
+                                        &mention_start, &mention_end);
+      if (mention_start != 0 || mention_end != 0) {
+        // Sanity check that our selection is non-zero and it is less than
+        // 100 characters as that would make contextual search bar hide.
+        // We also check that there is at least one character overlap between
+        // the new and old selection.
+        if (mention_start >= mention_end
+            || (mention_end - mention_start) > kContextualSearchMaxSelection
+            || mention_end <= context_->start_offset
+            || mention_start >= context_->end_offset) {
+          start_adjust = 0;
+          end_adjust = 0;
+        } else {
+          start_adjust = mention_start - context_->start_offset;
+          end_adjust = mention_end - context_->end_offset;
+        }
+      }
     }
   }
   bool is_invalid = response_code == net::URLFetcher::RESPONSE_CODE_INVALID;
   search_term_callback_.Run(
       is_invalid, response_code, search_term, display_text, alternate_term,
-      prevent_preload == kDoPreventPreloadValue);
+      prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust);
 
   // The ContextualSearchContext is consumed once the request has completed.
   context_.reset();
@@ -399,7 +422,9 @@ void ContextualSearchDelegate::DecodeSearchTermsFromJsonResponse(
     std::string* search_term,
     std::string* display_text,
     std::string* alternate_term,
-    std::string* prevent_preload) {
+    std::string* prevent_preload,
+    int* mention_start,
+    int* mention_end) {
   bool contains_xssi_escape = response.find(kXssiEscape) == 0;
   const std::string& proper_json =
       contains_xssi_escape ? response.substr(strlen(kXssiEscape)) : response;
@@ -416,6 +441,11 @@ void ContextualSearchDelegate::DecodeSearchTermsFromJsonResponse(
                          display_text)) {
       *display_text = *search_term;
     }
+    // Extract mentions for selection expansion.
+    base::ListValue* mentions_list;
+    dict->GetList(kContextualSearchMentions, &mentions_list);
+    if (mentions_list != NULL && mentions_list->GetSize() >= 2)
+      ExtractMentionsStartEnd(*mentions_list, mention_start, mention_end);
     // If either the selected text or the resolved term is not the search term,
     // use it as the alternate term.
     std::string selected_text;
@@ -443,6 +473,19 @@ int ContextualSearchDelegate::GetSearchTermSurroundingSize() {
   if (!param_value.empty() && base::StringToInt(param_value, &param_length))
     return param_length;
   return kContextualSearchDefaultContentSize;
+}
+
+// Extract the Start/End of the mentions in the surrounding text
+// for selection-expansion.
+void ContextualSearchDelegate::ExtractMentionsStartEnd(
+    const base::ListValue& mentions_list,
+    int* startResult,
+    int* endResult) {
+  int int_value;
+  if (mentions_list.GetInteger(0, &int_value))
+    *startResult = std::max(0, int_value);
+  if (mentions_list.GetInteger(1, &int_value))
+    *endResult = std::max(0, int_value);
 }
 
 // Returns the size of the surroundings to be sent to Icing.

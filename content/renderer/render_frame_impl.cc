@@ -1014,6 +1014,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(InputMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(InputMsg_SelectAll, OnSelectAll)
     IPC_MESSAGE_HANDLER(InputMsg_SelectRange, OnSelectRange)
+    IPC_MESSAGE_HANDLER(InputMsg_AdjustSelectionByCharacterOffset,
+                        OnAdjustSelectionByCharacterOffset)
     IPC_MESSAGE_HANDLER(InputMsg_Unselect, OnUnselect)
     IPC_MESSAGE_HANDLER(InputMsg_MoveRangeSelectionExtent,
                         OnMoveRangeSelectionExtent)
@@ -1325,6 +1327,29 @@ void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   frame_->selectRange(base, extent);
+}
+
+void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
+                                                         int end_adjust) {
+  size_t start, length;
+  if (!GetRenderWidget()->webwidget()->caretOrSelectionRange(
+      &start, &length)) {
+    return;
+  }
+
+  // Sanity checks to disallow empty and out of range selections.
+  if (start_adjust - end_adjust > static_cast<int>(length)
+      || static_cast<int>(start) + start_adjust < 0) {
+    return;
+  }
+
+  // A negative adjust amount moves the selection towards the beginning of
+  // the document, a positive amount moves the selection towards the end of
+  // the document.
+  start += start_adjust;
+  length += end_adjust - start_adjust;
+
+  frame_->selectRange(WebRange::fromDocumentRange(frame_, start, length));
 }
 
 void RenderFrameImpl::OnUnselect() {

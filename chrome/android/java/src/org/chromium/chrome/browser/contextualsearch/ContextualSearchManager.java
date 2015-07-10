@@ -645,18 +645,24 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * @param searchTerm The term to use in our subsequent search.
      * @param displayText The text to display in our UX.
      * @param alternateTerm The alternate term to display on the results page.
+     * @param selectionStartAdjust A positive number of characters that the start of the existing
+     *        selection should be expanded by.
+     * @param selectionEndAdjust A positive number of characters that the end of the existing
+     *        selection should be expanded by.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
-            boolean doPreventPreload) {
+            boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust) {
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
-                searchTerm, displayText, alternateTerm, doPreventPreload);
+                searchTerm, displayText, alternateTerm, doPreventPreload, selectionStartAdjust,
+                selectionEndAdjust);
     }
 
     @Override
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
-            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
+            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
+            int selectionStartAdjust, int selectionEndAdjust) {
         if (!mSearchPanelDelegate.isShowing()) return;
 
         // Show an appropriate message for what to search for.
@@ -698,6 +704,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
             }
             mPolicy.logSearchTermResolutionDetails(searchTerm,
                     mNetworkCommunicator.getBasePageUrl());
+        }
+
+        if (selectionStartAdjust != 0 || selectionEndAdjust != 0) {
+            mSelectionController.adjustSelection(selectionStartAdjust, selectionEndAdjust);
         }
     }
 

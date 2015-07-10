@@ -2058,6 +2058,16 @@ void WebContentsImpl::SelectRange(const gfx::Point& base,
       new InputMsg_SelectRange(focused_frame->GetRoutingID(), base, extent));
 }
 
+void WebContentsImpl::AdjustSelectionByCharacterOffset(int start_adjust,
+                                                       int end_adjust) {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_AdjustSelectionByCharacterOffset(
+      focused_frame->GetRoutingID(), start_adjust, end_adjust));
+}
+
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
   const gfx::Size old_size = GetPreferredSize();
   preferred_size_ = pref_size;

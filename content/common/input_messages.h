@@ -214,6 +214,14 @@ IPC_MESSAGE_ROUTED2(InputMsg_SelectRange,
                     gfx::Point /* base */,
                     gfx::Point /* extent */)
 
+// Sent by the browser to ask the renderer to adjust the selection start and
+// end points by the given amounts. A negative amount moves the selection
+// towards the beginning of the document, a positive amount moves the selection
+// towards the end of the document.
+IPC_MESSAGE_ROUTED2(InputMsg_AdjustSelectionByCharacterOffset,
+                    int /* start_adjust*/,
+                    int /* end_adjust */)
+
 // Requests the renderer to move the selection extent point to a new position.
 // Expects a MoveRangeSelectionExtent_ACK message when finished.
 IPC_MESSAGE_ROUTED1(InputMsg_MoveRangeSelectionExtent,

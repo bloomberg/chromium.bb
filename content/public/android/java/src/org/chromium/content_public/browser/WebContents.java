@@ -179,6 +179,15 @@ public interface WebContents extends Parcelable {
     void selectWordAroundCaret();
 
     /**
+     * Adjusts the selection starting and ending points by the given amount.
+     * A negative amount moves the selection towards the beginning of the document, a positive
+     * amount moves the selection towards the end of the document.
+     * @param startAdjust The amount to adjust the start of the selection.
+     * @param endAdjust The amount to adjust the end of the selection.
+     */
+    public void adjustSelectionByCharacterOffset(int startAdjust, int endAdjust);
+
+    /**
      * Get the URL of the current page.
      *
      * @return The URL of the current page.

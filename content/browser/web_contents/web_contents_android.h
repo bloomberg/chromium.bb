@@ -77,7 +77,10 @@ class CONTENT_EXPORT WebContentsAndroid
   void ShowImeIfNeeded(JNIEnv* env, jobject obj);
   void ScrollFocusedEditableNodeIntoView(JNIEnv* env, jobject obj);
   void SelectWordAroundCaret(JNIEnv* env, jobject obj);
-
+  void AdjustSelectionByCharacterOffset(JNIEnv* env,
+                                        jobject obj,
+                                        jint start_adjust,
+                                        jint end_adjust);
   void InsertCSS(JNIEnv* env, jobject jobj, jstring jcss);
   void EvaluateJavaScript(JNIEnv* env,
                           jobject obj,
