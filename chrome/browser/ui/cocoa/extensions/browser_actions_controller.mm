@@ -394,14 +394,22 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 }
 
 - (void)dealloc {
+  [self browserWillBeDestroyed];
+  [super dealloc];
+}
+
+- (void)browserWillBeDestroyed {
+  [overflowMenu_ setDelegate:nil];
   // Explicitly destroy the ToolbarActionsBar so all buttons get removed with a
   // valid BrowserActionsController, and so we can verify state before
   // destruction.
-  toolbarActionsBar_->DeleteActions();
-  toolbarActionsBar_.reset();
+  if (toolbarActionsBar_.get()) {
+    toolbarActionsBar_->DeleteActions();
+    toolbarActionsBar_.reset();
+  }
   DCHECK_EQ(0u, [buttons_ count]);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
+  browser_ = nullptr;
 }
 
 - (void)update {

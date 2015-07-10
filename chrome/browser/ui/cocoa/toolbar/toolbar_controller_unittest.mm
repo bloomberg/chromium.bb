@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,12 +84,10 @@ class ToolbarControllerTest : public CocoaProfileTest {
     // ensure they get picked up correct on initialization
     updater->UpdateCommandEnabled(IDC_BACK, false);
     updater->UpdateCommandEnabled(IDC_FORWARD, false);
-    resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     bar_.reset([[TestToolbarController alloc]
         initWithCommands:browser()->command_controller()->command_updater()
                  profile:profile()
-                 browser:browser()
-          resizeDelegate:resizeDelegate_.get()]);
+                 browser:browser()]);
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [test_window() contentView];
     [parent addSubview:[bar_ view]];
@@ -114,7 +111,6 @@ class ToolbarControllerTest : public CocoaProfileTest {
               [[views objectAtIndex:kHomeIndex] isEnabled] ? true : false);
   }
 
-  base::scoped_nsobject<ViewResizerPong> resizeDelegate_;
   base::scoped_nsobject<TestToolbarController> bar_;
 };
 
@@ -298,9 +294,11 @@ class BrowserRemovedObserver : public chrome::BrowserListObserver {
 // This can happen because the ToolbarController is retained by both the
 // BrowserWindowController and -[ToolbarController view], the latter of which is
 // autoreleased.
-// TODO(nhiroki): This is disabled due to http://crbug.com/506745.
-TEST_F(ToolbarControllerTest, DISABLED_ToolbarDestroyedAfterBrowser) {
+TEST_F(ToolbarControllerTest, ToolbarDestroyedAfterBrowser) {
   BrowserRemovedObserver observer;
+  // This is normally called by BrowserWindowController, but since |bar_| is not
+  // owned by one, call it here.
+  [bar_ browserWillBeDestroyed];
   CloseBrowserWindow();
   observer.WaitUntilBrowserRemoved();
   // |bar_| is released in TearDown().

@@ -9,6 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 @class MenuButton;
@@ -21,8 +22,10 @@ const BackForwardMenuType BACK_FORWARD_MENU_TYPE_FORWARD =
 
 // A class that manages the back/forward menu (and delayed-menu button, and
 // model).
-
-@interface BackForwardMenuController : NSObject<NSMenuDelegate> {
+// Implement HasWeakBrowserPointer so we can clean up if the Browser is
+// destroyed.
+@interface BackForwardMenuController
+    : NSObject<NSMenuDelegate, HasWeakBrowserPointer> {
  @private
   BackForwardMenuType type_;
   MenuButton* button_;  // Weak; comes from nib.

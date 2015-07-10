@@ -122,6 +122,7 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 
 @interface ToolbarController()
 @property(assign, nonatomic) Browser* browser;
+- (void)cleanUp;
 - (void)addAccessibilityDescriptions;
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(const std::string&)prefName;
@@ -206,7 +207,6 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 - (id)initWithCommands:(CommandUpdater*)commands
                profile:(Profile*)profile
                browser:(Browser*)browser
-        resizeDelegate:(id<ViewResizer>)resizeDelegate
           nibFileNamed:(NSString*)nibName {
   DCHECK(commands && profile && [nibName length]);
   if ((self = [super initWithNibName:nibName
@@ -214,7 +214,6 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
     commands_ = commands;
     profile_ = profile;
     browser_ = browser;
-    resizeDelegate_ = resizeDelegate;
     hasToolbar_ = YES;
     hasLocationBar_ = YES;
 
@@ -236,39 +235,13 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 
 - (id)initWithCommands:(CommandUpdater*)commands
                profile:(Profile*)profile
-               browser:(Browser*)browser
-        resizeDelegate:(id<ViewResizer>)resizeDelegate {
+               browser:(Browser*)browser {
   if ((self = [self initWithCommands:commands
                              profile:profile
                              browser:browser
-                      resizeDelegate:resizeDelegate
                         nibFileNamed:@"Toolbar"])) {
   }
   return self;
-}
-
-
-- (void)dealloc {
-  browserActionsContainerDelegate_.reset();
-
-  // Unset ViewIDs of toolbar elements.
-  // ViewIDs of |toolbarView|, |reloadButton_|, |locationBar_| and
-  // |browserActionsContainerView_| are handled by themselves.
-  view_id_util::UnsetID(backButton_);
-  view_id_util::UnsetID(forwardButton_);
-  view_id_util::UnsetID(homeButton_);
-  view_id_util::UnsetID(wrenchButton_);
-
-  // Make sure any code in the base class which assumes [self view] is
-  // the "parent" view continues to work.
-  hasToolbar_ = YES;
-  hasLocationBar_ = YES;
-
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-  if (trackingArea_.get())
-    [[self view] removeTrackingArea:trackingArea_.get()];
-  [super dealloc];
 }
 
 // Called after the view is done loading and the outlets have been hooked up.
@@ -396,6 +369,49 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   view_id_util::SetID(wrenchButton_, VIEW_ID_APP_MENU);
 
   [self addAccessibilityDescriptions];
+}
+
+- (void)dealloc {
+  [self cleanUp];
+  [super dealloc];
+}
+
+- (void)browserWillBeDestroyed {
+  // Pass this call onto other reference counted objects.
+  [backMenuController_ browserWillBeDestroyed];
+  [forwardMenuController_ browserWillBeDestroyed];
+  [browserActionsController_ browserWillBeDestroyed];
+  [wrenchMenuController_ browserWillBeDestroyed];
+
+  [self cleanUp];
+}
+
+- (void)cleanUp {
+  // Unset ViewIDs of toolbar elements.
+  // ViewIDs of |toolbarView|, |reloadButton_|, |locationBar_| and
+  // |browserActionsContainerView_| are handled by themselves.
+  view_id_util::UnsetID(backButton_);
+  view_id_util::UnsetID(forwardButton_);
+  view_id_util::UnsetID(homeButton_);
+  view_id_util::UnsetID(wrenchButton_);
+
+  // Make sure any code in the base class which assumes [self view] is
+  // the "parent" view continues to work.
+  hasToolbar_ = YES;
+  hasLocationBar_ = YES;
+
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+  if (trackingArea_.get()) {
+    [[self view] removeTrackingArea:trackingArea_.get()];
+    [trackingArea_.get() clearOwner];
+    trackingArea_.reset();
+  }
+
+  // Destroy owned objects that hold a weak Browser*.
+  locationBarView_.reset();
+  browserActionsContainerDelegate_.reset();
+  browser_ = nullptr;
 }
 
 - (void)addAccessibilityDescriptions {

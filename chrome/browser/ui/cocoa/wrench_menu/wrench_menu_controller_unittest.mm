@@ -4,11 +4,14 @@
 
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -237,6 +240,32 @@ TEST_F(WrenchMenuControllerTest, RecentTabsElideTitle) {
 TEST_F(WrenchMenuControllerTest, RecentTabDeleteOrder) {
   [controller_ menuNeedsUpdate:[controller_ menu]];
   // If the delete order is wrong then the test will crash on exit.
+}
+
+class BrowserRemovedObserver : public chrome::BrowserListObserver {
+ public:
+  BrowserRemovedObserver() { BrowserList::AddObserver(this); }
+  ~BrowserRemovedObserver() override { BrowserList::RemoveObserver(this); }
+  void WaitUntilBrowserRemoved() { run_loop_.Run(); }
+  void OnBrowserRemoved(Browser* browser) override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserRemovedObserver);
+};
+
+// Test that WrenchMenuController can be destroyed after the Browser.
+// This can happen because the WrenchMenuController's owner (ToolbarController)
+// can outlive the Browser.
+TEST_F(WrenchMenuControllerTest, DestroyedAfterBrowser) {
+  BrowserRemovedObserver observer;
+  // This is normally called by ToolbarController, but since |controller_| is
+  // not owned by one, call it here.
+  [controller_ browserWillBeDestroyed];
+  CloseBrowserWindow();
+  observer.WaitUntilBrowserRemoved();
+  // |controller_| is released in TearDown().
 }
 
 }  // namespace

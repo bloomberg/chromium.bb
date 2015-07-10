@@ -114,6 +114,24 @@ class ZoomLevelObserver {
   return self;
 }
 
+- (void)dealloc {
+  [self browserWillBeDestroyed];
+  [super dealloc];
+}
+
+- (void)browserWillBeDestroyed {
+  // This method indicates imminent destruction. Destroy owned objects that hold
+  // a weak Browser*, or pass this call onto reference counted objects.
+  recentTabsMenuModelDelegate_.reset();
+  [self setModel:nullptr];
+  wrenchMenuModel_.reset();
+  buttonViewController_.reset();
+
+  [browserActionsController_ browserWillBeDestroyed];
+
+  browser_ = nullptr;
+}
+
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
             fromModel:(ui::MenuModel*)model {
@@ -328,6 +346,7 @@ class ZoomLevelObserver {
 }
 
 - (void)createModel {
+  DCHECK(browser_);
   recentTabsMenuModelDelegate_.reset();
   wrenchMenuModel_.reset(
       new WrenchMenuModel(acceleratorDelegate_.get(), browser_));

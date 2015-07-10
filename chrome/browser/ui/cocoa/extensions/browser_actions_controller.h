@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #include "ui/gfx/geometry/size.h"
 
 class Browser;
@@ -28,7 +29,8 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
 // Handles state and provides an interface for controlling the Browser Actions
 // container within the Toolbar.
-@interface BrowserActionsController : NSObject<NSMenuDelegate> {
+@interface BrowserActionsController
+    : NSObject<NSMenuDelegate, HasWeakBrowserPointer> {
  @private
   // Reference to the current browser. Weak.
   Browser* browser_;

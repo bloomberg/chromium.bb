@@ -4,11 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 
-#include "content/public/browser/web_contents.h"
-
 @implementation OverlayableContentsController
 
-- (id)initWithBrowser:(Browser*)browser {
+- (id)init {
   if ((self = [super init])) {
     base::scoped_nsobject<NSView> view(
         [[NSView alloc] initWithFrame:NSZeroRect]);

@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "ui/base/cocoa/menu_controller.h"
 
 class BookmarkMenuBridge;
@@ -39,7 +40,8 @@ class ZoomLevelObserver;
 //
 // This object is owned by the ToolbarController and receives its NIB-based
 // views using the shim view controller below.
-@interface WrenchMenuController : MenuController<NSMenuDelegate> {
+@interface WrenchMenuController
+    : MenuController<NSMenuDelegate, HasWeakBrowserPointer> {
  @private
   // Used to provide accelerators for the menu.
   scoped_ptr<WrenchMenuControllerInternal::AcceleratorDelegate>

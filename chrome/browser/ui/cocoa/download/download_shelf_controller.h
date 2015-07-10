@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "ui/base/cocoa/tracking_area.h"
 
@@ -40,7 +41,8 @@ class PageNavigator;
 // UI of an item itself is represented by a button that is drawn by
 // download_item_cell.
 
-@interface DownloadShelfController : NSViewController<NSTextViewDelegate> {
+@interface DownloadShelfController
+    : NSViewController<NSTextViewDelegate, HasWeakBrowserPointer> {
  @private
   IBOutlet HoverButton* hoverCloseButton_;
 
@@ -119,10 +121,6 @@ class PageNavigator;
 
 // Called by individual item controllers when their downloads are opened.
 - (void)downloadWasOpened:(DownloadItemController*)download;
-
-// Notification that the download shelf is going to be destroyed and should
-// release the downloads.
-- (void)exiting;
 
 // Return the height of the download shelf.
 - (float)height;

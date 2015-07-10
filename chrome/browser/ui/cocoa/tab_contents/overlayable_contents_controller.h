@@ -8,13 +8,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
-
-class Browser;
-
-namespace content {
-class WebContents;
-}
 
 // OverlayableContentsController is an obsolete wrapper holding the view where a
 // tab's WebContents is displayed. In the old Chrome Instant implementation it
@@ -29,9 +22,6 @@ class WebContents;
 }
 
 @property(readonly, nonatomic) NSView* activeContainer;
-
-// Initialization.
-- (id)initWithBrowser:(Browser*)browser;
 
 @end
 

@@ -88,11 +88,16 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)dealloc {
+  [self browserWillBeDestroyed];
+  [super dealloc];
+}
+
+- (void)browserWillBeDestroyed {
   // All animations should have been explicitly stopped before a tab is closed.
   DCHECK(!showHideAnimation_.get());
   DCHECK(!moveAnimation_.get());
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
+  browser_ = nullptr;
 }
 
 - (void)setFindBarBridge:(FindBarBridge*)findBarBridge {

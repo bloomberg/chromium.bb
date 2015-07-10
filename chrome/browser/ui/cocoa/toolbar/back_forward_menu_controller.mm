@@ -40,6 +40,13 @@ using base::SysUTF16ToNSString;
   return self;
 }
 
+- (void)browserWillBeDestroyed {
+  [button_ setAttachedMenu:nil];
+  [backForwardMenu_ setDelegate:nil];
+  backForwardMenu_.reset();
+  model_.reset();
+}
+
 // Methods as delegate:
 
 // Called by backForwardMenu_ just before tracking begins.

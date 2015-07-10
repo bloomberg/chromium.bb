@@ -9,6 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
@@ -54,9 +55,9 @@ class WebContents;
 //
 // For a full description of the design, see
 // http://www.chromium.org/developers/design-documents/tab-strip-mac
-@interface TabStripController :
-  NSObject<TabControllerTarget,
-           URLDropTargetController> {
+@interface TabStripController : NSObject<TabControllerTarget,
+                                         URLDropTargetController,
+                                         HasWeakBrowserPointer> {
  @private
   base::scoped_nsobject<TabStripView> tabStripView_;
   NSView* switchView_;  // weak

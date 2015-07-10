@@ -121,7 +121,6 @@ class DownloadShelfControllerTest : public CocoaProfileTest {
 
   void TearDown() override {
     if (shelf_.get()) {
-      [shelf_ exiting];
       shelf_.reset();
     }
     CocoaProfileTest::TearDown();
@@ -374,7 +373,7 @@ TEST_F(DownloadShelfControllerTest, CancelAutoCloseOnExit) {
   EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
   EXPECT_EQ(2, shelf_.get()->cancelAutoCloseCount_);
 
-  [shelf_ exiting];
+  [shelf_ browserWillBeDestroyed];
   EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
   EXPECT_EQ(3, shelf_.get()->cancelAutoCloseCount_);
   shelf_.reset();

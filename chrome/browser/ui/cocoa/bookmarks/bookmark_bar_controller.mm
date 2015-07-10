@@ -350,6 +350,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (void)dealloc {
+  [self browserWillBeDestroyed];
+  [super dealloc];
+}
+
+- (void)browserWillBeDestroyed {
   // Clear delegate so it doesn't get called during stopAnimation.
   [[self animatableView] setResizeDelegate:nil];
 
@@ -375,7 +380,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self watchForExitEvent:NO];
-  [super dealloc];
+  browser_ = nullptr;
 }
 
 - (void)awakeFromNib {

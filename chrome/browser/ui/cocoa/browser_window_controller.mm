@@ -302,7 +302,7 @@ using content::WebContents;
     // Create the overlayable contents controller.  This provides the switch
     // view that TabStripController needs.
     overlayableContentsController_.reset(
-        [[OverlayableContentsController alloc] initWithBrowser:browser]);
+        [[OverlayableContentsController alloc] init]);
     [[overlayableContentsController_ view]
         setFrame:[[devToolsController_ view] bounds]];
     [[devToolsController_ view]
@@ -319,10 +319,9 @@ using content::WebContents;
     // registering for the appropriate command state changes from the back-end.
     // Adds the toolbar to the content area.
     toolbarController_.reset([[ToolbarController alloc]
-              initWithCommands:browser->command_controller()->command_updater()
-                       profile:browser->profile()
-                       browser:browser
-                resizeDelegate:self]);
+        initWithCommands:browser->command_controller()->command_updater()
+                 profile:browser->profile()
+                 browser:browser]);
     [toolbarController_ setHasToolbar:[self hasToolbar]
                        hasLocationBar:[self hasLocationBar]];
 
@@ -425,7 +424,6 @@ using content::WebContents;
 
 - (void)dealloc {
   browser_->tab_strip_model()->CloseAllTabs();
-  [downloadShelfController_ exiting];
 
   // Explicitly release |presentationModeController_| here, as it may call back
   // to this BWC in |-dealloc|.  We are required to call |-exitPresentationMode|
@@ -438,6 +436,20 @@ using content::WebContents;
     ignore_result(browser_.release());
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+  // Inform reference counted objects that the Browser will be destroyed. This
+  // ensures they invalidate their weak Browser* to prevent use-after-free.
+  // These may outlive the Browser if they are retained by something else. For
+  // example, since 10.10, the Nib loader internally creates an NSDictionary
+  // that retains NSViewControllers and is autoreleased, so there is no way to
+  // guarantee that the [super dealloc] call below will also call dealloc on the
+  // controllers.
+  [toolbarController_ browserWillBeDestroyed];
+  [tabStripController_ browserWillBeDestroyed];
+  [findBarCocoaController_ browserWillBeDestroyed];
+  [downloadShelfController_ browserWillBeDestroyed];
+  [bookmarkBarController_ browserWillBeDestroyed];
+  [avatarButtonController_ browserWillBeDestroyed];
 
   [super dealloc];
 }

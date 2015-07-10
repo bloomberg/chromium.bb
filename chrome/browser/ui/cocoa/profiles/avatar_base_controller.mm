@@ -131,11 +131,16 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
 }
 
 - (void)dealloc {
+  [self browserWillBeDestroyed];
+  [super dealloc];
+}
+
+- (void)browserWillBeDestroyed {
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
                 name:NSWindowWillCloseNotification
               object:[menuController_ window]];
-  [super dealloc];
+  browser_ = nullptr;
 }
 
 - (NSButton*)buttonView {

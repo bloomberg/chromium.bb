@@ -1039,6 +1039,7 @@
       'browser/ui/cocoa/global_error_bubble_controller.mm',
       'browser/ui/cocoa/gradient_button_cell.h',
       'browser/ui/cocoa/gradient_button_cell.mm',
+      'browser/ui/cocoa/has_weak_browser_pointer.h',
       'browser/ui/cocoa/hover_close_button.h',
       'browser/ui/cocoa/hover_close_button.mm',
       'browser/ui/cocoa/hung_renderer_controller.h',

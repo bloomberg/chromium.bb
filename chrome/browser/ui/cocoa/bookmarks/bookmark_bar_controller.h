@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_state.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
+#import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -153,12 +154,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 // A controller for the bookmark bar in the browser window. Handles showing
 // and hiding based on the preference in the given profile.
-@interface BookmarkBarController :
-    NSViewController<BookmarkBarState,
-                     BookmarkBarToolbarViewController,
-                     BookmarkButtonDelegate,
-                     BookmarkButtonControllerProtocol,
-                     NSDraggingDestination> {
+@interface BookmarkBarController
+    : NSViewController<BookmarkBarState,
+                       BookmarkBarToolbarViewController,
+                       BookmarkButtonDelegate,
+                       BookmarkButtonControllerProtocol,
+                       NSDraggingDestination,
+                       HasWeakBrowserPointer> {
  @private
   // The state of the bookmark bar. If an animation is running, this is set to
   // the "destination" and |lastState_| is set to the "original" state.

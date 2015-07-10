@@ -573,6 +573,11 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 }
 
 - (void)dealloc {
+  [self browserWillBeDestroyed];
+  [super dealloc];
+}
+
+- (void)browserWillBeDestroyed {
   [tabStripView_ setController:nil];
 
   if (trackingArea_.get())
@@ -586,7 +591,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     [[[view animationForKey:@"frameOrigin"] delegate] invalidate];
   }
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
+
+  browser_ = nullptr;
 }
 
 + (CGFloat)defaultTabHeight {
