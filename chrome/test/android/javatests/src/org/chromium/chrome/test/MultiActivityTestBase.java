@@ -54,6 +54,22 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
             + "  </body>"
             + "</html>");
 
+    /** Same as HREF_LINK, but disallowing a referrer from being sent triggers another codepath. */
+    protected static final String HREF_NO_REFERRER_LINK = UrlUtils.encodeHtmlDataUri(
+            "<html>"
+            + "  <head>"
+            + "    <title>href no referrer link page</title>"
+            + "    <meta name='viewport'"
+            + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
+            + "    <style>"
+            + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
+            + "    </style>"
+            + "  </head>"
+            + "  <body>"
+            + "    <a href='" + URL_4 + "' target='_blank' rel='noreferrer'><div></div></a>"
+            + "  </body>"
+            + "</html>");
+
     /** Clicking the body triggers a window.open() call to open URL_4. */
     protected static final String SUCCESS_URL = UrlUtils.encodeHtmlDataUri("opened!");
     protected static final String ONCLICK_LINK = UrlUtils.encodeHtmlDataUri(

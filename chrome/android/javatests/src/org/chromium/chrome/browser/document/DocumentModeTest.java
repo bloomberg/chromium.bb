@@ -672,4 +672,47 @@ public class DocumentModeTest extends DocumentModeTestBase {
         assertEquals("URL is not in the Intent",
                 URL_4, IntentHandler.getUrlFromIntent(thirdActivity.getIntent()));
     }
+
+    /**
+     * Tests that the page loads fine when a new page is opened and the opener is suppressed.
+     */
+    @MediumTest
+    public void testWindowOpenerSuppressed() throws Exception {
+        launchViaLaunchDocumentInstance(false, HREF_NO_REFERRER_LINK, "href no referrer link page");
+
+        final DocumentActivity firstActivity =
+                (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+
+        // Save the current tab ID.
+        final DocumentTabModelSelector selector =
+                ChromeApplication.getDocumentTabModelSelector();
+        final TabModel tabModel = selector.getModel(false);
+        final int firstTabId = selector.getCurrentTabId();
+        final int firstTabIndex = tabModel.index();
+
+        // Do a plain click to make the link open in a new foreground Document.
+        Runnable fgTrigger = new Runnable() {
+            @Override
+            public void run() {
+                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                    @Override
+                    public void run() {
+                        View view = firstActivity.findViewById(android.R.id.content).getRootView();
+                        TouchCommon.singleClickView(view);
+                    }
+                });
+            }
+        };
+
+        final DocumentActivity thirdActivity = ActivityUtils.waitForActivity(
+                    getInstrumentation(), DocumentActivity.class, fgTrigger);
+        waitForFullLoad(thirdActivity, "Page 4");
+        assertEquals("Wrong number of tabs", 2, tabModel.getCount());
+        assertNotSame("Wrong tab selected", firstTabIndex, tabModel.index());
+        assertNotSame("Wrong tab ID in foreground", firstTabId, selector.getCurrentTabId());
+        assertNotSame("Wrong Activity in foreground",
+                firstActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+        assertEquals("URL is not in the Intent",
+                URL_4, IntentHandler.getUrlFromIntent(thirdActivity.getIntent()));
+    }
 }

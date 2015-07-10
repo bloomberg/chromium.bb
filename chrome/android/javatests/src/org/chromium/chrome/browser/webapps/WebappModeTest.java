@@ -14,6 +14,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -29,8 +30,8 @@ import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 import java.lang.ref.WeakReference;
@@ -260,7 +261,7 @@ public class WebappModeTest extends MultiActivityTestBase {
     @DisableInTabbedMode
     @MediumTest
     public void testWebappHandlesWindowOpenInDocumentMode() throws Exception {
-        triggerWindowOpenAndWaitForLoad(DocumentActivity.class);
+        triggerWindowOpenAndWaitForLoad(DocumentActivity.class, ONCLICK_LINK, true);
     }
 
     /**
@@ -269,11 +270,29 @@ public class WebappModeTest extends MultiActivityTestBase {
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     @MediumTest
     public void testWebappHandlesWindowOpenInTabbedMode() throws Exception {
-        triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class);
+        triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, ONCLICK_LINK, true);
     }
 
-    private <T extends ChromeActivity> void triggerWindowOpenAndWaitForLoad(Class<T> classToWaitFor)
-            throws Exception {
+    /**
+     * Tests that WebappActivities handle suppressed window.open() properly in document mode.
+     */
+    @DisableInTabbedMode
+    @MediumTest
+    public void testWebappHandlesSuppressedWindowOpenInDocumentMode() throws Exception {
+        triggerWindowOpenAndWaitForLoad(DocumentActivity.class, HREF_NO_REFERRER_LINK, false);
+    }
+
+    /**
+     * Tests that WebappActivities handle suppressed window.open() properly in tabbed mode.
+     */
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    @MediumTest
+    public void testWebappHandlesSuppressedWindowOpenInTabbedMode() throws Exception {
+        triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, HREF_NO_REFERRER_LINK, false);
+    }
+
+    private <T extends ChromeActivity> void triggerWindowOpenAndWaitForLoad(
+            Class<T> classToWaitFor, String linkHtml, boolean checkContents) throws Exception {
         // Start the WebappActivity.  We can't use ActivityUtils.waitForActivity() because
         // of the way WebappActivity is instanced on pre-L devices.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
@@ -297,7 +316,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             }
         }));
         assertTrue(CriteriaHelper.pollForCriteria(
-                new TabLoadObserver(webappActivity.getActivityTab(), ONCLICK_LINK)));
+                new TabLoadObserver(webappActivity.getActivityTab(), linkHtml)));
 
         // Do a plain click to make the link open in the main browser via a window.open().
         // If the window is opened successfully, javascript on the first page triggers and changes
@@ -305,17 +324,22 @@ public class WebappModeTest extends MultiActivityTestBase {
         Runnable fgTrigger = new Runnable() {
             @Override
             public void run() {
-                try {
-                    DOMUtils.clickNode(null, webappActivity.getCurrentContentViewCore(), "body");
-                } catch (Exception e) {
-                }
+                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                    @Override
+                    public void run() {
+                        View view = webappActivity.findViewById(android.R.id.content).getRootView();
+                        TouchCommon.singleClickView(view);
+                    }
+                });
             }
         };
         ChromeActivity secondActivity = ActivityUtils.waitForActivity(
                 getInstrumentation(), classToWaitFor, fgTrigger);
         waitForFullLoad(secondActivity, "Page 4");
-        assertEquals("New WebContents was not created",
-                SUCCESS_URL, webappActivity.getActivityTab().getUrl());
+        if (checkContents) {
+            assertEquals("New WebContents was not created",
+                    SUCCESS_URL, webappActivity.getActivityTab().getUrl());
+        }
         assertNotSame("Wrong Activity in foreground",
                 webappActivity, ApplicationStatus.getLastTrackedFocusedActivity());
 
