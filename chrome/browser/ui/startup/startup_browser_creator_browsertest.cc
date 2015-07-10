@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
   // Close the browser.
-  browser()->window()->Close();
+  CloseBrowserAsynchronously(browser());
 
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
@@ -632,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   SessionStartupPref::SetStartupPref(other_profile, pref2);
 
   // Close the browser.
-  browser()->window()->Close();
+  CloseBrowserAsynchronously(browser());
 
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
@@ -690,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   chrome::NewTab(browser1);
   ui_test_utils::NavigateToURL(browser1,
                                test_server()->GetURL("files/empty.html"));
-  browser1->window()->Close();
+  CloseBrowserSynchronously(browser1);
 
   Browser* browser2 = new Browser(
       Browser::CreateParams(Browser::TYPE_TABBED, profile2,
@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   chrome::NewTab(browser2);
   ui_test_utils::NavigateToURL(browser2,
                                test_server()->GetURL("files/form.html"));
-  browser2->window()->Close();
+  CloseBrowserSynchronously(browser2);
 
   // Set different startup preferences for the 2 profiles.
   std::vector<GURL> urls1;
@@ -846,12 +846,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   chrome::NewTab(browser_last);
   ui_test_utils::NavigateToURL(browser_last,
                                test_server()->GetURL("files/empty.html"));
-  browser_last->window()->Close();
+  CloseBrowserAsynchronously(browser_last);
 
   // Close the main browser.
   chrome::HostDesktopType original_desktop_type =
       browser()->host_desktop_type();
-  browser()->window()->Close();
+  CloseBrowserAsynchronously(browser());
 
   // Do a simple non-process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
@@ -949,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   SessionStartupPref::SetStartupPref(profile_urls, pref_urls);
 
   // Simulate a launch after an unclear exit.
-  browser()->window()->Close();
+  CloseBrowserAsynchronously(browser());
   static_cast<ProfileImpl*>(profile_home)->last_session_exit_type_ =
       Profile::EXIT_CRASHED;
   static_cast<ProfileImpl*>(profile_last)->last_session_exit_type_ =

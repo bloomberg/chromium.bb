@@ -54,14 +54,6 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
     return false;
   }
 
-  void CloseBrowserSynchronously(Browser* browser) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
-    browser->window()->Close();
-    observer.Wait();
-  }
-
   Browser::CreateParams CreateParamsForApp(const std::string name,
                                            bool trusted) {
     return Browser::CreateParams::CreateForApp(

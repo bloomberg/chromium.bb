@@ -664,10 +664,9 @@ IN_PROC_BROWSER_TEST_F(AppControllerHandoffBrowserTest, TestHandoffURLs) {
       BrowserList::GetInstance(chrome::GetActiveDesktop());
   EXPECT_EQ(2u, active_browser_list->size());
 
-  // Close the one and only tab for the second browser window.
+  // Close the second browser window (which only has 1 tab left).
   Browser* browser2 = active_browser_list->get(1);
-  CloseTab(browser2, 0);
-  base::RunLoop().RunUntilIdle();
+  CloseBrowserSynchronously(browser2);
   EXPECT_EQ(g_handoff_url, test_url2);
 
   // The URLs of incognito windows should not be passed to Handoff.

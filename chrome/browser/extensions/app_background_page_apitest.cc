@@ -12,7 +12,6 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -95,20 +94,6 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
     watcher.Wait();
     return manager->IsBackgroundModeActive() == expected_background_mode;
 #endif
-  }
-
-  void CloseBrowser(Browser* browser) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
-    browser->window()->Close();
-#if defined(OS_MACOSX)
-    // BrowserWindowController depends on the auto release pool being recycled
-    // in the message loop to delete itself, which frees the Browser object
-    // which fires this event.
-    AutoreleasePool()->Recycle();
-#endif
-    observer.Wait();
   }
 
   void UnloadExtensionViaTask(const std::string& id) {
@@ -594,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
 
   // Close all browsers - app should continue running.
   set_exit_when_last_browser_closes(false);
-  CloseBrowser(browser());
+  CloseBrowserSynchronously(browser());
 
   // Post a task to unload the extension - this should cause Chrome to exit
   // cleanly (not crash).

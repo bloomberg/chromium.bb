@@ -19,6 +19,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -380,6 +381,32 @@ void InProcessBrowserTest::TearDown() {
   com_initializer_.reset();
 #endif
   BrowserTestBase::TearDown();
+}
+
+void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(browser));
+  CloseBrowserAsynchronously(browser);
+  observer.Wait();
+}
+
+void InProcessBrowserTest::CloseBrowserAsynchronously(Browser* browser) {
+  browser->window()->Close();
+#if defined(OS_MACOSX)
+  // BrowserWindowController depends on the auto release pool being recycled
+  // in the message loop to delete itself.
+  AutoreleasePool()->Recycle();
+#endif
+}
+
+void InProcessBrowserTest::CloseAllBrowsers() {
+  chrome::CloseAllBrowsers();
+#if defined(OS_MACOSX)
+  // BrowserWindowController depends on the auto release pool being recycled
+  // in the message loop to delete itself.
+  AutoreleasePool()->Recycle();
+#endif
 }
 
 // TODO(alexmos): This function should expose success of the underlying

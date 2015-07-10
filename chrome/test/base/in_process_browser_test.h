@@ -111,6 +111,18 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // Returns the browser created by CreateBrowser.
   Browser* browser() const { return browser_; }
 
+  // Closes the given browser and waits for it to release all its resources.
+  void CloseBrowserSynchronously(Browser* browser);
+
+  // Closes the browser without waiting for it to release all its resources.
+  // WARNING: This may leave tasks posted, but not yet run, in the message
+  // loops. Prefer CloseBrowserSynchronously over this method.
+  void CloseBrowserAsynchronously(Browser* browser);
+
+  // Closes all browsers. No guarantees are made about the destruction of
+  // outstanding resources.
+  void CloseAllBrowsers();
+
   // Convenience methods for adding tabs to a Browser.
   void AddTabAtIndexToBrowser(Browser* browser,
                               int index,

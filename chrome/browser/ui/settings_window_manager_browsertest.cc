@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -93,14 +92,6 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
   void ShowSettingsForProfile(Profile* profile) {
     settings_manager_->ShowChromePageForProfile(
         profile, GURL(chrome::kChromeUISettingsURL));
-  }
-
-  void CloseBrowserSynchronously(Browser* browser) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
-    browser->window()->Close();
-    observer.Wait();
   }
 
   void CloseNonDefaultBrowsers() {

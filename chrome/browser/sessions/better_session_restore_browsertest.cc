@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -310,30 +309,16 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
               post_interceptor_->DidLastUploadContain("password-entered"));
   }
 
-  void CloseBrowserSynchronously(Browser* browser, bool close_all_windows) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
-    if (close_all_windows)
-      chrome::CloseAllBrowsers();
-    else
-      browser->window()->Close();
-#if defined(OS_MACOSX)
-    // BrowserWindowController depends on the auto release pool being recycled
-    // in the message loop to delete itself, which frees the Browser object
-    // which fires this event.
-    AutoreleasePool()->Recycle();
-#endif
-    observer.Wait();
-  }
-
   virtual Browser* QuitBrowserAndRestore(Browser* browser,
                                          bool close_all_windows) {
     Profile* profile = browser->profile();
 
     // Close the browser.
     chrome::IncrementKeepAliveCount();
-    CloseBrowserSynchronously(browser, close_all_windows);
+    if (close_all_windows)
+      CloseAllBrowsers();
+    else
+      CloseBrowserSynchronously(browser);
 
     SessionServiceTestHelper helper;
     helper.SetService(
@@ -801,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
       browser()->profile(),
       chrome::HOST_DESKTOP_TYPE_NATIVE));
   popup->window()->Show();
-  CloseBrowserSynchronously(browser(), false);
+  CloseBrowserSynchronously(browser());
   Browser* new_browser = QuitBrowserAndRestore(popup, false);
   if (browser_defaults::kBrowserAliveWithNoWindows)
     NavigateAndCheckStoredData(new_browser, "session_cookies.html");

@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
@@ -107,20 +106,6 @@ class SessionRestoreTest : public InProcessBrowserTest {
         base::FilePath().AppendASCII("bot3.html"));
 
     return InProcessBrowserTest::SetUpUserDataDirectory();
-  }
-
-  void CloseBrowserSynchronously(Browser* browser) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
-    browser->window()->Close();
-#if defined(OS_MACOSX)
-    // BrowserWindowController depends on the auto release pool being recycled
-    // in the message loop to delete itself, which frees the Browser object
-    // which fires this event.
-    AutoreleasePool()->Recycle();
-#endif
-    observer.Wait();
   }
 
   Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {

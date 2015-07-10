@@ -413,14 +413,12 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   EXPECT_EQ(path_profile2, browser_list->get(2)->profile()->GetPath());
 
   // Closing the first window of the ephemeral profile should not delete it.
-  browser_list->get(2)->window()->Close();
-  content::RunAllPendingInMessageLoop();
+  CloseBrowserSynchronously(browser_list->get(2));
   EXPECT_EQ(2U, browser_list->size());
   EXPECT_EQ(initial_profile_count + 1, cache.GetNumberOfProfiles());
 
   // The second should though.
-  browser_list->get(1)->window()->Close();
-  content::RunAllPendingInMessageLoop();
+  CloseBrowserSynchronously(browser_list->get(1));
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(initial_profile_count, cache.GetNumberOfProfiles());
 }

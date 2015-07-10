@@ -74,24 +74,11 @@ class ContentSettingsTest : public InProcessBrowserTest {
     ASSERT_TRUE(content::GetCookies(browser()->profile(), url).empty());
 
     // Ensure cookies get wiped after last incognito window closes.
-    content::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(incognito));
-
-    chrome::CloseWindow(incognito);
-
-#if defined(OS_MACOSX)
-    // BrowserWindowController depends on the auto release pool being recycled
-    // in the message loop to delete itself, which frees the Browser object
-    // which fires this event.
-    AutoreleasePool()->Recycle();
-#endif
-
-    signal.Wait();
+    CloseBrowserSynchronously(incognito);
 
     incognito = CreateIncognitoBrowser();
     ASSERT_TRUE(content::GetCookies(incognito->profile(), url).empty());
-    chrome::CloseWindow(incognito);
+    CloseBrowserSynchronously(incognito);
   }
 
   void PreBasic(const GURL& url) {
