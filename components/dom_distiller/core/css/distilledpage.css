@@ -64,11 +64,13 @@ sub {
 table {
   border-collapse: collapse;
   border-spacing: 0;
+  display: block;
+  overflow-x: auto;
 }
 
 td,
 th {
-  padding: 0;
+  padding: 0.5rem;
 }
 
 /* Base typography. */
@@ -80,7 +82,7 @@ html {
 
 body {
   height: 100%;
-  line-height: 1.4;
+  line-height: 1.714;
   margin: 0px auto;
   text-rendering: optimizeLegibility;
   transition-property: color, background-color;
@@ -95,13 +97,13 @@ body {
  * and with CSS class constants in viewer.cc */
 
 .light {
-  color: #333;
-  background-color: #FFF;
+  color: #424242;
+  background-color: #FAFAFA;
 }
 
 .dark {
-  color: #DDD;
-  background-color: #000;
+  color: #E0E0E0;
+  background-color: #212121;
 }
 
 .sepia {
@@ -109,12 +111,79 @@ body {
   background-color: rgb(203, 173, 141);
 }
 
+.light a:link,
+.sepia a:link {
+  color: #55F;
+}
+
+.dark a:link {
+  color: #88F;
+}
+
+.light a:visited,
+.sepia a:visited {
+  color: #902290;
+}
+
+.dark a:visited {
+  color: #D872D8;
+}
+
+.light code,
+.light pre {
+  background-color: #EEE;
+  border-color: #AAA;
+}
+
+.sepia code,
+.sepia pre {
+  background-color: rgb(217, 196, 175);
+  border-color: rgb(147, 125, 102);
+}
+
+.dark code,
+.dark pre {
+  background-color: #333;
+  border-color: #555;
+}
+
+.light tbody tr:nth-child(odd) {
+  background-color: #EEE;
+}
+
+.light th, .light td {
+  border-left: 1px solid #AAA;
+}
+
+.sepia tbody tr:nth-child(odd) {
+  background-color: rgb(217, 196, 175);
+}
+
+.sepia th, .sepia td {
+  border-left: 1px solid rgb(147, 125, 102);
+}
+
+.dark tbody tr:nth-child(odd) {
+  background-color: #333;
+}
+
+.dark th, .dark td {
+  border-left: 1px solid #555;
+}
+
+/* #contentWrap is added to be more specific than the color theme rules */
+#contentWrap th:first-child { border-left: none; }
+#contentWrap td:first-child { border-left: none; }
+
+
+/* Font settings */
+
 .serif {
   font-family: serif;
 }
 
 .sans-serif {
-  font-family: 'Open Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 .monospace {
@@ -141,31 +210,43 @@ table,
 td,
 th,
 ul {
-  margin-bottom: 1rem;
+  margin-bottom: 1.143rem;
 }
 
+h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  line-height: 1.296;
-  margin-bottom: 0.444rem;
+  line-height: 1.417;
+  margin: 1em 0;
 }
 
 /* Content. */
 
 /* Margins for Show Original link. */
 
-#closeReaderView {
-  background-color: #FFFFFF;
+.light #closeReaderView {
   border-top: 1px solid #E0E0E0;
   color: #4285F4;
+}
+
+.dark #closeReaderView {
+  border-top: 1px solid #555;
+  color: #3adaff;
+}
+
+.sepia #closeReaderView {
+  border-top: 1px solid rgb(147, 125, 102);
+  color: #55F;
+}
+
+#closeReaderView {
   flex: 0 0 auto;
-  font-family: 'Roboto-Medium', 'Open Sans', sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-weight: 700;
   line-height: 14px;
-  margin-top: 24px;
   padding: 24px 16px;
   font-size: 14px;
   text-align: right;
@@ -175,74 +256,34 @@ h6 {
 }
 
 #content {
-  margin: 0.2rem 2.2%;
+  margin: 24px 16px 24px 16px;
 }
 
 #mainContent {
   flex: 1 1 auto;
   margin: 0px auto;
-  max-width: 800px;
+  max-width: 35em;
   width: 100%;
 }
 
 #articleHeader {
-  background-color: rgb(73, 73, 73);
-  color: white;
-  min-height: 90px;
+  margin-top: 24px;
   width: 100%;
 }
 
-#titleCollapse  {
-  display: block;
-  overflow: hidden;
-}
-
-#titleCollapse .verticalCenterOuter {
-  min-height: 90px;
-}
-
 #titleHolder {
-  padding: 10px 30px;
-}
-
-.verticalCenterOuter {
-  display: table;
-  height: 100%;
-}
-
-.verticalCenterInner {
-  display: table-cell;
-  vertical-align: middle;
-}
-
-
-/* Link colors for light, dark and sepia themes */
-
-.light a:link,
-.sepia a:link {
-  color: #55F;
-}
-
-.dark a:link {
-  color: #88F;
-}
-
-.light a:visited,
-.sepia a:visited {
-  color: #902290;
-}
-
-.dark a:visited {
-  color: #D872D8;
+  font-size: 1.714rem;
+  line-height: 1.417;
+  margin: 0 16px;
 }
 
 blockquote {
-  border-left: 4px solid #eee;
+  border-left: 4px solid #888;
   padding-left: 1em;
 }
 
 cite {
-  opacity: .54;
+  opacity: .8;
   font-style: italic;
 }
 
@@ -253,18 +294,12 @@ hr {
   width: 75%;
 }
 
-h1 {
-  font-size: 1.7rem;
-  line-height: 1.296;
-  margin-bottom: 0.444rem;
-}
 
 q {
   opacity: .8;
   display:block;
   font-style: italic;
   font-weight: 600;
-  line-height: 1.444;
 }
 
 embed,
@@ -279,7 +314,7 @@ video {
 img {
   display: block;
   height: auto;
-  margin: 0 auto 0.6rem auto;
+  margin: 0.6rem auto 0.4rem 0;
 }
 
 /* TODO(nyquist): set these classes directly in the dom distiller. */
@@ -289,10 +324,11 @@ figcaption,
 img+[class*='caption'],
 object+[class*='caption'],
 video+[class*='caption'] {
-  opacity: .54;
+  opacity: .8;
   display: table;
-  font-style: italic;
-  margin: 0 auto;
+  margin-bottom: 1rem;
+  font-size: 0.857rem;
+  line-height: 1.667;
 }
 
 ol,
@@ -300,31 +336,19 @@ ul {
   margin-left: 1.296rem;
 }
 
-.light code,
-.light pre,
-.sepia code,
-.sepia pre {
-  background-color: #f8f8f8;
-  border: 1px solid #eee;
-  border-radius: 2px;
-}
-
-.dark code,
-.dark pre {
-  background-color: #333;
-  border: 1px solid #555;
+code, pre {
+  border: 1px solid;
   border-radius: 2px;
 }
 
 pre code {
   border: none;
-  padding: 0;
 }
 
 pre {
-  line-height: 1.296;
-  overflow-x: scroll;
+  line-height: 1.642;
   padding: .5em;
+  white-space: pre-wrap;
 }
 
 .hidden {
