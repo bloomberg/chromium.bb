@@ -7,8 +7,10 @@
 
 #include <set>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/html_viewer/html_document.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
@@ -18,7 +20,6 @@
 namespace html_viewer {
 
 class GlobalState;
-class HTMLDocument;
 class HTMLDocumentOOPIF;
 
 // ApplicationDelegate created by the content handler for a specific url.
@@ -29,6 +30,12 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
       mojo::URLResponsePtr response,
       GlobalState* global_state,
       scoped_ptr<mojo::AppRefCount> parent_app_refcount);
+
+  typedef base::Callback<HTMLDocument*(HTMLDocument::CreateParams*)>
+      HTMLDocumentCreationCallback;
+
+  void SetHTMLDocumentCreationCallback(
+      const HTMLDocumentCreationCallback& callback);
 
  private:
   class ServiceConnectorQueue;
@@ -69,6 +76,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   // As we create HTMLDocuments they are added here. They are removed when the
   // HTMLDocument is deleted.
   std::set<HTMLDocumentOOPIF*> documents2_;
+
+  HTMLDocumentCreationCallback html_document_creation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentApplicationDelegate);
 };

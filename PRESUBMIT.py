@@ -1044,6 +1044,8 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome_elf[\\\/]dll_hash[\\\/]dll_hash_main\.cc$",
                  r"^chromecast[\\\/]",
                  r"^cloud_print[\\\/]",
+                 r"^components[\\\/]html_viewer[\\\/]"
+                     r"web_test_delegate_impl\.cc$",
                  r"^content[\\\/]common[\\\/]gpu[\\\/]client[\\\/]"
                      r"gl_helper_benchmark\.cc$",
                  r"^courgette[\\\/]courgette_tool\.cc$",

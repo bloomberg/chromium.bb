@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "components/html_viewer/global_state.h"
-#include "components/html_viewer/html_document.h"
 #include "components/html_viewer/html_document_oopif.h"
 #include "components/html_viewer/html_viewer_switches.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -20,6 +19,10 @@ namespace {
 
 bool EnableOOPIFs() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kOOPIF);
+}
+
+HTMLDocument* CreateHTMLDocument(HTMLDocument::CreateParams* params) {
+  return new HTMLDocument(params);
 }
 
 }  // namespace
@@ -75,7 +78,8 @@ HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
       parent_app_refcount_(parent_app_refcount.Pass()),
       url_(response->url),
       initial_response_(response.Pass()),
-      global_state_(global_state) {
+      global_state_(global_state),
+      html_document_creation_callback_(base::Bind(CreateHTMLDocument)) {
 }
 
 HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
@@ -91,6 +95,11 @@ HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
   for (HTMLDocumentOOPIF* doc : documents2)
     doc->Destroy();
   DCHECK(documents2_.empty());
+}
+
+void HTMLDocumentApplicationDelegate::SetHTMLDocumentCreationCallback(
+    const HTMLDocumentCreationCallback& callback) {
+  html_document_creation_callback_ = callback;
 }
 
 // Callback from the quit closure. We key off this rather than
@@ -172,7 +181,7 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
         &app_, connection, response.Pass(), global_state_,
         base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted,
                    base::Unretained(this)));
-    HTMLDocument* document = new HTMLDocument(&params);
+    HTMLDocument* document = html_document_creation_callback_.Run(&params);
     documents_.insert(document);
   }
 

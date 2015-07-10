@@ -21,6 +21,10 @@ class ContentHandlerImpl : public mojo::ContentHandler {
                      mojo::InterfaceRequest<ContentHandler> request);
   ~ContentHandlerImpl() override;
 
+ protected:
+  GlobalState* global_state() const { return global_state_; }
+  mojo::ApplicationImpl* app() const { return app_; }
+
  private:
   // Overridden from ContentHandler:
   void StartApplication(mojo::InterfaceRequest<mojo::Application> request,

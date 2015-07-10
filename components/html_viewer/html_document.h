@@ -81,20 +81,10 @@ class HTMLDocument : public blink::WebViewClient,
   // Deletes this object.
   void Destroy();
 
- private:
-  // Data associated with a child iframe.
-  struct ChildFrameData {
-    mojo::View* view;
-    blink::WebTreeScopeType scope;
-  };
+  blink::WebView* web_view() const { return web_view_; }
 
+ protected:
   ~HTMLDocument() override;
-
-  // Updates the size and scale factor of the webview and related classes from
-  // |root_|.
-  void UpdateWebviewSizeFromViewSize();
-
-  void InitGlobalStateAndLoadIfNecessary();
 
   // WebViewClient methods:
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
@@ -129,6 +119,19 @@ class HTMLDocument : public blink::WebViewClient,
                                      const blink::WebHistoryItem& history_item,
                                      blink::WebHistoryCommitType commit_type);
   virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
+
+ private:
+  // Data associated with a child iframe.
+  struct ChildFrameData {
+    mojo::View* view;
+    blink::WebTreeScopeType scope;
+  };
+
+  // Updates the size and scale factor of the webview and related classes from
+  // |root_|.
+  void UpdateWebviewSizeFromViewSize();
+
+  void InitGlobalStateAndLoadIfNecessary();
 
   // ViewManagerDelegate methods:
   void OnEmbed(mojo::View* root) override;

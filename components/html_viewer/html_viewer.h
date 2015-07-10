@@ -21,9 +21,15 @@ class HTMLViewer : public mojo::ApplicationDelegate,
   HTMLViewer();
   ~HTMLViewer() override;
 
- private:
+ protected:
+  GlobalState* global_state() const { return global_state_.get(); }
+  mojo::ApplicationImpl* app() const { return app_; }
+
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
+
+ private:
+  // Overridden from ApplicationDelegate:
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 

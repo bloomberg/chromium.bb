@@ -49,4 +49,10 @@ specific_include_rules = {
     "+mandoline/tab",
     "+third_party/mojo/src/mojo/edk/embedder/test_embedder.h",
   ],
+  "layout_test_.*": [
+    "+components/test_runner",
+  ],
+  "web_test_delegate_impl\..*": [
+    "+components/test_runner",
+  ],
 }
