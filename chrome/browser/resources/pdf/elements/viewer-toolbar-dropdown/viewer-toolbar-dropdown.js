@@ -8,6 +8,9 @@
    */
   var DROPDOWN_INNER_PADDING = 12;
 
+  /** Size of vertical padding on the outer #dropdown element. */
+  var DROPDOWN_OUTER_PADDING = 2;
+
   /** Minimum height of toolbar dropdowns (px). */
   var MIN_DROPDOWN_HEIGHT = 300;
 
@@ -33,13 +36,13 @@
       /** Toolbar icon currently being displayed. */
       dropdownIcon: {
         type: String,
-        computed: 'computeIcon(dropdownOpen, closedIcon, openIcon)'
+        computed: 'computeIcon_(dropdownOpen, closedIcon, openIcon)'
       },
 
       /** Lowest vertical point that the dropdown should occupy (px). */
       lowerBound: {
         type: Number,
-        observer: 'lowerBoundChanged'
+        observer: 'lowerBoundChanged_'
       },
 
       /**
@@ -47,14 +50,17 @@
        * is valid. If false, the height will be updated the next time the
        * dropdown is visible.
        */
-      maxHeightValid_: false
+      maxHeightValid_: false,
+
+      /** Current animation being played, or null if there is none. */
+      animation_: Object
     },
 
-    computeIcon: function(dropdownOpen, closedIcon, openIcon) {
+    computeIcon_: function(dropdownOpen, closedIcon, openIcon) {
       return dropdownOpen ? openIcon : closedIcon;
     },
 
-    lowerBoundChanged: function() {
+    lowerBoundChanged_: function() {
       this.maxHeightValid_ = false;
       if (this.dropdownOpen)
         this.updateMaxHeight();
@@ -64,11 +70,14 @@
       this.dropdownOpen = !this.dropdownOpen;
       if (this.dropdownOpen) {
         this.$.icon.classList.add('open');
+        this.$.dropdown.style.display = 'block';
         if (!this.maxHeightValid_)
           this.updateMaxHeight();
       } else {
         this.$.icon.classList.remove('open');
       }
+      this.cancelAnimation_();
+      this.playAnimation_(this.dropdownOpen);
     },
 
     updateMaxHeight: function() {
@@ -79,6 +88,49 @@
       height = Math.max(height, MIN_DROPDOWN_HEIGHT);
       scrollContainer.style.maxHeight = height + 'px';
       this.maxHeightValid_ = true;
+    },
+
+    cancelAnimation_: function() {
+      if (this._animation)
+        this._animation.cancel();
+    },
+
+    /**
+     * Start an animation on the dropdown.
+     * @param {boolean} isEntry True to play entry animation, false to play
+     * exit.
+     * @private
+     */
+    playAnimation_: function(isEntry) {
+      this._animation = isEntry ? this.animateEntry_() : this.animateExit_();
+      this._animation.onfinish = function() {
+        this._animation = null;
+        if (!this.dropdownOpen)
+          this.$.dropdown.style.display = 'none';
+      }.bind(this);
+    },
+
+    animateEntry_: function() {
+      var maxHeight = this.$.dropdown.getBoundingClientRect().height -
+          DROPDOWN_OUTER_PADDING;
+
+      var fade = new KeyframeEffect(this.$.dropdown, [
+            {opacity: 0},
+            {opacity: 1}
+          ], {duration: 150, easing: 'cubic-bezier(0, 0, 0.2, 1)'});
+      var slide = new KeyframeEffect(this.$.dropdown, [
+            {height: '20px', transform: 'translateY(-10px)'},
+            {height: maxHeight + 'px', transform: 'translateY(0)'}
+          ], {duration: 250, easing: 'cubic-bezier(0, 0, 0.2, 1)'});
+
+      return document.timeline.play(new GroupEffect([fade, slide]));
+    },
+
+    animateExit_: function() {
+      return this.$.dropdown.animate([
+            {transform: 'translateY(0)', opacity: 1},
+            {transform: 'translateY(-5px)', opacity: 0}
+          ], {duration: 100, easing: 'cubic-bezier(0.4, 0, 1, 1)'});
     }
   });
 
