@@ -24,6 +24,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
+#include "device/hid/hid_device_info_linux.h"
 #endif  // defined(OS_CHROMEOS)
 
 using device::HidDeviceFilter;
@@ -239,8 +240,10 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       chromeos::PermissionBrokerClient* client =
           chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
       DCHECK(client) << "Could not get permission broker client.";
+      device::HidDeviceInfoLinux* linux_device_info =
+          static_cast<device::HidDeviceInfoLinux*>(device.get());
       client->CheckPathAccess(
-          device->device_id(),
+          linux_device_info->device_node(),
           base::Bind(&HidDevicePermissionsPrompt::AddCheckedDevice, this,
                      base::Passed(&device_info)));
 #else
