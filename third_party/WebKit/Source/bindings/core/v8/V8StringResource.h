@@ -120,8 +120,8 @@ public:
         ASSERT(!string.is8Bit());
     }
 
-    virtual size_t length() const override { return m_plainString.impl()->length(); }
-    virtual const uint16_t* data() const override
+    size_t length() const override { return m_plainString.impl()->length(); }
+    const uint16_t* data() const override
     {
         return reinterpret_cast<const uint16_t*>(m_plainString.impl()->characters16());
     }
@@ -141,8 +141,8 @@ public:
         ASSERT(string.is8Bit());
     }
 
-    virtual size_t length() const override { return m_plainString.impl()->length(); }
-    virtual const char* data() const override
+    size_t length() const override { return m_plainString.impl()->length(); }
+    const char* data() const override
     {
         return reinterpret_cast<const char*>(m_plainString.impl()->characters8());
     }

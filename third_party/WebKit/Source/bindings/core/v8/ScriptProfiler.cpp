@@ -143,7 +143,7 @@ class ActivityControlAdapter final : public v8::ActivityControl {
 public:
     ActivityControlAdapter(ScriptProfiler::HeapSnapshotProgress* progress)
         : m_progress(progress), m_firstReport(true) { }
-    virtual ControlOption ReportProgressValue(int done, int total) override
+    ControlOption ReportProgressValue(int done, int total) override
     {
         ControlOption result = m_progress->isCanceled() ? kAbort : kContinue;
         if (m_firstReport) {
@@ -163,7 +163,7 @@ private:
 
 class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolver {
 public:
-    virtual const char* GetName(v8::Local<v8::Object> object) override
+    const char* GetName(v8::Local<v8::Object> object) override
     {
         DOMWindow* window = toDOMWindow(v8::Isolate::GetCurrent(), object);
         if (!window)
@@ -189,15 +189,15 @@ namespace {
 class HeapStatsStream : public v8::OutputStream {
 public:
     HeapStatsStream(ScriptProfiler::OutputStream* stream) : m_stream(stream) { }
-    virtual void EndOfStream() override { }
+    void EndOfStream() override { }
 
-    virtual WriteResult WriteAsciiChunk(char* data, int size) override
+    WriteResult WriteAsciiChunk(char* data, int size) override
     {
         ASSERT(false);
         return kAbort;
     }
 
-    virtual WriteResult WriteHeapStatsChunk(v8::HeapStatsUpdate* updateData, int count) override
+    WriteResult WriteHeapStatsChunk(v8::HeapStatsUpdate* updateData, int count) override
     {
         Vector<uint32_t> rawData(count * 3);
         for (int i = 0; i < count; ++i) {

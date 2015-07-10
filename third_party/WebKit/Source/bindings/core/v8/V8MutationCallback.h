@@ -45,10 +45,10 @@ public:
     {
         return adoptPtrWillBeNoop(new V8MutationCallback(callback, owner, scriptState));
     }
-    virtual ~V8MutationCallback();
+    ~V8MutationCallback() override;
 
-    virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord>>&, MutationObserver*) override;
-    virtual ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord>>&, MutationObserver*) override;
+    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -67,9 +67,9 @@ public:
         return adoptRefWillBeNoop(new V8NodeFilterCondition(filter, owner, scriptState));
     }
 
-    virtual ~V8NodeFilterCondition();
+    ~V8NodeFilterCondition() override;
 
-    virtual unsigned acceptNode(Node*, ExceptionState&) const override;
+    unsigned acceptNode(Node*, ExceptionState&) const override;
 
 private:
     // As the value |filter| is maintained by V8GC, the |owner| which references

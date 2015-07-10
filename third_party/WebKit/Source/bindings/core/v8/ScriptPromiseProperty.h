@@ -54,7 +54,7 @@ public:
     template<typename PassHolderType>
     ScriptPromiseProperty(ExecutionContext*, PassHolderType, Name);
 
-    virtual ~ScriptPromiseProperty() { }
+    ~ScriptPromiseProperty() override { }
 
     template<typename PassResolvedType>
     void resolve(PassResolvedType);
@@ -71,9 +71,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual v8::Local<v8::Object> holder(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
-    virtual v8::Local<v8::Value> resolvedValue(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
-    virtual v8::Local<v8::Value> rejectedValue(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+    v8::Local<v8::Object> holder(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+    v8::Local<v8::Value> resolvedValue(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+    v8::Local<v8::Value> rejectedValue(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
 
     HolderType m_holder;
     ResolvedType m_resolved;

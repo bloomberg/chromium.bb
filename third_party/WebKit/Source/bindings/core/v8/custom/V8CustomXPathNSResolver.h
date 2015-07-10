@@ -47,7 +47,7 @@ class V8CustomXPathNSResolver final : public XPathNSResolver {
 public:
     static V8CustomXPathNSResolver* create(ScriptState*, v8::Local<v8::Object> resolver);
 
-    virtual AtomicString lookupNamespaceURI(const String& prefix) override;
+    AtomicString lookupNamespaceURI(const String& prefix) override;
 
     DECLARE_VIRTUAL_TRACE();
 

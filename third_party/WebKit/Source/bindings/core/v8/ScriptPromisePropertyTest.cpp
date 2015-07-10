@@ -44,7 +44,7 @@ private:
     {
     }
 
-    virtual ScriptValue call(ScriptValue) override;
+    ScriptValue call(ScriptValue) override;
 };
 
 ScriptValue NotReached::call(ScriptValue)
@@ -69,7 +69,7 @@ private:
     {
     }
 
-    virtual ScriptValue call(ScriptValue arg) override
+    ScriptValue call(ScriptValue arg) override
     {
         m_value = arg;
         m_callCount++;
@@ -187,7 +187,7 @@ public:
     Property* property() { return m_holder->property(); }
     ScriptPromise promise(DOMWrapperWorld& world) { return property()->promise(world); }
 
-    virtual void destroyContext() override
+    void destroyContext() override
     {
         m_holder = nullptr;
         ScriptPromisePropertyTestBase::destroyContext();

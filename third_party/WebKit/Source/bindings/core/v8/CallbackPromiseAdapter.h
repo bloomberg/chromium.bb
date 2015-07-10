@@ -81,10 +81,10 @@ public:
     {
         ASSERT(m_resolver);
     }
-    virtual ~CallbackPromiseAdapter() { }
+    ~CallbackPromiseAdapter() override { }
 
     // Takes ownership of |result|.
-    virtual void onSuccess(typename S::WebType* result) override
+    void onSuccess(typename S::WebType* result) override
     {
         OwnPtr<typename S::WebType> ownPtr = adoptPtr(result);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
@@ -97,7 +97,7 @@ public:
     }
 
     // Takes ownership of |error|.
-    virtual void onError(typename T::WebType* error) override
+    void onError(typename T::WebType* error) override
     {
         OwnPtr<typename T::WebType> ownPtr = adoptPtr(error);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
@@ -118,9 +118,9 @@ public:
     {
         ASSERT(m_resolver);
     }
-    virtual ~CallbackPromiseAdapter() { }
+    ~CallbackPromiseAdapter() override { }
 
-    virtual void onSuccess() override
+    void onSuccess() override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
@@ -128,7 +128,7 @@ public:
     }
 
     // Takes ownership of |error|.
-    virtual void onError(typename T::WebType* error) override
+    void onError(typename T::WebType* error) override
     {
         OwnPtr<typename T::WebType> ownPtr = adoptPtr(error);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
@@ -149,10 +149,10 @@ public:
     {
         ASSERT(m_resolver);
     }
-    virtual ~CallbackPromiseAdapter() { }
+    ~CallbackPromiseAdapter() override { }
 
     // Takes ownership of |result|.
-    virtual void onSuccess(typename S::WebType* result) override
+    void onSuccess(typename S::WebType* result) override
     {
         OwnPtr<typename S::WebType> ownPtr = adoptPtr(result);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
@@ -160,7 +160,7 @@ public:
         m_resolver->resolve(S::take(m_resolver.get(), ownPtr.release()));
     }
 
-    virtual void onError() override
+    void onError() override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
@@ -180,11 +180,11 @@ public:
     {
         ASSERT(m_resolver);
     }
-    virtual ~CallbackPromiseAdapter() { }
+    ~CallbackPromiseAdapter() override { }
 
     // TODO(nhiroki): onSuccess should take ownership of a bool object for
     // consistency. (http://crbug.com/493531)
-    virtual void onSuccess(bool* result) override
+    void onSuccess(bool* result) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
@@ -192,7 +192,7 @@ public:
     }
 
     // Takes ownership of |error|.
-    virtual void onError(typename T::WebType* error) override
+    void onError(typename T::WebType* error) override
     {
         OwnPtr<typename T::WebType> ownPtr = adoptPtr(error);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
@@ -213,16 +213,16 @@ public:
     {
         ASSERT(m_resolver);
     }
-    virtual ~CallbackPromiseAdapter() { }
+    ~CallbackPromiseAdapter() override { }
 
-    virtual void onSuccess() override
+    void onSuccess() override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve();
     }
 
-    virtual void onError() override
+    void onError() override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
@@ -242,18 +242,18 @@ public:
     {
         ASSERT(m_resolver);
     }
-    virtual ~CallbackPromiseAdapter() { }
+    ~CallbackPromiseAdapter() override { }
 
     // TODO(nhiroki): onSuccess should take ownership of a bool object for
     // consistency. (http://crbug.com/493531)
-    virtual void onSuccess(bool* result) override
+    void onSuccess(bool* result) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve(*result);
     }
 
-    virtual void onError() override
+    void onError() override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;

@@ -48,7 +48,7 @@ public:
     {
     }
 
-    virtual bool read(v8::Local<v8::Value>*, ScriptValueCompositeCreator&) override;
+    bool read(v8::Local<v8::Value>*, ScriptValueCompositeCreator&) override;
 
 private:
     bool readDOMFileSystem(v8::Local<v8::Value>*);
@@ -73,7 +73,7 @@ public:
     ScriptValueSerializerForModules(SerializedScriptValueWriter&, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
 
 private:
-    virtual ScriptValueSerializer::StateBase* doSerializeValue(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next) override;
+    ScriptValueSerializer::StateBase* doSerializeValue(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next) override;
 
     ScriptValueSerializer::StateBase* writeDOMFileSystem(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next);
     bool writeCryptoKey(v8::Local<v8::Value>);
@@ -86,7 +86,7 @@ public:
     ScriptValueDeserializerForModules(SerializedScriptValueReaderForModules&, MessagePortArray* messagePorts, ArrayBufferContentsArray*);
 
 private:
-    virtual bool read(v8::Local<v8::Value>*) override;
+    bool read(v8::Local<v8::Value>*) override;
 };
 
 } // namespace blink

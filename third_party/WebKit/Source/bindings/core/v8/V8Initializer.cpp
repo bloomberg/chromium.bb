@@ -367,21 +367,21 @@ static void initializeV8Common(v8::Isolate* isolate)
 namespace {
 
 class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
-    virtual void* Allocate(size_t size) override
+    void* Allocate(size_t size) override
     {
         void* data;
         WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::ZeroInitialize, data);
         return data;
     }
 
-    virtual void* AllocateUninitialized(size_t size) override
+    void* AllocateUninitialized(size_t size) override
     {
         void* data;
         WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::DontInitialize, data);
         return data;
     }
 
-    virtual void Free(void* data, size_t size) override
+    void Free(void* data, size_t size) override
     {
         WTF::ArrayBufferContents::freeMemory(data, size);
     }

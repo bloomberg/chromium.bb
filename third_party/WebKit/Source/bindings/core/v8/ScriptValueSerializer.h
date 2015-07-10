@@ -242,7 +242,7 @@ protected:
         {
         }
 
-        virtual StateBase* advance(ScriptValueSerializer&) override
+        StateBase* advance(ScriptValueSerializer&) override
         {
             delete this;
             return 0;
@@ -291,10 +291,10 @@ protected:
         {
         }
 
-        virtual StateBase* advance(ScriptValueSerializer&) override;
+        StateBase* advance(ScriptValueSerializer&) override;
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
+        StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
     };
 
     class DenseArrayState final : public AbstractObjectState {
@@ -307,10 +307,10 @@ protected:
             m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
         }
 
-        virtual StateBase* advance(ScriptValueSerializer&) override;
+        StateBase* advance(ScriptValueSerializer&) override;
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
+        StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
 
     private:
         uint32_t m_arrayIndex;
@@ -325,10 +325,10 @@ protected:
             m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
         }
 
-        virtual StateBase* advance(ScriptValueSerializer&) override;
+        StateBase* advance(ScriptValueSerializer&) override;
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
+        StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
     };
 
     template <typename T>
@@ -342,7 +342,7 @@ protected:
         {
         }
 
-        virtual StateBase* advance(ScriptValueSerializer&) override;
+        StateBase* advance(ScriptValueSerializer&) override;
 
     private:
         v8::Local<v8::Array> m_entries;
@@ -574,22 +574,22 @@ public:
     }
 
     v8::Local<v8::Value> deserialize();
-    virtual bool newSparseArray(uint32_t) override;
-    virtual bool newDenseArray(uint32_t length) override;
-    virtual bool newMap() override;
-    virtual bool newSet() override;
-    virtual bool consumeTopOfStack(v8::Local<v8::Value>*) override;
-    virtual bool newObject() override;
-    virtual bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*) override;
-    virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
-    virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
-    virtual bool completeMap(uint32_t length, v8::Local<v8::Value>*) override;
-    virtual bool completeSet(uint32_t length, v8::Local<v8::Value>*) override;
-    virtual void pushObjectReference(const v8::Local<v8::Value>&) override;
-    virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) override;
-    virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
-    virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) override;
-    virtual uint32_t objectReferenceCount() override;
+    bool newSparseArray(uint32_t) override;
+    bool newDenseArray(uint32_t length) override;
+    bool newMap() override;
+    bool newSet() override;
+    bool consumeTopOfStack(v8::Local<v8::Value>*) override;
+    bool newObject() override;
+    bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*) override;
+    bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
+    bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
+    bool completeMap(uint32_t length, v8::Local<v8::Value>*) override;
+    bool completeSet(uint32_t length, v8::Local<v8::Value>*) override;
+    void pushObjectReference(const v8::Local<v8::Value>&) override;
+    bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) override;
+    bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
+    bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) override;
+    uint32_t objectReferenceCount() override;
 
 protected:
     SerializedScriptValueReader& reader() { return m_reader; }

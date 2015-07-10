@@ -51,7 +51,7 @@ class V8CustomElementLifecycleCallbacks final : public CustomElementLifecycleCal
 public:
     static PassRefPtrWillBeRawPtr<V8CustomElementLifecycleCallbacks> create(ScriptState*, v8::Local<v8::Object> prototype, v8::MaybeLocal<v8::Function> created, v8::MaybeLocal<v8::Function> attached, v8::MaybeLocal<v8::Function> detached, v8::MaybeLocal<v8::Function> attributeChanged);
 
-    virtual ~V8CustomElementLifecycleCallbacks();
+    ~V8CustomElementLifecycleCallbacks() override;
 
     bool setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding>);
 
@@ -60,10 +60,10 @@ public:
 private:
     V8CustomElementLifecycleCallbacks(ScriptState*, v8::Local<v8::Object> prototype, v8::MaybeLocal<v8::Function> created, v8::MaybeLocal<v8::Function> attached, v8::MaybeLocal<v8::Function> detached, v8::MaybeLocal<v8::Function> attributeChanged);
 
-    virtual void created(Element*) override;
-    virtual void attached(Element*) override;
-    virtual void detached(Element*) override;
-    virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) override;
+    void created(Element*) override;
+    void attached(Element*) override;
+    void detached(Element*) override;
+    void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) override;
 
     void call(const ScopedPersistent<v8::Function>& weakCallback, Element*);
 

@@ -53,7 +53,7 @@ class Event;
 // but ALLOWs duplicated non-HTML event handlers.
 class CORE_EXPORT V8AbstractEventListener : public EventListener {
 public:
-    virtual ~V8AbstractEventListener();
+    ~V8AbstractEventListener() override;
 
     static const V8AbstractEventListener* cast(const EventListener* listener)
     {
@@ -69,9 +69,9 @@ public:
 
     // Implementation of EventListener interface.
 
-    virtual bool operator==(const EventListener& other) override { return this == &other; }
+    bool operator==(const EventListener& other) override { return this == &other; }
 
-    virtual void handleEvent(ExecutionContext*, Event*) override final;
+    void handleEvent(ExecutionContext*, Event*) final;
     virtual void handleEvent(ScriptState*, Event*);
 
     // Returns the listener object, either a function or an object.
@@ -108,7 +108,7 @@ public:
         m_listener.clear();
     }
 
-    virtual bool belongsToTheCurrentWorld() const override final;
+    bool belongsToTheCurrentWorld() const final;
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
 
@@ -126,7 +126,7 @@ protected:
 
 private:
     // Implementation of EventListener function.
-    virtual bool virtualisAttribute() const override { return m_isAttribute; }
+    bool virtualisAttribute() const override { return m_isAttribute; }
 
     // This could return an empty handle and callers need to check return value.
     // We don't use v8::MaybeLocal because it can fail without exception.

@@ -17,12 +17,12 @@ public:
         return new {{v8_class}}(callback, scriptState);
     }
 
-    virtual ~{{v8_class}}();
+    ~{{v8_class}}() override;
 
     DECLARE_VIRTUAL_TRACE();
 
 {% for method in methods %}
-    virtual {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) override;
+    {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) override;
 {% endfor %}
 private:
     {{exported}}{{v8_class}}(v8::Local<v8::Function>, ScriptState*);

@@ -16,8 +16,8 @@ namespace blink {
 class ScriptStateForTesting : public ScriptState {
 public:
     static PassRefPtr<ScriptStateForTesting> create(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-    virtual ExecutionContext* executionContext() const override;
-    virtual void setExecutionContext(ExecutionContext*) override;
+    ExecutionContext* executionContext() const override;
+    void setExecutionContext(ExecutionContext*) override;
 private:
     ScriptStateForTesting(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
     ExecutionContext* m_executionContext;

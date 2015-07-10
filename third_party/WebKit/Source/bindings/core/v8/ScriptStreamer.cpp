@@ -172,11 +172,11 @@ public:
     {
     }
 
-    virtual ~SourceStream() { }
+    virtual ~SourceStream() override { }
 
     // Called by V8 on a background thread. Should block until we can return
     // some data.
-    virtual size_t GetMoreData(const uint8_t** src) override
+    size_t GetMoreData(const uint8_t** src) override
     {
         ASSERT(!isMainThread());
         {
@@ -197,7 +197,7 @@ public:
     }
 
     // Called by V8 on background thread.
-    virtual bool SetBookmark() override
+    bool SetBookmark() override
     {
         ASSERT(!isMainThread());
         m_bookmarkPosition = m_queueLeadPosition;
@@ -205,7 +205,7 @@ public:
     }
 
     // Called by V8 on background thread.
-    virtual void ResetToBookmark() override
+    void ResetToBookmark() override
     {
         ASSERT(!isMainThread());
         {

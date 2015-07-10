@@ -196,7 +196,7 @@ private:
 // class has a corresponding .idl file.
 #define DEFINE_WRAPPERTYPEINFO()                \
 public: \
-    virtual const WrapperTypeInfo* wrapperTypeInfo() const override \
+    const WrapperTypeInfo* wrapperTypeInfo() const override \
     { \
         return &s_wrapperTypeInfo; \
     } \
@@ -214,7 +214,7 @@ private: \
 // must not.
 #define DEFINE_WRAPPERTYPEINFO_NOT_REACHED() \
 public: \
-    virtual const WrapperTypeInfo* wrapperTypeInfo() const override \
+    const WrapperTypeInfo* wrapperTypeInfo() const override \
     { \
         ASSERT_NOT_REACHED(); \
         return 0; \
@@ -235,7 +235,7 @@ private: \
 // in X's cpp code, and instantiate X, i.e. "template class X;".
 #define DECLARE_WRAPPERTYPEINFO() \
 public: \
-    virtual const WrapperTypeInfo* wrapperTypeInfo() const override; \
+    const WrapperTypeInfo* wrapperTypeInfo() const override; \
 private: \
     typedef void end_of_define_wrappertypeinfo_not_reached_t
 

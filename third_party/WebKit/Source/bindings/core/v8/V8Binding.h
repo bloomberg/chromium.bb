@@ -1031,7 +1031,7 @@ public:
         interruptor->onInterrupted();
     }
 
-    virtual void requestInterrupt() override
+    void requestInterrupt() override
     {
         m_isolate->RequestInterrupt(&onInterruptCallback, this);
     }

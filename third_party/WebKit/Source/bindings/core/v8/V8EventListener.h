@@ -51,7 +51,7 @@ public:
 protected:
     V8EventListener(v8::Local<v8::Object> listener, bool isAttribute, ScriptState*);
     v8::Local<v8::Function> getListenerFunction(ScriptState*);
-    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;
+    v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;
 };
 
 } // namespace blink

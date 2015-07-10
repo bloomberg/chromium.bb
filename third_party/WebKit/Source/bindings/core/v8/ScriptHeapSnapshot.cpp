@@ -51,9 +51,9 @@ class OutputStreamAdapter final : public v8::OutputStream {
 public:
     OutputStreamAdapter(ScriptHeapSnapshot::OutputStream* output)
         : m_output(output) { }
-    virtual void EndOfStream() override { m_output->Close(); }
-    virtual int GetChunkSize() override { return 102400; }
-    virtual WriteResult WriteAsciiChunk(char* data, int size) override
+    void EndOfStream() override { m_output->Close(); }
+    int GetChunkSize() override { return 102400; }
+    WriteResult WriteAsciiChunk(char* data, int size) override
     {
         m_output->Write(String(data, size));
         return kContinue;
