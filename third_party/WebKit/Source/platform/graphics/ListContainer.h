@@ -151,6 +151,7 @@ protected:
     bool empty() const;
 
     size_t maxSizeForDerivedClass() const;
+    size_t getCapacityInBytes() const;
 
     // Unlike the ListContainer method, this one does not invoke element destructors.
     void clear();
@@ -300,6 +301,7 @@ public:
 
     using ListContainerBase::size;
     using ListContainerBase::empty;
+    using ListContainerBase::getCapacityInBytes;
 
     void clear()
     {

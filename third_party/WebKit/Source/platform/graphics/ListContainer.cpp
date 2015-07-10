@@ -124,8 +124,8 @@ public:
     size_t capacity() const
     {
         size_t capacitySum = 0;
-        for (Vector<OwnPtr<InnerList>>::const_iterator iter = m_storage.begin(); iter != m_storage.end(); ++iter)
-            capacitySum += (*iter)->capacity;
+        for (const auto& innerList : m_storage)
+            capacitySum += innerList->capacity;
         return capacitySum;
     }
 
@@ -429,6 +429,11 @@ bool ListContainerBase::empty() const
 size_t ListContainerBase::maxSizeForDerivedClass() const
 {
     return m_data->elementSize();
+}
+
+size_t ListContainerBase::getCapacityInBytes() const
+{
+    return m_data->capacity() * m_data->elementSize();
 }
 
 void ListContainerBase::clear()
