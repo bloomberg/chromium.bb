@@ -3111,6 +3111,9 @@
             # TODO(mgiuca): Move this suppression into individual third-party
             # libraries as required. http://crbug.com/505301.
             '-Wno-overloaded-virtual',
+            # Lots of third-party libraries have unused variables. Instead of
+            # suppressing them individually, we just blanket suppress them here.
+            '-Wno-unused-variable',
           ],
         },
         'conditions': [
@@ -5734,7 +5737,6 @@
                   '-Wno-unused-function',  # http://crbug.com/505316
                   '-Wno-unused-private-field',  # http://crbug.com/505317
                   '-Wno-unused-value',  # http://crbug.com/505318
-                  '-Wno-unused-variable',  # http://crbug.com/505319
                   '-Wno-unused-local-typedef',  # http://crbug.com/411648
                 ],
               },
