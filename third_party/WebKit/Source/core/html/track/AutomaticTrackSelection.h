@@ -5,6 +5,7 @@
 #ifndef AutomaticTrackSelection_h
 #define AutomaticTrackSelection_h
 
+#include "core/html/track/TextTrackKindUserPreference.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -18,10 +19,12 @@ public:
     struct Configuration {
         Configuration()
             : disableCurrentlyEnabledTracks(false)
-            , forceEnableSubtitleOrCaptionTrack(false) { }
+            , forceEnableSubtitleOrCaptionTrack(false)
+            , textTrackKindUserPreference(TextTrackKindUserPreference::Default) { }
 
         bool disableCurrentlyEnabledTracks;
         bool forceEnableSubtitleOrCaptionTrack;
+        TextTrackKindUserPreference textTrackKindUserPreference;
     };
 
     AutomaticTrackSelection(const Configuration&);
@@ -31,6 +34,7 @@ public:
 private:
     void performAutomaticTextTrackSelection(const TrackGroup&);
     void enableDefaultMetadataTextTracks(const TrackGroup&);
+    const AtomicString& preferredTrackKind() const;
 
     const Configuration m_configuration;
 };

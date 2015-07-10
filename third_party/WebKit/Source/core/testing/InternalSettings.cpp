@@ -291,6 +291,23 @@ void InternalSettings::setTextAutosizingWindowSizeOverride(int width, int height
     settings()->setTextAutosizingWindowSizeOverride(IntSize(width, height));
 }
 
+void InternalSettings::setTextTrackKindUserPreference(const String& preference, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    String token = preference.stripWhiteSpace();
+    TextTrackKindUserPreference userPreference = TextTrackKindUserPreference::Default;
+    if (token == "default")
+        userPreference = TextTrackKindUserPreference::Default;
+    else if (token == "captions")
+        userPreference = TextTrackKindUserPreference::Captions;
+    else if (token == "subtitles")
+        userPreference = TextTrackKindUserPreference::Subtitles;
+    else
+        exceptionState.throwDOMException(SyntaxError, "The user preference for text track kind " + preference + ")' is invalid.");
+
+    settings()->setTextTrackKindUserPreference(userPreference);
+}
+
 void InternalSettings::setMediaTypeOverride(const String& mediaType, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();

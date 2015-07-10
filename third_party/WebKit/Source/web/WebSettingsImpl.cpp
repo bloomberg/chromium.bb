@@ -384,6 +384,11 @@ void WebSettingsImpl::setXSSAuditorEnabled(bool enabled)
     m_settings->setXSSAuditorEnabled(enabled);
 }
 
+void WebSettingsImpl::setTextTrackKindUserPreference(TextTrackKindUserPreference preference)
+{
+    m_settings->setTextTrackKindUserPreference(static_cast<blink::TextTrackKindUserPreference>(preference));
+}
+
 void WebSettingsImpl::setTextTrackBackgroundColor(const WebString& color)
 {
     m_settings->setTextTrackBackgroundColor(color);

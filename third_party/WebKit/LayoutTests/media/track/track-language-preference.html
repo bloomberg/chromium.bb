@@ -76,6 +76,7 @@
 
                 consoleWrite("<i>**Set user preferred languages<" + "/i>");
                 run("internals.setUserPreferredLanguages(['jp', 'es-ES', 'en', 'fr'])");
+                window.internals.settings.setTextTrackKindUserPreference('captions');
             }
             
             function createTrackElement(language, src)
@@ -103,7 +104,7 @@
             {
                 findMediaElement();
 
-                setPreferences("Subtitles", true);
+                setPreferences();
 
                 runNextTest();
             }

@@ -60,6 +60,7 @@ public:
         AcceleratedCompositingChange,
         MediaQueryChange,
         AccessibilityStateChange,
+        TextTrackKindUserPreferenceChange,
     };
 
     virtual void settingsChanged(ChangeType) = 0;

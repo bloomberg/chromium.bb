@@ -34,6 +34,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
@@ -493,6 +494,15 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
             if (!doc || !doc->styleResolver())
                 break;
             doc->styleResolver()->viewportStyleResolver()->collectViewportRules();
+        }
+        break;
+    case SettingsDelegate::TextTrackKindUserPreferenceChange:
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame()) {
+                Document* doc = toLocalFrame(frame)->document();
+                if (doc)
+                    HTMLMediaElement::setTextTrackKindUserPreferenceForAllMediaElements(doc);
+            }
         }
         break;
     }

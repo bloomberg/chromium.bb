@@ -108,6 +108,7 @@ public:
     void setMockScrollbarsEnabled(bool, ExceptionState&);
     void setMockGestureTapHighlightsEnabled(bool, ExceptionState&);
     void setTextAutosizingEnabled(bool, ExceptionState&);
+    void setTextTrackKindUserPreference(const String& preference, ExceptionState&);
     void setAccessibilityFontScaleFactor(float fontScaleFactor, ExceptionState&);
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);
     void setViewportEnabled(bool, ExceptionState&);

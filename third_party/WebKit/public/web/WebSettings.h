@@ -97,6 +97,16 @@ public:
         Direction
     };
 
+    // Defines user preference for text track kind.
+    enum class TextTrackKindUserPreference {
+        // Display only tracks marked as default
+        Default,
+        // If available, display captions track in preferred language, else display subtitles.
+        Captions,
+        // If available, display subtitles track in preferred language, else display captions.
+        Subtitles
+    };
+
     // Sets value of a setting by its string identifier from Settings.in and
     // string representation of value. An enum's string representation is the
     // string representation of the integer value of the enum.
@@ -233,6 +243,7 @@ public:
     virtual void setTextAreasAreResizable(bool) = 0;
     virtual void setTextAutosizingEnabled(bool) = 0;
     virtual void setAccessibilityFontScaleFactor(float) = 0;
+    virtual void setTextTrackKindUserPreference(TextTrackKindUserPreference) = 0;
     virtual void setTextTrackBackgroundColor(const WebString&) = 0;
     virtual void setTextTrackFontFamily(const WebString&) = 0;
     virtual void setTextTrackFontStyle(const WebString&) = 0;

@@ -229,6 +229,9 @@ public:
     bool closedCaptionsVisible() const;
     void setClosedCaptionsVisible(bool);
 
+    static void setTextTrackKindUserPreferenceForAllMediaElements(Document*);
+    void automaticTrackSelectionForUpdatedUserPreference();
+
     void remoteRouteAvailabilityChanged(bool);
     void connectedToRemoteDevice();
     void disconnectedFromRemoteDevice();

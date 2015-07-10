@@ -339,6 +339,10 @@ logPreload initial=false
 # Android, and dynamically set by the inspector for mobile emulation.
 useMobileViewportStyle initial=false, invalidate=ViewportRule
 
+# Automatic track selection is performed based on user preference for track kind specified
+# by this setting.
+textTrackKindUserPreference type=TextTrackKindUserPreference, initial=TextTrackKindUserPreference::Default, invalidate=TextTrackKindUserPreference
+
 # User style overrides for captions and subtitles
 textTrackBackgroundColor type=String
 textTrackFontFamily type=String

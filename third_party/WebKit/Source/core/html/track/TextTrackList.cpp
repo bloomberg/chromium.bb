@@ -319,6 +319,15 @@ void TextTrackList::scheduleRemoveTrackEvent(PassRefPtrWillBeRawPtr<TextTrack> t
     scheduleTrackEvent(EventTypeNames::removetrack, track);
 }
 
+bool TextTrackList::hasShowingTracks()
+{
+    for (unsigned i = 0; i < length(); ++i) {
+        if (item(i)->mode() == TextTrack::showingKeyword())
+            return true;
+    }
+    return false;
+}
+
 HTMLMediaElement* TextTrackList::owner() const
 {
     return m_owner;

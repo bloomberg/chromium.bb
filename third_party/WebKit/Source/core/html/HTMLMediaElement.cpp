@@ -2490,6 +2490,10 @@ void HTMLMediaElement::honorUserPreferencesForAutomaticTextTrackSelection()
     if (m_closedCaptionsVisible)
         configuration.forceEnableSubtitleOrCaptionTrack = true;
 
+    Settings* settings = document().settings();
+    if (settings)
+        configuration.textTrackKindUserPreference = settings->textTrackKindUserPreference();
+
     AutomaticTrackSelection trackSelection(configuration);
     trackSelection.perform(*m_textTracks);
 
@@ -3266,6 +3270,27 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
     updateTextTrackDisplay();
 }
 
+void HTMLMediaElement::setTextTrackKindUserPreferenceForAllMediaElements(Document* document)
+{
+    WeakMediaElementSet elements = documentToElementSetMap().get(document);
+    for (const auto& element : elements)
+        element->automaticTrackSelectionForUpdatedUserPreference();
+}
+
+void HTMLMediaElement::automaticTrackSelectionForUpdatedUserPreference()
+{
+    markCaptionAndSubtitleTracksAsUnconfigured();
+    m_processingPreferenceChange = true;
+    m_closedCaptionsVisible = false;
+    honorUserPreferencesForAutomaticTextTrackSelection();
+    m_processingPreferenceChange = false;
+
+    // If a track is set to 'showing' post performing automatic track selection,
+    // set closed captions state to visible to update the CC button and display the track.
+    m_closedCaptionsVisible = m_textTracks->hasShowingTracks();
+    updateTextTrackDisplay();
+}
+
 void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
 {
     if (!m_textTracks)
@@ -3385,13 +3410,7 @@ void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assu
     if (m_processingPreferenceChange)
         return;
 
-    bool haveVisibleTextTrack = false;
-    for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-        if (m_textTracks->item(i)->mode() == TextTrack::showingKeyword()) {
-            haveVisibleTextTrack = true;
-            break;
-        }
-    }
+    bool haveVisibleTextTrack = m_textTracks->hasShowingTracks();
 
     if (assumption == AssumeNoVisibleChange
         && m_haveVisibleTextTrack == haveVisibleTextTrack) {

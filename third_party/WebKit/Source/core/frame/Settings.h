@@ -34,6 +34,7 @@
 #include "core/editing/EditingBehaviorTypes.h"
 #include "core/editing/SelectionStrategy.h"
 #include "core/frame/SettingsDelegate.h"
+#include "core/html/track/TextTrackKindUserPreference.h"
 #include "platform/Timer.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
 #include "platform/geometry/IntSize.h"

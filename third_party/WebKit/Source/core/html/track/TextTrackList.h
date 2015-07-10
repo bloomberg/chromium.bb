@@ -76,6 +76,8 @@ public:
     void scheduleChangeEvent();
     void removeAllInbandTracks();
 
+    bool hasShowingTracks();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
