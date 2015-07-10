@@ -11,6 +11,10 @@
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 
+namespace dbus {
+class FileDescriptor;
+}
+
 namespace device {
 
 class HidConnection;
@@ -38,11 +42,15 @@ class HidServiceLinux : public HidService {
   // functions are static and the necessary parameters are passed as a single
   // struct.
 #if defined(OS_CHROMEOS)
-  static void OnRequestPathAccessComplete(scoped_ptr<ConnectParams> params,
-                                          bool success);
-#endif  // defined(OS_CHROMEOS)
-  static void OpenDevice(scoped_ptr<ConnectParams> params);
-  static void ConnectImpl(scoped_ptr<ConnectParams> params);
+  static void OnPathOpened(scoped_ptr<ConnectParams> params,
+                           dbus::FileDescriptor fd);
+  static void ValidateFdOnBlockingThread(scoped_ptr<ConnectParams> params,
+                                         dbus::FileDescriptor fd);
+#else
+  static void OpenOnBlockingThread(scoped_ptr<ConnectParams> params);
+#endif
+  static void FinishOpen(scoped_ptr<ConnectParams> params);
+  static void CreateConnection(scoped_ptr<ConnectParams> params);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;

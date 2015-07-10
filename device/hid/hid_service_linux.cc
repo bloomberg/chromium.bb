@@ -23,6 +23,7 @@
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info_linux.h"
 #include "device/udev_linux/scoped_udev.h"
+#include "net/base/net_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
@@ -227,25 +228,17 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
       device_info, callback, task_runner_, file_task_runner_));
 
 #if defined(OS_CHROMEOS)
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::PermissionBrokerClient* client =
-        chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-    DCHECK(client) << "Could not get permission broker client.";
-    if (client) {
-      client->RequestPathAccess(
-          device_info->device_node(), -1,
-          base::Bind(&HidServiceLinux::OnRequestPathAccessComplete,
-                     base::Passed(&params)));
-    } else {
-      task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-    }
-    return;
-  }
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+  DCHECK(client) << "Could not get permission broker client.";
+  client->OpenPath(
+      device_info->device_node(),
+      base::Bind(&HidServiceLinux::OnPathOpened, base::Passed(&params)));
+#else
+  file_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&HidServiceLinux::OpenOnBlockingThread,
+                                         base::Passed(&params)));
 #endif  // defined(OS_CHROMEOS)
-
-  file_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&HidServiceLinux::OpenDevice, base::Passed(&params)));
 }
 
 HidServiceLinux::~HidServiceLinux() {
@@ -253,26 +246,42 @@ HidServiceLinux::~HidServiceLinux() {
 }
 
 #if defined(OS_CHROMEOS)
-// static
-void HidServiceLinux::OnRequestPathAccessComplete(
-    scoped_ptr<ConnectParams> params,
-    bool success) {
-  if (success) {
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
-        params->file_task_runner;
-    file_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&HidServiceLinux::OpenDevice, base::Passed(&params)));
-  } else {
-    params->callback.Run(nullptr);
-  }
-}
-#endif  // defined(OS_CHROMEOS)
 
 // static
-void HidServiceLinux::OpenDevice(scoped_ptr<ConnectParams> params) {
+void HidServiceLinux::OnPathOpened(scoped_ptr<ConnectParams> params,
+                                   dbus::FileDescriptor fd) {
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
+      params->file_task_runner;
+  file_task_runner->PostTask(
+      FROM_HERE, base::Bind(&HidServiceLinux::ValidateFdOnBlockingThread,
+                            base::Passed(&params), base::Passed(&fd)));
+}
+
+// static
+void HidServiceLinux::ValidateFdOnBlockingThread(
+    scoped_ptr<ConnectParams> params,
+    dbus::FileDescriptor fd) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  fd.CheckValidity();
+  if (fd.is_valid()) {
+    params->device_file = base::File(fd.TakeValue());
+    FinishOpen(params.Pass());
+  } else {
+    HID_LOG(EVENT) << "Permission broker denied access to '"
+                   << params->device_info->device_node() << "'.";
+    params->task_runner->PostTask(FROM_HERE,
+                                  base::Bind(params->callback, nullptr));
+  }
+}
+
+#else
+
+// static
+void HidServiceLinux::OpenOnBlockingThread(scoped_ptr<ConnectParams> params) {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner = params->task_runner;
+
   base::FilePath device_path(params->device_info->device_node());
   base::File& device_file = params->device_file;
   int flags =
@@ -296,26 +305,30 @@ void HidServiceLinux::OpenDevice(scoped_ptr<ConnectParams> params) {
     return;
   }
 
-  int result = fcntl(device_file.GetPlatformFile(), F_GETFL);
-  if (result == -1) {
-    HID_PLOG(ERROR) << "Failed to get flags from the device file descriptor";
-    task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
-    return;
-  }
+  FinishOpen(params.Pass());
+}
 
-  result = fcntl(device_file.GetPlatformFile(), F_SETFL, result | O_NONBLOCK);
+#endif  // defined(OS_CHROMEOS)
+
+// static
+void HidServiceLinux::FinishOpen(scoped_ptr<ConnectParams> params) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner = params->task_runner;
+
+  int result = net::SetNonBlocking(params->device_file.GetPlatformFile());
   if (result == -1) {
     HID_PLOG(ERROR) << "Failed to set the non-blocking flag on the device fd";
     task_runner->PostTask(FROM_HERE, base::Bind(params->callback, nullptr));
     return;
   }
 
-  task_runner->PostTask(FROM_HERE, base::Bind(&HidServiceLinux::ConnectImpl,
-                                              base::Passed(&params)));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&HidServiceLinux::CreateConnection, base::Passed(&params)));
 }
 
 // static
-void HidServiceLinux::ConnectImpl(scoped_ptr<ConnectParams> params) {
+void HidServiceLinux::CreateConnection(scoped_ptr<ConnectParams> params) {
   DCHECK(params->device_file.IsValid());
   params->callback.Run(make_scoped_refptr(
       new HidConnectionLinux(params->device_info, params->device_file.Pass(),
