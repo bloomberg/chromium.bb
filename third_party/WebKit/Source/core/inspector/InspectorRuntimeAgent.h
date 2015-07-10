@@ -63,6 +63,9 @@ public:
 
     // Part of the protocol.
     void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
+    void restore() override;
+
     void evaluate(ErrorString*,
         const String& expression,
         const String* objectGroup,
@@ -73,7 +76,7 @@ public:
         const bool* generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
         TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override final;
+        RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) final;
     void callFunctionOn(ErrorString*,
                         const String& objectId,
                         const String& expression,
@@ -82,16 +85,13 @@ public:
                         const bool* returnByValue,
                         const bool* generatePreview,
                         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-                        TypeBuilder::OptOutput<bool>* wasThrown) override final;
-    void releaseObject(ErrorString*, const String& objectId) override final;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override final;
-    void releaseObjectGroup(ErrorString*, const String& objectGroup) override final;
+                        TypeBuilder::OptOutput<bool>* wasThrown) final;
+    void releaseObject(ErrorString*, const String& objectId) final;
+    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) final;
+    void releaseObjectGroup(ErrorString*, const String& objectGroup) final;
     void run(ErrorString*) override;
     void isRunRequired(ErrorString*, bool* out_result) override;
-    void setCustomObjectFormatterEnabled(ErrorString*, bool) override final;
-
-    void disable(ErrorString*) override final;
-    void restore() override final;
+    void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
 
 protected:
     InspectorRuntimeAgent(InjectedScriptManager*, V8Debugger*, Client*);
@@ -101,12 +101,9 @@ protected:
     virtual void unmuteConsole() = 0;
 
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    void addExecutionContextToFrontend(ScriptState*, bool isPageContext, const String& origin, const String& frameId);
+    void addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
 
     bool m_enabled;
-
-    typedef HashMap<RefPtr<ScriptState>, int> ScriptStateToId;
-    ScriptStateToId m_scriptStateToId;
 
 private:
     class InjectedScriptCallScope;

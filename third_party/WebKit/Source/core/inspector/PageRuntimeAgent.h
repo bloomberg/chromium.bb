@@ -49,8 +49,9 @@ public:
     }
     virtual ~PageRuntimeAgent();
     DECLARE_VIRTUAL_TRACE();
-    virtual void init() override;
-    virtual void enable(ErrorString*) override;
+    void init() override;
+    void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);
@@ -63,9 +64,12 @@ private:
     virtual void muteConsole() override;
     virtual void unmuteConsole() override;
     void reportExecutionContextCreation();
+    void reportExecutionContext(ScriptState*, bool isPageContext, const String& origin, const String& frameId);
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     bool m_mainWorldContextCreated;
+    typedef HashMap<RefPtr<ScriptState>, int> ScriptStateToId;
+    ScriptStateToId m_scriptStateToId;
 };
 
 } // namespace blink

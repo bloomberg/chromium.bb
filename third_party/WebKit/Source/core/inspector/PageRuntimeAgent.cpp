@@ -85,6 +85,14 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
         reportExecutionContextCreation();
 }
 
+void PageRuntimeAgent::disable(ErrorString* errorString)
+{
+    if (!m_enabled)
+        return;
+    m_scriptStateToId.clear();
+    InspectorRuntimeAgent::disable(errorString);
+}
+
 void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     m_mainWorldContextCreated = true;
@@ -104,7 +112,7 @@ void PageRuntimeAgent::didCreateScriptContext(LocalFrame* frame, ScriptState* sc
     bool isMainWorld = worldId == MainWorldId;
     String originString = origin ? origin->toRawString() : "";
     String frameId = IdentifiersFactory::frameId(frame);
-    addExecutionContextToFrontend(scriptState, isMainWorld, originString, frameId);
+    reportExecutionContext(scriptState, isMainWorld, originString, frameId);
 }
 
 void PageRuntimeAgent::willReleaseScriptContext(LocalFrame* frame, ScriptState* scriptState)
@@ -157,16 +165,26 @@ void PageRuntimeAgent::reportExecutionContextCreation()
         // Ensure execution context is created.
         // If initializeMainWorld returns true, then is registered by didCreateScriptContext
         if (!localFrame->script().initializeMainWorld())
-            addExecutionContextToFrontend(ScriptState::forMainWorld(localFrame), true, "", frameId);
+            reportExecutionContext(ScriptState::forMainWorld(localFrame), true, "", frameId);
         localFrame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
             continue;
         for (const auto& pair : isolatedContexts) {
             String originString = pair.second ? pair.second->toRawString() : "";
-            addExecutionContextToFrontend(pair.first, false, originString, frameId);
+            reportExecutionContext(pair.first, false, originString, frameId);
         }
         isolatedContexts.clear();
     }
+}
+
+void PageRuntimeAgent::reportExecutionContext(ScriptState* scriptState, bool isPageContext, const String& origin, const String& frameId)
+{
+    int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
+    m_scriptStateToId.set(scriptState, executionContextId);
+    DOMWrapperWorld& world = scriptState->world();
+    String humanReadableName = world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "";
+    String type = isPageContext ? "" : "Extension";
+    InspectorRuntimeAgent::addExecutionContextToFrontend(executionContextId, type, origin, humanReadableName, frameId);
 }
 
 } // namespace blink

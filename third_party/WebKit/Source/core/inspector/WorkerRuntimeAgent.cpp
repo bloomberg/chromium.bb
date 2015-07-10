@@ -60,7 +60,9 @@ void WorkerRuntimeAgent::enable(ErrorString* errorString)
         return;
 
     InspectorRuntimeAgent::enable(errorString);
-    addExecutionContextToFrontend(m_workerGlobalScope->script()->scriptState(), true, m_workerGlobalScope->url(), "");
+    ScriptState* scriptState = m_workerGlobalScope->script()->scriptState();
+    int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
+    addExecutionContextToFrontend(executionContextId, "", m_workerGlobalScope->url(), "", "");
 }
 
 InjectedScript WorkerRuntimeAgent::injectedScriptForEval(ErrorString* error, const int* executionContextId)

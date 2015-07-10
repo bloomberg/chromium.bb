@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -186,7 +185,6 @@ void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString*, bool e
 void InspectorRuntimeAgent::restore()
 {
     if (m_state->getBoolean(InspectorRuntimeAgentState::runtimeEnabled)) {
-        m_scriptStateToId.clear();
         frontend()->executionContextsCleared();
         String error;
         enable(&error);
@@ -207,24 +205,19 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
     if (!m_enabled)
         return;
 
-    m_scriptStateToId.clear();
     m_enabled = false;
     m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, false);
 }
 
-void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptState, bool isPageContext, const String& origin, const String& frameId)
+void InspectorRuntimeAgent::addExecutionContextToFrontend(int executionContextId, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
 {
-    int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
-    m_scriptStateToId.set(scriptState, executionContextId);
-    DOMWrapperWorld& world = scriptState->world();
-    String humanReadableName = world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "";
     RefPtr<ExecutionContextDescription> description = ExecutionContextDescription::create()
         .setId(executionContextId)
         .setName(humanReadableName)
         .setOrigin(origin)
         .setFrameId(frameId);
-    if (isPageContext)
-        description->setIsPageContext(isPageContext);
+    if (!type.isEmpty())
+        description->setType(type);
     frontend()->executionContextCreated(description.release());
 }
 
