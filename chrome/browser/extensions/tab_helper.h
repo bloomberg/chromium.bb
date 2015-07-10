@@ -161,15 +161,18 @@ class TabHelper : public content::WebContentsObserver,
 
   // Message handlers.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& info);
-  void OnInlineWebstoreInstall(int install_id,
+  void OnInlineWebstoreInstall(content::RenderFrameHost* host,
+                               int install_id,
                                int return_route_id,
                                const std::string& webstore_item_id,
                                const GURL& requestor_url,
                                int listeners_mask);
-  void OnGetAppInstallState(const GURL& requestor_url,
+  void OnGetAppInstallState(content::RenderFrameHost* host,
+                            const GURL& requestor_url,
                             int return_route_id,
                             int callback_id);
   void OnContentScriptsExecuting(
+      content::RenderFrameHost* host,
       const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
       const GURL& on_url);
 

@@ -276,7 +276,7 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
 bool TabHelper::OnMessageReceived(const IPC::Message& message,
                                   content::RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(TabHelper, message, render_frame_host)
   IPC_MESSAGE_HANDLER(ExtensionHostMsg_InlineWebstoreInstall,
                       OnInlineWebstoreInstall)
   IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
@@ -347,7 +347,8 @@ void TabHelper::OnDidGetWebApplicationInfo(const WebApplicationInfo& info) {
     pending_web_app_action_ = NONE;
 }
 
-void TabHelper::OnInlineWebstoreInstall(int install_id,
+void TabHelper::OnInlineWebstoreInstall(content::RenderFrameHost* host,
+                                        int install_id,
                                         int return_route_id,
                                         const std::string& webstore_item_id,
                                         const GURL& requestor_url,
@@ -402,7 +403,8 @@ void TabHelper::OnInlineWebstoreInstall(int install_id,
   }
 }
 
-void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
+void TabHelper::OnGetAppInstallState(content::RenderFrameHost* host,
+                                     const GURL& requestor_url,
                                      int return_route_id,
                                      int callback_id) {
   ExtensionRegistry* registry =
@@ -418,11 +420,15 @@ void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
   else
     state = extension_misc::kAppStateNotInstalled;
 
-  Send(new ExtensionMsg_GetAppInstallStateResponse(
-      return_route_id, state, callback_id));
+  // We use the |host| to send the message because using
+  // WebContentsObserver::Send() defaults to using the main RenderView, which
+  // might be in a different process if the request came from a frame.
+  host->Send(new ExtensionMsg_GetAppInstallStateResponse(return_route_id, state,
+                                                         callback_id));
 }
 
 void TabHelper::OnContentScriptsExecuting(
+    content::RenderFrameHost* host,
     const ScriptExecutionObserver::ExecutingScriptsMap& executing_scripts_map,
     const GURL& on_url) {
   FOR_EACH_OBSERVER(

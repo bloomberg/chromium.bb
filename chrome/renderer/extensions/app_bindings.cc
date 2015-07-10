@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
@@ -71,6 +72,9 @@ AppBindings::AppBindings(Dispatcher* dispatcher, ScriptContext* context)
       base::Bind(&AppBindings::GetInstallState, base::Unretained(this)));
   RouteFunction("GetRunningState",
       base::Bind(&AppBindings::GetRunningState, base::Unretained(this)));
+}
+
+AppBindings::~AppBindings() {
 }
 
 void AppBindings::GetIsInstalled(
@@ -167,35 +171,33 @@ void AppBindings::GetInstallState(
 
 void AppBindings::GetRunningState(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // To distinguish between ready_to_run and cannot_run states, we need the top
-  // level frame.
-  const WebFrame* parent_frame = context()->web_frame();
-  while (parent_frame->parent())
-    parent_frame = parent_frame->parent();
-
+  // To distinguish between ready_to_run and cannot_run states, we need the app
+  // from the top frame.
+  blink::WebSecurityOrigin top_frame_security_origin =
+      context()->web_frame()->top()->securityOrigin();
   const ExtensionSet* extensions = dispatcher_->extensions();
 
   // The app associated with the top level frame.
-  const Extension* parent_app = extensions->GetHostedAppByURL(
-      parent_frame->document().url());
+  const Extension* top_app = extensions->GetHostedAppByURL(
+      GURL(top_frame_security_origin.toString().utf8()));
 
   // The app associated with this frame.
   const Extension* this_app = extensions->GetHostedAppByURL(
       context()->web_frame()->document().url());
 
-  if (!this_app || !parent_app) {
+  if (!this_app || !top_app) {
     args.GetReturnValue().Set(v8::String::NewFromUtf8(
         context()->isolate(), extension_misc::kAppStateCannotRun));
     return;
   }
 
-  const char* state = NULL;
-  if (dispatcher_->IsExtensionActive(parent_app->id())) {
-    if (parent_app == this_app)
+  const char* state = nullptr;
+  if (dispatcher_->IsExtensionActive(top_app->id())) {
+    if (top_app == this_app)
       state = extension_misc::kAppStateRunning;
     else
       state = extension_misc::kAppStateCannotRun;
-  } else if (parent_app == this_app) {
+  } else if (top_app == this_app) {
     state = extension_misc::kAppStateReadyToRun;
   } else {
     state = extension_misc::kAppStateCannotRun;

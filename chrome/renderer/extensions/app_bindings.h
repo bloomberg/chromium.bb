@@ -26,6 +26,7 @@ class AppBindings : public ObjectBackedNativeHandler,
                     public ChromeV8ExtensionHandler {
  public:
   AppBindings(Dispatcher* dispatcher, ScriptContext* context);
+  ~AppBindings() override;
 
  private:
   // IPC::Listener
