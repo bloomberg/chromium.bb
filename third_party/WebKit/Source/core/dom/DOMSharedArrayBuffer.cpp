@@ -6,7 +6,6 @@
 #include "core/dom/DOMSharedArrayBuffer.h"
 
 #include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 
 namespace blink {
 
@@ -21,19 +20,8 @@ v8::Local<v8::Object> DOMSharedArrayBuffer::wrap(v8::Isolate* isolate, v8::Local
 
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
     v8::Local<v8::Object> wrapper = v8::SharedArrayBuffer::New(isolate, data(), byteLength());
-    // V8::SharedArrayBuffer::New may run an arbitrary script and it may result in
-    // creating a new wrapper and associating it with |this|.  If so, the
-    // wrapper already created and associated must be used.
-    v8::Local<v8::Object> associatedWrapper = DOMDataStore::getWrapper(this, isolate);
-    if (UNLIKELY(!associatedWrapper.IsEmpty()))
-        return associatedWrapper;
 
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
-}
-
-v8::Local<v8::Object> DOMSharedArrayBuffer::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
-{
-    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
 
 } // namespace blink

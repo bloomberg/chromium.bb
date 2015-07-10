@@ -122,18 +122,21 @@ public:
         current(isolate).setReference(parent, ScriptWrappable::fromNode(child), isolate);
     }
 
-    static void setWrapper(ScriptWrappable* object, v8::Local<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
+    // Associates the given |object| with the given |wrapper| if the object is
+    // not yet associated with any wrapper.  Returns true if the given wrapper
+    // is associated with the object, or false if the object is already
+    // associated with a wrapper.  In the latter case, |wrapper| will be updated
+    // to the existing wrapper.
+    static bool setWrapper(v8::Isolate* isolate, ScriptWrappable* object, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object>& wrapper) WARN_UNUSED_RETURN
     {
-        return current(isolate).set(object, wrapper, isolate, wrapperTypeInfo);
+        return current(isolate).set(isolate, object, wrapperTypeInfo, wrapper);
     }
 
-    static void setWrapper(Node* node, v8::Local<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
+    static bool setWrapper(v8::Isolate* isolate, Node* node, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object>& wrapper) WARN_UNUSED_RETURN
     {
-        if (canUseScriptWrappable(node)) {
-            ScriptWrappable::fromNode(node)->setWrapper(wrapper, isolate, wrapperTypeInfo);
-            return;
-        }
-        return current(isolate).set(ScriptWrappable::fromNode(node), wrapper, isolate, wrapperTypeInfo);
+        if (canUseScriptWrappable(node))
+            return ScriptWrappable::fromNode(node)->setWrapper(isolate, wrapperTypeInfo, wrapper);
+        return current(isolate).set(isolate, ScriptWrappable::fromNode(node), wrapperTypeInfo, wrapper);
     }
 
     static bool containsWrapper(ScriptWrappable* object, v8::Isolate* isolate)
@@ -172,15 +175,13 @@ public:
     }
 
 private:
-    void set(ScriptWrappable* object, v8::Local<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
+    bool set(v8::Isolate* isolate, ScriptWrappable* object, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object>& wrapper) WARN_UNUSED_RETURN
     {
         ASSERT(object);
         ASSERT(!wrapper.IsEmpty());
-        if (m_isMainWorld) {
-            object->setWrapper(wrapper, isolate, wrapperTypeInfo);
-            return;
-        }
-        m_wrapperMap->set(object, wrapper, wrapperTypeInfo);
+        if (m_isMainWorld)
+            return object->setWrapper(isolate, wrapperTypeInfo, wrapper);
+        return m_wrapperMap->set(object, wrapperTypeInfo, wrapper);
     }
 
     // We can use a wrapper stored in a ScriptWrappable when we're in the main world.

@@ -309,7 +309,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     RefPtr<TestTypedefs> impl = TestTypedefs::create(stringArg);
     v8::Local<v8::Object> wrapper = info.Holder();
-    impl->associateWithWrapper(info.GetIsolate(), &V8TestTypedefs::wrapperTypeInfo, wrapper);
+    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestTypedefs::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }
 

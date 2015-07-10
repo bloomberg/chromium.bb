@@ -134,7 +134,7 @@ ImageData* ImageData::create(DOMUint8ClampedArray* data, unsigned width, unsigne
 
 v8::Local<v8::Object> ImageData::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Local<v8::Object> wrapper)
 {
-    ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
+    wrapper = ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
 
     if (!wrapper.IsEmpty() && m_data.get()) {
         // Create a V8 Uint8ClampedArray object and set the "data" property

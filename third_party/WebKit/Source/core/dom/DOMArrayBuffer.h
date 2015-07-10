@@ -50,7 +50,6 @@ public:
     bool isNeutered() { return buffer()->isNeutered(); }
 
     v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
-    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
 
 private:
     explicit DOMArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)

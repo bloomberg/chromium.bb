@@ -48,8 +48,12 @@ public:
     static v8::Local<v8::Object> createWrapper(v8::Isolate*, v8::Local<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappable*);
     static bool isWrapper(v8::Isolate*, v8::Local<v8::Value>);
 
-    static v8::Local<v8::Object> associateObjectWithWrapper(v8::Isolate*, ScriptWrappable*, const WrapperTypeInfo*, v8::Local<v8::Object>);
-    static v8::Local<v8::Object> associateObjectWithWrapper(v8::Isolate*, Node*, const WrapperTypeInfo*, v8::Local<v8::Object>);
+    // Associates the given ScriptWrappable with the given |wrapper| if the
+    // ScriptWrappable is not yet associated with any wrapper.  Returns the
+    // wrapper already associated or |wrapper| if not yet associated.
+    // The caller should always use the returned value rather than |wrapper|.
+    static v8::Local<v8::Object> associateObjectWithWrapper(v8::Isolate*, ScriptWrappable*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) WARN_UNUSED_RETURN;
+    static v8::Local<v8::Object> associateObjectWithWrapper(v8::Isolate*, Node*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) WARN_UNUSED_RETURN;
     static void setNativeInfo(v8::Local<v8::Object>, const WrapperTypeInfo*, ScriptWrappable*);
     static void clearNativeInfo(v8::Local<v8::Object>, const WrapperTypeInfo*);
     // hasInternalFieldsSet only checks if the value has the internal fields for
@@ -80,19 +84,23 @@ inline void V8DOMWrapper::clearNativeInfo(v8::Local<v8::Object> wrapper, const W
 
 inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isolate* isolate, ScriptWrappable* impl, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
 {
-    wrapperTypeInfo->refObject(impl);
-    setNativeInfo(wrapper, wrapperTypeInfo, impl);
-    ASSERT(hasInternalFieldsSet(wrapper));
-    DOMDataStore::setWrapper(impl, wrapper, isolate, wrapperTypeInfo);
+    if (DOMDataStore::setWrapper(isolate, impl, wrapperTypeInfo, wrapper)) {
+        wrapperTypeInfo->refObject(impl);
+        setNativeInfo(wrapper, wrapperTypeInfo, impl);
+        ASSERT(hasInternalFieldsSet(wrapper));
+    }
+    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(toScriptWrappable(wrapper) == impl);
     return wrapper;
 }
 
 inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isolate* isolate, Node* node, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
 {
-    wrapperTypeInfo->refObject(ScriptWrappable::fromNode(node));
-    setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromNode(node));
-    ASSERT(hasInternalFieldsSet(wrapper));
-    DOMDataStore::setWrapper(node, wrapper, isolate, wrapperTypeInfo);
+    if (DOMDataStore::setWrapper(isolate, node, wrapperTypeInfo, wrapper)) {
+        wrapperTypeInfo->refObject(ScriptWrappable::fromNode(node));
+        setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromNode(node));
+        ASSERT(hasInternalFieldsSet(wrapper));
+    }
+    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(toScriptWrappable(wrapper) == ScriptWrappable::fromNode(node));
     return wrapper;
 }
 

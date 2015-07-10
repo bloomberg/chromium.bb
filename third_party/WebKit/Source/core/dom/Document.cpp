@@ -5696,12 +5696,6 @@ v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate, v8::Local<v8::Object>
     }
 
     v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, this);
-    // V8DOMWrapper::createWrapper may run an arbitrary script and it may result
-    // in creating a new wrapper and associating it with |this|.  If so, the
-    // wrapper already created and associated must be used.
-    v8::Local<v8::Object> associatedWrapper = DOMDataStore::getWrapper(this, isolate);
-    if (UNLIKELY(!associatedWrapper.IsEmpty()))
-        return associatedWrapper;
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -5711,7 +5705,7 @@ v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate, v8::Local<v8::Object>
 
 v8::Local<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Local<v8::Object> wrapper)
 {
-    V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
+    wrapper = V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
     DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
     if (world.isMainWorld() && frame())
         frame()->script().windowProxy(world)->updateDocumentWrapper(wrapper);

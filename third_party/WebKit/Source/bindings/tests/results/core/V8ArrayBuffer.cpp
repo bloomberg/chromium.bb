@@ -57,7 +57,8 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
     WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), WTF::ArrayBufferContents::NotShared);
     RefPtr<TestArrayBuffer> buffer = TestArrayBuffer::create(contents);
-    buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
+    v8::Local<v8::Object> associatedWrapper = buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
+    ASSERT_UNUSED(associatedWrapper, associatedWrapper == object);
 
     return buffer.get();
 }

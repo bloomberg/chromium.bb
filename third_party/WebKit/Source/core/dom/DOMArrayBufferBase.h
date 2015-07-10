@@ -32,12 +32,6 @@ public:
         return v8::Local<v8::Object>();
     }
 
-    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override
-    {
-        ASSERT_NOT_REACHED();
-        return v8::Local<v8::Object>();
-    }
-
 protected:
     explicit DOMArrayBufferBase(PassRefPtr<WTF::ArrayBuffer> buffer)
         : m_buffer(buffer)
@@ -51,4 +45,3 @@ protected:
 } // namespace blink
 
 #endif // DOMArrayBuffer_h
-

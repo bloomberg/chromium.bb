@@ -494,7 +494,8 @@ v8::Local<v8::Object> createV8ObjectForNPObject(v8::Isolate* isolate, NPObject* 
     _NPN_RetainObject(object);
     _NPN_RegisterObject(object, root);
 
-    staticNPObjectMap().set(object, value, npObjectTypeInfo());
+    bool wrapperDidNotExist = staticNPObjectMap().set(object, npObjectTypeInfo(), value);
+    ASSERT_UNUSED(wrapperDidNotExist, wrapperDidNotExist);
     ASSERT(V8DOMWrapper::hasInternalFieldsSet(value));
     return value;
 }

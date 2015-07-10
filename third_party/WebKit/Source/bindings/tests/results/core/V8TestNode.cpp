@@ -174,7 +174,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     RefPtrWillBeRawPtr<TestNode> impl = TestNode::create();
     v8::Local<v8::Object> wrapper = info.Holder();
-    impl->associateWithWrapper(info.GetIsolate(), &V8TestNode::wrapperTypeInfo, wrapper);
+    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestNode::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
 }
 

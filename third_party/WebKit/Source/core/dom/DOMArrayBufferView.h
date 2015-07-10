@@ -73,11 +73,6 @@ public:
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Object>();
     }
-    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override
-    {
-        ASSERT_NOT_REACHED();
-        return v8::Local<v8::Object>();
-    }
 
 protected:
     explicit DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView)

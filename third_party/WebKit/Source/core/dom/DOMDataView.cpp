@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
 #include "platform/CheckedInt.h"
 #include "wtf/ArrayBufferView.h"
 
@@ -71,19 +70,8 @@ v8::Local<v8::Object> DOMDataView::wrap(v8::Isolate* isolate, v8::Local<v8::Obje
     ASSERT(v8Buffer->IsArrayBuffer());
 
     v8::Local<v8::Object> wrapper = v8::DataView::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), byteLength());
-    // V8::DataView::New may run an arbitrary script and it may result in
-    // creating a new wrapper and associating it with |this|.  If so, the
-    // wrapper already created and associated must be used.
-    v8::Local<v8::Object> associatedWrapper = DOMDataStore::getWrapper(this, isolate);
-    if (UNLIKELY(!associatedWrapper.IsEmpty()))
-        return associatedWrapper;
 
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
-}
-
-v8::Local<v8::Object> DOMDataView::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
-{
-    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
 
 } // namespace blink

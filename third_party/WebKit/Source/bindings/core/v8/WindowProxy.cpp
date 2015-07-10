@@ -324,6 +324,7 @@ bool WindowProxy::installDOMWindow()
         return false;
     if (!V8ObjectConstructor::newInstance(m_isolate, constructor).ToLocal(&windowWrapper))
         return false;
+    windowWrapper = V8DOMWrapper::associateObjectWithWrapper(m_isolate, window, wrapperTypeInfo, windowWrapper);
 
     V8DOMWrapper::setNativeInfo(v8::Local<v8::Object>::Cast(windowWrapper->GetPrototype()), wrapperTypeInfo, window);
 
@@ -334,6 +335,7 @@ bool WindowProxy::installDOMWindow()
     //   -- has prototype --> innerGlobalObject (Holds global variables, changes during navigation)
     //   -- has prototype --> DOMWindow instance
     //   -- has prototype --> Window.prototype
+    //   -- has prototype --> EventTarget.prototype
     //   -- has prototype --> Object.prototype
     //
     // Note: Much of this prototype structure is hidden from web content. The
@@ -344,7 +346,9 @@ bool WindowProxy::installDOMWindow()
     V8DOMWrapper::setNativeInfo(innerGlobalObject, wrapperTypeInfo, window);
     if (!v8CallBoolean(innerGlobalObject->SetPrototype(context, windowWrapper)))
         return false;
-    V8DOMWrapper::associateObjectWithWrapper(m_isolate, window, wrapperTypeInfo, windowWrapper);
+
+    // TODO(keishi): Remove installPagePopupController and implement
+    // PagePopupController in another way.
     V8PagePopupControllerBinding::installPagePopupController(context, windowWrapper);
     return true;
 }
