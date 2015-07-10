@@ -65,13 +65,14 @@ void* GetBaseAddress(const wchar_t* exe_name, void* entry_point) {
 }
 
 
-TargetProcess::TargetProcess(HANDLE initial_token, HANDLE lockdown_token,
+TargetProcess::TargetProcess(base::win::ScopedHandle initial_token,
+                             base::win::ScopedHandle lockdown_token,
                              HANDLE job, ThreadProvider* thread_pool)
   // This object owns everything initialized here except thread_pool and
   // the job_ handle. The Job handle is closed by BrokerServices and results
   // eventually in a call to our dtor.
-    : lockdown_token_(lockdown_token),
-      initial_token_(initial_token),
+    : lockdown_token_(lockdown_token.Pass()),
+      initial_token_(initial_token.Pass()),
       job_(job),
       thread_pool_(thread_pool),
       base_address_(NULL) {
@@ -374,7 +375,9 @@ void TargetProcess::Terminate() {
 }
 
 TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address) {
-  TargetProcess* target = new TargetProcess(NULL, NULL, NULL, NULL);
+  TargetProcess* target = new TargetProcess(base::win::ScopedHandle(),
+                                            base::win::ScopedHandle(),
+                                            NULL, NULL);
   PROCESS_INFORMATION process_info = {};
   process_info.hProcess = process;
   target->sandbox_process_info_.Set(process_info);

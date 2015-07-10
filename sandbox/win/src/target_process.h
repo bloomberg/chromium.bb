@@ -33,8 +33,9 @@ class ThreadProvider;
 class TargetProcess {
  public:
   // The constructor takes ownership of |initial_token| and |lockdown_token|.
-  TargetProcess(HANDLE initial_token, HANDLE lockdown_token, HANDLE job,
-                ThreadProvider* thread_pool);
+  TargetProcess(base::win::ScopedHandle initial_token,
+                base::win::ScopedHandle lockdown_token,
+                HANDLE job, ThreadProvider* thread_pool);
   ~TargetProcess();
 
   // TODO(cpu): Currently there does not seem to be a reason to implement

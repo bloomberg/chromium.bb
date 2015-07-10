@@ -496,8 +496,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Create the TargetProces object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
   base::win::ScopedProcessInformation process_info;
-  TargetProcess* target = new TargetProcess(initial_token.Take(),
-                                            lockdown_token.Take(),
+  TargetProcess* target = new TargetProcess(initial_token.Pass(),
+                                            lockdown_token.Pass(),
                                             job.Get(),
                                             thread_pool_);
 
