@@ -2937,7 +2937,8 @@ public class ContentViewCore implements
     @Override
     public void onSystemCaptioningChanged(TextTrackSettings settings) {
         if (mNativeContentViewCore == 0) return;
-        nativeSetTextTrackSettings(mNativeContentViewCore, settings.getTextTrackBackgroundColor(),
+        nativeSetTextTrackSettings(mNativeContentViewCore,
+                settings.getTextTracksEnabled(), settings.getTextTrackBackgroundColor(),
                 settings.getTextTrackFontFamily(), settings.getTextTrackFontStyle(),
                 settings.getTextTrackFontVariant(), settings.getTextTrackTextColor(),
                 settings.getTextTrackTextShadow(), settings.getTextTrackTextSize());
@@ -3234,9 +3235,9 @@ public class ContentViewCore implements
             long nativeContentViewCoreImpl, boolean enabled);
 
     private native void nativeSetTextTrackSettings(long nativeContentViewCoreImpl,
-            String textTrackBackgroundColor, String textTrackFontFamily, String textTrackFontStyle,
-            String textTrackFontVariant, String textTrackTextColor, String textTrackTextShadow,
-            String textTrackTextSize);
+            boolean textTracksEnabled, String textTrackBackgroundColor, String textTrackFontFamily,
+            String textTrackFontStyle, String textTrackFontVariant, String textTrackTextColor,
+            String textTrackTextShadow, String textTrackTextSize);
 
     private native void nativeExtractSmartClipData(long nativeContentViewCoreImpl,
             int x, int y, int w, int h);

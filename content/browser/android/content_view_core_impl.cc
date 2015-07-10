@@ -1281,6 +1281,7 @@ void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,
 
 void ContentViewCoreImpl::SetTextTrackSettings(JNIEnv* env,
                                                jobject obj,
+                                               jboolean textTracksEnabled,
                                                jstring textTrackBackgroundColor,
                                                jstring textTrackFontFamily,
                                                jstring textTrackFontStyle,
@@ -1289,6 +1290,7 @@ void ContentViewCoreImpl::SetTextTrackSettings(JNIEnv* env,
                                                jstring textTrackTextShadow,
                                                jstring textTrackTextSize) {
   FrameMsg_TextTrackSettings_Params params;
+  params.text_tracks_enabled = textTracksEnabled;
   params.text_track_background_color = ConvertJavaStringToUTF8(
       env, textTrackBackgroundColor);
   params.text_track_font_family = ConvertJavaStringToUTF8(
@@ -1303,7 +1305,6 @@ void ContentViewCoreImpl::SetTextTrackSettings(JNIEnv* env,
       env, textTrackTextShadow);
   params.text_track_text_size = ConvertJavaStringToUTF8(
       env, textTrackTextSize);
-
   web_contents_->GetMainFrame()->SetTextTrackSettings(params);
 }
 

@@ -16,6 +16,7 @@ import java.util.Objects;
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public final class TextTrackSettings {
     private static final String DEFAULT_VALUE = "";
+    private boolean mTextTracksEnabled;
     private String mTextTrackBackgroundColor;
     private String mTextTrackFontFamily;
     private String mTextTrackFontStyle;
@@ -26,13 +27,14 @@ public final class TextTrackSettings {
 
     /**
      * Constructs a new TextTrackSettings object that will
-     * return "" for all text track properties.
+     * return "" for all text track properties and false for textTracksEnabled.
      */
     public TextTrackSettings() {}
 
     /**
      * Constructs a new TextTrackSettings object
      *
+     * @param textTracksEnabled the captions state
      * @param textTrackBackgroundColor the background color
      * @param textTrackFontFamily the font family
      * @param textTrackFontStyle the font style
@@ -41,9 +43,10 @@ public final class TextTrackSettings {
      * @param textTrackTextShadow the text shadow
      * @param textTrackTextSize the text size
      */
-    public TextTrackSettings(String textTrackBackgroundColor, String textTrackFontFamily,
-            String textTrackFontStyle, String textTrackFontVariant, String textTrackTextColor,
-            String textTrackTextShadow, String textTrackTextSize) {
+    public TextTrackSettings(boolean textTracksEnabled, String textTrackBackgroundColor,
+            String textTrackFontFamily, String textTrackFontStyle, String textTrackFontVariant,
+            String textTrackTextColor, String textTrackTextShadow, String textTrackTextSize) {
+        mTextTracksEnabled = textTracksEnabled;
         mTextTrackBackgroundColor = textTrackBackgroundColor;
         mTextTrackFontFamily = textTrackFontFamily;
         mTextTrackFontStyle = textTrackFontStyle;
@@ -51,6 +54,13 @@ public final class TextTrackSettings {
         mTextTrackTextColor = textTrackTextColor;
         mTextTrackTextShadow = textTrackTextShadow;
         mTextTrackTextSize = textTrackTextSize;
+    }
+
+    /**
+     * @return true if closed captions are "on"
+     */
+    public boolean getTextTracksEnabled() {
+        return mTextTracksEnabled;
     }
 
     /**

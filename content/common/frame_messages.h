@@ -359,6 +359,9 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_TextTrackSettings_Params)
+  // Text tracks on/off state
+  IPC_STRUCT_MEMBER(bool, text_tracks_enabled)
+
   // Background color of the text track.
   IPC_STRUCT_MEMBER(std::string, text_track_background_color)
 
@@ -599,7 +602,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateName, std::string /* name */)
 // new origin.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateOrigin, url::Origin /* origin */)
 
-// Send to the RenderFrame to set text track style settings.
+// Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
                     FrameMsg_TextTrackSettings_Params /* params */)

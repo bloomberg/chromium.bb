@@ -219,6 +219,7 @@ using blink::WebSecurityOrigin;
 using blink::WebSecurityPolicy;
 using blink::WebSerializedScriptValue;
 using blink::WebServiceWorkerProvider;
+using blink::WebSettings;
 using blink::WebStorageQuotaCallbacks;
 using blink::WebString;
 using blink::WebURL;
@@ -1575,6 +1576,14 @@ void RenderFrameImpl::OnTextTrackSettingsChanged(
   DCHECK(!frame_->parent());
   if (!render_view_->webview())
     return;
+
+  if (params.text_tracks_enabled) {
+      render_view_->webview()->settings()->setTextTrackKindUserPreference(
+          WebSettings::TextTrackKindUserPreference::Captions);
+  } else {
+      render_view_->webview()->settings()->setTextTrackKindUserPreference(
+          WebSettings::TextTrackKindUserPreference::Default);
+  }
   render_view_->webview()->settings()->setTextTrackBackgroundColor(
       WebString::fromUTF8(params.text_track_background_color));
   render_view_->webview()->settings()->setTextTrackFontFamily(

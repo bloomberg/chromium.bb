@@ -32,7 +32,7 @@ public class CaptioningChangeDelegate {
     @VisibleForTesting
     public static final String DEFAULT_CAPTIONING_PREF_VALUE = "";
 
-    private boolean mTextTrackEnabled;
+    private boolean mTextTracksEnabled;
 
     private String mTextTrackBackgroundColor;
     private String mTextTrackFontFamily;
@@ -50,7 +50,7 @@ public class CaptioningChangeDelegate {
      * @see android.view.accessibility.CaptioningManager.CaptioningChangeListener#onEnabledChanged
      */
     public void onEnabledChanged(boolean enabled) {
-        mTextTrackEnabled = enabled;
+        mTextTracksEnabled = enabled;
         notifySettingsChanged();
     }
 
@@ -294,8 +294,8 @@ public class CaptioningChangeDelegate {
      * @param listener the listener to notify.
      */
     public void notifyListener(SystemCaptioningBridgeListener listener) {
-        if (mTextTrackEnabled) {
-            final TextTrackSettings settings = new TextTrackSettings(
+        if (mTextTracksEnabled) {
+            final TextTrackSettings settings = new TextTrackSettings(mTextTracksEnabled,
                     mTextTrackBackgroundColor, mTextTrackFontFamily, mTextTrackFontStyle,
                     mTextTrackFontVariant, mTextTrackTextColor, mTextTrackTextShadow,
                     mTextTrackTextSize);

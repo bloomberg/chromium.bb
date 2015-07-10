@@ -189,6 +189,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SetTextTrackSettings(JNIEnv* env,
                             jobject obj,
+                            jboolean textTracksEnabled,
                             jstring textTrackBackgroundColor,
                             jstring textTrackFontFamily,
                             jstring textTrackFontStyle,
