@@ -58,6 +58,9 @@ enum Jpeg2000Markers {
     JPEG2000_EOC = 0xffd9, // end of codestream
 };
 
+#define JPEG2000_SOP_FIXED_BYTES 0xFF910004
+#define JPEG2000_SOP_BYTE_LENGTH 6
+
 enum Jpeg2000Quantsty { // quantization style
     JPEG2000_QSTY_NONE, // no quantization
     JPEG2000_QSTY_SI,   // scalar derived
@@ -70,6 +73,8 @@ enum Jpeg2000Quantsty { // quantization style
 
 #define JPEG2000_MAX_DECLEVELS 32
 #define JPEG2000_MAX_RESLEVELS (JPEG2000_MAX_DECLEVELS + 1)
+
+#define JPEG2000_MAX_PASSES 100
 
 // T1 flags
 // flags determining significance of neighbor coefficients
@@ -154,6 +159,8 @@ typedef struct Jpeg2000QuantStyle {
 typedef struct Jpeg2000Pass {
     uint16_t rate;
     int64_t disto;
+    uint8_t flushed[4];
+    int flushed_len;
 } Jpeg2000Pass;
 
 typedef struct Jpeg2000Cblk {
@@ -161,11 +168,15 @@ typedef struct Jpeg2000Cblk {
     uint8_t ninclpasses; // number coding of passes included in codestream
     uint8_t nonzerobits;
     uint16_t length;
-    uint16_t lengthinc;
+    uint16_t lengthinc[JPEG2000_MAX_PASSES];
+    uint8_t nb_lengthinc;
     uint8_t lblock;
     uint8_t zero;
     uint8_t data[8192];
-    Jpeg2000Pass passes[100];
+    int nb_terminations;
+    int nb_terminationsinc;
+    int data_start[JPEG2000_MAX_PASSES];
+    Jpeg2000Pass passes[JPEG2000_MAX_PASSES];
     uint16_t coord[2][2]; // border coordinates {{x0, x1}, {y0, y1}}
 } Jpeg2000Cblk; // code block
 
@@ -261,5 +272,22 @@ int ff_jpeg2000_init_component(Jpeg2000Component *comp,
 void ff_jpeg2000_reinit(Jpeg2000Component *comp, Jpeg2000CodingStyle *codsty);
 
 void ff_jpeg2000_cleanup(Jpeg2000Component *comp, Jpeg2000CodingStyle *codsty);
+
+static inline int needs_termination(int style, int passno) {
+    if (style & JPEG2000_CBLK_BYPASS) {
+        int type = passno % 3;
+        passno /= 3;
+        if (type == 0 && passno > 2)
+            return 2;
+        if (type == 2 && passno > 2)
+            return 1;
+        if (style & JPEG2000_CBLK_TERMALL) {
+            return passno > 2 ? 2 : 1;
+        }
+    }
+    if (style & JPEG2000_CBLK_TERMALL)
+        return 1;
+    return 0;
+}
 
 #endif /* AVCODEC_JPEG2000_H */

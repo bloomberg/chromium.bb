@@ -190,6 +190,7 @@ warnings and errors. This is the default value.
 Same as @code{info}, except more verbose.
 @item debug, 48
 Show everything, including debugging information.
+@item trace, 56
 @end table
 
 By default the program logs to stderr, if coloring is supported by the
@@ -264,10 +265,14 @@ Possible flags for this option are:
 @item sse4.1
 @item sse4.2
 @item avx
+@item avx2
 @item xop
+@item fma3
 @item fma4
 @item 3dnow
 @item 3dnowext
+@item bmi1
+@item bmi2
 @item cmov
 @end table
 @item ARM
@@ -277,6 +282,13 @@ Possible flags for this option are:
 @item armv6t2
 @item vfp
 @item vfpv3
+@item neon
+@item setend
+@end table
+@item AArch64
+@table @samp
+@item armv8
+@item vfp
 @item neon
 @end table
 @item PowerPC

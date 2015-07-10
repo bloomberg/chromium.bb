@@ -59,7 +59,7 @@ static void fill_vaapi_pic(VAPictureH264 *va_pic,
         pic_structure = pic->reference;
     pic_structure &= PICT_FRAME; /* PICT_TOP_FIELD|PICT_BOTTOM_FIELD */
 
-    va_pic->picture_id = ff_vaapi_get_surface_id(&pic->f);
+    va_pic->picture_id = ff_vaapi_get_surface_id(pic->f);
     va_pic->frame_idx  = pic->long_ref ? pic->pic_id : pic->frame_num;
 
     va_pic->flags      = 0;
@@ -99,7 +99,7 @@ static int dpb_add(DPB *dpb, H264Picture *pic)
 
     for (i = 0; i < dpb->size; i++) {
         VAPictureH264 * const va_pic = &dpb->va_pics[i];
-        if (va_pic->picture_id == ff_vaapi_get_surface_id(&pic->f)) {
+        if (va_pic->picture_id == ff_vaapi_get_surface_id(pic->f)) {
             VAPictureH264 temp_va_pic;
             fill_vaapi_pic(&temp_va_pic, pic, 0);
 
@@ -230,7 +230,7 @@ static int vaapi_h264_start_frame(AVCodecContext          *avctx,
     VAPictureParameterBufferH264 *pic_param;
     VAIQMatrixBufferH264 *iq_matrix;
 
-    av_dlog(avctx, "vaapi_h264_start_frame()\n");
+    ff_dlog(avctx, "vaapi_h264_start_frame()\n");
 
     vactx->slice_param_size = sizeof(VASliceParameterBufferH264);
 
@@ -296,12 +296,12 @@ static int vaapi_h264_end_frame(AVCodecContext *avctx)
     H264SliceContext *sl = &h->slice_ctx[0];
     int ret;
 
-    av_dlog(avctx, "vaapi_h264_end_frame()\n");
+    ff_dlog(avctx, "vaapi_h264_end_frame()\n");
     ret = ff_vaapi_commit_slices(vactx);
     if (ret < 0)
         goto finish;
 
-    ret = ff_vaapi_render_picture(vactx, ff_vaapi_get_surface_id(&h->cur_pic_ptr->f));
+    ret = ff_vaapi_render_picture(vactx, ff_vaapi_get_surface_id(h->cur_pic_ptr->f));
     if (ret < 0)
         goto finish;
 
@@ -321,7 +321,7 @@ static int vaapi_h264_decode_slice(AVCodecContext *avctx,
     H264SliceContext *sl  = &h->slice_ctx[0];
     VASliceParameterBufferH264 *slice_param;
 
-    av_dlog(avctx, "vaapi_h264_decode_slice(): buffer %p, size %d\n",
+    ff_dlog(avctx, "vaapi_h264_decode_slice(): buffer %p, size %d\n",
             buffer, size);
 
     /* Fill in VASliceParameterBufferH264. */

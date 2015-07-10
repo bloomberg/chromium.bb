@@ -119,6 +119,10 @@ static const FormatEntry format_entries[AV_PIX_FMT_NB] = {
     [AV_PIX_FMT_GRAY16LE]    = { 1, 1 },
     [AV_PIX_FMT_YUV440P]     = { 1, 1 },
     [AV_PIX_FMT_YUVJ440P]    = { 1, 1 },
+    [AV_PIX_FMT_YUV440P10LE] = { 1, 1 },
+    [AV_PIX_FMT_YUV440P10BE] = { 1, 1 },
+    [AV_PIX_FMT_YUV440P12LE] = { 1, 1 },
+    [AV_PIX_FMT_YUV440P12BE] = { 1, 1 },
     [AV_PIX_FMT_YUVA420P]    = { 1, 1 },
     [AV_PIX_FMT_YUVA422P]    = { 1, 1 },
     [AV_PIX_FMT_YUVA444P]    = { 1, 1 },
@@ -960,6 +964,20 @@ SwsContext *sws_alloc_context(void)
     return c;
 }
 
+static uint16_t * alloc_gamma_tbl(double e)
+{
+    int i = 0;
+    uint16_t * tbl;
+    tbl = (uint16_t*)av_malloc(sizeof(uint16_t) * 1 << 16);
+    if (!tbl)
+        return NULL;
+
+    for (i = 0; i < 65536; ++i) {
+        tbl[i] = pow(i / 65535.0, e) * 65535.0;
+    }
+    return tbl;
+}
+
 av_cold int sws_init_context(SwsContext *c, SwsFilter *srcFilter,
                              SwsFilter *dstFilter)
 {
@@ -978,6 +996,7 @@ av_cold int sws_init_context(SwsContext *c, SwsFilter *srcFilter,
     const AVPixFmtDescriptor *desc_src;
     const AVPixFmtDescriptor *desc_dst;
     int ret = 0;
+    enum AVPixelFormat tmpFmt;
 
     cpu_flags = av_get_cpu_flags();
     flags     = c->flags;
@@ -1017,6 +1036,7 @@ av_cold int sws_init_context(SwsContext *c, SwsFilter *srcFilter,
         return AVERROR(EINVAL);
     }
     }
+    av_assert2(desc_src && desc_dst);
 
     i = flags & (SWS_POINT         |
                  SWS_AREA          |
@@ -1138,6 +1158,14 @@ av_cold int sws_init_context(SwsContext *c, SwsFilter *srcFilter,
     if (flags & SWS_FULL_CHR_H_INT &&
         isAnyRGB(dstFormat)        &&
         !isPlanarRGB(dstFormat)    &&
+        dstFormat != AV_PIX_FMT_RGBA64LE &&
+        dstFormat != AV_PIX_FMT_RGBA64BE &&
+        dstFormat != AV_PIX_FMT_BGRA64LE &&
+        dstFormat != AV_PIX_FMT_BGRA64BE &&
+        dstFormat != AV_PIX_FMT_RGB48LE &&
+        dstFormat != AV_PIX_FMT_RGB48BE &&
+        dstFormat != AV_PIX_FMT_BGR48LE &&
+        dstFormat != AV_PIX_FMT_BGR48BE &&
         dstFormat != AV_PIX_FMT_RGBA  &&
         dstFormat != AV_PIX_FMT_ARGB  &&
         dstFormat != AV_PIX_FMT_BGRA  &&
@@ -1233,6 +1261,57 @@ av_cold int sws_init_context(SwsContext *c, SwsFilter *srcFilter,
             c->lumXInc = ((int64_t)(srcW       - 2) << 16) / (dstW       - 2) - 20;
             c->chrXInc = ((int64_t)(c->chrSrcW - 2) << 16) / (c->chrDstW - 2) - 20;
         }
+    }
+
+    // hardcoded for now
+    c->gamma_value = 2.2;
+    tmpFmt = AV_PIX_FMT_RGBA64LE;
+
+
+    if (!unscaled && c->gamma_flag && (srcFormat != tmpFmt || dstFormat != tmpFmt)) {
+        SwsContext *c2;
+        c->cascaded_context[0] = NULL;
+
+        ret = av_image_alloc(c->cascaded_tmp, c->cascaded_tmpStride,
+                            srcW, srcH, tmpFmt, 64);
+        if (ret < 0)
+            return ret;
+
+        c->cascaded_context[0] = sws_getContext(srcW, srcH, srcFormat,
+                                                srcW, srcH, tmpFmt,
+                                                flags, NULL, NULL, c->param);
+        if (!c->cascaded_context[0]) {
+            return -1;
+        }
+
+        c->cascaded_context[1] = sws_getContext(srcW, srcH, tmpFmt,
+                                                dstW, dstH, tmpFmt,
+                                                flags, srcFilter, dstFilter, c->param);
+
+        if (!c->cascaded_context[1])
+            return -1;
+
+        c2 = c->cascaded_context[1];
+        c2->is_internal_gamma = 1;
+        c2->gamma     = alloc_gamma_tbl(    c->gamma_value);
+        c2->inv_gamma = alloc_gamma_tbl(1.f/c->gamma_value);
+        if (!c2->gamma || !c2->inv_gamma)
+            return AVERROR(ENOMEM);
+
+        c->cascaded_context[2] = NULL;
+        if (dstFormat != tmpFmt) {
+            ret = av_image_alloc(c->cascaded1_tmp, c->cascaded1_tmpStride,
+                                dstW, dstH, tmpFmt, 64);
+            if (ret < 0)
+                return ret;
+
+            c->cascaded_context[2] = sws_getContext(dstW, dstH, tmpFmt,
+                                                dstW, dstH, dstFormat,
+                                                flags, NULL, NULL, c->param);
+            if (!c->cascaded_context[2])
+                return -1;
+        }
+        return 0;
     }
 
     if (isBayer(srcFormat)) {
@@ -1583,6 +1662,22 @@ SwsContext *sws_getContext(int srcW, int srcH, enum AVPixelFormat srcFormat,
     return c;
 }
 
+static int isnan_vec(SwsVector *a)
+{
+    int i;
+    for (i=0; i<a->length; i++)
+        if (isnan(a->coeff[i]))
+            return 1;
+    return 0;
+}
+
+static void makenan_vec(SwsVector *a)
+{
+    int i;
+    for (i=0; i<a->length; i++)
+        a->coeff[i] = NAN;
+}
+
 SwsFilter *sws_getDefaultFilter(float lumaGBlur, float chromaGBlur,
                                 float lumaSharpen, float chromaSharpen,
                                 float chromaHShift, float chromaVShift,
@@ -1643,6 +1738,12 @@ SwsFilter *sws_getDefaultFilter(float lumaGBlur, float chromaGBlur,
     sws_normalizeVec(filter->chrV, 1.0);
     sws_normalizeVec(filter->lumH, 1.0);
     sws_normalizeVec(filter->lumV, 1.0);
+
+    if (isnan_vec(filter->chrH) ||
+        isnan_vec(filter->chrV) ||
+        isnan_vec(filter->lumH) ||
+        isnan_vec(filter->lumV))
+        goto fail;
 
     if (verbose)
         sws_printVec2(filter->chrH, NULL, AV_LOG_DEBUG);
@@ -1819,6 +1920,10 @@ static SwsVector *sws_getShiftedVec(SwsVector *a, int shift)
 void sws_shiftVec(SwsVector *a, int shift)
 {
     SwsVector *shifted = sws_getShiftedVec(a, shift);
+    if (!shifted) {
+        makenan_vec(a);
+        return;
+    }
     av_free(a->coeff);
     a->coeff  = shifted->coeff;
     a->length = shifted->length;
@@ -1828,6 +1933,10 @@ void sws_shiftVec(SwsVector *a, int shift)
 void sws_addVec(SwsVector *a, SwsVector *b)
 {
     SwsVector *sum = sws_sumVec(a, b);
+    if (!sum) {
+        makenan_vec(a);
+        return;
+    }
     av_free(a->coeff);
     a->coeff  = sum->coeff;
     a->length = sum->length;
@@ -1837,6 +1946,10 @@ void sws_addVec(SwsVector *a, SwsVector *b)
 void sws_subVec(SwsVector *a, SwsVector *b)
 {
     SwsVector *diff = sws_diffVec(a, b);
+    if (!diff) {
+        makenan_vec(a);
+        return;
+    }
     av_free(a->coeff);
     a->coeff  = diff->coeff;
     a->length = diff->length;
@@ -1846,6 +1959,10 @@ void sws_subVec(SwsVector *a, SwsVector *b)
 void sws_convVec(SwsVector *a, SwsVector *b)
 {
     SwsVector *conv = sws_getConvVec(a, b);
+    if (!conv) {
+        makenan_vec(a);
+        return;
+    }
     av_free(a->coeff);
     a->coeff  = conv->coeff;
     a->length = conv->length;
@@ -1977,8 +2094,14 @@ void sws_freeContext(SwsContext *c)
 
     sws_freeContext(c->cascaded_context[0]);
     sws_freeContext(c->cascaded_context[1]);
+    sws_freeContext(c->cascaded_context[2]);
     memset(c->cascaded_context, 0, sizeof(c->cascaded_context));
     av_freep(&c->cascaded_tmp[0]);
+    av_freep(&c->cascaded1_tmp[0]);
+
+    av_freep(&c->gamma);
+    av_freep(&c->inv_gamma);
+
 
     av_free(c);
 }

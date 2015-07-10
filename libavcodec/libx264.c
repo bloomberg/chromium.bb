@@ -148,12 +148,102 @@ static int avfmt2_num_planes(int avfmt)
     case AV_PIX_FMT_YUV444P:
         return 3;
 
+    case AV_PIX_FMT_BGR0:
     case AV_PIX_FMT_BGR24:
     case AV_PIX_FMT_RGB24:
         return 1;
 
     default:
         return 3;
+    }
+}
+
+static void reconfig_encoder(AVCodecContext *ctx, const AVFrame *frame)
+{
+    X264Context *x4 = ctx->priv_data;
+    AVFrameSideData *side_data;
+
+
+  if (x4->avcintra_class < 0) {
+    if (x4->params.b_interlaced && x4->params.b_tff != frame->top_field_first) {
+
+        x4->params.b_tff = frame->top_field_first;
+        x264_encoder_reconfig(x4->enc, &x4->params);
+    }
+    if (x4->params.vui.i_sar_height != ctx->sample_aspect_ratio.den ||
+        x4->params.vui.i_sar_width  != ctx->sample_aspect_ratio.num) {
+        x4->params.vui.i_sar_height = ctx->sample_aspect_ratio.den;
+        x4->params.vui.i_sar_width  = ctx->sample_aspect_ratio.num;
+        x264_encoder_reconfig(x4->enc, &x4->params);
+    }
+
+    if (x4->params.rc.i_vbv_buffer_size != ctx->rc_buffer_size / 1000 ||
+        x4->params.rc.i_vbv_max_bitrate != ctx->rc_max_rate    / 1000) {
+        x4->params.rc.i_vbv_buffer_size = ctx->rc_buffer_size / 1000;
+        x4->params.rc.i_vbv_max_bitrate = ctx->rc_max_rate    / 1000;
+        x264_encoder_reconfig(x4->enc, &x4->params);
+    }
+
+    if (x4->params.rc.i_rc_method == X264_RC_ABR &&
+        x4->params.rc.i_bitrate != ctx->bit_rate / 1000) {
+        x4->params.rc.i_bitrate = ctx->bit_rate / 1000;
+        x264_encoder_reconfig(x4->enc, &x4->params);
+    }
+
+    if (x4->crf >= 0 &&
+        x4->params.rc.i_rc_method == X264_RC_CRF &&
+        x4->params.rc.f_rf_constant != x4->crf) {
+        x4->params.rc.f_rf_constant = x4->crf;
+        x264_encoder_reconfig(x4->enc, &x4->params);
+    }
+
+    if (x4->params.rc.i_rc_method == X264_RC_CQP &&
+        x4->cqp >= 0 &&
+        x4->params.rc.i_qp_constant != x4->cqp) {
+        x4->params.rc.i_qp_constant = x4->cqp;
+        x264_encoder_reconfig(x4->enc, &x4->params);
+    }
+
+    if (x4->crf_max >= 0 &&
+        x4->params.rc.f_rf_constant_max != x4->crf_max) {
+        x4->params.rc.f_rf_constant_max = x4->crf_max;
+        x264_encoder_reconfig(x4->enc, &x4->params);
+    }
+  }
+
+    side_data = av_frame_get_side_data(frame, AV_FRAME_DATA_STEREO3D);
+    if (side_data) {
+        AVStereo3D *stereo = (AVStereo3D *)side_data->data;
+        int fpa_type;
+
+        switch (stereo->type) {
+        case AV_STEREO3D_CHECKERBOARD:
+            fpa_type = 0;
+            break;
+        case AV_STEREO3D_COLUMNS:
+            fpa_type = 1;
+            break;
+        case AV_STEREO3D_LINES:
+            fpa_type = 2;
+            break;
+        case AV_STEREO3D_SIDEBYSIDE:
+            fpa_type = 3;
+            break;
+        case AV_STEREO3D_TOPBOTTOM:
+            fpa_type = 4;
+            break;
+        case AV_STEREO3D_FRAMESEQUENCE:
+            fpa_type = 5;
+            break;
+        default:
+            fpa_type = -1;
+            break;
+        }
+
+        if (fpa_type != x4->params.i_frame_packing) {
+            x4->params.i_frame_packing = fpa_type;
+            x264_encoder_reconfig(x4->enc, &x4->params);
+        }
     }
 }
 
@@ -164,7 +254,6 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
     x264_nal_t *nal;
     int nnal, i, ret;
     x264_picture_t pic_out = {0};
-    AVFrameSideData *side_data;
 
     x264_picture_init( &x4->pic );
     x4->pic.img.i_csp   = x4->params.i_csp;
@@ -185,86 +274,7 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
             frame->pict_type == AV_PICTURE_TYPE_B ? X264_TYPE_B :
                                             X264_TYPE_AUTO;
 
-        if (x4->avcintra_class < 0) {
-        if (x4->params.b_interlaced && x4->params.b_tff != frame->top_field_first) {
-            x4->params.b_tff = frame->top_field_first;
-            x264_encoder_reconfig(x4->enc, &x4->params);
-        }
-        if (x4->params.vui.i_sar_height != ctx->sample_aspect_ratio.den ||
-            x4->params.vui.i_sar_width  != ctx->sample_aspect_ratio.num) {
-            x4->params.vui.i_sar_height = ctx->sample_aspect_ratio.den;
-            x4->params.vui.i_sar_width  = ctx->sample_aspect_ratio.num;
-            x264_encoder_reconfig(x4->enc, &x4->params);
-        }
-
-        if (x4->params.rc.i_vbv_buffer_size != ctx->rc_buffer_size / 1000 ||
-            x4->params.rc.i_vbv_max_bitrate != ctx->rc_max_rate    / 1000) {
-            x4->params.rc.i_vbv_buffer_size = ctx->rc_buffer_size / 1000;
-            x4->params.rc.i_vbv_max_bitrate = ctx->rc_max_rate    / 1000;
-            x264_encoder_reconfig(x4->enc, &x4->params);
-        }
-
-        if (x4->params.rc.i_rc_method == X264_RC_ABR &&
-            x4->params.rc.i_bitrate != ctx->bit_rate / 1000) {
-            x4->params.rc.i_bitrate = ctx->bit_rate / 1000;
-            x264_encoder_reconfig(x4->enc, &x4->params);
-        }
-
-        if (x4->crf >= 0 &&
-            x4->params.rc.i_rc_method == X264_RC_CRF &&
-            x4->params.rc.f_rf_constant != x4->crf) {
-            x4->params.rc.f_rf_constant = x4->crf;
-            x264_encoder_reconfig(x4->enc, &x4->params);
-        }
-
-        if (x4->params.rc.i_rc_method == X264_RC_CQP &&
-            x4->cqp >= 0 &&
-            x4->params.rc.i_qp_constant != x4->cqp) {
-            x4->params.rc.i_qp_constant = x4->cqp;
-            x264_encoder_reconfig(x4->enc, &x4->params);
-        }
-
-        if (x4->crf_max >= 0 &&
-            x4->params.rc.f_rf_constant_max != x4->crf_max) {
-            x4->params.rc.f_rf_constant_max = x4->crf_max;
-            x264_encoder_reconfig(x4->enc, &x4->params);
-        }
-        }
-
-        side_data = av_frame_get_side_data(frame, AV_FRAME_DATA_STEREO3D);
-        if (side_data) {
-            AVStereo3D *stereo = (AVStereo3D *)side_data->data;
-            int fpa_type;
-
-            switch (stereo->type) {
-            case AV_STEREO3D_CHECKERBOARD:
-                fpa_type = 0;
-                break;
-            case AV_STEREO3D_COLUMNS:
-                fpa_type = 1;
-                break;
-            case AV_STEREO3D_LINES:
-                fpa_type = 2;
-                break;
-            case AV_STEREO3D_SIDEBYSIDE:
-                fpa_type = 3;
-                break;
-            case AV_STEREO3D_TOPBOTTOM:
-                fpa_type = 4;
-                break;
-            case AV_STEREO3D_FRAMESEQUENCE:
-                fpa_type = 5;
-                break;
-            default:
-                fpa_type = -1;
-                break;
-            }
-
-            if (fpa_type != x4->params.i_frame_packing) {
-                x4->params.i_frame_packing = fpa_type;
-                x264_encoder_reconfig(x4->enc, &x4->params);
-            }
-        }
+        reconfig_encoder(ctx, frame);
     }
     do {
         if (x264_encoder_encode(x4->enc, &nal, &nnal, frame? &x4->pic: NULL, &pic_out) < 0)
@@ -307,8 +317,10 @@ static av_cold int X264_close(AVCodecContext *avctx)
     av_freep(&avctx->extradata);
     av_freep(&x4->sei);
 
-    if (x4->enc)
+    if (x4->enc) {
         x264_encoder_close(x4->enc);
+        x4->enc = NULL;
+    }
 
     av_frame_free(&avctx->coded_frame);
 
@@ -344,6 +356,8 @@ static int convert_pix_fmt(enum AVPixelFormat pix_fmt)
     case AV_PIX_FMT_YUV444P9:
     case AV_PIX_FMT_YUV444P10: return X264_CSP_I444;
 #ifdef X264_CSP_BGR
+    case AV_PIX_FMT_BGR0:
+        return X264_CSP_BGRA;
     case AV_PIX_FMT_BGR24:
         return X264_CSP_BGR;
 
@@ -701,7 +715,7 @@ static av_cold int X264_init(AVCodecContext *avctx)
         s = x264_encoder_headers(x4->enc, &nal, &nnal);
         avctx->extradata = p = av_malloc(s);
         if (!p)
-            goto nomem;
+            return AVERROR(ENOMEM);
 
         for (i = 0; i < nnal; i++) {
             /* Don't put the SEI in extradata. */
@@ -710,7 +724,7 @@ static av_cold int X264_init(AVCodecContext *avctx)
                 x4->sei_size = nal[i].i_payload;
                 x4->sei      = av_malloc(x4->sei_size);
                 if (!x4->sei)
-                    goto nomem;
+                    return AVERROR(ENOMEM);
                 memcpy(x4->sei, nal[i].p_payload, nal[i].i_payload);
                 continue;
             }
@@ -721,9 +735,6 @@ static av_cold int X264_init(AVCodecContext *avctx)
     }
 
     return 0;
-nomem:
-    X264_close(avctx);
-    return AVERROR(ENOMEM);
 }
 
 static const enum AVPixelFormat pix_fmts_8bit[] = {
@@ -751,6 +762,7 @@ static const enum AVPixelFormat pix_fmts_10bit[] = {
 };
 static const enum AVPixelFormat pix_fmts_8bit_rgb[] = {
 #ifdef X264_CSP_BGR
+    AV_PIX_FMT_BGR0,
     AV_PIX_FMT_BGR24,
     AV_PIX_FMT_RGB24,
 #endif
@@ -889,6 +901,8 @@ AVCodec ff_libx264_encoder = {
     .priv_class       = &x264_class,
     .defaults         = x264_defaults,
     .init_static_data = X264_init_static,
+    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE |
+                        FF_CODEC_CAP_INIT_CLEANUP,
 };
 
 AVCodec ff_libx264rgb_encoder = {

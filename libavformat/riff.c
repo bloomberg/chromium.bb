@@ -110,6 +110,9 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_MPEG4,        MKTAG('D', 'r', 'e', 'X') },
     { AV_CODEC_ID_MPEG4,        MKTAG('Q', 'M', 'P', '4') }, /* QNAP Systems */
     { AV_CODEC_ID_MPEG4,        MKTAG('P', 'L', 'V', '1') }, /* Pelco DVR MPEG-4 */
+    { AV_CODEC_ID_MPEG4,        MKTAG('G', 'L', 'V', '4') },
+    { AV_CODEC_ID_MPEG4,        MKTAG('G', 'M', 'P', '4') }, /* GeoVision camera */
+    { AV_CODEC_ID_MPEG4,        MKTAG('M', 'N', 'M', '4') }, /* March Networks DVR */
     { AV_CODEC_ID_MSMPEG4V3,    MKTAG('M', 'P', '4', '3') },
     { AV_CODEC_ID_MSMPEG4V3,    MKTAG('D', 'I', 'V', '3') },
     { AV_CODEC_ID_MSMPEG4V3,    MKTAG('M', 'P', 'G', '3') },
@@ -164,10 +167,12 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_MPEG2VIDEO,   MKTAG('E', 'M', '2', 'V') },
     /* Matrox MPEG-2 intra-only */
     { AV_CODEC_ID_MPEG2VIDEO,   MKTAG('M', '7', '0', '1') },
+    { AV_CODEC_ID_MPEG2VIDEO,   MKTAG('M', '7', '0', '5') },
     { AV_CODEC_ID_MPEG2VIDEO,   MKTAG('m', 'p', 'g', 'v') },
     { AV_CODEC_ID_MPEG1VIDEO,   MKTAG('B', 'W', '1', '0') },
     { AV_CODEC_ID_MPEG1VIDEO,   MKTAG('X', 'M', 'P', 'G') }, /* Xing MPEG intra only */
     { AV_CODEC_ID_MJPEG,        MKTAG('M', 'J', 'P', 'G') },
+    { AV_CODEC_ID_MJPEG,        MKTAG('M', 'S', 'C', '2') }, /* Multiscope II */
     { AV_CODEC_ID_MJPEG,        MKTAG('L', 'J', 'P', 'G') },
     { AV_CODEC_ID_MJPEG,        MKTAG('d', 'm', 'b', '1') },
     { AV_CODEC_ID_MJPEG,        MKTAG('m', 'j', 'p', 'a') },
@@ -365,6 +370,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_FIC,          MKTAG('F', 'I', 'C', 'V') },
     { AV_CODEC_ID_HQX,          MKTAG('C', 'H', 'Q', 'X') },
     { AV_CODEC_ID_TDSC,         MKTAG('T', 'D', 'S', 'C') },
+    { AV_CODEC_ID_HQ_HQA,       MKTAG('C', 'U', 'V', 'C') },
     { AV_CODEC_ID_NONE,         0 }
 };
 
@@ -404,6 +410,7 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { AV_CODEC_ID_ADPCM_G726,      0x0064 },
     { AV_CODEC_ID_ADPCM_IMA_WAV,   0x0069 },
     { AV_CODEC_ID_METASOUND,       0x0075 },
+    { AV_CODEC_ID_G729,            0x0083 },
     { AV_CODEC_ID_AAC,             0x00ff },
     { AV_CODEC_ID_G723_1,          0x0111 },
     { AV_CODEC_ID_SIPR,            0x0130 },
@@ -433,6 +440,7 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { AV_CODEC_ID_AAC,             0x706d },
     { AV_CODEC_ID_AAC,             0x4143 },
     { AV_CODEC_ID_XAN_DPCM,        0x594a },
+    { AV_CODEC_ID_G729,            0x729A },
     { AV_CODEC_ID_G723_1,          0xA100 }, /* Comverse Infosys Ltd. G723 1 */
     { AV_CODEC_ID_AAC,             0xA106 },
     { AV_CODEC_ID_SPEEX,           0xA109 },

@@ -1383,7 +1383,7 @@ DERING_CORE((%0, %1, 8)    ,(%%REGd, %1, 4),%%mm2,%%mm4,%%mm0,%%mm3,%%mm5,%%mm1,
 #ifdef DEBUG_DERING_THRESHOLD
                     __asm__ volatile("emms\n\t":);
                     {
-                    static long long numPixels=0;
+                    static uint64_t numPixels=0;
                     if(x!=1 && x!=8 && y!=1 && y!=8) numPixels++;
 //                    if((max-min)<20 || (max-min)*QP<200)
 //                    if((max-min)*QP < 500)
@@ -3242,6 +3242,69 @@ static inline void RENAME(duplicate)(uint8_t src[], int stride)
 #endif
 }
 
+#if ARCH_X86 && TEMPLATE_PP_MMXEXT
+static inline void RENAME(prefetchnta)(const void *p)
+{
+    __asm__ volatile(   "prefetchnta (%0)\n\t"
+        : : "r" (p)
+    );
+}
+
+static inline void RENAME(prefetcht0)(const void *p)
+{
+    __asm__ volatile(   "prefetcht0 (%0)\n\t"
+        : : "r" (p)
+    );
+}
+
+static inline void RENAME(prefetcht1)(const void *p)
+{
+    __asm__ volatile(   "prefetcht1 (%0)\n\t"
+        : : "r" (p)
+    );
+}
+
+static inline void RENAME(prefetcht2)(const void *p)
+{
+    __asm__ volatile(   "prefetcht2 (%0)\n\t"
+        : : "r" (p)
+    );
+}
+#elif !ARCH_X86 && AV_GCC_VERSION_AT_LEAST(3,2)
+static inline void RENAME(prefetchnta)(const void *p)
+{
+    __builtin_prefetch(p,0,0);
+}
+static inline void RENAME(prefetcht0)(const void *p)
+{
+    __builtin_prefetch(p,0,1);
+}
+static inline void RENAME(prefetcht1)(const void *p)
+{
+    __builtin_prefetch(p,0,2);
+}
+static inline void RENAME(prefetcht2)(const void *p)
+{
+    __builtin_prefetch(p,0,3);
+}
+#else
+static inline void RENAME(prefetchnta)(const void *p)
+{
+    return;
+}
+static inline void RENAME(prefetcht0)(const void *p)
+{
+    return;
+}
+static inline void RENAME(prefetcht1)(const void *p)
+{
+    return;
+}
+static inline void RENAME(prefetcht2)(const void *p)
+{
+    return;
+}
+#endif
 /**
  * Filter array of bytes (Y or U or V values)
  */
@@ -3309,7 +3372,7 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
         int i;
         uint64_t maxClipped;
         uint64_t clipped;
-        double scale;
+        AVRational scale;
 
         c.frameNum++;
         // first frame is fscked so we ignore it
@@ -3320,7 +3383,7 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
         }
 
         /* We always get a completely black picture first. */
-        maxClipped= (uint64_t)(sum * c.ppMode.maxClippedThreshold);
+        maxClipped= av_rescale(sum, c.ppMode.maxClippedThreshold.num, c.ppMode.maxClippedThreshold.den);
 
         clipped= sum;
         for(black=255; black>0; black--){
@@ -3334,13 +3397,13 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
             clipped-= yHistogram[white];
         }
 
-        scale= (double)(c.ppMode.maxAllowedY - c.ppMode.minAllowedY) / (double)(white-black);
+        scale = (AVRational){c.ppMode.maxAllowedY - c.ppMode.minAllowedY, white - black};
 
 #if TEMPLATE_PP_MMXEXT
-        c.packedYScale= (uint16_t)(scale*256.0 + 0.5);
+        c.packedYScale = (uint16_t)av_rescale(scale.num, 256, scale.den);
         c.packedYOffset= (((black*c.packedYScale)>>8) - c.ppMode.minAllowedY) & 0xFFFF;
 #else
-        c.packedYScale= (uint16_t)(scale*1024.0 + 0.5);
+        c.packedYScale = (uint16_t)av_rescale(scale.num, 1024, scale.den);
         c.packedYOffset= (black - c.ppMode.minAllowedY) & 0xFFFF;
 #endif
 
@@ -3350,7 +3413,7 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
         c.packedYScale|= c.packedYScale<<32;
         c.packedYScale|= c.packedYScale<<16;
 
-        if(mode & LEVEL_FIX)        QPCorrecture= (int)(scale*256*256 + 0.5);
+        if(mode & LEVEL_FIX)        QPCorrecture= (int)av_rescale(scale.num, 256*256, scale.den);
         else                        QPCorrecture= 256*256;
     }else{
         c.packedYScale= 0x0100010001000100LL;
@@ -3368,34 +3431,10 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
         // finish 1 block before the next otherwise we might have a problem
         // with the L1 Cache of the P4 ... or only a few blocks at a time or something
         for(x=0; x<width; x+=BLOCK_SIZE){
-
-#if TEMPLATE_PP_MMXEXT && HAVE_6REGS
-/*
-            prefetchnta(srcBlock + (((x>>2)&6) + 5)*srcStride + 32);
-            prefetchnta(srcBlock + (((x>>2)&6) + 6)*srcStride + 32);
-            prefetcht0(dstBlock + (((x>>2)&6) + 5)*dstStride + 32);
-            prefetcht0(dstBlock + (((x>>2)&6) + 6)*dstStride + 32);
-*/
-
-            __asm__(
-                "mov %4, %%"REG_a"              \n\t"
-                "shr $2, %%"REG_a"              \n\t"
-                "and $6, %%"REG_a"              \n\t"
-                "add %5, %%"REG_a"              \n\t"
-                "mov %%"REG_a", %%"REG_d"       \n\t"
-                "imul %1, %%"REG_a"             \n\t"
-                "imul %3, %%"REG_d"             \n\t"
-                "prefetchnta 32(%%"REG_a", %0)  \n\t"
-                "prefetcht0 32(%%"REG_d", %2)   \n\t"
-                "add %1, %%"REG_a"              \n\t"
-                "add %3, %%"REG_d"              \n\t"
-                "prefetchnta 32(%%"REG_a", %0)  \n\t"
-                "prefetcht0 32(%%"REG_d", %2)   \n\t"
-                :: "r" (srcBlock), "r" ((x86_reg)srcStride), "r" (dstBlock), "r" ((x86_reg)dstStride),
-                "g" ((x86_reg)x), "g" ((x86_reg)copyAhead)
-                : "%"REG_a, "%"REG_d
-            );
-#endif
+            RENAME(prefetchnta)(srcBlock + (((x>>2)&6) + copyAhead)*srcStride + 32);
+            RENAME(prefetchnta)(srcBlock + (((x>>2)&6) + copyAhead+1)*srcStride + 32);
+            RENAME(prefetcht0)(dstBlock + (((x>>2)&6) + copyAhead)*dstStride + 32);
+            RENAME(prefetcht0)(dstBlock + (((x>>2)&6) + copyAhead+1)*dstStride + 32);
 
             RENAME(blockCopy)(dstBlock + dstStride*8, dstStride,
                               srcBlock + srcStride*8, srcStride, mode & LEVEL_FIX, &c.packedYOffset);
@@ -3440,7 +3479,7 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
 #endif
         const int8_t *QPptr= &QPs[(y>>qpVShift)*QPStride];
         int8_t *nonBQPptr= &c.nonBQPTable[(y>>qpVShift)*FFABS(QPStride)];
-        int QP=0;
+        int QP=0, nonBQP=0;
         /* can we mess with a 8x16 block from srcBlock/dstBlock downwards and 1 line upwards
            if not than use a temporary buffer */
         if(y+15 >= height){
@@ -3473,34 +3512,34 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
             int endx = FFMIN(width, x+32);
             uint8_t *dstBlockStart = dstBlock;
             const uint8_t *srcBlockStart = srcBlock;
-          for(; x < endx; x+=BLOCK_SIZE){
-#if TEMPLATE_PP_MMXEXT && HAVE_6REGS
-/*
-            prefetchnta(srcBlock + (((x>>2)&6) + 5)*srcStride + 32);
-            prefetchnta(srcBlock + (((x>>2)&6) + 6)*srcStride + 32);
-            prefetcht0(dstBlock + (((x>>2)&6) + 5)*dstStride + 32);
-            prefetcht0(dstBlock + (((x>>2)&6) + 6)*dstStride + 32);
-*/
-
-            __asm__(
-                "mov %4, %%"REG_a"              \n\t"
-                "shr $2, %%"REG_a"              \n\t"
-                "and $6, %%"REG_a"              \n\t"
-                "add %5, %%"REG_a"              \n\t"
-                "mov %%"REG_a", %%"REG_d"       \n\t"
-                "imul %1, %%"REG_a"             \n\t"
-                "imul %3, %%"REG_d"             \n\t"
-                "prefetchnta 32(%%"REG_a", %0)  \n\t"
-                "prefetcht0 32(%%"REG_d", %2)   \n\t"
-                "add %1, %%"REG_a"              \n\t"
-                "add %3, %%"REG_d"              \n\t"
-                "prefetchnta 32(%%"REG_a", %0)  \n\t"
-                "prefetcht0 32(%%"REG_d", %2)   \n\t"
-                :: "r" (srcBlock), "r" ((x86_reg)srcStride), "r" (dstBlock), "r" ((x86_reg)dstStride),
-                "g" ((x86_reg)x), "g" ((x86_reg)copyAhead)
-                : "%"REG_a, "%"REG_d
+            int qp_index = 0;
+            for(qp_index=0; qp_index < (endx-startx)/BLOCK_SIZE; qp_index++){
+                QP = QPptr[(x+qp_index*BLOCK_SIZE)>>qpHShift];
+                nonBQP = nonBQPptr[(x+qp_index*BLOCK_SIZE)>>qpHShift];
+            if(!isColor){
+                QP= (QP* QPCorrecture + 256*128)>>16;
+                nonBQP= (nonBQP* QPCorrecture + 256*128)>>16;
+                yHistogram[(srcBlock+qp_index*8)[srcStride*12 + 4]]++;
+            }
+            c.QP_block[qp_index] = QP;
+            c.nonBQP_block[qp_index] = nonBQP;
+#if TEMPLATE_PP_MMX
+            __asm__ volatile(
+                "movd %1, %%mm7         \n\t"
+                "packuswb %%mm7, %%mm7  \n\t" // 0, 0, 0, QP, 0, 0, 0, QP
+                "packuswb %%mm7, %%mm7  \n\t" // 0,QP, 0, QP, 0,QP, 0, QP
+                "packuswb %%mm7, %%mm7  \n\t" // QP,..., QP
+                "movq %%mm7, %0         \n\t"
+                : "=m" (c.pQPb_block[qp_index])
+                : "r" (QP)
             );
 #endif
+            }
+          for(; x < endx; x+=BLOCK_SIZE){
+            RENAME(prefetchnta)(srcBlock + (((x>>2)&6) + copyAhead)*srcStride + 32);
+            RENAME(prefetchnta)(srcBlock + (((x>>2)&6) + copyAhead+1)*srcStride + 32);
+            RENAME(prefetcht0)(dstBlock + (((x>>2)&6) + copyAhead)*dstStride + 32);
+            RENAME(prefetcht0)(dstBlock + (((x>>2)&6) + copyAhead+1)*dstStride + 32);
 
             RENAME(blockCopy)(dstBlock + dstStride*copyAhead, dstStride,
                               srcBlock + srcStride*copyAhead, srcStride, mode & LEVEL_FIX, &c.packedYOffset);
@@ -3527,31 +3566,15 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
           dstBlock = dstBlockStart;
           srcBlock = srcBlockStart;
 
-          for(x = startx; x < endx; x+=BLOCK_SIZE){
+          for(x = startx, qp_index = 0; x < endx; x+=BLOCK_SIZE, qp_index++){
             const int stride= dstStride;
+            //temporary while changing QP stuff to make things continue to work
+            //eventually QP,nonBQP,etc will be arrays and this will be unnecessary
+            c.QP = c.QP_block[qp_index];
+            c.nonBQP = c.nonBQP_block[qp_index];
+            c.pQPb = c.pQPb_block[qp_index];
+            c.pQPb2 = c.pQPb2_block[qp_index];
 
-            if(isColor){
-                QP= QPptr[x>>qpHShift];
-                c.nonBQP= nonBQPptr[x>>qpHShift];
-            }else{
-                QP= QPptr[x>>4];
-                QP= (QP* QPCorrecture + 256*128)>>16;
-                c.nonBQP= nonBQPptr[x>>4];
-                c.nonBQP= (c.nonBQP* QPCorrecture + 256*128)>>16;
-                yHistogram[ srcBlock[srcStride*12 + 4] ]++;
-            }
-            c.QP= QP;
-#if TEMPLATE_PP_MMX
-            __asm__ volatile(
-                "movd %1, %%mm7         \n\t"
-                "packuswb %%mm7, %%mm7  \n\t" // 0, 0, 0, QP, 0, 0, 0, QP
-                "packuswb %%mm7, %%mm7  \n\t" // 0,QP, 0, QP, 0,QP, 0, QP
-                "packuswb %%mm7, %%mm7  \n\t" // QP,..., QP
-                "movq %%mm7, %0         \n\t"
-                : "=m" (c.pQPb)
-                : "r" (QP)
-            );
-#endif
             /* only deblock if we have 2 blocks */
             if(y + 8 < height){
                 if(mode & V_X1_FILTER)
@@ -3575,30 +3598,14 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
           dstBlock = dstBlockStart;
           srcBlock = srcBlockStart;
 
-          for(x = startx; x < endx; x+=BLOCK_SIZE){
+          for(x = startx, qp_index=0; x < endx; x+=BLOCK_SIZE, qp_index++){
             const int stride= dstStride;
             av_unused uint8_t *tmpXchg;
-
-            if(isColor){
-                QP= QPptr[x>>qpHShift];
-                c.nonBQP= nonBQPptr[x>>qpHShift];
-            }else{
-                QP= QPptr[x>>4];
-                QP= (QP* QPCorrecture + 256*128)>>16;
-                c.nonBQP= nonBQPptr[x>>4];
-                c.nonBQP= (c.nonBQP* QPCorrecture + 256*128)>>16;
-            }
-            c.QP= QP;
+            c.QP = c.QP_block[qp_index];
+            c.nonBQP = c.nonBQP_block[qp_index];
+            c.pQPb = c.pQPb_block[qp_index];
+            c.pQPb2 = c.pQPb2_block[qp_index];
 #if TEMPLATE_PP_MMX
-            __asm__ volatile(
-                "movd %1, %%mm7         \n\t"
-                "packuswb %%mm7, %%mm7  \n\t" // 0, 0, 0, QP, 0, 0, 0, QP
-                "packuswb %%mm7, %%mm7  \n\t" // 0,QP, 0, QP, 0,QP, 0, QP
-                "packuswb %%mm7, %%mm7  \n\t" // QP,..., QP
-                "movq %%mm7, %0         \n\t"
-                : "=m" (c.pQPb)
-                : "r" (QP)
-            );
             RENAME(transpose1)(tempBlock1, tempBlock2, dstBlock, dstStride);
 #endif
             /* check if we have a previous block to deblock it with dstBlock */
@@ -3620,7 +3627,7 @@ static void RENAME(postProcess)(const uint8_t src[], int srcStride, uint8_t dst[
 
 #else
                 if(mode & H_X1_FILTER)
-                    horizX1Filter(dstBlock-4, stride, QP);
+                    horizX1Filter(dstBlock-4, stride, c.QP);
                 else if(mode & H_DEBLOCK){
 #if TEMPLATE_PP_ALTIVEC
                     DECLARE_ALIGNED(16, unsigned char, tempBlock)[272];

@@ -5,6 +5,18 @@ Upstream cherry-picks:
   None
 
 Current patches:
+  autorename_* files are renamed copies of various files that would cause
+    base name collisions from mac libtool. These files are generated
+    by generate_gyp.py. https://chromium-review.googlesource.com/#/c/274543v/
+
+  Change libavcodec/internal.h ff_tlong define from while(0) to (void(0)).
+    This fixes "while loop has empty body" compile errors.
+
+  Changes/additions to libavutil/x86/x86inc.asm
+    https://chromium-review.googlesource.com/#/c/272274/
+    Fixes the conditionals on Linux so that these symbols are hidden and
+    adds the Chromium-specific private_extern extension for hiding these
+    symbols on OSX.
 
   Changes/additions to compat/msvcrt/{snprintf.h,strtod.h}
     Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
@@ -16,7 +28,11 @@ Current patches:
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs. In Chromium
     all codecs should use the safe bitstream reader.
 
-  Harden libavformat/matroskadec.c
+  Changes to libavformat/matroskadec.c
+    Remove extra const from static EbmlSyntax arrays. This fixes windows
+    compile error C4114, since EbmlSyntax struct is already defined with const.
+    TODO: push upstream.
+
     Add CONFIG_SIPR_DECODER and CONFIG_LZO checks to remove code that may be a
     security risk. Discuss with cevans before removing.
 

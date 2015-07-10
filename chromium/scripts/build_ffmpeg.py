@@ -301,9 +301,11 @@ def main(argv):
       '--disable-symver',
       '--disable-xlib',
       '--disable-zlib',
+      '--disable-securetransport',
 
       # Disable hardware decoding options which will sometimes turn on
       # via autodetect.
+      '--disable-d3d11va',
       '--disable-dxva2',
       '--disable-vaapi',
       '--disable-vda',

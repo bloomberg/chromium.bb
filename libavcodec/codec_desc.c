@@ -1178,7 +1178,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
     {
         .id        = AV_CODEC_ID_SMVJPEG,
         .type      = AVMEDIA_TYPE_VIDEO,
-        .name      = "smv",
+        .name      = "smvjpeg",
         .long_name = NULL_IF_CONFIG_SMALL("Sigmatel Motion Video"),
     },
 
@@ -1243,6 +1243,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .type      = AVMEDIA_TYPE_VIDEO,
         .name      = "hqx",
         .long_name = NULL_IF_CONFIG_SMALL("Canopus HQX"),
+        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
+    },
+    {
+        .id        = AV_CODEC_ID_HQ_HQA,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "hq_hqa",
+        .long_name = NULL_IF_CONFIG_SMALL("Canopus HQ/HQA"),
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
     },
 

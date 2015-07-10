@@ -1607,9 +1607,10 @@ static int mov_write_colr_tag(AVIOContext *pb, MOVTrack *track)
     default:                  avio_wb16(pb, 2);
     }
     switch (track->enc->colorspace) {
-    case AVCOL_TRC_BT709:     avio_wb16(pb, 1); break;
-    case AVCOL_PRI_SMPTE170M: avio_wb16(pb, 6); break;
-    case AVCOL_PRI_SMPTE240M: avio_wb16(pb, 7); break;
+    case AVCOL_SPC_BT709:     avio_wb16(pb, 1); break;
+    case AVCOL_SPC_BT470BG:
+    case AVCOL_SPC_SMPTE170M: avio_wb16(pb, 6); break;
+    case AVCOL_SPC_SMPTE240M: avio_wb16(pb, 7); break;
     default:                  avio_wb16(pb, 2);
     }
 
@@ -1800,7 +1801,7 @@ static int mov_write_tmcd_tag(AVIOContext *pb, MOVTrack *track)
     int64_t pos = avio_tell(pb);
 #if 1
     int frame_duration = av_rescale(track->timescale, track->enc->time_base.num, track->enc->time_base.den);
-    int nb_frames = 1.0/av_q2d(track->enc->time_base) + 0.5;
+    int nb_frames = ROUNDED_DIV(track->enc->time_base.den, track->enc->time_base.num);
     AVDictionaryEntry *t = NULL;
 
     if (nb_frames > 255) {
@@ -2367,11 +2368,15 @@ static int mov_write_tkhd_tag(AVIOContext *pb, MOVMuxContext *mov,
             avio_wb32(pb, track->enc->width << 16);
             avio_wb32(pb, track->height << 16);
         } else {
-            double sample_aspect_ratio = av_q2d(st->sample_aspect_ratio);
-            if (!sample_aspect_ratio || track->height != track->enc->height)
-                sample_aspect_ratio = 1;
-            avio_wb32(pb, sample_aspect_ratio * track->enc->width * 0x10000);
-            avio_wb32(pb, track->height * 0x10000);
+            int64_t track_width_1616 = av_rescale(st->sample_aspect_ratio.num,
+                                                  track->enc->width * 0x10000LL,
+                                                  st->sample_aspect_ratio.den);
+            if (!track_width_1616 ||
+                track->height != track->enc->height ||
+                track_width_1616 > UINT32_MAX)
+                track_width_1616 = track->enc->width * 0x10000U;
+            avio_wb32(pb, track_width_1616);
+            avio_wb32(pb, track->height * 0x10000U);
         }
     } else {
         avio_wb32(pb, 0);
@@ -3075,6 +3080,7 @@ static int mov_write_udta_tag(AVIOContext *pb, MOVMuxContext *mov,
         mov_write_string_metadata(s, pb_buf, "\251cpy", "copyright",   0);
         mov_write_string_metadata(s, pb_buf, "\251mak", "make",        0);
         mov_write_string_metadata(s, pb_buf, "\251mod", "model",       0);
+        mov_write_string_metadata(s, pb_buf, "\251xyz", "location",    0);
         mov_write_raw_metadata_tag(s, pb_buf, "XMP_", "xmp");
     } else {
         /* iTunes meta data */
@@ -4335,7 +4341,7 @@ int ff_mov_write_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (enc->codec_id == AV_CODEC_ID_AMR_NB) {
         /* We must find out how many AMR blocks there are in one packet */
-        static uint16_t packed_size[16] =
+        static const uint16_t packed_size[16] =
             {13, 14, 16, 18, 20, 21, 27, 32, 6, 0, 0, 0, 0, 0, 0, 1};
         int len = 0;
 
@@ -4876,9 +4882,9 @@ static uint32_t rgb_to_yuv(uint32_t rgb)
     g = (rgb >>  8) & 0xFF;
     b = (rgb      ) & 0xFF;
 
-    y  = av_clip_uint8( 16. +  0.257 * r + 0.504 * g + 0.098 * b);
-    cb = av_clip_uint8(128. -  0.148 * r - 0.291 * g + 0.439 * b);
-    cr = av_clip_uint8(128. +  0.439 * r - 0.368 * g - 0.071 * b);
+    y  = av_clip_uint8(( 16000 +  257 * r + 504 * g +  98 * b)/1000);
+    cb = av_clip_uint8((128000 -  148 * r - 291 * g + 439 * b)/1000);
+    cr = av_clip_uint8((128000 +  439 * r - 368 * g -  71 * b)/1000);
 
     return (y << 16) | (cr << 8) | cb;
 }
@@ -5153,10 +5159,15 @@ static int mov_write_header(AVFormatContext *s)
             }
             if (track->mode != MODE_MOV &&
                 track->enc->codec_id == AV_CODEC_ID_MP3 && track->timescale < 16000) {
-                av_log(s, AV_LOG_ERROR, "track %d: muxing mp3 at %dhz is not supported\n",
-                       i, track->enc->sample_rate);
-                ret = AVERROR(EINVAL);
-                goto error;
+                if (track->enc->strict_std_compliance >= FF_COMPLIANCE_NORMAL) {
+                    av_log(s, AV_LOG_ERROR, "track %d: muxing mp3 at %dhz is not standard, to mux anyway set strict to -1\n",
+                        i, track->enc->sample_rate);
+                    ret = AVERROR(EINVAL);
+                    goto error;
+                } else {
+                    av_log(s, AV_LOG_WARNING, "track %d: muxing mp3 at %dhz is not standard in MP4\n",
+                           i, track->enc->sample_rate);
+                }
             }
         } else if (st->codec->codec_type == AVMEDIA_TYPE_SUBTITLE) {
             track->timescale = st->time_base.den;

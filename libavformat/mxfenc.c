@@ -39,6 +39,7 @@
 #include "libavutil/random_seed.h"
 #include "libavutil/timecode.h"
 #include "libavutil/avassert.h"
+#include "libavutil/pixdesc.h"
 #include "libavutil/time_internal.h"
 #include "libavcodec/bytestream.h"
 #include "libavcodec/dnxhddata.h"
@@ -78,6 +79,9 @@ typedef struct MXFStreamContext {
     int interlaced;          ///< whether picture is interlaced
     int field_dominance;     ///< tff=1, bff=2
     int component_depth;
+    int color_siting;
+    int signal_standard;
+    int h_chroma_sub_sample;
     int temporal_reordering;
     AVRational aspect_ratio; ///< display aspect ratio
     int closed_gop;          ///< gop is closed, used in mpeg-2 frame parsing
@@ -312,7 +316,9 @@ typedef struct MXFContext {
     uint32_t instance_number;
     uint8_t umid[16];        ///< unique material identifier
     int channel_count;
+    int signal_standard;
     uint32_t tagged_value_count;
+    AVRational audio_edit_rate;
 } MXFContext;
 
 static const uint8_t uuid_base[]            = { 0xAD,0xAB,0x44,0x24,0x2f,0x25,0x4d,0xc7,0x92,0xff,0x29,0xbd };
@@ -329,7 +335,7 @@ static const uint8_t index_table_segment_key[]     = { 0x06,0x0E,0x2B,0x34,0x02,
 static const uint8_t random_index_pack_key[]       = { 0x06,0x0E,0x2B,0x34,0x02,0x05,0x01,0x01,0x0D,0x01,0x02,0x01,0x01,0x11,0x01,0x00 };
 static const uint8_t header_open_partition_key[]   = { 0x06,0x0E,0x2B,0x34,0x02,0x05,0x01,0x01,0x0D,0x01,0x02,0x01,0x01,0x02,0x01,0x00 }; // OpenIncomplete
 static const uint8_t header_closed_partition_key[] = { 0x06,0x0E,0x2B,0x34,0x02,0x05,0x01,0x01,0x0D,0x01,0x02,0x01,0x01,0x02,0x04,0x00 }; // ClosedComplete
-static const uint8_t klv_fill_key[]                = { 0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x01,0x03,0x01,0x02,0x10,0x01,0x00,0x00,0x00 };
+static const uint8_t klv_fill_key[]                = { 0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x02,0x03,0x01,0x02,0x10,0x01,0x00,0x00,0x00 };
 static const uint8_t body_partition_key[]          = { 0x06,0x0E,0x2B,0x34,0x02,0x05,0x01,0x01,0x0D,0x01,0x02,0x01,0x01,0x03,0x04,0x00 }; // ClosedComplete
 
 /**
@@ -406,12 +412,15 @@ static const MXFLocalTagPair mxf_local_tag_batch[] = {
     { 0x3202, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x01,0x04,0x01,0x05,0x02,0x01,0x00,0x00,0x00}}, /* Stored Height */
     { 0x3209, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x01,0x04,0x01,0x05,0x01,0x0C,0x00,0x00,0x00}}, /* Display Width */
     { 0x3208, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x01,0x04,0x01,0x05,0x01,0x0B,0x00,0x00,0x00}}, /* Display Height */
+    { 0x320B, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x01,0x04,0x01,0x05,0x01,0x0E,0x00,0x00,0x00}}, /* Presentation Y offset */
     { 0x320E, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x01,0x04,0x01,0x01,0x01,0x01,0x00,0x00,0x00}}, /* Aspect Ratio */
     { 0x3201, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x02,0x04,0x01,0x06,0x01,0x00,0x00,0x00,0x00}}, /* Picture Essence Coding */
     { 0x3212, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x02,0x04,0x01,0x03,0x01,0x06,0x00,0x00,0x00}}, /* Field Dominance (Opt) */
+    { 0x3215, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x05,0x04,0x05,0x01,0x13,0x00,0x00,0x00,0x00}}, /* Signal Standard */
     // CDCI Picture Essence Descriptor
     { 0x3301, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x02,0x04,0x01,0x05,0x03,0x0A,0x00,0x00,0x00}}, /* Component Depth */
     { 0x3302, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x01,0x04,0x01,0x05,0x01,0x05,0x00,0x00,0x00}}, /* Horizontal Subsampling */
+    { 0x3303, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x01,0x04,0x01,0x05,0x01,0x06,0x00,0x00,0x00}}, /* Color Siting */
     // Generic Sound Essence Descriptor
     { 0x3D02, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x04,0x04,0x02,0x03,0x01,0x04,0x00,0x00,0x00}}, /* Locked/Unlocked */
     { 0x3D03, {0x06,0x0E,0x2B,0x34,0x01,0x01,0x01,0x05,0x04,0x02,0x03,0x01,0x01,0x01,0x00,0x00}}, /* Audio sampling rate */
@@ -780,8 +789,14 @@ static void mxf_write_track(AVFormatContext *s, AVStream *st, enum MXFMetadataSe
         avio_write(pb, sc->track_essence_element_key + 12, 4);
 
     mxf_write_local_tag(pb, 8, 0x4B01);
-    avio_wb32(pb, mxf->time_base.den);
-    avio_wb32(pb, mxf->time_base.num);
+
+    if (st == mxf->timecode_track && s->oformat == &ff_mxf_opatom_muxer){
+        avio_wb32(pb, mxf->tc.rate.num);
+        avio_wb32(pb, mxf->tc.rate.den);
+    } else {
+        avio_wb32(pb, mxf->time_base.den);
+        avio_wb32(pb, mxf->time_base.num);
+    }
 
     // write origin
     mxf_write_local_tag(pb, 8, 0x4B02);
@@ -810,7 +825,12 @@ static void mxf_write_common_fields(AVFormatContext *s, AVStream *st)
 
     // write duration
     mxf_write_local_tag(pb, 8, 0x0202);
-    avio_wb64(pb, mxf->duration);
+
+    if (st != mxf->timecode_track && s->oformat == &ff_mxf_opatom_muxer && st->codec->codec_type == AVMEDIA_TYPE_AUDIO){
+        avio_wb64(pb, mxf->body_offset / mxf->edit_unit_byte_count);
+    } else {
+        avio_wb64(pb, mxf->duration);
+    }
 }
 
 static void mxf_write_sequence(AVFormatContext *s, AVStream *st, enum MXFMetadataSetType type)
@@ -978,8 +998,10 @@ static void mxf_write_cdci_common(AVFormatContext *s, AVStream *st, const UID ke
     int stored_height = (st->codec->height+15)/16*16;
     int display_height;
     int f1, f2;
-    unsigned desc_size = size+8+8+8+8+8+8+5+16+sc->interlaced*4+12+20;
+    unsigned desc_size = size+8+8+8+8+8+8+8+5+16+sc->interlaced*4+12+20+5;
     if (sc->interlaced && sc->field_dominance)
+        desc_size += 5;
+    if (sc->signal_standard)
         desc_size += 5;
 
     mxf_write_generic_desc(s, st, key, desc_size);
@@ -1003,13 +1025,26 @@ static void mxf_write_cdci_common(AVFormatContext *s, AVStream *st, const UID ke
     mxf_write_local_tag(pb, 4, 0x3208);
     avio_wb32(pb, display_height>>sc->interlaced);
 
+    // presentation Y offset
+    mxf_write_local_tag(pb, 4, 0x320B);
+    avio_wb32(pb, (st->codec->height - display_height)>>sc->interlaced);
+
     // component depth
     mxf_write_local_tag(pb, 4, 0x3301);
     avio_wb32(pb, sc->component_depth);
 
     // horizontal subsampling
     mxf_write_local_tag(pb, 4, 0x3302);
-    avio_wb32(pb, 2);
+    avio_wb32(pb, sc->h_chroma_sub_sample);
+
+    // color siting
+    mxf_write_local_tag(pb, 1, 0x3303);
+    avio_w8(pb, sc->color_siting);
+
+    if (sc->signal_standard) {
+        mxf_write_local_tag(pb, 1, 0x3215);
+        avio_w8(pb, sc->signal_standard);
+    }
 
     // frame layout
     mxf_write_local_tag(pb, 1, 0x320C);
@@ -1085,8 +1120,17 @@ static void mxf_write_generic_sound_common(AVFormatContext *s, AVStream *st, con
     AVIOContext *pb = s->pb;
     MXFContext *mxf = s->priv_data;
     int show_warnings = !mxf->footer_partition_offset;
+    int duration_size = 0;
 
-    mxf_write_generic_desc(s, st, key, size+5+12+8+8);
+    if (s->oformat == &ff_mxf_opatom_muxer)
+        duration_size = 12;
+
+    mxf_write_generic_desc(s, st, key, size+duration_size+5+12+8+8);
+
+    if (duration_size > 0){
+        mxf_write_local_tag(pb, 8, 0x3002);
+        avio_wb64(pb, mxf->body_offset / mxf->edit_unit_byte_count);
+    }
 
     // audio locked
     mxf_write_local_tag(pb, 1, 0x3D02);
@@ -1109,7 +1153,7 @@ static void mxf_write_generic_sound_common(AVFormatContext *s, AVStream *st, con
             av_log(s, AV_LOG_WARNING, "d10_channelcount shall be set to 4 or 8 : the output will not comply to MXF D-10 specs\n");
         avio_wb32(pb, mxf->channel_count);
     } else {
-        if (show_warnings && mxf->channel_count != -1)
+        if (show_warnings && mxf->channel_count != -1 && s->oformat != &ff_mxf_opatom_muxer)
             av_log(s, AV_LOG_ERROR, "-d10_channelcount requires MXF D-10 and will be ignored\n");
         avio_wb32(pb, st->codec->channels);
     }
@@ -1614,6 +1658,8 @@ AVPacket *pkt)
 
     if ((frame_size = avpriv_dnxhd_get_frame_size(cid)) < 0)
         return -1;
+    if ((sc->interlaced = avpriv_dnxhd_get_interlaced(cid)) < 0)
+        return AVERROR_INVALIDDATA;
 
     switch (cid) {
     case 1235:
@@ -1958,6 +2004,19 @@ static void mxf_gen_umid(AVFormatContext *s)
     mxf->instance_number = seed & 0xFFFFFF;
 }
 
+static int mxf_init_timecode(AVFormatContext *s, AVStream *st, AVRational rate)
+{
+    MXFContext *mxf = s->priv_data;
+    AVDictionaryEntry *tcr = av_dict_get(s->metadata, "timecode", NULL, 0);
+    if (!tcr)
+        tcr = av_dict_get(st->metadata, "timecode", NULL, 0);
+
+    if (tcr)
+        return av_timecode_init_from_string(&mxf->tc, rate, tcr->value, s);
+    else
+        return av_timecode_init(&mxf->tc, rate, 0, 0, s);
+}
+
 static int mxf_write_header(AVFormatContext *s)
 {
     MXFContext *mxf = s->priv_data;
@@ -1966,7 +2025,6 @@ static int mxf_write_header(AVFormatContext *s)
     const MXFSamplesPerFrame *spf = NULL;
     AVDictionaryEntry *t;
     int64_t timestamp = 0;
-    AVDictionaryEntry *tcr = av_dict_get(s->metadata, "timecode", NULL, 0);
 
     if (!s->nb_streams)
         return -1;
@@ -1983,16 +2041,31 @@ static int mxf_write_header(AVFormatContext *s)
             return AVERROR(ENOMEM);
         st->priv_data = sc;
 
-        if ((i == 0) ^ (st->codec->codec_type == AVMEDIA_TYPE_VIDEO)) {
+        if (((i == 0) ^ (st->codec->codec_type == AVMEDIA_TYPE_VIDEO)) && s->oformat != &ff_mxf_opatom_muxer) {
             av_log(s, AV_LOG_ERROR, "there must be exactly one video stream and it must be the first one\n");
             return -1;
         }
 
         if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+            const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(st->codec->pix_fmt);
             // TODO: should be avg_frame_rate
             AVRational rate, tbc = st->time_base;
             // Default component depth to 8
             sc->component_depth = 8;
+            sc->h_chroma_sub_sample = 2;
+            sc->color_siting = 0xFF;
+
+            if (pix_desc) {
+                sc->component_depth     = pix_desc->comp[0].depth_minus1 + 1;
+                sc->h_chroma_sub_sample = 1 << pix_desc->log2_chroma_w;
+            }
+            switch (ff_choose_chroma_location(s, st)) {
+            case AVCHROMA_LOC_TOPLEFT: sc->color_siting = 0; break;
+            case AVCHROMA_LOC_LEFT:    sc->color_siting = 6; break;
+            case AVCHROMA_LOC_TOP:     sc->color_siting = 1; break;
+            case AVCHROMA_LOC_CENTER:  sc->color_siting = 3; break;
+            }
+
             mxf->timecode_base = (tbc.den + tbc.num/2) / tbc.num;
             spf = ff_mxf_get_samples_per_frame(s, tbc);
             if (!spf) {
@@ -2003,19 +2076,15 @@ static int mxf_write_header(AVFormatContext *s)
             mxf->time_base = spf->time_base;
             rate = av_inv_q(mxf->time_base);
             avpriv_set_pts_info(st, 64, mxf->time_base.num, mxf->time_base.den);
-            if (!tcr)
-                tcr = av_dict_get(st->metadata, "timecode", NULL, 0);
-            if (tcr)
-                ret = av_timecode_init_from_string(&mxf->tc, rate, tcr->value, s);
-            else
-                ret = av_timecode_init(&mxf->tc, rate, 0, 0, s);
-            if (ret < 0)
+            if((ret = mxf_init_timecode(s, st, rate)) < 0)
                 return ret;
+
             sc->video_bit_rate = st->codec->bit_rate ? st->codec->bit_rate : st->codec->rc_max_rate;
             if (s->oformat == &ff_mxf_d10_muxer) {
-                if (sc->video_bit_rate == 50000000) {
-                    if (mxf->time_base.den == 25) sc->index = 3;
-                    else                          sc->index = 5;
+                if ((sc->video_bit_rate == 50000000) && (mxf->time_base.den == 25)) {
+                    sc->index = 3;
+                } else if ((sc->video_bit_rate == 49999840 || sc->video_bit_rate == 50000000) && (mxf->time_base.den != 25)) {
+                    sc->index = 5;
                 } else if (sc->video_bit_rate == 40000000) {
                     if (mxf->time_base.den == 25) sc->index = 7;
                     else                          sc->index = 9;
@@ -2033,7 +2102,11 @@ static int mxf_write_header(AVFormatContext *s)
                 mxf->edit_unit_byte_count += klv_fill_size(mxf->edit_unit_byte_count);
                 mxf->edit_unit_byte_count += 16 + 4 + 4 + spf->samples_per_frame[0]*8*4;
                 mxf->edit_unit_byte_count += klv_fill_size(mxf->edit_unit_byte_count);
+
+                sc->signal_standard = 1;
             }
+            if (mxf->signal_standard >= 0)
+                sc->signal_standard = mxf->signal_standard;
         } else if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (st->codec->sample_rate != 48000) {
                 av_log(s, AV_LOG_ERROR, "only 48khz is implemented\n");
@@ -2050,8 +2123,35 @@ static int mxf_write_header(AVFormatContext *s)
                     av_log(s, AV_LOG_ERROR, "MXF D-10 only support 16 or 24 bits le audio\n");
                 }
                 sc->index = ((MXFStreamContext*)s->streams[0]->priv_data)->index + 1;
-            } else
-            mxf->slice_count = 1;
+            } else if (s->oformat == &ff_mxf_opatom_muxer) {
+                AVRational tbc = av_inv_q(mxf->audio_edit_rate);
+
+                if (st->codec->codec_id != AV_CODEC_ID_PCM_S16LE &&
+                    st->codec->codec_id != AV_CODEC_ID_PCM_S24LE) {
+                    av_log(s, AV_LOG_ERROR, "Only pcm_s16le and pcm_s24le audio codecs are implemented\n");
+                    return AVERROR_PATCHWELCOME;
+                }
+                if (st->codec->channels != 1) {
+                    av_log(s, AV_LOG_ERROR, "MXF OPAtom only supports single channel audio\n");
+                    return AVERROR(EINVAL);
+                }
+
+                spf = ff_mxf_get_samples_per_frame(s, tbc);
+                if (!spf){
+                    av_log(s, AV_LOG_ERROR, "Unsupported timecode frame rate %d/%d\n", tbc.den, tbc.num);
+                    return AVERROR(EINVAL);
+                }
+
+                mxf->time_base = st->time_base;
+                if((ret = mxf_init_timecode(s, st, av_inv_q(spf->time_base))) < 0)
+                    return ret;
+
+                mxf->timecode_base = (tbc.den + tbc.num/2) / tbc.num;
+                mxf->edit_unit_byte_count = (av_get_bits_per_sample(st->codec->codec_id) * st->codec->channels) >> 3;
+                sc->index = 2;
+            } else {
+                mxf->slice_count = 1;
+            }
         }
 
         if (!sc->index) {
@@ -2265,7 +2365,6 @@ static int mxf_write_opatom_packet(AVFormatContext *s, AVPacket *pkt, MXFIndexEn
     mxf->edit_units_count++;
     avio_write(pb, pkt->data, pkt->size);
     mxf->body_offset += pkt->size;
-
     avio_flush(pb);
 
     return 0;
@@ -2501,7 +2600,7 @@ static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket
         }
 
         *out = pktl->pkt;
-        av_dlog(s, "out st:%d dts:%"PRId64"\n", (*out).stream_index, (*out).dts);
+        av_log(s, AV_LOG_TRACE, "out st:%d dts:%"PRId64"\n", (*out).stream_index, (*out).dts);
         s->internal->packet_buffer = pktl->next;
         if(s->streams[pktl->pkt.stream_index]->last_in_packet_buffer == pktl)
             s->streams[pktl->pkt.stream_index]->last_in_packet_buffer= NULL;
@@ -2531,9 +2630,42 @@ static int mxf_interleave(AVFormatContext *s, AVPacket *out, AVPacket *pkt, int 
                                mxf_interleave_get_packet, mxf_compare_timestamps);
 }
 
+#define MXF_COMMON_OPTIONS \
+    { "signal_standard", "Force/set Sigal Standard",\
+      offsetof(MXFContext, signal_standard), AV_OPT_TYPE_INT, {.i64 = -1}, -1, 7, AV_OPT_FLAG_ENCODING_PARAM, "signal_standard"},\
+    { "bt601", "ITU-R BT.601 and BT.656, also SMPTE 125M (525 and 625 line interlaced)",\
+      0, AV_OPT_TYPE_CONST, {.i64 = 1}, -1, 7, AV_OPT_FLAG_ENCODING_PARAM, "signal_standard"},\
+    { "bt1358", "ITU-R BT.1358 and ITU-R BT.799-3, also SMPTE 293M (525 and 625 line progressive)",\
+      0, AV_OPT_TYPE_CONST, {.i64 = 2}, -1, 7, AV_OPT_FLAG_ENCODING_PARAM, "signal_standard"},\
+    { "smpte347m", "SMPTE 347M (540 Mbps mappings)",\
+      0, AV_OPT_TYPE_CONST, {.i64 = 3}, -1, 7, AV_OPT_FLAG_ENCODING_PARAM, "signal_standard"},\
+    { "smpte274m", "SMPTE 274M (1125 line)",\
+      0, AV_OPT_TYPE_CONST, {.i64 = 4}, -1, 7, AV_OPT_FLAG_ENCODING_PARAM, "signal_standard"},\
+    { "smpte296m", "SMPTE 296M (750 line progressive)",\
+      0, AV_OPT_TYPE_CONST, {.i64 = 5}, -1, 7, AV_OPT_FLAG_ENCODING_PARAM, "signal_standard"},\
+    { "smpte349m", "SMPTE 349M (1485 Mbps mappings)",\
+      0, AV_OPT_TYPE_CONST, {.i64 = 6}, -1, 7, AV_OPT_FLAG_ENCODING_PARAM, "signal_standard"},\
+    { "smpte428", "SMPTE 428-1 DCDM",\
+      0, AV_OPT_TYPE_CONST, {.i64 = 7}, -1, 7, AV_OPT_FLAG_ENCODING_PARAM, "signal_standard"},
+
+
+
+static const AVOption mxf_options[] = {
+    MXF_COMMON_OPTIONS
+    { NULL },
+};
+
+static const AVClass mxf_muxer_class = {
+    .class_name     = "MXF muxer",
+    .item_name      = av_default_item_name,
+    .option         = mxf_options,
+    .version        = LIBAVUTIL_VERSION_INT,
+};
+
 static const AVOption d10_options[] = {
     { "d10_channelcount", "Force/set channelcount in generic sound essence descriptor",
       offsetof(MXFContext, channel_count), AV_OPT_TYPE_INT, {.i64 = -1}, -1, 8, AV_OPT_FLAG_ENCODING_PARAM},
+    MXF_COMMON_OPTIONS
     { NULL },
 };
 
@@ -2541,6 +2673,20 @@ static const AVClass mxf_d10_muxer_class = {
     .class_name     = "MXF-D10 muxer",
     .item_name      = av_default_item_name,
     .option         = d10_options,
+    .version        = LIBAVUTIL_VERSION_INT,
+};
+
+static const AVOption opatom_options[] = {
+    { "mxf_audio_edit_rate", "Audio edit rate for timecode",
+        offsetof(MXFContext, audio_edit_rate), AV_OPT_TYPE_RATIONAL, {.dbl=25}, 0, INT_MAX, AV_OPT_FLAG_ENCODING_PARAM },
+    MXF_COMMON_OPTIONS
+    { NULL },
+};
+
+static const AVClass mxf_opatom_muxer_class = {
+    .class_name     = "MXF-OPAtom muxer",
+    .item_name      = av_default_item_name,
+    .option         = opatom_options,
     .version        = LIBAVUTIL_VERSION_INT,
 };
 
@@ -2557,6 +2703,7 @@ AVOutputFormat ff_mxf_muxer = {
     .write_trailer     = mxf_write_footer,
     .flags             = AVFMT_NOTIMESTAMPS,
     .interleave_packet = mxf_interleave,
+    .priv_class        = &mxf_muxer_class,
 };
 
 AVOutputFormat ff_mxf_d10_muxer = {
@@ -2587,4 +2734,5 @@ AVOutputFormat ff_mxf_opatom_muxer = {
     .write_trailer     = mxf_write_footer,
     .flags             = AVFMT_NOTIMESTAMPS,
     .interleave_packet = mxf_interleave,
+    .priv_class        = &mxf_opatom_muxer_class,
 };

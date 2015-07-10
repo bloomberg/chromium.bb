@@ -80,6 +80,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(BS2B,           bs2b,           af);
     REGISTER_FILTER(CHANNELMAP,     channelmap,     af);
     REGISTER_FILTER(CHANNELSPLIT,   channelsplit,   af);
+    REGISTER_FILTER(CHORUS,         chorus,         af);
     REGISTER_FILTER(COMPAND,        compand,        af);
     REGISTER_FILTER(DCSHIFT,        dcshift,        af);
     REGISTER_FILTER(EARWAX,         earwax,         af);
@@ -117,9 +118,11 @@ void avfilter_register_all(void)
     REGISTER_FILTER(CODECVIEW,      codecview,      vf);
     REGISTER_FILTER(COLORBALANCE,   colorbalance,   vf);
     REGISTER_FILTER(COLORCHANNELMIXER, colorchannelmixer, vf);
+    REGISTER_FILTER(COLORKEY,       colorkey,       vf);
     REGISTER_FILTER(COLORLEVELS,    colorlevels,    vf);
     REGISTER_FILTER(COLORMATRIX,    colormatrix,    vf);
     REGISTER_FILTER(COPY,           copy,           vf);
+    REGISTER_FILTER(COVER_RECT,     cover_rect,     vf);
     REGISTER_FILTER(CROP,           crop,           vf);
     REGISTER_FILTER(CROPDETECT,     cropdetect,     vf);
     REGISTER_FILTER(CURVES,         curves,         vf);
@@ -128,6 +131,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(DEJUDDER,       dejudder,       vf);
     REGISTER_FILTER(DELOGO,         delogo,         vf);
     REGISTER_FILTER(DESHAKE,        deshake,        vf);
+    REGISTER_FILTER(DETELECINE,     detelecine,     vf);
     REGISTER_FILTER(DRAWBOX,        drawbox,        vf);
     REGISTER_FILTER(DRAWGRID,       drawgrid,       vf);
     REGISTER_FILTER(DRAWTEXT,       drawtext,       vf);
@@ -140,6 +144,7 @@ void avfilter_register_all(void)
     REGISTER_FILTER(FIELD,          field,          vf);
     REGISTER_FILTER(FIELDMATCH,     fieldmatch,     vf);
     REGISTER_FILTER(FIELDORDER,     fieldorder,     vf);
+    REGISTER_FILTER(FIND_RECT,      find_rect,      vf);
     REGISTER_FILTER(FORMAT,         format,         vf);
     REGISTER_FILTER(FPS,            fps,            vf);
     REGISTER_FILTER(FRAMEPACK,      framepack,      vf);
