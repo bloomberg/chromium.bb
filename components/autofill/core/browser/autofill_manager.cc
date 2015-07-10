@@ -852,6 +852,14 @@ void AutofillManager::OnDidGetRealPan(AutofillClient::GetRealPanResult result,
     recently_unmasked_cards_.push_back(unmasking_card_);
     unmasking_card_.set_record_type(CreditCard::FULL_SERVER_CARD);
     unmasking_card_.SetNumber(base::UTF8ToUTF16(real_pan));
+    if (!unmask_response_.exp_month.empty()) {
+      unmasking_card_.SetRawInfo(CREDIT_CARD_EXP_MONTH,
+                                 unmask_response_.exp_month);
+    }
+    if (!unmask_response_.exp_year.empty()) {
+      unmasking_card_.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                                 unmask_response_.exp_year);
+    }
     if (unmask_response_.should_store_pan)
       personal_data_->UpdateServerCreditCard(unmasking_card_);
 

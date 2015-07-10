@@ -45,6 +45,7 @@
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;
+using testing::AtLeast;
 using testing::SaveArg;
 
 namespace autofill {
@@ -747,6 +748,41 @@ class AutofillManagerTest : public testing::Test {
     form.fields[3].value = ASCIIToUTF16("2017");
     EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(1);
     FormSubmitted(form);
+  }
+
+  void PrepareForRealPanResponse(FormData* form, CreditCard* card) {
+    // This line silences the warning from RealPanWalletClient about matching
+    // sync and wallet server types.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "sync-url", "https://google.com");
+
+    CreateTestCreditCardFormData(form, true, false);
+    FormsSeen(std::vector<FormData>(1, *form));
+    *card = CreditCard(CreditCard::MASKED_SERVER_CARD, "a123");
+    test::SetCreditCardInfo(card, "John Dillinger", "1881" /* Visa */, "01",
+                            "2017");
+    card->SetTypeForMaskedCard(kVisaCard);
+
+    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(0);
+    EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _))
+        .Times(AtLeast(1));
+    autofill_manager_->FillOrPreviewCreditCardForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
+        form->fields[0], *card);
+
+#if defined(OS_IOS)
+    // Filling out the entire form on iOS requires requesting autofill on each
+    // of the form fields.
+    autofill_manager_->FillOrPreviewCreditCardForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
+        form->fields[1], *card);
+    autofill_manager_->FillOrPreviewCreditCardForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
+        form->fields[2], *card);
+    autofill_manager_->FillOrPreviewCreditCardForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
+        form->fields[3], *card);
+#endif  // defined(OS_IOS)
   }
 
  protected:
@@ -3005,45 +3041,9 @@ TEST_F(AutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
 }
 
 TEST_F(AutofillManagerTest, DontOfferToSaveWalletCard) {
-  // This line silences the warning from RealPanWalletClient about matching
-  // sync and wallet server types.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      "sync-url", "https://google.com");
-
-  // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  CreditCard card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&card, "John Dillinger", "1881" /* Visa */, "01",
-                          "2017");
-  card.SetTypeForMaskedCard(kVisaCard);
-
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(0);
-#if defined(OS_IOS)
-  EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _)).Times(4);
-#else
-  EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _));
-#endif  // defined(OS_IOS)
-  autofill_manager_->FillOrPreviewCreditCardForm(
-      AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, form,
-      form.fields[0], card);
-
-#if defined(OS_IOS)
-  // Filling out the entire form on iOS requires requesting autofill on each of
-  // the form fields.
-  autofill_manager_->FillOrPreviewCreditCardForm(
-      AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, form,
-      form.fields[1], card);
-  autofill_manager_->FillOrPreviewCreditCardForm(
-      AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, form,
-      form.fields[2], card);
-  autofill_manager_->FillOrPreviewCreditCardForm(
-      AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, form,
-      form.fields[3], card);
-#endif  // defined(OS_IOS)
+  CreditCard card;
+  PrepareForRealPanResponse(&form, &card);
 
   // Manually fill out |form| so we can use it in OnFormSubmitted.
   for (size_t i = 0; i < form.fields.size(); ++i) {
@@ -3080,8 +3080,7 @@ TEST_F(AutofillManagerTest, DontOfferToSaveWalletCard) {
 
   form = FormData();
   test::CreateTestAddressFormData(&form);
-  forms[0] = form;
-  FormsSeen(forms);
+  FormsSeen(std::vector<FormData>(1, form));
   for (size_t i = 0; i < form.fields.size(); ++i) {
     if (form.fields[i].name == ASCIIToUTF16("firstname"))
       form.fields[i].value = ASCIIToUTF16("Flo");
@@ -3099,6 +3098,26 @@ TEST_F(AutofillManagerTest, DontOfferToSaveWalletCard) {
       form.fields[i].value = ASCIIToUTF16("US");
   }
   autofill_manager_->OnFormSubmitted(form);
+}
+
+TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
+  FormData form;
+  CreditCard card;
+  PrepareForRealPanResponse(&form, &card);
+
+  AutofillManager::UnmaskResponse response;
+  response.should_store_pan = false;
+  response.cvc = ASCIIToUTF16("123");
+  response.exp_month = ASCIIToUTF16("02");
+  response.exp_year = ASCIIToUTF16("2018");
+  autofill_manager_->OnUnmaskResponse(response);
+  autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
+                                     "4012888888881881");
+
+  EXPECT_EQ(ASCIIToUTF16("02"), autofill_manager_->unmasking_card_.GetRawInfo(
+                                    CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2018"), autofill_manager_->unmasking_card_.GetRawInfo(
+                                      CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
 }  // namespace autofill
