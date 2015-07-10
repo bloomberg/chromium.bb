@@ -39,7 +39,6 @@ class UsbDeviceImpl : public UsbDevice {
 // UsbDevice implementation:
 #if defined(OS_CHROMEOS)
   void CheckUsbAccess(const ResultCallback& callback) override;
-  void OpenInterface(int interface_id, const OpenCallback& callback) override;
 #endif  // OS_CHROMEOS
   void Open(const OpenCallback& callback) override;
   bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
@@ -85,7 +84,6 @@ class UsbDeviceImpl : public UsbDevice {
 #if defined(OS_CHROMEOS)
   void OnOpenRequestComplete(const OpenCallback& callback,
                              dbus::FileDescriptor fd);
-  void OnPathAccessRequestComplete(const OpenCallback& callback, bool success);
   void OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,
                                   const OpenCallback& callback);
 #endif

@@ -79,7 +79,6 @@ class UsbFindDevicesFunction : public UIThreadExtensionFunction {
 
   uint16_t vendor_id_;
   uint16_t product_id_;
-  int interface_id_;
   scoped_ptr<base::ListValue> result_;
   base::Closure barrier_;
 

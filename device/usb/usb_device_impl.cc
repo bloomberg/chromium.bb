@@ -145,20 +145,6 @@ void UsbDeviceImpl::Open(const OpenCallback& callback) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-#if defined(OS_CHROMEOS)
-
-void UsbDeviceImpl::OpenInterface(int interface_id,
-                                  const OpenCallback& callback) {
-  chromeos::PermissionBrokerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-  DCHECK(client) << "Could not get permission broker client.";
-  client->RequestPathAccess(
-      device_path_, interface_id,
-      base::Bind(&UsbDeviceImpl::OnPathAccessRequestComplete, this, callback));
-}
-
-#endif  // defined(OS_CHROMEOS)
-
 bool UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -263,26 +249,6 @@ void UsbDeviceImpl::OnOpenRequestComplete(const OpenCallback& callback,
   blocking_task_runner_->PostTask(
       FROM_HERE, base::Bind(&UsbDeviceImpl::OpenOnBlockingThreadWithFd, this,
                             base::Passed(&fd), callback));
-}
-
-void UsbDeviceImpl::OnPathAccessRequestComplete(const OpenCallback& callback,
-                                                bool success) {
-  if (success) {
-    blocking_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&UsbDeviceImpl::OpenOnBlockingThread, this, callback));
-  } else {
-    // Once permission_broker changes for crbug.com/496469 land,
-    // RequestPathAccess will fail for partially claimed devices regardless of
-    // the interface number requested. Fall back to OpenPath to prevent a
-    // regression. This code will then be removed.
-    chromeos::PermissionBrokerClient* client =
-        chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-    DCHECK(client) << "Could not get permission broker client.";
-    client->OpenPath(
-        device_path_,
-        base::Bind(&UsbDeviceImpl::OnOpenRequestComplete, this, callback));
-  }
 }
 
 void UsbDeviceImpl::OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,

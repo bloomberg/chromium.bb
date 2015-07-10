@@ -30,11 +30,4 @@ void UsbDevice::CheckUsbAccess(const ResultCallback& callback) {
   callback.Run(true);
 }
 
-void UsbDevice::OpenInterface(int interface_id, const OpenCallback& callback) {
-  // On most platforms nothing special is necessary to open a device for access
-  // to a particular interface. This is needed until crbug.com/496469 is
-  // resolved.
-  Open(callback);
-}
-
 }  // namespace device
