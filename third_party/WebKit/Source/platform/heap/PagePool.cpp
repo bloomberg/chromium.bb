@@ -113,19 +113,28 @@ void OrphanedPagePool::decommitOrphanedPages()
     }
 }
 
+// Make the compiler think that something is going on there.
+static inline void breakOptimization(void *arg) {
+#if !defined(_WIN32) || defined(__clang__)
+    __asm__ __volatile__("" : : "r" (arg) : "memory");
+#endif
+}
+
 NO_SANITIZE_ADDRESS
-void OrphanedPagePool::clearMemory(PageMemory* memory)
+void OrphanedPagePool::asanDisabledMemset(Address address, char value, size_t size)
 {
-#if defined(ADDRESS_SANITIZER)
     // Don't use memset when running with ASan since this needs to zap
     // poisoned memory as well and the NO_SANITIZE_ADDRESS annotation
     // only works for code in this method and not for calls to memset.
-    Address base = memory->writableStart();
-    for (Address current = base; current < base + blinkPagePayloadSize(); ++current)
-        *current = 0;
-#else
-    memset(memory->writableStart(), 0, blinkPagePayloadSize());
-#endif
+    for (Address current = address; current < address + size; ++current) {
+        breakOptimization(current);
+        *current = value;
+    }
+}
+
+void OrphanedPagePool::clearMemory(PageMemory* memory)
+{
+    asanDisabledMemset(memory->writableStart(), 0, blinkPagePayloadSize());
 }
 
 #if ENABLE(ASSERT)

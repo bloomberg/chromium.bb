@@ -73,9 +73,6 @@ const uint8_t reuseAllowedZapValue = 0x2a;
 // A zap value used for freed memory that is forbidden to be added to the free
 // list in the next addToFreeList().
 const uint8_t reuseForbiddenZapValue = 0x2c;
-// The orphaned zap value must be zero in the lowest bits to allow for using
-// the mark bit when tracing.
-const uint8_t orphanedZapValue = 240;
 
 // In non-production builds, memory is zapped when it's freed. The zapped
 // memory is zeroed out when the memory is reused in Heap::allocateObject().

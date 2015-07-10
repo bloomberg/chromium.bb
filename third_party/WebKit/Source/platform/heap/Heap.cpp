@@ -1546,7 +1546,7 @@ void NormalPage::markOrphaned()
     // Force unpoison memory before memset.
     ASAN_UNPOISON_MEMORY_REGION(payload(), payloadSize());
 #endif
-    memset(payload(), orphanedZapValue, payloadSize());
+    OrphanedPagePool::asanDisabledMemset(payload(), OrphanedPagePool::orphanedZapValue, payloadSize());
     BasePage::markOrphaned();
 }
 
@@ -1757,7 +1757,7 @@ void LargeObjectPage::markOrphaned()
 {
     // Zap the payload with a recognizable value to detect any incorrect
     // cross thread pointer usage.
-    memset(payload(), orphanedZapValue, payloadSize());
+    OrphanedPagePool::asanDisabledMemset(payload(), OrphanedPagePool::orphanedZapValue, payloadSize());
     BasePage::markOrphaned();
 }
 
