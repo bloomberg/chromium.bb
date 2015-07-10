@@ -230,7 +230,7 @@ const std::string GetDevToolsAgentHostTypeString(
 }  // namespace
 
 ServiceWorkerHandler::ServiceWorkerHandler()
-    : enabled_(false), weak_factory_(this) {
+    : enabled_(false), render_frame_host_(nullptr), weak_factory_(this) {
 }
 
 ServiceWorkerHandler::~ServiceWorkerHandler() {
