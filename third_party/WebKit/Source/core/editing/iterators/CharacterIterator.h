@@ -37,10 +37,11 @@ namespace blink {
 
 // Builds on the text iterator, adding a character position so we can walk one
 // character at a time, or faster, as needed. Useful for searching.
-class CORE_EXPORT CharacterIterator {
+template <typename Strategy>
+class CORE_EXPORT CharacterIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
-    CharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    CharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int numCharacters);
 
@@ -54,16 +55,16 @@ public:
     void appendTextTo(BufferType& output) { m_textIterator.text().appendTextTo(output, m_runOffset); }
 
     int characterOffset() const { return m_offset; }
-    EphemeralRange range() const;
+    EphemeralRangeTemplate<Strategy> range() const;
 
     Document* ownerDocument() const;
     Node* currentContainer() const;
     int startOffset() const;
     int endOffset() const;
-    Position startPosition() const;
-    Position endPosition() const;
+    PositionAlgorithm<Strategy> startPosition() const;
+    PositionAlgorithm<Strategy> endPosition() const;
 
-    EphemeralRange calculateCharacterSubrange(int offset, int length);
+    EphemeralRangeTemplate<Strategy> calculateCharacterSubrange(int offset, int length);
 
 private:
     void initialize();
@@ -72,8 +73,11 @@ private:
     int m_runOffset;
     bool m_atBreak;
 
-    TextIterator m_textIterator;
+    TextIteratorAlgorithm<Strategy> m_textIterator;
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;
+using CharacterIterator = CharacterIteratorAlgorithm<EditingStrategy>;
 
 CORE_EXPORT EphemeralRange findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions);
 

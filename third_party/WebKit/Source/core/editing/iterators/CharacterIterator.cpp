@@ -83,7 +83,8 @@ private:
     mutable Vector<UChar> m_normalizedMatch;
 };
 
-CharacterIterator::CharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+template <typename Strategy>
+CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
     , m_atBreak(true)
@@ -92,36 +93,41 @@ CharacterIterator::CharacterIterator(const Position& start, const Position& end,
     initialize();
 }
 
-void CharacterIterator::initialize()
+template <typename Strategy>
+void CharacterIteratorAlgorithm<Strategy>::initialize()
 {
     while (!atEnd() && !m_textIterator.length())
         m_textIterator.advance();
 }
 
-EphemeralRange CharacterIterator::range() const
+template <typename Strategy>
+EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::range() const
 {
-    EphemeralRange range = m_textIterator.range();
+    EphemeralRangeTemplate<Strategy> range(m_textIterator.range());
     if (m_textIterator.atEnd() || m_textIterator.length() <= 1)
         return range;
-    Position startPosition = range.startPosition().parentAnchoredEquivalent();
-    Position endPosition = range.endPosition().parentAnchoredEquivalent();
+    PositionAlgorithm<Strategy> startPosition = range.startPosition().parentAnchoredEquivalent();
+    PositionAlgorithm<Strategy> endPosition = range.endPosition().parentAnchoredEquivalent();
     Node* node = startPosition.containerNode();
-    ASSERT_UNUSED(endPosition, node == endPosition.containerNode());
+    ASSERT(node == endPosition.containerNode());
     int offset = startPosition.offsetInContainerNode() + m_runOffset;
-    return EphemeralRange(Position(node, offset), Position(node, offset + 1));
+    return EphemeralRangeTemplate<Strategy>(PositionAlgorithm<Strategy>(node, offset), PositionAlgorithm<Strategy>(node, offset + 1));
 }
 
-Document* CharacterIterator::ownerDocument() const
+template <typename Strategy>
+Document* CharacterIteratorAlgorithm<Strategy>::ownerDocument() const
 {
     return m_textIterator.ownerDocument();
 }
 
-Node* CharacterIterator::currentContainer() const
+template <typename Strategy>
+Node* CharacterIteratorAlgorithm<Strategy>::currentContainer() const
 {
     return m_textIterator.currentContainer();
 }
 
-int CharacterIterator::startOffset() const
+template <typename Strategy>
+int CharacterIteratorAlgorithm<Strategy>::startOffset() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1)
@@ -131,7 +137,8 @@ int CharacterIterator::startOffset() const
     return m_textIterator.startOffsetInCurrentContainer();
 }
 
-int CharacterIterator::endOffset() const
+template <typename Strategy>
+int CharacterIteratorAlgorithm<Strategy>::endOffset() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1)
@@ -141,33 +148,36 @@ int CharacterIterator::endOffset() const
     return m_textIterator.endOffsetInCurrentContainer();
 }
 
-Position CharacterIterator::startPosition() const
+template <typename Strategy>
+PositionAlgorithm<Strategy> CharacterIteratorAlgorithm<Strategy>::startPosition() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.currentContainer();
             int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-            return createLegacyEditingPosition(n, offset);
+            return PositionAlgorithm<Strategy>::createLegacyEditingPosition(n, offset);
         }
         ASSERT(!m_runOffset);
     }
     return m_textIterator.startPositionInCurrentContainer();
 }
 
-Position CharacterIterator::endPosition() const
+template <typename Strategy>
+PositionAlgorithm<Strategy> CharacterIteratorAlgorithm<Strategy>::endPosition() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.currentContainer();
             int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-            return createLegacyEditingPosition(n, offset + 1);
+            return PositionAlgorithm<Strategy>::createLegacyEditingPosition(n, offset + 1);
         }
         ASSERT(!m_runOffset);
     }
     return m_textIterator.endPositionInCurrentContainer();
 }
 
-void CharacterIterator::advance(int count)
+template <typename Strategy>
+void CharacterIteratorAlgorithm<Strategy>::advance(int count)
 {
     if (count <= 0) {
         ASSERT(!count);
@@ -212,14 +222,15 @@ void CharacterIterator::advance(int count)
     m_runOffset = 0;
 }
 
-EphemeralRange CharacterIterator::calculateCharacterSubrange(int offset, int length)
+template <typename Strategy>
+EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::calculateCharacterSubrange(int offset, int length)
 {
     advance(offset);
-    const Position startPosition = this->startPosition();
+    const PositionAlgorithm<Strategy> startPos = startPosition();
 
     if (length > 1)
         advance(length - 1);
-    return EphemeralRange(startPosition, endPosition());
+    return EphemeralRangeTemplate<Strategy>(startPos, endPosition());
 }
 
 static const size_t minimumSearchBufferSize = 8192;
@@ -622,5 +633,7 @@ EphemeralRange findPlainText(const Position& inputStart, const Position& inputEn
     CharacterIterator computeRangeIterator(inputStart, inputEnd, iteratorFlagsForFindPlainText);
     return computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength);
 }
+
+template class CORE_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink
