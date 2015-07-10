@@ -801,7 +801,6 @@ if (is_win) {
       "-Qunused-arguments",  # http://crbug.com/504658
       "-Wno-extra-tokens",  # http://crbug.com/504663
       "-Wno-microsoft",  # http://crbug.com/505296
-      "-Wno-missing-braces",  # http://crbug.com/505297
       "-Wno-pointer-sign",  # http://crbug.com/505303
       "-Wno-switch",  # http://crbug.com/505308
       "-Wno-unknown-pragmas",  # http://crbug.com/505314
