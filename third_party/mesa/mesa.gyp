@@ -51,6 +51,14 @@
           '_GNU_SOURCE',
         ],
       }],
+      ['OS=="win"', {
+        'defines': [
+          # Generated files use const only if __cplusplus or __STDC__ is
+          # defined. On Windows, neither is defined, so define YY_USE_CONST
+          # to explicitly enable const.
+          'YY_USE_CONST',
+        ],
+      }],
       ['os_posix == 1', {
         'defines': [
           'HAVE_DLOPEN',
@@ -650,10 +658,6 @@
           'defines': [
             # Because we're building as a static library
             '_GLAPI_NO_EXPORTS',
-            # Generated files use const only if __cplusplus or __STDC__ is
-            # defined. On Windows, neither is defined, so define YY_USE_CONST
-            # to explicitly enable const.
-            'YY_USE_CONST',
           ],
         }],
       ],
