@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
@@ -48,6 +49,7 @@ using namespace HTMLNames;
 HTMLKeygenElement::HTMLKeygenElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(keygenTag, document, form)
 {
+    UseCounter::count(document, UseCounter::HTMLKeygenElement);
 }
 
 PassRefPtrWillBeRawPtr<HTMLKeygenElement> HTMLKeygenElement::create(Document& document, HTMLFormElement* form)

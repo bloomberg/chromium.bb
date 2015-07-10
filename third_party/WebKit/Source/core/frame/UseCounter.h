@@ -782,6 +782,7 @@ public:
         V8Performance_Navigation_AttributeGetter = 883,
         V8Performance_Memory_AttributeGetter = 884,
         V8SharedWorker_WorkerStart_AttributeGetter = 885,
+        HTMLKeygenElement = 886,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
