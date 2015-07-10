@@ -167,7 +167,7 @@ html[dir=rtl] .main-pane {
 .learn-more-container,
 .auth-container,
 .password-entry-container,
-.signin-button-container {
+.reauth-hint-container {
   display: none;
 }
 
@@ -352,20 +352,42 @@ html[dir=rtl] .main-pane {
   width: 40px;
 }
 
-.pod[auth-type='onlineSignIn'] .signin-button-container,
 .launch-app-button-container {
   display: block;
   flex: auto;
   text-align: center;
 }
 
-.signin-button,
 .launch-app-button {
   display: inline;
   margin-top: 6px !important;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.pod[auth-type='onlineSignIn'] .reauth-hint-container {
+  display: flex;
+  margin-top: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.reauth-hint-container .reauth-warning {
+  color: #f4b400;
+  display: inline-flex;
+}
+
+.reauth-hint-container .reauth-name-hint {
+  align-self: center;
+  color: #565656;
+  font-size: 16px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 6px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .action-box-area,

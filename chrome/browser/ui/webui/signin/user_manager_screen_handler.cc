@@ -688,8 +688,6 @@ void UserManagerScreenHandler::GetLocalizedValues(
   // For Control Bar.
   localized_strings->SetString("signedIn",
       l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_ACTIVE_USER));
-  localized_strings->SetString("signinButton",
-      l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON));
   localized_strings->SetString("addUser",
       l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON));
   localized_strings->SetString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));

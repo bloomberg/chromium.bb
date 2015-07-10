@@ -1125,8 +1125,9 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, PRE_NoSAML) {
 IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, NoSAML) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is allowed.
-  JsExpect("window.getComputedStyle(document.querySelector("
-           "    '#pod-row .signin-button-container')).display == 'none'");
+  JsExpect(
+      "window.getComputedStyle(document.querySelector("
+      "    '#pod-row .reauth-hint-container')).display == 'none'");
 }
 
 IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, PRE_SAMLNoLimit) {
@@ -1141,8 +1142,9 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, PRE_SAMLNoLimit) {
 IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, SAMLNoLimit) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is allowed.
-  JsExpect("window.getComputedStyle(document.querySelector("
-           "    '#pod-row .signin-button-container')).display == 'none'");
+  JsExpect(
+      "window.getComputedStyle(document.querySelector("
+      "    '#pod-row .reauth-hint-container')).display == 'none'");
 }
 
 IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, PRE_SAMLZeroLimit) {
@@ -1157,8 +1159,9 @@ IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, PRE_SAMLZeroLimit) {
 IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, SAMLZeroLimit) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is not allowed.
-  JsExpect("window.getComputedStyle(document.querySelector("
-           "    '#pod-row .signin-button-container')).display != 'none'");
+  JsExpect(
+      "window.getComputedStyle(document.querySelector("
+      "    '#pod-row .reauth-hint-container')).display != 'none'");
 }
 
 IN_PROC_BROWSER_TEST_P(SAMLPolicyTest, PRE_PRE_TransferCookiesAffiliated) {

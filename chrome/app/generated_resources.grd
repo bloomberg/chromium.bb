@@ -14222,9 +14222,6 @@ After you create a new supervised user, you can manage their settings at any tim
           <message name="IDS_SCREEN_LOCK_SIGN_OUT">
             Sign out
           </message>
-          <message name="IDS_LOGIN_BUTTON">
-            Sign in
-          </message>
         </if>
         <if expr="not use_titlecase">
           <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
@@ -14248,9 +14245,6 @@ After you create a new supervised user, you can manage their settings at any tim
           </if>
           <message name="IDS_SCREEN_LOCK_SIGN_OUT">
             Sign out
-          </message>
-          <message name="IDS_LOGIN_BUTTON">
-            Sign in
           </message>
         </if>
         <if expr="chromeos">

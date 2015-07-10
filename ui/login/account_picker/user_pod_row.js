@@ -709,8 +709,8 @@ cr.define('login', function() {
       this.addEventListener('click', this.handleClickOnPod_.bind(this));
       this.addEventListener('mousedown', this.handlePodMouseDown_.bind(this));
 
-      this.signinButtonElement.addEventListener('click',
-          this.activate.bind(this));
+      this.reauthWarningElement.addEventListener('click',
+                                                 this.activate.bind(this));
 
       this.actionBoxAreaElement.addEventListener('mousedown',
                                                  stopEventPropagation);
@@ -833,6 +833,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets reauth name hint element.
+     * @type {!HTMLDivElement}
+     */
+    get reauthNameHintElement() {
+      return this.querySelector('.reauth-name-hint');
+    },
+
+    /**
      * Gets the container holding the password field.
      * @type {!HTMLInputElement}
      */
@@ -858,11 +866,11 @@ cr.define('login', function() {
     },
 
     /**
-     * Gets user sign in button.
-     * @type {!HTMLButtonElement}
+     * Gets user online sign in hint element.
+     * @type {!HTMLDivElement}
      */
-    get signinButtonElement() {
-      return this.querySelector('.signin-button');
+    get reauthWarningElement() {
+      return this.querySelector('.reauth-hint-container');
     },
 
     /**
@@ -995,6 +1003,7 @@ cr.define('login', function() {
           '?id=' + UserPod.userImageSalt_[this.user.username];
 
       this.nameElement.textContent = this.user_.displayName;
+      this.reauthNameHintElement.textContent = this.user_.displayName;
       this.classList.toggle('signed-in', this.user_.signedIn);
 
       if (this.isAuthTypeUserClick)
@@ -1093,7 +1102,7 @@ cr.define('login', function() {
       if (this.isAuthTypePassword) {
         return this.passwordElement;
       } else if (this.isAuthTypeOnlineSignIn) {
-        return this.signinButtonElement;
+        return this;
       } else if (this.isAuthTypeUserClick) {
         return this.passwordLabelElement;
       }
@@ -1279,20 +1288,20 @@ cr.define('login', function() {
       error.appendChild(messageDiv);
 
       $('bubble').showContentForElement(
-          this.signinButtonElement,
+          this.reauthWarningElement,
           cr.ui.Bubble.Attachment.TOP,
           error,
-          this.signinButtonElement.offsetWidth / 2,
+          this.reauthWarningElement.offsetWidth / 2,
           4);
       // Move warning bubble up if it overlaps the shelf.
       var maxHeight =
           cr.ui.LoginUITools.getMaxHeightBeforeShelfOverlapping($('bubble'));
       if (maxHeight < $('bubble').offsetHeight) {
         $('bubble').showContentForElement(
-            this.signinButtonElement,
+            this.reauthWarningElement,
             cr.ui.Bubble.Attachment.BOTTOM,
             error,
-            this.signinButtonElement.offsetWidth / 2,
+            this.reauthWarningElement.offsetWidth / 2,
             4);
       }
     },
@@ -1932,6 +1941,7 @@ cr.define('login', function() {
     update: function() {
       this.imageElement.src = this.user.userImage;
       this.nameElement.textContent = this.user.displayName;
+      this.reauthNameHintElement.textContent = this.user.displayName;
 
       var isLockedUser = this.user.needsSignin;
       var isLegacySupervisedUser = this.user.legacySupervisedUser;
@@ -2024,6 +2034,7 @@ cr.define('login', function() {
       this.passwordEntryContainerElement.hidden = true;
       this.launchAppButtonContainerElement.hidden = false;
       this.nameElement.textContent = this.user.label;
+      this.reauthNameHintElement.textContent = this.user.label;
 
       UserPod.prototype.updateActionBoxArea.call(this);
       UserPod.prototype.customizeUserPodPerUserType.call(this);

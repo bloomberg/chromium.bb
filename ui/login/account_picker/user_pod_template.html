@@ -1,3 +1,5 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+
 <div id="user-pod-template" class="pod" hidden>
   <div class="user-image-pane">
     <div class="user-image-container">
@@ -38,8 +40,9 @@
         <span class="animated-ellipsis-component2">.</span>
       </div>
       <div class="custom-icon-container" hidden></div>
-      <div class="signin-button-container">
-        <button class="signin-button" i18n-content="signinButton"></button>
+      <div class="reauth-hint-container">
+        <iron-icon icon="warning" class="reauth-warning"></iron-icon>
+        <span class="reauth-name-hint"></span>
       </div>
       <div class="launch-app-button-container" hidden>
         <button class="launch-app-button" i18n-content="launchAppButton">
