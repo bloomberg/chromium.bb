@@ -544,13 +544,6 @@ void BlinkPlatformImpl::yieldCurrentThread() {
   base::PlatformThread::YieldCurrentThread();
 }
 
-// TODO(toyoshim): Remove no arguments version after the transition.
-blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent() {
-  return new WebWaitableEventImpl(
-    blink::WebWaitableEvent::ResetPolicy::Auto,
-    blink::WebWaitableEvent::InitialState::NonSignaled);
-}
-
 blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent(
     blink::WebWaitableEvent::ResetPolicy policy,
     blink::WebWaitableEvent::InitialState state) {
