@@ -987,8 +987,15 @@ class DevToolsPixelOutputTests : public DevToolsSanityTest {
   }
 };
 
+// This test enables switches::kUseGpuInTests which causes false positives
+// with MemorySanitizer.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TestScreenshotRecording DISABLED_TestScreenshotRecording
+#else
+#define MAYBE_TestScreenshotRecording TestScreenshotRecording
+#endif
 // Tests raw headers text.
-IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests, TestScreenshotRecording) {
+IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
+                       MAYBE_TestScreenshotRecording) {
   RunTest("testScreenshotRecording", std::string());
 }
-
