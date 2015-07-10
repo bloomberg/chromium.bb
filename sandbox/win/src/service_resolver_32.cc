@@ -18,7 +18,6 @@ const USHORT kCallEdx = 0xD2FF;
 const BYTE kCallEip = 0xE8;
 const BYTE kRet = 0xC2;
 const BYTE kRet2 = 0xC3;
-const BYTE kNop = 0x90;
 const USHORT kJmpEdx = 0xE2FF;
 const USHORT kXorEcx = 0xC933;
 const ULONG kLeaEdx = 0x0424548D;
@@ -29,8 +28,6 @@ const BYTE kAddEsp1 = 0x83;
 const USHORT kAddEsp2 = 0x4C4;
 const BYTE kJmp32 = 0xE9;
 const USHORT kSysenter = 0x340F;
-
-const int kMaxService = 1000;
 
 // Service code for 32 bit systems.
 // NOTE: on win2003 "call dword ptr [edx]" is "call edx".

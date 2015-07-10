@@ -87,7 +87,6 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     } else {
       // We're on XP sp2, so use the less standard approach.
       // For reference: http://www.uninformed.org/?v=2&a=4
-      static const int MEM_EXECUTE_OPTION_ENABLE = 1;
       static const int MEM_EXECUTE_OPTION_DISABLE = 2;
       static const int MEM_EXECUTE_OPTION_ATL7_THUNK_EMULATION = 4;
       static const int MEM_EXECUTE_OPTION_PERMANENT = 8;
