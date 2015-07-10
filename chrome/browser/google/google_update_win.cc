@@ -214,9 +214,9 @@ class UpdateCheckDriver {
 
   // Sets status_ to UPGRADE_ERROR, error_code_ to |error_code|, hresult_ to
   // |hresult|, installer_exit_code_ to |installer_exit_code|, and
-  // error_message_ to a composition of all values suitable for display to the
-  // user. This call should be followed by deletion of the driver, which will
-  // result in the caller being notified via its delegate.
+  // html_error_message_ to a composition of all values suitable for display
+  // to the user. This call should be followed by deletion of the driver,
+  // which will result in the caller being notified via its delegate.
   void OnUpgradeError(GoogleUpdateErrorCode error_code,
                       HRESULT hresult,
                       int installer_exit_code,
@@ -315,7 +315,7 @@ class UpdateCheckDriver {
   // caller.
   GoogleUpdateUpgradeStatus status_;
   GoogleUpdateErrorCode error_code_;
-  base::string16 error_message_;
+  base::string16 html_error_message_;
   base::string16 new_version_;
   HRESULT hresult_;
   int installer_exit_code_;
@@ -379,7 +379,7 @@ UpdateCheckDriver::~UpdateCheckDriver() {
   }
   if (delegate_) {
     if (status_ == UPGRADE_ERROR)
-      delegate_->OnError(error_code_, error_message_, new_version_);
+      delegate_->OnError(error_code_, html_error_message_, new_version_);
     else if (install_update_if_possible_)
       delegate_->OnUpgradeComplete(new_version_);
     else
@@ -671,7 +671,7 @@ void UpdateCheckDriver::PollGoogleUpdate() {
   } else if (IsFinalState(state, state_value, &upgrade_status, &new_version)) {
     status_ = upgrade_status;
     error_code_ = GOOGLE_UPDATE_NO_ERROR;
-    error_message_.clear();
+    html_error_message_.clear();
     if (!new_version.empty())
       new_version_ = new_version;
     hresult_ = S_OK;
@@ -719,21 +719,21 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
   error_code_ = error_code;
   hresult_ = hresult;
   installer_exit_code_ = installer_exit_code;
-  base::string16 error_msg =
+  base::string16 html_error_msg =
       base::StringPrintf(L"%d: <a href='%ls0x%X' target=_blank>0x%X</a>",
                          error_code_, base::UTF8ToUTF16(
                              chrome::kUpgradeHelpCenterBaseURL).c_str(),
                          hresult_, hresult_);
   if (installer_exit_code_ != -1)
-    error_msg += base::StringPrintf(L": %d", installer_exit_code_);
+    html_error_msg += base::StringPrintf(L": %d", installer_exit_code_);
   if (system_level_install_)
-    error_msg += L" -- system level";
+    html_error_msg += L" -- system level";
   if (error_string.empty()) {
-    error_message_ = l10n_util::GetStringFUTF16(
-        IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED, error_msg);
+    html_error_message_ = l10n_util::GetStringFUTF16(
+        IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED, html_error_msg);
   } else {
-    error_message_ = l10n_util::GetStringFUTF16(
-        IDS_ABOUT_BOX_GOOGLE_UPDATE_ERROR, error_string, error_msg);
+    html_error_message_ = l10n_util::GetStringFUTF16(
+        IDS_ABOUT_BOX_GOOGLE_UPDATE_ERROR, error_string, html_error_msg);
   }
 }
 

@@ -42,7 +42,7 @@ class VersionUpdaterWin : public VersionUpdater, public UpdateCheckDelegate {
                          const base::string16& new_version) override;
   void OnUpgradeComplete(const base::string16& new_version) override;
   void OnError(GoogleUpdateErrorCode error_code,
-               const base::string16& error_message,
+               const base::string16& html_error_message,
                const base::string16& new_version) override;
 
  private:
@@ -132,20 +132,17 @@ void VersionUpdaterWin::OnUpgradeComplete(const base::string16& new_version) {
 }
 
 void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
-                                const base::string16& error_message,
+                                const base::string16& html_error_message,
                                 const base::string16& new_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::string16 message;
 
-  // Current versions of Google Update provide a nice message for the policy
-  // case. Use this generic error for the policy case only if no message from
-  // Google Update is present.
-  if (error_code != GOOGLE_UPDATE_DISABLED_BY_POLICY || error_message.empty())
+  // html_error_message already mentions error_code so don't combine messages.
+  if (html_error_message.empty()) {
     message = l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code);
-
-  if (!error_message.empty()) {
-    message += l10n_util::GetStringFUTF16(
-        IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK, error_message);
+  } else {
+    message = l10n_util::GetStringFUTF16(
+        IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK, html_error_message);
   }
   callback_.Run(FAILED, 0, message);
 }
