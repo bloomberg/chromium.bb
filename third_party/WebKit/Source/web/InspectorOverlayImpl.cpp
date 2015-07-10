@@ -85,11 +85,6 @@ public:
         m_overlay->invalidate();
     }
 
-    void scheduleAnimation() override
-    {
-        m_overlay->invalidate();
-    }
-
 private:
     ChromeClient& m_client;
     InspectorOverlayImpl* m_overlay;
@@ -164,9 +159,9 @@ void InspectorOverlayImpl::paintPageOverlay(WebGraphicsContext* context, const W
 {
     if (isEmpty())
         return;
+
     GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
     FrameView* view = overlayMainFrame()->view();
-    view->updateAllLifecyclePhases();
     ASSERT(!view->needsLayout());
     view->paint(&graphicsContext, IntRect(0, 0, view->width(), view->height()));
 }
@@ -295,6 +290,8 @@ void InspectorOverlayImpl::update()
     if (!m_inspectModeEnabled)
         drawPausedInDebuggerMessage();
     drawViewSize();
+
+    toLocalFrame(overlayPage()->mainFrame())->view()->updateAllLifecyclePhases();
 
     m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
 }
