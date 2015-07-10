@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -132,6 +133,9 @@ int ProxyScriptFetcherImpl::Fetch(
     ConvertResponseToUTF16(charset, data, text);
     return OK;
   }
+
+  DCHECK(fetch_start_time_.is_null());
+  fetch_start_time_ = base::Time::Now();
 
   cur_request_ =
       url_request_context_->CreateRequest(url, DEFAULT_PRIORITY, this);
@@ -282,6 +286,11 @@ bool ProxyScriptFetcherImpl::ConsumeBytesRead(URLRequest* request,
 
 void ProxyScriptFetcherImpl::FetchCompleted() {
   if (result_code_ == OK) {
+    // Calculate duration of time for proxy script fetch to complete.
+    DCHECK(!fetch_start_time_.is_null());
+    UMA_HISTOGRAM_TIMES("Net.ProxyScriptFetcher.SuccessDuration",
+                        base::Time::Now() - fetch_start_time_);
+
     // The caller expects the response to be encoded as UTF16.
     std::string charset;
     cur_request_->GetCharset(&charset);
@@ -305,6 +314,7 @@ void ProxyScriptFetcherImpl::ResetCurRequestState() {
   callback_.Reset();
   result_code_ = OK;
   result_text_ = NULL;
+  fetch_start_time_ = base::Time();
 }
 
 void ProxyScriptFetcherImpl::OnTimeout(int id) {

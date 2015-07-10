@@ -116,6 +116,9 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
   // The maximum amount of time to wait for download to complete.
   base::TimeDelta max_duration_;
 
+  // The time that the fetch started.
+  base::Time fetch_start_time_;
+
   // Factory for creating the time-out task. This takes care of revoking
   // outstanding tasks when |this| is deleted.
   base::WeakPtrFactory<ProxyScriptFetcherImpl> weak_factory_;
