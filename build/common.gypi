@@ -104,8 +104,8 @@
           'branding%': 'Chromium',
 
           'conditions': [
-            # ChromeOS and Windows use Aura and Ash.
-            ['chromeos==1 or OS=="win" or OS=="linux"', {
+            # Windows and Linux (including Chrome OS) use Aura and Ash.
+            ['OS=="win" or OS=="linux"', {
               'use_ash%': 1,
               'use_aura%': 1,
             }],
@@ -225,8 +225,8 @@
             'toolkit_views%': 0,
           }],
 
-          # Enable HiDPI on Mac OS, Chrome OS, Windows and Linux.
-          ['OS=="mac" or chromeos==1 or OS=="win" or OS=="linux"', {
+          # Enable HiDPI on Mac OS, Windows and Linux (including Chrome OS).
+          ['OS=="mac" or OS=="win" or OS=="linux"', {
             'enable_hidpi%': 1,
           }],
 
