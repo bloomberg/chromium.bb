@@ -30653,6 +30653,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PLT.PT.NavigationStartToFirstLayout" units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first document layout is performed.
+  </summary>
+</histogram>
+
+<histogram name="PLT.PT.ResponseStartToFirstLayout" units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's response start to the time the
+    first document layout is performed.
+  </summary>
+</histogram>
+
 <histogram name="PLT.PT_BeginToCommit" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
   <summary>
