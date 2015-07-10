@@ -1093,8 +1093,8 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
     if (layoutObject == posLayoutObject && thisRenderedOffset == posRenderedOffset)
         return false;
 
-    InlineBoxPosition boxPosition1 = getInlineBoxAndOffset(DOWNSTREAM);
-    InlineBoxPosition boxPosition2 = pos.getInlineBoxAndOffset(DOWNSTREAM);
+    InlineBoxPosition boxPosition1 = computeInlineBoxPosition(DOWNSTREAM);
+    InlineBoxPosition boxPosition2 = pos.computeInlineBoxPosition(DOWNSTREAM);
 
     WTF_LOG(Editing, "layoutObject:           %p [%p]\n", layoutObject, boxPosition1.inlineBox);
     WTF_LOG(Editing, "thisRenderedOffset:     %d\n", thisRenderedOffset);
@@ -1126,9 +1126,9 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
 }
 
 template <typename Strategy>
-InlineBoxPosition PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity) const
+InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinity affinity) const
 {
-    return getInlineBoxAndOffset(affinity, primaryDirection());
+    return computeInlineBoxPosition(affinity, primaryDirection());
 }
 
 static bool isNonTextLeafChild(LayoutObject* object)
@@ -1190,7 +1190,7 @@ PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<
 }
 
 template <typename Strategy>
-InlineBoxPosition PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection) const
+InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinity affinity, TextDirection primaryDirection) const
 {
     InlineBox* inlineBox = nullptr;
     int caretOffset = deprecatedEditingOffset();
@@ -1210,7 +1210,7 @@ InlineBoxPosition PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity a
                     return InlineBoxPosition(inlineBox, caretOffset);
             }
 
-            return equivalent.getInlineBoxAndOffset(UPSTREAM, primaryDirection);
+            return equivalent.computeInlineBoxPosition(UPSTREAM, primaryDirection);
         }
         if (layoutObject->isBox()) {
             inlineBox = toLayoutBox(layoutObject)->inlineBoxWrapper();

@@ -372,7 +372,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         if (adjacentCharacterPosition == current || adjacentCharacterPosition.isNull())
             return VisiblePosition();
 
-        InlineBoxPosition boxPosition = adjacentCharacterPosition.deepEquivalent().getInlineBoxAndOffset(UPSTREAM);
+        InlineBoxPosition boxPosition = adjacentCharacterPosition.deepEquivalent().computeInlineBoxPosition(UPSTREAM);
         InlineBox* box = boxPosition.inlineBox;
         int offsetInBox = boxPosition.offsetInBox;
 
@@ -974,7 +974,7 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, Lay
         return VisiblePosition();
 
     RootInlineBox* root = 0;
-    InlineBox* box = visiblePosition.getInlineBoxAndOffset().inlineBox;
+    InlineBox* box = visiblePosition.computeInlineBoxPosition().inlineBox;
     if (box) {
         root = box->root().prevRootBox();
         // We want to skip zero height boxes.
@@ -1027,7 +1027,7 @@ VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutU
         return VisiblePosition();
 
     RootInlineBox* root = 0;
-    InlineBox* box = visiblePosition.getInlineBoxAndOffset().inlineBox;
+    InlineBox* box = visiblePosition.computeInlineBoxPosition().inlineBox;
     if (box) {
         root = box->root().nextRootBox();
         // We want to skip zero height boxes.
@@ -1441,7 +1441,7 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
     if (!layoutObject)
         return LayoutRect();
 
-    InlineBoxPosition boxPosition = position.position().getInlineBoxAndOffset(position.affinity());
+    InlineBoxPosition boxPosition = position.position().computeInlineBoxPosition(position.affinity());
 
     if (boxPosition.inlineBox)
         layoutObject = &boxPosition.inlineBox->layoutObject();

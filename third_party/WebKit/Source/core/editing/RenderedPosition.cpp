@@ -74,7 +74,7 @@ RenderedPosition::RenderedPosition(const VisiblePosition& position)
 {
     if (position.isNull())
         return;
-    InlineBoxPosition boxPosition = position.getInlineBoxAndOffset();
+    InlineBoxPosition boxPosition = position.computeInlineBoxPosition();
     m_inlineBox = boxPosition.inlineBox;
     m_offset = boxPosition.offsetInBox;
     if (m_inlineBox)
@@ -92,7 +92,7 @@ RenderedPosition::RenderedPosition(const Position& position, EAffinity affinity)
 {
     if (position.isNull())
         return;
-    InlineBoxPosition boxPosition = position.getInlineBoxAndOffset(affinity);
+    InlineBoxPosition boxPosition = position.computeInlineBoxPosition(affinity);
     m_inlineBox = boxPosition.inlineBox;
     m_offset = boxPosition.offsetInBox;
     if (m_inlineBox)

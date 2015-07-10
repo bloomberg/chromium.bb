@@ -90,11 +90,9 @@ public:
     // FIXME: This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.deprecatedNode()->rootEditableElement() : 0; }
 
-    // TODO(yosin) We should rename |getInlineBoxAndOffset| to
-    // |computeInlineBoxPosition| to avoid function starts with 'get'.
-    InlineBoxPosition getInlineBoxAndOffset() const
+    InlineBoxPosition computeInlineBoxPosition() const
     {
-        return m_deepPosition.getInlineBoxAndOffset(m_affinity);
+        return m_deepPosition.computeInlineBoxPosition(m_affinity);
     }
 
     // Rect is local to the returned layoutObject

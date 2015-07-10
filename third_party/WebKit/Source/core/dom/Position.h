@@ -225,10 +225,8 @@ public:
     bool isRenderedCharacter() const;
     bool rendersInDifferentPosition(const PositionAlgorithm<Strategy>&) const;
 
-    // TODO(yosin) We should rename |getInlineBoxAndOffset| to
-    // |computeInlineBoxPosition| to avoid function starts with 'get'.
-    InlineBoxPosition getInlineBoxAndOffset(EAffinity) const;
-    InlineBoxPosition getInlineBoxAndOffset(EAffinity, TextDirection primaryDirection) const;
+    InlineBoxPosition computeInlineBoxPosition(EAffinity) const;
+    InlineBoxPosition computeInlineBoxPosition(EAffinity, TextDirection primaryDirection) const;
 
     TextDirection primaryDirection() const;
 
