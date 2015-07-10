@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -90,10 +91,9 @@ public class EnhancedBookmarkUtils {
                 pair.first.destroy();
             }
         };
-        snackbarManager.showSnackbar(null,
-                activity.getString(R.string.enhanced_bookmark_page_saved),
-                activity.getString(R.string.enhanced_bookmark_item_edit), pair,
-                snackbarController);
+        snackbarManager.showSnackbar(Snackbar.make(
+                activity.getString(R.string.enhanced_bookmark_page_saved), snackbarController)
+                .setAction(activity.getString(R.string.enhanced_bookmark_item_edit), pair));
     }
 
     /**

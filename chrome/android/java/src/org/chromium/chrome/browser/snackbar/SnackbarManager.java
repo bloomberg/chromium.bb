@@ -139,41 +139,6 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     }
 
     /**
-     * TODO(newt): delete this method. Update callers to use {@link #showSnackbar(Snackbar)}.
-     * Shows a snackbar with description text and an action button.
-     * @param template Teamplate used to compose full description.
-     * @param description Text for description showing at start of snackbar.
-     * @param actionText Text for action button to show.
-     * @param actionData Data bound to this snackbar entry. Will be returned to listeners when
-     *                   action be clicked or snackbar be dismissed.
-     * @param controller Listener for this snackbar entry.
-     */
-    public void showSnackbar(String template, String description, String actionText,
-            Object actionData, SnackbarController controller) {
-        showSnackbar(Snackbar.make(description, controller).setTemplateText(template)
-                .setAction(actionText, actionData));
-    }
-
-    /**
-     * TODO(newt): delete this method. Update callers to use {@link #showSnackbar(Snackbar)}.
-     * Shows a snackbar for the given timeout duration with description text and an action button.
-     * Allows overriding the default timeout of {@link #DEFAULT_SNACKBAR_DURATION_MS} with
-     * a custom value.
-     * @param template Teamplate used to compose full description.
-     * @param description Text for description showing at start of snackbar.
-     * @param actionText Text for action button to show.
-     * @param actionData Data bound to this snackbar entry. Will be returned to listeners when
-     *                   action be clicked or snackbar be dismissed.
-     * @param controller Listener for this snackbar entry.
-     * @param timeoutMs The timeout to use in ms.
-     */
-    public void showSnackbar(String template, String description, String actionText,
-            Object actionData, SnackbarController controller, int timeoutMs) {
-        showSnackbar(Snackbar.make(description, controller).setTemplateText(template)
-                .setAction(actionText, actionData).setDuration(timeoutMs));
-    }
-
-    /**
      * Dismisses snackbar, clears out all entries in stack and prevents future remove callbacks from
      * happening. This method also unregisters this class from global layout notifications.
      * @param isTimeout Whether dismissal was triggered by timeout.
@@ -200,11 +165,11 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
     }
 
     /**
-     * Removes all entries for certain type of controller. This method is used when a controller
-     * wants to remove all entries it posted to snackbar manager before.
-     * @param controller This method only removes entries posted by this controller.
+     * Removes all snackbars that have a certain controller.
+     *
+     * @param controller Only snackbars with this controller will be removed.
      */
-    public void removeSnackbarEntry(SnackbarController controller) {
+    public void removeMatchingSnackbars(SnackbarController controller) {
         boolean isFound = false;
         Snackbar[] snackbars = new Snackbar[mStack.size()];
         mStack.toArray(snackbars);
@@ -216,21 +181,19 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
         }
         if (!isFound) return;
 
-        finishSnackbarEntryRemoval(controller);
+        finishSnackbarRemoval(controller);
     }
 
     /**
-     * Removes all entries for certain type of controller and with specified data. This method is
-     * used when a controller wants to remove some entries it posted to snackbar manager before.
-     * However it does not affect other controllers' entries. Note that this method assumes
-     * different types of snackbar controllers are not sharing the same instance.
-     * @param controller This method only removes entries posted by this controller.
-     * @param data Identifier of an entry to be removed from stack.
+     * Removes all snackbars that have a certain controller and action data.
+     *
+     * @param controller Only snackbars with this controller will be removed.
+     * @param actionData Only snackbars whose action data is equal to actionData will be removed.
      */
-    public void removeSnackbarEntry(SnackbarController controller, Object data) {
+    public void removeMatchingSnackbars(SnackbarController controller, Object actionData) {
         boolean isFound = false;
         for (Snackbar snackbar : mStack) {
-            if (snackbar.getActionData() != null && snackbar.getActionData().equals(data)
+            if (snackbar.getActionData() != null && snackbar.getActionData().equals(actionData)
                     && snackbar.getController() == controller) {
                 mStack.remove(snackbar);
                 isFound = true;
@@ -239,10 +202,10 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
         }
         if (!isFound) return;
 
-        finishSnackbarEntryRemoval(controller);
+        finishSnackbarRemoval(controller);
     }
 
-    private void finishSnackbarEntryRemoval(SnackbarController controller) {
+    private void finishSnackbarRemoval(SnackbarController controller) {
         controller.onDismissForEachType(false);
 
         if (mStack.isEmpty()) {

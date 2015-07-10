@@ -39,10 +39,11 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
      */
     public void showLoFiBar(Tab tab) {
         mTab = tab;
-        mSnackbarManager.showSnackbar(
-                null, mContext.getString(R.string.data_reduction_lo_fi_snackbar_message),
-                mContext.getString(R.string.data_reduction_lo_fi_snackbar_action),
-                tab.getId(), this, DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS);
+        mSnackbarManager.showSnackbar(Snackbar.make(
+                mContext.getString(R.string.data_reduction_lo_fi_snackbar_message), this)
+                .setAction(mContext.getString(R.string.data_reduction_lo_fi_snackbar_action),
+                        tab.getId())
+                .setDuration(DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS));
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                 DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_SHOWN);
     }
@@ -51,7 +52,7 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
      * Dismisses the snackbar.
      */
     public void dismissLoFiBar() {
-        if (mSnackbarManager.isShowing()) mSnackbarManager.removeSnackbarEntry(this);
+        if (mSnackbarManager.isShowing()) mSnackbarManager.removeMatchingSnackbars(this);
     }
 
     /**

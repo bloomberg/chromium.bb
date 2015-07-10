@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel.EnhancedBookmarkDeleteObserver;
+import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 
 import java.util.Locale;
@@ -87,14 +88,14 @@ public class EnhancedBookmarkUndoController extends BookmarkModelObserver implem
         if (!isUndoable) return;
 
         if (titles.length == 1) {
-            mSnackbarManager.showSnackbar(mContext.getString(R.string.undo_bar_delete_message),
-                    titles[0], mContext.getString(R.string.undo_bar_button_text),
-                    null, this);
+            mSnackbarManager.showSnackbar(Snackbar.make(titles[0], this)
+                    .setTemplateText(mContext.getString(R.string.undo_bar_delete_message))
+                    .setAction(mContext.getString(R.string.undo_bar_button_text), null));
         } else {
             mSnackbarManager.showSnackbar(
-                    mContext.getString(R.string.undo_bar_multiple_delete_message),
-                    String.format(Locale.getDefault(), "%d", titles.length),
-                    mContext.getString(R.string.undo_bar_button_text), null, this);
+                    Snackbar.make(String.format(Locale.getDefault(), "%d", titles.length), this)
+                    .setTemplateText(mContext.getString(R.string.undo_bar_multiple_delete_message))
+                    .setAction(mContext.getString(R.string.undo_bar_button_text), null));
         }
     }
 }

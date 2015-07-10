@@ -10,6 +10,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -77,13 +78,13 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
             @Override
             public void tabClosureUndone(Tab tab) {
                 if (disableUndo()) return;
-                mSnackbarManager.removeSnackbarEntry(UndoBarPopupController.this, tab.getId());
+                mSnackbarManager.removeMatchingSnackbars(UndoBarPopupController.this, tab.getId());
             }
 
             @Override
             public void tabClosureCommitted(Tab tab) {
                 if (disableUndo()) return;
-                mSnackbarManager.removeSnackbarEntry(UndoBarPopupController.this, tab.getId());
+                mSnackbarManager.removeMatchingSnackbars(UndoBarPopupController.this, tab.getId());
             }
 
             @Override
@@ -95,7 +96,7 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
             @Override
             public void allTabsClosureCommitted() {
                 if (disableUndo()) return;
-                mSnackbarManager.removeSnackbarEntry(UndoBarPopupController.this);
+                mSnackbarManager.removeMatchingSnackbars(UndoBarPopupController.this);
             }
         };
     }
@@ -129,9 +130,9 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
                 mSnackbarManager.isShowing() ? TAB_CLOSE_UNDO_TOAST_SHOWN_WARM
                                              : TAB_CLOSE_UNDO_TOAST_SHOWN_COLD,
                 TAB_CLOSE_UNDO_TOAST_COUNT);
-        mSnackbarManager.showSnackbar(mContext.getString(R.string.undo_bar_close_message),
-                content, mContext.getString(R.string.undo_bar_button_text),
-                tabId, this);
+        mSnackbarManager.showSnackbar(Snackbar.make(content, this)
+                .setTemplateText(mContext.getString(R.string.undo_bar_close_message))
+                .setAction(mContext.getString(R.string.undo_bar_button_text), tabId));
     }
 
     /**
@@ -144,9 +145,10 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
      */
     private void showUndoCloseAllBar(List<Integer> closedTabIds) {
         String content = String.format(Locale.getDefault(), "%d", closedTabIds.size());
-        mSnackbarManager.showSnackbar(mContext.getString(R.string.undo_bar_close_all_message),
-                content, mContext.getString(R.string.undo_bar_button_text),
-                closedTabIds, this);
+        mSnackbarManager.showSnackbar(Snackbar.make(content, this)
+                .setTemplateText(mContext.getString(R.string.undo_bar_close_all_message))
+                .setAction(mContext.getString(R.string.undo_bar_button_text), closedTabIds));
+
     }
 
     /**
