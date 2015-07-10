@@ -9,7 +9,6 @@ from benchmarks import webgl_expectations
 from measurements import smoothness
 import page_sets
 import page_sets.key_silk_cases
-
 from telemetry import benchmark
 
 
