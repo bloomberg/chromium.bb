@@ -62,8 +62,9 @@ def main():
 
   args = parser.parse_args()
 
-  minimum_version = GetRequiredMinimumVersion(args.package_id)
-  CheckPackageVersion(args.package_id, args.package_location, minimum_version)
+  if not ShouldSkipVersionCheck():
+    minimum_version = GetRequiredMinimumVersion(args.package_id)
+    CheckPackageVersion(args.package_id, args.package_location, minimum_version)
 
   # Create the stamp file.
   if args.stamp:
@@ -74,7 +75,7 @@ def main():
 
 def ExitError(msg):
   sys.exit(colorama.Fore.MAGENTA + colorama.Style.BRIGHT + msg +
-           colorama.Fore.RESET)
+           colorama.Style.RESET_ALL)
 
 
 def GetRequiredMinimumVersion(package_id):
@@ -119,6 +120,12 @@ def CheckPackageVersion(pkg_id, location, minimum_version):
 
   # Everything looks ok, print nothing.
 
+def ShouldSkipVersionCheck():
+  '''
+  Bots should not run the version check, since they download the sdk extras
+  in a different way.
+  '''
+  return bool(os.environ.get('CHROME_HEADLESS'))
 
 if __name__ == '__main__':
   main()
