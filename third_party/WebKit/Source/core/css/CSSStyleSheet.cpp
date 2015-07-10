@@ -290,7 +290,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         return 0;
     }
     CSSParserContext context(m_contents->parserContext(), UseCounter::getFrom(this));
-    RefPtrWillBeRawPtr<StyleRuleBase> rule = CSSParser::parseRule(context, ruleString);
+    RefPtrWillBeRawPtr<StyleRuleBase> rule = CSSParser::parseRule(context, m_contents.get(), ruleString);
 
     // FIXME: @namespace rules have special handling in the CSSOM spec, but it
     // mostly doesn't make sense since we don't support CSSNamespaceRule

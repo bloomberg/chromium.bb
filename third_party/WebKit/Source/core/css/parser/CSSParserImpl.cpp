@@ -111,9 +111,9 @@ bool CSSParserImpl::parseDeclarationList(MutableStylePropertySet* declaration, c
     return declaration->addParsedProperties(results);
 }
 
-PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& string, const CSSParserContext& context, AllowedRulesType allowedRules)
+PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& string, const CSSParserContext& context, StyleSheetContents* styleSheet, AllowedRulesType allowedRules)
 {
-    CSSParserImpl parser(context);
+    CSSParserImpl parser(context, styleSheet);
     CSSTokenizer::Scope scope(string);
     CSSParserTokenRange range = scope.tokenRange();
     range.consumeWhitespace();

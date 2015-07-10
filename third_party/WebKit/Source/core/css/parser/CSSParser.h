@@ -28,7 +28,7 @@ class CORE_EXPORT CSSParser {
     STATIC_ONLY(CSSParser);
 public:
     // As well as regular rules, allows @import and @namespace but not @charset
-    static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const CSSParserContext&, const String&);
+    static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const CSSParserContext&, StyleSheetContents*, const String&);
     static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&);
     static void parseSelector(const CSSParserContext&, const String&, CSSSelectorList&);
     static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&);
