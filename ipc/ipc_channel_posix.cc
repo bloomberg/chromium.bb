@@ -570,6 +570,7 @@ void ChannelPosix::ResetToAcceptingConnectionState() {
   while (!output_queue_.empty()) {
     Message* m = output_queue_.front();
     output_queue_.pop();
+    CloseFileDescriptors(m);
     delete m;
   }
 
