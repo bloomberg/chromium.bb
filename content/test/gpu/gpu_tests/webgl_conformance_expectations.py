@@ -531,29 +531,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # WEBGL 2 TESTS FAILURES
     ##############################################################
 
-    # Skip all WebGL 2 tests on Win AMD.
-    self.Skip('deqp/data/gles3/shaders/*', ['win', 'amd'], bug=483282)
-    self.Skip('framework/opengl/simplereference/*', ['win', 'amd'], bug=483282)
-    self.Skip('deqp/functional/gles3/*', ['win', 'amd'], bug=483282)
-    self.Skip('conformance2/*', ['win', 'amd'], bug=483282)
-
-    # Skip all WebGL 2 tests on Win Intel.
-    self.Skip('deqp/data/gles3/shaders/*', ['win', 'intel'], bug=483282)
-    self.Skip('framework/opengl/simplereference/*',
-        ['win', 'intel'], bug=483282)
-    self.Skip('deqp/functional/gles3/*', ['win', 'intel'], bug=483282)
-    self.Skip('conformance2/*', ['win', 'intel'], bug=483282)
-
-    # Skip all WebGL 2 tests on Win NVIDIA debug.
-    self.Skip('deqp/data/gles3/shaders/*',
-        ['win', 'nvidia', 'debug'], bug=483282)
-    self.Skip('framework/opengl/simplereference/*',
-        ['win', 'nvidia', 'debug'], bug=483282)
-    self.Skip('deqp/functional/gles3/*',
-        ['win', 'nvidia', 'debug'], bug=483282)
-    self.Skip('conformance2/*',
-        ['win', 'nvidia', 'debug'], bug=483282)
-
     self.Fail('deqp/data/gles3/shaders/arrays.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constant_expressions.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constants.html', bug=483282)
@@ -617,6 +594,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/textures/texture-npot.html', bug=483282)
     self.Fail('conformance2/transform_feedback/transform_feedback.html',
         bug=483282)
+
+    # Windows only.
+    self.Fail('conformance2/glsl3/array-in-complex-expression.html',
+        ['win'], bug=483282)
 
     # Mac only.
     self.Fail('conformance2/glsl3/array-as-return-value.html',

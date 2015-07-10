@@ -112,12 +112,6 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
         '--disable-gpu-process-crash-limit',
         '--enable-unsafe-es3-apis'
     ])
-    target_os = browser_finder.FindBrowser(options.finder_options).target_os
-    if target_os.startswith('win'):
-      options.AppendExtraBrowserArgs([
-          '--use-gl=desktop'
-      ])
-
 
 class WebglConformancePage(page_module.Page):
   def __init__(self, story_set, test, expectations):
