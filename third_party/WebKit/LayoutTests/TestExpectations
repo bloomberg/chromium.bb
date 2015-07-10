@@ -1265,6 +1265,9 @@ crbug.com/442512 svg/dom/viewspec-viewtargetparams.html [ Pass ImageOnlyFailure 
 crbug.com/442512 svg/dom/viewspec-zoomandpanparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/complex-svgView-specification.html [ Pass ImageOnlyFailure ]
 
+Bug(eae) fast/text/justify-ideograph-leading-expansion.html [ NeedsRebaseline ]
+Bug(eae) virtual/antialiasedtext/fast/text/justify-ideograph-leading-expansion.html [ NeedsRebaseline ]
+
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
 
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Pass Failure ]

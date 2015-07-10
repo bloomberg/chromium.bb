@@ -44,18 +44,18 @@ public:
         ASSERT(font);
         const FontDescription& fontDescription = font->fontDescription();
 
-        // Letter spacing can change the width of a word, as can tabs as we
-        // segment solely based on on space characters.
-        m_wordResultCachable = !fontDescription.letterSpacing()
-            && !run.allowTabs();
+        // Word and letter spacing can change the width of a word, as can tabs
+        // as we segment solely based on on space characters.
+        // If expansion is used (for justified text) the spacing between words
+        // change and thus we need to shape the entire run.
+        m_wordResultCachable = !fontDescription.wordSpacing()
+            && !fontDescription.letterSpacing() && !run.allowTabs()
+            && m_textRun.expansion() == 0.0f;
 
         // Shaping word by word is faster as each word is cached. If we cannot
         // use the cache or if the font doesn't support word by word shaping
         // fall back on shaping the entire run.
-        // If word spacing or expansion is used (for justified text) the spacing
-        // between words change and thus we need to shape the entire run.
-        m_shapeByWord = m_wordResultCachable && m_font->canShapeWordByWord()
-            && !fontDescription.wordSpacing() && m_textRun.expansion() == 0.0f;
+        m_shapeByWord = m_wordResultCachable && m_font->canShapeWordByWord();
     }
 
     bool next(RefPtr<ShapeResult>* wordResult)
