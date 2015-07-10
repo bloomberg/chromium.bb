@@ -48,8 +48,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-class TypingCommandLineOperation
-{
+class TypingCommandLineOperation {
 public:
     TypingCommandLineOperation(TypingCommand* typingCommand, bool selectInsertedText, const String& text)
     : m_typingCommand(typingCommand)
@@ -250,9 +249,10 @@ void TypingCommand::doApply()
     if (!endingSelection().isNonOrphanedCaretOrRange())
         return;
 
-    if (m_commandType == DeleteKey)
+    if (m_commandType == DeleteKey) {
         if (m_commands.isEmpty())
             m_openedByBackwardDelete = true;
+    }
 
     switch (m_commandType) {
     case DeleteSelection:
@@ -477,13 +477,14 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
             selectionToDelete.setWithoutValidation(selectionToDelete.end(), selectionToDelete.end().previous(BackwardDeletion));
         }
 
-        if (!startingSelection().isRange() || selectionToDelete.base() != startingSelection().start())
+        if (!startingSelection().isRange() || selectionToDelete.base() != startingSelection().start()) {
             selectionAfterUndo = selectionToDelete;
-        else
+        } else {
             // It's a little tricky to compute what the starting selection would have been in the original document.
             // We can't let the VisibleSelection class's validation kick in or it'll adjust for us based on
             // the current state of the document and we'll get the wrong result.
             selectionAfterUndo.setWithoutValidation(startingSelection().end(), selectionToDelete.extent());
+        }
         break;
     }
     case NoSelection:
@@ -557,16 +558,16 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
             selection->modify(FrameSelection::AlterationExtend, DirectionForward, CharacterGranularity);
 
         selectionToDelete = selection->selection();
-        if (!startingSelection().isRange() || selectionToDelete.base() != startingSelection().start())
+        if (!startingSelection().isRange() || selectionToDelete.base() != startingSelection().start()) {
             selectionAfterUndo = selectionToDelete;
-        else {
+        } else {
             // It's a little tricky to compute what the starting selection would have been in the original document.
             // We can't let the VisibleSelection class's validation kick in or it'll adjust for us based on
             // the current state of the document and we'll get the wrong result.
             Position extent = startingSelection().end();
-            if (extent.containerNode() != selectionToDelete.end().containerNode())
+            if (extent.containerNode() != selectionToDelete.end().containerNode()) {
                 extent = selectionToDelete.extent();
-            else {
+            } else {
                 int extraCharacters;
                 if (selectionToDelete.start().containerNode() == selectionToDelete.end().containerNode())
                     extraCharacters = selectionToDelete.end().computeOffsetInContainerNode() - selectionToDelete.start().computeOffsetInContainerNode();

@@ -141,7 +141,7 @@ public:
 
     void appendTrailingWhitespace();
 
-    bool expandUsingGranularity(TextGranularity granularity);
+    bool expandUsingGranularity(TextGranularity);
     bool expandUsingGranularityInComposedTree(TextGranularity);
 
     // We don't yet support multi-range selections, so we only ever have one range to return.

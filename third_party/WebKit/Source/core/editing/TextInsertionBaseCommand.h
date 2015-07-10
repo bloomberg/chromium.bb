@@ -57,9 +57,9 @@ void forEachLineInString(const String& string, const LineOperation& operation)
         operation(offset, newline - offset, false);
         offset = newline + 1;
     }
-    if (!offset)
+    if (!offset) {
         operation(0, string.length(), true);
-    else {
+    } else {
         unsigned length = string.length();
         if (length != offset)
             operation(offset, length - offset, true);

@@ -42,9 +42,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/layout/LayoutTextControl.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
-#include "core/layout/LayoutTextControl.h"
 #include "core/page/SpellCheckerClient.h"
 #include "platform/text/TextCheckerClient.h"
 

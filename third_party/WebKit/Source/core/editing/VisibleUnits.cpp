@@ -573,9 +573,9 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         // Keep asking the iterator for chunks until the search function
         // returns an end value not equal to the length of the string passed to it.
         bool inTextSecurityMode = it.node() && it.node()->layoutObject() && it.node()->layoutObject()->style()->textSecurity() != TSNONE;
-        if (!inTextSecurityMode)
+        if (!inTextSecurityMode) {
             it.text().appendTextTo(string);
-        else {
+        } else {
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
             Vector<UChar, 1024> iteratorString;
             iteratorString.fill('x', it.length());
@@ -669,8 +669,9 @@ VisiblePosition endOfWord(const VisiblePosition &c, EWordSide side)
         p = c.previous();
         if (p.isNull())
             return c;
-    } else if (isEndOfParagraph(c))
+    } else if (isEndOfParagraph(c)) {
         return c;
+    }
 
     return nextBoundary(p, endWordBoundary);
 }
