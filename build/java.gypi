@@ -79,6 +79,7 @@
     'never_lint%': 0,
     'findbugs_stamp': '<(intermediate_dir)/findbugs.stamp',
     'run_findbugs%': 0,
+    'java_in_dir_suffix%': '/src',
     'proguard_config%': '',
     'proguard_preprocess%': '0',
     'enable_errorprone%': '0',
@@ -259,7 +260,7 @@
       'variables': {
         'extra_args': [],
         'extra_inputs': [],
-        'java_sources': ['>!@(find >(java_in_dir)/src >(additional_src_dirs) -name "*.java")'],
+        'java_sources': ['>!@(find >(java_in_dir)>(java_in_dir_suffix) >(additional_src_dirs) -name "*.java")'],
         'conditions': [
           ['enable_errorprone == 1', {
             'extra_inputs': [
@@ -315,7 +316,7 @@
     {
       'variables': {
         'src_dirs': [
-          '<(java_in_dir)/src',
+          '<(java_in_dir)<(java_in_dir_suffix)',
           '>@(additional_src_dirs)',
         ],
         'stamp_path': '<(lint_stamp)',
