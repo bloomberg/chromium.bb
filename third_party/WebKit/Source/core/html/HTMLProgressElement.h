@@ -54,7 +54,7 @@ private:
     ~HTMLProgressElement() override;
 
     bool areAuthorShadowsAllowed() const override { return false; }
-    void willAddFirstOpenShadowRoot() override;
+    void willAddFirstAuthorShadowRoot() override;
     bool shouldAppearIndeterminate() const override;
     bool supportLabels() const override { return true; }
 

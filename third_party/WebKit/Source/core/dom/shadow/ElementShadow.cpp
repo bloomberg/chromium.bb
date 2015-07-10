@@ -150,9 +150,9 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
 
     if (type == ShadowRootType::Open) {
         if (!youngestShadowRoot()) {
-            shadowHost.willAddFirstOpenShadowRoot();
+            shadowHost.willAddFirstAuthorShadowRoot();
         } else if (youngestShadowRoot()->type() == ShadowRootType::UserAgent) {
-            shadowHost.willAddFirstOpenShadowRoot();
+            shadowHost.willAddFirstAuthorShadowRoot();
             UseCounter::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultipleWithUserAgentShadowRoot);
         } else {
             UseCounter::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultiple);

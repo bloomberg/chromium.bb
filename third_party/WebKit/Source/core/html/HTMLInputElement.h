@@ -268,7 +268,7 @@ private:
     enum AutoCompleteSetting { Uninitialized, On, Off };
 
     void didAddUserAgentShadowRoot(ShadowRoot&) final;
-    void willAddFirstOpenShadowRoot() final;
+    void willAddFirstAuthorShadowRoot() final;
 
     void willChangeForm() final;
     void didChangeForm() final;

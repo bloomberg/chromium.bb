@@ -653,7 +653,7 @@ void HTMLPlugInElement::didAddUserAgentShadowRoot(ShadowRoot&)
     userAgentShadowRoot()->appendChild(HTMLContentElement::create(document()));
 }
 
-void HTMLPlugInElement::willAddFirstOpenShadowRoot()
+void HTMLPlugInElement::willAddFirstAuthorShadowRoot()
 {
     lazyReattachIfAttached();
 }

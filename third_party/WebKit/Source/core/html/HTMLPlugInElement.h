@@ -132,7 +132,7 @@ private:
     bool layoutObjectIsFocusable() const final;
     bool isKeyboardFocusable() const final;
     void didAddUserAgentShadowRoot(ShadowRoot&) final;
-    void willAddFirstOpenShadowRoot() final;
+    void willAddFirstAuthorShadowRoot() final;
 
     // HTMLElement function:
     bool hasCustomFocusLogic() const override;

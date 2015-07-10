@@ -70,7 +70,7 @@ private:
     ~HTMLMeterElement() override;
 
     bool areAuthorShadowsAllowed() const override { return false; }
-    void willAddFirstOpenShadowRoot() override;
+    void willAddFirstAuthorShadowRoot() override;
     LayoutMeter* layoutMeter() const;
 
     bool supportLabels() const override { return true; }

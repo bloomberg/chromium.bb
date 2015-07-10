@@ -211,7 +211,7 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     inner->appendChild(bar);
 }
 
-void HTMLMeterElement::willAddFirstOpenShadowRoot()
+void HTMLMeterElement::willAddFirstAuthorShadowRoot()
 {
     ASSERT(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled());
     lazyReattachIfAttached();

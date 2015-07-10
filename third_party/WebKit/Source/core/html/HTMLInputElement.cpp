@@ -158,7 +158,7 @@ void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot&)
     m_inputTypeView->createShadowSubtree();
 }
 
-void HTMLInputElement::willAddFirstOpenShadowRoot()
+void HTMLInputElement::willAddFirstAuthorShadowRoot()
 {
     m_inputTypeView->destroyShadowSubtree();
     m_inputTypeView = InputTypeView::create(*this);

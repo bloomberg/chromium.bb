@@ -334,7 +334,7 @@ public:
     bool hasOpenShadowRoot() const { return shadowRoot(); }
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot& ensureUserAgentShadowRoot();
-    virtual void willAddFirstOpenShadowRoot() { }
+    virtual void willAddFirstAuthorShadowRoot() { }
 
     bool isInDescendantTreeOf(const Element* shadowHost) const;
 
