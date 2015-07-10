@@ -391,7 +391,7 @@ TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidUStrings); ++i) {
         String invalidTarget(invalidUStrings[i]);
-        EphemeralRange foundRange = findPlainText(range->startPosition(), range->endPosition(), invalidTarget, 0);
+        EphemeralRange foundRange = findPlainText(EphemeralRange(range.get()), invalidTarget, 0);
         RefPtrWillBeRawPtr<Range> actualRange = Range::create(document(), foundRange.startPosition(), foundRange.endPosition());
         EXPECT_TRUE(areRangesEqual(expectedRange.get(), actualRange.get()));
     }

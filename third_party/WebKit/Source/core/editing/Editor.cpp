@@ -1183,7 +1183,7 @@ static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& ta
     bool forward = !(options & Backwards);
 
     while (true) {
-        EphemeralRange resultRange = findPlainText(searchStart, searchEnd, target, options);
+        EphemeralRange resultRange = findPlainText(EphemeralRange(searchStart, searchEnd), target, options);
         if (resultRange.isCollapsed())
             return nullptr;
 

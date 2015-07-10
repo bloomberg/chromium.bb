@@ -42,6 +42,7 @@ class CORE_EXPORT CharacterIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
     CharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    explicit CharacterIteratorAlgorithm(const EphemeralRangeTemplate<Strategy>&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int numCharacters);
 
@@ -79,7 +80,7 @@ private:
 extern template class CORE_EXTERN_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;
 using CharacterIterator = CharacterIteratorAlgorithm<EditingStrategy>;
 
-CORE_EXPORT EphemeralRange findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions);
+CORE_EXPORT EphemeralRange findPlainText(const EphemeralRange& inputRange, const String&, FindOptions);
 
 } // namespace blink
 

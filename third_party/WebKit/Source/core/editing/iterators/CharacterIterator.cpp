@@ -94,6 +94,12 @@ CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(const PositionA
 }
 
 template <typename Strategy>
+CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(const EphemeralRangeTemplate<Strategy>& range, TextIteratorBehaviorFlags behavior)
+    : CharacterIterator(range.startPosition(), range.endPosition(), behavior)
+{
+}
+
+template <typename Strategy>
 void CharacterIteratorAlgorithm<Strategy>::initialize()
 {
     while (!atEnd() && !m_textIterator.length())
@@ -610,12 +616,12 @@ tryAgain:
 
 static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersOpenShadowRoots | TextIteratorDoesNotBreakAtReplacedElement;
 
-EphemeralRange findPlainText(const Position& inputStart, const Position& inputEnd, const String& target, FindOptions options)
+EphemeralRange findPlainText(const EphemeralRange& inputRange, const String& target, FindOptions options)
 {
     // CharacterIterator requires layoutObjects to be up-to-date.
-    if (!inputStart.inDocument())
+    if (!inputRange.startPosition().inDocument())
         return EphemeralRange();
-    ASSERT(inputStart.document() == inputEnd.document());
+    ASSERT(inputRange.startPosition().document() == inputRange.endPosition().document());
 
     // FIXME: Reduce the code duplication with above (but how?).
     size_t matchStart;
@@ -624,13 +630,13 @@ EphemeralRange findPlainText(const Position& inputStart, const Position& inputEn
         TextIteratorBehaviorFlags behavior = iteratorFlagsForFindPlainText;
         if (options & FindAPICall)
             behavior |= TextIteratorForWindowFind;
-        CharacterIterator findIterator(inputStart, inputEnd, behavior);
+        CharacterIterator findIterator(inputRange, behavior);
         matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
         if (!matchLength)
-            return EphemeralRange(options & Backwards ? inputStart : inputEnd);
+            return EphemeralRange(options & Backwards ? inputRange.startPosition() : inputRange.endPosition());
     }
 
-    CharacterIterator computeRangeIterator(inputStart, inputEnd, iteratorFlagsForFindPlainText);
+    CharacterIterator computeRangeIterator(inputRange, iteratorFlagsForFindPlainText);
     return computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength);
 }
 

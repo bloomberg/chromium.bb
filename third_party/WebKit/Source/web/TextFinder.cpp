@@ -299,7 +299,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         // than the timeout value, and is not interruptible as it is currently
         // written. We may need to rewrite it with interruptibility in mind, or
         // find an alternative.
-        EphemeralRange result = findPlainText(searchStart, searchEnd, searchText, options.matchCase ? 0 : CaseInsensitive);
+        EphemeralRange result = findPlainText(EphemeralRange(searchStart, searchEnd), searchText, options.matchCase ? 0 : CaseInsensitive);
         if (result.isCollapsed()) {
             // Not found.
             break;
