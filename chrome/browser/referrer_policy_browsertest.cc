@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -24,34 +26,18 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-
-namespace {
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data/referrer_policy");
-
-}  // namespace
 
 class ReferrerPolicyTest : public InProcessBrowserTest {
  public:
   ReferrerPolicyTest() {}
   ~ReferrerPolicyTest() override {}
 
-  void SetUp() override {
-    test_server_.reset(new net::SpawnedTestServer(
-                           net::SpawnedTestServer::TYPE_HTTP,
-                           net::SpawnedTestServer::kLocalhost,
-                           base::FilePath(kDocRoot)));
-    ASSERT_TRUE(test_server_->Start());
-    ssl_test_server_.reset(new net::SpawnedTestServer(
-                               net::SpawnedTestServer::TYPE_HTTPS,
-                               net::SpawnedTestServer::kLocalhost,
-                               base::FilePath(kDocRoot)));
-    ASSERT_TRUE(ssl_test_server_->Start());
-
-    InProcessBrowserTest::SetUp();
+  void SetUpOnMainThread() override {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
  protected:
@@ -160,19 +146,17 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
                        WindowOpenDisposition disposition,
                        blink::WebMouseEvent::Button button,
                        ExpectedReferrer expected_referrer) {
-    GURL start_url;
-    net::SpawnedTestServer* start_server = start_protocol == START_ON_HTTPS
-                                               ? ssl_test_server_.get()
-                                               : test_server_.get();
-    start_url = start_server->GetURL(
-        std::string("files/referrer-policy-start.html?") + "policy=" +
-        ReferrerPolicyToString(referrer_policy) + "&port=" +
-        base::IntToString(test_server_->host_port_pair().port()) +
-        "&ssl_port=" +
-        base::IntToString(ssl_test_server_->host_port_pair().port()) +
-        "&redirect=" + RedirectTypeToString(redirect) + "&link=" +
+    std::string relative_url =
+        std::string("referrer_policy/referrer-policy-start.html?") + "policy=" +
+        ReferrerPolicyToString(referrer_policy) + "&redirect=" +
+        RedirectTypeToString(redirect) + "&link=" +
         (button == blink::WebMouseEvent::ButtonNone ? "false" : "true") +
-        "&target=" + (link_type == LINK_WITH_TARGET_BLANK ? "_blank" : ""));
+        "&target=" + (link_type == LINK_WITH_TARGET_BLANK ? "_blank" : "");
+
+    const GURL start_url =
+        (start_protocol == START_ON_HTTPS)
+            ? net::URLRequestMockHTTPJob::GetMockHttpsUrl(relative_url)
+            : net::URLRequestMockHTTPJob::GetMockUrl(relative_url);
 
     ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
         content::NotificationService::AllSources());
@@ -219,9 +203,6 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
 
     return start_url;
   }
-
-  scoped_ptr<net::SpawnedTestServer> test_server_;
-  scoped_ptr<net::SpawnedTestServer> ssl_test_server_;
 };
 
 // The basic behavior of referrer policies is covered by layout tests in
@@ -478,7 +459,8 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
       blink::WebMouseEvent::ButtonLeft, EXPECT_ORIGIN_AS_REFERRER);
 
   // Navigate to C.
-  ui_test_utils::NavigateToURL(browser(), test_server_->GetURL(std::string()));
+  ui_test_utils::NavigateToURL(
+      browser(), net::URLRequestMockHTTPJob::GetMockUrl(std::string()));
 
   base::string16 expected_title =
       GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER);
@@ -545,10 +527,8 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
 
   // Load a page that loads an iframe.
   ui_test_utils::NavigateToURL(
-      browser(),
-      ssl_test_server_->GetURL(
-          std::string("files/referrer-policy-iframe.html?") +
-          base::IntToString(test_server_->host_port_pair().port())));
+      browser(), net::URLRequestMockHTTPJob::GetMockHttpsUrl(std::string(
+                     "referrer_policy/referrer-policy-iframe.html")));
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
   // Verify that the referrer policy was honored and the main page's origin was
@@ -560,8 +540,10 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
       frame,
       "window.domAutomationController.send(document.title)",
       &title));
-  EXPECT_EQ("Referrer is " + ssl_test_server_->GetURL(std::string()).spec(),
-            title);
+  EXPECT_EQ(
+      "Referrer is " +
+          net::URLRequestMockHTTPJob::GetMockHttpsUrl(std::string()).spec(),
+      title);
 
   // Reload the iframe.
   expected_title = base::ASCIIToUTF16("reset");
@@ -580,7 +562,8 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
       "window.domAutomationController.send(document.title)",
       &title));
   EXPECT_EQ("Referrer is " +
-                test_server_->GetURL("files/referrer-policy-log.html").spec(),
+                net::URLRequestMockHTTPJob::GetMockUrl(
+                    "referrer_policy/referrer-policy-log.html").spec(),
             title);
 }
 

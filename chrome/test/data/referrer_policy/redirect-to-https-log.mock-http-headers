@@ -1,0 +1,3 @@
+HTTP/1.1 301 Moved permanently
+Location: https://mock.http/referrer_policy/referrer-policy-log.html
+

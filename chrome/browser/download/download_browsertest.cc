@@ -93,7 +93,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2856,25 +2855,19 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
 // This test ensures that the Referer header is properly sanitized when
 // Save Link As is chosen from the context menu.
 IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
-  // Do initial setup.
-  ASSERT_TRUE(test_server()->Start());
-  net::SpawnedTestServer ssl_test_server(
-      net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/referrer_policy")));
-  ASSERT_TRUE(ssl_test_server.Start());
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&EchoReferrerRequestHandler));
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   EnableFileChooser(true);
   std::vector<DownloadItem*> download_items;
   GetDownloads(browser(), &download_items);
   ASSERT_TRUE(download_items.empty());
 
   // Navigate to the initial page, where Save Link As will be executed.
-  GURL url = ssl_test_server.GetURL(
-      std::string("files/referrer-policy-start.html?policy=origin") +
-      "&port=" + base::IntToString(test_server()->host_port_pair().port()) +
-      "&ssl_port=" +
-      base::IntToString(ssl_test_server.host_port_pair().port()) +
-      "&redirect=echoheader&link=true&target=");
+  GURL url = net::URLRequestMockHTTPJob::GetMockHttpsUrl(
+      std::string("referrer_policy/referrer-policy-start.html?policy=origin") +
+      "&redirect=" + embedded_test_server()->GetURL("/echoreferrer").spec() +
+      "&link=true&target=");
   ASSERT_TRUE(url.is_valid());
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -2906,12 +2899,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
   // Validate that the correct file was downloaded.
   GetDownloads(browser(), &download_items);
   EXPECT_EQ(1u, download_items.size());
-  EXPECT_EQ(test_server()->GetURL("echoheader?Referer"),
+  EXPECT_EQ(embedded_test_server()->GetURL("/echoreferrer"),
             download_items[0]->GetOriginalUrl());
 
   // Check that the file contains the expected referrer.
   base::FilePath file(download_items[0]->GetTargetFilePath());
-  std::string expected_contents = ssl_test_server.GetURL(std::string()).spec();
+  std::string expected_contents =
+      net::URLRequestMockHTTPJob::GetMockHttpsUrl(std::string()).spec();
   EXPECT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
 }
 
