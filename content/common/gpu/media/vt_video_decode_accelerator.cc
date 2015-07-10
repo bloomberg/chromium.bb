@@ -20,6 +20,7 @@
 #include "content/common/gpu/media/vt_video_decode_accelerator.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/limits.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_binders.h"
 
 using content_common_gpu_media::kModuleVt;
@@ -73,7 +74,8 @@ static base::ScopedCFTypeRef<CFMutableDictionaryRef>
 BuildImageConfig(CMVideoDimensions coded_dimensions) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config;
 
-  // TODO(sandersd): Does it save some work or memory to use 4:2:0?
+  // 4:2:2 is used over the native 4:2:0 because only 4:2:2 can be directly
+  // bound to a texture by CGLTexImageIOSurface2D().
   int32_t pixel_format = kCVPixelFormatType_422YpCbCr8;
 #define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
   base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
@@ -285,10 +287,8 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
-    CGLContextObj cgl_context,
     const base::Callback<bool(void)>& make_context_current)
-    : cgl_context_(cgl_context),
-      make_context_current_(make_context_current),
+    : make_context_current_(make_context_current),
       client_(nullptr),
       state_(STATE_DECODING),
       format_(nullptr),
@@ -996,8 +996,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   glEnable(GL_TEXTURE_RECTANGLE_ARB);
   gfx::ScopedTextureBinder
       texture_binder(GL_TEXTURE_RECTANGLE_ARB, texture_ids_[picture_id]);
+  CGLContextObj cgl_context =
+      static_cast<CGLContextObj>(gfx::GLContext::GetCurrent()->GetHandle());
   CGLError status = CGLTexImageIOSurface2D(
-      cgl_context_,                 // ctx
+      cgl_context,                  // ctx
       GL_TEXTURE_RECTANGLE_ARB,     // target
       GL_RGB,                       // internal_format
       frame.coded_size.width(),     // width
@@ -1006,11 +1008,11 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       GL_UNSIGNED_SHORT_8_8_APPLE,  // type
       surface,                      // io_surface
       0);                           // plane
+  glDisable(GL_TEXTURE_RECTANGLE_ARB);
   if (status != kCGLNoError) {
     NOTIFY_STATUS("CGLTexImageIOSurface2D()", status, SFT_PLATFORM_ERROR);
     return false;
   }
-  glDisable(GL_TEXTURE_RECTANGLE_ARB);
 
   available_picture_ids_.pop_back();
   picture_bindings_[picture_id] = frame.image;
