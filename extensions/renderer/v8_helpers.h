@@ -83,9 +83,10 @@ inline bool SetProperty(v8::Local<v8::Context> context,
 
 // GetProperty() family calls V8::Object::Get() and extracts a value from
 // returned MaybeLocal. Returns true on success.
+template <typename Key>
 inline bool GetProperty(v8::Local<v8::Context> context,
                         v8::Local<v8::Object> object,
-                        v8::Local<v8::Value> key,
+                        Key key,
                         v8::Local<v8::Value>* out) {
   return object->Get(context, key).ToLocal(out);
 }
