@@ -806,7 +806,6 @@ if (is_win) {
       "-Wno-unknown-pragmas",  # http://crbug.com/505314
       "-Wno-unused-function",  # http://crbug.com/505316
       "-Wno-unused-value",  # http://crbug.com/505318
-      "-Wno-unused-variable",  # http://crbug.com/505319
       "-Wno-unused-local-typedef",  # http://crbug.com/411648
     ]
   }
@@ -1003,6 +1002,10 @@ config("no_chromium_code") {
       # TODO(mgiuca): Move this suppression into individual third-party
       # libraries as required. http://crbug.com/505301.
       "-Wno-overloaded-virtual",
+
+      # Lots of third-party libraries have unused variables. Instead of
+      # suppressing them individually, we just blanket suppress them here.
+      "-Wno-unused-variable",
     ]
   }
 
