@@ -261,19 +261,17 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
             if (misspellingLocation >= 0 && misspellingLength > 0 && misspellingLocation < length && misspellingLength <= length && misspellingLocation + misspellingLength <= length) {
 
                 // Compute range of misspelled word
-                Position misspellingStart = m_start;
-                Position misspellingEnd = m_end;
-                TextIterator::subrange(misspellingStart, misspellingEnd, currentChunkOffset + misspellingLocation, misspellingLength);
+                const EphemeralRange misspellingRange = TextIterator::subrange(m_start, m_end, currentChunkOffset + misspellingLocation, misspellingLength);
 
                 // Remember first-encountered misspelling and its offset.
                 if (!firstMisspelling) {
                     firstMisspellingOffset = currentChunkOffset + misspellingLocation;
                     firstMisspelling = it.substring(misspellingLocation, misspellingLength);
-                    firstMisspellingRange = Range::create(misspellingStart.containerNode()->document(), m_start, m_end);
+                    firstMisspellingRange = Range::create(misspellingRange.document(), m_start, m_end);
                 }
 
                 // Store marker for misspelled word.
-                misspellingStart.containerNode()->document().markers().addMarker(misspellingStart, misspellingEnd, DocumentMarker::Spelling);
+                misspellingRange.document().markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling);
 
                 // Bail out if we're marking only the first misspelling, and not all instances.
                 if (!markAll)

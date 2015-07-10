@@ -309,25 +309,21 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         ASSERT(grammarDetail.location != -1 && grammarDetail.length > 0);
 
         // FIXME 4859190: This gets confused with doubled punctuation at the end of a paragraph
-        Position badGrammarStart = grammarSearchStart;
-        Position badGrammarEnd = grammarSearchEnd;
-        TextIterator::subrange(badGrammarStart, badGrammarEnd, grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
-        frame().selection().setSelection(VisibleSelection(badGrammarStart, badGrammarEnd));
+        const EphemeralRange badGrammarRange = TextIterator::subrange(grammarSearchStart, grammarSearchEnd, grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
+        frame().selection().setSelection(VisibleSelection(badGrammarRange));
         frame().selection().revealSelection();
 
-        frame().document()->markers().addMarker(badGrammarStart, badGrammarEnd, DocumentMarker::Grammar, grammarDetail.userDescription);
+        frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, grammarDetail.userDescription);
     } else if (!misspelledWord.isEmpty()) {
         // We found a misspelling, but not any earlier bad grammar. Select the misspelling, update the spelling panel, and store
         // a marker so we draw the red squiggle later.
 
-        Position misspellingStart = spellingSearchStart;
-        Position misspellingEnd = spellingSearchEnd;
-        TextIterator::subrange(misspellingStart, misspellingEnd, misspellingOffset, misspelledWord.length());
-        frame().selection().setSelection(VisibleSelection(misspellingStart, misspellingEnd, DOWNSTREAM));
+        const EphemeralRange misspellingRange = TextIterator::subrange(spellingSearchStart, spellingSearchEnd, misspellingOffset, misspelledWord.length());
+        frame().selection().setSelection(VisibleSelection(misspellingRange, DOWNSTREAM));
         frame().selection().revealSelection();
 
         spellCheckerClient().updateSpellingUIWithMisspelledWord(misspelledWord);
-        frame().document()->markers().addMarker(misspellingStart, misspellingEnd, DocumentMarker::Spelling);
+        frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling);
     }
 }
 
@@ -623,28 +619,22 @@ void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> r
         //    "wouldn'" as misspelled right after apostrophe is typed.
         if (shouldMarkSpelling && result->decoration == TextDecorationTypeSpelling && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset && !resultEndsAtAmbiguousBoundary) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
-            Position misspellingStart = paragraph.paragraphRange()->startPosition();
-            Position misspellingEnd = paragraph.paragraphRange()->endPosition();
-            TextIterator::subrange(misspellingStart, misspellingEnd, resultLocation, resultLength);
-            frame().document()->markers().addMarker(misspellingStart, misspellingEnd, DocumentMarker::Spelling, result->replacement, result->hash);
+            const EphemeralRange misspellingRange = TextIterator::subrange(paragraph.paragraphRange()->startPosition(), paragraph.paragraphRange()->endPosition(), resultLocation, resultLength);
+            frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling, result->replacement, result->hash);
         } else if (shouldMarkGrammar && result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
             for (unsigned j = 0; j < result->details.size(); j++) {
                 const GrammarDetail* detail = &result->details[j];
                 ASSERT(detail->length > 0 && detail->location >= 0);
                 if (paragraph.checkingRangeCovers(resultLocation + detail->location, detail->length)) {
-                    Position badGrammarStart = paragraph.paragraphRange()->startPosition();
-                    Position badGrammarEnd = paragraph.paragraphRange()->endPosition();
-                    TextIterator::subrange(badGrammarStart, badGrammarEnd, resultLocation + detail->location, detail->length);
-                    frame().document()->markers().addMarker(badGrammarStart, badGrammarEnd, DocumentMarker::Grammar, detail->userDescription, result->hash);
+                    const EphemeralRange badGrammarRange = TextIterator::subrange(paragraph.paragraphRange()->startPosition(), paragraph.paragraphRange()->endPosition(), resultLocation + detail->location, detail->length);
+                    frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, detail->userDescription, result->hash);
                 }
             }
         } else if (result->decoration == TextDecorationTypeInvisibleSpellcheck && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
-            Position invisibleSpellcheckStart = paragraph.paragraphRange()->startPosition();
-            Position invisibleSpellcheckEnd = paragraph.paragraphRange()->endPosition();
-            TextIterator::subrange(invisibleSpellcheckStart, invisibleSpellcheckEnd, resultLocation, resultLength);
-            frame().document()->markers().addMarker(invisibleSpellcheckStart, invisibleSpellcheckEnd, DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
+            const EphemeralRange invisibleSpellcheckRange = TextIterator::subrange(paragraph.paragraphRange()->startPosition(), paragraph.paragraphRange()->endPosition(), resultLocation, resultLength);
+            frame().document()->markers().addMarker(invisibleSpellcheckRange.startPosition(), invisibleSpellcheckRange.endPosition(), DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
         }
     }
 

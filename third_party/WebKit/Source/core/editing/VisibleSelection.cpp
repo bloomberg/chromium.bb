@@ -80,6 +80,11 @@ VisibleSelection::VisibleSelection(const VisiblePosition& base, const VisiblePos
 {
 }
 
+VisibleSelection::VisibleSelection(const EphemeralRange& range, EAffinity affinity, bool isDirectional)
+    : VisibleSelection(range.startPosition(), range.endPosition(), affinity, isDirectional)
+{
+}
+
 VisibleSelection::VisibleSelection(const Range* range, EAffinity affinity, bool isDirectional)
     : VisibleSelection(range->startPosition(), range->endPosition(), affinity, isDirectional)
 {

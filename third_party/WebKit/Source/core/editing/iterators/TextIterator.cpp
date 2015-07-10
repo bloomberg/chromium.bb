@@ -1074,12 +1074,10 @@ PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::subrange(Range* e
 }
 
 template<typename Strategy>
-void TextIteratorAlgorithm<Strategy>::subrange(Position& start, Position& end, int characterOffset, int characterCount)
+EphemeralRange TextIteratorAlgorithm<Strategy>::subrange(const Position& start, const Position& end, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(start, end, TextIteratorEmitsObjectReplacementCharacter);
-    EphemeralRange range = entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount);
-    start = range.startPosition();
-    end = range.endPosition();
+    return entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount);
 }
 
 // --------

@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingStrategy.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextGranularity.h"
 #include "core/editing/VisiblePosition.h"
@@ -87,6 +88,7 @@ public:
     VisibleSelection(const Position& base, const Position& extent, EAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
     VisibleSelection(const PositionInComposedTree& base, const PositionInComposedTree& extent, EAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
 
+    explicit VisibleSelection(const EphemeralRange&, EAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
     explicit VisibleSelection(const Range*, EAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
 
     explicit VisibleSelection(const VisiblePosition&, bool isDirectional = false);
