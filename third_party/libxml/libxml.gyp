@@ -214,6 +214,9 @@
               '-Wno-ignored-attributes',
               # libxml casts from int to long to void*.
               '-Wno-int-to-void-pointer-cast',
+              # libxml passes a volatile LPCRITICAL_SECTION* to a function
+              # expecting a void* volatile*.
+              '-Wno-incompatible-pointer-types',
             ],
           },
           'include_dirs': [

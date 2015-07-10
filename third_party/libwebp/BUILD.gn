@@ -46,6 +46,9 @@ source_set("libwebp_demux") {
   all_dependent_configs = [ ":libwebp_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  deps = [
+    ":libwebp_utils",
+  ]
 }
 
 source_set("libwebp_dsp") {
@@ -74,7 +77,9 @@ source_set("libwebp_dsp") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
   all_dependent_configs = [ ":libwebp_config" ]
-  deps = []
+  deps = [
+    ":libwebp_utils",
+  ]
   if (is_android) {
     deps += [ "//third_party/android_tools:cpu_features" ]
   }
@@ -151,6 +156,10 @@ source_set("libwebp_enc") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
   all_dependent_configs = [ ":libwebp_config" ]
+
+  deps = [
+    ":libwebp_utils",
+  ]
 }
 
 source_set("libwebp_utils") {
@@ -172,6 +181,14 @@ source_set("libwebp_utils") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
   all_dependent_configs = [ ":libwebp_config" ]
+
+  config("libwebp_utils_warnings") {
+    if (is_clang) {
+      # See https://code.google.com/p/webp/issues/detail?id=253.
+      cflags = [ "-Wno-incompatible-pointer-types" ]
+    }
+  }
+  public_configs = [ ":libwebp_utils_warnings" ]
 }
 
 group("libwebp") {

@@ -33,6 +33,9 @@
       'sources': [
         'demux/demux.c',
       ],
+      'dependencies' : [
+        'libwebp_utils',
+      ],
     },
     {
       'target_name': 'libwebp_dsp',
@@ -58,6 +61,9 @@
         'dsp/yuv.c',
         'dsp/yuv_mips32.c',
         'dsp/yuv_sse2.c',
+      ],
+      'dependencies' : [
+        'libwebp_utils',
       ],
       'conditions': [
         ['OS == "android"', {
@@ -141,6 +147,9 @@
         'enc/vp8l.c',
         'enc/webpenc.c',
       ],
+      'dependencies' : [
+        'libwebp_utils',
+      ],
     },
     {
       'target_name': 'libwebp_utils',
@@ -160,6 +169,20 @@
         'utils/thread.c',
         'utils/utils.c',
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # See https://code.google.com/p/webp/issues/detail?id=253.
+          '-Wno-incompatible-pointer-types',
+        ]
+      },
+      'direct_dependent_settings': {
+        'variables': {
+          'clang_warning_flags': [
+            # See https://code.google.com/p/webp/issues/detail?id=253.
+            '-Wno-incompatible-pointer-types',
+          ]
+        },
+      },
     },
     {
       'target_name': 'libwebp',

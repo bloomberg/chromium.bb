@@ -67,6 +67,13 @@ static_library("zlib") {
 
   if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
     sources += [ "x86.c" ]
+
+    config("zlib_warnings") {
+      if (is_clang) {
+        cflags = [ "-Wno-incompatible-pointer-types" ]
+      }
+    }
+    configs += [ ":zlib_warnings" ]
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]

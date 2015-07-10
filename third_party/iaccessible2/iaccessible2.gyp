@@ -43,6 +43,11 @@
           '-lrpcrt4.lib',
         ],
       },
+      'variables': {
+        'clang_warning_flags': [
+          '-Wno-incompatible-pointer-types',
+        ]
+      },
     },
   ],
 }

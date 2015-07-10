@@ -22,8 +22,11 @@ shared_library("IAccessible2Proxy") {
 
   config("IAccessible2Proxy_warnings") {
     if (is_clang) {
-      # MIDL generated code has a habit of omitting optional braces.
-      cflags = [ "-Wno-missing-braces" ]
+      cflags = [
+        # MIDL generated code has a habit of omitting optional braces.
+        "-Wno-missing-braces",
+        "-Wno-incompatible-pointer-types",
+      ]
     }
   }
   configs -= [ "//build/config/compiler:chromium_code" ]
