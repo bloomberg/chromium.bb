@@ -22,11 +22,11 @@ PASS RTCPeerConnection interface: attribute onicecandidate
 PASS RTCPeerConnection interface: attribute onsignalingstatechange 
 PASS RTCPeerConnection interface: attribute oniceconnectionstatechange 
 FAIL RTCPeerConnection interface: attribute onicegatheringstatechange assert_true: The prototype object must have a property "onicegatheringstatechange" expected true got false
-FAIL RTCPeerConnection interface: operation createOffer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback,RTCOfferOptions) assert_equals: property has wrong .length expected 2 but got 1
-FAIL RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) assert_equals: property has wrong .length expected 3 but got 1
-FAIL RTCPeerConnection interface: operation createAnswer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback) assert_equals: property has wrong .length expected 2 but got 1
-FAIL RTCPeerConnection interface: operation setRemoteDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) assert_equals: property has wrong .length expected 3 but got 1
-FAIL RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidate,VoidFunction,RTCPeerConnectionErrorCallback) assert_equals: property has wrong .length expected 3 but got 1
+FAIL RTCPeerConnection interface: operation createOffer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback,RTCOfferOptions) assert_equals: property has wrong .length expected 0 but got 1
+PASS RTCPeerConnection interface: operation setLocalDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) 
+FAIL RTCPeerConnection interface: operation createAnswer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback) assert_equals: property has wrong .length expected 0 but got 1
+PASS RTCPeerConnection interface: operation setRemoteDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) 
+PASS RTCPeerConnection interface: operation addIceCandidate(RTCIceCandidate,VoidFunction,RTCPeerConnectionErrorCallback) 
 FAIL RTCPeerConnection interface: operation getSenders() assert_own_property: interface prototype object missing non-static operation expected property "getSenders" missing
 FAIL RTCPeerConnection interface: operation getReceivers() assert_own_property: interface prototype object missing non-static operation expected property "getReceivers" missing
 FAIL RTCPeerConnection interface: operation addTrack(MediaStreamTrack,MediaStream) assert_own_property: interface prototype object missing non-static operation expected property "addTrack" missing
@@ -72,13 +72,13 @@ FAIL RTCPeerConnection interface: pc must inherit property "onicegatheringstatec
 PASS RTCPeerConnection interface: pc must inherit property "createOffer" with the proper type (19) 
 PASS RTCPeerConnection interface: calling createOffer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback,RTCOfferOptions) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "setLocalDescription" with the proper type (20) 
-FAIL RTCPeerConnection interface: calling setLocalDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError assert_throws: Called with 1 arguments function "function bound () { [native code] }" threw object "TypeMismatchError: Failed to execute 'setLocalDescription..." ("TypeMismatchError") expected object "TypeError" ("TypeError")
+PASS RTCPeerConnection interface: calling setLocalDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "createAnswer" with the proper type (21) 
 PASS RTCPeerConnection interface: calling createAnswer(RTCSessionDescriptionCallback,RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "setRemoteDescription" with the proper type (22) 
-FAIL RTCPeerConnection interface: calling setRemoteDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError assert_throws: Called with 1 arguments function "function bound () { [native code] }" threw object "TypeMismatchError: Failed to execute 'setRemoteDescriptio..." ("TypeMismatchError") expected object "TypeError" ("TypeError")
+PASS RTCPeerConnection interface: calling setRemoteDescription(RTCSessionDescription,VoidFunction,RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError 
 PASS RTCPeerConnection interface: pc must inherit property "addIceCandidate" with the proper type (23) 
-FAIL RTCPeerConnection interface: calling addIceCandidate(RTCIceCandidate,VoidFunction,RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError assert_throws: Called with 1 arguments function "function bound () { [native code] }" threw object "TypeMismatchError: Failed to execute 'addIceCandidate' on..." ("TypeMismatchError") expected object "TypeError" ("TypeError")
+PASS RTCPeerConnection interface: calling addIceCandidate(RTCIceCandidate,VoidFunction,RTCPeerConnectionErrorCallback) on pc with too few arguments must throw TypeError 
 FAIL RTCPeerConnection interface: pc must inherit property "getSenders" with the proper type (24) assert_inherits: property "getSenders" not found in prototype chain
 FAIL RTCPeerConnection interface: pc must inherit property "getReceivers" with the proper type (25) assert_inherits: property "getReceivers" not found in prototype chain
 FAIL RTCPeerConnection interface: pc must inherit property "addTrack" with the proper type (26) assert_inherits: property "addTrack" not found in prototype chain
