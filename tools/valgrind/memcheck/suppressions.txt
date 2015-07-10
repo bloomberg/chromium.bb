@@ -2904,9 +2904,6 @@
    fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
    fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
    fun:_ZNK7SkPaint11getFillPathERK6SkPathPS0_PK6SkRectf
-   fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixbbP9SkBlitter
-   fun:_ZNK6SkDraw8drawPathERK6SkPathRK7SkPaintPK8SkMatrixb
-   fun:_ZN14SkBitmapDevice8drawPathERK6SkDrawRK6SkPathRK7SkPaintPK8SkMatrixb
 }
 {
    bug_394558
