@@ -1917,7 +1917,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{1.02,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kIdl,false},
     // 1-finger marked as palm for a long time then unmarked - shouldn't tap
     {S,{0.00,0,1,1,&fs[34],0,0,0,0},-1,MkSet(),0,0,kIdl,false},
-    {C,{1.50,0,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kFTB,false},
+    {C,{1.50,0,1,1,&fs[0],0,0,0,0},-1,MkSet(91),0,0,kIdl,false},
     {C,{1.51,0,0,0,NULL,0,0,0,0},-1,MkSet(),0,0,kIdl,false},
 
     //{C,{ 0.08, 0, 0, 0, NULL, 0, 0, 0, 0 }, .07, MkSet(), 0, 0, kIdl, false },

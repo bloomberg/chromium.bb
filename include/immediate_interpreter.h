@@ -748,6 +748,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // This much time after fingers change, stop allowing contacts classified
   // as thumb to be classified as non-thumb.
   DoubleProperty thumb_eval_timeout_;
+  // If a finger is recognized as thumb, it has only this much time to change
+  // its status and perform a click
+  DoubleProperty thumb_click_prevention_timeout_;
   // Consider scroll vs pointing if finger moves at least this distance [mm]
   DoubleProperty two_finger_scroll_distance_thresh_;
   // Maximum distance [mm] between the outermost fingers while performing a

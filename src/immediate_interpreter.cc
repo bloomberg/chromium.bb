@@ -1037,6 +1037,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       thumb_movement_factor_(prop_reg, "Thumb Movement Factor", 0.5),
       thumb_speed_factor_(prop_reg, "Thumb Speed Factor", 0.5),
       thumb_eval_timeout_(prop_reg, "Thumb Evaluation Timeout", 0.06),
+      thumb_click_prevention_timeout_(prop_reg,
+                                      "Thumb Click Prevention Timeout", 0.2),
       two_finger_scroll_distance_thresh_(prop_reg,
                                          "Two Finger Scroll Distance Thresh",
                                          2.0),
@@ -2149,7 +2151,12 @@ void ImmediateInterpreter::UpdateTapState(
   if (hwstate && (!same_fingers || prev_tap_gs_fingers_ != tap_gs_fingers)) {
     // See if fingers were added
     for (FingerMap::const_iterator it =
-             tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e; ++it)
+             tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e; ++it) {
+      // If the finger was marked as a thumb before, it is not new.
+      if (hwstate->timestamp - finger_origin_timestamp(*it) >
+               thumb_click_prevention_timeout_.val_)
+        continue;
+
       if (!SetContainsValue(prev_tap_gs_fingers_, *it)) {
         // Gesturing finger wasn't in prev state. It's new.
         const FingerState* fs = hwstate->GetFingerState(*it);
@@ -2160,6 +2167,7 @@ void ImmediateInterpreter::UpdateTapState(
         added_fingers.insert(*it);
         Log("TTC: Added %d", *it);
       }
+    }
 
     // See if fingers were removed or are now non-gesturing (dead)
     for (FingerMap::const_iterator it =
