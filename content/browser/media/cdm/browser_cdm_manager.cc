@@ -177,7 +177,6 @@ BrowserCdmManager::BrowserCdmManager(
 BrowserCdmManager::~BrowserCdmManager() {
   DVLOG(1) << __FUNCTION__ << ": " << render_process_id_;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(g_browser_cdm_manager_map.Get().count(render_process_id_) == 0);
 }
 
 // Makes sure BrowserCdmManager is always deleted on the Browser UI thread.
