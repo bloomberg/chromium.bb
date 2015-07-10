@@ -91,19 +91,19 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
   }
 
   void DistillPage(const base::Closure& quit_closure, const std::string& url) {
-    quit_closure_ = quit_closure;
     distiller_page_->DistillPage(
         embedded_test_server()->GetURL(url),
         dom_distiller::proto::DomDistillerOptions(),
         base::Bind(&DistillerPageWebContentsTest::OnPageDistillationFinished,
-                   this));
+                   this, quit_closure));
   }
 
   void OnPageDistillationFinished(
+      base::Closure quit_closure,
       scoped_ptr<proto::DomDistillerResult> distiller_result,
       bool distillation_successful) {
     distiller_result_ = distiller_result.Pass();
-    quit_closure_.Run();
+    quit_closure.Run();
   }
 
   void OnJsExecutionDone(base::Closure callback, const base::Value* value) {
@@ -144,7 +144,6 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
                                     bool wait_for_document_loaded);
 
   DistillerPageWebContents* distiller_page_;
-  base::Closure quit_closure_;
   scoped_ptr<proto::DomDistillerResult> distiller_result_;
   scoped_ptr<base::Value> js_result_;
 };
