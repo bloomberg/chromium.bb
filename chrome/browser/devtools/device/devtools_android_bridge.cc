@@ -911,33 +911,24 @@ void DevToolsAndroidBridge::ScheduleTaskDefault(const base::Closure& task) {
 
 static scoped_refptr<TCPDeviceProvider> CreateTCPDeviceProvider() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kRemoteDebuggingTargets)) {
-    std::string value =
-        command_line->GetSwitchValueASCII(switches::kRemoteDebuggingTargets);
-    std::vector<std::string> addresses = base::SplitString(
-        value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    std::set<net::HostPortPair> targets;
-    for (const std::string& address : addresses) {
-      net::HostPortPair target = net::HostPortPair::FromString(address);
-      if (target.IsEmpty()) {
-        LOG(WARNING) << "Invalid target: " << address;
-        continue;
-      }
-      targets.insert(target);
+  if (!command_line->HasSwitch(switches::kRemoteDebuggingTargets))
+    return nullptr;
+  std::string value =
+      command_line->GetSwitchValueASCII(switches::kRemoteDebuggingTargets);
+  std::vector<std::string> addresses = base::SplitString(
+      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::set<net::HostPortPair> targets;
+  for (const std::string& address : addresses) {
+    net::HostPortPair target = net::HostPortPair::FromString(address);
+    if (target.IsEmpty()) {
+      LOG(WARNING) << "Invalid target: " << address;
+      continue;
     }
-    if (targets.empty())
-      return nullptr;
-    return new TCPDeviceProvider(targets);
-#if defined(DEBUG_DEVTOOLS)
-  } else {
-    RemoteDebuggingServer::EnableTetheringForDebug();
-    // We cannot rely on command line switch here as we might want to connect
-    // to another instance of Chrome. Using hard-coded port number instead.
-    const int kDefaultDebuggingPort = 9222;
-    return TCPDeviceProvider::CreateForLocalhost(kDefaultDebuggingPort);
-#endif
+    targets.insert(target);
   }
-  return nullptr;
+  if (targets.empty())
+    return nullptr;
+  return new TCPDeviceProvider(targets);
 }
 
 void DevToolsAndroidBridge::CreateDeviceProviders() {
