@@ -27,25 +27,25 @@ class PlatformMojoMediaClient {
 
   // Returns the RendererFactory to be used by MojoRendererService. If returns
   // null, a RendererImpl will be used with audio/video decoders provided in
-  // GetAudioDecoders() and GetVideoDecoders().
-  virtual scoped_ptr<RendererFactory> GetRendererFactory(
+  // CreateAudioDecoders() and CreateVideoDecoders().
+  virtual scoped_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log) = 0;
 
   // The list of audio or video decoders for use with RendererImpl when
-  // GetRendererFactory() returns null. Ownership of the decoders is passed to
-  // the caller. The methods on each decoder will only be called on
+  // CreateRendererFactory() returns null. Ownership of the decoders is passed
+  // to the caller. The methods on each decoder will only be called on
   // |media_task_runner|. |media_log| should be used to log errors or important
   // status information.
-  virtual ScopedVector<AudioDecoder> GetAudioDecoders(
+  virtual ScopedVector<AudioDecoder> CreateAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<MediaLog>& media_log) = 0;
-  virtual ScopedVector<VideoDecoder> GetVideoDecoders(
+  virtual ScopedVector<VideoDecoder> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<MediaLog>& media_log) = 0;
 
   // The output sink used for rendering audio or video respectively.
-  virtual scoped_refptr<AudioRendererSink> GetAudioRendererSink() = 0;
-  virtual scoped_ptr<VideoRendererSink> GetVideoRendererSink(
+  virtual scoped_refptr<AudioRendererSink> CreateAudioRendererSink() = 0;
+  virtual scoped_ptr<VideoRendererSink> CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) = 0;
 
   // The platform's audio hardware configuration.  Note, this must remain
@@ -53,7 +53,7 @@ class PlatformMojoMediaClient {
   virtual const AudioHardwareConfig& GetAudioHardwareConfig() = 0;
 
   // Returns the CdmFactory to be used by MojoCdmService.
-  virtual scoped_ptr<CdmFactory> GetCdmFactory() = 0;
+  virtual scoped_ptr<CdmFactory> CreateCdmFactory() = 0;
 };
 
 class MojoMediaClient {
@@ -63,19 +63,19 @@ class MojoMediaClient {
   static MojoMediaClient* Get();
 
   // Copy of the PlatformMojoMediaClient interface.
-  scoped_ptr<RendererFactory> GetRendererFactory(
+  scoped_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log);
-  ScopedVector<AudioDecoder> GetAudioDecoders(
+  ScopedVector<AudioDecoder> CreateAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<MediaLog>& media_log);
-  ScopedVector<VideoDecoder> GetVideoDecoders(
+  ScopedVector<VideoDecoder> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<MediaLog>& media_log);
-  scoped_refptr<AudioRendererSink> GetAudioRendererSink();
-  scoped_ptr<VideoRendererSink> GetVideoRendererSink(
+  scoped_refptr<AudioRendererSink> CreateAudioRendererSink();
+  scoped_ptr<VideoRendererSink> CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   const AudioHardwareConfig& GetAudioHardwareConfig();
-  scoped_ptr<CdmFactory> GetCdmFactory();
+  scoped_ptr<CdmFactory> CreateCdmFactory();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MojoMediaClient>;

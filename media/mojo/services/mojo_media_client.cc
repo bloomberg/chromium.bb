@@ -18,38 +18,38 @@ MojoMediaClient* MojoMediaClient::Get() {
   return g_mojo_media_client.Pointer();
 }
 
-scoped_ptr<RendererFactory> MojoMediaClient::GetRendererFactory(
+scoped_ptr<RendererFactory> MojoMediaClient::CreateRendererFactory(
     const scoped_refptr<MediaLog>& media_log) {
-  return mojo_media_client_->GetRendererFactory(media_log);
+  return mojo_media_client_->CreateRendererFactory(media_log);
 }
 
-ScopedVector<AudioDecoder> MojoMediaClient::GetAudioDecoders(
+ScopedVector<AudioDecoder> MojoMediaClient::CreateAudioDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<MediaLog>& media_log) {
-  return mojo_media_client_->GetAudioDecoders(media_task_runner, media_log);
+  return mojo_media_client_->CreateAudioDecoders(media_task_runner, media_log);
 }
 
-ScopedVector<VideoDecoder> MojoMediaClient::GetVideoDecoders(
+ScopedVector<VideoDecoder> MojoMediaClient::CreateVideoDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const scoped_refptr<MediaLog>& media_log) {
-  return mojo_media_client_->GetVideoDecoders(media_task_runner, media_log);
+  return mojo_media_client_->CreateVideoDecoders(media_task_runner, media_log);
 }
 
-scoped_refptr<AudioRendererSink> MojoMediaClient::GetAudioRendererSink() {
-  return mojo_media_client_->GetAudioRendererSink();
+scoped_refptr<AudioRendererSink> MojoMediaClient::CreateAudioRendererSink() {
+  return mojo_media_client_->CreateAudioRendererSink();
 }
 
-scoped_ptr<VideoRendererSink> MojoMediaClient::GetVideoRendererSink(
+scoped_ptr<VideoRendererSink> MojoMediaClient::CreateVideoRendererSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  return mojo_media_client_->GetVideoRendererSink(task_runner);
+  return mojo_media_client_->CreateVideoRendererSink(task_runner);
 }
 
 const AudioHardwareConfig& MojoMediaClient::GetAudioHardwareConfig() {
   return mojo_media_client_->GetAudioHardwareConfig();
 }
 
-scoped_ptr<CdmFactory> MojoMediaClient::GetCdmFactory() {
-  return mojo_media_client_->GetCdmFactory();
+scoped_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory() {
+  return mojo_media_client_->CreateCdmFactory();
 }
 
 MojoMediaClient::MojoMediaClient()

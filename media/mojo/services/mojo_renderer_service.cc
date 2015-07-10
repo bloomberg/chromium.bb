@@ -44,8 +44,9 @@ MojoRendererService::MojoRendererService(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::MessageLoop::current()->task_runner());
   MojoMediaClient* mojo_media_client = MojoMediaClient::Get();
-  audio_renderer_sink_ = mojo_media_client->GetAudioRendererSink();
-  video_renderer_sink_ = mojo_media_client->GetVideoRendererSink(task_runner);
+  audio_renderer_sink_ = mojo_media_client->CreateAudioRendererSink();
+  video_renderer_sink_ =
+      mojo_media_client->CreateVideoRendererSink(task_runner);
 
   // Create renderer.
   if (renderer_factory) {
@@ -54,11 +55,11 @@ MojoRendererService::MojoRendererService(
   } else {
     scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
         task_runner, audio_renderer_sink_.get(),
-        mojo_media_client->GetAudioDecoders(task_runner, media_log).Pass(),
+        mojo_media_client->CreateAudioDecoders(task_runner, media_log).Pass(),
         mojo_media_client->GetAudioHardwareConfig(), media_log));
     scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
         task_runner, video_renderer_sink_.get(),
-        mojo_media_client->GetVideoDecoders(task_runner, media_log).Pass(),
+        mojo_media_client->CreateVideoDecoders(task_runner, media_log).Pass(),
         true, nullptr, media_log));
     renderer_.reset(new RendererImpl(task_runner, audio_renderer.Pass(),
                                      video_renderer.Pass()));

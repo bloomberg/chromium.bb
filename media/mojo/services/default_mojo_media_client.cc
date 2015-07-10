@@ -38,31 +38,31 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
         audio_manager->GetDefaultOutputStreamParameters()));
   }
 
-  scoped_ptr<RendererFactory> GetRendererFactory(
+  scoped_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log) override {
     return make_scoped_ptr(new DefaultRendererFactory(media_log, nullptr,
                                                       *audio_hardware_config_));
   }
 
-  ScopedVector<AudioDecoder> GetAudioDecoders(
+  ScopedVector<AudioDecoder> CreateAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<MediaLog>& media_log) override {
     NOTREACHED();
     return ScopedVector<AudioDecoder>();
   }
 
-  ScopedVector<VideoDecoder> GetVideoDecoders(
+  ScopedVector<VideoDecoder> CreateVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<MediaLog>& media_log) override {
     NOTREACHED();
     return ScopedVector<VideoDecoder>();
   }
 
-  scoped_refptr<AudioRendererSink> GetAudioRendererSink() override {
+  scoped_refptr<AudioRendererSink> CreateAudioRendererSink() override {
     return new AudioOutputStreamSink();
   }
 
-  scoped_ptr<VideoRendererSink> GetVideoRendererSink(
+  scoped_ptr<VideoRendererSink> CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override {
     return make_scoped_ptr(
         new NullVideoSink(false, base::TimeDelta::FromSecondsD(1.0 / 60),
@@ -73,7 +73,7 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
     return *audio_hardware_config_;
   }
 
-  scoped_ptr<CdmFactory> GetCdmFactory() override {
+  scoped_ptr<CdmFactory> CreateCdmFactory() override {
     return make_scoped_ptr(new DefaultCdmFactory());
   }
 

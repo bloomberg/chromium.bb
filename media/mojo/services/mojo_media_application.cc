@@ -68,13 +68,14 @@ void MojoMediaApplication::Create(
 
 RendererFactory* MojoMediaApplication::GetRendererFactory() {
   if (!renderer_factory_)
-    renderer_factory_ = MojoMediaClient::Get()->GetRendererFactory(media_log_);
+    renderer_factory_ =
+        MojoMediaClient::Get()->CreateRendererFactory(media_log_);
   return renderer_factory_.get();
 }
 
 CdmFactory* MojoMediaApplication::GetCdmFactory() {
   if (!cdm_factory_)
-    cdm_factory_ = MojoMediaClient::Get()->GetCdmFactory();
+    cdm_factory_ = MojoMediaClient::Get()->CreateCdmFactory();
   return cdm_factory_.get();
 }
 
