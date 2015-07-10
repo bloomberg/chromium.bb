@@ -51,6 +51,16 @@ static_library("libphonenumber_without_metadata") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
+  config("libphonenumber_without_metadata_warnings") {
+    if (is_clang) {
+      cflags = [
+        # https://github.com/googlei18n/libphonenumber/pull/741
+        "-Wno-unused-private-field",
+      ]
+    }
+  }
+  configs += [ ":libphonenumber_without_metadata_warnings" ]
+
   public_configs = [ ":libphonenumber_config" ]
 
   public_deps = [

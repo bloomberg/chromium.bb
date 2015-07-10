@@ -83,7 +83,8 @@ source_set("cld2_platform_impl") {
 config("cld2_warnings") {
   if (is_clang) {
     cflags = [
-      # cld_2 has unused private fields.
+      # cld_2 contains unused private fields.
+      # https://code.google.com/p/cld2/issues/detail?id=37
       "-Wno-unused-private-field",
     ]
   }

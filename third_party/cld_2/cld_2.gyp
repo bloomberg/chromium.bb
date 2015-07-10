@@ -178,7 +178,8 @@
         'clang_warning_flags': [
           # The generated files don't have braces around subobject initializers.
           '-Wno-missing-braces',
-          # cld_2 contains unused private fields.
+          # cld_2 contains unused private fields,
+          # https://code.google.com/p/cld2/issues/detail?id=37
           '-Wno-unused-private-field',
         ],
       },
@@ -203,6 +204,13 @@
         '<@(cld2_dynamic_data_loader_sources)',
       ],
       'defines': ['CLD2_DYNAMIC_MODE'],
+      'variables': {
+        'clang_warning_flags': [
+          # cld_2 contains unused private fields,
+          # https://code.google.com/p/cld2/issues/detail?id=37
+          '-Wno-unused-private-field',
+        ],
+      },
     },
   ],
 }
