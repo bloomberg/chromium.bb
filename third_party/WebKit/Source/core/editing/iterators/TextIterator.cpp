@@ -1064,16 +1064,6 @@ int TextIteratorAlgorithm<Strategy>::rangeLength(const typename Strategy::Positi
 }
 
 template<typename Strategy>
-PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::subrange(Range* entireRange, int characterOffset, int characterCount)
-{
-    CharacterIterator entireRangeIterator(entireRange->startPosition(), entireRange->endPosition(), TextIteratorEmitsObjectReplacementCharacter);
-    EphemeralRange range = entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount);
-    if (range.isNull())
-        return nullptr;
-    return Range::create(range.document(), range.startPosition(), range.endPosition());
-}
-
-template<typename Strategy>
 EphemeralRange TextIteratorAlgorithm<Strategy>::subrange(const Position& start, const Position& end, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(start, end, TextIteratorEmitsObjectReplacementCharacter);

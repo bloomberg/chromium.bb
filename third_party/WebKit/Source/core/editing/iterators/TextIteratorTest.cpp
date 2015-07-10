@@ -433,9 +433,10 @@ TEST_F(TextIteratorTest, SubrangeWithReplacedElements)
     Node* divNode = document().getElementById("div");
     RefPtrWillBeRawPtr<Range> entireRange = Range::create(document(), divNode, 0, divNode, 3);
 
-    RefPtrWillBeRawPtr<Range> subrange = TextIterator::subrange(entireRange.get(), 2, 3);
-    EXPECT_EQ(0, subrange->startOffset());
-    EXPECT_EQ(3, subrange->endOffset());
+    EphemeralRange result = TextIterator::subrange(entireRange->startPosition(), entireRange->endPosition(), 2, 3);
+    Node* textNode = divNode->lastChild();
+    EXPECT_EQ(Position(textNode, 0), result.startPosition());
+    EXPECT_EQ(Position(textNode, 3), result.endPosition());
 }
 
 } // namespace blink

@@ -83,9 +83,6 @@ public:
     // also emits spaces for other non-text nodes using the
     // |TextIteratorEmitsCharactersBetweenAllVisiblePosition| mode.
     static int rangeLength(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, bool forSelectionPreservation = false);
-    // TODO(yosin) We should get rid of |Range| version of |subrange()| by
-    // replacing it by |EphemeralRange| version of |subrange()|.
-    static PassRefPtrWillBeRawPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
     static EphemeralRange subrange(const Position& start, const Position& end, int characterOffset, int characterCount);
 
     static bool shouldEmitTabBeforeNode(Node*);
