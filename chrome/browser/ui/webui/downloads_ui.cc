@@ -90,20 +90,26 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                      !profile->IsSupervised());
 
   source->SetJsonPath("strings.js");
-  source->AddResourcePath("constants.js", IDR_DOWNLOAD_CONSTANTS_JS);
+  source->AddResourcePath("constants.html", IDR_DOWNLOADS_CONSTANTS_HTML);
+  source->AddResourcePath("constants.js", IDR_DOWNLOADS_CONSTANTS_JS);
   source->AddResourcePath("throttled_icon_loader.html",
-                          IDR_DOWNLOAD_THROTTLED_ICON_LOADER_HTML);
+                          IDR_DOWNLOADS_THROTTLED_ICON_LOADER_HTML);
   source->AddResourcePath("throttled_icon_loader.js",
-                          IDR_DOWNLOAD_THROTTLED_ICON_LOADER_JS);
+                          IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS);
 
   if (switches::MdDownloadsEnabled()) {
-    source->AddResourcePath("manager.js", IDR_MD_DOWNLOAD_MANAGER_JS);
-    source->SetDefaultResource(IDR_MD_DOWNLOADS_HTML);
+    source->AddResourcePath("downloads.css", IDR_MD_DOWNLOADS_DOWNLOADS_CSS);
+    source->AddResourcePath("item_view.html", IDR_MD_DOWNLOADS_ITEM_VIEW_HTML);
+    source->AddResourcePath("item_view.js", IDR_MD_DOWNLOADS_ITEM_VIEW_JS);
+    source->AddResourcePath("manager.html", IDR_MD_DOWNLOADS_MANAGER_HTML);
+    source->AddResourcePath("manager.js", IDR_MD_DOWNLOADS_MANAGER_JS);
+    source->AddResourcePath("strings.html", IDR_MD_DOWNLOADS_STRINGS_HTML);
+    source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
   } else {
-    source->AddResourcePath("item_view.js", IDR_DOWNLOAD_ITEM_VIEW_JS);
-    source->AddResourcePath("focus_row.js", IDR_DOWNLOAD_FOCUS_ROW_JS);
-    source->AddResourcePath("manager.js", IDR_DOWNLOAD_MANAGER_JS);
-    source->SetDefaultResource(IDR_DOWNLOADS_HTML);
+    source->AddResourcePath("item_view.js", IDR_DOWNLOADS_ITEM_VIEW_JS);
+    source->AddResourcePath("focus_row.js", IDR_DOWNLOADS_FOCUS_ROW_JS);
+    source->AddResourcePath("manager.js", IDR_DOWNLOADS_MANAGER_JS);
+    source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
   }
 
   return source;

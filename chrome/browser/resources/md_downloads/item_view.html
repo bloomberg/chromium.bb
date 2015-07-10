@@ -1,0 +1,58 @@
+<dom-module id="item-view">
+  <template>
+    <div id="date-container" hidden$="{{hideDate}}">
+      <div id="since"></div>
+      <div id="date"></div>
+    </div>
+
+    <div id="safe" hidden$="{{isDangerous}}">
+      <div id="progress"></div>
+      <img id="safe-icon" alt="">
+      <div id="title-area">
+        <a is="action-link" id="file-link" column-type="name"></a>
+        <span id="name"></span>
+        <span id="status"></span>
+      </div>
+      <div>
+        <a id="src-url" target="_blank" column-type="url"></a>
+      </div>
+      <div>
+        <a is="action-link" id="show" column-type="show"
+            i18n-content="control_showinfolder"></a>
+        <a id="retry" column-type="retry" i18n-content="control_retry"
+            download></a>
+        <a is="action-link" id="pause" column-type="pause"
+            i18n-content="control_pause"></a>
+        <a is="action-link" id="resume" column-type="resume"
+            i18n-content="control_resume"></a>
+        <a is="action-link" id="safe-remove" column-type="remove"
+            i18n-content="control_removefromlist"></a>
+        <a is="action-link" id="cancel" column-type="cancel"
+            i18n-content="control_cancel"></a>
+        <span id="controlled-by"
+            i18n-values=".innerHTML:control_by_extension"></span>
+      </div>
+    </div>
+
+    <div id="dangerous" hidden$="{{!isDangerous}}">
+      <img id="dangerous-icon" alt="">
+      <div id="description"></div>
+      <div id="malware-controls" hidden$="{{!isMalware}}">
+        <a is="action-link" id="restore" column-type="save"
+            i18n-content="danger_restore"></a>
+        <a is="action-link" id="dangerous-remove" column-type="discard"
+            i18n-content="control_removefromlist"></a>
+      </div>
+      <button id="save" column-type="save" i18n-content="danger_save"
+          hidden$="{{isMalware}}"></button>
+      <button id="discard" column-type="discard" i18n-content="danger_discard"
+          hidden$="{{isMalware}}"></button>
+    </div>
+  </template>
+  <link rel="import" href="chrome://resources/html/cr.html">
+  <link rel="import" href="chrome://resources/html/load_time_data.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+  <link rel="import" href="chrome://downloads/constants.html">
+  <link rel="import" href="chrome://downloads/throttled_icon_loader.html">
+  <script src="chrome://downloads/item_view.js"></script>
+</dom-module>
