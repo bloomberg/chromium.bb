@@ -249,26 +249,14 @@ bool SecurityOrigin::canAccess(const SecurityOrigin* other) const
     if (isUnique() || other->isUnique())
         return false;
 
-    // Here are two cases where we should permit access:
+    // document.domain handling, as per https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain:
     //
     // 1) Neither document has set document.domain. In this case, we insist
     //    that the scheme, host, and port of the URLs match.
     //
     // 2) Both documents have set document.domain. In this case, we insist
     //    that the documents have set document.domain to the same value and
-    //    that the scheme of the URLs match.
-    //
-    // This matches the behavior of Firefox 2 and Internet Explorer 6.
-    //
-    // Internet Explorer 7 and Opera 9 are more strict in that they require
-    // the port numbers to match when both pages have document.domain set.
-    //
-    // FIXME: Evaluate whether we can tighten this policy to require matched
-    //        port numbers.
-    //
-    // Opera 9 allows access when only one page has set document.domain, but
-    // this is a security vulnerability.
-
+    //    that the scheme of the URLs match. Ports do not need to match.
     bool canAccess = false;
     if (m_protocol == other->m_protocol) {
         if (!m_domainWasSetInDOM && !other->m_domainWasSetInDOM) {
