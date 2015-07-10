@@ -27,6 +27,9 @@ public:
 
     // Called when a text message of a session is received.
     virtual void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString& message) = 0;
+
+    // Called when a binary message of a session is received.
+    virtual void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length) = 0;
 };
 
 } // namespace blink

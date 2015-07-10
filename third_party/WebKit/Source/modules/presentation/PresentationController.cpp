@@ -92,6 +92,16 @@ void PresentationController::didReceiveSessionTextMessage(WebPresentationSession
     m_presentation->didReceiveSessionTextMessage(sessionClient, message);
 }
 
+void PresentationController::didReceiveSessionBinaryMessage(WebPresentationSessionClient* sessionClient, const uint8_t* data, size_t length)
+{
+    if (!m_presentation) {
+        delete sessionClient;
+        return;
+    }
+
+    m_presentation->didReceiveSessionBinaryMessage(sessionClient, data, length);
+}
+
 void PresentationController::setPresentation(Presentation* presentation)
 {
     m_presentation = presentation;

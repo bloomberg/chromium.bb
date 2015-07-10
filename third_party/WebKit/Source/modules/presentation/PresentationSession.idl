@@ -19,7 +19,7 @@ enum PresentationSessionState {
     attribute EventHandler onstatechange;
 
     // Communication
-    // TODO(avayvod): attribute BinaryType binaryType;
+    attribute BinaryType binaryType;
     attribute EventHandler onmessage;
     [RaisesException] void send(DOMString message);
     [RaisesException] void send(Blob data);

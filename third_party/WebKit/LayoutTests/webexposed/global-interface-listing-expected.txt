@@ -3629,6 +3629,7 @@ interface PresentationAvailability
     method constructor
     setter onchange
 interface PresentationSession
+    getter binaryType
     getter id
     getter onmessage
     getter onstatechange
@@ -3636,6 +3637,7 @@ interface PresentationSession
     method close
     method constructor
     method send
+    setter binaryType
     setter onmessage
     setter onstatechange
 interface ProcessingInstruction

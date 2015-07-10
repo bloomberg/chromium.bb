@@ -103,6 +103,7 @@ PresentationSession::PresentationSession(LocalFrame* frame, const String& id, co
     , m_id(id)
     , m_url(url)
     , m_state(WebPresentationSessionState::Connected)
+    , m_binaryType(BinaryTypeBlob)
 {
 }
 
@@ -220,9 +221,58 @@ void PresentationSession::handleMessageQueue()
     }
 }
 
+String PresentationSession::binaryType() const
+{
+    switch (m_binaryType) {
+    case BinaryTypeBlob:
+        return "blob";
+    case BinaryTypeArrayBuffer:
+        return "arraybuffer";
+    }
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
+void PresentationSession::setBinaryType(const String& binaryType)
+{
+    if (binaryType == "blob") {
+        m_binaryType = BinaryTypeBlob;
+        return;
+    }
+    if (binaryType == "arraybuffer") {
+        m_binaryType = BinaryTypeArrayBuffer;
+        return;
+    }
+    ASSERT_NOT_REACHED();
+}
+
 void PresentationSession::didReceiveTextMessage(const String& message)
 {
+    if (m_state == WebPresentationSessionState::Disconnected)
+        return;
+
     dispatchEvent(MessageEvent::create(message));
+}
+
+void PresentationSession::didReceiveBinaryMessage(const uint8_t* data, size_t length)
+{
+    if (m_state == WebPresentationSessionState::Disconnected)
+        return;
+
+    switch (m_binaryType) {
+    case BinaryTypeBlob: {
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->appendBytes(data, length);
+        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+        dispatchEvent(MessageEvent::create(blob));
+        return;
+    }
+    case BinaryTypeArrayBuffer:
+        RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(data, length);
+        dispatchEvent(MessageEvent::create(buffer.release()));
+        return;
+    }
+    ASSERT_NOT_REACHED();
 }
 
 void PresentationSession::close()

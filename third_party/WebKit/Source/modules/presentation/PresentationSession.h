@@ -49,6 +49,9 @@ public:
     void send(Blob*, ExceptionState&);
     void close();
 
+    String binaryType() const;
+    void setBinaryType(const String&);
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
@@ -58,8 +61,9 @@ public:
     // Notifies the session about its state change.
     void didChangeState(WebPresentationSessionState);
 
-    // Notifies the session about new text message.
+    // Notifies the session about new message.
     void didReceiveTextMessage(const String& message);
+    void didReceiveBinaryMessage(const uint8_t* data, size_t length);
 
 private:
     class BlobLoader;
@@ -68,6 +72,11 @@ private:
         MessageTypeText,
         MessageTypeArrayBuffer,
         MessageTypeBlob,
+    };
+
+    enum BinaryType {
+        BinaryTypeBlob,
+        BinaryTypeArrayBuffer
     };
 
     struct Message {
@@ -105,6 +114,8 @@ private:
     // For Blob data handling.
     Member<BlobLoader> m_blobLoader;
     Deque<OwnPtr<Message>> m_messages;
+
+    BinaryType m_binaryType;
 };
 
 } // namespace blink

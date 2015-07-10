@@ -48,6 +48,7 @@ public:
     virtual void didStartDefaultSession(WebPresentationSessionClient*) override;
     virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
     virtual void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
+    virtual void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length) override;
 
     // Connects the |Presentation| object with this controller.
     void setPresentation(Presentation*);

@@ -58,6 +58,7 @@ public:
 
     // Called when the |onmessage| event needs to be fired to the right session.
     void didReceiveSessionTextMessage(WebPresentationSessionClient*, const String& message);
+    void didReceiveSessionBinaryMessage(WebPresentationSessionClient*, const uint8_t* data, size_t length);
 
     // Adds a session to the open sessions list.
     void registerSession(PresentationSession*);

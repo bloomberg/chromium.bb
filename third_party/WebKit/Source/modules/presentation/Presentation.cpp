@@ -152,6 +152,15 @@ void Presentation::didReceiveSessionTextMessage(WebPresentationSessionClient* se
     delete sessionClient;
 }
 
+void Presentation::didReceiveSessionBinaryMessage(WebPresentationSessionClient* sessionClient, const uint8_t* data, size_t length)
+{
+    PresentationSession* session = findSession(sessionClient);
+    if (session)
+        session->didReceiveBinaryMessage(data, length);
+
+    delete sessionClient;
+}
+
 void Presentation::registerSession(PresentationSession* session)
 {
     m_openSessions.add(session);
