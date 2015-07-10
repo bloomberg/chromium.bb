@@ -83,7 +83,8 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
 
   // Creates the two tokens with the levels specified in a previous call to
   // SetTokenLevel().
-  ResultCode MakeTokens(HANDLE* initial, HANDLE* lockdown);
+  ResultCode MakeTokens(base::win::ScopedHandle* initial,
+                        base::win::ScopedHandle* lockdown);
 
   const AppContainerAttributes* GetAppContainer() const;
 

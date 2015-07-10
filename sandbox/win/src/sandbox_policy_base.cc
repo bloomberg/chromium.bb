@@ -541,7 +541,8 @@ ResultCode PolicyBase::MakeJobObject(HANDLE* job) {
   return SBOX_ALL_OK;
 }
 
-ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
+ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
+                                  base::win::ScopedHandle* lockdown) {
   if (appcontainer_list_.get() && appcontainer_list_->HasAppContainer() &&
       lowbox_sid_) {
     return SBOX_ERROR_BAD_PARAMS;
@@ -549,10 +550,13 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
 
   // Create the 'naked' token. This will be the permanent token associated
   // with the process and therefore with any thread that is not impersonating.
-  DWORD result = CreateRestrictedToken(lockdown, lockdown_level_,
+  HANDLE temp_handle;
+  DWORD result = CreateRestrictedToken(&temp_handle, lockdown_level_,
                                        integrity_level_, PRIMARY);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_GENERIC;
+
+  lockdown->Set(temp_handle);
 
   // If we're launching on the alternate desktop we need to make sure the
   // integrity label on the object is no higher than the sandboxed process's
@@ -584,9 +588,11 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
     if (lockdown_level_ < USER_LIMITED || lockdown_level_ != initial_level_)
       return SBOX_ERROR_CANNOT_INIT_APPCONTAINER;
 
-    *initial = INVALID_HANDLE_VALUE;
+    *initial = base::win::ScopedHandle();
     return SBOX_ALL_OK;
-  } else if (lowbox_sid_) {
+  }
+
+  if (lowbox_sid_) {
     NtCreateLowBoxToken CreateLowBoxToken = NULL;
     ResolveNTFunctionPtr("NtCreateLowBoxToken", &CreateLowBoxToken);
     OBJECT_ATTRIBUTES obj_attr;
@@ -602,7 +608,7 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
     HANDLE saved_handles[1] = {lowbox_directory_.Get()};
     DWORD saved_handles_count = lowbox_directory_.IsValid() ? 1 : 0;
 
-    NTSTATUS status = CreateLowBoxToken(&token_lowbox, *lockdown,
+    NTSTATUS status = CreateLowBoxToken(&token_lowbox, lockdown->Get(),
                                         TOKEN_ALL_ACCESS, &obj_attr,
                                         lowbox_sid_, 0, NULL,
                                         saved_handles_count, saved_handles);
@@ -610,19 +616,18 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
       return SBOX_ERROR_GENERIC;
 
     DCHECK(token_lowbox);
-    ::CloseHandle(*lockdown);
-    *lockdown = token_lowbox;
+    lockdown->Set(token_lowbox);
   }
 
   // Create the 'better' token. We use this token as the one that the main
   // thread uses when booting up the process. It should contain most of
   // what we need (before reaching main( ))
-  result = CreateRestrictedToken(initial, initial_level_,
+  result = CreateRestrictedToken(&temp_handle, initial_level_,
                                  integrity_level_, IMPERSONATION);
-  if (ERROR_SUCCESS != result) {
-    ::CloseHandle(*lockdown);
+  if (ERROR_SUCCESS != result)
     return SBOX_ERROR_GENERIC;
-  }
+
+  initial->Set(temp_handle);
   return SBOX_ALL_OK;
 }
 

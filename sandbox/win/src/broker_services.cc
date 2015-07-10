@@ -357,8 +357,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   // Construct the tokens and the job object that we are going to associate
   // with the soon to be created target process.
-  HANDLE initial_token_temp;
-  HANDLE lockdown_token_temp;
+  base::win::ScopedHandle initial_token;
+  base::win::ScopedHandle lockdown_token;
   ResultCode result = SBOX_ALL_OK;
 
   if (IsTokenCacheable(policy_base)) {
@@ -367,36 +367,38 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     // process launch.
     uint32_t token_key = GenerateTokenCacheKey(policy_base);
     TokenCacheMap::iterator it = token_cache_.find(token_key);
+    HANDLE initial_token_temp;
+    HANDLE lockdown_token_temp;
     if (it != token_cache_.end()) {
       initial_token_temp = it->second.first;
       lockdown_token_temp = it->second.second;
     } else {
-      result =
-          policy_base->MakeTokens(&initial_token_temp, &lockdown_token_temp);
+      result = policy_base->MakeTokens(&initial_token, &lockdown_token);
       if (SBOX_ALL_OK != result)
         return result;
       token_cache_[token_key] =
-          std::pair<HANDLE, HANDLE>(initial_token_temp, lockdown_token_temp);
+          std::make_pair(initial_token.Get(), lockdown_token.Get());
+      initial_token_temp = initial_token.Take();
+      lockdown_token_temp = lockdown_token.Take();
     }
 
     if (!::DuplicateToken(initial_token_temp, SecurityImpersonation,
                           &initial_token_temp)) {
       return SBOX_ERROR_GENERIC;
     }
+    initial_token.Set(initial_token_temp);
 
     if (!::DuplicateTokenEx(lockdown_token_temp, TOKEN_ALL_ACCESS, 0,
                             SecurityIdentification, TokenPrimary,
                             &lockdown_token_temp)) {
       return SBOX_ERROR_GENERIC;
     }
+    lockdown_token.Set(lockdown_token_temp);
   } else {
-    result = policy_base->MakeTokens(&initial_token_temp, &lockdown_token_temp);
+    result = policy_base->MakeTokens(&initial_token, &lockdown_token);
     if (SBOX_ALL_OK != result)
       return result;
   }
-
-  base::win::ScopedHandle initial_token(initial_token_temp);
-  base::win::ScopedHandle lockdown_token(lockdown_token_temp);
 
   HANDLE job_temp;
   result = policy_base->MakeJobObject(&job_temp);
