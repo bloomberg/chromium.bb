@@ -5,7 +5,8 @@
 #include "google_apis/gcm/base/mcs_message.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,10 +22,13 @@ class MCSMessageTest : public testing::Test {
   ~MCSMessageTest() override;
 
  private:
-  base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
-MCSMessageTest::MCSMessageTest() {
+MCSMessageTest::MCSMessageTest()
+  : task_runner_(new base::TestSimpleTaskRunner()),
+    task_runner_handle_(task_runner_) {
 }
 
 MCSMessageTest::~MCSMessageTest() {

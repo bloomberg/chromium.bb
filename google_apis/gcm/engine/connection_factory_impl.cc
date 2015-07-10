@@ -4,10 +4,11 @@
 
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/thread_task_runner_handle.h"
 #include "google_apis/gcm/engine/connection_handler_impl.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -136,7 +137,7 @@ void ConnectionFactoryImpl::ConnectWithBackoff() {
     waiting_for_backoff_ = true;
     recorder_->RecordConnectionDelayedDueToBackoff(
         backoff_entry_->GetTimeUntilRelease().InMilliseconds());
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ConnectionFactoryImpl::ConnectWithBackoff,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -547,7 +548,7 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
   // If there is new proxy info, post OnProxyResolveDone to retry it. Otherwise,
   // if there was an error falling back, fail synchronously.
   if (status == net::OK) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                    weak_ptr_factory_.GetWeakPtr(), status));

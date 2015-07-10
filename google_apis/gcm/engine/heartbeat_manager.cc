@@ -5,8 +5,10 @@
 #include "google_apis/gcm/engine/heartbeat_manager.h"
 
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -174,7 +176,7 @@ void HeartbeatManager::RestartTimer() {
   // Windows, Mac, Android, iOS, and Chrome OS all provide a way to be notified
   // when the system is suspending or resuming.  The only one that does not is
   // Linux so we need to poll to check for missed heartbeats.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&HeartbeatManager::CheckForMissedHeartbeat,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -197,7 +199,7 @@ void HeartbeatManager::CheckForMissedHeartbeat() {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Otherwise check again later.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&HeartbeatManager::CheckForMissedHeartbeat,
                  weak_ptr_factory_.GetWeakPtr()),

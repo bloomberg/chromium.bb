@@ -4,7 +4,8 @@
 
 #include "google_apis/gcm/engine/connection_handler_impl.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -129,7 +130,7 @@ void ConnectionHandlerImpl::Login(
   if (output_stream_->Flush(
           base::Bind(&ConnectionHandlerImpl::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr())) != net::ERR_IO_PENDING) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ConnectionHandlerImpl::OnMessageSent,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -259,7 +260,7 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
     DVLOG(1) << "Socket read finished prematurely. Waiting for "
              << min_bytes_needed - input_stream_->UnreadByteCount()
              << " more bytes.";
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ConnectionHandlerImpl::WaitForData,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -374,7 +375,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
   // Messages with no content are valid; just use the default protobuf for
   // that tag.
   if (protobuf.get() && message_size_ == 0) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ConnectionHandlerImpl::GetNextMessage,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -444,7 +445,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
   }
 
   input_stream_->RebuildBuffer();
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ConnectionHandlerImpl::GetNextMessage,
                  weak_ptr_factory_.GetWeakPtr()));

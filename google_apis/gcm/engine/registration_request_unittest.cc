@@ -8,6 +8,8 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "google_apis/gcm/engine/gcm_registration_request_handler.h"
 #include "google_apis/gcm/engine/instance_id_get_token_request_handler.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
@@ -83,7 +85,8 @@ class RegistrationRequestTest : public testing::Test {
   bool callback_called_;
   std::map<std::string, std::string> extras_;
   scoped_ptr<RegistrationRequest> request_;
-  base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   FakeGCMStatsRecorder recorder_;
@@ -93,8 +96,10 @@ RegistrationRequestTest::RegistrationRequestTest()
     : max_retry_count_(2),
       status_(RegistrationRequest::SUCCESS),
       callback_called_(false),
+      task_runner_(new base::TestSimpleTaskRunner()),
+      task_runner_handle_(task_runner_),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
-          message_loop_.task_runner())) {}
+          task_runner_)) {}
 
 RegistrationRequestTest::~RegistrationRequestTest() {}
 

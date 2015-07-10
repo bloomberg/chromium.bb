@@ -5,9 +5,11 @@
 #include "google_apis/gcm/engine/registration_request.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "google_apis/gcm/base/gcm_util.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
@@ -172,7 +174,7 @@ void RegistrationRequest::RetryWithBackoff(bool update_backoff) {
         source_to_record_,
         backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
         retries_left_ + 1);
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&RegistrationRequest::RetryWithBackoff,
                    weak_ptr_factory_.GetWeakPtr(),

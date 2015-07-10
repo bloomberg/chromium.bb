@@ -5,8 +5,9 @@
 #include "google_apis/gcm/engine/checkin_request.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/thread_task_runner_handle.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/load_flags.h"
@@ -166,7 +167,7 @@ void CheckinRequest::RetryWithBackoff(bool update_backoff) {
              << " milliseconds.";
     recorder_->RecordCheckinDelayedDueToBackoff(
         backoff_entry_.GetTimeUntilRelease().InMilliseconds());
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CheckinRequest::RetryWithBackoff,
                    weak_ptr_factory_.GetWeakPtr(),

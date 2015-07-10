@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_channel_status_request.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -33,7 +35,8 @@ class GCMChannelStatusRequestTest : public testing::Test {
                           int poll_interval_seconds);
 
   scoped_ptr<GCMChannelStatusRequest> request_;
-  base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   bool request_callback_invoked_;
@@ -43,8 +46,10 @@ class GCMChannelStatusRequestTest : public testing::Test {
 };
 
 GCMChannelStatusRequestTest::GCMChannelStatusRequestTest()
-    : url_request_context_getter_(
-          new net::TestURLRequestContextGetter(message_loop_.task_runner())),
+    : task_runner_(new base::TestSimpleTaskRunner()),
+      task_runner_handle_(task_runner_),
+      url_request_context_getter_(
+          new net::TestURLRequestContextGetter(task_runner_)),
       request_callback_invoked_(false),
       update_received_(false),
       enabled_(true),

@@ -272,9 +272,9 @@ class ConnectionFactoryImplTest
 };
 
 ConnectionFactoryImplTest::ConnectionFactoryImplTest()
-   : factory_(base::Bind(&ConnectionFactoryImplTest::ConnectionsComplete,
+    : factory_(base::Bind(&ConnectionFactoryImplTest::ConnectionsComplete,
                          base::Unretained(this))),
-     run_loop_(new base::RunLoop()) {
+      run_loop_(new base::RunLoop()) {
   factory()->SetConnectionListener(this);
   factory()->Initialize(
       ConnectionFactory::BuildLoginRequestCallback(),
@@ -433,7 +433,7 @@ TEST_F(ConnectionFactoryImplTest, CanarySucceedsRetryDuringLogin) {
   EXPECT_FALSE(factory()->IsEndpointReachable());
 
   // Pump the loop, to ensure the pending backoff retry has no effect.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(1));

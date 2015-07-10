@@ -12,9 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "google_apis/gcm/base/fake_encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -61,18 +61,19 @@ class GCMStoreImplTest : public testing::Test {
   void UpdateCallback(bool success);
 
  protected:
-  base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temp_directory_;
   bool expected_success_;
   uint64 next_persistent_id_;
-  scoped_ptr<base::RunLoop> run_loop_;
 };
 
 GCMStoreImplTest::GCMStoreImplTest()
-    : expected_success_(true),
+    : task_runner_(new base::TestSimpleTaskRunner()),
+      task_runner_handle_(task_runner_),
+      expected_success_(true),
       next_persistent_id_(base::Time::Now().ToInternalValue()) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
-  run_loop_.reset(new base::RunLoop());
 }
 
 GCMStoreImplTest::~GCMStoreImplTest() {}
@@ -83,7 +84,7 @@ scoped_ptr<GCMStoreImpl> GCMStoreImplTest::BuildGCMStore() {
       // behavior in the production code. Currently GCMStoreImpl checks if
       // the directory exist or not to determine the store existence.
       temp_directory_.path().Append(FILE_PATH_LITERAL("GCM Store")),
-      message_loop_.task_runner(),
+      task_runner_,
       make_scoped_ptr<Encryptor>(new FakeEncryptor)));
 }
 
@@ -101,7 +102,7 @@ std::string GCMStoreImplTest::GetNextPersistentId() {
   return base::Uint64ToString(next_persistent_id_++);
 }
 
-void GCMStoreImplTest::PumpLoop() { message_loop_.RunUntilIdle(); }
+void GCMStoreImplTest::PumpLoop() { task_runner_->RunUntilIdle(); }
 
 void GCMStoreImplTest::LoadCallback(
     scoped_ptr<GCMStore::LoadResult>* result_dst,
@@ -114,8 +115,6 @@ void GCMStoreImplTest::LoadWithoutCheckCallback(
     scoped_ptr<GCMStore::LoadResult>* result_dst,
     scoped_ptr<GCMStore::LoadResult> result) {
   *result_dst = result.Pass();
-  run_loop_->Quit();
-  run_loop_.reset(new base::RunLoop());
 }
 
 void GCMStoreImplTest::UpdateCallback(bool success) {

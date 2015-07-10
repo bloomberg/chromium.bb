@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -65,13 +66,16 @@ class HeartbeatManagerTest : public testing::Test {
   int heartbeats_sent_;
   int reconnects_triggered_;
 
-  base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
 HeartbeatManagerTest::HeartbeatManagerTest()
     : manager_(new TestHeartbeatManager()),
       heartbeats_sent_(0),
-      reconnects_triggered_(0) {
+      reconnects_triggered_(0),
+      task_runner_(new base::TestSimpleTaskRunner()),
+      task_runner_handle_(task_runner_) {
 }
 
 void HeartbeatManagerTest::StartManager() {

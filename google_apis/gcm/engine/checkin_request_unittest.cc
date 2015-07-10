@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "google_apis/gcm/engine/checkin_request.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
@@ -87,7 +89,8 @@ class CheckinRequestTest : public testing::Test {
   uint64 android_id_;
   uint64 security_token_;
   int checkin_device_type_;
-  base::MessageLoop message_loop_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   checkin_proto::ChromeBuildProto chrome_build_proto_;
@@ -100,8 +103,10 @@ CheckinRequestTest::CheckinRequestTest()
       android_id_(kBlankAndroidId),
       security_token_(kBlankSecurityToken),
       checkin_device_type_(0),
+      task_runner_(new base::TestSimpleTaskRunner()),
+      task_runner_handle_(task_runner_),
       url_request_context_getter_(new net::TestURLRequestContextGetter(
-          message_loop_.task_runner())) {
+          task_runner_)) {
 }
 
 CheckinRequestTest::~CheckinRequestTest() {}
