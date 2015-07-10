@@ -11,7 +11,7 @@
         android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillPreferences"
         android:title="@string/prefs_autofill" />
     <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences"
+        android:fragment="org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences"
         android:title="@string/prefs_saved_passwords" />
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.AccessibilityPreferences"

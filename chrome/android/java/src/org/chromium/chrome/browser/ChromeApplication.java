@@ -70,7 +70,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
-import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences;
+import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
@@ -395,7 +395,7 @@ public class ChromeApplication extends ContentApplication {
     @CalledByNative
     protected void showPasswordSettings() {
         PreferencesLauncher.launchSettingsPage(this,
-                ManageSavedPasswordsPreferences.class.getName());
+                SavePasswordsPreferences.class.getName());
     }
 
     /**

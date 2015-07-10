@@ -33,10 +33,10 @@ import org.chromium.content.common.ContentSwitches;
 import org.chromium.ui.text.SpanApplier;
 
 /**
- * "Manage Saved Passwords" activity, providing options to delete or
- * show saved passwords.
+ * The "Save passwords" screen in Settings, which allows the user to enable or disable password
+ * saving, to view saved passwords (just the username and URL), and to delete saved passwords.
  */
-public class ManageSavedPasswordsPreferences extends PreferenceFragment
+public class SavePasswordsPreferences extends PreferenceFragment
         implements OnPreferenceChangeListener, PasswordListObserver,
         Preference.OnPreferenceClickListener {
 

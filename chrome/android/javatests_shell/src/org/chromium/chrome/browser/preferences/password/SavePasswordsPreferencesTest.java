@@ -20,7 +20,7 @@ import org.chromium.content.common.ContentSwitches;
 /**
  * Tests for the "Save Passwords" settings screen.
  */
-public class SavedPasswordsPreferencesTest extends ChromeShellTestBase {
+public class SavePasswordsPreferencesTest extends ChromeShellTestBase {
 
     @Override
     protected void setUp() throws Exception {
@@ -44,16 +44,16 @@ public class SavedPasswordsPreferencesTest extends ChromeShellTestBase {
         });
 
         final Preferences preferences = PreferencesTest.startPreferences(getInstrumentation(),
-                ManageSavedPasswordsPreferences.class.getName());
+                SavePasswordsPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ManageSavedPasswordsPreferences savedPasswordPrefs =
-                        (ManageSavedPasswordsPreferences) preferences.getFragmentForTest();
+                SavePasswordsPreferences savedPasswordPrefs =
+                        (SavePasswordsPreferences) preferences.getFragmentForTest();
                 ChromeSwitchPreference onOffSwitch = (ChromeSwitchPreference)
                         savedPasswordPrefs.findPreference(
-                                ManageSavedPasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
+                                SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
                 assertTrue(onOffSwitch.isChecked());
 
                 PreferencesTest.clickPreference(savedPasswordPrefs, onOffSwitch);
@@ -68,15 +68,15 @@ public class SavedPasswordsPreferencesTest extends ChromeShellTestBase {
         });
 
         final Preferences preferences2 = PreferencesTest.startPreferences(getInstrumentation(),
-                ManageSavedPasswordsPreferences.class.getName());
+                SavePasswordsPreferences.class.getName());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ManageSavedPasswordsPreferences savedPasswordPrefs =
-                        (ManageSavedPasswordsPreferences) preferences2.getFragmentForTest();
+                SavePasswordsPreferences savedPasswordPrefs =
+                        (SavePasswordsPreferences) preferences2.getFragmentForTest();
                 ChromeSwitchPreference onOffSwitch = (ChromeSwitchPreference)
                         savedPasswordPrefs.findPreference(
-                                ManageSavedPasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
+                                SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
                 assertFalse(onOffSwitch.isChecked());
             }
         });
@@ -97,18 +97,18 @@ public class SavedPasswordsPreferencesTest extends ChromeShellTestBase {
         });
 
         final Preferences preferences = PreferencesTest.startPreferences(
-                getInstrumentation(), ManageSavedPasswordsPreferences.class.getName());
+                getInstrumentation(), SavePasswordsPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertTrue(CommandLine.getInstance().hasSwitch(
                         ContentSwitches.ENABLE_CREDENTIAL_MANAGER_API));
-                ManageSavedPasswordsPreferences passwordPrefs =
-                        (ManageSavedPasswordsPreferences) preferences.getFragmentForTest();
+                SavePasswordsPreferences passwordPrefs =
+                        (SavePasswordsPreferences) preferences.getFragmentForTest();
                 ChromeBaseCheckBoxPreference onOffSwitch =
                         (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
-                                ManageSavedPasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
+                                SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
                 assertTrue(onOffSwitch.isChecked());
 
                 PreferencesTest.clickPreference(passwordPrefs, onOffSwitch);
@@ -123,17 +123,17 @@ public class SavedPasswordsPreferencesTest extends ChromeShellTestBase {
         });
 
         final Preferences preferences2 = PreferencesTest.startPreferences(
-                getInstrumentation(), ManageSavedPasswordsPreferences.class.getName());
+                getInstrumentation(), SavePasswordsPreferences.class.getName());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertTrue(CommandLine.getInstance().hasSwitch(
                         ContentSwitches.ENABLE_CREDENTIAL_MANAGER_API));
-                ManageSavedPasswordsPreferences passwordPrefs =
-                        (ManageSavedPasswordsPreferences) preferences2.getFragmentForTest();
+                SavePasswordsPreferences passwordPrefs =
+                        (SavePasswordsPreferences) preferences2.getFragmentForTest();
                 ChromeBaseCheckBoxPreference onOffSwitch =
                         (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
-                                ManageSavedPasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
+                                SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
                 assertFalse(onOffSwitch.isChecked());
             }
         });

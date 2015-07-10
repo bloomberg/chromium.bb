@@ -14,7 +14,7 @@ import android.widget.PopupMenu.OnMenuItemClickListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences;
+import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.widget.ButtonCompat;
 
 /**
@@ -58,7 +58,7 @@ public class OverflowSelector {
     private static boolean processMenuItem(MenuItem item, Context context) {
         if (item.getItemId() == R.id.settings) {
             PreferencesLauncher.launchSettingsPage(
-                    context, ManageSavedPasswordsPreferences.class.getName());
+                    context, SavePasswordsPreferences.class.getName());
             return true;
         }
         // TODO(melandory): Learn more should open link to help center

@@ -39,13 +39,13 @@ public class PasswordEntryEditor extends Fragment {
         View v = inflater.inflate(R.layout.password_entry_editor, container, false);
         getActivity().setTitle(R.string.password_entry_editor_title);
 
-        // Extras are set on this intent in class ManageSavedPasswordsPreferences.
+        // Extras are set on this intent in class SavePasswordsPreferences.
         Bundle extras = getArguments();
         assert extras != null;
-        mID = extras.getInt(ManageSavedPasswordsPreferences.PASSWORD_LIST_ID);
+        mID = extras.getInt(SavePasswordsPreferences.PASSWORD_LIST_ID);
         String name = null;
-        if (extras.containsKey(ManageSavedPasswordsPreferences.PASSWORD_LIST_NAME)) {
-            name = extras.getString(ManageSavedPasswordsPreferences.PASSWORD_LIST_NAME);
+        if (extras.containsKey(SavePasswordsPreferences.PASSWORD_LIST_NAME)) {
+            name = extras.getString(SavePasswordsPreferences.PASSWORD_LIST_NAME);
         }
         TextView nameView = (TextView) v.findViewById(R.id.password_entry_editor_name);
         if (name != null) {
@@ -54,7 +54,7 @@ public class PasswordEntryEditor extends Fragment {
             nameView.setText(R.string.section_saved_passwords_exceptions);
             mException = true;
         }
-        String url = extras.getString(ManageSavedPasswordsPreferences.PASSWORD_LIST_URL);
+        String url = extras.getString(SavePasswordsPreferences.PASSWORD_LIST_URL);
         TextView urlView = (TextView) v.findViewById(R.id.password_entry_editor_url);
         urlView.setText(url);
 
@@ -65,9 +65,9 @@ public class PasswordEntryEditor extends Fragment {
     // Delete was clicked.
     private void removeItem() {
         Intent data = new Intent();
-        data.putExtra(ManageSavedPasswordsPreferences.PASSWORD_LIST_DELETED_ID, mID);
-        data.putExtra(ManageSavedPasswordsPreferences.DELETED_ITEM_IS_EXCEPTION, mException);
-        getActivity().setResult(ManageSavedPasswordsPreferences.RESULT_DELETE_PASSWORD, data);
+        data.putExtra(SavePasswordsPreferences.PASSWORD_LIST_DELETED_ID, mID);
+        data.putExtra(SavePasswordsPreferences.DELETED_ITEM_IS_EXCEPTION, mException);
+        getActivity().setResult(SavePasswordsPreferences.RESULT_DELETE_PASSWORD, data);
     }
 
     private void hookupCancelDeleteButtons(View v) {

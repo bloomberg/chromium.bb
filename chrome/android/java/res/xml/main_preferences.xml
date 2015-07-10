@@ -23,7 +23,7 @@
         android:key="autofill_settings"
         android:title="@string/prefs_autofill" />
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences"
+        android:fragment="org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences"
         android:key="saved_passwords"
         android:title="@string/prefs_saved_passwords" />
     <Preference
