@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// http://www.w3.org/TR/navigation-timing/#sec-window.performance-attribute
+
+// TODO(philipj): Window.performance should be in High Resolution Time:
+// https://github.com/w3c/hr-time/issues/9
+
 [
     ImplementedAs=DOMWindowPerformance,
 ] partial interface Window {
-    // https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/NavigationTiming/Overview.html#sec-window.performance-attribute
     [Replaceable] readonly attribute Performance performance;
 };

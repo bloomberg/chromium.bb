@@ -27,7 +27,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// TODO(philipj): SharedWorker.workerStart was in the High Resolution Time spec,
+// but was removed in favor of Performance.translateTime():
+// https://github.com/w3c/hr-time/commit/39aaf81e1ea206fdf0fde4f49604ddd64d4f5b13
+
 partial interface SharedWorker {
-    // See https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/HighResolutionTime2/Overview.html for details.
-    [CallWith=ExecutionContext] readonly attribute double workerStart;
+    [CallWith=ExecutionContext, Measure] readonly attribute DOMHighResTimeStamp workerStart;
 };

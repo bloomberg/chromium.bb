@@ -28,7 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// See: http://www.w3.org/TR/navigation-timing/
+// http://www.w3.org/TR/navigation-timing/#sec-navigation-info-interface
+
+// TODO(philipj): This interface been morphed into PerformanceNavigationTiming
+// in the latest spec:
+// https://w3c.github.io/navigation-timing/#sec-PerformanceNavigationTiming
+
 [
     GarbageCollected
 ] interface PerformanceNavigation {
@@ -37,6 +42,5 @@
     const unsigned short TYPE_BACK_FORWARD = 2;
     const unsigned short TYPE_RESERVED = 255;
     readonly attribute unsigned short type;
-
     readonly attribute unsigned short redirectCount;
 };

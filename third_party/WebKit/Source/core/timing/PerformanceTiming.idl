@@ -28,7 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// See: https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/NavigationTiming/Overview.html#sec-navigation-timing-interface
+// http://www.w3.org/TR/navigation-timing/#sec-navigation-timing-interface
+
+// TODO(philipj): This interface been morphed into PerformanceNavigationTiming
+// in the latest spec:
+// https://w3c.github.io/navigation-timing/#sec-PerformanceNavigationTiming
+
 [
     GarbageCollected
 ] interface PerformanceTiming {
@@ -54,5 +59,6 @@
     readonly attribute unsigned long long loadEventStart;
     readonly attribute unsigned long long loadEventEnd;
 
+    // TODO(philipj): This serializer is not defined in the spec.
     serializer = {attribute};
 };

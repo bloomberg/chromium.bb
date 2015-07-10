@@ -774,6 +774,15 @@ public:
         V8Document_CreateTouch_Method = 874,
         V8HTMLFrameElement_GetSVGDocument_Method = 875,
         RequestFileSystemNonWebbyOrigin = 876,
+        V8Console_Memory_AttributeGetter = 877,
+        V8Console_Memory_AttributeSetter = 878,
+        V8MemoryInfo_TotalJSHeapSize_AttributeGetter = 879,
+        V8MemoryInfo_UsedJSHeapSize_AttributeGetter = 880,
+        V8MemoryInfo_JSHeapSizeLimit_AttributeGetter = 881,
+        V8Performance_Timing_AttributeGetter = 882,
+        V8Performance_Navigation_AttributeGetter = 883,
+        V8Performance_Memory_AttributeGetter = 884,
+        V8SharedWorker_WorkerStart_AttributeGetter = 885,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -497,6 +497,8 @@
         # IDL files that only have typedefs/enums.
         'core_typedefs_enums_only_idl_files': [
             'dom/CommonDefinitions.idl',
+            'timing/DOMHighResTimeStamp.idl',
+            'timing/PerformanceEntryList.idl',
         ],
         'webcore_rendering_files': [
             'layout/api/LineLayoutBlockFlow.h',

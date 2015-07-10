@@ -28,20 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// See: https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/ResourceTiming/Overview.html
+// https://w3c.github.io/resource-timing/#performanceresourcetiming
+
+// TODO(philipj): This interface should be [Exposed=(Window,Worker)].
 interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMString initiatorType;
-
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] readonly attribute double workerStart;
-    readonly attribute double redirectStart;
-    readonly attribute double redirectEnd;
-    readonly attribute double fetchStart;
-    readonly attribute double domainLookupStart;
-    readonly attribute double domainLookupEnd;
-    readonly attribute double connectStart;
-    readonly attribute double connectEnd;
-    readonly attribute double secureConnectionStart;
-    readonly attribute double requestStart;
-    readonly attribute double responseStart;
-    readonly attribute double responseEnd;
+    // TODO(philipj): readonly attribute DOMString nextHopProtocol;
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] readonly attribute DOMHighResTimeStamp workerStart;
+    readonly attribute DOMHighResTimeStamp redirectStart;
+    readonly attribute DOMHighResTimeStamp redirectEnd;
+    readonly attribute DOMHighResTimeStamp fetchStart;
+    readonly attribute DOMHighResTimeStamp domainLookupStart;
+    readonly attribute DOMHighResTimeStamp domainLookupEnd;
+    readonly attribute DOMHighResTimeStamp connectStart;
+    readonly attribute DOMHighResTimeStamp connectEnd;
+    readonly attribute DOMHighResTimeStamp secureConnectionStart;
+    readonly attribute DOMHighResTimeStamp requestStart;
+    readonly attribute DOMHighResTimeStamp responseStart;
+    readonly attribute DOMHighResTimeStamp responseEnd;
+    // TODO(philipj): The spec has tranferSize/encodedBodySize/decodedBodySize
+    // and a serializer:
+    // readonly attribute unsigned short transferSize;
+    // readonly attribute unsigned short encodedBodySize;
+    // readonly attribute unsigned short decodedBodySize;
+    // serializer = {inherit, attribute};
 };

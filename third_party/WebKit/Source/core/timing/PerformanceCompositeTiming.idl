@@ -28,9 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// See: http://w3c.github.io/frame-timing/
+// https://w3c.github.io/frame-timing/#performancecompositetiming
+
 [
     RuntimeEnabled=FrameTimingSupport  // Experimental flag
 ] interface PerformanceCompositeTiming : PerformanceEntry {
+    // TODO(philipj): This is named |sourceFrameNumber| in the spec.
     readonly attribute unsigned long sourceFrame;
+    // TODO(philipj): serializer = {inherit, attribute};
 };
