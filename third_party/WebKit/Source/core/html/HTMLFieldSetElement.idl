@@ -33,6 +33,5 @@ interface HTMLFieldSetElement : HTMLElement {
     readonly attribute DOMString validationMessage;
     boolean checkValidity();
     boolean reportValidity();
-    // FIXME: The error argument should not be nullable.
-    void setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
+    void setCustomValidity(DOMString error);
 };

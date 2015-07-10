@@ -42,8 +42,7 @@
     readonly attribute DOMString validationMessage;
     boolean checkValidity();
     boolean reportValidity();
-    // TODO(philipj):  The error argument should not be nullable.
-    void setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
+    void setCustomValidity(DOMString error);
 
     // TODO(philipj): legacycaller any (any... arguments); crbug.com/465009
 
