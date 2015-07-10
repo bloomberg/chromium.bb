@@ -1592,12 +1592,23 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
     image_dir: Directory containing base image.
     extra_env: Flags to be added to the environment for the new process.
   """
-  image = os.path.join(image_dir, constants.BASE_IMAGE_BIN)
-  cmd = ['./mod_image_for_recovery.sh',
-         '--board=%s' % board,
-         '--image=%s' % path_util.ToChrootPath(image)]
-  RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
-                 enter_chroot=True)
+  base_image = os.path.join(image_dir, constants.BASE_IMAGE_BIN)
+  # mod_image_for_recovery leaves behind some artifacts in the source directory
+  # that we don't care about. So, use a tempdir as the working directory.
+  # This tempdir needs to be at a chroot accessible path.
+  with osutils.TempDir(base_dir=image_dir) as tempdir:
+    tempdir_base_image = os.path.join(tempdir, constants.BASE_IMAGE_BIN)
+    tempdir_recovery_image = os.path.join(tempdir, constants.RECOVERY_IMAGE_BIN)
+
+    # Copy the base image. Symlinking isn't enough because image building
+    # scripts follow symlinks by design.
+    shutil.copyfile(base_image, tempdir_base_image)
+    cmd = ['./mod_image_for_recovery.sh',
+           '--board=%s' % board,
+           '--image=%s' % path_util.ToChrootPath(tempdir_base_image)]
+    RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
+                   enter_chroot=True)
+    shutil.move(tempdir_recovery_image, image_dir)
 
 
 def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
