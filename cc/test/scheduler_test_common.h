@@ -166,6 +166,8 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   static scoped_ptr<FakeCompositorTimingHistory> Create();
   ~FakeCompositorTimingHistory() override;
 
+  void SetAllEstimatesTo(base::TimeDelta duration);
+
   void SetBeginMainFrameToCommitDurationEstimate(base::TimeDelta duration);
   void SetCommitToReadyToActivateDurationEstimate(base::TimeDelta duration);
   void SetPrepareTilesDurationEstimate(base::TimeDelta duration);
@@ -211,10 +213,18 @@ class TestScheduler : public Scheduler {
     return begin_retro_frame_args_.empty();
   }
 
+  bool SwapThrottled() const { return state_machine_.SwapThrottled(); }
+
   bool CanStart() const { return state_machine_.CanStartForTesting(); }
+
+  bool NeedsCommit() const { return state_machine_.needs_commit(); }
 
   BeginFrameSource& frame_source() { return *frame_source_; }
   bool FrameProductionThrottled() { return throttle_frame_production_; }
+
+  bool MainThreadIsInHighLatencyMode() const {
+    return state_machine_.MainThreadIsInHighLatencyMode();
+  }
 
   ~TestScheduler() override;
 

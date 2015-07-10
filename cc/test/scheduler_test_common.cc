@@ -83,6 +83,14 @@ FakeCompositorTimingHistory::FakeCompositorTimingHistory(
 FakeCompositorTimingHistory::~FakeCompositorTimingHistory() {
 }
 
+void FakeCompositorTimingHistory::SetAllEstimatesTo(base::TimeDelta duration) {
+  begin_main_frame_to_commit_duration_ = duration;
+  commit_to_ready_to_activate_duration_ = duration;
+  prepare_tiles_duration_ = duration;
+  activate_duration_ = duration;
+  draw_duration_ = duration;
+}
+
 void FakeCompositorTimingHistory::SetBeginMainFrameToCommitDurationEstimate(
     base::TimeDelta duration) {
   begin_main_frame_to_commit_duration_ = duration;

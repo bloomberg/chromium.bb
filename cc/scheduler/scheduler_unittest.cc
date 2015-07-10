@@ -246,6 +246,12 @@ class SchedulerTest : public testing::Test {
         fake_compositor_timing_history.Pass());
     DCHECK(scheduler_);
     client_->set_scheduler(scheduler_.get());
+
+    // Use large estimates by default to avoid latency recovery
+    // in most tests.
+    base::TimeDelta slow_duration = base::TimeDelta::FromSeconds(1);
+    fake_compositor_timing_history_->SetAllEstimatesTo(slow_duration);
+
     return scheduler_.get();
   }
 
@@ -384,11 +390,9 @@ class SchedulerTest : public testing::Test {
     return fake_external_begin_frame_source_.get();
   }
 
-  void MainFrameInHighLatencyMode(
-      int64 begin_main_frame_to_commit_estimate_in_ms,
-      int64 commit_to_activate_estimate_in_ms,
-      bool impl_latency_takes_priority,
-      bool should_send_begin_main_frame);
+  void CheckMainFrameSkippedAfterLateCommit(bool expect_send_begin_main_frame);
+  void ImplFrameSkippedAfterLateSwapAck(bool swap_ack_before_deadline);
+  void ImplFrameIsNotSkippedAfterLateSwapAck();
   void BeginFramesNotFromClient(bool use_external_begin_frame_source,
                                 bool throttle_frame_production);
   void BeginFramesNotFromClient_SwapThrottled(
@@ -1323,73 +1327,538 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
 
-void SchedulerTest::MainFrameInHighLatencyMode(
-    int64 begin_main_frame_to_commit_estimate_in_ms,
-    int64 commit_to_activate_estimate_in_ms,
-    bool impl_latency_takes_priority,
-    bool should_send_begin_main_frame) {
-  scheduler_settings_.use_external_begin_frame_source = true;
-  SetUpScheduler(true);
-
-  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
-      base::TimeDelta::FromMilliseconds(
-          begin_main_frame_to_commit_estimate_in_ms));
-  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
-      base::TimeDelta::FromMilliseconds(commit_to_activate_estimate_in_ms));
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
-
-  scheduler_->SetImplLatencyTakesPriority(impl_latency_takes_priority);
-
+void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
+    bool expect_send_begin_main_frame) {
   // Impl thread hits deadline before commit finishes.
   scheduler_->SetNeedsCommit();
   EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
-  task_runner().RunPendingTasks();  // Run posted deadline.
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 5);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 5);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 5);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 3, 5);
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 4, 5);
   EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
-  EXPECT_TRUE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
 
   client_->Reset();
   scheduler_->SetNeedsCommit();
   EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
-  task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_EQ(scheduler_->MainThreadIsInHighLatencyMode(),
-            should_send_begin_main_frame);
-  EXPECT_EQ(client_->HasAction("ScheduledActionSendBeginMainFrame"),
-            should_send_begin_main_frame);
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_EQ(expect_send_begin_main_frame,
+            scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_EQ(expect_send_begin_main_frame,
+            client_->HasAction("ScheduledActionSendBeginMainFrame"));
+}
+
+TEST_F(SchedulerTest, MainFrameSkippedAfterLateCommit) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+
+  bool expect_send_begin_main_frame = false;
+  EXPECT_SCOPED(
+      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
 }
 
 TEST_F(SchedulerTest,
-       SkipMainFrameIfHighLatencyAndCanCommitAndActivateBeforeDeadline) {
-  // Set up client so that estimates indicate that we can commit and activate
-  // before the deadline (~8ms by default).
-  EXPECT_SCOPED(MainFrameInHighLatencyMode(1, 1, false, false));
+       MainFrameNotSkippedAfterLateCommitInPreferImplLatencyMode) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  scheduler_->SetImplLatencyTakesPriority(true);
+
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+
+  bool expect_send_begin_main_frame = true;
+  EXPECT_SCOPED(
+      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
 }
 
-TEST_F(SchedulerTest, NotSkipMainFrameIfHighLatencyAndCanCommitTooLong) {
-  // Set up client so that estimates indicate that the commit cannot finish
-  // before the deadline (~8ms by default).
-  EXPECT_SCOPED(MainFrameInHighLatencyMode(10, 1, false, true));
+TEST_F(SchedulerTest,
+       MainFrameNotSkippedAfterLateCommit_CommitEstimateTooLong) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
+      slow_duration);
+
+  bool expect_send_begin_main_frame = true;
+  EXPECT_SCOPED(
+      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
 }
 
-TEST_F(SchedulerTest, NotSkipMainFrameIfHighLatencyAndCanActivateTooLong) {
-  // Set up client so that estimates indicate that the activate cannot finish
-  // before the deadline (~8ms by default).
-  EXPECT_SCOPED(MainFrameInHighLatencyMode(1, 10, false, true));
+TEST_F(SchedulerTest,
+       MainFrameNotSkippedAfterLateCommit_ReadyToActivateEstimateTooLong) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
+      slow_duration);
+
+  bool expect_send_begin_main_frame = true;
+  EXPECT_SCOPED(
+      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
 }
 
-TEST_F(SchedulerTest, NotSkipMainFrameInPreferImplLatencyMode) {
-  // Set up client so that estimates indicate that we can commit and activate
-  // before the deadline (~8ms by default), but also enable impl latency takes
-  // priority mode.
-  EXPECT_SCOPED(MainFrameInHighLatencyMode(1, 1, true, true));
+TEST_F(SchedulerTest,
+       MainFrameNotSkippedAfterLateCommit_ActivateEstimateTooLong) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetActivateDurationEstimate(slow_duration);
+
+  bool expect_send_begin_main_frame = true;
+  EXPECT_SCOPED(
+      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+}
+
+TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateCommit_DrawEstimateTooLong) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetDrawDurationEstimate(slow_duration);
+
+  bool expect_send_begin_main_frame = true;
+  EXPECT_SCOPED(
+      CheckMainFrameSkippedAfterLateCommit(expect_send_begin_main_frame));
+}
+
+void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
+    bool swap_ack_before_deadline) {
+  // To get into a high latency state, this test disables automatic swap acks.
+  scheduler_->SetMaxSwapsPending(1);
+  client_->SetAutomaticSwapAck(false);
+
+  // Draw and swap for first BeginFrame
+  client_->Reset();
+  scheduler_->SetNeedsCommit();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  SendNextBeginFrame();
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 4);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 4);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 4);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 3, 4);
+
+  client_->Reset();
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionCommit", client_, 0, 4);
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 4);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 4);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 4);
+
+  // Verify we skip every other frame if the swap ack consistently
+  // comes back late.
+  for (int i = 0; i < 10; i++) {
+    // Not calling scheduler_->DidSwapBuffersComplete() until after next
+    // BeginImplFrame puts the impl thread in high latency mode.
+    client_->Reset();
+    scheduler_->SetNeedsCommit();
+    scheduler_->SetNeedsRedraw();
+    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    SendNextBeginFrame();
+    // Verify that we skip the BeginImplFrame
+    EXPECT_NO_ACTION(client_);
+    EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+
+    // Verify that we do not perform any actions after we are no longer
+    // swap throttled.
+    client_->Reset();
+    if (swap_ack_before_deadline) {
+      // It shouldn't matter if the swap ack comes back before the deadline...
+      scheduler_->DidSwapBuffersComplete();
+      task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+    } else {
+      // ... or after the deadline.
+      task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+      scheduler_->DidSwapBuffersComplete();
+    }
+    EXPECT_NO_ACTION(client_);
+
+    // Verify that we start the next BeginImplFrame and continue normally
+    // after having just skipped a BeginImplFrame.
+    client_->Reset();
+    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    SendNextBeginFrame();
+    EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+    EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+    EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 3);
+
+    client_->Reset();
+    scheduler_->NotifyBeginMainFrameStarted();
+    scheduler_->NotifyReadyToCommit();
+    scheduler_->NotifyReadyToActivate();
+    task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+    EXPECT_ACTION("ScheduledActionCommit", client_, 0, 4);
+    EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 4);
+    EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 4);
+    EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 4);
+  }
+}
+
+TEST_F(SchedulerTest,
+       ImplFrameSkippedAfterLateSwapAck_FastEstimates_SwapAckThenDeadline) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+
+  bool swap_ack_before_deadline = true;
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateSwapAck(swap_ack_before_deadline));
+}
+
+TEST_F(SchedulerTest,
+       ImplFrameSkippedAfterLateSwapAck_FastEstimates_DeadlineThenSwapAck) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+
+  bool swap_ack_before_deadline = false;
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateSwapAck(swap_ack_before_deadline));
+}
+
+TEST_F(SchedulerTest,
+       ImplFrameSkippedAfterLateSwapAck_ImplLatencyTakesPriority) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  // Even if every estimate related to the main thread is slow, we should
+  // still expect to recover impl thread latency if the draw is fast and we
+  // are in impl latency takes priority.
+  scheduler_->SetImplLatencyTakesPriority(true);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(slow_duration);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetDrawDurationEstimate(fast_duration);
+
+  bool swap_ack_before_deadline = false;
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateSwapAck(swap_ack_before_deadline));
+}
+
+TEST_F(SchedulerTest,
+       ImplFrameSkippedAfterLateSwapAck_OnlyImplSideUpdatesExpected) {
+  // This tests that we recover impl thread latency when there are no commits.
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  // To get into a high latency state, this test disables automatic swap acks.
+  scheduler_->SetMaxSwapsPending(1);
+  client_->SetAutomaticSwapAck(false);
+
+  // Even if every estimate related to the main thread is slow, we should
+  // still expect to recover impl thread latency if there are no commits from
+  // the main thread.
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(slow_duration);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetDrawDurationEstimate(fast_duration);
+
+  // Draw and swap for first BeginFrame
+  client_->Reset();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  SendNextBeginFrame();
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 3);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 3);
+
+  client_->Reset();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+
+  // Verify we skip every other frame if the swap ack consistently
+  // comes back late.
+  for (int i = 0; i < 10; i++) {
+    // Not calling scheduler_->DidSwapBuffersComplete() until after next
+    // BeginImplFrame puts the impl thread in high latency mode.
+    client_->Reset();
+    scheduler_->SetNeedsRedraw();
+    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    SendNextBeginFrame();
+    // Verify that we skip the BeginImplFrame
+    EXPECT_NO_ACTION(client_);
+    EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+
+    // Verify that we do not perform any actions after we are no longer
+    // swap throttled.
+    client_->Reset();
+    scheduler_->DidSwapBuffersComplete();
+    EXPECT_NO_ACTION(client_);
+
+    // Verify that we start the next BeginImplFrame and continue normally
+    // after having just skipped a BeginImplFrame.
+    client_->Reset();
+    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    SendNextBeginFrame();
+    EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+    EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
+
+    client_->Reset();
+    // Deadline should be immediate.
+    EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+    task_runner().RunUntilTime(now_src_->NowTicks());
+    EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+    EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  }
+}
+
+void SchedulerTest::ImplFrameIsNotSkippedAfterLateSwapAck() {
+  // To get into a high latency state, this test disables automatic swap acks.
+  scheduler_->SetMaxSwapsPending(1);
+  client_->SetAutomaticSwapAck(false);
+
+  // Draw and swap for first BeginFrame
+  client_->Reset();
+  scheduler_->SetNeedsCommit();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  SendNextBeginFrame();
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 3);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 3);
+
+  client_->Reset();
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionCommit", client_, 0, 4);
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 4);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 4);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 4);
+
+  // Verify impl thread consistently operates in high latency mode
+  // without skipping any frames.
+  for (int i = 0; i < 10; i++) {
+    // Not calling scheduler_->DidSwapBuffersComplete() until after next frame
+    // puts the impl thread in high latency mode.
+    client_->Reset();
+    scheduler_->SetNeedsCommit();
+    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    SendNextBeginFrame();
+    EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
+    EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+
+    client_->Reset();
+    scheduler_->DidSwapBuffersComplete();
+    scheduler_->NotifyBeginMainFrameStarted();
+    scheduler_->NotifyReadyToCommit();
+    scheduler_->NotifyReadyToActivate();
+    task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+
+    // Verify that we don't skip the actions of the BeginImplFrame
+    EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 0, 5);
+    EXPECT_ACTION("ScheduledActionCommit", client_, 1, 5);
+    EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 2, 5);
+    EXPECT_ACTION("ScheduledActionAnimate", client_, 3, 5);
+    EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 4, 5);
+  }
+}
+
+TEST_F(SchedulerTest,
+       ImplFrameIsNotSkippedAfterLateSwapAck_CommitEstimateTooLong) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
+      slow_duration);
+  EXPECT_SCOPED(ImplFrameIsNotSkippedAfterLateSwapAck());
+}
+
+TEST_F(SchedulerTest,
+       ImplFrameIsNotSkippedAfterLateSwapAck_ReadyToActivateEstimateTooLong) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
+      slow_duration);
+  EXPECT_SCOPED(ImplFrameIsNotSkippedAfterLateSwapAck());
+}
+
+TEST_F(SchedulerTest,
+       ImplFrameIsNotSkippedAfterLateSwapAck_ActivateEstimateTooLong) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetActivateDurationEstimate(slow_duration);
+  EXPECT_SCOPED(ImplFrameIsNotSkippedAfterLateSwapAck());
+}
+
+TEST_F(SchedulerTest,
+       ImplFrameIsNotSkippedAfterLateSwapAck_DrawEstimateTooLong) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetDrawDurationEstimate(slow_duration);
+  EXPECT_SCOPED(ImplFrameIsNotSkippedAfterLateSwapAck());
+}
+
+TEST_F(SchedulerTest,
+       MainFrameThenImplFrameSkippedAfterLateCommitAndLateSwapAck) {
+  // Set up client with custom estimates.
+  // This test starts off with expensive estimates to prevent latency recovery
+  // initially, then lowers the estimates to enable it once both the main
+  // and impl threads are in a high latency mode.
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  auto slow_duration = base::TimeDelta::FromSeconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(slow_duration);
+
+  // To get into a high latency state, this test disables automatic swap acks.
+  scheduler_->SetMaxSwapsPending(1);
+  client_->SetAutomaticSwapAck(false);
+
+  // Impl thread hits deadline before commit finishes to make
+  // MainThreadIsInHighLatencyMode true
+  client_->Reset();
+  scheduler_->SetNeedsCommit();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 5);
+  EXPECT_ACTION("WillBeginImplFrame", client_, 1, 5);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 5);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 3, 5);
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 4, 5);
+
+  // Draw and swap for first commit, start second commit.
+  client_->Reset();
+  scheduler_->SetNeedsCommit();
+  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  scheduler_->NotifyReadyToActivate();
+
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 6);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 6);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 6);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 6);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 4, 6);
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 5, 6);
+
+  // Don't call scheduler_->DidSwapBuffersComplete() until after next frame
+  // to put the impl thread in a high latency mode.
+  client_->Reset();
+  scheduler_->SetNeedsCommit();
+  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->SwapThrottled());
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
+  // Note: BeginMainFrame and swap are skipped here because of
+  // swap ack backpressure, not because of latency recovery.
+  EXPECT_FALSE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
+  EXPECT_FALSE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+
+  // Lower estimates so that the scheduler will attempt latency recovery.
+  auto fast_duration = base::TimeDelta::FromMilliseconds(1);
+  fake_compositor_timing_history_->SetAllEstimatesTo(fast_duration);
+
+  // Now that both threads are in a high latency mode, make sure we
+  // skip the BeginMainFrame, then the BeginImplFrame, but not both
+  // at the same time.
+
+  // Verify we skip BeginMainFrame first.
+  client_->Reset();
+  // Previous commit request is still outstanding.
+  EXPECT_TRUE(scheduler_->NeedsCommit());
+  EXPECT_TRUE(scheduler_->SwapThrottled());
+  SendNextBeginFrame();
+  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  scheduler_->DidSwapBuffersComplete();
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 2, 3);
+
+  // Verify we skip the BeginImplFrame second.
+  client_->Reset();
+  // Previous commit request is still outstanding.
+  EXPECT_TRUE(scheduler_->NeedsCommit());
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  SendNextBeginFrame();
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  scheduler_->DidSwapBuffersComplete();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+
+  EXPECT_NO_ACTION(client_);
+
+  // Then verify we operate in a low latency mode.
+  client_->Reset();
+  // Previous commit request is still outstanding.
+  EXPECT_TRUE(scheduler_->NeedsCommit());
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  SendNextBeginFrame();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  scheduler_->NotifyReadyToActivate();
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  scheduler_->DidSwapBuffersComplete();
+  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 6);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 6);
+  EXPECT_ACTION("ScheduledActionCommit", client_, 2, 6);
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 3, 6);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 4, 6);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 5, 6);
 }
 
 TEST_F(
@@ -1398,18 +1867,9 @@ TEST_F(
   // NPAPI plugins on Windows block the Browser UI thread on the Renderer main
   // thread. This prevents the scheduler from receiving any pending swap acks.
 
-  // Since we are simulating a long commit, set up a client with draw duration
-  // estimates that prevent skipping main frames to get to low latency mode.
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
   SetUpScheduler(true);
-
-  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
-      base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
-      base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -1477,19 +1937,10 @@ TEST_F(SchedulerTest,
   // swap trottled and we have a pending tree and active tree that
   // still needs to be drawn for the first time.
 
-  // Since we are simulating a long commit, set up a client with draw duration
-  // estimates that prevent skipping main frames to get to low latency mode.
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
   scheduler_settings_.main_frame_before_activation_enabled = true;
   SetUpScheduler(true);
-
-  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
-      base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
-      base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -1571,13 +2022,6 @@ TEST_F(
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
   scheduler_settings_.main_frame_before_activation_enabled = true;
   SetUpScheduler(true);
-
-  fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
-      base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
-      base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.

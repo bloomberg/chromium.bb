@@ -460,10 +460,15 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
   BeginFrameArgs adjusted_args = args;
   adjusted_args.deadline -= compositor_timing_history_->DrawDurationEstimate();
 
-  if (!state_machine_.impl_latency_takes_priority() &&
-      main_thread_is_in_high_latency_mode &&
-      CanCommitAndActivateBeforeDeadline()) {
+  if (ShouldRecoverMainLatency(adjusted_args)) {
+    TRACE_EVENT_INSTANT0("cc", "SkipBeginMainFrameToReduceLatency",
+                         TRACE_EVENT_SCOPE_THREAD);
     state_machine_.SetSkipNextBeginMainFrameToReduceLatency();
+  } else if (ShouldRecoverImplLatency(adjusted_args)) {
+    TRACE_EVENT_INSTANT0("cc", "SkipBeginImplFrameToReduceLatency",
+                         TRACE_EVENT_SCOPE_THREAD);
+    frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
+    return;
   }
 
   BeginImplFrame(adjusted_args);
@@ -515,7 +520,6 @@ void Scheduler::ScheduleBeginImplFrameDeadline() {
 
   begin_impl_frame_deadline_mode_ =
       state_machine_.CurrentBeginImplFrameDeadlineMode();
-
   base::TimeTicks deadline;
   switch (begin_impl_frame_deadline_mode_) {
     case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE:
@@ -697,6 +701,8 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat> Scheduler::AsValue()
 }
 
 void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
+  base::TimeTicks now = Now();
+
   state->BeginDictionary("state_machine");
   state_machine_.AsValueInto(state);
   state->EndDictionary();
@@ -725,9 +731,14 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
                     !begin_impl_frame_deadline_task_.IsCancelled());
   state->SetString("inside_action",
                    SchedulerStateMachine::ActionToString(inside_action_));
+
   state->BeginDictionary("begin_impl_frame_args");
-  begin_impl_frame_tracker_.AsValueInto(Now(), state);
+  begin_impl_frame_tracker_.AsValueInto(now, state);
   state->EndDictionary();
+
+  state->SetString("begin_impl_frame_deadline_mode_",
+                   SchedulerStateMachine::BeginImplFrameDeadlineModeToString(
+                       begin_impl_frame_deadline_mode_));
   state->EndDictionary();
 
   state->BeginDictionary("compositor_timing_history");
@@ -740,10 +751,51 @@ void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {
       state_machine_.HasInitializedOutputSurface() && state_machine_.visible());
 }
 
-bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
-  BeginFrameArgs args =
-      begin_impl_frame_tracker_.DangerousMethodCurrentOrLast();
+bool Scheduler::ShouldRecoverMainLatency(const BeginFrameArgs& args) const {
+  DCHECK(!settings_.using_synchronous_renderer_compositor);
 
+  if (!state_machine_.MainThreadIsInHighLatencyMode())
+    return false;
+
+  // When prioritizing impl thread latency, we currently put the
+  // main thread in a high latency mode. Don't try to fight it.
+  if (state_machine_.impl_latency_takes_priority())
+    return false;
+
+  return CanCommitAndActivateBeforeDeadline(args);
+}
+
+bool Scheduler::ShouldRecoverImplLatency(const BeginFrameArgs& args) const {
+  DCHECK(!settings_.using_synchronous_renderer_compositor);
+
+  // If we are swap throttled at the BeginFrame, that means the impl thread is
+  // very likely in a high latency mode.
+  bool impl_thread_is_likely_high_latency = state_machine_.SwapThrottled();
+  if (!impl_thread_is_likely_high_latency)
+    return false;
+
+  // The deadline may be in the past if our draw time is too long.
+  bool can_draw_before_deadline = args.frame_time < args.deadline;
+
+  // When prioritizing impl thread latency, the deadline doesn't wait
+  // for the main thread.
+  if (state_machine_.impl_latency_takes_priority())
+    return can_draw_before_deadline;
+
+  // If we only have impl-side updates, the deadline doesn't wait for
+  // the main thread.
+  if (state_machine_.OnlyImplSideUpdatesExpected())
+    return can_draw_before_deadline;
+
+  // If we get here, we know the main thread is in a low-latency mode relative
+  // to the impl thread. In this case, only try to also recover impl thread
+  // latency if both the main and impl threads can run serially before the
+  // deadline.
+  return CanCommitAndActivateBeforeDeadline(args);
+}
+
+bool Scheduler::CanCommitAndActivateBeforeDeadline(
+    const BeginFrameArgs& args) const {
   // Check if the main thread computation and commit can be finished before the
   // impl thread's deadline.
   base::TimeTicks estimated_draw_time =
@@ -751,12 +803,6 @@ bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
       compositor_timing_history_->BeginMainFrameToCommitDurationEstimate() +
       compositor_timing_history_->CommitToReadyToActivateDurationEstimate() +
       compositor_timing_history_->ActivateDurationEstimate();
-
-  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
-               "CanCommitAndActivateBeforeDeadline",
-               "time_left_after_drawing_ms",
-               (args.deadline - estimated_draw_time).InMillisecondsF(), "state",
-               AsValue());
 
   return estimated_draw_time < args.deadline;
 }

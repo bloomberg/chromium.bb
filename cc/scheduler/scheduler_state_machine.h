@@ -145,6 +145,8 @@ class CC_EXPORT SchedulerStateMachine {
   // impl thread to draw, it is in a high latency mode.
   bool MainThreadIsInHighLatencyMode() const;
 
+  bool SwapThrottled() const;
+
   // Indicates whether the LayerTreeHostImpl is visible.
   void SetVisible(bool visible);
   bool visible() const { return visible_; }
@@ -156,6 +158,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   void SetNeedsAnimate();
   bool needs_animate() const { return needs_animate_; }
+
+  bool OnlyImplSideUpdatesExpected() const;
 
   // Indicates that prepare-tiles is required. This guarantees another
   // PrepareTiles will occur shortly (even if no redraw is required).
@@ -195,6 +199,7 @@ class CC_EXPORT SchedulerStateMachine {
   // updates from the main thread to the impl, or to push deltas from the impl
   // thread to main.
   void SetNeedsCommit();
+  bool needs_commit() const { return needs_commit_; }
 
   // Call this only in response to receiving an ACTION_SEND_BEGIN_MAIN_FRAME
   // from NextAction.
@@ -210,6 +215,7 @@ class CC_EXPORT SchedulerStateMachine {
   // Allow access of the can_start_ state in tests.
   bool CanStartForTesting() const { return can_start_; }
 
+  // Indicates production should be skipped to recover latency.
   void SetSkipNextBeginMainFrameToReduceLatency();
 
   // Indicates whether drawing would, at this time, make sense.
@@ -332,7 +338,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool did_create_and_initialize_first_output_surface_;
   bool impl_latency_takes_priority_;
   bool skip_next_begin_main_frame_to_reduce_latency_;
-  bool skip_begin_main_frame_to_reduce_latency_;
   bool continuous_painting_;
   bool children_need_begin_frames_;
   bool defer_commits_;

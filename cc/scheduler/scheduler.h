@@ -120,9 +120,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   bool PrepareTilesPending() const {
     return state_machine_.PrepareTilesPending();
   }
-  bool MainThreadIsInHighLatencyMode() const {
-    return state_machine_.MainThreadIsInHighLatencyMode();
-  }
   bool BeginImplFrameDeadlinePending() const {
     return !begin_impl_frame_deadline_task_.IsCancelled();
   }
@@ -201,7 +198,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void DrawAndSwapForced();
   void ProcessScheduledActions();
   void UpdateCompositorTimingHistoryRecordingEnabled();
-  bool CanCommitAndActivateBeforeDeadline() const;
+  bool ShouldRecoverMainLatency(const BeginFrameArgs& args) const;
+  bool ShouldRecoverImplLatency(const BeginFrameArgs& args) const;
+  bool CanCommitAndActivateBeforeDeadline(const BeginFrameArgs& args) const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
   void BeginRetroFrame();

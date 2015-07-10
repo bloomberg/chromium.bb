@@ -48,7 +48,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       did_create_and_initialize_first_output_surface_(false),
       impl_latency_takes_priority_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
-      skip_begin_main_frame_to_reduce_latency_(false),
       continuous_painting_(false),
       children_need_begin_frames_(false),
       defer_commits_(false),
@@ -240,8 +239,6 @@ void SchedulerStateMachine::AsValueInto(
                     impl_latency_takes_priority_);
   state->SetBoolean("main_thread_is_in_high_latency_mode",
                     MainThreadIsInHighLatencyMode());
-  state->SetBoolean("skip_begin_main_frame_to_reduce_latency",
-                    skip_begin_main_frame_to_reduce_latency_);
   state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
                     skip_next_begin_main_frame_to_reduce_latency_);
   state->SetBoolean("continuous_painting", continuous_painting_);
@@ -339,7 +336,7 @@ bool SchedulerStateMachine::ShouldDraw() const {
     return false;
 
   // Do not queue too many swaps.
-  if (pending_swaps_ >= max_pending_swaps_)
+  if (SwapThrottled())
     return false;
 
   // Except for the cases above, do not draw outside of the BeginImplFrame
@@ -413,8 +410,7 @@ bool SchedulerStateMachine::SendingBeginMainFrameMightCauseDeadlock() const {
   // and we have deadlock.
   // This returns true if there's too much backpressure to finish a commit
   // if we were to initiate a BeginMainFrame.
-  return has_pending_tree_ && active_tree_needs_first_draw_ &&
-         pending_swaps_ >= max_pending_swaps_;
+  return has_pending_tree_ && active_tree_needs_first_draw_ && SwapThrottled();
 }
 
 bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
@@ -472,11 +468,11 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     bool just_swapped_in_deadline =
         begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
         did_perform_swap_in_last_draw_;
-    if (pending_swaps_ >= max_pending_swaps_ && !just_swapped_in_deadline)
+    if (SwapThrottled() && !just_swapped_in_deadline)
       return false;
   }
 
-  if (skip_begin_main_frame_to_reduce_latency_)
+  if (skip_next_begin_main_frame_to_reduce_latency_)
     return false;
 
   return true;
@@ -858,10 +854,6 @@ void SchedulerStateMachine::OnBeginImplFrame() {
   // "Drain" the PrepareTiles funnel.
   if (prepare_tiles_funnel_ > 0)
     prepare_tiles_funnel_--;
-
-  skip_begin_main_frame_to_reduce_latency_ =
-      skip_next_begin_main_frame_to_reduce_latency_;
-  skip_next_begin_main_frame_to_reduce_latency_ = false;
 }
 
 void SchedulerStateMachine::OnBeginImplFrameDeadlinePending() {
@@ -885,6 +877,8 @@ void SchedulerStateMachine::OnBeginImplFrameDeadline() {
 
 void SchedulerStateMachine::OnBeginImplFrameIdle() {
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
+
+  skip_next_begin_main_frame_to_reduce_latency_ = false;
 }
 
 SchedulerStateMachine::BeginImplFrameDeadlineMode
@@ -898,7 +892,7 @@ SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
     return BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW;
   } else if (ShouldTriggerBeginImplFrameDeadlineImmediately()) {
     return BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE;
-  } else if (needs_redraw_ && pending_swaps_ < max_pending_swaps_) {
+  } else if (needs_redraw_ && !SwapThrottled()) {
     // We have an animation or fast input path on the impl thread that wants
     // to draw, so don't wait too long for a new active tree.
     // If we are swap throttled we should wait until we are unblocked.
@@ -913,7 +907,6 @@ SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
 
 bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
     const {
-  // TODO(brianderson): This should take into account multiple commit sources.
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
     return false;
 
@@ -922,7 +915,7 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
     return true;
 
   // SwapAck throttle the deadline since we wont draw and swap anyway.
-  if (pending_swaps_ >= max_pending_swaps_)
+  if (SwapThrottled())
     return false;
 
   if (active_tree_needs_first_draw_)
@@ -987,6 +980,10 @@ bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
   return active_tree_needs_first_draw_;
 }
 
+bool SchedulerStateMachine::SwapThrottled() const {
+  return pending_swaps_ >= max_pending_swaps_;
+}
+
 void SchedulerStateMachine::SetVisible(bool visible) {
   visible_ = visible;
   // TODO(sunnyps): Change the funnel to a bool to avoid hacks like this.
@@ -1003,6 +1000,13 @@ void SchedulerStateMachine::SetNeedsAnimate() {
 
 void SchedulerStateMachine::SetWaitForReadyToDraw() {
   wait_for_active_tree_ready_to_draw_ = true;
+}
+
+bool SchedulerStateMachine::OnlyImplSideUpdatesExpected() const {
+  bool has_impl_updates = needs_redraw_ || needs_animate_;
+  bool main_updates_expected =
+      needs_commit_ || commit_state_ != COMMIT_STATE_IDLE || has_pending_tree_;
+  return has_impl_updates && !main_updates_expected;
 }
 
 void SchedulerStateMachine::SetNeedsPrepareTiles() {
