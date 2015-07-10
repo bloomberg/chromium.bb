@@ -538,8 +538,9 @@ struct DecoderTextureState {
         texsubimage_faster_than_teximage(texsubimage_faster_than_teximage) {}
 
   // This indicates all the following texSubImage*D calls that are part of the
-  // failed texImage*D call should be ignored.
-  // TODO(zmo): This mechanism is buggy. crbug.com/492852
+  // failed texImage*D call should be ignored. The client calls have a lock
+  // around them, so it will affect only a single texImage*D + texSubImage*D
+  // group.
   bool tex_image_failed;
 
   // Command buffer stats.
