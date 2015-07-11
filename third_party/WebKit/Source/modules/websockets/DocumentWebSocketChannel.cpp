@@ -50,6 +50,7 @@
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSerializedOrigin.h"
 #include "public/platform/WebSocketHandshakeRequestInfo.h"
 #include "public/platform/WebSocketHandshakeResponseInfo.h"
 #include "public/platform/WebString.h"

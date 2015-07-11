@@ -32,12 +32,11 @@
 #define WebSocketHandle_h
 
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebSerializedOrigin.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
 
-class WebSecurityOrigin;
+class WebSerializedOrigin;
 class WebSocketHandleClient;
 class WebString;
 class WebURL;
@@ -58,12 +57,7 @@ public:
 
     virtual ~WebSocketHandle() { }
 
-    // TODO(mkwst): Drop the WebSerializedOrigin version once Chromium is updated: https://crbug.com/508896
-    virtual void connect(const WebURL& url, const WebVector<WebString>& protocols, const WebSecurityOrigin& origin, WebSocketHandleClient* client)
-    {
-        connect(url, protocols, WebSerializedOrigin(origin), client);
-    }
-    virtual void connect(const WebURL&, const WebVector<WebString>& protocols, const WebSerializedOrigin&, WebSocketHandleClient*) {}
+    virtual void connect(const WebURL& /* url */, const WebVector<WebString>& protocols, const WebSerializedOrigin& /* origin */, WebSocketHandleClient*) = 0;
     virtual void send(bool fin, MessageType, const char* data, size_t /* size */) = 0;
     virtual void flowControl(int64_t quota) = 0;
     virtual void close(unsigned short code, const WebString& reason) = 0;

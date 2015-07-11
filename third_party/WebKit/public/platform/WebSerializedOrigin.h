@@ -14,14 +14,11 @@
 namespace blink {
 
 class SecurityOrigin;
-class WebSecurityOrigin;
 
 // WebSerializedOrigin represents a serialized Web Origin specified in RFC6454.
 class WebSerializedOrigin {
 public:
     WebSerializedOrigin() : m_string("null") { }
-    BLINK_PLATFORM_EXPORT WebSerializedOrigin(const WebSecurityOrigin&);
-
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebSerializedOrigin(const SecurityOrigin&);
 #else
