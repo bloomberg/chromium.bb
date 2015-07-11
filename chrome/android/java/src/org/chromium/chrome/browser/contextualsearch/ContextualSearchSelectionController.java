@@ -294,6 +294,8 @@ public class ContextualSearchSelectionController {
      *                           the search term.
      */
     void adjustSelection(int selectionStartAdjust, int selectionEndAdjust) {
+        if (ContextualSearchFieldTrial.isSelectionExpansionDisabled()) return;
+
         // TODO(donnd): add code to verify that the selection is still valid before changing it.
         // crbug.com/508354
 

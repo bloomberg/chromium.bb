@@ -42,6 +42,9 @@ public class ContextualSearchFieldTrial {
     static final String SIDE_SEARCH_PROVIDER_ICON_ENABLED =
             "contextual_search_side_search_provider_icon_enabled";
 
+    static final String SELECTION_EXPANSION_DISABLED =
+            "contextual_search_selection_expansion_disabled";
+
     private static final String CHINESE_LANGUAGE_CODE = "zh";
     private static final String JAPANESE_LANGUAGE_CODE = "ja";
     private static final String KOREAN_LANGUAGE_CODE = "ko";
@@ -248,6 +251,13 @@ public class ContextualSearchFieldTrial {
      */
     public static boolean isSideSearchProviderIconEnabled() {
         return getBooleanParam(SIDE_SEARCH_PROVIDER_ICON_ENABLED);
+    }
+
+    /**
+     * @return Whether the base page selection expansion after server response is disabled.
+     */
+    public static boolean isSelectionExpansionDisabled() {
+        return getBooleanParam(SELECTION_EXPANSION_DISABLED);
     }
 
     // --------------------------------------------------------------------------------------------
