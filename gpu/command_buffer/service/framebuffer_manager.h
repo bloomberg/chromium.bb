@@ -11,6 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
 
@@ -240,7 +241,8 @@ class GPU_EXPORT FramebufferManager {
     DISALLOW_COPY_AND_ASSIGN(TextureDetachObserver);
   };
 
-  FramebufferManager(uint32 max_draw_buffers, uint32 max_color_attachments);
+  FramebufferManager(uint32 max_draw_buffers, uint32 max_color_attachments,
+                     ContextGroup::ContextType context_type);
   ~FramebufferManager();
 
   // Must call before destruction.
@@ -285,6 +287,10 @@ class GPU_EXPORT FramebufferManager {
         texture_detach_observers_.end());
   }
 
+  ContextGroup::ContextType context_type() const {
+    return context_type_;
+  }
+
  private:
   friend class Framebuffer;
 
@@ -310,6 +316,8 @@ class GPU_EXPORT FramebufferManager {
 
   uint32 max_draw_buffers_;
   uint32 max_color_attachments_;
+
+  ContextGroup::ContextType context_type_;
 
   typedef std::vector<TextureDetachObserver*> TextureDetachObserverVector;
   TextureDetachObserverVector texture_detach_observers_;

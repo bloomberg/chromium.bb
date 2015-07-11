@@ -1848,9 +1848,11 @@ TEST_F(SharedTextureTest, TextureSafetyAccounting) {
 
 TEST_F(SharedTextureTest, FBOCompletenessCheck) {
   const GLenum kCompleteValue = GL_FRAMEBUFFER_COMPLETE;
-  FramebufferManager framebuffer_manager1(1, 1);
+  FramebufferManager framebuffer_manager1(
+      1, 1, ContextGroup::CONTEXT_TYPE_UNDEFINED);
   texture_manager1_->set_framebuffer_manager(&framebuffer_manager1);
-  FramebufferManager framebuffer_manager2(1, 1);
+  FramebufferManager framebuffer_manager2(
+      1, 1, ContextGroup::CONTEXT_TYPE_UNDEFINED);
   texture_manager2_->set_framebuffer_manager(&framebuffer_manager2);
 
   scoped_refptr<TextureRef> ref1 = texture_manager1_->CreateTexture(10, 10);

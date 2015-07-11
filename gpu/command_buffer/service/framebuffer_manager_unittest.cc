@@ -34,7 +34,7 @@ const bool kUseDefaultTextures = false;
 class FramebufferManagerTest : public GpuServiceTest {
  public:
   FramebufferManagerTest()
-      : manager_(1, 1),
+      : manager_(1, 1, ContextGroup::CONTEXT_TYPE_UNDEFINED),
         feature_info_(new FeatureInfo()) {
     texture_manager_.reset(new TextureManager(NULL,
                                               feature_info_.get(),
@@ -55,7 +55,6 @@ class FramebufferManagerTest : public GpuServiceTest {
   }
 
  protected:
-
   FramebufferManager manager_;
   scoped_refptr<FeatureInfo> feature_info_;
   scoped_ptr<TextureManager> texture_manager_;
@@ -106,13 +105,13 @@ TEST_F(FramebufferManagerTest, Destroy) {
   ASSERT_TRUE(framebuffer1 == NULL);
 }
 
-class FramebufferInfoTest : public GpuServiceTest {
+class FramebufferInfoTestBase : public GpuServiceTest {
  public:
   static const GLuint kClient1Id = 1;
   static const GLuint kService1Id = 11;
 
-  FramebufferInfoTest()
-      : manager_(kMaxDrawBuffers,  kMaxColorAttachments),
+  explicit FramebufferInfoTestBase(ContextGroup::ContextType context_type)
+      : manager_(kMaxDrawBuffers,  kMaxColorAttachments, context_type),
         feature_info_(new FeatureInfo()) {
     texture_manager_.reset(new TextureManager(NULL,
                                               feature_info_.get(),
@@ -126,7 +125,7 @@ class FramebufferInfoTest : public GpuServiceTest {
                                                         kMaxSamples,
                                                         feature_info_.get()));
   }
-  ~FramebufferInfoTest() override {
+  ~FramebufferInfoTestBase() override {
     manager_.Destroy(false);
     texture_manager_->Destroy(false);
     renderbuffer_manager_->Destroy(false);
@@ -156,10 +155,17 @@ class FramebufferInfoTest : public GpuServiceTest {
   scoped_ptr<MockErrorState> error_state_;
 };
 
+class FramebufferInfoTest : public FramebufferInfoTestBase {
+ public:
+  FramebufferInfoTest()
+      : FramebufferInfoTestBase(ContextGroup::CONTEXT_TYPE_UNDEFINED) {
+  }
+};
+
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
-const GLuint FramebufferInfoTest::kClient1Id;
-const GLuint FramebufferInfoTest::kService1Id;
+const GLuint FramebufferInfoTestBase::kClient1Id;
+const GLuint FramebufferInfoTestBase::kService1Id;
 #endif
 
 TEST_F(FramebufferInfoTest, Basic) {
@@ -918,6 +924,55 @@ TEST_F(FramebufferInfoTest, GetStatus) {
         .RetiresOnSaturation();
   }
   framebuffer_->GetStatus(texture_manager_.get(), GL_READ_FRAMEBUFFER);
+}
+
+class FramebufferInfoES3Test : public FramebufferInfoTestBase {
+ public:
+  FramebufferInfoES3Test()
+      : FramebufferInfoTestBase(ContextGroup::CONTEXT_TYPE_WEBGL2) {
+  }
+};
+
+TEST_F(FramebufferInfoES3Test, DifferentDimensions) {
+  const GLuint kRenderbufferClient1Id = 33;
+  const GLuint kRenderbufferService1Id = 333;
+  const GLuint kRenderbufferClient2Id = 34;
+  const GLuint kRenderbufferService2Id = 334;
+  const GLsizei kWidth1 = 16;
+  const GLsizei kHeight1 = 32;
+  const GLenum kFormat1 = GL_RGBA4;
+  const GLsizei kSamples1 = 0;
+  const GLsizei kWidth2 = 32;  // Different from kWidth1
+  const GLsizei kHeight2 = 32;
+  const GLenum kFormat2 = GL_DEPTH_COMPONENT16;
+  const GLsizei kSamples2 = 0;
+
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_FALSE(
+      framebuffer_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+
+  renderbuffer_manager_->CreateRenderbuffer(
+      kRenderbufferClient1Id, kRenderbufferService1Id);
+  Renderbuffer* renderbuffer1 =
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient1Id);
+  ASSERT_TRUE(renderbuffer1 != NULL);
+  renderbuffer_manager_->SetInfo(
+      renderbuffer1, kSamples1, kFormat1, kWidth1, kHeight1);
+  framebuffer_->AttachRenderbuffer(GL_COLOR_ATTACHMENT0, renderbuffer1);
+
+  renderbuffer_manager_->CreateRenderbuffer(
+      kRenderbufferClient2Id, kRenderbufferService2Id);
+  Renderbuffer* renderbuffer2 =
+      renderbuffer_manager_->GetRenderbuffer(kRenderbufferClient2Id);
+  ASSERT_TRUE(renderbuffer2 != NULL);
+  renderbuffer_manager_->SetInfo(
+      renderbuffer2, kSamples2, kFormat2, kWidth2, kHeight2);
+  framebuffer_->AttachRenderbuffer(GL_DEPTH_ATTACHMENT, renderbuffer2);
+
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+            framebuffer_->IsPossiblyComplete());
 }
 
 }  // namespace gles2
