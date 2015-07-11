@@ -91,24 +91,39 @@ public:
     }
 
 private:
+    void setFallbackFonts(const ShapeResult* wordResult,
+        HashSet<const SimpleFontData*>* fallbackFonts)
+    {
+        if (fallbackFonts) {
+            const HashSet<const SimpleFontData*>* fontsForWord =
+                wordResult->fallbackFonts();
+            HashSet<const SimpleFontData*>::const_iterator it;
+            for (it = fontsForWord->begin(); it != fontsForWord->end(); ++it)
+                fallbackFonts->add(*it);
+        }
+    }
+
     PassRefPtr<ShapeResult> shapeWord(const TextRun& wordRun,
         const Font* font, HashSet<const SimpleFontData*>* fallbackFonts)
     {
         ShapeCacheEntry* cacheEntry = m_wordResultCachable
             ? m_shapeCache->add(wordRun, ShapeCacheEntry())
             : nullptr;
-        if (cacheEntry && cacheEntry->m_shapeResult)
+        if (cacheEntry && cacheEntry->m_shapeResult) {
+            setFallbackFonts(cacheEntry->m_shapeResult.get(), fallbackFonts);
             return cacheEntry->m_shapeResult;
+        }
 
-        HarfBuzzShaper shaper(font, wordRun, fallbackFonts);
+        HashSet<const SimpleFontData*> fallbackFontsForWord;
+        HarfBuzzShaper shaper(font, wordRun, &fallbackFontsForWord);
         RefPtr<ShapeResult> shapeResult = shaper.shapeResult();
         if (!shapeResult)
             return nullptr;
 
-        // FIXME: Add support for fallback fonts. https://crbug.com/503688
-        if (cacheEntry && (!fallbackFonts || fallbackFonts->isEmpty()))
+        if (cacheEntry)
             cacheEntry->m_shapeResult = shapeResult;
 
+        setFallbackFonts(shapeResult.get(), fallbackFonts);
         return shapeResult.release();
     }
 

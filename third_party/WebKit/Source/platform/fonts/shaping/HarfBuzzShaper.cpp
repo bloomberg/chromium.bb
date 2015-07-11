@@ -600,6 +600,9 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run,
     , m_letterSpacing(font->fontDescription().letterSpacing())
     , m_expansionOpportunityCount(0)
 {
+    // TODO(eae): Once SimpleShaper is gone the ownership of this should shift
+    // to HarfBuzzShaper.
+    ASSERT(fallbackFonts);
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_textRun.length() + 1]);
     normalizeCharacters(m_textRun, m_textRun.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
     setExpansion(m_textRun.expansion());
@@ -1128,6 +1131,7 @@ void HarfBuzzShaper::shapeResult(ShapeResult* result, unsigned index,
 
     run->m_width = totalAdvance > 0.0 ? totalAdvance : 0.0;
     result->m_width += run->m_width;
+    result->m_fallbackFonts = *m_fallbackFonts;
 }
 
 float HarfBuzzShaper::adjustSpacing(ShapeResult::RunInfo* run, size_t glyphIndex, unsigned currentCharacterIndex, float& offset, float& totalAdvance)
