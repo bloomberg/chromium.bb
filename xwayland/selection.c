@@ -240,14 +240,14 @@ weston_wm_get_selection_data(struct weston_wm *wm)
 				  0x1fffffff /* length */);
 
 	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
-	if (reply == NULL)
-		return;
 
-	if (reply->type == wm->atom.incr) {
-		dump_property(wm, wm->atom.wl_selection, reply);
+	dump_property(wm, wm->atom.wl_selection, reply);
+
+	if (reply == NULL) {
+		return;
+	} else if (reply->type == wm->atom.incr) {
 		wm->incr = 1;
 	} else {
-		dump_property(wm, wm->atom.wl_selection, reply);
 		wm->incr = 0;
 		weston_wm_write_property(wm, reply);
 	}
