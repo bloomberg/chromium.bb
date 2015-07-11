@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/chrome_requirements_checker.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -77,12 +78,10 @@ class ManagementUninstallFunctionUninstallDialogDelegate
       const extensions::Extension* target_extension,
       bool show_programmatic_uninstall_ui)
       : function_(function) {
-    content::WebContents* web_contents = function->GetSenderWebContents();
+    ChromeExtensionFunctionDetails details(function);
     extension_uninstall_dialog_.reset(
         extensions::ExtensionUninstallDialog::Create(
-            Profile::FromBrowserContext(function->browser_context()),
-            web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr,
-            this));
+            details.GetProfile(), details.GetNativeWindowForUI(), this));
     if (show_programmatic_uninstall_ui) {
       extension_uninstall_dialog_->ConfirmUninstallByExtension(
           target_extension, function->extension(),

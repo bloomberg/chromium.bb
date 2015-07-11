@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/blob_reader.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
@@ -36,7 +37,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/storage_monitor/storage_info.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,8 +45,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/blob_holder.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -61,7 +59,6 @@
 using content::WebContents;
 using storage_monitor::MediaStorageUtil;
 using storage_monitor::StorageInfo;
-using web_modal::WebContentsModalDialogManager;
 
 namespace extensions {
 
@@ -146,23 +143,6 @@ bool GetGalleryFilePathAndId(const std::string& gallery_id,
   *gallery_pref_id = pref_id;
   *gallery_file_path = file_path;
   return true;
-}
-
-WebContents* GetWebContents(content::RenderFrameHost* rfh,
-                            Profile* profile,
-                            const std::string& app_id) {
-  WebContents* contents = WebContents::FromRenderFrameHost(rfh);
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(contents);
-  if (!web_contents_modal_dialog_manager) {
-    // If there is no WebContentsModalDialogManager, then this contents is
-    // probably the background page for an app. Try to find a app window to
-    // host the dialog.
-    AppWindow* window = AppWindowRegistry::Get(profile)
-                            ->GetCurrentAppWindowForApp(app_id);
-    contents = window ? window->web_contents() : nullptr;
-  }
-  return contents;
 }
 
 base::ListValue* ConstructFileSystemList(
@@ -543,7 +523,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
 void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   media_galleries::UsageCount(media_galleries::SHOW_DIALOG);
   WebContents* contents =
-      GetWebContents(render_frame_host(), GetProfile(), extension()->id());
+      ChromeExtensionFunctionDetails(this).GetOriginWebContents();
   if (!contents) {
     SendResponse(false);
     return;
@@ -648,18 +628,11 @@ bool MediaGalleriesAddUserSelectedFolderFunction::RunAsync() {
 void MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit() {
   Profile* profile = GetProfile();
   const std::string& app_id = extension()->id();
-  WebContents* contents = GetWebContents(render_frame_host(), profile, app_id);
+  WebContents* contents =
+      ChromeExtensionFunctionDetails(this).GetOriginWebContents();
   if (!contents) {
-    // When the request originated from a background page, but there is no app
-    // window open, check to see if it originated from a tab and display the
-    // dialog in that tab.
-    bool found_tab = extensions::ExtensionTabUtil::GetTabById(
-        source_tab_id(), profile, profile->IsOffTheRecord(),
-        NULL, NULL, &contents, NULL);
-    if (!found_tab || !contents) {
-      SendResponse(false);
-      return;
-    }
+    SendResponse(false);
+    return;
   }
 
   if (!user_gesture()) {
@@ -883,7 +856,7 @@ void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
   }
 
   WebContents* contents =
-      GetWebContents(render_frame_host(), GetProfile(), extension()->id());
+      ChromeExtensionFunctionDetails(this).GetOriginWebContents();
   if (!contents) {
     SendResponse(false);
     return;
