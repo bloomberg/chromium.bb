@@ -63,17 +63,17 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
 
   // Check validation cache usage:
   if (IsAPnaclTest()) {
-    // Should have received 4 validation queries:
-    // - Two for the IRT: the app and one of the translator nexes use the IRT.
+    // Should have received 5 validation queries:
+    // - Three for the IRT: the app and both of the translator nexes use it.
     // - Two for the two PNaCl translator nexes.
     // The PNaCl app nexe comes from a delete-on-close temp file, so it
     // doesn't have a stable identity for validation caching. Overall, there
     // are 3 eligible nexes. The first 3 queries for these eligible nexes
-    // are misses, and one of the IRT queries is a hit.
+    // are misses, and the latter two of the IRT queries are hits.
     histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
                                nacl::NaClBrowser::CACHE_MISS, 3);
     histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
-                               nacl::NaClBrowser::CACHE_HIT, 1);
+                               nacl::NaClBrowser::CACHE_HIT, 2);
     // Should have received a cache setting afterwards (IRT set only once).
     histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
                                   nacl::NaClBrowser::CACHE_HIT, 3);
@@ -83,7 +83,7 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
     // Should have one cache query for the IRT.
     histograms.ExpectUniqueSample("NaCl.ValidationCache.Query",
                                   nacl::NaClBrowser::CACHE_MISS, 1);
-    // Should have received a cache setting afterwards for IRT and translators.
+    // Should have received a cache setting afterwards for the IRT.
     histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
                                   nacl::NaClBrowser::CACHE_HIT, 1);
   }
@@ -231,17 +231,15 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
 
   content::FetchHistogramsFromChildProcesses();
-  // Should have received 4 validation queries:
-  // - Two for the IRT: the app and one of the translator nexes use the IRT.
+  // Should have received 5 validation queries:
+  // - Three for the IRT: the app and both of the translator nexes use it.
   // - Two for the two PNaCl translator nexes.
-  // The PNaCl app nexe comes from a delete-on-close temp file, so it
-  // doesn't have a stable identity for validation caching. Overall, there
-  // are 3 eligible nexes. The first 3 queries for these eligible nexes
-  // are misses, and one of the IRT queries is a hit.
+  // - The PNaCl app nexe comes from a delete-on-close temp file, so it
+  //   doesn't have a stable identity for validation caching.
   histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
                                nacl::NaClBrowser::CACHE_MISS, 3);
   histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
-                               nacl::NaClBrowser::CACHE_HIT, 1);
+                               nacl::NaClBrowser::CACHE_HIT, 2);
   // Should have received a cache setting afterwards.
   histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
                                nacl::NaClBrowser::CACHE_HIT, 3);
@@ -252,11 +250,11 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
   // cache hits!)
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_2"));
 
-  // Should now have 4 more queries on top of the previous ones.
-  histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 8);
+  // Should now have 5 more queries on top of the previous ones.
+  histograms.ExpectTotalCount("NaCl.ValidationCache.Query", 10);
   // With the extra queries being cache hits.
   histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
-                               nacl::NaClBrowser::CACHE_HIT, 5);
+                               nacl::NaClBrowser::CACHE_HIT, 7);
   // No extra cache settings.
   histograms.ExpectUniqueSample("NaCl.ValidationCache.Set",
                                 nacl::NaClBrowser::CACHE_HIT, 3);
