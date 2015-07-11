@@ -570,6 +570,7 @@
               'dependencies': [
                 '../sandbox/sandbox.gyp:sbox_integration_tests',
                 '../sandbox/sandbox.gyp:sbox_unittests',
+                '../sandbox/sandbox.gyp:sbox_validation_tests',
               ],
             }],
             ['use_ash==1', {
