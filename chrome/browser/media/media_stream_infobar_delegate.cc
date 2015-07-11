@@ -142,7 +142,7 @@ bool MediaStreamInfoBarDelegate::Cancel() {
 }
 
 base::string16 MediaStreamInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  return base::string16();
 }
 
 bool MediaStreamInfoBarDelegate::LinkClicked(
