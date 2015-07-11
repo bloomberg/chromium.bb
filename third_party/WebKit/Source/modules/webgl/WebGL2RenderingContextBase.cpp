@@ -94,6 +94,23 @@ void WebGL2RenderingContextBase::copyBufferSubData(GLenum readTarget, GLenum wri
     if (isContextLost())
         return;
 
+    WebGLBuffer* readBuffer = validateBufferDataTarget("copyBufferSubData", readTarget);
+    if (!readBuffer)
+        return;
+
+    WebGLBuffer* writeBuffer = validateBufferDataTarget("copyBufferSubData", writeTarget);
+    if (!writeBuffer)
+        return;
+
+    if ((writeBuffer->getInitialTarget() == GL_ELEMENT_ARRAY_BUFFER && readBuffer->getInitialTarget() != GL_ELEMENT_ARRAY_BUFFER)
+        || (writeBuffer->getInitialTarget() != GL_ELEMENT_ARRAY_BUFFER && readBuffer->getInitialTarget() == GL_ELEMENT_ARRAY_BUFFER)) {
+        synthesizeGLError(GL_INVALID_OPERATION, "copyBufferSubData", "Cannot copy into an element buffer destination from a non-element buffer source");
+        return;
+    }
+
+    if (writeBuffer->getInitialTarget() == 0)
+        writeBuffer->setInitialTarget(readBuffer->getInitialTarget());
+
     webContext()->copyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size);
 }
 
@@ -101,6 +118,16 @@ void WebGL2RenderingContextBase::getBufferSubData(GLenum target, GLintptr offset
 {
     if (isContextLost())
         return;
+
+    if (!returnedData) {
+        synthesizeGLError(GL_INVALID_VALUE, "getBufferSubData", "ArrayBuffer cannot be null");
+        return;
+    }
+
+    if (offset < 0) {
+        synthesizeGLError(GL_INVALID_VALUE, "getBufferSubData", "offset must be greater than 0");
+        return;
+    }
 
     void* mappedData = webContext()->mapBufferRange(target, offset, returnedData->byteLength(), GL_MAP_READ_BIT);
 
@@ -1566,6 +1593,11 @@ Vector<GLint> WebGL2RenderingContextBase::getActiveUniforms(WebGLProgram* progra
     Vector<GLint> result;
     if (isContextLost() || !validateWebGLObject("getActiveUniforms", program))
         return result;
+
+    if (pname == GL_UNIFORM_NAME_LENGTH) {
+        synthesizeGLError(GL_INVALID_ENUM, "getActiveUniforms", "invalid parameter name");
+        return result;
+    }
 
     result.resize(uniformIndices.size());
     webContext()->getActiveUniformsiv(objectOrZero(program), uniformIndices.size(), uniformIndices.data(), pname, result.data());
