@@ -12,17 +12,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
-import android.util.SparseArray;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentUtils;
-import org.chromium.chrome.browser.document.PendingDocumentData;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.OffTheRecordTabModel.OffTheRecordTabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -80,12 +77,6 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
      * TabModel that keeps track of incognito tabs. This may be null if no incognito tabs exist.
      */
     private final OffTheRecordDocumentTabModel mIncognitoTabModel;
-
-    /**
-     * A map of tab IDs to PendingDocumentData to be consumed by opening activities.
-     */
-    private final SparseArray<PendingDocumentData> mPendingDocumentData =
-            new SparseArray<PendingDocumentData>();
 
     /**
      * If the TabModels haven't been initialized yet, prioritize the correct one to load the Tab.
@@ -226,26 +217,6 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
      */
     public int generateValidTabId() {
         return TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
-    }
-
-    /**
-     * Stores PendingUrlParams to be used when the tab with the given ID is launched via intent.
-     * @param tabId The ID of the tab that will be launched via intent.
-     * @param params The PendingUrlParams to use when loading the URL in the tab.
-     */
-    public void addPendingDocumentData(int tabId, PendingDocumentData params) {
-        ThreadUtils.assertOnUiThread();
-        mPendingDocumentData.put(tabId, params);
-    }
-
-    /**
-     * @return Retrieves and removes PendingDocumentData for a particular tab id.
-     */
-    public PendingDocumentData removePendingDocumentData(int tabId) {
-        ThreadUtils.assertOnUiThread();
-        PendingDocumentData data = mPendingDocumentData.get(tabId);
-        mPendingDocumentData.remove(tabId);
-        return data;
     }
 
     /**

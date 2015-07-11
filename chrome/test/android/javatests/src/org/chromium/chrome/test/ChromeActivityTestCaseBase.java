@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
-import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -61,6 +60,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationData;
@@ -467,10 +467,10 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
                     ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                         @Override
                         public void run() {
-                            ChromeLauncherActivity.launchDocumentInstance(getActivity(), incognito,
-                                    ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url,
-                                    DocumentMetricIds.STARTED_BY_UNKNOWN,
-                                    PageTransition.AUTO_TOPLEVEL, null);
+                            AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(
+                                    new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL));
+                            ChromeLauncherActivity.launchDocumentInstance(
+                                    getActivity(), incognito, asyncParams);
                         }
                     });
                 }

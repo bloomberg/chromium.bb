@@ -50,12 +50,15 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParamsManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content.browser.crypto.CipherFactory;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.ui.base.PageTransition;
 
@@ -337,7 +340,8 @@ public class ChromeLauncherActivity extends Activity
                 getApplicationContext(), getIntent(), url, incognito, Tab.INVALID_TAB_ID);
         setRecentsFlagsOnIntent(
                 newIntent, append ? 0 : Intent.FLAG_ACTIVITY_NEW_DOCUMENT, incognito);
-        fireDocumentIntent(this, newIntent, incognito, url, affiliated, null);
+        AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(new LoadUrlParams(url));
+        fireDocumentIntent(this, newIntent, incognito, affiliated, asyncParams);
     }
 
     /**
@@ -365,9 +369,12 @@ public class ChromeLauncherActivity extends Activity
                 String url = HomepageManager.getHomepageUri(ChromeLauncherActivity.this);
                 if (TextUtils.isEmpty(url)) url = UrlConstants.NTP_URL;
 
-                int mode = mIsInMultiInstanceMode ? LAUNCH_MODE_FOREGROUND : LAUNCH_MODE_RETARGET;
-                launchDocumentInstance(ChromeLauncherActivity.this, false, mode, url,
-                        DocumentMetricIds.STARTED_BY_LAUNCHER, PageTransition.AUTO_TOPLEVEL, null);
+                AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(
+                        new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL));
+                asyncParams.setDocumentStartedBy(DocumentMetricIds.STARTED_BY_LAUNCHER);
+                asyncParams.setDocumentLaunchMode(
+                        mIsInMultiInstanceMode ? LAUNCH_MODE_FOREGROUND : LAUNCH_MODE_RETARGET);
+                launchDocumentInstance(ChromeLauncherActivity.this, false, asyncParams);
 
                 if (mIsFinishNeeded) finish();
             }
@@ -391,13 +398,12 @@ public class ChromeLauncherActivity extends Activity
         if (tabId == Tab.INVALID_TAB_ID) return false;
 
         // Try to clobber the page.
-        PendingDocumentData data = new PendingDocumentData();
-        data.url = url;
-        data.originalIntent = new Intent(getIntent());
-        ChromeApplication.getDocumentTabModelSelector().addPendingDocumentData(tabId, data);
+        AsyncTabCreationParams data =
+                new AsyncTabCreationParams(new LoadUrlParams(url), new Intent(getIntent()));
+        AsyncTabCreationParamsManager.add(tabId, data);
         if (!relaunchTask(tabId)) {
             // Were not able to clobber, will fall through to handle in a new document.
-            ChromeApplication.getDocumentTabModelSelector().removePendingDocumentData(tabId);
+            AsyncTabCreationParamsManager.remove(tabId);
             return false;
         }
 
@@ -440,32 +446,30 @@ public class ChromeLauncherActivity extends Activity
      * This should never be exposed to non-Chrome callers.
      * @param activity Activity launching the new instance. May be null.
      * @param incognito Whether the created document should be incognito.
-     * @param launchMode See LAUNCH_MODE_* above.
-     * @param url URL to load.
-     * @param intentSource What is causing the Intent to be fired.
-     *         See DocumentUma.DOCUMENT_ACTIVITY_STARTED_BY_
-     * @param pageTransitionType The page transition we will do on loading the given URL.
-     * @param pendingUrlParams PendingUrlParams to store internally and use later once an intent is
-     *                         received to launch the URL. May be null.
+     * @param asyncParams AsyncTabCreationParams to store internally and use later once an intent is
+     *                    received to launch the URL.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static void launchDocumentInstance(Activity activity, boolean incognito, int launchMode,
-            String url, int intentSource, int pageTransitionType,
-            PendingDocumentData pendingUrlParams) {
+    public static void launchDocumentInstance(
+            Activity activity, boolean incognito, AsyncTabCreationParams asyncParams) {
+        assert asyncParams != null;
+
+        final int launchMode = asyncParams.getDocumentLaunchMode();
+        final int intentSource = asyncParams.getDocumentStartedBy();
+        final LoadUrlParams loadUrlParams = asyncParams.getLoadUrlParams();
+
         // If we weren't given an initial URL, check the pending parameters.
-        if (url == null && pendingUrlParams != null) {
-            if (pendingUrlParams.url != null) {
-                url = pendingUrlParams.url;
-            } else if (pendingUrlParams.webContents != null) {
-                url = pendingUrlParams.webContents.getUrl();
-            }
+        if (loadUrlParams.getUrl() == null && asyncParams.getWebContents() != null) {
+            loadUrlParams.setUrl(asyncParams.getWebContents().getUrl());
         }
 
-        // Try to retarget an existing task.  Make sure there is no pending data to go with the load
-        // because relaunching an Activity won't send the parameters over.
+        // Try to retarget an existing task.  Make sure there is no pending POST data or a dangling
+        // WebContents to go with the load because relaunching an Activity will not use it when it
+        // is restarted.
         if (launchMode == LAUNCH_MODE_RETARGET) {
-            assert pendingUrlParams == null;
-            if (relaunchTask(incognito, url)) return;
+            assert asyncParams.getWebContents() == null;
+            assert loadUrlParams.getPostData() == null;
+            if (relaunchTask(incognito, loadUrlParams.getUrl())) return;
         }
 
         // If the new tab is spawned by another tab, record the parent.
@@ -477,10 +481,12 @@ public class ChromeLauncherActivity extends Activity
 
         // Fire an Intent to start a DocumentActivity instance.
         Context context = ApplicationStatus.getApplicationContext();
-        Intent intent = createLaunchIntent(context, null, url, incognito, parentId);
+        Intent intent = createLaunchIntent(
+                context, null, loadUrlParams.getUrl(), incognito, parentId);
         setRecentsFlagsOnIntent(intent, Intent.FLAG_ACTIVITY_NEW_DOCUMENT, incognito);
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
-        intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, pageTransitionType);
+        intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE,
+                loadUrlParams.getTransitionType());
         intent.putExtra(IntentHandler.EXTRA_STARTED_BY, intentSource);
         if (activity != null && activity.getIntent() != null) {
             intent.putExtra(IntentHandler.EXTRA_PARENT_INTENT, activity.getIntent());
@@ -492,9 +498,9 @@ public class ChromeLauncherActivity extends Activity
         boolean affiliated = launchMode == LAUNCH_MODE_AFFILIATED;
         if (activity == null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            fireDocumentIntent(context, intent, incognito, url, affiliated, pendingUrlParams);
+            fireDocumentIntent(context, intent, incognito, affiliated, asyncParams);
         } else {
-            fireDocumentIntent(activity, intent, incognito, url, affiliated, pendingUrlParams);
+            fireDocumentIntent(activity, intent, incognito, affiliated, asyncParams);
         }
     }
 
@@ -508,9 +514,10 @@ public class ChromeLauncherActivity extends Activity
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static void fireDocumentIntent(Context context, Intent intent, boolean incognito,
-            String url, boolean affiliated, PendingDocumentData pendingUrlParams) {
-        assert url != null;
-        assert incognito || TextUtils.equals(IntentHandler.getUrlFromIntent(intent), url);
+            boolean affiliated, AsyncTabCreationParams asyncParams) {
+        assert asyncParams != null;
+        assert incognito || TextUtils.equals(
+                IntentHandler.getUrlFromIntent(intent), asyncParams.getLoadUrlParams().getUrl());
         assert !affiliated || !incognito;
 
         // Remove any flags from the Intent that would prevent a second instance of Chrome from
@@ -521,25 +528,14 @@ public class ChromeLauncherActivity extends Activity
                     intent);
         }
 
-        // Incognito URLs are not passed through the Intent for privacy reasons.  Instead, store it
-        // as a parameter that gets retrieved when the IncognitoDocumentActivity starts.
-        if (incognito) {
-            if (pendingUrlParams == null) pendingUrlParams = new PendingDocumentData();
-            assert pendingUrlParams.url == null;
-            pendingUrlParams.url = url;
-        }
-
         // Store parameters for the new DocumentActivity, which are retrieved immediately after the
         // new Activity starts.  This structure is used to avoid passing things like pointers to
         // native WebContents in the Intent, which are strictly under Android's control and is
         // re-delivered when a Chrome Activity is restarted.
         boolean isWebContentsPending = false;
-        if (pendingUrlParams != null) {
-            int tabId = ActivityDelegate.getTabIdFromIntent(intent);
-            ChromeApplication.getDocumentTabModelSelector().addPendingDocumentData(
-                    tabId, pendingUrlParams);
-            isWebContentsPending = pendingUrlParams.webContents != null;
-        }
+        int tabId = ActivityDelegate.getTabIdFromIntent(intent);
+        AsyncTabCreationParamsManager.add(tabId, asyncParams);
+        isWebContentsPending = asyncParams.getWebContents() != null;
 
         Bundle options = affiliated && !isWebContentsPending
                 ? ActivityOptions.makeTaskLaunchBehind().toBundle() : null;

@@ -15,12 +15,13 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
-import org.chromium.chrome.browser.document.DocumentMetricIds;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -54,9 +55,9 @@ public class ChromeTabbedActivityLollipopAndAboveTest extends ChromeTabbedActivi
                 ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                     @Override
                     public void run() {
-                        ChromeLauncherActivity.launchDocumentInstance(null, false,
-                                ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, "about:blank",
-                                DocumentMetricIds.STARTED_BY_UNKNOWN, 0, null);
+                        AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(
+                                new LoadUrlParams("about:blank"));
+                        ChromeLauncherActivity.launchDocumentInstance(null, false, asyncParams);
                     }
                 });
             }

@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util.browser.tabmodel.document;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -56,7 +57,6 @@ public class MockTabDelegate extends TabDelegate {
     }
 
     @Override
-    public void createNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
-            TabDelegate.AsyncTabCreationParams params) {
+    public void createNewTab(AsyncTabCreationParams params, TabLaunchType type, Tab parent) {
     }
 }

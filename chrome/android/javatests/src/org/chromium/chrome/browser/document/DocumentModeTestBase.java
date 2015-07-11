@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -27,7 +28,7 @@ import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
-import org.chromium.ui.base.PageTransition;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.concurrent.Callable;
 
@@ -132,9 +133,9 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                ChromeLauncherActivity.launchDocumentInstance(null, incognito,
-                        ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url,
-                        DocumentMetricIds.STARTED_BY_UNKNOWN, PageTransition.LINK, null);
+                AsyncTabCreationParams asyncParams =
+                        new AsyncTabCreationParams(new LoadUrlParams(url));
+                ChromeLauncherActivity.launchDocumentInstance(null, incognito, asyncParams);
             }
         };
         return launchUrlViaRunnable(incognito, runnable, expectedTitle);

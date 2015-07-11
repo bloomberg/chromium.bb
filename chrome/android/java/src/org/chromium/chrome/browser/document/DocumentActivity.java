@@ -48,6 +48,8 @@ import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParamsManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.InitializationObserver;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
@@ -64,7 +66,6 @@ import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -370,10 +371,10 @@ public class DocumentActivity extends ChromeActivity {
         super.onResumeWithNative();
 
         if (mDocumentTab != null) {
-            PendingDocumentData pendingData = ChromeApplication.getDocumentTabModelSelector()
-                    .removePendingDocumentData(ActivityDelegate.getTabIdFromIntent(getIntent()));
-            if (pendingData != null && pendingData.url != null) {
-                loadLastKnownUrl(pendingData);
+            AsyncTabCreationParams asyncParams = AsyncTabCreationParamsManager.remove(
+                    ActivityDelegate.getTabIdFromIntent(getIntent()));
+            if (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null) {
+                loadLastKnownUrl(asyncParams);
             }
             mDocumentTab.show(TabSelectionType.FROM_USER);
         }
@@ -384,11 +385,12 @@ public class DocumentActivity extends ChromeActivity {
         return (SingleTabModelSelector) super.getTabModelSelector();
     }
 
-    private void loadLastKnownUrl(PendingDocumentData pendingData) {
+    private void loadLastKnownUrl(AsyncTabCreationParams asyncParams) {
         Intent intent = getIntent();
-        if (pendingData != null && pendingData.originalIntent != null) {
-            intent = pendingData.originalIntent;
+        if (asyncParams != null && asyncParams.getOriginalIntent() != null) {
+            intent = asyncParams.getOriginalIntent();
         }
+
         boolean isIntentChromeOrFirstParty = IntentHandler.isIntentChromeOrFirstParty(intent,
                 getApplicationContext());
         int transitionType = intent == null ? PageTransition.LINK
@@ -401,15 +403,15 @@ public class DocumentActivity extends ChromeActivity {
             // anything other than TYPED for security reasons.
             transitionType = PageTransition.LINK;
         }
-
         if (transitionType == PageTransition.LINK) {
             transitionType |= PageTransition.FROM_API;
         }
 
-        String url = (pendingData != null && pendingData.url != null) ? pendingData.url :
-                determineLastKnownUrl();
+        String url = (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null)
+                ? asyncParams.getLoadUrlParams().getUrl() : determineLastKnownUrl();
 
-        LoadUrlParams loadUrlParams = new LoadUrlParams(url, transitionType);
+        LoadUrlParams loadUrlParams = asyncParams == null
+                ? new LoadUrlParams(url, transitionType) : asyncParams.getLoadUrlParams();
         if (getIntent() != null) {
             loadUrlParams.setIntentReceivedTimestamp(getOnCreateTimestampUptimeMs());
         }
@@ -418,18 +420,8 @@ public class DocumentActivity extends ChromeActivity {
             IntentHandler.addReferrerAndHeaders(loadUrlParams, intent, this);
         }
 
-        if (pendingData != null) {
-            if (pendingData.postData != null) {
-                loadUrlParams.setPostData(pendingData.postData);
-                loadUrlParams.setLoadType(LoadURLType.BROWSER_INITIATED_HTTP_POST);
-            }
-            if (pendingData.extraHeaders != null) {
-                loadUrlParams.setVerbatimHeaders(pendingData.extraHeaders);
-            }
-            if (pendingData.referrer != null) {
-                loadUrlParams.setReferrer(pendingData.referrer);
-            }
-            mDocumentTab.getTabRedirectHandler().updateIntent(pendingData.originalIntent);
+        if (asyncParams != null) {
+            mDocumentTab.getTabRedirectHandler().updateIntent(asyncParams.getOriginalIntent());
         } else {
             if (getIntent() != null) {
                 try {
@@ -443,9 +435,10 @@ public class DocumentActivity extends ChromeActivity {
         }
 
         mDocumentTab.loadUrl(loadUrlParams);
-        if (pendingData != null && pendingData.requestId > 0) {
+        if (asyncParams != null && asyncParams.getRequestId() != null
+                && asyncParams.getRequestId() > 0) {
             ServiceTabLauncher.onWebContentsForRequestAvailable(
-                    pendingData.requestId, mDocumentTab.getWebContents());
+                    asyncParams.getRequestId(), mDocumentTab.getWebContents());
         }
     }
 
@@ -458,15 +451,15 @@ public class DocumentActivity extends ChromeActivity {
         mDefaultThemeColor = isIncognito()
                 ? getResources().getColor(R.color.incognito_primary_color)
                 : getResources().getColor(R.color.default_primary_color);
-        PendingDocumentData pendingData = ChromeApplication.getDocumentTabModelSelector()
-                .removePendingDocumentData(ActivityDelegate.getTabIdFromIntent(getIntent()));
+        AsyncTabCreationParams asyncParams = AsyncTabCreationParamsManager.remove(
+                ActivityDelegate.getTabIdFromIntent(getIntent()));
         int tabId = determineTabId();
         TabState tabState = mTabModel.getTabStateForDocument(tabId);
         mDocumentTab = DocumentTab.create(DocumentActivity.this, isIncognito(),
                 getWindowAndroid(), determineLastKnownUrl(),
-                pendingData != null ? pendingData.webContents : null, tabState);
+                asyncParams != null ? asyncParams.getWebContents() : null, tabState);
 
-        if (pendingData != null && pendingData.webContents != null) {
+        if (asyncParams != null && asyncParams.getWebContents() != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
                     IntentHandler.EXTRA_PARENT_INTENT);
             mDocumentTab.setParentIntent(parentIntent);
@@ -480,7 +473,8 @@ public class DocumentActivity extends ChromeActivity {
 
         getTabModelSelector().setTab(mDocumentTab);
 
-        if (!mDocumentTab.didRestoreState() || (pendingData != null && pendingData.url != null)) {
+        if (!mDocumentTab.didRestoreState()
+                || (asyncParams != null && asyncParams.getLoadUrlParams().getUrl() != null)) {
             if (!mDocumentTab.isCreatedWithWebContents()) {
                 // Don't load tabs in the background on low end devices. We will call
                 // loadLastKnownUrl() in onResumeWithNative() next time activity is resumed.
@@ -489,17 +483,20 @@ public class DocumentActivity extends ChromeActivity {
                         ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND);
                 if (SysUtils.isLowEndDevice()
                         && launchMode == ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED
-                        && pendingData != null) {
-                    // onResumeWithNative() wants pendingData.url to be non-null
-                    if (pendingData.url == null) {
-                        pendingData.url = determineLastKnownUrl();
+                        && asyncParams != null) {
+                    // onResumeWithNative() wants asyncParams's URL to be non-null.
+                    LoadUrlParams loadUrlParams = asyncParams.getLoadUrlParams();
+                    if (loadUrlParams.getUrl() == null) {
+                        loadUrlParams.setUrl(determineLastKnownUrl());
                     }
-                    ChromeApplication.getDocumentTabModelSelector().addPendingDocumentData(
-                            ActivityDelegate.getTabIdFromIntent(getIntent()), pendingData);
-                    // Use the URL as the document title until tab is loaded
-                    updateTaskDescription(pendingData.url, null);
+
+                    AsyncTabCreationParamsManager.add(
+                            ActivityDelegate.getTabIdFromIntent(getIntent()), asyncParams);
+
+                    // Use the URL as the document title until tab is loaded.
+                    updateTaskDescription(loadUrlParams.getUrl(), null);
                 } else {
-                    loadLastKnownUrl(pendingData);
+                    loadLastKnownUrl(asyncParams);
                 }
             }
             mDocumentTab.setShouldPreserve(IntentUtils.safeGetBooleanExtra(getIntent(),
@@ -708,11 +705,11 @@ public class DocumentActivity extends ChromeActivity {
         String url = entry != null
                 ? entry.getUrl() : searchContentViewCore.getWebContents().getUrl();
 
-        TabDelegate.AsyncTabCreationParams asyncParams = new TabDelegate.AsyncTabCreationParams();
-        asyncParams.documentStartedBy = DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH;
-
-        getTabCreator(false).createNewTab(new LoadUrlParams(url, PageTransition.LINK),
-                TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab(), asyncParams);
+        AsyncTabCreationParams asyncParams =
+                new AsyncTabCreationParams(new LoadUrlParams(url, PageTransition.LINK));
+        asyncParams.setDocumentStartedBy(DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH);
+        getTabCreator(false).createNewTab(
+                asyncParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab());
         return false;
     }
 
