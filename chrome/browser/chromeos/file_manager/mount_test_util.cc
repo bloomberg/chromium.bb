@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_manager/drive_test_util.h"
+#include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"

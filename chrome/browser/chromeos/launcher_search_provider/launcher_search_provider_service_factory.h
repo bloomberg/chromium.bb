@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_SERVICE_FACTORY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_LAUNCHER_SEARCH_PROVIDER_SERVICE_FACTORY_H_
+#define CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_LAUNCHER_SEARCH_PROVIDER_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -40,4 +40,4 @@ class ServiceFactory : public BrowserContextKeyedServiceFactory {
 }  // namespace launcher_search_provider
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_SERVICE_FACTORY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_LAUNCHER_SEARCH_PROVIDER_SERVICE_FACTORY_H_

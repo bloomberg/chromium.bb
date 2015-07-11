@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
-#include "chrome/browser/chromeos/file_manager/drive_test_util.cc"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/mount_test_util.cc"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/drive/test_util.h"
 #include "chrome/test/base/testing_browser_process.h"

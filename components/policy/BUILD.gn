@@ -209,7 +209,7 @@ if (enable_configuration_policy) {
 
     defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
 
-    deps = [
+    public_deps = [
       ":cloud_policy_code_generate",
       ":cloud_policy_proto_generated_compile",
       "//base",

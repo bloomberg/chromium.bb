@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chrome/chrome_tests.gni")
 import("//media/media_options.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -28,6 +29,7 @@ source_set("chromeos") {
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
+    "//components/wallpaper",
     "//content/app/resources",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
@@ -37,12 +39,14 @@ source_set("chromeos") {
 
   deps = [
     # TODO(tbarzic): Cleanup this list.
+    ":attestation_proto",
+    ":device_policy_proto",
+    ":drive_proto",
     "//ash",
     "//ash:ash_with_content",
     "//components/login",
     "//components/session_manager/core",
     "//components/user_manager",
-    "//components/wallpaper",
     "//components/wifi_sync",
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",
@@ -118,9 +122,6 @@ source_set("chromeos") {
     "//ui/web_dialogs",
     "//url",
     "//v8",
-    ":attestation_proto",
-    ":device_policy_proto",
-    ":drive_proto",
   ]
 
   defines = []
@@ -158,6 +159,36 @@ source_set("chromeos") {
   if (ui_compositor_image_transport) {
     deps += [ "//ui/gl" ]
   }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = rebase_path(
+          chrome_tests_unit_gypi_values.chrome_unit_tests_chromeos_sources,
+          ".",
+          "//chrome")
+
+  public_deps = [
+    ":chromeos",
+  ]
+  deps = [
+    ":attestation_proto",
+    ":device_policy_proto",
+    ":drive_proto",
+    "//ash/resources",
+    "//components/policy",
+    "//components/invalidation/public",
+    "//crypto:platform",
+    "//dbus",
+    "//skia",
+    "//sync",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/leveldatabase",
+    "//third_party/mojo/src/mojo/public/cpp/system:system",
+    "//ui/chromeos/resources",
+  ]
 }
 
 proto_library("drive_proto") {

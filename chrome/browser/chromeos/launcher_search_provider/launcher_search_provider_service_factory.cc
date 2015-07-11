@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/launcher_search_provider/service_factory.h"
+#include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"
 
-#include "chrome/browser/chromeos/launcher_search_provider/service.h"
+#include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"

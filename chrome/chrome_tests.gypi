@@ -20,11 +20,10 @@
       'browser/extensions/updater/extension_cache_fake.cc',
       'browser/extensions/updater/extension_cache_fake.h',
     ],
-    'chrome_browser_tests_sources': [
-      # The list of sources which is only used by chrome browser tests.
-      '../apps/app_restore_service_browsertest.cc',
-      '../apps/load_and_launch_browsertest.cc',
-      # TODO(rockot): Remove this once extensions_browsertests exists.
+    # TODO(rockot) bug 505926: These should be moved to extensions_browsertests
+    # but have old dependencies on chrome files. The chrome dependencies should
+    # be removed and these moved to the extensions_browsertests target.
+    'chrome_browser_tests_extensions_sources': [
       '../extensions/browser/api/app_window/app_window_apitest.cc',
       '../extensions/browser/api/bluetooth/bluetooth_apitest.cc',
       '../extensions/browser/api/bluetooth/bluetooth_private_apitest.cc',
@@ -38,6 +37,11 @@
       '../extensions/browser/guest_view/mime_handler_view/mime_handler_view_browsertest.cc',
       '../extensions/renderer/console_apitest.cc',
       '../extensions/renderer/script_context_browsertest.cc',
+    ],
+    'chrome_browser_tests_sources': [
+      # The list of sources which is only used by chrome browser tests.
+      '../apps/app_restore_service_browsertest.cc',
+      '../apps/load_and_launch_browsertest.cc',
       'app/chrome_command_ids.h',
       'app/chrome_dll.rc',
       'app/chrome_dll_resource.h',
@@ -48,6 +52,7 @@
       'browser/apps/app_shim/app_shim_host_manager_browsertest_mac.mm',
       'browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.cc',
       'browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h',
+      'browser/apps/app_speech_recognition_browsertest.cc',
       'browser/apps/app_url_redirector_browsertest.cc',
       'browser/apps/app_window_browsertest.cc',
       'browser/apps/ephemeral_app_browsertest.cc',
@@ -58,7 +63,6 @@
       'browser/apps/guest_view/app_view_browsertest.cc',
       'browser/apps/guest_view/extension_view/extension_view_browsertest.cc',
       'browser/apps/guest_view/web_view_browsertest.cc',
-      'browser/apps/speech_recognition_browsertest.cc',
       'browser/apps/window_controls_browsertest.cc',
       'browser/autocomplete/autocomplete_browsertest.cc',
       'browser/autofill/autofill_browsertest.cc',
@@ -653,8 +657,8 @@
       'browser/chromeos/device/input_service_proxy_browsertest.cc',
       'browser/chromeos/drive/drive_integration_service_browsertest.cc',
       'browser/chromeos/drive/drive_notification_manager_factory_browsertest.cc',
-      'browser/chromeos/drive/test_util.cc',
-      'browser/chromeos/drive/test_util.h',
+      'browser/chromeos/drive/drive_test_util.cc',
+      'browser/chromeos/drive/drive_test_util.h',
       'browser/chromeos/extensions/accessibility_features_apitest.cc',
       'browser/chromeos/extensions/echo_private_apitest.cc',
       'browser/chromeos/extensions/file_manager/file_browser_handler_api_test.cc',
@@ -670,8 +674,6 @@
       'browser/chromeos/extensions/wallpaper_private_apitest.cc',
       'browser/chromeos/file_manager/audio_player_browsertest.cc',
       'browser/chromeos/file_manager/gallery_browsertest.cc',
-      'browser/chromeos/file_manager/drive_test_util.cc',
-      'browser/chromeos/file_manager/drive_test_util.h',
       'browser/chromeos/file_manager/external_filesystem_apitest.cc',
       'browser/chromeos/file_manager/file_manager_browsertest_base.cc',
       'browser/chromeos/file_manager/file_manager_browsertest_base.h',
@@ -679,12 +681,14 @@
       'browser/chromeos/file_manager/file_manager_jstest.cc',
       'browser/chromeos/file_manager/file_manager_jstest_base.cc',
       'browser/chromeos/file_manager/file_manager_jstest_base.h',
+      'browser/chromeos/file_manager/mount_test_util.cc',
+      'browser/chromeos/file_manager/mount_test_util.h',
       'browser/chromeos/file_manager/video_player_browsertest.cc',
       'browser/chromeos/file_manager/gallery_jstest.cc',
       'browser/chromeos/file_manager/image_loader_jstest.cc',
       'browser/chromeos/file_manager/zip_file_creator_browsertest.cc',
       'browser/chromeos/first_run/drive_first_run_browsertest.cc',
-      'browser/chromeos/first_run/first_run_browsertest.cc',
+      'browser/chromeos/first_run/chromeos_first_run_browsertest.cc',
       'browser/chromeos/input_method/input_method_engine_browsertests.cc',
       'browser/chromeos/input_method/mode_indicator_browsertest.cc',
       'browser/chromeos/login/crash_restore_browsertest.cc',
@@ -780,7 +784,7 @@
       'browser/chromeos/policy/user_policy_test_helper.h',
       'browser/chromeos/policy/variations_service_policy_browsertest.cc',
       'browser/chromeos/power/peripheral_battery_observer_browsertest.cc',
-      'browser/chromeos/preferences_browsertest.cc',
+      'browser/chromeos/preferences_chromeos_browsertest.cc',
       'browser/chromeos/profiles/profile_helper_browsertest.cc',
       'browser/chromeos/settings/scoped_cros_settings_test_helper.cc',
       'browser/chromeos/settings/scoped_cros_settings_test_helper.h',
@@ -946,8 +950,14 @@
       'test/data/webui/print_preview.js',
       'test/data/webui/sandboxstatus_browsertest.js',
     ],
-    'chrome_interactive_ui_test_sources': [
+    # TODO(rockot) bug 505926: These should be moved to a target in
+    # //extensions but have old dependencies on chrome files. The chrome
+    # dependencies should be removed and these moved to the
+    # extensions_browsertests target.
+    'chrome_interactive_ui_test_extensions_sources': [
       '../extensions/browser/app_window/app_window_interactive_uitest.cc',
+    ],
+    'chrome_interactive_ui_test_sources': [
       '../ui/base/clipboard/clipboard_android_unittest.cc',
       '../ui/base/clipboard/clipboard_unittest.cc',
       'browser/apps/app_browsertest_util.cc',
@@ -1085,7 +1095,7 @@
       'browser/ui/views/constrained_window_views_browsertest.cc',
       'browser/ui/views/extensions/extension_dialog_interactive_uitest.cc',
       'browser/ui/views/find_bar_controller_interactive_uitest.cc',
-      'browser/ui/views/find_bar_host_interactive_uitest.cc',
+      'browser/ui/views/find_bar_views_interactive_uitest.cc',
       'browser/ui/views/frame/browser_view_focus_uitest.cc',
       'browser/ui/views/frame/browser_view_interactive_uitest.cc',
       'browser/ui/views/keyboard_access_browsertest.cc',
@@ -1556,6 +1566,7 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        '<@(chrome_interactive_ui_test_extensions_sources)',
         '<@(chrome_interactive_ui_test_sources)',
       ],
       'conditions': [
@@ -2072,6 +2083,7 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        '<@(chrome_browser_tests_extensions_sources)',
         '<@(chrome_browser_tests_sources)',
         '<@(chrome_browser_tests_webui_js_sources)',
         '<@(chrome_browser_extensions_test_support_sources)',

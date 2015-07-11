@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FAVICON_FAVICON_HELPER_H_
-#define CHROME_BROWSER_FAVICON_FAVICON_HELPER_H_
+#ifndef CHROME_BROWSER_FAVICON_FAVICON_UTILS_H_
+#define CHROME_BROWSER_FAVICON_FAVICON_UTILS_H_
 
 #include "components/favicon/content/content_favicon_driver.h"
 
@@ -23,4 +23,4 @@ bool ShouldDisplayFavicon(content::WebContents* web_contents);
 
 }  // namespace favicon
 
-#endif  // CHROME_BROWSER_FAVICON_FAVICON_HELPER_H_
+#endif  // CHROME_BROWSER_FAVICON_FAVICON_UTILS_H_

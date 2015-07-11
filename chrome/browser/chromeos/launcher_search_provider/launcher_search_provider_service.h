@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
@@ -88,4 +88,4 @@ class Service : public KeyedService,
 }  // namespace launcher_search_provider
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LAUNCHER_SEARCH_PROVIDER_LAUNCHER_SEARCH_PROVIDER_SERVICE_H_

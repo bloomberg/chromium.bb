@@ -8,3 +8,8 @@ chrome_tests_gypi_values = exec_script("//build/gypi_to_gn.py",
                                        [ rebase_path("chrome_tests.gypi") ],
                                        "scope",
                                        [ "chrome_tests.gypi" ])
+chrome_tests_unit_gypi_values =
+    exec_script("//build/gypi_to_gn.py",
+                [ rebase_path("chrome_tests_unit.gypi") ],
+                "scope",
+                [ "chrome_tests_unit.gypi" ])

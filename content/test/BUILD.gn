@@ -22,12 +22,13 @@ content_tests_gypi_values =
 # GYP version //content/content_tests.gypi:test_support_content
 source_set("test_support") {
   testonly = true
-  public_deps = []
-  deps = [
-    "//cc/blink",
+  public_deps = [
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
+  ]
+  deps = [
+    "//cc/blink",
     "//net:test_support",
     "//skia",
     "//storage/common",

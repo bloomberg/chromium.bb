@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chrome/chrome_tests.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
 
@@ -204,7 +205,6 @@ source_set("test_support") {
 }
 
 if (!is_android) {
-  import("//chrome/chrome_tests.gni")
   import("//third_party/protobuf/proto_library.gni")
 
   # GYP version: chrome/chrome_tests_unit.gypi:ipc_protobuf_message_test_proto
@@ -252,6 +252,11 @@ if (!is_android) {
       "//ui/resources:ui_test_pak",
       "//ui/web_dialogs:test_support",
     ]
+
+    # TODO(rockot) bug 505926: The chrome_extensions_interactive_uitests target
+    # should be deleted and this line removed. See the
+    # chrome_extensions_interactive_uitests target for more.
+    deps += [ "//extensions:chrome_extensions_interactive_uitests" ]
 
     # Runtime dependencies
     datadeps = [
@@ -595,6 +600,11 @@ if (!is_android) {
       "//ui/web_dialogs:test_support",
       "//v8",
     ]
+
+    # TODO(rockot) bug 505926: The chrome_extensions_browsertests target should
+    # be deleted and this line removed. See the chrome_extensions_browsertests
+    # target for more.
+    deps += [ "//extensions:chrome_extensions_browsertests" ]
 
     # Runtime dependencies
     data_deps = [
@@ -1107,34 +1117,33 @@ if (!is_android) {
     }
   }
 
-  unit_gypi_values = exec_script("//build/gypi_to_gn.py",
-                                 [ rebase_path("../chrome_tests_unit.gypi") ],
-                                 "scope",
-                                 [ "../chrome_tests_unit.gypi" ])
-
   js2gtest("unit_tests_js") {
     test_type = "unit"
-    sources = rebase_path(unit_gypi_values.chrome_unit_tests_gtestjs_sources,
-                          ".",
-                          "//chrome")
-    extra_js_files = rebase_path(unit_gypi_values.chrome_unit_tests_js_sources,
-                                 ".",
-                                 "//chrome")
+    sources = rebase_path(
+            chrome_tests_unit_gypi_values.chrome_unit_tests_gtestjs_sources,
+            ".",
+            "//chrome")
+    extra_js_files =
+        rebase_path(chrome_tests_unit_gypi_values.chrome_unit_tests_js_sources,
+                    ".",
+                    "//chrome")
     if (is_chromeos) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_chromeos_gtestjs_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_chromeos_gtestjs_sources,
               ".",
               "//chrome")
-      extra_js_files +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_chromeos_js_sources,
-                      ".",
-                      "//chrome")
+      extra_js_files += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_chromeos_js_sources,
+              ".",
+              "//chrome")
     }
   }
 
   test("unit_tests") {
     sources =
-        rebase_path(unit_gypi_values.chrome_unit_tests_sources, ".", "//chrome")
+        rebase_path(chrome_tests_unit_gypi_values.chrome_unit_tests_sources,
+                    ".",
+                    "//chrome")
 
     defines = []
 
@@ -1221,26 +1230,26 @@ if (!is_android) {
       deps += [ "//testing/android/native_test:native_test_native_code" ]
       isolate_file = "../unit_tests.isolate"
     } else {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_non_android_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_non_android_sources,
+              ".",
+              "//chrome")
     }
     if (is_ios || is_chromeos) {
       sources -=
           [ "../browser/metrics/signin_status_metrics_provider_unittest.cc" ]
     }
     if (enable_background) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_background_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_background_sources,
+              ".",
+              "//chrome")
     }
     if (enable_spellcheck) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_spellchecker_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_spellchecker_sources,
+              ".",
+              "//chrome")
       if (is_mac && !is_ios) {
         deps += [ "//third_party/hunspell" ]
       }
@@ -1254,10 +1263,10 @@ if (!is_android) {
     }
 
     if (enable_extensions) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_extensions_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_extensions_sources,
+              ".",
+              "//chrome")
       deps += [
         "//chrome/common/extensions/api",
         "//device/usb:mocks",
@@ -1266,13 +1275,13 @@ if (!is_android) {
       ]
       if (enable_configuration_policy) {
         sources += rebase_path(
-                unit_gypi_values.chrome_unit_tests_extensions_policy_sources,
+                chrome_tests_unit_gypi_values.chrome_unit_tests_extensions_policy_sources,
                 ".",
                 "//chrome")
       }
       if (!is_chromeos) {
         sources += rebase_path(
-                unit_gypi_values.chrome_unit_tests_extensions_non_chromeos_sources,
+                chrome_tests_unit_gypi_values.chrome_unit_tests_extensions_non_chromeos_sources,
                 ".",
                 "//chrome")
       }
@@ -1283,20 +1292,22 @@ if (!is_android) {
         "//ui/views",
         "//ui/views:test_support",
       ]
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_views_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_views_sources,
+              ".",
+              "//chrome")
       if (!is_mac) {
         sources += rebase_path(
-                unit_gypi_values.chrome_unit_tests_views_non_mac_sources,
+                chrome_tests_unit_gypi_values.chrome_unit_tests_views_non_mac_sources,
                 ".",
                 "//chrome")
       }
     }
     if (use_ash) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_ash_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_ash_sources,
+              ".",
+              "//chrome")
       deps += [
         "//ash:test_support",
         "//ash/resources",
@@ -1318,10 +1329,10 @@ if (!is_android) {
       ]
     }
     if (!is_chromeos && is_linux) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_desktop_linux_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_desktop_linux_sources,
+              ".",
+              "//chrome")
     }
     if (!is_chromeos && !use_ozone && is_linux) {
       deps += [
@@ -1331,25 +1342,26 @@ if (!is_android) {
     }
 
     if (enable_task_manager) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_task_manager_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_task_manager_sources,
+              ".",
+              "//chrome")
     }
     if (enable_mdns) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_mdns_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_mdns_sources,
+              ".",
+              "//chrome")
     }
     if (enable_service_discovery) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_service_discovery_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_service_discovery_sources,
               ".",
               "//chrome")
     }
     if (enable_configuration_policy) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_configuration_policy_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_configuration_policy_sources,
               ".",
               "//chrome")
       if (is_chromeos) {
@@ -1368,15 +1380,16 @@ if (!is_android) {
       }
     }
     if (enable_web_speech) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_speech_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_speech_sources,
+              ".",
+              "//chrome")
     }
     if (enable_notifications) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_notifications_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_notifications_sources,
+              ".",
+              "//chrome")
       if (is_android) {
         sources -= [
           # Android does not use the Message Center notification system.
@@ -1388,7 +1401,7 @@ if (!is_android) {
     if (safe_browsing_mode == 1) {
       # TODO(sgurun): enable tests for safe_browsing==2.
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_full_safe_browsing_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_full_safe_browsing_sources,
               ".",
               "//chrome")
       deps += [ ":test_proto" ]
@@ -1407,57 +1420,52 @@ if (!is_android) {
     }
     if (enable_autofill_dialog && !is_android) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_autofill_dialog_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_autofill_dialog_sources,
               ".",
               "//chrome")
     }
     if (enable_plugins) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_plugins_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_plugins_sources,
+              ".",
+              "//chrome")
     }
     if (enable_print_preview) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_print_preview_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_print_preview_sources,
+              ".",
+              "//chrome")
     }
     if (enable_captive_portal_detection) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_captive_portal_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_captive_portal_sources,
+              ".",
+              "//chrome")
     }
     if (enable_session_service) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_session_service_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_session_service_sources,
               ".",
               "//chrome")
     }
     if (enable_media_router) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_media_router_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_media_router_sources,
+              ".",
+              "//chrome")
       deps += [ "//chrome/browser/media/router:test_support" ]
       if (!toolkit_views) {
         sources -= [ "../browser/ui/views/media_router/media_router_ui_browsertest.cc" ]
       }
     }
     if (enable_webrtc) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_webrtc_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_webrtc_sources,
+              ".",
+              "//chrome")
     }
     if (is_chromeos) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_chromeos_sources,
-                      ".",
-                      "//chrome")
-      deps += [
-        "//ash/resources",
-        "//ui/chromeos/resources",
-      ]
+      deps += [ "//chrome/browser/chromeos:unit_tests" ]
       sources -= [
         "../browser/signin/signin_global_error_unittest.cc",
         "../browser/signin/signin_manager_unittest.cc",
@@ -1502,9 +1510,10 @@ if (!is_android) {
       ldflags = [ "-Wl,--strip-debug" ]
     }
     if (is_mac) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_mac_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_mac_sources,
+              ".",
+              "//chrome")
       sources -= [
         "../browser/ui/tests/ui_gfx_image_unittest.cc",
         "../renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc",
@@ -1532,9 +1541,10 @@ if (!is_android) {
       ]
     }
     if (is_win || is_mac) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_win_mac_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_win_mac_sources,
+              ".",
+              "//chrome")
     }
     if (is_win || is_mac || is_chromeos) {
       sources += [ "../common/extensions/api/networking_private/networking_private_crypto_unittest.cc" ]
@@ -1551,9 +1561,10 @@ if (!is_android) {
         #'LinkIncremental': '<(msvs_debug_link_nonincremental)',  TODO(GYP)
       }
 
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_win_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_win_sources,
+              ".",
+              "//chrome")
       deps += [
         #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_1',  TODO(GYP)
         #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_2',  TODO(GYP)
@@ -1595,27 +1606,28 @@ if (!is_android) {
     }
     if (!is_android && !is_chromeos) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_non_android_or_chromeos_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_non_android_or_chromeos_sources,
               ".",
               "//chrome")
     }
     if (enable_themes) {
-      sources += rebase_path(unit_gypi_values.chrome_unit_tests_themes_sources,
-                             ".",
-                             "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_themes_sources,
+              ".",
+              "//chrome")
     }
     if (!is_android && (use_nss_certs || use_openssl_certs)) {
       sources += [ "../common/net/x509_certificate_model_unittest.cc" ]
     }
     if (enable_supervised_users) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_supervised_user_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_supervised_user_sources,
               ".",
               "//chrome")
     }
     if (enable_supervised_users && !is_android && !is_ios) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_supervised_user_legacy_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_supervised_user_legacy_sources,
               ".",
               "//chrome")
     }
@@ -1628,15 +1640,15 @@ if (!is_android) {
       deps += [ "//third_party/cld" ]
     }
     if (enable_app_list) {
-      sources +=
-          rebase_path(unit_gypi_values.chrome_unit_tests_app_list_sources,
-                      ".",
-                      "//chrome")
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_app_list_sources,
+              ".",
+              "//chrome")
       deps += [ "//ui/app_list:test_support" ]
     }
     if (enable_app_list && is_chromeos) {
       sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_app_list_chromeos_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_app_list_chromeos_sources,
               ".",
               "//chrome")
     }
@@ -1748,9 +1760,9 @@ source_set("test_support_unit") {
   ]
 
   if (!is_android && use_ash) {
-    sources +=
-        rebase_path(unit_gypi_values.chrome_test_support_unit_ash_sources,
-                    ".",
-                    "//chrome")
+    sources += rebase_path(
+            chrome_tests_unit_gypi_values.chrome_test_support_unit_ash_sources,
+            ".",
+            "//chrome")
   }
 }

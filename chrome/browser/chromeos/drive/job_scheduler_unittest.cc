@@ -16,7 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive_pref_names.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/drive/test_util.h"

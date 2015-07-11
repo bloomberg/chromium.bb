@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
-#include "chrome/browser/chromeos/launcher_search_provider/service.h"
+#include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 #include "chrome/common/extensions/api/launcher_search_provider.h"
 #include "content/public/browser/render_frame_host.h"
 

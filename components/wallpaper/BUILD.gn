@@ -26,6 +26,9 @@ component("wallpaper") {
       "wallpaper_manager_base.cc",
       "wallpaper_manager_base.h",
     ]
+    public_deps = [
+      "//third_party/icu",
+    ]
     deps += [
       "//chromeos",
       "//components/user_manager",

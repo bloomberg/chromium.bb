@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_result.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/launcher_search_provider/service.h"
+#include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_impl.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 

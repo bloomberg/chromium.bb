@@ -1309,6 +1309,51 @@ executable("quic_server") {
 # TODO(GYP) make this compile on Android, we need some native test deps done.
 # TODO(GYP) Also doesn't work on Mac, need to figure out why not.
 if (!is_android && !is_mac) {
+  if (is_linux) {
+    # There are quic-related files with the same file name in different
+    # directories. With our current object file mapping, these produce the
+    # same .o files. Split these out into a second target to avoid the
+    # collision.
+    # TODO(rch) bug 505930: de-duplicate these names.
+    quic_dupe_files = [
+      "tools/quic/quic_client_session_test.cc",
+      "tools/quic/test_tools/mock_quic_dispatcher.cc",
+      "tools/quic/test_tools/mock_quic_dispatcher.h",
+      "tools/quic/test_tools/quic_test_utils.cc",
+      "tools/quic/test_tools/quic_test_utils.h",
+    ]
+    source_set("quic_de_dupe") {
+      testonly = true
+      if (is_linux) {
+        sources = quic_dupe_files
+
+        deps = [
+          ":balsa",
+          ":extras",
+          ":http_server",
+          ":net",
+          ":simple_quic_tools",
+          ":test_support",
+          "//base",
+          "//base:i18n",
+          "//base:prefs_test_support",
+          "//base/allocator",
+          "//base/third_party/dynamic_annotations",
+          "//crypto",
+          "//crypto:platform",
+          "//crypto:test_support",
+          "//gin",
+          "//net/base/registry_controlled_domains",
+          "//sql",
+          "//testing/gmock",
+          "//testing/gtest",
+          "//third_party/zlib",
+          "//url",
+        ]
+      }
+    }
+  }
+
   test("net_unittests") {
     sources = gypi_values.net_test_sources
 
@@ -1345,11 +1390,13 @@ if (!is_android && !is_mac) {
     }
     if (is_linux) {
       sources += gypi_values.net_linux_test_sources
+      sources -= quic_dupe_files
       deps += [
         ":balsa",
+        ":epoll_quic_tools",
         ":epoll_server",
         ":flip_in_mem_edsm_server_base",
-        ":epoll_quic_tools",
+        ":quic_de_dupe",
       ]
     }
 
