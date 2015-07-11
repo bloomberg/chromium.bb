@@ -178,11 +178,17 @@ void LocationBarView::Init() {
   // not prepared for that.
   DCHECK(GetWidget());
 
-  const int kOmniboxPopupBorderImages[] =
-      IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
-  const int kOmniboxBorderImages[] = IMAGE_GRID(IDR_TEXTFIELD);
-  border_painter_.reset(views::Painter::CreateImageGridPainter(
-      is_popup_mode_ ? kOmniboxPopupBorderImages : kOmniboxBorderImages));
+  if (is_popup_mode_) {
+    const int kOmniboxPopupBorderImages[] =
+        IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
+    border_painter_.reset(
+        views::Painter::CreateImageGridPainter(kOmniboxPopupBorderImages));
+  } else {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const gfx::Insets omnibox_border_insets(14, 9, 14, 9);
+    border_painter_.reset(views::Painter::CreateImagePainter(
+        *rb.GetImageSkiaNamed(IDR_OMNIBOX_BORDER), omnibox_border_insets));
+  }
 
   location_icon_view_ = new LocationIconView(this);
   location_icon_view_->set_drag_controller(this);
