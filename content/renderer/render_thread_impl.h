@@ -616,8 +616,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_gather_pixel_refs_enabled_;
 
   class PendingRenderFrameConnect
-      : public base::RefCounted<PendingRenderFrameConnect>,
-        public mojo::ErrorHandler {
+      : public base::RefCounted<PendingRenderFrameConnect> {
    public:
     PendingRenderFrameConnect(
         int routing_id,
@@ -633,9 +632,10 @@ class CONTENT_EXPORT RenderThreadImpl
    private:
     friend class base::RefCounted<PendingRenderFrameConnect>;
 
-    ~PendingRenderFrameConnect() override;
+    ~PendingRenderFrameConnect();
 
-    void OnConnectionError() override;
+    // Mojo error handler.
+    void OnConnectionError();
 
     int routing_id_;
     mojo::InterfaceRequest<mojo::ServiceProvider> services_;

@@ -1025,7 +1025,7 @@ void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
       connection->services().Pass());
   mojo::ServiceProviderPtr exposed_services(
       connection->exposed_services().Pass());
-  exposed_services.set_error_handler(nullptr);
+  exposed_services.set_connection_error_handler(mojo::Closure());
   pending_render_frame_connects_.erase(it);
 
   frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
@@ -1986,7 +1986,9 @@ RenderThreadImpl::PendingRenderFrameConnect::PendingRenderFrameConnect(
   // The RenderFrame may be deleted before the ExchangeServiceProviders message
   // is received. In that case, the RenderFrameHost should close the connection,
   // which is detected by setting an error handler on |exposed_services_|.
-  exposed_services_.set_error_handler(this);
+  exposed_services_.set_connection_error_handler(base::Bind(
+      &RenderThreadImpl::PendingRenderFrameConnect::OnConnectionError,
+      base::Unretained(this)));
 }
 
 RenderThreadImpl::PendingRenderFrameConnect::~PendingRenderFrameConnect() {
