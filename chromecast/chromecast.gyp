@@ -367,7 +367,6 @@
           ],
           'dependencies': [
             '../components/components.gyp:metrics_serialization',
-            '../ui/aura/aura.gyp:aura_test_support',
           ],
         }],
         ['OS=="android"', {

@@ -18,7 +18,6 @@
 #include "chromecast/graphics/cast_screen.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #endif
@@ -92,11 +91,6 @@ void CastContentWindow::CreateWindowTree(
   } else {
     window_tree_host_->compositor()->SetBackgroundColor(SK_ColorBLACK);
   }
-
-  focus_client_.reset(new aura::test::TestFocusClient());
-  aura::client::SetFocusClient(
-      window_tree_host_->window(), focus_client_.get());
-
   window_tree_host_->Show();
 
   // Add and show content's view/window
