@@ -834,6 +834,10 @@ template("java_prebuilt_impl") {
   if (_supports_android) {
     _dex_path = _base_path + ".dex.jar"
   }
+  _deps = []
+  if (defined(invoker.deps)) {
+    _deps = invoker.deps
+  }
 
   _template_name = target_name
 
@@ -849,10 +853,7 @@ template("java_prebuilt_impl") {
     requires_android =
         defined(invoker.requires_android) && invoker.requires_android
 
-    deps = []
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
+    deps = _deps
     build_config = _build_config
     jar_path = _jar_path
     if (_supports_android) {
@@ -875,9 +876,7 @@ template("java_prebuilt_impl") {
     input_jar_path = invoker.jar_path
     output_jar_path = _jar_path
 
-    deps = [
-      ":$build_config_target_name",
-    ]
+    deps = [ ":$build_config_target_name" ] + _deps
   }
 
   if (_supports_android) {
