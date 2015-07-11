@@ -115,7 +115,7 @@ EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::range() c
     PositionAlgorithm<Strategy> startPosition = range.startPosition().parentAnchoredEquivalent();
     PositionAlgorithm<Strategy> endPosition = range.endPosition().parentAnchoredEquivalent();
     Node* node = startPosition.containerNode();
-    ASSERT(node == endPosition.containerNode());
+    ASSERT_UNUSED(endPosition, node == endPosition.containerNode());
     int offset = startPosition.offsetInContainerNode() + m_runOffset;
     return EphemeralRangeTemplate<Strategy>(PositionAlgorithm<Strategy>(node, offset), PositionAlgorithm<Strategy>(node, offset + 1));
 }
