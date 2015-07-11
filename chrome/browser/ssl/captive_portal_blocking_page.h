@@ -57,7 +57,8 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
   // SecurityInterstitialPage method:
   const void* GetTypeForTesting() const override;
 
-  void SetDelegateForTesting(Delegate* delegate) { delegate_.reset(delegate); }
+  // Should only be used for testing and chrome://interstitials page.
+  void SetDelegate(Delegate* delegate) { delegate_.reset(delegate); }
 
  protected:
   // SecurityInterstitialPage methods:

@@ -55,4 +55,8 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, DISABLED_OpenInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=clientside_phishing"),
       "Security error");
+  TestInterstitial(GURL("chrome://interstitials/captiveportal"),
+                   "Connect to network");
+  TestInterstitial(GURL("chrome://interstitials/captiveportal?is_wifi=1"),
+                   "Connect to Wi-Fi");
 }

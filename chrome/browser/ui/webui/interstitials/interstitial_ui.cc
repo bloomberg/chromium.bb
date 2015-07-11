@@ -24,6 +24,10 @@
 #include "net/ssl/ssl_info.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/ssl/captive_portal_blocking_page.h"
+#endif
+
 namespace {
 
 class InterstitialHTMLSource : public content::URLDataSource {
@@ -45,6 +49,24 @@ class InterstitialHTMLSource : public content::URLDataSource {
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(InterstitialHTMLSource);
 };
+
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+class FakeConnectionInfoDelegate : public CaptivePortalBlockingPage::Delegate {
+ public:
+  FakeConnectionInfoDelegate(bool is_wifi_connection, std::string wifi_ssid)
+      : is_wifi_connection_(is_wifi_connection), wifi_ssid_(wifi_ssid) {}
+  ~FakeConnectionInfoDelegate() override {}
+
+  bool IsWifiConnection() const override { return is_wifi_connection_; }
+  std::string GetWiFiSSID() const override { return wifi_ssid_; }
+
+ private:
+  bool is_wifi_connection_;
+  const std::string wifi_ssid_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeConnectionInfoDelegate);
+};
+#endif
 
 SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   // Random parameters for SSL blocking page.
@@ -139,6 +161,51 @@ SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
       resource);
 }
 
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
+    content::WebContents* web_contents) {
+  bool is_wifi_connection = false;
+  GURL landing_url("https://captive.portal/login");
+  GURL request_url("https://google.com");
+  // Not initialized to a default value, since non-empty wifi_ssid is
+  // considered a wifi connection, even if is_wifi_connection is false.
+  std::string wifi_ssid;
+
+  std::string request_url_param;
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "url",
+                                 &request_url_param)) {
+    if (GURL(request_url_param).is_valid())
+      request_url = GURL(request_url_param);
+  }
+  std::string landing_url_param;
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "landing_page",
+                                 &landing_url_param)) {
+    if (GURL(landing_url_param).is_valid())
+      landing_url = GURL(landing_url_param);
+  }
+  std::string wifi_connection_param;
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "is_wifi",
+                                 &wifi_connection_param)) {
+    is_wifi_connection = wifi_connection_param == "1";
+  }
+  std::string wifi_ssid_param;
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "wifi_name",
+                                 &wifi_ssid_param)) {
+    wifi_ssid = wifi_ssid_param;
+  }
+  FakeConnectionInfoDelegate* delegate =
+      new FakeConnectionInfoDelegate(is_wifi_connection, wifi_ssid);
+  net::SSLInfo ssl_info;
+  ssl_info.cert = new net::X509Certificate(
+      request_url.host(), "CA", base::Time::Max(), base::Time::Max());
+  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
+      web_contents, request_url, landing_url, nullptr, ssl_info,
+      base::Callback<void(bool)>());
+  blocking_page->SetDelegate(delegate);
+  return blocking_page;
+}
+#endif
+
 } //  namespace
 
 InterstitialUI::InterstitialUI(content::WebUI* web_ui)
@@ -188,7 +255,12 @@ void InterstitialHTMLSource::StartDataRequest(
                               base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents_));
   }
-
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  else if (base::StartsWithASCII(path, "captiveportal", true))
+  {
+    interstitial_delegate.reset(CreateCaptivePortalBlockingPage(web_contents_));
+  }
+#endif
   std::string html;
   if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();

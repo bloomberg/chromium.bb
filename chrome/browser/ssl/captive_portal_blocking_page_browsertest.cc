@@ -130,7 +130,7 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
       contents, GURL(kBrokenSSL), login_url, ssl_cert_reporter.Pass(), ssl_info,
       base::Callback<void(bool)>());
-  blocking_page->SetDelegateForTesting(delegate);
+  blocking_page->SetDelegate(delegate);
   blocking_page->Show();
 
   WaitForInterstitialAttach(contents);
@@ -305,7 +305,7 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
     CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
         contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
         base::Callback<void(bool)>());
-    blocking_page->SetDelegateForTesting(delegate);
+    blocking_page->SetDelegate(delegate);
     return blocking_page;
   }
 };
