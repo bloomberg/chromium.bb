@@ -1,0 +1,14 @@
+{
+  "TestStudy1": [
+    {"group_name": "TestGroup1"}
+  ],
+  "TestStudy2": [
+    {
+      "group_name": "TestGroup2",
+      "params": {
+        "x": "1",
+        "y": "2"
+      }
+    }
+  ]
+}

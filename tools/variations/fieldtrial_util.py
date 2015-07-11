@@ -22,17 +22,10 @@ def _escape(str):
 
 # Generate a list of command-line switches to enable field trials defined in
 # fieldtrial_testing_config_*.json.
-def GenerateArgs(base_config_path, platform_config_path=None):
+def GenerateArgs(config_path):
   try:
-    with open(base_config_path, 'r') as base_file:
+    with open(config_path, 'r') as base_file:
       variations = json.load(base_file)
-      if platform_config_path:
-        try:
-          with open(platform_config_path, 'r') as platform_file:
-            platform_specifics = json.load(platform_file)
-            variations.update(platform_specifics)
-        except (IOError, ValueError):
-          pass
   except (IOError, ValueError):
     return []
 

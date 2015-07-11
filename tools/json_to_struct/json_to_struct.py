@@ -183,6 +183,29 @@ def _Load(filename):
     result = json.loads(json_comment_eater.Nom(handle.read()))
   return result
 
+def GenerateStruct(basepath, output_root, namespace, schema, description,
+                   description_filename, schema_filename, year=None):
+  """Generates a C++ struct from a JSON description.
+
+  Args:
+    basepath: The base directory in which files are generated.
+    output_root: The filename and path, relative to basepath, of the file to
+        create, without an extension.
+    namespace: A string corresponding to the C++ namespace to use.
+    schema: A dict containing the schema. See comment at the top of this file.
+    description: A dict containing the description. See comment at the top of
+        this file.
+    description_filename: The description filename. This is added to the
+        header of the outputted files.
+    schema_filename: The schema filename. This is added to the header of the
+        outputted files.
+    year: Year to display next to the copy-right in the header.
+  """
+  year = int(year) if year else datetime.now().year
+  head = HEAD % (year, schema_filename, description_filename)
+  _GenerateH(basepath, output_root, head, namespace, schema, description)
+  _GenerateCC(basepath, output_root, head, namespace, schema, description)
+
 if __name__ == '__main__':
   parser = optparse.OptionParser(
       description='Generates an C++ array of struct from a JSON description.',
@@ -195,6 +218,7 @@ if __name__ == '__main__':
       help='C++ namespace for generated files. e.g search_providers.')
   parser.add_option('-s', '--schema', help='path to the schema file, '
       'mandatory.')
+  parser.add_option('-o', '--output', help='output filename, ')
   (opts, args) = parser.parse_args()
 
   if not opts.schema:
@@ -202,7 +226,7 @@ if __name__ == '__main__':
 
   description_filename = os.path.normpath(args[0])
   root, ext = os.path.splitext(description_filename)
-  shortroot = os.path.split(root)[1]
+  shortroot = opts.output if opts.output else os.path.split(root)[1]
   if opts.destdir:
     output_root = os.path.join(os.path.normpath(opts.destdir), shortroot)
   else:
@@ -215,7 +239,5 @@ if __name__ == '__main__':
 
   schema = _Load(opts.schema)
   description = _Load(description_filename)
-
-  head = HEAD % (datetime.now().year, opts.schema, description_filename)
-  _GenerateH(basepath, output_root, head, opts.namespace, schema, description)
-  _GenerateCC(basepath, output_root, head, opts.namespace, schema, description)
+  GenerateStruct(basepath, output_root, opts.namespace, schema, description,
+                 description_filename, opts.schema)

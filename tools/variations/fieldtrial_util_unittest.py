@@ -3,18 +3,20 @@
 # found in the LICENSE file.
 
 import unittest
+
 import fieldtrial_util
+import os
 import tempfile
 
 
 class FieldTrialUtilUnittest(unittest.TestCase):
 
   def test_GenArgsEmptyPaths(self):
-    args = fieldtrial_util.GenerateArgs('', '')
+    args = fieldtrial_util.GenerateArgs('')
     self.assertEqual([], args)
 
   def test_GenArgsOneConfig(self):
-    with tempfile.NamedTemporaryFile('w') as base_file:
+    with tempfile.NamedTemporaryFile('w', delete=False) as base_file:
       config = '''{
         "BrowserBlackList": [
           { "group_name": "Enabled" }
@@ -32,43 +34,17 @@ class FieldTrialUtilUnittest(unittest.TestCase):
           }
         ]
       }'''
-      base_file.write(config)
-      base_file.flush()
-
-      result = fieldtrial_util.GenerateArgs(base_file.name)
-      self.assertEqual(['--force-fieldtrials='
-          'BrowserBlackList/Enabled/c/d./SimpleParams/Default',
-          '--force-fieldtrial-params='
-          'c.d%2E:url/http%3A%2F%2Fwww%2Egoogle%2Ecom,'
-          'SimpleParams.Default:id/abc'], result)
-
-  def test_GenArgsOverrideConfig(self):
-    with tempfile.NamedTemporaryFile('w') as base_file:
-      config = '''{
-        "a": [
-          { "group_name": "b" }
-        ],
-        "c": [
-          { "group_name": "d" }
-        ]
-      }'''
-      base_file.write(config)
-      base_file.flush()
-      with tempfile.NamedTemporaryFile('w') as platform_file:
-        config = '''{
-          "a": [
-            { "group_name": "1" }
-          ],
-          "b": [
-            { "group_name": "bgroup" }
-          ]
-        }'''
-        platform_file.write(config)
-        platform_file.flush()
-        result = fieldtrial_util.GenerateArgs(base_file.name,
-            platform_file.name)
+      try:
+        base_file.write(config)
+        base_file.close()
+        result = fieldtrial_util.GenerateArgs(base_file.name)
         self.assertEqual(['--force-fieldtrials='
-            'a/1/c/d/b/bgroup'], result)
+            'BrowserBlackList/Enabled/c/d./SimpleParams/Default',
+            '--force-fieldtrial-params='
+            'c.d%2E:url/http%3A%2F%2Fwww%2Egoogle%2Ecom,'
+            'SimpleParams.Default:id/abc'], result)
+      finally:
+        os.unlink(base_file.name)
 
 if __name__ == '__main__':
   unittest.main()
