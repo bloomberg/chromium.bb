@@ -702,7 +702,7 @@ weston_logind_setup_vt(struct weston_logind *wl)
 	sigset_t mask;
 	struct wl_event_loop *loop;
 
-	snprintf(buf, sizeof(buf), "/dev/tty%d", wl->vtnr);
+	snprintf(buf, sizeof(buf), "/dev/tty%u", wl->vtnr);
 	buf[sizeof(buf) - 1] = 0;
 
 	wl->vt = open(buf, O_RDWR|O_CLOEXEC|O_NONBLOCK);
