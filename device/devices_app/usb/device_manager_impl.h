@@ -19,10 +19,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace mojo {
-class ErrorHandler;
-}
-
 namespace device {
 
 class UsbDevice;
@@ -43,7 +39,7 @@ class DeviceManagerImpl : public DeviceManager {
       scoped_refptr<base::SequencedTaskRunner> service_task_runner);
   ~DeviceManagerImpl() override;
 
-  void set_error_handler(mojo::ErrorHandler* error_handler);
+  void set_connection_error_handler(const mojo::Closure& error_handler);
 
  private:
   // DeviceManager implementation:

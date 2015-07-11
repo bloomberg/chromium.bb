@@ -111,8 +111,9 @@ DeviceManagerImpl::DeviceManagerImpl(
 DeviceManagerImpl::~DeviceManagerImpl() {
 }
 
-void DeviceManagerImpl::set_error_handler(mojo::ErrorHandler* error_handler) {
-  binding_.set_error_handler(error_handler);
+void DeviceManagerImpl::set_connection_error_handler(
+    const mojo::Closure& error_handler) {
+  binding_.set_connection_error_handler(error_handler);
 }
 
 void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,

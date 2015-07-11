@@ -19,7 +19,6 @@
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 using ::testing::Invoke;
@@ -78,23 +77,6 @@ class USBDeviceManagerImplTest : public testing::Test {
  private:
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<TestDeviceClient> device_client_;
-};
-
-// This is used this to watch a MessagePipe and run a given callback when the
-// pipe is closed.
-class PipeWatcher : public mojo::ErrorHandler {
- public:
-  PipeWatcher(const base::Closure& error_callback)
-      : error_callback_(error_callback) {}
-  ~PipeWatcher() override {}
-
- private:
-  // mojo::ErrorHandler:
-  void OnConnectionError() override { error_callback_.Run(); }
-
-  const base::Closure error_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(PipeWatcher);
 };
 
 class MockOpenCallback {
@@ -222,8 +204,7 @@ TEST_F(USBDeviceManagerImplTest, OpenDevice) {
 
   {
     base::RunLoop loop;
-    scoped_ptr<PipeWatcher> watcher(new PipeWatcher(loop.QuitClosure()));
-    bad_device.set_error_handler(watcher.get());
+    bad_device.set_connection_error_handler(loop.QuitClosure());
     bad_device->GetDeviceInfo(base::Bind(&FailOnGetDeviceInfoResponse));
     loop.Run();
   }
