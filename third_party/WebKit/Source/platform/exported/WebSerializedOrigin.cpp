@@ -6,10 +6,16 @@
 #include "public/platform/WebSerializedOrigin.h"
 
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
 
 WebSerializedOrigin::WebSerializedOrigin(const SecurityOrigin& origin)
+    : m_string(origin.toString())
+{
+}
+
+WebSerializedOrigin::WebSerializedOrigin(const WebSecurityOrigin& origin)
     : m_string(origin.toString())
 {
 }
