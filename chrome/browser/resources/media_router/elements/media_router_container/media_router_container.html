@@ -15,16 +15,16 @@
         class$="[[currentView_]]"
         hidden$="[[computeHeaderHidden_(currentView_, issue)]]">
       <div id="header-text">
-        <span
-            hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]"
-            >[[headerText]]</span>
+        <span hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]"
+            id="sink-list-header-text">[[headerText]]</span>
         <span hidden$="[[computeCastModeHidden_(currentView_)]]"
-            >[[selectCastModeHeaderText_]]</span>
+            id="cast-mode-header-text">[[selectCastModeHeaderText_]]</span>
       </div>
       <paper-icon-button icon="[[computeArrowDropIcon_(currentView_)]]"
-          on-click="toggleCastModeHidden_">
+          id="arrow-drop-icon" on-click="toggleCastModeHidden_">
       </paper-icon-button>
-      <paper-icon-button icon="close" on-click="onCloseButtonClick_">
+      <paper-icon-button icon="close" id="close-button"
+          on-click="onCloseButtonClick_">
       </paper-icon-button>
     </paper-toolbar>
     <issue-banner id="issue-banner" issue="[[issue]]"
@@ -51,7 +51,8 @@
     <!-- TODO(kdresner): Don't show this until we've given a little
     bit of time to actually discover devices. Maybe show a spinner
     during this time. -->
-    <div hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]">
+    <div id="sink-list-view"
+        hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]">
       <div id="device-missing"
            hidden$="[[!computeSinkListHidden_(sinkList)]]">
         <span>[[deviceMissingText_]]</span>
@@ -72,8 +73,7 @@
                   <span>[[item.name]]</span>
                 </div>
                 <div class="sink-text route"
-                     hidden$="[[computeRouteInSinkListHidden_(item.id,
-                     sinkToRouteMap_)]]">
+                    hidden$="[[computeRouteInSinkListHidden_(item.id, sinkToRouteMap_)]]">
                   <span>[[
                       computeRouteInSinkListValue_(item.id, sinkToRouteMap_)
                           ]]</span>
