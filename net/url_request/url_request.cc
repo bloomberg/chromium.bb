@@ -37,8 +37,8 @@
 #include "net/url_request/url_request_job_manager.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "net/url_request/url_request_redirect_job.h"
+#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 using base::Time;
 using std::string;
@@ -952,8 +952,9 @@ int URLRequest::Redirect(const RedirectInfo& redirect_info) {
   // into //content. See https://crbug.com/471397.
   if (redirect_info.new_url.GetOrigin() != url().GetOrigin() &&
       extra_request_headers_.HasHeader(HttpRequestHeaders::kOrigin)) {
-    extra_request_headers_.SetHeader(HttpRequestHeaders::kOrigin,
-                                     url::Origin().string());
+    extra_request_headers_.SetHeader(
+        HttpRequestHeaders::kOrigin,
+        url::DeprecatedSerializedOrigin().string());
   }
 
   referrer_ = redirect_info.new_referrer;

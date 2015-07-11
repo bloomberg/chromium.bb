@@ -336,7 +336,8 @@ void RenderFrameProxy::OnDidUpdateName(const std::string& name) {
   web_frame_->setReplicatedName(blink::WebString::fromUTF8(name));
 }
 
-void RenderFrameProxy::OnDidUpdateOrigin(const url::Origin& origin) {
+void RenderFrameProxy::OnDidUpdateOrigin(
+    const url::DeprecatedSerializedOrigin& origin) {
   web_frame_->setReplicatedOrigin(blink::WebSecurityOrigin::createFromString(
       blink::WebString::fromUTF8(origin.string())));
 }

@@ -19,7 +19,7 @@ class Timer;
 }  // namespace base
 
 namespace url {
-class Origin;
+class DeprecatedSerializedOrigin;
 }  // namespace url
 
 namespace net {

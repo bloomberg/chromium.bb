@@ -12,8 +12,8 @@
 #include "net/websockets/websocket_handshake_response_info.h"
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
 #include "net/websockets/websocket_stream.h"
+#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 
@@ -111,7 +111,8 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
       new DeterministicKeyWebSocketHandshakeStreamCreateHelper(delegate,
                                                                sub_protocols));
   stream_request_ = CreateAndConnectStreamForTesting(
-      GURL(socket_url), create_helper.Pass(), url::Origin(origin),
+      GURL(socket_url), create_helper.Pass(),
+      url::DeprecatedSerializedOrigin(origin),
       url_request_context_host_.GetURLRequestContext(), BoundNetLog(),
       connect_delegate.Pass(),
       timer ? timer.Pass()

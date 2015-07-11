@@ -35,7 +35,7 @@
 #include "net/websockets/websocket_handshake_response_info.h"
 #include "net/websockets/websocket_mux.h"
 #include "net/websockets/websocket_stream.h"
-#include "url/origin.h"
+#include "url/deprecated_serialized_origin.h"
 
 namespace net {
 
@@ -330,7 +330,7 @@ WebSocketChannel::~WebSocketChannel() {
 void WebSocketChannel::SendAddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
-    const url::Origin& origin) {
+    const url::DeprecatedSerializedOrigin& origin) {
   // Delegate to the tested version.
   SendAddChannelRequestWithSuppliedCreator(
       socket_url,
@@ -526,7 +526,7 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
 void WebSocketChannel::SendAddChannelRequestForTesting(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
-    const url::Origin& origin,
+    const url::DeprecatedSerializedOrigin& origin,
     const WebSocketStreamCreator& creator) {
   SendAddChannelRequestWithSuppliedCreator(
       socket_url, requested_subprotocols, origin, creator);
@@ -545,7 +545,7 @@ void WebSocketChannel::SetUnderlyingConnectionCloseTimeoutForTesting(
 void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
-    const url::Origin& origin,
+    const url::DeprecatedSerializedOrigin& origin,
     const WebSocketStreamCreator& creator) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
   if (!socket_url.SchemeIsWSOrWSS()) {

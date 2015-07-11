@@ -22,8 +22,8 @@
 #include "ipc/ipc_message_utils.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
+#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace content {
 class PageState;
@@ -45,8 +45,8 @@ struct CONTENT_EXPORT ParamTraits<GURL> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<url::Origin> {
-  typedef url::Origin param_type;
+struct CONTENT_EXPORT ParamTraits<url::DeprecatedSerializedOrigin> {
+  typedef url::DeprecatedSerializedOrigin param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

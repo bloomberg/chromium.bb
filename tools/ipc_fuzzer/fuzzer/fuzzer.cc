@@ -1790,12 +1790,12 @@ struct FuzzTraits<ui::LatencyInfo::InputCoordinate> {
 };
 
 template <>
-struct FuzzTraits<url::Origin> {
-  static bool Fuzz(url::Origin* p, Fuzzer* fuzzer) {
+struct FuzzTraits<url::DeprecatedSerializedOrigin> {
+  static bool Fuzz(url::DeprecatedSerializedOrigin* p, Fuzzer* fuzzer) {
     std::string origin = p->string();
     if (!FuzzParam(&origin, fuzzer))
         return false;
-    *p = url::Origin(origin);
+    *p = url::DeprecatedSerializedOrigin(origin);
     return true;
   }
 };

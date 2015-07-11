@@ -187,7 +187,8 @@ void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
   }
 }
 
-void FrameTreeNode::SetCurrentOrigin(const url::Origin& origin) {
+void FrameTreeNode::SetCurrentOrigin(
+    const url::DeprecatedSerializedOrigin& origin) {
   if (!origin.IsSameAs(replication_state_.origin))
     render_manager_.OnDidUpdateOrigin(origin);
   replication_state_.origin = origin;

@@ -56,24 +56,28 @@ void ParamTraits<GURL>::Log(const GURL& p, std::string* l) {
   l->append(p.spec());
 }
 
-void ParamTraits<url::Origin>::Write(Message* m,
-                                          const url::Origin& p) {
+void ParamTraits<url::DeprecatedSerializedOrigin>::Write(
+    Message* m,
+    const url::DeprecatedSerializedOrigin& p) {
   m->WriteString(p.string());
 }
 
-bool ParamTraits<url::Origin>::Read(const Message* m,
-                                    base::PickleIterator* iter,
-                                    url::Origin* p) {
+bool ParamTraits<url::DeprecatedSerializedOrigin>::Read(
+    const Message* m,
+    base::PickleIterator* iter,
+    url::DeprecatedSerializedOrigin* p) {
   std::string s;
   if (!iter->ReadString(&s)) {
-    *p = url::Origin();
+    *p = url::DeprecatedSerializedOrigin();
     return false;
   }
-  *p = url::Origin(s);
+  *p = url::DeprecatedSerializedOrigin(s);
   return true;
 }
 
-void ParamTraits<url::Origin>::Log(const url::Origin& p, std::string* l) {
+void ParamTraits<url::DeprecatedSerializedOrigin>::Log(
+    const url::DeprecatedSerializedOrigin& p,
+    std::string* l) {
   l->append(p.string());
 }
 

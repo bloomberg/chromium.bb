@@ -23,8 +23,8 @@
 #include "net/websockets/websocket_handshake_constants.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
+#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 namespace {
@@ -82,7 +82,7 @@ class StreamRequestImpl : public WebSocketStreamRequest {
   StreamRequestImpl(
       const GURL& url,
       const URLRequestContext* context,
-      const url::Origin& origin,
+      const url::DeprecatedSerializedOrigin& origin,
       scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
       scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper)
       : delegate_(new Delegate(this)),
@@ -329,7 +329,7 @@ WebSocketStream::ConnectDelegate::~ConnectDelegate() {}
 scoped_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
-    const url::Origin& origin,
+    const url::DeprecatedSerializedOrigin& origin,
     URLRequestContext* url_request_context,
     const BoundNetLog& net_log,
     scoped_ptr<ConnectDelegate> connect_delegate) {
@@ -350,7 +350,7 @@ scoped_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
 scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamForTesting(
     const GURL& socket_url,
     scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
-    const url::Origin& origin,
+    const url::DeprecatedSerializedOrigin& origin,
     URLRequestContext* url_request_context,
     const BoundNetLog& net_log,
     scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate,

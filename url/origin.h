@@ -5,29 +5,12 @@
 #ifndef URL_ORIGIN_H_
 #define URL_ORIGIN_H_
 
-#include <string>
+#include "url/deprecated_serialized_origin.h"
 
-#include "url/url_export.h"
-
+// TODO(mkwst): Drop this once Blink's WebSerializedOrigin no longer depends
+// on this class name.
 namespace url {
-
-// Origin represents a Web Origin serialized to a string.
-// See RFC6454 for details.
-class URL_EXPORT Origin {
- public:
-  Origin();
-  explicit Origin(const std::string& origin);
-
-  const std::string& string() const { return string_; }
-
-  bool IsSameAs(const Origin& that) const {
-    return string_ == that.string_;
-  }
-
- private:
-  std::string string_;
-};
-
-}  // namespace url
+using Origin = DeprecatedSerializedOrigin;
+}
 
 #endif  // URL_ORIGIN_H_

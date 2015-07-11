@@ -778,7 +778,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   // Swap the child frame out and pass a serialized origin to be set for
   // WebRemoteFrame.
   content::FrameReplicationState replication_state;
-  replication_state.origin = url::Origin("http://foo.com");
+  replication_state.origin = url::DeprecatedSerializedOrigin("http://foo.com");
   child_frame->SwapOut(kProxyRoutingId, true, replication_state);
 
   // The child frame should now be a WebRemoteFrame.
@@ -791,7 +791,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
 
   // Now, swap out the second frame using a unique origin and verify that it is
   // replicated correctly.
-  replication_state.origin = url::Origin();
+  replication_state.origin = url::DeprecatedSerializedOrigin();
   TestRenderFrame* child_frame2 = static_cast<TestRenderFrame*>(
       RenderFrame::FromWebFrame(web_frame->lastChild()));
   child_frame2->SwapOut(kProxyRoutingId + 1, true, replication_state);

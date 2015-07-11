@@ -25,7 +25,7 @@
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
-#include "url/origin.h"
+#include "url/deprecated_serialized_origin.h"
 
 namespace content {
 
@@ -348,7 +348,7 @@ bool WebSocketHost::OnMessageReceived(const IPC::Message& message) {
 void WebSocketHost::OnAddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
-    const url::Origin& origin,
+    const url::DeprecatedSerializedOrigin& origin,
     int render_frame_id) {
   DVLOG(3) << "WebSocketHost::OnAddChannelRequest"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
@@ -372,7 +372,7 @@ void WebSocketHost::OnAddChannelRequest(
 void WebSocketHost::AddChannel(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
-    const url::Origin& origin,
+    const url::DeprecatedSerializedOrigin& origin,
     int render_frame_id) {
   DVLOG(3) << "WebSocketHost::AddChannel"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url

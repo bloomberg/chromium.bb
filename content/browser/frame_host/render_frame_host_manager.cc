@@ -938,7 +938,8 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
   }
 }
 
-void RenderFrameHostManager::OnDidUpdateOrigin(const url::Origin& origin) {
+void RenderFrameHostManager::OnDidUpdateOrigin(
+    const url::DeprecatedSerializedOrigin& origin) {
   if (!IsSwappedOutStateForbidden())
     return;
 

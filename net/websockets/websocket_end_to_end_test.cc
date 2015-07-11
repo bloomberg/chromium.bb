@@ -28,7 +28,7 @@
 #include "net/websockets/websocket_channel.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/origin.h"
+#include "url/deprecated_serialized_origin.h"
 
 namespace net {
 
@@ -244,7 +244,7 @@ class WebSocketEndToEndTest : public ::testing::Test {
     if (!initialised_context_) {
       InitialiseContext();
     }
-    url::Origin origin("http://localhost");
+    url::DeprecatedSerializedOrigin origin("http://localhost");
     event_interface_ = new ConnectTestingEventInterface;
     channel_.reset(
         new WebSocketChannel(make_scoped_ptr(event_interface_), &context_));

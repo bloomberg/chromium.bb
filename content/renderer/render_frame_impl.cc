@@ -3929,7 +3929,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   if (!is_swapped_out_) {
     WebString serialized_origin(frame->document().securityOrigin().toString());
     if (GURL(serialized_origin).IsStandard())
-      params.origin = url::Origin(serialized_origin.utf8());
+      params.origin = url::DeprecatedSerializedOrigin(serialized_origin.utf8());
   }
 
   if (frame->document().baseURL() != params.url)

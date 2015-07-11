@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_FRAME_REPLICATION_STATE_H_
 
 #include "content/common/content_export.h"
-#include "url/origin.h"
+#include "url/deprecated_serialized_origin.h"
 
 namespace blink {
 enum class WebTreeScopeType;
@@ -35,7 +35,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // delay sending origin updates to proxies until they have a local descendant
   // (if ever). This would reduce leaking a user's browsing history into a
   // compromized renderer.
-  url::Origin origin;
+  url::DeprecatedSerializedOrigin origin;
 
   // Current sandbox flags of the frame.  |sandbox_flags| are initialized for
   // new child frames using the value of the <iframe> element's "sandbox"

@@ -15,8 +15,8 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
+#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -116,7 +116,7 @@ class CONTENT_EXPORT FrameTreeNode {
   }
 
   // Set the current origin and notify proxies about the update.
-  void SetCurrentOrigin(const url::Origin& origin);
+  void SetCurrentOrigin(const url::DeprecatedSerializedOrigin& origin);
 
   // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name);

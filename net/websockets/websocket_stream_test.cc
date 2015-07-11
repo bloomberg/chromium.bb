@@ -33,7 +33,6 @@
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 namespace {

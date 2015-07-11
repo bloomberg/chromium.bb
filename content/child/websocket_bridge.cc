@@ -25,8 +25,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 using blink::WebSerializedOrigin;
 using blink::WebSocketHandle;
@@ -217,7 +217,7 @@ void WebSocketBridge::connect(
   std::vector<std::string> protocols_to_pass;
   for (size_t i = 0; i < protocols.size(); ++i)
     protocols_to_pass.push_back(protocols[i].utf8());
-  url::Origin origin_to_pass(origin);
+  url::DeprecatedSerializedOrigin origin_to_pass(origin);
 
   DVLOG(1) << "Bridge#" << channel_id_ << " Connect(" << url << ", ("
            << JoinString(protocols_to_pass, ", ") << "), "
