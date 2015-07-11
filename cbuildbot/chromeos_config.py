@@ -641,7 +641,6 @@ _waterfall_config_map = {
         'guado_moblab-release',
 
         # Experimental PFQs.
-        'peach_pit-chrome-pfq',
         'tricky-chrome-pfq',
 
         # Incremental Builders.
@@ -1112,7 +1111,6 @@ def GetConfig():
       chrome_pfq, 'peach_pit-chrome-pfq',
       _base_configs['peach_pit'],
       hw_tests=HWTestList.SharedPoolPFQ(),
-      important=False,
   )
 
   site_config.AddConfig(
