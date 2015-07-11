@@ -310,6 +310,7 @@ struct ChildThreadImpl::Options {
   bool use_mojo_channel;
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
+  scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner;
 
  private:
   Options();
@@ -323,6 +324,8 @@ class ChildThreadImpl::Options::Builder {
   Builder& UseMojoChannel(bool use_mojo_channel);
   Builder& WithChannelName(const std::string& channel_name);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
+  Builder& ListenerTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   Options Build();
 

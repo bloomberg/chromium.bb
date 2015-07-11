@@ -21,7 +21,7 @@ InProcessRendererThread::~InProcessRendererThread() {
 
 void InProcessRendererThread::Init() {
   render_process_.reset(new RenderProcessImpl());
-  new RenderThreadImpl(params_);
+  RenderThreadImpl::Create(params_);
 }
 
 void InProcessRendererThread::CleanUp() {

@@ -191,7 +191,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     // TODO(markus): Check if it is OK to unconditionally move this
     // instruction down.
     RenderProcessImpl render_process;
-    new RenderThreadImpl(main_message_loop.Pass());
+    RenderThreadImpl::Create(main_message_loop.Pass());
 #endif
     bool run_loop = true;
     if (!no_sandbox) {
@@ -207,7 +207,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     RenderProcessImpl render_process;
-    new RenderThreadImpl(main_message_loop.Pass());
+    RenderThreadImpl::Create(main_message_loop.Pass());
 #endif
     base::HighResolutionTimerManager hi_res_timer_manager;
 

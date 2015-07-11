@@ -557,15 +557,36 @@ void RenderThreadImpl::HistogramCustomizer::SetCommonHost(
   }
 }
 
+// static
+RenderThreadImpl* RenderThreadImpl::Create(
+    const InProcessChildThreadParams& params) {
+  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
+      scheduler::RendererScheduler::Create();
+  return new RenderThreadImpl(params, renderer_scheduler.Pass());
+}
+
+// static
+RenderThreadImpl* RenderThreadImpl::Create(
+    scoped_ptr<base::MessageLoop> main_message_loop) {
+  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
+      scheduler::RendererScheduler::Create();
+  return new RenderThreadImpl(main_message_loop.Pass(),
+                              renderer_scheduler.Pass());
+}
+
 RenderThreadImpl* RenderThreadImpl::current() {
   return lazy_tls.Pointer()->Get();
 }
 
-RenderThreadImpl::RenderThreadImpl(const InProcessChildThreadParams& params)
+RenderThreadImpl::RenderThreadImpl(
+    const InProcessChildThreadParams& params,
+    scoped_ptr<scheduler::RendererScheduler> scheduler)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
                           .UseMojoChannel(ShouldUseMojoChannel())
+                          .ListenerTaskRunner(scheduler->DefaultTaskRunner())
                           .Build()),
+      renderer_scheduler_(scheduler.Pass()),
       raster_worker_pool_(new RasterWorkerPool()) {
   Init();
 }
@@ -573,10 +594,13 @@ RenderThreadImpl::RenderThreadImpl(const InProcessChildThreadParams& params)
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
 RenderThreadImpl::RenderThreadImpl(
-    scoped_ptr<base::MessageLoop> main_message_loop)
+    scoped_ptr<base::MessageLoop> main_message_loop,
+    scoped_ptr<scheduler::RendererScheduler> scheduler)
     : ChildThreadImpl(Options::Builder()
                           .UseMojoChannel(ShouldUseMojoChannel())
+                          .ListenerTaskRunner(scheduler->DefaultTaskRunner())
                           .Build()),
+      renderer_scheduler_(scheduler.Pass()),
       main_message_loop_(main_message_loop.Pass()),
       raster_worker_pool_(new RasterWorkerPool()) {
   Init();
@@ -613,8 +637,6 @@ void RenderThreadImpl::Init() {
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher(
       thread_safe_sender()));
-  renderer_scheduler_ = scheduler::RendererScheduler::Create();
-  channel()->SetListenerTaskRunner(renderer_scheduler_->DefaultTaskRunner());
   main_thread_cache_storage_dispatcher_.reset(
       new CacheStorageDispatcher(thread_safe_sender()));
   embedded_worker_dispatcher_.reset(new EmbeddedWorkerDispatcher());

@@ -135,10 +135,11 @@ class CONTENT_EXPORT RenderThreadImpl
       public GpuChannelHostFactory,
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
+  static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
+  static RenderThreadImpl* Create(
+      scoped_ptr<base::MessageLoop> main_message_loop);
   static RenderThreadImpl* current();
 
-  explicit RenderThreadImpl(const InProcessChildThreadParams& params);
-  explicit RenderThreadImpl(scoped_ptr<base::MessageLoop> main_message_loop);
   ~RenderThreadImpl() override;
   void Shutdown() override;
 
@@ -420,6 +421,10 @@ class CONTENT_EXPORT RenderThreadImpl
       mojo::ServiceProviderPtr exposed_services);
 
  protected:
+  RenderThreadImpl(const InProcessChildThreadParams& params,
+                   scoped_ptr<scheduler::RendererScheduler> scheduler);
+  RenderThreadImpl(scoped_ptr<base::MessageLoop> main_message_loop,
+                   scoped_ptr<scheduler::RendererScheduler> scheduler);
   virtual void SetResourceDispatchTaskQueue(
     const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 

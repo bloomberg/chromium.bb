@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/resource_messages.h"
 #include "content/common/websocket_messages.h"
@@ -91,8 +92,10 @@ class TestTaskCounter : public base::SingleThreadTaskRunner {
 class RenderThreadImplForTest : public RenderThreadImpl {
  public:
   RenderThreadImplForTest(const InProcessChildThreadParams& params,
+                          scoped_ptr<scheduler::RendererScheduler> scheduler,
                           scoped_refptr<TestTaskCounter> test_task_counter)
-      : RenderThreadImpl(params), test_task_counter_(test_task_counter) {}
+      : RenderThreadImpl(params, scheduler.Pass()),
+        test_task_counter_(test_task_counter) {}
 
   ~RenderThreadImplForTest() override {}
 
@@ -163,10 +166,12 @@ class RenderThreadImplBrowserTest : public testing::Test {
     cmd->AppendSwitchASCII(switches::kContentImageTextureTarget,
                            base::UintToString(GL_TEXTURE_2D));
 
+    scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
+        scheduler::RendererScheduler::Create();
     thread_ = new RenderThreadImplForTest(
         InProcessChildThreadParams(test_helper_->GetChannelId(),
                                    test_helper_->GetIOTaskRunner()),
-        test_task_counter_);
+        renderer_scheduler.Pass(), test_task_counter_);
     cmd->InitFromArgv(old_argv);
 
     thread_->EnsureWebKitInitialized();
