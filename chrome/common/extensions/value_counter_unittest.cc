@@ -7,36 +7,62 @@
 #include "extensions/common/value_counter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ValueCounterUnittest : public testing::Test {
-};
+using ValueCounterTest = testing::Test;
 
-TEST_F(ValueCounterUnittest, TestAddingSameValue) {
-  extensions::ValueCounter vc;
+namespace extensions {
+
+TEST_F(ValueCounterTest, TestAddingSameValue) {
+  ValueCounter vc;
   base::ListValue value;
-  ASSERT_EQ(1, vc.Add(value));
-  ASSERT_EQ(2, vc.Add(value));
+  ASSERT_TRUE(vc.Add(value));
+  ASSERT_FALSE(vc.Add(value));
 }
 
-TEST_F(ValueCounterUnittest, TestAddingDifferentValue) {
-  extensions::ValueCounter vc;
+TEST_F(ValueCounterTest, TestAddingDifferentValue) {
+  ValueCounter vc;
   base::ListValue value1;
   base::DictionaryValue value2;
-  ASSERT_EQ(1, vc.Add(value1));
-  ASSERT_EQ(1, vc.Add(value2));
+  ASSERT_TRUE(vc.Add(value1));
+  ASSERT_TRUE(vc.Add(value2));
 }
 
-TEST_F(ValueCounterUnittest, TestRemovingValue) {
-  extensions::ValueCounter vc;
+TEST_F(ValueCounterTest, TestRemovingSameValue) {
+  ValueCounter vc;
   base::ListValue value;
-  ASSERT_EQ(1, vc.Add(value));
-  ASSERT_EQ(2, vc.Add(value));
-  ASSERT_EQ(1, vc.Remove(value));
-  ASSERT_EQ(0, vc.Remove(value));
+  vc.Add(value);
+  vc.Add(value);
+  ASSERT_FALSE(vc.Remove(value));
+  ASSERT_TRUE(vc.Remove(value));
+  ASSERT_FALSE(vc.Remove(value));
 }
 
-TEST_F(ValueCounterUnittest, TestAddIfMissing) {
-  extensions::ValueCounter vc;
+TEST_F(ValueCounterTest, TestReAddingSameValue) {
+  ValueCounter vc;
   base::ListValue value;
-  ASSERT_EQ(1, vc.AddIfMissing(value));
-  ASSERT_EQ(1, vc.AddIfMissing(value));
+  ASSERT_FALSE(vc.Remove(value));
+  ASSERT_TRUE(vc.Add(value));
+  ASSERT_TRUE(vc.Remove(value));
+  ASSERT_TRUE(vc.Add(value));
+  ASSERT_TRUE(vc.Remove(value));
+  ASSERT_FALSE(vc.Remove(value));
 }
+
+TEST_F(ValueCounterTest, TestIsEmpty) {
+  ValueCounter vc;
+  base::ListValue value1;
+  base::DictionaryValue value2;
+  ASSERT_TRUE(vc.is_empty());
+  vc.Add(value1);
+  ASSERT_FALSE(vc.is_empty());
+  vc.Remove(value1);
+  ASSERT_TRUE(vc.is_empty());
+  vc.Add(value1);
+  vc.Add(value2);
+  ASSERT_FALSE(vc.is_empty());
+  vc.Remove(value1);
+  ASSERT_FALSE(vc.is_empty());
+  vc.Remove(value2);
+  ASSERT_TRUE(vc.is_empty());
+}
+
+}  // namespace extensions

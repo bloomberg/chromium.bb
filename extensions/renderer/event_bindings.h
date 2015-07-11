@@ -53,23 +53,32 @@ class EventBindings : public ObjectBackedNativeHandler {
   // to MatchAgainstEventFilter where this listener matches.
   void AttachFilteredEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // JavaScript handler which forwards to DetachFilteredEvent.
   // void DetachFilteredEvent(int id, bool manual)
-  // id     - Id of the event to detach.
-  // manual - false if this is part of the extension unload process where all
-  //          listeners are automatically detached.
-  void DetachFilteredEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
+  // args[0] forwards to |matcher_id|
+  // args[1] forwards to |is_manual|
+  void DetachFilteredEventHandler(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Detaches a filtered event. Unlike a normal event, a filtered event is
+  // identified by a unique ID per filter, not its name.
+  // |matcher_id| The ID of the filtered event.
+  // |is_manual| false if this is part of the extension unload process where all
+  // listeners are automatically detached.
+  void DetachFilteredEvent(int matcher_id, bool is_manual);
 
   void MatchAgainstEventFilter(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   scoped_ptr<EventMatcher> ParseEventMatcher(
-      base::DictionaryValue* filter_dict);
+      scoped_ptr<base::DictionaryValue> filter);
 
   // Called when our context, and therefore us, is invalidated. Run any cleanup.
   void OnInvalidated();
 
-  // The set of attached events. Maintain this so that we can detch them on
-  // unload.
+  // The set of attached events and filtered events. Maintain these so that we
+  // can detch them on unload.
   std::set<std::string> attached_event_names_;
+  std::set<int> attached_matcher_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(EventBindings);
 };

@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, EventsAreUnregistered) {
   const std::string& id = extension->id();
 
   // The page has closed, so no matter what all events are no longer listened
-  // to.
+  // to. Assertions for normal events:
   EXPECT_FALSE(
       event_router->ExtensionHasEventListener(id, "browserAction.onClicked"));
   EXPECT_FALSE(
@@ -54,6 +54,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, EventsAreUnregistered) {
       event_router->ExtensionHasEventListener(id, "runtime.onSuspend"));
   EXPECT_FALSE(
       event_router->ExtensionHasEventListener(id, "runtime.onInstalled"));
+  // Assertions for filtered events:
+  EXPECT_FALSE(event_router->ExtensionHasEventListener(
+      id, "webNavigation.onBeforeNavigate"));
+  EXPECT_FALSE(
+      event_router->ExtensionHasEventListener(id, "webNavigation.onCommitted"));
+  EXPECT_FALSE(event_router->ExtensionHasEventListener(
+      id, "webNavigation.onDOMContentLoaded"));
+  EXPECT_FALSE(
+      event_router->ExtensionHasEventListener(id, "webNavigation.onCompleted"));
 }
 
 }  // namespace extensions

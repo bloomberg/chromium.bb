@@ -10,47 +10,44 @@
 
 namespace extensions {
 
-ValueCounter::ValueCounter() {}
+struct ValueCounter::Entry {
+  explicit Entry(scoped_ptr<base::Value> value)
+      : value(value.Pass()), count(1) {}
 
-ValueCounter::~ValueCounter() {}
+  scoped_ptr<base::Value> value;
+  int count;
+};
 
-ValueCounter::Entry::Entry(const base::Value& value)
-    : value_(value.DeepCopy()), count_(1) {}
+ValueCounter::ValueCounter() {
+}
 
-ValueCounter::Entry::~Entry() {}
+ValueCounter::~ValueCounter() {
+}
 
-int ValueCounter::Entry::Increment() { return ++count_; }
-
-int ValueCounter::Entry::Decrement() { return --count_; }
-
-int ValueCounter::Add(const base::Value& value) { return AddImpl(value, true); }
-
-int ValueCounter::Remove(const base::Value& value) {
-  for (EntryList::iterator it = entries_.begin(); it != entries_.end(); it++) {
-    (*it)->value()->GetType();
-    if ((*it)->value()->Equals(&value)) {
-      int remaining = (*it)->Decrement();
-      if (remaining == 0) {
-        std::swap(*it, entries_.back());
-        entries_.pop_back();
-      }
-      return remaining;
+bool ValueCounter::Add(const base::Value& value) {
+  for (Entry* entry : entries_) {
+    if (entry->value->Equals(&value)) {
+      ++entry->count;
+      return false;
     }
   }
-  return 0;
+  entries_.push_back(new Entry(value.CreateDeepCopy()));
+  return true;
 }
 
-int ValueCounter::AddIfMissing(const base::Value& value) {
-  return AddImpl(value, false);
-}
-
-int ValueCounter::AddImpl(const base::Value& value, bool increment) {
-  for (EntryList::iterator it = entries_.begin(); it != entries_.end(); it++) {
-    if ((*it)->value()->Equals(&value))
-      return increment ? (*it)->Increment() : (*it)->count();
+bool ValueCounter::Remove(const base::Value& value) {
+  for (ScopedVector<Entry>::iterator it = entries_.begin();
+       it != entries_.end(); ++it) {
+    if ((*it)->value->Equals(&value)) {
+      if (--(*it)->count == 0) {
+        std::swap(*it, entries_.back());
+        entries_.pop_back();
+        return true;  // Removed the last entry.
+      }
+      return false;  // Removed, but no the last entry.
+    }
   }
-  entries_.push_back(linked_ptr<Entry>(new Entry(value)));
-  return 1;
+  return false;  // Nothing to remove.
 }
 
 }  // namespace extensions
