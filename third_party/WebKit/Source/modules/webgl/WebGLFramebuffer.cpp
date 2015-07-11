@@ -247,16 +247,71 @@ namespace {
     bool isColorRenderable(GLenum internalformat)
     {
         switch (internalformat) {
+        case GL_RGB:
+        case GL_RGBA:
+        case GL_SRGB_ALPHA_EXT:
+        case GL_R8:
+        case GL_R8UI:
+        case GL_R8I:
+        case GL_R16UI:
+        case GL_R16I:
+        case GL_R32UI:
+        case GL_R32I:
+        case GL_RG8:
+        case GL_RG8UI:
+        case GL_RG8I:
+        case GL_RG16UI:
+        case GL_RG16I:
+        case GL_RG32UI:
+        case GL_RG32I:
+        case GL_RGB8:
+        case GL_RGB565:
+        case GL_RGBA8:
+        case GL_SRGB8_ALPHA8:
+        case GL_RGB5_A1:
+        case GL_RGBA4:
+        case GL_RGB10_A2:
+        case GL_RGBA8UI:
+        case GL_RGBA8I:
+        case GL_RGB10_A2UI:
+        case GL_RGBA16UI:
+        case GL_RGBA16I:
+        case GL_RGBA32UI:
+        case GL_RGBA32I:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    bool isDepthRenderable(GLenum internalformat, bool includesDepthStencil)
+    {
+        switch (internalformat) {
+        case GL_DEPTH_COMPONENT:
         case GL_DEPTH_COMPONENT16:
         case GL_DEPTH_COMPONENT24:
         case GL_DEPTH_COMPONENT32F:
+            return true;
+        case GL_DEPTH_STENCIL:
         case GL_DEPTH24_STENCIL8:
         case GL_DEPTH32F_STENCIL8:
-        case GL_STENCIL_INDEX8:
-        case GL_DEPTH_STENCIL: // WebGL 1 specific.
-            return false;
+            return includesDepthStencil;
         default:
+            return false;
+        }
+    }
+
+    bool isStencilRenderable(GLenum internalformat, bool includesDepthStencil)
+    {
+        switch (internalformat) {
+        case GL_STENCIL_INDEX8:
             return true;
+        case GL_DEPTH_STENCIL:
+        case GL_DEPTH24_STENCIL8:
+        case GL_DEPTH32F_STENCIL8:
+            return includesDepthStencil;
+        default:
+            return false;
         }
     }
 
@@ -344,78 +399,34 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLe
     ASSERT(reason);
 
     GLenum internalformat = attachedObject->format();
-    WebGLSharedObject* object = attachedObject->object();
-    ASSERT(object && (object->isTexture() || object->isRenderbuffer()));
 
-    if (attachment == GL_DEPTH_ATTACHMENT) {
-        if (object->isRenderbuffer()) {
-            if (internalformat != GL_DEPTH_COMPONENT16) {
-                *reason = "the internalformat of the attached renderbuffer is not DEPTH_COMPONENT16";
-                return false;
-            }
-        } else if (object->isTexture()) {
-            GLenum type = attachedObject->type();
-            if (!(context()->extensionEnabled(WebGLDepthTextureName) && internalformat == GL_DEPTH_COMPONENT
-                && (type == GL_UNSIGNED_SHORT || type == GL_UNSIGNED_INT))) {
-                *reason = "the attached texture is not a depth texture";
-                return false;
-            }
+    switch (attachment) {
+    case GL_DEPTH_ATTACHMENT:
+        if (!isDepthRenderable(internalformat, context()->isWebGL2OrHigher())) {
+            *reason = "the internalformat of the attached image is not depth-renderable";
+            return false;
         }
-    } else if (attachment == GL_STENCIL_ATTACHMENT) {
-        // Depend on the underlying GL drivers to check stencil textures
-        // and check renderbuffer type here only.
-        if (object->isRenderbuffer()) {
-            if (internalformat != GL_STENCIL_INDEX8) {
-                *reason = "the internalformat of the attached renderbuffer is not STENCIL_INDEX8";
-                return false;
-            }
+        break;
+    case GL_STENCIL_ATTACHMENT:
+        if (!isStencilRenderable(internalformat, context()->isWebGL2OrHigher())) {
+            *reason = "the internalformat of the attached image is not stencil-renderable";
+            return false;
         }
-    } else if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-        if (object->isRenderbuffer()) {
-            if (internalformat != GL_DEPTH_STENCIL_OES) {
-                *reason = "the internalformat of the attached renderbuffer is not DEPTH_STENCIL";
-                return false;
-            }
-        } else if (object->isTexture()) {
-            GLenum type = attachedObject->type();
-            if (!(context()->extensionEnabled(WebGLDepthTextureName) && internalformat == GL_DEPTH_STENCIL_OES
-                && type == GL_UNSIGNED_INT_24_8_OES)) {
-                *reason = "the attached texture is not a DEPTH_STENCIL texture";
-                return false;
-            }
+        break;
+    case GL_DEPTH_STENCIL_ATTACHMENT:
+        ASSERT(!context()->isWebGL2OrHigher());
+        if (internalformat != GL_DEPTH_STENCIL_OES) {
+            *reason = "the internalformat of the attached image is not DEPTH_STENCIL";
+            return false;
         }
-    } else if (attachment == GL_COLOR_ATTACHMENT0
-        || (context()->extensionEnabled(WebGLDrawBuffersName) && attachment > GL_COLOR_ATTACHMENT0
-            && attachment < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + context()->maxColorAttachments()))) {
-        if (object->isRenderbuffer()) {
-            if (!isColorRenderable(internalformat)) {
-                *reason = "the internalformat of the attached renderbuffer is not color-renderable";
-                return false;
-            }
-        } else if (object->isTexture()) {
-            GLenum type = attachedObject->type();
-            if (internalformat != GL_RGBA && internalformat != GL_RGB
-                && !(internalformat == GL_SRGB_ALPHA_EXT && context()->extensionEnabled(EXTsRGBName))) {
-                *reason = "the internalformat of the attached texture is not color-renderable";
-                return false;
-            }
-            // TODO: WEBGL_color_buffer_float and EXT_color_buffer_half_float extensions have not been implemented in
-            // WebGL yet. It would be better to depend on the underlying GL drivers to check on rendering to floating point textures
-            // and add the check back to WebGL when above two extensions are implemented.
-            // Assume UNSIGNED_BYTE is renderable here without the need to explicitly check if GL_OES_rgb8_rgba8 extension is supported.
-            if (type != GL_UNSIGNED_BYTE
-                && type != GL_UNSIGNED_SHORT_5_6_5
-                && type != GL_UNSIGNED_SHORT_4_4_4_4
-                && type != GL_UNSIGNED_SHORT_5_5_5_1
-                && !(type == GL_FLOAT && context()->extensionEnabled(OESTextureFloatName))
-                && !(type == GL_HALF_FLOAT_OES && context()->extensionEnabled(OESTextureHalfFloatName))) {
-                *reason = "unsupported type: The attached texture is not supported to be rendered to";
-                return false;
-            }
+        break;
+    default:
+        ASSERT(attachment == GL_COLOR_ATTACHMENT0 || (attachment > GL_COLOR_ATTACHMENT0 && attachment < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + context()->maxColorAttachments())));
+        if (!isColorRenderable(internalformat)) {
+            *reason = "the internalformat of the attached image is not color-renderable";
+            return false;
         }
-    } else {
-        *reason = "unknown framebuffer attachment point";
-        return false;
+        break;
     }
 
     if (!attachedObject->width() || !attachedObject->height()) {
@@ -495,9 +506,10 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
 {
     unsigned count = 0;
     GLsizei width = 0, height = 0;
-    bool haveDepth = false;
-    bool haveStencil = false;
-    bool haveDepthStencil = false;
+    WebGLAttachment* depthAttachment = nullptr;
+    WebGLAttachment* stencilAttachment = nullptr;
+    WebGLAttachment* depthStencilAttachment = nullptr;
+    bool isWebGL2OrHigher = context()->isWebGL2OrHigher();
     for (const auto& it : m_attachments) {
         WebGLAttachment* attachment = it.value.get();
         if (!isAttachmentComplete(attachment, it.key, reason))
@@ -512,22 +524,24 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
         }
         switch (it.key) {
         case GL_DEPTH_ATTACHMENT:
-            haveDepth = true;
+            depthAttachment = attachment;
             break;
         case GL_STENCIL_ATTACHMENT:
-            haveStencil = true;
+            stencilAttachment = attachment;
             break;
         case GL_DEPTH_STENCIL_ATTACHMENT:
-            haveDepthStencil = true;
+            depthStencilAttachment = attachment;
             break;
         }
-        if (!count) {
-            width = attachment->width();
-            height = attachment->height();
-        } else {
-            if (width != attachment->width() || height != attachment->height()) {
-                *reason = "attachments do not have the same dimensions";
-                return GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS;
+        if (!isWebGL2OrHigher) {
+            if (!count) {
+                width = attachment->width();
+                height = attachment->height();
+            } else {
+                if (width != attachment->width() || height != attachment->height()) {
+                    *reason = "attachments do not have the same dimensions";
+                    return GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS;
+                }
             }
         }
         ++count;
@@ -536,13 +550,16 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
         *reason = "no attachments";
         return GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT;
     }
-    if (!width || !height) {
-        *reason = "framebuffer has a 0 dimension";
-        return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-    }
-    // WebGL specific: no conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments.
-    if ((haveDepthStencil && (haveDepth || haveStencil)) || (haveDepth && haveStencil)) {
+    // WebGL 1 specific: no conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments.
+    if (!isWebGL2OrHigher
+        && ((depthStencilAttachment && (depthAttachment || stencilAttachment))
+            || (depthAttachment && stencilAttachment))) {
         *reason = "conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments";
+        return GL_FRAMEBUFFER_UNSUPPORTED;
+    }
+    if (isWebGL2OrHigher
+        && (depthAttachment && stencilAttachment && depthAttachment->object() != stencilAttachment->object())) {
+        *reason = "both DEPTH/STENCIL attachments are present and not the same image";
         return GL_FRAMEBUFFER_UNSUPPORTED;
     }
     return GL_FRAMEBUFFER_COMPLETE;

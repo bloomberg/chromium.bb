@@ -268,7 +268,7 @@ void WebGL2RenderingContextBase::renderbufferStorageImpl(
         if (samples > 0) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName,
                 "for integer formats, samples > 0");
-            break;
+            return;
         }
     case GL_R8:
     case GL_RG8:
@@ -291,13 +291,21 @@ void WebGL2RenderingContextBase::renderbufferStorageImpl(
             webContext()->renderbufferStorageMultisampleCHROMIUM(
                 target, samples, internalformat, width, height);
         }
-        m_renderbufferBinding->setInternalFormat(internalformat);
-        m_renderbufferBinding->setSize(width, height);
+        break;
+    case GL_DEPTH_STENCIL:
+        // To be WebGL 1 backward compatible.
+        if (samples > 0) {
+            synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
+            return;
+        }
+        webContext()->renderbufferStorage(target, GL_DEPTH24_STENCIL8, width, height);
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
-        break;
+        return;
     }
+    m_renderbufferBinding->setInternalFormat(internalformat);
+    m_renderbufferBinding->setSize(width, height);
 }
 
 void WebGL2RenderingContextBase::renderbufferStorageMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height)

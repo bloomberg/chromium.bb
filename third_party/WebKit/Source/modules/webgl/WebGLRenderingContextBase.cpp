@@ -2054,7 +2054,7 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(GLenum target, GLenum at
     Platform3DObject bufferObject = objectOrZero(buffer);
     switch (attachment) {
     case GL_DEPTH_STENCIL_ATTACHMENT:
-        if (isDepthStencilSupported() || !buffer) {
+        if (isWebGL2OrHigher() || isDepthStencilSupported() || !buffer) {
             webContext()->framebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT, renderbuffertarget, bufferObject);
             webContext()->framebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, renderbuffertarget, bufferObject);
         } else {
@@ -2070,7 +2070,14 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(GLenum target, GLenum at
     default:
         webContext()->framebufferRenderbuffer(target, attachment, renderbuffertarget, bufferObject);
     }
-    framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, buffer);
+    if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+        // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
+        // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
+        framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, buffer);
+        framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, buffer);
+    } else {
+        framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, buffer);
+    }
     applyStencilTest();
 }
 
