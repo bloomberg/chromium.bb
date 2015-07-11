@@ -54,7 +54,7 @@ static BOOL GetAddrProtection(HANDLE process_handle, uintptr_t addr,
 static BOOL ReadProcessMemoryChecked(HANDLE process_handle,
                                      const void *remote_addr,
                                      void *local_addr, size_t size) {
-  size_t bytes_copied;
+  SIZE_T bytes_copied;
   return (ReadProcessMemory(process_handle, remote_addr, local_addr,
                             size, &bytes_copied)
           && bytes_copied == size);
@@ -62,7 +62,7 @@ static BOOL ReadProcessMemoryChecked(HANDLE process_handle,
 
 static BOOL WriteProcessMemoryChecked(HANDLE process_handle, void *remote_addr,
                                       const void *local_addr, size_t size) {
-  size_t bytes_copied;
+  SIZE_T bytes_copied;
   /*
    * WriteProcessMemory() does not always respect page permissions, so
    * we first manually check permissions to ensure that we are not
