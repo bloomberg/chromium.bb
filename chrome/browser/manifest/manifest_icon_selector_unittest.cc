@@ -4,10 +4,14 @@
 
 #include "chrome/browser/manifest/manifest_icon_selector.h"
 
+#include <string>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
+#include "ui/gfx/test/test_screen.h"
 
 namespace {
 
@@ -15,67 +19,22 @@ const int kPreferredIconSize = 48;
 
 }
 
-// A dummy implementation of gfx::Screen, since ManifestIconSelector needs
-// access to a gfx::Display's device scale factor.
-// This is inspired by web_contents_video_capture_device_unittest.cc
-// A bug has been opened to merge all those mocks: http://crbug.com/417227
-class FakeScreen : public gfx::Screen {
- public:
-  FakeScreen() : display_(0x1337, gfx::Rect(0, 0, 2560, 1440)) {
-  }
-  ~FakeScreen() override {}
-
-  void SetDisplayDeviceScaleFactor(float device_scale_factor) {
-    display_.set_device_scale_factor(device_scale_factor);
-  }
-
-  // gfx::Screen implementation (only what's needed for testing).
-  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
-  gfx::NativeWindow GetWindowUnderCursor() override { return nullptr; }
-  gfx::NativeWindow GetWindowAtScreenPoint(
-      const gfx::Point& point) override { return nullptr; }
-  int GetNumDisplays() const override { return 1; }
-  std::vector<gfx::Display> GetAllDisplays() const override {
-    return std::vector<gfx::Display>(1, display_);
-  }
-  gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const override {
-    return display_;
-  }
-  gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override {
-    return display_;
-  }
-  gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override {
-    return display_;
-  }
-  gfx::Display GetPrimaryDisplay() const override {
-    return display_;
-  }
-  void AddObserver(gfx::DisplayObserver* observer) override {}
-  void RemoveObserver(gfx::DisplayObserver* observer) override {}
-
- private:
-  gfx::Display display_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeScreen);
-};
-
 class ManifestIconSelectorTest : public testing::Test  {
  protected:
-  ManifestIconSelectorTest() {}
+  ManifestIconSelectorTest() {
+    test_screen_.display()->set_id(0x1337);
+    test_screen_.display()->set_bounds(gfx::Rect(0, 0, 2560, 1440));
+  }
+
   ~ManifestIconSelectorTest() override {}
 
   GURL FindBestMatchingIcon(const std::vector<content::Manifest::Icon>& icons) {
     return ManifestIconSelector::FindBestMatchingIcon(
-        icons,
-        GetPreferredIconSizeInDp(),
-        &fake_screen_);
+        icons, GetPreferredIconSizeInDp(), &test_screen_);
   }
 
   void SetDisplayDeviceScaleFactor(float device_scale_factor) {
-    fake_screen_.SetDisplayDeviceScaleFactor(device_scale_factor);
+    test_screen_.display()->set_device_scale_factor(device_scale_factor);
   }
 
   static int GetPreferredIconSizeInDp() {
@@ -98,7 +57,7 @@ class ManifestIconSelectorTest : public testing::Test  {
   }
 
  private:
-  FakeScreen fake_screen_;
+  gfx::test::TestScreen test_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestIconSelectorTest);
 };
@@ -421,7 +380,7 @@ TEST_F(ManifestIconSelectorTest, UseAnyIfNoPreferredSize) {
     sizes_1.push_back(gfx::Size(GetPreferredIconSizeInDp(),
                                 GetPreferredIconSizeInDp()));
     std::vector<gfx::Size> sizes_2;
-    sizes_2.push_back(gfx::Size(0,0));
+    sizes_2.push_back(gfx::Size(0, 0));
 
     std::vector<content::Manifest::Icon> icons;
     icons.push_back(CreateIcon("http://foo.com/icon.png", "", 1.0, sizes_1));
@@ -437,7 +396,7 @@ TEST_F(ManifestIconSelectorTest, UseAnyIfNoPreferredSize) {
     sizes_1.push_back(gfx::Size(GetPreferredIconSizeInDp() + 1,
                                 GetPreferredIconSizeInDp() + 1));
     std::vector<gfx::Size> sizes_2;
-    sizes_2.push_back(gfx::Size(0,0));
+    sizes_2.push_back(gfx::Size(0, 0));
 
     std::vector<content::Manifest::Icon> icons;
     icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", 1.0, sizes_1));
@@ -450,7 +409,7 @@ TEST_F(ManifestIconSelectorTest, UseAnyIfNoPreferredSize) {
   // 'any' on default density and current density => current density.
   {
     std::vector<gfx::Size> sizes;
-    sizes.push_back(gfx::Size(0,0));
+    sizes.push_back(gfx::Size(0, 0));
 
     std::vector<content::Manifest::Icon> icons;
     icons.push_back(CreateIcon("http://foo.com/icon_no.png", "", 1.0, sizes));

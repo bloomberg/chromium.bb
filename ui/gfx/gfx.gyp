@@ -482,6 +482,8 @@
         'test/fontconfig_util_linux.h',
         'test/gfx_util.cc',
         'test/gfx_util.h',
+        'test/test_screen.h',
+        'test/test_screen.cc',
         'test/ui_cocoa_test_helper.h',
         'test/ui_cocoa_test_helper.mm',
       ],

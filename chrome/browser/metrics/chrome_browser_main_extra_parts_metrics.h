@@ -18,6 +18,10 @@ namespace chrome {
 void AddMetricsExtraParts(ChromeBrowserMainParts* main_parts);
 }
 
+namespace ui {
+class InputDeviceEventObserver;
+}  // namespace ui
+
 class ChromeBrowserMainExtraPartsMetrics
     : public ChromeBrowserMainExtraParts,
       public gfx::DisplayObserver,
@@ -58,6 +62,10 @@ class ChromeBrowserMainExtraPartsMetrics
 
   // Measures start up performance of the first active web contents.
   scoped_ptr<FirstWebContentsProfiler> first_web_contents_profiler_;
+
+#if defined(USE_OZONE) || defined(USE_X11)
+  scoped_ptr<ui::InputDeviceEventObserver> input_device_event_observer_;
+#endif  // defined(USE_OZONE) || defined(USE_X11)
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetrics);
 };

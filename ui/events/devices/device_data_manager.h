@@ -20,6 +20,10 @@
 
 namespace ui {
 
+namespace test {
+class DeviceDataManagerTestAPI;
+}  // namespace test
+
 class InputDeviceEventObserver;
 
 // Keeps track of device mappings and event transformations.
@@ -78,9 +82,17 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void OnDeviceListsComplete() override;
 
  private:
+  friend class test::DeviceDataManagerTestAPI;
+
   static DeviceDataManager* instance_;
 
   bool IsTouchDeviceIdValid(int touch_device_id) const;
+
+  void NotifyObserversTouchscreenDeviceConfigurationChanged();
+  void NotifyObserversKeyboardDeviceConfigurationChanged();
+  void NotifyObserversMouseDeviceConfigurationChanged();
+  void NotifyObserversTouchpadDeviceConfigurationChanged();
+  void NotifyObserversDeviceListsComplete();
 
   double touch_radius_scale_map_[kMaxDeviceNum];
 

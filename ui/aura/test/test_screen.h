@@ -21,6 +21,7 @@ class Window;
 class WindowTreeHost;
 
 // A minimal, testing Aura implementation of gfx::Screen.
+// TODO(bruthig): Consider extending gfx::test::TestScreen.
 class TestScreen : public gfx::Screen,
                    public WindowObserver {
  public:

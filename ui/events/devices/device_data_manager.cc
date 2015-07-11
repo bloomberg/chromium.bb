@@ -11,6 +11,13 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point3_f.h"
 
+// This macro provides the implementation for the observer notification methods.
+#define NOTIFY_OBSERVERS(method_name, observer_method)      \
+  void DeviceDataManager::method_name() {                   \
+    FOR_EACH_OBSERVER(InputDeviceEventObserver, observers_, \
+                      observer_method());                   \
+  }
+
 namespace ui {
 
 namespace {
@@ -35,7 +42,9 @@ DeviceDataManager::~DeviceDataManager() {
 DeviceDataManager* DeviceDataManager::instance() { return instance_; }
 
 void DeviceDataManager::set_instance(DeviceDataManager* instance) {
-  CHECK(!instance_) << "Can not set multiple instances of DeviceDataManager";
+  DCHECK(instance)
+      << "Must reset the DeviceDataManager using DeleteInstance().";
+  DCHECK(!instance_) "Can not set multiple instances of DeviceDataManager.";
   instance_ = instance;
 }
 
@@ -46,6 +55,7 @@ void DeviceDataManager::CreateInstance() {
 
   set_instance(new DeviceDataManager());
 
+  // TODO(bruthig): Replace the DeleteInstance callbacks with explicit calls.
   base::AtExitManager::RegisterTask(base::Bind(DeleteInstance));
 }
 
@@ -132,9 +142,7 @@ void DeviceDataManager::OnTouchscreenDevicesUpdated(
     return;
   }
   touchscreen_devices_ = devices;
-  FOR_EACH_OBSERVER(InputDeviceEventObserver,
-                    observers_,
-                    OnTouchscreenDeviceConfigurationChanged());
+  NotifyObserversTouchscreenDeviceConfigurationChanged();
 }
 
 void DeviceDataManager::OnKeyboardDevicesUpdated(
@@ -147,9 +155,7 @@ void DeviceDataManager::OnKeyboardDevicesUpdated(
     return;
   }
   keyboard_devices_ = devices;
-  FOR_EACH_OBSERVER(InputDeviceEventObserver,
-                    observers_,
-                    OnKeyboardDeviceConfigurationChanged());
+  NotifyObserversKeyboardDeviceConfigurationChanged();
 }
 
 void DeviceDataManager::OnMouseDevicesUpdated(
@@ -162,9 +168,7 @@ void DeviceDataManager::OnMouseDevicesUpdated(
     return;
   }
   mouse_devices_ = devices;
-  FOR_EACH_OBSERVER(InputDeviceEventObserver,
-                    observers_,
-                    OnMouseDeviceConfigurationChanged());
+  NotifyObserversMouseDeviceConfigurationChanged();
 }
 
 void DeviceDataManager::OnTouchpadDevicesUpdated(
@@ -177,18 +181,29 @@ void DeviceDataManager::OnTouchpadDevicesUpdated(
     return;
   }
   touchpad_devices_ = devices;
-  FOR_EACH_OBSERVER(InputDeviceEventObserver,
-                    observers_,
-                    OnTouchpadDeviceConfigurationChanged());
+  NotifyObserversTouchpadDeviceConfigurationChanged();
 }
 
 void DeviceDataManager::OnDeviceListsComplete() {
   if (!device_lists_complete_) {
     device_lists_complete_ = true;
-    FOR_EACH_OBSERVER(InputDeviceEventObserver, observers_,
-                      OnDeviceListsComplete());
+    NotifyObserversDeviceListsComplete();
   }
 }
+
+NOTIFY_OBSERVERS(NotifyObserversTouchscreenDeviceConfigurationChanged,
+                 OnTouchscreenDeviceConfigurationChanged);
+
+NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged,
+                 OnKeyboardDeviceConfigurationChanged);
+
+NOTIFY_OBSERVERS(NotifyObserversMouseDeviceConfigurationChanged,
+                 OnMouseDeviceConfigurationChanged);
+
+NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged,
+                 OnTouchpadDeviceConfigurationChanged);
+
+NOTIFY_OBSERVERS(NotifyObserversDeviceListsComplete, OnDeviceListsComplete);
 
 void DeviceDataManager::AddObserver(InputDeviceEventObserver* observer) {
   observers_.AddObserver(observer);

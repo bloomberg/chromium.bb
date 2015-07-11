@@ -127,6 +127,7 @@
       'browser/media/midi_permission_context_unittest.cc',
       'browser/media/native_desktop_media_list_unittest.cc',
       'browser/memory/oom_priority_manager_chromeos_unittest.cc',
+      'browser/metrics/chrome_browser_main_extra_parts_metrics_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/cloned_install_detector_unittest.cc',
       'browser/metrics/drive_metrics_provider_unittest.cc',

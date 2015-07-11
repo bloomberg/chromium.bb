@@ -45476,6 +45476,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>pthammaiah@google.com</owner>
 </histogram>
 
+<histogram name="Touchscreen.TouchEventsEnabled" enum="TouchEventsState">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Tracks whether touch events are enabled. This is based on the touch events
+    enabled flag and the presence of a touchscreen.
+  </summary>
+  <details>
+    NOTE: This metric was incorrectly recorded on ChromeOS for versions 42
+    through 44, see http://crbug.com/499476 for more details.
+  </details>
+</histogram>
+
 <histogram name="TPM.EarlyResetDuringCommand" units="count">
   <owner>semenzato@google.com</owner>
   <summary>
@@ -69052,6 +69064,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="TLSRenegotiationPatched" type="int">
   <int value="0" label="Not renegotiation patched"/>
   <int value="1" label="Renegotiation patched"/>
+</enum>
+
+<enum name="TouchEventsState" type="int">
+  <int value="0" label="Enabled"/>
+  <int value="1" label="Automatic - enabled"/>
+  <int value="2" label="Automatic - disabled"/>
+  <int value="3" label="Disabled"/>
 </enum>
 
 <enum name="TouchpadDeviceState" type="int">

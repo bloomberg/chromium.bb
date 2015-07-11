@@ -39,6 +39,11 @@
 #endif
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+#if defined(USE_OZONE) || defined(USE_X11)
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_event_observer.h"
+#endif  // defined(USE_OZONE) || defined(USE_X11)
+
 #if defined(OS_WIN)
 #include "chrome/installer/util/google_update_settings.h"
 #endif  // defined(OS_WIN)
@@ -247,6 +252,38 @@ void RecordTouchEventState() {
                             UMA_TOUCH_EVENTS_STATE_COUNT);
 }
 
+#if defined(USE_OZONE) || defined(USE_X11)
+
+// Asynchronously records the touch event state when the ui::DeviceDataManager
+// completes a device scan.
+class AsynchronousTouchEventStateRecorder
+    : public ui::InputDeviceEventObserver {
+ public:
+  AsynchronousTouchEventStateRecorder();
+  ~AsynchronousTouchEventStateRecorder() override;
+
+  // ui::InputDeviceEventObserver overrides.
+  void OnDeviceListsComplete() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousTouchEventStateRecorder);
+};
+
+AsynchronousTouchEventStateRecorder::AsynchronousTouchEventStateRecorder() {
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
+}
+
+AsynchronousTouchEventStateRecorder::~AsynchronousTouchEventStateRecorder() {
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+}
+
+void AsynchronousTouchEventStateRecorder::OnDeviceListsComplete() {
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+  RecordTouchEventState();
+}
+
+#endif  // defined(USE_OZONE) || defined(USE_X11)
+
 }  // namespace
 
 ChromeBrowserMainExtraPartsMetrics::ChromeBrowserMainExtraPartsMetrics()
@@ -275,7 +312,20 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
                             GetLinuxWindowManager(),
                             UMA_LINUX_WINDOW_MANAGER_COUNT);
 #endif
+
+#if defined(USE_OZONE) || defined(USE_X11)
+  // The touch event state for X11 and Ozone based event sub-systems are based
+  // on device scans that happen asynchronously. So we may need to attach an
+  // observer to wait until these scans complete.
+  if (ui::DeviceDataManager::GetInstance()->device_lists_complete()) {
+    RecordTouchEventState();
+  } else {
+    input_device_event_observer_.reset(
+        new AsynchronousTouchEventStateRecorder());
+  }
+#else
   RecordTouchEventState();
+#endif  // defined(USE_OZONE) || defined(USE_X11)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   RecordMacMetrics();

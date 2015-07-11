@@ -38,6 +38,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/test/test_screen.h"
 
 namespace content {
 namespace {
@@ -540,44 +541,6 @@ class StubClientObserver {
   DISALLOW_COPY_AND_ASSIGN(StubClientObserver);
 };
 
-// A dummy implementation of gfx::Screen, since WebContentsVideoCaptureDevice
-// needs access to a gfx::Display's device scale factor.
-class FakeScreen : public gfx::Screen {
- public:
-  FakeScreen() : the_one_display_(0x1337, gfx::Rect(0, 0, 2560, 1440)) {
-    the_one_display_.set_device_scale_factor(kTestDeviceScaleFactor);
-  }
-  ~FakeScreen() override {}
-
-  // gfx::Screen implementation (only what's needed for testing).
-  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
-  gfx::NativeWindow GetWindowUnderCursor() override { return NULL; }
-  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
-    return NULL;
-  }
-  int GetNumDisplays() const override { return 1; }
-  std::vector<gfx::Display> GetAllDisplays() const override {
-    return std::vector<gfx::Display>(1, the_one_display_);
-  }
-  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
-    return the_one_display_;
-  }
-  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
-    return the_one_display_;
-  }
-  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
-    return the_one_display_;
-  }
-  gfx::Display GetPrimaryDisplay() const override { return the_one_display_; }
-  void AddObserver(gfx::DisplayObserver* observer) override {}
-  void RemoveObserver(gfx::DisplayObserver* observer) override {}
-
- private:
-  gfx::Display the_one_display_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeScreen);
-};
-
 // Test harness that sets up a minimal environment with necessary stubs.
 class WebContentsVideoCaptureDeviceTest : public testing::Test {
  public:
@@ -589,8 +552,12 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &fake_screen_);
-    ASSERT_EQ(&fake_screen_, gfx::Screen::GetNativeScreen());
+    test_screen_.display()->set_id(0x1337);
+    test_screen_.display()->set_bounds(gfx::Rect(0, 0, 2560, 1440));
+    test_screen_.display()->set_device_scale_factor(kTestDeviceScaleFactor);
+
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, &test_screen_);
+    ASSERT_EQ(&test_screen_, gfx::Screen::GetNativeScreen());
 
     // TODO(nick): Sadness and woe! Much "mock-the-world" boilerplate could be
     // eliminated here, if only we could use RenderViewHostTestHarness. The
@@ -655,7 +622,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   media::VideoCaptureDevice* device() { return device_.get(); }
 
   // Returns the device scale factor of the capture target's native view.  This
-  // is necessary because, architecturally, the FakeScreen implementation is
+  // is necessary because, architecturally, the TestScreen implementation is
   // ignored on Mac platforms (when determining the device scale factor for a
   // particular window).
   float GetDeviceScaleFactor() const {
@@ -703,7 +670,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
   }
 
  private:
-  FakeScreen fake_screen_;
+  gfx::test::TestScreen test_screen_;
 
   StubClientObserver client_observer_;
 

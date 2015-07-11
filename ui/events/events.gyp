@@ -312,6 +312,7 @@
         # Note: sources list duplicated in GN build.
         'test/cocoa_test_event_utils.h',
         'test/cocoa_test_event_utils.mm',
+        'test/device_data_manager_test_api.h',
         'test/event_generator.cc',
         'test/event_generator.h',
         'test/events_test_utils.cc',
@@ -340,6 +341,15 @@
           'dependencies': [
             'devices/events_devices.gyp:events_devices',
           ],
+        }],
+        ['use_x11==1 or use_ozone==1', {
+          'sources' : [
+              'test/device_data_manager_test_api_impl.cc',
+            ]
+        }, { # else use_x11=1 or use_ozone=1
+          'sources' : [
+              'test/device_data_manager_test_api_stub.cc',
+            ]
         }],
       ],
     },
