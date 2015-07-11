@@ -414,7 +414,7 @@ shared_output_get_shm_buffer(struct shared_output *so)
 	    so->shm.height != height) {
 
 		/* Destroy free buffers */
-		wl_list_for_each_safe(sb, bnext, &so->shm.free_buffers, link)
+		wl_list_for_each_safe(sb, bnext, &so->shm.free_buffers, free_link)
 			ss_shm_buffer_destroy(sb);
 
 		/* Orphan in-use buffers so they get destroyed */
@@ -975,7 +975,7 @@ shared_output_destroy(struct shared_output *so)
 
 	wl_list_for_each_safe(buffer, bnext, &so->shm.buffers, link)
 		ss_shm_buffer_destroy(buffer);
-	wl_list_for_each_safe(buffer, bnext, &so->shm.free_buffers, link)
+	wl_list_for_each_safe(buffer, bnext, &so->shm.free_buffers, free_link)
 		ss_shm_buffer_destroy(buffer);
 
 	wl_display_disconnect(so->parent.display);
