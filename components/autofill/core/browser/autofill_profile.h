@@ -160,7 +160,8 @@ class AutofillProfile : public AutofillDataModel {
     language_code_ = language_code;
   }
 
-  // Nonempty only when type() == SERVER_PROFILE.
+  // Nonempty only when type() == SERVER_PROFILE. base::kSHA1Length bytes long.
+  // Not necessarily valid UTF-8.
   const std::string& server_id() const { return server_id_; }
 
   // Creates an identifier and saves it as |server_id_|. Only used for

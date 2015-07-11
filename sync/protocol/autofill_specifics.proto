@@ -183,7 +183,7 @@ message WalletMetadataSpecifics {
   // The type of the Wallet metadata.
   optional Type type = 1;
 
-  // Unique ID string of the corresponding Wallet data.
+  // Base64 encoding of the unique ID string of the corresponding Wallet data.
   // For Wallet cards, this value is server generated and opaque to Chrome.
   // For Wallet addresses, this is a SHA1 hash of the following fields:
   //
@@ -198,9 +198,8 @@ message WalletMetadataSpecifics {
   // - Zip code
   // - Sorting code
   // - Country
-  // - Phone numbers
-  //
-  // Finally, Chrome appends the address language code to the end of the hash.
+  // - Phone number
+  // - Language code
   optional string id = 2;
 
   // The number of times that this Wallet card or address was used.

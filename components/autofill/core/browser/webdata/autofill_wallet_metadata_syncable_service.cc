@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
@@ -74,8 +75,7 @@ void UndeleteMetadataIfExisting(
     scoped_ptr<DataType> local_metadata = locals->take_and_erase(it);
     changes_to_sync->push_back(syncer::SyncChange(
         FROM_HERE, syncer::SyncChange::ACTION_ADD,
-        BuildSyncData(metadata_type, local_metadata->server_id(),
-                      *local_metadata)));
+        BuildSyncData(metadata_type, server_id, *local_metadata)));
   }
 }
 
@@ -190,6 +190,13 @@ bool MergeRemote(
     updater.Run(*local_metadata);
 
   return true;
+}
+
+template <typename DataType>
+std::string GetServerId(const DataType& data) {
+  std::string server_id;
+  base::Base64Encode(data.server_id(), &server_id);
+  return server_id;
 }
 
 }  // namespace
@@ -333,7 +340,7 @@ void AutofillWalletMetadataSyncableService::AutofillProfileChanged(
 
   if (sync_processor_ && change.data_model() &&
       change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
-    AutofillDataModelChanged(change.data_model()->server_id(),
+    AutofillDataModelChanged(GetServerId(*change.data_model()),
                              sync_pb::WalletMetadataSpecifics::ADDRESS,
                              *change.data_model());
   }
@@ -345,7 +352,7 @@ void AutofillWalletMetadataSyncableService::CreditCardChanged(
 
   if (sync_processor_ && change.data_model() &&
       change.data_model()->record_type() != CreditCard::LOCAL_CARD) {
-    AutofillDataModelChanged(change.data_model()->server_id(),
+    AutofillDataModelChanged(GetServerId(*change.data_model()),
                              sync_pb::WalletMetadataSpecifics::CARD,
                              *change.data_model());
   }
@@ -389,7 +396,7 @@ bool AutofillWalletMetadataSyncableService::GetLocalData(
       AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase())
           ->GetServerProfiles(&profile_list.get());
   while (!profile_list.empty()) {
-    profiles->add(profile_list.front()->server_id(),
+    profiles->add(GetServerId(*profile_list.front()),
                   make_scoped_ptr(profile_list.front()));
     profile_list.weak_erase(profile_list.begin());
   }
@@ -398,7 +405,7 @@ bool AutofillWalletMetadataSyncableService::GetLocalData(
   success &= AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase())
                  ->GetServerCreditCards(&card_list.get());
   while (!card_list.empty()) {
-    cards->add(card_list.front()->server_id(),
+    cards->add(GetServerId(*card_list.front()),
                make_scoped_ptr(card_list.front()));
     card_list.weak_erase(card_list.begin());
   }
