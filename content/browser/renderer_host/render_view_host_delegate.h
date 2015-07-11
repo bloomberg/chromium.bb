@@ -95,7 +95,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The RenderView has been constructed.
   virtual void RenderViewReady(RenderViewHost* render_view_host) {}
 
-  // The RenderView died somehow (crashed or was killed by the user).
+  // The process containing the RenderView exited somehow (either cleanly,
+  // crash, or user kill).
   virtual void RenderViewTerminated(RenderViewHost* render_view_host,
                                     base::TerminationStatus status,
                                     int error_code) {}

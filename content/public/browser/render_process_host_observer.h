@@ -17,11 +17,14 @@ class RenderProcessHost;
 // in RenderProcessHost lifecycle events.
 class CONTENT_EXPORT RenderProcessHostObserver {
  public:
-  // This method is invoked when a render process exited (either normally or
-  // with a crash). To determine if the process closed normally or crashed,
-  // examine the |status| parameter.
+  // This method is invoked when the process of the observed RenderProcessHost
+  // exits (either normally or with a crash). To determine if the process closed
+  // normally or crashed, examine the |status| parameter.
   //
-  // Note that this is equivalent to WebContentsObserver::RenderProcessGone().
+  // This will cause a call to WebContentsObserver::RenderProcessGone() for the
+  // active renderer process for the top-level frame; for code that needs to be
+  // a WebContentsObserver anyway, consider whether that API might be a better
+  // choice.
   virtual void RenderProcessExited(RenderProcessHost* host,
                                    base::TerminationStatus status,
                                    int exit_code) {}

@@ -585,8 +585,7 @@ void RenderViewHostImpl::RenderProcessExited(RenderProcessHost* host,
     return;
 
   RenderWidgetHostImpl::RendererExited(status, exit_code);
-  delegate_->RenderViewTerminated(
-      this, static_cast<base::TerminationStatus>(status), exit_code);
+  delegate_->RenderViewTerminated(this, status, exit_code);
 }
 
 void RenderViewHostImpl::DragTargetDragEnter(

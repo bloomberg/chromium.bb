@@ -97,13 +97,16 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // just swapped out.
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
 
-  // This method is invoked when the process for the current RenderView crashes.
-  // The WebContents continues to use the RenderViewHost, e.g. when the user
-  // reloads the current page. When the RenderViewHost itself is deleted, the
-  // RenderViewDeleted method will be invoked.
+  // This method is invoked when the process for the current main
+  // RenderFrameHost exits (usually by crashing, though possibly by other
+  // means). The WebContents continues to use the RenderFrameHost, e.g. when the
+  // user reloads the current page. When the RenderFrameHost itself is deleted,
+  // the RenderFrameDeleted method will be invoked.
   //
-  // Note that this is equivalent to
-  // RenderProcessHostObserver::RenderProcessExited().
+  // Note that this is triggered upstream through
+  // RenderProcessHostObserver::RenderProcessExited(); for code that doesn't
+  // otherwise need to be a WebContentsObserver, that API is probably a better
+  // choice.
   virtual void RenderProcessGone(base::TerminationStatus status) {}
 
   // This method is invoked when a WebContents swaps its visible RenderViewHost
