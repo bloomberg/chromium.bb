@@ -10,6 +10,12 @@
     {
       'target_name': 'iaccessible2',
       'type': 'static_library',
+      'variables': {
+        'clang_warning_flags': [
+          # MIDL generates code like "#endif !_MIDL_USE_GUIDDEF_"
+          '-Wno-extra-tokens',
+        ],
+      },
       'sources': [
         'ia2_api_all.idl',
         '<(midl_out_dir)/ia2_api_all.h',

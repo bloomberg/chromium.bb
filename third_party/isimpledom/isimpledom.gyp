@@ -9,6 +9,10 @@
       'type': 'static_library',
       'variables': {
         'midl_out_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/isimpledom',
+        'clang_warning_flags': [
+          # MIDL generates code like "#endif !_MIDL_USE_GUIDDEF_"
+          '-Wno-extra-tokens',
+        ],
       },
       'sources': [
         'ISimpleDOMDocument.idl',

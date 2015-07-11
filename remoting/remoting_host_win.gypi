@@ -30,6 +30,12 @@
       # GN version: //remoting/host:remoting_lib_idl
       'target_name': 'remoting_lib_idl',
       'type': 'static_library',
+      'variables': {
+        'clang_warning_flags': [
+          # MIDL generates code like "#endif !_MIDL_USE_GUIDDEF_"
+          '-Wno-extra-tokens',
+        ],
+      },
       'sources': [
         'host/win/chromoting_lib_idl.templ',
         '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.h',

@@ -7,6 +7,12 @@
     {
       'target_name': 'google_update',
       'type': 'static_library',
+      'variables': {
+        'clang_warning_flags': [
+          # MIDL generates code like "#endif !_MIDL_USE_GUIDDEF_"
+          '-Wno-extra-tokens',
+        ],
+      },
       'sources': [
         'google_update_idl.idl',
         '<(SHARED_INTERMEDIATE_DIR)/google_update/google_update_idl.h',
