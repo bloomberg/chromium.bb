@@ -41,37 +41,25 @@ function _processEachRegisteredElement(callback)
 
 function _recordEvent(event)
 {
-    replayEventQueue.push(event);
+    replayEventQueue.push([event, event.currentTarget.id]);
 }
 
 function checkThatEventsFiredInOrder(expectedOrderQueue)
 {
-    function eventTarget(event)
-    {
-        // In Internet Explorer an Event object does not have a "target" property.
-        // The analagous property is called "srcElement".
-        return event.target || event.srcElement;
-    }
-
-    function elementIdOrTagName(element)
-    {
-        return element.id || element.tagName;
-    }
-
     while (replayEventQueue.length && expectedOrderQueue.length) {
         var replayedEvent = replayEventQueue.shift();
         var expectedEvent = expectedOrderQueue.shift();
-        var replayedEventTargetName = elementIdOrTagName(eventTarget(replayedEvent));
-        if (replayedEventTargetName === expectedEvent[0] && replayedEvent.type === expectedEvent[1])
-            testPassed('fired event is (' + replayedEventTargetName + ', ' + replayedEvent.type + ').');
+        var replayedEventTargetName = replayedEvent[1];
+        if (replayedEventTargetName === expectedEvent[0] && replayedEvent[0].type === expectedEvent[1])
+            testPassed('fired event is (' + replayedEventTargetName + ', ' + replayedEvent[0].type + ').');
         else {
-            testFailed('fired event is (' + replayedEventTargetName + ', ' + replayedEvent.type + '). ' +
+            testFailed('fired event is (' + replayedEventTargetName + ', ' + replayedEvent[0].type + '). ' +
                        'Should be (' + expectedEvent[0] + ', ' + expectedEvent[1] + ').');
         }
     }
     while (replayEventQueue.length) {
         var replayedEvent = replayEventQueue.shift();
-        testFailed('should not have fired event (' + elementIdOrTagName(eventTarget(replayedEvent)) + ', ' + replayedEvent.type + '). But did.');
+        testFailed('should not have fired event (' + replayedEvent[1] + ', ' + replayedEvent[0].type + '). But did.');
     }
     while (expectedOrderQueue.length) {
         var expectedEvent = expectedOrderQueue.shift();

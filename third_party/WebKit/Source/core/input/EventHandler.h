@@ -239,6 +239,8 @@ private:
     bool handleGestureScrollBegin(const PlatformGestureEvent&);
     void clearGestureScrollState();
 
+    void updateGestureTargetNodeForMouseEvent(const GestureEventWithHitTestResults&);
+
     bool shouldApplyTouchAdjustment(const PlatformGestureEvent&) const;
 
     OptionalCursor selectCursor(const HitTestResult&);
