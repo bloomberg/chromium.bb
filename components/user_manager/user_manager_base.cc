@@ -88,6 +88,9 @@ const char kUsingSAMLKey[] = "using_saml";
 // Key of Device Id.
 const char kDeviceId[] = "device_id";
 
+// Key of GAPS cookie.
+const char kGAPSCookie[] = "gaps_cookie";
+
 // Key of the reason for re-auth.
 const char kReauthReasonKey[] = "reauth_reason";
 
@@ -1164,6 +1167,19 @@ std::string UserManagerBase::GetKnownUserDeviceId(const UserID& user_id) {
   std::string device_id;
   if (GetKnownUserStringPref(user_id, kDeviceId, &device_id)) {
     return device_id;
+  }
+  return std::string();
+}
+
+void UserManagerBase::SetKnownUserGAPSCookie(const UserID& user_id,
+                                             const std::string& gaps_cookie) {
+  SetKnownUserStringPref(user_id, kGAPSCookie, gaps_cookie);
+}
+
+std::string UserManagerBase::GetKnownUserGAPSCookie(const UserID& user_id) {
+  std::string gaps_cookie;
+  if (GetKnownUserStringPref(user_id, kGAPSCookie, &gaps_cookie)) {
+    return gaps_cookie;
   }
   return std::string();
 }

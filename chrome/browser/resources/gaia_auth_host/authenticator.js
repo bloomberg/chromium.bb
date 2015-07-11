@@ -25,8 +25,10 @@ cr.define('cr.login', function() {
   var SIGN_IN_HEADER = 'google-accounts-signin';
   var EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   var LOCATION_HEADER = 'location';
+  var COOKIE_HEADER = 'cookie';
   var SET_COOKIE_HEADER = 'set-cookie';
   var OAUTH_CODE_COOKIE = 'oauth_code';
+  var GAPS_COOKIE = 'GAPS';
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
 
@@ -87,6 +89,7 @@ cr.define('cr.login', function() {
     'platformVersion',     // Version of the OS build.
     'releaseChannel',      // Installation channel.
     'endpointGen',         // Current endpoint generation.
+    'gapsCookie',          // GAPS cookie
   ];
 
   /**
@@ -114,7 +117,10 @@ cr.define('cr.login', function() {
     this.initialFrameUrl_ = null;
     this.reloadUrl_ = null;
     this.trusted_ = true;
-    this.oauth_code_ = null;
+    this.oauthCode_ = null;
+    this.gapsCookie_ = null;
+    this.gapsCookieSent_ = false;
+    this.newGapsCookie_ = null;
 
     this.useEafe_ = false;
     this.clientId_ = null;
@@ -170,7 +176,10 @@ cr.define('cr.login', function() {
     this.email_ = null;
     this.gaiaId_ = null;
     this.password_ = null;
-    this.oauth_code_ = null;
+    this.oauthCode_ = null;
+    this.gapsCookie_ = null;
+    this.gapsCookieSent_ = false;
+    this.newGapsCookie_ = null;
     this.chooseWhatToSync_ = false;
     this.skipForNow_ = false;
     this.sessionIndex_ = null;
@@ -188,6 +197,7 @@ cr.define('cr.login', function() {
     this.authMode = authMode;
     this.clearCredentials_();
     this.loaded_ = false;
+    // gaiaUrl parameter is used for testing. Once defined, it is never changed.
     this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
     this.continueUrl_ = data.continueUrl || CONTINUE_URL;
     this.continueUrlWithoutParams_ =
@@ -197,6 +207,9 @@ cr.define('cr.login', function() {
     this.isNewGaiaFlowChromeOS = data.isNewGaiaFlowChromeOS;
     this.useEafe_ = data.useEafe || false;
     this.clientId_ = data.clientId;
+    this.gapsCookie_ = data.gapsCookie;
+    this.gapsCookieSent_ = false;
+    this.newGapsCookie_ = null;
 
     this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
     this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -210,6 +223,16 @@ cr.define('cr.login', function() {
       this.webview_.contextMenus.onShow.addListener(function(e) {
         e.preventDefault();
       });
+
+      if (!this.onBeforeSetHeadersSet_) {
+        this.onBeforeSetHeadersSet_ = true;
+        var filterPrefix = this.idpOrigin_ + EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
+        // This depends on gaiaUrl parameter, that is why it is here.
+        this.webview_.request.onBeforeSendHeaders.addListener(
+            this.onBeforeSendHeaders_.bind(this),
+            {urls: [filterPrefix + '?*', filterPrefix + '/*']},
+            ['requestHeaders', 'blocking']);
+      }
     }
 
     this.webview_.src = this.reloadUrl_;
@@ -374,11 +397,73 @@ cr.define('cr.login', function() {
           this.isNewGaiaFlowChromeOS && headerName == SET_COOKIE_HEADER) {
         var headerValue = header.value;
         if (headerValue.indexOf(OAUTH_CODE_COOKIE + '=', 0) == 0) {
-          this.oauth_code_ =
+          this.oauthCode_ =
               headerValue.substring(OAUTH_CODE_COOKIE.length + 1).split(';')[0];
+        }
+        if (headerValue.indexOf(GAPS_COOKIE + '=', 0) == 0) {
+          this.newGapsCookie_ =
+              headerValue.substring(GAPS_COOKIE.length + 1).split(';')[0];
         }
       }
     }
+  };
+
+  /**
+   * This method replaces cookie value in cookie header.
+   * @param@ {string} header_value Original string value of Cookie header.
+   * @param@ {string} cookie_name Name of cookie to be replaced.
+   * @param@ {string} cookie_value New cookie value.
+   * @return {string} New Cookie header value.
+   * @private
+   */
+  Authenticator.prototype.updateCookieValue_ = function(
+      header_value, cookie_name, cookie_value) {
+    var cookies = header_value.split(/\s*;\s*/);
+    var found = false;
+    for (var i = 0; i < cookies.length; ++i) {
+      if (cookies[i].indexOf(cookie_name + '=', 0) == 0) {
+        found = true;
+        cookies[i] = cookie_name + '=' + cookie_value;
+        break;
+      }
+    }
+    if (!found) {
+      cookies.push(cookie_name + '=' + cookie_value);
+    }
+    return cookies.join('; ');
+  };
+
+  /**
+   * Handler for webView.request.onBeforeSendHeaders .
+   * @return {!Object} Modified request headers.
+   * @private
+   */
+  Authenticator.prototype.onBeforeSendHeaders_ = function(details) {
+    // We should re-send cookie if first request was unsuccessful (i.e. no new
+    // GAPS cookie was received).
+    if (this.isNewGaiaFlowChromeOS && this.gapsCookie_ &&
+        (!this.gapsCookieSent_ || !this.newGapsCookie_)) {
+      var headers = details.requestHeaders;
+      var found = false;
+      var gapsCookie = this.gapsCookie_;
+
+      for (var i = 0, l = headers.length; i < l; ++i) {
+        if (headers[i].name == COOKIE_HEADER) {
+          headers[i].value = this.updateCookieValue_(headers[i].value,
+                                                     GAPS_COOKIE, gapsCookie);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        details.requestHeaders.push(
+            {name: COOKIE_HEADER, value: GAPS_COOKIE + '=' + gapsCookie});
+      }
+      this.gapsCookieSent_ = true;
+    }
+    return {
+      requestHeaders: details.requestHeaders
+    };
   };
 
   /**
@@ -398,14 +483,14 @@ cr.define('cr.login', function() {
     if (this.useEafe_ &&
         typeof e.data == 'object' &&
         e.data.hasOwnProperty('authorizationCode')) {
-      assert(!this.oauth_code_);
-      this.oauth_code_ = e.data.authorizationCode;
+      assert(!this.oauthCode_);
+      this.oauthCode_ = e.data.authorizationCode;
       this.dispatchEvent(
           new CustomEvent('authCompleted',
                           {
                             detail: {
                               authCodeOnly: true,
-                              authCode: this.oauth_code_
+                              authCode: this.oauthCode_
                             }
                           }));
       return;
@@ -533,22 +618,23 @@ cr.define('cr.login', function() {
   Authenticator.prototype.onAuthCompleted_ = function() {
     assert(this.skipForNow_ ||
            (this.email_ && this.gaiaId_ && this.sessionIndex_));
-    this.dispatchEvent(
-        new CustomEvent('authCompleted',
-                        // TODO(rsorokin): get rid of the stub values.
-                        {
-                          detail: {
-                            email: this.email_ || '',
-                            gaiaId: this.gaiaId_ || '',
-                            password: this.password_ || '',
-                            authCode: this.oauth_code_,
-                            usingSAML: this.authFlow == AuthFlow.SAML,
-                            chooseWhatToSync: this.chooseWhatToSync_,
-                            skipForNow: this.skipForNow_,
-                            sessionIndex: this.sessionIndex_ || '',
-                            trusted: this.trusted_
-                          }
-                        }));
+    this.dispatchEvent(new CustomEvent(
+        'authCompleted',
+        // TODO(rsorokin): get rid of the stub values.
+        {
+          detail: {
+            email: this.email_ || '',
+            gaiaId: this.gaiaId_ || '',
+            password: this.password_ || '',
+            authCode: this.oauthCode_,
+            usingSAML: this.authFlow == AuthFlow.SAML,
+            chooseWhatToSync: this.chooseWhatToSync_,
+            skipForNow: this.skipForNow_,
+            sessionIndex: this.sessionIndex_ || '',
+            trusted: this.trusted_,
+            gapsCookie: this.newGapsCookie_ || this.gapsCookie_ || '',
+          }
+        }));
     this.clearCredentials_();
   };
 
@@ -659,7 +745,7 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onLoadCommit_ = function(e) {
-    if (this.oauth_code_) {
+    if (this.oauthCode_) {
       this.skipForNow_ = true;
       this.maybeCompleteAuth_();
     }

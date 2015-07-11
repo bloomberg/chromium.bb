@@ -26,7 +26,8 @@ UserContext::UserContext(const UserContext& other)
       user_type_(other.user_type_),
       public_session_locale_(other.public_session_locale_),
       public_session_input_method_(other.public_session_input_method_),
-      device_id_(other.device_id_) {
+      device_id_(other.device_id_),
+      gaps_cookie_(other.gaps_cookie_) {
 }
 
 UserContext::UserContext(const std::string& user_id)
@@ -122,6 +123,10 @@ const std::string& UserContext::GetDeviceId() const {
   return device_id_;
 }
 
+const std::string& UserContext::GetGAPSCookie() const {
+  return gaps_cookie_;
+}
+
 bool UserContext::HasCredentials() const {
   return (!user_id_.empty() && !key_.GetSecret().empty()) ||
          !auth_code_.empty();
@@ -177,6 +182,10 @@ void UserContext::SetPublicSessionInputMethod(const std::string& input_method) {
 
 void UserContext::SetDeviceId(const std::string& device_id) {
   device_id_ = device_id;
+}
+
+void UserContext::SetGAPSCookie(const std::string& gaps_cookie) {
+  gaps_cookie_ = gaps_cookie;
 }
 
 void UserContext::ClearSecrets() {

@@ -137,6 +137,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void SetKnownUserDeviceId(const UserID& user_id,
                             const std::string& device_id) override;
   std::string GetKnownUserDeviceId(const UserID& user_id) override;
+  void SetKnownUserGAPSCookie(const UserID& user_id,
+                              const std::string& gaps_cookie) override;
+  std::string GetKnownUserGAPSCookie(const UserID& user_id) override;
   void UpdateReauthReason(const std::string& user_id,
                           const int reauth_reason) override;
   bool FindReauthReason(const std::string& user_id, int* out_value) override;

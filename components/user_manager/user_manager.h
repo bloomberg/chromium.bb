@@ -383,6 +383,12 @@ class USER_MANAGER_EXPORT UserManager {
                                     const std::string& device_id) = 0;
   virtual std::string GetKnownUserDeviceId(const UserID& user_id) = 0;
 
+  // Setter and getter for GAPSCookie known user string preference.
+  virtual void SetKnownUserGAPSCookie(const UserID& user_id,
+                                      const std::string& gaps_cookie) = 0;
+
+  virtual std::string GetKnownUserGAPSCookie(const UserID& user_id) = 0;
+
   // Saves why the user has to go through re-auth flow.
   virtual void UpdateReauthReason(const UserID& user_id,
                                   const int reauth_reason) = 0;

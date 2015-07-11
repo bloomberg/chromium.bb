@@ -233,6 +233,7 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
   params.SetString("email", context.email);
   params.SetBoolean("isEnrollingConsumerManagement",
                     is_enrolling_consumer_management);
+  params.SetString("gapsCookie", context.gaps_cookie);
 
   UpdateAuthParams(&params,
                    context.has_users,
@@ -512,7 +513,8 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& email,
     const std::string& password,
     const std::string& auth_code,
-    bool using_saml) {
+    bool using_saml,
+    const std::string& gaps_cookie) {
   if (!Delegate())
     return;
 
@@ -529,6 +531,7 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
                                : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML);
+  user_context.SetGAPSCookie(gaps_cookie);
   Delegate()->CompleteLogin(user_context);
 }
 
@@ -948,6 +951,12 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   if (Delegate()) {
     context.show_users = Delegate()->IsShowUsers();
     context.has_users = !Delegate()->GetUsers().empty();
+  }
+
+  if (!context.email.empty()) {
+    context.gaps_cookie =
+        user_manager::UserManager::Get()->GetKnownUserGAPSCookie(
+            gaia::CanonicalizeEmail(context.email));
   }
 
   populated_email_.clear();

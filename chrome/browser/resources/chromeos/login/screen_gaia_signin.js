@@ -741,7 +741,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             credentials.email,
             credentials.password,
             credentials.authCode,
-            credentials.usingSAML
+            credentials.usingSAML,
+            credentials.gapsCookie
           ]);
         }
       } else {
