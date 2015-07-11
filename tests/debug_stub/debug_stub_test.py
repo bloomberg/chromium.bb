@@ -268,6 +268,35 @@ def KillProcess(process):
   process.wait()
 
 
+def ChangeReg(conn, name, func):
+  regs = DecodeRegs(conn.RspRequest('g'))
+  regs[name] = func(regs[name])
+  return conn.RspRequest('G' + EncodeRegs(regs))
+
+
+def SkipBreakpoint(connection, stop_reply):
+  # Skip past the faulting instruction in debugger_test.c's
+  # breakpoint() function.
+  regs = DecodeRegs(connection.RspRequest('g'))
+  if ARCH in ('x86-32', 'x86-64'):
+    AssertReplySignal(stop_reply, NACL_SIGSEGV)
+    # Skip past the single-byte HLT instruction.
+    regs[IP_REG[ARCH]] += 1
+  elif ARCH == 'arm':
+    AssertReplySignal(stop_reply, NACL_SIGILL)
+    bundle_size = 16
+    assert regs['r15'] % bundle_size == 0, regs['r15']
+    regs['r15'] += bundle_size
+  elif ARCH == 'mips32':
+    AssertReplySignal(stop_reply, NACL_SIGTRAP)
+    bundle_size = 16
+    assert regs['prog_ctr'] % bundle_size == 0, regs['prog_ctr']
+    regs['prog_ctr'] += bundle_size
+  else:
+    raise AssertionError('Unknown architecture')
+  AssertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
+
+
 class LaunchDebugStub(object):
 
   def __init__(self, test):
@@ -811,6 +840,58 @@ class DebugStubTest(unittest.TestCase):
       reply = connection.RspRequest('vFile:close:%x' % 13)
       self.assertEqual(reply, 'F-1,%x' % GDB_EBADF)
 
+  def test_register_constraints(self):
+    if ARCH != 'x86-32':
+      # This has only been implemented for x86-32.
+      return
+    with LaunchDebugStub('test_super_instruction') as connection:
+      reply = connection.RspRequest('c')
+      SkipBreakpoint(connection, reply)
+
+      regs = DecodeRegs(connection.RspRequest('g'))
+
+      # Allowed to change all General registers besides eip.
+      self.assertEquals(ChangeReg(connection, 'eax', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'ebx', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'ecx', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'edx', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'esp', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'ebp', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'esi', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'edi', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'eflags', lambda x: x + 1), 'OK')
+
+      # Cannot change read only registers, however error is suppressed.
+      self.assertEquals(ChangeReg(connection, 'cs', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'ss', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'ds', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'es', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'fs', lambda x: x + 1), 'OK')
+      self.assertEquals(ChangeReg(connection, 'gs', lambda x: x + 1), 'OK')
+
+      # Next instruction is a super instruction.
+      # Therefore cannot jump anywhere in the middle.
+      for i in xrange(1,5):
+        self.assertEquals(ChangeReg(connection, 'eip', lambda x: x + i), 'E03')
+
+      # Allowed to jump over the entire super instruction.
+      self.assertEquals(ChangeReg(connection, 'eip', lambda x: x + 5), 'OK')
+
+  def test_step_inside_super_instruction(self):
+    if ARCH != 'x86-32':
+      # This has only been implemented for x86-32.
+      return
+    with LaunchDebugStub('test_super_instruction') as connection:
+      reply = connection.RspRequest('c')
+      SkipBreakpoint(connection, reply)
+
+      reply = connection.RspRequest('vCont;s:1')
+      self.assertEquals(reply, 'T05thread:1;')
+
+      regs = DecodeRegs(connection.RspRequest('g'))
+
+      # Cannot change registers within super-instruction.
+      self.assertEquals(ChangeReg(connection, 'eax', lambda x: x + 1), 'E03')
 
 class DebugStubBreakpointTest(unittest.TestCase):
 
@@ -892,30 +973,25 @@ class DebugStubBreakpointTest(unittest.TestCase):
       new_memory = ReadMemory(connection, func_addr, 1)
       self.assertEquals(new_memory, old_memory[:1])
 
+  def test_setting_breakpoint_in_super_instruction(self):
+    if ARCH != 'x86-32':
+      # This has only been implemented for x86-32.
+      return
+    with LaunchDebugStub('test_super_instruction') as connection:
+      reply = connection.RspRequest('c')
+      SkipBreakpoint(connection, reply)
+
+      regs = DecodeRegs(connection.RspRequest('g'))
+
+      # Next instruction is inside super instruction.
+      invalid_addr = regs[IP_REG[ARCH]] + 3
+
+      # Setting breakpoint here should not be allowed.
+      reply = connection.RspRequest('Z0,%x,0' % invalid_addr)
+      self.assertEquals(reply, 'E03')
+
 
 class DebugStubThreadSuspensionTest(unittest.TestCase):
-
-  def SkipBreakpoint(self, connection, stop_reply):
-    # Skip past the faulting instruction in debugger_test.c's
-    # breakpoint() function.
-    regs = DecodeRegs(connection.RspRequest('g'))
-    if ARCH in ('x86-32', 'x86-64'):
-      AssertReplySignal(stop_reply, NACL_SIGSEGV)
-      # Skip past the single-byte HLT instruction.
-      regs[IP_REG[ARCH]] += 1
-    elif ARCH == 'arm':
-      AssertReplySignal(stop_reply, NACL_SIGILL)
-      bundle_size = 16
-      assert regs['r15'] % bundle_size == 0, regs['r15']
-      regs['r15'] += bundle_size
-    elif ARCH == 'mips32':
-      AssertReplySignal(stop_reply, NACL_SIGTRAP)
-      bundle_size = 16
-      assert regs['prog_ctr'] % bundle_size == 0, regs['prog_ctr']
-      regs['prog_ctr'] += bundle_size
-    else:
-      raise AssertionError('Unknown architecture')
-    AssertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
 
   def WaitForTestThreadsToStart(self, connection, symbols):
     # Wait until:
@@ -924,7 +1000,7 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
     old_value = ReadUint32(connection, symbols['g_main_thread_var'])
     while True:
       reply = connection.RspRequest('c')
-      self.SkipBreakpoint(connection, reply)
+      SkipBreakpoint(connection, reply)
       child_thread_id = ParseThreadStopReply(reply)['thread_id']
       if ReadUint32(connection, symbols['g_main_thread_var']) != old_value:
         break
@@ -945,7 +1021,7 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
         main_thread_val = ReadUint32(connection, symbols['g_main_thread_var'])
         child_thread_val = ReadUint32(connection, symbols['g_child_thread_var'])
         reply = connection.RspRequest('vCont;c:%x' % child_thread_id)
-        self.SkipBreakpoint(connection, reply)
+        SkipBreakpoint(connection, reply)
         self.assertEquals(ParseThreadStopReply(reply)['thread_id'],
                           child_thread_id)
         # The main thread should not be allowed to run, so should not
@@ -982,7 +1058,7 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
             # there is nothing to do.
             pass
           else:
-            self.SkipBreakpoint(connection, reply)
+            SkipBreakpoint(connection, reply)
           self.assertEquals(ParseThreadStopReply(reply)['thread_id'],
                             child_thread_id)
           # The main thread should not be allowed to run, so should not

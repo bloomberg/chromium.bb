@@ -26,6 +26,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
+#include "native_client/src/trusted/validator/ncvalidate.h"
 
 #if NACL_WINDOWS
 #define snprintf sprintf_s
@@ -109,6 +110,12 @@ void Target::Destroy() {
 
 bool Target::AddBreakpoint(uint32_t user_address) {
   const Abi::BPDef *bp = abi_->GetBreakpointDef();
+
+  // Don't allow breakpoints within instructions / pseudo-instructions
+  if (!IsOnValidInstBoundary(user_address)) {
+    NaClLog(LOG_ERROR, "Failed to set breakpoint at 0x%x\n", user_address);
+    return false;
+  }
 
   // If we already have a breakpoint here then don't add it
   if (breakpoint_map_.find(user_address) != breakpoint_map_.end())
@@ -259,6 +266,37 @@ void Target::Run(Session *ses) {
 
 bool Target::IsInitialBreakpointActive() {
   return initial_breakpoint_addr_ != 0;
+}
+
+bool Target::IsOnValidInstBoundary(uint32_t addr) {
+  // TODO(leslieb): Remove when x86-64 and arm have validator implementations.
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  uint8_t code_buf[NACL_INSTR_BLOCK_SIZE];
+  // Calculate nearest bundle address.
+  uint32_t bundle_addr = addr & ~(NACL_INSTR_BLOCK_SIZE - 1);
+  uintptr_t code_addr = NaClUserToSysAddrRange(
+    nap_, bundle_addr, NACL_INSTR_BLOCK_SIZE);
+
+  if (code_addr == kNaClBadAddress)
+    return false;
+
+  // Read memory.  This checks whether the memory is mapped.
+  if (!IPlatform::GetMemory(code_addr, NACL_INSTR_BLOCK_SIZE, code_buf))
+    return false;
+
+  // Bundle boundaries are always valid.
+  if (bundle_addr == addr)
+    return true;
+
+  return nap_->validator->IsOnInstBoundary(
+                  bundle_addr, addr,
+                  code_buf,
+                  NACL_INSTR_BLOCK_SIZE,
+                  nap_->cpu_features) == NaClValidationSucceeded;
+#else
+  UNREFERENCED_PARAMETER(addr);
+  return true;
+#endif
 }
 
 void Target::WaitForDebugEvent() {
@@ -630,9 +668,17 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
 
       pktIn->GetBlock(ctx_, abi_->GetContextSize());
 
-      thread->SetRegisters(ctx_);
+      uint32_t new_pc = static_cast<uint32_t>(
+          reinterpret_cast<NaClSignalContext *>(ctx_)->prog_ctr);
 
-      pktOut->AddString("OK");
+      if (!IsOnValidInstBoundary(new_pc)) {
+        NaClLog(LOG_ERROR, "Invalid register change\n");
+        err = FAILED;
+      } else {
+        thread->SetRegisters(ctx_);
+        pktOut->AddString("OK");
+      }
+
       break;
     }
 

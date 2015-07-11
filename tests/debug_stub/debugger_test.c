@@ -249,6 +249,18 @@ void test_suspending_threads(void) {
   }
 }
 
+/*
+ * Single super-instruction to test register constraints.
+ * Tests also assume the super-instruction immediately follows the hlt.
+ */
+void test_super_instruction(void) {
+#if defined(__i386__)
+  __asm__(".p2align 5\n" /* Ensures nacljmp doesnt cross a bundle boundary */
+          "hlt\n"
+          "nacljmp %ecx\n");
+#endif
+}
+
 int main(int argc, char **argv) {
   /*
    * This will crash if the entry-point breakpoint has been mishandled such
@@ -288,5 +300,10 @@ int main(int argc, char **argv) {
     test_suspending_threads();
     return 0;
   }
+  if (strcmp(argv[1], "test_super_instruction") == 0) {
+    test_super_instruction();
+    return 0;
+  }
+
   return 1;
 }
