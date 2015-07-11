@@ -382,6 +382,19 @@
             '../sbox_integration_tests.isolate',
           ],
         },
+        {
+          'target_name': 'sbox_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'sbox_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            '../sbox_unittests.isolate',
+          ],
+        },
       ],
     }],
   ],

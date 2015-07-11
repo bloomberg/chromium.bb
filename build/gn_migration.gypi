@@ -569,6 +569,7 @@
             ['OS=="win"', {
               'dependencies': [
                 '../sandbox/sandbox.gyp:sbox_integration_tests',
+                '../sandbox/sandbox.gyp:sbox_unittests',
               ],
             }],
             ['use_ash==1', {
