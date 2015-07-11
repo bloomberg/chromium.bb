@@ -366,6 +366,11 @@ crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-224.xht [ ImageOnlyFailure ]
 
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-normal-011.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-new-003.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-new-005.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-new-006.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-new-008.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-new-009.xht [ ImageOnlyFailure ]
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-002.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.xht [ ImageOnlyFailure ]
