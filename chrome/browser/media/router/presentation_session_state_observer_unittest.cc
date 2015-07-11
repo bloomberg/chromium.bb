@@ -29,7 +29,7 @@ MediaRoute::Id CreateRouteId(const char* presentation_url,
 }
 
 MATCHER_P(PresentationSessionInfoEquals, expected, "") {
-  return arg.presentation_url == expected.presentation_url &
+  return arg.presentation_url == expected.presentation_url &&
          arg.presentation_id == expected.presentation_id;
 }
 
