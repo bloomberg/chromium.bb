@@ -91,6 +91,10 @@
         "upload_gce_images": false,
         "upload_hw_test_artifacts": true,
         "upload_standalone_images": true,
+        "upload_stripped_packages": [
+            "chromeos-base/chromeos-chrome",
+            "sys-kernel/*kernel*"
+        ],
         "upload_symbols": false,
         "uprev": true,
         "use_chrome_lkgm": false,

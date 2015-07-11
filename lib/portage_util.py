@@ -1477,7 +1477,7 @@ def FindPackageNameMatches(pkg_str, board=None):
 
   cmd += ['list', pkg_str]
   result = cros_build_lib.RunCommand(
-      cmd, capture_output=True, error_code_ok=True)
+      cmd, enter_chroot=True, capture_output=True, error_code_ok=True)
 
   matches = []
   if result.returncode == 0:

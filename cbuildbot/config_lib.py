@@ -534,6 +534,15 @@ def DefaultSettings():
       #                      basis for GCE images.
       upload_gce_images=False,
 
+      # List of patterns for portage packages for which stripped binpackages
+      # should be uploaded to GS. The patterns are used to search for packages
+      # via `equery list`.
+      upload_stripped_packages=[
+          # Used by SimpleChrome workflow.
+          'chromeos-base/chromeos-chrome',
+          'sys-kernel/*kernel*',
+      ],
+
       # Google Storage path to offload files to.
       #   None - No upload
       #   GS_PATH_DEFAULT - 'gs://chromeos-image-archive/' + bot_id

@@ -1897,6 +1897,52 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
   return [filename]
 
 
+def BuildStrippedPackagesTarball(buildroot, board, package_globs, archive_dir):
+  """Builds a tarball containing stripped packages.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: The board for which packages should be tarred up.
+    package_globs: List of package search patterns. Each pattern is used to
+        search for packages via `equery list`.
+    archive_dir: The directory to drop the tarball in.
+
+  Returns:
+    The file name of the output tarball, None if no package found.
+  """
+  chroot_path = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
+  board_path = os.path.join(chroot_path, 'build', board)
+  stripped_pkg_dir = os.path.join(board_path, 'stripped-packages')
+  tarball_paths = []
+  for pattern in package_globs:
+    packages = portage_util.FindPackageNameMatches(pattern, board)
+    for cpv in packages:
+      pkg = '%s/%s' % (cpv.category, cpv.pv)
+      cmd = ['strip_package', '--board', board, pkg]
+      cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
+      # Find the stripped package.
+      files = glob.glob(os.path.join(stripped_pkg_dir, pkg) + '.*')
+      if not files:
+        raise AssertionError('Silent failure to strip binary %s? '
+                             'Failed to find stripped files at %s.' %
+                             (pkg, os.path.join(stripped_pkg_dir, pkg)))
+      if len(files) > 1:
+        cros_build_lib.PrintBuildbotStepWarnings()
+        logging.warning('Expected one stripped package for %s, found %d',
+                        pkg, len(files))
+
+      tarball = sorted(files)[-1]
+      tarball_paths.append(os.path.abspath(tarball))
+
+  if not tarball_paths:
+    # tar barfs on an empty list of files, so skip tarring completely.
+    return None
+
+  tarball_output = os.path.join(archive_dir, 'stripped-packages.tar')
+  BuildTarball(buildroot, tarball_paths, tarball_output, compressed=False)
+  return os.path.basename(tarball_output)
+
+
 def BuildGceTarball(archive_dir, image_dir, image):
   """Builds a tarball that can be converted into a GCE image.
 

@@ -77,40 +77,15 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     self._recovery_image_status_queue.put(status)
     return status
 
-  @staticmethod
-  def SingleMatchGlob(path_pattern):
-    """Returns the last match (after sort) if multiple found."""
-    files = glob.glob(path_pattern)
-    files.sort()
-    if not files:
-      raise NothingToArchiveException('No %s found!' % path_pattern)
-    elif len(files) > 1:
-      cros_build_lib.PrintBuildbotStepWarnings()
-      logging.warning('Expecting one result for %s package, but found '
-                      'multiple.', path_pattern)
-    return files[-1]
-
-  def ArchiveStrippedChrome(self):
-    """Generate and upload stripped Chrome package."""
-
-    # If chrome is not installed, skip archiving.
-    chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    board_path = os.path.join(chroot_path, 'build', self._current_board)
-    if not portage_util.IsPackageInstalled(constants.CHROME_CP,
-                                           board_path):
-      return
-
-    cmd = ['strip_package', '--board', self._current_board,
-           constants.CHROME_PN]
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)
-    pkg_dir = os.path.join(
-        self._build_root, constants.DEFAULT_CHROOT_DIR, 'build',
-        self._current_board, 'stripped-packages')
-    chrome_tarball = self.SingleMatchGlob(
-        os.path.join(pkg_dir, constants.CHROME_CP) + '-*')
-    filename = os.path.basename(chrome_tarball)
-    os.link(chrome_tarball, os.path.join(self.archive_path, filename))
-    self._upload_queue.put([filename])
+  def ArchiveStrippedPackages(self):
+    """Generate and archive stripped versions of packages requested."""
+    tarball = commands.BuildStrippedPackagesTarball(
+        self._build_root,
+        self._current_board,
+        self._run.config.upload_stripped_packages,
+        self.archive_path)
+    if tarball is not None:
+      self._upload_queue.put([tarball])
 
   def BuildAndArchiveDeltaSysroot(self):
     """Generate and upload delta sysroot for initial build_packages."""
@@ -207,7 +182,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     #          \- ArchiveGceTarballs
     #       \- PushImage (blocks on BuildAndArchiveAllImages)
     #    \- ArchiveManifest
-    #    \- ArchiveStrippedChrome
+    #    \- ArchiveStrippedPackages
     #    \- ArchiveImageScripts
 
     def ArchiveManifest():
@@ -400,9 +375,10 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
     def BuildAndArchiveArtifacts():
       # Run archiving steps in parallel.
-      steps = [ArchiveReleaseArtifacts, ArchiveManifest]
+      steps = [ArchiveReleaseArtifacts, ArchiveManifest,
+               self.ArchiveStrippedPackages]
       if config['images']:
-        steps.extend([self.ArchiveStrippedChrome, ArchiveImageScripts])
+        steps.append(ArchiveImageScripts)
       if config['create_delta_sysroot']:
         steps.append(self.BuildAndArchiveDeltaSysroot)
 

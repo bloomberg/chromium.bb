@@ -10,17 +10,21 @@ import base64
 import mock
 import os
 from StringIO import StringIO
+from os.path import join as pathjoin
+from os.path import abspath as abspath
 
 from chromite.cbuildbot import autotest_rpc_errors
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import path_util
+from chromite.lib import portage_util
 from chromite.scripts import pushimage
 
 
@@ -539,7 +543,7 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
 
 
 class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
-  """Tests related to Building the Test Tarball Artifacts."""
+  """Tests related to building tarball artifacts."""
 
   def setUp(self):
     self._buildroot = os.path.join(self.tempdir, 'buildroot')
@@ -618,6 +622,42 @@ class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
         self._buildroot, control_file_list,
         os.path.join(self._tarball_dir, 'autotest_server_package.tar.bz2'),
         cwd=self._cwd, error_code_ok=True)
+
+  def testBuildStrippedPackagesArchive(self):
+    """Test generation of stripped package tarball using globs."""
+    package_globs = ['chromeos-base/chromeos-chrome', 'sys-kernel/*kernel*']
+    self.PatchObject(
+        portage_util, 'FindPackageNameMatches',
+        side_effect=[
+            [portage_util.SplitCPV('chromeos-base/chrome-1-r0')],
+            [portage_util.SplitCPV('sys-kernel/kernel-1-r0'),
+             portage_util.SplitCPV('sys-kernel/kernel-2-r0')]])
+    # Drop "stripped packages".
+    pkg_dir = pathjoin(self._buildroot, 'chroot', 'build', 'test-board',
+                       'stripped-packages')
+    osutils.Touch(pathjoin(pkg_dir, 'chromeos-base', 'chrome-1-r0.tbz2'),
+                  makedirs=True)
+    sys_kernel = pathjoin(pkg_dir, 'sys-kernel')
+    osutils.Touch(pathjoin(sys_kernel, 'kernel-1-r0.tbz2'), makedirs=True)
+    osutils.Touch(pathjoin(sys_kernel, 'kernel-1-r01.tbz2'), makedirs=True)
+    osutils.Touch(pathjoin(sys_kernel, 'kernel-2-r0.tbz1'), makedirs=True)
+    osutils.Touch(pathjoin(sys_kernel, 'kernel-2-r0.tbz2'), makedirs=True)
+    stripped_files_list = [
+        abspath(pathjoin(pkg_dir, 'chromeos-base', 'chrome-1-r0.tbz2')),
+        abspath(pathjoin(pkg_dir, 'sys-kernel', 'kernel-1-r0.tbz2')),
+        abspath(pathjoin(pkg_dir, 'sys-kernel', 'kernel-2-r0.tbz2'))]
+
+    tar_mock = self.PatchObject(commands, 'BuildTarball')
+    self.PatchObject(cros_build_lib, 'RunCommand')
+    commands.BuildStrippedPackagesTarball(self._buildroot,
+                                          'test-board',
+                                          package_globs,
+                                          self.tempdir)
+    tar_mock.assert_called_once_with(
+        self._buildroot, stripped_files_list,
+        pathjoin(self.tempdir, 'stripped-packages.tar'),
+        compressed=False)
+
 
 class UnmockedTests(cros_test_lib.TempDirTestCase):
   """Test cases which really run tests, instead of using mocks."""

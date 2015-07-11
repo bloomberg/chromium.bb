@@ -2013,7 +2013,7 @@ def GetConfig():
       vm_tests=[],
   )
 
-  # bayleybay-release does not enable vm_tests or unittests due to the compiler
+  # bobcat-release does not enable vm_tests or unittests due to the compiler
   # flags enabled for baytrail.
   site_config.AddConfig(
       _release, 'bobcat-release',

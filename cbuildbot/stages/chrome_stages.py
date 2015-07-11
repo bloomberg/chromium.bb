@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import glob
 import multiprocessing
 import platform
 import os
@@ -157,8 +158,16 @@ class ChromeSDKStage(generic_stages.BoardSpecificBuilderStage,
 
   def _ArchiveChromeEbuildEnv(self):
     """Generate and upload Chrome ebuild environment."""
-    chrome_dir = artifact_stages.ArchiveStage.SingleMatchGlob(
-        os.path.join(self._pkg_dir, constants.CHROME_CP) + '-*')
+    files = glob.glob(os.path.join(self._pkg_dir, constants.CHROME_CP) + '-*')
+    if not files:
+      raise artifact_stages.NothingToArchiveException(
+          'Failed to find package %s' % constants.CHROME_CP)
+    if len(files) > 1:
+      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.warning('Expected one package for %s, found %d',
+                      constants.CHROME_CP, len(files))
+
+    chrome_dir = sorted(files)[-1]
     env_bzip = os.path.join(chrome_dir, 'environment.bz2')
     with osutils.TempDir(prefix='chrome-sdk-stage') as tempdir:
       # Convert from bzip2 to tar format.
