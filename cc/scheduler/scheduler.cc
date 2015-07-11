@@ -768,6 +768,12 @@ bool Scheduler::ShouldRecoverMainLatency(const BeginFrameArgs& args) const {
 bool Scheduler::ShouldRecoverImplLatency(const BeginFrameArgs& args) const {
   DCHECK(!settings_.using_synchronous_renderer_compositor);
 
+  // Disable impl thread latency recovery when using the unthrottled
+  // begin frame source since we will always get a BeginFrame before
+  // the swap ack and our heuristics below will not work.
+  if (!throttle_frame_production_)
+    return false;
+
   // If we are swap throttled at the BeginFrame, that means the impl thread is
   // very likely in a high latency mode.
   bool impl_thread_is_likely_high_latency = state_machine_.SwapThrottled();
