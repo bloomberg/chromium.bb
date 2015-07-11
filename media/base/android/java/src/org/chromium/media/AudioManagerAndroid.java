@@ -1055,11 +1055,15 @@ class AudioManagerAndroid {
                     if (DEBUG) logd("SettingsObserver.onChange: " + selfChange);
                     super.onChange(selfChange);
 
+                    /**
+                     * According to https://crbug.com/488332, on some Samsung devices we may
+                     * fail to verify the mode is MODE_IN_COMMUNICATION as we set previously.
+                     * Disable the check as a temporary fix until we understand what's going on.
                     // Ensure that the observer is activated during communication mode.
                     if (mAudioManager.getMode() != AudioManager.MODE_IN_COMMUNICATION) {
                         throw new IllegalStateException(
                                 "Only enable SettingsObserver in COMM mode");
-                    }
+                    }*/
 
                     // Get stream volume for the voice stream and deliver callback if
                     // the volume index is zero. It is not possible to move the volume
