@@ -4,18 +4,22 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Process;
+import android.util.SparseArray;
+import android.view.View;
+import android.widget.TextView;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An infobar that presents the user with several buttons.
@@ -38,10 +42,11 @@ public class ConfirmInfoBar extends InfoBar {
     private WindowAndroid mWindowAndroid;
 
     /**
-     * The list of {@link ContentSettingsType}s being requested by this infobar.  Can be null or
-     * empty if none apply.
+     * Mapping between the required {@link ContentSettingsType}s and their associated Android
+     * runtime permissions.  Only {@link ContentSettingsType}s that are associated with runtime
+     * permissions will be included in this list while all others will be excluded.
      */
-    private int[] mContentSettings;
+    private SparseArray<String> mContentSettingsToPermissionsMap;
 
     public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int iconDrawableId,
             Bitmap iconBitmap, String message, String linkText, String primaryButtonText,
@@ -64,10 +69,10 @@ public class ConfirmInfoBar extends InfoBar {
     protected void setContentSettings(
             WindowAndroid windowAndroid, int[] contentSettings) {
         mWindowAndroid = windowAndroid;
-        mContentSettings = contentSettings;
-
         assert windowAndroid != null
                 : "A WindowAndroid must be specified to request access to content settings";
+
+        mContentSettingsToPermissionsMap = generatePermissionsMapping(contentSettings);
     }
 
     @Override
@@ -80,46 +85,103 @@ public class ConfirmInfoBar extends InfoBar {
                 != PackageManager.PERMISSION_DENIED;
     }
 
-    private List<String> getPermissionsToRequest() {
-        Context context = getContext();
-        List<String> permissionsToRequest = new ArrayList<String>();
-        for (int i = 0; i < mContentSettings.length; i++) {
+    private SparseArray<String> generatePermissionsMapping(int[] contentSettings) {
+        Context context = mWindowAndroid.getApplicationContext();
+        SparseArray<String> permissionsToRequest = new SparseArray<String>();
+        for (int i = 0; i < contentSettings.length; i++) {
             String permission = PrefServiceBridge.getAndroidPermissionForContentSetting(
-                    mContentSettings[i]);
+                    contentSettings[i]);
             if (permission != null) {
-                if (!hasPermission(context, permission)) permissionsToRequest.add(permission);
+                if (!hasPermission(context, permission)) {
+                    permissionsToRequest.append(contentSettings[i], permission);
+                }
             }
         }
         return permissionsToRequest;
     }
 
+    private int getDeniedPermissionResourceId(String permission) {
+        int contentSettingsType = 0;
+        // SparseArray#indexOfValue uses == instead of .equals, so we need to manually iterate
+        // over the list.
+        for (int i = 0; i < mContentSettingsToPermissionsMap.size(); i++) {
+            if (permission.equals(mContentSettingsToPermissionsMap.valueAt(i))) {
+                contentSettingsType = mContentSettingsToPermissionsMap.keyAt(i);
+            }
+        }
+        switch (contentSettingsType) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
+                return R.string.infobar_missing_location_permission_text;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return R.string.infobar_missing_microphone_permission_text;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return R.string.infobar_missing_camera_permission_text;
+            default:
+                assert false;
+                return R.string.infobar_missing_multiple_permissions_text;
+
+        }
+    }
+
     @Override
     public void onButtonClicked(final boolean isPrimaryButton) {
-        if (mWindowAndroid == null || mContentSettings == null
-                || !isPrimaryButton || getContext() == null) {
+        if (mWindowAndroid == null || !isPrimaryButton || getContext() == null
+                || mContentSettingsToPermissionsMap == null
+                || mContentSettingsToPermissionsMap.size() == 0) {
             onButtonClickedInternal(isPrimaryButton);
             return;
         }
 
-        List<String> permissionsToRequest = getPermissionsToRequest();
-        if (permissionsToRequest.isEmpty()) {
-            onButtonClickedInternal(isPrimaryButton);
-            return;
-        }
+        requestAndroidPermissions();
+    }
 
+    private void requestAndroidPermissions() {
         PermissionCallback callback = new PermissionCallback() {
             @Override
             public void onRequestPermissionsResult(
                     String[] permissions, int[] grantResults) {
-                boolean grantedAllPermissions = true;
+                int deniedCount = 0;
+                int requestableCount = 0;
+                int deniedStringId = R.string.infobar_missing_multiple_permissions_text;
                 for (int i = 0; i < grantResults.length; i++) {
                     if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-                        grantedAllPermissions = false;
-                        break;
+                        deniedCount++;
+                        if (deniedCount > 1) {
+                            deniedStringId = R.string.infobar_missing_multiple_permissions_text;
+                        } else {
+                            deniedStringId = getDeniedPermissionResourceId(permissions[i]);
+                        }
+
+                        if (mWindowAndroid.canRequestPermission(permissions[i])) {
+                            requestableCount++;
+                        }
                     }
                 }
 
-                if (!grantedAllPermissions) {
+                Activity activity = mWindowAndroid.getActivity().get();
+                if (deniedCount > 0 && requestableCount > 0 && activity != null) {
+                    View view = activity.getLayoutInflater().inflate(
+                            R.layout.update_permissions_dialog, null);
+                    TextView dialogText = (TextView) view.findViewById(R.id.text);
+                    dialogText.setText(deniedStringId);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
+                            .setView(view)
+                            .setPositiveButton(R.string.infobar_update_permissions_button_text,
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            requestAndroidPermissions();
+                                        }
+                                    })
+                             .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                     @Override
+                                     public void onCancel(DialogInterface dialog) {
+                                         onCloseButtonClicked();
+                                     }
+                             });
+                    builder.create().show();
+                } else if (deniedCount > 0) {
                     onCloseButtonClicked();
                 } else {
                     onButtonClickedInternal(true);
@@ -127,9 +189,11 @@ public class ConfirmInfoBar extends InfoBar {
             }
         };
 
-        mWindowAndroid.requestPermissions(
-                permissionsToRequest.toArray(new String[permissionsToRequest.size()]),
-                callback);
+        String[] permissionsToRequest = new String[mContentSettingsToPermissionsMap.size()];
+        for (int i = 0; i < mContentSettingsToPermissionsMap.size(); i++) {
+            permissionsToRequest[i] = mContentSettingsToPermissionsMap.valueAt(i);
+        }
+        mWindowAndroid.requestPermissions(permissionsToRequest, callback);
     }
 
     private void onButtonClickedInternal(boolean isPrimaryButton) {
