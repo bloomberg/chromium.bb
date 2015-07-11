@@ -424,7 +424,7 @@ bool WebFrameWidgetImpl::hasTouchEventHandlersAt(const WebPoint& point)
 void WebFrameWidgetImpl::scheduleAnimation()
 {
     if (m_layerTreeView) {
-        m_layerTreeView->setNeedsAnimate();
+        m_layerTreeView->setNeedsCompositorUpdate();
         return;
     }
     if (m_client)

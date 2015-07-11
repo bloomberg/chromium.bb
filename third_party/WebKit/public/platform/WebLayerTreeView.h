@@ -103,13 +103,13 @@ public:
     // Flow control and scheduling ---------------------------------------
 
     // Indicates that an animation needs to be updated.
-    virtual void setNeedsAnimate() = 0;
+    virtual void setNeedsAnimate() { }
 
     // Indicates that blink needs a BeginFrame, but that nothing might actually be dirty.
-    virtual void setNeedsBeginFrame() { }
+    virtual void setNeedsBeginFrame() { setNeedsAnimate(); }
 
     // Indicates that blink needs a BeginFrame and to update compositor state.
-    virtual void setNeedsCompositorUpdate() { }
+    virtual void setNeedsCompositorUpdate() { setNeedsAnimate(); }
 
     // Relays the end of a fling animation.
     virtual void didStopFlinging() { }

@@ -4492,7 +4492,6 @@ public:
     void setVisible(bool)  override { }
     void setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum)  override { }
     void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec)  override { }
-    void setNeedsAnimate()  override { }
     void finishAllRendering()  override { }
     void registerSelection(const WebSelection& selection) override
     {
