@@ -32,7 +32,7 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {DIV} at (88,10) size 30x170 [color=#A52A2A]
           LayoutText {#text} at (1,0) size 26x156
             text run at (1,0) width 156: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
-      LayoutBlockFlow {DIV} at (0,410) size 117x170
+      LayoutBlockFlow {DIV} at (0,410) size 118x170
         LayoutBlockFlow {DIV} at (0,0) size 29x170
           LayoutText {#text} at (1,0) size 26x156
             text run at (1,0) width 156: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
@@ -42,6 +42,6 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {DIV} at (58,0) size 30x170 [color=#008080]
           LayoutText {#text} at (1,0) size 26x156
             text run at (1,0) width 156: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
-        LayoutBlockFlow {DIV} at (88,0) size 29x170 [color=#A52A2A]
+        LayoutBlockFlow {DIV} at (88,0) size 30x170 [color=#A52A2A]
           LayoutText {#text} at (1,0) size 26x156
             text run at (1,0) width 156: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"

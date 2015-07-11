@@ -793,9 +793,6 @@ crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests
 
 crbug.com/453002 [ Win ] fast/css/font-weight-1.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] fast/writing-mode/english-lr-text.html [ ImageOnlyFailure Pass ]
-crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure Pass ]
-crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure Pass ]
-crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ Failure Pass ]
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 
 crbug.com/505670 [ Debug ] css3/filters/huge-region.html [ Skip ]
@@ -3036,7 +3033,6 @@ crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/international/bd
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/international/bidi-AN-after-L.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/international/plane2.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/international/thai-line-breaks.html [ ImageOnlyFailure ]
-crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/midword-break-before-surrogate-pair-2.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/softHyphen.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/whitespace/024.html [ ImageOnlyFailure ]
