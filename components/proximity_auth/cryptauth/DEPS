@@ -1,5 +1,6 @@
 include_rules = [
   "+crypto",
+  "+components/gcm_driver",
   "+google_apis",
   "+net",
 ]

@@ -1,0 +1,147 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/proximity_auth/cryptauth/cryptauth_gcm_manager_impl.h"
+
+#include "base/bind.h"
+#include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
+#include "components/gcm_driver/gcm_driver.h"
+#include "components/proximity_auth/cryptauth/pref_names.h"
+#include "components/proximity_auth/logging/logging.h"
+
+namespace proximity_auth {
+
+namespace {
+
+// The GCM app id identifies the client.
+const char kCryptAuthGCMAppId[] = "com.google.chrome.cryptauth";
+
+// The GCM sender id identifies the CryptAuth server.
+const char kCryptAuthGCMSenderId[] = "381449029288";
+
+// The 'registrationTickleType' key-value pair is present in GCM push
+// messages. The values correspond to a server-side enum.
+const char kRegistrationTickleTypeKey[] = "registrationTickleType";
+const char kRegistrationTickleTypeForceEnrollment[] = "1";
+const char kRegistrationTickleTypeUpdateEnrollment[] = "2";
+const char kRegistrationTickleTypeDevicesSync[] = "3";
+
+}  // namespace
+
+CryptAuthGCMManagerImpl::CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
+                                                 PrefService* pref_service)
+    : gcm_driver_(gcm_driver),
+      pref_service_(pref_service),
+      registration_in_progress_(false),
+      weak_ptr_factory_(this) {
+}
+
+CryptAuthGCMManagerImpl::~CryptAuthGCMManagerImpl() {
+  if (gcm_driver_->GetAppHandler(kCryptAuthGCMAppId) == this)
+    gcm_driver_->RemoveAppHandler(kCryptAuthGCMAppId);
+}
+
+void CryptAuthGCMManagerImpl::StartListening() {
+  if (gcm_driver_->GetAppHandler(kCryptAuthGCMAppId) == this) {
+    PA_LOG(INFO) << "GCM app handler already added";
+    return;
+  }
+
+  gcm_driver_->AddAppHandler(kCryptAuthGCMAppId, this);
+}
+
+void CryptAuthGCMManagerImpl::RegisterWithGCM() {
+  if (registration_in_progress_) {
+    PA_LOG(INFO) << "GCM Registration is already in progress";
+    return;
+  }
+
+  PA_LOG(INFO) << "Beginning GCM registration...";
+  registration_in_progress_ = true;
+
+  std::vector<std::string> sender_ids(1, kCryptAuthGCMSenderId);
+  gcm_driver_->Register(
+      kCryptAuthGCMAppId, sender_ids,
+      base::Bind(&CryptAuthGCMManagerImpl::OnRegistrationCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+std::string CryptAuthGCMManagerImpl::GetRegistrationId() {
+  return pref_service_->GetString(prefs::kCryptAuthGCMRegistrationId);
+}
+
+void CryptAuthGCMManagerImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CryptAuthGCMManagerImpl::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void CryptAuthGCMManagerImpl::ShutdownHandler() {
+}
+
+void CryptAuthGCMManagerImpl::OnMessage(
+    const std::string& app_id,
+    const gcm::GCMClient::IncomingMessage& message) {
+  std::vector<std::string> fields;
+  for (const auto& kv : message.data) {
+    fields.push_back(std::string(kv.first) + ": " + std::string(kv.second));
+  }
+
+  PA_LOG(INFO) << "GCM message received:\n"
+               << "  sender_id: " << message.sender_id << "\n"
+               << "  collapse_key: " << message.collapse_key << "\n"
+               << "  data:\n    " << JoinString(fields, "\n    ");
+
+  if (message.data.find(kRegistrationTickleTypeKey) == message.data.end()) {
+    PA_LOG(WARNING) << "GCM message does not contain 'registrationTickleType'.";
+  } else {
+    std::string tickle_type = message.data.at(kRegistrationTickleTypeKey);
+    if (tickle_type == kRegistrationTickleTypeForceEnrollment ||
+        tickle_type == kRegistrationTickleTypeUpdateEnrollment) {
+      // These tickle types correspond to re-enrollment messages.
+      FOR_EACH_OBSERVER(Observer, observers_, OnReenrollMessage());
+    } else if (tickle_type == kRegistrationTickleTypeDevicesSync) {
+      FOR_EACH_OBSERVER(Observer, observers_, OnResyncMessage());
+    } else {
+      PA_LOG(WARNING) << "Unknown tickle type in GCM message.";
+    }
+  }
+}
+
+void CryptAuthGCMManagerImpl::OnMessagesDeleted(const std::string& app_id) {
+}
+
+void CryptAuthGCMManagerImpl::OnSendError(
+    const std::string& app_id,
+    const gcm::GCMClient::SendErrorDetails& details) {
+  NOTREACHED();
+}
+
+void CryptAuthGCMManagerImpl::OnSendAcknowledged(
+    const std::string& app_id,
+    const std::string& message_id) {
+  NOTREACHED();
+}
+
+void CryptAuthGCMManagerImpl::OnRegistrationCompleted(
+    const std::string& registration_id,
+    gcm::GCMClient::Result result) {
+  registration_in_progress_ = false;
+  if (result != gcm::GCMClient::SUCCESS) {
+    PA_LOG(WARNING) << "GCM registration failed with result="
+                    << static_cast<int>(result);
+    FOR_EACH_OBSERVER(Observer, observers_, OnGCMRegistrationResult(false));
+    return;
+  }
+
+  PA_LOG(INFO) << "GCM registration success, registration_id="
+               << registration_id;
+  pref_service_->SetString(prefs::kCryptAuthGCMRegistrationId, registration_id);
+  FOR_EACH_OBSERVER(Observer, observers_, OnGCMRegistrationResult(true));
+}
+
+}  // namespace proximity_auth

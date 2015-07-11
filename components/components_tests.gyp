@@ -461,6 +461,7 @@
       'proximity_auth/cryptauth/cryptauth_device_manager_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_enroller_impl_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_enrollment_manager_unittest.cc',
+      'proximity_auth/cryptauth/cryptauth_gcm_manager_impl_unittest.cc',
       'proximity_auth/cryptauth/fake_secure_message_delegate_unittest.cc',
       'proximity_auth/cryptauth/sync_scheduler_impl_unittest.cc',
       'proximity_auth/logging/logging_unittest.cc',

@@ -41,5 +41,9 @@ const char kCryptAuthEnrollmentLastEnrollmentTimeSeconds[] =
 // components/proximity_auth/cryptauth/proto/cryptauth_api.proto.
 extern const char kCryptAuthEnrollmentReason[] = "cryptauth.enrollment.reason";
 
+// The GCM registration id used for receiving push messages from CryptAuth.
+extern const char kCryptAuthGCMRegistrationId[] =
+    "cryptauth.gcm_registration_id";
+
 }  // namespace prefs
 }  // proximity_auth
