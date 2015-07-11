@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "url/gurl.h"
 
@@ -72,8 +73,17 @@ bool OSExchangeDataProviderMac::GetString(base::string16* data) const {
   DCHECK(data);
   NSArray* items = [pasteboard_ readObjectsForClasses:@[ [NSString class] ]
                                               options:@{ }];
-  if ([items count] == 0)
-    return false;
+
+  // There was no NSString, check for an NSURL.
+  if ([items count] == 0) {
+    GURL url;
+    base::string16 title;
+    bool result =
+        GetURLAndTitle(OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url, &title);
+    if (result)
+      *data = base::UTF8ToUTF16(url.spec());
+    return result;
+  }
 
   *data = base::SysNSStringToUTF16([items objectAtIndex:0]);
   return true;

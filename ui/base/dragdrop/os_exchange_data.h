@@ -190,6 +190,8 @@ class UI_BASE_EXPORT OSExchangeData {
   // functions return and the result is in the out parameter. If the data does
   // not exist, the out parameter is not touched. The out parameter cannot be
   // NULL.
+  // GetString() returns the plain text representation of the pasteboard
+  // contents.
   bool GetString(base::string16* data) const;
   bool GetURLAndTitle(FilenameToURLPolicy policy,
                       GURL* url,
