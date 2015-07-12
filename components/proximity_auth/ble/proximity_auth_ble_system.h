@@ -135,7 +135,14 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
   const base::TimeDelta polling_interval_;
 
+  // True if the remote device sent public key contained in |unlock_keyes_| or
+  // |device_whitelist_|.
   bool device_authenticated_;
+
+  // True if the screen is locked and call to |screenlock_bridge_->Unlock()| was
+  // made, but |OnScreenDidUnlock| was not called yet. This is a guard to avoid
+  // a double |screenlock_bridge_->Unlock()| call.
+  bool unlock_requested_;
 
   bool is_polling_screen_state_;
 

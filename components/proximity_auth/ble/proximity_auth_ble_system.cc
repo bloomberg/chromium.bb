@@ -93,6 +93,7 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
       cryptauth_client_factory_(cryptauth_client_factory.Pass()),
       device_whitelist_(new BluetoothLowEnergyDeviceWhitelist(pref_service)),
       device_authenticated_(false),
+      unlock_requested_(false),
       is_polling_screen_state_(false),
       weak_ptr_factory_(this) {
   PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
@@ -104,6 +105,7 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
     ProximityAuthClient* proximity_auth_client)
     : screenlock_bridge_(screenlock_bridge.Pass()),
       proximity_auth_client_(proximity_auth_client),
+      unlock_requested_(false),
       is_polling_screen_state_(false),
       weak_ptr_factory_(this) {
   PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
@@ -188,6 +190,7 @@ void ProximityAuthBleSystem::OnScreenDidLock(
       break;
     case ScreenlockBridge::LockHandler::LOCK_SCREEN:
       DCHECK(!connection_finder_);
+      unlock_requested_ = false;
       connection_finder_.reset(CreateConnectionFinder());
       connection_finder_->Find(
           base::Bind(&ProximityAuthBleSystem::OnConnectionFound,
@@ -225,6 +228,7 @@ void ProximityAuthBleSystem::OnScreenDidUnlock(
     device_authenticated_ = false;
   }
 
+  unlock_requested_ = false;
   connection_.reset();
   connection_finder_.reset();
 }
@@ -268,9 +272,10 @@ void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
   // Note that this magically unlocks Chrome (no user interaction is needed).
   // This user experience for this operation will be greately improved once
   // the Proximity Auth Unlock Manager migration to C++ is done.
-  if (message.payload() == kScreenUnlocked) {
+  if (message.payload() == kScreenUnlocked && !unlock_requested_) {
     PA_LOG(INFO) << "Device unlocked. Unlock.";
     screenlock_bridge_->Unlock(proximity_auth_client_);
+    unlock_requested_ = true;
   }
 }
 
