@@ -71,6 +71,11 @@ const wchar_t kWindows8OSKRegPath[] =
 bool IsKeyboardPresentOnSlate(std::string* reason) {
   bool result = false;
 
+  if (GetVersion() < VERSION_WIN7) {
+    *reason = "Detection not supported";
+    return false;
+  }
+
   // This function is only supported for Windows 8 and up.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableUsbKeyboardDetect)) {
