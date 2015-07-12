@@ -4244,13 +4244,9 @@ TEST(HeapTest, VectorDestructors)
 
     InlinedVectorObject::s_destructorCalls = 0;
     {
-        auto const heapObject = new InlinedVectorObjectWrapper();
+        Persistent<InlinedVectorObjectWrapper> vectorWrapper = new InlinedVectorObjectWrapper();
         Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
         EXPECT_EQ(2, InlinedVectorObject::s_destructorCalls);
-        // Force compiler to keep |heapObject| variable on the stack
-        // while collectGarbage() is working.
-        // Otherwise GC would think that it's safe to collect the object.
-        EXPECT_TRUE(heapObject);
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
     EXPECT_LE(8, InlinedVectorObject::s_destructorCalls);
