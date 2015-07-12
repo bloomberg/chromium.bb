@@ -8,11 +8,19 @@
       "repaintRects": [
         [27, 353, 22, 17],
         [14, 353, 48, 64],
-        [8, 548, 418, 18]
+        [8, 314, 418, 72]
       ],
       "paintInvalidationClients": [
-        "InlineTextBox 'here; the great\n'",
-        "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
+        "InlineTextBox 'doubled-up\n'",
+        "InlineTextBox 'soldiers were always getting up and walking off to'",
+        "RootInlineBox",
+        "InlineTextBox 'other parts of\n'",
+        "InlineTextBox 'the ground, Alice soon came to the conclusion'",
+        "RootInlineBox",
+        "InlineTextBox 'that it was a very\n'",
+        "InlineTextBox 'difficult game indeed.\n'",
+        "RootInlineBox",
+        "InlineTextBox 'The players all played at once without waiting'",
         "RootInlineBox",
         "LayoutBlockFlow P",
         "LayoutBlockFlow (floating) SPAN id='blueFloat'",

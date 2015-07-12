@@ -14,9 +14,15 @@
         [65, 368, 356, 54],
         [14, 422, 72, 18],
         [14, 404, 355, 36],
-        [8, 368, 418, 198]
+        [8, 332, 418, 234]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox 'other parts of\n'",
+        "InlineTextBox 'the ground, Alice soon came to the conclusion'",
+        "RootInlineBox",
+        "InlineTextBox 'that it was a very\n'",
+        "InlineTextBox 'difficult game indeed.\n'",
+        "RootInlineBox",
         "InlineTextBox 'The players all played at once without waiting'",
         "RootInlineBox",
         "InlineTextBox 'for turns,\n'",

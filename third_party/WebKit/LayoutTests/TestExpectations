@@ -1156,13 +1156,6 @@ crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failur
 crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] http/tests/inspector/tracing [ Pass Failure ]
 
-crbug.com/491866 fast/repaint/line-flow-with-floats-10.html [ NeedsRebaseline ]
-crbug.com/491866 fast/repaint/line-flow-with-floats-3.html [ NeedsRebaseline ]
-crbug.com/491866 fast/repaint/line-flow-with-floats-4.html [ NeedsRebaseline ]
-crbug.com/491866 fast/repaint/line-flow-with-floats-5.html [ NeedsRebaseline ]
-crbug.com/491866 fast/repaint/line-flow-with-floats-6.html [ NeedsRebaseline ]
-crbug.com/491866 fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
-
 # These are experiencing assertions in harfbuzz.
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
