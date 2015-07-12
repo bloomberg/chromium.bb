@@ -39,11 +39,6 @@ class WebSourceInfo;
 
 class WebMediaStreamTrackSourcesRequest {
 public:
-    class ExtraData {
-    public:
-        virtual ~ExtraData() { }
-    };
-
     WebMediaStreamTrackSourcesRequest() { }
     WebMediaStreamTrackSourcesRequest(const WebMediaStreamTrackSourcesRequest& other) { assign(other); }
     ~WebMediaStreamTrackSourcesRequest() { reset(); }
@@ -61,13 +56,6 @@ public:
 
     BLINK_PLATFORM_EXPORT WebString origin() const;
     BLINK_PLATFORM_EXPORT void requestSucceeded(const WebVector<WebSourceInfo>&) const;
-
-    // Extra data associated with this object.
-    // If non-null, the extra data pointer will be deleted when the object is destroyed.
-    // Setting the extra data pointer will cause any existing non-null
-    // extra data pointer to be deleted.
-    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
-    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(MediaStreamTrackSourcesRequest*);

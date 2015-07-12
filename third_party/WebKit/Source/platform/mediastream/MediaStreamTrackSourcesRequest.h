@@ -29,7 +29,6 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebVector.h"
 #include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -37,28 +36,15 @@ class WebSourceInfo;
 
 class MediaStreamTrackSourcesRequest : public GarbageCollectedFinalized<MediaStreamTrackSourcesRequest> {
 public:
-    class ExtraData {
-    public:
-        virtual ~ExtraData() { }
-    };
-
     virtual ~MediaStreamTrackSourcesRequest() { }
 
     virtual String origin() = 0;
     virtual void requestSucceeded(const WebVector<WebSourceInfo>&) = 0;
 
-    ExtraData* extraData() const { return m_extraData.get(); }
-    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
-
-    // Need to eagerly finalize the ExtraData.
-    EAGERLY_FINALIZE();
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     MediaStreamTrackSourcesRequest() { }
-
-private:
-    OwnPtr<ExtraData> m_extraData;
 };
 
 } // namespace blink

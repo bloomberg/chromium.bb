@@ -32,35 +32,21 @@
 #define RTCVoidRequest_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
 class RTCVoidRequest : public GarbageCollectedFinalized<RTCVoidRequest> {
 public:
-    class ExtraData {
-    public:
-        virtual ~ExtraData() { }
-    };
-
     virtual ~RTCVoidRequest() { }
 
     virtual void requestSucceeded() = 0;
     virtual void requestFailed(const String& error) = 0;
 
-    ExtraData* extraData() const { return m_extraData.get(); }
-    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
-
-    // Need to eagerly finalize ExtraData.
-    EAGERLY_FINALIZE();
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     RTCVoidRequest() { }
-
-private:
-    OwnPtr<ExtraData> m_extraData;
 };
 
 } // namespace blink

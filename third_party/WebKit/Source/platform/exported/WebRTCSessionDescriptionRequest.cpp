@@ -38,20 +38,6 @@
 
 namespace blink {
 
-namespace {
-
-class ExtraDataContainer : public RTCSessionDescriptionRequest::ExtraData {
-public:
-    ExtraDataContainer(PassOwnPtr<WebRTCSessionDescriptionRequest::ExtraData> extraData) : m_extraData(extraData) { }
-
-    WebRTCSessionDescriptionRequest::ExtraData* extraData() { return m_extraData.get(); }
-
-private:
-    OwnPtr<WebRTCSessionDescriptionRequest::ExtraData> m_extraData;
-};
-
-} // namespace
-
 WebRTCSessionDescriptionRequest::WebRTCSessionDescriptionRequest(RTCSessionDescriptionRequest* constraints)
     : m_private(constraints)
 {
@@ -79,18 +65,4 @@ void WebRTCSessionDescriptionRequest::requestFailed(const WebString& error) cons
     m_private->requestFailed(error);
 }
 
-WebRTCSessionDescriptionRequest::ExtraData* WebRTCSessionDescriptionRequest::extraData() const
-{
-    RTCSessionDescriptionRequest::ExtraData* data = m_private->extraData();
-    if (!data)
-        return 0;
-    return static_cast<ExtraDataContainer*>(data)->extraData();
-}
-
-void WebRTCSessionDescriptionRequest::setExtraData(ExtraData* extraData)
-{
-    m_private->setExtraData(adoptPtr(new ExtraDataContainer(adoptPtr(extraData))));
-}
-
 } // namespace blink
-
