@@ -1079,6 +1079,9 @@ weston_view_assign_output(struct weston_view *ev)
 	mask = 0;
 	pixman_region32_init(&region);
 	wl_list_for_each(output, &ec->output_list, link) {
+		if (output->destroying)
+			continue;
+
 		pixman_region32_intersect(&region, &ev->transform.boundingbox,
 					  &output->region);
 
@@ -3888,8 +3891,14 @@ WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
 	struct wl_resource *resource;
+	struct weston_view *view;
 
 	output->destroying = 1;
+
+	wl_list_for_each(view, &output->compositor->view_list, link) {
+		if (view->output_mask & (1 << output->id))
+			weston_view_assign_output(view);
+	}
 
 	wl_event_source_remove(output->repaint_timer);
 
