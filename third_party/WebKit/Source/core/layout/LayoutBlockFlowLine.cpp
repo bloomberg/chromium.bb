@@ -1556,6 +1556,10 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
                     o->containingBlock()->insertPositionedObject(box);
                 } else if (o->isFloating()) {
                     layoutState.floats().append(FloatWithRect(box));
+                    if (box->needsLayout()) {
+                        box->layout();
+                        dirtyLinesFromChangedChild(o);
+                    }
                 } else if (isFullLayout || o->needsLayout()) {
                     // Replaced element.
                     box->dirtyLineBoxes(isFullLayout);
@@ -1605,35 +1609,6 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
         setShouldDoFullPaintInvalidation();
 }
 
-void LayoutBlockFlow::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWithRect>& floats, size_t& floatIndex, bool& encounteredNewFloat, bool& dirtiedByFloat)
-{
-    Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr();
-    if (!cleanLineFloats)
-        return;
-
-    for (auto* floatingBox : *cleanLineFloats) {
-        floatingBox->layoutIfNeeded();
-        LayoutSize newSize = floatingBox->size() +
-            LayoutSize(floatingBox->marginWidth(), floatingBox->marginHeight());
-        if (floats[floatIndex].object != floatingBox) {
-            encounteredNewFloat = true;
-            return;
-        }
-
-        if (floats[floatIndex].rect.size() != newSize) {
-            LayoutUnit floatTop = isHorizontalWritingMode() ? floats[floatIndex].rect.y() : floats[floatIndex].rect.x();
-            LayoutUnit floatHeight = isHorizontalWritingMode() ? std::max(floats[floatIndex].rect.height(), newSize.height())
-                : std::max(floats[floatIndex].rect.width(), newSize.width());
-            floatHeight = std::min(floatHeight, LayoutUnit::max() - floatTop);
-            line->markDirty();
-            markLinesDirtyInBlockRange(line->lineBottomWithLeading(), floatTop + floatHeight, line);
-            floats[floatIndex].rect.setSize(newSize);
-            dirtiedByFloat = true;
-        }
-        floatIndex++;
-    }
-}
-
 RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutState, InlineBidiResolver& resolver)
 {
     RootInlineBox* curr = nullptr;
@@ -1646,7 +1621,6 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         // Paginate all of the clean lines.
         bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
         LayoutUnit paginationDelta = 0;
-        size_t floatIndex = 0;
         for (curr = firstRootBox(); curr && !curr->isDirty(); curr = curr->nextRootBox()) {
             if (paginated) {
                 paginationDelta -= curr->paginationStrut();
@@ -1667,18 +1641,9 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
             if (!firstLineBoxWithBreakAndClearance && lineBoxHasBRWithClearance(curr))
                 firstLineBoxWithBreakAndClearance = curr;
 
-            // If a new float has been inserted before this line or before its last known float, just do a full layout.
-            bool encounteredNewFloat = false;
-            checkFloatsInCleanLine(curr, layoutState.floats(), floatIndex, encounteredNewFloat, dirtiedByFloat);
-            if (encounteredNewFloat)
-                layoutState.markForFullLayout();
-
             if (dirtiedByFloat || layoutState.isFullLayout())
                 break;
         }
-        // Check if a new float has been inserted after the last known float.
-        if (!curr && floatIndex < layoutState.floats().size())
-            layoutState.markForFullLayout();
     }
 
     if (layoutState.isFullLayout()) {
@@ -1770,18 +1735,11 @@ bool LayoutBlockFlow::lineBoxHasBRWithClearance(RootInlineBox* curr)
 void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInlineBox* startLine, InlineIterator& cleanLineStart, BidiStatus& cleanLineBidiStatus)
 {
     ASSERT(!layoutState.endLine());
-    size_t floatIndex = layoutState.floatIndex();
     RootInlineBox* last = nullptr;
     for (RootInlineBox* curr = startLine->nextRootBox(); curr; curr = curr->nextRootBox()) {
-        if (!curr->isDirty()) {
-            bool encounteredNewFloat = false;
-            bool dirtiedByFloat = false;
-            checkFloatsInCleanLine(curr, layoutState.floats(), floatIndex, encounteredNewFloat, dirtiedByFloat);
-            if (encounteredNewFloat)
-                return;
-            if (lineBoxHasBRWithClearance(curr))
-                return;
-        }
+        if (!curr->isDirty() && lineBoxHasBRWithClearance(curr))
+            return;
+
         if (curr->isDirty())
             last = nullptr;
         else if (!last)

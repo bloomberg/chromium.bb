@@ -2496,7 +2496,7 @@ void LayoutObject::insertedIntoTree()
             layer->dirtyVisibleContentStatus();
     }
 
-    if (!isFloating() && parent()->childrenInline())
+    if (parent()->childrenInline())
         parent()->dirtyLinesFromChangedChild(this);
 
     if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
