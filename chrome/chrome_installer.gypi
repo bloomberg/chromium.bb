@@ -1068,5 +1068,22 @@
         },
       ],  # targets
     }],  # OS=="mac"
+    ['OS=="win" and test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'installer_util_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'installer_util_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'installer_util_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
