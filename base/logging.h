@@ -436,7 +436,7 @@ const LogSeverity LOG_0 = LOG_ERROR;
 #if defined(OFFICIAL_BUILD) && defined(NDEBUG) && !defined(OS_ANDROID)
 
 // Make all CHECK functions discard their log strings to reduce code
-// bloat for official release builds.
+// bloat for official release builds (except Android).
 
 // TODO(akalin): This would be more valuable if there were some way to
 // remove BreakDebugger() from the backtrace, perhaps by turning it
