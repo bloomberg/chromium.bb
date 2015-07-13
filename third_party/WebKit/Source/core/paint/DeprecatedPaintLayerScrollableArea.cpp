@@ -687,7 +687,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
     bool autoHorizontalScrollBarChanged = box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow);
     bool autoVerticalScrollBarChanged = box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow);
 
-    if (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged) {
+    if (!pinchViewportSuppliesScrollbars() && (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)) {
         if (box().hasAutoHorizontalScrollbar())
             setHasHorizontalScrollbar(hasHorizontalOverflow);
         if (box().hasAutoVerticalScrollbar())
@@ -798,6 +798,10 @@ void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedSt
         updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
 
     if (!canHaveOverflowScrollbars(box()))
+        return;
+
+    // Avoid drawing two sets of scrollbars when pinch viewport is enabled.
+    if (pinchViewportSuppliesScrollbars())
         return;
 
     EOverflow overflowX = box().style()->overflowX();
@@ -1421,6 +1425,18 @@ void DeprecatedPaintLayerScrollableArea::setTopmostScrollChild(DeprecatedPaintLa
     if (!hasOverlayScrollbars())
         return;
     m_nextTopmostScrollChild = scrollChild;
+}
+
+bool DeprecatedPaintLayerScrollableArea::pinchViewportSuppliesScrollbars() const
+{
+    if (!layer()->isRootLayer())
+        return false;
+
+    LocalFrame* frame = box().frame();
+    if (!frame || !frame->isMainFrame() || !frame->settings())
+        return false;
+
+    return frame->settings()->viewportMetaEnabled();
 }
 
 } // namespace blink

@@ -566,10 +566,6 @@ protected:
     // Scroll the content by invalidating everything.
     void scrollContentsSlowPath(const IntRect& updateRect);
 
-    // Prevents creation of scrollbars. Used to prevent drawing two sets of
-    // overlay scrollbars in the case of the pinch viewport.
-    bool scrollbarsDisabled() const;
-
     // These functions are used to create/destroy scrollbars.
     void setHasHorizontalScrollbar(bool);
     void setHasVerticalScrollbar(bool);
@@ -695,6 +691,7 @@ private:
     bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
     void adjustScrollbarOpacity();
     void setScrollOffsetFromUpdateScrollbars(const DoubleSize&);
+    bool pinchViewportSuppliesScrollbars() const;
 
     IntRect rectToCopyOnScroll() const;
 

@@ -2940,17 +2940,9 @@ bool FrameView::isFlippedDocument() const
     return layoutView->hasFlippedBlocksWritingMode();
 }
 
-bool FrameView::scrollbarsDisabled() const
+bool FrameView::pinchViewportSuppliesScrollbars() const
 {
-    // FIXME: This decision should be made based on whether or not to use
-    // viewport scrollbars for the main frame. This is implicitly just Android,
-    // but should be made explicit.
-    // http://crbug.com/434533
-#if !OS(ANDROID)
-    return false;
-#else
-    return m_frame->isMainFrame();
-#endif
+    return m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->viewportMetaEnabled();
 }
 
 AXObjectCache* FrameView::axObjectCache() const
@@ -3374,7 +3366,8 @@ bool FrameView::shouldIgnoreOverflowHidden() const
 
 void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
 {
-    if (scrollbarsDisabled()) {
+    // Avoid drawing two sets of scrollbars when pinch viewport is enabled.
+    if (pinchViewportSuppliesScrollbars()) {
         setScrollOffsetFromUpdateScrollbars(desiredOffset);
         return;
     }
