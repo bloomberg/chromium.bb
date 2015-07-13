@@ -9,7 +9,6 @@
 #include "jni/MotionEventSynthesizer_jni.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/android/view_configuration.h"
-#include "ui/gfx/screen.h"
 
 using blink::WebTouchEvent;
 
@@ -107,10 +106,14 @@ SyntheticGestureTargetAndroid::GetDefaultSyntheticGestureSourceType() const {
 }
 
 float SyntheticGestureTargetAndroid::GetTouchSlopInDips() const {
+  // TODO(jdduke): Have all targets use the same ui::GestureConfiguration
+  // codepath.
   return gfx::ViewConfiguration::GetTouchSlopInDips();
 }
 
 float SyntheticGestureTargetAndroid::GetMinScalingSpanInDips() const {
+  // TODO(jdduke): Have all targets use the same ui::GestureConfiguration
+  // codepath.
   return gfx::ViewConfiguration::GetMinScalingSpanInDips();
 }
 

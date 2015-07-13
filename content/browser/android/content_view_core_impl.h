@@ -366,15 +366,15 @@ class ContentViewCoreImpl : public ContentViewCore,
   // A compositor layer containing any layer that should be shown.
   scoped_refptr<cc::Layer> root_layer_;
 
-  // Device scale factor.
-  float dpi_scale_;
-
   // Page scale factor.
   float page_scale_;
 
   // The Android view that can be used to add and remove decoration layers
   // like AutofillPopup.
   scoped_ptr<ui::ViewAndroid> view_android_;
+
+  // Device scale factor.
+  const float dpi_scale_;
 
   // The owning window that has a hold of main application activity.
   ui::WindowAndroid* window_android_;

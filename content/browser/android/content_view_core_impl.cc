@@ -57,7 +57,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/screen.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -155,12 +154,6 @@ int ToGestureEventType(WebInputEvent::Type type) {
   };
 }
 
-float GetPrimaryDisplayDeviceScaleFactor() {
-  const gfx::Display& display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-  return display.device_scale_factor();
-}
-
 }  // namespace
 
 // Enables a callback when the underlying WebContents is destroyed, to enable
@@ -222,9 +215,9 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::SolidColorLayer::Create(Compositor::LayerSettings())),
-      dpi_scale_(GetPrimaryDisplayDeviceScaleFactor()),
       page_scale_(1),
       view_android_(new ui::ViewAndroid(view_android_delegate, window_android)),
+      dpi_scale_(ui::GetScaleFactorForNativeView(view_android_.get())),
       window_android_(window_android),
       device_orientation_(0),
       accessibility_enabled_(false) {

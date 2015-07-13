@@ -1599,8 +1599,10 @@ void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
 void RenderWidgetHostImpl::SetTouchEventEmulationEnabled(
     bool enabled, ui::GestureProviderConfigType config_type) {
   if (enabled) {
-    if (!touch_emulator_)
-      touch_emulator_.reset(new TouchEmulator(this));
+    if (!touch_emulator_) {
+      touch_emulator_.reset(new TouchEmulator(
+          this, view_ ? content::GetScaleFactorForView(view_) : 1.0f));
+    }
     touch_emulator_->Enable(config_type);
   } else {
     if (touch_emulator_)

@@ -15,7 +15,6 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/screen.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -45,7 +44,8 @@ const double kMouseMoveDropIntervalSeconds = 5.f / 1000;
 
 } // namespace
 
-TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
+TouchEmulator::TouchEmulator(TouchEmulatorClient* client,
+                             float device_scale_factor)
     : client_(client),
       gesture_provider_config_type_(
           ui::GestureProviderConfigType::CURRENT_PLATFORM),
@@ -55,8 +55,7 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
   DCHECK(client_);
   ResetState();
 
-  bool use_2x = gfx::Screen::GetNativeScreen()->
-      GetPrimaryDisplay().device_scale_factor() > 1.5f;
+  bool use_2x = device_scale_factor > 1.5f;
   float cursor_scale_factor = use_2x ? 2.f : 1.f;
   cursor_size_ = InitCursorFromResource(&touch_cursor_,
       cursor_scale_factor,

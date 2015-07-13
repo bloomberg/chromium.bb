@@ -18,7 +18,7 @@ namespace content {
 // Emulates touch input with mouse and keyboard.
 class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
  public:
-  explicit TouchEmulator(TouchEmulatorClient* client);
+  TouchEmulator(TouchEmulatorClient* client, float device_scale_factor);
   ~TouchEmulator() override;
 
   void Enable(ui::GestureProviderConfigType config_type);
