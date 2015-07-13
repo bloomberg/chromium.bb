@@ -198,7 +198,7 @@ public:
     void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override {}
     void dispatchDidFailProvisionalLoad(const ResourceError&, HistoryCommitType) override {}
     void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) override {}
-    void dispatchDidFinishDocumentLoad() override {}
+    void dispatchDidFinishDocumentLoad(bool) override {}
     void dispatchDidFinishLoad() override {}
     void dispatchDidFirstVisuallyNonEmptyLayout() override {}
     void dispatchDidChangeThemeColor() override {}

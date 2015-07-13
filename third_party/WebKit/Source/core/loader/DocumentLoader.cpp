@@ -87,13 +87,12 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
     , m_originalRequest(req)
     , m_substituteData(substituteData)
     , m_request(req)
-    , m_committed(false)
     , m_isClientRedirect(false)
     , m_replacesCurrentHistoryItem(false)
     , m_navigationType(NavigationTypeOther)
-    , m_loadingMainResource(false)
     , m_timeOfLastDataReceived(0.0)
     , m_applicationCacheHost(ApplicationCacheHost::create(this))
+    , m_state(NotStarted)
 {
 }
 
@@ -205,7 +204,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
     if (!frameLoader())
         return;
     m_mainDocumentError = error;
-    clearMainResourceLoader();
+    m_state = MainResourceDone;
     frameLoader()->receivedMainResourceError(this, error);
     clearMainResourceHandle();
 }
@@ -226,8 +225,8 @@ void DocumentLoader::stopLoading()
 
 void DocumentLoader::commitIfReady()
 {
-    if (!m_committed) {
-        m_committed = true;
+    if (m_state < Committed) {
+        m_state = Committed;
         frameLoader()->commitProvisionalLoad();
     }
 }
@@ -237,7 +236,7 @@ bool DocumentLoader::isLoading() const
     if (document() && document()->hasActiveParser())
         return true;
 
-    return m_loadingMainResource || m_fetcher->isFetching();
+    return (m_state > NotStarted && m_state < MainResourceDone) || m_fetcher->isFetching();
 }
 
 void DocumentLoader::notifyFinished(Resource* resource)
@@ -283,7 +282,7 @@ void DocumentLoader::finishedLoading(double finishTime)
 
     if (!m_mainDocumentError.isNull())
         return;
-    clearMainResourceLoader();
+    m_state = MainResourceDone;
 
     // If the document specified an application cache manifest, it violates the author's intent if we store it in the memory cache
     // and deny the appcache the chance to intercept it in the future, so remove from the memory cache.
@@ -530,6 +529,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
 
 void DocumentLoader::commitData(const char* bytes, size_t length)
 {
+    ASSERT(m_state < MainResourceDone);
     ensureWriter(m_response.mimeType());
 
     // This can happen if document.close() is called by an event handler while
@@ -538,6 +538,9 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
         return;
     }
+
+    if (length)
+        m_state = DataReceived;
 
     m_writer->addData(bytes, length);
 }
@@ -608,11 +611,6 @@ void DocumentLoader::detachFromFrame()
     WeakIdentifierMap<DocumentLoader>::notifyObjectDestroyed(this);
     clearMainResourceHandle();
     m_frame = nullptr;
-}
-
-void DocumentLoader::clearMainResourceLoader()
-{
-    m_loadingMainResource = false;
 }
 
 void DocumentLoader::clearMainResourceHandle()
@@ -714,8 +712,8 @@ void DocumentLoader::startLoadingMainResource()
     m_mainDocumentError = ResourceError();
     timing().markNavigationStart();
     ASSERT(!m_mainResource);
-    ASSERT(!m_loadingMainResource);
-    m_loadingMainResource = true;
+    ASSERT(m_state == NotStarted);
+    m_state = Provisional;
 
     if (maybeLoadEmpty())
         return;

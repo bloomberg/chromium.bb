@@ -476,7 +476,7 @@ void FrameLoader::finishedParsing()
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame->view() ? m_frame.get() : nullptr);
 
     if (client())
-        client()->dispatchDidFinishDocumentLoad();
+        client()->dispatchDidFinishDocumentLoad(m_documentLoader->isCommittedButEmpty());
 
     checkCompleted();
 

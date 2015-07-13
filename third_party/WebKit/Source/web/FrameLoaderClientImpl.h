@@ -93,7 +93,7 @@ public:
     void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override;
     void dispatchDidFailProvisionalLoad(const ResourceError&, HistoryCommitType) override;
     void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) override;
-    void dispatchDidFinishDocumentLoad() override;
+    void dispatchDidFinishDocumentLoad(bool documentIsEmpty) override;
     void dispatchDidFinishLoad() override;
     void dispatchDidFirstVisuallyNonEmptyLayout() override;
 

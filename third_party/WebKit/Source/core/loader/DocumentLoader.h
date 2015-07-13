@@ -94,15 +94,15 @@ namespace blink {
 
         void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource);
         void stopLoading();
-        bool isCommitted() const { return m_committed; }
         bool isLoading() const;
-        bool isLoadingMainResource() const { return m_loadingMainResource; }
         const ResourceResponse& response() const { return m_response; }
         const ResourceError& mainDocumentError() const { return m_mainDocumentError; }
         bool isClientRedirect() const { return m_isClientRedirect; }
         void setIsClientRedirect(bool isClientRedirect) { m_isClientRedirect = isClientRedirect; }
         bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
         void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
+
+        bool isCommittedButEmpty() const { return m_state == Committed; }
 
         bool shouldContinueForNavigationPolicy(const ResourceRequest&, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy, NavigationPolicy = NavigationPolicyCurrentTab);
         NavigationType navigationType() const { return m_navigationType; }
@@ -161,7 +161,6 @@ namespace blink {
 
         void commitIfReady();
         void commitData(const char* bytes, size_t length);
-        void clearMainResourceLoader();
         ResourceLoader* mainResourceLoader() const;
         void clearMainResourceHandle();
 
@@ -208,7 +207,6 @@ namespace blink {
 
         ResourceError m_mainDocumentError;
 
-        bool m_committed;
         bool m_isClientRedirect;
         bool m_replacesCurrentHistoryItem;
 
@@ -216,7 +214,6 @@ namespace blink {
 
         RefPtrWillBeMember<MHTMLArchive> m_archive;
 
-        bool m_loadingMainResource;
         DocumentLoadTiming m_documentLoadTiming;
 
         double m_timeOfLastDataReceived;
@@ -226,6 +223,15 @@ namespace blink {
         RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
         ClientHintsPreferences m_clientHintsPreferences;
         InitialScrollState m_initialScrollState;
+
+        enum State {
+            NotStarted,
+            Provisional,
+            Committed,
+            DataReceived,
+            MainResourceDone
+        };
+        State m_state;
     };
 
     DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);
