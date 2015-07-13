@@ -3287,7 +3287,8 @@ void HTMLMediaElement::automaticTrackSelectionForUpdatedUserPreference()
 
     // If a track is set to 'showing' post performing automatic track selection,
     // set closed captions state to visible to update the CC button and display the track.
-    m_closedCaptionsVisible = m_textTracks->hasShowingTracks();
+    if (m_textTracks)
+        m_closedCaptionsVisible = m_textTracks->hasShowingTracks();
     updateTextTrackDisplay();
 }
 
