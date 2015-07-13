@@ -162,7 +162,7 @@ void SpellChecker::ignoreSpelling()
     const EphemeralRange range = frame().selection().selection().toNormalizedEphemeralRange();
     if (range.isNull())
         return;
-    frame().document()->markers().removeMarkers(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
+    frame().document()->markers().removeMarkers(range, DocumentMarker::Spelling);
 }
 
 void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
@@ -342,7 +342,7 @@ void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &moving
     const EphemeralRange range = movingSelection.toNormalizedEphemeralRange();
     if (range.isNull())
         return;
-    frame().document()->markers().removeMarkers(range.startPosition(), range.endPosition(), DocumentMarker::MisspellingMarkers());
+    frame().document()->markers().removeMarkers(range, DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
@@ -817,12 +817,12 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
             const EphemeralRange range = newAdjacentWords.toNormalizedEphemeralRange();
             if (range.isNotNull())
-                frame().document()->markers().removeMarkers(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
+                frame().document()->markers().removeMarkers(range, DocumentMarker::Spelling);
         }
         if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeGrammar)) {
             const EphemeralRange range = newSelectedSentence.toNormalizedEphemeralRange();
             if (range.isNotNull())
-                frame().document()->markers().removeMarkers(range.startPosition(), range.endPosition(), DocumentMarker::Grammar);
+                frame().document()->markers().removeMarkers(range, DocumentMarker::Grammar);
         }
     }
 
