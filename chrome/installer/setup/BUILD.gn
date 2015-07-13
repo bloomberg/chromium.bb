@@ -39,6 +39,9 @@ if (is_win) {
       "setup_util.cc",
       "setup_util_unittest.cc",
       "setup_util_unittest.h",
+      "update_active_setup_version_work_item.cc",  # Move to lib
+      "update_active_setup_version_work_item.h",  # Move to lib
+      "update_active_setup_version_work_item_unittest.cc",
     ]
 
     deps = [

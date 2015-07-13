@@ -356,6 +356,9 @@
             'installer/setup/setup_util.cc',
             'installer/setup/setup_util_unittest.cc',
             'installer/setup/setup_util_unittest.h',
+            'installer/setup/update_active_setup_version_work_item.cc',  # Move to lib
+            'installer/setup/update_active_setup_version_work_item.h',   # Move to lib
+            'installer/setup/update_active_setup_version_work_item_unittest.cc',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],

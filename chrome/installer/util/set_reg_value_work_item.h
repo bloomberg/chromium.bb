@@ -18,31 +18,6 @@
 // exists.
 class SetRegValueWorkItem : public WorkItem {
  public:
-  ~SetRegValueWorkItem() override;
-
-  bool Do() override;
-
-  void Rollback() override;
-
- private:
-  friend class WorkItem;
-
-  enum SettingStatus {
-    // The status before Do is called.
-    SET_VALUE,
-    // One possible outcome after Do(). A new value is created under the key.
-    NEW_VALUE_CREATED,
-    // One possible outcome after Do(). The previous value under the key has
-    // been overwritten.
-    VALUE_OVERWRITTEN,
-    // One possible outcome after Do(). No change is applied, either
-    // because we are not allowed to overwrite the previous value, or due to
-    // some errors like the key does not exist.
-    VALUE_UNCHANGED,
-    // The status after Do and Rollback is called.
-    VALUE_ROLL_BACK
-  };
-
   SetRegValueWorkItem(HKEY predefined_root,
                       const std::wstring& key_path,
                       REGSAM wow64_access,
@@ -70,6 +45,29 @@ class SetRegValueWorkItem : public WorkItem {
                       REGSAM wow64_access,
                       const std::wstring& value_name,
                       const GetValueFromExistingCallback& get_value_callback);
+
+  ~SetRegValueWorkItem() override;
+
+  bool Do() override;
+
+  void Rollback() override;
+
+ private:
+  enum SettingStatus {
+    // The status before Do is called.
+    SET_VALUE,
+    // One possible outcome after Do(). A new value is created under the key.
+    NEW_VALUE_CREATED,
+    // One possible outcome after Do(). The previous value under the key has
+    // been overwritten.
+    VALUE_OVERWRITTEN,
+    // One possible outcome after Do(). No change is applied, either
+    // because we are not allowed to overwrite the previous value, or due to
+    // some errors like the key does not exist.
+    VALUE_UNCHANGED,
+    // The status after Do and Rollback is called.
+    VALUE_ROLL_BACK
+  };
 
   // Root key of the target key under which the value is set. The root key can
   // only be one of the predefined keys on Windows.
