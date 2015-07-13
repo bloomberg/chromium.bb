@@ -19,6 +19,9 @@
 
 using content::OpenURLParams;
 
+// OomPriorityManager is only active on Chrome OS.
+#if defined(OS_CHROMEOS)
+
 namespace memory {
 namespace {
 
@@ -26,9 +29,9 @@ typedef InProcessBrowserTest OomPriorityManagerTest;
 
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using content::WindowedNotificationObserver;
-
   OomPriorityManager* oom_priority_manager =
       g_browser_process->GetOomPriorityManager();
+  ASSERT_TRUE(oom_priority_manager);
   EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
 
   // Get three tabs open.
@@ -162,6 +165,8 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
   OomPriorityManager* oom_priority_manager =
       g_browser_process->GetOomPriorityManager();
+  ASSERT_TRUE(oom_priority_manager);
+
   // Get three tabs open.
   content::WindowedNotificationObserver load1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -194,7 +199,8 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
   const int kIntervalTimeInMS = 5;
   int timeout = kTimeoutTimeInMS / kIntervalTimeInMS;
   while (--timeout) {
-    usleep(kIntervalTimeInMS * 1000);
+    base::PlatformThread::Sleep(
+        base::TimeDelta::FromMilliseconds(kIntervalTimeInMS));
     base::RunLoop().RunUntilIdle();
     if (oom_priority_manager->recent_tab_discard())
       break;
@@ -204,3 +210,5 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
 
 }  // namespace
 }  // namespace memory
+
+#endif  // defined(OS_CHROMEOS)
