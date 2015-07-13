@@ -127,10 +127,6 @@ class AppBannerDataFetcher
   // load could not be started.
   bool FetchIcon(const GURL& image_url);
 
-  // Creates a banner for the app using the given |icon|.
-  virtual void ShowBanner(const SkBitmap* icon,
-                          const base::string16& title) = 0;
-
   // Records that a banner was shown. The |event_name| corresponds to the RAPPOR
   // metric being recorded.
   void RecordDidShowBanner(const std::string& event_name);
@@ -152,6 +148,10 @@ class AppBannerDataFetcher
   // Record that the banner could be shown at this point, if the triggering
   // heuristic allowed.
   void RecordCouldShowBanner();
+
+  // Creates a banner for the app using the given |icon|.
+  virtual void ShowBanner(const SkBitmap* icon,
+                          const base::string16& title) = 0;
 
   // Returns whether the banner should be shown.
   bool CheckIfShouldShowBanner();

@@ -29,13 +29,13 @@ class AppBannerDataFetcherDesktop : public AppBannerDataFetcher {
  protected:
   ~AppBannerDataFetcherDesktop() override;
 
-  // AppBannerDataFetcher override.
-  void ShowBanner(const SkBitmap* icon, const base::string16& title) override;
-
  private:
   // AppBannerDataFetcher override.
   bool IsWebAppInstalled(content::BrowserContext* browser_context,
                          const GURL& start_url) override;
+
+  // AppBannerDataFetcher override.
+  void ShowBanner(const SkBitmap* icon, const base::string16& title) override;
 
   scoped_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
 
