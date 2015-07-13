@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -20,11 +21,15 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/setup/update_active_setup_version_work_item.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
@@ -33,20 +38,22 @@
 
 namespace {
 
-class SetupUtilTestWithDir : public testing::Test {
+class SetupUtilTest : public testing::Test {
  protected:
+  SetupUtilTest() {}
+
   void SetUp() override {
-    // Create a temp directory for testing.
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
+    registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
+    registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
   }
 
-  void TearDown() override {
-    // Clean up test directory manually so we can fail if it leaks.
-    ASSERT_TRUE(test_dir_.Delete());
-  }
-
-  // The temporary directory used to contain the test operations.
   base::ScopedTempDir test_dir_;
+
+ private:
+  registry_util::RegistryOverrideManager registry_override_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetupUtilTest);
 };
 
 // The privilege tested in ScopeTokenPrivilege tests below.
@@ -100,8 +107,88 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
 
 }  // namespace
 
+TEST_F(SetupUtilTest, UpdateLastOSUpgradeHandledByActiveSetup) {
+  BrowserDistribution* chrome_dist =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER);
+  const base::string16 active_setup_path(
+      InstallUtil::GetActiveSetupPath(chrome_dist));
+
+  base::win::RegKey test_key;
+  base::string16 unused_tmp;
+
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            test_key.Open(HKEY_LOCAL_MACHINE, active_setup_path.c_str(),
+                          KEY_QUERY_VALUE));
+  // The WorkItem assume the ActiveSetup key itself already exists and only
+  // handles the Version entry, create it now, but don't fill the "Version"
+  // entry just yet.
+  EXPECT_EQ(ERROR_SUCCESS,
+            test_key.Create(HKEY_LOCAL_MACHINE, active_setup_path.c_str(),
+                            KEY_QUERY_VALUE));
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND, test_key.ReadValue(L"Version", &unused_tmp));
+
+  // Test returns false when no Active Setup version present (and doesn't alter
+  // that state).
+  EXPECT_FALSE(
+      installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND, test_key.ReadValue(L"Version", &unused_tmp));
+
+  {
+    UpdateActiveSetupVersionWorkItem active_setup_work_item(
+        active_setup_path, UpdateActiveSetupVersionWorkItem::UPDATE);
+    active_setup_work_item.Do();
+    EXPECT_EQ(ERROR_SUCCESS, test_key.ReadValue(L"Version", &unused_tmp));
+  }
+
+  // Test returns false with default Active Setup version.
+  EXPECT_FALSE(
+      installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
+  EXPECT_EQ(ERROR_SUCCESS, test_key.ReadValue(L"Version", &unused_tmp));
+
+  // Run through |kIterations| sequences of bumping the OS upgrade version |i|
+  // times and simulating a regular update |kIterations-i| times, confirming
+  // that handling any number of OS upgrades only results in a single hit and
+  // that no amount of regular updates after that result in any hit.
+  const size_t kIterations = 4U;
+  for (size_t i = 0U; i < kIterations; ++i) {
+    SCOPED_TRACE(i);
+    // Bump the OS_UPGRADES component |i| times.
+    for (size_t j = 0; j < i; ++j) {
+      UpdateActiveSetupVersionWorkItem active_setup_work_item(
+          active_setup_path, UpdateActiveSetupVersionWorkItem::
+                                 UPDATE_AND_BUMP_OS_UPGRADES_COMPONENT);
+      active_setup_work_item.Do();
+    }
+
+    // There should be a single OS upgrade to handle if the OS_UPGRADES
+    // component was bumped at least once.
+    EXPECT_EQ(i > 0, installer::UpdateLastOSUpgradeHandledByActiveSetup(
+                         chrome_dist));
+
+    // We should only be told to handle the latest OS upgrade once above.
+    EXPECT_FALSE(
+        installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
+    EXPECT_FALSE(
+        installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
+
+    // Run |kIterations-i| regular updates.
+    for (size_t j = i; j < kIterations; ++j) {
+      UpdateActiveSetupVersionWorkItem active_setup_work_item(
+          active_setup_path, UpdateActiveSetupVersionWorkItem::UPDATE);
+      active_setup_work_item.Do();
+    }
+
+    // No amount of regular updates should trigger an OS upgrade to be handled.
+    EXPECT_FALSE(
+        installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
+    EXPECT_FALSE(
+        installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
+  }
+}
+
 // Test that we are parsing Chrome version correctly.
-TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
+TEST_F(SetupUtilTest, GetMaxVersionFromArchiveDirTest) {
   // Create a version dir
   base::FilePath chrome_dir = test_dir_.path().AppendASCII("1.0.0.0");
   base::CreateDirectory(chrome_dir);
@@ -137,7 +224,7 @@ TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
   ASSERT_EQ(version->GetString(), "9.9.9.9");
 }
 
-TEST_F(SetupUtilTestWithDir, DeleteFileFromTempProcess) {
+TEST_F(SetupUtilTest, DeleteFileFromTempProcess) {
   base::FilePath test_file;
   base::CreateTemporaryFileInDir(test_dir_.path(), &test_file);
   ASSERT_TRUE(base::PathExists(test_file));
@@ -267,7 +354,7 @@ namespace {
 
 // A test fixture that configures an InstallationState and an InstallerState
 // with a product being updated.
-class FindArchiveToPatchTest : public SetupUtilTestWithDir {
+class FindArchiveToPatchTest : public SetupUtilTest {
  protected:
   class FakeInstallationState : public installer::InstallationState {
   };
@@ -291,7 +378,7 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
   };
 
   void SetUp() override {
-    SetupUtilTestWithDir::SetUp();
+    SetupUtilTest::SetUp();
     product_version_ = Version("30.0.1559.0");
     max_version_ = Version("47.0.1559.0");
 
@@ -318,7 +405,7 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
 
   void TearDown() override {
     original_state_.reset();
-    SetupUtilTestWithDir::TearDown();
+    SetupUtilTest::TearDown();
   }
 
   base::FilePath GetArchivePath(const Version& version) const {
@@ -434,6 +521,8 @@ class MigrateMultiToSingleTest : public testing::Test {
   static const HKEY kRootKey;
   static const wchar_t kVersionString[];
   static const wchar_t kMultiChannel[];
+
+ private:
   registry_util::RegistryOverrideManager registry_override_manager_;
 };
 

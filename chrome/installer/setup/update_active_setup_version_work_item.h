@@ -15,6 +15,18 @@
 // on demand. This WorkItem is only viable on machine-wide installs.
 class UpdateActiveSetupVersionWorkItem : public WorkItem {
  public:
+  // The components of the Active Setup Version entry, in order.
+  enum VersionComponent {
+    // The major version.
+    MAJOR,
+    // Unused component, always 0 for now.
+    UNUSED1,
+    // Number of OS upgrades handled since original install.
+    OS_UPGRADES,
+    // Unused component, always 0 for now.
+    UNUSED2,
+  };
+
   // The operation to be performed by this UpdateActiveSetupVersionWorkItem.
   enum Operation {
     // Update (or install if not present) the Active Setup "Version" in the
@@ -36,18 +48,6 @@ class UpdateActiveSetupVersionWorkItem : public WorkItem {
   void Rollback() override;
 
  private:
-  // The components of the Active Setup Version entry, in order.
-  enum ActiveSetupVersionComponent {
-    // The major version.
-    MAJOR,
-    // Unused component, always 0 for now.
-    UNUSED1,
-    // Number of OS upgrades handled since original install.
-    OS_UPGRADES,
-    // Unused component, always 0 for now.
-    UNUSED2,
-  };
-
   // Returns the updated Active Setup version to be used based on the
   // |existing_version|.
   base::string16 GetUpdatedActiveSetupVersion(
