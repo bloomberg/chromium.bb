@@ -32,6 +32,7 @@
 #define ScriptFunctionCall_h
 
 #include "bindings/core/v8/ScriptValue.h"
+
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -46,6 +47,7 @@ public:
     void appendArgument(const String&);
     void appendArgument(int);
     void appendArgument(bool);
+    bool appendArgument(const Vector<ScriptValue>&);
     void appendUndefinedArgument();
 
 protected:

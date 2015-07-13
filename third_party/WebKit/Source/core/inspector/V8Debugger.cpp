@@ -379,6 +379,18 @@ int V8Debugger::frameCount()
     return 0;
 }
 
+PassRefPtr<JavaScriptCallFrame> V8Debugger::toJavaScriptCallFrameUnsafe(const ScriptValue& value)
+{
+    if (value.isEmpty())
+        return nullptr;
+    ScriptState* scriptState = value.scriptState();
+    if (!scriptState || !scriptState->contextIsValid())
+        return nullptr;
+    ScriptState::Scope scope(scriptState);
+    ASSERT(value.isObject());
+    return V8JavaScriptCallFrame::unwrap(v8::Local<v8::Object>::Cast(value.v8ValueUnsafe()));
+}
+
 PassRefPtr<JavaScriptCallFrame> V8Debugger::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
 {
     const int scopeBits = 2;
