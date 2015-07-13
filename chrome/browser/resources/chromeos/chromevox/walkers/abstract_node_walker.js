@@ -93,7 +93,7 @@ cvox.AbstractNodeWalker.prototype.privateSync_ = function(sel) {
 
   var n = cvox.CursorSelection.fromNode(node);
   if (!cvox.DomUtil.hasContent(node)) {
-    var n = this.next(/** @type {!cvox.CursorSelection} */
+    n = this.next(/** @type {!cvox.CursorSelection} */
         (cvox.CursorSelection.fromNode(node)).setReversed(r));
   }
   if (n) {

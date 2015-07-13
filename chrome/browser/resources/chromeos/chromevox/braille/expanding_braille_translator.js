@@ -208,11 +208,11 @@ cvox.ExpandingBrailleTranslator.rangeForPosition_ = function(
   }
   // Find the last chunk of either whitespace or non-whitespace before and
   // including pos.
-  var start = str.substring(start, pos + 1).search(/(\s+|\S+)$/) + start;
+  start = str.substring(start, pos + 1).search(/(\s+|\S+)$/) + start;
   // Find the characters to include after pos, starting at pos so that
   // they are the same kind (either whitespace or not) as the
   // characters starting at start.
-  var end = pos + /^(\s+|\S+)/.exec(str.substring(pos, end))[0].length;
+  end = pos + /^(\s+|\S+)/.exec(str.substring(pos, end))[0].length;
   return {start: start, end: end};
 };
 
