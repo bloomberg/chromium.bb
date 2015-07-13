@@ -158,6 +158,10 @@ private:
     // have already been finalized in the current lazy sweeping.
     void dispose();
 
+#if ENABLE(OILPAN)
+    void clearWeakMembers(Visitor*);
+#endif
+
     RawPtrWillBeMember<Element> m_element;
     ResourcePtr<ImageResource> m_image;
     // FIXME: Oilpan: We might be able to remove this Persistent hack when
@@ -165,28 +169,8 @@ private:
     GC_PLUGIN_IGNORE("http://crbug.com/383741")
     RefPtrWillBePersistent<Element> m_keepAlive;
 
-#if ENABLE(OILPAN)
-    class ImageLoaderClientRemover {
-    public:
-        ImageLoaderClientRemover(ImageLoader& loader, ImageLoaderClient& client) : m_loader(loader), m_client(client) { }
-        ~ImageLoaderClientRemover();
-
-    private:
-        ImageLoader& m_loader;
-        ImageLoaderClient& m_client;
-    };
-    friend class ImageLoaderClientRemover;
-
-    // Oilpan: This ImageLoader object must outlive its clients because they
-    // need to call ImageLoader::willRemoveClient before they
-    // die. Non-Persistent HeapHashMap doesn't work well because weak processing
-    // for HeapHashMap is not triggered when both of ImageLoader and
-    // ImageLoaderClient are unreachable.
-    GC_PLUGIN_IGNORE("http://crbug.com/383742")
-    PersistentHeapHashMap<WeakMember<ImageLoaderClient>, OwnPtr<ImageLoaderClientRemover>> m_clients;
-#else
+    // Oilpan: the client references are weak, and managed as such via clearWeakMembers();
     HashSet<ImageLoaderClient*> m_clients;
-#endif
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
     WeakPtr<Task> m_pendingTask; // owned by Microtask

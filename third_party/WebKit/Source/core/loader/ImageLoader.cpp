@@ -167,6 +167,11 @@ void ImageLoader::dispose()
     if (m_pendingTask)
         m_pendingTask->clearLoader();
 
+#if ENABLE(OILPAN)
+    for (const auto& client : m_clients)
+        willRemoveClient(*client);
+#endif
+
     if (m_image)
         m_image->removeClient(this);
 
@@ -179,9 +184,27 @@ void ImageLoader::dispose()
         errorEventSender().cancelEvent(this);
 }
 
+#if ENABLE(OILPAN)
+void ImageLoader::clearWeakMembers(Visitor* visitor)
+{
+    Vector<ImageLoaderClient*> deadClients;
+    for (const auto& client : m_clients) {
+        if (!Heap::isHeapObjectAlive(client)) {
+            willRemoveClient(*client);
+            deadClients.append(client);
+        }
+    }
+    for (unsigned i = 0; i < deadClients.size(); ++i)
+        m_clients.remove(deadClients[i]);
+}
+#endif
+
 DEFINE_TRACE(ImageLoader)
 {
     visitor->trace(m_element);
+#if ENABLE(OILPAN)
+    visitor->template registerWeakMembers<ImageLoader, &ImageLoader::clearWeakMembers>(this);
+#endif
 }
 
 void ImageLoader::setImage(ImageResource* newImage)
@@ -593,11 +616,7 @@ void ImageLoader::addClient(ImageLoaderClient* client)
         if (m_image && !m_highPriorityClientCount++)
             memoryCache()->updateDecodedResource(m_image.get(), UpdateForPropertyChange, MemoryCacheLiveResourcePriorityHigh);
     }
-#if ENABLE(OILPAN)
-    m_clients.add(client, adoptPtr(new ImageLoaderClientRemover(*this, *client)));
-#else
     m_clients.add(client);
-#endif
 }
 
 void ImageLoader::willRemoveClient(ImageLoaderClient& client)
@@ -645,21 +664,10 @@ void ImageLoader::elementDidMoveToNewDocument()
 
 void ImageLoader::sourceImageChanged()
 {
-#if ENABLE(OILPAN)
-    for (auto& client : m_clients)
-        client.key->notifyImageSourceChanged();
-#else
     for (auto& client : m_clients) {
         ImageLoaderClient* handle = client;
         handle->notifyImageSourceChanged();
     }
-#endif
 }
 
-#if ENABLE(OILPAN)
-ImageLoader::ImageLoaderClientRemover::~ImageLoaderClientRemover()
-{
-    m_loader.willRemoveClient(m_client);
-}
-#endif
-}
+} // namespace blink
