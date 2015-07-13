@@ -28,10 +28,6 @@ class SerialIoHandlerPosix : public SerialIoHandler,
   serial::ConnectionInfoPtr GetPortInfo() const override;
   bool SetBreak() override;
   bool ClearBreak() override;
-  void RequestAccess(
-      const std::string& port,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) override;
 
  private:
   friend class SerialIoHandler;

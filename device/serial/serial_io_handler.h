@@ -14,6 +14,10 @@
 #include "device/serial/buffer.h"
 #include "device/serial/serial.mojom.h"
 
+namespace dbus {
+class FileDescriptor;
+}
+
 namespace device {
 
 // Provides a simplified interface for performing asynchronous I/O on serial
@@ -35,8 +39,18 @@ class SerialIoHandler : public base::NonThreadSafe,
                     const serial::ConnectionOptions& options,
                     const OpenCompleteCallback& callback);
 
-  // Signals that the access request for |port| is complete.
-  void OnRequestAccessComplete(const std::string& port, bool success);
+#if defined(OS_CHROMEOS)
+  // Signals that the port has been opened.
+  void OnPathOpened(
+      scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      dbus::FileDescriptor fd);
+
+  // Validates the file descriptor provided by the permission broker.
+  void ValidateOpenPort(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      dbus::FileDescriptor fd);
+#endif  // defined(OS_CHROMEOS)
 
   // Performs an async Read operation. Behavior is undefined if this is called
   // while a Read is already pending. Otherwise, the Done or DoneWithError
@@ -119,12 +133,6 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   // Platform-specific port configuration applies options_ to the device.
   virtual bool ConfigurePortImpl() = 0;
-
-  // Requests access to the underlying serial device, if needed.
-  virtual void RequestAccess(
-      const std::string& port,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Performs platform-specific, one-time port configuration on open.
   virtual bool PostOpen();

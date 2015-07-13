@@ -11,12 +11,6 @@
 
 #if defined(OS_LINUX)
 #include <linux/serial.h>
-#if defined(OS_CHROMEOS)
-#include "base/bind.h"
-#include "base/sys_info.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/permission_broker_client.h"
-#endif  // defined(OS_CHROMEOS)
 
 // The definition of struct termios2 is copied from asm-generic/termbits.h
 // because including that header directly conflicts with termios.h.
@@ -151,35 +145,6 @@ scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
   return new SerialIoHandlerPosix(file_thread_task_runner,
                                   ui_thread_task_runner);
-}
-
-void SerialIoHandlerPosix::RequestAccess(
-    const std::string& port,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-#if defined(OS_LINUX) && defined(OS_CHROMEOS)
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::PermissionBrokerClient* client =
-        chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-    if (!client) {
-      DVLOG(1) << "Could not get permission_broker client.";
-      OnRequestAccessComplete(port, false /* failure */);
-      return;
-    }
-    // PermissionBrokerClient should be called on the UI thread.
-    ui_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &chromeos::PermissionBrokerClient::RequestPathAccess,
-            base::Unretained(client), port, -1,
-            base::Bind(&SerialIoHandler::OnRequestAccessComplete, this, port)));
-  } else {
-    OnRequestAccessComplete(port, true /* success */);
-    return;
-  }
-#else
-  OnRequestAccessComplete(port, true /* success */);
-#endif  // defined(OS_LINUX) && defined(OS_CHROMEOS)
 }
 
 void SerialIoHandlerPosix::ReadImpl() {

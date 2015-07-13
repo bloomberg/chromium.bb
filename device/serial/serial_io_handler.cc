@@ -9,6 +9,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/permission_broker_client.h"
+#include "dbus/file_descriptor.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace device {
 
 SerialIoHandler::SerialIoHandler(
@@ -38,33 +44,52 @@ void SerialIoHandler::Open(const std::string& port,
   DCHECK(file_thread_task_runner_.get());
   DCHECK(ui_thread_task_runner_.get());
   MergeConnectionOptions(options);
-  RequestAccess(port, file_thread_task_runner_, ui_thread_task_runner_);
+
+#if defined(OS_CHROMEOS)
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+  DCHECK(client) << "Could not get permission_broker client.";
+  // PermissionBrokerClient should be called on the UI thread.
+  ui_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&chromeos::PermissionBrokerClient::OpenPath,
+                            base::Unretained(client), port,
+                            base::Bind(&SerialIoHandler::OnPathOpened, this,
+                                       file_thread_task_runner_,
+                                       base::ThreadTaskRunnerHandle::Get())));
+#else
+  file_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SerialIoHandler::StartOpen, this, port,
+                            base::ThreadTaskRunnerHandle::Get()));
+#endif  // defined(OS_CHROMEOS)
 }
 
-void SerialIoHandler::RequestAccess(
-    const std::string& port,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  OnRequestAccessComplete(port, true /* success */);
-}
+#if defined(OS_CHROMEOS)
 
-void SerialIoHandler::OnRequestAccessComplete(const std::string& port,
-                                              bool success) {
+void SerialIoHandler::OnPathOpened(
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    dbus::FileDescriptor fd) {
   DCHECK(CalledOnValidThread());
-  if (success) {
-    DCHECK(file_thread_task_runner_.get());
-    file_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SerialIoHandler::StartOpen, this, port,
-                              base::ThreadTaskRunnerHandle::Get()));
-    return;
-  } else {
-    DCHECK(!open_complete_.is_null());
-    OpenCompleteCallback callback = open_complete_;
-    open_complete_.Reset();
-    callback.Run(false);
-    return;
-  }
+  file_thread_task_runner->PostTask(
+      FROM_HERE, base::Bind(&SerialIoHandler::ValidateOpenPort, this,
+                            io_thread_task_runner, base::Passed(&fd)));
 }
+
+void SerialIoHandler::ValidateOpenPort(
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+    dbus::FileDescriptor fd) {
+  base::File file;
+  fd.CheckValidity();
+  if (fd.is_valid()) {
+    file = base::File(fd.TakeValue());
+  }
+
+  io_thread_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&SerialIoHandler::FinishOpen, this, base::Passed(&file)));
+}
+
+#endif
 
 void SerialIoHandler::MergeConnectionOptions(
     const serial::ConnectionOptions& options) {
@@ -103,7 +128,7 @@ void SerialIoHandler::StartOpen(
               base::File::FLAG_TERMINAL_DEVICE;
   base::File file(path, flags);
   io_task_runner->PostTask(FROM_HERE, base::Bind(&SerialIoHandler::FinishOpen,
-                                                 this, Passed(file.Pass())));
+                                                 this, base::Passed(&file)));
 }
 
 void SerialIoHandler::FinishOpen(base::File file) {
