@@ -150,9 +150,10 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(const ScriptVal
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
-InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, v8::Isolate* isolate)
+InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger)
     : InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>("Debugger")
     , m_injectedScriptManager(injectedScriptManager)
+    , m_debugger(debugger)
     , m_pausedScriptState(nullptr)
     , m_breakReason(InspectorFrontend::Debugger::Reason::Other)
     , m_scheduledDebuggerStep(NoStep)
@@ -175,7 +176,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_currentAsyncOperationId(unknownAsyncOperationId)
     , m_pendingTraceAsyncOperationCompleted(false)
     , m_startingStepIntoAsync(false)
-    , m_compiledScripts(isolate)
+    , m_compiledScripts(debugger->isolate())
 {
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
 }

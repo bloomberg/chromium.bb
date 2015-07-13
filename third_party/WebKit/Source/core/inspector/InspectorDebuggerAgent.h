@@ -162,8 +162,7 @@ public:
     void setListener(Listener* listener) { m_listener = listener; }
 
     bool enabled();
-
-    virtual V8Debugger& debugger() = 0;
+    V8Debugger& debugger() { return *m_debugger; }
 
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
@@ -191,7 +190,7 @@ public:
     void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) final;
 
 protected:
-    InspectorDebuggerAgent(InjectedScriptManager*, v8::Isolate*);
+    InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*);
 
     virtual void startListeningV8Debugger() = 0;
     virtual void stopListeningV8Debugger() = 0;
@@ -263,6 +262,7 @@ private:
     };
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    RawPtrWillBeMember<V8Debugger> m_debugger;
     RefPtr<ScriptState> m_pausedScriptState;
     ScriptValue m_currentCallStack;
     ScriptsMap m_scripts;

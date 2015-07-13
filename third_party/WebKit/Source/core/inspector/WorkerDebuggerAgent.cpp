@@ -44,7 +44,7 @@ PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerTh
 }
 
 WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerThreadDebugger* workerThreadDebugger, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
-    : InspectorDebuggerAgent(injectedScriptManager, workerThreadDebugger->debugger()->isolate())
+    : InspectorDebuggerAgent(injectedScriptManager, workerThreadDebugger->debugger())
     , m_workerThreadDebugger(workerThreadDebugger)
     , m_inspectedWorkerGlobalScope(inspectedWorkerGlobalScope)
 {
@@ -68,11 +68,6 @@ void WorkerDebuggerAgent::startListeningV8Debugger()
 void WorkerDebuggerAgent::stopListeningV8Debugger()
 {
     m_workerThreadDebugger->removeListener(this);
-}
-
-V8Debugger& WorkerDebuggerAgent::debugger()
-{
-    return *(m_workerThreadDebugger->debugger());
 }
 
 InjectedScript WorkerDebuggerAgent::injectedScriptForEval(ErrorString* error, const int* executionContextId)

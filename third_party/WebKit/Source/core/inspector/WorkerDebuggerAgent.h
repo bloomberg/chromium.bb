@@ -48,12 +48,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-
     WorkerDebuggerAgent(WorkerThreadDebugger*, WorkerGlobalScope*, InjectedScriptManager*);
 
     void startListeningV8Debugger() override;
     void stopListeningV8Debugger() override;
-    V8Debugger& debugger() override;
     InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
     void muteConsole() override;
     void unmuteConsole() override;

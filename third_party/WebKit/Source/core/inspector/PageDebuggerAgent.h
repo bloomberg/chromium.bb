@@ -72,7 +72,6 @@ protected:
 private:
     void startListeningV8Debugger() override;
     void stopListeningV8Debugger() override;
-    V8Debugger& debugger() override;
     void muteConsole() override;
     void unmuteConsole() override;
 

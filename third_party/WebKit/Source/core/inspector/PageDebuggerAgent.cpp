@@ -59,7 +59,7 @@ PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDe
 }
 
 PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
-    : InspectorDebuggerAgent(injectedScriptManager, MainThreadDebugger->debugger()->isolate())
+    : InspectorDebuggerAgent(injectedScriptManager, MainThreadDebugger->debugger())
     , m_mainThreadDebugger(MainThreadDebugger)
     , m_pageAgent(pageAgent)
     , m_overlay(overlay)
@@ -122,11 +122,6 @@ void PageDebuggerAgent::startListeningV8Debugger()
 void PageDebuggerAgent::stopListeningV8Debugger()
 {
     m_mainThreadDebugger->removeListener(this, m_pageAgent->inspectedFrame());
-}
-
-V8Debugger& PageDebuggerAgent::debugger()
-{
-    return *(m_mainThreadDebugger->debugger());
 }
 
 void PageDebuggerAgent::muteConsole()
