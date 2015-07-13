@@ -70,8 +70,7 @@ CertVerifierBlockAdapter::Params::~Params() {
 void CertVerifierBlockAdapter::Verify(
     const Params& params,
     void (^completion_handler)(scoped_ptr<CertVerifyResult>, int)) {
-  DCHECK(params.cert);
-  DCHECK(params.hostname.size());
+  DCHECK(completion_handler);
 
   scoped_refptr<VerificationContext> context(
       new VerificationContext(params.cert));
@@ -82,7 +81,6 @@ void CertVerifierBlockAdapter::Verify(
                                       params.ocsp_response, params.flags,
                                       params.crl_set.get(), &(context->result),
                                       callback, &(context->request), net_log_);
-  DCHECK(status != ERR_INVALID_ARGUMENT);
 
   if (status == ERR_IO_PENDING) {
     // Completion handler will be called from |callback| when verification

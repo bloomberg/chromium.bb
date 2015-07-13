@@ -135,6 +135,26 @@ TEST_F(CertVerifierBlockAdapterTest, DefaultParamsAndAsync) {
             actualResult->is_issued_by_known_root);
 }
 
+// Tests |Verify| with invalid arguments.
+TEST_F(CertVerifierBlockAdapterTest, InvalidParamsAndError) {
+  // Set up expectation.
+  const int kExpectedStatus = ERR_INVALID_ARGUMENT;
+  EXPECT_CALL(*cert_verifier_mock_,
+              Verify(nullptr, "", "", 0, nullptr, _, _, _, _))
+      .Times(1)
+      .WillOnce(testing::Return(kExpectedStatus));
+
+  // Call |Verify|.
+  scoped_ptr<CertVerifyResult> actualResult;
+  int actualStatus = -1;
+  CertVerifierBlockAdapter::Params params(nullptr, "");
+  Verify(params, &actualResult, &actualStatus);
+
+  // Ensure that Verification results are correct.
+  EXPECT_EQ(kExpectedStatus, actualStatus);
+  EXPECT_FALSE(actualResult);
+}
+
 // Tests |Verify| with error.
 TEST_F(CertVerifierBlockAdapterTest, DefaultParamsAndError) {
   // Set up expectation.

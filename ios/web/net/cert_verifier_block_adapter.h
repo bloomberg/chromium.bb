@@ -27,7 +27,9 @@ class CertVerifierBlockAdapter {
   ~CertVerifierBlockAdapter();
 
   // Encapsulates verification parms. |cert| and |hostname| are mandatory, the
-  // other params are optional.
+  // other params are optional. If either of mandatory arguments is null or
+  // empty then verification |CompletionHandler| will be called with
+  // ERR_INVALID_ARGUMENT status.
   struct Params {
     // Constructs Params from X509 cert and hostname, which are mandatory for
     // verification.
