@@ -154,8 +154,10 @@ class ExtensionTabUtil {
   static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
                                          const Extension* extension);
 
-  // Returns true if |url| is used for testing crashes.
-  static bool IsCrashURL(const GURL& url);
+  // Returns true if navigating to |url| would kill a page or the browser
+  // itself, whether by simulating a crash, browser quit, thread hang, or
+  // equivalent. Extensions should be prevented from navigating to such URLs.
+  static bool IsKillURL(const GURL& url);
 
   // Opens a tab for the specified |web_contents|.
   static void CreateTab(content::WebContents* web_contents,

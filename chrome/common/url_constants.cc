@@ -186,6 +186,7 @@ const char kChromeUIFlagsHost[] = "flags";
 const char kChromeUIFlashHost[] = "flash";
 const char kChromeUIGCMInternalsHost[] = "gcm-internals";
 const char kChromeUIHangHost[] = "hang";
+const char kChromeUIHangUIHost[] = "uithreadhang";
 const char kChromeUIHelpFrameHost[] = "help-frame";
 const char kChromeUIHelpHost[] = "help";
 const char kChromeUIHistoryHost[] = "history";

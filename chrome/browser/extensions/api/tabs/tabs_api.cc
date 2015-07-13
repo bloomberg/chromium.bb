@@ -433,7 +433,7 @@ bool WindowsCreateFunction::RunSync() {
         return false;
       }
       // Don't let the extension crash the browser or renderers.
-      if (ExtensionTabUtil::IsCrashURL(url)) {
+      if (ExtensionTabUtil::IsKillURL(url)) {
         error_ = keys::kNoCrashBrowserError;
         return false;
       }
@@ -1297,7 +1297,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
   }
 
   // Don't let the extension crash the browser or renderers.
-  if (ExtensionTabUtil::IsCrashURL(url)) {
+  if (ExtensionTabUtil::IsKillURL(url)) {
     error_ = keys::kNoCrashBrowserError;
     return false;
   }

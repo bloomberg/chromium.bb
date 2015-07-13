@@ -178,6 +178,7 @@ extern const char kChromeUIGCMInternalsHost[];
 extern const char kChromeUIHelpFrameHost[];
 extern const char kChromeUIHelpHost[];
 extern const char kChromeUIHangHost[];
+extern const char kChromeUIHangUIHost[];
 extern const char kChromeUIHistoryHost[];
 extern const char kChromeUIHistoryFrameHost[];
 extern const char kChromeUIIdentityInternalsHost[];

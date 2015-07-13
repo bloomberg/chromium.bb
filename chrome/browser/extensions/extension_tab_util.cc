@@ -188,7 +188,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   }
 
   // Don't let extensions crash the browser or renderers.
-  if (ExtensionTabUtil::IsCrashURL(url)) {
+  if (ExtensionTabUtil::IsKillURL(url)) {
     *error = keys::kNoCrashBrowserError;
     return NULL;
   }
@@ -526,13 +526,28 @@ GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,
   return url;
 }
 
-bool ExtensionTabUtil::IsCrashURL(const GURL& url) {
+bool ExtensionTabUtil::IsKillURL(const GURL& url) {
+  static const char* kill_hosts[] = {
+      chrome::kChromeUICrashHost,
+      chrome::kChromeUIHangUIHost,
+      chrome::kChromeUIKillHost,
+      chrome::kChromeUIQuitHost,
+      chrome::kChromeUIRestartHost,
+      content::kChromeUIBrowserCrashHost,
+  };
+
   // Check a fixed-up URL, to normalize the scheme and parse hosts correctly.
   GURL fixed_url =
       url_fixer::FixupURL(url.possibly_invalid_spec(), std::string());
-  return (fixed_url.SchemeIs(content::kChromeUIScheme) &&
-          (fixed_url.host() == content::kChromeUIBrowserCrashHost ||
-           fixed_url.host() == chrome::kChromeUICrashHost));
+  if (!fixed_url.SchemeIs(content::kChromeUIScheme))
+    return false;
+
+  for (size_t i = 0; i < arraysize(kill_hosts); ++i) {
+    if (fixed_url.host() == kill_hosts[i])
+      return true;
+  }
+
+  return false;
 }
 
 void ExtensionTabUtil::CreateTab(WebContents* web_contents,
