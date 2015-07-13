@@ -285,9 +285,9 @@ void fd_bo_del(struct fd_bo *bo)
 	if (!atomic_dec_and_test(&bo->refcnt))
 		return;
 
-	if (bo->fd) {
+	if (bo->fd >= 0) {
 		close(bo->fd);
-		bo->fd = 0;
+		bo->fd = -1;
 	}
 
 	pthread_mutex_lock(&table_lock);
@@ -372,7 +372,7 @@ uint32_t fd_bo_handle(struct fd_bo *bo)
 
 int fd_bo_dmabuf(struct fd_bo *bo)
 {
-	if (!bo->fd) {
+	if (bo->fd < 0) {
 		struct drm_prime_handle req = {
 				.handle = bo->handle,
 				.flags = DRM_CLOEXEC,

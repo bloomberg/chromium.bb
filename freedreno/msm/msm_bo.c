@@ -137,6 +137,7 @@ drm_private struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
 
 	bo = &msm_bo->base;
 	bo->funcs = &funcs;
+	bo->fd = -1;
 
 	for (i = 0; i < ARRAY_SIZE(msm_bo->list); i++)
 		list_inithead(&msm_bo->list[i]);

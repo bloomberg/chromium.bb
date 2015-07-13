@@ -101,7 +101,7 @@ static void kgsl_pipe_destroy(struct fd_pipe *pipe)
 	if (kgsl_pipe->drawctxt_id)
 		ioctl(kgsl_pipe->fd, IOCTL_KGSL_DRAWCTXT_DESTROY, &req);
 
-	if (kgsl_pipe->fd)
+	if (kgsl_pipe->fd >= 0)
 		close(kgsl_pipe->fd);
 
 	free(kgsl_pipe);
