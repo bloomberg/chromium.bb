@@ -103,7 +103,7 @@ before invoking ZUC_RUN_TESTS().
 
 The current implementation defers processing of command-line parameters
 to the main application hosting the testing. It is possible that a
-helper to process certain parameters may be added.
+helper function to process certain parameters may be added.
 
 @subsection zunitc_execution_matching Matching Patterns for Tests
 
@@ -133,7 +133,7 @@ Test ordering can be randomized by setting a non-zero positive value to
 zuc_set_random(). Setting it to 1 will cause the framework to pick a
 random seed based on the time. A value greater than 1 will be taken as a
 random seed itself. And setting it to 0 will disable randomization and
-allow the test to be executed in their natural ordering.
+allow the tests to be executed in their natural ordering.
 
 @section zunitc_fixtures Fixtures
 
