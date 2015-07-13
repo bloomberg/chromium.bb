@@ -334,7 +334,6 @@
 <translation id="3846593650622216128">Aquesta configuració està gestionada per una extensió.</translation>
 <translation id="8185331656081929126">Mostra notificacions quan es detectin impressores noves a la xarxa</translation>
 <translation id="2972557485845626008">Microprogramari</translation>
-<translation id="735327918767574393">Ha fallat alguna cosa en mostrar la pàgina. Per continuar, torneu-la a carregar o aneu a una altra pàgina.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>El vostre compte pot proporcionar un identificador de recurs i la ubicació del dispositiu (opcional)<ph name="END_BOLD"/>. <ph name="BEGIN_ITALIC"/>Podeu proporcionar un identificador del dispositiu i una ubicació als camps que hi ha més avall. Aquestes dades es mostraran per al dispositiu a la pàgina chrome:policy de la consola d'administració<ph name="END_ITALIC"/>.</translation>
 <translation id="7607274158153386860">Sol·licita el lloc per a la tauleta</translation>
 <translation id="8028060951694135607">Recuperació de claus de Microsoft</translation>
@@ -583,7 +582,6 @@
 <translation id="6135622770221372891">Identificadors de canal</translation>
 <translation id="8472623782143987204">recolzat per maquinari</translation>
 <translation id="8545107379349809705">Amaga la informació...</translation>
-<translation id="2419206345979625354">La pàgina web s'ha tancat de manera inesperada. Per continuar, torneu a carregar-la o aneu a una altra pàgina.</translation>
 <translation id="4865571580044923428">Gestiona les excepcions...</translation>
 <translation id="2526619973349913024">Busca actualitzacions</translation>
 <translation id="3716615839203649375">permet</translation>
@@ -691,7 +689,6 @@
 <translation id="3704726585584668805">Activa el connector de PDF fora de procés.</translation>
 <translation id="5486326529110362464">Ha d'existir el valor d'entrada de la clau privada.</translation>
 <translation id="6824725898506587159">Gestiona els idiomes</translation>
-<translation id="8190907767443402387">Envieu comentaris per ajudar a millorar Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Un administrador ha desactivat l'inici de sessió múltiple per a <ph name="USER_EMAIL"/>.
 Tots els usuaris han de tancar la sessió per continuar.</translation>
@@ -1178,7 +1175,6 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY"/>, us pot resultar pràctic la prop
 <translation id="1864756863218646478">No s'ha pogut trobar el fitxer.</translation>
 <translation id="7810202088502699111">S'han bloquejat finestres emergents en aquesta pàgina.</translation>
 <translation id="8884961208881553398">Afegeix serveis nous</translation>
-<translation id="3808873045540128170">L'hem perdut!</translation>
 <translation id="744341768939279100">Crea un perfil</translation>
 <translation id="646727171725540434">Servidor intermediari HTTP</translation>
 <translation id="7576690715254076113">Intercala</translation>
@@ -1861,7 +1857,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="7075513071073410194">PKCS #1 MD5 amb encriptació RSA</translation>
 <translation id="7767646430896201896">Opcions:</translation>
 <translation id="1114335938027186412">L'ordinador conté un dispositiu de seguretat amb mòdul de plataforma de confiança (TPM), que s'utilitza per implementar un gran nombre de funcions clau de seguretat a Chrome OS. Visiteu el Centre d'ajuda de Chromebook per obtenir més informació: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">la tecla Esc neteja tota la memòria intermèdia de preedició</translation>
 <translation id="3344786168130157628">Nom del punt d'accés:</translation>
 <translation id="8293206222192510085">Afegeix una adreça d'interès</translation>
@@ -1925,7 +1920,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="919412290393329570">Desactiva l'efecte d'estirar de la imatge per actualitzar la pantalla.</translation>
 <translation id="8466234950814670489">Arxiu tar</translation>
 <translation id="852269967951527627">No permetis que cap lloc mostri notificacions</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">full de paper</translation>
 <translation id="2125314715136825419">Continua sense actualitzar Adobe Reader (no recomanat)</translation>
 <translation id="5034510593013625357">Patró del nom d'amfitrió</translation>
@@ -2341,7 +2335,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="4572659312570518089">S'ha cancel·lat l'autenticació mentre es connectava a &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="4925542575807923399">L'administrador d'aquest compte requereix que sigui el primer compte que iniciï la sessió en una sessió amb inici de sessió múltiple.</translation>
 <translation id="5701381305118179107">Centre</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">S'està verificant...</translation>
 <translation id="7193047015510747410">Emplenar automàticament les credencials de sincronització</translation>
 <translation id="7257173066616499747">Xarxes Wi-Fi</translation>
@@ -2711,7 +2704,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="18139523105317219">Nom de la part EDI</translation>
 <translation id="8356258244599961364">Aquest idioma no té cap mètode d'entrada.</translation>
 <translation id="733186066867378544">Excepcions d'ubicació geogràfica</translation>
-<translation id="3328801116991980348">Informació del lloc</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/>
           té problemes per accedir a la xarxa.
           <ph name="LINE_BREAK"/>
@@ -3214,7 +3206,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="7568790562536448087">Actualització</translation>
 <translation id="3910699493603749297">Teclat de khmer</translation>
 <translation id="5487982064049856365">Heu canviat recentment la contrasenya. Inicieu la sessió amb la nova.</translation>
-<translation id="2345055320165338418">Si estan activades, les respostes a determinats tipus de consultes apareixeran directament a la llista de suggeriments de l'omnibox.</translation>
 <translation id="1585717515139318619">Un altre programa de l'ordinador ha afegit un tema que pot canviar el funcionament de Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3527,7 +3518,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="4365673000813822030">La sincronització ha deixat de funcionar.</translation>
 <translation id="6790820461102226165">Afegiu una persona...</translation>
 <translation id="2332131598580221120">Mostra a la botiga</translation>
-<translation id="2289304220823908416">Obteniu ajuda amb el dispositiu Chrome.</translation>
 <translation id="5875858680971105888">L'usuari supervisat no s'ha pogut importar. Comproveu la connexió a la xarxa i torneu-ho a provar més tard.</translation>
 <translation id="5411472733320185105">No utilitzeu la configuració del servidor intermediari per a aquests amfitrions i dominis:</translation>
 <translation id="3685121001045880436">És possible que el servidor on s'allotja la pàgina web s'hagi sobrecarregat o que s'hi hagi produït un error.
@@ -3562,7 +3552,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Mostra a la carpeta</translation>
 <translation id="5990198433782424697">Extensions en URL chrome://</translation>
-<translation id="7664673415674668445">Comentaris de l'error</translation>
 <translation id="1793119619663054394">Confirmeu que voleu suprimir <ph name="PROFILE_NAME"/> i totes les dades associades de Chrome en aquest ordinador? Aquesta acció no es pot desfer.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="4605399136610325267">No està connectat a Internet</translation>
@@ -3703,7 +3692,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="2643698698624765890">Per gestionar les extensions, feu clic a Extensions al menú Finestra.</translation>
 <translation id="4846680374085650406">Esteu seguint la recomanació de l'administració per a aquesta configuració.</translation>
 <translation id="1974060860693918893">Configuració avançada</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Descarta la foto</translation>
 <translation id="1244303850296295656">Error d'extensió</translation>
 <translation id="3541661933757219855">Escriviu Ctrl + Alt + / o Esc per amagar-lo</translation>
@@ -3717,7 +3705,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="3660234220361471169">No és de confiança</translation>
 <translation id="2679385451463308372">Imprimeix des de la finestra de diàleg del sistema…</translation>
 <translation id="959890390740139744">Corregeix l'ortografia automàticament</translation>
-<translation id="5146827657109421175">Torna a la llista de dispositius</translation>
 <translation id="2607991137469694339">Mètode d'introducció en tàmil (fonètic)</translation>
 <translation id="399179161741278232">Importats</translation>
 <translation id="810066391692572978">El fitxer utilitza funcions no compatibles.</translation>
@@ -3955,7 +3942,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="1325040735987616223">Actualització del sistema</translation>
 <translation id="720210938761809882">Pàgina bloquejada</translation>
 <translation id="7748144333872478614">Desactiva els fons de finestra a TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Quant a NaCl</translation>
 <translation id="3084771660770137092">Chrome s'ha quedat sense memòria, o bé el procés de la pàgina web s'ha cancel·lat per algun altre motiu. Per continuar, torneu-la a carregar o aneu a una altra pàgina.</translation>
 <translation id="1114901192629963971">No es pot verificar la contrasenya a la xarxa actual. Seleccioneu una altra xarxa.</translation>
@@ -4158,7 +4144,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="4023146161712577481">S'està determinant la configuració del dispositiu</translation>
 <translation id="6333834492048057036">Se centra en la barra d'adreces per fer una cerca.</translation>
 <translation id="4172051516777682613">Mostra sempre</translation>
-<translation id="3228279582454007836">No has visitat mai abans aquest lloc.</translation>
 <translation id="7027125358315426638">Nom de la base de dades:</translation>
 <translation id="5449716055534515760">Tanca la &amp;finestra</translation>
 <translation id="3224239078034945833">Multilingüe canadenc</translation>
@@ -4771,7 +4756,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="4850458635498951714">Afegeix un dispositiu</translation>
 <translation id="3140353188828248647">Passa la barra d'adreces a primer pla</translation>
 <translation id="1371806038977523515">L'extensió següent controla aquesta configuració:</translation>
-<translation id="2020262498093941982">Respostes al suggeriment</translation>
 <translation id="6462082050341971451">Encara hi ets?</translation>
 <translation id="7971550670320370753">Permet que l'usuari desactivi fàcilment la funció d'importació de Cloud.</translation>
 <translation id="5565871407246142825">Targetes de crèdit</translation>
@@ -5287,7 +5271,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="3160041952246459240">Teniu certificats arxivats que identifiquen els servidors següents:</translation>
 <translation id="6305328361606238230">Rebre missatges de tramesa automàtica</translation>
-<translation id="566920818739465183">Heu visitat aquest lloc per primera vegada el dia <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Feu clic per anar endavant o manteniu premut per veure l'historial</translation>
 <translation id="4092878864607680421">La versió més recent de l'aplicació &quot;<ph name="APP_NAME"/>&quot; requereix més permisos i, per tant, s'ha desactivat.</translation>
 <translation id="5828228029189342317">Heu triat que s'obrin alguns tipus de fitxers automàticament després de baixar-los.</translation>

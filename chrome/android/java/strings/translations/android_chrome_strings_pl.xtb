@@ -32,13 +32,12 @@
 <translation id="8237438615979997762">Dane przechowywane na tym urządzeniu oraz na Twoim koncie Google pozostaną w obu tych miejscach. Jednak nowe dane i przyszłe zmiany nie będą już synchronizowane z kontem.</translation>
 <translation id="9070377983101773829">Rozpocznij wyszukiwanie głosowe</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
-<translation id="6504836143156866575">Wersja języka JavaScript</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Zaszyfruj wszystko za pomocą hasła</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="7644305409888602715">Tłumaczę stronę na <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="5335200807405507442">Pobierz wstępnie zasoby strony</translation>
-<translation id="5168917394043976756">Otwórz szufladę nawigacji</translation>
+<translation id="5168917394043976756">Otwórz panel nawigacji</translation>
 <translation id="9050666287014529139">Hasło</translation>
 <translation id="326254929494722411">Konto Google nie zostało jeszcze skonfigurowane na tym urządzeniu</translation>
 <translation id="8143660160623733249">Nazwa folderu</translation>
@@ -270,7 +269,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="4543087392704641517">Tytuł zakładki</translation>
 <translation id="1987317783729300807">Konta</translation>
 <translation id="7846076177841592234">Anuluj wybór</translation>
-<translation id="6064211167623632605">Ścieżka do pliku wykonywalnego</translation>
 <translation id="4522570452068850558">Szczegóły</translation>
 <translation id="1521530746149324532">Jesteś w trybie incognito.</translation>
 <translation id="971774202801778802">URL zakładki</translation>
@@ -296,7 +294,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="6208263165776660488">Karty Chrome zostały przeniesione</translation>
 <translation id="4526792582053123229">Google nie optymalizuje ani nie widzi stron, z którymi łączysz się przez HTTPS lub które przeglądasz w trybie incognito.</translation>
 <translation id="7626032353295482388">Chrome - witamy!</translation>
-<translation id="7817177303494746697">Wersja Blink</translation>
 <translation id="2532336938189706096">Widok sieci</translation>
 <translation id="6571070086367343653">Edytuj kartę kredytową</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
@@ -355,7 +352,7 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 <translation id="3774280986422214650">Jeśli włączysz tę funkcję, weźmiesz udział w eksperymencie polegającym na przekazywaniu stron HTTPS przez serwery Google.</translation>
 <translation id="1445680696957526815">Komponenty Chrome są ze sobą niezgodne. Być może przeglądarka się uaktualnia. Spróbuj ponownie za kilka minut. Jeśli problem nie ustąpi, odinstaluj i ponownie zainstaluj Chrome.</translation>
 <translation id="2526148617758225454">Oszczędzanie danych jest włączone. Możesz nim zarządzać w ustawieniach.</translation>
-<translation id="189172778771606813">Zamknij szufladę nawigacji</translation>
+<translation id="189172778771606813">Zamknij panel nawigacji</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="3102119246920354026">Pamięć podręczna</translation>
 <translation id="748127970106343339">Potwierdź usunięcie z urządzenia danych logowania</translation>
@@ -377,7 +374,6 @@ Aby go wyłączyć, kliknij przycisk Wstecz.</translation>
 Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chrome…”</translation>
 <translation id="4797039098279997504">Kliknij, by wrócić na <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Brak kontroli</translation>
-<translation id="2699916814609764774">Ścieżka profilu</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="6979922938747275756">Błąd podczas wczytywania folderów</translation>

@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">‏הנתונים השמורים במכשיר הזה והנתונים השמורים בחשבון Google שלך יישארו בשני המקומות. עם זאת, לא יתבצע בין השניים סנכרון של נתונים חדשים שתוסיף או של שינויים שתבצע בנתונים הקיימים.</translation>
 <translation id="9070377983101773829">התחל חיפוש קולי</translation>
 <translation id="6831043979455480757">תרגם</translation>
-<translation id="6504836143156866575">‏גרסת JavaScript</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">הצפן הכל באמצעות ביטוי סיסמה</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
@@ -270,7 +269,6 @@
 <translation id="4543087392704641517">כותרת סימניה</translation>
 <translation id="1987317783729300807">חשבונות</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
-<translation id="6064211167623632605">נתיב הפעלה</translation>
 <translation id="4522570452068850558">פרטים</translation>
 <translation id="1521530746149324532">עברת למצב גלישה בסתר.</translation>
 <translation id="971774202801778802">כתובת אתר של סימניה</translation>
@@ -296,7 +294,6 @@
 <translation id="6208263165776660488">‏כרטיסיות Chrome עברו למקום אחר</translation>
 <translation id="4526792582053123229">‏Google לא תראה או תבצע אופטימיזציה של דפים שהגישה אליהם בוצעה דרך HTTPS או במצב גלישה בסתר.</translation>
 <translation id="7626032353295482388">‏ברוכים הבאים ל-Chrome</translation>
-<translation id="7817177303494746697">‏גרסת Blink</translation>
 <translation id="2532336938189706096">תצוגת אינטרנט</translation>
 <translation id="6571070086367343653">ערוך כרטיס אשראי</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
@@ -377,7 +374,6 @@
 פתח את Chrome במחשב, עבור אל התפריט ובחר באפשרות 'היכנס אל Chrome…'</translation>
 <translation id="4797039098279997504">גע כדי לחזור אל <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">לא מבוקר</translation>
-<translation id="2699916814609764774">נתיב פרופיל</translation>
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="6979922938747275756">שגיאה בטעינת תיקיות</translation>

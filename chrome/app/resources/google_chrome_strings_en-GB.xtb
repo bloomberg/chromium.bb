@@ -31,7 +31,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="110877069173485804">This is your Chrome</translation>
 <translation id="8406086379114794905">Help make Chrome better</translation>
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
-<translation id="2721687379934343312">On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
 <translation id="4700157086864140907">Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.</translation>
 <translation id="4953650215774548573">Set Google Chrome as your default browser</translation>
@@ -87,6 +86,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5037239767309817516">Please close all Google Chrome windows and relaunch it for this change to take effect.</translation>
 <translation id="1619887657840448962">To make Chrome safer, we disabled the following extension that isn't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> and may have been added without your knowledge.</translation>
 <translation id="225614027745146050">Welcome</translation>
+<translation id="8811903091068364646">&amp;Relaunch Chrome on the desktop</translation>
 <translation id="3398288718845740432">Hide in Chrome Menu</translation>
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
@@ -107,7 +107,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3656661827369545115">Launch Chromium automatically when your computer starts</translation>
 <translation id="1763864636252898013">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="556024056938947818">Google Chrome is trying to show passwords.</translation>
-<translation id="3012890944909934180">Relaunch Chrome on the desktop</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="8460191995881063249">Chrome Notification Center</translation>
 <translation id="1457721931618994305">Updating Google Chrome ...</translation>
@@ -199,7 +198,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="5028489144783860647">Google Chrome could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="9026991721384951619">Chrome OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
-<translation id="2267273557509361161">Relaunch Chrome in Windows 8 mode</translation>
 <translation id="2871893339301912279">You're signed in to Chrome!</translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
@@ -259,6 +257,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3037838751736561277">Google Chrome is in background mode.</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
 <translation id="4692614041509923516">Your computer is running an old version of Microsoft Windows that cannot process this website's security certificate. Because of this problem, Google Chrome can't tell whether the certificate came from <ph name="SITE"/> or from someone on your network pretending to be <ph name="SITE"/>. Please update your computer to a more recent version of Windows.</translation>
+<translation id="5931853610562009806">On Mac, passwords may be saved to your Keychain and accessed or synced by other Chrome users sharing this OS X account.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome is out of date</translation>
 <translation id="7592736734348559088">Google Chrome could not sync your data because your account sign-in details are out of date.</translation>
@@ -270,6 +269,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
 <translation id="5132929315877954718">Discover great apps, games, extensions and themes for Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Relaunch Chrome in Windows 8 mode</translation>
 <translation id="6626317981028933585">Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.</translation>
 <translation id="8274359292107649245">Open Chrome on the desktop</translation>
 <translation id="7242029209006116544">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE"/></translation>

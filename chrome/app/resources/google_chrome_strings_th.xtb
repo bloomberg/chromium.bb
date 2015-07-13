@@ -27,7 +27,6 @@
 <translation id="110877069173485804">นี่คือ Chrome ของคุณ</translation>
 <translation id="8406086379114794905">ช่วยปรับปรุง Chrome ให้ดีขึ้น</translation>
 <translation id="5620765574781326016">เรียนรู้เกี่ยวกับหัวข้อต่างๆ บนเว็บไซต์โดยไม่ต้องออกจากหน้า</translation>
-<translation id="2721687379934343312">สำหรับ Mac รหัสผ่านจะถูกบันทึกไว้ใน Keychain และผู้ใช้ Chrome คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
 <translation id="683440813066116847">กฎขาเข้าสำหรับ Google Chrome Canary เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="4700157086864140907">Google Chrome สามารถให้บริการตรวจสอบการสะกดที่ชาญฉลาดมากขึ้นโดยการส่งสิ่งที่คุณพิมพ์ในเบราว์เซอร์ไปยังเซิร์ฟเวอร์ของ Google ซึ่งจะช่วยให้คุณสามารถใช้เทคโนโลยีตรวจสอบการสะกดแบบเดียวกันกับที่การค้นหาของ Google ใช้</translation>
 <translation id="4953650215774548573">ตั้ง Google Chrome เป็นเบราว์เซอร์เริ่มต้นของคุณ</translation>
@@ -103,7 +102,6 @@
 <translation id="3656661827369545115">เปิด Chromium โดยอัตโนมัติเมื่อเปิดคอมพิวเตอร์</translation>
 <translation id="1763864636252898013">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN"/> เพราะระบบปฏิบัติการของอุปกรณ์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="556024056938947818">Google Chrome กำลังพยายามแสดงรหัสผ่าน</translation>
-<translation id="3012890944909934180">เปิดใช้ Chrome บนเดสก์ท็อปอีกครั้ง</translation>
 <translation id="2580411288591421699">ไม่สามารถติดตั้ง Google Chrome รุ่นเดียวกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome แล้วลองใหม่อีกครั้ง</translation>
 <translation id="8460191995881063249">ศูนย์การแจ้งเตือนของ Chrome</translation>
 <translation id="1457721931618994305">กำลังอัปเดต Google Chrome...</translation>
@@ -193,7 +191,6 @@
 <translation id="5028489144783860647">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านการซิงค์</translation>
 <translation id="9026991721384951619">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>
-<translation id="2267273557509361161">เปิดใช้ Chrome ในโหมด Windows 8 อีกครั้ง</translation>
 <translation id="2871893339301912279">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว!</translation>
 <translation id="7890208801193284374">ถ้าคุณให้ผู้อื่นใช้คอมพิวเตอร์ร่วมด้วย เพื่อนๆ และครอบครัวของคุณสามารถท่องเว็บแยกกันได้และตั้งค่า Chrome ได้ตามที่พวกเขาต้องการ</translation>
 <translation id="7161904924553537242">ยินดีต้อนรับสู่ Google Chrome</translation>

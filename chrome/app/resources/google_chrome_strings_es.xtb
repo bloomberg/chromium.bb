@@ -31,7 +31,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="8406086379114794905">Ayuda a mejorar Chrome</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
-<translation id="2721687379934343312">En los equipos Mac, las contraseñas se guardan en tu llavero y otros usuarios de Chrome que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
 <translation id="683440813066116847">Regla entrante para que Google Chrome Canary permita tráfico mDNS.</translation>
 <translation id="4700157086864140907">Para que el corrector ortográfico sea más útil, Google Chrome envía lo que escribes en el navegador a los servidores de Google con el fin de poder usar la tecnología de corrección ortográfica de la búsqueda de Google.</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
@@ -108,7 +107,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3656661827369545115">Abrir Chromium automáticamente al iniciar el ordenador</translation>
 <translation id="1763864636252898013">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN"/>, el sistema operativo de tu dispositivo no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
-<translation id="3012890944909934180">Reiniciar Chrome en el escritorio</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando. Cierra el navegador y vuelve a intentarlo.</translation>
 <translation id="8460191995881063249">Centro de notificaciones de Chrome</translation>
 <translation id="1457721931618994305">Actualizando Google Chrome...</translation>
@@ -197,7 +195,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="5028489144783860647">Google Chrome no ha podido sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
 <translation id="9026991721384951619">Chrome OS no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
 <translation id="8547799825197623713">Barra de aplicaciones de Google Chrome Canary</translation>
-<translation id="2267273557509361161">Reiniciar Chrome en modo Windows 8</translation>
 <translation id="2871893339301912279">Has iniciado sesión en Chrome</translation>
 <translation id="7890208801193284374">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome a su gusto.</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>

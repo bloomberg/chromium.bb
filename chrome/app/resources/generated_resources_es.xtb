@@ -338,7 +338,6 @@
 <translation id="3846593650622216128">Una extensión aplica estas opciones.</translation>
 <translation id="8185331656081929126">Mostrar notificaciones cuando se detecten nuevas impresoras en la red</translation>
 <translation id="2972557485845626008">Firmware</translation>
-<translation id="735327918767574393">Se ha producido un error al mostrar esta página web. Para continuar, vuelve a cargar la página o accede a otra.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Tu cuenta está habilitada para proporcionar una ubicación y un ID de recurso para este dispositivo (opcional).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Puedes proporcionar una ubicación y un identificador del dispositivo en los campos que se indican a continuación. Esta información se mostrará para el dispositivo en la página chrome:policy de la consola de administración.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Solicitar sitio para tablets</translation>
 <translation id="8028060951694135607">Recuperación de claves de Microsoft</translation>
@@ -592,7 +591,6 @@ Esto puede deberse a que tu cortafuegos o software antivirus haya considerado er
 <translation id="6135622770221372891">IDs de canal</translation>
 <translation id="8472623782143987204">respaldado por hardware</translation>
 <translation id="8545107379349809705">Ocultar información...</translation>
-<translation id="2419206345979625354">La página web se ha cerrado de forma inesperada. Para continuar, vuelve a cargar la página o accede a otra.</translation>
 <translation id="4865571580044923428">Administrar excepciones...</translation>
 <translation id="2526619973349913024">Buscar actualizaciones</translation>
 <translation id="3716615839203649375">permitir</translation>
@@ -701,7 +699,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3704726585584668805">Permite habilitar el complemento de PDF de salida de proceso.</translation>
 <translation id="5486326529110362464">Debe existir un valor de entrada para la clave privada.</translation>
 <translation id="6824725898506587159">Administrar idiomas</translation>
-<translation id="8190907767443402387">Enviar comentarios para ayudar a mejorar Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Un administrador ha inhabilitado el inicio de sesión múltiple para <ph name="USER_EMAIL"/>.
 Todos los usuarios deben cerrar sesión para continuar.</translation>
@@ -1189,7 +1186,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="1864756863218646478">No se ha podido encontrar el archivo.</translation>
 <translation id="7810202088502699111">Se han bloqueado los pop-ups en esta página.</translation>
 <translation id="8884961208881553398">Añadir nuevos servicios</translation>
-<translation id="3808873045540128170">¡Houston, tenemos un problema!</translation>
 <translation id="744341768939279100">Crear un nuevo perfil</translation>
 <translation id="646727171725540434">Proxy HTTP</translation>
 <translation id="7576690715254076113">Intercalar</translation>
@@ -1875,7 +1871,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="7075513071073410194">PKCS #1 MD5 con cifrado RSA</translation>
 <translation id="7767646430896201896">Opciones:</translation>
 <translation id="1114335938027186412">Tu ordenador contiene un dispositivo de seguridad del módulo de plataforma de confianza (TPM), que se utiliza para implementar un gran número de funciones clave de seguridad en Chrome OS. Puedes consultar más información en el Centro de ayuda de los Chromebook (https://support.google.com/chromebook/?p=tpm).</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">La tecla Esc elimina completamente el búfer de preedición.</translation>
 <translation id="3344786168130157628">Nombre del punto de acceso:</translation>
 <translation id="8293206222192510085">Añadir marcador</translation>
@@ -1939,7 +1934,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="919412290393329570">Inhabilitar el efecto desplazar para actualizar.</translation>
 <translation id="8466234950814670489">Archivo tar</translation>
 <translation id="852269967951527627">No permitir que los sitios muestren notificaciones</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">hoja de papel</translation>
 <translation id="2125314715136825419">Continuar sin actualizar Adobe Reader (no recomendado)</translation>
 <translation id="5034510593013625357">URL de dominio</translation>
@@ -2352,7 +2346,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="4572659312570518089">Se canceló la autenticación mientras se establecía conexión con <ph name="DEVICE_NAME"/>.</translation>
 <translation id="4925542575807923399">El administrador de esta cuenta requiere que esta cuenta sea la primera en la que se inicie sesión cuando se cree una sesión de inicio de sesión múltiple.</translation>
 <translation id="5701381305118179107">Centrar</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Verificando...</translation>
 <translation id="7193047015510747410">Autocompletar credencial de sincronización</translation>
 <translation id="7257173066616499747">Redes Wi-Fi</translation>
@@ -2724,7 +2717,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="18139523105317219">Nombre de parte EDI</translation>
 <translation id="8356258244599961364">Idioma sin métodos de entrada</translation>
 <translation id="733186066867378544">Excepciones de ubicación geográfica</translation>
-<translation id="3328801116991980348">Información del sitio</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> no puede acceder a la red.
           <ph name="LINE_BREAK"/>
           Esto se puede deber a que el cortafuegos o el software antivirus de tu ordenador haya considerado erróneamente que <ph name="PRODUCT_NAME"/> es una aplicación intrusa y esté impidiendo que establezca conexión con Internet.</translation>
@@ -3222,7 +3214,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="7568790562536448087">Actualización</translation>
 <translation id="3910699493603749297">Teclado khmer</translation>
 <translation id="5487982064049856365">Has cambiado recientemente la contraseña. Inicia sesión con la nueva contraseña</translation>
-<translation id="2345055320165338418">Si se habilita, las respuestas a determinados tipos de consultas aparecerán directamente en la lista de sugerencias del omnibox.</translation>
 <translation id="1585717515139318619">Otro programa de tu ordenador ha añadido un tema que puede cambiar el funcionamiento de Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3534,7 +3525,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="4365673000813822030">¡Ups! La sincronización ha dejado de funcionar.</translation>
 <translation id="6790820461102226165">Añadir persona...</translation>
 <translation id="2332131598580221120">Ver en Chrome Web Store</translation>
-<translation id="2289304220823908416">Permite obtener ayuda relacionada con tu dispositivo Chrome.</translation>
 <translation id="5875858680971105888">¡Vaya! No se ha podido importar el usuario supervisado. Comprueba tu conexión de red y vuelve a intentarlo más tarde.</translation>
 <translation id="5411472733320185105">No utilizar la configuración de proxy para estos hosts y dominios:</translation>
 <translation id="3685121001045880436">Es probable que se haya producido un error en el servidor en el que se aloja la página web o que el servidor esté sobrecargado.
@@ -3568,7 +3558,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Mostrar en carpeta</translation>
 <translation id="5990198433782424697">Extensiones en las URL chrome://</translation>
-<translation id="7664673415674668445">Comentarios de ¡Houston, tenemos un problema!</translation>
 <translation id="1793119619663054394">¿Seguro que quieres eliminar &quot;<ph name="PROFILE_NAME"/>&quot; y todos los datos de Chrome asociados de este ordenador? Esta acción no se puede deshacer.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="4605399136610325267">El dispositivo no está conectado a Internet.</translation>
@@ -3709,7 +3698,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="2643698698624765890">Para administrar tus extensiones, haz clic en la opción Extensiones del menú Ventana.</translation>
 <translation id="4846680374085650406">Estás siguiendo la recomendación del administrador para esta opción.</translation>
 <translation id="1974060860693918893">Opciones avanzadas</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Descartar foto</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
 <translation id="3541661933757219855">Pulsa Ctrl+Alt+/ o Esc para ocultar el teclado.</translation>
@@ -3723,7 +3711,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="3660234220361471169">No es de confianza</translation>
 <translation id="2679385451463308372">Imprimir usando el diálogo del sistema...</translation>
 <translation id="959890390740139744">Corregir la ortografía automáticamente</translation>
-<translation id="5146827657109421175">Volver a la lista de dispositivos</translation>
 <translation id="2607991137469694339">Método de entrada de tamil (fonético)</translation>
 <translation id="399179161741278232">Importados</translation>
 <translation id="810066391692572978">El archivo utiliza funciones no admitidas.</translation>
@@ -3962,7 +3949,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="1325040735987616223">Actualización del sistema</translation>
 <translation id="720210938761809882">Página bloqueada</translation>
 <translation id="7748144333872478614">Inhabilitar fondos de pantalla de ventana en TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Acerca de NaCl</translation>
 <translation id="3084771660770137092">El proceso de la página web puede haber finalizado porque se haya agotado la memoria de Chrome o por algún otro motivo. Para continuar, vuelve a cargar la página o accede a otra.</translation>
 <translation id="1114901192629963971">No se puede verificar tu contraseña en la red actual. Selecciona otra red.</translation>
@@ -4165,7 +4151,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="4023146161712577481">Determinando la configuración del dispositivo.</translation>
 <translation id="6333834492048057036">El cursor se sitúa en la barra de direcciones para la búsqueda</translation>
 <translation id="4172051516777682613">Mostrar siempre</translation>
-<translation id="3228279582454007836">No has visitado nunca este sitio.</translation>
 <translation id="7027125358315426638">Nombre de la base de datos:</translation>
 <translation id="5449716055534515760">Cerrar &amp;ventana</translation>
 <translation id="3224239078034945833">Canadiense multilingüe</translation>
@@ -4613,7 +4598,7 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="7199540622786492483"><ph name="PRODUCT_NAME"/> no está actualizado porque no se ha reiniciado en algún tiempo. Hay una actualización disponible, que se aplicará en cuanto reinicies la aplicación.</translation>
 <translation id="2171101176734966184">Has intentado acceder a <ph name="DOMAIN"/>, pero el servidor ha presentado un certificado firmado con un algoritmo de firma no seguro. Una posible causa de este problema es que se hayan falsificado las credenciales de seguridad presentadas por el servidor y que hayas accedido a la página de un atacante en lugar de establecer conexión con el servidor en cuestión.</translation>
 <translation id="3726527440140411893">Se han habilitado las siguientes cookies al visitar esta página:</translation>
-<translation id="6989763994942163495">Mostrar opciones avanzadas...</translation>
+<translation id="6989763994942163495">Mostrar configuración avanzada...</translation>
 <translation id="3320859581025497771">tu operador de telefonía</translation>
 <translation id="580961539202306967">Preguntarme cuando un sitio quiera enviarme mensajes push (recomendado)</translation>
 <translation id="2233502537820838181">&amp;Más información</translation>
@@ -4779,7 +4764,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="4850458635498951714">Añadir un dispositivo</translation>
 <translation id="3140353188828248647">Activar barra de direcciones</translation>
 <translation id="1371806038977523515">Estos valores de configuración los controla:</translation>
-<translation id="2020262498093941982">Answers in Suggest</translation>
 <translation id="6462082050341971451">¿Sigues ahí?</translation>
 <translation id="7971550670320370753">Permite que el usuario inhabilite fácilmente la función de importar a la nube.</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
@@ -5297,7 +5281,6 @@ Calculando el tiempo de carga completa</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="3160041952246459240">Tienes certificados registrados que identifican a los siguientes servidores:</translation>
 <translation id="6305328361606238230">Recibir mensajes push</translation>
-<translation id="566920818739465183">Visitaste este sitio por primera vez el <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Haz clic para avanzar una página o pulsa unos segundos para ver el historial</translation>
 <translation id="4092878864607680421">La versión más reciente de la aplicación &quot;<ph name="APP_NAME"/>&quot; necesita más permisos, por lo que se ha inhabilitado.</translation>
 <translation id="5828228029189342317">Has elegido que se abran algunos tipos de archivos automáticamente después de la descarga.</translation>

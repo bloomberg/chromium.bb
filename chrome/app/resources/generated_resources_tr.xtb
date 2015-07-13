@@ -340,7 +340,6 @@
 <translation id="3846593650622216128">Bu ayarlar bir uygulama tarafından zorunlu tutuluyor.</translation>
 <translation id="8185331656081929126">Ağ üzerinde yeni yazıcılar algılandığında bildirim göster</translation>
 <translation id="2972557485845626008">Donanım yazılımı</translation>
-<translation id="735327918767574393">Bu web sayfası görüntülenirken bir şeyler ters gitti. Devam etmek için sayfayı yeniden yükleyin veya başka bir sayfaya gidin.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Hesabınız, bu cihaz için bir Öğe Kimliği ve Konum sağlamak üzere etkinleştirildi (isteğe bağlı).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Aşağıdaki alanlarda bir cihaz tanımlayıcısı ve konum sağlayabilirsiniz. Bu ayrıntılar, yönetim konsolunuzdaki chrome:policy sayfasında bu cihaz için gösterilecektir.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Tablet sitesi isteğinde bulun</translation>
 <translation id="8028060951694135607">Microsoft Anahtar Kurtarma</translation>
@@ -596,7 +595,6 @@
 <translation id="6135622770221372891">Kanal Kimlikleri</translation>
 <translation id="8472623782143987204">donanım esaslı</translation>
 <translation id="8545107379349809705">Bilgileri gizle...</translation>
-<translation id="2419206345979625354">Web sayfası beklemedik biçimde sonlandırıldı. Devam etmek için sayfayı yeniden yükleyin veya başka bir sayfaya gidin.</translation>
 <translation id="4865571580044923428">İstisnaları yönet...</translation>
 <translation id="2526619973349913024">Güncellemeleri denetle</translation>
 <translation id="3716615839203649375">izin ver</translation>
@@ -707,7 +705,6 @@
 <translation id="3704726585584668805">İşlem dışı PDF eklentisini etkinleştirin.</translation>
 <translation id="5486326529110362464">Özel anahtara ilişkin giriş anahtarı olmalıdır.</translation>
 <translation id="6824725898506587159">Dilleri yönetin</translation>
-<translation id="8190907767443402387">Chrome'un iyileştirilmesine yardımcı olmak için geri bildirim gönderin</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Bir yönetici <ph name="USER_EMAIL"/> için çoklu oturum açmayı engellemiş.
 Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
@@ -1194,7 +1191,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY"/> kullanışlı
 <translation id="1864756863218646478">Dosya bulunamadı.</translation>
 <translation id="7810202088502699111">Bu sayfadaki pop-up'lar engellendi.</translation>
 <translation id="8884961208881553398">Yeni hizmet ekle</translation>
-<translation id="3808873045540128170">Bu artık iflah olmaz!</translation>
 <translation id="744341768939279100">Yeni profil oluştur</translation>
 <translation id="646727171725540434">HTTP proxy'si</translation>
 <translation id="7576690715254076113">Harmanla</translation>
@@ -1884,7 +1880,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="7075513071073410194">PKCS #1 RSA Şifrelemeli MD5</translation>
 <translation id="7767646430896201896">Seçenekler:</translation>
 <translation id="1114335938027186412">Bilgisayarınızda, Chrome OS'deki pek çok kritik güvenlik özelliğini uygulamak için kullanılan bir Güvenilir Platform Modülü (TPM) güvenlik cihazı bulunmaktadır. Daha fazla bilgi edinmek için Chromebook Yardım Merkezi'ni ziyaret edin: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Esc tuşu tüm düzenleme öncesi arabelleği temizler</translation>
 <translation id="3344786168130157628">Erişim noktası adı:</translation>
 <translation id="8293206222192510085">Yer İşareti Ekle</translation>
@@ -1948,7 +1943,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="919412290393329570">Yenilemek için çekme efektini devre dışı bırakın.</translation>
 <translation id="8466234950814670489">Tar arşivi</translation>
 <translation id="852269967951527627">Sitelerin bildirim göstermesine izin verme</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">kağıt</translation>
 <translation id="2125314715136825419">Adobe Reader'ı güncellemeden devam et (önerilmez)</translation>
 <translation id="5034510593013625357">Ana makine adı kalıbı</translation>
@@ -2367,7 +2361,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="4572659312570518089">&quot;<ph name="DEVICE_NAME"/>&quot; cihazına bağlanırken kimlik doğrulaması iptal edildi.</translation>
 <translation id="4925542575807923399">Bu hesabın yöneticisi hesabın bir çoklu oturumda ilk oturum açan hesap olmasını gerektiriyor.</translation>
 <translation id="5701381305118179107">Ortala</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Doğrulanıyor...</translation>
 <translation id="7193047015510747410">Senkronizasyon kimlik bilgilerini otomatik doldur</translation>
 <translation id="7257173066616499747">Kablosuz ağlar</translation>
@@ -2738,7 +2731,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="18139523105317219">EDI Grup Adı</translation>
 <translation id="8356258244599961364">Bu dilde herhangi bir giriş yöntemi yok</translation>
 <translation id="733186066867378544">Fiziksel konum istisnaları</translation>
-<translation id="3328801116991980348">Site bilgileri</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/>
           ağa erişmeyle ilgili sorun yaşıyor.
           <ph name="LINE_BREAK"/>
@@ -3241,7 +3233,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="7568790562536448087">Güncelleniyor</translation>
 <translation id="3910699493603749297">Kmer klavye</translation>
 <translation id="5487982064049856365">Yakın zamanda şifre değiştirdiniz. Lütfen yenisi ile giriş yapın.</translation>
-<translation id="2345055320165338418">Etkinleştirilirse, belirli türden sorguların yanıtları doğrudan Çok Amaçlı Adres Çubuğu öneri listesinde görünür.</translation>
 <translation id="1585717515139318619">Bilgisayarınızdaki başka bir program, Chrome'un çalışma şeklini değiştirebilecek bir tema ekledi.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3553,7 +3544,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="4365673000813822030">Hata, Senkronizasyonun çalışması durdu.</translation>
 <translation id="6790820461102226165">Kişi Ekle...</translation>
 <translation id="2332131598580221120">Mağazada görüntüle</translation>
-<translation id="2289304220823908416">Chrome cihazınızla ilgili yardım alın.</translation>
 <translation id="5875858680971105888">Hata! Denetlenen kullanıcı içe aktarılamadı. Lütfen ağ bağlantınızı kontrol edin ve daha sonra tekrar deneyin.</translation>
 <translation id="5411472733320185105">Aşağıdaki ana makine ve alanlar için proxy ayarlarını kullanmayın:</translation>
 <translation id="3685121001045880436">Büyük olasılıkla Web sayfasını barındıran sunucu aşırı yüklendi veya bir hatayla karşılaştı.
@@ -3588,7 +3578,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">Klasörde &amp;Göster</translation>
 <translation id="5990198433782424697">chrome:// URL'lerinde uzantılar</translation>
-<translation id="7664673415674668445">&quot;Bu artık iflah olmaz&quot; geri bildirimi.</translation>
 <translation id="1793119619663054394">&quot;<ph name="PROFILE_NAME"/>&quot; isimli profili ve onunla ilişkilendirilmiş tüm Chrome verilerini bu bilgisayardan kaldırmak istediğinizden emin misiniz? Bu işlem geri alınamaz.</translation>
 <translation id="7456142309650173560">geliştirici</translation>
 <translation id="4605399136610325267">İnternet bağlantısı yok</translation>
@@ -3729,7 +3718,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="2643698698624765890">Pencere menüsünden Uzantılar'ı tıklayarak uzantılarınızı yönetin.</translation>
 <translation id="4846680374085650406">Bu ayar için yöneticinin önerisini uyguluyorsunuz.</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Fotoğrafı sil</translation>
 <translation id="1244303850296295656">Uzantı hatası</translation>
 <translation id="3541661933757219855">Gizlemek için Ctrl+Alt+/ yazın veya Escape tuşuna basın</translation>
@@ -3743,7 +3731,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="3660234220361471169">Güvenilmeyen</translation>
 <translation id="2679385451463308372">Sistem iletişim kutusunu kullanarak yazdır…</translation>
 <translation id="959890390740139744">Yazımı Otomatik Olarak Düzelt</translation>
-<translation id="5146827657109421175">Cihaz listesine dön</translation>
 <translation id="2607991137469694339">Tamil giriş yöntemi (Fonetik)</translation>
 <translation id="399179161741278232">İçe aktarılanlar</translation>
 <translation id="810066391692572978">Dosyada desteklenmeyen özellikler kullanılıyor.</translation>
@@ -3982,7 +3969,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="1325040735987616223">Sistem Güncellemesi</translation>
 <translation id="720210938761809882">Sayfa engellendi</translation>
 <translation id="7748144333872478614">TouchView'da pencere arka planlarını devre dışı bırak</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">NaCl hakkında</translation>
 <translation id="3084771660770137092">Ya Chrome'da bellek kalmadı ya da web sayfasına ait işlem başka bir nedenden dolayı sonlandırıldı. Devam etmek için yeniden yükleyin veya başka bir sayfaya gidin.</translation>
 <translation id="1114901192629963971">Şifreniz bu mevcut ağda doğrulanamıyor. Lütfen başka bir ağ seçin.</translation>
@@ -4184,7 +4170,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="4023146161712577481">Cihaz yapılandırması belirleniyor.</translation>
 <translation id="6333834492048057036">Aramak için adres çubuğuna odaklan</translation>
 <translation id="4172051516777682613">Her zaman göster</translation>
-<translation id="3228279582454007836">Bu siteyi bugün hiç ziyaret etmediniz.</translation>
 <translation id="7027125358315426638">Veritabanı adı:</translation>
 <translation id="5449716055534515760">Pencereyi &amp;Kapat</translation>
 <translation id="3224239078034945833">Çok Dilli Kanada</translation>
@@ -4799,7 +4784,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="4850458635498951714">Cihaz ekle</translation>
 <translation id="3140353188828248647">Adres çubuğuna odaklan</translation>
 <translation id="1371806038977523515">Bu ayarlar şu uzantı tarafından kontrol ediliyor:</translation>
-<translation id="2020262498093941982">Suggest'teki Yanıtlar</translation>
 <translation id="6462082050341971451">Hâlâ orada mısınız?</translation>
 <translation id="7971550670320370753">Kullanıcının, bulutta içe aktarma özelliğini kolayca devre dışı bırakmasına izin verir.</translation>
 <translation id="5565871407246142825">Kredi kartları</translation>
@@ -5317,7 +5301,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="5300589172476337783">Göster</translation>
 <translation id="3160041952246459240">Dosyada şu sunucuları tanımlayan sertifikalarınız var:</translation>
 <translation id="6305328361606238230">Push mesajlarını al</translation>
-<translation id="566920818739465183">Bu siteyi ilk kez <ph name="VISIT_DATE"/> tarihinde ziyaret ettiniz.</translation>
 <translation id="2961695502793809356">İlerlemek için tıkla, geçmişi görmek için tıklayıp tut</translation>
 <translation id="4092878864607680421">&quot;<ph name="APP_NAME"/>&quot; uygulamasının en yeni sürümü daha fazla izin gerektirir. Bu nedenle devre dışı bırakıldı.</translation>
 <translation id="5828228029189342317">İndirme işleminden sonra belirli dosya türlerini otomatik olarak açmayı seçtiniz.</translation>

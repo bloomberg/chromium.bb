@@ -41,6 +41,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4285930937574705105">Usanidi umeshindwa kwa sababu ya hitilafu isiyojulikana. Ikiwa Chromium inaendesha sasa, tafadhali ifunge na ujaribu tena.</translation>
 <translation id="1396446129537741364">Chromium inajaribu kuonyesha manenosiri.</translation>
 <translation id="2097986737970966220">Fungua Chromium kwenye eneo-kazi</translation>
+<translation id="108122890477367602">Zima halafu uwashe Chromium katika hali ya Windows 8</translation>
 <translation id="8987477933582888019">Kivinjari cha Wavuti</translation>
 <translation id="4050175100176540509">Maboresho muhimu ya usalama na vipengele vipya vinapatikana katika toleo jipya.</translation>
 <translation id="2886012850691518054">Hiari: Saidia kuboresha Chromium kwa kutuma takwimu za matumizi na ripoti za uharibifu kiotomatiki kwa Google.</translation>
@@ -89,15 +90,12 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="7473891865547856676">La Asante</translation>
 <translation id="9191268552238695869">Msimamizi amesakinisha Chromium kwenye mfumo, na inapatikana kwa watumiaji wote. Chromium ya kiwango cha mfumo itabadilisha usakinishaji wa kiwango cha mtumiaji sasa.</translation>
 <translation id="3509308970982693815">Tafadhali funga madirisha yote ya Chromium na ujaribu tena.</translation>
-<translation id="3192211604788138894">Fungua upya Chromium katika hali ya Windows 8</translation>
 <translation id="8851136666856101339">kuu</translation>
 <translation id="4077262827416206768">Tafadhali funga madirisha yote ya Chromium na uizindue upya Chromium ili mabadiliko haya yaanze kufanya kazi.</translation>
 <translation id="6475912303565314141">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME"/> inaweza kudhuru hali yako ya kuvinjari, kwa hivyo Chromium imeizuia.</translation>
-<translation id="208174207680926830">Fungua upya Chromium kwenye eneo-kazi</translation>
 <translation id="750717762378961310">Faili hili ni hasidi, na Chromium imeizuia.</translation>
 <translation id="6944967875980567883">Vipengee vilivyopakiwa kwenye Chromium</translation>
-<translation id="6899795326977034905">Kwenye Mac, manenosiri yanahifadhiwa kwenye Msururu wako wa kitufe na yanaweza kufikiwa au kusawazishwa na watumiaji wengine wa Chrome wanaoshiriki akaunti hii ya OS X.</translation>
 <translation id="3046695367536568084">Unapaswa kuwa umeingia katika akaunti ya Chromium ili utumie programu hizi. Hii inaruhusu Chromium kusawazisha programu, alamisho, historia, manenosiri yako, na mipangilio mingine katika vifaa vyote.</translation>
 <translation id="3296368748942286671">Endelea kuendesha programu za mandharinyuma wakati Chromium imefungwa</translation>
 <translation id="473775607612524610">Sasisha</translation>
@@ -242,7 +240,9 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="1708666629004767631">Kuna toleo jipya, na salama linalopatikana la Chromium.</translation>
 <translation id="1644918877723739397">Chromium itahifadhi nenosiri hili katika <ph name="SAVED_PASSWORD_LINK"/> na kulikumbuka wakati ujao utakapolihitaji.</translation>
 <translation id="378917192836375108">Chromium hukuruhusu kubofya nambari ya simu kwenye wavuti na kuipiga kwa Skype.</translation>
+<translation id="8605166112420372522">Zima halafu uwashe Chromium kwenye eneo-kazi</translation>
 <translation id="1461885241643463646">Huwasha mitiririko ya kuingia katika Chromium kulingana na iframe. Ripoti hii hubatilisha --washa kuingia katika akaunti kulingana na wavuti.</translation>
+<translation id="390894725198123737">Kwenye Mac, manenosiri yanaweza kuhifadhiwa kwenye Msururu wako wa kitufe na yanaweza kufikiwa au kusawazishwa na watumiaji wengine wa Chromium wanaoshiriki akaunti hii ya OS X.</translation>
 <translation id="608189560609172163">Chromium haikuweza kusawazisha data yako kutokana na hitalafu ya kuingia katika akaunti.</translation>
 <translation id="4888717733111232871">Sheria ya ndani ya Chromium ili kuruhusu trafiki ya mDNS.</translation>
 <translation id="151962892725702025">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu Usawazishaji haupatikani kwa kikoa chako.</translation>

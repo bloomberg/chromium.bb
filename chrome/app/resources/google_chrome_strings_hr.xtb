@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Ovo je vaš Chrome</translation>
 <translation id="8406086379114794905">Pomozite nam da poboljšamo Chrome</translation>
 <translation id="5620765574781326016">Ne morate napustiti stranicu da biste saznali koje su teme web-lokacija.</translation>
-<translation id="2721687379934343312">Na Mac računalima, zaporke se spremaju u vaš Keychain, a drugi korisnici preglednika Chrome koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="683440813066116847">Ulazno pravilo kako bi Google Chrome Canary dopustio mDNS promet.</translation>
 <translation id="4700157086864140907">Google Chrome može pružiti bolju provjeru pravopisa slanjem teksta unesenog u preglednik Googleovim poslužiteljima te vam na taj način omogućuje upotrebu iste tehnologije provjere pravopisa kojom se služi Google pretraživanje.</translation>
 <translation id="4953650215774548573">Postavite Google Chrome kao svoj zadani preglednik</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">Pokrenite Chrome automatski prilikom pokretanja računala</translation>
 <translation id="1763864636252898013">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN"/>; operativni sustav vašeg uređaja smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="556024056938947818">Google Chrome pokušava prikazati zaporke.</translation>
-<translation id="3012890944909934180">Ponovo pokrenite Chrome na radnoj površini</translation>
 <translation id="2580411288591421699">Nije moguće instalirati istu verziju programa Google Chrome koja je trenutačno pokrenuta. Zatvorite Google Chrome i pokušajte ponovo.</translation>
 <translation id="8460191995881063249">Centar za obavijesti usluge Chrome</translation>
 <translation id="1457721931618994305">Ažuriranje preglednika Google Chrome...</translation>
@@ -190,7 +188,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="5028489144783860647">Google Chrome nije mogao sinkronizirati vaše podatke. Ažurirajte zaporku za sinkronizaciju.</translation>
 <translation id="9026991721384951619">OS Chrome nije mogao sinkronizirati vaše podatke jer su vaši podaci za prijavu na račun zastarjeli.</translation>
 <translation id="8547799825197623713">Pokretač aplikacija za Chromeov kanal Canary</translation>
-<translation id="2267273557509361161">Ponovo pokreni Chrome u načinu Windows 8</translation>
 <translation id="2871893339301912279">Prijavljeni ste na Chrome!</translation>
 <translation id="7890208801193284374">Ako dijelite računalo, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chrome prema svojim željama.</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>

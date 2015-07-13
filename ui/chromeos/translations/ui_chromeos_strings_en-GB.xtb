@@ -24,7 +24,6 @@
 <translation id="2670531586141364277">Activation of '<ph name="NAME"/>' requires a network connection.</translation>
 <translation id="4442424173763614572">DNS lookup failed</translation>
 <translation id="7874779702599364982">Searching for cellular networks...</translation>
-<translation id="5512030650494444738">Ganzania Flower</translation>
 <translation id="3901991538546252627">Connecting to <ph name="NAME"/></translation>
 <translation id="1773212559869067373">Authentication certificate rejected locally</translation>
 <translation id="2563185590376525700">Frog</translation>
@@ -67,5 +66,6 @@
 <translation id="2951236788251446349">Jellyfish</translation>
 <translation id="8000066093800657092">No network</translation>
 <translation id="2563856802393254086">Congratulations! Your '<ph name="NAME"/>' data service has been activated and is ready to go.</translation>
+<translation id="4935975195727477204">Gazania Flower</translation>
 <translation id="7297443947353982503">Username/password incorrect or EAP-auth failed</translation>
 </translationbundle>

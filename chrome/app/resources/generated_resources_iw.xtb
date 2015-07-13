@@ -331,7 +331,6 @@
 <translation id="3846593650622216128">הגדרות אלה נאכפות על ידי תוסף.</translation>
 <translation id="8185331656081929126">הצג הודעות כאשר מזוהות מדפסות חדשות ברשת</translation>
 <translation id="2972557485845626008">קושחה</translation>
-<translation id="735327918767574393">משהו השתבש בעת הצגת דף אינטרנט זה. כדי להמשיך, טען מחדש או עבור לדף אחר.</translation>
 <translation id="948859574356056887">‏<ph name="BEGIN_BOLD"/>החשבון שלך מוגדר לספק 'מזהה נכס' ו'מיקום' בשביל המכשיר הזה (אופציונלי).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>תוכל לספק מזהה מכשיר ומיקום בשדות שבהמשך. הפרטים האלה יוצגו בשביל המכשיר הזה בדף chrome:policy במסוף הניהול.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">בקש אתר טאבלט</translation>
 <translation id="8028060951694135607">‏שחזור מפתח של Microsoft</translation>
@@ -587,7 +586,6 @@
 <translation id="6135622770221372891">מזהי ערוץ</translation>
 <translation id="8472623782143987204">גיבוי חומרה</translation>
 <translation id="8545107379349809705">הסתר פרטים....</translation>
-<translation id="2419206345979625354">דף האינטרנט הפסיק לפעול באופן בלתי צפוי. כדי להמשיך, טען את הדף מחדש או עבור לדף אחר.</translation>
 <translation id="4865571580044923428">נהל חריגים...</translation>
 <translation id="2526619973349913024">בדוק אם קיים עדכון</translation>
 <translation id="3716615839203649375">הפעל</translation>
@@ -699,7 +697,6 @@
 <translation id="3704726585584668805">‏הפעל את הפלאגין 'PDF מחוץ לתהליך'.</translation>
 <translation id="5486326529110362464">חייב להתקיים ערך קלט של מפתח פרטי.</translation>
 <translation id="6824725898506587159">נהל שפות</translation>
-<translation id="8190907767443402387">‏שלח משוב כדי לסייע לנו לשפר את Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">מנהל מערכת ביטל הרשאה של כניסה עם מספר חשבונות עבור <ph name="USER_EMAIL"/>.
 כדי להמשיך, כל המשתמשים חייבים לבצע יציאה.</translation>
@@ -1185,7 +1182,6 @@
 <translation id="1864756863218646478">הקובץ לא נמצא.</translation>
 <translation id="7810202088502699111">חלונות קופצים נחסמו בדף זה.</translation>
 <translation id="8884961208881553398">הוסף שירותים חדשים</translation>
-<translation id="3808873045540128170">זה סופו של כל חלון!</translation>
 <translation id="744341768939279100">צור פרופיל חדש</translation>
 <translation id="646727171725540434">‏שרת Proxy של HTTP</translation>
 <translation id="7576690715254076113">אסוף</translation>
@@ -1865,7 +1861,6 @@
 <translation id="7075513071073410194">‏PKCS #1 MD5 עם הצפנת RSA</translation>
 <translation id="7767646430896201896">אפשרויות:</translation>
 <translation id="1114335938027186412">‏המחשב שלך מכיל התקן אבטחה מסוג Trusted Platform Module‏ (TPM), המשמש ליישם תכונות אבטחה קריטיות רבות במערכת ההפעלה של Chrome. בקר במרכז העזרה של Chromebook כדי לקבל מידע נוסף: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">‏Esc מנקה את כל המאגר של טרום-עריכה</translation>
 <translation id="3344786168130157628">שם נקודת הגישה:</translation>
 <translation id="8293206222192510085">הוסף סימניה</translation>
@@ -1929,7 +1924,6 @@
 <translation id="919412290393329570">השבת את אפקט משוך לרענון.</translation>
 <translation id="8466234950814670489">‏ארכיון TAR</translation>
 <translation id="852269967951527627">אל תתיר הצגה של הודעות מאף אתר</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">גליון נייר</translation>
 <translation id="2125314715136825419">‏המשך ללא עדכון Adobe Reader (לא מומלץ)</translation>
 <translation id="5034510593013625357">תבנית שם מארח</translation>
@@ -2344,7 +2338,6 @@
 <translation id="4572659312570518089">האימות בוטל בעת ההתחברות ל-&quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="4925542575807923399">מנהל המערכת עבור החשבון הזה דורש שהחשבון הזה יהיה הראשון שיבצעו עבורו כניסה בעת כניסה עם מספר חשבונות</translation>
 <translation id="5701381305118179107">מרכז</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">מאמת...</translation>
 <translation id="7193047015510747410">מילוי אוטומטי של אישור סנכרון</translation>
 <translation id="7257173066616499747">‏רשתות Wi-Fi</translation>
@@ -2714,7 +2707,6 @@
 <translation id="18139523105317219">‏שם צד EDI</translation>
 <translation id="8356258244599961364">לשפה זו אין שיטות קלט</translation>
 <translation id="733186066867378544">חריגים של מיקום גיאוגרפי</translation>
-<translation id="3328801116991980348">פרטי אתר</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> נתקל בבעיות בגישה לרשת. <ph name="PRODUCT_NAME"/> הסיבה עשויה להיות שתוכנת חומת האש או האנטי וירוס שלך חושבת בטעות ש-<ph name="LINE_BREAK"/> פורץ למחשב שלך ולכן חוסמת את ההתחברות שלו לאינטרנט.</translation>
 <translation id="2065985942032347596">נדרש אימות</translation>
 <translation id="8282947398454257691">ידיעת המזהה הייחודי של המכשיר</translation>
@@ -3210,7 +3202,6 @@
 <translation id="7568790562536448087">מעדכן</translation>
 <translation id="3910699493603749297">מקלדת חמר</translation>
 <translation id="5487982064049856365">שינית לאחרונה את הסיסמה. היכנס באמצעות הסיסמה החדשה.</translation>
-<translation id="2345055320165338418">כשתכונה זו מופעלת, תגובות לסוגי שאילתות מסוימים יופיעו ישירות ברשימת ההצעות בסרגל הכתובות.</translation>
 <translation id="1585717515139318619">‏תכנית אחרת במחשב הוסיפה עיצוב שעשוי לשנות את אופן הפעולה של Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3520,7 +3511,6 @@
 <translation id="4365673000813822030">אופס, הסינכרון הפסיק לפעול.</translation>
 <translation id="6790820461102226165">הוסף משתמש...</translation>
 <translation id="2332131598580221120">הצג בחנות</translation>
-<translation id="2289304220823908416">‏קבל עזרה עם מכשיר ה-Chrome שלך.</translation>
 <translation id="5875858680971105888">אופס! לא הייתה אפשרות לייבא את המשתמש בפיקוח. בדוק את החיבור לרשת ונסה שוב מאוחר יותר.</translation>
 <translation id="5411472733320185105">‏אל תשתמש בהגדרות proxy עבור מארחים ודומיינים אלה:</translation>
 <translation id="3685121001045880436">ככל הנראה, השרת המארח את דף האינטרנט מצוי בעומס יתר או שנתקל בשגיאה.
@@ -3554,7 +3544,6 @@
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;הצג בתיקייה</translation>
 <translation id="5990198433782424697">‏תוספים בכתובות אתר המתחילות ב-chrome://</translation>
-<translation id="7664673415674668445">משוב על חלון או כרטיסייה שנסגרו.</translation>
 <translation id="1793119619663054394">‏האם אתה בטוח שברצונך להסיר את &quot;<ph name="PROFILE_NAME"/>&quot; ואת כל הנתונים הקשורים ל-Chrome ממחשב זה? לא ניתן לבטל פעולה זו.</translation>
 <translation id="7456142309650173560">מפתח</translation>
 <translation id="4605399136610325267">אין חיבור לאינטרנט</translation>
@@ -3695,7 +3684,6 @@
 <translation id="2643698698624765890">נהל את התוספים שלך באמצעות לחיצה על 'תוספים' בתפריט 'חלון'.</translation>
 <translation id="4846680374085650406">אתה פועל בהתאם להמלצה של מנהל המערכת לגבי הגדרה זו.</translation>
 <translation id="1974060860693918893">מתקדם</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">מחק תמונה</translation>
 <translation id="1244303850296295656">שגיאת תוסף</translation>
 <translation id="3541661933757219855">‏הקלד Ctrl+Alt+/ או Escape כדי להסתיר</translation>
@@ -3709,7 +3697,6 @@
 <translation id="3660234220361471169">לא אמין</translation>
 <translation id="2679385451463308372">הדפס באמצעות תיבת דו-שיח של המערכת...</translation>
 <translation id="959890390740139744">תקן איות באופן אוטומטי</translation>
-<translation id="5146827657109421175">חזור לרשימת המכשירים</translation>
 <translation id="2607991137469694339">שיטת קלט טמילית (פונטי)</translation>
 <translation id="399179161741278232">מיובאות</translation>
 <translation id="810066391692572978">הקובץ משתמש בתכונות שאינן נתמכות.</translation>
@@ -3944,7 +3931,6 @@
 <translation id="1325040735987616223">עדכון מערכת</translation>
 <translation id="720210938761809882">דף חסום</translation>
 <translation id="7748144333872478614">‏השבת רקעים של חלונות ב-TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">‏הכל על NaCl</translation>
 <translation id="3084771660770137092">‏ייתכן שהזיכרון של Chrome אזל או שתהליך שפעל על דף האינטרנט הופסק מסיבה כלשהי. כדי להמשיך, טען מחדש או עבור לדף אחר.</translation>
 <translation id="1114901192629963971">לא ניתן לאמת את הסיסמה ברשת הזו. בחר רשת אחרת.</translation>
@@ -4146,7 +4132,6 @@
 <translation id="4023146161712577481">קובע את תצורת המכשיר.</translation>
 <translation id="6333834492048057036">מיקוד בסרגל כתובות לחיפוש</translation>
 <translation id="4172051516777682613">הצג תמיד</translation>
-<translation id="3228279582454007836">מעולם לא ביקרת באתר זה קודם לכן.</translation>
 <translation id="7027125358315426638">שם מסד נתונים:</translation>
 <translation id="5449716055534515760">סגור ח&amp;לון</translation>
 <translation id="3224239078034945833">קנדית - מרובת-שפות</translation>
@@ -4762,7 +4747,6 @@
 <translation id="4850458635498951714">הוסף מכשיר</translation>
 <translation id="3140353188828248647">התמקד בסרגל הכתובות</translation>
 <translation id="1371806038977523515">ההגדרות האלה נשלטות על ידי:</translation>
-<translation id="2020262498093941982">Answers in Suggest</translation>
 <translation id="6462082050341971451">האם אתה עדיין שם?</translation>
 <translation id="7971550670320370753">מתיר למשתמש להשבית בקלות את תכונת הייבוא מהענן.</translation>
 <translation id="5565871407246142825">כרטיסי אשראי</translation>
@@ -5282,7 +5266,6 @@ Del</translation>
 <translation id="5300589172476337783">הצג</translation>
 <translation id="3160041952246459240">יש לך אישורים בקובץ המזהים שרתים אלה:</translation>
 <translation id="6305328361606238230">קבל הודעות בדחיפה</translation>
-<translation id="566920818739465183">ביקרת באתר זה בפעם הראשונה בתאריך <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">לחץ כדי לעבור קדימה, לחץ והחזק כדי לראות את ההיסטוריה</translation>
 <translation id="4092878864607680421">הגירסה החדשה ביותר של היישום &quot;<ph name="APP_NAME"/>&quot; דורשת הרשאות נוספות, ולכן הושבתה.</translation>
 <translation id="5828228029189342317">בחרת לפתוח סוגי קבצים מסוימים באופן אוטומטי לאחר הורדתם.</translation>

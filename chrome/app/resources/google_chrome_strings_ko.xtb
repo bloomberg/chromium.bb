@@ -31,7 +31,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="110877069173485804">나만의 Chrome</translation>
 <translation id="8406086379114794905">더 나은 Chrome을 만들 수 있도록 도와주세요.</translation>
 <translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
-<translation id="2721687379934343312">Mac에서는 비밀번호가 키체인에 저장되며 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="4700157086864140907">Chrome은 사용자가 브라우저에 입력한 내용을 Google 서버에 보내어 Google 검색에서 사용하는 기술과 동일한 맞춤법 검사 기술을 사용할 수 있게 함으로써 더욱 뛰어난 맞춤법 검사 기능을 제공할 수 있습니다.</translation>
 <translation id="4953650215774548573">Chrome을 기본 브라우저로 설정</translation>
@@ -107,7 +106,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3656661827369545115">컴퓨터를 시작하면 Chromium 자동 실행</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="556024056938947818">Chrome에서 비밀번호를 표시하려고 합니다.</translation>
-<translation id="3012890944909934180">데스크톱에서 Chrome 다시 실행</translation>
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
 <translation id="8460191995881063249">Chrome 알림 센터</translation>
 <translation id="1457721931618994305">Chrome 업데이트 중...</translation>
@@ -198,7 +196,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5028489144783860647">Chrome에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하시기 바랍니다.</translation>
 <translation id="9026991721384951619">계정의 로그인 세부정보가 오래되어 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="8547799825197623713">Chrome 앱 실행기 카나리아</translation>
-<translation id="2267273557509361161">Windows 8 모드에서 Chrome 다시 실행</translation>
 <translation id="2871893339301912279">Chrome에 로그인되어 있습니다.</translation>
 <translation id="7890208801193284374">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>

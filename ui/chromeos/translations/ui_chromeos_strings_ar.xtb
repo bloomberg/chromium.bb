@@ -24,7 +24,6 @@
 <translation id="2670531586141364277">يتطلب تنشيط '<ph name="NAME"/>' اتصالاً بالشبكة.</translation>
 <translation id="4442424173763614572">أخفق البحث في نظام أسماء النطاقات</translation>
 <translation id="7874779702599364982">جارٍ البحث عن شبكات للهاتف الجوال...</translation>
-<translation id="5512030650494444738">زهرة الجازانيا</translation>
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME"/></translation>
 <translation id="1773212559869067373">تمّ رفض شهادة المصادقة محليًا</translation>
 <translation id="2563185590376525700">ضفدع</translation>
@@ -67,5 +66,6 @@
 <translation id="2951236788251446349">قنديل البحر</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="2563856802393254086">تم تنشيط خدمة البيانات '<ph name="NAME"/>' وهي جاهزة للعمل.</translation>
+<translation id="4935975195727477204">زهرة غازانيا</translation>
 <translation id="7297443947353982503">‏اسم المستخدم/كلمة المرور غير صحيحة أو أخفقت مصادقة EAP</translation>
 </translationbundle>

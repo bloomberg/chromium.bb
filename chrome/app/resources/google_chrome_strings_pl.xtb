@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Oto Twój Chrome</translation>
 <translation id="8406086379114794905">Pomóż ulepszać Chrome</translation>
 <translation id="5620765574781326016">Poznaj tematy omawiane w witrynach, nie opuszczając strony.</translation>
-<translation id="2721687379934343312">Na komputerach z systemem Mac hasła są zapisane w pęku kluczy. Inni użytkownicy Chrome udostępniający to konto systemu OS X mogą uzyskiwać do nich dostęp i je synchronizować.</translation>
 <translation id="683440813066116847">Reguła dla ruchu przychodzącego w Google Chrome Canary zezwalająca na ruch mDNS.</translation>
 <translation id="4700157086864140907">Google Chrome może lepiej sprawdzać pisownię, przesyłając do serwerów Google tekst, który wpisujesz w przeglądarce. Dzięki temu możesz korzystać z technologii sprawdzania pisowni używanej przez wyszukiwarkę Google.</translation>
 <translation id="4953650215774548573">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
@@ -103,7 +102,6 @@ i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podsz
 <translation id="3656661827369545115">Uruchamiaj Chromium automatycznie po włączeniu komputera</translation>
 <translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN"/>. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
-<translation id="3012890944909934180">Ponownie uruchom Chrome na pulpicie</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
 <translation id="8460191995881063249">Centrum powiadomień Chrome</translation>
 <translation id="1457721931618994305">Aktualizowanie Google Chrome...</translation>
@@ -193,7 +191,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="5028489144783860647">Google Chrome nie może zsynchronizować danych. Zaktualizuj hasło synchronizacji.</translation>
 <translation id="9026991721384951619">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
 <translation id="8547799825197623713">Program uruchamiający aplikacje Chrome w wersji poglądowej</translation>
-<translation id="2267273557509361161">Uruchom Chrome ponownie w trybie dla Windows 8</translation>
 <translation id="2871893339301912279">Jesteś zalogowany w Chrome.</translation>
 <translation id="7890208801193284374">Jeśli dzielisz komputer ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chrome.</translation>
 <translation id="7161904924553537242">Google Chrome – witamy</translation>

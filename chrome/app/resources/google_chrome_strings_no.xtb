@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Dette er din Chrome</translation>
 <translation id="8406086379114794905">Bidra til å gjøre Chrome bedre</translation>
 <translation id="5620765574781326016">Finn ut mer om emner på nettsteder uten å forlate siden.</translation>
-<translation id="2721687379934343312">På Mac blir passord lagret i nøkkelringen. Andre Chrome-brukere som deler denne OS X-kontoen, har adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="683440813066116847">Regel om innkommende trafikk for Google Chrome Canary for å tillate mDNS-trafikk.</translation>
 <translation id="4700157086864140907">Google Chrome kan gi bedre stavekontroll ved å sende det du skriver inn i nettleseren til Googles tjenere, noe som gjør at du kan bruke samme teknologi for stavekontroll som brukes av Google Søk.</translation>
 <translation id="4953650215774548573">Bruk Google Chrome som standard nettleser</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">Start Chromium automatisk når datamaskinen din starter</translation>
 <translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN"/>. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
-<translation id="3012890944909934180">Start Chrome på nytt via skrivebordet</translation>
 <translation id="2580411288591421699">Google Chrome-versjonen du prøver å installere, kjører allerede. Lukk Google Chrome og forsøk å installere på nytt.</translation>
 <translation id="8460191995881063249">Chrome varselssenter</translation>
 <translation id="1457721931618994305">Oppdaterer Google Chrome …</translation>
@@ -191,7 +189,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="5028489144783860647">Google Chrome kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="9026991721384951619">Chrome OS kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="8547799825197623713">Chrome-appvelger – Canary</translation>
-<translation id="2267273557509361161">Start Chrome på nytt i Windows 8-modus</translation>
 <translation id="2871893339301912279">Du er nå logget på Chrome.</translation>
 <translation id="7890208801193284374">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>

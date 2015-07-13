@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Dies ist Ihr persönlicher Chrome-Browser</translation>
 <translation id="8406086379114794905">Zur Verbesserung von Chrome beitragen</translation>
 <translation id="5620765574781326016">Erfahren Sie mehr über Website-Themen, ohne die Seite zu verlassen.</translation>
-<translation id="2721687379934343312">Auf einem Mac werden die Passwörter in Ihrem Schlüsselbund gespeichert. Sie können von anderen Chrome-Nutzern über dieses OS X-Konto abgerufen oder synchronisiert werden.</translation>
 <translation id="683440813066116847">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome Canary</translation>
 <translation id="4700157086864140907">Google Chrome bietet eine intelligentere Rechtschreibprüfung, indem der Browser das, was Sie eingeben, an die Google-Server sendet. So steht Ihnen dieselbe Technologie zur Rechtschreibprüfung zur Verfügung, die bei der Google-Suche zum Einsatz kommt.</translation>
 <translation id="4953650215774548573">Google Chrome als Standardbrowser festlegen</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">Chromium beim Starten des Computers automatisch ausführen</translation>
 <translation id="1763864636252898013">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN"/> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="556024056938947818">Google Chrome versucht, Passwörter anzuzeigen.</translation>
-<translation id="3012890944909934180">Chrome auf dem Desktop neu starten</translation>
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
 <translation id="8460191995881063249">Chrome-Benachrichtigungscenter</translation>
 <translation id="1457721931618994305">Google Chrome wird aktualisiert...</translation>
@@ -184,7 +182,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="5028489144783860647">Google Chrome konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
 <translation id="9026991721384951619">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>
 <translation id="8547799825197623713">Chrome App Launcher für Canary</translation>
-<translation id="2267273557509361161">Chrome im Windows 8-Modus neu starten</translation>
 <translation id="2871893339301912279">Sie sind in Chrome angemeldet.</translation>
 <translation id="7890208801193284374">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chrome jeweils nach ihren Wünschen einrichten.</translation>
 <translation id="7161904924553537242">Willkommen bei Chrome</translation>

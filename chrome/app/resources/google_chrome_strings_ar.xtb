@@ -27,7 +27,6 @@
 <translation id="110877069173485804">‏هذا Chrome الخاص بك</translation>
 <translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>
 <translation id="5620765574781326016">تعرّف على موضوعات على مواقع الويب دون مغادرة الصفحة.</translation>
-<translation id="2721687379934343312">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="683440813066116847">‏قاعدة الوارد إلى Google Chrome Canary للسماح بحركة مرور mDNS.</translation>
 <translation id="4700157086864140907">‏يمكن أن يقدم Google Chrome تدقيقًا إملائيًا أكثر دقة من خلال إرسال ما تكتبه في المتصفح إلى خوادم Google، مما يتيح لك استخدام تقنية التدقيق الإملائي ذاتها المستخدمة في بحث Google.</translation>
 <translation id="4953650215774548573">‏تعيين Google Chrome المتصفح الافتراضي</translation>
@@ -83,6 +82,7 @@
 <translation id="5037239767309817516">‏الرجاء إغلاق جميع نوافذ Google Chrome وإعادة تشغيله حتى يسري هذا التغيير.</translation>
 <translation id="1619887657840448962">‏لجعل Chrome أكثر أمنًا، عطلنا الإضافة التالية التي لم تُدرج في <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> وربما تكون قد أضيفت دون علمك.</translation>
 <translation id="225614027745146050">مرحبًا</translation>
+<translation id="8811903091068364646">‏إع&amp;ادة تشغيل Chrome على سطح المكتب</translation>
 <translation id="3398288718845740432">‏الإخفاء في قائمة Chrome</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="3149510190863420837">‏تطبيقات Chrome</translation>
@@ -104,7 +104,6 @@
 <translation id="3656661827369545115">‏تشغيل Chromium تلقائيًا عندما يتم تشغيل جهاز الكمبيوتر</translation>
 <translation id="1763864636252898013">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN"/>؛ بل إنه شهادة أمان غير موثوقة من خلال نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
-<translation id="3012890944909934180">‏إعادة تشغيل Chrome على سطح المكتب</translation>
 <translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
 <translation id="8460191995881063249">‏مركز إشعارات Chrome</translation>
 <translation id="1457721931618994305">‏جارٍ تحديث Google Chrome...</translation>
@@ -199,7 +198,6 @@
 <translation id="5028489144783860647">‏تعذر على Google Chrome مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="9026991721384951619">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="8547799825197623713">‏مشغل تطبيقات Chrome في Canary</translation>
-<translation id="2267273557509361161">‏إعادة تشغيل Chrome في وضع Windows 8</translation>
 <translation id="2871893339301912279">‏تم تسجيل دخولك إلى Chrome!</translation>
 <translation id="7890208801193284374">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chrome على النحو الذي يريدونه.</translation>
 <translation id="7161904924553537242">‏مرحبًا بك في Google Chrome</translation>
@@ -257,6 +255,7 @@
 <translation id="3037838751736561277">‏Google Chrome في وضع الخلفية.</translation>
 <translation id="2084710999043359739">‏إضافة إلى Chrome</translation>
 <translation id="4692614041509923516">‏يشغل جهاز الكمبيوتر إصدارًا قديمًا من Microsoft Windows لا يمكنها معالجة شهادة أمان موقع الويب. وبسبب هذه المشكلة، لا يمكن لـ Google Chrome أن يخبر ما إذا كانت الشهادة قادمة من <ph name="SITE"/> أو من شخص ما على الشبكة يتظاهر بأنه <ph name="SITE"/>. يُرجى تحديث جهاز الكمبيوتر إلى الإصدار الأكثر حداثة من Windows.</translation>
+<translation id="5931853610562009806">‏في نظام التشغيل Mac، قد يتم حفظ كلمات المرور في تطبيق Keychain والدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="3360895254066713204">‏مساعد Chrome</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="7592736734348559088">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
@@ -268,6 +267,7 @@
 <translation id="1001534784610492198">‏أرشيف المثبت تالف أو غير صالح. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="2246246234298806438">‏لا يمكن لـ Google Chrome عرض معاينة الطباعة عندما يكون عارض PDF المضمّن مفقودًا.</translation>
 <translation id="5132929315877954718">‏يمكنك اكتشاف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Google Chrome.</translation>
+<translation id="7784335114585804598">‏إع&amp;ادة تشغيل Chrome في وضع Windows 8</translation>
 <translation id="6626317981028933585">‏لا يمكن استيراد إعدادات موزيلا فايرفوكس أثناء تشغيل المتصفّح. لاستيراد الإعدادات إلى متصفّح Google Chrome، احفظ عملك وأغلق جميع نوافذ فايرفوكس، ثمّ انقر على زرّ المتابعة.</translation>
 <translation id="8274359292107649245">‏فتح Chrome على سطح المكتب</translation>
 <translation id="7242029209006116544">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME"/>. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chrome بشكل مستقل. <ph name="LEARN_MORE"/></translation>

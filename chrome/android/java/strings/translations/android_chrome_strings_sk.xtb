@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Údaje uložené na tomto zariadení aj údaje uložené v účte Google zostanú na oboch miestach. Nové údaje ani zmeny súčasných údajov sa už však medzi týmito miestami synchronizovať nebudú.</translation>
 <translation id="9070377983101773829">Spustiť hlasové vyhľadávanie</translation>
 <translation id="6831043979455480757">Preložiť</translation>
-<translation id="6504836143156866575">Verzia JavaScriptu</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Šifrovať všetko prístupovou frázou</translation>
 <translation id="869891660844655955">Koniec platnosti</translation>
@@ -270,7 +269,6 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="4543087392704641517">Názov záložky</translation>
 <translation id="1987317783729300807">Účty</translation>
 <translation id="7846076177841592234">Zrušiť výber</translation>
-<translation id="6064211167623632605">Spustiteľná cesta</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="1521530746149324532">Ste v režime inkognito.</translation>
 <translation id="971774202801778802">Webová adresa záložky</translation>
@@ -296,7 +294,6 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 <translation id="6208263165776660488">Karty prehliadača Chrome boli presunuté</translation>
 <translation id="4526792582053123229">Google neoptimalizuje ani neuvidí stránky, ku ktorým pristupujete prostredníctvom protokolu HTTPS alebo v režime inkognito.</translation>
 <translation id="7626032353295482388">Víta vás prehliadač Chrome</translation>
-<translation id="7817177303494746697">Verzia nástroja Blink</translation>
 <translation id="2532336938189706096">Webové zobrazenie</translation>
 <translation id="6571070086367343653">Upraviť kreditnú kartu</translation>
 <translation id="6192792657125177640">Výnimky</translation>
@@ -377,7 +374,6 @@ Toto zobrazenie ukončíte pomocou tlačidla Späť.</translation>
 Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Prihlásiť sa do prehliadača Chrome…</translation>
 <translation id="4797039098279997504">Klepnutím sa vrátite na kartu <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Nespravované</translation>
-<translation id="2699916814609764774">Cesta profilu</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="6979922938747275756">Pri načítavaní priečinkov sa vyskytla chyba</translation>

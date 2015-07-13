@@ -335,7 +335,6 @@
 <translation id="3846593650622216128">Queste impostazioni sono applicate da un'estensione.</translation>
 <translation id="8185331656081929126">Mostra notifiche quando vengono rilevate nuove stampanti in rete</translation>
 <translation id="2972557485845626008">Firmware</translation>
-<translation id="735327918767574393">Si è verificato un problema durante la visualizzazione della pagina web. Per continuare, ricaricala o apri un'altra pagina.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Il tuo account è configurato per fornire un ID asset e la posizione di questo dispositivo (facoltativo).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Puoi specificare un identificatore e la posizione del dispositivo nei campi che seguono. Questi dati verranno mostrati per il dispositivo in questione nella pagina chrome:policy della tua console di gestione.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Richiedi sito per tablet</translation>
 <translation id="8028060951694135607">Recupero chiavi Microsoft</translation>
@@ -579,7 +578,6 @@
 <translation id="6135622770221372891">ID canali</translation>
 <translation id="8472623782143987204">basato sull'hardware</translation>
 <translation id="8545107379349809705">Nascondi informazioni...</translation>
-<translation id="2419206345979625354">La pagina web si è chiusa in modo imprevisto. Per continuare, ricaricare o accedere a un'altra pagina.</translation>
 <translation id="4865571580044923428">Gestisci eccezioni...</translation>
 <translation id="2526619973349913024">Verifica la presenza di aggiornamenti</translation>
 <translation id="3716615839203649375">consenti</translation>
@@ -687,7 +685,6 @@
 <translation id="3704726585584668805">Attiva il plug-in PDF out-of-process</translation>
 <translation id="5486326529110362464">Il valore di input per la chiave privata deve essere esistente.</translation>
 <translation id="6824725898506587159">Gestisci lingue</translation>
-<translation id="8190907767443402387">Invia commenti per contribuire al miglioramento di Google Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Un amministratore ha vietato l'accesso simultaneo per <ph name="USER_EMAIL"/>.
 Per continuare, devono disconnettersi tutti gli utenti.</translation>
@@ -1173,7 +1170,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="1864756863218646478">Impossibile trovare il file.</translation>
 <translation id="7810202088502699111">I popup sono stati bloccati in questa pagina.</translation>
 <translation id="8884961208881553398">Aggiungi nuovi servizi</translation>
-<translation id="3808873045540128170">Sei stata terminata!</translation>
 <translation id="744341768939279100">Crea un nuovo profilo</translation>
 <translation id="646727171725540434">Proxy HTTP</translation>
 <translation id="7576690715254076113">Fascicola</translation>
@@ -1852,7 +1848,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestire le impostazioni i
 <translation id="7075513071073410194">PKCS #1 MD5 con crittografia RSA</translation>
 <translation id="7767646430896201896">Opzioni:</translation>
 <translation id="1114335938027186412">Il computer contiene un dispositivo di sicurezza TPM (Trusted Platform Module) che viene utilizzato per implementare in Chrome OS molte funzionalità di sicurezza fondamentali. Per ulteriori informazioni, visita il Centro assistenza Chromebook all'indirizzo: https://support.google.com/chromebook/?p=tpm.</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Il tasto Esc cancella l'intero buffer di pre-edit</translation>
 <translation id="3344786168130157628">Nome punto di accesso:</translation>
 <translation id="8293206222192510085">Aggiunta preferito</translation>
@@ -1916,7 +1911,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestire le impostazioni i
 <translation id="919412290393329570">Disattiva l'effetto pull-to-refresh.</translation>
 <translation id="8466234950814670489">Archivio Tar</translation>
 <translation id="852269967951527627">Non consentire la visualizzazione di notifiche nei siti</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">foglio</translation>
 <translation id="2125314715136825419">Procedi senza aggiornare Adobe Reader (non consigliato)</translation>
 <translation id="5034510593013625357">Schema nome host</translation>
@@ -2334,7 +2328,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="4572659312570518089">Autenticazione annullata durante la connessione a &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="4925542575807923399">L'amministratore di questo account richiede che questo account sia il primo account registrato in una sessione con accesso simultaneo.</translation>
 <translation id="5701381305118179107">Centra</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Verifica in corso...</translation>
 <translation id="7193047015510747410">Compila automaticamente credenziale di sincronizzazione</translation>
 <translation id="7257173066616499747">Reti Wi-Fi</translation>
@@ -2705,7 +2698,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="18139523105317219">EDI Party Name</translation>
 <translation id="8356258244599961364">Questa lingua non ha metodi di immissione</translation>
 <translation id="733186066867378544">Eccezioni di localizzazione geografica</translation>
-<translation id="3328801116991980348">Informazioni sito</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> ha problemi di accesso alla rete. <ph name="LINE_BREAK"/> Questo può essere dovuto al fatto che il firewall o il software antivirus considera erroneamente <ph name="PRODUCT_NAME"/> come un intruso sul computer e blocca la sua connessione a Internet.</translation>
 <translation id="2065985942032347596">Autenticazione richiesta</translation>
 <translation id="8282947398454257691">Conoscere l'identificatore univoco del dispositivo</translation>
@@ -3201,7 +3193,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7568790562536448087">Aggiornamento</translation>
 <translation id="3910699493603749297">Tastiera Khmer</translation>
 <translation id="5487982064049856365">Di recente hai cambiato la password. Esegui l'accesso con la nuova password.</translation>
-<translation id="2345055320165338418">Se attivato, le risposte a determinati tipi di query verranno visualizzate direttamente nell'elenco di suggerimenti omnibox.</translation>
 <translation id="1585717515139318619">Un altro programma sul computer ha aggiunto un tema che potrebbe modificare il funzionamento di Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3513,7 +3504,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="4365673000813822030">Spiacenti, la sincronizzazione si è interrotta.</translation>
 <translation id="6790820461102226165">Aggiungi persona...</translation>
 <translation id="2332131598580221120">Visualizza nello store</translation>
-<translation id="2289304220823908416">Ricevi aiuto con il tuo dispositivo Chrome.</translation>
 <translation id="5875858680971105888">Spiacenti. Impossibile importare l'utente controllato. Controlla la connessione di rete e riprova più tardi.</translation>
 <translation id="5411472733320185105">Non utilizzare le impostazioni proxy per i seguenti host e domini:</translation>
 <translation id="3685121001045880436">È possibile che il server su cui è in hosting la pagina web sia sovraccarico o che abbia riscontrato un errore. Per evitare che le estensioni generino troppo traffico e che la situazione peggiori, <ph name="PRODUCT_NAME"/> ha interrotto momentaneamente le richieste delle estensioni a questo URL.<ph name="LINE_BREAK"/>Se ritieni che questo comportamento sia indesiderato, ad esempio se stai eseguendo il debug del tuo sito web, visita il sito all'indirizzo <ph name="URL_FOR_MORE_INFO"/>, dove puoi trovare ulteriori informazioni, anche per disattivare la funzione.</translation>
@@ -3541,7 +3531,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">Mo&amp;stra nella cartella</translation>
 <translation id="5990198433782424697">Estensioni su URL chrome://</translation>
-<translation id="7664673415674668445">Feedback &quot;È morto, Jim!&quot;.</translation>
 <translation id="1793119619663054394">Vuoi rimuovere &quot;<ph name="PROFILE_NAME"/>&quot; e tutti i dati di Chrome associati da questo computer? L'operazione non può essere annullata.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="4605399136610325267">Non connesso a Internet</translation>
@@ -3682,7 +3671,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="2643698698624765890">Gestisci le tue estensioni facendo clic su Estensioni nel menu Finestra.</translation>
 <translation id="4846680374085650406">Stai seguendo il consiglio dell'amministratore per questa impostazione.</translation>
 <translation id="1974060860693918893">Avanzate</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Elimina foto</translation>
 <translation id="1244303850296295656">Errore delle estensioni</translation>
 <translation id="3541661933757219855">Digita Ctrl+Alt+/ o Esc per nascondere</translation>
@@ -3696,7 +3684,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="3660234220361471169">Non attendibile</translation>
 <translation id="2679385451463308372">Stampa utilizzando la finestra di dialogo di sistema…</translation>
 <translation id="959890390740139744">Correggi ortografia automaticamente</translation>
-<translation id="5146827657109421175">Torna a elenco dispositivi</translation>
 <translation id="2607991137469694339">Metodo di immissione tamil (fonetico)</translation>
 <translation id="399179161741278232">Importati</translation>
 <translation id="810066391692572978">Il file utilizza funzioni non supportate.</translation>
@@ -3934,7 +3921,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="1325040735987616223">Aggiornamento del sistema</translation>
 <translation id="720210938761809882">Pagina bloccata</translation>
 <translation id="7748144333872478614">Disattiva sfondi delle finestre in TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Informazioni su NaCl</translation>
 <translation id="3084771660770137092">Google Chrome ha esaurito la memoria o il processo relativo alla pagina web è stato chiuso per qualche altro motivo. Per continuare, ricarica la pagina o aprine un'altra.</translation>
 <translation id="1114901192629963971">Impossibile verificare la password su questa rete. Seleziona un'altra rete.</translation>
@@ -4136,7 +4122,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="4023146161712577481">Configurazione del dispositivo in fase di determinazione.</translation>
 <translation id="6333834492048057036">Attivazione della barra degli indirizzi per la ricerca</translation>
 <translation id="4172051516777682613">Mostra sempre</translation>
-<translation id="3228279582454007836">Non hai mai visitato questo sito prima di oggi.</translation>
 <translation id="7027125358315426638">Nome database:</translation>
 <translation id="5449716055534515760">Chiu&amp;di finestra</translation>
 <translation id="3224239078034945833">Multilingue canadese</translation>
@@ -4748,7 +4733,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="4850458635498951714">Aggiungi un dispositivo</translation>
 <translation id="3140353188828248647">Area attiva nella barra degli indirizzi</translation>
 <translation id="1371806038977523515">Queste impostazioni sono controllate da:</translation>
-<translation id="2020262498093941982">Risposte in Suggest</translation>
 <translation id="6462082050341971451">Sei ancora lì?</translation>
 <translation id="7971550670320370753">Consente all'utente di disattivare facilmente la funzione di importazione del cloud.</translation>
 <translation id="5565871407246142825">Carte di credito</translation>
@@ -5264,7 +5248,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="3160041952246459240">Hai dei certificati su file che identificano questi server:</translation>
 <translation id="6305328361606238230">Vuoi ricevere messaggi push?</translation>
-<translation id="566920818739465183">Hai visitato per la prima volta questo sito in data <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Fai clic per andare avanti, tieni premuto per vedere la cronologia</translation>
 <translation id="4092878864607680421">L'ultima versione dell'applicazione &quot;<ph name="APP_NAME"/>&quot; richiede maggiori autorizzazioni, pertanto è stata disattivata.</translation>
 <translation id="5828228029189342317">Hai scelto di aprire determinati tipi di file automaticamente dopo il download.</translation>

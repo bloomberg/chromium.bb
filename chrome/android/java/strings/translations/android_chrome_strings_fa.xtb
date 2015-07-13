@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">‏داده‌های ذخیره‌شده در این دستگاه و داده‌های ذخیره‌شده در حساب Google شما همچنان در هر دو مکان خواهند بود. اما داده‌های جدید یا تغییراتی که در داده‌هایتان ایجاد می‌کنید بین آنها همگام‌سازی نمی‌شود.</translation>
 <translation id="9070377983101773829">شروع جستجوی صوتی</translation>
 <translation id="6831043979455480757">ترجمه</translation>
-<translation id="6504836143156866575">نسخه جاوا اسکریپت</translation>
 <translation id="3244271242291266297">ماه</translation>
 <translation id="886510833909353412">رمزگذاری همه با عبارت عبور</translation>
 <translation id="869891660844655955">تاریخ انقضا</translation>
@@ -267,7 +266,6 @@
 <translation id="4543087392704641517">عنوان نشانک</translation>
 <translation id="1987317783729300807">حساب‌ها</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
-<translation id="6064211167623632605">مسیر قابل اجرا</translation>
 <translation id="4522570452068850558">جزئیات</translation>
 <translation id="1521530746149324532">در حالت ناشناس هستید.</translation>
 <translation id="971774202801778802">نشانی اینترنتی نشانک</translation>
@@ -293,7 +291,6 @@
 <translation id="6208263165776660488">‏برگه‌های Chrome جابه‌جا شده‌اند</translation>
 <translation id="4526792582053123229">‏Google صفحات بازدیدشده با HTTPS یا حالت ناشناس را بهینه یا مشاهده نمی‌کند.</translation>
 <translation id="7626032353295482388">‏به Chrome خوش آمدید</translation>
-<translation id="7817177303494746697">‏نسخه Blink</translation>
 <translation id="2532336938189706096">نمای وب</translation>
 <translation id="6571070086367343653">ویرایش کارت اعتباری</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
@@ -374,7 +371,6 @@
 کافیست Chrome را در رایانه‌تان باز کنید، به منو بروید و «ورود به سیستم Chrome...» را انتخاب کنید</translation>
 <translation id="4797039098279997504">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB"/>، لمس کنید</translation>
 <translation id="4376501731284077108">کنترل نشده</translation>
-<translation id="2699916814609764774">مسیر نمایه</translation>
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="6979922938747275756">خطا در بارگیری پوشه‌ها</translation>

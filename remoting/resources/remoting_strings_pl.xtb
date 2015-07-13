@@ -21,7 +21,7 @@ Chromoting</translation>
 <translation id="5397086374758643919">Program do odinstalowywania hosta Pulpitu zdalnego Chrome</translation>
 <translation id="3258789396564295715">Możesz bezpiecznie korzystać z tego komputera przez Pulpit zdalny Chrome.</translation>
 <translation id="5070121137485264635">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić Pulpitowi zdalnemu Chrome dodatkowych uprawnień dostępu do tego adresu:</translation>
-<translation id="5168917394043976756">Otwórz szufladę nawigacji</translation>
+<translation id="5168917394043976756">Otwórz panel nawigacji</translation>
 <translation id="2124408767156847088">Uzyskaj bezpieczny dostęp do swoich komputerów z urządzenia z Androidem.</translation>
 <translation id="3194245623920924351">Pulpit zdalny Chrome</translation>
 <translation id="5537725057119320332">Cast</translation>
@@ -172,7 +172,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http://goo.gl/SyrVzj) i Polityce prywatności Chrome (http://goo.gl/0uXE5d).</translation>
 <translation id="4361728918881830843">Aby umożliwić zdalne połączenia z innym komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="7444276978508498879">Podłączył się klient: <ph name="CLIENT_USERNAME"/>.</translation>
-<translation id="189172778771606813">Zamknij szufladę nawigacji</translation>
+<translation id="189172778771606813">Zamknij panel nawigacji</translation>
 <translation id="4913529628896049296">czekam na połączenie…</translation>
 <translation id="811307782653349804">Dostęp do własnego komputera z dowolnego miejsca.</translation>
 <translation id="2939145106548231838">Host wymaga uwierzytelnienia</translation>

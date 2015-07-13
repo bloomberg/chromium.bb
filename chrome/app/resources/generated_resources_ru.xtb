@@ -335,7 +335,6 @@
 <translation id="3846593650622216128">Эти настройки определяются расширением.</translation>
 <translation id="8185331656081929126">Оповещать о новых принтерах в сети</translation>
 <translation id="2972557485845626008">Микропрограмма</translation>
-<translation id="735327918767574393">Не удалось открыть веб-страницу. Попробуйте обновить ее или перейдите на другую страницу.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>В вашем аккаунте можно указать идентификатор объекта и местоположение устройства (необязательно).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Для этого нужно заполнить соответствующие поля. Идентификатор объекта и местоположение устройства будут отображаться на странице chrome:policy в консоли управления.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Запросить версию сайта для планшетных ПК</translation>
 <translation id="8028060951694135607">Восстановление ключей Microsoft</translation>
@@ -584,7 +583,6 @@
 <translation id="6135622770221372891">Идентификаторы каналов</translation>
 <translation id="8472623782143987204">требуется оборудование</translation>
 <translation id="8545107379349809705">Скрыть сведения</translation>
-<translation id="2419206345979625354">Произошла непредвиденная ошибка. Попробуйте обновить страницу или откройте другую.</translation>
 <translation id="4865571580044923428">Настроить исключения…</translation>
 <translation id="2526619973349913024">Проверить обновления</translation>
 <translation id="3716615839203649375">разрешить</translation>
@@ -698,7 +696,6 @@
 <translation id="3704726585584668805">Включить плагин PDF, работающий в отдельном процессе.</translation>
 <translation id="5486326529110362464">Должно существовать входное значение для закрытого ключа.</translation>
 <translation id="6824725898506587159">Управление языками</translation>
-<translation id="8190907767443402387">Отправьте отзыв и помогите улучшить Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Администратор отключил множественный вход для аккаунта <ph name="USER_EMAIL"/>.
 Прежде чем вы сможете войти в аккаунт, все остальные пользователи должны выйти из него.</translation>
@@ -1184,7 +1181,6 @@
 <translation id="1864756863218646478">Не удалось найти файл.</translation>
 <translation id="7810202088502699111">Всплывающие окна были заблокированы. </translation>
 <translation id="8884961208881553398">Добавить сервисы</translation>
-<translation id="3808873045540128170">Он улетел! Но он обещал вернуться...</translation>
 <translation id="744341768939279100">Создать профиль</translation>
 <translation id="646727171725540434">HTTP</translation>
 <translation id="7576690715254076113">Разобрать по копиям</translation>
@@ -1872,7 +1868,6 @@
 <translation id="7075513071073410194">PKCS #1 MD5 с шифрованием RSA</translation>
 <translation id="7767646430896201896">Варианты:</translation>
 <translation id="1114335938027186412">Компьютер оснащен устройством безопасности модуля доверительной платформы (TPM), используемым для реализации многих критических функций безопасности в Chrome OS. Более подробную информацию можно получить в Справочном центре Chromebook: https://support.google.com/chromebook/?p=tpm.</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Клавиша Esc очищает весь буфер предварительного редактирования</translation>
 <translation id="3344786168130157628">Название точки доступа:</translation>
 <translation id="8293206222192510085">Добавление закладки</translation>
@@ -1936,7 +1931,6 @@
 <translation id="919412290393329570">Не обновлять, если пользователь тянет страницу вниз</translation>
 <translation id="8466234950814670489">Архив TAR</translation>
 <translation id="852269967951527627">Не показывать уведомления на сайтах</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">лист бумаги</translation>
 <translation id="2125314715136825419">Продолжить, не обновляя Adobe Reader (не рекомендуется)</translation>
 <translation id="5034510593013625357">Шаблон названия хоста</translation>
@@ -2355,7 +2349,6 @@
 <translation id="4572659312570518089">При подключении к &quot;<ph name="DEVICE_NAME"/>&quot; аутентификация была отменена.</translation>
 <translation id="4925542575807923399">Чтобы начать сеанс множественного входа, необходимо в первую очередь выполнить вход в этот аккаунт</translation>
 <translation id="5701381305118179107">Выровнять по центру</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Проверка…</translation>
 <translation id="7193047015510747410">Включить автоматический ввод учетных данных для синхронизации</translation>
 <translation id="7257173066616499747">Сети Wi-Fi</translation>
@@ -2727,7 +2720,6 @@
 <translation id="18139523105317219">Имя стороны EDI</translation>
 <translation id="8356258244599961364">Для этого языка не выбран способ ввода</translation>
 <translation id="733186066867378544">Передача геоданных – исключения</translation>
-<translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> не может подключиться к сети.<ph name="LINE_BREAK"/>Возможно, брандмауэр или антивирус ошибочно считает, что <ph name="PRODUCT_NAME"/> является посторонней программой на вашем компьютере, и поэтому блокирует ей доступ в Интернет.</translation>
 <translation id="2065985942032347596">Необходима авторизация</translation>
 <translation id="8282947398454257691">доступ к уникальному идентификатору устройства</translation>
@@ -3223,7 +3215,6 @@
 <translation id="7568790562536448087">Обновление</translation>
 <translation id="3910699493603749297">Кхмерская раскладка</translation>
 <translation id="5487982064049856365">Вы изменили пароль. Войдите, используя новый.</translation>
-<translation id="2345055320165338418">Если этот флажок установлен, ответы на некоторые запросы сразу появляются в подсказках омнибокса.</translation>
 <translation id="1585717515139318619">Одна из программ на вашем компьютере добавила тему, которая может влиять на работу Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3535,7 +3526,6 @@
 <translation id="4365673000813822030">К сожалению, выполнить синхронизацию не удалось.</translation>
 <translation id="6790820461102226165">Добавление пользователя</translation>
 <translation id="2332131598580221120">Открыть в Интернет-магазине</translation>
-<translation id="2289304220823908416">Помощь в работе с устройством Chrome.</translation>
 <translation id="5875858680971105888">Не удалось импортировать контролируемый профиль. Проверьте подключение к сети и повторите попытку позже.</translation>
 <translation id="5411472733320185105">Не использовать прокси-сервер для подключения к следующим хостам и доменам:</translation>
 <translation id="3685121001045880436">Возможно, сервер, на котором размещена эта веб-страница, перегружен или на нем произошла ошибка.
@@ -3570,7 +3560,6 @@
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">Показать в папке</translation>
 <translation id="5990198433782424697">Запуск расширений на URL типа &quot;chrome://&quot;</translation>
-<translation id="7664673415674668445">Ошибка!</translation>
 <translation id="1793119619663054394">Удалить профиль &quot;<ph name="PROFILE_NAME"/>&quot; и все связанные с ним данные Chrome с этого компьютера? Это действие нельзя отменить.</translation>
 <translation id="7456142309650173560">для разработчиков</translation>
 <translation id="4605399136610325267">Отсутствует подключение к Интернету</translation>
@@ -3711,7 +3700,6 @@
 <translation id="2643698698624765890">Управлять расширениями можно на вкладке &quot;Расширения&quot; в меню &quot;Окно&quot;.</translation>
 <translation id="4846680374085650406">Параметр настроен в соответствии с рекомендациями администратора.</translation>
 <translation id="1974060860693918893">Дополнительно</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Удалить фото</translation>
 <translation id="1244303850296295656">Ошибка расширения</translation>
 <translation id="3541661933757219855">Нажмите Ctrl + Alt + / или Escape, чтобы скрыть клавиатуру</translation>
@@ -3725,7 +3713,6 @@
 <translation id="3660234220361471169">Недоверенный</translation>
 <translation id="2679385451463308372">Показывать системное диалоговое окно при печати...</translation>
 <translation id="959890390740139744">Автоматическое исправление орфографических ошибок</translation>
-<translation id="5146827657109421175">Назад к списку устройств</translation>
 <translation id="2607991137469694339">Способ ввода для тамильского языка (фонетический)</translation>
 <translation id="399179161741278232">Выполнен импорт</translation>
 <translation id="810066391692572978">Файл использует неподдерживаемые функции.</translation>
@@ -3962,7 +3949,6 @@
 <translation id="1325040735987616223">Обновление системы</translation>
 <translation id="720210938761809882">Страница заблокирована</translation>
 <translation id="7748144333872478614">Отключить заставки в TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">О NaCl</translation>
 <translation id="3084771660770137092">Выполнение процесса этой веб-страницы было прекращено. Это может быть вызвано тем, что Chrome не хватает памяти, или иными причинами. Чтобы продолжить, обновите страницу или перейдите на другой URL.</translation>
 <translation id="1114901192629963971">Не удалось проверить пароль в этой сети. Выберите другую сеть.</translation>
@@ -4164,7 +4150,6 @@
 <translation id="4023146161712577481">Определение конфигурации устройства.</translation>
 <translation id="6333834492048057036">Ввод поискового запроса в адресной строке</translation>
 <translation id="4172051516777682613">Показывать всегда</translation>
-<translation id="3228279582454007836">Этот сайт не посещался до сегодняшнего дня.</translation>
 <translation id="7027125358315426638">Название базы данных:</translation>
 <translation id="5449716055534515760">Закрыть &amp;окно</translation>
 <translation id="3224239078034945833">Канадская (многоязычная)</translation>
@@ -4778,7 +4763,6 @@
 <translation id="4850458635498951714">Добавить устройство</translation>
 <translation id="3140353188828248647">Курсор в адресную строку</translation>
 <translation id="1371806038977523515">Этими параметрами управляет расширение:</translation>
-<translation id="2020262498093941982">Подсказки при поиске</translation>
 <translation id="6462082050341971451">Вы еще здесь?</translation>
 <translation id="7971550670320370753">Позволяет отключить функцию сохранения данных в облаке.</translation>
 <translation id="5565871407246142825">Банковские карты</translation>
@@ -5294,7 +5278,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5300589172476337783">Показать</translation>
 <translation id="3160041952246459240">У вас есть сертификаты, идентифицирующие следующие серверы:</translation>
 <translation id="6305328361606238230">Получать push-сообщения</translation>
-<translation id="566920818739465183">Дата первого посещения этого сайта: <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Нажмите, чтобы перейти вперед. Удерживайте, чтобы просмотреть историю.</translation>
 <translation id="4092878864607680421">Новейшая версия расширения <ph name="APP_NAME"/> требует дополнительных разрешений, поэтому расширение было отключено.</translation>
 <translation id="5828228029189342317">Вы выбрали автоматическое открытие некоторых типов файлов после скачивания.</translation>

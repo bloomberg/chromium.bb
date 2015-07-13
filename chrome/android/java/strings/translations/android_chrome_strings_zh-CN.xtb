@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">此设备中以及您的 Google 帐户中存储的数据都会保留在原位置。但是，新的数据或您对数据进行的更改将不会在此设备和您的 Google 帐户之间同步。</translation>
 <translation id="9070377983101773829">开始语音搜索</translation>
 <translation id="6831043979455480757">翻译</translation>
-<translation id="6504836143156866575">JavaScript 版本</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">使用密码加密所有同步数据</translation>
 <translation id="869891660844655955">截止日期</translation>
@@ -270,7 +269,6 @@
 <translation id="4543087392704641517">书签标题</translation>
 <translation id="1987317783729300807">帐户</translation>
 <translation id="7846076177841592234">取消选择</translation>
-<translation id="6064211167623632605">可执行文件路径</translation>
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="1521530746149324532">您已进入隐身模式。</translation>
 <translation id="971774202801778802">书签网址</translation>
@@ -296,7 +294,6 @@
 <translation id="6208263165776660488">Chrome 标签页已移至新的位置</translation>
 <translation id="4526792582053123229">Google 不会优化（也看不到）采用 HTTPS 协议或以隐身模式访问的网页。</translation>
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
-<translation id="7817177303494746697">Blink 版本</translation>
 <translation id="2532336938189706096">网页视图</translation>
 <translation id="6571070086367343653">修改信用卡</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -377,7 +374,6 @@
 只需在计算机上打开 Chrome，点击菜单，然后选择“登录到 Chrome…”即可。</translation>
 <translation id="4797039098279997504">触摸即可返回到 <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">不限</translation>
-<translation id="2699916814609764774">个人资料路径</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="6979922938747275756">加载文件夹时出现错误</translation>

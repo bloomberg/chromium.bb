@@ -336,7 +336,6 @@
 <translation id="3846593650622216128">Te ustawienia są wymuszone przez rozszerzenie.</translation>
 <translation id="8185331656081929126">Pokazuj powiadomienia po wykryciu w sieci nowych drukarek</translation>
 <translation id="2972557485845626008">Oprogramowanie układowe</translation>
-<translation id="735327918767574393">Podczas wyświetlania strony internetowej wystąpił problem. Aby kontynuować, załaduj stronę ponownie lub przejdź do innej strony.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Na Twoim koncie można podać identyfikator zasobu i lokalizację tego urządzenia (opcjonalnie).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Informacje te możesz wpisać w polach poniżej. Będą one widoczne przy urządzeniu na stronie chrome:policy w konsoli zarządzania.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Żądaj strony w wersji dla tabletów</translation>
 <translation id="8028060951694135607">Odzyskiwanie kluczy firmy Microsoft</translation>
@@ -585,7 +584,6 @@
 <translation id="6135622770221372891">Identyfikatory kanałów</translation>
 <translation id="8472623782143987204">sprzętowe</translation>
 <translation id="8545107379349809705">Ukryj informacje...</translation>
-<translation id="2419206345979625354">Strona nieoczekiwanie przestała działać. Aby kontynuować, załaduj ją ponownie lub otwórz inną.</translation>
 <translation id="4865571580044923428">Zarządzaj wyjątkami...</translation>
 <translation id="2526619973349913024">Sprawdź dostępność aktualizacji</translation>
 <translation id="3716615839203649375">pozwól</translation>
@@ -697,7 +695,6 @@
 <translation id="3704726585584668805">Włącz wtyczkę PDF poza procesem.</translation>
 <translation id="5486326529110362464">Wartość wejściowa klucza prywatnego musi istnieć.</translation>
 <translation id="6824725898506587159">Więcej języków</translation>
-<translation id="8190907767443402387">Prześlij opinię, aby pomóc udoskonalić Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Administrator nie zezwolił na wielokrotne logowanie użytkownika <ph name="USER_EMAIL"/>.
 Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
@@ -1183,7 +1180,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="1864756863218646478">Nie można znaleźć pliku.</translation>
 <translation id="7810202088502699111">Wyskakujące okienka na tej stronie zostały zablokowane.</translation>
 <translation id="8884961208881553398">Dodaj nowe usługi</translation>
-<translation id="3808873045540128170">Ciemność, widzę ciemność!</translation>
 <translation id="744341768939279100">Utwórz nowy profil</translation>
 <translation id="646727171725540434">Serwer proxy HTTP</translation>
 <translation id="7576690715254076113">Sortuj</translation>
@@ -1864,7 +1860,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="7075513071073410194">PKCS #1, MD5 z szyfrowaniem RSA</translation>
 <translation id="7767646430896201896">Opcje:</translation>
 <translation id="1114335938027186412">Twój komputer ma układ TPM (Trusted Platform Module), który umożliwia zastosowanie wielu krytycznych funkcji zabezpieczeń w Chrome OS. Więcej informacji znajdziesz w Centrum pomocy Chromebooka na stronie https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Klawisz Esc czyści cały bufor wstępnego edytowania</translation>
 <translation id="3344786168130157628">Nazwa punktu dostępu:</translation>
 <translation id="8293206222192510085">Dodaj zakładkę</translation>
@@ -1928,7 +1923,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="919412290393329570">Wyłącz efekt „przeciągnij, by odświeżyć”.</translation>
 <translation id="8466234950814670489">Archiwum Tar</translation>
 <translation id="852269967951527627">Nie zezwalaj żadnej witrynie na pokazywanie powiadomień</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">kartka</translation>
 <translation id="2125314715136825419">Kontynuuj bez aktualizowania programu Adobe Reader (niezalecane)</translation>
 <translation id="5034510593013625357">Wzorzec nazwy hosta</translation>
@@ -2350,7 +2344,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="4572659312570518089">Podczas łączenia się z urządzeniem „<ph name="DEVICE_NAME"/>” zostało anulowane uwierzytelnianie.</translation>
 <translation id="4925542575807923399">Administrator tego konta wymaga, by w sesji wielokrotnego logowania logować się na nie jako pierwsze.</translation>
 <translation id="5701381305118179107">Wyśrodkuj</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Weryfikuję...</translation>
 <translation id="7193047015510747410">Autouzupełnianie danych uwierzytelniających synchronizacji</translation>
 <translation id="7257173066616499747">Sieci Wi-Fi</translation>
@@ -2722,7 +2715,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="18139523105317219">Nazwa strony EDI</translation>
 <translation id="8356258244599961364">Ten język nie ma żadnej metody wprowadzania</translation>
 <translation id="733186066867378544">Wyjątki dla geolokalizacji</translation>
-<translation id="3328801116991980348">Informacje o witrynie</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> ma trudności z uzyskaniem dostępu do sieci. <ph name="LINE_BREAK"/> Przyczyną może być błędne zidentyfikowanie <ph name="PRODUCT_NAME"/> przez zaporę sieciową lub oprogramowanie antywirusowe jako programu niepożądanego i blokowanie jego dostępu do internetu.</translation>
 <translation id="2065985942032347596">Wymagane uwierzytelnienie</translation>
 <translation id="8282947398454257691">Odczytywać unikalny identyfikator Twojego urządzenia</translation>
@@ -3218,7 +3210,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="7568790562536448087">Aktualizowanie</translation>
 <translation id="3910699493603749297">Klawiatura khmerska</translation>
 <translation id="5487982064049856365">Od niedawna masz nowe hasło. Podaj je przy logowaniu.</translation>
-<translation id="2345055320165338418">Po włączeniu tej opcji odpowiedzi na niektóre typy zapytań będą pojawiać się bezpośrednio na liście sugestii w omniboksie.</translation>
 <translation id="1585717515139318619">Inny program na Twoim komputerze dodał motyw, który może zmieniać sposób działania Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3530,7 +3521,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="4365673000813822030">Ups, synchronizacja przestała działać.</translation>
 <translation id="6790820461102226165">Dodaj osobę...</translation>
 <translation id="2332131598580221120">Wyświetl w sklepie</translation>
-<translation id="2289304220823908416">Uzyskaj pomoc dotyczącą urządzenia z Chrome.</translation>
 <translation id="5875858680971105888">Ups! Nie udało się zaimportować użytkownika nadzorowanego. Sprawdź połączenie sieciowe i spróbuj ponownie później.</translation>
 <translation id="5411472733320185105">Nie używaj ustawień proxy dla następujących hostów i domen:</translation>
 <translation id="3685121001045880436">Możliwe, że na serwerze obsługującym stronę internetową doszło do przeciążenia lub wystąpił błąd.
@@ -3565,7 +3555,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Pokaż w folderze</translation>
 <translation id="5990198433782424697">Rozszerzenia w URL-ach chrome://</translation>
-<translation id="7664673415674668445">Opinia o awarii.</translation>
 <translation id="1793119619663054394">Na pewno chcesz usunąć profil „<ph name="PROFILE_NAME"/>” i wszystkie powiązane z nim dane Chrome z tego komputera? Tej czynności nie można cofnąć.</translation>
 <translation id="7456142309650173560">deweloperska</translation>
 <translation id="4605399136610325267">Brak połączenia z internetem</translation>
@@ -3706,7 +3695,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="2643698698624765890">Aby zarządzać zainstalowanymi rozszerzeniami, kliknij Rozszerzenia w menu Okno.</translation>
 <translation id="4846680374085650406">Przestrzegasz zaleceń administratora dotyczących tego ustawienia.</translation>
 <translation id="1974060860693918893">Zaawansowane</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Odrzuć zdjęcie</translation>
 <translation id="1244303850296295656">Błąd rozszerzenia</translation>
 <translation id="3541661933757219855">Aby ukryć, naciśnij kombinację Ctrl+Alt+/ lub klawisz Escape.</translation>
@@ -3720,7 +3708,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="3660234220361471169">Niezaufany</translation>
 <translation id="2679385451463308372">Drukuj poprzez systemowe okno dialogowe</translation>
 <translation id="959890390740139744">Sprawdzaj pisownię automatycznie</translation>
-<translation id="5146827657109421175">Powrót do listy urządzeń</translation>
 <translation id="2607991137469694339">Metoda wprowadzania znaków tamilskich (fonetycznie)</translation>
 <translation id="399179161741278232">Zaimportowane</translation>
 <translation id="810066391692572978">Plik korzysta z nieobsługiwanych funkcji.</translation>
@@ -3958,7 +3945,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="1325040735987616223">Aktualizacja systemu</translation>
 <translation id="720210938761809882">Strona zablokowana</translation>
 <translation id="7748144333872478614">Wyłącz tło okna w TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">NaCl – informacje</translation>
 <translation id="3084771660770137092">W przeglądarce Chrome zabrakło pamięci albo proces strony internetowej został zakończony z innego powodu. Aby kontynuować, załaduj stronę ponownie lub przejdź do innej strony.</translation>
 <translation id="1114901192629963971">W bieżącej sieci nie udało się zweryfikować Twojego hasła. Wybierz inną sieć.</translation>
@@ -4160,7 +4146,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="4023146161712577481">Określanie konfiguracji urządzenia.</translation>
 <translation id="6333834492048057036">Ustaw fokus na pasku adresu, by przeprowadzić wyszukiwanie</translation>
 <translation id="4172051516777682613">Zawsze pokazuj</translation>
-<translation id="3228279582454007836">Witryna nie była wcześniej odwiedzana.</translation>
 <translation id="7027125358315426638">Nazwa bazy danych:</translation>
 <translation id="5449716055534515760">Zamknij o&amp;kno</translation>
 <translation id="3224239078034945833">kanadyjska klawiatura wielojęzyczna</translation>
@@ -4774,7 +4759,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="4850458635498951714">Dodaj urządzenie</translation>
 <translation id="3140353188828248647">Ustaw fokus na pasek adresu</translation>
 <translation id="1371806038977523515">Te ustawienia są kontrolowane przez:</translation>
-<translation id="2020262498093941982">Odpowiedzi w sugestiach</translation>
 <translation id="6462082050341971451">Jesteś tam jeszcze?</translation>
 <translation id="7971550670320370753">Pozwala użytkownikowi łatwo wyłączyć funkcję importowania z chmury.</translation>
 <translation id="5565871407246142825">Karty kredytowe</translation>
@@ -5290,7 +5274,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="3160041952246459240">Masz zapisane certyfikaty, które umożliwiają identyfikację następujących serwerów:</translation>
 <translation id="6305328361606238230">Otrzymywanie komunikatów push</translation>
-<translation id="566920818739465183">Strona została odwiedzona po raz pierwszy w dniu <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Kliknij, aby przejść dalej. Przytrzymaj, aby wyświetlić historię</translation>
 <translation id="4092878864607680421">Najnowsza wersja aplikacji „<ph name="APP_NAME"/>” wymaga większej liczby pozwoleń, została więc wyłączona.</translation>
 <translation id="5828228029189342317">Wybrano opcję automatycznego otwierania określonych typów plików po pobraniu.</translation>

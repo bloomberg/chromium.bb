@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">このデバイスに保存されているデータと Google アカウントに保存されているデータはそのまま残ります。ただし、データを追加したり変更したりしてもデバイス間での同期は行われません。</translation>
 <translation id="9070377983101773829">音声検索を開始</translation>
 <translation id="6831043979455480757">翻訳</translation>
-<translation id="6504836143156866575">JavaScript のバージョン</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">すべてのデータをパスフレーズで暗号化する</translation>
 <translation id="869891660844655955">有効期限</translation>
@@ -270,7 +269,6 @@
 <translation id="4543087392704641517">ブックマークのタイトル</translation>
 <translation id="1987317783729300807">アカウント</translation>
 <translation id="7846076177841592234">選択解除</translation>
-<translation id="6064211167623632605">実行可能ファイルのパス</translation>
 <translation id="4522570452068850558">詳細</translation>
 <translation id="1521530746149324532">シークレット モードです。</translation>
 <translation id="971774202801778802">ブックマーク URL</translation>
@@ -296,7 +294,6 @@
 <translation id="6208263165776660488">Chrome のタブが移動しました</translation>
 <translation id="4526792582053123229">HTTPS やシークレット モードでアクセスしたページについては、Google による最適化や確認は行われません。</translation>
 <translation id="7626032353295482388">Chrome にようこそ</translation>
-<translation id="7817177303494746697">Blink のバージョン</translation>
 <translation id="2532336938189706096">ウェブ表示</translation>
 <translation id="6571070086367343653">クレジットカードの編集</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -377,7 +374,6 @@
 パソコンで Chrome を開き、メニューから [Chrome にログイン] を選択してください。</translation>
 <translation id="4797039098279997504">タップすると <ph name="URL_OF_THE_CURRENT_TAB"/> に戻ります</translation>
 <translation id="4376501731284077108">管理対象外</translation>
-<translation id="2699916814609764774">プロフィールのパス</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="6979922938747275756">フォルダの読み込み中にエラーが発生しました</translation>

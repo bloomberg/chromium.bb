@@ -336,7 +336,6 @@
 <translation id="3846593650622216128">Ces paramètres sont appliqués par une extension.</translation>
 <translation id="8185331656081929126">Afficher des notifications lorsque de nouvelles imprimantes sont détectées sur le réseau</translation>
 <translation id="2972557485845626008">Micrologiciel</translation>
-<translation id="735327918767574393">Une erreur s'est produite lors de l'affichage de cette page Web. Pour continuer, actualisez cette page ou ouvrez-en une autre.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Votre compte est activé pour fournir l'ID d'élément et la position de cet appareil (facultatif).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Vous pouvez spécifier l'identifiant et la position de l'appareil dans les champs ci-dessous. Ces informations apparaîtront sur la page relative aux règles de Chrome dans la console de gestion.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Demander le site pour tablette</translation>
 <translation id="8028060951694135607">Récupération de clé Microsoft</translation>
@@ -588,7 +587,6 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="6135622770221372891">Identifiants de version</translation>
 <translation id="8472623782143987204">matériel requis</translation>
 <translation id="8545107379349809705">Masquer les informations…</translation>
-<translation id="2419206345979625354">Arrêt inattendu de la page Web. Pour continuer, actualisez cette page ou ouvrez-en une autre.</translation>
 <translation id="4865571580044923428">Gérer les exceptions...</translation>
 <translation id="2526619973349913024">Rechercher des mises à jour</translation>
 <translation id="3716615839203649375">autoriser</translation>
@@ -701,7 +699,6 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="3704726585584668805">Activer le plug-in PDF hors procédure</translation>
 <translation id="5486326529110362464">La valeur d'entrée de la clé privée est obligatoire.</translation>
 <translation id="6824725898506587159">Gérer les langues</translation>
-<translation id="8190907767443402387">Envoyer des commentaires pour nous aider à améliorer Google Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Un administrateur a désactivé la connexion multicompte pour <ph name="USER_EMAIL"/>.
 Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
@@ -1189,7 +1186,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY"/>) pourra vous ê
 <translation id="1864756863218646478">Fichier introuvable.</translation>
 <translation id="7810202088502699111">Des fenêtres pop-up ont été bloquées sur cette page.</translation>
 <translation id="8884961208881553398">Ajouter de nouveaux services</translation>
-<translation id="3808873045540128170">Il est mort, Jim !</translation>
 <translation id="744341768939279100">Créer un profil</translation>
 <translation id="646727171725540434">Proxy HTTP</translation>
 <translation id="7576690715254076113">Assembler</translation>
@@ -1879,7 +1875,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="7075513071073410194">PKCS #1 MD5 avec chiffrement RSA</translation>
 <translation id="7767646430896201896">Options :</translation>
 <translation id="1114335938027186412">Votre ordinateur comprend un dispositif de sécurité avec module de plate-forme sécurisée (TPM, Trusted Platform Module) qui permet de mettre en œuvre plusieurs fonctionnalités de sécurité critiques dans Chrome OS. Consultez le centre d'aide Chromebook pour en savoir plus : https://support.google.com/chromebook/?p=tpm.</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Échap efface toute la mémoire tampon de pré-édition</translation>
 <translation id="3344786168130157628">Nom du point d'accès :</translation>
 <translation id="8293206222192510085">Ajouter aux favoris</translation>
@@ -1943,7 +1938,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="919412290393329570">Désactiver l'effet &quot;Dérouler pour actualiser&quot;</translation>
 <translation id="8466234950814670489">Archive TAR</translation>
 <translation id="852269967951527627">Interdire à tous les sites d'afficher des notifications</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">feuille de papier</translation>
 <translation id="2125314715136825419">Continuer sans mettre à jour Adobe Reader (non recommandé)</translation>
 <translation id="5034510593013625357">Modèle du nom d'hôte</translation>
@@ -2370,7 +2364,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="4572659312570518089">Annulation de l'authentification lors de la connexion à l'appareil &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="4925542575807923399">L'administrateur de ce compte a configuré ce dernier de sorte qu'il soit le premier compte à être connecté lors de sessions de connexion multicompte.</translation>
 <translation id="5701381305118179107">Centrer</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Vérification en cours…</translation>
 <translation id="7193047015510747410">Saisir automatiquement les identifiants de synchronisation</translation>
 <translation id="7257173066616499747">Réseaux Wi-Fi</translation>
@@ -2742,7 +2735,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="18139523105317219">Nom de partie EDI</translation>
 <translation id="8356258244599961364">Aucune méthode de saisie n'est associée à cette langue.</translation>
 <translation id="733186066867378544">Exceptions de géolocalisation</translation>
-<translation id="3328801116991980348">Informations sur le site</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/>
           rencontre des difficultés pour accéder au réseau.
           <ph name="LINE_BREAK"/>
@@ -3247,7 +3239,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7568790562536448087">Mise à jour en cours</translation>
 <translation id="3910699493603749297">Clavier khmer</translation>
 <translation id="5487982064049856365">Vous avez récemment changé de mot de passe. Veuillez vous connecter avec le nouveau mot de passe.</translation>
-<translation id="2345055320165338418">Si cette option est activée, les réponses à certains types de requêtes s'affichent directement dans la liste de suggestions de l'omnibox.</translation>
 <translation id="1585717515139318619">Un thème qui risque de modifier le fonctionnement de Chrome a été ajouté via un autre programme sur votre ordinateur.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3559,7 +3550,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="4365673000813822030">Petit problème… La synchronisation s'est arrêtée.</translation>
 <translation id="6790820461102226165">Ajouter un profil utilisateur…</translation>
 <translation id="2332131598580221120">Afficher dans la boutique</translation>
-<translation id="2289304220823908416">Obtenir de l'aide pour votre appareil Chrome</translation>
 <translation id="5875858680971105888">Petit problème… Impossible d'importer l'utilisateur supervisé. Veuillez vérifier votre connexion réseau, puis réessayer ultérieurement.</translation>
 <translation id="5411472733320185105">Ne pas utiliser les paramètres du proxy pour les hôtes et domaines suivants :</translation>
 <translation id="3685121001045880436">Le serveur hébergeant la page Web est probablement surchargé ou a rencontré une erreur.
@@ -3593,7 +3583,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Afficher dans le dossier</translation>
 <translation id="5990198433782424697">Extensions des URL chrome://</translation>
-<translation id="7664673415674668445">Commentaires relatifs à une erreur</translation>
 <translation id="1793119619663054394">Voulez-vous vraiment supprimer le profil &quot;<ph name="PROFILE_NAME"/>&quot; et toutes les données Chrome associées de cet ordinateur ? Il est impossible d'annuler cette action.</translation>
 <translation id="7456142309650173560">développeur</translation>
 <translation id="4605399136610325267">Non connecté à Internet.</translation>
@@ -3734,7 +3723,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2643698698624765890">Pour gérer les extensions, cliquer sur &quot;Extensions&quot; dans le menu &quot;Fenêtre&quot;</translation>
 <translation id="4846680374085650406">Vous suivez la recommandation de l'administrateur pour ce paramètre.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Supprimer la photo</translation>
 <translation id="1244303850296295656">Erreur au niveau des extensions.</translation>
 <translation id="3541661933757219855">Appuyez sur Ctrl+Alt+/ ou sur Échap pour masquer</translation>
@@ -3748,7 +3736,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="3660234220361471169">Non approuvé</translation>
 <translation id="2679385451463308372">Imprimer depuis la boîte de dialogue système…</translation>
 <translation id="959890390740139744">Corriger l'orthographe automatiquement</translation>
-<translation id="5146827657109421175">Retour à la liste des appareils</translation>
 <translation id="2607991137469694339">Mode de saisie en tamoul (phonétique)</translation>
 <translation id="399179161741278232">Importés</translation>
 <translation id="810066391692572978">Ce fichier utilise des fonctionnalités non compatibles.</translation>
@@ -3986,7 +3973,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="1325040735987616223">Mise à jour du système</translation>
 <translation id="720210938761809882">Page bloquée</translation>
 <translation id="7748144333872478614">Désactiver les backdrops de fenêtres dans TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">À propos de NaCl</translation>
 <translation id="3084771660770137092">Google Chrome n'avait pas suffisamment de mémoire ou le processus de la page Web a été arrêté pour une autre raison. Pour continuer, actualisez la page ou ouvrez-en une autre.</translation>
 <translation id="1114901192629963971">Impossible de valider votre mot de passe sur le réseau actuel. Sélectionnez un autre réseau.</translation>
@@ -4189,7 +4175,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="4023146161712577481">Détermination de la configuration de l'appareil en cours…</translation>
 <translation id="6333834492048057036">Centrer sur la barre d'adresse pour la recherche</translation>
 <translation id="4172051516777682613">Toujours afficher</translation>
-<translation id="3228279582454007836">Vous n'avez jamais visité ce site auparavant.</translation>
 <translation id="7027125358315426638">Nom de la base de données :</translation>
 <translation id="5449716055534515760">Fe&amp;rmer la fenêtre</translation>
 <translation id="3224239078034945833">Canadien multilingue</translation>
@@ -4803,7 +4788,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="4850458635498951714">Ajouter un appareil</translation>
 <translation id="3140353188828248647">Activer la barre d'adresse</translation>
 <translation id="1371806038977523515">Ces paramètres sont contrôlés par :</translation>
-<translation id="2020262498093941982">Réponses dans les suggestions</translation>
 <translation id="6462082050341971451">Êtes-vous toujours là ?</translation>
 <translation id="7971550670320370753">Permettre à l'utilisateur de facilement désactiver la fonctionnalité d'importation dans le cloud</translation>
 <translation id="5565871407246142825">Cartes de paiement</translation>
@@ -5319,7 +5303,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="3160041952246459240">Certains de vos certificats enregistrés identifient ces serveurs :</translation>
 <translation id="6305328361606238230">Recevoir les messages Push</translation>
-<translation id="566920818739465183">Vous avez visité ce site pour la première fois le <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Cliquer pour avancer, maintenir pour voir l'historique</translation>
 <translation id="4092878864607680421">La dernière version de l'application &quot;<ph name="APP_NAME"/>&quot; requiert d'autres autorisations. Elle a donc été désactivée.</translation>
 <translation id="5828228029189342317">Vous avez choisi d'ouvrir automatiquement certains types de fichiers après leur téléchargement.</translation>

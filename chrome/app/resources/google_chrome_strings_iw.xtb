@@ -27,7 +27,6 @@
 <translation id="110877069173485804">‏זה ה-Chrome שלך</translation>
 <translation id="8406086379114794905">‏עזור לשפר את Chrome</translation>
 <translation id="5620765574781326016">קרא מידע על נושאים באתרים בלי לעזוב את הדף.</translation>
-<translation id="2721687379934343312">‏ב-Mac, סיסמאות נשמרות ב-Keychain שלך ומשתמשי Chrome  אחרים המשתפים חשבון OS X זה יכולים לגשת אליהן או לסנכרן אותן.</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="4700157086864140907">‏Google Chrome יכול לספק בדיקת איות חכמה יותר על ידי כך שהוא שולח את מה שאתה מקליד בדפדפן לשרתי Google, ומאפשר לך להשתמש באותה טכנולוגיית בדיקת איות ש'חיפוש Google' משתמש בה.</translation>
 <translation id="4953650215774548573">‏הגדר את Google Chrome כדפדפן ברירת המחדל</translation>
@@ -102,7 +101,6 @@
 <translation id="3656661827369545115">‏הפעל את Chromium אוטומטית בעת הפעלת המחשב</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN"/>. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
-<translation id="3012890944909934180">‏הפעל מחדש את Chrome בשולחן העבודה</translation>
 <translation id="2580411288591421699">‏אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. סגור את Google Chrome ונסה שוב.</translation>
 <translation id="8460191995881063249">‏מרכז ההתראות של Chrome</translation>
 <translation id="1457721931618994305">‏מעדכן את Google Chrome...</translation>
@@ -192,7 +190,6 @@
 <translation id="5028489144783860647">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה שלך עבור סנכרון.</translation>
 <translation id="9026991721384951619">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="8547799825197623713">‏מפעיל היישומים של Chrome - קאנארי</translation>
-<translation id="2267273557509361161">‏הפעל מחדש את Chrome במצב Windows 8</translation>
 <translation id="2871893339301912279">‏נכנסת ל-Chrome!</translation>
 <translation id="7890208801193284374">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
 <translation id="7161904924553537242">‏ברוך הבא ל-Google Chrome</translation>

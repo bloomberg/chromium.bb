@@ -31,7 +31,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="110877069173485804">Det här är Chrome</translation>
 <translation id="8406086379114794905">Hjälp till att göra Chrome bättre</translation>
 <translation id="5620765574781326016">Läs mer om vilka ämnen som webbplatser handlar om utan att lämna sidan.</translation>
-<translation id="2721687379934343312">På Mac sparas lösenord på nyckelringen. Andra Chrome-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
 <translation id="683440813066116847">Regel som tillåter inkommande mDNS-trafik för Google Chrome Canary.</translation>
 <translation id="4700157086864140907">Google Chrome kan ge smartare stavningskontroll genom att skicka det som du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
 <translation id="4953650215774548573">Ange Google Chrome som standardwebbläsare</translation>
@@ -108,7 +107,6 @@ och felaktiga uppgifter. Antingen utger sig en hackare för att vara <ph name="S
 <translation id="3656661827369545115">Starta Chromium automatiskt när datorn startas</translation>
 <translation id="1763864636252898013">Servern kunde inte bevisa att den är <ph name="DOMAIN"/> eftersom enhetens operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="556024056938947818">Google Chrome försöker visa lösenord.</translation>
-<translation id="3012890944909934180">Starta om Chrome på datorn</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
 <translation id="8460191995881063249">Chromes meddelandecenter</translation>
 <translation id="1457721931618994305">Uppdaterar Google Chrome ...</translation>
@@ -200,7 +198,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="5028489144783860647">Google Chrome kunde inte synkronisera data. Uppdatera lösenfrasen för synkroniseringen.</translation>
 <translation id="9026991721384951619">Det gick inte att synkronisera data med Chrome OS eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="8547799825197623713">Startprogrammet för appar i Chrome Canary</translation>
-<translation id="2267273557509361161">Starta Chrome i Windows 8-läge</translation>
 <translation id="2871893339301912279">Du är inloggad i Chrome.</translation>
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
 <translation id="7161904924553537242">Välkommen till Google Chrome</translation>

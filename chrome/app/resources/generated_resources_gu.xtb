@@ -340,7 +340,6 @@
 <translation id="3846593650622216128">આ સેટિંગ્સ એક એક્સ્ટેંશન દ્વારા લાગુ કરવામાં આવે છે.</translation>
 <translation id="8185331656081929126">નેટવર્ક પર નવા પ્રિન્ટર્સ શોધવામાં આવે ત્યારે સૂચનાઓ બતાવો</translation>
 <translation id="2972557485845626008">ફર્મવેર</translation>
-<translation id="735327918767574393">આ વેબપૃષ્ઠ પ્રદર્શિત કરતી વખતે કંઈક ખોટું થયું હતું. ચાલુ રાખવા, ફરીથી લોડ કરો અથવા બીજા પૃષ્ઠ પર જાઓ.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>આ ઉપકરણ માટે સંપતિ ID અને સ્થાન પ્રદાન કરવા માટે તમારું એકાઉન્ટ સક્ષમ છે (વૈકલ્પિક).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>તમે નીચેના ફીલ્ડ્સમાં ઉપકરણ ઓળખકર્તા અને સ્થાન પ્રદાન કરી શકો છો. આ ઉપકરણ માટે તમારા સંચાલન કન્સોલમાં chrome:નીતિ પૃષ્ઠ પર આ વિગતો દર્શાવવામાં આવશે.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">ટેબ્લેટ સાઇટની વિનંતી કરો</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
@@ -596,7 +595,6 @@
 <translation id="6135622770221372891">ચેનલ ID</translation>
 <translation id="8472623782143987204">હાર્ડવેર-બેક્ડ</translation>
 <translation id="8545107379349809705">માહિતી છુપાવો...</translation>
-<translation id="2419206345979625354">વેબપૃષ્ઠ અનિચ્છનીય રીતે સમાપ્ત કરવામાં અાવ્યું હતું. ચાલુ રાખવા, ફરીથી લોડ કરો અથવા બીજા પૃષ્ઠ પર જાઓ.</translation>
 <translation id="4865571580044923428">અપવાદોને મેનેજ કરો...</translation>
 <translation id="2526619973349913024">અપડેટ માટે તપાસો</translation>
 <translation id="3716615839203649375">મંજૂરી આપો</translation>
@@ -705,7 +703,6 @@
 <translation id="3704726585584668805">પ્રક્રિયામાં નથી તેવા PDF પ્લગિનને સક્ષમ કરો.</translation>
 <translation id="5486326529110362464">ખાનગી કી માટે ઇનપુટ મૂલ્ય અસ્તિત્વમાં હોવું જોઈએ.</translation>
 <translation id="6824725898506587159">ભાષાઓનું સંચાલન કરો</translation>
-<translation id="8190907767443402387">Chrome ને વધુ સારું બનાવવામાં સહાય કરવા પ્રતિસાદ મોકલો</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">વ્યવસ્થાપકે <ph name="USER_EMAIL"/> માટે બહુવિધ સાઇન-ઇનને નામંજૂર કર્યું છે.
 બધા વપરાશકર્તાઓએ ચાલુ રાખવા માટે સાઇન આઉટ થવું આવશ્યક છે.</translation>
@@ -1197,7 +1194,6 @@
 <translation id="1864756863218646478">ફાઇલ શોધી શકાઈ નથી.</translation>
 <translation id="7810202088502699111">આ પૃષ્ઠ પરનાં પૉપ-અપ્સ અવરોધિત હતા.</translation>
 <translation id="8884961208881553398">નવી સેવાઓ ઉમેરો</translation>
-<translation id="3808873045540128170">તે નષ્ટ થઈ ગયું, જીમ!</translation>
 <translation id="744341768939279100">એક  નવી પ્રોફાઇલ બનાવો</translation>
 <translation id="646727171725540434">HTTP પ્રોક્સી</translation>
 <translation id="7576690715254076113">કૉલેટ</translation>
@@ -1889,7 +1885,6 @@
 <translation id="7075513071073410194">RSA એન્ક્રિપ્શનવાળું PKCS #1 MD5</translation>
 <translation id="7767646430896201896">વિકલ્પો:</translation>
 <translation id="1114335938027186412">તમારું કમ્પ્યુટર વિશ્વસનીય પ્લેટફોર્મ મોડ્યુલ (TPM) સેવા ઉપકરણ ધરાવે છે, જેનો ઉપયોગ Chrome OS માં ઘણી મહત્વપૂર્ણ સુરક્ષા સુવિધાઓ લાગુ કરવા માટે થાય છે. વધુ જાણવા માટે Chromebook સહાય કેંદ્રની મુલાકાત લો: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">સંપૂર્ણ પ્રી-એડિટ બફરને Esc સાફ કરે છે</translation>
 <translation id="3344786168130157628">ઍક્સેસ પોઇન્ટનું નામ:</translation>
 <translation id="8293206222192510085">બુકમાર્ક ઉમેરો</translation>
@@ -1953,7 +1948,6 @@
 <translation id="919412290393329570">તાજું કરવા માટે ખેંચો અસર અક્ષમ કરો.</translation>
 <translation id="8466234950814670489">તાર આર્કાઇવ</translation>
 <translation id="852269967951527627">કોઈ પણ સાઇટને સૂચનાઓ દર્શાવવાની મંજૂરી આપશો નહીં</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">કાગળનું પત્રક</translation>
 <translation id="2125314715136825419">Adobe Reader અપડેટ કર્યા વગર આગળ વધો (ભલામણપાત્ર નથી)</translation>
 <translation id="5034510593013625357">હોસ્ટનામનો દાખલો</translation>
@@ -2374,7 +2368,6 @@
 <translation id="4572659312570518089">&quot;<ph name="DEVICE_NAME"/>&quot; થી કનેક્ટ કરતી વખતે પ્રમાણીકરણ રદ કરવામાં આવ્યું.</translation>
 <translation id="4925542575807923399">આ એકાઉન્ટના વ્યવસ્થાપક માટે જરૂરી છે કે આ એકાઉન્ટ બહુવિધ સાઇન ઇન સત્રમાં પ્રથમ સાઇન-ઇન કરેલ એકાઉન્ટ હોય.</translation>
 <translation id="5701381305118179107">મધ્યમાં</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">ચકાસી રહ્યું છે...</translation>
 <translation id="7193047015510747410">સ્વતઃભરણ સમન્વયન ઓળખપત્ર</translation>
 <translation id="7257173066616499747">Wi-Fi નેટવર્ક્સ</translation>
@@ -2745,7 +2738,6 @@
 <translation id="18139523105317219">EDI પાર્ટી નામ</translation>
 <translation id="8356258244599961364">આ ભાષામાં કોઇ ઇનપુટ પદ્ધતિઓ નથી</translation>
 <translation id="733186066867378544">ભૌગોલિક સ્થાન અપવાદો</translation>
-<translation id="3328801116991980348">સાઇટ માહિતી</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> ને નેટવર્ક ઍક્સેસ કરવામાં મુશ્કેલી આવી રહી છે.<ph name="LINE_BREAK"/> આ એટલા માટે થઈ શકે છે કારણ કે તમારું ફાયરવૉલ અથવા એન્ટીવાયરસ સૉફ્ટવેર ભૂલથી માની રહ્યું છે કે <ph name="PRODUCT_NAME"/> એ તમારા કમ્પ્યુટર પર એક ઘુસણખોર છે અને તે તેને ઇન્ટરનેટથી કનેક્ટ થવાથી અવરોધિત કરી રહ્યું છે.</translation>
 <translation id="2065985942032347596">પ્રમાણીકરણ આવશ્યક</translation>
 <translation id="8282947398454257691">તમારા અનન્ય ઉપકરણ ઓળખકર્તાને જાણો</translation>
@@ -3248,7 +3240,6 @@
 <translation id="7568790562536448087">અપડેટ થઈ રહ્યું છે</translation>
 <translation id="3910699493603749297">ખ્મેર કીબોર્ડ</translation>
 <translation id="5487982064049856365">તમે હાલમાં જ પાસવર્ડ બદલ્યો છે. કૃપા કરીને નવાથી સાઇન ઇન કરો.</translation>
-<translation id="2345055320165338418">જો સક્ષમ હોય, તો અમુક પ્રકારના પ્રશ્નોના જવાબો સીધા જ ઑમ્નિબૉક્સ સૂચન સૂચિમાં દેખાશે.</translation>
 <translation id="1585717515139318619">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે કોઇ થીમ ઉમેરી છે જે Chrome ની કાર્યપદ્ધતિમાં ફેરફાર કરી શકે છે.
 <ph name="EXTENSION_NAME"/></translation>
 <translation id="438503109373656455">સારાતોગા</translation>
@@ -3559,7 +3550,6 @@
 <translation id="4365673000813822030">ઊફ્ફ, સમન્વયન કામ કરતું બંધ થઈ ગયું છે. </translation>
 <translation id="6790820461102226165">વ્યક્તિ ઉમેરો...</translation>
 <translation id="2332131598580221120">દુકાનમાં જુઓ</translation>
-<translation id="2289304220823908416">તમારા Chrome ઉપકરણ સાથે સહાય મેળવો.</translation>
 <translation id="5875858680971105888">અરેરે! નિરીક્ષિત વપરાશકર્તા આયાત કરી શકાયા નથી. કૃપા કરીને તમારું નેટવર્ક કનેક્શન તપાસો અને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="5411472733320185105">આ હોસ્ટ્સ અને ડોમેન્સ માટે પ્રોક્સી સેટિંગ્સનો ઉપયોગ કરશો નહીં: </translation>
 <translation id="3685121001045880436">એવું લાગે છે કે સર્વર જે વેબ પૃષ્ઠનું હોસ્ટ કરે છે તેને ઓવરલોડ થઈ ગયું છે અથવા કોઈ ભૂલ આવી છે.
@@ -3594,7 +3584,6 @@
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">ફોલ્ડરમાં બતાવો</translation>
 <translation id="5990198433782424697">chrome:// URL પર એક્સ્ટેન્શન્સ</translation>
-<translation id="7664673415674668445">ડેડ જિમનો પ્રતિસાદ.</translation>
 <translation id="1793119619663054394">શું તમે ખરેખર આ કમ્પ્યુટર પરથી &quot;<ph name="PROFILE_NAME"/>&quot; અને તમામ સંકળાયેલા Chrome ડેટાને દૂર કરવા માગો છો. આ પૂર્વવત્ કરી શકાતું નથી.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="4605399136610325267">ઇન્ટરનેટ કનેક્ટ નથી</translation>
@@ -3735,7 +3724,6 @@
 <translation id="2643698698624765890">વિંડો મેનૂમાં એક્સટેંશનને ક્લિક કરીને તમારા એક્સ્ટેંશન્સને મેનેજ કરો.</translation>
 <translation id="4846680374085650406">તમે આ સેટિંગ માટે વ્ય્વસ્થાપકની ભલામણને અનુસરી રહ્યાં છો.</translation>
 <translation id="1974060860693918893">વિગતવાર</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">ફોટો કાઢી નાખો</translation>
 <translation id="1244303850296295656">એક્સટેંશન ભૂલ</translation>
 <translation id="3541661933757219855">છુપાવવા માટે Ctrl+Alt+/ અથવા Escape ટાઇપ કરો</translation>
@@ -3749,7 +3737,6 @@
 <translation id="3660234220361471169">અવિશ્વસનીય</translation>
 <translation id="2679385451463308372">સિસ્ટમ સંવાદનો ઉપયોગ કરીને છાપો... </translation>
 <translation id="959890390740139744">જોડણી આપમેળે સુધારો</translation>
-<translation id="5146827657109421175">ઉપકરણ સૂચિ પર પાછા આવો</translation>
 <translation id="2607991137469694339">તમિળ ઇનપુટ પદ્ધતિ (Phonetic)</translation>
 <translation id="399179161741278232">આયાત કરેલા</translation>
 <translation id="810066391692572978">ફાઇલ અનસપોર્ટેડ સુવિધાઓનો ઉપયોગ કરે છે.</translation>
@@ -3985,7 +3972,6 @@
 <translation id="1325040735987616223">સિસ્ટમ અપડેટ</translation>
 <translation id="720210938761809882">પૃષ્ઠ અવરોધિત કર્યુ</translation>
 <translation id="7748144333872478614">TouchView માં વિંડો બેકડ્રોપ્સ અક્ષમ કરો</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">NaCl વિશે</translation>
 <translation id="3084771660770137092">Chrome ની મેમરી સમાપ્ત થઈ ગઈ છે અથવા કોઈ અન્ય કારણસર વેબપૃષ્ઠની પ્રક્રિયા બંધ થઈ ગઈ છે. ચાલુ રાખવા માટે, ફરીથી લોડ કરો અથવા બીજા પૃષ્ઠ પર જાઓ.</translation>
 <translation id="1114901192629963971">આ ચાલુ નેટવર્ક પર તમારો પાસવર્ડ ચકાસી શકાયો નથી. કૃપા કરીને બીજું નેટવર્ક પસંદ કરો.</translation>
@@ -4187,7 +4173,6 @@
 <translation id="4023146161712577481">ઉપકરણ ગોઠવણી નક્કી કરી રહ્યાં છે.</translation>
 <translation id="6333834492048057036">શોધ માટે સરનામાં બાર પર ફોકસ કરો</translation>
 <translation id="4172051516777682613">હંમેશા બતાવો</translation>
-<translation id="3228279582454007836">તમે આજ પહેલાં ક્યારેય આ સાઇટની મુલાકાત લીધી નથી.</translation>
 <translation id="7027125358315426638">ડેટાબેસ નામ:</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
 <translation id="3224239078034945833">કેનેડિયન બહુભાષીય</translation>
@@ -4803,7 +4788,6 @@
 <translation id="4850458635498951714">ઉપકરણ ઉમેરો</translation>
 <translation id="3140353188828248647">સરનામાં બાર પર ફોકસ કરો</translation>
 <translation id="1371806038977523515">આ સેટિંગ્સ આના દ્વારા નિયંત્રિત કરવામાં આવે છે:</translation>
-<translation id="2020262498093941982">સૂચનમાં જવાબો</translation>
 <translation id="6462082050341971451">શું તમે હજી પણ ત્યાં જ છો?</translation>
 <translation id="7971550670320370753">વપરાશકર્તાને મેઘ-આયાત સુવિધાને સરળતાથી અક્ષમ કરવાની મંજૂરી આપે છે.</translation>
 <translation id="5565871407246142825">ક્રેડિટ કાર્ડ્સ</translation>
@@ -5319,7 +5303,6 @@
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="3160041952246459240">ફાઇલ પરના તમારા પ્રમાણપત્રોને આ સર્વર્સ ઓળખે છે:</translation>
 <translation id="6305328361606238230">પુશ સંદેશાઓ મેળવો</translation>
-<translation id="566920818739465183">તમે આ સાઇટની <ph name="VISIT_DATE"/> ના રોજ મુલાકાત લીધી હતી.</translation>
 <translation id="2961695502793809356">આગળ જવા માટે ક્લિક કરો, ઇતિહાસ જોવા માટે હોલ્ડ કરો</translation>
 <translation id="4092878864607680421">એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; ના નવા સંસ્કરણને વધુ પરવાનગીઓની જરૂર છે, તેથી તેને અક્ષમ કરવામાં આવ્યું છે.</translation>
 <translation id="5828228029189342317">તમે કેટલાક ફાઇલ પ્રકારોને ડાઉનલોડ થયા પછી આપમેળે ખુલવા માટે પસંદ કર્યા છે.</translation>

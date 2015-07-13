@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Šiame įrenginyje ir „Google“ paskyroje saugomi duomenys liks abiejose vietose. Tačiau nauji duomenys ar atlikti duomenų pakeitimai nebus sinchronizuojami.</translation>
 <translation id="9070377983101773829">Pradėti paiešką balsu</translation>
 <translation id="6831043979455480757">Vertėjas</translation>
-<translation id="6504836143156866575">„JavaScript“ versija</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Šifruoti viską naudojant slaptafrazę</translation>
 <translation id="869891660844655955">Galiojimo data</translation>
@@ -270,7 +269,6 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="4543087392704641517">Žymės pavadinimas</translation>
 <translation id="1987317783729300807">Paskyros</translation>
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
-<translation id="6064211167623632605">Vykdomasis kelias</translation>
 <translation id="4522570452068850558">Išsami informacija</translation>
 <translation id="1521530746149324532">Pradėjote naudoti inkognito režimą.</translation>
 <translation id="971774202801778802">Žymės URL</translation>
@@ -296,7 +294,6 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="6208263165776660488">„Chrome“ skirtukai perkelti</translation>
 <translation id="4526792582053123229">Naudojant HTTPS arba inkognito režimą pasiekti puslapiai nebus optimizuojami ir „Google“ jų nematys.</translation>
 <translation id="7626032353295482388">Sveiki, tai „Chrome“</translation>
-<translation id="7817177303494746697">„Blink“ versija</translation>
 <translation id="2532336938189706096">Žiniatinklio rodinys</translation>
 <translation id="6571070086367343653">Kredito kortelės redagavimas</translation>
 <translation id="6192792657125177640">Išimtys</translation>
@@ -378,7 +375,6 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite „Prisijungti prie „Chrome“...“</translation>
 <translation id="4797039098279997504">Palieskite, kad grįžtumėte į <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Nevaldoma</translation>
-<translation id="2699916814609764774">Profilio kelias</translation>
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="6979922938747275756">Įkeliant aplankus įvyko klaida</translation>

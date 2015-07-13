@@ -27,7 +27,6 @@
 <translation id="110877069173485804">自分好みに設定</translation>
 <translation id="8406086379114794905">Chrome の品質向上にご協力ください</translation>
 <translation id="5620765574781326016">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。</translation>
-<translation id="2721687379934343312">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chrome ユーザーがアクセスしたり同期したりできます。</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="4700157086864140907">Google Chrome ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されているスペルチェック テクノロジーを活用できます。</translation>
 <translation id="4953650215774548573">Google Chrome を既定のブラウザとして設定する</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">パソコンの起動時に Chromium を自動的に起動する</translation>
 <translation id="1763864636252898013">このサーバーが <ph name="DOMAIN"/> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
-<translation id="3012890944909934180">デスクトップで Chrome を再起動する</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="8460191995881063249">Chrome 通知センター</translation>
 <translation id="1457721931618994305">Google Chrome を更新しています...</translation>
@@ -190,7 +188,6 @@
 <translation id="5028489144783860647">Google Chrome はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="9026991721384951619">アカウントのログイン情報が最新ではないため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="8547799825197623713">Chrome アプリ ランチャー（Canary 向け）</translation>
-<translation id="2267273557509361161">Windows 8 モードで Chrome を再起動</translation>
 <translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="7890208801193284374">パソコンを共有している場合、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>

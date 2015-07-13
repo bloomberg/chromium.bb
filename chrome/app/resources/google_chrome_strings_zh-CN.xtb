@@ -27,7 +27,6 @@
 <translation id="110877069173485804">这是您的专属Chrome</translation>
 <translation id="8406086379114794905">帮助我们改进Chrome</translation>
 <translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
-<translation id="2721687379934343312">在苹果机上，密码会保存到您的钥匙串中，可供共用此 OS X 帐户的其他 Chrome 浏览器用户使用或同步。</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="4700157086864140907">Google Chrome会将您在浏览器中输入的内容发送到Google服务器，并使用Google搜索所用的拼写检查技术，因而可为您提供更智能的拼写检查功能。</translation>
 <translation id="4953650215774548573">将Google Chrome设为默认浏览器</translation>
@@ -102,7 +101,6 @@
 <translation id="3656661827369545115">启动计算机时自动启动Chromium</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN"/>；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
-<translation id="3012890944909934180">重新启动桌面版 Chrome</translation>
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
 <translation id="8460191995881063249">Chrome 通知中心</translation>
 <translation id="1457721931618994305">正在更新 Google Chrome...</translation>
@@ -176,7 +174,6 @@
 <translation id="5028489144783860647">Google Chrome无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="9026991721384951619">您的帐户登录详细信息已过期，Chrome操作系统无法同步您的数据。</translation>
 <translation id="8547799825197623713">Chrome 应用启动器 Canary</translation>
-<translation id="2267273557509361161">在 Windows 8 模式下重新启动 Chrome</translation>
 <translation id="2871893339301912279">您已登录 Chrome！</translation>
 <translation id="7890208801193284374">如果您与亲朋好友共用计算机，他们将能够使用单独的帐户进行浏览，并可随心所欲地设置Chrome。</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome</translation>

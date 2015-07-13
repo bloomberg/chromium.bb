@@ -30,7 +30,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="110877069173485804">Voici votre Chrome</translation>
 <translation id="8406086379114794905">Aidez-nous à améliorer Chrome</translation>
 <translation id="5620765574781326016">Pour en savoir plus sur des sujets évoqués sur des sites Web sans quitter la page.</translation>
-<translation id="2721687379934343312">Sur Mac, les mots de passe sont sauvegardés dans votre trousseau. D'autres utilisateurs de Google Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
 <translation id="4700157086864140907">Google Chrome peut fournir une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
 <translation id="4953650215774548573">Définir Google Chrome en tant que navigateur par défaut</translation>
@@ -108,7 +107,6 @@ au site <ph name="SITE"/>, des identifiants inhabituels et incorrects ont été 
 <translation id="3656661827369545115">Lancer Chromium automatiquement au démarrage de l'ordinateur</translation>
 <translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN"/>, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="556024056938947818">Tentative d'affichage des mots de passe dans Google Chrome</translation>
-<translation id="3012890944909934180">Relancer Chrome sur le Bureau</translation>
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
 <translation id="8460191995881063249">Centre de notifications Chrome</translation>
 <translation id="1457721931618994305">Mise à jour de Google Chrome en cours…</translation>
@@ -200,7 +198,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="5028489144783860647">Impossible de synchroniser vos données dans Google Chrome. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="9026991721384951619">Impossible de synchroniser vos données dans Chrome OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="8547799825197623713">Lanceur d'applications Chrome – Canary</translation>
-<translation id="2267273557509361161">Relancer Chrome en mode Windows 8</translation>
 <translation id="2871893339301912279">Vous êtes connecté à Google Chrome.</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>

@@ -24,7 +24,6 @@
 <translation id="2670531586141364277">Para activar &quot;<ph name="NAME"/>&quot;, es necesaria una conexión de red.</translation>
 <translation id="4442424173763614572">Error al buscar DNS</translation>
 <translation id="7874779702599364982">Buscando redes para celulares...</translation>
-<translation id="5512030650494444738">Flor</translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME"/></translation>
 <translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
 <translation id="2563185590376525700">Rana</translation>
@@ -67,5 +66,6 @@
 <translation id="2951236788251446349">Medusa</translation>
 <translation id="8000066093800657092">Sin red</translation>
 <translation id="2563856802393254086">Se activó tu servicio de datos &quot;<ph name="NAME"/>&quot; y está listo para que lo uses.</translation>
+<translation id="4935975195727477204">Flor de gazania</translation>
 <translation id="7297443947353982503">Nombre de usuario o contraseña incorrectos o error de autenticación EAP</translation>
 </translationbundle>

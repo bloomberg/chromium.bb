@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Dette er din Chrome-browser</translation>
 <translation id="8406086379114794905">Hjælp med at forbedre Chrome</translation>
 <translation id="5620765574781326016">Læs om emner på websites uden at forlade siden.</translation>
-<translation id="2721687379934343312">På Mac gemmes adgangskoder i din Keychain, og andre Chrome-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="683440813066116847">Indgående regel for Google Chrome Canary om at tillade mDNS-trafik.</translation>
 <translation id="4700157086864140907">Google Chrome kan anvende smartere stavekontrol ved at sende dine indtastninger i browseren til Googles servere, så du kan bruge den samme teknologi til stavekontrol, som der anvendes i Google-søgninger.</translation>
 <translation id="4953650215774548573">Angiv Google Chrome som din standardbrowser</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">Start Chromium automatisk, når du starter computeren op</translation>
 <translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN"/>, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="556024056938947818">Google Chrome forsøger at vise adgangskoder.</translation>
-<translation id="3012890944909934180">Genstart Chrome på skrivebordet</translation>
 <translation id="2580411288591421699">Det er ikke muligt at installere den samme version af Google Chrome, som allerede kører. Luk Google Chrome, og prøv igen.</translation>
 <translation id="8460191995881063249">Chrome Underretningscenter</translation>
 <translation id="1457721931618994305">Opdaterer Google Chrome...</translation>
@@ -191,7 +189,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="5028489144783860647">Google Chrome kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="9026991721384951619">Chrome OS kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
 <translation id="8547799825197623713">Chrome-applikationslisten for Canary</translation>
-<translation id="2267273557509361161">Genstart Chrome i Windows 8-tilstand</translation>
 <translation id="2871893339301912279">Du er logget ind på Chrome.</translation>
 <translation id="7890208801193284374">Hvis du deler en computer, kan venner og familie browse individuelt og konfigurere Chrome, som de ønsker hver især.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>

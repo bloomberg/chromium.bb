@@ -332,7 +332,6 @@
 <translation id="3846593650622216128">Disse innstillingene blir håndhevet av en utvidelse.</translation>
 <translation id="8185331656081929126">Vis varsler når nye skrivere oppdages på nettverket</translation>
 <translation id="2972557485845626008">Fastvare</translation>
-<translation id="735327918767574393">Noe gikk galt under visningen av nettsiden. Du kan fortsette ved å laste inn på nytt eller gå til en annen side.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Sending av denne enhetens ressurs-ID og posisjon er slått på i kontoen din. (Dette er valgfritt).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Du kan legge inn en identifikator og posisjon for enheten i feltene nedenfor. Disse opplysningene vises for denne enheten på chrome:policy-siden i administrasjonskonsollen.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Be om nettsted for nettbrett</translation>
 <translation id="8028060951694135607">Microsoft nøkkelgjenoppretting</translation>
@@ -587,7 +586,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="6135622770221372891">ID-er for kanal</translation>
 <translation id="8472623782143987204">maskinvarestøttet</translation>
 <translation id="8545107379349809705">Skjul informasjon</translation>
-<translation id="2419206345979625354">Nettsiden ble uventet lukket. For å fortsette, last inn siden på nytt eller gå til en annen side.</translation>
 <translation id="4865571580044923428">Administrer unntak</translation>
 <translation id="2526619973349913024">Se etter oppdateringer</translation>
 <translation id="3716615839203649375">tillat</translation>
@@ -698,7 +696,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="3704726585584668805">Aktiver det selvstendige PDF-programtillegget.</translation>
 <translation id="5486326529110362464">Inndataverdien for privatnøkkelen må eksistere.</translation>
 <translation id="6824725898506587159">Administrer språk</translation>
-<translation id="8190907767443402387">Send tilbakemelding for å hjelpe til med å forbedre Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">En administrator har deaktivert multipålogging for <ph name="USER_EMAIL"/>.
 Alle brukere må logge av for å fortsette.</translation>
@@ -1186,7 +1183,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="1864756863218646478">Kunne ikke finne filen.</translation>
 <translation id="7810202088502699111">Forgrunnsvinduer er blokkert på siden.</translation>
 <translation id="8884961208881553398">Legg til nye tjenester</translation>
-<translation id="3808873045540128170">Oisann, rusk i maskineriet …</translation>
 <translation id="744341768939279100">Opprett en ny profil</translation>
 <translation id="646727171725540434">HTTP-mellomtjener</translation>
 <translation id="7576690715254076113">I rekkefølge</translation>
@@ -1570,7 +1566,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="7791543448312431591">Legg til</translation>
 <translation id="8569764466147087991">Velg en fil du vil åpne</translation>
 <translation id="3010279545267083280">Passordet er slettet</translation>
-<translation id="4275663329226226506">Media</translation>
+<translation id="4275663329226226506">Medier</translation>
 <translation id="4467100756425880649">Chrome Nettmarked Galleri</translation>
 <translation id="5649768706273821470">Lytt</translation>
 <translation id="4096508467498758490">Deaktiver utvidelser for utviklermodus</translation>
@@ -1865,7 +1861,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="7075513071073410194">PKCS #1 MD5 med RSA-kryptering</translation>
 <translation id="7767646430896201896">Alternativer:</translation>
 <translation id="1114335938027186412">Datamaskinen din inneholder en TPM-sikkerhetsenhet (Trusted Platform Module) som brukes til å implementere mange viktige sikkerhetsfunksjoner i Chrome OS. Gå til Chromebook-brukerstøtten for å finne ut mer: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Esc-tasten sletter hele forhåndsredigeringsbufferen</translation>
 <translation id="3344786168130157628">Navn på tilgangspunkt:</translation>
 <translation id="8293206222192510085">Legg til bokmerke</translation>
@@ -1929,7 +1924,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="919412290393329570">Slå av «trekk for å laste inn på nytt»-effekten.</translation>
 <translation id="8466234950814670489">Tar-arkiv</translation>
 <translation id="852269967951527627">Ikke tillat at nettsteder viser varsler</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">ark</translation>
 <translation id="2125314715136825419">Fortsett uten å oppdatere Adobe Reader (ikke anbefalt)</translation>
 <translation id="5034510593013625357">Mønster for vertsnavn</translation>
@@ -2352,7 +2346,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="4572659312570518089">Autentiseringen ble avbrutt under tilkobling til <ph name="DEVICE_NAME"/>.</translation>
 <translation id="4925542575807923399">Administratoren for denne kontoen krever at denne kontoen er den første påloggingskontoen i en multipåloggingsøkt.</translation>
 <translation id="5701381305118179107">Midtstill</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Bekrefter …</translation>
 <translation id="7193047015510747410">Autofyll påloggingsinformasjon for synkronisering</translation>
 <translation id="7257173066616499747">Wi-Fi-nettverk</translation>
@@ -2722,7 +2715,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="18139523105317219">Navn på EDI-enhet</translation>
 <translation id="8356258244599961364">Dette språket har ingen inndatametoder.</translation>
 <translation id="733186066867378544">Unntak for geografisk posisjonering</translation>
-<translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/>
           har problemer med tilgangen til nettverket.
           <ph name="LINE_BREAK"/>
@@ -3225,7 +3217,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="7568790562536448087">Oppdaterer</translation>
 <translation id="3910699493603749297">Khmer-tastatur</translation>
 <translation id="5487982064049856365">Du har nylig endret passordet. Logg på med det nye passordet.</translation>
-<translation id="2345055320165338418">Hvis funksjonen er aktivert, vises svarene på enkelte typer søk direkte i forslagslisten til søkefeltet.</translation>
 <translation id="1585717515139318619">Et annet program på datamaskinen la til et tema som kan endre måten Chrome fungerer på. 
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3535,7 +3526,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="4365673000813822030">Beklager, synkroniseringen har sluttet å fungere.</translation>
 <translation id="6790820461102226165">Legg til person …</translation>
 <translation id="2332131598580221120">Se i Nettmarked</translation>
-<translation id="2289304220823908416">Få hjelp med Chrome-enheten din.</translation>
 <translation id="5875858680971105888">Beklager, den administrerte brukeren kunne ikke importeres. Sjekk nettverksforbindelsen din og prøv på nytt senere.</translation>
 <translation id="5411472733320185105">Ikke bruk mellomtjenerinnstillinger for følgende tjenere og domener:</translation>
 <translation id="3685121001045880436">Det er sannsynlig at tjeneren som er vert for nettsiden har blitt overbelastet eller at det har oppstått en feil.
@@ -3570,7 +3560,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/>, <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Vis i mappe</translation>
 <translation id="5990198433782424697">Utvidelser på chrome://-nettadresser</translation>
-<translation id="7664673415674668445">Å nei-tilbakemelding.</translation>
 <translation id="1793119619663054394">Er du sikker på at du vil fjerne «<ph name="PROFILE_NAME"/>» og alle tilhørende Chrome-data fra denne datamaskinen? Dette kan ikke angres.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="4605399136610325267">Internett er ikke tilkoblet</translation>
@@ -3711,7 +3700,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="2643698698624765890">Du kan administrere utvidelsene dine ved å klikke på Utvidelser i vindusmenyen.</translation>
 <translation id="4846680374085650406">Du følger administratorens anbefaling for denne innstillingen.</translation>
 <translation id="1974060860693918893">Avansert</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Slett bilde</translation>
 <translation id="1244303850296295656">Feil med utvidelse</translation>
 <translation id="3541661933757219855">Trykk på Ctrl+Alt+/ eller Escape for å skjule</translation>
@@ -3725,7 +3713,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="3660234220361471169">Uklarert</translation>
 <translation id="2679385451463308372">Skriv ut ved bruk av systemdialogboksen</translation>
 <translation id="959890390740139744">Korriger staving automatisk</translation>
-<translation id="5146827657109421175">Tilbake til enhetslisten</translation>
 <translation id="2607991137469694339">Inndatametode for tamil (fonetisk)</translation>
 <translation id="399179161741278232">Importert</translation>
 <translation id="810066391692572978">Filen bruker funksjoner som ikke støttes.</translation>
@@ -3960,7 +3947,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="1325040735987616223">Systemoppdatering</translation>
 <translation id="720210938761809882">Siden er blokkert</translation>
 <translation id="7748144333872478614">Slå av vindusbaktepper i TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Om NaCl</translation>
 <translation id="3084771660770137092">Chrome gikk tom for minne, eller prosessen for nettsiden ble avsluttet av andre årsaker. Hvis du vil fortsette, laster du inn siden på nytt, eller går til en annen side.</translation>
 <translation id="1114901192629963971">Passordet kan ikke bekreftes på dette nettverket. Velg annet nettverk.</translation>
@@ -4163,7 +4149,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="4023146161712577481">Fastslår enhetskonfigurasjonen.</translation>
 <translation id="6333834492048057036">Fokusér på adressefeltet for søk</translation>
 <translation id="4172051516777682613">Vis alltid</translation>
-<translation id="3228279582454007836">Du har aldri besøkt dette nettstedet før i dag.</translation>
 <translation id="7027125358315426638">Databasenavn:</translation>
 <translation id="5449716055534515760">Lukk vin&amp;du</translation>
 <translation id="3224239078034945833">Flerspråklig canadisk</translation>
@@ -4776,7 +4761,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="4850458635498951714">Legg til en enhet</translation>
 <translation id="3140353188828248647">Fokuser adressefelt</translation>
 <translation id="1371806038977523515">Disse innstillingene kontrolleres av:</translation>
-<translation id="2020262498093941982">Svar i forslag</translation>
 <translation id="6462082050341971451">Er du fortsatt der?</translation>
 <translation id="7971550670320370753">Gir brukeren mulighet til enkelt å slå av funksjonen for nettskyimport.</translation>
 <translation id="5565871407246142825">Kredittkort</translation>
@@ -5291,7 +5275,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="5300589172476337783">Vis</translation>
 <translation id="3160041952246459240">Du har en fil med sertifikater som identifiserer disse tjenerne:</translation>
 <translation id="6305328361606238230">Motta pushmeldinger</translation>
-<translation id="566920818739465183">Du besøkte dette nettstedet første gang den <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Klikk for å gå fremover – hold for å se logg</translation>
 <translation id="4092878864607680421">Den nyeste versjonen av utvidelsen «<ph name="APP_NAME"/>» krever ytterligere tillatelser, så den har blitt deaktivert.</translation>
 <translation id="5828228029189342317">Du har valgt å åpne bestemte filtyper automatisk etter nedlasting.</translation>

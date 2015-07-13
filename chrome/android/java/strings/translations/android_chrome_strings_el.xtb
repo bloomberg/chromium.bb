@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Τα δεδομένα που αποθηκεύτηκαν σε αυτήν τη συσκευή, καθώς και τα δεδομένα που αποθηκεύτηκαν στο Λογαριασμό σας Google θα παραμείνουν και στα δύο μέρη. Ωστόσο, τα νέα δεδομένα ή οι αλλαγές που πραγματοποιήσατε στα δεδομένα σας δεν θα συγχρονιστούν μεταξύ τους.</translation>
 <translation id="9070377983101773829">Έναρξη φωνητικής αναζήτησης</translation>
 <translation id="6831043979455480757">Μετάφραση</translation>
-<translation id="6504836143156866575">Έκδοση JavaScript</translation>
 <translation id="3244271242291266297">ΜΜ</translation>
 <translation id="886510833909353412">Κρυπτογράφηση όλων με φράση πρόσβασης</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
@@ -270,7 +269,6 @@
 <translation id="4543087392704641517">Τίτλος σελιδοδείκτη</translation>
 <translation id="1987317783729300807">Λογαριασμοί</translation>
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>
-<translation id="6064211167623632605">Εκτελέσιμη διαδρομή</translation>
 <translation id="4522570452068850558">Λεπτομέρειες</translation>
 <translation id="1521530746149324532">Είστε σε κατάσταση ανώνυμης περιήγησης.</translation>
 <translation id="971774202801778802">Διεύθυνση URL σελιδοδείκτη</translation>
@@ -296,7 +294,6 @@
 <translation id="6208263165776660488">Οι καρτέλες του Chrome μετακινήθηκαν</translation>
 <translation id="4526792582053123229">Οι σελίδες στις οποίες αποκτάτε πρόσβαση μέσω του HTTPS ή της Ανώνυμης περιήγησης δεν θα βελτιστοποιηθούν ή δεν θα είναι ορατές από την Google.</translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>
-<translation id="7817177303494746697">Έκδοση Blink</translation>
 <translation id="2532336938189706096">Προβολή ιστού</translation>
 <translation id="6571070086367343653">Επεξεργασία πιστωτικής κάρτας</translation>
 <translation id="6192792657125177640">Εξαιρέσεις</translation>
@@ -378,7 +375,6 @@
 Ανοίξτε απλώς το Chrome στον υπολογιστή σας, μεταβείτε στο μενού και επιλέξτε &quot;Σύνδεση στο Chrome…&quot;</translation>
 <translation id="4797039098279997504">Αγγίξτε για να επιστρέψετε στη διεύθυνση <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Χωρίς έλεγχο</translation>
-<translation id="2699916814609764774">Διαδρομή προφίλ</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="6979922938747275756">Σφάλμα φόρτωσης φακέλων</translation>

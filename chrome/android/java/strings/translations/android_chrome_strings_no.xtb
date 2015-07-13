@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Data som er lagret på denne enheten, samt data som er lagret i Google-kontoen din, blir værende på begge steder. Nye data eller eventuelle endringer i eksisterende data blir imidlertid ikke synkronisert mellom enheten og kontoen din.</translation>
 <translation id="9070377983101773829">Start talesøk</translation>
 <translation id="6831043979455480757">Oversett</translation>
-<translation id="6504836143156866575">JavaScript-versjon</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Kryptér alle data med en passordfrase</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
@@ -270,7 +269,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="4543087392704641517">Bokmerketittel</translation>
 <translation id="1987317783729300807">Kontoer</translation>
 <translation id="7846076177841592234">Opphev valget</translation>
-<translation id="6064211167623632605">Kjørbar bane</translation>
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="1521530746149324532">Du er nå inkognito.</translation>
 <translation id="971774202801778802">Bokmerkenettadresse</translation>
@@ -296,7 +294,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="6208263165776660488">Chrome-fanene er flyttet</translation>
 <translation id="4526792582053123229">Sider som åpnes med HTTPS eller i inkognitomodus, blir ikke optimalisert eller sett av Google.</translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
-<translation id="7817177303494746697">Blink-versjon</translation>
 <translation id="2532336938189706096">Nettvisning</translation>
 <translation id="6571070086367343653">Rediger kredittkort</translation>
 <translation id="6192792657125177640">Unntak</translation>
@@ -377,7 +374,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».</translation>
 <translation id="4797039098279997504">Trykk for å gå tilbake til <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Ukontrollert</translation>
-<translation id="2699916814609764774">Profilbane</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="6979922938747275756">Feil ved innlasting av mapper</translation>

@@ -31,7 +31,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="110877069173485804">Tai jūsų „Chrome“</translation>
 <translation id="8406086379114794905">Padėkite tobulinti „Chrome“</translation>
 <translation id="5620765574781326016">Sužinokite apie temas svetainėse neišėję iš puslapio.</translation>
-<translation id="2721687379934343312">„Mac“ kompiuteriuose slaptažodžiai saugomi programoje „Keychain“ ir gali būti pasiekiami arba sinchronizuojami kitų „Chrome“ naudotojų, bendrai naudojančių šią „OS X“ paskyrą.</translation>
 <translation id="683440813066116847">„Canary“ versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
 <translation id="4700157086864140907">„Google Chrome“ gali teikti išmanesnę rašybos tikrinimo funkciją, siųsdama tai, ką įvedate naršyklėje, „Google“ serveriams ir leisdama naudoti tą pačią rašybos tikrinimo technologiją, kuri naudojama „Google“ paieškoje.</translation>
 <translation id="4953650215774548573">Nustatyti „Google Chrome“ kaip numatytąją naršyklę</translation>
@@ -109,7 +108,6 @@ ir netinkamus prisijungimo duomenis. Užpuolėjas bando apsimesti svetaine <ph n
 <translation id="3656661827369545115">Automatiškai paleisti „Chromium“, kai įjungiamas kompiuteris</translation>
 <translation id="1763864636252898013">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN"/>; jo saugos sertifikatas nėra patikimas įrenginio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="556024056938947818">„Google Chrome“ bando rodyti slaptažodžius.</translation>
-<translation id="3012890944909934180">Iš naujo paleisti „Chrome“ darbalaukyje</translation>
 <translation id="2580411288591421699">Negalima įdiegti tos pačios „Google Chrome“ versijos, kuri dabar paleista. Uždarykite „Google Chrome“ ir bandykite dar kartą.</translation>
 <translation id="8460191995881063249">„Chrome“ pranešimų centras</translation>
 <translation id="1457721931618994305">Atnaujinama „Google Chrome“...</translation>
@@ -202,7 +200,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="5028489144783860647">„Google Chrome“ negali sinchronizuoti duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="9026991721384951619">„Chrome“ OS negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="8547799825197623713">„Chrome“ programų paleidimo priemonė („Canary“)</translation>
-<translation id="2267273557509361161">Iš naujo paleisti „Chrome“ „Windows 8“ režimu</translation>
 <translation id="2871893339301912279">Esate prisijungę prie „Chrome“.</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
 <translation id="7161904924553537242">Sveiki! Tai - „Google Chrome“</translation>

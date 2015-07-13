@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Šis ir jūsu pārlūks Chrome</translation>
 <translation id="8406086379114794905">Palīdziet uzlabot Chrome</translation>
 <translation id="5620765574781326016">Uzziniet vairāk par vietnēs aprakstītajām tēmām, neaizverot lapu.</translation>
-<translation id="2721687379934343312">Operētājsistēmā Mac paroles tiek saglabātas sistēmā Keychain un citi Chrome lietotāji, kuri kopīgo šo OS X kontu, var piekļūt tām un sinhronizēt tās.</translation>
 <translation id="683440813066116847">Ienākošo savienojumu kārtula pārlūkam Google Chrome Canary, lai atļautu mDNS datplūsmu.</translation>
 <translation id="4700157086864140907">Google Chrome var efektīvāk labot pareizrakstības kļūdas, nosūtot pārlūkā rakstīto uz Google serveriem un tādējādi ļaujot izmantot to pašu pareizrakstības pārbaudes tehnoloģiju, kas tiek izmantota Google meklēšanā.</translation>
 <translation id="4953650215774548573">Iestatīt Google Chrome kā manu noklusējuma pārlūku</translation>
@@ -103,7 +102,6 @@
 <translation id="3656661827369545115">Datora startēšanas laikā automātiski palaist Chromium</translation>
 <translation id="1763864636252898013">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN"/>; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu ierīces operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="556024056938947818">Google Chrome mēģina rādīt paroles.</translation>
-<translation id="3012890944909934180">Restartēt Chrome darbvirsmā</translation>
 <translation id="2580411288591421699">Nevar instalēt to pašu Google Chrome versiju, kas jau darbojas. Lūdzu, aizveriet Google Chrome un mēģiniet vēlreiz.</translation>
 <translation id="8460191995881063249">Chrome paziņojumu centrs</translation>
 <translation id="1457721931618994305">Notiek Google Chrome atjaunināšana...</translation>
@@ -195,7 +193,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="5028489144783860647">Google Chrome nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
 <translation id="9026991721384951619">Chrome OS nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="8547799825197623713">Chrome lietotņu palaišanas programma kanālam Canary</translation>
-<translation id="2267273557509361161">Restartēt Chrome Windows 8 režīmā</translation>
 <translation id="2871893339301912279">Esat pierakstījies pārlūkā Chrome!</translation>
 <translation id="7890208801193284374">Ja jūsu datoru izmanto arī jūsu draugi un ģimenes locekļi, viņi var iestatīt pārlūku Chrome atbilstoši savām vēlmēm un pārlūkot saturu atsevišķos kontos.</translation>
 <translation id="7161904924553537242">Laipni lūdzam Google Chrome</translation>

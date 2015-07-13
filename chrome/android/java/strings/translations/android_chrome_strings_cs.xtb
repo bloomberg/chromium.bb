@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Data uložená v tomto zařízení i data uložená ve vašem účtu Google zůstanou na obou místech. Pokud však přidáte nová data nebo v datech provedete změny, nedojde k synchronizaci.</translation>
 <translation id="9070377983101773829">Spustit hlasové vyhledávání</translation>
 <translation id="6831043979455480757">Přeložit</translation>
-<translation id="6504836143156866575">Verze JavaScriptu</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Šifrovat vše pomocí heslové fráze</translation>
 <translation id="869891660844655955">Datum vypršení platnosti</translation>
@@ -270,7 +269,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="4543087392704641517">Název záložky</translation>
 <translation id="1987317783729300807">Účty</translation>
 <translation id="7846076177841592234">Zrušit výběr</translation>
-<translation id="6064211167623632605">Cesta spustitelného souboru</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="1521530746149324532">Jste v anonymním režimu.</translation>
 <translation id="971774202801778802">Adresa URL záložky</translation>
@@ -296,7 +294,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="6208263165776660488">Karty Chrome byly přesunuty</translation>
 <translation id="4526792582053123229">Stránky zobrazené prostřednictvím protokolu HTTPS nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány.</translation>
 <translation id="7626032353295482388">Vítá vás Chrome</translation>
-<translation id="7817177303494746697">Verze jádra Blink</translation>
 <translation id="2532336938189706096">Webové zobrazení</translation>
 <translation id="6571070086367343653">Upravit platební kartu</translation>
 <translation id="6192792657125177640">Výjimky</translation>
@@ -377,7 +374,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 Stačí otevřít Chrome v počítači, přejít do nabídky a zvolit možnost Přihlásit se do prohlížeče Chrome…</translation>
 <translation id="4797039098279997504">Klepnutím se vrátíte na kartu <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Neurčeno</translation>
-<translation id="2699916814609764774">Cesta k profilu</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="6979922938747275756">Při načítání složek došlo k chybě</translation>

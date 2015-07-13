@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Podatki, shranjeni v tej napravi, in podatki v Google Računu bodo ostali na obeh mestih, pri čemer novi ali spremenjeni podatki ne bodo sinhronizirani z njima.</translation>
 <translation id="9070377983101773829">Začni glasovno iskanje</translation>
 <translation id="6831043979455480757">Prevedi</translation>
-<translation id="6504836143156866575">Različica JavaScripta</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Šifriranje z geslom</translation>
 <translation id="869891660844655955">Datum izteka</translation>
@@ -270,7 +269,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="4543087392704641517">Naslov zaznamka</translation>
 <translation id="1987317783729300807">Računi</translation>
 <translation id="7846076177841592234">Prekliči izbor</translation>
-<translation id="6064211167623632605">Pot do izvedljive datoteke</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="1521530746149324532">Zdaj se vaše brskanje ne shranjuje v zgodovino.</translation>
 <translation id="971774202801778802">URL zaznamka</translation>
@@ -296,7 +294,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6208263165776660488">Chromovi zavihki so premaknjeni na drugo mesto</translation>
 <translation id="4526792582053123229">Google ne optimizira in ne vidi strani, odprtih prek protokola HTTPS ali v načinu brez beleženja zgodovine.</translation>
 <translation id="7626032353295482388">Dobrodošli v brskalniku Chrome</translation>
-<translation id="7817177303494746697">Različica Blinka</translation>
 <translation id="2532336938189706096">Spletni pogled</translation>
 <translation id="6571070086367343653">Urejanje kreditne kartice</translation>
 <translation id="6192792657125177640">Izjeme</translation>
@@ -377,7 +374,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 V računalniku odprite Chrome, nato meni in izberite »Prijava v Chrome …«</translation>
 <translation id="4797039098279997504">Dotaknite se, če se želite vrniti na <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Nenadzorovano</translation>
-<translation id="2699916814609764774">Pot profila</translation>
 <translation id="6981982820502123353">Pripomočki za osebe s posebnimi potrebami</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="6979922938747275756">Napaka pri nalaganju map</translation>

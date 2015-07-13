@@ -333,7 +333,6 @@
 <translation id="3846593650622216128">การตั้งค่าเหล่านี้ถูกบังคับใช้โดยส่วนขยาย</translation>
 <translation id="8185331656081929126">แสดงการแจ้งเตือนเมื่อตรวจพบเครื่องพิมพ์ใหม่บนเครือข่าย</translation>
 <translation id="2972557485845626008">เฟิร์มแวร์</translation>
-<translation id="735327918767574393">เกิดข้อผิดพลาดขณะแสดงหน้าเว็บนี้ หากต้องการดำเนินการต่อ ให้โหลดหน้าเว็บนี้ซ้ำหรือไปที่หน้าเว็บอื่น</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>เปิดใช้บัญชีเพื่อระบุรหัสเนื้อหาและตำแหน่งสำหรับอุปกรณ์นี้ (ไม่บังคับ)<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>คุณสามารถระบุตัวระบุและตำแหน่งของอุปกรณ์ในช่องด้านล่าง รายละเอียดเหล่านี้จะแสดงขึ้นสำหรับอุปกรณ์นี้ในหน้า chrome:policy ในคอนโซลการจัดการ<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">ขอไซต์แท็บเล็ต</translation>
 <translation id="8028060951694135607">การกู้คืนคีย์ของ Microsoft</translation>
@@ -582,7 +581,6 @@
 <translation id="6135622770221372891">รหัสช่อง</translation>
 <translation id="8472623782143987204">การสนับสนุนฮาร์ดแวร์</translation>
 <translation id="8545107379349809705">ซ่อนข้อมูล...</translation>
-<translation id="2419206345979625354">หน้าเว็บนี้ยุติลงโดยไม่คาดคิด หากต้องการดำเนินการต่อ ให้โหลดหน้าเว็บนี้ซ้ำหรือไปที่หน้าเว็บอื่น</translation>
 <translation id="4865571580044923428">จัดการข้อยกเว้น...</translation>
 <translation id="2526619973349913024">ตรวจหาอัปเดต</translation>
 <translation id="3716615839203649375">อนุญาต</translation>
@@ -690,7 +688,6 @@
 <translation id="3704726585584668805">เปิดใช้ปลั๊กอิน PDF นอกกระบวนการ</translation>
 <translation id="5486326529110362464">ค่าที่ป้อนสำหรับคีย์ส่วนตัวต้องมีอยู่จริง</translation>
 <translation id="6824725898506587159">จัดการภาษา</translation>
-<translation id="8190907767443402387">ส่งข้อเสนอแนะเพื่อช่วยปรับปรุง Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">ผู้ดูแลระบบไม่อนุญาตให้ <ph name="USER_EMAIL"/> ลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี
 ผู้ใช้ทุกคนต้องออกจากระบบเพื่อดำเนินการต่อ</translation>
@@ -1177,7 +1174,6 @@
 <translation id="1864756863218646478">ไม่พบไฟล์</translation>
 <translation id="7810202088502699111">หน้าเว็บนี้บล็อกป๊อปอัป</translation>
 <translation id="8884961208881553398">เพิ่มบริการใหม่</translation>
-<translation id="3808873045540128170">เขาตายแล้ว, จิม!</translation>
 <translation id="744341768939279100">สร้างโปรไฟล์ใหม่</translation>
 <translation id="646727171725540434">พร็อกซี HTTP</translation>
 <translation id="7576690715254076113">เรียง</translation>
@@ -1864,7 +1860,6 @@
 <translation id="7075513071073410194">PKCS #1 MD5 พร้อมการเข้ารหัส RSA</translation>
 <translation id="7767646430896201896">ตัวเลือก:</translation>
 <translation id="1114335938027186412">คอมพิวเตอร์ของคุณมีอุปกรณ์รักษาความปลอดภัย Trusted Platform Module (TPM) ซึ่งใช้เพื่อนำคุณลักษณะการรักษาความปลอดภัยที่สำคัญจำนวนมากมาใช้ใน Chrome OS โปรดไปที่ศูนย์ช่วยเหลือของ Chromebook เพื่อเรียนรู้เพิ่มเติม: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Esc ล้างบัฟเฟอร์ที่แก้ไขล่วงหน้าทั้งหมด</translation>
 <translation id="3344786168130157628">Access point name:</translation>
 <translation id="8293206222192510085">เพิ่มบุ๊กมาร์ก</translation>
@@ -1928,7 +1923,6 @@
 <translation id="919412290393329570">ปิดใช้เอฟเฟ็กต์การดึงเพื่อรีเฟรช</translation>
 <translation id="8466234950814670489">ไฟล์ Tar</translation>
 <translation id="852269967951527627">ไม่อนุญาตให้ไซต์ใดๆ แสดงการแจ้งเตือน</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">หน้ากระดาษ</translation>
 <translation id="2125314715136825419">ดำเนินการต่อโดยไม่อัปเดต Adobe Reader (ไม่แนะนำ)</translation>
 <translation id="5034510593013625357">รูปแบบชื่อโฮสต์</translation>
@@ -2346,7 +2340,6 @@
 <translation id="4572659312570518089">การตรวจสอบสิทธิ์ถูกยกเลิกขณะที่เชื่อมต่อกับ &quot;<ph name="DEVICE_NAME"/>&quot;</translation>
 <translation id="4925542575807923399">ผู้ดูแลระบบต้องทำให้บัญชีนี้เป็นบัญชีที่ลงชื่อเข้าใช้เป็นบัญชีแรก ในเซสชันการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="5701381305118179107">กึ่งกลาง</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">กำลังยืนยันความถูกต้อง...</translation>
 <translation id="7193047015510747410">ป้อนข้อมูลรับรองการซิงค์โดยอัตโนมัติ</translation>
 <translation id="7257173066616499747">เครือข่าย Wi-Fi</translation>
@@ -2718,7 +2711,6 @@
 <translation id="18139523105317219">ชื่อหน่วย EDI</translation>
 <translation id="8356258244599961364">ภาษานี้ไม่มีวิธีการป้อนข้อมูล</translation>
 <translation id="733186066867378544">ข้อยกเว้นตำแหน่งทางภูมิศาสตร์</translation>
-<translation id="3328801116991980348">ข้อมูลไซต์</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> ประสบปัญหาในการเข้าถึงเครือข่าย <ph name="LINE_BREAK"/> อาจเกิดจากการที่ไฟร์วอลล์หรือซอฟต์แวร์ป้องกันไวรัสของคุณเข้าใจผิดว่า <ph name="PRODUCT_NAME"/> เป็นผู้บุกรุกเครื่องคอมพิวเตอร์ของคุณ และกำลังบล็อกไม่ให้คอมพิวเตอร์ของคุณเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="2065985942032347596">ต้องมีการตรวจสอบความถูกต้อง</translation>
 <translation id="8282947398454257691">ทราบตัวระบุอุปกรณ์ที่ไม่ซ้ำกัน</translation>
@@ -3205,7 +3197,6 @@
 <translation id="7568790562536448087">การอัปเดต</translation>
 <translation id="3910699493603749297">แป้นพิมพ์ภาษากัมพูชา</translation>
 <translation id="5487982064049856365">คุณเพิ่งเปลี่ยนรหัสผ่านเมื่อเร็วๆ นี้ โปรดลงชื่อเข้าใช้ด้วยรหัสผ่านใหม่</translation>
-<translation id="2345055320165338418">หากเปิดใช้ การตอบสนองกับข้อความค้นหาบางประเภทจะปรากฏในรายการคำแนะนำของแถบอเนกประสงค์โดยตรง</translation>
 <translation id="1585717515139318619">โปรแกรมอื่นบนคอมพิวเตอร์ได้เพิ่มธีมซึ่งอาจเปลี่ยนลักษณะการทำงานของ Chrome
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3517,7 +3508,6 @@
 <translation id="4365673000813822030">อ๊ะ การซิงค์หยุดทำงาน</translation>
 <translation id="6790820461102226165">เพิ่มบุคคล...</translation>
 <translation id="2332131598580221120">ดูในสโตร์</translation>
-<translation id="2289304220823908416">รับความช่วยเหลือเกี่ยวกับอุปกรณ์ Chrome</translation>
 <translation id="5875858680971105888">อ๊ะ! ไม่สามารถนำเข้าผู้ใช้ภายใต้การดูแลได้ โปรดตรวจสอบการเชื่อมต่อเครือข่ายและลองอีกครั้งในภายหลัง</translation>
 <translation id="5411472733320185105">อย่าใช้การตั้งค่าพร็อกซีสำหรับโฮสต์และโดเมนเหล่านี้:</translation>
 <translation id="3685121001045880436">เป็นไปได้ที่เซิร์ฟเวอร์ที่โฮสต์หน้าเว็บอาจโหลดข้อมูลมากเกินไปหรือพบข้อผิดพลาด
@@ -3552,7 +3542,6 @@
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;แสดงในโฟลเดอร์</translation>
 <translation id="5990198433782424697">ส่วนขยายใน chrome:// URL</translation>
-<translation id="7664673415674668445">เสียใจด้วยนะ ไม่พบหน้านี้</translation>
 <translation id="1793119619663054394">คุณแน่ใจไหมว่าต้องการนำ &quot;<ph name="PROFILE_NAME"/>&quot; และข้อมูล Chrome ทั้งหมดที่เกี่ยวข้องออกจากคอมพิวเตอร์นี้ เมื่อดำเนินการแล้วจะไม่สามารถยกเลิกได้</translation>
 <translation id="7456142309650173560">การพัฒนา</translation>
 <translation id="4605399136610325267">ไม่ได้เชื่อมต่ออินเทอร์เน็ต</translation>
@@ -3693,7 +3682,6 @@
 <translation id="2643698698624765890">จัดการส่วนขยายของคุณโดยคลิกที่ &quot;ส่วนขยาย&quot; ในเมนู &quot;หน้าต่าง&quot;</translation>
 <translation id="4846680374085650406">คุณทำตามคำแนะนำของผู้ดูแลระบบสำหรับการตั้งค่านี้</translation>
 <translation id="1974060860693918893">ขั้นสูง</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">ยกเลิกรูปภาพ</translation>
 <translation id="1244303850296295656">ข้อผิดพลาดของส่วนขยาย</translation>
 <translation id="3541661933757219855">พิมพ์ Ctrl+Alt+/ หรือ Escape เพื่อซ่อน</translation>
@@ -3707,7 +3695,6 @@
 <translation id="3660234220361471169">ไม่น่าเชื่อถือ</translation>
 <translation id="2679385451463308372">พิมพ์โดยใช้หน้าต่างระบบ…</translation>
 <translation id="959890390740139744">แก้ไขการสะกดคำโดยอัตโนมัติ</translation>
-<translation id="5146827657109421175">กลับไปที่รายการอุปกรณ์</translation>
 <translation id="2607991137469694339">วิธีการป้อนข้อมูลภาษาทมิฬ (การถ่ายเสียง)</translation>
 <translation id="399179161741278232">นำเข้า</translation>
 <translation id="810066391692572978">ไฟล์ใช้คุณลักษณะที่ไม่ได้รับการสนับสนุน</translation>
@@ -3945,7 +3932,6 @@
 <translation id="1325040735987616223">การอัปเดตระบบ</translation>
 <translation id="720210938761809882">หน้าเว็บที่ถูกบล็อก</translation>
 <translation id="7748144333872478614">ปิดใช้ฉากหลังหน้าต่างใน TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">เกี่ยวกับ NaCl</translation>
 <translation id="3084771660770137092">ไม่ว่า Chrome จะมีหน่วยความจำไม่เพียงพอหรือกระบวนการของหน้าเว็บถูกยกเลิกด้วยเหตุใดก็ตาม หากต้องการดำเนินการต่อ ให้โหลดซ้ำหรือไปที่หน้าเว็บอื่น</translation>
 <translation id="1114901192629963971">ไม่สามารถยืนยันรหัสผ่านของคุณในเครือข่ายปัจจุบันนี้ โปรดเลือกเครือข่ายอื่น</translation>
@@ -4148,7 +4134,6 @@
 <translation id="4023146161712577481">กำลังกำหนดการกำหนดค่าของอุปกรณ์</translation>
 <translation id="6333834492048057036">เน้นแถบที่อยู่เว็บสำหรับการค้นหา</translation>
 <translation id="4172051516777682613">แสดงทุกครั้ง</translation>
-<translation id="3228279582454007836">คุณไม่เคยเข้าชมเว็บไซต์นี้เลยในวันนี้</translation>
 <translation id="7027125358315426638">ชื่อฐานข้อมูล:</translation>
 <translation id="5449716055534515760">ปิดหน้าต่&amp;าง</translation>
 <translation id="3224239078034945833">แคนาดาแบบหลายภาษา</translation>
@@ -4761,7 +4746,6 @@
 <translation id="4850458635498951714">เพิ่มอุปกรณ์</translation>
 <translation id="3140353188828248647">โฟกัสแถบที่อยู่</translation>
 <translation id="1371806038977523515">การตั้งค่าเหล่านี้ถูกควบคุมโดย:</translation>
-<translation id="2020262498093941982">คำตอบในคำแนะนำ</translation>
 <translation id="6462082050341971451">คุณยังอยู่ที่นั่นหรือเปล่า</translation>
 <translation id="7971550670320370753">อนุญาตให้ผู้ใช้สามารถปิดใช้คุณลักษณะการนำเข้าสู่ระบบคลาวด์ได้ง่ายๆ</translation>
 <translation id="5565871407246142825">บัตรเครดิต</translation>
@@ -5277,7 +5261,6 @@
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="3160041952246459240">คุณมีใบรับรองของไฟล์ซึ่งระบุตัวตนของเซิร์ฟเวอร์เหล่านี้:</translation>
 <translation id="6305328361606238230">รับข้อความแบบ Push</translation>
-<translation id="566920818739465183">คุณเข้าชมเว็บไซต์นี้เป็นครั้งแรกเมื่อ <ph name="VISIT_DATE"/></translation>
 <translation id="2961695502793809356">คลิกเพื่อไปข้างหน้า กดค้างเพื่อดูประวัติการเข้าชม</translation>
 <translation id="4092878864607680421">แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; รุ่นใหม่ล่าสุดจำเป็นต้องได้รับการอนุญาตมากกว่าเดิม ดังนั้นจึงมีการปิดใช้งานไว้</translation>
 <translation id="5828228029189342317">คุณได้เลือกที่จะเปิดไฟล์บางประเภทโดยอัตโนมัติหลังจากการดาวน์โหลด</translation>

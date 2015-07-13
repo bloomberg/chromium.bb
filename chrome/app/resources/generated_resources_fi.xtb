@@ -335,7 +335,6 @@
 <translation id="3846593650622216128">Laajennus on ottanut nämä asetukset käyttöön.</translation>
 <translation id="8185331656081929126">Näytä ilmoitukset, kun verkossa havaitaan uusia tulostimia</translation>
 <translation id="2972557485845626008">Laiteohjelmisto</translation>
-<translation id="735327918767574393">Jokin meni vikaan tätä sivua ladattaessa. Päivitä sivu tai siirry toiselle sivulle.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Voit halutessasi lisätä tälle laitteelle tunnuksen ja sijainnin tililläsi.<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Kirjoita laitteen tunnus ja sijainti alla oleviin kenttiin. Laitteelle määrittämäsi tiedot näytetään hallintakonsolin chrome:policy-sivulla.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Pyydä tablet-laitteelle sopiva sivusto</translation>
 <translation id="8028060951694135607">Microsoftin avaimen palautus</translation>
@@ -584,7 +583,6 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi <ph name="ACCOUNT_EMAIL
 <translation id="6135622770221372891">Kanavatunnukset</translation>
 <translation id="8472623782143987204">laitteiston tukema</translation>
 <translation id="8545107379349809705">Piilota tiedot...</translation>
-<translation id="2419206345979625354">Verkkosivu suljettiin yllättäen. Päivitä sivu tai siirry toiselle sivulle.</translation>
 <translation id="4865571580044923428">Hallinnoi poikkeuksia...</translation>
 <translation id="2526619973349913024">Tarkista päivitykset</translation>
 <translation id="3716615839203649375">salli</translation>
@@ -696,7 +694,6 @@ suojaamattomia yhteyksiä.<ph name="PRODUCT_NAME"/></translation>
 <translation id="3704726585584668805">Ota käyttöön prosessin ulkopuolinen PDF-laajennus.</translation>
 <translation id="5486326529110362464">Yksityisen avaimen syötearvoa ei ole olemassa.</translation>
 <translation id="6824725898506587159">Hallinnoi kieliä</translation>
-<translation id="8190907767443402387">Paranna Chromea lähettämällä palautetta</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Järjestelmänvalvoja on kieltänyt käyttäjää <ph name="USER_EMAIL"/> kirjautumasta sisään useisiin tileihin.
 Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translation>
@@ -1182,7 +1179,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="1864756863218646478">Tiedostoa ei löytynyt.</translation>
 <translation id="7810202088502699111">Ponnahdusikkunat estettiin tällä sivulla.</translation>
 <translation id="8884961208881553398">Lisää uusia palveluita</translation>
-<translation id="3808873045540128170">Sinne meni!</translation>
 <translation id="744341768939279100">Luo uusi profiili</translation>
 <translation id="646727171725540434">HTTP-välityspalvelin</translation>
 <translation id="7576690715254076113">Kokoa</translation>
@@ -1868,7 +1864,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="7075513071073410194">PKCS #1 MD5 ja RSA-salaus</translation>
 <translation id="7767646430896201896">Asetukset:</translation>
 <translation id="1114335938027186412">Tietokoneesi sisältää Trusted Platform Module (TPM) -turvalaitteen, jonka avulla otetaan käyttöön monia tärkeitä turvallisuusominaisuuksia Chrome-käyttöjärjestelmässä. Lisätietoja on Chromebook-ohjekeskuksessa: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Esc-näppäin tyhjentää koko muokkauspuskurin</translation>
 <translation id="3344786168130157628">Tukiaseman nimi:</translation>
 <translation id="8293206222192510085">Lisää kirjanmerkki</translation>
@@ -1932,7 +1927,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="919412290393329570">Poista käytöstä vetämällä päivittäminen.</translation>
 <translation id="8466234950814670489">Tar-arkisto</translation>
 <translation id="852269967951527627">Älä anna sivustojen näyttää ilmoituksia</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">paperiarkki</translation>
 <translation id="2125314715136825419">Jatka päivittämättä Adobe Readeria (ei suositella)</translation>
 <translation id="5034510593013625357">Isäntänimen malli</translation>
@@ -2347,7 +2341,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="4572659312570518089">Todennus peruutettiin yhdistettäessä laitteeseen <ph name="DEVICE_NAME"/>.</translation>
 <translation id="4925542575807923399">Tämän tilin järjestelmänvalvoja edellyttää, että tämä tili on ensimmäinen sisään kirjautuva tili useiden tilien istunnossa.</translation>
 <translation id="5701381305118179107">Keskitä</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Vahvistetaan...</translation>
 <translation id="7193047015510747410">Automaattisen täytön synkronointitunnukset</translation>
 <translation id="7257173066616499747">Wi-Fi-verkot</translation>
@@ -2719,7 +2712,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="18139523105317219">EDI-osapuolen nimi</translation>
 <translation id="8356258244599961364">Tällä kielellä ei ole syöttötapoja</translation>
 <translation id="733186066867378544">Paikannuksen poikkeukset</translation>
-<translation id="3328801116991980348">Tietoja sivustosta</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> ei saa yhteyttä verkkoon. <ph name="LINE_BREAK"/> Tämä voi johtua siitä, että palomuurisi tai virustorjuntaohjelmasi luulee virheellisesti ohjelman <ph name="PRODUCT_NAME"/> olevan luvaton ja estää sitä muodostamasta internetyhteyttä.</translation>
 <translation id="2065985942032347596">Käyttöoikeustarkistus pakollinen</translation>
 <translation id="8282947398454257691">Saada selville laitetunnuksesi.</translation>
@@ -3206,7 +3198,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="7568790562536448087">Päivitetään</translation>
 <translation id="3910699493603749297">Khmerinkielinen näppäimistö</translation>
 <translation id="5487982064049856365">Olet äskettäin vaihtanut salasanasi. Kirjaudu sisään uudella salasanallasi.</translation>
-<translation id="2345055320165338418">Jos ominaisuus on käytössä, vastaukset tiettyihin kyselyihin näytetään suoraan omniboxin ehdotusluettelossa.</translation>
 <translation id="1585717515139318619">Toinen tietokoneellasi oleva ohjelma on lisännyt teeman, joka voi muuttaa Chromen toimintaa.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3520,7 +3511,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="4365673000813822030">Hups, synkronointi on lakannut toimimasta.</translation>
 <translation id="6790820461102226165">Lisää henkilö…</translation>
 <translation id="2332131598580221120">Näytä Web Storessa</translation>
-<translation id="2289304220823908416">Hanki ohjeita Chrome-laitteen käyttöön.</translation>
 <translation id="5875858680971105888">Hups! Valvottua käyttäjää ei voitu tuoda. Tarkista verkkoyhteytesi ja yritä myöhemmin uudelleen.</translation>
 <translation id="5411472733320185105">Älä käytä välityspalvelimen asetuksia näille palvelimille ja verkkotunnuksille:</translation>
 <translation id="3685121001045880436">Verkkosivua ylläpitävä palvelin on luultavasti ylikuormittunut tai palvelimella on tapahtunut virhe.
@@ -3553,7 +3543,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">Näytä ka&amp;nsiossa</translation>
 <translation id="5990198433782424697">Laajennukset chrome://-alkuisissa URL-osoitteissa</translation>
-<translation id="7664673415674668445">Sinne meni -palaute.</translation>
 <translation id="1793119619663054394">Haluatko varmasti poistaa profiilin <ph name="PROFILE_NAME"/> ja kaikki siihen liittyvät Chrome-tiedot tältä tietokoneelta? Tätä ei voi perua.</translation>
 <translation id="7456142309650173560">kehitys</translation>
 <translation id="4605399136610325267">Internetyhteys ei käytössä</translation>
@@ -3693,7 +3682,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="2643698698624765890">Hallinnoi laajennuksiasi valitsemalla Ikkuna-valikosta Laajennukset.</translation>
 <translation id="4846680374085650406">Noudatat järjestelmänvalvojan tätä asetusta koskevaa suositusta.</translation>
 <translation id="1974060860693918893">Lisäasetukset</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Hylkää kuva</translation>
 <translation id="1244303850296295656">Laajennusvirhe</translation>
 <translation id="3541661933757219855">Piilota painamalla Ctrl+Alt+/ tai Esc</translation>
@@ -3707,7 +3695,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="3660234220361471169">Ei-luotettu</translation>
 <translation id="2679385451463308372">Tulosta järjestelmän ikkunan kautta...</translation>
 <translation id="959890390740139744">Korjaa oikeinkirjoitus automaattisesti</translation>
-<translation id="5146827657109421175">Takaisin laiteluetteloon</translation>
 <translation id="2607991137469694339">Tamilin syöttötapa (foneettinen)</translation>
 <translation id="399179161741278232">Tuotu</translation>
 <translation id="810066391692572978">Tiedosto käyttää tukemattomia ominaisuuksia.</translation>
@@ -3945,7 +3932,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="1325040735987616223">Järjestelmäpäivitys</translation>
 <translation id="720210938761809882">Sivu estetty</translation>
 <translation id="7748144333872478614">Poista ikkunoiden taustat käytöstä TouchView'ssa.</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Tietoja NaCl:stä</translation>
 <translation id="3084771660770137092">Joko Chromen muisti loppui tai verkkosivun prosessi lopetettiin muusta syystä. Päivitä sivu tai siirry toiselle sivulle.</translation>
 <translation id="1114901192629963971">Salasanaasi ei voi vahvistaa nykyisessä verkossa. Valitse toinen verkko.</translation>
@@ -4147,7 +4133,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="4023146161712577481">Selvitetään laitteen kokoonpanoa.</translation>
 <translation id="6333834492048057036">Tarkenna osoitepalkkiin hakua varten</translation>
 <translation id="4172051516777682613">Näytä aina</translation>
-<translation id="3228279582454007836">Et ole käynyt tässä sivustossa ennen tätä päivää.</translation>
 <translation id="7027125358315426638">Tietokannan nimi:</translation>
 <translation id="5449716055534515760">&amp;Sulje ikkuna</translation>
 <translation id="3224239078034945833">Kanada, monikielinen</translation>
@@ -4758,7 +4743,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="4850458635498951714">Lisää laite</translation>
 <translation id="3140353188828248647">Keskitä osoitepalkkiin</translation>
 <translation id="1371806038977523515">Näitä asetuksia hallinnoi:</translation>
-<translation id="2020262498093941982">Ota käyttöön vastaukset ehdotuksiin</translation>
 <translation id="6462082050341971451">Oletko vielä siellä?</translation>
 <translation id="7971550670320370753">Antaa käyttäjän poistaa pilvituontiominaisuuden käytöstä helposti.</translation>
 <translation id="5565871407246142825">Luottokortit</translation>
@@ -5274,7 +5258,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="3160041952246459240">Olet tallentanut seuraavat palvelimet tunnistavat varmenteet:</translation>
 <translation id="6305328361606238230">Haluatko vastaanottaa push-viestejä?</translation>
-<translation id="566920818739465183">Kävit tässä sivustossa ensimmäisen kerran <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Siirry eteenpäin klikkaamalla, tarkastele historiaa pitämällä alhaalla</translation>
 <translation id="4092878864607680421">Sovelluksen <ph name="APP_NAME"/> uusin versio vaatii enemmän käyttölupia, joten se on poistettu käytöstä.</translation>
 <translation id="5828228029189342317">Olet valinnut tiettyjen tiedostotyyppien avaamisen automaattisesti latauksen jälkeen.</translation>

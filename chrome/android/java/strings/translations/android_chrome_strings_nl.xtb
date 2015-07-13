@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">De gegevens die op dit apparaat zijn opgeslagen en de gegevens die in je Google-account zijn opgeslagen, blijven op die plaatsen staan. Nieuwe gegevens of wijzigingen die je aanbrengt, worden echter niet gesynchroniseerd.</translation>
 <translation id="9070377983101773829">Gesproken zoekopdracht starten</translation>
 <translation id="6831043979455480757">Vertalen</translation>
-<translation id="6504836143156866575">JavaScript-versie</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Alles versleutelen met wachtwoordzin</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
@@ -270,7 +269,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="4543087392704641517">Bladwijzertitel</translation>
 <translation id="1987317783729300807">Accounts</translation>
 <translation id="7846076177841592234">Selectie opheffen</translation>
-<translation id="6064211167623632605">Uitvoerbaar pad</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="1521530746149324532">Je bent incognito.</translation>
 <translation id="971774202801778802">Bladwijzer-URL</translation>
@@ -296,7 +294,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 <translation id="6208263165776660488">Chrome-tabbladen zijn verplaatst</translation>
 <translation id="4526792582053123229">Pagina's die via HTTPS of incognito worden geopend, worden niet geoptimaliseerd of gedetecteerd door Google.</translation>
 <translation id="7626032353295482388">Welkom bij Chrome</translation>
-<translation id="7817177303494746697">Blink-versie</translation>
 <translation id="2532336938189706096">Webweergave</translation>
 <translation id="6571070086367343653">Creditcard bewerken</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
@@ -377,7 +374,6 @@ Klik op de knop 'Terug' om te sluiten.</translation>
 Open Chrome op je computer, ga naar het menu en selecteer 'Inloggen bij Chrome'.</translation>
 <translation id="4797039098279997504">Tik om terug te gaan naar <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Niet-beheerd</translation>
-<translation id="2699916814609764774">Profielpad</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="6979922938747275756">Fout bij het laden van mappen</translation>

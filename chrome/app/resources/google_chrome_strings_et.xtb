@@ -27,7 +27,6 @@
 <translation id="110877069173485804">See on teie Chrome</translation>
 <translation id="8406086379114794905">Aidake Chrome'i täiustada</translation>
 <translation id="5620765574781326016">Lisateave veebisaitide teemade kohta ilma lehelt lahkumata.</translation>
-<translation id="2721687379934343312">Macis salvestatakse paroolid rakendusse Keychain. Teised Chrome'i kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ja neid sünkroonida.</translation>
 <translation id="683440813066116847">Sissetuleku reegel Google Chrome Canaryle mDNS-liikluse lubamiseks.</translation>
 <translation id="4700157086864140907">Google Chrome võib õigekirjakontrolli täiustada, saates brauserisse sisestatud teksti Google'i serveritesse ja võimaldades kasutada sama õigekirjakontrolli tehnoloogiat, mida kasutatakse Google'i otsingus.</translation>
 <translation id="4953650215774548573">Määra Google Chrome vaikebrauseriks</translation>
@@ -104,7 +103,6 @@ ja valed mandaadid. Kas proovib ründaja teeselda, et on <ph name="SITE"/>, või
 <translation id="3656661827369545115">Käivita Chromium automaatselt, kui arvuti käivitub</translation>
 <translation id="1763864636252898013">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN"/>, seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="556024056938947818">Google Chrome püüab näidata paroole.</translation>
-<translation id="3012890944909934180">Käivitage Chrome uuesti töölaual</translation>
 <translation id="2580411288591421699">Töötava Google Chrome'i versiooniga sama versiooni ei saa installida. Sulgege Google Chrome ja proovige uuesti.</translation>
 <translation id="8460191995881063249">Chrome'i märguandekeskus</translation>
 <translation id="1457721931618994305">Google Chrome'i värskendamine ...</translation>
@@ -196,7 +194,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="5028489144783860647">Google Chrome ei saanud teie andmeid sünkroonida. Värskendage oma sünkroonimisparooli.</translation>
 <translation id="9026991721384951619">Chrome OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="8547799825197623713">Chrome'i rakenduste käiviti Canary</translation>
-<translation id="2267273557509361161">Käivita Chrome uuesti Windows 8 režiimis</translation>
 <translation id="2871893339301912279">Olete Chrome'i sisse logitud.</translation>
 <translation id="7890208801193284374">Kui jagate oma arvutit, siis saavad sõbrad ja pereliikmed eraldi sirvida ning seadistada Chrome'i just nii, nagu neile meeldib.</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>

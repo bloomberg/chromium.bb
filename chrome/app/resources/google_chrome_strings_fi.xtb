@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Tämä on oma Chromesi</translation>
 <translation id="8406086379114794905">Auta parantamaan Chromea</translation>
 <translation id="5620765574781326016">Tutustu verkkosivuston aiheisiin poistumatta sivulta.</translation>
-<translation id="2721687379934343312">Salasanat tallennetaan Macilla Avainnippuusi, ja muut Chrome-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
 <translation id="683440813066116847">Google Chrome Canaryn saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
 <translation id="4700157086864140907">Google Chrome voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksentarkistustekniikkaa.</translation>
 <translation id="4953650215774548573">Aseta Google Chrome oletusselaimeksi</translation>
@@ -102,7 +101,6 @@
 <translation id="3656661827369545115">Käynnistä Chromium automaattisesti tietokoneen käynnistyessä</translation>
 <translation id="1763864636252898013">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN"/>; laitteesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="556024056938947818">Google Chrome yrittää näyttää salasanoja.</translation>
-<translation id="3012890944909934180">Käynnistä Chrome uudelleen työpöytätilassa</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="8460191995881063249">Chromen ilmoituskeskus</translation>
 <translation id="1457721931618994305">Päivitetään Google Chromea...</translation>
@@ -192,7 +190,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="5028489144783860647">Google Chrome ei voinut synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="9026991721384951619">Chrome-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="8547799825197623713">Chrome Canary -sovellusten käynnistysohjelma</translation>
-<translation id="2267273557509361161">Käynnistä Chrome uudelleen Windows 8 -tilassa</translation>
 <translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="7890208801193284374">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromesta juuri itselleen sopivan.</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>

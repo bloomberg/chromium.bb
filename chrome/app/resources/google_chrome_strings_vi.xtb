@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Đây là Chrome của bạn</translation>
 <translation id="8406086379114794905">Giúp cải thiện Chrome tốt hơn</translation>
 <translation id="5620765574781326016">Tìm hiểu về các chủ đề trên trang web mà không phải rời khỏi trang.</translation>
-<translation id="2721687379934343312">Trên máy Mac, mật khẩu được lưu vào Keychain và có thể được truy cập hoặc đồng bộ hóa bởi những người dùng Chrome khác dùng chung tài khoản OS X này.</translation>
 <translation id="683440813066116847">Quy tắc kết nối để Google Chrome Canary cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="4700157086864140907">Google Chrome có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
 <translation id="4953650215774548573">Đặt Google Chrome làm trình duyệt mặc định của bạn</translation>
@@ -104,7 +103,6 @@
 <translation id="3656661827369545115">Tự động khởi động Chromium khi máy tính của bạn khởi động</translation>
 <translation id="1763864636252898013">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN"/>; chứng chỉ bảo mật của máy chủ này không được hệ điều hành thiết bị của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="556024056938947818">Google Chrome đang cố gắng hiển thị mật khẩu.</translation>
-<translation id="3012890944909934180">Chạy lại Chrome trên máy tính để bàn</translation>
 <translation id="2580411288591421699">Không thể cài đặt phiên bản Google Chrome giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="8460191995881063249">Trung tâm thông báo của Chrome</translation>
 <translation id="1457721931618994305">Đang cập nhật Google Chrome...</translation>
@@ -196,7 +194,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5028489144783860647">Google Chrome không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="9026991721384951619">Chrome OS không thể đồng bộ hóa dữ liệu của bạn do chi tiết đăng nhập tài khoản của bạn đã lỗi thời.</translation>
 <translation id="8547799825197623713">Canary trình chạy ứng dụng Chrome</translation>
-<translation id="2267273557509361161">Chạy lại Chrome ở chế độ Windows 8</translation>
 <translation id="2871893339301912279">Bạn đã đăng nhập vào Chrome!</translation>
 <translation id="7890208801193284374">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chrome theo ý của họ.</translation>
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>

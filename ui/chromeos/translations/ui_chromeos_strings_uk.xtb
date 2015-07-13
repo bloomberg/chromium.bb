@@ -24,7 +24,6 @@
 <translation id="2670531586141364277">Для активації &quot;<ph name="NAME"/>&quot; потрібне з’єднання з мережею.</translation>
 <translation id="4442424173763614572">Помилка пошуку DNS</translation>
 <translation id="7874779702599364982">Пошук мобільних мереж…</translation>
-<translation id="5512030650494444738">Квітка</translation>
 <translation id="3901991538546252627">Під’єднання до <ph name="NAME"/></translation>
 <translation id="1773212559869067373">Сертифікат автентифікації відхилений локально</translation>
 <translation id="2563185590376525700">Жаба</translation>
@@ -67,5 +66,6 @@
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="8000066093800657092">Немає мережі</translation>
 <translation id="2563856802393254086">Вітаємо! Вашу службу передавання даних &quot;<ph name="NAME"/>&quot; активовано. Нею можна користуватися.</translation>
+<translation id="4935975195727477204">Квітка</translation>
 <translation id="7297443947353982503">Неправильне ім’я користувача чи пароль або помилка автентифікації за протоколом EAP</translation>
 </translationbundle>

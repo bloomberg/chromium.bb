@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Les dades emmagatzemades en aquest dispositiu i les que s'emmagatzemin al compte de Google es conservaran en totes dues ubicacions. Tanmateix, les dades noves o els canvis que hi feu no se sincronitzaran entre si.</translation>
 <translation id="9070377983101773829">Inicia la cerca per veu</translation>
 <translation id="6831043979455480757">Tradueix</translation>
-<translation id="6504836143156866575">Versió de JavaScript</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Encripta-ho tot amb una frase de contrasenya</translation>
 <translation id="869891660844655955">Data de caducitat</translation>
@@ -270,7 +269,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="4543087392704641517">Títol de l'adreça d'interès</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="7846076177841592234">Cancel·la la selecció</translation>
-<translation id="6064211167623632605">Camí executable</translation>
 <translation id="4522570452068850558">Detalls</translation>
 <translation id="1521530746149324532">Heu passat al mode d'incògnit.</translation>
 <translation id="971774202801778802">URL de l'adreça d'interès</translation>
@@ -296,7 +294,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="6208263165776660488">Les pestanyes de Chrome s'han mogut</translation>
 <translation id="4526792582053123229">Google no optimitzarà ni veurà pàgines a què hàgiu accedit en mode d'incògnit o amb HTTPS.</translation>
 <translation id="7626032353295482388">Us donem la benvinguda a Chrome</translation>
-<translation id="7817177303494746697">Versió de Blink</translation>
 <translation id="2532336938189706096">Visualització web</translation>
 <translation id="6571070086367343653">Edita la targeta de crèdit</translation>
 <translation id="6192792657125177640">Excepcions</translation>
@@ -377,7 +374,6 @@ Premeu el botó Enrere per sortir-ne.</translation>
 Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la sessió a Chrome...</translation>
 <translation id="4797039098279997504">Toqueu per tornar a <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">No controlats</translation>
-<translation id="2699916814609764774">Camí del perfil</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="6979922938747275756">Error en carregar les carpetes</translation>

@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">‏أخفقت عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
 <translation id="1396446129537741364">‏يحاول Chromium إظهار كلمات المرور.</translation>
 <translation id="2097986737970966220">‏فتح Chromium على سطح المكتب</translation>
+<translation id="108122890477367602">‏إع&amp;ادة تشغيل Chromium في وضع Windows 8</translation>
 <translation id="8987477933582888019">متصفح الويب</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
 <translation id="2886012850691518054">‏اختياري: ساعد في تحسين Chromium عن طريق إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
@@ -90,15 +91,12 @@
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="9191268552238695869">‏ثبّت أحد المشرفين Chromium على هذا النظام، وهو متاح لجميع المستخدمين. سيحل تثبيت Chromium على مستوى النظام محل التثبيت على مستوى المستخدم الآن.</translation>
 <translation id="3509308970982693815">‏الرجاء إغلاق جميع نوافذ Chromium وإعادة المحاولة.</translation>
-<translation id="3192211604788138894">‏إعادة تشغيل Chromium في وضع Windows 8</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="4077262827416206768">‏الرجاء إغلاق جميع نوافذ Chromium وإعادة تشغيل Chromium حتى يسري هذا التغيير.</translation>
 <translation id="6475912303565314141">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium.</translation>
 <translation id="1725059042853530269">‏قد يضر <ph name="FILE_NAME"/> بتجربة متصفحك، لذلك فقد حظره Chromium.</translation>
-<translation id="208174207680926830">‏إعادة تشغيل Chromium على سطح المكتب</translation>
 <translation id="750717762378961310">‏يُعد الملف برنامجًا ضارًا، وقد أجرى Chromium حظره.</translation>
 <translation id="6944967875980567883">‏الوحدات المحملة في Chromium</translation>
-<translation id="6899795326977034905">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chromium الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="3046695367536568084">‏يجب أن تسجّل الدخول إلى Chromium لاستخدام التطبيقات. ويتيح هذا مزامنة Chromium لتطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك، فضلاً عن الإعدادات الأخرى عبر الأجهزة.</translation>
 <translation id="3296368748942286671">‏استمرار تشغيل تطبيقات الخلفية عند إغلاق Chromium</translation>
 <translation id="473775607612524610">تحديث</translation>
@@ -243,7 +241,9 @@
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
 <translation id="1644918877723739397">‏سيُخزن Chromium هذا في <ph name="SAVED_PASSWORD_LINK"/> وسيتذكره عندما تحتاج إليه في المرة القادمة.</translation>
 <translation id="378917192836375108">‏يتيح لك Chromium النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
+<translation id="8605166112420372522">‏إع&amp;ادة تشغيل Chromium على سطح المكتب</translation>
 <translation id="1461885241643463646">‏يمكّن تدفقات تسجيل الدخول لمتصفح Chromium القائمة على iframe. وتلغي هذه العلامة تمكين تسجيل الدخول القائم على الموقع.</translation>
+<translation id="390894725198123737">‏في نظام التشغيل Mac، قد يتم حفظ كلمات المرور في تطبيق Keychain والدخول إليها أو مزامنتها من قبل مستخدمي Chromium الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="608189560609172163">‏تعذر على Chromium مزامنة البيانات نظرًا لحدوث خطأ أثناء تسجيل الدخول.</translation>
 <translation id="4888717733111232871">‏قاعدة الوارد إلى Chromium للسماح بحركة مرور mDNS.</translation>
 <translation id="151962892725702025">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>

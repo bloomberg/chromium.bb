@@ -90,15 +90,12 @@
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="9191268552238695869">ผู้ดูแลระบบได้ติดตั้ง Chromium ในระบบนี้แล้วและผู้ใช้ทุกคนสามารถใช้ได้ ตอนนี้ Chromium ระดับระบบจะถูกนำไปแทนที่ระดับผู้ใช้ที่ติดตั้งไว้</translation>
 <translation id="3509308970982693815">โปรดปิดหน้าต่าง Chromium ทั้งหมดแล้วลองอีกครั้ง</translation>
-<translation id="3192211604788138894">เปิด Chromium อีกครั้งในโหมด Windows 8</translation>
 <translation id="8851136666856101339">หลัก</translation>
 <translation id="4077262827416206768">โปรดปิดหน้าต่าง Chromium ทั้งหมดและเปิด Chromium อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="6475912303565314141">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chromium ด้วย</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME"/> อาจเป็นอันตรายต่อการท่องเว็บของคุณ Chromium จึงบล็อกไว้</translation>
-<translation id="208174207680926830">เปิด Chromium อีกครั้งบนเดสก์ท็อป</translation>
 <translation id="750717762378961310">ไฟล์นี้เป็นอันตรายและ Chromium ได้บล็อกไฟล์ดังกล่าวไว้</translation>
 <translation id="6944967875980567883">โมดูลที่โหลดเข้าไปใน Chromium</translation>
-<translation id="6899795326977034905">สำหรับ Mac รหัสผ่านจะถูกบันทึกไว้ใน Keychain และผู้ใช้ Chromium คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
 <translation id="3046695367536568084">คุณจะต้องลงชื่อเข้าใช้ Chromium เพื่อใช้แอป ซึ่งจะช่วยให้ Chromium สามารถซิงค์แอป บุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ ระหว่างอุปกรณ์ได้</translation>
 <translation id="3296368748942286671">เรียกใช้แอปพลิเคชันพื้นหลังต่อไปเมื่อปิด Chromium</translation>
 <translation id="473775607612524610">การอัปเดต</translation>

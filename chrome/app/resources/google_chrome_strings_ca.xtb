@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Aquest és el vostre Chrome</translation>
 <translation id="8406086379114794905">Ajudeu a millorar Chrome</translation>
 <translation id="5620765574781326016">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina.</translation>
-<translation id="2721687379934343312">En un Mac, les contrasenyes es desen a Keychain i altres usuaris de Chrome que comparteixin aquest compte d'OS X poden accedir-hi i sincronitzar-les.</translation>
 <translation id="683440813066116847">Regla d'entrada de Google Chrome Canary per permetre el trànsit de mDNS.</translation>
 <translation id="4700157086864140907">Perquè el corrector ortogràfic sigui més útil, Google Chrome envia als servidors de Google el text que escriviu al navegador i, així, poder fer servir la mateixa tecnologia de correcció ortogràfica de la cerca de Google.</translation>
 <translation id="4953650215774548573">Defineix Google Chrome com a navegador predeterminat</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">Inicia Chromium automàticament en iniciar l'ordinador</translation>
 <translation id="1763864636252898013">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN"/> perquè el sistema operatiu del vostre dispositiu considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="556024056938947818">Google Chrome està provant de mostrar les contrasenyes.</translation>
-<translation id="3012890944909934180">Torna a iniciar Chrome a l'escriptori</translation>
 <translation id="2580411288591421699">No es pot instal·lar la mateixa versió de Google Chrome que s'executa actualment. Tanqueu Google Chrome i torneu-ho a provar.</translation>
 <translation id="8460191995881063249">Centre de notificacions de Chrome</translation>
 <translation id="1457721931618994305">S'està actualitzant Google Chrome...</translation>
@@ -191,7 +189,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="5028489144783860647">Google Chrome no ha pogut sincronitzar les dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
 <translation id="9026991721384951619">Chrome OS no ha pogut sincronitzar les vostres dades perquè les dades d'inici de sessió del compte no estan actualitzades.</translation>
 <translation id="8547799825197623713">Menú d'aplicacions de Chrome per a Canary</translation>
-<translation id="2267273557509361161">Torna a iniciar Chrome en mode Windows 8</translation>
 <translation id="2871893339301912279">Teniu la sessió iniciada a Chrome.</translation>
 <translation id="7890208801193284374">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chrome com vulguin.</translation>
 <translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>

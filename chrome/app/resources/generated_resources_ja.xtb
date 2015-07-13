@@ -337,7 +337,6 @@
 <translation id="3846593650622216128">これらの設定は拡張機能によって行われました。</translation>
 <translation id="8185331656081929126">ネットワーク上で新しいプリンタが検出されたときに通知を表示する</translation>
 <translation id="2972557485845626008">ファームウェア</translation>
-<translation id="735327918767574393">このウェブページの表示中に問題が発生しました。続行するには、ページを再読み込みするか別のページに移動してください。</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>お使いのアカウントでは、このデバイスのアセット ID と位置情報を提供することができます（任意）。<ph name="END_BOLD"/>デバイス ID と位置情報を下記の欄に指定できます。こうした詳細は管理コンソールの chrome:policy ページにこのデバイスの情報として表示されます。<ph name="BEGIN_ITALIC"/><ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">タブレット サイトのリクエスト</translation>
 <translation id="8028060951694135607">Microsoft キー回復</translation>
@@ -586,7 +585,6 @@
 <translation id="6135622770221372891">チャンネル ID</translation>
 <translation id="8472623782143987204">ハードウェア式</translation>
 <translation id="8545107379349809705">情報を表示しない...</translation>
-<translation id="2419206345979625354">ウェブページが予期せず終了しました。続行するには、ページを再読み込みするか別のページに移動してください。</translation>
 <translation id="4865571580044923428">例外の管理...</translation>
 <translation id="2526619973349913024">アップデートを確認</translation>
 <translation id="3716615839203649375">許可</translation>
@@ -698,7 +696,6 @@
 <translation id="3704726585584668805">プロセス外 PDF プラグインを有効にします。</translation>
 <translation id="5486326529110362464">秘密鍵の入力値が存在している必要があります。</translation>
 <translation id="6824725898506587159">言語を管理</translation>
-<translation id="8190907767443402387">Chrome の機能向上のため、フィードバックを送信する</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038"><ph name="USER_EMAIL"/> のマルチ ログインは、管理者によって禁止されています。
 続行するには、すべてのユーザーがログアウトする必要があります。</translation>
@@ -1185,7 +1182,6 @@
 <translation id="1864756863218646478">ファイルが見つかりませんでした。</translation>
 <translation id="7810202088502699111">このページのポップアップはブロックされました。</translation>
 <translation id="8884961208881553398">新しいサービスを追加</translation>
-<translation id="3808873045540128170">強制終了しました</translation>
 <translation id="744341768939279100">新しいプロフィールを作成</translation>
 <translation id="646727171725540434">HTTP プロキシ</translation>
 <translation id="7576690715254076113">部単位で印刷</translation>
@@ -1875,7 +1871,6 @@
 <translation id="7075513071073410194">PKCS #1 MD5 with RSA 暗号化</translation>
 <translation id="7767646430896201896">オプション:</translation>
 <translation id="1114335938027186412">ご使用のパソコンには Trusted Platform Module（TPM）セキュリティ デバイスが組み込まれています。これは Chrome OS の多くの重要なセキュリティ機能を実装するために使用されます。詳しくは Chromebook ヘルプセンター（https://support.google.com/chromebook/?p=tpm）をご覧ください。</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Esc キーで事前編集バッファ全体をクリアする</translation>
 <translation id="3344786168130157628">アクセス ポイント名:</translation>
 <translation id="8293206222192510085">ブックマークの追加</translation>
@@ -1939,7 +1934,6 @@
 <translation id="919412290393329570">「スクロールして更新」の効果を無効にする。</translation>
 <translation id="8466234950814670489">tar アーカイブ</translation>
 <translation id="852269967951527627">すべてのサイトに対して通知の表示を許可しない</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">枚</translation>
 <translation id="2125314715136825419">Adobe Reader を更新せずに次に進む（非推奨）</translation>
 <translation id="5034510593013625357">ホスト名のパターン</translation>
@@ -2363,7 +2357,6 @@
 <translation id="4572659312570518089">「<ph name="DEVICE_NAME"/>」への接続中に、認証がキャンセルされました。</translation>
 <translation id="4925542575807923399">このアカウントの管理者が、マルチ ログイン セッションにおいて最初にこのアカウントにログインすることを要件としています。</translation>
 <translation id="5701381305118179107">中央揃え</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">確認中...</translation>
 <translation id="7193047015510747410">同期の認証情報を自動入力する</translation>
 <translation id="7257173066616499747">Wi-Fi ネットワーク</translation>
@@ -2735,7 +2728,6 @@
 <translation id="18139523105317219">EDI パーティ名</translation>
 <translation id="8356258244599961364">この言語の入力方法はありません</translation>
 <translation id="733186066867378544">現在地の例外</translation>
-<translation id="3328801116991980348">サイト情報</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/>
           からネットワークにアクセスできません。
           <ph name="LINE_BREAK"/>
@@ -3238,7 +3230,6 @@
 <translation id="7568790562536448087">更新中:</translation>
 <translation id="3910699493603749297">クメール語キーボード</translation>
 <translation id="5487982064049856365">パスワードは最近変更されました。新しいパスワードでログインしてください。</translation>
-<translation id="2345055320165338418">有効にした場合、特定タイプのクエリについては、検索結果がアドレスバーに直接表示されます。</translation>
 <translation id="1585717515139318619">パソコン上の別のプログラムにより、Chrome の動作に影響を及ぼす可能性のあるテーマが追加されました。
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3550,7 +3541,6 @@
 <translation id="4365673000813822030">同期は停止されました。</translation>
 <translation id="6790820461102226165">ユーザーを追加...</translation>
 <translation id="2332131598580221120">ストアで見る</translation>
-<translation id="2289304220823908416">Chrome デバイスに関するヘルプが表示されます。</translation>
 <translation id="5875858680971105888">監視対象ユーザーをインポートできませんでした。ネットワーク接続を確認し、しばらくしてからもう一度お試しください。</translation>
 <translation id="5411472733320185105">以下のホストとドメインにはプロキシ設定を使用しない:</translation>
 <translation id="3685121001045880436">ウェブページをホストしているサーバーで、負荷が過大になったか、エラーが発生した可能性があります。
@@ -3585,7 +3575,6 @@
 <translation id="3574305903863751447"><ph name="COUNTRY"/> <ph name="STATE"/> <ph name="CITY"/></translation>
 <translation id="8724859055372736596">フォルダを開く(&amp;S)</translation>
 <translation id="5990198433782424697">chrome:// URL での拡張機能</translation>
-<translation id="7664673415674668445">強制終了のフィードバック。</translation>
 <translation id="1793119619663054394">このパソコンから「<ph name="PROFILE_NAME"/>」とそれに関連付けられているすべての Chrome データを削除してもよろしいですか？この操作は元に戻せません。</translation>
 <translation id="7456142309650173560">Dev</translation>
 <translation id="4605399136610325267">インターネットに接続していません</translation>
@@ -3726,7 +3715,6 @@
 <translation id="2643698698624765890">[ウィンドウ] メニューの [拡張機能] をクリックして拡張機能を管理できます。</translation>
 <translation id="4846680374085650406">管理者が推奨する設定を使用しています。</translation>
 <translation id="1974060860693918893">詳細設定</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">写真を破棄</translation>
 <translation id="1244303850296295656">拡張機能のエラー</translation>
 <translation id="3541661933757219855">Ctrl+Alt+/ または Esc キーで非表示</translation>
@@ -3740,7 +3728,6 @@
 <translation id="3660234220361471169">信頼されていない</translation>
 <translation id="2679385451463308372">システム ダイアログを使用して印刷...</translation>
 <translation id="959890390740139744">スペルミスの自動修正</translation>
-<translation id="5146827657109421175">デバイスリストに戻る</translation>
 <translation id="2607991137469694339">タミル語の入力方法（表音）</translation>
 <translation id="399179161741278232">インポートしたブックマーク</translation>
 <translation id="810066391692572978">サポートされていない機能がファイルで使用されています。</translation>
@@ -3978,7 +3965,6 @@
 <translation id="1325040735987616223">システム アップデート</translation>
 <translation id="720210938761809882">ページはブロックされています</translation>
 <translation id="7748144333872478614">TouchView でウィンドウの背景を無効にする</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">NaCl について</translation>
 <translation id="3084771660770137092">Chrome のメモリが不足しているか、ウェブページのプロセスが何らかの原因で終了しました。続行するには、ページを再読み込みするか別のページに移動してください。</translation>
 <translation id="1114901192629963971">現在のネットワークではパスワードを確認できません。別のネットワークを選択してください。</translation>
@@ -4181,7 +4167,6 @@
 <translation id="4023146161712577481">デバイスの設定を確認しています。</translation>
 <translation id="6333834492048057036">検索のためアドレスバーにフォーカスを移動</translation>
 <translation id="4172051516777682613">常に表示</translation>
-<translation id="3228279582454007836">このサイトにアクセスしたのは今日がはじめてです。</translation>
 <translation id="7027125358315426638">データベース名:</translation>
 <translation id="5449716055534515760">ウィンドウを閉じる(&amp;D)</translation>
 <translation id="3224239078034945833">カナダ多言語</translation>
@@ -4795,7 +4780,6 @@
 <translation id="4850458635498951714">デバイスを追加</translation>
 <translation id="3140353188828248647">アドレスバーにフォーカスを移す</translation>
 <translation id="1371806038977523515">これらの設定は次の拡張機能によって制御されています:</translation>
-<translation id="2020262498093941982">Answers in Suggest</translation>
 <translation id="6462082050341971451">まもなくログアウトされます</translation>
 <translation id="7971550670320370753">ユーザーがクラウド インポート機能を簡単に無効にできるようにします。</translation>
 <translation id="5565871407246142825">クレジットカード</translation>
@@ -5312,7 +5296,6 @@
 <translation id="5300589172476337783">表示</translation>
 <translation id="3160041952246459240">これらのサーバーを識別するための証明書がファイルに格納されています:</translation>
 <translation id="6305328361606238230">プッシュ メッセージの受信</translation>
-<translation id="566920818739465183">このサイトに初めてアクセスしたのは <ph name="VISIT_DATE"/>です。</translation>
 <translation id="2961695502793809356">クリックすると次に進みます。押したまま待つと履歴が表示されます。</translation>
 <translation id="4092878864607680421">アプリ「<ph name="APP_NAME"/>」の最新バージョンは、さらに許可が必要なため無効になっています。</translation>
 <translation id="5828228029189342317">ダウンロード後に特定の種類のファイルが自動的に開くように指定しました。</translation>

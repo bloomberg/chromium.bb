@@ -339,7 +339,6 @@
 <translation id="3846593650622216128">Aceste setări sunt impuse de o extensie.</translation>
 <translation id="8185331656081929126">Afișați notificări când în rețea sunt detectate imprimante noi</translation>
 <translation id="2972557485845626008">Firmware</translation>
-<translation id="735327918767574393">A apărut o eroare la afișarea acestei pagini web. Pentru a continua, reîncarc-o sau accesează altă pagină.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Contul are activată opțiunea de a trimite ID-ul de articol și locația pentru acest dispozitiv (opțional).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Poți specifica un identificator de dispozitiv și o locație în câmpurile de mai jos. Aceste detalii vor fi afișate pentru acest dispozitiv pe pagina chrome:policy în consola de gestionare.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Solicitați site-ul pentru tablete</translation>
 <translation id="8028060951694135607">Recuperare de chei Microsoft</translation>
@@ -595,7 +594,6 @@ Pentru instrucțiuni suplimentare, verificați-vă e-mailurile la adresa <ph nam
 <translation id="6135622770221372891">Coduri de canal</translation>
 <translation id="8472623782143987204">susținut de hardware</translation>
 <translation id="8545107379349809705">Ascundeți informațiile...</translation>
-<translation id="2419206345979625354">Încărcarea paginii web a fost oprită pe neașteptate. Pentru a continua, reîncarc-o sau accesează altă pagină.</translation>
 <translation id="4865571580044923428">Gestionați excepțiile...</translation>
 <translation id="2526619973349913024">Verifică dacă există actualizări</translation>
 <translation id="3716615839203649375">permiteți</translation>
@@ -707,7 +705,6 @@ Pentru instrucțiuni suplimentare, verificați-vă e-mailurile la adresa <ph nam
 <translation id="3704726585584668805">Activează pluginul PDF în afara procesului.</translation>
 <translation id="5486326529110362464">Trebuie să existe o valoarea introdusă pentru cheia privată.</translation>
 <translation id="6824725898506587159">Gestionați limbile</translation>
-<translation id="8190907767443402387">Trimiteți feedback pentru a contribui la îmbunătățirea browserului Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Un administrator a interzis conectarea multiplă pentru <ph name="USER_EMAIL"/>.
 Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
@@ -1201,7 +1198,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="1864756863218646478">Fișierul nu a putut fi găsit.</translation>
 <translation id="7810202088502699111">Ferestrele pop-up au fost blocate pe această pagină.</translation>
 <translation id="8884961208881553398">Adaugă servicii noi</translation>
-<translation id="3808873045540128170">Și dus a fost!</translation>
 <translation id="744341768939279100">Creați un profil nou</translation>
 <translation id="646727171725540434">Proxy HTTP</translation>
 <translation id="7576690715254076113">Colaționează</translation>
@@ -1889,7 +1885,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7075513071073410194">PKCS #1 MD5 cu criptare RSA</translation>
 <translation id="7767646430896201896">Opțiuni:</translation>
 <translation id="1114335938027186412">Computerul conține un dispozitiv de securitate Trusted Platform Module (TPM), care este folosit pentru a implementa numeroase funcții esențiale de securitate în sistemul de operare Chrome. Accesează Centrul de ajutor Chromebook pentru a afla mai multe: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Cu tasta Esc se golește zona tampon de pre-editare</translation>
 <translation id="3344786168130157628">Nume punct de acces:</translation>
 <translation id="8293206222192510085">Adăugați marcaj</translation>
@@ -1953,7 +1948,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="919412290393329570">Dezactivează efectul „trage pentru a actualiza”.</translation>
 <translation id="8466234950814670489">Arhivă .tar</translation>
 <translation id="852269967951527627">Nu permite niciunui site să afișeze notificări</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">foaie de hârtie</translation>
 <translation id="2125314715136825419">Continuă fără a actualiza Adobe Reader (nerecomandat)</translation>
 <translation id="5034510593013625357">Model de nume de gazdă</translation>
@@ -2383,7 +2377,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="4572659312570518089">Autentificarea a fost anulată în timpul conectării la „<ph name="DEVICE_NAME"/>”.</translation>
 <translation id="4925542575807923399">Administratorul acestui cont solicită ca acest cont să fie primul conectat într-o sesiune de conectare multiplă.</translation>
 <translation id="5701381305118179107">Pe centru</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Se verifică...</translation>
 <translation id="7193047015510747410">Completează automat datele de conectare pentru sincronizare</translation>
 <translation id="7257173066616499747">Rețele Wi-Fi</translation>
@@ -2755,7 +2748,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="18139523105317219">Nume parte EDI</translation>
 <translation id="8356258244599961364">Această limbă nu are metode de introducere de text</translation>
 <translation id="733186066867378544">Excepții privind localizarea geografică</translation>
-<translation id="3328801116991980348">Informații despre site</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/>
           întâmpină probleme la accesarea rețelei.
           <ph name="LINE_BREAK"/>
@@ -3265,7 +3257,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7568790562536448087">Se actualizează</translation>
 <translation id="3910699493603749297">Tastatură khmeră</translation>
 <translation id="5487982064049856365">Ați schimbat recent parola. Conectați-vă utilizând parola nouă.</translation>
-<translation id="2345055320165338418">Dacă este activat, răspunsurile la anumite tipuri de interogări apar direct în lista de sugestii din caseta polivalentă.</translation>
 <translation id="1585717515139318619">Un alt program de pe computer a adăugat o temă care poate schimba modul în care funcționează Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3577,7 +3568,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="4365673000813822030">Hopa, sincronizarea a încetat să funcționeze.</translation>
 <translation id="6790820461102226165">Adaugă o persoană...</translation>
 <translation id="2332131598580221120">Vedeți în magazin</translation>
-<translation id="2289304220823908416">Beneficiază de asistență pentru dispozitivul Chrome.</translation>
 <translation id="5875858680971105888">Hopa! Utilizatorul monitorizat nu a putut fi importat. Verificați conexiunea la rețea și încercați din nou mai târziu.</translation>
 <translation id="5411472733320185105">Nu utiliza setările proxy pentru următoarele gazde și domenii:</translation>
 <translation id="3685121001045880436">Probabil că serverul care găzduiește pagina web a fost supraîncărcat sau a întâmpinat o eroare.
@@ -3611,7 +3601,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Afișează în dosar</translation>
 <translation id="5990198433782424697">Extensii pentru adresele URL chrome://</translation>
-<translation id="7664673415674668445">Feedback pentru „Și dus a fost!”.</translation>
 <translation id="1793119619663054394">Sigur dorești să elimini „<ph name="PROFILE_NAME"/>” și toate datele Chrome asociate de pe acest computer? Această acțiune nu poate fi anulată.</translation>
 <translation id="7456142309650173560">dezvoltatori</translation>
 <translation id="4605399136610325267">Nu te-ai conectat la internet</translation>
@@ -3751,7 +3740,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="2643698698624765890">Gestionați extensiile făcând clic pe Extensii în meniul Window (Fereastră).</translation>
 <translation id="4846680374085650406">Urmați recomandarea administratorului pentru această setare.</translation>
 <translation id="1974060860693918893">Avansat</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Renunțați la fotografie</translation>
 <translation id="1244303850296295656">Eroare privind extensiile</translation>
 <translation id="3541661933757219855">Apasă pe Ctrl+Alt+/ sau pe Escape pentru a ascunde</translation>
@@ -3765,7 +3753,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="3660234220361471169">Nu prezintă încredere</translation>
 <translation id="2679385451463308372">Printează utilizând caseta de dialog a sistemului...</translation>
 <translation id="959890390740139744">Corectează automat greșelile de ortografie</translation>
-<translation id="5146827657109421175">Înapoi la lista de dispozitive</translation>
 <translation id="2607991137469694339">Metodă de introducere pentru tamilă (fonetic)</translation>
 <translation id="399179161741278232">Importate</translation>
 <translation id="810066391692572978">Fișierul utilizează funcții neacceptate.</translation>
@@ -4003,7 +3990,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="1325040735987616223">Actualizare de sistem</translation>
 <translation id="720210938761809882">Pagină blocată</translation>
 <translation id="7748144333872478614">Dezactivează fundalurile ferestrelor în TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Despre NaCl</translation>
 <translation id="3084771660770137092">Fie Chrome nu are suficientă memorie, fie procesarea paginii web a fost întreruptă dintr-un alt motiv. Pentru a continua, reîncarcă sau accesează altă pagină.</translation>
 <translation id="1114901192629963971">Parola nu poate fi confirmată în rețeaua actuală. Selectează altă rețea.</translation>
@@ -4205,7 +4191,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="4023146161712577481">Se determină configurația dispozitivului.</translation>
 <translation id="6333834492048057036">Focalizează pe bara de adrese pentru căutare</translation>
 <translation id="4172051516777682613">Afișați întotdeauna</translation>
-<translation id="3228279582454007836">Nu ai accesat niciodată acest site până astăzi.</translation>
 <translation id="7027125358315426638">Nume bază de date:</translation>
 <translation id="5449716055534515760">Închide fe&amp;reastra</translation>
 <translation id="3224239078034945833">Canadiană multilingvă</translation>
@@ -4821,7 +4806,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="4850458635498951714">Adăugați un dispozitiv</translation>
 <translation id="3140353188828248647">Focalizează pe bara de adrese</translation>
 <translation id="1371806038977523515">Aceste setări sunt controlate de:</translation>
-<translation id="2020262498093941982">Răspunsuri în Google Suggest</translation>
 <translation id="6462082050341971451">Mai sunteți aici?</translation>
 <translation id="7971550670320370753">Permite utilizatorului să dezactiveze cu ușurință funcția de import în cloud.</translation>
 <translation id="5565871407246142825">Carduri de credit</translation>
@@ -5337,7 +5321,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="3160041952246459240">Ai certificate stocate care identifică aceste servere:</translation>
 <translation id="6305328361606238230">Primești mesaje push?</translation>
-<translation id="566920818739465183">Ai accesat prima dată acest site pe <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Dă clic pentru a naviga înainte, ține apăsat pentru a vedea istoricul</translation>
 <translation id="4092878864607680421">Cea mai recentă versiune a aplicației „<ph name="APP_NAME"/>” necesită permisiuni suplimentare, astfel că a fost dezactivată.</translation>
 <translation id="5828228029189342317">Ai ales să deschizi automat anumite tipuri de fișiere după descărcare.</translation>

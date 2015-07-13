@@ -336,7 +336,6 @@
 <translation id="3846593650622216128">Estas configurações são aplicadas por uma extensão.</translation>
 <translation id="8185331656081929126">Mostrar notificações quando novas impressoras forem detectadas na rede</translation>
 <translation id="2972557485845626008">Firmware</translation>
-<translation id="735327918767574393">Ocorreu um erro durante a exibição desta página. Para continuar, atualize ou vá para outra página.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Sua conta está ativada para fornecer um código de recurso e uma localização para este dispositivo (opcional).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>É possível fornecer um identificador de dispositivo e uma localização nos campos abaixo. Esses detalhes serão exibidos para este dispositivo na página chrome:policy no console de gerenciamento.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Solicitar site para tablet</translation>
 <translation id="8028060951694135607">Recuperação de chave da Microsoft</translation>
@@ -585,7 +584,6 @@
 <translation id="6135622770221372891">IDs de canais</translation>
 <translation id="8472623782143987204">suportado por hardware</translation>
 <translation id="8545107379349809705">Ocultar informações...</translation>
-<translation id="2419206345979625354">A página da Web foi fechada inesperadamente. Para continuar, atualize-a ou vá para outra página.</translation>
 <translation id="4865571580044923428">Gerenciar exceções...</translation>
 <translation id="2526619973349913024">Verificar atualizações</translation>
 <translation id="3716615839203649375">permitir</translation>
@@ -696,7 +694,6 @@
 <translation id="3704726585584668805">Ativar o plugin de PDF fora do processo.</translation>
 <translation id="5486326529110362464">O valor inserido para a chave privada deve existir.</translation>
 <translation id="6824725898506587159">Gerenciar idiomas</translation>
-<translation id="8190907767443402387">Envie feedback e ajude a melhorar o Google Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Um administrador desativou o login múltiplo para <ph name="USER_EMAIL"/>.
 Todos os usuários devem sair para continuar.</translation>
@@ -1182,7 +1179,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY"/> pode ser útil da
 <translation id="1864756863218646478">O arquivo não foi encontrado.</translation>
 <translation id="7810202088502699111">As pop-ups foram bloqueadas nesta página.</translation>
 <translation id="8884961208881553398">Adicionar novos serviços</translation>
-<translation id="3808873045540128170">Ele está morto, Jim.</translation>
 <translation id="744341768939279100">Criar um novo perfil</translation>
 <translation id="646727171725540434">Proxy HTTP</translation>
 <translation id="7576690715254076113">Agrupar</translation>
@@ -1872,7 +1868,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="7075513071073410194">PKCS #1 MD5 com criptografia RSA</translation>
 <translation id="7767646430896201896">Opções:</translation>
 <translation id="1114335938027186412">Seu computador possui um dispositivo de segurança Trusted Platform Module (TPM, na sigla em inglês), que é utilizado para implementar muitos recursos de segurança importantes no Chrome OS. Visite a Central de Ajuda do Chromebook para saber mais: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">A tecla Esc limpa todo o buffer anterior à edição</translation>
 <translation id="3344786168130157628">Nome do ponto de acesso:</translation>
 <translation id="8293206222192510085">Adicionar favorito</translation>
@@ -1936,7 +1931,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="919412290393329570">Desative o efeito &quot;puxar para atualizar&quot;.</translation>
 <translation id="8466234950814670489">Arquivo tar</translation>
 <translation id="852269967951527627">Não permitir que nenhum site exiba notificações</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">folha de papel</translation>
 <translation id="2125314715136825419">Proceder sem atualizar o Adobe Reader (não recomendado)</translation>
 <translation id="5034510593013625357">Padrão de nome do host</translation>
@@ -2356,7 +2350,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="4572659312570518089">Autenticação cancelada durante a conexão com &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
 <translation id="4925542575807923399">O administrador dessa conta exige que ela seja a primeira conta a fazer o login em uma sessão de login múltiplo.</translation>
 <translation id="5701381305118179107">Centralizar</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Verificando...</translation>
 <translation id="7193047015510747410">Preenchimento automático de credencial de sincronização</translation>
 <translation id="7257173066616499747">Redes Wi-Fi</translation>
@@ -2729,7 +2722,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="18139523105317219">Nome da Parte EDI</translation>
 <translation id="8356258244599961364">Este idioma não tem métodos de entrada</translation>
 <translation id="733186066867378544">Exceções de geolocalização</translation>
-<translation id="3328801116991980348">Informações do site</translation>
 <translation id="7337488620968032387">O <ph name="PRODUCT_NAME"/> está com problemas para acessar a rede. <ph name="LINE_BREAK"/> Isso pode estar acontecendo porque seu software de firewall ou antivírus considera erroneamente que <ph name="PRODUCT_NAME"/> é um intruso em seu computador e bloqueia sua conexão de Internet.</translation>
 <translation id="2065985942032347596">Autenticação obrigatória</translation>
 <translation id="8282947398454257691">Saber seu identificador de dispositivo exclusivo</translation>
@@ -3225,7 +3217,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="7568790562536448087">Atualização</translation>
 <translation id="3910699493603749297">Teclado em khmer</translation>
 <translation id="5487982064049856365">Você alterou recentemente a senha. Faça login com a nova senha.</translation>
-<translation id="2345055320165338418">Se ativado, as respostas a determinados tipos de consultas aparecem diretamente na lista de sugestões da omnibox.</translation>
 <translation id="1585717515139318619">Outro programa no seu computador adicionou um tema que pode mudar a forma como o Google Chrome funciona.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3538,7 +3529,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="4365673000813822030">Ops, a sincronização parou de funcionar.</translation>
 <translation id="6790820461102226165">Adicionar pessoa...</translation>
 <translation id="2332131598580221120">Ver na loja</translation>
-<translation id="2289304220823908416">Ajuda para seu dispositivo Chrome.</translation>
 <translation id="5875858680971105888">Ops, não foi possível importar o usuário supervisionado. Verifique sua conexão de rede e tente novamente mais tarde.</translation>
 <translation id="5411472733320185105">Não usar as configurações de proxy para estes hosts e domínios:</translation>
 <translation id="3685121001045880436">É provável que o servidor que hospeda a página da web tenha ficado sobrecarregado ou encontrado um erro. 
@@ -3573,7 +3563,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Mostrar na pasta</translation>
 <translation id="5990198433782424697">Extensões em URLs chrome://</translation>
-<translation id="7664673415674668445">Feedback para &quot;Ele está morto, Jim&quot;.</translation>
 <translation id="1793119619663054394">Tem certeza de que deseja remover o perfil &quot;<ph name="PROFILE_NAME"/>&quot; e todos os dados associados do Chrome deste computador? Esta ação não pode ser desfeita.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="4605399136610325267">Sem conexão à Internet</translation>
@@ -3714,7 +3703,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="2643698698624765890">Gerencie suas extensões clicando em Extensões no menu Janela.</translation>
 <translation id="4846680374085650406">Você está seguindo a recomendação do administrador para esta configuração.</translation>
 <translation id="1974060860693918893">Avançado</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Descartar foto</translation>
 <translation id="1244303850296295656">Erro na extensão</translation>
 <translation id="3541661933757219855">Digite Ctrl+Alt+/ ou Esc para ocultar</translation>
@@ -3728,7 +3716,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="3660234220361471169">Não confiáveis</translation>
 <translation id="2679385451463308372">Imprimir usando a caixa de diálogo do sistema...</translation>
 <translation id="959890390740139744">Corrigir ortografia automaticamente</translation>
-<translation id="5146827657109421175">Voltar à lista de dispositivos</translation>
 <translation id="2607991137469694339">Método de entrada Tamil (fonético)</translation>
 <translation id="399179161741278232">Importado</translation>
 <translation id="810066391692572978">Arquivo utiliza recursos não suportados.</translation>
@@ -3966,7 +3953,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="1325040735987616223">Atualização do sistema</translation>
 <translation id="720210938761809882">Página bloqueada</translation>
 <translation id="7748144333872478614">Desativar panos de fundo de janelas no TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Sobre NaCl</translation>
 <translation id="3084771660770137092">O Google Chrome ficou sem memória ou o processo da página foi encerrado por algum outro motivo. Para continuar, atualize a página ou vá para outra página.</translation>
 <translation id="1114901192629963971">Sua senha não pôde ser verificada nessa rede atual. Selecione outra rede.</translation>
@@ -4168,7 +4154,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="4023146161712577481">Determinando a configuração do dispositivo.</translation>
 <translation id="6333834492048057036">Foco na barra de endereço para pesquisa</translation>
 <translation id="4172051516777682613">Sempre mostrar</translation>
-<translation id="3228279582454007836">É a primeira vez que você visita esse site.</translation>
 <translation id="7027125358315426638">Nome do banco de dados:</translation>
 <translation id="5449716055534515760">Fechar jan&amp;ela</translation>
 <translation id="3224239078034945833">Canadense multilíngue</translation>
@@ -4782,7 +4767,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="4850458635498951714">Adicionar um dispositivo</translation>
 <translation id="3140353188828248647">Foco na barra de endereço</translation>
 <translation id="1371806038977523515">Estas configurações são controladas por:</translation>
-<translation id="2020262498093941982">Answers in Suggest</translation>
 <translation id="6462082050341971451">Você ainda está aí?</translation>
 <translation id="7971550670320370753">Permitir que o usuário desative facilmente o recurso de importação para a nuvem.</translation>
 <translation id="5565871407246142825">Cartões de crédito</translation>
@@ -5298,7 +5282,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="3160041952246459240">Você tem certificados no arquivo que identificam estes servidores:</translation>
 <translation id="6305328361606238230">Receber mensagens push</translation>
-<translation id="566920818739465183">Você visitou este site pela primeira vez em <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Clique para avançar, mantenha pressionado para ver o histórico</translation>
 <translation id="4092878864607680421">A versão mais recente do aplicativo &quot;<ph name="APP_NAME"/>&quot; exige mais permissões, e por isso foi desativada.</translation>
 <translation id="5828228029189342317">Você optou por abrir alguns tipos de arquivo automaticamente depois do download.</translation>

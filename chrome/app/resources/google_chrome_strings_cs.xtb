@@ -31,7 +31,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="110877069173485804">Toto je váš Chrome</translation>
 <translation id="8406086379114794905">Pomozte nám Chrome zlepšit</translation>
 <translation id="5620765574781326016">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit.</translation>
-<translation id="2721687379934343312">V počítačích Mac se hesla ukládají do vašeho úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chrome, kteří sdílejí tento účet systému OS X.</translation>
 <translation id="683440813066116847">Pravidlo příchozího provozu pro aplikaci Google Chrome Canary, které povolí provoz mDNS.</translation>
 <translation id="4700157086864140907">Google Chrome může poskytovat lepší kontrolu pravopisu tím, že text zadaný do prohlížeče odešle na servery Google. Umožňuje vám tak používat stejnou technologii kontroly pravopisu, jakou používá Vyhledávání Google.</translation>
 <translation id="4953650215774548573">Nastavit Google Chrome jako výchozí prohlížeč</translation>
@@ -107,7 +106,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3656661827369545115">Při spuštění počítače automaticky spustit Chromium</translation>
 <translation id="1763864636252898013">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN"/>. Operační systém vašeho zařízení nedůvěřuje jeho bezpečnostnímu certifikátu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="556024056938947818">Google Chrome se pokouší zobrazit hesla.</translation>
-<translation id="3012890944909934180">Spustit Chrome znovu na klasické ploše</translation>
 <translation id="2580411288591421699">Nelze nainstalovat verzi aplikace Google Chrome, která je právě spuštěná. Ukončete aplikaci Google Chrome a opakujte akci.</translation>
 <translation id="8460191995881063249">Centrum oznámení Chrome</translation>
 <translation id="1457721931618994305">Aktualizace prohlížeče Google Chrome...</translation>
@@ -189,7 +187,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="5028489144783860647">Google Chrome vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="9026991721384951619">Chrome OS vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
 <translation id="8547799825197623713">Spouštěč aplikací Chrome Canary</translation>
-<translation id="2267273557509361161">Spustit Chrome znovu v režimu Windows 8</translation>
 <translation id="2871893339301912279">Nyní jste přihlášeni do Chromu.</translation>
 <translation id="7890208801193284374">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chrome podle svých požadavků.</translation>
 <translation id="7161904924553537242">Vítá vás Google Chrome</translation>

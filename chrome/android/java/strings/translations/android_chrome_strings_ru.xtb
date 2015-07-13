@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Данные, находящиеся на этом устройстве и в аккаунте Google, сохранятся, однако новые данные и вносимые изменения синхронизироваться не будут.</translation>
 <translation id="9070377983101773829">Голосовой поиск</translation>
 <translation id="6831043979455480757">Перевести</translation>
-<translation id="6504836143156866575">Версия JavaScript</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="886510833909353412">Шифровать все данные с помощью кодовой фразы</translation>
 <translation id="869891660844655955">Срок действия</translation>
@@ -270,7 +269,6 @@
 <translation id="4543087392704641517">Заголовок закладки</translation>
 <translation id="1987317783729300807">Аккаунты</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
-<translation id="6064211167623632605">Путь к исполняемому файлу</translation>
 <translation id="4522570452068850558">Подробнее</translation>
 <translation id="1521530746149324532">Вы перешли в режим инкогнито</translation>
 <translation id="971774202801778802">URL закладки</translation>
@@ -296,7 +294,6 @@
 <translation id="6208263165776660488">Где искать вкладки</translation>
 <translation id="4526792582053123229">Нам недоступны страницы, открытые через HTTPS или в режиме инкогнито, поэтому их нельзя оптимизировать.</translation>
 <translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
-<translation id="7817177303494746697">Версия Blink</translation>
 <translation id="2532336938189706096">Веб-версия</translation>
 <translation id="6571070086367343653">Изменить данные карты</translation>
 <translation id="6192792657125177640">Исключения</translation>
@@ -377,7 +374,6 @@
 Для этого откройте меню браузера на компьютере и выберите пункт &quot;Войти в Chrome&quot;.</translation>
 <translation id="4797039098279997504">Нажмите, чтобы вернуться на страницу <ph name="URL_OF_THE_CURRENT_TAB"/>.</translation>
 <translation id="4376501731284077108">Не контролируется</translation>
-<translation id="2699916814609764774">Путь к профилю</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="6979922938747275756">Ошибка при загрузке папок</translation>

@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Os dados armazenados neste dispositivo e na sua Conta do Google permanecerão nos dois locais. Entretanto, dados novos ou alterações feitas nos seus dados não serão sincronizados entre eles.</translation>
 <translation id="9070377983101773829">Iniciar pesquisa por voz</translation>
 <translation id="6831043979455480757">Traduzir</translation>
-<translation id="6504836143156866575">Versão do Javascript</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Criptografar tudo com senha</translation>
 <translation id="869891660844655955">Validade</translation>
@@ -269,7 +268,6 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="4543087392704641517">Título do favorito</translation>
 <translation id="1987317783729300807">Contas</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
-<translation id="6064211167623632605">Caminho do arquivo executável</translation>
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="1521530746149324532">Você entrou no modo de navegação anônima.</translation>
 <translation id="971774202801778802">URL do favorito</translation>
@@ -295,7 +293,6 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="6208263165776660488">As guias do Chrome foram movidas</translation>
 <translation id="4526792582053123229">Páginas acessadas com HTTPS ou no modo de navegação anônima não são otimizadas ou vistas pelo Google.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>
-<translation id="7817177303494746697">Versão do Blink</translation>
 <translation id="2532336938189706096">Visualização da Web</translation>
 <translation id="6571070086367343653">Editar cartão de crédito</translation>
 <translation id="6192792657125177640">Exceções</translation>
@@ -376,7 +373,6 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login no Google Chrome…”</translation>
 <translation id="4797039098279997504">Toque para voltar a <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Sem controle</translation>
-<translation id="2699916814609764774">Caminho do perfil</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="6979922938747275756">Ocorreu um erro ao carregar as pastas</translation>

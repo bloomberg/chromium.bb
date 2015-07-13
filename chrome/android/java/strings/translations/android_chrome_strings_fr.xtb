@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Les données stockées sur cet appareil et dans votre compte Google seront conservées. Toutefois, les nouvelles données ou les modifications apportées aux données ne seront pas synchronisées entre ces deux emplacements.</translation>
 <translation id="9070377983101773829">Démarrer la recherche vocale</translation>
 <translation id="6831043979455480757">Traduire</translation>
-<translation id="6504836143156866575">Version de JavaScript</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Tout chiffrer à l'aide d'une phrase secrète</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
@@ -270,7 +269,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="4543087392704641517">Titre du favori</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
-<translation id="6064211167623632605">Chemin d'accès exécutable</translation>
 <translation id="4522570452068850558">Détails</translation>
 <translation id="1521530746149324532">Vous êtes passé en mode navigation privée</translation>
 <translation id="971774202801778802">URL du favori</translation>
@@ -296,7 +294,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="6208263165776660488">Les onglets de Chrome ont été déplacés</translation>
 <translation id="4526792582053123229">Le HTTPS et la navigation privée empêchent la détection et l'optimisation des pages.</translation>
 <translation id="7626032353295482388">Bienvenue dans Chrome</translation>
-<translation id="7817177303494746697">Version de Blink</translation>
 <translation id="2532336938189706096">Vue Web</translation>
 <translation id="6571070086367343653">Modifier la carte de paiement</translation>
 <translation id="6192792657125177640">Exceptions</translation>
@@ -378,7 +375,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de sélectionner &quot;Se connecter à Chrome&quot;.</translation>
 <translation id="4797039098279997504">Appuyer ici pour revenir à l'adresse <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Aucun contrôle</translation>
-<translation id="2699916814609764774">Chemin d'accès au profil</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="6979922938747275756">Erreur lors du chargement des dossiers.</translation>

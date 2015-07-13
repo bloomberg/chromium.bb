@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">Dữ liệu đã lưu trên thiết bị này cũng như dữ liệu đã lưu trong tài khoản Google của bạn sẽ vẫn ở cả hai vị trí. Tuy nhiên, dữ liệu mới hoặc các thay đổi mà bạn thực hiện đối với dữ liệu sẽ không được đồng bộ hóa giữa hai vị trí.</translation>
 <translation id="9070377983101773829">Bắt đầu tìm kiếm bằng giọng nói</translation>
 <translation id="6831043979455480757">Dịch</translation>
-<translation id="6504836143156866575">Phiên bản JavaScript</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Mã hóa tất cả bằng cụm mật khẩu</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>
@@ -270,7 +269,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="4543087392704641517">Tiêu đề dấu trang</translation>
 <translation id="1987317783729300807">Tài khoản</translation>
 <translation id="7846076177841592234">Hủy chọn</translation>
-<translation id="6064211167623632605">Đường dẫn thực thi</translation>
 <translation id="4522570452068850558">Chi tiết</translation>
 <translation id="1521530746149324532">Bạn đã truy cập ẩn danh.</translation>
 <translation id="971774202801778802">URL dấu trang</translation>
@@ -296,7 +294,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="6208263165776660488">Tab Chrome đã di chuyển</translation>
 <translation id="4526792582053123229">Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng HTTPS hoặc Chế độ ẩn danh.</translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
-<translation id="7817177303494746697">Phiên bản Blink</translation>
 <translation id="2532336938189706096">Lượt xem trên web</translation>
 <translation id="6571070086367343653">Chỉnh sửa thẻ tín dụng</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
@@ -377,7 +374,6 @@ Nhấn nút quay lại để thoát.</translation>
 Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu và chọn &quot;Đăng nhập vào Chrome…”</translation>
 <translation id="4797039098279997504">Chạm để quay lại <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Không bị hạn chế</translation>
-<translation id="2699916814609764774">Đường dẫn hồ sơ</translation>
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="6979922938747275756">Lỗi khi tải thư mục</translation>

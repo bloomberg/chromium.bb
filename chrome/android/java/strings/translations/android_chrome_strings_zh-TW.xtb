@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">儲存在這個裝置上和 Google 帳戶中的資料將各自保持原狀，但當您新增資料或變更資料時，兩者之間的資料將不會保持同步。</translation>
 <translation id="9070377983101773829">開始語音搜尋</translation>
 <translation id="6831043979455480757">翻譯</translation>
-<translation id="6504836143156866575">JavaScript 版本</translation>
 <translation id="3244271242291266297">月</translation>
 <translation id="886510833909353412">使用通關密語將所有資料加密</translation>
 <translation id="869891660844655955">到期日</translation>
@@ -270,7 +269,6 @@
 <translation id="4543087392704641517">書籤標題</translation>
 <translation id="1987317783729300807">帳戶</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
-<translation id="6064211167623632605">執行檔路徑</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="1521530746149324532">您已啟用無痕模式。</translation>
 <translation id="971774202801778802">書籤網址</translation>
@@ -296,7 +294,6 @@
 <translation id="6208263165776660488">Chrome 分頁已移至新的位置</translation>
 <translation id="4526792582053123229">透過 HTTPS 或無痕模式存取網頁時，Google 不會進行最佳化處理，也不會偵測到這些網頁。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
-<translation id="7817177303494746697">Blink 版本</translation>
 <translation id="2532336938189706096">網頁檢視</translation>
 <translation id="6571070086367343653">編輯信用卡</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -377,7 +374,6 @@
 只需在電腦上開啟 Chrome、前往選單，然後選取 [登入 Chrome...] 即可。</translation>
 <translation id="4797039098279997504">輕觸即可返回 <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">不受控制</translation>
-<translation id="2699916814609764774">設定檔路徑</translation>
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="6979922938747275756">載入資料夾時發生錯誤</translation>

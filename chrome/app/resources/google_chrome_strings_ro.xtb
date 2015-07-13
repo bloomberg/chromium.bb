@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Acesta este browserul dvs. Chrome</translation>
 <translation id="8406086379114794905">Contribuie la îmbunătățirea Chrome</translation>
 <translation id="5620765574781326016">Află despre subiectele de pe site-uri fără să părăsești pagina.</translation>
-<translation id="2721687379934343312">Pe Mac, parolele sunt salvate în aplicația dvs. Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care utilizează același cont de OS X.</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>
 <translation id="4700157086864140907">Google Chrome poate oferi o verificare a ortografiei mai inteligentă prin trimiterea textului introdus în browser la serverele Google, permițându-vă să utilizați aceeași tehnologie de verificare a ortografiei utilizată de Căutare Google.</translation>
 <translation id="4953650215774548573">Setați Google Chrome ca browser prestabilit</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">Chromium se lansează automat la pornirea computerului</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
-<translation id="3012890944909934180">Relansați Chrome pe desktop</translation>
 <translation id="2580411288591421699">Nu se poate instala aceeași versiune Google Chrome care rulează în prezent. Închide Google Chrome și încearcă din nou.</translation>
 <translation id="8460191995881063249">Centrul de notificări Chrome</translation>
 <translation id="1457721931618994305">Se actualizează Google Chrome...</translation>
@@ -191,7 +189,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="5028489144783860647">Google Chrome nu a putut sincroniza datele. Actualizați expresia de acces pentru sincronizare.</translation>
 <translation id="9026991721384951619">Sistemul de operare Chrome nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="8547799825197623713">Lansatorul de aplicații Chrome Canary</translation>
-<translation id="2267273557509361161">Relansați Chrome în modul Windows 8</translation>
 <translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>

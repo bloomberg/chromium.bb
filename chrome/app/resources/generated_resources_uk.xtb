@@ -58,9 +58,11 @@
 <translation id="7900476766547206086">Користувачам, які виконали вхід, потрібні паролі, оскільки один або кілька користувачів увімкнули це налаштування.</translation>
 <translation id="5328031682234198929">8</translation>
 <translation id="168282077338734107">Увімкнути імітовані функціональні характеристики &quot;Ok Google&quot;.</translation>
+<translation id="965490406356730238">Коли доступно, вмикати для записаного кадру декодер mjpeg з апаратним прискоренням.</translation>
 <translation id="3300394989536077382">Підписано</translation>
 <translation id="654233263479157500">Використовувати веб-послугу для виправлення помилок навігації</translation>
 <translation id="3792890930871100565">Від’єднати принтери</translation>
+<translation id="1105162038795579389">Пакет &quot;<ph name="BUNDLE_NAME"/>&quot; додає для користувача <ph name="USER_NAME"/> такі додатки та розширення:</translation>
 <translation id="3293894718455402932">Розширення &quot;<ph name="EXTENSION"/>&quot; зможе читати й записувати зображення, відео та звукові файли у вибраних розташуваннях.</translation>
 <translation id="7180611975245234373">Оновити</translation>
 <translation id="4940047036413029306">Лапки</translation>
@@ -165,6 +167,7 @@
 <translation id="8392896330146417149">Стан роумінгу:</translation>
 <translation id="4632483769545853758">Увімкнути звук на вкладці</translation>
 <translation id="5427459444770871191">Повернути &amp;за годинниковою стрілкою</translation>
+<translation id="8348015212883180653">Якщо ви розумієте ризики, пов’язані з безпекою, можете <ph name="BEGIN_LINK"/>перейти на цей ненадійний сайт<ph name="END_LINK"/> або <ph name="BEGIN_ERROR_LINK"/>повідомити про помилку<ph name="END_ERROR_LINK"/>.</translation>
 <translation id="2923240520113693977">Естонська</translation>
 <translation id="3384773155383850738">Максимальна кількість пропозицій</translation>
 <translation id="1014321050861012327">Зберігати паролі автоматично.</translation>
@@ -335,7 +338,6 @@
 <translation id="3846593650622216128">Ці налаштування встановлюються розширенням.</translation>
 <translation id="8185331656081929126">Показувати сповіщення, якщо в мережі виявлено нові принтери</translation>
 <translation id="2972557485845626008">Мікропрограма</translation>
-<translation id="735327918767574393">Під час відображення цієї веб-сторінки сталася помилка. Щоб продовжити, перезавантажте цю сторінку чи перейдіть на іншу.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>У вашому обліковому записі ввімкнено показ ідентифікатора об’єкта та місцезнаходження для цього пристрою (додатково).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Ви можете вказати ідентифікатор і місцезнаходження пристрою в полях нижче. Ці дані відображатимуться на сторінці chrome:policy на консолі керування.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Запитувати сайт планшетного ПК</translation>
 <translation id="8028060951694135607">Відновлення ключів Microsoft</translation>
@@ -474,6 +476,7 @@
 <translation id="1983450660696935749">Випадки, коли розширення вимикалось</translation>
 <translation id="3084548735795614657">Перетягніть, щоб установити</translation>
 <translation id="2278988676849463018">Клавіатура каннада (фонетична)</translation>
+<translation id="507075806566596212">Ви збираєтеся зареєструвати цей <ph name="DEVICE_TYPE"/> у Google, щоб увімкнути можливість віддалено знаходити та блокувати пристрій, а також стирати дані на ньому. Для цього потрібне перезавантаження. Продовжити?</translation>
 <translation id="5661272705528507004">Цю SIM-карту вимкнено, і вона непридатна для використання. Зв’яжіться зі своїм постачальником послуг, щоб здійснити заміну.</translation>
 <translation id="4601242977939794209">Конвертер файлів EMF</translation>
 <translation id="1128128132059598906">EAP – TTLS</translation>
@@ -517,6 +520,7 @@
 <translation id="741906494724992817">Цьому додатку не потрібні спеціальні дозволи.</translation>
 <translation id="238039057627789696">Якщо ввімкнено, засіб обробки відео доручає компонування веб-переглядачу, об’єднуючи обидва шляхи компонування.</translation>
 <translation id="4792148404905252597">Вимикає експериментальне використання короткотермінових програм, які запускаються з гіперпосилань. Наприклад, посилання на сторінки інформації про програму у Веб-магазині Chrome у результатах пошуку Google запускають програму, а не відкривають сторінку інформації.</translation>
+<translation id="3018454109497821123">Увімкнути Пошук на Диску на Панелі запуску додатків Chrome.</translation>
 <translation id="3245321423178950146">Невідомий виконавець</translation>
 <translation id="2437838871182492352">Випадки, коли розширення вмикалось</translation>
 <translation id="9050666287014529139">Парольна фраза</translation>
@@ -579,12 +583,12 @@
 <translation id="2164862903024139959">В’єтнамська клавіатура (TCVN)</translation>
 <translation id="8885197664446363138">Функція Smart Lock недоступна</translation>
 <translation id="1697532407822776718">Готово!</translation>
+<translation id="3690976161240450479">Помилка входу. Зв’яжіться з адміністратором або повторіть спробу.</translation>
 <translation id="8373553483208508744">Вимкнути звук на вкладках</translation>
 <translation id="8703575177326907206">Ваше з’єднання з <ph name="DOMAIN"/> не зашифровано.</translation>
 <translation id="6135622770221372891">Ідентифікатори каналу</translation>
 <translation id="8472623782143987204">з апаратною підтримкою</translation>
 <translation id="8545107379349809705">Сховати інформацію...</translation>
-<translation id="2419206345979625354">Веб-сторінка несподівано перестала працювати. Щоб продовжити, оновіть її або перейдіть на іншу сторінку.</translation>
 <translation id="4865571580044923428">Керувати винятками...</translation>
 <translation id="2526619973349913024">Перевірити наявність оновлення</translation>
 <translation id="3716615839203649375">дозволити</translation>
@@ -690,7 +694,6 @@
 <translation id="3704726585584668805">Увімкнути плагін PDF, що запускається поза процесом.</translation>
 <translation id="5486326529110362464">Має бути дійсне значення секретного ключа.</translation>
 <translation id="6824725898506587159">Керувати мовами</translation>
-<translation id="8190907767443402387">Надіслати відгук, щоб допомогти покращити Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">Адміністратор заборонив паралельний вхід користувачеві <ph name="USER_EMAIL"/>.
 Щоб продовжити, усі користувачі повинні вийти.</translation>
@@ -741,6 +744,7 @@
 <translation id="1992397118740194946">Не налаштовано</translation>
 <translation id="6867678160199975333">Переключитися на користувача <ph name="NEW_PROFILE_NAME"/></translation>
 <translation id="3718720264653688555">Віртуальна клавіатура</translation>
+<translation id="8592071947729879125">Обмежувати дозволи для елементів iframe.</translation>
 <translation id="7760004034676677601">Це стартова сторінка, яку ви очікували?</translation>
 <translation id="3504135463003295723">Назва групи:</translation>
 <translation id="3314070176311241517">Дозволити всім сайтам запускати JavaScript (рекомендовано)</translation>
@@ -756,6 +760,7 @@
 <translation id="5379140238605961210">Продовжити блокувати доступ до мікрофона</translation>
 <translation id="488785315393301722">Показати деталі</translation>
 <translation id="820854170120587500">Функція безпечного перегляду від Google нещодавно виявила фішинг на сайті <ph name="SITE"/>. <ph name="BEGIN_LINK"/>Фішингові сайти<ph name="END_LINK"/> видають себе за інші сайти, щоб ошукати вас.</translation>
+<translation id="2838379631617906747">Встановлення</translation>
 <translation id="4377039040362059580">Теми та фонові малюнки</translation>
 <translation id="5794414402486823030">Завжди відкривати за допомогою системного переглядача</translation>
 <translation id="711902386174337313">Читати список пристроїв, на яких ви ввійшли</translation>
@@ -829,6 +834,7 @@
 <translation id="7177840076592118126">Використовувати стабільний порядок вікон у режимі огляду.</translation>
 <translation id="5711983031544731014">Не вдалося розблокувати. Введіть пароль.</translation>
 <translation id="2149850907588596975">Паролі та форми</translation>
+<translation id="9111296877637560526">Якщо ввімкнути цю опцію, веб-додатки отримуватимуть доступ до API Virtual Reality.</translation>
 <translation id="3672928695873425336">Заборонити згортання полиці після натискання.</translation>
 <translation id="7707053413911715161">Увімкнути без виділення поля</translation>
 <translation id="657402800789773160">&amp;Перезавантажити цю сторінку</translation>
@@ -908,6 +914,7 @@
 <translation id="6596745167571172521">Вимкнути Caps Lock</translation>
 <translation id="4200983522494130825">Нова &amp;вкладка</translation>
 <translation id="7979036127916589816">Помилка синхронізації</translation>
+<translation id="4330406155931244378">Увімкнути перевірку правопису для кількох мов</translation>
 <translation id="4426082685552308673">Пошук середнього значення</translation>
 <translation id="802597130941734897">Керувати адресами для доставки…</translation>
 <translation id="1029317248976101138">Збільшити</translation>
@@ -985,6 +992,7 @@
 <translation id="9203398526606335860">&amp;Профілювання ввімкнено</translation>
 <translation id="4307281933914537745">Докладніше про відновлення системи</translation>
 <translation id="2849936225196189499">Вирішальні</translation>
+<translation id="1330036564648768163">Немає пристрою?</translation>
 <translation id="7977551819349545646">Оновлення Chromebox…</translation>
 <translation id="9001035236599590379">Тип MIME</translation>
 <translation id="1624026626836496796">Це потрібно зробити лише раз. Ваші облікові дані не буде збережено.</translation>
@@ -1009,6 +1017,7 @@
 <translation id="3353984535370177728">Виберіть папку для завантаження</translation>
 <translation id="8258405095852912294">Цей сайт не приймає картки Discover.</translation>
 <translation id="8061298200659260393">Заборонити всім сайтам надсилати push-повідомлення</translation>
+<translation id="8202160505685531999">Щоб оновити профіль <ph name="DEVICE_TYPE"/>, введіть пароль ще раз.</translation>
 <translation id="6328639280570009161">Спробуйте вимкнути прогнозування мережі.</translation>
 <translation id="3528498924003805721">Цілі ярликів</translation>
 <translation id="5117427536932535467">Теми та фонові зображення</translation>
@@ -1038,6 +1047,7 @@
 <translation id="8038111231936746805">(за умовчанням)</translation>
 <translation id="8559762987265718583">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/>, оскільки на пристрої встановлено неправильні дату й час (<ph name="DATE_AND_TIME"/>).</translation>
 <translation id="2915500479781995473">Серверу не вдалося підтвердити, що це <ph name="DOMAIN"/>. Термін дії сертифіката безпеки цього домену закінчився. Можливі причини: неправильна конфігурація або перехоплення вашого з’єднання зловмисником. На годиннику вашого комп’ютера зараз <ph name="CURRENT_TIME"/>. Якщо дата неправильна, налаштуйте системний годинник і оновіть цю сторінку.</translation>
+<translation id="324533084080637716">Зі структурованою для статей розміткою</translation>
 <translation id="1975841812214822307">Видалити…</translation>
 <translation id="108346963417674655">Не вдається безпечно під’єднатися через проблему із сервером. Можливо, цей веб-сайт працював раніше, але під’єднання до нього становить ризик для всіх користувачів, тому доступ вимкнено.</translation>
 <translation id="8280151743281770066">Вірменська (фонетична)</translation>
@@ -1073,6 +1083,7 @@
 <translation id="661719348160586794">Тут відображатимуться ваші збережені паролі.</translation>
 <translation id="6422732120309392130">Вимкнути фільтрування в режимі огляду шляхом введення тексту.</translation>
 <translation id="3764986667044728669">Помилка реєстрації</translation>
+<translation id="6935367737854035550">Вмикає елементи матеріального дизайну вгорі веб-переглядача Chrome.</translation>
 <translation id="1664310274171851702">Лише безпечні основні з’єднання</translation>
 <translation id="1878524442024357078">Заборонити сайтам запускати плагіни на комп’ютері</translation>
 <translation id="6105158702728922449">Використовувати вашу камеру та мікрофон</translation>
@@ -1091,6 +1102,8 @@
 <translation id="46733879594767046">Увімкнути великі значки на сторінці нової вкладки</translation>
 <translation id="2397374778584840405">Випадки, коли операційна система примусово припинила процес вкладки (&quot;<ph name="IDS_KILLED_TAB_TITLE"/>&quot;)</translation>
 <translation id="836961001039546082">Увімкнути матеріальний інтерфейс для файлів PDF.</translation>
+<translation id="1682324559341535203">Зареєструвати <ph name="DEVICE_TYPE"/></translation>
+<translation id="8852366862412129888">Цей сайт включає ресурси HTTP.</translation>
 <translation id="2396635603035772766">Увімкнути експериментальний інтерфейс із підказками для зберігання паролів. Замінює наявний інформаційний рядок.</translation>
 <translation id="2676946222714718093">Відтворюється на пристрої</translation>
 <translation id="8972727166872864532">Щоб відвідати цю сторінку, потрібно мати дозвіл батьків.</translation>
@@ -1176,7 +1189,6 @@
 <translation id="1864756863218646478">Файл неможливо знайти.</translation>
 <translation id="7810202088502699111">На цій сторінці спливаючі вікна заблоковано.</translation>
 <translation id="8884961208881553398">Додати нові сервіси</translation>
-<translation id="3808873045540128170">Ми її втратили!</translation>
 <translation id="744341768939279100">Створити новий профіль</translation>
 <translation id="646727171725540434">Проксі-сервер HTTP</translation>
 <translation id="7576690715254076113">Сортувати за копіями</translation>
@@ -1216,6 +1228,7 @@
 <translation id="212862741129535676">Відсоток заряду акумулятора, який використовує стан частоти</translation>
 <translation id="7761701407923456692">Сертифікат сервера не відповідає URL-адресі.</translation>
 <translation id="6799646767877093143">На цьому сайті використовується плагін (<ph name="PLUGIN_NAME"/>), який невдовзі не підтримуватиметься.</translation>
+<translation id="3753641128651686748">Пакет &quot;<ph name="BUNDLE_NAME"/>&quot; додає для користувача <ph name="USER_NAME"/> такі додатки:</translation>
 <translation id="4495419450179050807">Не показувати на цій сторінці</translation>
 <translation id="6529214173428607795">Це дасть змогу використовувати експериментальну функцію SurfaceWorker.</translation>
 <translation id="8818152613617627612">Платіжні дані</translation>
@@ -1306,6 +1319,7 @@
           <ph name="PLATFORM_TEXT"/></translation>
 <translation id="2694026874607847549">1 файл cookie</translation>
 <translation id="8994845581478641365">Засіб створення кешу шрифтів DirectWrite</translation>
+<translation id="6428317975370806940">Історія й останні вкладки</translation>
 <translation id="469230890969474295">Папка OEM</translation>
 <translation id="3909791450649380159">Вирізат&amp;и</translation>
 <translation id="2955913368246107853">Закрити панель пошуку</translation>
@@ -1466,6 +1480,7 @@
 <translation id="7955383984025963790">Вкладка 5</translation>
 <translation id="7541121857749629630">Винятки для зображень</translation>
 <translation id="6314502684458966003">(щоб вводити комбінації клавіш послідовно)</translation>
+<translation id="2676342370492585497">Активний змішаний вміст</translation>
 <translation id="9033857511263905942">&amp;Вставити</translation>
 <translation id="1910572251697014317">На цей телефон надіслано сповіщення від Google. Зауважте, що за допомогою Bluetooth можна розблокувати <ph name="DEVICE_TYPE"/> з телефона з відстані понад 30 метрів. У разі виникнення проблем можна &lt;a&gt;тимчасово вимкнути цю функцію&lt;/a&gt;.</translation>
 <translation id="9014987600015527693">Показати інший телефон</translation>
@@ -1473,6 +1488,7 @@
 <translation id="1000916256947465293">Автоматично входити в обліковий запис на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно буде проходити процедуру підтвердження щоразу, коли ви входите в обліковий запис на веб-сайті.</translation>
 <translation id="7122169255686960726">Більше екземплярів</translation>
 <translation id="7285011324031710154">Вмикає рамку стилю веб-додатка для розміщених додатків.</translation>
+<translation id="6835762382653651563">Щоб оновити свій <ph name="DEVICE_TYPE"/>, під’єднайтеся до Інтернету.</translation>
 <translation id="5749861707650047230">{NUM_DOWNLOAD,plural, =1{Скасувати завантаження}one{Скасувати завантаження}few{Скасувати завантаження}many{Скасувати завантаження}other{Скасувати завантаження}}</translation>
 <translation id="1221825588892235038">Лише виділений фрагмент</translation>
 <translation id="8713979477561846077">Увімкнути автоматичне виправлення для американської клавіатури, щоб отримувати пропозиції під час введення на фізичній клавіатурі.</translation>
@@ -1602,6 +1618,7 @@
 <translation id="5620568081365989559">Інструментам розробника потрібен повний доступ до папки <ph name="FOLDER_PATH"/>. Переконайтеся, що ви не оприлюдните приватну інформацію.</translation>
 <translation id="996987097147224996">Натисніть Сtrl+пробіл, щоб вибрати попередній метод введення.</translation>
 <translation id="2618254410484974446"><ph name="ISSUER"/> підтверджує ідентифікатор цього веб-сайту. Сервер надав інформацію про прозорість сертифіката, але вона недійсна.</translation>
+<translation id="7329154610228416156">Не вдалося ввійти, оскільки вас було переспрямовано на незахищену URL-адресу (<ph name="BLOCKED_URL"/>). Зв’яжіться з адміністратором.</translation>
 <translation id="4240069395079660403">Неможливо відобразити <ph name="PRODUCT_NAME"/> цією мовою</translation>
 <translation id="747114903913869239">Помилка: не вдається розшифрувати розширення</translation>
 <translation id="8209439005376447114"><ph name="ISSUER"/> підтверджує ідентифікатор цього веб-сайту. Сервер надав дійсну інформацію про прозорість сертифіката.</translation>
@@ -1655,6 +1672,7 @@
 <translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="8521441079177373948">Англійська (Великобританія)</translation>
 <translation id="2816269189405906839">Метод введення для китайської мови (чангже)</translation>
+<translation id="5342344590724511265">Відповідь &quot;Вкладка аварійно закрилась&quot;.</translation>
 <translation id="1857166538520940818">Вкласти файл:</translation>
 <translation id="8297012244086013755">Клавіатура хангул із 3 наборами клавіш (без клавіші Shift)</translation>
 <translation id="8178711702393637880">Використовувати додатковий ланцюжок для апаратної растеризації веб-вмісту. Потрібно ввімкнути апаратну растеризацію.</translation>
@@ -1747,6 +1765,7 @@
 <translation id="8226222018808695353">Заборонено</translation>
 <translation id="6237614789842758826">Виконайте пошук у Google</translation>
 <translation id="798525203920325731">Простори імен мережі</translation>
+<translation id="6772186257078173656">Увімкнути перевірку правопису для кількох мов.</translation>
 <translation id="7092106376816104">Винятки для спливаючих вікон</translation>
 <translation id="5418923334382419584">Мʼянмська клавіатура</translation>
 <translation id="8594787581355215556">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS"/>. Керуйте своїми синхронізованими даними на <ph name="BEGIN_LINK"/>інформаційній панелі Google<ph name="END_LINK"/>.</translation>
@@ -1860,10 +1879,11 @@
 <translation id="4821086771593057290">Ваш пароль змінено. Повторіть спробу з новим паролем.</translation>
 <translation id="6080696365213338172">Ви отримали доступ до вмісту, використовуючи наданий адміністратором сертифікат. Адміністратор може перехоплювати дані, які ви надасте домену <ph name="DOMAIN"/>.</translation>
 <translation id="2509739495444557741">Плагіни не встановлено.</translation>
+<translation id="6731638353631257659">Режим кешування V8.</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 із шифруванням RSA</translation>
 <translation id="7767646430896201896">Опції:</translation>
+<translation id="526926484727016706">За умовчанням відхилятимуться всі дозволи для елементів iframe. Якщо надати елементу iframe якісь дозволи, їх може бути додано як значення нових атрибутів елемента iframe.</translation>
 <translation id="1114335938027186412">Ваш комп’ютер оснащено пристроєм Trusted Platform Module (TPM), який виконує багато важливих функцій безпеки в ОС Chrome. Щоб дізнатися більше, відвідайте Довідковий центр Chromebook: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">За допомогою клавіші Esc можна очищати буфер попереднього редагування</translation>
 <translation id="3344786168130157628">Ім’я точки доступу:</translation>
 <translation id="8293206222192510085">Додати закладку</translation>
@@ -1927,7 +1947,6 @@
 <translation id="919412290393329570">Вимкнути ефект &quot;потягнути, щоб оновити&quot;.</translation>
 <translation id="8466234950814670489">Архів у форматі TAR</translation>
 <translation id="852269967951527627">Заборонити всім сайтам показувати сповіщення</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">аркуш паперу</translation>
 <translation id="2125314715136825419">Продовжити без оновлення Adobe Reader (не рекомендується)</translation>
 <translation id="5034510593013625357">Зразок назви хосту</translation>
@@ -1987,6 +2006,7 @@
 <translation id="6434309073475700221">Скасувати</translation>
 <translation id="6589706261477377614">Збільшити яскравість клавіатури</translation>
 <translation id="1367951781824006909">Вибрати файл</translation>
+<translation id="2897815155851085655">Довідка й інформація</translation>
 <translation id="1425127764082410430">&amp;Пошук у <ph name="SEARCH_ENGINE"/> за словами &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="1187722533808055681">Вихід зі стану неактивності</translation>
 <translation id="8075539548641175231">Дані зашифровано за допомогою вашої парольної фрази для синхронізації <ph name="TIME"/>. Введіть її нижче.</translation>
@@ -2019,6 +2039,7 @@
 <translation id="4956752588882954117">Сторінку можна переглянути.</translation>
 <translation id="1114202307280046356">Ромб</translation>
 <translation id="4215350869199060536">Помилка. Заборонені символи в імені.</translation>
+<translation id="5876563972054587128">Змішаний вміст</translation>
 <translation id="894360074127026135">Програма підвищення до міжнародного рівня Netscape</translation>
 <translation id="8420060421540670057">Показувати файли Документів Google</translation>
 <translation id="6075731018162044558">Помилка. Системі не вдалося отримати маркер довгострокового доступу API для цього пристрою.</translation>
@@ -2123,6 +2144,7 @@
 <translation id="6251870443722440887">Обробка GDI</translation>
 <translation id="473775607612524610">Оновити</translation>
 <translation id="6122081475643980456">Ваше з’єднання з Інтернетом контролюється</translation>
+<translation id="6829250331733125857">Довідка для <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="148466539719134488">Швейцарська</translation>
 <translation id="8022523925619404071">Увімкнути автоматичне оновлення</translation>
 <translation id="8737685506611670901">Відкривати посилання протоколу <ph name="PROTOCOL"/>, а не обробника <ph name="REPLACED_HANDLER_TITLE"/></translation>
@@ -2182,6 +2204,7 @@
 <translation id="7903128267494448252">Видалити цього користувача</translation>
 <translation id="4924638091161556692">Виправлено</translation>
 <translation id="8893928184421379330">На жаль, пристрій <ph name="DEVICE_LABEL"/> неможливо розпізнати.</translation>
+<translation id="4830573902900904548">Ваш <ph name="DEVICE_TYPE"/> не може під’єднатися до Інтернету через мережу &quot;<ph name="NETWORK_NAME"/>&quot;. Виберіть іншу. <ph name="LEARN_MORE_LINK_START"/>Докладніше<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="5972017421290582825">Керувати налаштуваннями MIDI…</translation>
 <translation id="6082651258230788217">Показати на панелі інструментів</translation>
 <translation id="8642947597466641025">Збільшити розмір тексту</translation>
@@ -2211,6 +2234,7 @@
 <translation id="6655458902729017087">Сховати облікові записи</translation>
 <translation id="6975147921678461939">Акумулятор заряджається: <ph name="PRECENTAGE"/>%</translation>
 <translation id="5453632173748266363">Кирилиця</translation>
+<translation id="6425092077175753609">Матеріальний</translation>
 <translation id="6110466548232134880"><ph name="ISSUER"/> підтверджує ідентифікатор організації <ph name="ORGANIZATION"/> (<ph name="LOCALITY"/>). Сервер надав інформацію про прозорість сертифіката.</translation>
 <translation id="1008557486741366299">Не зараз</translation>
 <translation id="6437213622978068772">Перезавантажити (Ctrl+R)</translation>
@@ -2239,6 +2263,7 @@
           пристроєм.</translation>
 <translation id="2078019350989722914">Попереджати перед виходом (<ph name="KEY_EQUIVALENT"/>)</translation>
 <translation id="7965010376480416255">Спільна пам’ять</translation>
+<translation id="1309804047705294744">Увімкнути завантаження матеріального дизайну</translation>
 <translation id="6248988683584659830">Пошук налаштувань</translation>
 <translation id="7262221505565121">Винятки доступу плагіна з неізольованим програмним середовищем</translation>
 <translation id="7273110280511444812">останнє підключення: <ph name="DATE"/></translation>
@@ -2304,6 +2329,7 @@
 <translation id="5399158067281117682">PIN-коди не підходять!</translation>
 <translation id="6277105963844135994">Час очікування мережі минув</translation>
 <translation id="874420130893181774">Метод введення для стандарту піньїнь традиційної китайської мови</translation>
+<translation id="6316103499056411227">Файли з Диска відображатимуться під час пошуку на Панелі запуску додатків Chrome.</translation>
 <translation id="7885253890047913815">Останні місця призначення</translation>
 <translation id="3646789916214779970">Установити тему за умовчанням</translation>
 <translation id="604001903249547235">Резервне копіювання у хмару</translation>
@@ -2343,9 +2369,9 @@
 <translation id="2728074944070176061">Трансляція на <ph name="SINKNAME"/></translation>
 <translation id="3712897371525859903">Зберегти сторінку &amp;як...</translation>
 <translation id="4572659312570518089">Автентифікацію скасовано під час під’єднання до &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
+<translation id="817663682525208479">Помилка сертифіката</translation>
 <translation id="4925542575807923399">Адміністратору облікового запису потрібно, щоб цей обліковий запис був першим обліковим записом, з якого здійснено вхід під час сеансу паралельного входу.</translation>
 <translation id="5701381305118179107">По центру</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Перевірка...</translation>
 <translation id="7193047015510747410">Автозаповнення облікових даних синхронізації</translation>
 <translation id="7257173066616499747">Мережі Wi-Fi</translation>
@@ -2455,8 +2481,10 @@
 <translation id="5585912436068747822">Помилка форматування</translation>
 <translation id="8766796754185931010">Котоері</translation>
 <translation id="6357619544108132570">Вітаємо у світі <ph name="SHORT_PRODUCT_NAME"/>. Це не звичайний комп’ютер.</translation>
+<translation id="7141105143012495934">Помилка входу. Не вдалось отримати дані вашого облікового запису. Зв’яжіться з адміністратором або повторіть спробу.</translation>
 <translation id="7786207843293321886">Вийти з режиму гостя</translation>
 <translation id="5360150013186312835">Показати на панелі інструментів</translation>
+<translation id="6740369132746915122">Якщо ви розумієте ризики, пов’язані з безпекою, можете <ph name="BEGIN_LINK"/>перейти на цей ненадійний сайт<ph name="END_LINK"/>.</translation>
 <translation id="3359256513598016054">Обмеження політики сертифіката</translation>
 <translation id="4433914671537236274">Створення носія для відновлення</translation>
 <translation id="5480254151128201294">Власник заблокував цей пристрій.</translation>
@@ -2473,6 +2501,7 @@
 <translation id="5170568018924773124">Показати в папці</translation>
 <translation id="8559694214572302298">Декодер зображень</translation>
 <translation id="6054173164583630569">Французька розкладка</translation>
+<translation id="3788090790273268753">Термін дії сертифіката для цього сайту закінчується 2016 року. Ланцюжок сертифіката містить сертифікат, підписаний за допомогою SHA-1.</translation>
 <translation id="7036710474162401473">Цей сервіс входу міститься в домені <ph name="SAML_DOMAIN"/>.</translation>
 <translation id="6450876761651513209">Змінювати налаштування конфіденційності</translation>
 <translation id="4364444725319685468">Файл &quot;<ph name="FILE_NAME"/>&quot; завантажено</translation>
@@ -2711,7 +2740,6 @@
 <translation id="18139523105317219">Ім'я сторони EDI</translation>
 <translation id="8356258244599961364">Для цієї мови немає методів введення</translation>
 <translation id="733186066867378544">Винятки для географічних місцезнаходжень</translation>
-<translation id="3328801116991980348">Інформація про сайт</translation>
 <translation id="7337488620968032387">У <ph name="PRODUCT_NAME"/> виникли проблеми з доступом до мережі. <ph name="LINE_BREAK"/> Можливо, ваш брандмауер або антивірусне програмне забезпечення помилково розглядають веб-переглядач <ph name="PRODUCT_NAME"/> як зломника на вашому комп’ютері та не дозволяють йому під’єднатися до Інтернету.</translation>
 <translation id="2065985942032347596">Потрібна автентифікація</translation>
 <translation id="8282947398454257691">Бачити ваш унікальний ідентифікатор пристрою</translation>
@@ -2808,6 +2836,7 @@
 <translation id="6990081529015358884">У вас недостатньо місця</translation>
 <translation id="5273628206174272911">Експериментальна навігація в історії за допомогою горизонтального прокручування.</translation>
 <translation id="1618268899808219593">Довідковий центр</translation>
+<translation id="7853747251428735">Інші інструменти</translation>
 <translation id="180035236176489073">Щоб отримати доступ до цих файлів, потрібно перебувати в режимі онлайн.</translation>
 <translation id="8785135611469711856">Плагін не відповідає</translation>
 <translation id="4522570452068850558">Деталі</translation>
@@ -2893,6 +2922,7 @@
 <translation id="8382913212082956454">Копіювати &amp;адресу електронної пошти</translation>
 <translation id="7887192723714330082">Реагувати на команду &quot;Ok Google&quot;, коли екран увімкнено та розблоковано</translation>
 <translation id="2280845493034384933">Вмикається інвертований порядок прокручування області перегляду в деяких ситуаціях. Під час масштабування рухом пальців спершу прокручується візуальна область перегляду, а потім область перегляду макета.</translation>
+<translation id="5283008903473888488">Пакет &quot;<ph name="BUNDLE_NAME"/>&quot; додає для користувача <ph name="USER_NAME"/> такі розширення:</translation>
 <translation id="4157188838832721931">Не пропонувати користувачеві ввести свій пароль для ОС, перш ніж показувати паролі на сторінці паролів.</translation>
 <translation id="2993517869960930405">Інформація про додаток</translation>
 <translation id="3088757355463573099">Увімкнути для тестування проксі-сервер заощадження трафіку, наданий оператором.</translation>
@@ -3038,6 +3068,7 @@
 <translation id="8066238397346344588">Вимкнути Google Payments</translation>
 <translation id="8652139471850419555">Рекомендовані мережі</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (за умовчанням)</translation>
+<translation id="1626545055522824874">Сертифікат SHA-1</translation>
 <translation id="5392544185395226057">Увімкнути підтримку для Native Client.</translation>
 <translation id="5400640815024374115">Модуль Trusted Platform Module (TPM) вимкнено або його немає.</translation>
 <translation id="3846214748874656680">Вийти з повноекранного режиму</translation>
@@ -3198,7 +3229,6 @@
 <translation id="7568790562536448087">Оновлення</translation>
 <translation id="3910699493603749297">Кхмерська клавіатура</translation>
 <translation id="5487982064049856365">Ви нещодавно змінили пароль. Увійдіть за допомогою нового пароля.</translation>
-<translation id="2345055320165338418">Якщо ввімкнено, відповіді на запити деяких типів з’являтимуться прямо в списку пропозицій універсального вікна пошуку.</translation>
 <translation id="1585717515139318619">Інша програма на вашому комп’ютері додала тему, яка може впливати на роботу Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3216,6 +3246,7 @@
 <translation id="4220128509585149162">Збої в роботі</translation>
 <translation id="3838543471119263078">Файли cookie й інші дані із сайтів і плагінів</translation>
 <translation id="8798099450830957504">За умовчанням</translation>
+<translation id="2309760508720442723">У ланцюжку сертифіката сайту виявлено проблеми (<ph name="CERT_ERROR_DESCRIPTION"/>).</translation>
 <translation id="2481332092278989943">Додати на полицю</translation>
 <translation id="4448186133363537200">JavaScript не може блокувати орієнтацію екрана.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 із шифруванням RSA</translation>
@@ -3365,7 +3396,9 @@
     <ph name="LINE_BREAK1"/>
     Фотографії готові до імпорту на <ph name="BEGIN_LINK"/>Google Диск<ph name="END_LINK"/></translation>
 <translation id="2677924368525077324">Увімкнути редагування тексту на основі дотиків</translation>
+<translation id="3909535143686058220">Код пристрою, згенерований кешем.</translation>
 <translation id="9213566138414731677"><ph name="WALLET_ERROR"/>. Цю трансакцію можна виконати без Google Payments.</translation>
+<translation id="4680322106555328717">Нещодавно ви дозволили показувати на цьому сайті ненадійний вміст (як-от сценарії або елементи iframe).</translation>
 <translation id="283669119850230892">Щоб використовувати мережу <ph name="NETWORK_ID"/>, спершу завершіть під’єднання до Інтернету нижче.</translation>
 <translation id="7513996269498582533">Виявлено користувачем</translation>
 <translation id="9073281213608662541">PAP</translation>
@@ -3375,6 +3408,7 @@
 <translation id="1095631072651601838"><ph name="ISSUER"/> підтверджує ідентифікатор організації <ph name="ORGANIZATION"/> (<ph name="LOCALITY"/>). Сервер надав інформацію про прозорість сертифіката, але один або кілька журналів прозорості сертифіката не розпізнано.</translation>
 <translation id="4610637590575890427">Ви мали на увазі перейти до <ph name="SITE"/>?</translation>
 <translation id="5141240743006678641">Шифрувати синхронізовані паролі за допомогою облікових даних Google</translation>
+<translation id="6871906683378132336">Схоже, це стаття</translation>
 <translation id="8391950649760071442">Транслітерація (emandi → ఏమండీ)</translation>
 <translation id="5866389191145427800">Указує налаштування якості для знімків, зроблених у збільшеному масштабі.</translation>
 <translation id="9033580282188396791">Увімкнеться засіб розпізнавання проксі-сервера V8 поза процесом. Цей засіб запускатиметься під час процесу службової програми, а не процесу веб-переглядача.</translation>
@@ -3450,12 +3484,15 @@
 <translation id="506152810699123561">Показники, пов’язані з впливом <ph name="SHORT_PRODUCT_NAME"/> на пам’ять системи</translation>
 <translation id="674632704103926902">Увімкнути перетягування дотиком</translation>
 <translation id="6510568984200103950">Менше налаштувань</translation>
+<translation id="4791148004876134991">Змінює функцію комбінації клавіш Cmd+`, коли додаток Chrome активний. Коли це налаштування ввімкнено, додатки Chrome не чергуються, якщо натиснути Cmd+` у вікні веб-переглядача, а вікна веб-переглядача не чергуються, якщо додаток Chrome активний.</translation>
 <translation id="8954952943849489823">Помилка переміщення. Неочікувана помилка: $1</translation>
 <translation id="2318143611928805047">Розмір паперу</translation>
 <translation id="7100897339030255923">Вибрано елементів: <ph name="COUNT"/></translation>
+<translation id="5324674707192845912">Ви збираєтеся скасувати реєстрацію цього <ph name="DEVICE_TYPE"/> у Google, щоб вимкнути можливість віддалено знаходити та блокувати пристрій, а також стирати дані на ньому. Для цього потрібне перезавантаження. Продовжити?</translation>
 <translation id="4322394346347055525">Закрити інші вкладки</translation>
 <translation id="2562743677925229011">Ви не ввійшли в <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="5592595402373377407">Ще недостатньо даних.</translation>
+<translation id="2890333672271810534">Історія й останні вкладки</translation>
 <translation id="1556189134700913550">Застосувати до всіх</translation>
 <translation id="881799181680267069">Сховати інші</translation>
 <translation id="4724850507808590449">Імпортовано <ph name="FILE_COUNT"/> фото</translation>
@@ -3510,7 +3547,6 @@
 <translation id="4365673000813822030">На жаль, синхронізація перестала працювати.</translation>
 <translation id="6790820461102226165">Додати користувача…</translation>
 <translation id="2332131598580221120">Переглянути в магазині</translation>
-<translation id="2289304220823908416">Довідка для пристрою Chrome.</translation>
 <translation id="5875858680971105888">На жаль, не вдалось імпортувати нового контрольованого користувача. Перевірте з’єднання з мережею та повторіть спробу.</translation>
 <translation id="5411472733320185105">Не використовуйте налаштування проксі-сервера для таких хостів і доменів:</translation>
 <translation id="3685121001045880436">Імовірно, що сервер, на якому розміщено веб-сторінку, перевантажено чи на ньому сталася помилка.
@@ -3540,12 +3576,13 @@
 <translation id="2351266942280602854">Мова та способи введення</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
 <translation id="7816975051619137001">Автоматично виправляти орфографічні помилки</translation>
+<translation id="856992080682148">Термін дії сертифіката для цього сайту закінчується 2017 року. Ланцюжок сертифіката містить сертифікат, підписаний за допомогою SHA-1.</translation>
 <translation id="4608500690299898628">&amp;Знайти...</translation>
+<translation id="4796938776984088430">Довідка й інформація</translation>
 <translation id="7582582252461552277">Віддавати перевагу цій мережі</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Показати в папці</translation>
 <translation id="5990198433782424697">Розширення на URL-адресах chrome://</translation>
-<translation id="7664673415674668445">Відгук &quot;Ми її втратили!&quot;.</translation>
 <translation id="1793119619663054394">Видалити профіль &quot;<ph name="PROFILE_NAME"/>&quot; і всі пов’язані з ним дані Chrome із цього комп’ютера? Цю дію не можна відмінити.</translation>
 <translation id="7456142309650173560">версія для розробників</translation>
 <translation id="4605399136610325267">Відсутнє з’єднання з Інтернетом</translation>
@@ -3628,6 +3665,7 @@
 <translation id="2190355936436201913">(пусто)</translation>
 <translation id="8515737884867295000">Автентифікацію за сертифікатом не здійснено</translation>
 <translation id="5818003990515275822">Корейська</translation>
+<translation id="404010098438120717">Увімкнути WebVR</translation>
 <translation id="2453021845418314664">Розширені налаштування синхронізації</translation>
 <translation id="14720830734893704">Увімкнути підтримку віртуальної клавіатури.</translation>
 <translation id="5458214261780477893">Дворак</translation>
@@ -3680,7 +3718,6 @@
 <translation id="2643698698624765890">Керуйте своїми розширеннями, натиснувши вкладку &quot;Розширення&quot; в меню Window (Вікно).</translation>
 <translation id="4846680374085650406">Ви дотримуєтеся рекомендації адміністратора щодо цього налаштування.</translation>
 <translation id="1974060860693918893">Розширені</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Відхилити фото</translation>
 <translation id="1244303850296295656">Помилка розширення</translation>
 <translation id="3541661933757219855">Щоб сховати, натисніть Ctrl+Alt+/ або Escape</translation>
@@ -3694,7 +3731,6 @@
 <translation id="3660234220361471169">Ненадійні</translation>
 <translation id="2679385451463308372">Друкувати за допомогою діалогового вікна системи...</translation>
 <translation id="959890390740139744">Автоматично виправляти орфографічні помилки</translation>
-<translation id="5146827657109421175">Назад до списку пристроїв</translation>
 <translation id="2607991137469694339">Метод введення тамільської мови (Phonetic)</translation>
 <translation id="399179161741278232">Імпортовано</translation>
 <translation id="810066391692572978">Файл використовує непідтримувані функції.</translation>
@@ -3710,6 +3746,7 @@
 <translation id="4690462567478992370">Припинити використання недійсного сертифіката</translation>
 <translation id="7421446779945496135">Увімкнути розпізнавання облікових записів дітей.</translation>
 <translation id="1142012852508714031">Ім’я профілю</translation>
+<translation id="5337705430875057403">Зловмисники на сайті <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> можуть обманом змусити вас виконати небезпечну дію, як-от установити шкідливе програмне забезпечення або повідомити особисту інформацію (наприклад, паролі, номери телефонів або кредитних карток).</translation>
 <translation id="6325191661371220117">Вимкнути автозапуск</translation>
 <translation id="6817358880000653228">Збережені паролі для цього сайту:</translation>
 <translation id="4613271546271159013">Розширення змінило сторінку, яка з’являється, коли ви відкриваєте нову вкладку.</translation>
@@ -3932,7 +3969,6 @@
 <translation id="1325040735987616223">Оновлення системи</translation>
 <translation id="720210938761809882">Сторінку заблоковано</translation>
 <translation id="7748144333872478614">Вимкнути фони вікон у режимі TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Про NaCl</translation>
 <translation id="3084771660770137092">Недостатньо пам'яті Chrome або процес для веб-сторінки припинено з іншої причини. Щоб продовжити, перезавантажте цю сторінку чи перейдіть на іншу.</translation>
 <translation id="1114901192629963971">Ваш пароль неможливо підтвердити в цій мережі. Виберіть іншу мережу.</translation>
@@ -4008,6 +4044,7 @@
 <translation id="265390580714150011">Значення поля</translation>
 <translation id="3869917919960562512">Неправильний індекс.</translation>
 <translation id="7031962166228839643">Триває підготовка модуля TPM, зачекайте (це може тривати декілька хвилин)...</translation>
+<translation id="7757728985316497492">Увімкнути для записаного кадру декодер mjpeg з апаратним прискоренням.</translation>
 <translation id="715118844758971915">Типові принтери</translation>
 <translation id="5242724311594467048">Увімкнути розширення &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="7877451762676714207">Невідома помилка сервера. Повторіть спробу чи зв’яжіться з адміністратором сервера.</translation>
@@ -4134,7 +4171,6 @@
 <translation id="4023146161712577481">Визначення конфігурації пристрою.</translation>
 <translation id="6333834492048057036">Вибрати адресний рядок для пошуку</translation>
 <translation id="4172051516777682613">Завжди показувати</translation>
-<translation id="3228279582454007836">Ви ніколи не відвідували цей сайт до сьогоднішнього дня</translation>
 <translation id="7027125358315426638">Назва бази даних:</translation>
 <translation id="5449716055534515760">Закрити вік&amp;но</translation>
 <translation id="3224239078034945833">Канадська (багатомовна)</translation>
@@ -4199,6 +4235,7 @@
 <translation id="8761567432415473239">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK"/>виявила шкідливі програми<ph name="END_LINK"/> на сайті <ph name="SITE"/>.</translation>
 <translation id="6746392203843147041">збільшити гучність</translation>
 <translation id="2317031807364506312">СКАСУВАТИ</translation>
+<translation id="3065041951436100775">Відповідь &quot;Вкладка закрилась&quot;.</translation>
 <translation id="2885378588091291677">Диспетчер завдань</translation>
 <translation id="7412226954991670867">Пам’ять GPU</translation>
 <translation id="4916679969857390442">Лупа</translation>
@@ -4654,6 +4691,7 @@
 <translation id="9019062154811256702">Переглядати та змінювати параметри автозаповнення</translation>
 <translation id="3593965109698325041">Обмеження імені сертифіката</translation>
 <translation id="4358697938732213860">Додати адресу</translation>
+<translation id="5937843713457938680">Режим кешування для механізму V8 JavaScript.</translation>
 <translation id="8396532978067103567">Неправильний пароль.</translation>
 <translation id="5981759340456370804">Статистика для сисадмінів</translation>
 <translation id="9035022520814077154">Помилка системи безпеки</translation>
@@ -4678,6 +4716,7 @@
 <translation id="676327646545845024">Ніколи більше не відображати це діалогове вікно для всіх посилань такого типу.</translation>
 <translation id="1485146213770915382">Вставте <ph name="SEARCH_TERMS_LITERAL"/> в URL-адресу, де мають відобразитись умови пошуку.</translation>
 <translation id="8141725884565838206">Керування паролями</translation>
+<translation id="8837103518490433332">Зберегти пароль для <ph name="ORIGIN"/> у <ph name="PASSWORD_MANAGER_BRAND"/>?</translation>
 <translation id="6016809788585079594">Скажіть &quot;Ok Google&quot; востаннє</translation>
 <translation id="7792122566227574447">Часто відвідувані сторінки, за винятком пошукових запитів</translation>
 <translation id="4839303808932127586">Збере&amp;гти відео як...</translation>
@@ -4718,6 +4757,7 @@
 <translation id="3968739731834770921">Кана</translation>
 <translation id="7387829944233909572">Діалогове вікно &quot;Очистити дані веб-перегляду&quot;</translation>
 <translation id="8023801379949507775">Оновити розширення зараз</translation>
+<translation id="5757567991662509396">Вмикає перевірку правопису Android.</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES"/> (максимум <ph name="NUM_KILOBYTES_LIVE"/>)</translation>
 <translation id="7782250248211791706">Відключити обліковий запис Google</translation>
 <translation id="6782622603507084740">Увімкнути EmbeddedSearch API</translation>
@@ -4747,7 +4787,6 @@
 <translation id="4850458635498951714">Додати пристрій</translation>
 <translation id="3140353188828248647">Активувати адресний рядок</translation>
 <translation id="1371806038977523515">Цими налаштуваннями керує розширення:</translation>
-<translation id="2020262498093941982">Відповіді в пропозиції</translation>
 <translation id="6462082050341971451">Ви ще тут?</translation>
 <translation id="7971550670320370753">Користувачі можуть легко вимикати функцію імпортування в хмару.</translation>
 <translation id="5565871407246142825">Кредитні картки</translation>
@@ -4802,6 +4841,7 @@
 <translation id="216169395504480358">Додати Wi-Fi...</translation>
 <translation id="1804251416207250805">Вимикає надсилання пакетів перевірки зв'язку для аудиту гіперпосилань.</translation>
 <translation id="5116628073786783676">Збере&amp;гти аудіо як...</translation>
+<translation id="2163470535490402084">Щоб увійти в <ph name="DEVICE_TYPE"/>, під’єнайтеся до Інтернету.</translation>
 <translation id="9166510596677678112">Надіслати електронний лист цій людині</translation>
 <translation id="2557899542277210112">Для швидкого доступу розташуйте свої закладки тут, на панелі закладок.</translation>
 <translation id="2749881179542288782">Перевірити граматику та правопис</translation>
@@ -4830,6 +4870,7 @@
 <translation id="7291266260406617455">Увімкнути збереження паролів вручну</translation>
 <translation id="7209475358897642338">Виберіть свою мову</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (контрольований користувач)</translation>
+<translation id="8655972064210167941">Помилка входу. Не вдалося підтвердити ваш пароль. Зв’яжіться з адміністратором або повторіть спробу.</translation>
 <translation id="9149866541089851383">Редагувати...</translation>
 <translation id="3356395591469757189">Пропозиції автозаповнення як додаткове вікно клавіатури</translation>
 <translation id="7939412583708276221">Усе ж зберегти</translation>
@@ -4935,6 +4976,7 @@
 <translation id="7339763383339757376">PKCS #7, єдиний сертифікат</translation>
 <translation id="7587108133605326224">Балтійська</translation>
 <translation id="3340978935015468852">налаштування</translation>
+<translation id="3930208863636674029">Дані аналізу кешу.</translation>
 <translation id="4562982562425894419">Тепер ваш Chromebook може:</translation>
 <translation id="3581912141526548234">Застосувати (спробувати отримати хеші та застосувати їх)</translation>
 <translation id="1974371662733320303">Вибрана стратегія вивільнення пам’яті</translation>
@@ -4952,6 +4994,7 @@
 <translation id="1692799361700686467">Файли cookie з багатьох сайтів дозволено.</translation>
 <translation id="7945967575565699145">Експериментальний протокол QUIC.</translation>
 <translation id="5187295959347858724">Зараз ви ввійшли в <ph name="SHORT_PRODUCT_NAME"/>. Ваші закладки, історія й інші налаштування синхронізуються з обліковим записом Google.</translation>
+<translation id="8731332457891046104">Скасувати реєстрацію <ph name="DEVICE_TYPE"/></translation>
 <translation id="2421956571193030337">Використовуйте цю функцію лише з обліковими записами, у яких ви впевнені.</translation>
 <translation id="223714078860837942">Якщо для сторінки не налаштовано правило джерела посилання на непристойний вміст, установлення цієї позначки зменшить обсяг інформації в заголовку джерела посилання для міждоменних запитів.</translation>
 <translation id="3608454375274108141">F10</translation>
@@ -5185,6 +5228,7 @@
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Новий принтер у вашій мережі}one{Нові принтери у вашій мережі}few{Нові принтери у вашій мережі}many{Нові принтери у вашій мережі}other{Нові принтери у вашій мережі}}</translation>
 <translation id="1327074568633507428">Принтер у Google Cloud Print</translation>
 <translation id="4631110328717267096">Не вдалося оновити систему.</translation>
+<translation id="4098354747657067197">Оманливий сайт</translation>
 <translation id="6185132558746749656">Місцезнаходження пристрою</translation>
 <translation id="3695919544155087829">Введіть пароль, який використовувався для шифрування цього файлу сертифіката.</translation>
 <translation id="2230051135190148440">CHAP</translation>
@@ -5264,7 +5308,6 @@
 <translation id="5300589172476337783">Показати</translation>
 <translation id="3160041952246459240">У вас записано сертифікати, які ідентифікують такі сервери:</translation>
 <translation id="6305328361606238230">Отримувати push-повідомлення</translation>
-<translation id="566920818739465183">Ви вперше відвідали цей сайт <ph name="VISIT_DATE"/></translation>
 <translation id="2961695502793809356">Натисніть, щоб перейти далі; утримуйте, щоб переглянути історію</translation>
 <translation id="4092878864607680421">Найновіша версія програми &quot;<ph name="APP_NAME"/>&quot; потребує більше дозволів, тому її вимкнено.</translation>
 <translation id="5828228029189342317">Ви вирішили автоматично відкривати певні типи файлів після завантаження.</translation>
@@ -5347,6 +5390,7 @@
 <translation id="7549053541268690807">Пошук у словнику</translation>
 <translation id="8911079125461595075">Пошукова система Google позначила розширення <ph name="EXTENSION_NAME"/> як шкідливе. Встановлення заборонено.</translation>
 <translation id="5870086504539785141">Закрити меню доступності</translation>
+<translation id="6809448577646370871">Спеціальне чергування вікон додатків Chrome.</translation>
 <translation id="7005848115657603926">Недійсний діапазон сторінок, використовуйте <ph name="EXAMPLE_PAGE_RANGE"/></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="6251889282623539337">Загальні положення та умови <ph name="DOMAIN"/></translation>
@@ -5458,6 +5502,7 @@
 <translation id="2773948261276885771">Установити сторінки</translation>
 <translation id="3688526734140524629">Змінити версію</translation>
 <translation id="7030084719913890980">Можливо, зловмисники зламали захист цього сайту та намагатимуться встановити на ваш комп’ютер небезпечні програми, які викрадають або видаляють інформацію (як-от фотографії, паролі, повідомлення й дані кредитних карток).</translation>
+<translation id="1376740484579795545">Якщо це налаштування ввімкнено, з URL-адреси chrome://downloads/ відкривається сторінка завантаження матеріального дизайну.</translation>
 <translation id="6263625581655667292">Примусово вмикати режим Lo-Fi для заощадження трафіку, вмикати його лише під час з’єднання з мобільною мережею або вимкнути. Щоб користуватися режимом Lo-Fi, потрібно ввімкнути Заощадження трафіку.</translation>
 <translation id="5941153596444580863">Додати користувача…</translation>
 <translation id="4503387275462811823">Опис розширення</translation>
@@ -5536,6 +5581,7 @@
 <translation id="3459774175445953971">Оновлено:</translation>
 <translation id="2569850583200847032">Увімкнути генерування пароля.</translation>
 <translation id="930268624053534560">Детальні позначки часу</translation>
+<translation id="4547659257713117923">Немає вкладок з інших пристроїв</translation>
 <translation id="1088086359088493902">Секунди</translation>
 <translation id="73289266812733869">Невиділений</translation>
 <translation id="8054563304616131773">Введіть дійсну електронну адресу</translation>
@@ -5762,6 +5808,7 @@
 <translation id="5253753933804516447">Увімкнути команду &quot;Ok Google&quot;, щоб шукати голосом, коли екран увімкнено та розблоковано</translation>
 <translation id="1568822834048182062">Ваші закладки, історія, паролі й інші налаштування синхронізуватимуться з обліковим записом Google.</translation>
 <translation id="5511823366942919280">Налаштувати цей пристрій як &quot;Shark&quot;?</translation>
+<translation id="1675023460278456180">Матеріальний гібридний</translation>
 <translation id="5286673433070377078">Bleeding Edge Renderer Paths – МОЖЕ СПРИЧИНИТИ АВАРІЙНЕ ЗАВЕРШЕННЯ РОБОТИ ВАШОГО ВЕБ-ПЕРЕГЛЯДАЧА</translation>
 <translation id="6843725295806269523">вимкнути звук</translation>
 <translation id="4682551433947286597">Фонові малюнки з’являються на екрані входу.</translation>
@@ -5821,6 +5868,7 @@
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="2813137708069460534">Показники, пов’язані з використанням мережі <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="2491341326828824053">Вимкнути растровий формат для однієї копії</translation>
+<translation id="7775325654940954648">Не вдалося відобразити цю веб-сторінку. Закрийте непотрібні додатки та вкладки, щоб звільнити пам’ять.</translation>
 <translation id="7250799832286185545">Роки</translation>
 <translation id="5849869942539715694">Пакування розширення...</translation>
 <translation id="93766956588638423">Відновити розширення</translation>
@@ -5848,6 +5896,7 @@
 <translation id="5832830184511718549">Використовує додатковий ланцюжок для компонування веб-сторінки. Це дозволяє плавно прокручувати сторінку, навіть якщо основний ланцюжок не відповідає.</translation>
 <translation id="7943385054491506837">Розкладка Colemak (США)</translation>
 <translation id="4316693445078347518">Генерування віртуальної картки Google Payments…</translation>
+<translation id="4952186391360931024">Нематеріальний</translation>
 <translation id="1635033183663317347">Установив опікун.</translation>
 <translation id="5457858494714903578">Не вдалося встановити ненадійне розширення з ідентифікатором &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">Наступна панель</translation>

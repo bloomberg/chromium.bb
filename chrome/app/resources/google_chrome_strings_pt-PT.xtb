@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Este é o seu Chrome</translation>
 <translation id="8406086379114794905">Ajude a melhorar o Chrome</translation>
 <translation id="5620765574781326016">Saiba mais acerca de tópicos em Websites sem sair da página.</translation>
-<translation id="2721687379934343312">No Mac, as palavras-passe são guardadas no Keychain e podem ser sincronizadas ou acedidas por outros utilizadores do Chrome que partilhem esta conta OS X.</translation>
 <translation id="683440813066116847">Regra de importação para o Google Chrome Canary permitir o tráfego mDNS.</translation>
 <translation id="4700157086864140907">O Google Chrome pode disponibilizar uma verificação ortográfica mais inteligente, enviando o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da pesquisa do Google.</translation>
 <translation id="4953650215774548573">Definir o Google Chrome como o navegador predefinido</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">Iniciar automaticamente o Chromium quando o computador arranca</translation>
 <translation id="1763864636252898013">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o sistema operativo do seu dispositivo não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="556024056938947818">O Google Chrome está a tentar mostrar palavras-passe.</translation>
-<translation id="3012890944909934180">Reiniciar o Chrome no computador</translation>
 <translation id="2580411288591421699">Não é possível instalar a mesma versão do Google Chrome atualmente em execução. Feche o Google Chrome e tente novamente.</translation>
 <translation id="8460191995881063249">Centro de Notificações do Chrome</translation>
 <translation id="1457721931618994305">A atualizar o Google Chrome...</translation>
@@ -191,7 +189,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="5028489144783860647">O Google Chrome não conseguiu sincronizar os dados. Atualize a frase de acesso da Sincronização.</translation>
 <translation id="9026991721384951619">O SO Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
 <translation id="8547799825197623713">Iniciador de Aplicações do Chrome para o Canary</translation>
-<translation id="2267273557509361161">Reiniciar o Chrome no modo Windows 8</translation>
 <translation id="2871893339301912279">Tem sessão iniciada no Chrome!</translation>
 <translation id="7890208801193284374">Se partilhar um computador, os amigos e os familiares podem navegar separadamente e configurar o Chrome da forma que quiserem.</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>

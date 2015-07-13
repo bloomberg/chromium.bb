@@ -90,15 +90,12 @@
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="9191268552238695869">Un administrador ha instal·lat Chromium en aquest sistema i està disponible per a tots els usuaris. El Chromium a nivell de sistema substituirà ara la vostra instal·lació a nivell d'usuari.</translation>
 <translation id="3509308970982693815">Tanqueu totes les finestres de Chromium i torneu-ho a provar.</translation>
-<translation id="3192211604788138894">Tornar a iniciar Chromium en mode Windows 8</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="4077262827416206768">Tanqueu totes les finestres de Chromium i torneu-lo a iniciar perquè s'apliqui aquest canvi.</translation>
 <translation id="6475912303565314141">També controla la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME"/> podria perjudicar la vostra experiència de navegació i, per això, Chromium l'ha bloquejat.</translation>
-<translation id="208174207680926830">Tornar a iniciar Chromium a l'escriptori</translation>
 <translation id="750717762378961310">Aquest fitxer és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="6944967875980567883">Mòduls carregats a Chromium</translation>
-<translation id="6899795326977034905">Als dispositius Mac, les contrasenyes es desen al clauer, i els usuaris de Chromium que comparteixin aquest compte d'OS X poden accedir-hi i sincronitzar-les.</translation>
 <translation id="3046695367536568084">Heu de tenir la sessió iniciada a Chromium per poder utilitzar aplicacions. D'aquesta manera, Chromium podrà sincronitzar les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres paràmetres amb la resta de dispositius.</translation>
 <translation id="3296368748942286671">Continua executant les aplicacions en segon pla quan es tanqui Chromium</translation>
 <translation id="473775607612524610">Actualitza</translation>

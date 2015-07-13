@@ -27,7 +27,6 @@
 <translation id="110877069173485804">Ваш персональный Chrome</translation>
 <translation id="8406086379114794905">Помогите сделать Chrome безопаснее</translation>
 <translation id="5620765574781326016">Теперь искать информацию в Интернете можно с любой страницы.</translation>
-<translation id="2721687379934343312">В Mac OS X все пароли сохраняются с помощью технологии Keychain. Использовать или синхронизировать их могут другие пользователи Chrome, имеющие доступ к этому аккаунту.</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
 <translation id="4700157086864140907">В браузере Chrome для проверки правописания вводимый вами текст передается на серверы Google. Та же технология используется в Google Поиске.</translation>
 <translation id="4953650215774548573">Сделать Google Chrome браузером по умолчанию</translation>
@@ -101,7 +100,6 @@
 <translation id="3656661827369545115">Запускать Chromium автоматически при включении компьютера</translation>
 <translation id="1763864636252898013">Не удалось подтвердить, что это сервер <ph name="DOMAIN"/>. Операционная система устройства не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
-<translation id="3012890944909934180">Перезапустить Chrome в режиме рабочего стола</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="8460191995881063249">Центр оповещений Chrome</translation>
 <translation id="1457721931618994305">Выполняется обновление Google Chrome...</translation>
@@ -181,7 +179,6 @@
 <translation id="5028489144783860647">Google Chrome не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="9026991721384951619">Не удалось выполнить синхронизацию, так как учетные данные устарели.</translation>
 <translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
-<translation id="2267273557509361161">Перезапустить Chrome в режиме Windows 8</translation>
 <translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
 <translation id="7890208801193284374">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chrome на свой вкус.</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>

@@ -340,7 +340,6 @@
 <translation id="3846593650622216128">Ett tillägg har låst inställningarna.</translation>
 <translation id="8185331656081929126">Visa aviseringar när nya skrivare hittas i nätverket</translation>
 <translation id="2972557485845626008">Fast programvara</translation>
-<translation id="735327918767574393">Ett fel uppstod när webbsidan skulle visas. Fortsätt genom att läsa in sidan på nytt eller besök en annan sida.</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>Ditt konto har aktiverats för att ange ett tillgångs-id och en plats för den här enheten (valfritt).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>Du kan ange en enhetsidentifierare och plats i fälten nedan. Informationen visas för enheten på sidan chrome:policy i hanteringskonsolen.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">Begär webbplats för surfplatta</translation>
 <translation id="8028060951694135607">Microsofts nyckelåterställning</translation>
@@ -596,7 +595,6 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL"/>. Där finns dessa och andra anvis
 <translation id="6135622770221372891">Kanal-ID:n</translation>
 <translation id="8472623782143987204">maskinvarustödd</translation>
 <translation id="8545107379349809705">Dölj info ...</translation>
-<translation id="2419206345979625354">Webbsidan stängdes oväntat. Om du vill fortsätta läser du in sidan igen eller öppnar en annan sida.</translation>
 <translation id="4865571580044923428">Hantera undantag...</translation>
 <translation id="2526619973349913024">Sök efter uppdatering</translation>
 <translation id="3716615839203649375">tillåt</translation>
@@ -708,7 +706,6 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL"/>. Där finns dessa och andra anvis
 <translation id="3704726585584668805">Aktivera PDF-pluginprogrammet utanför processen.</translation>
 <translation id="5486326529110362464">Det angivna värdet för den privata nyckeln måste finnas.</translation>
 <translation id="6824725898506587159">Hantera språk</translation>
-<translation id="8190907767443402387">Skicka feedback om du vill hjälpa till att förbättra Chrome</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">En administratör har förbjudit multiinloggning för <ph name="USER_EMAIL"/>.
 Alla användare måste logga ut för att fortsätta.</translation>
@@ -1195,7 +1192,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="1864756863218646478">Filen hittades inte.</translation>
 <translation id="7810202088502699111">Popup-fönster är blockerade på den här sidan.</translation>
 <translation id="8884961208881553398">Lägg till nya tjänster</translation>
-<translation id="3808873045540128170">Attans!</translation>
 <translation id="744341768939279100">Skapa en ny profil</translation>
 <translation id="646727171725540434">HTTP-proxy</translation>
 <translation id="7576690715254076113">Jämför</translation>
@@ -1882,7 +1878,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="7075513071073410194">PKCS #1 MD5 med RSA-kryptering</translation>
 <translation id="7767646430896201896">Alternativ:</translation>
 <translation id="1114335938027186412">Datorn innehåller säkerhetsenheten TPM (Trusted Platform Module), som används för att implementera flera viktiga säkerhetsfunktioner i Chrome OS. Besök hjälpcentret för Chromebook om du vill läsa mer: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Esc rensar hela förredigeringsbufferten</translation>
 <translation id="3344786168130157628">Namn på åtkomstpunkt (APN):</translation>
 <translation id="8293206222192510085">Lägg till bokmärke</translation>
@@ -1946,7 +1941,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="919412290393329570">Inaktivera effekten dra för att uppdatera.</translation>
 <translation id="8466234950814670489">Tar-arkiv</translation>
 <translation id="852269967951527627">Tillåt inga webbplatser att visa aviseringar</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">pappersark</translation>
 <translation id="2125314715136825419">Fortsätt utan att uppdatera Adobe Reader (rekommenderas inte)</translation>
 <translation id="5034510593013625357">Värdnamnsmönster</translation>
@@ -2370,7 +2364,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="4572659312570518089">Autentiseringen avbröts vid anslutning till <ph name="DEVICE_NAME"/>.</translation>
 <translation id="4925542575807923399">Administratören för kontot kräver att kontot är det första i en session med multiinloggning.</translation>
 <translation id="5701381305118179107">Centrera</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">Verifierar …</translation>
 <translation id="7193047015510747410">Autofyll användaruppgifter vid synkronisering</translation>
 <translation id="7257173066616499747">Wi-Fi-nätverk</translation>
@@ -2742,7 +2735,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="18139523105317219">EDI-partsnamn</translation>
 <translation id="8356258244599961364">Det här språket saknar inmatningsmetoder</translation>
 <translation id="733186066867378544">Undantag för geografisk plats</translation>
-<translation id="3328801116991980348">Platsinformation</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> har problem med att komma åt nätverket. <ph name="LINE_BREAK"/> Det kan bero på att brandväggen eller antivirusprogrammet felaktigt misstänker att <ph name="PRODUCT_NAME"/> har gjort intrång på datorn och blockerar därmed dess anslutning till Internet.</translation>
 <translation id="2065985942032347596">Verifiering krävs</translation>
 <translation id="8282947398454257691">Veta din unika enhetsidentifierare</translation>
@@ -3238,7 +3230,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="7568790562536448087">Uppdaterar</translation>
 <translation id="3910699493603749297">Khmeriskt tangentbord</translation>
 <translation id="5487982064049856365">Du har nyligen ändrat lösenordet. Logga in med det nya lösenordet.</translation>
-<translation id="2345055320165338418">När detta alternativ är markerat visas svaren på vissa typer av frågor direkt i listan med förslag i adressfältet.</translation>
 <translation id="1585717515139318619">Ett annat program i datorn har lagt till ett tema som kan ändra hur Chrome fungerar.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3550,7 +3541,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="4365673000813822030">Oj, synkroniseringen har slutat fungera.</translation>
 <translation id="6790820461102226165">Lägg till person …</translation>
 <translation id="2332131598580221120">Visa i butik</translation>
-<translation id="2289304220823908416">Få hjälp med din Chrome-enhet.</translation>
 <translation id="5875858680971105888">Det gick inte att importera den hanterade användaren. Kontrollera nätverksanslutningen och försök igen senare.</translation>
 <translation id="5411472733320185105">Använd inte proxyinställningar för dessa värdenheter och domäner:</translation>
 <translation id="3685121001045880436">Det är troligt att servern som webbsidan finns på har överbelastats eller att ett fel har påträffats.
@@ -3585,7 +3575,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">Visa i &amp;mapp</translation>
 <translation id="5990198433782424697">Tillägg på chrome://-webbadresser</translation>
-<translation id="7664673415674668445">Feedback om problem.</translation>
 <translation id="1793119619663054394">Vill du ta bort <ph name="PROFILE_NAME"/> och all tillhörande data i Chrome från den här datorn? Åtgärden kan inte ångras.</translation>
 <translation id="7456142309650173560">utvecklare</translation>
 <translation id="4605399136610325267">Det finns ingen Internetanslutning</translation>
@@ -3726,7 +3715,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="2643698698624765890">Hantera tillägg genom att klicka på Tillägg på menyn Fönster.</translation>
 <translation id="4846680374085650406">Du följer administratörens rekommendation för den här inställningen.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">Ta bort fotot</translation>
 <translation id="1244303850296295656">Fel i tillägg</translation>
 <translation id="3541661933757219855">Tryck på Ctrl+Alt+/ eller Escape för att dölja</translation>
@@ -3740,7 +3728,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="3660234220361471169">Opålitliga</translation>
 <translation id="2679385451463308372">Skriv ut via systemets dialogruta ...</translation>
 <translation id="959890390740139744">Rätta stavning automatiskt</translation>
-<translation id="5146827657109421175">Tillbaka till enhetslistan</translation>
 <translation id="2607991137469694339">Inmatningsmetod för tamil (fonetisk)</translation>
 <translation id="399179161741278232">Importerade</translation>
 <translation id="810066391692572978">Filen använder funktioner som inte stöds.</translation>
@@ -3979,7 +3966,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="1325040735987616223">Systemuppdatering</translation>
 <translation id="720210938761809882">Sidan är blockerad</translation>
 <translation id="7748144333872478614">Inaktivera fönsterbakgrunder i TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Om NaCl</translation>
 <translation id="3084771660770137092">Antingen tog minnet slut i Chrome eller så avslutades processen för webbsidan av någon annan anledning. Om du vill fortsätta läser du in sidan på nytt eller öppnar en annan sida.</translation>
 <translation id="1114901192629963971">Det går inte att verifiera lösenordet i det nuvarande nätverket. Välj ett annat nätverk.</translation>
@@ -4182,7 +4168,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="4023146161712577481">Kontrollerar enhetskonfiguration.</translation>
 <translation id="6333834492048057036">Fokusera på adressfältet för sökning</translation>
 <translation id="4172051516777682613">Visa alltid</translation>
-<translation id="3228279582454007836">Du har aldrig besökt den här webbplatsen tidigare.</translation>
 <translation id="7027125358315426638">Databasnamn:</translation>
 <translation id="5449716055534515760">Stäng fön&amp;ster</translation>
 <translation id="3224239078034945833">Kanadensiska (flerspråkig)</translation>
@@ -4798,7 +4783,6 @@ hanteraren
 <translation id="4850458635498951714">Lägg till en enhet</translation>
 <translation id="3140353188828248647">Fokusera på adressfältet</translation>
 <translation id="1371806038977523515">De här inställningarna kontrolleras av:</translation>
-<translation id="2020262498093941982">Svar i Suggest</translation>
 <translation id="6462082050341971451">Är du kvar?</translation>
 <translation id="7971550670320370753">Ger användaren möjlighet att enkelt inaktivera funktionen att importera till molnet.</translation>
 <translation id="5565871407246142825">Kreditkort</translation>
@@ -5315,7 +5299,6 @@ hanteraren
 <translation id="5300589172476337783">Visa</translation>
 <translation id="3160041952246459240">Du har sparade certifikat som identifierar dessa servrar:</translation>
 <translation id="6305328361606238230">Ta emot push-meddelanden</translation>
-<translation id="566920818739465183">Du besökte den här webbplatsen första gången den <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Klicka för att fortsätta, håll ned för att se historik</translation>
 <translation id="4092878864607680421">Den senaste versionen av programmet <ph name="APP_NAME"/> kräver mer behörighet och har därför inaktiverats.</translation>
 <translation id="5828228029189342317">Du har valt att öppna vissa filtyper automatiskt efter att de har laddats ned.</translation>

@@ -336,7 +336,6 @@
 <translation id="3846593650622216128">این تنظیمات توسط یک برنامه افزودنی اجرا شده‌اند.</translation>
 <translation id="8185331656081929126">نمایش اعلان‌ها هنگامی که چاپگرهای جدیدی در شبکه شناسایی می‌شوند</translation>
 <translation id="2972557485845626008">میان افزار</translation>
-<translation id="735327918767574393">هنگام نمایش این صفحهٔ وب مشکلی پیش آمده است. برای ادامه، تازه‌سازی کنید یا به یک صفحه دیگر بروید.</translation>
 <translation id="948859574356056887">‏<ph name="BEGIN_BOLD"/>حساب شما قابلیت ارائه شناسه دارایی و مکان را برای این دستگاه دارد (اختیاری).<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>می‌توانید شناسه دستگاه و مکان را در قسمت‌های زیر ارائه کنید. این جزئیات برای این دستگاه در صفحه chrome:policy در کنسول مدیریت ارائه شده است.<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">درخواست سایت رایانه لوحی</translation>
 <translation id="8028060951694135607">‏بازیابی کلید Microsot</translation>
@@ -585,7 +584,6 @@
 <translation id="6135622770221372891">شناسه‌های کانال</translation>
 <translation id="8472623782143987204">سخت‌افزار پشتیبانی</translation>
 <translation id="8545107379349809705">پنهان کردن اطلاعات…</translation>
-<translation id="2419206345979625354">صفحه وب به طور غیرمنتظره متوقف شد. برای ادامه دادن، صفحه را تازه‌سازی کنید یا به صفحه دیگری بروید.</translation>
 <translation id="4865571580044923428">مدیریت موارد استثنا...</translation>
 <translation id="2526619973349913024">بررسی برای وجود به‌روزرسانی</translation>
 <translation id="3716615839203649375">مجاز</translation>
@@ -695,7 +693,6 @@
 <translation id="3704726585584668805">‏فعال کردن افزایه خارج از پردازش PDF.</translation>
 <translation id="5486326529110362464">مقدار ورودی برای کلید خصوصی باید وجود داشته باشد.</translation>
 <translation id="6824725898506587159">مدیریت زبان‌ها</translation>
-<translation id="8190907767443402387">‏برای کمک به بهبود Chrome بازخورد خود را ارسال کنید</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">یکی از سرپرستان ورود چندگانه به سیستم را برای <ph name="USER_EMAIL"/> غیرمجاز کرده است.
 برای ادامه همه کاربران باید از سیستم خارج شوند.</translation>
@@ -1181,7 +1178,6 @@
 <translation id="1864756863218646478">این فایل پیدا نشد.</translation>
 <translation id="7810202088502699111">پنجره‌های بازشو در این صفحه مسدود شده‌اند.</translation>
 <translation id="8884961208881553398">افزودن سرویس‌های جدید</translation>
-<translation id="3808873045540128170">کارش تمومه رفیق!</translation>
 <translation id="744341768939279100">ایجاد نمایه‌ای جدید</translation>
 <translation id="646727171725540434">‏پراکسی HTTP</translation>
 <translation id="7576690715254076113">تلفیق کردن</translation>
@@ -1870,7 +1866,6 @@
 <translation id="7075513071073410194">‏PKCS #1 MD5 با رمزگذاری RSA</translation>
 <translation id="7767646430896201896">گزینه‌ها:</translation>
 <translation id="1114335938027186412">‏رایانه شما حاوی یک دستگاه امنیتی با مدول پلتفورم مورد اعتماد (TPM) است که برای اجرای بسیاری از ویژگی‌های امنیتی مهم در سیستم عامل Chrome استفاده می‌شود. برای کسب اطلاعات بیشتر به مرکز راهنمایی Chromebook بروید: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">‏Esc کل بافر از پیش ویرایش شده را پاک می‌کند</translation>
 <translation id="3344786168130157628">نام نقطه دسترسی:</translation>
 <translation id="8293206222192510085">افزودن نشانک</translation>
@@ -1934,7 +1929,6 @@
 <translation id="919412290393329570">جلوه «کشیدن برای بازخوانی» را غیرفعال کنید.</translation>
 <translation id="8466234950814670489">تار نوار</translation>
 <translation id="852269967951527627">به هیچ سایتی اجازه نمایش اعلان‌ها داده نشود</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="8813811964357448561">صفحه کاغذ</translation>
 <translation id="2125314715136825419">‏ادامه بدون به‌روزرسانی Adobe Reader (توصیه نمی‌شود)</translation>
 <translation id="5034510593013625357">الگوی نام میزبان</translation>
@@ -2178,7 +2172,7 @@
 <translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="5892507820957994680">‏لیست تفسیر و اجرای نرم‌افزار داخلی را لغو می‌کند و شتاب دهنده GPU را در پیکربندی های سیستم پشتیبانی نشده فعال می‌کند.</translation>
 <translation id="255632937203580977">اعلان‌های کشف دستگاه</translation>
-<translation id="6407080938771313237">‏HUD لمسی سه‌بعدی</translation>
+<translation id="6407080938771313237">رابط لمسی پروژکتوری</translation>
 <translation id="6122093587541546701">ایمیل (اختیاری):</translation>
 <translation id="3058212636943679650">‏در صورتی که لازم شود سیستم عامل رایانهٔ خود را بازیابی کنید، به یک کارت SD بازیابی یا کارت حافظهٔ USB نیاز خواهید داشت.</translation>
 <translation id="7252661675567922360">بارگیری نشود</translation>
@@ -2355,7 +2349,6 @@
 <translation id="4572659312570518089">هنگام اتصال به «<ph name="DEVICE_NAME"/>» تأیید اعتبار لغو شد.</translation>
 <translation id="4925542575807923399">سرپرست این حساب لازم می‌داند که این حساب اولین حسابی باشد که در جلسه چندگانه ورود به سیستم وارد سیستم شده باشد.</translation>
 <translation id="5701381305118179107">مرکز</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">در حال تأیید...</translation>
 <translation id="7193047015510747410">تکمیل خودکار اعتبارنامه همگام‌سازی</translation>
 <translation id="7257173066616499747">‏شبکه‌های Wi-Fi</translation>
@@ -2727,7 +2720,6 @@
 <translation id="18139523105317219">‏نام طرف EDI</translation>
 <translation id="8356258244599961364">این زبان هیچ روش ورودی ندارد</translation>
 <translation id="733186066867378544">موارد استثنای موقعیت مکانی جغرافیایی</translation>
-<translation id="3328801116991980348">اطلاعات سایت</translation>
 <translation id="7337488620968032387"><ph name="PRODUCT_NAME"/> برای دسترسی به شبکه با مشکل مواجه است. <ph name="LINE_BREAK"/> این امر ممکن است به این دلیل باشد که فایروال یا نرم‌افزار آنتی ویروس شما به اشتباه فکر می‌کند <ph name="PRODUCT_NAME"/> در رایانهٔ شما یک مزاحم است و آن‌ را از اتصال به اینترنت باز می‌دارد.</translation>
 <translation id="2065985942032347596">تأیید اعتبار لازم است</translation>
 <translation id="8282947398454257691">شناسه یکتای دستگاه‌تان را بداند</translation>
@@ -3223,7 +3215,6 @@
 <translation id="7568790562536448087">در حال به‌روزرسانی</translation>
 <translation id="3910699493603749297">صفحه‌کلید خمری</translation>
 <translation id="5487982064049856365">شما اخیراً گذرواژه را تغییر دادید. لطفاً با گذرواژه جدید وارد شوید.</translation>
-<translation id="2345055320165338418">‏اگر فعال باشد، پاسخ‌های انواع خاصی از عبارت‌های جستجو مستقیماً در فهرست پیشنهادهای Omnibox نشان داده خواهند شد.</translation>
 <translation id="1585717515139318619">‏برنامه دیگری در رایانه شما یک طرح زمینه اضافه کرده است که ممکن است نحوه کارکرد Chrome را تغییر دهد.
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3535,7 +3526,6 @@
 <translation id="4365673000813822030">وای، همگام‌سازی متوقف شده است.</translation>
 <translation id="6790820461102226165">افزودن شخص...</translation>
 <translation id="2332131598580221120">مشاهده در فروشگاه</translation>
-<translation id="2289304220823908416">‏برای دستگاه Chrome خودتان راهنمایی دریافت کنید.</translation>
 <translation id="5875858680971105888">اووه! وارد کردن کاربر نظارت‌شده انجام نشد. لطفاً اتصال شبکه‌تان را بررسی کرده، بعداً دوباره امتحان کنید.</translation>
 <translation id="5411472733320185105">از تنظیمات پراکسی برای این میزبان ها و دامنه‌ها استفاده نکنید:</translation>
 <translation id="3685121001045880436">امکان دارد سروری که صفحهٔ وب را میزبانی می‌کند بار اضافی داشته باشد یا با خطایی مواجه شده باشد.
@@ -3570,7 +3560,6 @@
 <translation id="3574305903863751447"><ph name="CITY"/>، <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;نمایش در پوشه</translation>
 <translation id="5990198433782424697">‏‫برنامه‌های افزودنی در نشانی‌های اینترنتی chrome://‎</translation>
-<translation id="7664673415674668445">بازخورد جیم مرده.</translation>
 <translation id="1793119619663054394">‏مطمئنید می‌خواهید &quot;<ph name="PROFILE_NAME"/>&quot; و همه اطلاعات Chrome مربوط به آن را از این رایانه حذف کنید؟ این عمل قابل واگرد نیست.</translation>
 <translation id="7456142309650173560">‏برنامه‌نویسان (dev)</translation>
 <translation id="4605399136610325267">اینترنت وصل نیست</translation>
@@ -3711,7 +3700,6 @@
 <translation id="2643698698624765890">با کلیک کردن روی برنامه‌های افزودنی در منوی پنجره، برنامه‌های افزودنی نصب شده خود را مدیریت کنید.</translation>
 <translation id="4846680374085650406">شما از توصیه‌های سرپرست سیستم برای این تنظیم پیروی می‌کنید.</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/>‎</translation>
 <translation id="4509017836361568632">رد کردن تصویر</translation>
 <translation id="1244303850296295656">خطای برنامهٔ افزودنی</translation>
 <translation id="3541661933757219855">‏Ctrl+Alt+/ یاEscape را برای مخفی کردن تایپ کنید</translation>
@@ -3725,7 +3713,6 @@
 <translation id="3660234220361471169">غیر قابل اطمینان</translation>
 <translation id="2679385451463308372">چاپ با استفاده از کادر گفتگوی سیستم...</translation>
 <translation id="959890390740139744">تصحیح املای خودکار</translation>
-<translation id="5146827657109421175">برگشت به فهرست دستگاه</translation>
 <translation id="2607991137469694339">روش‌ ورودی تامیل (آوایی)</translation>
 <translation id="399179161741278232">وارد شده</translation>
 <translation id="810066391692572978">فایل از ویژگی‌های پشتیبانی نشده استفاده می‌کند.</translation>
@@ -3960,7 +3947,6 @@
 <translation id="1325040735987616223">به‌روزرسانی سیستم</translation>
 <translation id="720210938761809882">صفحه مسدودشده</translation>
 <translation id="7748144333872478614">‏غیرفعال کردن پس‌زمینه پنجره در TouchView</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">‏درباره NaCl</translation>
 <translation id="3084771660770137092">‏ممکن است حافظه Chrome تمام شده باشد یا فرآیند مربوط به صفحهٔ وب به دلایل دیگری متوقف شده باشد. برای ادامه، صفحه را تازه‌سازی کنید یا به یک صفحه دیگر بروید.</translation>
 <translation id="1114901192629963971">رمز ورود شما در این شبکه فعلی تأیید نمی‌شود. لطفاً شبکه دیگری انتخاب کنید.</translation>
@@ -4162,7 +4148,6 @@
 <translation id="4023146161712577481">تعیین پیکربندی دستگاه</translation>
 <translation id="6333834492048057036">تمرکز نوار آدرس برای جستجو</translation>
 <translation id="4172051516777682613">همیشه نشان داده شود</translation>
-<translation id="3228279582454007836">شما امروز از این سایت بازدید نکرده‌اید.</translation>
 <translation id="7027125358315426638">نام پایگاه داده:</translation>
 <translation id="5449716055534515760">بستن &amp;پنجره</translation>
 <translation id="3224239078034945833">چند زبانه کانادا</translation>
@@ -4776,7 +4761,6 @@
 <translation id="4850458635498951714">افزودن یک دستگاه</translation>
 <translation id="3140353188828248647">فوکوس نوار آدرس</translation>
 <translation id="1371806038977523515">کنترل این تنظیمات توسط:</translation>
-<translation id="2020262498093941982">پاسخ‌ها در پیشنهاد</translation>
 <translation id="6462082050341971451">آیا هنوز آنجا هستید؟</translation>
 <translation id="7971550670320370753">‏به کاربر امکان می‌دهد به آسانی ویژگی وارد کردن محتوا از cloud را غیرفعال کند.</translation>
 <translation id="5565871407246142825">کارت‌های اعتباری</translation>
@@ -5293,7 +5277,6 @@
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="3160041952246459240">شما گواهی هایی در فایل دارید که این سرورها را شناسایی می‌کنند:</translation>
 <translation id="6305328361606238230">دریافت پیام‌های فشاری</translation>
-<translation id="566920818739465183">اولین بار این سایت را در <ph name="VISIT_DATE"/> بازدید کردید.</translation>
 <translation id="2961695502793809356">برای رفتن به جلو کلیک کنید، برای دیدن سابقه نگه دارید</translation>
 <translation id="4092878864607680421">جدیدترین نسخه برنامه &quot;<ph name="APP_NAME"/>&quot; به مجوزهای بیشتری نیاز دارد، بنابراین غیر فعال شده است.</translation>
 <translation id="5828228029189342317">شما تنظیمات را به گونه‌ای انجام داده‌اید که برخی از انواع فایل‌ها بعد از دانلود به صورت خودکار باز شوند.</translation>

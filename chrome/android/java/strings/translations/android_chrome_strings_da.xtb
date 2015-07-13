@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">De data, som er gemt på denne enhed og på din Google-konto, vil fortsat være gemt begge steder. Nye data eller ændringer, som du foretager, synkroniseres dog ikke imellem de to.</translation>
 <translation id="9070377983101773829">Start talesøgning</translation>
 <translation id="6831043979455480757">Oversæt</translation>
-<translation id="6504836143156866575">JavaScript-version</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">Kryptér alle med en adgangssætning</translation>
 <translation id="869891660844655955">Udløbsdato</translation>
@@ -270,7 +269,6 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="4543087392704641517">Bogmærkets titel</translation>
 <translation id="1987317783729300807">Konti</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
-<translation id="6064211167623632605">Eksekverbar sti</translation>
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="1521530746149324532">Du er i inkognitotilstand.</translation>
 <translation id="971774202801778802">Bogmærkets webadresse</translation>
@@ -296,7 +294,6 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="6208263165776660488">Chrome-fanerne er flyttet</translation>
 <translation id="4526792582053123229">Google optimerer og viser ikke sider, der besøges via HTTPS eller inkognito.</translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
-<translation id="7817177303494746697">Blink-version</translation>
 <translation id="2532336938189706096">Webvisning</translation>
 <translation id="6571070086367343653">Rediger kreditkort</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
@@ -377,7 +374,6 @@ Tryk på tilbagetasten for at afslutte.</translation>
 Du skal bare åbne Chrome på din computer, gå til menuen og vælge &quot;Log ind på Chrome...&quot;</translation>
 <translation id="4797039098279997504">Tryk for at gå tilbage til <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="4376501731284077108">Ukontrolleret</translation>
-<translation id="2699916814609764774">Profilsti</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="6979922938747275756">Fejl ved indlæsning af mapper</translation>

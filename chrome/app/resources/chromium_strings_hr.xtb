@@ -73,7 +73,7 @@
 <translation id="2347108572062610441">Ovo proširenje promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromiuma.</translation>
 <translation id="3849925841547750267">Na žalost, vaše postavke preglednika Mozilla Firefox nisu dostupne dok je taj preglednik aktivan. Da biste uvezli te postavke u Chromium, spremite svoj rad i zatvorite sve prozore Firefoxa. Zatim kliknite &quot;Nastavak&quot;.</translation>
 <translation id="7027298027173928763">Chromium se nije uspio ažurirati na najnoviju verziju, tako da se nisu instalirale sjajne nove značajke i sigurnosni popravci. Ponovo instalirajte Chromium ručno.</translation>
-<translation id="2718390899429598676">Radi dodatne sigurnosti Chromium će kriptirati vaše podatke.</translation>
+<translation id="2718390899429598676">Radi dodatne sigurnosti Chromium će šifrirati vaše podatke.</translation>
 <translation id="8897323336392112261">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromiuma ili kada se klikne gumb Početna.</translation>
 <translation id="4330585738697551178">Za taj se modul već zna da je u konfliktu s Chromiumom.</translation>
 <translation id="3190315855212034486">Hopa! Chromium je pao. Pokrenuti ponovo sada?</translation>
@@ -90,15 +90,12 @@
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="9191268552238695869">Administrator je instalirao Chromium u ovom sustavu i on je dostupan svim korisnicima. Chromium na razini sustava sada će zamijeniti vašu instalaciju na razini korisnika.</translation>
 <translation id="3509308970982693815">Zatvorite sve prozore preglednika Chromium i pokušajte ponovo.</translation>
-<translation id="3192211604788138894">Ponovo pokreni Chromium u načinu Windows 8</translation>
 <translation id="8851136666856101339">glav</translation>
 <translation id="4077262827416206768">Zatvorite sve prozore preglednika Chromium i ponovo pokrenite Chromium da bi ta promjena postala aktivna.</translation>
 <translation id="6475912303565314141">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromiuma.</translation>
 <translation id="1725059042853530269">Datoteka <ph name="FILE_NAME"/> može uzrokovati štetu prilikom pregledavanja, pa ju je Chromium blokirao.</translation>
-<translation id="208174207680926830">Ponovo pokreni Chromium na radnoj površini</translation>
 <translation id="750717762378961310">Ta je datoteka zlonamjerna i Chromium ju je blokirao.</translation>
 <translation id="6944967875980567883">Moduli učitani u Chromium</translation>
-<translation id="6899795326977034905">Na Mac računalima zaporke se spremaju u vaš Keychain, a drugi korisnici Chromiuma koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="3046695367536568084">Morate se prijaviti na Chromium da biste upotrebljavali aplikacije. To omogućuje Chromiumu sinkronizaciju vaših aplikacija, oznaka, povijesti, zaporki i ostalih postavki na različitim uređajima.</translation>
 <translation id="3296368748942286671">Nastavi izvršavati ​​pozadinske aplikacije po zatvaranju preglednika Chromium</translation>
 <translation id="473775607612524610">Ažuriraj</translation>

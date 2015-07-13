@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">이 기기에 저장된 데이터뿐만 아니라 Google 계정에 저장된 데이터도 그대로 유지됩니다. 그러나 데이터에 새로 추가하거나 변경한 사항은 서로 동기화되지 않습니다.</translation>
 <translation id="9070377983101773829">음성 검색 시작</translation>
 <translation id="6831043979455480757">번역</translation>
-<translation id="6504836143156866575">자바스크립트 버전</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">암호로 모두 암호화</translation>
 <translation id="869891660844655955">유효기간</translation>
@@ -270,7 +269,6 @@
 <translation id="4543087392704641517">북마크 제목</translation>
 <translation id="1987317783729300807">계정</translation>
 <translation id="7846076177841592234">선택 취소</translation>
-<translation id="6064211167623632605">실행 가능 경로</translation>
 <translation id="4522570452068850558">세부정보</translation>
 <translation id="1521530746149324532">시크릿 모드로 바뀌었습니다.</translation>
 <translation id="971774202801778802">북마크 URL</translation>
@@ -296,7 +294,6 @@
 <translation id="6208263165776660488">Chrome 탭이 달라졌습니다.</translation>
 <translation id="4526792582053123229">HTTPS 또는 시크릿 모드를 사용해 액세스한 페이지는 최적화되지 않으며 Google에서 볼 수 없습니다.</translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다.</translation>
-<translation id="7817177303494746697">Blink 버전</translation>
 <translation id="2532336938189706096">웹 보기</translation>
 <translation id="6571070086367343653">신용카드 수정</translation>
 <translation id="6192792657125177640">예외</translation>
@@ -377,7 +374,6 @@
 컴퓨터에서 Chrome을 열고 메뉴로 이동하여 'Chrome에 로그인...'을 선택하세요.</translation>
 <translation id="4797039098279997504">터치하여 <ph name="URL_OF_THE_CURRENT_TAB"/>(으)로 돌아가기</translation>
 <translation id="4376501731284077108">제어되지 않음</translation>
-<translation id="2699916814609764774">프로필 경로</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="6979922938747275756">폴더를 로드하는 중에 오류가 발생했습니다.</translation>

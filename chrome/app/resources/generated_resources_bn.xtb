@@ -337,7 +337,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3846593650622216128">এইসব সেটিংস একটি এক্সটেনশন দ্বারা প্রয়োগ করা হয়৷</translation>
 <translation id="8185331656081929126">নেটওয়ার্কে নতুন মুদ্রণগুলি শণাক্ত করা হলে বিজ্ঞপ্তিগুলি দেখান</translation>
 <translation id="2972557485845626008">ফার্মওয়্যার</translation>
-<translation id="735327918767574393">এই ওয়েবপৃষ্ঠাটি দেখানোর সময় কিছু ভুল হয়েছে৷ অবিরত রাখতে, পুনরায় লোড করুন বা অন্য পৃষ্ঠাতে যান৷</translation>
 <translation id="948859574356056887"><ph name="BEGIN_BOLD"/>আপনার অ্যাকাউন্টকে এই ডিভাইসের (ঐচ্ছিক) জন্য একটি সম্পদ আইডি এবং অবস্থান প্রদান করার জন্য সক্ষম করা হয়েছে৷<ph name="END_BOLD"/> <ph name="BEGIN_ITALIC"/>আপনি নীচের ক্ষেত্রে থাকা একটি ডিভাইস শনাক্তকারী এবং অবস্থান প্রদান করতে পারেন৷ আপনার ব্যবস্থাপনা কনসোলের chrome নীতি পৃষ্ঠায় এই ডিভাইসের জন্য বিশদ বিবরণে এইগুলিকে প্রদর্শন করা হবে৷<ph name="END_ITALIC"/></translation>
 <translation id="7607274158153386860">ট্যাবলেট সাইট অনুরোধ করুন</translation>
 <translation id="8028060951694135607">Microsoft মূল পুনরুদ্ধার</translation>
@@ -590,7 +589,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6135622770221372891">চ্যানেল IDগুলি</translation>
 <translation id="8472623782143987204">hardware-backed</translation>
 <translation id="8545107379349809705">তথ্য লুকান ...</translation>
-<translation id="2419206345979625354">ওয়েবপৃষ্ঠাটি অপ্রত্যাশিতভাবে সমাপ্ত হয়েছে। অব্যাহত রাখতে, পুনরায় লোড করুন বা অন্য পৃষ্ঠাতে যান।</translation>
 <translation id="4865571580044923428">ব্যতিক্রমগুলি পরিচালনা করুন...</translation>
 <translation id="2526619973349913024">আপডেট চেক করুন</translation>
 <translation id="3716615839203649375">মঞ্জুরি দিন</translation>
@@ -700,7 +698,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3704726585584668805">প্রক্রিয়ার বাইরের PDF প্লাগিন সক্রিয় করুন।</translation>
 <translation id="5486326529110362464">ব্যক্তিগত কী-র জন্য ইনপুট মান থাকা আবশ্যক৷</translation>
 <translation id="6824725898506587159">ভাষাগুলি পরিচালনা করুন</translation>
-<translation id="8190907767443402387">Chrome উন্নতিতে সহায়তা করতে প্রতিক্রিয়া পাঠান</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="4120329147617730038">একজন প্রশাসক <ph name="USER_EMAIL"/> এর জন্য একাধিক সাইন ইন অননুমোদিত করেছে।
 চালিয়ে যেতে সমস্ত ব্যবহারকারীদের সাইন আউট করা আবশ্যক।</translation>
@@ -1194,7 +1191,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1864756863218646478">ফাইলটি পাওয়া যায়নি৷</translation>
 <translation id="7810202088502699111">এই পৃষ্ঠাতে পপ-আপগুলি ব্লক করা হয়েছে৷</translation>
 <translation id="8884961208881553398">নতুন পরিষেবাসমূহ যোগ করুন</translation>
-<translation id="3808873045540128170">সে মৃত, জিম!</translation>
 <translation id="744341768939279100">একটি নতুন প্রোফাইল তৈরি করুন</translation>
 <translation id="646727171725540434">HTTP প্রক্সি</translation>
 <translation id="7576690715254076113">ক্রমসজ্জিত</translation>
@@ -1881,7 +1877,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7075513071073410194">RSA এনক্রিপশান সহ PKCS #1 MD5</translation>
 <translation id="7767646430896201896">বিকল্পগুলি:</translation>
 <translation id="1114335938027186412">আপনার কম্পিউটারে একটি  বিশ্বস্ত প্ল্যাটফর্ম মডিউল (TPM) নিরাপত্তা ডিভাইস রয়েছে, যা Chrome OS এ অনেকগুলি জটিল সুরক্ষা বৈশিষ্ট্য প্রয়োগ করতে ব্যবহৃত হয়। আরো জানতে Chromebook সহায়তা কেন্দ্রে : https://support.google.com/chromebook/?p=tpm যান</translation>
-<translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Esc সম্পূর্ণ প্রাক-সম্পাদন বাফার সাফ করে</translation>
 <translation id="3344786168130157628">অ্যাক্সেস পয়েন্ট নাম:</translation>
 <translation id="8293206222192510085">বুকমার্ক যুক্ত করুন</translation>
@@ -1945,7 +1940,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="919412290393329570">রিফ্রেশ-করতে-টানুন এফেক্ট অক্ষম করুন৷</translation>
 <translation id="8466234950814670489">Tar আর্কাইভ</translation>
 <translation id="852269967951527627">বিজ্ঞপ্তিগুলি দেখানোর জন্য কোনো সাইটকে মঞ্জুরি দেবেন না</translation>
-<translation id="6915678159055240887">ক্রোমবাক্স</translation>
 <translation id="8813811964357448561">কাগজের পত্রক</translation>
 <translation id="2125314715136825419">Adobe Reader আপডেট না করেই এগিয়ে যান (প্রস্তাবিত নয়)</translation>
 <translation id="5034510593013625357">হোস্টনাম ধরণ</translation>
@@ -2369,7 +2363,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4572659312570518089">&quot;<ph name="DEVICE_NAME"/>&quot; এ সংযুক্ত করার সময় প্রমাণীকরণ বাতিল করা হয়েছে৷</translation>
 <translation id="4925542575807923399">এই অ্যাকাউন্টের প্রশাসক এই অ্যাকাউন্টটিকে একটি একাধিক সাইন ইন সেশনের প্রথম সাইন ইন থাকা অ্যাকাউন্ট হিসাবে চায়৷</translation>
 <translation id="5701381305118179107">কেন্দ্র</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="1406500794671479665">যাচাই করা হচ্ছে...</translation>
 <translation id="7193047015510747410">স্বতঃপূর্ণ সিঙ্কের প্রমাণপত্র</translation>
 <translation id="7257173066616499747">Wi-Fi নেটওয়ার্কগুলি</translation>
@@ -2740,7 +2733,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="18139523105317219">EDI পার্টি নাম</translation>
 <translation id="8356258244599961364">এই ভাষাটির কোনো ইনপুট পদ্ধতি নেই</translation>
 <translation id="733186066867378544">ভৌগলিক-অবস্থান ব্যতিক্রম</translation>
-<translation id="3328801116991980348">সাইট তথ্য</translation>
 <translation id="7337488620968032387">  <ph name="PRODUCT_NAME"/>
        এর নেটওয়ার্কটি অ্যাক্সেস করতে সমস্যা আছে৷
           <ph name="LINE_BREAK"/>
@@ -3246,7 +3238,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7568790562536448087">আপডেট হচ্ছে</translation>
 <translation id="3910699493603749297">খেমের কীবোর্ড</translation>
 <translation id="5487982064049856365">আপনি সম্প্রতি পাসওয়ার্ড পরিবর্তন করছেন৷ দয়া করে নতুনটি ব্যবহার করে সাইন ইন করুন৷</translation>
-<translation id="2345055320165338418">যদি সক্রিয় থাকে, তাহকে কিছু নির্দিষ্ট ক্যোয়ারি বহুউপযোগী ক্ষেত্রের প্রস্তাবনা তালিকায় সরাসরি প্রদর্শিত হবে।</translation>
 <translation id="1585717515139318619">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম একটি থীম যোগ করেছে যা Chrome এর কাজ করার ধরন পাল্টে দিতে পারে।
 
 <ph name="EXTENSION_NAME"/></translation>
@@ -3559,7 +3550,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4365673000813822030">উপস, সিঙ্ক কাজ করা বন্ধ করে দিয়েছে৷</translation>
 <translation id="6790820461102226165">ব্যক্তিকে যোগ করুন...</translation>
 <translation id="2332131598580221120">দোকানে দেখুন</translation>
-<translation id="2289304220823908416">আপনার Chrome ডিভাইস থেকে সাহায্য গ্রহণ করে।</translation>
 <translation id="5875858680971105888">ওহো! তত্ত্বাবধানে থাকা ব্যবহারকারী আমদানি করা যায়নি৷ দয়া করে আপনার নেটওয়ার্ক সংযোগটি পরীক্ষা করে দেখুন এবং পরে আবার চেষ্টা করুন৷</translation>
 <translation id="5411472733320185105">এই হোস্টগুলি এবং ডোমেনগুলির জন্য প্রক্সি সেটিংস ব্যবহার করবেন না:</translation>
 <translation id="3685121001045880436">এটি সম্ভব যে ওয়েব পৃষ্ঠা হোস্টিং করা সার্ভারটির উপর বেশি চাপ পড়েছে বা তা একটি ত্রুটির সম্মুখীন হয়েছে৷
@@ -3593,7 +3583,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">ফোল্ডারে &amp;দেখান</translation>
 <translation id="5990198433782424697">chrome:// URLগুলিতে এক্সটেনশানগুলি</translation>
-<translation id="7664673415674668445">মৃত জিমের প্রতিক্রিয়া।</translation>
 <translation id="1793119619663054394">আপনি কি &quot;<ph name="PROFILE_NAME"/>&quot; এবং এই কম্পিউটার থেকে সমস্ত সংশ্লিষ্ট Chrome ডেটা মুছে ফেলার বিষয়ে নিশ্চিত? এটিকে পূর্বাবস্থায় ফেরানো যাবে না৷</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="4605399136610325267">ইন্টারনেট সংযুক্ত নেই</translation>
@@ -3732,7 +3721,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2643698698624765890">উইন্ডো মেনুতে এক্সটেনশান ক্লিক করে আপনার এক্সটেনশানগুলি পরিচালনা করুন৷</translation>
 <translation id="4846680374085650406">আপনি এই সেটিংয়ের জন্য প্রশাসকের সুপারিশ অনুসরণ করছেন৷</translation>
 <translation id="1974060860693918893">উন্নত</translation>
-<translation id="3621534696831822003">https://support.google.com/accounts/answer/6197437?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="4509017836361568632">ফটো বাতিল করুন</translation>
 <translation id="1244303850296295656">এক্সটেনশন ত্রুটি</translation>
 <translation id="3541661933757219855">Ctrl+Alt+/ টাইপ করুন অথবা লুকাতে Escape</translation>
@@ -3746,7 +3734,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3660234220361471169">অবিশ্বস্থ</translation>
 <translation id="2679385451463308372">সিস্টেম কথোপকথন ব্যবহার করে মুদ্রণ করুন...</translation>
 <translation id="959890390740139744">স্বয়ংক্রিয়ভাবে বানান ঠিক করুন</translation>
-<translation id="5146827657109421175">ডিভাইসের তালিকাতে ফিরুন</translation>
 <translation id="2607991137469694339">তামিল ইনপুট পদ্ধতি (ধ্বনি-নির্দেশক)</translation>
 <translation id="399179161741278232">আমদানিকৃত</translation>
 <translation id="810066391692572978">স্বতঃপূর্ণ ভবিষ্যত্‌বাণী দেখান</translation>
@@ -3984,7 +3971,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1325040735987616223">সিস্টেম আপডেট</translation>
 <translation id="720210938761809882">পৃষ্ঠা অবরুদ্ধ করা আছে</translation>
 <translation id="7748144333872478614">টাচভিউ -তে থাকা উইন্ডো ব্যাকড্রপসমূহ অক্ষম করুন</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">NaCl সম্পর্কে</translation>
 <translation id="3084771660770137092">হয় Chrome-এর মেমরির শেষ হয়েছে অথবা অন্য কোন কারণে ওয়েবপৃষ্ঠার প্রক্রিয়া বন্ধ হয়েছে৷ অবিরত রাখতে, পুনরায় লোড করুন বা অন্য পৃষ্ঠায় যান৷</translation>
 <translation id="1114901192629963971">এই বর্তমান নেটওয়ার্কে আপনার পাসওয়ার্ড যাচাই করা যাবে না৷ দয়া করে অন্য নেটওয়ার্ক নির্বাচন করুন৷</translation>
@@ -4187,7 +4173,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4023146161712577481">ডিভাইসের কনফিগারেশন নির্ধারণ করা হচ্ছে।</translation>
 <translation id="6333834492048057036">অনুসন্ধানের জন্য ঠিকানা দণ্ডের উপর নজর রাখুন</translation>
 <translation id="4172051516777682613">সর্বদা দেখান</translation>
-<translation id="3228279582454007836">আপনি আজকের আগে এই সাইটটি পরিদর্শন করেন নি৷</translation>
 <translation id="7027125358315426638">ডেটাবেসের নাম:</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
 <translation id="3224239078034945833">কানাডিয়ান বহুভাষিক</translation>
@@ -4802,7 +4787,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4850458635498951714">একটি ডিভাইস জুড়ুন</translation>
 <translation id="3140353188828248647">ফোকাস ঠিকানা দণ্ড</translation>
 <translation id="1371806038977523515">এই সেটিংস এর দ্বারা নিয়ন্ত্রণ করা হয়:</translation>
-<translation id="2020262498093941982">প্রস্তবনায় উত্তর দেয়</translation>
 <translation id="6462082050341971451">আপনি কি এখনও সেখানে আছেন?</translation>
 <translation id="7971550670320370753">ব্যবহারকারিকে মেঘ-আমদানি বৈশিষ্ট্য সহজে অক্ষম করতে দেয়।</translation>
 <translation id="5565871407246142825">ক্রেডিট কার্ডসমূহ</translation>
@@ -5318,7 +5302,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="3160041952246459240">আপনার ফাইলগুলিতে এমন শংসাপত্রগুলি রয়েছে যা এই সার্ভারগুলিকে শনাক্ত করে:</translation>
 <translation id="6305328361606238230">জোর করে পাঠানো বার্তা গ্রহণ করুন</translation>
-<translation id="566920818739465183">আপনি এই সাইটটি প্রথমবার <ph name="VISIT_DATE"/>-এ পরিদর্শন করেছিলেন৷</translation>
 <translation id="2961695502793809356">এগিয়ে যাওয়ার জন্য ক্লিক করুন, ইতিহাস দেখার জন্য ধরে রাখুন</translation>
 <translation id="4092878864607680421">&quot;<ph name="APP_NAME"/>&quot; অ্যাপটির নবীনতম সংস্করণটির আরো অনুমতির প্রয়োজন, তাই এটি অক্ষম করা আছে৷</translation>
 <translation id="5828228029189342317">আপনি কিছু নির্দিষ্ট প্রকারের ফাইল ডাউনলোডের পরে স্বয়ংক্রিয়ভাবে  খোলার জন্য চয়ন করেছেন৷</translation>

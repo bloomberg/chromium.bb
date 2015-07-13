@@ -32,7 +32,6 @@
 <translation id="8237438615979997762">इस डिवाइस पर संग्रहीत डेटा के साथ ही आपके Google खाते में संग्रहीत डेटा दोनों स्थानों में बना रहेगा. हालांकि, नया डेटा या आपके द्वारा अपने डेटा में किए जाने वाले बदलाव उनके बीच समन्वयित नहीं किए जाएंगे.</translation>
 <translation id="9070377983101773829">बोलकर खोजें चालू करें</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
-<translation id="6504836143156866575">JavaScript वर्शन</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="886510833909353412">पासफ़्रेज़ से सभी एन्क्रिप्ट करें</translation>
 <translation id="869891660844655955">समय समाप्ति दिनांक</translation>
@@ -270,7 +269,6 @@
 <translation id="4543087392704641517">शीर्षक बुकमार्क करें</translation>
 <translation id="1987317783729300807">खाते</translation>
 <translation id="7846076177841592234">चयन हटाएं</translation>
-<translation id="6064211167623632605">निष्पादन-योग्य पथ</translation>
 <translation id="4522570452068850558">विवरण</translation>
 <translation id="1521530746149324532">आप गुप्त मोड में चले गए हैं.</translation>
 <translation id="971774202801778802">URL बुकमार्क करें</translation>
@@ -296,7 +294,6 @@
 <translation id="6208263165776660488">Chrome टैब ले जाए गए हैं</translation>
 <translation id="4526792582053123229">HTTPS या गुप्त मोड से ऐक्‍सेस किए गए पृष्ठों को Google द्वारा अनुकूलित नहीं किया जाएगा या देखा नहीं जाएगा.</translation>
 <translation id="7626032353295482388">Chrome में आपका स्वागत है</translation>
-<translation id="7817177303494746697">ब्लिंक वर्शन</translation>
 <translation id="2532336938189706096">वेब दृश्य</translation>
 <translation id="6571070086367343653">क्रेडिट कार्ड संपादित करें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
@@ -377,7 +374,6 @@
 बस अपने कंप्यूटर पर Chrome खोलें, मेनू पर जाएं और &quot;Chrome में प्रवेश करें…&quot; चुनें</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB"/> पर वापस लौटने के लिए स्पर्श करें</translation>
 <translation id="4376501731284077108">अनियंत्रित</translation>
-<translation id="2699916814609764774">प्रोफ़ाइल पथ</translation>
 <translation id="6981982820502123353">पहुंच क्षमता</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="6979922938747275756">फ़ोल्डर लोड करने में त्रुटि</translation>
