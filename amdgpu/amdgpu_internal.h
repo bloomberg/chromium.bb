@@ -88,7 +88,6 @@ struct amdgpu_bo {
 	struct amdgpu_device *dev;
 
 	uint64_t alloc_size;
-	uint64_t virtual_mc_base_address;
 
 	uint32_t handle;
 	uint32_t flink_name;

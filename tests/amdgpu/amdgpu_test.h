@@ -25,6 +25,7 @@
 #define _AMDGPU_TEST_H_
 
 #include "amdgpu.h"
+#include "amdgpu_drm.h"
 
 /**
  * Define max. number of card in system which we are able to handle
@@ -109,10 +110,11 @@ static inline amdgpu_bo_handle gpu_mem_alloc(
 					uint64_t alignment,
 					uint32_t type,
 					uint64_t flags,
-					uint64_t *vmc_addr)
+					uint64_t *vmc_addr,
+					amdgpu_va_handle *va_handle)
 {
 	struct amdgpu_bo_alloc_request req = {0};
-	struct amdgpu_bo_alloc_result res = {0};
+	amdgpu_bo_handle buf_handle;
 	int r;
 
 	CU_ASSERT_NOT_EQUAL(vmc_addr, NULL);
@@ -122,22 +124,50 @@ static inline amdgpu_bo_handle gpu_mem_alloc(
 	req.preferred_heap = type;
 	req.flags = flags;
 
-	r = amdgpu_bo_alloc(device_handle, &req, &res);
+	r = amdgpu_bo_alloc(device_handle, &req, &buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	CU_ASSERT_NOT_EQUAL(res.virtual_mc_base_address, 0);
-	CU_ASSERT_NOT_EQUAL(res.buf_handle, NULL);
-	*vmc_addr = res.virtual_mc_base_address;
-	return res.buf_handle;
+	r = amdgpu_va_range_alloc(device_handle,
+				  amdgpu_gpu_va_range_general,
+				  size, alignment, 0, vmc_addr,
+				  va_handle, 0);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_va_op(buf_handle, 0, size, *vmc_addr, 0, AMDGPU_VA_OP_MAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	return buf_handle;
+}
+
+static inline int gpu_mem_free(amdgpu_bo_handle bo,
+			       amdgpu_va_handle va_handle,
+			       uint64_t vmc_addr,
+			       uint64_t size)
+{
+	int r;
+
+	r = amdgpu_bo_va_op(bo, 0, size, vmc_addr, 0, AMDGPU_VA_OP_UNMAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_va_range_free(va_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_free(bo);
+	CU_ASSERT_EQUAL(r, 0);
+
+	return 0;
 }
 
 static inline int
 amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
 			unsigned alignment, unsigned heap, uint64_t flags,
-			amdgpu_bo_handle *bo, void **cpu, uint64_t *mc_address)
+			amdgpu_bo_handle *bo, void **cpu, uint64_t *mc_address,
+			amdgpu_va_handle *va_handle)
 {
 	struct amdgpu_bo_alloc_request request = {};
-	struct amdgpu_bo_alloc_result out;
+	amdgpu_bo_handle buf_handle;
+	amdgpu_va_handle handle;
+	uint64_t vmc_addr;
 	int r;
 
 	request.alloc_size = size;
@@ -145,19 +175,53 @@ amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
 	request.preferred_heap = heap;
 	request.flags = flags;
 
-	r = amdgpu_bo_alloc(dev, &request, &out);
+	r = amdgpu_bo_alloc(dev, &request, &buf_handle);
 	if (r)
 		return r;
 
-	r = amdgpu_bo_cpu_map(out.buf_handle, cpu);
-	if (r) {
-		amdgpu_bo_free(out.buf_handle);
-		return r;
-	}
+	r = amdgpu_va_range_alloc(dev,
+				  amdgpu_gpu_va_range_general,
+				  size, alignment, 0, &vmc_addr,
+				  &handle, 0);
+	if (r)
+		goto error_va_alloc;
 
-	*bo = out.buf_handle;
-	*mc_address = out.virtual_mc_base_address;
+	r = amdgpu_bo_va_op(buf_handle, 0, size, vmc_addr, 0, AMDGPU_VA_OP_MAP);
+	if (r)
+		goto error_va_map;
+
+	r = amdgpu_bo_cpu_map(buf_handle, cpu);
+	if (r)
+		goto error_cpu_map;
+
+	*bo = buf_handle;
+	*mc_address = vmc_addr;
+	*va_handle = handle;
+
 	return 0;
+
+error_cpu_map:
+	amdgpu_bo_cpu_unmap(bo);
+
+error_va_map:
+	amdgpu_bo_va_op(bo, 0, size, vmc_addr, 0, AMDGPU_VA_OP_UNMAP);
+
+error_va_alloc:
+	amdgpu_bo_free(bo);
+	return r;
+}
+
+static inline int
+amdgpu_bo_unmap_and_free(amdgpu_bo_handle bo, amdgpu_va_handle va_handle,
+			 uint64_t mc_addr, uint64_t size)
+{
+	amdgpu_bo_cpu_unmap(bo);
+	amdgpu_bo_va_op(bo, 0, size, mc_addr, 0, AMDGPU_VA_OP_UNMAP);
+	amdgpu_va_range_free(va_handle);
+	amdgpu_bo_free(bo);
+
+	return 0;
+
 }
 
 static inline int

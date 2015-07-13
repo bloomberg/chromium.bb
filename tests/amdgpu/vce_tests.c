@@ -39,8 +39,10 @@
 #define MAX_RESOURCES	16
 
 struct amdgpu_vce_bo {
-	struct amdgpu_bo *handle;
+	amdgpu_bo_handle handle;
+	amdgpu_va_handle va_handle;
 	uint64_t addr;
+	uint64_t size;
 	uint8_t *ptr;
 };
 
@@ -62,6 +64,7 @@ static uint32_t family_id;
 
 static amdgpu_context_handle context_handle;
 static amdgpu_bo_handle ib_handle;
+static amdgpu_va_handle ib_va_handle;
 static uint64_t ib_mc_address;
 static uint32_t *ib_cpu;
 
@@ -98,7 +101,7 @@ int suite_vce_tests_init(void)
 	r = amdgpu_bo_alloc_and_map(device_handle, IB_SIZE, 4096,
 				    AMDGPU_GEM_DOMAIN_GTT, 0,
 				    &ib_handle, (void**)&ib_cpu,
-				    &ib_mc_address);
+				    &ib_mc_address, &ib_va_handle);
 	if (r)
 		return CUE_SINIT_FAILED;
 
@@ -111,7 +114,8 @@ int suite_vce_tests_clean(void)
 {
 	int r;
 
-	r = amdgpu_bo_free(ib_handle);
+	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
+				     ib_mc_address, IB_SIZE);
 	if (r)
 		return CUE_SCLEAN_FAILED;
 
@@ -170,20 +174,48 @@ static int submit(unsigned ndw, unsigned ip)
 static void alloc_resource(struct amdgpu_vce_bo *vce_bo, unsigned size, unsigned domain)
 {
 	struct amdgpu_bo_alloc_request req = {0};
-	struct amdgpu_bo_alloc_result res = {0};
+	amdgpu_bo_handle buf_handle;
+	amdgpu_va_handle va_handle;
+	uint64_t va = 0;
 	int r;
 
 	req.alloc_size = ALIGN(size, 4096);
 	req.preferred_heap = domain;
-	r = amdgpu_bo_alloc(device_handle, &req, &res);
+	r = amdgpu_bo_alloc(device_handle, &req, &buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
-	vce_bo->addr = res.virtual_mc_base_address;
-	vce_bo->handle = res.buf_handle;
+	r = amdgpu_va_range_alloc(device_handle,
+				  amdgpu_gpu_va_range_general,
+				  req.alloc_size, 1, 0, &va,
+				  &va_handle, 0);
+	CU_ASSERT_EQUAL(r, 0);
+	r = amdgpu_bo_va_op(buf_handle, 0, req.alloc_size, va, 0,
+			    AMDGPU_VA_OP_MAP);
+	CU_ASSERT_EQUAL(r, 0);
+	vce_bo->addr = va;
+	vce_bo->handle = buf_handle;
+	vce_bo->size = req.alloc_size;
+	vce_bo->va_handle = va_handle;
 	r = amdgpu_bo_cpu_map(vce_bo->handle, (void **)&vce_bo->ptr);
 	CU_ASSERT_EQUAL(r, 0);
 	memset(vce_bo->ptr, 0, size);
 	r = amdgpu_bo_cpu_unmap(vce_bo->handle);
 	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void free_resource(struct amdgpu_vce_bo *vce_bo)
+{
+	int r;
+
+	r = amdgpu_bo_va_op(vce_bo->handle, 0, vce_bo->size,
+			    vce_bo->addr, 0, AMDGPU_VA_OP_UNMAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_va_range_free(vce_bo->va_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_free(vce_bo->handle);
+	CU_ASSERT_EQUAL(r, 0);
+	memset(vce_bo, 0, sizeof(*vce_bo));
 }
 
 static void amdgpu_cs_vce_create(void)
@@ -213,8 +245,7 @@ static void amdgpu_cs_vce_create(void)
 	r = submit(len, AMDGPU_HW_IP_VCE);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_free(resources[0]);
-	CU_ASSERT_EQUAL(r, 0);
+	free_resource(&enc.fb[0]);
 }
 
 static void amdgpu_cs_vce_config(void)
@@ -419,10 +450,12 @@ static void amdgpu_cs_vce_encode(void)
 		check_result(&enc);
 	}
 
-	for (i = 0; i < num_resources-1; ++i) {
-		r = amdgpu_bo_free(resources[i]);
-		CU_ASSERT_EQUAL(r, 0);
-	}
+	free_resource(&enc.fb[0]);
+	free_resource(&enc.fb[1]);
+	free_resource(&enc.bs[0]);
+	free_resource(&enc.bs[1]);
+	free_resource(&enc.vbuf);
+	free_resource(&enc.cpb);
 }
 
 static void amdgpu_cs_vce_destroy(void)
@@ -450,6 +483,5 @@ static void amdgpu_cs_vce_destroy(void)
 	r = submit(len, AMDGPU_HW_IP_VCE);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_free(resources[0]);
-	CU_ASSERT_EQUAL(r, 0);
+	free_resource(&enc.fb[0]);
 }

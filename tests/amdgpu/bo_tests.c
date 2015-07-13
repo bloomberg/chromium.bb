@@ -36,6 +36,7 @@ static uint32_t minor_version;
 
 static amdgpu_bo_handle buffer_handle;
 static uint64_t virtual_mc_base_address;
+static amdgpu_va_handle va_handle;
 
 static void amdgpu_bo_export_import(void);
 static void amdgpu_bo_metadata(void);
@@ -53,7 +54,8 @@ CU_TestInfo bo_tests[] = {
 int suite_bo_tests_init(void)
 {
 	struct amdgpu_bo_alloc_request req = {0};
-	struct amdgpu_bo_alloc_result res = {0};
+	amdgpu_bo_handle buf_handle;
+	uint64_t va;
 	int r;
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
@@ -65,19 +67,47 @@ int suite_bo_tests_init(void)
 	req.phys_alignment = BUFFER_ALIGN;
 	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
 
-	r = amdgpu_bo_alloc(device_handle, &req, &res);
+	r = amdgpu_bo_alloc(device_handle, &req, &buf_handle);
 	if (r)
 		return CUE_SINIT_FAILED;
 
-	buffer_handle = res.buf_handle;
-	virtual_mc_base_address = res.virtual_mc_base_address;
+	r = amdgpu_va_range_alloc(device_handle,
+				  amdgpu_gpu_va_range_general,
+				  BUFFER_SIZE, BUFFER_ALIGN, 0,
+				  &va, &va_handle, 0);
+	if (r)
+		goto error_va_alloc;
+
+	r = amdgpu_bo_va_op(buf_handle, 0, BUFFER_SIZE, va, 0, AMDGPU_VA_OP_MAP);
+	if (r)
+		goto error_va_map;
+
+	buffer_handle = buf_handle;
+	virtual_mc_base_address = va;
 
 	return CUE_SUCCESS;
+
+error_va_map:
+	amdgpu_va_range_free(va_handle);
+
+error_va_alloc:
+	amdgpu_bo_free(buf_handle);
+	return CUE_SINIT_FAILED;
 }
 
 int suite_bo_tests_clean(void)
 {
 	int r;
+
+	r = amdgpu_bo_va_op(buffer_handle, 0, BUFFER_SIZE,
+			    virtual_mc_base_address, 0,
+			    AMDGPU_VA_OP_UNMAP);
+	if (r)
+		return CUE_SCLEAN_FAILED;
+
+	r = amdgpu_va_range_free(va_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
 	r = amdgpu_bo_free(buffer_handle);
 	if (r)

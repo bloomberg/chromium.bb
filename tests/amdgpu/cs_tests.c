@@ -43,6 +43,7 @@ static amdgpu_context_handle context_handle;
 static amdgpu_bo_handle ib_handle;
 static uint64_t ib_mc_address;
 static uint32_t *ib_cpu;
+static amdgpu_va_handle ib_va_handle;
 
 static amdgpu_bo_handle resources[MAX_RESOURCES];
 static unsigned num_resources;
@@ -63,6 +64,7 @@ int suite_cs_tests_init(void)
 	amdgpu_bo_handle ib_result_handle;
 	void *ib_result_cpu;
 	uint64_t ib_result_mc_address;
+	amdgpu_va_handle ib_result_va_handle;
 	int r;
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
@@ -79,13 +81,15 @@ int suite_cs_tests_init(void)
 	r = amdgpu_bo_alloc_and_map(device_handle, IB_SIZE, 4096,
 				    AMDGPU_GEM_DOMAIN_GTT, 0,
 				    &ib_result_handle, &ib_result_cpu,
-				    &ib_result_mc_address);
+				    &ib_result_mc_address,
+				    &ib_result_va_handle);
 	if (r)
 		return CUE_SINIT_FAILED;
 
 	ib_handle = ib_result_handle;
 	ib_mc_address = ib_result_mc_address;
 	ib_cpu = ib_result_cpu;
+	ib_va_handle = ib_result_va_handle;
 
 	return CUE_SUCCESS;
 }
@@ -94,7 +98,8 @@ int suite_cs_tests_clean(void)
 {
 	int r;
 
-	r = amdgpu_bo_free(ib_handle);
+	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
+				     ib_mc_address, IB_SIZE);
 	if (r)
 		return CUE_SCLEAN_FAILED;
 
@@ -163,39 +168,56 @@ static void uvd_cmd(uint64_t addr, unsigned cmd, int *idx)
 static void amdgpu_cs_uvd_create(void)
 {
 	struct amdgpu_bo_alloc_request req = {0};
-	struct amdgpu_bo_alloc_result res = {0};
+	amdgpu_bo_handle buf_handle;
+	uint64_t va = 0;
+	amdgpu_va_handle va_handle;
 	void *msg;
 	int i, r;
 
 	req.alloc_size = 4*1024;
 	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
 
-	r = amdgpu_bo_alloc(device_handle, &req, &res);
+	r = amdgpu_bo_alloc(device_handle, &req, &buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_cpu_map(res.buf_handle, &msg);
+	r = amdgpu_va_range_alloc(device_handle,
+				  amdgpu_gpu_va_range_general,
+				  4096, 1, 0, &va,
+				  &va_handle, 0);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_va_op(buf_handle, 0, 4096, va, 0, AMDGPU_VA_OP_MAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_cpu_map(buf_handle, &msg);
 	CU_ASSERT_EQUAL(r, 0);
 
 	memcpy(msg, uvd_create_msg, sizeof(uvd_create_msg));
 	if (family_id >= AMDGPU_FAMILY_VI)
 		((uint8_t*)msg)[0x10] = 7;
 
-	r = amdgpu_bo_cpu_unmap(res.buf_handle);
+	r = amdgpu_bo_cpu_unmap(buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
 	num_resources = 0;
-	resources[num_resources++] = res.buf_handle;
+	resources[num_resources++] = buf_handle;
 	resources[num_resources++] = ib_handle;
 
 	i = 0;
-	uvd_cmd(res.virtual_mc_base_address, 0x0, &i);
+	uvd_cmd(va, 0x0, &i);
 	for (; i % 16; ++i)
 		ib_cpu[i] = 0x80000000;
 
 	r = submit(i, AMDGPU_HW_IP_UVD);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_free(resources[0]);
+	r = amdgpu_bo_va_op(buf_handle, 0, 4096, va, 0, AMDGPU_VA_OP_UNMAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_va_range_free(va_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_free(buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
 
@@ -204,7 +226,9 @@ static void amdgpu_cs_uvd_decode(void)
 	const unsigned dpb_size = 15923584, dt_size = 737280;
 	uint64_t msg_addr, fb_addr, bs_addr, dpb_addr, dt_addr, it_addr;
 	struct amdgpu_bo_alloc_request req = {0};
-	struct amdgpu_bo_alloc_result res = {0};
+	amdgpu_bo_handle buf_handle;
+	amdgpu_va_handle va_handle;
+	uint64_t va = 0;
 	uint64_t sum;
 	uint8_t *ptr;
 	int i, r;
@@ -219,10 +243,20 @@ static void amdgpu_cs_uvd_decode(void)
 
 	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
 
-	r = amdgpu_bo_alloc(device_handle, &req, &res);
+	r = amdgpu_bo_alloc(device_handle, &req, &buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_cpu_map(res.buf_handle, (void **)&ptr);
+	r = amdgpu_va_range_alloc(device_handle,
+				  amdgpu_gpu_va_range_general,
+				  req.alloc_size, 1, 0, &va,
+				  &va_handle, 0);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_va_op(buf_handle, 0, req.alloc_size, va, 0,
+			    AMDGPU_VA_OP_MAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_cpu_map(buf_handle, (void **)&ptr);
 	CU_ASSERT_EQUAL(r, 0);
 
 	memcpy(ptr, uvd_decode_msg, sizeof(uvd_create_msg));
@@ -246,10 +280,10 @@ static void amdgpu_cs_uvd_decode(void)
 	memset(ptr, 0, dt_size);
 
 	num_resources = 0;
-	resources[num_resources++] = res.buf_handle;
+	resources[num_resources++] = buf_handle;
 	resources[num_resources++] = ib_handle;
 
-	msg_addr = res.virtual_mc_base_address;
+	msg_addr = va;
 	fb_addr = msg_addr + 4*1024;
 	if (family_id >= AMDGPU_FAMILY_VI) {
 		it_addr = fb_addr + 4*1024;
@@ -280,48 +314,72 @@ static void amdgpu_cs_uvd_decode(void)
 		sum += ptr[i];
 	CU_ASSERT_EQUAL(sum, 0x20345d8);
 
-	r = amdgpu_bo_cpu_unmap(res.buf_handle);
+	r = amdgpu_bo_cpu_unmap(buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_free(resources[0]);
+	r = amdgpu_bo_va_op(buf_handle, 0, req.alloc_size, va, 0, AMDGPU_VA_OP_UNMAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_va_range_free(va_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_free(buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
 
 static void amdgpu_cs_uvd_destroy(void)
 {
 	struct amdgpu_bo_alloc_request req = {0};
-	struct amdgpu_bo_alloc_result res = {0};
+	amdgpu_bo_handle buf_handle;
+	amdgpu_va_handle va_handle;
+	uint64_t va = 0;
 	void *msg;
 	int i, r;
 
 	req.alloc_size = 4*1024;
 	req.preferred_heap = AMDGPU_GEM_DOMAIN_GTT;
 
-	r = amdgpu_bo_alloc(device_handle, &req, &res);
+	r = amdgpu_bo_alloc(device_handle, &req, &buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_cpu_map(res.buf_handle, &msg);
+	r = amdgpu_va_range_alloc(device_handle,
+				  amdgpu_gpu_va_range_general,
+				  req.alloc_size, 1, 0, &va,
+				  &va_handle, 0);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_va_op(buf_handle, 0, req.alloc_size, va, 0,
+			    AMDGPU_VA_OP_MAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_cpu_map(buf_handle, &msg);
 	CU_ASSERT_EQUAL(r, 0);
 
 	memcpy(msg, uvd_destroy_msg, sizeof(uvd_create_msg));
 	if (family_id >= AMDGPU_FAMILY_VI)
 		((uint8_t*)msg)[0x10] = 7;
 
-	r = amdgpu_bo_cpu_unmap(res.buf_handle);
+	r = amdgpu_bo_cpu_unmap(buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
 	num_resources = 0;
-	resources[num_resources++] = res.buf_handle;
+	resources[num_resources++] = buf_handle;
 	resources[num_resources++] = ib_handle;
 
 	i = 0;
-	uvd_cmd(res.virtual_mc_base_address, 0x0, &i);
+	uvd_cmd(va, 0x0, &i);
 	for (; i % 16; ++i)
 		ib_cpu[i] = 0x80000000;
 
 	r = submit(i, AMDGPU_HW_IP_UVD);
 	CU_ASSERT_EQUAL(r, 0);
 
-	r = amdgpu_bo_free(resources[0]);
+	r = amdgpu_bo_va_op(buf_handle, 0, req.alloc_size, va, 0, AMDGPU_VA_OP_UNMAP);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_va_range_free(va_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_free(buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }

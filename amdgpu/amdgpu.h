@@ -156,19 +156,6 @@ struct amdgpu_bo_alloc_request {
 };
 
 /**
- * Structure describing memory allocation request
- *
- * \sa amdgpu_bo_alloc()
-*/
-struct amdgpu_bo_alloc_result {
-	/** Assigned virtual MC Base Address */
-	uint64_t virtual_mc_base_address;
-
-	/** Handle of allocated memory to be used by the given process only. */
-	amdgpu_bo_handle buf_handle;
-};
-
-/**
  * Special UMD specific information associated with buffer.
  *
  * It may be need to pass some buffer charactersitic as part
@@ -213,13 +200,6 @@ struct amdgpu_bo_info {
 	 */
 	uint64_t phys_alignment;
 
-	/**
-	 * Assigned virtual MC Base Address.
-	 * \note  This information will be returned only if this buffer was
-	 * allocated in the same process otherwise 0 will be returned.
-	*/
-	uint64_t virtual_mc_base_address;
-
 	/** Heap where to allocate memory. */
 	uint32_t preferred_heap;
 
@@ -242,9 +222,6 @@ struct amdgpu_bo_import_result {
 
 	 /** Buffer size */
 	uint64_t alloc_size;
-
-	 /** Assigned virtual MC Base Address */
-	uint64_t virtual_mc_base_address;
 };
 
 /**
@@ -558,8 +535,7 @@ int amdgpu_device_deinitialize(amdgpu_device_handle device_handle);
  *				   See #amdgpu_device_initialize()
  * \param   alloc_buffer - \c [in] Pointer to the structure describing an
  *				   allocation request
- * \param   info	 - \c [out] Pointer to structure which return
- *				    information about allocated memory
+ * \param   buf_handle	- \c [out] Allocated buffer handle
  *
  * \return   0 on success\n
  *          <0 - Negative POSIX Error code
@@ -568,7 +544,7 @@ int amdgpu_device_deinitialize(amdgpu_device_handle device_handle);
 */
 int amdgpu_bo_alloc(amdgpu_device_handle dev,
 		    struct amdgpu_bo_alloc_request *alloc_buffer,
-		    struct amdgpu_bo_alloc_result *info);
+		    amdgpu_bo_handle *buf_handle);
 
 /**
  * Associate opaque data with buffer to be queried by another UMD
@@ -652,7 +628,7 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
  * want to map to GPU address space (make GPU accessible)
  * (This address must be correctly aligned).
  * \param size - [in] Size of allocation (must be correctly aligned)
- * \param amdgpu_bo_alloc_result - [out] Handle of allocation to be passed as
+ * \param buf_handle - [out] Buffer handle for the userptr memory
  * resource on submission and be used in other operations.
  *
  *
@@ -677,7 +653,7 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 */
 int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 				    void *cpu, uint64_t size,
-				    struct amdgpu_bo_alloc_result *info);
+				    amdgpu_bo_handle *buf_handle);
 
 /**
  * Free previosuly allocated memory
@@ -1172,5 +1148,27 @@ int amdgpu_va_range_query(amdgpu_device_handle dev,
 			  enum amdgpu_gpu_va_range type,
 			  uint64_t *start,
 			  uint64_t *end);
+
+/**
+ *  VA mapping/unmapping for the buffer object
+ *
+ * \param  bo		- \c [in] BO handle
+ * \param  offset	- \c [in] Start offset to map
+ * \param  size		- \c [in] Size to map
+ * \param  addr		- \c [in] Start virtual address.
+ * \param  flags	- \c [in] Supported flags for mapping/unmapping
+ * \param  ops		- \c [in] AMDGPU_VA_OP_MAP or AMDGPU_VA_OP_UNMAP
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+
+int amdgpu_bo_va_op(amdgpu_bo_handle bo,
+		    uint64_t offset,
+		    uint64_t size,
+		    uint64_t addr,
+		    uint64_t flags,
+		    uint32_t ops);
 
 #endif /* #ifdef _AMDGPU_H_ */
