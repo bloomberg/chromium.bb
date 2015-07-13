@@ -91,13 +91,12 @@ public:
     {
         v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
         v8::HandleScope scope(isolate);
-        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         // If we're invoked from C++ without a V8 context on the stack, we should
         // run the microtask in the context of the element's document's main world.
-        if (context.IsEmpty())
-            m_scriptState = ScriptState::forMainWorld(loader->element()->document().frame());
+        if (ScriptState::hasCurrentScriptState(isolate))
+            m_scriptState = ScriptState::current(isolate);
         else
-            m_scriptState = ScriptState::from(context);
+            m_scriptState = ScriptState::forMainWorld(loader->element()->document().frame());
     }
 
     ~Task() override
