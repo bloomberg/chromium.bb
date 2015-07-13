@@ -35,13 +35,17 @@ namespace {
 // An extra set of apps to register on initialization, if set by a test.
 const MojoShellContext::StaticApplicationMap* g_applications_for_test;
 
-void StartProcessOnIOThread(mojo::InterfaceRequest<ProcessControl> request) {
+void StartProcessOnIOThread(mojo::InterfaceRequest<ProcessControl> request,
+                            bool use_sandbox) {
   UtilityProcessHost* process_host =
       UtilityProcessHost::Create(nullptr, nullptr);
   // TODO(rockot): Make it possible for the embedder to associate app URLs with
   // app names so we can have more meaningful process names here.
   process_host->SetName(base::UTF8ToUTF16("Mojo Application"));
+  if (!use_sandbox)
+    process_host->DisableSandbox();
   process_host->StartMojoMode();
+
   ServiceRegistry* services = process_host->GetServiceRegistry();
   services->ConnectToRemoteService(request.Pass());
 }
@@ -53,9 +57,10 @@ void OnApplicationLoaded(const GURL& url, bool success) {
 
 // The default loader to use for all applications. This launches a utility
 // process and forwards the Load request the ProcessControl service there.
+// The utility process is sandboxed if |use_sandbox| is true and vice versa.
 class UtilityProcessLoader : public mojo::shell::ApplicationLoader {
  public:
-  UtilityProcessLoader() {}
+  explicit UtilityProcessLoader(bool use_sandbox) : use_sandbox_(use_sandbox) {}
   ~UtilityProcessLoader() override {}
 
  private:
@@ -67,10 +72,13 @@ class UtilityProcessLoader : public mojo::shell::ApplicationLoader {
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&StartProcessOnIOThread, base::Passed(&process_request)));
+        base::Bind(&StartProcessOnIOThread, base::Passed(&process_request),
+                   use_sandbox_));
     process_control->LoadApplication(url.spec(), application_request.Pass(),
                                      base::Bind(&OnApplicationLoaded, url));
   }
+
+  const bool use_sandbox_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessLoader);
 };
@@ -126,11 +134,13 @@ void MojoShellContext::SetApplicationsForTest(
 MojoShellContext::MojoShellContext()
     : application_manager_(new mojo::shell::ApplicationManager(this)) {
   proxy_.Get().reset(new Proxy(this));
+
   application_manager_->set_default_loader(
-      scoped_ptr<mojo::shell::ApplicationLoader>(new UtilityProcessLoader));
+      scoped_ptr<mojo::shell::ApplicationLoader>(
+          new UtilityProcessLoader(true /* use_sandbox */)));
 
   StaticApplicationMap apps;
-  GetContentClient()->browser()->RegisterMojoApplications(&apps);
+  GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
   if (g_applications_for_test) {
     // Add testing apps to the map, potentially overwriting whatever the
     // browser client registered.
@@ -142,6 +152,17 @@ MojoShellContext::MojoShellContext()
         scoped_ptr<mojo::shell::ApplicationLoader>(
             new mojo::shell::StaticApplicationLoader(entry.second)),
         entry.first);
+  }
+
+  std::vector<GURL> urls;
+  GetContentClient()
+      ->browser()
+      ->RegisterUnsandboxedOutOfProcessMojoApplications(&urls);
+  for (const auto& url : urls) {
+    application_manager_->SetLoaderForURL(
+        scoped_ptr<mojo::shell::ApplicationLoader>(
+            new UtilityProcessLoader(false /* use_sandbox */)),
+        url);
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)

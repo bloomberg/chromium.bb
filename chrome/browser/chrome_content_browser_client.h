@@ -261,7 +261,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void OverrideFrameMojoShellServices(
       content::ServiceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
-  void RegisterMojoApplications(StaticMojoApplicationMap* apps) override;
+  void RegisterInProcessMojoApplications(
+      StaticMojoApplicationMap* apps) override;
   void OpenURL(content::BrowserContext* browser_context,
                const content::OpenURLParams& params,
                const base::Callback<void(content::WebContents*)>& callback)

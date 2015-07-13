@@ -116,6 +116,8 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       int opener_render_view_id,
       int opener_render_frame_id,
       bool* no_javascript_access) override;
+  void RegisterUnsandboxedOutOfProcessMojoApplications(
+      std::vector<GURL>* urls) override;
 #if defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,

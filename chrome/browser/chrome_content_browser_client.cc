@@ -2421,7 +2421,7 @@ void ChromeContentBrowserClient::OverrideFrameMojoShellServices(
 #endif
 }
 
-void ChromeContentBrowserClient::RegisterMojoApplications(
+void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   apps->insert(std::make_pair(GURL(device::kDevicesMojoAppUrl),

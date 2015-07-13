@@ -334,6 +334,13 @@ bool CastContentBrowserClient::CanCreateWindow(
   return false;
 }
 
+void CastContentBrowserClient::RegisterUnsandboxedOutOfProcessMojoApplications(
+    std::vector<GURL>* urls) {
+#if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
+  urls->push_back("mojo:media");
+#endif
+}
+
 #if defined(OS_ANDROID)
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
