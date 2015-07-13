@@ -132,12 +132,14 @@ static_library("test_support") {
     "//jingle:notifier_test_util",
     "//net",
     "//testing/gmock",
-    "//third_party/cacheinvalidation",
 
     # TODO(sync): Remove this (http://crbug.com/133352);
     "//third_party/protobuf:protobuf_lite",
 
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
+  ]
+  public_deps = [
+    "//third_party/cacheinvalidation",
   ]
 
   if (is_android) {

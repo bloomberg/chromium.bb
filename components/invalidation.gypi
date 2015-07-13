@@ -53,6 +53,7 @@
         '../base/base.gyp:base_prefs',
         '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         'gcm_driver',
         'keyed_service_core',
         'pref_registry',
@@ -150,6 +151,9 @@
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         'gcm_driver_test_support',
         'keyed_service_core',
+      ],
+      'export_dependent_settings': [
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
       ],
       'include_dirs': [
         '..',
