@@ -1244,7 +1244,7 @@ void ThreadState::addInterruptor(Interruptor* interruptor)
     ASSERT(checkThread());
     SafePointScope scope(HeapPointersOnStack);
     {
-        SafePointAwareMutexLocker locker(threadAttachMutex(), HeapPointersOnStack);
+        MutexLocker locker(threadAttachMutex());
         m_interruptors.append(interruptor);
     }
 }
@@ -1254,7 +1254,7 @@ void ThreadState::removeInterruptor(Interruptor* interruptor)
     ASSERT(checkThread());
     SafePointScope scope(HeapPointersOnStack);
     {
-        SafePointAwareMutexLocker locker(threadAttachMutex(), HeapPointersOnStack);
+        MutexLocker locker(threadAttachMutex());
         size_t index = m_interruptors.find(interruptor);
         RELEASE_ASSERT(index != kNotFound);
         m_interruptors.remove(index);
