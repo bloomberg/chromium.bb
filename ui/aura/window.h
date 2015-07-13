@@ -382,16 +382,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // to.
   void RemoveChildImpl(Window* child, Window* new_parent);
 
-  // If this Window has a layer it is added to |parent| and the origin set to
-  // |offset|. Otherwise this recurses through the children invoking
-  // ReparentLayers(). The net effect is both setting the parent of layers to
-  // |parent| as well as updating bounds of windows with a layerless ancestor.
-  void ReparentLayers(ui::Layer* parent, const gfx::Vector2d& offset);
-
-  // Offsets the first encountered Windows with layers by |offset|. This
-  // recurses through all layerless Windows, stopping at windows with layers.
-  void OffsetLayerBounds(const gfx::Vector2d& offset);
-
   // Called when this window's parent has changed.
   void OnParentChanged();
 
