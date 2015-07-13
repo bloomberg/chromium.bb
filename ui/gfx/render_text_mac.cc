@@ -15,6 +15,41 @@
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 
+namespace {
+
+// This function makes a copy of |font| with the given symbolic traits. This
+// function is similar to CTFontCreateCopyWithSymbolicTraits, but this function
+// works on OSX 10.10, unlike CTFontCreateCopyWithSymbolicTraits.
+base::ScopedCFTypeRef<CTFontRef> CopyFontWithSymbolicTraits(CTFontRef font,
+                                                            int sym_traits) {
+  base::ScopedCFTypeRef<CTFontDescriptorRef> orig_desc(
+      CTFontCopyFontDescriptor(font));
+  base::ScopedCFTypeRef<CFDictionaryRef> orig_attributes(
+      CTFontDescriptorCopyAttributes(orig_desc));
+  // Make a mutable copy of orig_attributes.
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> attributes(
+      CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, orig_attributes));
+
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> traits(
+      CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+                                &kCFTypeDictionaryKeyCallBacks,
+                                &kCFTypeDictionaryValueCallBacks));
+  base::ScopedCFTypeRef<CFNumberRef> n(
+      CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &sym_traits));
+  CFDictionarySetValue(traits, kCTFontSymbolicTrait, n.release());
+  CFDictionarySetValue(attributes, kCTFontTraitsAttribute, traits.release());
+
+  base::ScopedCFTypeRef<CFStringRef> family_name(CTFontCopyFamilyName(font));
+  CFDictionarySetValue(attributes, kCTFontNameAttribute, family_name.release());
+
+  base::ScopedCFTypeRef<CTFontDescriptorRef> desc(
+      CTFontDescriptorCreateWithAttributes(attributes));
+  return base::ScopedCFTypeRef<CTFontRef>(
+      CTFontCreateWithFontDescriptor(desc, 0.0, nullptr));
+}
+
+}  // namespace
+
 namespace gfx {
 
 RenderTextMac::RenderTextMac()
@@ -279,8 +314,8 @@ base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
     const int traits = (style.style(BOLD) ? kCTFontBoldTrait : 0) |
                        (style.style(ITALIC) ? kCTFontItalicTrait : 0);
     if (traits != 0) {
-      base::ScopedCFTypeRef<CTFontRef> styled_font(
-          CTFontCreateCopyWithSymbolicTraits(font, 0.0, NULL, traits, traits));
+      base::ScopedCFTypeRef<CTFontRef> styled_font =
+          CopyFontWithSymbolicTraits(font, traits);
       // TODO(asvitkine): Handle |styled_font| == NULL case better.
       if (styled_font) {
         CFAttributedStringSetAttribute(attr_string, range, kCTFontAttributeName,
