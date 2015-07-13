@@ -96,6 +96,8 @@ class ExtensionViewHost;
 @end
 
 @interface ExtensionPopupController(TestingAPI)
+// Sets whether or not animations are enabled.
++ (void)setAnimationsEnabledForTesting:(BOOL)enabled;
 // Returns a weak pointer to the current popup's view.
 - (NSView*)view;
 // Returns the minimum allowed size for an extension popup.

@@ -103,6 +103,9 @@ BrowserActionTestUtil::BrowserActionTestUtil(Browser* browser,
     : browser_(browser) {
   if (!is_real_window)
     test_helper_.reset(new TestToolbarActionsBarHelperCocoa(browser, nullptr));
+  // We disable animations on extension popups so that tests aren't waiting for
+  // a popup to fade out.
+  [ExtensionPopupController setAnimationsEnabledForTesting:NO];
 }
 
 BrowserActionTestUtil::~BrowserActionTestUtil() {}
@@ -172,9 +175,6 @@ gfx::Size BrowserActionTestUtil::GetPopupSize() {
 
 bool BrowserActionTestUtil::HidePopup() {
   ExtensionPopupController* controller = [ExtensionPopupController popup];
-  // The window must be gone or we'll fail a unit test with windows left open.
-  [static_cast<InfoBubbleWindow*>([controller window])
-      setAllowedAnimations:info_bubble::kAnimateNone];
   [controller close];
   return !HasPopup();
 }

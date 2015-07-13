@@ -42,6 +42,8 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
   return std::max(min, std::min(max, value));
 }
 
+BOOL gAnimationsEnabled = true;
+
 }  // namespace
 
 @interface ExtensionPopupController (Private)
@@ -179,6 +181,8 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
     beingInspected_ = devMode;
     ignoreWindowDidResignKey_ = NO;
     [[self bubble] setArrowLocation:arrowLocation];
+    if (!gAnimationsEnabled)
+      [window setAllowedAnimations:info_bubble::kAnimateNone];
   }
   return self;
 }
@@ -420,6 +424,11 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
 
 - (void)windowDidMove:(NSNotification*)notification {
   [self onWindowChanged];
+}
+
+// Private (TestingAPI)
++ (void)setAnimationsEnabledForTesting:(BOOL)enabled {
+  gAnimationsEnabled = enabled;
 }
 
 // Private (TestingAPI)
