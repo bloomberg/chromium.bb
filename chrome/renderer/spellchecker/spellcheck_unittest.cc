@@ -12,6 +12,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/hunspell_engine.h"
+#include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
@@ -63,7 +64,7 @@ class SpellCheckTest : public testing::Test {
 #if defined(OS_MACOSX)
     // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
     // Instead, tests should exercise individual spelling engines.
-    spell_check_->spellcheck_.platform_spelling_engine_.reset(
+    spell_check_->languages_.front()->platform_spelling_engine_.reset(
         new HunspellEngine);
 #endif
     spell_check_->Init(file.Pass(), std::set<std::string>(), language);
@@ -78,12 +79,13 @@ class SpellCheckTest : public testing::Test {
   SpellCheck* spell_check() { return spell_check_.get(); }
 
   bool CheckSpelling(const std::string& word, int tag) {
-    return spell_check_->spellcheck_.platform_spelling_engine_->CheckSpelling(
-        base::ASCIIToUTF16(word), tag);
+    return spell_check_->languages_.front()
+        ->platform_spelling_engine_->CheckSpelling(base::ASCIIToUTF16(word),
+                                                   tag);
   }
 
   bool IsValidContraction(const base::string16& word, int tag) {
-    return spell_check_->spellcheck_.IsValidContraction(word, tag);
+    return spell_check_->languages_.front()->IsValidContraction(word, tag);
   }
 
 #if !defined(OS_MACOSX)
@@ -1413,8 +1415,9 @@ TEST_F(SpellCheckTest, SpellingEngine_CheckSpelling) {
   // flags internal state that a dictionary was requested. The second one will
   // take the passed-in file and initialize hunspell with it. (The file was
   // passed to hunspell in the ctor for the test fixture).
-  // This needs to be done since we need to ensure the SpellingEngine object
-  // contained in |spellcheck_| from the test fixture does get initialized.
+  // This needs to be done since we need to ensure the SpellingEngine objects
+  // contained in the SpellcheckLanguages in |languages_| from the test fixture
+  // does get initialized.
   // TODO(groby): Clean up this mess.
   InitializeIfNeeded();
   ASSERT_FALSE(InitializeIfNeeded());

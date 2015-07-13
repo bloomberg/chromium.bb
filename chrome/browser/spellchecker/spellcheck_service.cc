@@ -172,16 +172,16 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   IPC::PlatformFileForTransit file = IPC::InvalidPlatformFileForTransit();
 
-  if (hunspell_dictionary_->GetDictionaryFile().IsValid()) {
+  if (hunspell_dictionaries_.front()->GetDictionaryFile().IsValid()) {
     file = IPC::GetFileHandleForProcess(
-        hunspell_dictionary_->GetDictionaryFile().GetPlatformFile(),
+        hunspell_dictionaries_.front()->GetDictionaryFile().GetPlatformFile(),
         process->GetHandle(), false);
   }
 
   process->Send(new SpellCheckMsg_Init(
       file,
       custom_dictionary_->GetWords(),
-      hunspell_dictionary_->GetLanguage(),
+      hunspell_dictionaries_.front()->GetLanguage(),
       prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
   process->Send(new SpellCheckMsg_EnableSpellCheck(
       prefs->GetBoolean(prefs::kEnableContinuousSpellcheck)));
@@ -196,7 +196,8 @@ SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
 }
 
 SpellcheckHunspellDictionary* SpellcheckService::GetHunspellDictionary() {
-  return hunspell_dictionary_.get();
+  return hunspell_dictionaries_.empty() ? nullptr
+                                        : hunspell_dictionaries_.front();
 }
 
 spellcheck::FeedbackSender* SpellcheckService::GetFeedbackSender() {
@@ -287,18 +288,19 @@ void SpellcheckService::OnEnableAutoSpellCorrectChanged() {
 }
 
 void SpellcheckService::OnSpellCheckDictionariesChanged() {
-  if (hunspell_dictionary_.get())
-    hunspell_dictionary_->RemoveObserver(this);
+  if (!hunspell_dictionaries_.empty())
+    hunspell_dictionaries_.front()->RemoveObserver(this);
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   DCHECK(prefs);
 
   std::string dictionary;
   prefs->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &dictionary);
 
-  hunspell_dictionary_.reset(new SpellcheckHunspellDictionary(
+  hunspell_dictionaries_.clear();
+  hunspell_dictionaries_.push_back(new SpellcheckHunspellDictionary(
       dictionary, context_->GetRequestContext(), this));
-  hunspell_dictionary_->AddObserver(this);
-  hunspell_dictionary_->Load();
+  hunspell_dictionaries_.front()->AddObserver(this);
+  hunspell_dictionaries_.front()->Load();
   std::string language_code;
   std::string country_code;
   chrome::spellcheck_common::GetISOLanguageCountryCodeFromLocale(

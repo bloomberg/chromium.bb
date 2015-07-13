@@ -15,6 +15,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
+#include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -161,6 +162,7 @@ class SpellCheck::SpellcheckRequest {
 SpellCheck::SpellCheck()
     : auto_spell_correct_turned_on_(false),
       spellcheck_enabled_(true) {
+  languages_.push_back(new SpellcheckLanguage());
 }
 
 SpellCheck::~SpellCheck() {
@@ -226,7 +228,7 @@ void SpellCheck::OnRequestDocumentMarkers() {
 void SpellCheck::Init(base::File file,
                       const std::set<std::string>& custom_words,
                       const std::string& language) {
-  spellcheck_.Init(file.Pass(), language);
+  languages_.front()->Init(file.Pass(), language);
   custom_dictionary_.Init(custom_words);
 }
 
@@ -245,10 +247,9 @@ bool SpellCheck::SpellCheckWord(
   if (InitializeIfNeeded())
     return true;
 
-  return spellcheck_.SpellCheckWord(in_word, in_word_len,
-                                    tag,
-                                    misspelling_start, misspelling_len,
-                                    optional_suggestions);
+  return languages_.front()->SpellCheckWord(in_word, in_word_len, tag,
+                                            misspelling_start, misspelling_len,
+                                            optional_suggestions);
 }
 
 bool SpellCheck::SpellCheckParagraph(
@@ -372,7 +373,7 @@ void SpellCheck::RequestTextChecking(
 #endif
 
 bool SpellCheck::InitializeIfNeeded() {
-  return spellcheck_.InitializeIfNeeded();
+  return languages_.front()->InitializeIfNeeded();
 }
 
 #if !defined(OS_MACOSX) // OSX doesn't have |pending_request_param_|
@@ -390,7 +391,7 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
 
-  if (!spellcheck_.IsEnabled()) {
+  if (!languages_.front()->IsEnabled()) {
     param->completion()->didCancelCheckingText();
   } else {
     WebVector<blink::WebTextCheckingResult> results;

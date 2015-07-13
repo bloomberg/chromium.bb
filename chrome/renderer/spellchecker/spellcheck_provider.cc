@@ -11,6 +11,7 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"

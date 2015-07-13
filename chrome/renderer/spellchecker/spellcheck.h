@@ -13,13 +13,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
-#include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
 
+class SpellcheckLanguage;
 struct SpellCheckResult;
 
 namespace blink {
@@ -150,7 +151,9 @@ class SpellCheck : public content::RenderProcessObserver,
   scoped_ptr<SpellcheckRequest> pending_request_param_;
 #endif
 
-  SpellcheckLanguage spellcheck_;  // Language-specific spellchecking code.
+  // A vector of objects used to actually check spelling, one for each enabled
+  // language.
+  ScopedVector<SpellcheckLanguage> languages_;
 
   // Custom dictionary spelling engine.
   CustomDictionaryEngine custom_dictionary_;
