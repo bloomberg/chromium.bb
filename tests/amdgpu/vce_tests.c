@@ -156,14 +156,6 @@ static int submit(unsigned ndw, unsigned ip)
 	if (r)
 		return r;
 
-	r = amdgpu_bo_alloc_and_map(device_handle, IB_SIZE, 4096,
-				    AMDGPU_GEM_DOMAIN_GTT, 0,
-				    &ib_handle, (void**)&ib_cpu,
-				    &ib_mc_address);
-	if (r)
-		return r;
-	resources[num_resources-1] = ib_handle;
-
 	fence_status.context = context_handle;
 	fence_status.ip_type = ip;
 
