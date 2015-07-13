@@ -441,6 +441,11 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
      */
     @Override
     public boolean onPassphraseEntered(String passphrase, boolean isGaia, boolean isUpdate) {
+        if (!mProfileSyncService.isSyncInitialized()) {
+            // If the backend was shut down since the dialog was opened, do nothing.
+            return false;
+        }
+
         if (isUpdate) {
             handleEncryptWithCustomPassphrase(passphrase);
             // Setting a new passphrase should always succeed (validation that
@@ -473,6 +478,11 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
      */
     @Override
     public void onPassphraseTypeSelected(PassphraseType type) {
+        if (!mProfileSyncService.isSyncInitialized()) {
+            // If the backend was shut down since the dialog was opened, do nothing.
+            return;
+        }
+
         boolean isAllDataEncrypted = mProfileSyncService.isEncryptEverythingEnabled();
         boolean isUsingSecondaryPassphrase = mProfileSyncService.isUsingSecondaryPassphrase();
 

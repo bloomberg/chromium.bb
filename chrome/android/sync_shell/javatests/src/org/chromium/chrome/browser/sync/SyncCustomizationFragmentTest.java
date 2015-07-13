@@ -216,6 +216,51 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertEquals(keystoreView, listView.getSelectedView());
     }
 
+    /**
+     * Test that choosing a passphrase type while sync is off doesn't crash.
+     *
+     * This is a regression test for http://crbug.com/507557.
+     */
+    @SmallTest
+    @Feature({"Sync"})
+    public void testChoosePassphraseTypeWhenSyncIsOff() throws Exception {
+        setupTestAccountAndSignInToSync(CLIENT_ID);
+        SyncTestUtil.waitForSyncActive(mContext);
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        Preference encryption = getEncryption(fragment);
+        clickPreference(encryption);
+
+        final PassphraseTypeDialogFragment typeFragment = getPassphraseTypeDialogFragment();
+        stopSync();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                typeFragment.onItemClick(
+                        null, null, 0, PassphraseType.CUSTOM_PASSPHRASE.internalValue());
+            }
+        });
+        // No crash means we passed.
+    }
+
+    /**
+     * Test that entering a passphrase while sync is off doesn't crash.
+     */
+    @SmallTest
+    @Feature({"Sync"})
+    public void testEnterPassphraseWhenSyncIsOff() throws Exception {
+        setupTestAccountAndSignInToSync(CLIENT_ID);
+        SyncTestUtil.waitForSyncActive(mContext);
+        final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        stopSync();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                fragment.onPassphraseEntered("passphrase", false, false);
+            }
+        });
+        // No crash means we passed.
+    }
+
     @SmallTest
     @Feature({"Sync"})
     public void testPassphraseCreation() throws Exception {
