@@ -11,7 +11,7 @@
 CLANG_REVISION=241602
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=2
+CLANG_SUB_REVISION=3
 
 PACKAGE_VERSION="${CLANG_REVISION}-${CLANG_SUB_REVISION}"
 
