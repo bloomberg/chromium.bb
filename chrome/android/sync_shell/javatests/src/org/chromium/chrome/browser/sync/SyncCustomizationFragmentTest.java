@@ -103,6 +103,24 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
     }
 
+    /**
+     * This is a regression test for http://crbug.com/467600.
+     */
+    @SmallTest
+    @Feature({"Sync"})
+    public void testOpeningSettingsDoesntStartBackend() throws Exception {
+        setupTestAccountAndSignInToSync(CLIENT_ID);
+        stopSync();
+        startSyncCustomizationFragment();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertFalse(mProfileSyncService.isSyncRequested());
+                assertFalse(mProfileSyncService.isSyncInitialized());
+            }
+        });
+    }
+
     @SmallTest
     @Feature({"Sync"})
     public void testDefaultControlStatesWithSyncOffThenOn() throws Exception {
