@@ -66,9 +66,9 @@ void Define(const v8::FunctionCallbackInfo<Value>& info) {
   std::vector<std::string> dependencies;
   v8::Local<Value> factory;
 
-  if (args.PeekNext()->IsString())
+  if (!args.PeekNext().IsEmpty() && args.PeekNext()->IsString())
     args.GetNext(&id);
-  if (args.PeekNext()->IsArray())
+  if (!args.PeekNext().IsEmpty() && args.PeekNext()->IsArray())
     args.GetNext(&dependencies);
   if (!args.GetNext(&factory))
     return args.ThrowError();

@@ -2131,7 +2131,7 @@ void TestRunner::QueueLoadHTMLString(gin::Arguments* args) {
   args->GetNext(&base_url_str);
   WebURL base_url = WebURL(GURL(base_url_str));
 
-  if (args->PeekNext()->IsString()) {
+  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
     std::string unreachable_url_str;
     args->GetNext(&unreachable_url_str);
     WebURL unreachable_url = WebURL(GURL(unreachable_url_str));

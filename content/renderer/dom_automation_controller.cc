@@ -75,8 +75,9 @@ bool DomAutomationController::SendMsg(const gin::Arguments& args) {
   // writer is lenient, and (b) on the receiving side we wrap the JSON string
   // in square brackets, converting it to an array, then parsing it and
   // grabbing the 0th element to get the value out.
-  if (args.PeekNext()->IsString() || args.PeekNext()->IsBoolean() ||
-      args.PeekNext()->IsNumber()) {
+  if (!args.PeekNext().IsEmpty() &&
+      (args.PeekNext()->IsString() || args.PeekNext()->IsBoolean() ||
+       args.PeekNext()->IsNumber())) {
     V8ValueConverterImpl conv;
     value.reset(
         conv.FromV8Value(args.PeekNext(), args.isolate()->GetCurrentContext()));

@@ -75,6 +75,8 @@ class GIN_EXPORT Arguments {
     info_->GetReturnValue().Set(v8_value);
   }
 
+  // Always check the return value whether the handle is empty before
+  // dereferencing the handle.
   v8::Local<v8::Value> PeekNext() const;
 
   void ThrowError() const;

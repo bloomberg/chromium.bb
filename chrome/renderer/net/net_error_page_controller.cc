@@ -56,7 +56,7 @@ bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
   if (!render_frame())
     return false;
 
-  if (!args.PeekNext()->IsInt32())
+  if (args.PeekNext().IsEmpty() || !args.PeekNext()->IsInt32())
     return false;
 
   NetErrorHelper* net_error_helper =

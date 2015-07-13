@@ -2050,7 +2050,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   // the device is assumed to be a touchscreen (since most tests were written
   // assuming this).
   event.sourceDevice = blink::WebGestureDeviceTouchscreen;
-  if (args->PeekNext()->IsString()) {
+  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
     std::string device_string;
     if (!args->GetNext(&device_string)) {
       args->ThrowError();

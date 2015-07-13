@@ -68,9 +68,9 @@ void MemoryBenchmarkingExtension::HeapProfilerDump(gin::Arguments* args) {
   std::string process_type;
   std::string reason("benchmarking_extension");
 
-  if (args->PeekNext()->IsString()) {
+  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString()) {
     args->GetNext(&process_type);
-    if (args->PeekNext()->IsString())
+    if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsString())
       args->GetNext(&reason);
   }
 
