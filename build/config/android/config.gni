@@ -164,6 +164,7 @@ if (is_android) {
 
   # libc++ stuff ---------------------------------------------------------------
 
+  android_libcpp_root = "$android_ndk_root/sources/cxx-stl/llvm-libc++"
   if (component_mode == "shared_library") {
     android_libcpp_library = "c++_shared"
   } else {

@@ -1432,7 +1432,12 @@ template("android_apk") {
              "Relocation packing requires use of the" + " Chromium linker.")
     }
 
-    _native_libs = process_file_template(
+    _native_libs = []
+    if (is_component_build) {
+      _native_libs += [ "$root_out_dir/lib.stripped/libc++_shared.so" ]
+      _chromium_linker_dep += [ "//build/android:cpplib_stripped" ]
+    }
+    _native_libs += process_file_template(
             invoker.native_libs,
             "$root_build_dir/lib.stripped/{{source_file_part}}")
 
@@ -2085,11 +2090,6 @@ template("create_native_executable_dist") {
   libraries_list =
       "${target_gen_dir}/${template_name}_library_dependencies.list"
 
-  # TODO(gyp)
-  #'dependencies': [
-  #'<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
-  #],
-
   find_deps_target_name = "${template_name}__find_library_dependencies"
   copy_target_name = "${template_name}__copy_libraries_and_exe"
 
@@ -2137,7 +2137,7 @@ template("create_native_executable_dist") {
     rebased_libraries_list = rebase_path(libraries_list, root_build_dir)
     args = [
       "--files=$rebased_binaries_list",
-      "--files=@FileArg($rebased_libraries_list:libraries)",
+      "--files=@FileArg($rebased_libraries_list:lib_paths)",
     ]
 
     deps = [

@@ -651,8 +651,6 @@ config("runtime_library") {
     # arm-linux-androideabi-4.4.3 toolchain (circa Gingerbread) will exhibit
     # strange errors. The include ordering here is important; change with
     # caution.
-    android_libcpp_root = "$android_ndk_root/sources/cxx-stl/llvm-libc++"
-
     cflags += [
       "-isystem" +
           rebase_path("$android_libcpp_root/libcxx/include", root_build_dir),
@@ -665,13 +663,6 @@ config("runtime_library") {
     ]
 
     lib_dirs += [ "$android_libcpp_root/libs/$android_app_abi" ]
-
-    if (component_mode == "shared_library") {
-      android_libcpp_library = "c++_shared"
-    } else {
-      android_libcpp_library = "c++_static"
-    }
-
     libs += [ "$android_libcpp_library" ]
 
     if (current_cpu == "mipsel") {
