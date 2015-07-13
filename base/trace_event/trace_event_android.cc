@@ -29,7 +29,7 @@ void WriteEvent(
     const unsigned char* arg_types,
     const TraceEvent::TraceValue* arg_values,
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned char flags) {
+    unsigned int flags) {
   std::string out = StringPrintf("%c|%d|%s", phase, getpid(), name);
   if (flags & TRACE_EVENT_FLAG_HAS_ID)
     StringAppendF(&out, "-%" PRIx64, static_cast<uint64>(id));

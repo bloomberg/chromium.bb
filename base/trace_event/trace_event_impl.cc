@@ -597,7 +597,7 @@ void TraceEvent::Initialize(
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned char flags) {
+    unsigned int flags) {
   timestamp_ = timestamp;
   thread_timestamp_ = thread_timestamp;
   duration_ = TimeDelta::FromInternalValue(-1);
@@ -2007,7 +2007,7 @@ TraceEventHandle TraceLog::AddTraceEvent(
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned char flags) {
+    unsigned int flags) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   base::TraceTicks now = base::TraceTicks::Now();
   return AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled,
@@ -2029,7 +2029,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned char flags) {
+    unsigned int flags) {
   TraceEventHandle handle = { 0, 0, 0 };
   if (!*category_group_enabled)
     return handle;

@@ -121,7 +121,7 @@ class BASE_EXPORT TraceEvent {
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-      unsigned char flags);
+      unsigned int flags);
 
   void Reset();
 
@@ -148,7 +148,7 @@ class BASE_EXPORT TraceEvent {
   TimeDelta duration() const { return duration_; }
   TimeDelta thread_duration() const { return thread_duration_; }
   unsigned long long id() const { return id_; }
-  unsigned char flags() const { return flags_; }
+  unsigned int flags() const { return flags_; }
 
   // Exposed for unittesting:
 
@@ -183,7 +183,7 @@ class BASE_EXPORT TraceEvent {
   scoped_refptr<base::RefCountedString> parameter_copy_storage_;
   int thread_id_;
   char phase_;
-  unsigned char flags_;
+  unsigned int flags_;
   unsigned char arg_types_[kTraceMaxNumArgs];
 
   DISALLOW_COPY_AND_ASSIGN(TraceEvent);
@@ -406,7 +406,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
                                 const char* const arg_names[],
                                 const unsigned char arg_types[],
                                 const unsigned long long arg_values[],
-                                unsigned char flags);
+                                unsigned int flags);
 
   // Enable tracing for EventCallback.
   void SetEventCallbackEnabled(const TraceConfig& trace_config,
@@ -453,7 +453,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-      unsigned char flags);
+      unsigned int flags);
   TraceEventHandle AddTraceEventWithThreadIdAndTimestamp(
       char phase,
       const unsigned char* category_group_enabled,
@@ -466,7 +466,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
-      unsigned char flags);
+      unsigned int flags);
   static void AddTraceEventEtw(char phase,
                                const char* category_group,
                                const void* id,

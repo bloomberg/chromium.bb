@@ -2340,7 +2340,7 @@ class TraceEventCallbackTest : public TraceEventTestFixture {
                        const char* const arg_names[],
                        const unsigned char arg_types[],
                        const unsigned long long arg_values[],
-                       unsigned char flags) {
+                       unsigned int flags) {
     s_instance->collected_events_phases_.push_back(phase);
     s_instance->collected_events_categories_.push_back(
         TraceLog::GetCategoryGroupName(category_group_enabled));
