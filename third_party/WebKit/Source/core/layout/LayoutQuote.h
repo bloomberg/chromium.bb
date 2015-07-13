@@ -35,18 +35,18 @@ class LayoutTextFragment;
 class LayoutQuote final : public LayoutInline {
 public:
     LayoutQuote(Document*, const QuoteType);
-    virtual ~LayoutQuote();
+    ~LayoutQuote() override;
     void attachQuote();
 
-    virtual const char* name() const override { return "LayoutQuote"; }
+    const char* name() const override { return "LayoutQuote"; }
 
 private:
     void detachQuote();
 
-    virtual void willBeDestroyed() override;
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || LayoutInline::isOfType(type); }
-    virtual void styleDidChange(StyleDifference, const ComputedStyle*) override;
-    virtual void willBeRemovedFromTree() override;
+    void willBeDestroyed() override;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectQuote || LayoutInline::isOfType(type); }
+    void styleDidChange(StyleDifference, const ComputedStyle*) override;
+    void willBeRemovedFromTree() override;
 
     String computeText() const;
     void updateText();

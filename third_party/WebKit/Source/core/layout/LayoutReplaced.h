@@ -31,46 +31,46 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 public:
     LayoutReplaced(Element*);
     LayoutReplaced(Element*, const LayoutSize& intrinsicSize);
-    virtual ~LayoutReplaced();
+    ~LayoutReplaced() override;
 
-    virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
-    virtual LayoutUnit computeReplacedLogicalHeight() const override;
+    LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
+    LayoutUnit computeReplacedLogicalHeight() const override;
 
     bool hasReplacedLogicalHeight() const;
     LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = nullptr) const;
 
-    virtual bool needsPreferredWidthsRecalculation() const override;
+    bool needsPreferredWidthsRecalculation() const override;
 
     // These values are specified to be 300 and 150 pixels in the CSS 2.1 spec.
     // http://www.w3.org/TR/CSS2/visudet.html#inline-replaced-width
     static const int defaultWidth;
     static const int defaultHeight;
-    virtual bool canHaveChildren() const override { return false; }
+    bool canHaveChildren() const override { return false; }
     bool shouldPaint(const PaintInfo&, const LayoutPoint&) const;
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) { }
     LayoutRect localSelectionRect(bool checkWhetherSelected = true) const; // This is in local coordinates, but it's a physical rect (so the top left corner is physical top left).
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) override;
 
     bool isSelected() const;
 
 protected:
-    virtual void willBeDestroyed() override;
+    void willBeDestroyed() override;
 
-    virtual void layout() override;
+    void layout() override;
 
-    virtual LayoutSize intrinsicSize() const override final { return m_intrinsicSize; }
-    virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
+    LayoutSize intrinsicSize() const final { return m_intrinsicSize; }
+    void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
 
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
+    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const final;
 
     virtual LayoutUnit intrinsicContentLogicalHeight() const { return intrinsicLogicalHeight(); }
 
     virtual LayoutUnit minimumReplacedHeight() const { return LayoutUnit(); }
 
-    virtual void setSelectionState(SelectionState) override final;
+    void setSelectionState(SelectionState) final;
 
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     void setIntrinsicSize(const LayoutSize& intrinsicSize) { m_intrinsicSize = intrinsicSize; }
     virtual void intrinsicSizeChanged();
@@ -78,15 +78,15 @@ protected:
     virtual LayoutBox* embeddedContentBox() const { return nullptr; }
 
 private:
-    virtual void computePreferredLogicalWidths() override final;
+    void computePreferredLogicalWidths() final;
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
+    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
 
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override final;
+    PositionWithAffinity positionForPoint(const LayoutPoint&) final;
 
-    virtual bool canBeSelectionLeaf() const override { return true; }
+    bool canBeSelectionLeaf() const override { return true; }
 
-    virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const override final;
+    LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const final;
     void computeAspectRatioInformationForLayoutBox(LayoutBox*, FloatSize& constrainedSize, double& intrinsicRatio) const;
 
     mutable LayoutSize m_intrinsicSize;

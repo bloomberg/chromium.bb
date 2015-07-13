@@ -44,8 +44,8 @@ public:
         setDocumentForAnonymous(&owner->document());
     }
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreenPlaceholder || LayoutBlockFlow::isOfType(type); }
-    virtual void willBeDestroyed() override;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreenPlaceholder || LayoutBlockFlow::isOfType(type); }
+    void willBeDestroyed() override;
     LayoutFullScreen* m_owner;
 };
 

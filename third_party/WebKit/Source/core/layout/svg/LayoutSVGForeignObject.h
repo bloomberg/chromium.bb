@@ -30,32 +30,32 @@ class SVGForeignObjectElement;
 class LayoutSVGForeignObject final : public LayoutSVGBlock {
 public:
     explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
-    virtual ~LayoutSVGForeignObject();
+    ~LayoutSVGForeignObject() override;
 
-    virtual const char* name() const override { return "LayoutSVGForeignObject"; }
+    const char* name() const override { return "LayoutSVGForeignObject"; }
 
-    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual void layout() override;
+    void layout() override;
 
-    virtual FloatRect objectBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
-    virtual FloatRect strokeBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
+    FloatRect objectBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
+    FloatRect strokeBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
+    FloatRect paintInvalidationRectInLocalCoordinates() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
 
-    virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGForeignObject || LayoutSVGBlock::isOfType(type); }
+    bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGForeignObject || LayoutSVGBlock::isOfType(type); }
 
-    virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+    void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
     FloatRect viewportRect() { return m_viewport; }
 
 private:
-    virtual void updateLogicalWidth() override;
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    void updateLogicalWidth() override;
+    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    virtual const AffineTransform& localToParentTransform() const override;
+    const AffineTransform& localToParentTransform() const override;
 
     bool m_needsTransformUpdate : 1;
     FloatRect m_viewport;

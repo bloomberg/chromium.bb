@@ -29,9 +29,9 @@ class LayoutSVGTSpan final : public LayoutSVGInline {
 public:
     explicit LayoutSVGTSpan(Element*);
 
-    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    virtual const char* name() const override { return "LayoutSVGTSpan"; }
+    const char* name() const override { return "LayoutSVGTSpan"; }
 };
 }
 

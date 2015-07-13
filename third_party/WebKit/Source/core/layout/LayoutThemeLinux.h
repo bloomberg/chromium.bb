@@ -12,7 +12,7 @@ namespace blink {
 class LayoutThemeLinux final : public LayoutThemeDefault {
 public:
     static PassRefPtr<LayoutTheme> create();
-    virtual String extraDefaultStyleSheet() override;
+    String extraDefaultStyleSheet() override;
 };
 
 } // namespace blink

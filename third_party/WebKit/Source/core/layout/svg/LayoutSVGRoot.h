@@ -32,13 +32,13 @@ class SVGElement;
 class LayoutSVGRoot final : public LayoutReplaced {
 public:
     explicit LayoutSVGRoot(SVGElement*);
-    virtual ~LayoutSVGRoot();
+    ~LayoutSVGRoot() override;
 
     bool isEmbeddedThroughSVGImage() const;
     bool isEmbeddedThroughFrameContainingSVGDocument() const;
 
-    virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
-    virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override;
+    void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
     // If you have a LayoutSVGRoot, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
@@ -48,8 +48,8 @@ public:
     LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
-    virtual void setNeedsBoundariesUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
-    virtual void setNeedsTransformUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
+    void setNeedsBoundariesUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
+    void setNeedsTransformUpdate() override { m_needsBoundariesOrTransformUpdate = true; }
 
     IntSize containerSize() const { return m_containerSize; }
     void setContainerSize(const IntSize& containerSize)
@@ -66,50 +66,50 @@ public:
     const AffineTransform& localToBorderBoxTransform() const { return m_localToBorderBoxTransform; }
     bool shouldApplyViewportClip() const;
 
-    virtual bool hasNonIsolatedBlendingDescendants() const override final;
+    bool hasNonIsolatedBlendingDescendants() const final;
 
-    virtual const char* name() const override { return "LayoutSVGRoot"; }
+    const char* name() const override { return "LayoutSVGRoot"; }
 
 private:
     const LayoutObjectChildList* children() const { return &m_children; }
     LayoutObjectChildList* children() { return &m_children; }
 
-    virtual LayoutObjectChildList* virtualChildren() override { return children(); }
-    virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
+    LayoutObjectChildList* virtualChildren() override { return children(); }
+    const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGRoot || LayoutReplaced::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGRoot || LayoutReplaced::isOfType(type); }
 
-    virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
-    virtual LayoutUnit computeReplacedLogicalHeight() const override;
-    virtual void layout() override;
-    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
+    LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
+    LayoutUnit computeReplacedLogicalHeight() const override;
+    void layout() override;
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual void willBeDestroyed() override;
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
-    virtual void removeChild(LayoutObject*) override;
+    void willBeDestroyed() override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+    void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
+    void removeChild(LayoutObject*) override;
 
-    virtual void insertedIntoTree() override;
-    virtual void willBeRemovedFromTree() override;
+    void insertedIntoTree() override;
+    void willBeRemovedFromTree() override;
 
-    virtual const AffineTransform& localToParentTransform() const override;
+    const AffineTransform& localToParentTransform() const override;
 
-    virtual FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
-    virtual FloatRect strokeBoundingBox() const override { return m_strokeBoundingBox; }
-    virtual FloatRect paintInvalidationRectInLocalCoordinates() const override { return m_paintInvalidationBoundingBox; }
+    FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
+    FloatRect strokeBoundingBox() const override { return m_strokeBoundingBox; }
+    FloatRect paintInvalidationRectInLocalCoordinates() const override { return m_paintInvalidationBoundingBox; }
 
-    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
+    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
 
-    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
-    virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
+    void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
+    const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
 
-    virtual bool canBeSelectionLeaf() const override { return false; }
-    virtual bool canHaveChildren() const override { return true; }
+    bool canBeSelectionLeaf() const override { return false; }
+    bool canHaveChildren() const override { return true; }
 
-    virtual void descendantIsolationRequirementsChanged(DescendantIsolationState) override final;
+    void descendantIsolationRequirementsChanged(DescendantIsolationState) final;
 
     void updateCachedBoundaries();
     void buildLocalToBorderBoxTransform();

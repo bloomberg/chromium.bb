@@ -71,13 +71,13 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    virtual ~InlineFlowBox();
+    ~InlineFlowBox() override;
 #endif
 
 #ifndef NDEBUG
-    virtual void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr, int = 0) const override;
+    void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr, int = 0) const override;
 #endif
-    virtual const char* boxName() const override;
+    const char* boxName() const override;
 
     InlineFlowBox* prevLineBox() const { return m_prevLineBox; }
     InlineFlowBox* nextLineBox() const { return m_nextLineBox; }
@@ -87,7 +87,7 @@ public:
     InlineBox* firstChild() const { checkConsistency(); return m_firstChild; }
     InlineBox* lastChild() const { checkConsistency(); return m_lastChild; }
 
-    virtual bool isLeaf() const override final { return false; }
+    bool isLeaf() const final { return false; }
 
     InlineBox* firstLeafChild() const;
     InlineBox* lastLeafChild() const;
@@ -95,7 +95,7 @@ public:
     typedef void (*CustomInlineBoxRangeReverse)(void* userData, Vector<InlineBox*>::iterator first, Vector<InlineBox*>::iterator last);
     void collectLeafBoxesInLogicalOrder(Vector<InlineBox*>&, CustomInlineBoxRangeReverse customReverseImplementation = 0, void* userData = nullptr) const;
 
-    virtual void setConstructed() override final
+    void setConstructed() final
     {
         InlineBox::setConstructed();
         for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
@@ -103,21 +103,21 @@ public:
     }
 
     void addToLine(InlineBox* child);
-    virtual void deleteLine() override final;
-    virtual void extractLine() override final;
-    virtual void attachLine() override final;
-    virtual void move(const LayoutSize&) override;
+    void deleteLine() final;
+    void extractLine() final;
+    void attachLine() final;
+    void move(const LayoutSize&) override;
 
     virtual void extractLineBoxFromLayoutObject();
     virtual void attachLineBoxToLayoutObject();
     virtual void removeLineBoxFromLayoutObject();
 
-    virtual void clearTruncation() override;
+    void clearTruncation() override;
 
     IntRect roundedFrameRect() const;
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
-    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
     bool boxShadowCanBeAppliedToBackground(const FillLayer&) const;
 
@@ -198,10 +198,10 @@ public:
 
     void removeChild(InlineBox* child, MarkLineBoxes);
 
-    virtual LayoutObject::SelectionState selectionState() const override;
+    LayoutObject::SelectionState selectionState() const override;
 
-    virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const override final;
-    virtual LayoutUnit placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool&) override;
+    bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const final;
+    LayoutUnit placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, LayoutUnit blockRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool&) override;
 
     bool hasTextChildren() const { return m_hasTextChildren; }
     bool hasTextDescendants() const { return m_hasTextDescendants; }
@@ -301,7 +301,7 @@ private:
 protected:
     OwnPtr<OverflowModel> m_overflow;
 
-    virtual bool isInlineFlowBox() const override final { return true; }
+    bool isInlineFlowBox() const final { return true; }
 
     InlineBox* m_firstChild;
     InlineBox* m_lastChild;

@@ -19,7 +19,7 @@ class OverriddenLayoutPart : public LayoutPart {
 public:
     explicit OverriddenLayoutPart(Element* element) : LayoutPart(element) { }
 
-    virtual const char* name() const override { return "OverriddenLayoutPart"; }
+    const char* name() const override { return "OverriddenLayoutPart"; }
 };
 
 TEST_F(LayoutPartTest, DestroyUpdatesImageQualityController)

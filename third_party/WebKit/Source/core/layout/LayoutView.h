@@ -49,7 +49,7 @@ class LayoutQuote;
 class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 public:
     explicit LayoutView(Document*);
-    virtual ~LayoutView();
+    ~LayoutView() override;
     void willBeDestroyed() override;
 
     // hitTest() will update layout, style and compositing first while hitTestNoLifecycleUpdate() does not.
@@ -62,17 +62,17 @@ public:
 
     void clearHitTestCache() { m_hitTestCache->clear(); }
 
-    virtual const char* name() const override { return "LayoutView"; }
+    const char* name() const override { return "LayoutView"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutView || LayoutBlockFlow::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutView || LayoutBlockFlow::isOfType(type); }
 
-    virtual DeprecatedPaintLayerType layerTypeRequired() const override { return NormalDeprecatedPaintLayer; }
+    DeprecatedPaintLayerType layerTypeRequired() const override { return NormalDeprecatedPaintLayer; }
 
-    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    virtual void layout() override;
-    virtual void updateLogicalWidth() override;
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    void layout() override;
+    void updateLogicalWidth() override;
+    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
     // Based on FrameView::layoutSize, but:
     // - checks for null FrameView
@@ -99,15 +99,15 @@ public:
 
     static ViewportConstrainedPosition viewportConstrainedPosition(EPosition position) { return position == FixedPosition ? IsFixedPosition : IsNotFixedPosition; }
     void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const;
-    virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     void adjustViewportConstrainedOffset(LayoutRect&, ViewportConstrainedPosition) const;
 
     void invalidatePaintForRectangle(const LayoutRect&, PaintInvalidationReason) const;
 
     void invalidatePaintForViewAndCompositedLayers();
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
-    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
 
     enum SelectionPaintInvalidationMode { PaintInvalidationNewXOROld, PaintInvalidationNewMinusOld };
     void setSelection(LayoutObject* start, int startPos, LayoutObject*, int endPos, SelectionPaintInvalidationMode = PaintInvalidationNewXOROld);
@@ -121,17 +121,17 @@ public:
     void selectionStartEnd(int& startPos, int& endPos);
     void invalidatePaintForSelection();
 
-    virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
+    void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
+    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
-    virtual LayoutRect viewRect() const override;
+    LayoutRect viewRect() const override;
 
     bool shouldDoFullPaintInvalidationForNextLayout() const;
     bool doingFullPaintInvalidation() const { return m_frameView->needsFullPaintInvalidation(); }
 
     LayoutState* layoutState() const { return m_layoutState; }
 
-    virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
+    void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
     void setPageLogicalHeight(LayoutUnit height)
@@ -172,30 +172,30 @@ public:
     void removeLayoutCounter() { ASSERT(m_layoutCounterCount > 0); m_layoutCounterCount--; }
     bool hasLayoutCounters() { return m_layoutCounterCount; }
 
-    virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const override;
+    bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const override;
 
     double layoutViewportWidth() const;
     double layoutViewportHeight() const;
 
     void pushLayoutState(LayoutState& layoutState) { m_layoutState = &layoutState; }
     void popLayoutState() { ASSERT(m_layoutState); m_layoutState = m_layoutState->next(); }
-    virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override final;
+    void invalidateTreeIfNeeded(PaintInvalidationState&) final;
 
-    virtual LayoutRect visualOverflowRect() const override;
+    LayoutRect visualOverflowRect() const override;
 
     // Invalidates paint for the entire view, including composited descendants, but not including child frames.
     // It is very likely you do not want to call this method.
     void setShouldDoFullPaintInvalidationForViewAndAllDescendants();
 
 private:
-    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
+    void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
 
     template <typename Strategy>
     void commitPendingSelectionAlgorithm();
 
-    virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
-    virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
-    virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
+    const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
+    void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
+    void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
     void layoutContent();
 #if ENABLE(ASSERT)

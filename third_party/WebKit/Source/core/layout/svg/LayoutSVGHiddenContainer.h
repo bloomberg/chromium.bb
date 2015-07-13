@@ -32,19 +32,19 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
 public:
     explicit LayoutSVGHiddenContainer(SVGElement*);
 
-    virtual const char* name() const override { return "LayoutSVGHiddenContainer"; }
+    const char* name() const override { return "LayoutSVGHiddenContainer"; }
 
 protected:
-    virtual void layout() override;
+    void layout() override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGHiddenContainer || LayoutSVGContainer::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGHiddenContainer || LayoutSVGContainer::isOfType(type); }
 
 private:
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*, const PaintInvalidationState* = nullptr) const override final { return LayoutRect(); }
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override final;
+    void paint(const PaintInfo&, const LayoutPoint&) final;
+    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*, const PaintInvalidationState* = nullptr) const final { return LayoutRect(); }
+    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const final;
 
-    virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override final;
+    bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) final;
 };
 }
 

@@ -74,7 +74,7 @@ public:
     const AtomicString& fragment() const { return m_fragment; }
 
 private:
-    virtual bool operator==(const ClipPathOperation& o) const override
+    bool operator==(const ClipPathOperation& o) const override
     {
         return isSameType(o) && m_url == static_cast<const ReferenceClipPathOperation&>(o).m_url;
     }
@@ -113,7 +113,7 @@ public:
     }
 
 private:
-    virtual bool operator==(const ClipPathOperation&) const override;
+    bool operator==(const ClipPathOperation&) const override;
 
     ShapeClipPathOperation(PassRefPtr<BasicShape> shape)
         : ClipPathOperation(SHAPE)

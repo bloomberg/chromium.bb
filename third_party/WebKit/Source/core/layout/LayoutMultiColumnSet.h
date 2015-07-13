@@ -68,8 +68,8 @@ public:
     const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const;
     const MultiColumnFragmentainerGroup& fragmentainerGroupAtVisualPoint(const LayoutPoint&) const;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSet || LayoutBlockFlow::isOfType(type); }
-    virtual bool canHaveChildren() const override final { return false; }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSet || LayoutBlockFlow::isOfType(type); }
+    bool canHaveChildren() const final { return false; }
 
     // Return the width and height of a single column or page in the set.
     LayoutUnit pageLogicalWidth() const { return flowThread()->logicalWidth(); }
@@ -141,7 +141,7 @@ public:
     // overflow. Only to be called on the last set.
     void expandToEncompassFlowThreadContentsIfNeeded();
 
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
+    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const final;
 
     void attachToFlowThread();
     void detachFromFlowThread();
@@ -156,23 +156,23 @@ public:
     // The "CSS actual" value of column-count. This includes overflowing columns, if any.
     unsigned actualColumnCount() const;
 
-    virtual const char* name() const override { return "LayoutMultiColumnSet"; }
+    const char* name() const override { return "LayoutMultiColumnSet"; }
 
 protected:
     LayoutMultiColumnSet(LayoutFlowThread*);
 
 private:
-    virtual void insertedIntoTree() override final;
-    virtual void willBeRemovedFromTree() override final;
+    void insertedIntoTree() final;
+    void willBeRemovedFromTree() final;
 
-    virtual bool isSelfCollapsingBlock() const override { return false; }
+    bool isSelfCollapsingBlock() const override { return false; }
 
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
+    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
-    virtual void paintObject(const PaintInfo&, const LayoutPoint& paintOffset) override;
+    void paintObject(const PaintInfo&, const LayoutPoint& paintOffset) override;
 
-    virtual void addOverflowFromChildren() override;
+    void addOverflowFromChildren() override;
 
     MultiColumnFragmentainerGroupList m_fragmentainerGroups;
     LayoutFlowThread* m_flowThread;

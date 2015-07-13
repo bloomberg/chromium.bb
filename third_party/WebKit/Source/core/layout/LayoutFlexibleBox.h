@@ -40,31 +40,31 @@ namespace blink {
 class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 public:
     LayoutFlexibleBox(Element*);
-    virtual ~LayoutFlexibleBox();
+    ~LayoutFlexibleBox() override;
 
     static LayoutFlexibleBox* createAnonymous(Document*);
 
-    virtual const char* name() const override { return "LayoutFlexibleBox"; }
+    const char* name() const override { return "LayoutFlexibleBox"; }
 
-    virtual bool isFlexibleBox() const override final { return true; }
-    virtual bool canCollapseAnonymousBlockChild() const override { return false; }
-    virtual void layoutBlock(bool relayoutChildren) override final;
+    bool isFlexibleBox() const final { return true; }
+    bool canCollapseAnonymousBlockChild() const override { return false; }
+    void layoutBlock(bool relayoutChildren) final;
 
-    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
-    virtual int firstLineBoxBaseline() const override;
-    virtual int inlineBlockBaseline(LineDirectionMode) const override;
+    int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
+    int firstLineBoxBaseline() const override;
+    int inlineBlockBaseline(LineDirectionMode) const override;
 
-    virtual void paintChildren(const PaintInfo&, const LayoutPoint&) override final;
+    void paintChildren(const PaintInfo&, const LayoutPoint&) final;
 
     bool isHorizontalFlow() const;
 
     OrderIterator& orderIterator() { return m_orderIterator; }
 
 protected:
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
+    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual void removeChild(LayoutObject*) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void removeChild(LayoutObject*) override;
 
 private:
     enum FlexSign {

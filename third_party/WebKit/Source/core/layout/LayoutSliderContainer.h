@@ -43,10 +43,10 @@ class SliderContainerElement;
 class LayoutSliderContainer : public LayoutFlexibleBox {
 public:
     LayoutSliderContainer(SliderContainerElement*);
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
 private:
-    virtual void layout() override;
+    void layout() override;
 };
 
 } // namespace blink

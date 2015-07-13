@@ -36,19 +36,19 @@ class LayoutHTMLCanvas final : public LayoutReplaced {
 public:
     explicit LayoutHTMLCanvas(HTMLCanvasElement*);
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCanvas || LayoutReplaced::isOfType(type); }
-    virtual DeprecatedPaintLayerType layerTypeRequired() const override;
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject&) override final;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCanvas || LayoutReplaced::isOfType(type); }
+    DeprecatedPaintLayerType layerTypeRequired() const override;
+    PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject&) final;
 
     void canvasSizeChanged();
 
-    virtual const char* name() const override { return "LayoutHTMLCanvas"; }
+    const char* name() const override { return "LayoutHTMLCanvas"; }
 
 private:
-    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
-    virtual void intrinsicSizeChanged() override { canvasSizeChanged(); }
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
+    void intrinsicSizeChanged() override { canvasSizeChanged(); }
 
-    virtual CompositingReasons additionalCompositingReasons() const override;
+    CompositingReasons additionalCompositingReasons() const override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutHTMLCanvas, isCanvas());

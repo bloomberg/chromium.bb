@@ -51,7 +51,7 @@ public:
 
     static LayoutTableRow* createAnonymous(Document*);
     static LayoutTableRow* createAnonymousWithParent(const LayoutObject*);
-    virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
+    LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParent(parent);
     }
@@ -91,24 +91,24 @@ public:
     const BorderValue& borderAdjoiningStartCell(const LayoutTableCell*) const;
     const BorderValue& borderAdjoiningEndCell(const LayoutTableCell*) const;
 
-    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
     void addOverflowFromCell(const LayoutTableCell*);
 
-    virtual const char* name() const override { return "LayoutTableRow"; }
+    const char* name() const override { return "LayoutTableRow"; }
 
 private:
-    virtual LayoutObjectChildList* virtualChildren() override { return children(); }
-    virtual const LayoutObjectChildList* virtualChildren() const override { return children(); }
+    LayoutObjectChildList* virtualChildren() override { return children(); }
+    const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || LayoutBox::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || LayoutBox::isOfType(type); }
 
-    virtual void willBeRemovedFromTree() override;
+    void willBeRemovedFromTree() override;
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
-    virtual void layout() override;
+    void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
+    void layout() override;
 
-    virtual DeprecatedPaintLayerType layerTypeRequired() const override
+    DeprecatedPaintLayerType layerTypeRequired() const override
     {
         if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations() || style()->hasCompositorProxy())
             return NormalDeprecatedPaintLayer;
@@ -119,11 +119,11 @@ private:
         return NoDeprecatedPaintLayer;
     }
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     void nextSibling() const = delete;
     void previousSibling() const = delete;

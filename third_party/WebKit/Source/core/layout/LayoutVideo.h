@@ -35,7 +35,7 @@ class HTMLVideoElement;
 class LayoutVideo final : public LayoutMedia {
 public:
     LayoutVideo(HTMLVideoElement*);
-    virtual ~LayoutVideo();
+    ~LayoutVideo() override;
 
     IntRect videoBox() const;
 
@@ -47,33 +47,33 @@ public:
     HTMLVideoElement* videoElement() const;
     bool acceleratedRenderingInUse();
 
-    virtual const char* name() const override { return "LayoutVideo"; }
+    const char* name() const override { return "LayoutVideo"; }
 
 private:
-    virtual void updateFromElement() override;
+    void updateFromElement() override;
 
-    virtual void intrinsicSizeChanged() override;
+    void intrinsicSizeChanged() override;
     LayoutSize calculateIntrinsicSize();
     void updateIntrinsicSize();
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect*) override;
+    void imageChanged(WrappedImagePtr, const IntRect*) override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || LayoutMedia::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || LayoutMedia::isOfType(type); }
 
-    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual void layout() override;
+    void layout() override;
 
-    virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
-    virtual LayoutUnit computeReplacedLogicalHeight() const override;
-    virtual LayoutUnit minimumReplacedHeight() const override;
+    LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const override;
+    LayoutUnit computeReplacedLogicalHeight() const override;
+    LayoutUnit minimumReplacedHeight() const override;
 
-    virtual LayoutUnit offsetLeft() const override;
-    virtual LayoutUnit offsetTop() const override;
-    virtual LayoutUnit offsetWidth() const override;
-    virtual LayoutUnit offsetHeight() const override;
+    LayoutUnit offsetLeft() const override;
+    LayoutUnit offsetTop() const override;
+    LayoutUnit offsetWidth() const override;
+    LayoutUnit offsetHeight() const override;
 
-    virtual CompositingReasons additionalCompositingReasons() const override;
+    CompositingReasons additionalCompositingReasons() const override;
 
     void updatePlayer();
 

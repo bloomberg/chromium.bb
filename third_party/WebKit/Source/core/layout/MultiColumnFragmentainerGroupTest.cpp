@@ -21,8 +21,8 @@ public:
     MultiColumnFragmentainerGroupTest() : m_flowThread(nullptr), m_columnSet(nullptr) { }
 
 protected:
-    virtual void SetUp() override;
-    virtual void TearDown() override;
+    void SetUp() override;
+    void TearDown() override;
 
     LayoutMultiColumnSet& columnSet() { return *m_columnSet; }
 

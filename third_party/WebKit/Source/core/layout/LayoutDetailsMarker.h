@@ -33,11 +33,11 @@ public:
 
     Orientation orientation() const;
 
-    virtual const char* name() const override { return "LayoutDetailsMarker"; }
+    const char* name() const override { return "LayoutDetailsMarker"; }
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectDetailsMarker || LayoutBlockFlow::isOfType(type); }
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectDetailsMarker || LayoutBlockFlow::isOfType(type); }
+    void paint(const PaintInfo&, const LayoutPoint&) override;
 
     bool isOpen() const;
 };

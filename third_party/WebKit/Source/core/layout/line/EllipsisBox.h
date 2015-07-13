@@ -39,16 +39,16 @@ public:
         setHasVirtualLogicalHeight();
     }
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
-    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
     void setSelectionState(LayoutObject::SelectionState s) { m_selectionState = s; }
     IntRect selectionRect();
 
-    virtual LayoutUnit virtualLogicalHeight() const override { return m_height; }
-    virtual LayoutObject::SelectionState selectionState() const override { return m_selectionState; }
+    LayoutUnit virtualLogicalHeight() const override { return m_height; }
+    LayoutObject::SelectionState selectionState() const override { return m_selectionState; }
     const AtomicString& ellipsisStr() { return m_str; }
 
-    virtual const char* boxName() const override;
+    const char* boxName() const override;
 
 private:
 

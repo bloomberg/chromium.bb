@@ -30,17 +30,17 @@ namespace blink {
 class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
 public:
     explicit LayoutSVGResourceClipper(SVGClipPathElement*);
-    virtual ~LayoutSVGResourceClipper();
+    ~LayoutSVGResourceClipper() override;
 
-    virtual const char* name() const override { return "LayoutSVGResourceClipper"; }
+    const char* name() const override { return "LayoutSVGResourceClipper"; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
+    void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
     FloatRect resourceBoundingBox(const LayoutObject*);
 
     static const LayoutSVGResourceType s_resourceType = ClipperResourceType;
-    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+    LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
     bool hitTestClipContent(const FloatRect&, const FloatPoint&);
 

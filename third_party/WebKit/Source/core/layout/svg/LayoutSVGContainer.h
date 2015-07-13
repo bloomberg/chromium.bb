@@ -32,7 +32,7 @@ class SVGElement;
 class LayoutSVGContainer : public LayoutSVGModelObject {
 public:
     explicit LayoutSVGContainer(SVGElement*);
-    virtual ~LayoutSVGContainer();
+    ~LayoutSVGContainer() override;
 
     // If you have a LayoutSVGContainer, use firstChild or lastChild instead.
     void slowFirstChild() const = delete;
@@ -41,34 +41,34 @@ public:
     LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual void setNeedsBoundariesUpdate() override final { m_needsBoundariesUpdate = true; }
+    void paint(const PaintInfo&, const LayoutPoint&) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void setNeedsBoundariesUpdate() final { m_needsBoundariesUpdate = true; }
     virtual bool didTransformToRootUpdate() { return false; }
     bool isObjectBoundingBoxValid() const { return m_objectBoundingBoxValid; }
 
     bool selfWillPaint();
 
-    virtual bool hasNonIsolatedBlendingDescendants() const override final;
+    bool hasNonIsolatedBlendingDescendants() const final;
 
-    virtual const char* name() const override { return "LayoutSVGContainer"; }
+    const char* name() const override { return "LayoutSVGContainer"; }
 
-    virtual FloatRect objectBoundingBox() const override final { return m_objectBoundingBox; }
+    FloatRect objectBoundingBox() const final { return m_objectBoundingBox; }
 
 protected:
-    virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
-    virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
+    LayoutObjectChildList* virtualChildren() final { return children(); }
+    const LayoutObjectChildList* virtualChildren() const final { return children(); }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || LayoutSVGModelObject::isOfType(type); }
-    virtual void layout() override;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || LayoutSVGModelObject::isOfType(type); }
+    void layout() override;
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override final;
-    virtual void removeChild(LayoutObject*) override final;
-    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
+    void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) final;
+    void removeChild(LayoutObject*) final;
+    void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
 
-    virtual FloatRect strokeBoundingBox() const override final { return m_strokeBoundingBox; }
+    FloatRect strokeBoundingBox() const final { return m_strokeBoundingBox; }
 
-    virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
+    bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 
     // Allow LayoutSVGTransformableContainer to hook in at the right time in layout().
     virtual bool calculateLocalTransform() { return false; }
@@ -81,7 +81,7 @@ protected:
 
     void updateCachedBoundaries();
 
-    virtual void descendantIsolationRequirementsChanged(DescendantIsolationState) override final;
+    void descendantIsolationRequirementsChanged(DescendantIsolationState) final;
 
 private:
     const LayoutObjectChildList* children() const { return &m_children; }

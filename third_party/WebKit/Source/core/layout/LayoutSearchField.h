@@ -32,12 +32,12 @@ class HTMLInputElement;
 class LayoutSearchField final : public LayoutTextControlSingleLine {
 public:
     LayoutSearchField(HTMLInputElement*);
-    virtual ~LayoutSearchField();
+    ~LayoutSearchField() override;
 
 private:
-    virtual void centerContainerIfNeeded(LayoutBox*) const override;
-    virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
-    virtual LayoutUnit computeLogicalHeightLimit() const override;
+    void centerContainerIfNeeded(LayoutBox*) const override;
+    LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
+    LayoutUnit computeLogicalHeightLimit() const override;
 
     Element* searchDecorationElement() const;
     Element* cancelButtonElement() const;

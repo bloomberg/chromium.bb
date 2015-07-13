@@ -70,7 +70,7 @@ class CompositedDeprecatedPaintLayerMapping final : public GraphicsLayerClient {
     WTF_MAKE_NONCOPYABLE(CompositedDeprecatedPaintLayerMapping); WTF_MAKE_FAST_ALLOCATED(CompositedDeprecatedPaintLayerMapping);
 public:
     explicit CompositedDeprecatedPaintLayerMapping(DeprecatedPaintLayer&);
-    virtual ~CompositedDeprecatedPaintLayerMapping();
+    ~CompositedDeprecatedPaintLayerMapping() override;
 
     DeprecatedPaintLayer& owningLayer() const { return m_owningLayer; }
 
@@ -140,12 +140,12 @@ public:
     void updateShouldFlattenTransform();
 
     // GraphicsLayerClient interface
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) override;
-    virtual bool isTrackingPaintInvalidations() const override;
+    void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) override;
+    bool isTrackingPaintInvalidations() const override;
 
 #if ENABLE(ASSERT)
-    virtual void verifyNotPainting() override;
+    void verifyNotPainting() override;
 #endif
 
     LayoutRect contentsBox() const;
@@ -180,7 +180,7 @@ public:
     void assertNeedsToUpdateGraphicsLayerBitsCleared() {  ASSERT(m_pendingUpdateScope == GraphicsLayerUpdateNone); }
 #endif
 
-    virtual String debugName(const GraphicsLayer*) override;
+    String debugName(const GraphicsLayer*) override;
 
     LayoutSize contentOffsetInCompositingLayer() const;
 

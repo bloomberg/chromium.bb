@@ -32,12 +32,12 @@ class HTMLTextFormControlElement;
 
 class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
 public:
-    virtual ~LayoutTextControl();
+    ~LayoutTextControl() override;
 
     HTMLTextFormControlElement* textFormControlElement() const;
     virtual PassRefPtr<ComputedStyle> createInnerEditorStyle(const ComputedStyle& startStyle) const = 0;
 
-    virtual const char* name() const override { return "LayoutTextControl"; }
+    const char* name() const override { return "LayoutTextControl"; }
 
 protected:
     LayoutTextControl(HTMLTextFormControlElement*);
@@ -49,7 +49,7 @@ protected:
     int scrollbarThickness() const;
     void adjustInnerEditorStyle(ComputedStyle& textBlockStyle) const;
 
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     void hitInnerEditorElement(HitTestResult&, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset);
 
@@ -63,28 +63,28 @@ protected:
     virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const = 0;
     virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const = 0;
 
-    virtual void updateFromElement() override;
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
-    virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
+    void updateFromElement() override;
+    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 
     // We need to override this function because we don't want overflow:hidden on an <input>
     // to affect the baseline calculation. This is necessary because we are an inline-block
     // element as an implementation detail which would normally be affected by this.
-    virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
+    int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextControl || LayoutBlockFlow::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextControl || LayoutBlockFlow::isOfType(type); }
 
 private:
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override final;
-    virtual void computePreferredLogicalWidths() override final;
-    virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override final { }
-    virtual bool avoidsFloats() const override final { return true; }
+    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const final;
+    void computePreferredLogicalWidths() final;
+    void removeLeftoverAnonymousBlock(LayoutBlock*) final { }
+    bool avoidsFloats() const final { return true; }
 
-    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override final;
+    void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) final;
 
-    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
+    void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const final;
 
-    virtual bool canBeProgramaticallyScrolled() const override final { return true; }
+    bool canBeProgramaticallyScrolled() const final { return true; }
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControl, isTextControl());
@@ -98,14 +98,14 @@ public:
     explicit LayoutTextControlInnerContainer(Element* element)
         : LayoutFlexibleBox(element)
     { }
-    virtual ~LayoutTextControlInnerContainer() { }
+    ~LayoutTextControlInnerContainer() override { }
 
-    virtual int baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode position) const override
+    int baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode position) const override
     {
         return LayoutBlock::baselinePosition(baseline, firstLine, direction, position);
     }
-    virtual int firstLineBoxBaseline() const override { return LayoutBlock::firstLineBoxBaseline(); }
-    virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
+    int firstLineBoxBaseline() const override { return LayoutBlock::firstLineBoxBaseline(); }
+    int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 };
 
 

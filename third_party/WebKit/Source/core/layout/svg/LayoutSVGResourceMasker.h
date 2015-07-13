@@ -35,12 +35,12 @@ class GraphicsContext;
 class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
 public:
     explicit LayoutSVGResourceMasker(SVGMaskElement*);
-    virtual ~LayoutSVGResourceMasker();
+    ~LayoutSVGResourceMasker() override;
 
-    virtual const char* name() const override { return "LayoutSVGResourceMasker"; }
+    const char* name() const override { return "LayoutSVGResourceMasker"; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
+    void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
     FloatRect resourceBoundingBox(const LayoutObject*);
 
@@ -48,7 +48,7 @@ public:
     SVGUnitTypes::SVGUnitType maskContentUnits() const { return toSVGMaskElement(element())->maskContentUnits()->currentValue()->enumValue(); }
 
     static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
-    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+    LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
     PassRefPtr<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&, GraphicsContext*);
 

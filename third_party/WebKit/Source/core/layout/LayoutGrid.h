@@ -50,13 +50,13 @@ enum GridAxisPosition {GridAxisStart, GridAxisEnd, GridAxisCenter};
 class LayoutGrid final : public LayoutBlock {
 public:
     explicit LayoutGrid(Element*);
-    virtual ~LayoutGrid();
+    ~LayoutGrid() override;
 
-    virtual const char* name() const override { return "LayoutGrid"; }
+    const char* name() const override { return "LayoutGrid"; }
 
-    virtual void layoutBlock(bool relayoutChildren) override;
+    void layoutBlock(bool relayoutChildren) override;
 
-    virtual bool canCollapseAnonymousBlockChild() const override { return false; }
+    bool canCollapseAnonymousBlockChild() const override { return false; }
 
     void dirtyGrid();
 
@@ -92,14 +92,14 @@ public:
     }
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type); }
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
-    virtual void computePreferredLogicalWidths() override;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type); }
+    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
+    void computePreferredLogicalWidths() override;
 
-    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
-    virtual void removeChild(LayoutObject*) override;
+    void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
+    void removeChild(LayoutObject*) override;
 
-    virtual void styleDidChange(StyleDifference, const ComputedStyle*) override;
+    void styleDidChange(StyleDifference, const ComputedStyle*) override;
 
     bool explicitGridDidResize(const ComputedStyle&) const;
     bool namedGridLinesDefinitionDidChange(const ComputedStyle&) const;
@@ -156,7 +156,7 @@ private:
 
     void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection, GridSizingData&, LayoutUnit availableSpace);
 
-    virtual void paintChildren(const PaintInfo&, const LayoutPoint&) override;
+    void paintChildren(const PaintInfo&, const LayoutPoint&) override;
     bool allowedToStretchLogicalHeightForChild(const LayoutBox& child) const;
     bool needToStretchChildLogicalHeight(const LayoutBox&) const;
     LayoutUnit childIntrinsicHeight(const LayoutBox&) const;

@@ -15,7 +15,7 @@ namespace blink {
 // are siblings of LayoutMultiColumnSet objects, i.e. direct children of the multicol container.
 class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
 public:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSpannerPlaceholder || LayoutBox::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSpannerPlaceholder || LayoutBox::isOfType(type); }
 
     static LayoutMultiColumnSpannerPlaceholder* createAnonymous(const ComputedStyle& parentStyle, LayoutBox&);
 
@@ -34,18 +34,18 @@ public:
     void layoutObjectInFlowThreadStyleDidChange(const ComputedStyle* oldStyle);
     void updateMarginProperties();
 
-    virtual const char* name() const override { return "LayoutMultiColumnSpannerPlaceholder"; }
+    const char* name() const override { return "LayoutMultiColumnSpannerPlaceholder"; }
 
 protected:
-    virtual void willBeRemovedFromTree() override;
-    virtual bool needsPreferredWidthsRecalculation() const override;
-    virtual LayoutUnit minPreferredLogicalWidth() const override;
-    virtual LayoutUnit maxPreferredLogicalWidth() const override;
-    virtual void layout() override;
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
-    virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override;
-    virtual void paint(const PaintInfo&, const LayoutPoint& paintOffset) override;
-    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    void willBeRemovedFromTree() override;
+    bool needsPreferredWidthsRecalculation() const override;
+    LayoutUnit minPreferredLogicalWidth() const override;
+    LayoutUnit maxPreferredLogicalWidth() const override;
+    void layout() override;
+    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    void invalidateTreeIfNeeded(PaintInvalidationState&) override;
+    void paint(const PaintInfo&, const LayoutPoint& paintOffset) override;
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
 private:
     LayoutMultiColumnSpannerPlaceholder(LayoutBox*);

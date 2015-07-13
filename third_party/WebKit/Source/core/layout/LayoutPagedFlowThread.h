@@ -22,14 +22,14 @@ public:
     // Return the number of pages. Will never be less than 1.
     int pageCount();
 
-    virtual bool isLayoutPagedFlowThread() const override { return true; }
-    virtual const char* name() const override { return "LayoutPagedFlowThread"; }
-    virtual bool needsNewWidth() const override;
-    virtual void updateLogicalWidth() override;
+    bool isLayoutPagedFlowThread() const override { return true; }
+    const char* name() const override { return "LayoutPagedFlowThread"; }
+    bool needsNewWidth() const override;
+    void updateLogicalWidth() override;
     virtual void layout();
 
 private:
-    virtual bool descendantIsValidColumnSpanner(LayoutObject* /*descendant*/) const override { return false; }
+    bool descendantIsValidColumnSpanner(LayoutObject* /*descendant*/) const override { return false; }
 };
 
 } // namespace blink

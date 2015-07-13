@@ -33,20 +33,20 @@ class LayoutObject;
 class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
 public:
     explicit LayoutSVGResourceMarker(SVGMarkerElement*);
-    virtual ~LayoutSVGResourceMarker();
+    ~LayoutSVGResourceMarker() override;
 
-    virtual const char* name() const override { return "LayoutSVGResourceMarker"; }
+    const char* name() const override { return "LayoutSVGResourceMarker"; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
+    void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
     // Calculates marker boundaries, mapped to the target element's coordinate space
     FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;
 
-    virtual void layout() override;
-    virtual void calcViewport() override;
+    void layout() override;
+    void calcViewport() override;
 
-    virtual const AffineTransform& localToParentTransform() const override;
+    const AffineTransform& localToParentTransform() const override;
     AffineTransform markerTransformation(const FloatPoint& origin, float angle, float strokeWidth) const;
 
     FloatPoint referencePoint() const;
@@ -57,7 +57,7 @@ public:
     const FloatRect& viewport() const { return m_viewport; }
 
     static const LayoutSVGResourceType s_resourceType = MarkerResourceType;
-    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+    LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
     // Generates a transformation matrix usable to layout marker content. Handles scaling the marker content

@@ -42,12 +42,12 @@ class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
 public:
     explicit LayoutSVGResourceGradient(SVGGradientElement*);
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override final;
-    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override final;
+    void removeAllClientsFromCache(bool markForInvalidation = true) final;
+    void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) final;
 
-    virtual SVGPaintServer preparePaintServer(const LayoutObject&) override final;
+    SVGPaintServer preparePaintServer(const LayoutObject&) final;
 
-    virtual bool isChildAllowed(LayoutObject* child, const ComputedStyle&) const override final;
+    bool isChildAllowed(LayoutObject* child, const ComputedStyle&) const final;
 
 protected:
     void addStops(GradientData*, const Vector<Gradient::ColorStop>&) const;

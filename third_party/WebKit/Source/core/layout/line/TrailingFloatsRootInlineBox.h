@@ -39,7 +39,7 @@ public:
     }
 
 private:
-    virtual LayoutUnit virtualLogicalHeight() const override { return 0; }
+    LayoutUnit virtualLogicalHeight() const override { return 0; }
 };
 
 } // namespace blink

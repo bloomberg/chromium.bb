@@ -86,7 +86,7 @@ public:
     unsigned lastTypedCharacterOffset() { return m_lastTypedCharacterOffset; }
 
 private:
-    virtual void fired() override
+    void fired() override
     {
         ASSERT(gSecureTextTimers->contains(m_layoutText));
         m_layoutText->setText(m_layoutText->text().impl(), true /* forcing setting text as it may be masked later */);

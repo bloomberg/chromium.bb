@@ -37,65 +37,65 @@ class LayoutThemeMac final : public LayoutTheme {
 public:
     static PassRefPtr<LayoutTheme> create();
 
-    virtual void addVisualOverflow(const LayoutObject&, IntRect& borderBox) override;
+    void addVisualOverflow(const LayoutObject&, IntRect& borderBox) override;
 
-    virtual bool isControlStyled(const ComputedStyle&, const AuthorStyleInfo&) const override;
+    bool isControlStyled(const ComputedStyle&, const AuthorStyleInfo&) const override;
 
-    virtual Color platformActiveSelectionBackgroundColor() const override;
-    virtual Color platformInactiveSelectionBackgroundColor() const override;
-    virtual Color platformActiveSelectionForegroundColor() const override;
-    virtual Color platformActiveListBoxSelectionBackgroundColor() const override;
-    virtual Color platformActiveListBoxSelectionForegroundColor() const override;
-    virtual Color platformInactiveListBoxSelectionBackgroundColor() const override;
-    virtual Color platformInactiveListBoxSelectionForegroundColor() const override;
-    virtual Color platformFocusRingColor() const override;
+    Color platformActiveSelectionBackgroundColor() const override;
+    Color platformInactiveSelectionBackgroundColor() const override;
+    Color platformActiveSelectionForegroundColor() const override;
+    Color platformActiveListBoxSelectionBackgroundColor() const override;
+    Color platformActiveListBoxSelectionForegroundColor() const override;
+    Color platformInactiveListBoxSelectionBackgroundColor() const override;
+    Color platformInactiveListBoxSelectionForegroundColor() const override;
+    Color platformFocusRingColor() const override;
 
-    virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart part) override { return part == ListboxPart ? SmallScrollbar : RegularScrollbar; }
+    ScrollbarControlSize scrollbarControlSizeForPart(ControlPart part) override { return part == ListboxPart ? SmallScrollbar : RegularScrollbar; }
 
-    virtual void platformColorsDidChange() override;
+    void platformColorsDidChange() override;
 
     // System fonts.
-    virtual void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const override;
+    void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const override;
 
-    virtual int minimumMenuListSize(const ComputedStyle&) const override;
+    int minimumMenuListSize(const ComputedStyle&) const override;
 
-    virtual void adjustSliderThumbSize(ComputedStyle&, Element*) const override;
+    void adjustSliderThumbSize(ComputedStyle&, Element*) const override;
 
-    virtual IntSize sliderTickSize() const override;
-    virtual int sliderTickOffsetFromTrackCenter() const override;
+    IntSize sliderTickSize() const override;
+    int sliderTickOffsetFromTrackCenter() const override;
 
-    virtual int popupInternalPaddingLeft(const ComputedStyle&) const override;
-    virtual int popupInternalPaddingRight(const ComputedStyle&) const override;
-    virtual int popupInternalPaddingTop(const ComputedStyle&) const override;
-    virtual int popupInternalPaddingBottom(const ComputedStyle&) const override;
+    int popupInternalPaddingLeft(const ComputedStyle&) const override;
+    int popupInternalPaddingRight(const ComputedStyle&) const override;
+    int popupInternalPaddingTop(const ComputedStyle&) const override;
+    int popupInternalPaddingBottom(const ComputedStyle&) const override;
 
-    virtual bool popsMenuByArrowKeys() const override { return true; }
-    virtual bool popsMenuBySpaceKey() const override final { return true; }
+    bool popsMenuByArrowKeys() const override { return true; }
+    bool popsMenuBySpaceKey() const final { return true; }
 
-    virtual IntSize meterSizeForBounds(const LayoutMeter*, const IntRect&) const override;
-    virtual bool supportsMeter(ControlPart) const override;
+    IntSize meterSizeForBounds(const LayoutMeter*, const IntRect&) const override;
+    bool supportsMeter(ControlPart) const override;
 
     // Returns the repeat interval of the animation for the progress bar.
-    virtual double animationRepeatIntervalForProgressBar() const override;
+    double animationRepeatIntervalForProgressBar() const override;
     // Returns the duration of the animation for the progress bar.
-    virtual double animationDurationForProgressBar() const override;
+    double animationDurationForProgressBar() const override;
 
-    virtual Color systemColor(CSSValueID) const override;
+    Color systemColor(CSSValueID) const override;
 
-    virtual bool supportsSelectionForegroundColors() const override { return false; }
+    bool supportsSelectionForegroundColors() const override { return false; }
 
     virtual bool isModalColorChooser() const { return false; }
 
 protected:
     LayoutThemeMac();
-    virtual ~LayoutThemeMac();
+    ~LayoutThemeMac() override;
 
-    virtual void adjustMenuListStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustSearchFieldStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const override;
+    void adjustMenuListStyle(ComputedStyle&, Element*) const override;
+    void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const override;
 
 public:
     // Constants and methods shared with ThemePainterMac
@@ -165,19 +165,19 @@ public:
 
 protected:
     void adjustMediaSliderThumbSize(ComputedStyle&) const;
-    virtual String extraFullScreenStyleSheet() override;
+    String extraFullScreenStyleSheet() override;
 
     // Controls color values returned from platformFocusRingColor(). systemColor() will be used when false.
     bool usesTestModeFocusRingColor() const;
 
-    virtual bool shouldUseFallbackTheme(const ComputedStyle&) const override;
+    bool shouldUseFallbackTheme(const ComputedStyle&) const override;
 
 private:
-    virtual String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
-    virtual String extraDefaultStyleSheet() override;
-    virtual bool shouldShowPlaceholderWhenFocused() const override;
+    String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
+    String extraDefaultStyleSheet() override;
+    bool shouldShowPlaceholderWhenFocused() const override;
 
-    virtual ThemePainter& painter() override { return m_painter; }
+    ThemePainter& painter() override { return m_painter; }
 
     mutable RetainPtr<NSPopUpButtonCell> m_popupButton;
     mutable RetainPtr<NSSearchFieldCell> m_search;

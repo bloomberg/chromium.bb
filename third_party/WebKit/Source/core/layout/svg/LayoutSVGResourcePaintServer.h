@@ -77,7 +77,7 @@ struct SVGPaintDescription {
 class LayoutSVGResourcePaintServer : public LayoutSVGResourceContainer {
 public:
     LayoutSVGResourcePaintServer(SVGElement*);
-    virtual ~LayoutSVGResourcePaintServer();
+    ~LayoutSVGResourcePaintServer() override;
 
     virtual SVGPaintServer preparePaintServer(const LayoutObject&) = 0;
 

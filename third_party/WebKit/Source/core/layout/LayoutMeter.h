@@ -30,18 +30,18 @@ class HTMLMeterElement;
 class LayoutMeter final : public LayoutBlockFlow {
 public:
     explicit LayoutMeter(HTMLElement*);
-    virtual ~LayoutMeter();
+    ~LayoutMeter() override;
 
     HTMLMeterElement* meterElement() const;
-    virtual void updateFromElement() override;
+    void updateFromElement() override;
 
-    virtual const char* name() const override { return "LayoutMeter"; }
+    const char* name() const override { return "LayoutMeter"; }
 
 private:
-    virtual void updateLogicalWidth() override;
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    void updateLogicalWidth() override;
+    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMeter || LayoutBlockFlow::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMeter || LayoutBlockFlow::isOfType(type); }
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMeter, isMeter());

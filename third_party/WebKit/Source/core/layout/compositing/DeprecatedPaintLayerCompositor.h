@@ -68,7 +68,7 @@ class CORE_EXPORT DeprecatedPaintLayerCompositor final : public GraphicsLayerCli
     WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerCompositor);
 public:
     explicit DeprecatedPaintLayerCompositor(LayoutView&);
-    virtual ~DeprecatedPaintLayerCompositor();
+    ~DeprecatedPaintLayerCompositor() override;
 
     void updateIfNeededRecursive();
 
@@ -156,7 +156,7 @@ public:
     void resetTrackedPaintInvalidationRects();
     void setTracksPaintInvalidations(bool);
 
-    virtual String debugName(const GraphicsLayer*) override;
+    String debugName(const GraphicsLayer*) override;
     DocumentLifecycle& lifecycle() const;
 
     bool needsUpdateDescendantDependentFlags() const { return m_needsUpdateDescendantDependentFlags; }
@@ -181,9 +181,9 @@ private:
 #endif
 
     // GraphicsLayerClient implementation
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) override;
 
-    virtual bool isTrackingPaintInvalidations() const override;
+    bool isTrackingPaintInvalidations() const override;
 
     void updateWithoutAcceleratedCompositing(CompositingUpdateType);
     void updateIfNeeded();

@@ -32,24 +32,24 @@ class FlexBoxIterator;
 class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
 public:
     LayoutDeprecatedFlexibleBox(Element&);
-    virtual ~LayoutDeprecatedFlexibleBox();
+    ~LayoutDeprecatedFlexibleBox() override;
 
-    virtual const char* name() const override { return "LayoutDeprecatedFlexibleBox"; }
+    const char* name() const override { return "LayoutDeprecatedFlexibleBox"; }
 
-    virtual void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+    void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
 
-    virtual void layoutBlock(bool relayoutChildren) override;
+    void layoutBlock(bool relayoutChildren) override;
     void layoutHorizontalBox(bool relayoutChildren);
     void layoutVerticalBox(bool relayoutChildren);
 
-    virtual bool isDeprecatedFlexibleBox() const override { return true; }
+    bool isDeprecatedFlexibleBox() const override { return true; }
     bool isStretchingChildren() const { return m_stretchingChildren; }
-    virtual bool canCollapseAnonymousBlockChild() const override { return false; }
+    bool canCollapseAnonymousBlockChild() const override { return false; }
 
     void placeChild(LayoutBox* child, const LayoutPoint& location);
 
 private:
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
+    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 
     LayoutUnit allowedChildFlex(LayoutBox* child, bool expanding, unsigned group);
 

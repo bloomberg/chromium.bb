@@ -31,17 +31,17 @@ class SVGRadialGradientElement;
 class LayoutSVGResourceRadialGradient final : public LayoutSVGResourceGradient {
 public:
     explicit LayoutSVGResourceRadialGradient(SVGRadialGradientElement*);
-    virtual ~LayoutSVGResourceRadialGradient();
+    ~LayoutSVGResourceRadialGradient() override;
 
-    virtual const char* name() const override { return "LayoutSVGResourceRadialGradient"; }
+    const char* name() const override { return "LayoutSVGResourceRadialGradient"; }
 
     static const LayoutSVGResourceType s_resourceType = RadialGradientResourceType;
-    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+    LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
-    virtual SVGUnitTypes::SVGUnitType gradientUnits() const override { return attributes().gradientUnits(); }
-    virtual void calculateGradientTransform(AffineTransform& transform) override { transform = attributes().gradientTransform(); }
-    virtual bool collectGradientAttributes(SVGGradientElement*) override;
-    virtual void buildGradient(GradientData*) const override;
+    SVGUnitTypes::SVGUnitType gradientUnits() const override { return attributes().gradientUnits(); }
+    void calculateGradientTransform(AffineTransform& transform) override { transform = attributes().gradientTransform(); }
+    bool collectGradientAttributes(SVGGradientElement*) override;
+    void buildGradient(GradientData*) const override;
 
     FloatPoint centerPoint(const RadialGradientAttributes&) const;
     FloatPoint focalPoint(const RadialGradientAttributes&) const;

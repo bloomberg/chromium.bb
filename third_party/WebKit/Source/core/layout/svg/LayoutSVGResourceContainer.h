@@ -40,14 +40,14 @@ class DeprecatedPaintLayer;
 class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 public:
     explicit LayoutSVGResourceContainer(SVGElement*);
-    virtual ~LayoutSVGResourceContainer();
+    ~LayoutSVGResourceContainer() override;
 
     virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
     virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) = 0;
 
-    virtual void layout() override;
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override final;
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceContainer || LayoutSVGHiddenContainer::isOfType(type); }
+    void layout() override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceContainer || LayoutSVGHiddenContainer::isOfType(type); }
 
     virtual LayoutSVGResourceType resourceType() const = 0;
 
@@ -84,7 +84,7 @@ protected:
     void markAllClientLayersForInvalidation();
     void markClientForInvalidation(LayoutObject*, InvalidationMode);
 
-    virtual void willBeDestroyed() override;
+    void willBeDestroyed() override;
 
     bool m_isInLayout;
 

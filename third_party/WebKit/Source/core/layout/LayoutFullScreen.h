@@ -35,8 +35,8 @@ class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
 public:
     static LayoutFullScreen* createAnonymous(Document*);
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreen || LayoutFlexibleBox::isOfType(type); }
-    virtual const char* name() const override { return "LayoutFullScreen"; }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreen || LayoutFlexibleBox::isOfType(type); }
+    const char* name() const override { return "LayoutFullScreen"; }
 
     void setPlaceholder(LayoutBlock*);
     LayoutBlock* placeholder() { return m_placeholder; }
@@ -50,7 +50,7 @@ public:
 
 private:
     LayoutFullScreen();
-    virtual void willBeDestroyed() override;
+    void willBeDestroyed() override;
 
 protected:
     LayoutBlock* m_placeholder;

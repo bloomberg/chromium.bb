@@ -36,27 +36,27 @@ class LayoutObject;
 
 class LayoutImageResourceStyleImage final : public LayoutImageResource {
 public:
-    virtual ~LayoutImageResourceStyleImage();
+    ~LayoutImageResourceStyleImage() override;
 
     static PassOwnPtr<LayoutImageResource> create(StyleImage* styleImage)
     {
         return adoptPtr(new LayoutImageResourceStyleImage(styleImage));
     }
-    virtual void initialize(LayoutObject*) override;
-    virtual void shutdown() override;
+    void initialize(LayoutObject*) override;
+    void shutdown() override;
 
-    virtual bool hasImage() const override { return true; }
-    virtual PassRefPtr<Image> image(int width = 0, int height = 0) const override;
-    virtual bool errorOccurred() const override { return m_styleImage->errorOccurred(); }
+    bool hasImage() const override { return true; }
+    PassRefPtr<Image> image(int width = 0, int height = 0) const override;
+    bool errorOccurred() const override { return m_styleImage->errorOccurred(); }
 
-    virtual void setContainerSizeForLayoutObject(const IntSize&) override;
-    virtual bool imageHasRelativeWidth() const override { return m_styleImage->imageHasRelativeWidth(); }
-    virtual bool imageHasRelativeHeight() const override { return m_styleImage->imageHasRelativeHeight(); }
+    void setContainerSizeForLayoutObject(const IntSize&) override;
+    bool imageHasRelativeWidth() const override { return m_styleImage->imageHasRelativeWidth(); }
+    bool imageHasRelativeHeight() const override { return m_styleImage->imageHasRelativeHeight(); }
 
-    virtual LayoutSize imageSize(float multiplier) const override { return m_styleImage->imageSize(m_layoutObject, multiplier); }
-    virtual LayoutSize intrinsicSize(float multiplier) const override { return m_styleImage->imageSize(m_layoutObject, multiplier); }
+    LayoutSize imageSize(float multiplier) const override { return m_styleImage->imageSize(m_layoutObject, multiplier); }
+    LayoutSize intrinsicSize(float multiplier) const override { return m_styleImage->imageSize(m_layoutObject, multiplier); }
 
-    virtual WrappedImagePtr imagePtr() const override { return m_styleImage->data(); }
+    WrappedImagePtr imagePtr() const override { return m_styleImage->data(); }
 
 private:
     LayoutImageResourceStyleImage(StyleImage*);

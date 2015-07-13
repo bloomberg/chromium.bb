@@ -31,22 +31,22 @@ class HTMLTextAreaElement;
 class LayoutTextControlMultiLine final : public LayoutTextControl {
 public:
     LayoutTextControlMultiLine(HTMLTextAreaElement*);
-    virtual ~LayoutTextControlMultiLine();
+    ~LayoutTextControlMultiLine() override;
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextArea || LayoutTextControl::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTextArea || LayoutTextControl::isOfType(type); }
 
-    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-    virtual float getAvgCharWidth(AtomicString family) override;
-    virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const override;
-    virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
+    float getAvgCharWidth(AtomicString family) override;
+    LayoutUnit preferredContentLogicalWidth(float charWidth) const override;
+    LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
     // We override the two baseline functions because we want our baseline to be the bottom of our margin box.
-    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
-    virtual int inlineBlockBaseline(LineDirectionMode) const override { return -1; }
+    int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
+    int inlineBlockBaseline(LineDirectionMode) const override { return -1; }
 
-    virtual PassRefPtr<ComputedStyle> createInnerEditorStyle(const ComputedStyle& startStyle) const override;
-    virtual LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
+    PassRefPtr<ComputedStyle> createInnerEditorStyle(const ComputedStyle& startStyle) const override;
+    LayoutObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlMultiLine, isTextArea());

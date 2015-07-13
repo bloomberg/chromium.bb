@@ -36,14 +36,14 @@ public:
     {
     }
 
-    virtual bool isSVGRootInlineBox() const override { return true; }
+    bool isSVGRootInlineBox() const override { return true; }
 
-    virtual LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+    LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
     void setLogicalHeight(LayoutUnit height) { m_logicalHeight = height; }
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
-    virtual void markDirty() override;
+    void markDirty() override;
 
     void computePerCharacterLayoutInformation();
 

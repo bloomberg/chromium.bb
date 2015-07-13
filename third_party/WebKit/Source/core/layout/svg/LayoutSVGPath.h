@@ -33,22 +33,22 @@ namespace blink {
 class LayoutSVGPath final : public LayoutSVGShape {
 public:
     explicit LayoutSVGPath(SVGGeometryElement*);
-    virtual ~LayoutSVGPath();
+    ~LayoutSVGPath() override;
 
-    virtual const Vector<MarkerPosition>* markerPositions() const override { return &m_markerPositions; }
+    const Vector<MarkerPosition>* markerPositions() const override { return &m_markerPositions; }
 
-    virtual const Vector<FloatPoint>* zeroLengthLineCaps() const override { return &m_zeroLengthLinecapLocations; }
+    const Vector<FloatPoint>* zeroLengthLineCaps() const override { return &m_zeroLengthLinecapLocations; }
     static FloatRect zeroLengthSubpathRect(const FloatPoint&, float);
 
-    virtual const char* name() const override { return "LayoutSVGPath"; }
+    const char* name() const override { return "LayoutSVGPath"; }
 
 private:
     void updateShapeFromElement() override;
     void updateStrokeAndFillBoundingBoxes() override;
 
-    virtual FloatRect hitTestStrokeBoundingBox() const override;
+    FloatRect hitTestStrokeBoundingBox() const override;
 
-    virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
+    bool shapeDependentStrokeContains(const FloatPoint&) override;
 
     FloatRect markerRect(float strokeWidth) const;
     bool shouldGenerateMarkerPositions() const;

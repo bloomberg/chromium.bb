@@ -69,7 +69,7 @@ class InlineFlowBox;
 class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 public:
     LayoutBoxModelObject(ContainerNode*);
-    virtual ~LayoutBoxModelObject();
+    ~LayoutBoxModelObject() override;
 
     // This is the only way layers should ever be destroyed.
     void destroyLayer();
@@ -186,21 +186,21 @@ public:
     virtual LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const = 0;
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const = 0;
 
-    virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
-    virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
+    void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
+    const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
 
-    virtual void setSelectionState(SelectionState) override;
+    void setSelectionState(SelectionState) override;
 
     void contentChanged(ContentChangeType);
     bool hasAcceleratedCompositing() const;
 
-    virtual void computeLayerHitTestRects(LayerHitTestRects&) const override;
+    void computeLayerHitTestRects(LayerHitTestRects&) const override;
 
     // Returns true if the background is painted opaque in the given rect.
     // The query rect is given in local coordinate system.
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const { return false; }
 
-    virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override;
+    void invalidateTreeIfNeeded(PaintInvalidationState&) override;
 
     // Indicate that the contents of this layoutObject need to be repainted. Only has an effect if compositing is being used,
     void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this layout object
@@ -213,7 +213,7 @@ public:
     bool backgroundStolenForBeingBody(const ComputedStyle* rootElementStyle = nullptr) const;
 
 protected:
-    virtual void willBeDestroyed() override;
+    void willBeDestroyed() override;
 
     LayoutPoint adjustedPositionRelativeToOffsetParent(const LayoutPoint&) const;
 
@@ -230,7 +230,7 @@ protected:
     void addFocusRingRectsForNormalChildren(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
     void addFocusRingRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
 
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer*, const LayoutPoint&, const LayoutRect&) const override;
+    void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer*, const LayoutPoint&, const LayoutRect&) const override;
 
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
@@ -267,7 +267,7 @@ private:
     void createLayer(DeprecatedPaintLayerType);
 
     LayoutUnit computedCSSPadding(const Length&) const;
-    virtual bool isBoxModelObject() const override final { return true; }
+    bool isBoxModelObject() const final { return true; }
 
     OwnPtr<DeprecatedPaintLayer> m_layer;
 };

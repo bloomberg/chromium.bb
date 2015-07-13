@@ -39,12 +39,12 @@ class LayoutProgress;
 
 class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 public:
-    virtual String extraDefaultStyleSheet() override;
-    virtual String extraQuirksStyleSheet() override;
+    String extraDefaultStyleSheet() override;
+    String extraQuirksStyleSheet() override;
 
-    virtual Color systemColor(CSSValueID) const override;
+    Color systemColor(CSSValueID) const override;
 
-    virtual bool supportsFocusRing(const ComputedStyle&) const override;
+    bool supportsFocusRing(const ComputedStyle&) const override;
 
     // List Box selection color
     virtual Color activeListBoxSelectionBackgroundColor() const;
@@ -52,50 +52,50 @@ public:
     virtual Color inactiveListBoxSelectionBackgroundColor() const;
     virtual Color inactiveListBoxSelectionForegroundColor() const;
 
-    virtual Color platformActiveSelectionBackgroundColor() const override;
-    virtual Color platformInactiveSelectionBackgroundColor() const override;
-    virtual Color platformActiveSelectionForegroundColor() const override;
-    virtual Color platformInactiveSelectionForegroundColor() const override;
+    Color platformActiveSelectionBackgroundColor() const override;
+    Color platformInactiveSelectionBackgroundColor() const override;
+    Color platformActiveSelectionForegroundColor() const override;
+    Color platformInactiveSelectionForegroundColor() const override;
 
-    virtual IntSize sliderTickSize() const override;
-    virtual int sliderTickOffsetFromTrackCenter() const override;
-    virtual void adjustSliderThumbSize(ComputedStyle&, Element*) const override;
+    IntSize sliderTickSize() const override;
+    int sliderTickOffsetFromTrackCenter() const override;
+    void adjustSliderThumbSize(ComputedStyle&, Element*) const override;
 
     static void setCaretBlinkInterval(double);
 
-    virtual void setCheckboxSize(ComputedStyle&) const override;
-    virtual void setRadioSize(ComputedStyle&) const override;
-    virtual void adjustInnerSpinButtonStyle(ComputedStyle&, Element*) const override;
+    void setCheckboxSize(ComputedStyle&) const override;
+    void setRadioSize(ComputedStyle&) const override;
+    void adjustInnerSpinButtonStyle(ComputedStyle&, Element*) const override;
 
-    virtual bool popsMenuBySpaceKey() const override final { return true; }
-    virtual bool popsMenuByReturnKey() const override final { return true; }
-    virtual bool popsMenuByAltDownUpOrF4Key() const override { return true; }
+    bool popsMenuBySpaceKey() const final { return true; }
+    bool popsMenuByReturnKey() const final { return true; }
+    bool popsMenuByAltDownUpOrF4Key() const override { return true; }
 
-    virtual bool shouldOpenPickerWithF4Key() const override;
+    bool shouldOpenPickerWithF4Key() const override;
 
-    virtual Color platformTapHighlightColor() const override
+    Color platformTapHighlightColor() const override
     {
         return Color(defaultTapHighlightColor);
     }
 
     // A method asking if the theme's controls actually care about redrawing
     // when hovered.
-    virtual bool supportsHover(const ComputedStyle&) const override final;
+    bool supportsHover(const ComputedStyle&) const final;
 
-    virtual Color platformFocusRingColor() const override;
+    Color platformFocusRingColor() const override;
 
-    virtual double caretBlinkInterval() const final;
+    double caretBlinkInterval() const final;
 
     // System fonts.
     virtual void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const;
 
-    virtual int minimumMenuListSize(const ComputedStyle&) const override;
+    int minimumMenuListSize(const ComputedStyle&) const override;
 
-    virtual void adjustButtonStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustSearchFieldStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const override;
+    void adjustButtonStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const override;
+    void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const override;
 
     // MenuList refers to an unstyled menulist (meaning a menulist without
     // background-color or border set) and MenuListButton refers to a styled
@@ -106,17 +106,17 @@ public:
     // In short, we either go down the MenuList code path or the MenuListButton
     // codepath. We never go down both. And in both cases, they layout the
     // entire menulist.
-    virtual void adjustMenuListStyle(ComputedStyle&, Element*) const override;
-    virtual void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
+    void adjustMenuListStyle(ComputedStyle&, Element*) const override;
+    void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
 
-    virtual double animationRepeatIntervalForProgressBar() const override;
-    virtual double animationDurationForProgressBar() const override;
+    double animationRepeatIntervalForProgressBar() const override;
+    double animationDurationForProgressBar() const override;
 
     // These methods define the padding for the MenuList's inner block.
-    virtual int popupInternalPaddingLeft(const ComputedStyle&) const override;
-    virtual int popupInternalPaddingRight(const ComputedStyle&) const override;
-    virtual int popupInternalPaddingTop(const ComputedStyle&) const override;
-    virtual int popupInternalPaddingBottom(const ComputedStyle&) const override;
+    int popupInternalPaddingLeft(const ComputedStyle&) const override;
+    int popupInternalPaddingRight(const ComputedStyle&) const override;
+    int popupInternalPaddingTop(const ComputedStyle&) const override;
+    int popupInternalPaddingBottom(const ComputedStyle&) const override;
 
     // Provide a way to pass the default font size from the Settings object
     // to the layout theme. FIXME: http://b/1129186 A cleaner way would be
@@ -129,17 +129,17 @@ public:
 
 protected:
     LayoutThemeDefault();
-    virtual ~LayoutThemeDefault();
-    virtual bool shouldUseFallbackTheme(const ComputedStyle&) const override;
+    ~LayoutThemeDefault() override;
+    bool shouldUseFallbackTheme(const ComputedStyle&) const override;
     virtual int menuListArrowPadding() const;
 
     IntRect determinateProgressValueRectFor(LayoutProgress*, const IntRect&) const;
     IntRect indeterminateProgressValueRectFor(LayoutProgress*, const IntRect&) const;
 
 private:
-    virtual bool shouldShowPlaceholderWhenFocused() const override;
+    bool shouldShowPlaceholderWhenFocused() const override;
 
-    virtual ThemePainter& painter() override { return m_painter; }
+    ThemePainter& painter() override { return m_painter; }
 
     int menuListInternalPadding(const ComputedStyle&, int paddingType) const;
 

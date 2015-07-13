@@ -44,7 +44,7 @@ enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 class CORE_EXPORT LayoutTable final : public LayoutBlock {
 public:
     explicit LayoutTable(Element*);
-    virtual ~LayoutTable();
+    ~LayoutTable() override;
 
     // Per CSS 3 writing-mode: "The first and second values of the 'border-spacing' property represent spacing between columns
     // and rows respectively, not necessarily the horizontal and vertical spacing respectively".
@@ -53,33 +53,33 @@ public:
 
     bool collapseBorders() const { return style()->borderCollapse(); }
 
-    virtual int borderStart() const override { return m_borderStart; }
-    virtual int borderEnd() const override { return m_borderEnd; }
-    virtual int borderBefore() const override;
-    virtual int borderAfter() const override;
+    int borderStart() const override { return m_borderStart; }
+    int borderEnd() const override { return m_borderEnd; }
+    int borderBefore() const override;
+    int borderAfter() const override;
 
-    virtual int borderLeft() const override
+    int borderLeft() const override
     {
         if (style()->isHorizontalWritingMode())
             return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
         return style()->isFlippedBlocksWritingMode() ? borderAfter() : borderBefore();
     }
 
-    virtual int borderRight() const override
+    int borderRight() const override
     {
         if (style()->isHorizontalWritingMode())
             return style()->isLeftToRightDirection() ? borderEnd() : borderStart();
         return style()->isFlippedBlocksWritingMode() ? borderBefore() : borderAfter();
     }
 
-    virtual int borderTop() const override
+    int borderTop() const override
     {
         if (style()->isHorizontalWritingMode())
             return style()->isFlippedBlocksWritingMode() ? borderAfter() : borderBefore();
         return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
     }
 
-    virtual int borderBottom() const override
+    int borderBottom() const override
     {
         if (style()->isHorizontalWritingMode())
             return style()->isFlippedBlocksWritingMode() ? borderBefore() : borderAfter();
@@ -123,8 +123,8 @@ public:
     int calcBorderEnd() const;
     void recalcBordersInRowDirection();
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
-    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
+    void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
+    void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
 
     struct ColumnStruct {
         explicit ColumnStruct(unsigned initialSpan = 1)
@@ -201,8 +201,8 @@ public:
     }
 
     // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
-    virtual LayoutUnit paddingEnd() const override { return static_cast<int>(LayoutBlock::paddingEnd()); }
-    virtual LayoutUnit paddingStart() const override { return static_cast<int>(LayoutBlock::paddingStart()); }
+    LayoutUnit paddingEnd() const override { return static_cast<int>(LayoutBlock::paddingEnd()); }
+    LayoutUnit paddingStart() const override { return static_cast<int>(LayoutBlock::paddingStart()); }
 
     LayoutUnit bordersPaddingAndSpacingInRowDirection() const
     {
@@ -254,7 +254,7 @@ public:
     }
 
     static LayoutTable* createAnonymousWithParent(const LayoutObject*);
-    virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
+    LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParent(parent);
     }
@@ -267,9 +267,9 @@ public:
     void addColumn(const LayoutTableCol*);
     void removeColumn(const LayoutTableCol*);
 
-    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override final;
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) final;
 
-    virtual void paintMask(const PaintInfo&, const LayoutPoint&) override final;
+    void paintMask(const PaintInfo&, const LayoutPoint&) final;
 
     const CollapsedBorderValues& collapsedBorders()
     {
@@ -279,40 +279,40 @@ public:
 
     void subtractCaptionRect(LayoutRect&) const;
 
-    virtual const char* name() const override { return "LayoutTable"; }
+    const char* name() const override { return "LayoutTable"; }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual void simplifiedNormalFlowLayout() override;
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer) override;
-    virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void simplifiedNormalFlowLayout() override;
+    PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject& paintInvalidationContainer) override;
+    void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }
 
-    virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
-    virtual void layout() override;
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
-    virtual void computePreferredLogicalWidths() override;
-    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    void paintObject(const PaintInfo&, const LayoutPoint&) override;
+    void layout() override;
+    void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
+    void computePreferredLogicalWidths() override;
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
-    virtual int firstLineBoxBaseline() const override;
-    virtual int inlineBlockBaseline(LineDirectionMode) const override;
+    int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
+    int firstLineBoxBaseline() const override;
+    int inlineBlockBaseline(LineDirectionMode) const override;
 
     LayoutTableCol* slowColElement(unsigned col, bool* startEdge, bool* endEdge) const;
 
     void updateColumnCache() const;
     void invalidateCachedColumns();
 
-    virtual void updateLogicalWidth() override;
+    void updateLogicalWidth() override;
 
     LayoutUnit convertStyleLogicalWidthToComputedWidth(const Length& styleLogicalWidth, LayoutUnit availableWidth);
     LayoutUnit convertStyleLogicalHeightToComputedHeight(const Length& styleLogicalHeight);
 
-    virtual LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const override;
+    LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const override;
 
-    virtual void addOverflowFromChildren() override;
+    void addOverflowFromChildren() override;
 
     void recalcSections() const;
     void layoutCaption(LayoutTableCaption&);

@@ -135,7 +135,7 @@ public:
     // Anonymous objects should pass the document as their node, and they will then automatically be
     // marked as anonymous in the constructor.
     explicit LayoutObject(Node*);
-    virtual ~LayoutObject();
+    ~LayoutObject() override;
 
     // Returns the name of the layout object.
     virtual const char* name() const = 0;
@@ -969,10 +969,10 @@ public:
     virtual int previousOffsetForBackwardDeletion(int current) const;
     virtual int nextOffset(int current) const;
 
-    virtual void imageChanged(ImageResource*, const IntRect* = nullptr) override final;
+    void imageChanged(ImageResource*, const IntRect* = nullptr) final;
     virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) { }
-    virtual bool willRenderImage(ImageResource*) override final;
-    virtual bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) override final;
+    bool willRenderImage(ImageResource*) final;
+    bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) final;
 
     void selectionStartEnd(int& spos, int& epos) const;
 

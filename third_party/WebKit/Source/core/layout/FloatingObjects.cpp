@@ -140,12 +140,12 @@ public:
     {
     }
 
-    virtual ~ComputeFloatOffsetForFloatLayoutAdapter() { }
+    ~ComputeFloatOffsetForFloatLayoutAdapter() override { }
 
     LayoutUnit heightRemaining() const;
 
 protected:
-    virtual bool updateOffsetIfNeeded(const FloatingObject&) override final;
+    bool updateOffsetIfNeeded(const FloatingObject&) final;
 };
 
 template <FloatingObject::Type FloatTypeValue>
@@ -156,10 +156,10 @@ public:
     {
     }
 
-    virtual ~ComputeFloatOffsetForLineLayoutAdapter() { }
+    ~ComputeFloatOffsetForLineLayoutAdapter() override { }
 
 protected:
-    virtual bool updateOffsetIfNeeded(const FloatingObject&) override final;
+    bool updateOffsetIfNeeded(const FloatingObject&) final;
 };
 
 

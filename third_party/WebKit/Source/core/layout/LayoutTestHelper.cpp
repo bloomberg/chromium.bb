@@ -13,7 +13,7 @@ namespace blink {
 
 class FakeGraphicsLayerFactory : public GraphicsLayerFactory {
 public:
-    virtual PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerClient* client) override
+    PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerClient* client) override
     {
         return adoptPtr(new GraphicsLayer(client));
     }

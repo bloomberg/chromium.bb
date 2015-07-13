@@ -29,14 +29,14 @@ class LayoutTable;
 class LayoutTableCaption final : public LayoutBlockFlow {
 public:
     explicit LayoutTableCaption(Element*);
-    virtual ~LayoutTableCaption();
-    virtual LayoutUnit containingBlockLogicalWidthForContent() const override;
+    ~LayoutTableCaption() override;
+    LayoutUnit containingBlockLogicalWidthForContent() const override;
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCaption || LayoutBlockFlow::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCaption || LayoutBlockFlow::isOfType(type); }
 
-    virtual void insertedIntoTree() override;
-    virtual void willBeRemovedFromTree() override;
+    void insertedIntoTree() override;
+    void willBeRemovedFromTree() override;
 
     LayoutTable* table() const;
 };

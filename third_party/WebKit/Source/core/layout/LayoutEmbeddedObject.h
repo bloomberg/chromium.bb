@@ -34,7 +34,7 @@ class TextRun;
 class LayoutEmbeddedObject : public LayoutPart {
 public:
     LayoutEmbeddedObject(Element*);
-    virtual ~LayoutEmbeddedObject();
+    ~LayoutEmbeddedObject() override;
 
     enum PluginUnavailabilityReason {
         PluginMissing,
@@ -43,26 +43,26 @@ public:
     void setPluginUnavailabilityReason(PluginUnavailabilityReason);
     bool showsUnavailablePluginIndicator() const;
 
-    virtual const char* name() const override { return "LayoutEmbeddedObject"; }
+    const char* name() const override { return "LayoutEmbeddedObject"; }
 
     const String& unavailablePluginReplacementText() const { return m_unavailablePluginReplacementText; }
 
 private:
-    virtual void paintContents(const PaintInfo&, const LayoutPoint&) override final;
-    virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override final;
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
+    void paintContents(const PaintInfo&, const LayoutPoint&) final;
+    void paintReplaced(const PaintInfo&, const LayoutPoint&) final;
+    void paint(const PaintInfo&, const LayoutPoint&) final;
 
-    virtual void layout() override final;
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject&) override final;
+    void layout() final;
+    PaintInvalidationReason invalidatePaintIfNeeded(PaintInvalidationState&, const LayoutBoxModelObject&) final;
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
-    virtual LayoutBox* embeddedContentBox() const override final;
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
+    LayoutBox* embeddedContentBox() const final;
 
-    virtual DeprecatedPaintLayerType layerTypeRequired() const override final;
+    DeprecatedPaintLayerType layerTypeRequired() const final;
 
-    virtual ScrollResultOneDimensional scroll(ScrollDirectionPhysical, ScrollGranularity, float multiplier) override final;
+    ScrollResultOneDimensional scroll(ScrollDirectionPhysical, ScrollGranularity, float multiplier) final;
 
-    virtual CompositingReasons additionalCompositingReasons() const override;
+    CompositingReasons additionalCompositingReasons() const override;
 
     bool m_showsUnavailablePluginIndicator;
     PluginUnavailabilityReason m_pluginUnavailabilityReason;

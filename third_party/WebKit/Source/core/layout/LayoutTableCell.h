@@ -121,21 +121,21 @@ public:
 
     void setCellLogicalWidth(int constrainedLogicalWidth, SubtreeLayoutScope&);
 
-    virtual int borderLeft() const override;
-    virtual int borderRight() const override;
-    virtual int borderTop() const override;
-    virtual int borderBottom() const override;
-    virtual int borderStart() const override;
-    virtual int borderEnd() const override;
-    virtual int borderBefore() const override;
-    virtual int borderAfter() const override;
+    int borderLeft() const override;
+    int borderRight() const override;
+    int borderTop() const override;
+    int borderBottom() const override;
+    int borderStart() const override;
+    int borderEnd() const override;
+    int borderBefore() const override;
+    int borderAfter() const override;
 
     void collectBorderValues(LayoutTable::CollapsedBorderValues&);
     static void sortBorderValues(LayoutTable::CollapsedBorderValues&);
 
-    virtual void layout() override;
+    void layout() override;
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) override;
 
     LayoutUnit cellBaselinePosition() const;
     bool isBaselineAligned() const
@@ -150,27 +150,27 @@ public:
     int intrinsicPaddingBefore() const { return m_intrinsicPaddingBefore; }
     int intrinsicPaddingAfter() const { return m_intrinsicPaddingAfter; }
 
-    virtual LayoutUnit paddingTop() const override;
-    virtual LayoutUnit paddingBottom() const override;
-    virtual LayoutUnit paddingLeft() const override;
-    virtual LayoutUnit paddingRight() const override;
+    LayoutUnit paddingTop() const override;
+    LayoutUnit paddingBottom() const override;
+    LayoutUnit paddingLeft() const override;
+    LayoutUnit paddingRight() const override;
 
     // FIXME: For now we just assume the cell has the same block flow direction as the table. It's likely we'll
     // create an extra anonymous LayoutBlock to handle mixing directionality anyway, in which case we can lock
     // the block flow directionality of the cells to the table's directionality.
-    virtual LayoutUnit paddingBefore() const override;
-    virtual LayoutUnit paddingAfter() const override;
+    LayoutUnit paddingBefore() const override;
+    LayoutUnit paddingAfter() const override;
 
     void setOverrideLogicalContentHeightFromRowHeight(LayoutUnit);
 
-    virtual void scrollbarsChanged(bool horizontalScrollbarChanged, bool verticalScrollbarChanged) override;
+    void scrollbarsChanged(bool horizontalScrollbarChanged, bool verticalScrollbarChanged) override;
 
     bool cellWidthChanged() const { return m_cellWidthChanged; }
     void setCellWidthChanged(bool b = true) { m_cellWidthChanged = b; }
 
     static LayoutTableCell* createAnonymous(Document*);
     static LayoutTableCell* createAnonymousWithParent(const LayoutObject*);
-    virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
+    LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
     {
         return createAnonymousWithParent(parent);
     }
@@ -224,29 +224,29 @@ public:
     }
 #endif
 
-    virtual const char* name() const override { return "LayoutTableCell"; }
+    const char* name() const override { return "LayoutTableCell"; }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual void computePreferredLogicalWidths() override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void computePreferredLogicalWidths() override;
 
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
+    void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCell || LayoutBlockFlow::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableCell || LayoutBlockFlow::isOfType(type); }
 
-    virtual void willBeRemovedFromTree() override;
+    void willBeRemovedFromTree() override;
 
-    virtual void updateLogicalWidth() override;
+    void updateLogicalWidth() override;
 
-    virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
-    virtual void paintMask(const PaintInfo&, const LayoutPoint&) override;
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) override;
+    void paintMask(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const override;
+    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const override;
 
-    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const override;
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
-    virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
+    LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const override;
+    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
+    void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
     int borderHalfLeft(bool outer) const;
     int borderHalfRight(bool outer) const;

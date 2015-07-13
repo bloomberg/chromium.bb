@@ -42,15 +42,15 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
 public:
     explicit LayoutSVGResourcePattern(SVGPatternElement*);
 
-    virtual const char* name() const override { return "LayoutSVGResourcePattern"; }
+    const char* name() const override { return "LayoutSVGResourcePattern"; }
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
+    void removeAllClientsFromCache(bool markForInvalidation = true) override;
+    void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
 
-    virtual SVGPaintServer preparePaintServer(const LayoutObject&) override;
+    SVGPaintServer preparePaintServer(const LayoutObject&) override;
 
     static const LayoutSVGResourceType s_resourceType = PatternResourceType;
-    virtual LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+    LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
 private:
     PassOwnPtr<PatternData> buildPatternData(const LayoutObject&);

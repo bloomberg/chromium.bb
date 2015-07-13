@@ -32,27 +32,27 @@ namespace blink {
 class LayoutBR final : public LayoutText {
 public:
     explicit LayoutBR(Node*);
-    virtual ~LayoutBR();
+    ~LayoutBR() override;
 
-    virtual const char* name() const override { return "LayoutBR"; }
+    const char* name() const override { return "LayoutBR"; }
 
-    virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /* paintInvalidationContainer */) const override { return LayoutRect(); }
+    LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /* paintInvalidationContainer */) const override { return LayoutRect(); }
 
-    virtual float width(unsigned /* from */, unsigned /* len */, const Font&, LayoutUnit /* xpos */, TextDirection, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */ , FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
-    virtual float width(unsigned /* from */, unsigned /* len */, LayoutUnit /* xpos */, TextDirection, bool = false /* firstLine */, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */, FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
+    float width(unsigned /* from */, unsigned /* len */, const Font&, LayoutUnit /* xpos */, TextDirection, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */ , FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
+    float width(unsigned /* from */, unsigned /* len */, LayoutUnit /* xpos */, TextDirection, bool = false /* firstLine */, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */, FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
 
     int lineHeight(bool firstLine) const;
 
     // overrides
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectBr || LayoutText::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectBr || LayoutText::isOfType(type); }
 
-    virtual int caretMinOffset() const override;
-    virtual int caretMaxOffset() const override;
+    int caretMinOffset() const override;
+    int caretMaxOffset() const override;
 
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override final;
+    PositionWithAffinity positionForPoint(const LayoutPoint&) final;
 
 protected:
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBR, isBR());

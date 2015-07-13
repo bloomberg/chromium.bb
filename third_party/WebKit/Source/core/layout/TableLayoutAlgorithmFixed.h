@@ -33,10 +33,10 @@ class TableLayoutAlgorithmFixed final : public TableLayoutAlgorithm {
 public:
     TableLayoutAlgorithmFixed(LayoutTable*);
 
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) override;
-    virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
-    virtual void layout() override;
-    virtual void willChangeTableLayout() override;
+    void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) override;
+    void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
+    void layout() override;
+    void willChangeTableLayout() override;
 
 private:
     int calcWidthArray();

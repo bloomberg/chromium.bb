@@ -19,12 +19,12 @@ protected:
     ImageQualityController* controller() { return m_controller; }
 
 private:
-    virtual void SetUp() override
+    void SetUp() override
     {
         m_controller = ImageQualityController::imageQualityController();
         RenderingTest::SetUp();
     }
-    virtual void TearDown() override
+    void TearDown() override
     {
     }
     ImageQualityController* m_controller;

@@ -39,21 +39,20 @@ class LayoutRubyRun;
 
 class LayoutRubyBase final : public LayoutBlockFlow {
 public:
-    virtual ~LayoutRubyBase();
-
+    ~LayoutRubyBase() override;
     static LayoutRubyBase* createAnonymous(Document*);
 
-    virtual const char* name() const override { return "LayoutRubyBase"; }
+    const char* name() const override { return "LayoutRubyBase"; }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyBase || LayoutBlockFlow::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectRubyBase || LayoutBlockFlow::isOfType(type); }
 
-    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
 private:
     LayoutRubyBase();
 
-    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
-    virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const override;
+    ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
+    void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const override;
 
     void moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = nullptr);
     void moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = nullptr);

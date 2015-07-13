@@ -36,67 +36,66 @@ class LayoutScrollbar;
 class LayoutScrollbarPart final : public LayoutBlock {
 public:
     static LayoutScrollbarPart* createAnonymous(Document*, LayoutScrollbar* = nullptr, ScrollbarPart = NoPart);
+    ~LayoutScrollbarPart() override;
 
-    virtual ~LayoutScrollbarPart();
+    const char* name() const override { return "LayoutScrollbarPart"; }
 
-    virtual const char* name() const override { return "LayoutScrollbarPart"; }
+    DeprecatedPaintLayerType layerTypeRequired() const override { return NoDeprecatedPaintLayer; }
 
-    virtual DeprecatedPaintLayerType layerTypeRequired() const override { return NoDeprecatedPaintLayer; }
-
-    virtual void layout() override;
+    void layout() override;
 
     // Scrollbar parts needs to be rendered at device pixel boundaries.
-    virtual LayoutRectOutsets marginBoxOutsets() const override
+    LayoutRectOutsets marginBoxOutsets() const override
     {
         ASSERT(isIntegerValue(LayoutBlock::marginBoxOutsets().top()));
         return LayoutBlock::marginBoxOutsets();
     }
-    virtual LayoutUnit marginTop() const override
+    LayoutUnit marginTop() const override
     {
         ASSERT(isIntegerValue(LayoutBlock::marginTop()));
         return LayoutBlock::marginTop();
     }
-    virtual LayoutUnit marginBottom() const override
+    LayoutUnit marginBottom() const override
     {
         ASSERT(isIntegerValue(LayoutBlock::marginBottom()));
         return LayoutBlock::marginBottom();
     }
-    virtual LayoutUnit marginLeft() const override
+    LayoutUnit marginLeft() const override
     {
         ASSERT(isIntegerValue(LayoutBlock::marginLeft()));
         return LayoutBlock::marginLeft();
     }
-    virtual LayoutUnit marginRight() const override
+    LayoutUnit marginRight() const override
     {
         ASSERT(isIntegerValue(LayoutBlock::marginRight()));
         return LayoutBlock::marginRight();
     }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutScrollbarPart || LayoutBlock::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutScrollbarPart || LayoutBlock::isOfType(type); }
     LayoutObject* layoutObjectOwningScrollbar() const;
 
 protected:
-    virtual void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+    void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
 private:
     LayoutScrollbarPart(LayoutScrollbar*, ScrollbarPart);
 
-    virtual void computePreferredLogicalWidths() override;
+    void computePreferredLogicalWidths() override;
 
     // Have all padding getters return 0. The important point here is to avoid resolving percents
     // against the containing block, since scroll bar corners don't always have one (so it would
     // crash). Scroll bar corners are not actually laid out, and they don't have child content, so
     // what we return here doesn't really matter.
-    virtual LayoutUnit paddingTop() const override { return LayoutUnit(); }
-    virtual LayoutUnit paddingBottom() const override { return LayoutUnit(); }
-    virtual LayoutUnit paddingLeft() const override { return LayoutUnit(); }
-    virtual LayoutUnit paddingRight() const override { return LayoutUnit(); }
-    virtual LayoutUnit paddingBefore() const override { return LayoutUnit(); }
-    virtual LayoutUnit paddingAfter() const override { return LayoutUnit(); }
-    virtual LayoutUnit paddingStart() const override { return LayoutUnit(); }
-    virtual LayoutUnit paddingEnd() const override { return LayoutUnit(); }
+    LayoutUnit paddingTop() const override { return LayoutUnit(); }
+    LayoutUnit paddingBottom() const override { return LayoutUnit(); }
+    LayoutUnit paddingLeft() const override { return LayoutUnit(); }
+    LayoutUnit paddingRight() const override { return LayoutUnit(); }
+    LayoutUnit paddingBefore() const override { return LayoutUnit(); }
+    LayoutUnit paddingAfter() const override { return LayoutUnit(); }
+    LayoutUnit paddingStart() const override { return LayoutUnit(); }
+    LayoutUnit paddingEnd() const override { return LayoutUnit(); }
 
     void layoutHorizontalPart();
     void layoutVerticalPart();

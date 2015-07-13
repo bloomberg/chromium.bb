@@ -36,12 +36,12 @@ public:
 
     FrameEdgeInfo edgeInfo() const;
 
-    virtual const char* name() const override { return "LayoutFrame"; }
+    const char* name() const override { return "LayoutFrame"; }
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrame || LayoutPart::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrame || LayoutPart::isOfType(type); }
 
-    virtual void updateFromElement() override;
+    void updateFromElement() override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrame, isFrame());

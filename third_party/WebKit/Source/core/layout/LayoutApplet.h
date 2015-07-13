@@ -31,9 +31,9 @@ class HTMLAppletElement;
 class LayoutApplet final : public LayoutEmbeddedObject {
 public:
     explicit LayoutApplet(HTMLAppletElement*);
-    virtual ~LayoutApplet();
+    ~LayoutApplet() override;
 
-    virtual const char* name() const override { return "LayoutApplet"; }
+    const char* name() const override { return "LayoutApplet"; }
 };
 
 } // namespace blink

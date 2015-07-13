@@ -37,16 +37,16 @@ class LayoutTextFragment final : public LayoutText {
 public:
     LayoutTextFragment(Node*, StringImpl*, int startOffset, int length);
     LayoutTextFragment(Node*, StringImpl*);
-    virtual ~LayoutTextFragment();
+    ~LayoutTextFragment() override;
 
-    virtual bool isTextFragment() const override { return true; }
+    bool isTextFragment() const override { return true; }
 
-    virtual bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
+    bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
 
     unsigned start() const { return m_start; }
     unsigned end() const { return m_end; }
 
-    virtual unsigned textStartOffset() const override { return start(); }
+    unsigned textStartOffset() const override { return start(); }
 
     void setContentString(StringImpl*);
     StringImpl* contentString() const { return m_contentString.get(); }
@@ -56,15 +56,15 @@ public:
     // things like first-letter this may differ from the completeText as we maybe using
     // only a portion of the text nodes content.
 
-    virtual PassRefPtr<StringImpl> originalText() const override;
+    PassRefPtr<StringImpl> originalText() const override;
 
-    virtual void setText(PassRefPtr<StringImpl>, bool force = false) override;
+    void setText(PassRefPtr<StringImpl>, bool force = false) override;
     void setTextFragment(PassRefPtr<StringImpl>, unsigned start, unsigned length);
 
-    virtual void transformText() override;
+    void transformText() override;
 
     // FIXME: Rename to LayoutTextFragment
-    virtual const char* name() const override { return "LayoutTextFragment"; }
+    const char* name() const override { return "LayoutTextFragment"; }
 
     void setFirstLetterPseudoElement(FirstLetterPseudoElement* element) { m_firstLetterPseudoElement = element; }
     FirstLetterPseudoElement* firstLetterPseudoElement() const { return m_firstLetterPseudoElement; }
@@ -73,11 +73,11 @@ public:
     bool isRemainingTextLayoutObject() const { return m_isRemainingTextLayoutObject; }
 
 protected:
-    virtual void willBeDestroyed() override;
+    void willBeDestroyed() override;
 
 private:
     LayoutBlock* blockForAccompanyingFirstLetter() const;
-    virtual UChar previousCharacter() const override;
+    UChar previousCharacter() const override;
 
     Text* associatedTextNode() const;
     void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;

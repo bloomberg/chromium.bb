@@ -38,12 +38,12 @@ public:
     {
     }
 
-    virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override { return false; }
+    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override { return false; }
 
-    virtual void styleDidChange(StyleDifference, const ComputedStyle*) override;
+    void styleDidChange(StyleDifference, const ComputedStyle*) override;
 
-    virtual const char* name() const override { return "LayoutSVGResourceFilterPrimitive"; }
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || LayoutSVGHiddenContainer::isOfType(type); }
+    const char* name() const override { return "LayoutSVGResourceFilterPrimitive"; }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || LayoutSVGHiddenContainer::isOfType(type); }
 
     inline void primitiveAttributeChanged(const QualifiedName& attribute)
     {

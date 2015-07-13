@@ -39,7 +39,7 @@ public:
     explicit LayoutVTTCue(VTTCueBox*);
 
 private:
-    virtual void layout() override;
+    void layout() override;
 
     void adjustForTopAndBottomMarginBorderAndPadding();
     void repositionCueSnapToLinesNotSet();

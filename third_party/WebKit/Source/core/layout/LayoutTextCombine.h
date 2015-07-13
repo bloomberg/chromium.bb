@@ -41,13 +41,13 @@ public:
     void transformLayoutRect(LayoutRect& boxRect) const;
     LayoutUnit inlineWidthForLayout() const;
 
-    virtual const char* name() const override { return "LayoutTextCombine"; }
+    const char* name() const override { return "LayoutTextCombine"; }
 
 private:
-    virtual bool isCombineText() const override { return true; }
-    virtual float width(unsigned from, unsigned length, const Font&, LayoutUnit xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* glyphBounds = nullptr) const override;
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual void setTextInternal(PassRefPtr<StringImpl>) override;
+    bool isCombineText() const override { return true; }
+    float width(unsigned from, unsigned length, const Font&, LayoutUnit xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* glyphBounds = nullptr) const override;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    void setTextInternal(PassRefPtr<StringImpl>) override;
     void updateIsCombined();
 
     float offsetX(const LayoutRect& boxRect) const;

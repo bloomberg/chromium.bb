@@ -35,25 +35,25 @@ public:
     FloatRect viewport() const { return m_viewport; }
 
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
-    virtual bool didTransformToRootUpdate() override { return m_didTransformToRootUpdate; }
+    bool didTransformToRootUpdate() override { return m_didTransformToRootUpdate; }
 
-    virtual void determineIfLayoutSizeChanged() override;
-    virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+    void determineIfLayoutSizeChanged() override;
+    void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
+    void paint(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual const char* name() const override { return "LayoutSVGViewportContainer"; }
+    const char* name() const override { return "LayoutSVGViewportContainer"; }
 
 private:
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || LayoutSVGContainer::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || LayoutSVGContainer::isOfType(type); }
 
     AffineTransform viewportTransform() const;
-    virtual const AffineTransform& localToParentTransform() const override { return m_localToParentTransform; }
+    const AffineTransform& localToParentTransform() const override { return m_localToParentTransform; }
 
-    virtual void calcViewport() override;
-    virtual bool calculateLocalTransform() override;
+    void calcViewport() override;
+    bool calculateLocalTransform() override;
 
-    virtual bool pointIsInsideViewportClip(const FloatPoint& pointInParent) override;
+    bool pointIsInsideViewportClip(const FloatPoint& pointInParent) override;
 
     FloatRect m_viewport;
     mutable AffineTransform m_localToParentTransform;

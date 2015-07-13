@@ -33,13 +33,13 @@ namespace blink {
 class CORE_EXPORT LayoutPart : public LayoutReplaced {
 public:
     explicit LayoutPart(Element*);
-    virtual ~LayoutPart();
+    ~LayoutPart() override;
 
     bool requiresAcceleratedCompositing() const;
 
-    virtual bool needsPreferredWidthsRecalculation() const override final;
+    bool needsPreferredWidthsRecalculation() const final;
 
-    virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
     void ref() { ++m_refCount; }
     void deref();
@@ -51,25 +51,25 @@ public:
     void widgetPositionsUpdated();
     bool updateWidgetGeometry();
 
-    virtual bool isLayoutPart() const override final { return true; }
+    bool isLayoutPart() const final { return true; }
     virtual void paintContents(const PaintInfo&, const LayoutPoint&);
 
 protected:
-    virtual DeprecatedPaintLayerType layerTypeRequired() const override;
+    DeprecatedPaintLayerType layerTypeRequired() const override;
 
-    virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override final;
-    virtual void layout() override;
-    virtual void paint(const PaintInfo&, const LayoutPoint&) override;
-    virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override final;
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
+    void layout() override;
+    void paint(const PaintInfo&, const LayoutPoint&) override;
+    CursorDirective getCursor(const LayoutPoint&, Cursor&) const final;
 
     // Overridden to invalidate the child frame if any.
-    virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
+    void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
 
 private:
-    virtual CompositingReasons additionalCompositingReasons() const override;
+    CompositingReasons additionalCompositingReasons() const override;
 
-    virtual void willBeDestroyed() override final;
-    virtual void destroy() override final;
+    void willBeDestroyed() final;
+    void destroy() final;
 
     bool setWidgetGeometry(const LayoutRect&);
 

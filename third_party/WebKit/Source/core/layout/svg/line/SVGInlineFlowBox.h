@@ -33,13 +33,13 @@ public:
     {
     }
 
-    virtual bool isSVGInlineFlowBox() const override { return true; }
-    virtual LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+    bool isSVGInlineFlowBox() const override { return true; }
+    LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
     void setLogicalHeight(LayoutUnit h) { m_logicalHeight = h; }
 
-    virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
-    virtual LayoutRect calculateBoundaries() const override;
+    LayoutRect calculateBoundaries() const override;
 
 private:
     LayoutUnit m_logicalHeight;

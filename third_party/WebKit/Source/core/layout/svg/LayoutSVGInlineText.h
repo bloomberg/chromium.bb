@@ -43,24 +43,24 @@ public:
     // Preserves floating point precision for the use in DRT. It knows how to round and does a better job than enclosingIntRect.
     FloatRect floatLinesBoundingBox() const;
 
-    virtual PassRefPtr<StringImpl> originalText() const override;
+    PassRefPtr<StringImpl> originalText() const override;
 
-    virtual const char* name() const override { return "LayoutSVGInlineText"; }
+    const char* name() const override { return "LayoutSVGInlineText"; }
 
 private:
-    virtual void setTextInternal(PassRefPtr<StringImpl>) override;
-    virtual void styleDidChange(StyleDifference, const ComputedStyle*) override;
+    void setTextInternal(PassRefPtr<StringImpl>) override;
+    void styleDidChange(StyleDifference, const ComputedStyle*) override;
 
-    virtual FloatRect objectBoundingBox() const override { return floatLinesBoundingBox(); }
+    FloatRect objectBoundingBox() const override { return floatLinesBoundingBox(); }
 
-    virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInlineText || LayoutText::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInlineText || LayoutText::isOfType(type); }
 
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
-    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) override;
-    virtual IntRect linesBoundingBox() const override;
-    virtual InlineTextBox* createTextBox(int start, unsigned short length) override;
+    PositionWithAffinity positionForPoint(const LayoutPoint&) override;
+    LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) override;
+    IntRect linesBoundingBox() const override;
+    InlineTextBox* createTextBox(int start, unsigned short length) override;
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState*) const override final;
+    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState*) const final;
 
     float m_scalingFactor;
     Font m_scaledFont;

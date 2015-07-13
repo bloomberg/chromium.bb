@@ -33,29 +33,29 @@ namespace blink {
 class LayoutThemeAndroid final : public LayoutThemeDefault {
 public:
     static PassRefPtr<LayoutTheme> create();
-    virtual String extraDefaultStyleSheet() override;
+    String extraDefaultStyleSheet() override;
 
-    virtual void adjustInnerSpinButtonStyle(ComputedStyle&, Element*) const override;
+    void adjustInnerSpinButtonStyle(ComputedStyle&, Element*) const override;
 
-    virtual bool delegatesMenuListRendering() const override { return true; }
+    bool delegatesMenuListRendering() const override { return true; }
 
-    virtual String extraMediaControlsStyleSheet() override;
+    String extraMediaControlsStyleSheet() override;
 
-    virtual Color platformTapHighlightColor() const override
+    Color platformTapHighlightColor() const override
     {
         return LayoutThemeAndroid::defaultTapHighlightColor;
     }
 
-    virtual Color platformActiveSelectionBackgroundColor() const override
+    Color platformActiveSelectionBackgroundColor() const override
     {
         return LayoutThemeAndroid::defaultActiveSelectionBackgroundColor;
     }
 
 protected:
-    virtual int menuListArrowPadding() const override;
+    int menuListArrowPadding() const override;
 
 private:
-    virtual ~LayoutThemeAndroid();
+    ~LayoutThemeAndroid() override;
 
     static const RGBA32 defaultTapHighlightColor = 0x6633b5e5;
     static const RGBA32 defaultActiveSelectionBackgroundColor = 0x6633b5e5;
