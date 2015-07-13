@@ -17,12 +17,12 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
  public:
   Backend() : storage_(NULL) {}
 
-  void Init(const base::FilePath& db_path) {
+  void Init(const std::string& uma_client_name, const base::FilePath& db_path) {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     DCHECK(!storage_);
     TRACE_EVENT0("ValueStoreFrontend::Backend", "Init");
     db_path_ = db_path;
-    storage_ = new LeveldbValueStore(db_path);
+    storage_ = new LeveldbValueStore(uma_client_name, db_path);
   }
 
   // This variant is useful for testing (using a mock ValueStore).
@@ -98,9 +98,10 @@ ValueStoreFrontend::ValueStoreFrontend()
     : backend_(new Backend()) {
 }
 
-ValueStoreFrontend::ValueStoreFrontend(const base::FilePath& db_path)
+ValueStoreFrontend::ValueStoreFrontend(const std::string& uma_client_name,
+                                       const base::FilePath& db_path)
     : backend_(new Backend()) {
-  Init(db_path);
+  Init(uma_client_name, db_path);
 }
 
 ValueStoreFrontend::ValueStoreFrontend(scoped_ptr<ValueStore> value_store)
@@ -114,10 +115,11 @@ ValueStoreFrontend::~ValueStoreFrontend() {
   DCHECK(CalledOnValidThread());
 }
 
-void ValueStoreFrontend::Init(const base::FilePath& db_path) {
+void ValueStoreFrontend::Init(const std::string& uma_client_name,
+                              const base::FilePath& db_path) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ValueStoreFrontend::Backend::Init,
-                 backend_, db_path));
+                          base::Bind(&ValueStoreFrontend::Backend::Init,
+                                     backend_, uma_client_name, db_path));
 }
 
 void ValueStoreFrontend::Get(const std::string& key,

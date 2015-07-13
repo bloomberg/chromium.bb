@@ -63,6 +63,13 @@
 
 using content::BrowserThread;
 
+// Statistics are logged to UMA with this string as part of histogram name. They
+// can all be found under Extensions.Database.Open.<client>. Changing this needs
+// to synchronize with histograms.xml, AND will also become incompatible with
+// older browsers still reporting the previous values.
+const char kStateDatabaseUMAClientName[] = "State";
+const char kRulesDatabaseUMAClientName[] = "Rules";
+
 namespace extensions {
 
 //
@@ -81,16 +88,14 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
   // loaded immediately so that the rules are ready before we issue network
   // requests.
   state_store_.reset(new StateStore(
-      profile_,
-      profile_->GetPath().AppendASCII(extensions::kStateStoreName),
-      true));
+      profile_, kStateDatabaseUMAClientName,
+      profile_->GetPath().AppendASCII(extensions::kStateStoreName), true));
   state_store_notification_observer_.reset(
       new StateStoreNotificationObserver(state_store_.get()));
 
   rules_store_.reset(new StateStore(
-      profile_,
-      profile_->GetPath().AppendASCII(extensions::kRulesStoreName),
-      false));
+      profile_, kRulesDatabaseUMAClientName,
+      profile_->GetPath().AppendASCII(extensions::kRulesStoreName), false));
 
 #if defined(OS_CHROMEOS)
   const user_manager::User* user =

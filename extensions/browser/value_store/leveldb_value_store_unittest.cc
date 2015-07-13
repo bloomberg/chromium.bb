@@ -18,8 +18,10 @@
 
 namespace {
 
+const char kDatabaseUMAClientName[] = "Test";
+
 ValueStore* Param(const base::FilePath& file_path) {
-  return new LeveldbValueStore(file_path);
+  return new LeveldbValueStore(kDatabaseUMAClientName, file_path);
 }
 
 }  // namespace
@@ -48,7 +50,10 @@ class LeveldbValueStoreUnitTest : public testing::Test {
 
   void CloseStore() { store_.reset(); }
 
-  void OpenStore() { store_.reset(new LeveldbValueStore(database_path())); }
+  void OpenStore() {
+    store_.reset(
+        new LeveldbValueStore(kDatabaseUMAClientName, database_path()));
+  }
 
   LeveldbValueStore* store() { return store_.get(); }
   const base::FilePath& database_path() { return database_dir_.path(); }

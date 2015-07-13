@@ -14,6 +14,10 @@
 #include "extensions/browser/value_store/value_store.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
+namespace base {
+class HistogramBase;
+}  // namespace base
+
 // Value store area, backed by a leveldb database.
 // All methods must be run on the FILE thread.
 class LeveldbValueStore : public ValueStore {
@@ -24,7 +28,8 @@ class LeveldbValueStore : public ValueStore {
   // need to be notified of that, but we don't want to permanently give up.
   //
   // Must be created on the FILE thread.
-  explicit LeveldbValueStore(const base::FilePath& path);
+  LeveldbValueStore(const std::string& uma_client_name,
+                    const base::FilePath& path);
 
   // Must be deleted on the FILE thread.
   ~LeveldbValueStore() override;
@@ -91,6 +96,7 @@ class LeveldbValueStore : public ValueStore {
 
   // leveldb backend.
   scoped_ptr<leveldb::DB> db_;
+  base::HistogramBase* open_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(LeveldbValueStore);
 };

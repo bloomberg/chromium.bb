@@ -12,6 +12,12 @@ namespace extensions {
 
 namespace {
 
+// Statistics are logged to UMA with this string as part of histogram name. They
+// can all be found under Extensions.Database.Open.<client>. Changing this needs
+// to synchronize with histograms.xml, AND will also become incompatible with
+// older browsers still reporting the previous values.
+const char kDatabaseUMAClientName[] = "Settings";
+
 base::FilePath GetDatabasePath(const base::FilePath& base_path,
                                const std::string& extension_id) {
   return base_path.AppendASCII(extension_id);
@@ -22,7 +28,8 @@ base::FilePath GetDatabasePath(const base::FilePath& base_path,
 ValueStore* LeveldbSettingsStorageFactory::Create(
     const base::FilePath& base_path,
     const std::string& extension_id) {
-  return new LeveldbValueStore(GetDatabasePath(base_path, extension_id));
+  return new LeveldbValueStore(kDatabaseUMAClientName,
+                               GetDatabasePath(base_path, extension_id));
 }
 
 void LeveldbSettingsStorageFactory::DeleteDatabaseIfExists(

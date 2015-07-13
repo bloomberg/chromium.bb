@@ -65,9 +65,11 @@ void StateStore::DelayedTaskQueue::SetReady() {
 }
 
 StateStore::StateStore(content::BrowserContext* context,
+                       const std::string& uma_client_name,
                        const base::FilePath& db_path,
                        bool deferred_load)
     : db_path_(db_path),
+      uma_client_name_(uma_client_name),
       task_queue_(new DelayedTaskQueue()),
       extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(context));
@@ -166,7 +168,7 @@ void StateStore::Init() {
     return;
 
   if (!db_path_.empty())
-    store_.Init(db_path_);
+    store_.Init(uma_client_name_, db_path_);
   task_queue_->SetReady();
 }
 

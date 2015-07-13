@@ -27,6 +27,7 @@ namespace extensions {
 namespace {
 
 const char kTestExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const char kDatabaseUMAClientName[] = "Test";
 
 class MockSettingsObserver : public SettingsObserver {
  public:
@@ -42,9 +43,11 @@ class MockSettingsObserver : public SettingsObserver {
 class MutablePolicyValueStore : public PolicyValueStore {
  public:
   explicit MutablePolicyValueStore(const base::FilePath& path)
-      : PolicyValueStore(kTestExtensionId,
-                         make_scoped_refptr(new SettingsObserverList()),
-                         scoped_ptr<ValueStore>(new LeveldbValueStore(path))) {}
+      : PolicyValueStore(
+            kTestExtensionId,
+            make_scoped_refptr(new SettingsObserverList()),
+            make_scoped_ptr(
+                new LeveldbValueStore(kDatabaseUMAClientName, path))) {}
   ~MutablePolicyValueStore() override {}
 
   WriteResult Set(WriteOptions options,
@@ -94,10 +97,9 @@ class PolicyValueStoreTest : public testing::Test {
     observers_ = new SettingsObserverList();
     observers_->AddObserver(&observer_);
     store_.reset(new PolicyValueStore(
-        kTestExtensionId,
-        observers_,
-        scoped_ptr<ValueStore>(
-            new LeveldbValueStore(scoped_temp_dir_.path()))));
+        kTestExtensionId, observers_,
+        make_scoped_ptr(new LeveldbValueStore(kDatabaseUMAClientName,
+                                              scoped_temp_dir_.path()))));
   }
 
   void TearDown() override {

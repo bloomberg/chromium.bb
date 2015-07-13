@@ -48,9 +48,17 @@ class ScopedSnapshot {
 
 }  // namespace
 
-LeveldbValueStore::LeveldbValueStore(const base::FilePath& db_path)
-    : db_path_(db_path) {
+LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
+                                     const base::FilePath& db_path)
+    : db_path_(db_path), open_histogram_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
+  // not a constant.
+  open_histogram_ = base::LinearHistogram::FactoryGet(
+      "Extensions.Database.Open." + uma_client_name, 1,
+      leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 LeveldbValueStore::~LeveldbValueStore() {
@@ -331,6 +339,8 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::EnsureDbIsOpen() {
   leveldb::DB* db = NULL;
   leveldb::Status status =
       leveldb::DB::Open(options, db_path_.AsUTF8Unsafe(), &db);
+  if (open_histogram_)
+    open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
   if (!status.ok())
     return ToValueStoreError(status, util::NoKey());
 

@@ -14,6 +14,8 @@
 
 using content::BrowserThread;
 
+const char kDatabaseUMAClientName[] = "Test";
+
 class ValueStoreFrontendTest : public testing::Test {
  public:
   ValueStoreFrontendTest()
@@ -40,7 +42,7 @@ class ValueStoreFrontendTest : public testing::Test {
 
   // Reset the value store, reloading the DB from disk.
   void ResetStorage() {
-    storage_.reset(new ValueStoreFrontend(db_path_));
+    storage_.reset(new ValueStoreFrontend(kDatabaseUMAClientName, db_path_));
   }
 
   bool Get(const std::string& key, scoped_ptr<base::Value>* output) {

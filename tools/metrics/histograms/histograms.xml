@@ -9856,6 +9856,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Database.Open" enum="LevelDBStatus">
+  <owner>cmumford@chromium.org</owner>
+  <summary>The result of an open attempt to an Extensions database.</summary>
+</histogram>
+
 <histogram name="Extensions.DeclarativeRulesStorageInitialization"
     units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -71292,6 +71297,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="WatcherQueryEndSession"/>
   <suffix name="WM_ENDSESSION"/>
   <affected-histogram name="Stability.ExitFunnel"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ExtensionsDatabaseOpen" separator=".">
+  <suffix name="Rules" label="Rules backing stores"/>
+  <suffix name="Settings" label="Settings backing stores"/>
+  <suffix name="State" label="State backing stores"/>
+  <affected-histogram name="Extensions.Database.Open"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExternalExtensionEvent" separator="">
