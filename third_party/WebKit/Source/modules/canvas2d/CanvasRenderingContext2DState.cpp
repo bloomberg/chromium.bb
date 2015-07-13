@@ -458,7 +458,7 @@ SkXfermode::Mode CanvasRenderingContext2DState::globalComposite() const
 
 void CanvasRenderingContext2DState::setImageSmoothingEnabled(bool enabled)
 {
-    SkFilterQuality filterQuality = enabled ? kMedium_SkFilterQuality : kNone_SkFilterQuality;
+    SkFilterQuality filterQuality = enabled ? kLow_SkFilterQuality : kNone_SkFilterQuality;
     m_strokePaint.setFilterQuality(filterQuality);
     m_fillPaint.setFilterQuality(filterQuality);
     m_imagePaint.setFilterQuality(filterQuality);
@@ -466,7 +466,7 @@ void CanvasRenderingContext2DState::setImageSmoothingEnabled(bool enabled)
 
 bool CanvasRenderingContext2DState::imageSmoothingEnabled() const
 {
-    return m_imagePaint.getFilterQuality() == kMedium_SkFilterQuality;
+    return m_imagePaint.getFilterQuality() == kLow_SkFilterQuality;
 }
 
 bool CanvasRenderingContext2DState::shouldDrawShadows() const
