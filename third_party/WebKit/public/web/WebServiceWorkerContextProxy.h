@@ -43,6 +43,7 @@ struct WebNotificationData;
 class WebServiceWorkerRegistration;
 class WebServiceWorkerRequest;
 class WebString;
+struct WebSyncRegistration;
 
 // A proxy interface to talk to the worker's GlobalScope implementation.
 // All methods of this class must be called on the worker thread.
@@ -71,9 +72,12 @@ public:
     // Passes ownership of the callbacks.
     virtual void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) = 0;
 
-    // Once the ServiceWorker has finished handling the sync event
+    // Once the ServiceWorker has finished handling the sync event,
     // didHandleSyncEvent is called on the context client.
+    // TODO(iclelland): Remove the single-parameter version once all call sites
+    // have been updated.
     virtual void dispatchSyncEvent(int syncEventID) = 0;
+    virtual void dispatchSyncEvent(int syncEventID, const WebSyncRegistration&) = 0;
 
     virtual void addStashedMessagePorts(const WebMessagePortChannelArray& channels, const WebVector<WebString>& channelNames) = 0;
 };

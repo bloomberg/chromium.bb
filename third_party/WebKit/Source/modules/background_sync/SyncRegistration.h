@@ -18,9 +18,10 @@ class ScriptPromiseResolver;
 class ScriptState;
 struct WebSyncRegistration;
 
-class SyncRegistration final : public GarbageCollectedFinalized<SyncRegistration>, public ScriptWrappable {
+class MODULES_EXPORT SyncRegistration final : public GarbageCollectedFinalized<SyncRegistration>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    static SyncRegistration* create(const WebSyncRegistration&, ServiceWorkerRegistration*);
     static SyncRegistration* take(ScriptPromiseResolver*, WebSyncRegistration*, ServiceWorkerRegistration*);
     static void dispose(WebSyncRegistration* registrationRaw);
 

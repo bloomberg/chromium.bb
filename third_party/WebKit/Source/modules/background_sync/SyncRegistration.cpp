@@ -20,12 +20,17 @@
 
 namespace blink {
 
+SyncRegistration* SyncRegistration::create(const WebSyncRegistration& syncRegistration, ServiceWorkerRegistration* serviceWorkerRegistration)
+{
+    SyncRegistrationOptions options = SyncRegistrationOptions();
+    options.setTag(syncRegistration.tag);
+    return new SyncRegistration(syncRegistration.id, options, serviceWorkerRegistration);
+}
+
 SyncRegistration* SyncRegistration::take(ScriptPromiseResolver*, WebSyncRegistration* syncRegistration, ServiceWorkerRegistration* serviceWorkerRegistration)
 {
     OwnPtr<WebSyncRegistration> registration = adoptPtr(syncRegistration);
-    SyncRegistrationOptions options = SyncRegistrationOptions();
-    options.setTag(syncRegistration->tag);
-    return new SyncRegistration(syncRegistration->id, options, serviceWorkerRegistration);
+    return create(*syncRegistration, serviceWorkerRegistration);
 }
 
 void SyncRegistration::dispose(WebSyncRegistration* syncRegistration)
