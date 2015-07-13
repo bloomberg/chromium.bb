@@ -156,7 +156,7 @@ void V4L2JpegDecodeAccelerator::Decode(
            << ", size=" << bitstream_buffer.size();
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (video_frame->format() != media::VideoFrame::I420) {
+  if (video_frame->format() != media::PIXEL_FORMAT_I420) {
     PostNotifyError(bitstream_buffer.id(), UNSUPPORTED_JPEG);
     return;
   }
@@ -315,7 +315,7 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
   linked_ptr<JobRecord> job_record = input_jobs_.front();
 
   size_t frame_size = media::VideoFrame::AllocationSize(
-      media::VideoFrame::I420, job_record->out_frame->coded_size());
+      media::PIXEL_FORMAT_I420, job_record->out_frame->coded_size());
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
