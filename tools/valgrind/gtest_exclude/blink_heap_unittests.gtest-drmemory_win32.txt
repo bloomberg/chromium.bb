@@ -3,8 +3,3 @@ HeapTest.ThreadedWeakness
 
 # crbug.com/420699: Crash under Dr. Memory
 HeapTest.CheckAndMarkPointer
-
-# crbug.com/508634: Fail/Crash under Dr. Memory
-HeapTest.DeepTest
-HeapTest.HeapVectorWithInlineCapacity
-HeapTest.MarkTest
