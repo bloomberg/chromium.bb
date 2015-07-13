@@ -287,6 +287,10 @@ def BuildScript(status, context):
     with Step('build ragel_validator-64', status):
       SCons(context, platform='x86-64', parallel=True, args=['ncval_new'])
 
+    # Check validator trie proofs on both 32 + 64 bits.
+    with Step('check validator proofs', status):
+      SCons(context, platform='x86-64', parallel=False, args=['dfachecktries'])
+
     with Step('predownload validator corpus', status):
       Command(context,
           cmd=[sys.executable,

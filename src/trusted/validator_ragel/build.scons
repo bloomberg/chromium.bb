@@ -376,8 +376,8 @@ if ragel_involved:
     ('vmovd_proof.py', ('32', '64'),
      '20150226.jecxz', '20150430.vmovd_bugfix'),
   ]
-  # Run the 3 latest proofs by default.
-  for proof_file, bitnesses, old, new in trie_proofs[-3:]:
+  # Run the 5 latest proofs by default.
+  for proof_file, bitnesses, old, new in trie_proofs[-5:]:
     for bitness in bitnesses:
       trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}
       check_proof = env.AutoDepsCommand(

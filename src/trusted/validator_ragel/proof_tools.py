@@ -365,7 +365,8 @@ def Disassemble(options, byte_sequences_iter):
         objdump_parser.SkipHeader(objdump_proc.stdout),
         iter(accepts)):
       instruction = objdump_parser.CanonicalizeInstruction(
-            objdump_parser.ParseLine(line))
+            objdump_parser.ParseLine(line),
+            simplify_condition_jumps=True)
       prefixes, mnemonic, operands = (spec.ParseInstruction(instruction))
       full_operands = tuple(prefixes + [mnemonic] + operands)
       if accept_info1 is not None:

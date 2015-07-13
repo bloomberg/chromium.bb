@@ -92,6 +92,12 @@ def _HexRE(group_name='value'):
   return r'(?P<%s>-?0x[\da-f]+)' % group_name
 
 
+CONDITION_JUMPS_RE = re.compile(
+    r'(data16 )?'
+    r'(?P<name>j%s|loop(n?e)?|j[er]?cxz)(?P<branch_hint>,p[nt])? %s$'
+    % (_CONDITION_SUFFIX_RE, _HexRE('destination')))
+
+
 def _ImmediateRE(group_name='immediate'):
   return r'(?P<%s>\$%s)' % (
       group_name,
@@ -1386,11 +1392,7 @@ def ValidateRegularInstruction(instruction, bitness):
 
 def ValidateDirectJump(instruction, bitness):
   assert bitness in [32, 64]
-  cond_jumps_re = re.compile(
-      r'(data16 )?'
-      r'(?P<name>j%s|loop(n?e)?|j[er]?cxz)(?P<branch_hint>,p[nt])? %s$'
-      % (_CONDITION_SUFFIX_RE, _HexRE('destination')))
-  m = cond_jumps_re.match(instruction.disasm)
+  m = CONDITION_JUMPS_RE.match(instruction.disasm)
   if m is not None:
     if (m.group('name') == 'jcxz' or
         (m.group('name') == 'jecxz' and bitness == 64)):

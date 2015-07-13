@@ -5,6 +5,7 @@
 import collections
 import itertools
 import re
+import spec
 
 
 def SkipHeader(objdump_output_lines):
@@ -51,7 +52,7 @@ def ParseLine(line):
   return Instruction(address, [int(byte, 16) for byte in bytes.split()], disasm)
 
 
-def CanonicalizeInstruction(insn):
+def CanonicalizeInstruction(insn, simplify_condition_jumps=False):
   # Canonicalize whitespaces.
   disasm = ' '.join(insn.disasm.split())
 
@@ -60,5 +61,11 @@ def CanonicalizeInstruction(insn):
   # it won't be removed (because there would be no space at the end)
   rex_prefix = re.compile(r'(rex([.]W?R?X?B?)? )')
   disasm = re.sub(rex_prefix, '', disasm, count=1)
+
+  # Drop branch prediction and address from jumps.
+  if simplify_condition_jumps:
+    m = spec.CONDITION_JUMPS_RE.match(disasm)
+    if m:
+      disasm = m.group('name')
 
   return Instruction(insn.address, insn.bytes, disasm)
