@@ -349,7 +349,8 @@ cr.define('wallpapers', function() {
         var dataModelId = self.dataModelId_;
         self.pendingItems_++;
         return WallpaperThumbnailsGridItem(value, dataModelId,
-            self.thumbnailList_[value.wallpaperId],
+            (value.wallpaperId == null) ?
+                null : self.thumbnailList_[value.wallpaperId],
             self.pendingItemComplete.bind(self));
       };
       this.selectionModel = new ListSingleSelectionModel();

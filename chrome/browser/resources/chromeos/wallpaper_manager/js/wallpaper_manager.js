@@ -1004,14 +1004,13 @@ function WallpaperManager(dialogDom) {
       };
 
       var self = this;
-      // Need this check for test purpose.
-      var numOnlineWallpaper = (this.enableOnlineWallpaper_ && this.manifest_) ?
-        this.manifest_.wallpaper_list.length : 0;
       var processResults = function(entries) {
         for (var i = 0; i < entries.length; i++) {
           var entry = entries[i];
           var wallpaperInfo = {
-                wallpaperId: numOnlineWallpaper + i,
+                // Set wallpaperId to null to avoid duplicate thumbnail images,
+                // see crbug.com/506135 for details.
+                wallpaperId: null,
                 baseURL: entry.name,
                 // The layout will be replaced by the actual value saved in
                 // local storage when requested later. Layout is not important
@@ -1026,7 +1025,7 @@ function WallpaperManager(dialogDom) {
         }
         if (loadTimeData.getBoolean('isOEMDefaultWallpaper')) {
           var oemDefaultWallpaperElement = {
-              wallpaperId: numOnlineWallpaper + entries.length,
+              wallpaperId: null,
               baseURL: 'OemDefaultWallpaper',
               layout: 'CENTER_CROPPED',
               source: Constants.WallpaperSourceEnum.OEM,
