@@ -30,6 +30,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/net/chrome_extensions_network_delegate.h"
 #include "chrome/browser/net/connect_interceptor.h"
+#include "chrome/browser/net/request_source_bandwidth_histograms.h"
 #include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -520,6 +521,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
   }
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnCompleted(request, started);
+  RecordRequestSourceBandwidth(request, started);
   extensions_delegate_->ForwardProxyErrors(request);
   extensions_delegate_->ForwardDoneRequestStatus(request);
 }

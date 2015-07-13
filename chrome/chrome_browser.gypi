@@ -1950,6 +1950,8 @@
       'browser/net/quota_policy_channel_id_store.h',
       'browser/net/referrer.cc',
       'browser/net/referrer.h',
+      'browser/net/request_source_bandwidth_histograms.cc',
+      'browser/net/request_source_bandwidth_histograms.h',
       'browser/net/resource_prefetch_predictor_observer.cc',
       'browser/net/resource_prefetch_predictor_observer.h',
       'browser/net/safe_search_util.cc',

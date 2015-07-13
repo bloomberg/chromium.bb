@@ -22761,6 +22761,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ResponseSizeByProcess.Browser" units="kilobytes">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Count of (post-SSL/proxy, pre-filter) kilobytes received per request made by
+    the browser process.
+  </summary>
+</histogram>
+
+<histogram name="Net.ResponseSizeByProcess.Renderer" units="kilobytes">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Count of (post-SSL/proxy, pre-filter) kilobytes received per request made by
+    a renderer process.
+  </summary>
+</histogram>
+
+<histogram name="Net.ResponseSizeByProcess.Unknown" units="kilobytes">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Count of (post-SSL/proxy, pre-filter) kilobytes received per request made by
+    a process not covered by one of the other ResponseSizeByProcess histograms.
+  </summary>
+</histogram>
+
 <histogram name="Net.SocketIdleTimeBeforeNextUse_ReusedSocket">
   <obsolete>
     Deprecated as of 03/2015.
