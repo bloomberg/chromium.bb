@@ -49,7 +49,7 @@ enum SecurityReportingOption {
 class BindingSecurity {
 public:
     static bool shouldAllowAccessToNode(v8::Isolate*, Node*, ExceptionState&);
-    static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, SecurityReportingOption = ReportSecurityError);
+    CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, SecurityReportingOption = ReportSecurityError);
     CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, ExceptionState&);
 };
 

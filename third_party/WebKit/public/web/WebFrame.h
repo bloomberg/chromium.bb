@@ -347,6 +347,12 @@ public:
     // be calling this API.
     virtual v8::Local<v8::Context> mainWorldScriptContext() const = 0;
 
+
+    // Returns true if the WebFrame currently executing JavaScript has access
+    // to the given WebFrame, or false otherwise.
+    BLINK_EXPORT static bool scriptCanAccess(WebFrame*);
+
+
     // Navigation ----------------------------------------------------------
 
     // Reload the current document.

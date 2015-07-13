@@ -85,6 +85,7 @@
 #include "config.h"
 #include "web/WebLocalFrameImpl.h"
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
@@ -199,6 +200,7 @@
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebIconURL.h"
 #include "public/web/WebInputElement.h"
+#include "public/web/WebKit.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPerformance.h"
 #include "public/web/WebPlugin.h"
@@ -945,6 +947,11 @@ v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const
     ScriptState* scriptState = ScriptState::forMainWorld(frame());
     ASSERT(scriptState->contextIsValid());
     return scriptState->context();
+}
+
+bool WebFrame::scriptCanAccess(WebFrame* target)
+{
+    return BindingSecurity::shouldAllowAccessToFrame(mainThreadIsolate(), toCoreFrame(target), DoNotReportSecurityError);
 }
 
 void WebLocalFrameImpl::reload(bool ignoreCache)
