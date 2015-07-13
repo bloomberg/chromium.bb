@@ -8,6 +8,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
@@ -53,7 +54,8 @@ void V8ContextNativeHandler::GetModuleSystem(
       v8::Local<v8::Object>::Cast(args[0])->CreationContext();
   ScriptContext* context =
       dispatcher_->script_context_set().GetByV8Context(v8_context);
-  args.GetReturnValue().Set(context->module_system()->NewInstance());
+  if (blink::WebFrame::scriptCanAccess(context->web_frame()))
+    args.GetReturnValue().Set(context->module_system()->NewInstance());
 }
 
 void V8ContextNativeHandler::RunWithNativesEnabledModuleSystem(
