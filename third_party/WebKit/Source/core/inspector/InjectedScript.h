@@ -36,7 +36,6 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InjectedScriptNative.h"
 #include "wtf/Forward.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -82,7 +81,7 @@ public:
     void evaluateOnCallFrame(
         ErrorString*,
         const ScriptValue& callFrames,
-        const Vector<ScriptValue>& asyncCallStacks,
+        bool isAsyncCallStack,
         const String& callFrameId,
         const String& expression,
         const String& objectGroup,

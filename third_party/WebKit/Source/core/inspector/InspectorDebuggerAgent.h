@@ -218,6 +218,7 @@ private:
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
+    bool callStackForId(ErrorString*, const String& callFrameId, ScriptValue* callStack, bool* isAsync);
 
     void clearCurrentAsyncOperation();
     void resetAsyncCallTracker();

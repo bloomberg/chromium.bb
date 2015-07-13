@@ -943,7 +943,7 @@ InjectedScript.prototype = {
 
     /**
      * @param {!JavaScriptCallFrame} topCallFrame
-     * @param {!Array.<!JavaScriptCallFrame>} asyncCallStacks
+     * @param {boolean} isAsyncStack
      * @param {string} callFrameId
      * @param {string} expression
      * @param {string} objectGroup
@@ -952,13 +952,12 @@ InjectedScript.prototype = {
      * @param {boolean} generatePreview
      * @return {*}
      */
-    evaluateOnCallFrame: function(topCallFrame, asyncCallStacks, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
+    evaluateOnCallFrame: function(topCallFrame, isAsyncStack, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
-        var parsedCallFrameId = nullifyObjectProto(/** @type {!Object} */ (InjectedScriptHost.eval("(" + callFrameId + ")")));
-        var callFrame = this._callFrameForParsedId(topCallFrame, parsedCallFrameId, asyncCallStacks);
+        var callFrame = this._callFrameForId(topCallFrame, callFrameId);
         if (!callFrame)
             return "Could not find call frame with given id";
-        if (parsedCallFrameId["asyncOrdinal"])
+        if (isAsyncStack)
             return this._evaluateAndWrap(null, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview, callFrame.scopeChain);
         return this._evaluateAndWrap(callFrame, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview);
     },
@@ -1036,20 +1035,6 @@ InjectedScript.prototype = {
     _callFrameForId: function(topCallFrame, callFrameId)
     {
         var parsedCallFrameId = nullifyObjectProto(/** @type {!Object} */ (InjectedScriptHost.eval("(" + callFrameId + ")")));
-        return this._callFrameForParsedId(topCallFrame, parsedCallFrameId, []);
-    },
-
-    /**
-     * @param {!JavaScriptCallFrame} topCallFrame
-     * @param {!Object} parsedCallFrameId
-     * @param {!Array.<!JavaScriptCallFrame>} asyncCallStacks
-     * @return {?JavaScriptCallFrame}
-     */
-    _callFrameForParsedId: function(topCallFrame, parsedCallFrameId, asyncCallStacks)
-    {
-        var asyncOrdinal = parsedCallFrameId["asyncOrdinal"]; // 1-based index
-        if (asyncOrdinal)
-            topCallFrame = asyncCallStacks[asyncOrdinal - 1];
         var ordinal = parsedCallFrameId["ordinal"];
         var callFrame = topCallFrame;
         while (--ordinal >= 0 && callFrame)
