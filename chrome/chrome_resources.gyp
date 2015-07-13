@@ -402,7 +402,7 @@
       # GN version: //chrome:packed_resources
       'target_name': 'packed_resources',
       'type': 'none',
-      'dependencies': [
+      'dependencies': [  # Update duplicate logic in repack_locales.py
         # MSVS needs the dependencies explictly named, Make is able to
         # derive the dependencies from the output files.
         'chrome_resources',
@@ -444,15 +444,16 @@
           'includes': ['chrome_repack_chrome_material_200_percent.gypi']
         },
       ],
-      'conditions': [
+      'conditions': [  # GN version: chrome_repack_locales.gni template("_repack_one_locale")
         ['OS != "ios"', {
-          'dependencies': [
+          'dependencies': [  # Update duplicate logic in repack_locales.py
             '<(DEPTH)/content/app/resources/content_resources.gyp:content_resources',
             '<(DEPTH)/content/app/strings/content_strings.gyp:content_strings',
+            '<(DEPTH)/device/bluetooth/bluetooth_strings.gyp:device_bluetooth_strings',
             '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
           ],
         }, {  # else
-          'dependencies': [
+          'dependencies': [  # Update duplicate logic in repack_locales.py
             '<(DEPTH)/ios/chrome/ios_chrome_resources.gyp:ios_strings_resources_gen',
           ],
           'actions': [
@@ -462,7 +463,7 @@
           ],
         }],
         ['use_ash==1', {
-          'dependencies': [
+          'dependencies': [  # Update duplicate logic in repack_locales.py
              '<(DEPTH)/ash/ash_resources.gyp:ash_resources',
              '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
           ],
@@ -473,20 +474,19 @@
           ],
         }],
         ['chromeos==1', {
-          'dependencies': [
+          'dependencies': [  # Update duplicate logic in repack_locales.py
             '<(DEPTH)/remoting/remoting.gyp:remoting_resources',
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
           ],
         }],
         ['enable_autofill_dialog==1 and OS!="android"', {
-          'dependencies': [
+          'dependencies': [  # Update duplicate logic in repack_locales.py
             '<(DEPTH)/third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
           ],
         }],
         ['enable_extensions==1', {
-          'dependencies': [
-            '<(DEPTH)/device/bluetooth/bluetooth_strings.gyp:device_bluetooth_strings',
+          'dependencies': [  # Update duplicate logic in repack_locales.py
             '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
           ],
         }],
