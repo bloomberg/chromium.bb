@@ -86,14 +86,6 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   // Returns the number of app windows for a specific app.
   size_t GetAppWindowCountForApp(const std::string& app_id);
 
-  // The command line already has an argument on it - about:blank, which
-  // is set by InProcessBrowserTest::PrepareTestCommandLine. For platform app
-  // launch tests we need to clear this.
-  void ClearCommandLineArgs();
-
-  // Sets up the command line for running platform apps.
-  void SetCommandLineArg(const std::string& test_file);
-
   // Creates an empty app window for |extension|.
   AppWindow* CreateAppWindow(const Extension* extension);
 

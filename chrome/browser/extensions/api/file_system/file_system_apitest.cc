@@ -64,6 +64,10 @@ const int kGraylistedPath = base::DIR_HOME;
 
 class FileSystemApiTest : public PlatformAppBrowserTest {
  public:
+  FileSystemApiTest() {
+    set_open_about_blank_on_browser_launch(false);
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     test_root_folder_ = test_data_dir_.AppendASCII("api_test")
@@ -71,8 +75,6 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
     FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
         "test_root", test_root_folder_);
   }
-
-  void SetUpOnMainThread() override { ClearCommandLineArgs(); }
 
   void TearDown() override {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();

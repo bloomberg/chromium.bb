@@ -195,23 +195,6 @@ size_t PlatformAppBrowserTest::GetAppWindowCountForApp(
       .size();
 }
 
-void PlatformAppBrowserTest::ClearCommandLineArgs() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::CommandLine::StringVector args = command_line->GetArgs();
-  base::CommandLine::StringVector argv = command_line->argv();
-  for (size_t i = 0; i < args.size(); i++)
-    argv.pop_back();
-  command_line->InitFromArgv(argv);
-}
-
-void PlatformAppBrowserTest::SetCommandLineArg(const std::string& test_file) {
-  ClearCommandLineArgs();
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::FilePath test_doc(test_data_dir_.AppendASCII(test_file));
-  test_doc = test_doc.NormalizePathSeparators();
-  command_line->AppendArgPath(test_doc);
-}
-
 AppWindow* PlatformAppBrowserTest::CreateAppWindow(const Extension* extension) {
   return CreateAppWindowFromParams(extension, AppWindow::CreateParams());
 }

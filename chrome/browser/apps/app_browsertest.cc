@@ -176,20 +176,84 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
 #endif  // ENABLE_PRINT_PREVIEW
 
 #if !defined(OS_CHROMEOS) && !defined(OS_WIN)
-bool CopyTestDataAndSetCommandLineArg(
+bool CopyTestDataAndGetTestFilePath(
     const base::FilePath& test_data_file,
     const base::FilePath& temp_dir,
-    const char* filename) {
+    const char* filename,
+    base::FilePath* file_path) {
   base::FilePath path = temp_dir.AppendASCII(
       filename).NormalizePathSeparators();
   if (!(base::CopyFile(test_data_file, path)))
     return false;
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendArgPath(path);
+  *file_path = path;
   return true;
 }
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN)
+
+class PlatformAppWithFileBrowserTest: public PlatformAppBrowserTest {
+ public:
+  PlatformAppWithFileBrowserTest() {
+    set_open_about_blank_on_browser_launch(false);
+  }
+
+ protected:
+  bool RunPlatformAppTestWithFileInTestDataDir(
+      const std::string& extension_name,
+      const std::string& test_file) {
+    base::FilePath test_doc(test_data_dir_.AppendASCII(test_file));
+    test_doc = test_doc.NormalizePathSeparators();
+    return RunPlatformAppTestWithCommandLine(
+        extension_name, MakeCommandLineWithTestFilePath(test_doc));
+  }
+
+  bool RunPlatformAppTestWithFile(const std::string& extension_name,
+                                  const base::FilePath& test_file_path) {
+    return RunPlatformAppTestWithCommandLine(
+        extension_name, MakeCommandLineWithTestFilePath(test_file_path));
+  }
+
+  bool RunPlatformAppTestWithNothing(const std::string& extension_name) {
+    return RunPlatformAppTestWithCommandLine(
+        extension_name, *base::CommandLine::ForCurrentProcess());
+  }
+
+ private:
+  bool RunPlatformAppTestWithCommandLine(
+      const std::string& extension_name,
+      const base::CommandLine& command_line) {
+    extensions::ResultCatcher catcher;
+
+    base::FilePath extension_path = test_data_dir_.AppendASCII(extension_name);
+    const extensions::Extension* extension =
+        LoadExtensionWithFlags(extension_path, ExtensionBrowserTest::kFlagNone);
+    if (!extension) {
+      message_ = "Failed to load extension.";
+      return false;
+    }
+
+    AppLaunchParams params(browser()->profile(), extension,
+                           extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
+                           extensions::SOURCE_TEST);
+    params.command_line = command_line;
+    params.current_directory = test_data_dir_;
+    OpenApplication(params);
+
+    if (!catcher.GetNextResult()) {
+      message_ = catcher.message();
+      return false;
+    }
+
+    return true;
+  }
+
+  base::CommandLine MakeCommandLineWithTestFilePath(
+    const base::FilePath& test_file) {
+    base::CommandLine command_line = *base::CommandLine::ForCurrentProcess();
+    command_line.AppendArgPath(test_file);
+    return command_line;
+  }
+};
 
 #if !defined(OS_CHROMEOS)
 const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
@@ -477,214 +541,188 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
 // Tests that command line parameters get passed through to platform apps
 // via launchData correctly when launching with a file.
 // TODO(benwells/jeremya): tests need a way to specify a handler ID.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFile) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithFile) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_file", kTestFilePath)) << message_;
 }
 
 // Tests that relative paths can be passed through to the platform app.
-// This test doesn't use the normal test infrastructure as it needs to open
-// the application differently to all other platform app tests, by setting
-// the AppLaunchParams.current_directory field.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
-  // Setup the command line
-  ClearCommandLineArgs();
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::FilePath relative_test_doc =
-      base::FilePath::FromUTF8Unsafe(kTestFilePath);
-  relative_test_doc = relative_test_doc.NormalizePathSeparators();
-  command_line->AppendArgPath(relative_test_doc);
-
-  // Load the extension
-  ResultCatcher catcher;
-  const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("platform_apps/launch_file"));
-  ASSERT_TRUE(extension);
-
-  // Run the test
-  AppLaunchParams params(browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
-                         NEW_WINDOW, extensions::SOURCE_TEST);
-  params.command_line = *base::CommandLine::ForCurrentProcess();
-  params.current_directory = test_data_dir_;
-  OpenApplication(params);
-
-  if (!catcher.GetNextResult()) {
-    message_ = catcher.message();
-    ASSERT_TRUE(0);
-  }
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithRelativeFile) {
+  ASSERT_TRUE(RunPlatformAppTestWithFile(
+      "platform_apps/launch_file",
+      base::FilePath::FromUTF8Unsafe(kTestFilePath))) << message_;
 }
 
 // Tests that launch data is sent through if the file extension matches.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFileExtension) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file_by_extension"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
+                       LaunchWithFileExtension) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_file_by_extension", kTestFilePath)) << message_;
 }
 
 // Tests that launch data is sent through to a whitelisted extension if the file
 // extension matches.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWhiteListedExtensionWithFile) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/launch_whitelisted_ext_with_file"))
-          << message_;
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_whitelisted_ext_with_file",
+      kTestFilePath)) << message_;
 }
 
 // Tests that launch data is sent through if the file extension and MIME type
 // both match.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileExtensionAndMimeType) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/launch_file_by_extension_and_type")) << message_;
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_file_by_extension_and_type", kTestFilePath))
+      << message_;
 }
 
 // Tests that launch data is sent through for a file with no extension if a
 // handler accepts "".
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFileWithoutExtension) {
-  SetCommandLineArg("platform_apps/launch_files/test");
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file_with_no_extension"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
+                       LaunchWithFileWithoutExtension) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_file_with_no_extension",
+      "platform_apps/launch_files/test")) << message_;
 }
 
 #if !defined(OS_WIN)
 // Tests that launch data is sent through for a file with an empty extension if
 // a handler accepts "".
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFileEmptyExtension) {
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
+                       LaunchWithFileEmptyExtension) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ClearCommandLineArgs();
-  ASSERT_TRUE(CopyTestDataAndSetCommandLineArg(
+  base::FilePath test_file;
+  ASSERT_TRUE(CopyTestDataAndGetTestFilePath(
       test_data_dir_.AppendASCII(kTestFilePath),
       temp_dir.path(),
-      "test."));
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file_with_no_extension"))
-      << message_;
+      "test.",
+      &test_file));
+  ASSERT_TRUE(RunPlatformAppTestWithFile(
+      "platform_apps/launch_file_with_no_extension", test_file)) << message_;
 }
 
 // Tests that launch data is sent through for a file with an empty extension if
 // a handler accepts *.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileEmptyExtensionAcceptAny) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ClearCommandLineArgs();
-  ASSERT_TRUE(CopyTestDataAndSetCommandLineArg(
+  base::FilePath test_file;
+  ASSERT_TRUE(CopyTestDataAndGetTestFilePath(
       test_data_dir_.AppendASCII(kTestFilePath),
       temp_dir.path(),
-      "test."));
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/launch_file_with_any_extension")) << message_;
+      "test.",
+      &test_file));
+  ASSERT_TRUE(RunPlatformAppTestWithFile(
+      "platform_apps/launch_file_with_any_extension", test_file)) << message_;
 }
 #endif
 
 // Tests that launch data is sent through for a file with no extension if a
 // handler accepts *.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileWithoutExtensionAcceptAny) {
-  SetCommandLineArg("platform_apps/launch_files/test");
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/launch_file_with_any_extension")) << message_;
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_file_with_any_extension",
+      "platform_apps/launch_files/test")) << message_;
 }
 
 // Tests that launch data is sent through for a file with an extension if a
 // handler accepts *.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
                        LaunchWithFileAcceptAnyExtension) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/launch_file_with_any_extension")) << message_;
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_file_with_any_extension", kTestFilePath))
+      << message_;
 }
 
 // Tests that no launch data is sent through if the file has the wrong
 // extension.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongExtension) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_extension"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
+                       LaunchWithWrongExtension) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_wrong_extension", kTestFilePath)) << message_;
 }
 
 // Tests that no launch data is sent through if the file has no extension but
 // the handler requires a specific extension.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongEmptyExtension) {
-  SetCommandLineArg("platform_apps/launch_files/test");
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_extension"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
+                       LaunchWithWrongEmptyExtension) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_wrong_extension",
+      "platform_apps/launch_files/test")) << message_;
 }
 
 // Tests that no launch data is sent through if the file is of the wrong MIME
 // type.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongType) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_type"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithWrongType) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_wrong_type", kTestFilePath)) << message_;
 }
 
 // Tests that no launch data is sent through if the platform app does not
 // provide an intent.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNoIntent) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_no_intent"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithNoIntent) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_no_intent", kTestFilePath)) << message_;
 }
 
 // Tests that launch data is sent through when the file has unknown extension
 // but the MIME type can be sniffed and the sniffed type matches.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithSniffableType) {
-  SetCommandLineArg("platform_apps/launch_files/test.unknownextension");
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/launch_file_by_extension_and_type")) << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
+                       LaunchWithSniffableType) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_file_by_extension_and_type",
+      "platform_apps/launch_files/test.unknownextension")) << message_;
 }
 
 // Tests that launch data is sent through with the MIME type set to
 // application/octet-stream if the file MIME type cannot be read.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNoType) {
-  SetCommandLineArg("platform_apps/launch_files/test_binary.unknownextension");
-  ASSERT_TRUE(RunPlatformAppTest(
-      "platform_apps/launch_application_octet_stream")) << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNoType) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_application_octet_stream",
+      "platform_apps/launch_files/test_binary.unknownextension")) << message_;
 }
 
 // Tests that no launch data is sent through if the file does not exist.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNoFile) {
-  SetCommandLineArg("platform_apps/launch_files/doesnotexist.txt");
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_invalid"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNoFile) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_invalid",
+      "platform_apps/launch_files/doesnotexist.txt")) << message_;
 }
 
 // Tests that no launch data is sent through if the argument is a directory.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithDirectory) {
-  SetCommandLineArg("platform_apps/launch_files");
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_invalid"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithDirectory) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/launch_invalid",
+      "platform_apps/launch_files")) << message_;
 }
 
 // Tests that no launch data is sent through if there are no arguments passed
 // on the command line
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNothing) {
-  ClearCommandLineArgs();
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_nothing"))
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchWithNothing) {
+  ASSERT_TRUE(RunPlatformAppTestWithNothing("platform_apps/launch_nothing"))
       << message_;
 }
 
 // Test that platform apps can use the chrome.fileSystem.getDisplayPath
 // function to get the native file system path of a file they are launched with.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, GetDisplayPath) {
-  SetCommandLineArg(kTestFilePath);
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/get_display_path"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, GetDisplayPath) {
+  ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
+      "platform_apps/get_display_path", kTestFilePath)) << message_;
 }
 
 // Tests that the file is created if the file does not exist and the app has the
 // fileSystem.write permission.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchNewFile) {
+IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNewFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ClearCommandLineArgs();
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendArgPath(temp_dir.path().AppendASCII("new_file.txt"));
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_new_file")) << message_;
+  ASSERT_TRUE(RunPlatformAppTestWithFile(
+      "platform_apps/launch_new_file",
+      temp_dir.path().AppendASCII("new_file.txt"))) << message_;
 }
 
 #endif  // !defined(OS_CHROMEOS)
