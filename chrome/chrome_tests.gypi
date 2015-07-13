@@ -3178,7 +3178,6 @@
           'target_name': 'interactive_ui_tests_run',
           'type': 'none',
           'dependencies': [
-            'chrome',
             'interactive_ui_tests',
           ],
           'conditions': [
@@ -3199,7 +3198,6 @@
           'target_name': 'sync_integration_tests_run',
           'type': 'none',
           'dependencies': [
-            'chrome',
             'sync_integration_tests',
           ],
           'conditions': [
