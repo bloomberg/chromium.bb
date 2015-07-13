@@ -10,8 +10,7 @@ var test = function()
     {
         InspectorTest.addResult("Testing: " + inputColor);
         var color = WebInspector.Color.parse(inputColor);
-        spectrum.setColor(color);
-        spectrum.setColorFormat(format);
+        spectrum.setColor(color, format);
     }
     
     function checkColorString(inputColor, format)
@@ -24,7 +23,7 @@ var test = function()
     {
         setColor(inputColor, format)
         spectrum._hsv[3] = 0;
-        spectrum._onchange();
+        spectrum._innerSetColor(spectrum._hsv, undefined, undefined, WebInspector.Spectrum._ChangeSource.Other);
         InspectorTest.addResult(spectrum.colorString());
     }
 
@@ -32,9 +31,9 @@ var test = function()
     {
         setColor(inputColor, format);
         spectrum._formatViewSwitch();
-        InspectorTest.addResult(spectrum._currentFormat);
+        InspectorTest.addResult(spectrum._colorFormat);
         spectrum._formatViewSwitch();
-        InspectorTest.addResult(spectrum._currentFormat);
+        InspectorTest.addResult(spectrum._colorFormat);
     }
 
     var spectrum = new WebInspector.Spectrum();
