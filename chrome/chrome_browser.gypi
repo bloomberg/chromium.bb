@@ -3307,7 +3307,6 @@
             '../net/net.gyp:net_with_v8',
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
-            '../third_party/expat/expat.gyp:expat',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
             '../third_party/libyuv/libyuv.gyp:libyuv',

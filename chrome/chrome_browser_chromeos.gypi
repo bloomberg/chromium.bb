@@ -1191,7 +1191,6 @@
         '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
-        '../third_party/expat/expat.gyp:expat',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',

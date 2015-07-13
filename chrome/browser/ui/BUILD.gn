@@ -99,7 +99,6 @@ source_set("ui") {
       "//storage/common",
       "//third_party/WebKit/public:resources",
       "//third_party/adobe/flash:flapper_version_h",
-      "//third_party/expat",
       "//third_party/leveldatabase",
       "//third_party/mojo/src/mojo/edk/system",
       "//third_party/libjingle",

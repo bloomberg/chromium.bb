@@ -94,7 +94,6 @@ source_set("chromeos") {
     "//sync",
     "//third_party/adobe/flash:flapper_version_h",
     "//third_party/cacheinvalidation",
-    "//third_party/expat",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/libevent",

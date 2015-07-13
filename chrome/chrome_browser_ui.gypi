@@ -2816,7 +2816,6 @@
             '../net/net.gyp:net_with_v8',
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
-            '../third_party/expat/expat.gyp:expat',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             '../third_party/re2/re2.gyp:re2',

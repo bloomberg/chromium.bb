@@ -284,7 +284,6 @@ source_set("browser") {
       "//storage/common",
       "//third_party/WebKit/public:image_resources",
       "//third_party/WebKit/public:resources",
-      "//third_party/expat",
       "//third_party/leveldatabase",
       "//third_party/libaddressinput",
       "//third_party/libyuv",
