@@ -259,6 +259,7 @@ void ProfileInfoCache::DeleteProfileFromCache(
   std::string key = CacheKeyFromProfilePath(profile_path);
   cache->Remove(key, NULL);
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
+  profile_attributes_entries_.erase(profile_path);
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
@@ -1237,4 +1238,52 @@ void ProfileInfoCache::MigrateLegacyProfileNamesAndDownloadAvatars() {
         GetAvatarIconIndexOfProfileAtIndex(profile_index)));
   }
 #endif
+}
+
+void ProfileInfoCache::AddProfile(
+    const base::FilePath& profile_path,
+    const base::string16& name,
+    const std::string& gaia_id,
+    const base::string16& user_name,
+    size_t icon_index,
+    const std::string& supervised_user_id) {
+  AddProfileToCache(
+      profile_path, name, gaia_id, user_name, icon_index, supervised_user_id);
+}
+
+void ProfileInfoCache::RemoveProfile(const base::FilePath& profile_path) {
+  DeleteProfileFromCache(profile_path);
+}
+
+std::vector<ProfileAttributesEntry*>
+ProfileInfoCache::GetAllProfilesAttributes() {
+  std::vector<ProfileAttributesEntry*> ret;
+  for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
+    ProfileAttributesEntry* entry;
+    if (GetProfileAttributesWithPath(GetPathOfProfileAtIndex(i), &entry)) {
+      ret.push_back(entry);
+    }
+  }
+  return ret;
+}
+
+bool ProfileInfoCache::GetProfileAttributesWithPath(
+    const base::FilePath& path, ProfileAttributesEntry** entry) {
+  if (GetNumberOfProfiles() == 0)
+    return false;
+
+  if (GetIndexOfProfileWithPath(path) == std::string::npos)
+    return false;
+
+  if (profile_attributes_entries_.find(path) ==
+      profile_attributes_entries_.end()) {
+    // The profile info is in the cache but its entry isn't created yet, insert
+    // it in the map.
+    scoped_ptr<ProfileAttributesEntry> new_entry(new ProfileAttributesEntry());
+    profile_attributes_entries_.add(path, new_entry.Pass());
+    profile_attributes_entries_.get(path)->Initialize(this, path);
+  }
+
+  *entry = profile_attributes_entries_.get(path);
+  return true;
 }

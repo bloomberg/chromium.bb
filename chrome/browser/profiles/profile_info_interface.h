@@ -19,6 +19,8 @@ class Image;
 // This abstract interface is used to query the profiles backend for information
 // about the different profiles. Its sole concrete implementation is the
 // ProfileInfoCache. This interface exists largely to assist in testing.
+// The ProfileInfoInterface is being deprecated. Prefer using the
+// ProfileAttributesStorage and avoid using the Get*AtIndex family of functions.
 class ProfileInfoInterface {
  public:
   virtual size_t GetNumberOfProfiles() const = 0;
