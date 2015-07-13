@@ -27,6 +27,7 @@
             android:ellipsize="end"
             android:lineSpacingExtra="6dp"
             android:paddingTop="16dp"
+            android:textAlignment="viewStart"
             android:textColor="@color/url_emphasis_default_text"
             android:textSize="16sp"/>
 
