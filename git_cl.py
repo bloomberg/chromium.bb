@@ -1816,6 +1816,8 @@ def CMDcomments(parser, args):
 
 def CMDdescription(parser, args):
   """Brings up the editor for the current CL's description."""
+  parser.add_option('-d', '--display', action='store_true',
+                    help='Display the description instead of opening an editor')
   auth.add_auth_options(parser)
   options, _ = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -1823,6 +1825,9 @@ def CMDdescription(parser, args):
   if not cl.GetIssue():
     DieWithError('This branch has no associated changelist.')
   description = ChangeDescription(cl.GetDescription())
+  if options.display:
+    print description.description
+    return 0
   description.prompt()
   if cl.GetDescription() != description.description:
     cl.UpdateDescription(description.description)
