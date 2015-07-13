@@ -780,6 +780,14 @@ void LayerImpl::UpdatePropertyTreeTransform() {
     TransformTree& transform_tree =
         layer_tree_impl()->property_trees()->transform_tree;
     TransformNode* node = transform_tree.Node(transform_tree_index_);
+    // A LayerImpl's own current state is insufficient for determining whether
+    // it owns a TransformNode, since this depends on the state of the
+    // corresponding Layer at the time of the last commit. For example, a
+    // transform animation might have been in progress at the time the last
+    // commit started, but might have finished since then on the compositor
+    // thread.
+    if (node->owner_id != id())
+      return;
     if (node->data.local != transform_) {
       node->data.local = transform_;
       node->data.needs_local_transform_update = true;
@@ -799,6 +807,13 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
     OpacityTree& opacity_tree =
         layer_tree_impl()->property_trees()->opacity_tree;
     OpacityNode* node = opacity_tree.Node(opacity_tree_index_);
+    // A LayerImpl's own current state is insufficient for determining whether
+    // it owns an OpacityNode, since this depends on the state of the
+    // corresponding Layer at the time of the last commit. For example, an
+    // opacity animation might have been in progress at the time the last commit
+    // started, but might have finished since then on the compositor thread.
+    if (node->owner_id != id())
+      return;
     node->data.opacity = opacity_;
     opacity_tree.set_needs_update(true);
   }
@@ -808,10 +823,10 @@ void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
   if (scrollable())
     UpdatePropertyTreeScrollOffset();
 
-  if (OpacityIsAnimating())
+  if (HasAnyAnimationTargetingProperty(Animation::OPACITY))
     UpdatePropertyTreeOpacity();
 
-  if (TransformIsAnimating())
+  if (HasAnyAnimationTargetingProperty(Animation::TRANSFORM))
     UpdatePropertyTreeTransform();
 }
 
@@ -1210,6 +1225,14 @@ bool LayerImpl::AnimationStartScale(float* start_scale) const {
     return layer_tree_impl_->AnimationStartScale(this, start_scale);
 
   return layer_animation_controller_->AnimationStartScale(start_scale);
+}
+
+bool LayerImpl::HasAnyAnimationTargetingProperty(
+    Animation::TargetProperty property) const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->HasAnyAnimationTargetingProperty(this, property);
+
+  return !!layer_animation_controller_->GetAnimation(property);
 }
 
 bool LayerImpl::HasFilterAnimationThatInflatesBounds() const {

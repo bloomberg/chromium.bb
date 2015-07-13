@@ -210,6 +210,10 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
     picture_->SetBounds(gfx::Size(100, 100000));
     root->AddChild(picture_);
 
+    // picture_'s transform is going to be changing on the compositor thread, so
+    // force it to have a transform node by making it scrollable.
+    picture_->SetScrollClipLayerId(root->id());
+
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostPictureTest::SetupTree();
   }

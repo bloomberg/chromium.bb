@@ -394,6 +394,16 @@ bool AnimationHost::HasPotentiallyRunningTransformAnimation(
   return animation && !animation->is_finished();
 }
 
+bool AnimationHost::HasAnyAnimationTargetingProperty(
+    int layer_id,
+    Animation::TargetProperty property) const {
+  LayerAnimationController* controller = GetControllerForLayerId(layer_id);
+  if (!controller)
+    return false;
+
+  return !!controller->GetAnimation(property);
+}
+
 bool AnimationHost::FilterIsAnimatingOnImplOnly(int layer_id) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   if (!controller)

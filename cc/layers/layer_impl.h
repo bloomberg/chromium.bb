@@ -551,6 +551,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool MaximumTargetScale(float* max_scale) const;
   bool AnimationStartScale(float* start_scale) const;
 
+  // This includes all animations, even those that are finished but haven't yet
+  // been deleted.
+  bool HasAnyAnimationTargetingProperty(
+      Animation::TargetProperty property) const;
+
   bool HasFilterAnimationThatInflatesBounds() const;
   bool HasTransformAnimationThatInflatesBounds() const;
   bool HasAnimationThatInflatesBounds() const;

@@ -1664,6 +1664,15 @@ bool LayerTreeImpl::HasPotentiallyRunningTransformAnimation(
              : false;
 }
 
+bool LayerTreeImpl::HasAnyAnimationTargetingProperty(
+    const LayerImpl* layer,
+    Animation::TargetProperty property) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->HasAnyAnimationTargetingProperty(layer->id(), property)
+             : false;
+}
+
 bool LayerTreeImpl::FilterIsAnimatingOnImplOnly(const LayerImpl* layer) const {
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
