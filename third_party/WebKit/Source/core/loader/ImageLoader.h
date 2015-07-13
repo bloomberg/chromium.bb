@@ -59,16 +59,11 @@ template<typename T> class EventSender;
 typedef EventSender<ImageLoader> ImageEventSender;
 
 class CORE_EXPORT ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<ImageLoader>, public ImageResourceClient {
+    WILL_BE_USING_PRE_FINALIZER(ImageLoader, dispose);
 public:
     explicit ImageLoader(Element*);
     ~ImageLoader() override;
 
-    // We must run the destructor in the eager sweeping phase and call
-    // m_image->removeClient(this). Otherwise, the ImageResource can invoke
-    // didAddClient() for the ImageLoader that is about to die in the current
-    // lazy sweeping, and the didAddClient() can access on-heap objects that
-    // have already been finalized in the current lazy sweeping.
-    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
     enum UpdateFromElementBehavior {
@@ -156,12 +151,20 @@ private:
 
     void willRemoveClient(ImageLoaderClient&);
 
+    // For Oilpan, we must run dispose() as a prefinalizer and call
+    // m_image->removeClient(this) (and more.) Otherwise, the ImageResource can invoke
+    // didAddClient() for the ImageLoader that is about to die in the current
+    // lazy sweeping, and the didAddClient() can access on-heap objects that
+    // have already been finalized in the current lazy sweeping.
+    void dispose();
+
     RawPtrWillBeMember<Element> m_element;
     ResourcePtr<ImageResource> m_image;
     // FIXME: Oilpan: We might be able to remove this Persistent hack when
     // ImageResourceClient is traceable.
     GC_PLUGIN_IGNORE("http://crbug.com/383741")
     RefPtrWillBePersistent<Element> m_keepAlive;
+
 #if ENABLE(OILPAN)
     class ImageLoaderClientRemover {
     public:
@@ -173,6 +176,7 @@ private:
         ImageLoaderClient& m_client;
     };
     friend class ImageLoaderClientRemover;
+
     // Oilpan: This ImageLoader object must outlive its clients because they
     // need to call ImageLoader::willRemoveClient before they
     // die. Non-Persistent HeapHashMap doesn't work well because weak processing

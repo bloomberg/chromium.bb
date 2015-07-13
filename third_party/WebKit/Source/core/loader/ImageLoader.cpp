@@ -148,9 +148,19 @@ ImageLoader::ImageLoader(Element* element)
     , m_highPriorityClientCount(0)
 {
     WTF_LOG(Timers, "new ImageLoader %p", this);
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 ImageLoader::~ImageLoader()
+{
+#if !ENABLE(OILPAN)
+    dispose();
+#endif
+}
+
+void ImageLoader::dispose()
 {
     WTF_LOG(Timers, "~ImageLoader %p; m_hasPendingLoadEvent=%d, m_hasPendingErrorEvent=%d",
         this, m_hasPendingLoadEvent, m_hasPendingErrorEvent);
