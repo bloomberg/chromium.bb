@@ -82,16 +82,15 @@ class PageMemoryRegion : public MemoryRegion {
 public:
     ~PageMemoryRegion()
     {
+        Heap::removePageMemoryRegion(this);
         release();
     }
 
     void pageDeleted(Address page)
     {
         markPageUnused(page);
-        if (!--m_numPages) {
-            Heap::removePageMemoryRegion(this);
+        if (!--m_numPages)
             delete this;
-        }
     }
 
     void markPageUsed(Address page)
@@ -131,6 +130,7 @@ private:
         , m_isLargePage(numPages == 1)
         , m_numPages(numPages)
     {
+        Heap::addPageMemoryRegion(this);
         for (size_t i = 0; i < blinkPagesPerRegion; ++i)
             m_inUse[i] = false;
     }

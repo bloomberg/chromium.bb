@@ -879,14 +879,6 @@ void ThreadState::runScheduledGC(StackState stackState)
     }
 }
 
-void ThreadState::prepareRegionTree()
-{
-    // Add the regions allocated by this thread to the region search tree.
-    for (PageMemoryRegion* region : m_allocatedRegionsSinceLastGC)
-        Heap::addPageMemoryRegion(region);
-    m_allocatedRegionsSinceLastGC.clear();
-}
-
 void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
 {
     if (m_shouldFlushHeapDoesNotContainCache) {
@@ -915,7 +907,6 @@ void ThreadState::preGC()
     ASSERT(!isInGC());
     setGCState(GCRunning);
     makeConsistentForGC();
-    prepareRegionTree();
     flushHeapDoesNotContainCacheIfNeeded();
     clearHeapAges();
 }
