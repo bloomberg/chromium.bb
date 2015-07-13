@@ -55,9 +55,6 @@ class AppRemotingConnectionHelper
   void SetHostMessageReceivedCallback(
       HostMessageReceivedCallback host_message_received_callback);
 
-  // Reset |host_message_received_callback_ to null|.
-  void ResetHostMessageReceivedCallback();
-
  private:
   // RemoteConnectionObserver interface.
   void ConnectionStateChanged(protocol::ConnectionToHost::State state,

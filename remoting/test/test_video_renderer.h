@@ -23,8 +23,6 @@ class DesktopFrame;
 class DesktopRect;
 }
 
-typedef uint32 RgbaColor;
-
 namespace remoting {
 namespace test {
 
@@ -49,19 +47,19 @@ class TestVideoRenderer : public VideoRenderer, public protocol::VideoStub {
   // Initialize a decoder to decode video packets.
   void SetCodecForDecoding(const protocol::ChannelConfig::Codec codec);
 
-  // Returns a copy of the current buffer.
-  scoped_ptr<webrtc::DesktopFrame> GetBufferForTest() const;
+  // Returns a copy of the current frame.
+  scoped_ptr<webrtc::DesktopFrame> GetCurrentFrameForTest() const;
 
   // Gets a weak pointer for this object.
   base::WeakPtr<TestVideoRenderer> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
-  // Set expected image pattern for comparison and the callback will be called
-  // when the pattern is matched.
-  void SetImagePatternAndMatchedCallback(
+  // Set expected rect and average color for comparison and the callback will be
+  // called when the pattern is matched.
+  void ExpectAverageColorInRect(
       const webrtc::DesktopRect& expected_rect,
-      const RgbaColor& expected_color,
+      uint32_t expected_average_color,
       const base::Closure& image_pattern_matched_callback);
 
  private:

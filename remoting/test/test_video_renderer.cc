@@ -4,7 +4,10 @@
 
 #include "remoting/test/test_video_renderer.h"
 
+#include <cmath>
+
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
@@ -14,6 +17,27 @@
 #include "remoting/codec/video_decoder_vpx.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+
+namespace {
+
+// Used to store a RGB color, and it can be converted from uint32_t.
+struct RGBValue {
+  RGBValue(int r, int g, int b) : red(r), green(g), blue(b) {}
+
+  int red;
+  int green;
+  int blue;
+};
+
+// Convert an uint32_t to a RGBValue.
+RGBValue ConvertUint32ToRGBValue(uint32_t color) {
+  RGBValue rgb_value((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
+  return rgb_value;
+}
+
+// Used to account for frame resizing and lossy encoding error in percentage.
+const double kMaxColorError = 0.02;
+}  // namespace
 
 namespace remoting {
 namespace test {
@@ -34,17 +58,25 @@ class TestVideoRenderer::Core {
   // Initialize a decoder to decode video packets.
   void SetCodecForDecoding(const protocol::ChannelConfig::Codec codec);
 
-  // Returns a copy of the current buffer.
-  scoped_ptr<webrtc::DesktopFrame> GetBufferForTest() const;
+  // Returns a copy of the current frame.
+  scoped_ptr<webrtc::DesktopFrame> GetCurrentFrameForTest() const;
 
   // Set expected image pattern for comparison and the callback will be called
   // when the pattern is matched.
-  void SetImagePatternAndMatchedCallback(
+  void ExpectAverageColorInRect(
       const webrtc::DesktopRect& expected_rect,
-      const RgbaColor& expected_color,
+      uint32_t expected_avg_color,
       const base::Closure& image_pattern_matched_callback);
 
  private:
+  // Returns average color of pixels fall within |rect| on the current frame.
+  RGBValue CalculateAverageColorValue(const webrtc::DesktopRect& rect) const;
+
+  // Compares |candidate_avg_value| to |expected_avg_color_|.
+  // Returns true if the root mean square of the errors in the R, G and B
+  // components does not exceed a given limit.
+  bool ExpectedAverageColorIsMatched(const RGBValue& candidate_avg_value) const;
+
   // Used to ensure Core methods are called on the same thread.
   base::ThreadChecker thread_checker_;
 
@@ -61,18 +93,14 @@ class TestVideoRenderer::Core {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // Used to store decoded video frame.
-  scoped_ptr<webrtc::DesktopFrame> buffer_;
+  scoped_ptr<webrtc::DesktopFrame> frame_;
 
-  // Protects access to |buffer_|.
+  // Protects access to |frame_|.
   mutable base::Lock lock_;
 
   // Used to store the expected image pattern.
   webrtc::DesktopRect expected_rect_;
-  RgbaColor expected_color_;
-
-  // Maintains accumulating image pattern.
-  webrtc::DesktopRect accumulating_rect_;
-  RgbaColor accumulating_color_;
+  uint32_t expected_avg_color_;
 
   // Used to store the callback when expected pattern is matched.
   base::Closure image_pattern_matched_callback_;
@@ -124,10 +152,10 @@ void TestVideoRenderer::Core::SetCodecForDecoding(
 }
 
 scoped_ptr<webrtc::DesktopFrame>
-    TestVideoRenderer::Core::GetBufferForTest() const {
+TestVideoRenderer::Core::GetCurrentFrameForTest() const {
   base::AutoLock auto_lock(lock_);
-  DCHECK(buffer_);
-  return make_scoped_ptr(webrtc::BasicDesktopFrame::CopyOf(*buffer_.get()));
+  DCHECK(frame_);
+  return make_scoped_ptr(webrtc::BasicDesktopFrame::CopyOf(*frame_.get()));
 }
 
 void TestVideoRenderer::Core::ProcessVideoPacket(
@@ -147,7 +175,7 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
     if (!screen_size_.equals(source_size)) {
       screen_size_ = source_size;
       decoder_->Initialize(screen_size_);
-      buffer_.reset(new webrtc::BasicDesktopFrame(screen_size_));
+      frame_.reset(new webrtc::BasicDesktopFrame(screen_size_));
     }
   }
 
@@ -166,26 +194,82 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
     // previous video frame.
     decoder_->RenderFrame(screen_size_,
                           webrtc::DesktopRect::MakeWH(screen_size_.width(),
-                          screen_size_.height()), buffer_->data(),
-                          buffer_->stride(), &updated_region_);
+                                                      screen_size_.height()),
+                          frame_->data(), frame_->stride(), &updated_region_);
   }
 
   main_task_runner_->PostTask(FROM_HERE, done);
 
-  // TODO(liaoyuke): Update |accumulating_rect_| and |accumulating_color_|, then
-  // compare to the expected image pattern to check whether the pattern is
-  // matched or not and update |image_pattern_matched| accordingly.
+  // Check to see if a image pattern matched reply is passed in, and whether
+  // the |expected_rect_| falls within the current frame.
+  if (image_pattern_matched_callback_.is_null() ||
+      expected_rect_.right() > frame_->size().width() ||
+      expected_rect_.bottom() > frame_->size().height()) {
+    return;
+  }
+
+  // Compare the expected image pattern with the corresponding rectangle region
+  // on the current frame.
+  RGBValue accumulating_avg_value = CalculateAverageColorValue(expected_rect_);
+  VLOG(2) << accumulating_avg_value.red << " " << accumulating_avg_value.green
+          << " " << accumulating_avg_value.blue;
+
+  if (ExpectedAverageColorIsMatched(accumulating_avg_value)) {
+    main_task_runner_->PostTask(
+        FROM_HERE, base::ResetAndReturn(&image_pattern_matched_callback_));
+  }
 }
 
-void TestVideoRenderer::Core::SetImagePatternAndMatchedCallback(
+void TestVideoRenderer::Core::ExpectAverageColorInRect(
     const webrtc::DesktopRect& expected_rect,
-    const RgbaColor& expected_color,
+    uint32_t expected_avg_color,
     const base::Closure& image_pattern_matched_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   expected_rect_ = expected_rect;
-  expected_color_ = expected_color;
+  expected_avg_color_ = expected_avg_color;
   image_pattern_matched_callback_ = image_pattern_matched_callback;
+}
+
+RGBValue TestVideoRenderer::Core::CalculateAverageColorValue(
+    const webrtc::DesktopRect& rect) const {
+  int red_sum = 0;
+  int green_sum = 0;
+  int blue_sum = 0;
+
+  // Loop through pixels that fall within |accumulating_rect_| to obtain the
+  // average color value.
+  for (int y = rect.top(); y < rect.bottom(); ++y) {
+    uint8_t* frame_pos =
+        frame_->data() + (y * frame_->stride() +
+                          rect.left() * webrtc::DesktopFrame::kBytesPerPixel);
+
+    // Pixels of decoded video frame are presented in ARGB format.
+    for (int x = 0; x < rect.width(); ++x) {
+      red_sum += frame_pos[2];
+      green_sum += frame_pos[1];
+      blue_sum += frame_pos[0];
+      frame_pos += 4;
+    }
+  }
+
+  int area = rect.width() * rect.height();
+  RGBValue rgb_value(red_sum / area, green_sum / area, blue_sum / area);
+  return rgb_value;
+}
+
+bool TestVideoRenderer::Core::ExpectedAverageColorIsMatched(
+    const RGBValue& candidate_avg_value) const {
+  RGBValue expected_avg_value = ConvertUint32ToRGBValue(expected_avg_color_);
+  double error_sum_squares = 0;
+  double red_error = expected_avg_value.red - candidate_avg_value.red;
+  double green_error = expected_avg_value.green - candidate_avg_value.green;
+  double blue_error = expected_avg_value.blue - candidate_avg_value.blue;
+  error_sum_squares = red_error * red_error + green_error * green_error +
+                      blue_error * blue_error;
+  error_sum_squares /= (255.0 * 255.0);
+
+  return sqrt(error_sum_squares / 3) < kMaxColorError;
 }
 
 TestVideoRenderer::TestVideoRenderer()
@@ -267,23 +351,26 @@ void TestVideoRenderer::SetCodecForDecoding(
                             codec));
 }
 
-scoped_ptr<webrtc::DesktopFrame> TestVideoRenderer::GetBufferForTest() const {
+scoped_ptr<webrtc::DesktopFrame> TestVideoRenderer::GetCurrentFrameForTest()
+    const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return core_->GetBufferForTest();
+  return core_->GetCurrentFrameForTest();
 }
 
-void TestVideoRenderer::SetImagePatternAndMatchedCallback(
+void TestVideoRenderer::ExpectAverageColorInRect(
     const webrtc::DesktopRect& expected_rect,
-    const RgbaColor& expected_color,
+    uint32_t expected_avg_color,
     const base::Closure& image_pattern_matched_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!expected_rect.is_empty()) << "Expected rect cannot be empty";
 
   DVLOG(2) << "TestVideoRenderer::SetImagePatternAndMatchedCallback() Called";
   video_decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::SetImagePatternAndMatchedCallback,
-                            base::Unretained(core_.get()), expected_rect,
-                            expected_color, image_pattern_matched_callback));
+      FROM_HERE,
+      base::Bind(&Core::ExpectAverageColorInRect, base::Unretained(core_.get()),
+                 expected_rect, expected_avg_color,
+                 image_pattern_matched_callback));
 }
 
 }  // namespace test

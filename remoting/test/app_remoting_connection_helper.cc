@@ -4,6 +4,7 @@
 
 #include "remoting/test/app_remoting_connection_helper.h"
 
+#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -51,10 +52,6 @@ void AppRemotingConnectionHelper::Initialize(
 void AppRemotingConnectionHelper::SetHostMessageReceivedCallback(
       HostMessageReceivedCallback host_message_received_callback) {
   host_message_received_callback_ = host_message_received_callback;
-}
-
-void AppRemotingConnectionHelper::ResetHostMessageReceivedCallback() {
-  host_message_received_callback_.Reset();
 }
 
 bool AppRemotingConnectionHelper::StartConnection() {
@@ -148,7 +145,7 @@ void AppRemotingConnectionHelper::HostMessageReceived(
   // If a callback is not registered, then the message is passed to a default
   // handler for the class based on the message type.
   if (!host_message_received_callback_.is_null()) {
-    host_message_received_callback_.Run(message);
+    base::ResetAndReturn(&host_message_received_callback_).Run(message);
   } else if (message.type() == "onWindowAdded") {
     HandleOnWindowAddedMessage(message);
   } else {

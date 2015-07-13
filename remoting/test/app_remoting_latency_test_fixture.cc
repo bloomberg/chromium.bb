@@ -51,16 +51,15 @@ void AppRemotingLatencyTestFixture::TearDown() {
 
 void AppRemotingLatencyTestFixture::SetExpectedImagePattern(
     const webrtc::DesktopRect& expected_rect,
-    const RgbaColor& expected_color) {
+    uint32_t expected_color) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!run_loop_ || !run_loop_->running());
 
   run_loop_.reset(new base::RunLoop());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestVideoRenderer::SetImagePatternAndMatchedCallback,
-                 test_video_renderer_, expected_rect, expected_color,
-                 run_loop_->QuitClosure()));
+      FROM_HERE, base::Bind(&TestVideoRenderer::ExpectAverageColorInRect,
+                            test_video_renderer_, expected_rect, expected_color,
+                            run_loop_->QuitClosure()));
 }
 
 bool AppRemotingLatencyTestFixture::WaitForImagePatternMatched(

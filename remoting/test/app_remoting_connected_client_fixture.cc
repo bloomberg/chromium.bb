@@ -87,7 +87,6 @@ bool AppRemotingConnectedClientFixture::VerifyResponseForSimpleHostMessage(
   run_loop_->Run();
   timer_->Stop();
 
-  connection_helper_->ResetHostMessageReceivedCallback();
   return message_received;
 }
 

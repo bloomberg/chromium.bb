@@ -30,8 +30,6 @@ struct RemoteApplicationDetails;
 class AppRemotingConnectionHelper;
 class TestVideoRenderer;
 
-typedef uint32 RgbaColor;
-
 // Creates a connection to a remote host which is available for tests to use.
 // Provides convenient methods to create test cases to measure the input and
 // rendering latency between client and the remote host.
@@ -46,7 +44,7 @@ class AppRemotingLatencyTestFixture : public testing::Test {
   // Set expected image pattern for comparison and a matched reply will be
   // called when the pattern is matched.
   void SetExpectedImagePattern(const webrtc::DesktopRect& expected_rect,
-                               const RgbaColor& expected_color);
+                               uint32_t expected_avg_color);
 
   // Waits for an image pattern matched reply up to |max_wait_time|. Returns
   // true if we received a response within the maximum time limit.
@@ -54,7 +52,7 @@ class AppRemotingLatencyTestFixture : public testing::Test {
   bool WaitForImagePatternMatched(const base::TimeDelta& max_wait_time);
 
   // Name of the application being tested.
-  // NOTE: must be initialized in the constructor of derived class.
+  // NOTE: Must be initialized in the constructor of derived class.
   std::string application_name_;
 
  private:
