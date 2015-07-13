@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/sync_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/data_type_controller.h"
@@ -104,8 +105,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   void TestSwitchDisablesType(syncer::ModelTypeSet types) {
     command_line_->AppendSwitchASCII(switches::kDisableSyncTypes,
                                      syncer::ModelTypeSetToString(types));
-    GURL sync_service_url =
-        ProfileSyncService::GetSyncServiceURL(*command_line_);
+    GURL sync_service_url = GetSyncServiceURL(*command_line_);
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
     scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
@@ -113,7 +113,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
             new ProfileSyncComponentsFactoryImpl(
                 profile_.get(),
                 command_line_.get(),
-                ProfileSyncService::GetSyncServiceURL(*command_line_),
+                GetSyncServiceURL(*command_line_),
                 token_service,
                 profile_->GetRequestContext())),
         profile_.get(),
@@ -141,7 +141,7 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
           new ProfileSyncComponentsFactoryImpl(
               profile_.get(),
               command_line_.get(),
-              ProfileSyncService::GetSyncServiceURL(*command_line_),
+              GetSyncServiceURL(*command_line_),
               token_service,
               profile_->GetRequestContext())),
       profile_.get(),

@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/sync_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -339,8 +340,8 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
   CreateService(browser_sync::AUTO_START);
   InitializeForNthSync();
   const std::string& url = service()->sync_service_url().spec();
-  EXPECT_TRUE(url == ProfileSyncService::kSyncServerUrl ||
-              url == ProfileSyncService::kDevServerUrl);
+  EXPECT_TRUE(url == internal::kSyncServerUrl ||
+              url == internal::kSyncDevServerUrl);
 }
 
 // Verify a successful initialization.
@@ -625,15 +626,6 @@ TEST_F(ProfileSyncServiceTest, Rollback) {
 }
 
 #endif
-
-TEST_F(ProfileSyncServiceTest, GetSyncServiceURL) {
-  // See that we can override the URL with a flag.
-  base::CommandLine command_line(
-      base::FilePath(base::FilePath(FILE_PATH_LITERAL("chrome.exe"))));
-  command_line.AppendSwitchASCII(switches::kSyncServiceURL, "https://foo/bar");
-  EXPECT_EQ("https://foo/bar",
-            ProfileSyncService::GetSyncServiceURL(command_line).spec());
-}
 
 // Verify that LastSyncedTime is cleared when the user signs out.
 TEST_F(ProfileSyncServiceTest, ClearLastSyncedTimeOnSignOut) {

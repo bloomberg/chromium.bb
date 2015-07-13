@@ -58,8 +58,8 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/sync_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -126,12 +126,6 @@ using syncer::SyncProtocolError;
 using syncer::WeakHandle;
 
 typedef GoogleServiceAuthError AuthError;
-
-const char* ProfileSyncService::kSyncServerUrl =
-    "https://clients4.google.com/chrome-sync";
-
-const char* ProfileSyncService::kDevServerUrl =
-    "https://clients4.google.com/chrome-sync/dev";
 
 const char kSyncUnrecoverableErrorHistogram[] =
     "Sync.UnrecoverableErrors";
@@ -2603,38 +2597,6 @@ void ProfileSyncService::SetClearingBrowseringDataForTesting(
                         base::Time,
                         base::Time)> c) {
   clear_browsing_data_ = c;
-}
-
-GURL ProfileSyncService::GetSyncServiceURL(
-    const base::CommandLine& command_line) {
-  // By default, dev, canary, and unbranded Chromium users will go to the
-  // development servers. Development servers have more features than standard
-  // sync servers. Users with officially-branded Chrome stable and beta builds
-  // will go to the standard sync servers.
-  GURL result(kDevServerUrl);
-
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    result = GURL(kSyncServerUrl);
-  }
-
-  // Override the sync server URL from the command-line, if sync server
-  // command-line argument exists.
-  if (command_line.HasSwitch(switches::kSyncServiceURL)) {
-    std::string value(command_line.GetSwitchValueASCII(
-        switches::kSyncServiceURL));
-    if (!value.empty()) {
-      GURL custom_sync_url(value);
-      if (custom_sync_url.is_valid()) {
-        result = custom_sync_url;
-      } else {
-        LOG(WARNING) << "The following sync URL specified at the command-line "
-                     << "is invalid: " << value;
-      }
-    }
-  }
-  return result;
 }
 
 void ProfileSyncService::CheckSyncBackupIfNeeded() {

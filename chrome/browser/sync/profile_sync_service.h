@@ -255,11 +255,6 @@ class ProfileSyncService : public sync_driver::SyncService,
     ROLLBACK    // Backend for rollback.
   };
 
-  // Default sync server URL.
-  static const char* kSyncServerUrl;
-  // Sync server URL for dev channel users
-  static const char* kDevServerUrl;
-
   // Takes ownership of |factory| and |signin_wrapper|.
   ProfileSyncService(
       scoped_ptr<ProfileSyncComponentsFactory> factory,
@@ -687,9 +682,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   void SetClearingBrowseringDataForTesting(base::Callback<
       void(BrowsingDataRemover::Observer*, Profile*, base::Time, base::Time)>
                                                c);
-
-  // Return the base URL of the Sync Server.
-  static GURL GetSyncServiceURL(const base::CommandLine& command_line);
 
   base::Time GetDeviceBackupTimeForTesting() const;
 

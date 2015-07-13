@@ -547,6 +547,7 @@
       'common/search_urls_unittest.cc',
       'common/secure_origin_whitelist_unittest.cc',
       'common/switch_utils_unittest.cc',
+      'common/sync_util_unittest.cc',
       'common/variations/experiment_labels_unittest.cc',
       'common/variations/variations_util_unittest.cc',
       'common/worker_thread_ticker_unittest.cc',

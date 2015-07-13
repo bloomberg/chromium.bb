@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/sync_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/util/get_session_name.h"
 #include "ui/base/device_form_factor.h"
@@ -12,25 +13,6 @@
 namespace browser_sync {
 
 namespace {
-
-// Converts VersionInfo::Channel to string for user-agent string.
-std::string ChannelToString(chrome::VersionInfo::Channel channel) {
-  switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-      return "unknown";
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      return "canary";
-    case chrome::VersionInfo::CHANNEL_DEV:
-      return "dev";
-    case chrome::VersionInfo::CHANNEL_BETA:
-      return "beta";
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      return "stable";
-    default:
-      NOTREACHED();
-      return "unknown";
-  }
-}
 
 #if defined(OS_ANDROID)
 bool IsTabletUI() {
@@ -67,36 +49,16 @@ LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {
 // static.
 std::string LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(
     const chrome::VersionInfo& version_info) {
-  std::string user_agent;
-  user_agent = "Chrome ";
-#if defined(OS_WIN)
-  user_agent += "WIN ";
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  return MakeDesktopUserAgentForSync(version_info);
 #elif defined(OS_CHROMEOS)
-  user_agent += "CROS ";
+  return MakeUserAgentForSync(version_info, "CROS ");
 #elif defined(OS_ANDROID)
   if (IsTabletUI())
-    user_agent += "ANDROID-TABLET ";
+    return MakeUserAgentForSync(version_info, "ANDROID-TABLET ");
   else
-    user_agent += "ANDROID-PHONE ";
-#elif defined(OS_LINUX)
-  user_agent += "LINUX ";
-#elif defined(OS_FREEBSD)
-  user_agent += "FREEBSD ";
-#elif defined(OS_OPENBSD)
-  user_agent += "OPENBSD ";
-#elif defined(OS_MACOSX)
-  user_agent += "MAC ";
+    return MakeUserAgentForSync(version_info, "ANDROID-PHONE ");
 #endif
-  user_agent += version_info.Version();
-  user_agent += " (" + version_info.LastChange() + ")";
-  if (!version_info.IsOfficialBuild()) {
-    user_agent += "-devel";
-  } else {
-    user_agent +=
-        " channel(" + ChannelToString(version_info.GetChannel()) + ")";
-  }
-
-  return user_agent;
 }
 
 const sync_driver::DeviceInfo*
