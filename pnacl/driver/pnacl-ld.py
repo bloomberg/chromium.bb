@@ -275,6 +275,8 @@ LDPatterns = [
 
   ( '(--no-as-needed)',    "env.append('INPUTS', $0)"),
   ( '(--as-needed)',       "env.append('INPUTS', $0)"),
+  ( '(--no-gc-sections)',  "env.append('INPUTS', $0)"),
+  ( '(--gc-sections)',     "env.append('INPUTS', $0)"),
   ( '(--start-group)',     "env.append('INPUTS', $0)"),
   ( '(--end-group)',       "env.append('INPUTS', $0)"),
   ( '(-Bstatic)',          "env.append('INPUTS', $0)"),
