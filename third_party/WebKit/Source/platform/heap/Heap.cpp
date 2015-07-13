@@ -760,7 +760,6 @@ void NormalPageHeap::promptlyFreeObject(HeapObjectHeader* header)
             }
             m_remainingAllocationSize += size;
             FILL_ZERO_IF_PRODUCTION(address, size);
-            ASAN_POISON_MEMORY_REGION(address, size);
             return;
         }
         FILL_ZERO_IF_PRODUCTION(payload, payloadSize);
@@ -786,7 +785,6 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
         m_remainingAllocationSize -= expandSize;
 
         // Unpoison the memory used for the object (payload).
-        ASAN_UNPOISON_MEMORY_REGION(header->payloadEnd(), expandSize);
         FILL_ZERO_IF_NOT_PRODUCTION(header->payloadEnd(), expandSize);
         header->setSize(allocationSize);
         ASSERT(findPageFromAddress(header->payloadEnd() - 1));
@@ -806,7 +804,6 @@ bool NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
         m_currentAllocationPoint -= shrinkSize;
         m_remainingAllocationSize += shrinkSize;
         FILL_ZERO_IF_PRODUCTION(m_currentAllocationPoint, shrinkSize);
-        ASAN_POISON_MEMORY_REGION(m_currentAllocationPoint, shrinkSize);
         header->setSize(allocationSize);
         return true;
     }
@@ -814,7 +811,6 @@ bool NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
     ASSERT(header->gcInfoIndex() > 0);
     Address shrinkAddress = header->payloadEnd() - shrinkSize;
     FILL_ZERO_IF_PRODUCTION(shrinkAddress, shrinkSize);
-    ASAN_POISON_MEMORY_REGION(shrinkAddress, shrinkSize);
     HeapObjectHeader* freedHeader = new (NotNull, shrinkAddress) HeapObjectHeader(shrinkSize, header->gcInfoIndex());
     freedHeader->markPromptlyFreed();
     ASSERT(pageFromObject(reinterpret_cast<Address>(header)) == findPageFromAddress(reinterpret_cast<Address>(header)));
@@ -1327,7 +1323,6 @@ void NormalPage::sweep()
             // This memory will be added to the freelist. Maintain the invariant
             // that memory on the freelist is zero filled.
             FILL_ZERO_IF_PRODUCTION(headerAddress, size);
-            ASAN_POISON_MEMORY_REGION(payload, payloadSize);
             headerAddress += size;
             continue;
         }
