@@ -108,8 +108,6 @@ public:
     PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
     int frameCount();
 
-    static PassRefPtr<JavaScriptCallFrame> toJavaScriptCallFrameUnsafe(const ScriptValue&);
-
     bool isPaused();
 
     v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>);

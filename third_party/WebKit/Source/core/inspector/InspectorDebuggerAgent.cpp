@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "bindings/core/v8/inspector/V8JavaScriptCallFrame.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/AsyncCallChain.h"
 #include "core/inspector/ContentSearchUtils.h"
@@ -43,6 +44,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/JSONParser.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"
@@ -130,9 +132,21 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallF
     return ScriptCallStack::create(frames);
 }
 
+static PassRefPtr<JavaScriptCallFrame> toJavaScriptCallFrame(const ScriptValue& value)
+{
+    if (value.isEmpty())
+        return nullptr;
+    ScriptState* scriptState = value.scriptState();
+    if (!scriptState || !scriptState->contextIsValid())
+        return nullptr;
+    ScriptState::Scope scope(scriptState);
+    ASSERT(value.isObject());
+    return V8JavaScriptCallFrame::unwrap(v8::Local<v8::Object>::Cast(value.v8ValueUnsafe()));
+}
+
 static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(const ScriptValue& callFrames)
 {
-    RefPtr<JavaScriptCallFrame> jsCallFrame = V8Debugger::toJavaScriptCallFrameUnsafe(callFrames);
+    RefPtr<JavaScriptCallFrame> jsCallFrame = toJavaScriptCallFrame(callFrames);
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
@@ -862,6 +876,35 @@ void InspectorDebuggerAgent::setPauseOnExceptionsImpl(ErrorString* errorString, 
         m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, pauseState);
 }
 
+bool InspectorDebuggerAgent::callStackForId(ErrorString* errorString, const String& callFrameId, ScriptValue* callStack, bool* isAsync)
+{
+    RefPtr<JSONValue> parsedObjectId = parseJSON(callFrameId);
+    if (!parsedObjectId) {
+        *errorString = "Failed to parse frame id";
+        return false;
+    }
+    RefPtr<JSONObject> objectId = parsedObjectId->asObject();
+    if (!objectId) {
+        *errorString = "Failed to parse frame id";
+        return false;
+    }
+    unsigned asyncOrdinal = 0; // 0 is current call stack
+    bool success = parsedObjectId->asObject()->getNumber("asyncOrdinal", &asyncOrdinal);
+    if (!success || !asyncOrdinal) {
+        *callStack = m_currentCallStack;
+        *isAsync = false;
+        return true;
+    }
+    if (!m_currentAsyncCallChain || asyncOrdinal < 1 || asyncOrdinal >= m_currentAsyncCallChain->callStacks().size()) {
+        *errorString = "Async call stack not found";
+        return false;
+    }
+    RefPtr<AsyncCallStack> asyncStack = m_currentAsyncCallChain->callStacks()[asyncOrdinal - 1];
+    *callStack = asyncStack->callFrames();
+    *isAsync = true;
+    return true;
+}
+
 void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const String& callFrameId, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
     if (!isPaused() || m_currentCallStack.isEmpty()) {
@@ -874,6 +917,12 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
         return;
     }
 
+    bool isAsync = false;
+    ScriptValue callStack;
+    if (!callStackForId(errorString, callFrameId, &callStack, &isAsync))
+        return;
+    ASSERT(!callStack.isEmpty());
+
     V8Debugger::PauseOnExceptionsState previousPauseOnExceptionsState = debugger().pauseOnExceptionsState();
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
         if (previousPauseOnExceptionsState != V8Debugger::DontPauseOnExceptions)
@@ -881,16 +930,7 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
         muteConsole();
     }
 
-    Vector<ScriptValue> asyncCallStacks;
-    if (m_currentAsyncCallChain) {
-        const AsyncCallStackVector& callStacks = m_currentAsyncCallChain->callStacks();
-        asyncCallStacks.resize(callStacks.size());
-        AsyncCallStackVector::const_iterator it = callStacks.begin();
-        for (size_t i = 0; it != callStacks.end(); ++it, ++i)
-            asyncCallStacks[i] = (*it)->callFrames();
-    }
-
-    injectedScript.evaluateOnCallFrame(errorString, m_currentCallStack, asyncCallStacks, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
+    injectedScript.evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
         unmuteConsole();
         if (debugger().pauseOnExceptionsState() != previousPauseOnExceptionsState)
@@ -1446,7 +1486,7 @@ PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyn
         return nullptr;
     RefPtrWillBeRawPtr<ScriptAsyncCallStack> result = nullptr;
     for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
-        RefPtr<JavaScriptCallFrame> callFrame = V8Debugger::toJavaScriptCallFrameUnsafe((*it)->callFrames());
+        RefPtr<JavaScriptCallFrame> callFrame = toJavaScriptCallFrame((*it)->callFrames());
         if (!callFrame)
             break;
         result = ScriptAsyncCallStack::create((*it)->description(), toScriptCallStack(callFrame.get()), result.release());
