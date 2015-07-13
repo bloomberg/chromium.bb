@@ -220,13 +220,17 @@ void JavaScriptDialogManager::CancelActiveAndPendingDialogs(
     content::WebContents* web_contents) {
   AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
   AppModalDialog* active_dialog = queue->active_dialog();
-  if (active_dialog && active_dialog->web_contents() == web_contents)
-    active_dialog->Invalidate();
   for (AppModalDialogQueue::iterator i = queue->begin();
        i != queue->end(); ++i) {
+    // Invalidating the active dialog might trigger showing a not-yet
+    // invalidated dialog, so invalidate the active dialog last.
+    if ((*i) == active_dialog)
+      continue;
     if ((*i)->web_contents() == web_contents)
       (*i)->Invalidate();
   }
+  if (active_dialog && active_dialog->web_contents() == web_contents)
+    active_dialog->Invalidate();
 }
 
 void JavaScriptDialogManager::OnDialogClosed(
