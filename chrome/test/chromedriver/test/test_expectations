@@ -115,6 +115,10 @@ _OS_NEGATIVE_FILTER['win'] = [
 _OS_NEGATIVE_FILTER['linux'] = [
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=416
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1148
+    'CombinedInputActionsTest.testCombiningShiftAndClickResultsInANewWindow',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1150
+    'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=26
@@ -127,6 +131,8 @@ _OS_NEGATIVE_FILTER['mac'] = [
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=416
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1149
+    'ChromeDriverTests.testShouldAllowTheUserToSwitchToAnIFrameAndRemainFocusedOnIt',
 ]
 _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
