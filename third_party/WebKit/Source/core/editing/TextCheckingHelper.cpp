@@ -34,6 +34,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/WordAwareIterator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -158,7 +159,7 @@ PassRefPtrWillBeRawPtr<Range> TextCheckingParagraph::paragraphRange() const
 PassRefPtrWillBeRawPtr<Range> TextCheckingParagraph::subrange(int characterOffset, int characterCount) const
 {
     ASSERT(m_checkingRange);
-    EphemeralRange range = TextIterator::subrange(paragraphRange()->startPosition(), paragraphRange()->endPosition(), characterOffset, characterCount);
+    EphemeralRange range = calculateCharacterSubrange(EphemeralRange(paragraphRange().get()), characterOffset, characterCount);
     if (range.isNull())
         return nullptr;
     return Range::create(range.document(), range.startPosition(), range.endPosition());
@@ -264,7 +265,7 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
             if (misspellingLocation >= 0 && misspellingLength > 0 && misspellingLocation < length && misspellingLength <= length && misspellingLocation + misspellingLength <= length) {
 
                 // Compute range of misspelled word
-                const EphemeralRange misspellingRange = TextIterator::subrange(m_start, m_end, currentChunkOffset + misspellingLocation, misspellingLength);
+                const EphemeralRange misspellingRange = calculateCharacterSubrange(EphemeralRange(m_start, m_end), currentChunkOffset + misspellingLocation, misspellingLength);
 
                 // Remember first-encountered misspelling and its offset.
                 if (!firstMisspelling) {
@@ -428,10 +429,8 @@ int TextCheckingHelper::findFirstGrammarDetail(const Vector<GrammarDetail>& gram
             continue;
 
         if (markAll) {
-            Position badGrammarStart = m_start;
-            Position badGrammarEnd = m_end;
-            TextIterator::subrange(badGrammarStart, badGrammarEnd, badGrammarPhraseLocation - startOffset + detail->location, detail->length);
-            badGrammarStart.containerNode()->document().markers().addMarker(badGrammarStart, badGrammarEnd, DocumentMarker::Grammar, detail->userDescription);
+            const EphemeralRange badGrammarRange = calculateCharacterSubrange(EphemeralRange(m_start, m_end), badGrammarPhraseLocation - startOffset + detail->location, detail->length);
+            badGrammarRange.document().markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, detail->userDescription);
         }
 
         // Remember this detail only if it's earlier than our current candidate (the details aren't in a guaranteed order)

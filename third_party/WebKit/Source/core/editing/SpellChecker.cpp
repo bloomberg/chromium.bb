@@ -309,7 +309,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         ASSERT(grammarDetail.location != -1 && grammarDetail.length > 0);
 
         // FIXME 4859190: This gets confused with doubled punctuation at the end of a paragraph
-        const EphemeralRange badGrammarRange = TextIterator::subrange(grammarSearchStart, grammarSearchEnd, grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
+        const EphemeralRange badGrammarRange = calculateCharacterSubrange(EphemeralRange(grammarSearchStart, grammarSearchEnd), grammarPhraseOffset + grammarDetail.location, grammarDetail.length);
         frame().selection().setSelection(VisibleSelection(badGrammarRange));
         frame().selection().revealSelection();
 
@@ -318,7 +318,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         // We found a misspelling, but not any earlier bad grammar. Select the misspelling, update the spelling panel, and store
         // a marker so we draw the red squiggle later.
 
-        const EphemeralRange misspellingRange = TextIterator::subrange(spellingSearchStart, spellingSearchEnd, misspellingOffset, misspelledWord.length());
+        const EphemeralRange misspellingRange = calculateCharacterSubrange(EphemeralRange(spellingSearchStart, spellingSearchEnd), misspellingOffset, misspelledWord.length());
         frame().selection().setSelection(VisibleSelection(misspellingRange, DOWNSTREAM));
         frame().selection().revealSelection();
 
@@ -619,7 +619,7 @@ void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> r
         //    "wouldn'" as misspelled right after apostrophe is typed.
         if (shouldMarkSpelling && result->decoration == TextDecorationTypeSpelling && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset && !resultEndsAtAmbiguousBoundary) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
-            const EphemeralRange misspellingRange = TextIterator::subrange(paragraph.paragraphRange()->startPosition(), paragraph.paragraphRange()->endPosition(), resultLocation, resultLength);
+            const EphemeralRange misspellingRange = calculateCharacterSubrange(EphemeralRange(paragraph.paragraphRange().get()), resultLocation, resultLength);
             frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling, result->replacement, result->hash);
         } else if (shouldMarkGrammar && result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
@@ -627,13 +627,13 @@ void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> r
                 const GrammarDetail* detail = &result->details[j];
                 ASSERT(detail->length > 0 && detail->location >= 0);
                 if (paragraph.checkingRangeCovers(resultLocation + detail->location, detail->length)) {
-                    const EphemeralRange badGrammarRange = TextIterator::subrange(paragraph.paragraphRange()->startPosition(), paragraph.paragraphRange()->endPosition(), resultLocation + detail->location, detail->length);
+                    const EphemeralRange badGrammarRange = calculateCharacterSubrange(EphemeralRange(paragraph.paragraphRange().get()), resultLocation + detail->location, detail->length);
                     frame().document()->markers().addMarker(badGrammarRange.startPosition(), badGrammarRange.endPosition(), DocumentMarker::Grammar, detail->userDescription, result->hash);
                 }
             }
         } else if (result->decoration == TextDecorationTypeInvisibleSpellcheck && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
-            const EphemeralRange invisibleSpellcheckRange = TextIterator::subrange(paragraph.paragraphRange()->startPosition(), paragraph.paragraphRange()->endPosition(), resultLocation, resultLength);
+            const EphemeralRange invisibleSpellcheckRange = calculateCharacterSubrange(EphemeralRange(paragraph.paragraphRange().get()), resultLocation, resultLength);
             frame().document()->markers().addMarker(invisibleSpellcheckRange.startPosition(), invisibleSpellcheckRange.endPosition(), DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
         }
     }

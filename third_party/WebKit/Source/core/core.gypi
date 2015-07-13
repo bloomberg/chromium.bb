@@ -3714,6 +3714,7 @@
             'editing/FrameSelectionTest.cpp',
             'editing/GranularityStrategyTest.cpp',
             'editing/InputMethodControllerTest.cpp',
+            'editing/iterators/CharacterIteratorTest.cpp',
             'editing/iterators/TextIteratorTest.cpp',
             'editing/StyledMarkupSerializerTest.cpp',
             'editing/SurroundingTextTest.cpp',

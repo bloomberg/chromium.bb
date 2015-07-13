@@ -239,6 +239,12 @@ EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::calculate
     return EphemeralRangeTemplate<Strategy>(startPos, endPosition());
 }
 
+EphemeralRange calculateCharacterSubrange(const EphemeralRange& range, int characterOffset, int characterCount)
+{
+    CharacterIterator entireRangeIterator(range, TextIteratorEmitsObjectReplacementCharacter);
+    return entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount);
+}
+
 static const size_t minimumSearchBufferSize = 8192;
 
 #if ENABLE(ASSERT)

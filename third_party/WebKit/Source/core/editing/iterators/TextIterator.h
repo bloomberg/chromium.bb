@@ -83,7 +83,6 @@ public:
     // also emits spaces for other non-text nodes using the
     // |TextIteratorEmitsCharactersBetweenAllVisiblePosition| mode.
     static int rangeLength(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, bool forSelectionPreservation = false);
-    static EphemeralRange subrange(const Position& start, const Position& end, int characterOffset, int characterCount);
 
     static bool shouldEmitTabBeforeNode(Node*);
     static bool shouldEmitNewlineBeforeNode(Node&);

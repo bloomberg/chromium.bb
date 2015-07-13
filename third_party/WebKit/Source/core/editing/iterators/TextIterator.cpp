@@ -1063,13 +1063,6 @@ int TextIteratorAlgorithm<Strategy>::rangeLength(const typename Strategy::Positi
     return length;
 }
 
-template<typename Strategy>
-EphemeralRange TextIteratorAlgorithm<Strategy>::subrange(const Position& start, const Position& end, int characterOffset, int characterCount)
-{
-    CharacterIterator entireRangeIterator(start, end, TextIteratorEmitsObjectReplacementCharacter);
-    return entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount);
-}
-
 // --------
 
 template <typename Strategy>

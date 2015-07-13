@@ -32,7 +32,6 @@
 #include "core/editing/iterators/TextIterator.h"
 
 #include "core/editing/EditingTestBase.h"
-#include "core/editing/iterators/CharacterIterator.h"
 #include "core/frame/FrameView.h"
 
 namespace blink {
@@ -362,41 +361,6 @@ TEST_F(TextIteratorTest, IgnoresContainersClipDistributed)
     EXPECT_EQ("[Nobody can find me!]", iterate<ComposedTree>(TextIteratorEntersOpenShadowRoots));
 }
 
-TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
-{
-    static const char* bodyContent = "<div>foo bar test</div>";
-    setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<Range> range = getBodyRange();
-
-    RefPtrWillBeRawPtr<Range> expectedRange = range->cloneRange();
-    expectedRange->collapse(false);
-
-    // A lone lead surrogate (0xDA0A) example taken from fuzz-58.
-    static const UChar invalid1[] = {
-        0x1461u, 0x2130u, 0x129bu, 0xd711u, 0xd6feu, 0xccadu, 0x7064u,
-        0xd6a0u, 0x4e3bu, 0x03abu, 0x17dcu, 0xb8b7u, 0xbf55u, 0xfca0u,
-        0x07fau, 0x0427u, 0xda0au, 0
-    };
-
-    // A lone trailing surrogate (U+DC01).
-    static const UChar invalid2[] = {
-        0x1461u, 0x2130u, 0x129bu, 0xdc01u, 0xd6feu, 0xccadu, 0
-    };
-    // A trailing surrogate followed by a lead surrogate (U+DC03 U+D901).
-    static const UChar invalid3[] = {
-        0xd800u, 0xdc00u, 0x0061u, 0xdc03u, 0xd901u, 0xccadu, 0
-    };
-
-    static const UChar* invalidUStrings[] = { invalid1, invalid2, invalid3 };
-
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidUStrings); ++i) {
-        String invalidTarget(invalidUStrings[i]);
-        EphemeralRange foundRange = findPlainText(EphemeralRange(range.get()), invalidTarget, 0);
-        RefPtrWillBeRawPtr<Range> actualRange = Range::create(document(), foundRange.startPosition(), foundRange.endPosition());
-        EXPECT_TRUE(areRangesEqual(expectedRange.get(), actualRange.get()));
-    }
-}
-
 TEST_F(TextIteratorTest, EmitsReplacementCharForInput)
 {
     static const char* bodyContent =
@@ -421,22 +385,6 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
     RefPtrWillBeRawPtr<Range> range = Range::create(document(), divNode, 0, divNode, 3);
 
     EXPECT_EQ(3, TextIterator::rangeLength(range->startPosition(), range->endPosition()));
-}
-
-TEST_F(TextIteratorTest, SubrangeWithReplacedElements)
-{
-    static const char* bodyContent =
-        "<div id='div' contenteditable='true'>1<img src='foo.png'>345</div>";
-    setBodyContent(bodyContent);
-    document().view()->updateAllLifecyclePhases();
-
-    Node* divNode = document().getElementById("div");
-    RefPtrWillBeRawPtr<Range> entireRange = Range::create(document(), divNode, 0, divNode, 3);
-
-    EphemeralRange result = TextIterator::subrange(entireRange->startPosition(), entireRange->endPosition(), 2, 3);
-    Node* textNode = divNode->lastChild();
-    EXPECT_EQ(Position(textNode, 0), result.startPosition());
-    EXPECT_EQ(Position(textNode, 3), result.endPosition());
 }
 
 } // namespace blink

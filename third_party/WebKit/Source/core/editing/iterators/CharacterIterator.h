@@ -80,6 +80,8 @@ private:
 extern template class CORE_EXTERN_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;
 using CharacterIterator = CharacterIteratorAlgorithm<EditingStrategy>;
 
+
+CORE_EXPORT EphemeralRange calculateCharacterSubrange(const EphemeralRange&, int characterOffset, int characterCount);
 CORE_EXPORT EphemeralRange findPlainText(const EphemeralRange& inputRange, const String&, FindOptions);
 
 } // namespace blink
