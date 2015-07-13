@@ -60,7 +60,7 @@ void DeprecatedPaintLayerPainter::paintLayer(GraphicsContext* context, const Dep
     DisableCompositingQueryAsserts disabler;
 
     if (m_paintLayer.compositingState() != NotComposited) {
-        if (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers) {
+        if (paintingInfo.paintBehavior() & PaintBehaviorFlattenCompositingLayers) {
             // FIXME: ok, but what about PaintBehaviorFlattenCompositingLayers? That's for printing.
             // FIXME: why isn't the code here global, as opposed to being set on each paintLayer() call?
             paintFlags |= PaintLayerUncachedClipRects;
@@ -78,13 +78,13 @@ void DeprecatedPaintLayerPainter::paintLayer(GraphicsContext* context, const Dep
     if (!m_paintLayer.layoutObject()->opacity())
         return;
 
-    if (m_paintLayer.paintsWithTransparency(paintingInfo.paintBehavior))
+    if (m_paintLayer.paintsWithTransparency(paintingInfo.paintBehavior()))
         paintFlags |= PaintLayerHaveTransparency;
 
     LayerFixedPositionRecorder fixedPositionRecorder(*context, *m_paintLayer.layoutObject());
 
     // PaintLayerAppliedTransform is used in LayoutReplica, to avoid applying the transform twice.
-    if (m_paintLayer.paintsWithTransform(paintingInfo.paintBehavior) && !(paintFlags & PaintLayerAppliedTransform)) {
+    if (m_paintLayer.paintsWithTransform(paintingInfo.paintBehavior()) && !(paintFlags & PaintLayerAppliedTransform)) {
         paintLayerWithTransform(context, paintingInfo, paintFlags);
         return;
     }
@@ -217,9 +217,9 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
     // Note that there is no need to composite if we're painting the root.
     // FIXME: this should be unified further into DeprecatedPaintLayer::paintsWithTransparency().
     bool shouldCompositeForBlendMode = (!m_paintLayer.layoutObject()->isDocumentElement() || m_paintLayer.layoutObject()->isSVGRoot()) && m_paintLayer.stackingNode()->isStackingContext() && m_paintLayer.hasNonIsolatedDescendantWithBlendMode();
-    if (shouldCompositeForBlendMode || m_paintLayer.paintsWithTransparency(paintingInfo.paintBehavior)) {
+    if (shouldCompositeForBlendMode || m_paintLayer.paintsWithTransparency(paintingInfo.paintBehavior())) {
         clipRecorder.emplace(*context, *m_paintLayer.layoutObject(), DisplayItem::TransparencyClip,
-            m_paintLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior),
+            m_paintLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior()),
             &paintingInfo, LayoutPoint(), paintFlags);
 
         compositingRecorder.emplace(*context, *m_paintLayer.layoutObject(),
@@ -242,7 +242,7 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
             shouldPaintContent = atLeastOneFragmentIntersectsDamageRect(layerFragments, localPaintingInfo, paintFlags, offsetFromRoot);
     }
 
-    bool selectionOnly = localPaintingInfo.paintBehavior & PaintBehaviorSelectionOnly;
+    bool selectionOnly = localPaintingInfo.paintBehavior() & PaintBehaviorSelectionOnly;
     // If this layer's layoutObject is a child of the paintingRoot, we paint unconditionally, which
     // is done by passing a nil paintingRoot down to our layoutObject (as if no paintingRoot was ever set).
     // Else, our layout tree may or may not contain the painting root, so we pass that root along
@@ -329,7 +329,7 @@ bool DeprecatedPaintLayerPainter::atLeastOneFragmentIntersectsDamageRect(Depreca
 
 void DeprecatedPaintLayerPainter::paintLayerWithTransform(GraphicsContext* context, const DeprecatedPaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
-    TransformationMatrix layerTransform = m_paintLayer.renderableTransform(paintingInfo.paintBehavior);
+    TransformationMatrix layerTransform = m_paintLayer.renderableTransform(paintingInfo.paintBehavior());
     // If the transform can't be inverted, then don't paint anything.
     if (!layerTransform.isInvertible())
         return;
@@ -357,7 +357,7 @@ void DeprecatedPaintLayerPainter::paintLayerWithTransform(GraphicsContext* conte
         ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
         // Calculate the transformed bounding box in the current coordinate space, to figure out
         // which fragmentainers (e.g. columns) we need to visit.
-        LayoutRect transformedExtent = DeprecatedPaintLayer::transparencyClipBox(&m_paintLayer, paginationLayer, DeprecatedPaintLayer::PaintingTransparencyClipBox, DeprecatedPaintLayer::RootOfTransparencyClipBox, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+        LayoutRect transformedExtent = DeprecatedPaintLayer::transparencyClipBox(&m_paintLayer, paginationLayer, DeprecatedPaintLayer::PaintingTransparencyClipBox, DeprecatedPaintLayer::RootOfTransparencyClipBox, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior());
         // FIXME: we don't check if paginationLayer is within paintingInfo.rootLayer here.
         paginationLayer->collectFragments(fragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, 0, paintingInfo.subPixelAccumulation, &transformedExtent);
     } else {
@@ -397,7 +397,7 @@ void DeprecatedPaintLayerPainter::paintFragmentByApplyingTransform(GraphicsConte
     LayoutPoint delta;
     m_paintLayer.convertToLayerCoords(paintingInfo.rootLayer, delta);
     delta.moveBy(fragmentTranslation);
-    TransformationMatrix transform(m_paintLayer.renderableTransform(paintingInfo.paintBehavior));
+    TransformationMatrix transform(m_paintLayer.renderableTransform(paintingInfo.paintBehavior()));
     IntPoint roundedDelta = roundedIntPoint(delta);
     transform.translateRight(roundedDelta.x(), roundedDelta.y());
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
@@ -405,7 +405,7 @@ void DeprecatedPaintLayerPainter::paintFragmentByApplyingTransform(GraphicsConte
     Transform3DRecorder transform3DRecorder(*context, *m_paintLayer.layoutObject(), DisplayItem::Transform3DElementTransform, transform);
 
     // Now do a paint with the root layer shifted to be us.
-    DeprecatedPaintLayerPaintingInfo transformedPaintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.paintBehavior,
+    DeprecatedPaintLayerPaintingInfo transformedPaintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.paintBehavior(),
         adjustedSubPixelAccumulation, paintingInfo.paintingRoot);
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags, ForceSingleFragment);
 }
@@ -428,7 +428,7 @@ void DeprecatedPaintLayerPainter::paintChildren(unsigned childrenToVisit, Graphi
         DeprecatedPaintLayerPainter childPainter(*child->layer());
         // If this Layer should paint into its own backing or a grouped backing, that will be done via CompositedDeprecatedPaintLayerMapping::paintContents()
         // and CompositedDeprecatedPaintLayerMapping::doPaintTask().
-        if (!childPainter.shouldPaintLayerInSoftwareMode(toGlobalPaintFlags(paintingInfo.paintBehavior), paintFlags))
+        if (!childPainter.shouldPaintLayerInSoftwareMode(toGlobalPaintFlags(paintingInfo.paintBehavior()), paintFlags))
             continue;
 
         DeprecatedPaintLayerPaintingInfo childPaintingInfo = paintingInfo;

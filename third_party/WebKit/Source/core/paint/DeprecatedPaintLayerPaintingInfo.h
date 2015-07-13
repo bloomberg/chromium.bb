@@ -80,16 +80,22 @@ struct DeprecatedPaintLayerPaintingInfo {
         , paintingRoot(inPaintingRoot)
         , paintDirtyRect(inDirtyRect)
         , subPixelAccumulation(inSubPixelAccumulation)
-        , paintBehavior(inPaintBehavior)
         , clipToDirtyRect(true)
+        , m_paintBehavior(inPaintBehavior)
     { }
+
+    PaintBehavior paintBehavior() const { return m_paintBehavior; }
+
+    // TODO(jchaffraix): We should encapsulate all these fields.
     DeprecatedPaintLayer* rootLayer;
     LayoutObject* paintingRoot; // only paint descendants of this object
     LayoutRect paintDirtyRect; // relative to rootLayer;
     LayoutSize subPixelAccumulation;
     IntSize scrollOffsetAccumulation;
-    PaintBehavior paintBehavior;
     bool clipToDirtyRect;
+
+private:
+    const PaintBehavior m_paintBehavior;
 };
 
 } // namespace blink
