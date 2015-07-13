@@ -102,6 +102,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       if (is_linux) {
         # These will already be filtered out on non-Linux.
         sources -= [
+          "linux/x11_util.cc",
           "linux/x_server_clipboard.cc",
           "linux/x_server_clipboard.h",
         ]
