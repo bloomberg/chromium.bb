@@ -4,7 +4,6 @@
 
 #include "mojo/runner/child_process_host.h"
 
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -22,7 +21,6 @@
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
 #include "mojo/runner/task_runners.h"
-#include "ui/gl/gl_switches.h"
 
 namespace mojo {
 namespace runner {
@@ -97,25 +95,12 @@ void ChildProcessHost::DidStart(bool success) {
 }
 
 bool ChildProcessHost::DoLaunch() {
-  static const char* kForwardSwitches[] = {
-      switches::kOverrideUseGLWithOSMesaForTests,
-      switches::kTraceToConsole,
-      switches::kV,
-      switches::kVModule,
-      switches::kWaitForDebugger,
-  };
-
   const base::CommandLine* parent_command_line =
       base::CommandLine::ForCurrentProcess();
   base::CommandLine child_command_line(parent_command_line->GetProgram());
-  child_command_line.CopySwitchesFrom(*parent_command_line, kForwardSwitches,
-                                      arraysize(kForwardSwitches));
+  child_command_line.AppendArguments(*parent_command_line, false);
   child_command_line.AppendSwitchASCII(switches::kApp, name_);
   child_command_line.AppendSwitch(switches::kChildProcess);
-
-  auto args = parent_command_line->GetArgs();
-  for (const auto& arg : args)
-    child_command_line.AppendArgNative(arg);
 
   embedder::HandlePassingInformation handle_passing_info;
   platform_channel_pair_.PrepareToPassClientHandleToChildProcess(
