@@ -39,10 +39,10 @@ public:
         return adoptRefWillBeNoop(new CSSFontFaceRule(rule, sheet));
     }
 
-    virtual ~CSSFontFaceRule();
+    ~CSSFontFaceRule() override;
 
-    virtual String cssText() const override;
-    virtual void reattach(StyleRuleBase*) override;
+    String cssText() const override;
+    void reattach(StyleRuleBase*) override;
 
     CSSStyleDeclaration* style() const;
 
@@ -53,7 +53,7 @@ public:
 private:
     CSSFontFaceRule(StyleRuleFontFace*, CSSStyleSheet* parent);
 
-    virtual CSSRule::Type type() const override { return FONT_FACE_RULE; }
+    CSSRule::Type type() const override { return FONT_FACE_RULE; }
 
     RefPtrWillBeMember<StyleRuleFontFace> m_fontFaceRule;
     mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;

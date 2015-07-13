@@ -38,10 +38,10 @@ public:
         return adoptRefWillBeNoop(new CSSImportRule(rule, sheet));
     }
 
-    virtual ~CSSImportRule();
+    ~CSSImportRule() override;
 
-    virtual String cssText() const override;
-    virtual void reattach(StyleRuleBase*) override;
+    String cssText() const override;
+    void reattach(StyleRuleBase*) override;
 
     String href() const;
     MediaList* media() const;
@@ -52,7 +52,7 @@ public:
 private:
     CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
 
-    virtual CSSRule::Type type() const override { return IMPORT_RULE; }
+    CSSRule::Type type() const override { return IMPORT_RULE; }
 
     RefPtrWillBeMember<StyleRuleImport> m_importRule;
     mutable RefPtrWillBeMember<MediaList> m_mediaCSSOMWrapper;

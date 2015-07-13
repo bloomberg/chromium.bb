@@ -47,7 +47,7 @@ class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData, publi
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
 public:
     static PassRefPtrWillBeRawPtr<MediaQueryList> create(ExecutionContext*, PassRefPtrWillBeRawPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>);
-    virtual ~MediaQueryList();
+    ~MediaQueryList() override;
 
     String media() const;
     bool matches();
@@ -69,11 +69,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // From ActiveDOMObject
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override;
+    bool hasPendingActivity() const override;
+    void stop() override;
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
 private:
     MediaQueryList(ExecutionContext*, PassRefPtrWillBeRawPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>);

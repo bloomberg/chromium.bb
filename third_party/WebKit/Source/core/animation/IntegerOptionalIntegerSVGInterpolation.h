@@ -20,7 +20,7 @@ public:
         return adoptRefWillBeNoop(new IntegerOptionalIntegerSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute, min));
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const override final
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final
     {
         return fromInterpolableValue(*m_cachedValue, m_min);
     }

@@ -17,7 +17,7 @@ namespace {
 
 class TestListener : public MediaQueryListListener {
 public:
-    virtual void notifyMediaQueryChanged() override { }
+    void notifyMediaQueryChanged() override { }
 };
 
 } // anonymous namespace

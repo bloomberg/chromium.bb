@@ -110,7 +110,7 @@ public:
     void loadWithCallback(PassRefPtrWillBeRawPtr<LoadFontCallback>, ExecutionContext*);
 
     // ActiveDOMObject
-    virtual bool hasPendingActivity() const override;
+    bool hasPendingActivity() const override;
 
 private:
     static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors&);

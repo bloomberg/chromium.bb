@@ -26,7 +26,7 @@ public:
         return adoptRefWillBeNoop(new DeferredLegacyStyleInterpolation(start, end, id));
     }
 
-    virtual void apply(StyleResolverState&) const override;
+    void apply(StyleResolverState&) const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -40,7 +40,7 @@ public:
 
     void underlyingStyleChanged() { m_outdated = true; }
 
-    virtual bool isDeferredLegacyStyleInterpolation() const override final { return true; }
+    bool isDeferredLegacyStyleInterpolation() const final { return true; }
 
 private:
     DeferredLegacyStyleInterpolation(PassRefPtrWillBeRawPtr<CSSValue> start, PassRefPtrWillBeRawPtr<CSSValue> end, CSSPropertyID id)

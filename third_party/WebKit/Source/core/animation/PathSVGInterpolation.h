@@ -14,7 +14,7 @@ class PathSVGInterpolation : public SVGInterpolation {
 public:
     static PassRefPtrWillBeRawPtr<PathSVGInterpolation> maybeCreate(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute);
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const override final;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

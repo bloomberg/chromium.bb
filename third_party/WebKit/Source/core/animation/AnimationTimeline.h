@@ -142,9 +142,9 @@ private:
             ASSERT(m_timeline);
         }
 
-        virtual void wakeAfter(double duration) override;
-        virtual void cancelWake() override;
-        virtual void serviceOnNextFrame() override;
+        void wakeAfter(double duration) override;
+        void cancelWake() override;
+        void serviceOnNextFrame() override;
 
         void timerFired(Timer<AnimationTimelineTiming>*) { m_timeline->wake(); }
 

@@ -39,7 +39,7 @@ namespace blink {
 
 class AnimatableImage final : public AnimatableValue {
 public:
-    virtual ~AnimatableImage() { }
+    ~AnimatableImage() override { }
     static PassRefPtrWillBeRawPtr<AnimatableImage> create(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
         return adoptRefWillBeNoop(new AnimatableImage(value));
@@ -53,8 +53,8 @@ public:
     }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableImage(PassRefPtrWillBeRawPtr<CSSValue> value)
@@ -62,8 +62,8 @@ private:
     {
         ASSERT(m_value.get());
     }
-    virtual AnimatableType type() const override { return TypeImage; }
-    virtual bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeImage; }
+    bool equalTo(const AnimatableValue*) const override;
 
     const RefPtrWillBeMember<CSSValue> m_value;
 };

@@ -47,22 +47,22 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual CSSRule* parentRule() const override { return 0; }
-    virtual unsigned length() const override final;
-    virtual String item(unsigned index) const override final;
-    virtual String getPropertyValue(const String& propertyName) override final;
-    virtual String getPropertyPriority(const String& propertyName) override final;
-    virtual String getPropertyShorthand(const String& propertyName) override final;
-    virtual bool isPropertyImplicit(const String& propertyName) override final;
-    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) override final;
-    virtual String removeProperty(const String& propertyName, ExceptionState&) override final;
-    virtual String cssText() const override final;
-    virtual void setCSSText(const String&, ExceptionState&) override final;
-    virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) override final;
-    virtual String getPropertyValueInternal(CSSPropertyID) override final;
-    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) override final;
+    CSSRule* parentRule() const override { return 0; }
+    unsigned length() const final;
+    String item(unsigned index) const final;
+    String getPropertyValue(const String& propertyName) final;
+    String getPropertyPriority(const String& propertyName) final;
+    String getPropertyShorthand(const String& propertyName) final;
+    bool isPropertyImplicit(const String& propertyName) final;
+    void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) final;
+    String removeProperty(const String& propertyName, ExceptionState&) final;
+    String cssText() const final;
+    void setCSSText(const String&, ExceptionState&) final;
+    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) final;
+    String getPropertyValueInternal(CSSPropertyID) final;
+    void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) final;
 
-    virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const override final;
+    bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const final;
 
 protected:
     enum MutationType { NoChanges, PropertyChanged };
@@ -76,14 +76,14 @@ public:
     PropertySetCSSStyleDeclaration(MutableStylePropertySet& propertySet) : m_propertySet(&propertySet) { }
 
 #if !ENABLE(OILPAN)
-    virtual void ref() override;
-    virtual void deref() override;
+    void ref() override;
+    void deref() override;
 #endif
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    virtual MutableStylePropertySet& propertySet() const override final { ASSERT(m_propertySet); return *m_propertySet; }
+    MutableStylePropertySet& propertySet() const final { ASSERT(m_propertySet); return *m_propertySet; }
 
     RawPtrWillBeMember<MutableStylePropertySet> m_propertySet; // Cannot be null
 };
@@ -99,8 +99,8 @@ public:
 #if !ENABLE(OILPAN)
     void clearParentRule() { m_parentRule = nullptr; }
 
-    virtual void ref() override;
-    virtual void deref() override;
+    void ref() override;
+    void deref() override;
 #endif
 
     void reattach(MutableStylePropertySet&);
@@ -109,14 +109,14 @@ public:
 
 protected:
     StyleRuleCSSStyleDeclaration(MutableStylePropertySet&, CSSRule*);
-    virtual ~StyleRuleCSSStyleDeclaration();
+    ~StyleRuleCSSStyleDeclaration() override;
 
-    virtual CSSStyleSheet* parentStyleSheet() const override;
+    CSSStyleSheet* parentStyleSheet() const override;
 
-    virtual CSSRule* parentRule() const override { return m_parentRule;  }
+    CSSRule* parentRule() const override { return m_parentRule;  }
 
-    virtual void willMutate() override;
-    virtual void didMutate(MutationType) override;
+    void willMutate() override;
+    void didMutate(MutationType) override;
 
 #if !ENABLE(OILPAN)
     unsigned m_refCount;
@@ -135,15 +135,15 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual MutableStylePropertySet& propertySet() const override;
+    MutableStylePropertySet& propertySet() const override;
 #if !ENABLE(OILPAN)
-    virtual void ref() override;
-    virtual void deref() override;
+    void ref() override;
+    void deref() override;
 #endif
-    virtual CSSStyleSheet* parentStyleSheet() const override;
-    virtual Element* parentElement() const override { return m_parentElement; }
+    CSSStyleSheet* parentStyleSheet() const override;
+    Element* parentElement() const override { return m_parentElement; }
 
-    virtual void didMutate(MutationType) override;
+    void didMutate(MutationType) override;
 
     RawPtrWillBeMember<Element> m_parentElement;
 };

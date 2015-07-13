@@ -39,10 +39,10 @@ public:
         return adoptRefWillBeNoop(new CSSStyleRule(rule, sheet));
     }
 
-    virtual ~CSSStyleRule();
+    ~CSSStyleRule() override;
 
-    virtual String cssText() const override;
-    virtual void reattach(StyleRuleBase*) override;
+    String cssText() const override;
+    void reattach(StyleRuleBase*) override;
 
     String selectorText() const;
     void setSelectorText(const String&);
@@ -57,7 +57,7 @@ public:
 private:
     CSSStyleRule(StyleRule*, CSSStyleSheet*);
 
-    virtual CSSRule::Type type() const override { return STYLE_RULE; }
+    CSSRule::Type type() const override { return STYLE_RULE; }
 
     String generateSelectorText() const;
 

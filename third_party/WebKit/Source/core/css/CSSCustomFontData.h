@@ -35,16 +35,16 @@ public:
         return adoptRef(new CSSCustomFontData(source, visibility));
     }
 
-    virtual ~CSSCustomFontData() { }
+    ~CSSCustomFontData() override { }
 
-    virtual bool shouldSkipDrawing() const override
+    bool shouldSkipDrawing() const override
     {
         if (m_fontFaceSource)
             m_fontFaceSource->paintRequested();
         return m_fallbackVisibility == InvisibleFallback && m_isLoading;
     }
 
-    virtual void beginLoadIfNeeded() const override
+    void beginLoadIfNeeded() const override
     {
         if (!m_isLoading && m_fontFaceSource) {
             m_isLoading = true;
@@ -52,9 +52,9 @@ public:
         }
     }
 
-    virtual bool isLoading() const override { return m_isLoading; }
-    virtual bool isLoadingFallback() const override { return true; }
-    virtual void clearFontFaceSource() override { m_fontFaceSource = 0; }
+    bool isLoading() const override { return m_isLoading; }
+    bool isLoadingFallback() const override { return true; }
+    void clearFontFaceSource() override { m_fontFaceSource = 0; }
 
 private:
     CSSCustomFontData(RemoteFontFaceSource* source, FallbackVisibility visibility)

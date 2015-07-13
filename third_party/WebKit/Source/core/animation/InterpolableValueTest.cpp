@@ -21,7 +21,7 @@ public:
         return adoptRefWillBeNoop(new SampleInterpolation(start, end));
     }
 
-    virtual PropertyHandle property() const override
+    PropertyHandle property() const override
     {
         return PropertyHandle(CSSPropertyBackgroundColor);
     }

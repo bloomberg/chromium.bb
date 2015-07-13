@@ -17,7 +17,7 @@ public:
         return adoptRefWillBeNoop(new ConstantStyleInterpolation(value, id));
     }
 
-    virtual void apply(StyleResolverState& state) const override
+    void apply(StyleResolverState& state) const override
     {
         StyleBuilder::applyProperty(m_id, state, m_value.get());
     }

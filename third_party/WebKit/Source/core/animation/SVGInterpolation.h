@@ -13,13 +13,13 @@ namespace blink {
 
 class SVGInterpolation : public Interpolation {
 public:
-    virtual bool isSVGInterpolation() const override final { return true; }
+    bool isSVGInterpolation() const final { return true; }
 
     SVGAnimatedPropertyBase* attribute() const { return m_attribute.get(); }
 
     const QualifiedName& attributeName() const { return m_attribute->attributeName(); }
 
-    virtual PropertyHandle property() const override final
+    PropertyHandle property() const final
     {
         return PropertyHandle(attributeName());
     }

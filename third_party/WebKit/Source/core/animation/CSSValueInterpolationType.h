@@ -17,13 +17,13 @@ public:
         : InterpolationType(property)
     { }
 
-    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const override final;
-    virtual void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const override final;
+    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const final;
+    void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 };
 
 class DefaultNonInterpolableValue : public NonInterpolableValue {
 public:
-    virtual ~DefaultNonInterpolableValue() { }
+    ~DefaultNonInterpolableValue() override { }
     static PassRefPtrWillBeRawPtr<DefaultNonInterpolableValue> create(PassRefPtrWillBeRawPtr<CSSValue> cssValue)
     {
         return adoptRefWillBeNoop(new DefaultNonInterpolableValue(cssValue));

@@ -163,11 +163,11 @@ public:
     void setCenterY(BasicShapeCenterCoordinate centerY) { m_centerY = centerY; }
     void setRadius(BasicShapeRadius radius) { m_radius = radius; }
 
-    virtual void path(Path&, const FloatRect&) override;
-    virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
-    virtual bool operator==(const BasicShape&) const override;
+    void path(Path&, const FloatRect&) override;
+    PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
+    bool operator==(const BasicShape&) const override;
 
-    virtual Type type() const override { return BasicShapeCircleType; }
+    Type type() const override { return BasicShapeCircleType; }
 private:
     BasicShapeCircle() { }
 
@@ -193,11 +193,11 @@ public:
     void setRadiusX(BasicShapeRadius radiusX) { m_radiusX = radiusX; }
     void setRadiusY(BasicShapeRadius radiusY) { m_radiusY = radiusY; }
 
-    virtual void path(Path&, const FloatRect&) override;
-    virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
-    virtual bool operator==(const BasicShape&) const override;
+    void path(Path&, const FloatRect&) override;
+    PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
+    bool operator==(const BasicShape&) const override;
 
-    virtual Type type() const override { return BasicShapeEllipseType; }
+    Type type() const override { return BasicShapeEllipseType; }
 private:
     BasicShapeEllipse() { }
 
@@ -220,13 +220,13 @@ public:
     void setWindRule(WindRule windRule) { m_windRule = windRule; }
     void appendPoint(const Length& x, const Length& y) { m_values.append(x); m_values.append(y); }
 
-    virtual void path(Path&, const FloatRect&) override;
-    virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
-    virtual bool operator==(const BasicShape&) const override;
+    void path(Path&, const FloatRect&) override;
+    PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
+    bool operator==(const BasicShape&) const override;
 
-    virtual WindRule windRule() const override { return m_windRule; }
+    WindRule windRule() const override { return m_windRule; }
 
-    virtual Type type() const override { return BasicShapePolygonType; }
+    Type type() const override { return BasicShapePolygonType; }
 private:
     BasicShapePolygon()
         : m_windRule(RULE_NONZERO)
@@ -262,11 +262,11 @@ public:
     void setBottomRightRadius(const LengthSize& radius) { m_bottomRightRadius = radius; }
     void setBottomLeftRadius(const LengthSize& radius) { m_bottomLeftRadius = radius; }
 
-    virtual void path(Path&, const FloatRect&) override;
-    virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
-    virtual bool operator==(const BasicShape&) const override;
+    void path(Path&, const FloatRect&) override;
+    PassRefPtr<BasicShape> blend(const BasicShape*, double) const override;
+    bool operator==(const BasicShape&) const override;
 
-    virtual Type type() const override { return BasicShapeInsetType; }
+    Type type() const override { return BasicShapeInsetType; }
 private:
     BasicShapeInset() { }
 

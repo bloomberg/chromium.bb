@@ -37,7 +37,7 @@ namespace blink {
 
 class AnimatableLengthBox final : public AnimatableValue {
 public:
-    virtual ~AnimatableLengthBox() { }
+    ~AnimatableLengthBox() override { }
     static PassRefPtrWillBeRawPtr<AnimatableLengthBox> create(PassRefPtrWillBeRawPtr<AnimatableValue> left, PassRefPtrWillBeRawPtr<AnimatableValue> right, PassRefPtrWillBeRawPtr<AnimatableValue> top, PassRefPtrWillBeRawPtr<AnimatableValue> bottom)
     {
         return adoptRefWillBeNoop(new AnimatableLengthBox(left, right, top, bottom));
@@ -50,7 +50,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
     AnimatableLengthBox(PassRefPtrWillBeRawPtr<AnimatableValue> left, PassRefPtrWillBeRawPtr<AnimatableValue> right, PassRefPtrWillBeRawPtr<AnimatableValue> top, PassRefPtrWillBeRawPtr<AnimatableValue> bottom)
@@ -60,8 +60,8 @@ private:
         , m_bottom(bottom)
     {
     }
-    virtual AnimatableType type() const override { return TypeLengthBox; }
-    virtual bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeLengthBox; }
+    bool equalTo(const AnimatableValue*) const override;
 
     RefPtrWillBeMember<AnimatableValue> m_left;
     RefPtrWillBeMember<AnimatableValue> m_right;

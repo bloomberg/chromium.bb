@@ -15,28 +15,28 @@ class MediaValuesDynamic final : public MediaValues {
 public:
     static PassRefPtr<MediaValues> create(Document&);
     static PassRefPtr<MediaValues> create(LocalFrame*);
-    virtual PassRefPtr<MediaValues> copy() const override;
-    virtual bool isSafeToSendToAnotherThread() const override;
-    virtual bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
-    virtual bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
+    PassRefPtr<MediaValues> copy() const override;
+    bool isSafeToSendToAnotherThread() const override;
+    bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
+    bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
 
-    virtual int viewportWidth() const override;
-    virtual int viewportHeight() const override;
-    virtual int deviceWidth() const override;
-    virtual int deviceHeight() const override;
-    virtual float devicePixelRatio() const override;
-    virtual int colorBitsPerComponent() const override;
-    virtual int monochromeBitsPerComponent() const override;
-    virtual PointerType primaryPointerType() const override;
-    virtual int availablePointerTypes() const override;
-    virtual HoverType primaryHoverType() const override;
-    virtual int availableHoverTypes() const override;
-    virtual bool threeDEnabled() const override;
-    virtual bool strictMode() const override;
-    virtual const String mediaType() const override;
-    virtual WebDisplayMode displayMode() const override;
-    virtual Document* document() const override;
-    virtual bool hasValues() const override;
+    int viewportWidth() const override;
+    int viewportHeight() const override;
+    int deviceWidth() const override;
+    int deviceHeight() const override;
+    float devicePixelRatio() const override;
+    int colorBitsPerComponent() const override;
+    int monochromeBitsPerComponent() const override;
+    PointerType primaryPointerType() const override;
+    int availablePointerTypes() const override;
+    HoverType primaryHoverType() const override;
+    int availableHoverTypes() const override;
+    bool threeDEnabled() const override;
+    bool strictMode() const override;
+    const String mediaType() const override;
+    WebDisplayMode displayMode() const override;
+    Document* document() const override;
+    bool hasValues() const override;
 
 protected:
     MediaValuesDynamic(LocalFrame*);

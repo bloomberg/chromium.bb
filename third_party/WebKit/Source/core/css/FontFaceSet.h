@@ -68,7 +68,7 @@ class FontFaceSet final : public EventTargetWithInlineData, public RefCountedSup
 #endif
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~FontFaceSet();
+    ~FontFaceSet() override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
@@ -88,8 +88,8 @@ public:
     unsigned long size() const;
     AtomicString status() const;
 
-    virtual ExecutionContext* executionContext() const override;
-    virtual const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
 
     Document* document() const;
 
@@ -99,9 +99,9 @@ public:
     void loadError(FontFace*);
 
     // ActiveDOMObject
-    virtual void suspend() override;
-    virtual void resume() override;
-    virtual void stop() override;
+    void suspend() override;
+    void resume() override;
+    void stop() override;
 
     static PassRefPtrWillBeRawPtr<FontFaceSet> from(Document&);
     static void didLayout(Document&);

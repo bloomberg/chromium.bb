@@ -16,7 +16,7 @@ public:
     static bool usesDefaultInterpolation(const CSSValue&, const CSSValue&);
     static PassRefPtrWillBeRawPtr<ImageSliceStyleInterpolation> maybeCreate(const CSSValue&, const CSSValue&, CSSPropertyID);
 
-    virtual void apply(StyleResolverState&) const override;
+    void apply(StyleResolverState&) const override;
     DECLARE_VIRTUAL_TRACE();
 
     // Image slices can have either percentages or numbers: http://dev.w3.org/csswg/css-backgrounds-3/#the-border-image-slice

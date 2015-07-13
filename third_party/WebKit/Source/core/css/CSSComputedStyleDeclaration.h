@@ -50,11 +50,11 @@ public:
     {
         return adoptRefWillBeNoop(new CSSComputedStyleDeclaration(node, allowVisitedStyle, pseudoElementName));
     }
-    virtual ~CSSComputedStyleDeclaration();
+    ~CSSComputedStyleDeclaration() override;
 
 #if !ENABLE(OILPAN)
-    virtual void ref() override;
-    virtual void deref() override;
+    void ref() override;
+    void deref() override;
 #endif
 
     String getPropertyValue(CSSPropertyID) const;
@@ -81,23 +81,23 @@ private:
     Node* styledNode() const;
 
     // CSSOM functions. Don't make these public.
-    virtual CSSRule* parentRule() const override;
-    virtual unsigned length() const override;
-    virtual String item(unsigned index) const override;
+    CSSRule* parentRule() const override;
+    unsigned length() const override;
+    String item(unsigned index) const override;
     const ComputedStyle* computeComputedStyle() const;
-    virtual String getPropertyValue(const String& propertyName) override;
-    virtual String getPropertyPriority(const String& propertyName) override;
-    virtual String getPropertyShorthand(const String& propertyName) override;
-    virtual bool isPropertyImplicit(const String& propertyName) override;
-    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) override;
-    virtual String removeProperty(const String& propertyName, ExceptionState&) override;
-    virtual String cssText() const override;
-    virtual void setCSSText(const String&, ExceptionState&) override;
-    virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) override;
-    virtual String getPropertyValueInternal(CSSPropertyID) override;
-    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) override;
+    String getPropertyValue(const String& propertyName) override;
+    String getPropertyPriority(const String& propertyName) override;
+    String getPropertyShorthand(const String& propertyName) override;
+    bool isPropertyImplicit(const String& propertyName) override;
+    void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) override;
+    String removeProperty(const String& propertyName, ExceptionState&) override;
+    String cssText() const override;
+    void setCSSText(const String&, ExceptionState&) override;
+    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) override;
+    String getPropertyValueInternal(CSSPropertyID) override;
+    void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) override;
 
-    virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const override;
+    bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const override;
 
     RefPtrWillBeMember<Node> m_node;
     PseudoId m_pseudoElementSpecifier;

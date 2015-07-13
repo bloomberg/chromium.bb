@@ -20,7 +20,7 @@ public:
         return adoptRef(new PathStyleMotionPath(pathString));
     }
 
-    virtual bool isPathStyleMotionPath() const override { return true; }
+    bool isPathStyleMotionPath() const override { return true; }
 
     bool equals(const PathStyleMotionPath& other) const
     {

@@ -164,7 +164,7 @@ private:
     private:
         blink::Platform* m_platform; // Not owned.
         WebCompositorSupportMock** m_compositor;
-        virtual WebCompositorSupport* compositorSupport() override { return *m_compositor; }
+        WebCompositorSupport* compositorSupport() override { return *m_compositor; }
     };
 
     WebCompositorSupportMock* m_mockCompositor;

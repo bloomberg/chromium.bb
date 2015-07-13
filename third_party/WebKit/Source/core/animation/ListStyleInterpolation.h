@@ -37,7 +37,7 @@ public:
         return nullptr;
     }
 
-    virtual void apply(StyleResolverState& state) const override
+    void apply(StyleResolverState& state) const override
     {
         StyleBuilder::applyProperty(m_id, state, interpolableValueToList(m_cachedValue.get(), m_nonInterpolableData, m_range).get());
     }
@@ -134,7 +134,7 @@ private:
         return result.release();
     }
 
-    virtual void apply(StyleResolverState& state) const override
+    void apply(StyleResolverState& state) const override
     {
         StyleBuilder::applyProperty(m_id, state, interpolableValueToList(m_cachedValue.get(), m_range).get());
     }

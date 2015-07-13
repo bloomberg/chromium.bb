@@ -88,9 +88,9 @@ public:
     }
 
     // EffectModel implementation.
-    virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const override;
+    void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const override;
 
-    virtual bool isKeyframeEffectModel() const override { return true; }
+    bool isKeyframeEffectModel() const override { return true; }
 
     virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
     virtual bool isStringKeyframeEffectModel() const { return false; }
@@ -119,7 +119,7 @@ public:
         return m_keyframeGroups->contains(property);
     }
 
-    virtual bool isTransformRelatedEffect() const override;
+    bool isTransformRelatedEffect() const override;
 
 protected:
     KeyframeEffectModelBase(PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing)

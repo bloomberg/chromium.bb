@@ -76,10 +76,10 @@ public:
     StyleImage* image() { return m_image.get(); }
     void setImage(PassRefPtr<StyleImage> image) { m_image = image; }
 
-    virtual bool isImage() const override { return true; }
-    virtual LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
+    bool isImage() const override { return true; }
+    LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
-    virtual bool equals(const ContentData& data) const override
+    bool equals(const ContentData& data) const override
     {
         if (!data.isImage())
             return false;
@@ -92,7 +92,7 @@ private:
     {
     }
 
-    virtual PassOwnPtr<ContentData> cloneInternal() const override
+    PassOwnPtr<ContentData> cloneInternal() const override
     {
         RefPtr<StyleImage> image = const_cast<StyleImage*>(this->image());
         return create(image.release());
@@ -109,10 +109,10 @@ public:
     const String& text() const { return m_text; }
     void setText(const String& text) { m_text = text; }
 
-    virtual bool isText() const override { return true; }
-    virtual LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
+    bool isText() const override { return true; }
+    LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
-    virtual bool equals(const ContentData& data) const override
+    bool equals(const ContentData& data) const override
     {
         if (!data.isText())
             return false;
@@ -125,7 +125,7 @@ private:
     {
     }
 
-    virtual PassOwnPtr<ContentData> cloneInternal() const override { return create(text()); }
+    PassOwnPtr<ContentData> cloneInternal() const override { return create(text()); }
 
     String m_text;
 };
@@ -138,8 +138,8 @@ public:
     const CounterContent* counter() const { return m_counter.get(); }
     void setCounter(PassOwnPtr<CounterContent> counter) { m_counter = counter; }
 
-    virtual bool isCounter() const override { return true; }
-    virtual LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
+    bool isCounter() const override { return true; }
+    LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
 private:
     CounterContentData(PassOwnPtr<CounterContent> counter)
@@ -147,13 +147,13 @@ private:
     {
     }
 
-    virtual PassOwnPtr<ContentData> cloneInternal() const override
+    PassOwnPtr<ContentData> cloneInternal() const override
     {
         OwnPtr<CounterContent> counterData = adoptPtr(new CounterContent(*counter()));
         return create(counterData.release());
     }
 
-    virtual bool equals(const ContentData& data) const override
+    bool equals(const ContentData& data) const override
     {
         if (!data.isCounter())
             return false;
@@ -171,10 +171,10 @@ public:
     QuoteType quote() const { return m_quote; }
     void setQuote(QuoteType quote) { m_quote = quote; }
 
-    virtual bool isQuote() const override { return true; }
-    virtual LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
+    bool isQuote() const override { return true; }
+    LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
-    virtual bool equals(const ContentData& data) const override
+    bool equals(const ContentData& data) const override
     {
         if (!data.isQuote())
             return false;
@@ -187,7 +187,7 @@ private:
     {
     }
 
-    virtual PassOwnPtr<ContentData> cloneInternal() const override { return create(quote()); }
+    PassOwnPtr<ContentData> cloneInternal() const override { return create(quote()); }
 
     QuoteType m_quote;
 };

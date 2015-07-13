@@ -19,7 +19,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     static bool canCreateFrom(const CSSValue&);
-    virtual void apply(StyleResolverState&) const override;
+    void apply(StyleResolverState&) const override;
 
 private:
     ImageStyleInterpolation(PassRefPtrWillBeRawPtr<CSSValue> start, PassRefPtrWillBeRawPtr<CSSValue> end, CSSPropertyID id)

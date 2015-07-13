@@ -40,10 +40,10 @@ public:
         return adoptRefWillBeNoop(new CSSPageRule(rule, sheet));
     }
 
-    virtual ~CSSPageRule();
+    ~CSSPageRule() override;
 
-    virtual String cssText() const override;
-    virtual void reattach(StyleRuleBase*) override;
+    String cssText() const override;
+    void reattach(StyleRuleBase*) override;
 
     CSSStyleDeclaration* style() const;
 
@@ -55,7 +55,7 @@ public:
 private:
     CSSPageRule(StyleRulePage*, CSSStyleSheet*);
 
-    virtual CSSRule::Type type() const override { return PAGE_RULE; }
+    CSSRule::Type type() const override { return PAGE_RULE; }
 
     RefPtrWillBeMember<StyleRulePage> m_pageRule;
     mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;

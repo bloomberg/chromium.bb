@@ -43,14 +43,14 @@ public:
         return adoptRefWillBeNoop(new AnimatableFilterOperations(operations));
     }
 
-    virtual ~AnimatableFilterOperations() { }
+    ~AnimatableFilterOperations() override { }
     DECLARE_VIRTUAL_TRACE();
 
     const FilterOperations& operations() const { return m_operations; }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableFilterOperations(const FilterOperations& operations)
@@ -58,8 +58,8 @@ private:
     {
     }
 
-    virtual bool equalTo(const AnimatableValue*) const override;
-    virtual AnimatableType type() const override { return TypeFilterOperations; }
+    bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeFilterOperations; }
 
     FilterOperations m_operations;
 };

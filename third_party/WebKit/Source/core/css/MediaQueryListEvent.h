@@ -37,7 +37,7 @@ public:
     String media() const { return m_mediaQueryList ? m_mediaQueryList->media() : m_media; }
     bool matches() const { return m_mediaQueryList ? m_mediaQueryList->matches() : m_matches; }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::MediaQueryListEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::MediaQueryListEvent; }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

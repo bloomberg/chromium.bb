@@ -41,7 +41,7 @@ namespace blink {
 // http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
 class CORE_EXPORT AnimatableRepeatable : public AnimatableValue {
 public:
-    virtual ~AnimatableRepeatable() { }
+    ~AnimatableRepeatable() override { }
 
     // This will consume the vector passed into it.
     static PassRefPtrWillBeRawPtr<AnimatableRepeatable> create(WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>>& values)
@@ -65,15 +65,15 @@ protected:
 
     static bool interpolateLists(const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>>& fromValues, const WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>>& toValues, double fraction, WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>>& interpolatedValues);
 
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
     WillBeHeapVector<RefPtrWillBeMember<AnimatableValue>> m_values;
 
 private:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
-    virtual AnimatableType type() const override { return TypeRepeatable; }
-    virtual bool equalTo(const AnimatableValue*) const override final;
+    AnimatableType type() const override { return TypeRepeatable; }
+    bool equalTo(const AnimatableValue*) const final;
 };
 
 DEFINE_TYPE_CASTS(AnimatableRepeatable, AnimatableValue, value, (value->isRepeatable() || value->isStrokeDasharrayList()), (value.isRepeatable() || value.isStrokeDasharrayList()));

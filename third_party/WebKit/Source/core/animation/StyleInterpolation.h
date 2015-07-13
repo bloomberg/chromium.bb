@@ -35,12 +35,12 @@ public:
     // (3) a custom value that is inserted directly into the StyleResolverState.
     virtual void apply(StyleResolverState&) const = 0;
 
-    virtual bool isStyleInterpolation() const override final { return true; }
+    bool isStyleInterpolation() const final { return true; }
     virtual bool isDeferredLegacyStyleInterpolation() const { return false; }
 
     CSSPropertyID id() const { return m_id; }
 
-    virtual PropertyHandle property() const override final
+    PropertyHandle property() const final
     {
         return PropertyHandle(id());
     }

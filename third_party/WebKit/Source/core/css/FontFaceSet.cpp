@@ -58,8 +58,8 @@ public:
     void loadFonts(ExecutionContext*);
     ScriptPromise promise() { return m_resolver->promise(); }
 
-    virtual void notifyLoaded(FontFace*) override;
-    virtual void notifyError(FontFace*) override;
+    void notifyLoaded(FontFace*) override;
+    void notifyError(FontFace*) override;
 
     DECLARE_VIRTUAL_TRACE();
 

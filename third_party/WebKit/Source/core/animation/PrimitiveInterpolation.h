@@ -28,7 +28,7 @@ public:
 // Represents a pair of keyframes that are compatible for "smooth" interpolation eg. "0px" and "100px".
 class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
 public:
-    virtual ~PairwisePrimitiveInterpolation() { }
+    ~PairwisePrimitiveInterpolation() override { }
 
     static PassOwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> create(const InterpolationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
     {
@@ -56,7 +56,7 @@ private:
         , m_nonInterpolableValue(nonInterpolableValue)
     { }
 
-    virtual void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const override final
+    void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const final
     {
         ASSERT(result);
         ASSERT(&result->type() == &m_type);
@@ -73,7 +73,7 @@ private:
 // Represents a pair of incompatible keyframes that fall back to 50% flip behaviour eg. "auto" and "0px".
 class FlipPrimitiveInterpolation : public PrimitiveInterpolation {
 public:
-    virtual ~FlipPrimitiveInterpolation() { }
+    ~FlipPrimitiveInterpolation() override { }
 
     static PassOwnPtrWillBeRawPtr<FlipPrimitiveInterpolation> create(PassOwnPtrWillBeRawPtr<InterpolationValue> start, PassOwnPtrWillBeRawPtr<InterpolationValue> end)
     {
@@ -97,7 +97,7 @@ private:
         ASSERT(m_end);
     }
 
-    virtual void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const override final
+    void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const final
     {
         // TODO(alancutter): Remove this optimisation once Oilpan is default.
         if (!std::isnan(m_lastFraction) && (fraction < 0.5) == (m_lastFraction < 0.5))

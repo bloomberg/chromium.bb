@@ -140,8 +140,8 @@ private:
             , m_previousIteration(nullValue())
         {
         }
-        virtual bool requiresIterationEvents(const AnimationEffect&) override;
-        virtual void onEventCondition(const AnimationEffect&) override;
+        bool requiresIterationEvents(const AnimationEffect&) override;
+        void onEventCondition(const AnimationEffect&) override;
         DECLARE_VIRTUAL_TRACE();
 
     private:
@@ -164,8 +164,8 @@ private:
             , m_previousPhase(AnimationEffect::PhaseNone)
         {
         }
-        virtual bool requiresIterationEvents(const AnimationEffect&) override { return false; }
-        virtual void onEventCondition(const AnimationEffect&) override;
+        bool requiresIterationEvents(const AnimationEffect&) override { return false; }
+        void onEventCondition(const AnimationEffect&) override;
         DECLARE_VIRTUAL_TRACE();
 
     private:

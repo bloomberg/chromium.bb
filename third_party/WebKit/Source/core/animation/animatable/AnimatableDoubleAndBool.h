@@ -12,7 +12,7 @@ namespace blink {
 
 class CORE_EXPORT AnimatableDoubleAndBool final : public AnimatableValue {
 public:
-    virtual ~AnimatableDoubleAndBool() { }
+    ~AnimatableDoubleAndBool() override { }
     static PassRefPtrWillBeRawPtr<AnimatableDoubleAndBool> create(double number, bool flag)
     {
         return adoptRefWillBeNoop(new AnimatableDoubleAndBool(number, flag));
@@ -24,8 +24,8 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableDoubleAndBool(double number, bool flag)
@@ -33,8 +33,8 @@ private:
         , m_flag(flag)
     {
     }
-    virtual AnimatableType type() const override { return TypeDoubleAndBool; }
-    virtual bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeDoubleAndBool; }
+    bool equalTo(const AnimatableValue*) const override;
 
     double m_number;
     bool m_flag;

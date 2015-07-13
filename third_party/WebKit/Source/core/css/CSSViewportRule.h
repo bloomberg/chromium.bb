@@ -47,10 +47,10 @@ public:
     {
         return adoptRefWillBeNoop(new CSSViewportRule(viewportRule, sheet));
     }
-    virtual ~CSSViewportRule();
+    ~CSSViewportRule() override;
 
-    virtual String cssText() const override;
-    virtual void reattach(StyleRuleBase*) override;
+    String cssText() const override;
+    void reattach(StyleRuleBase*) override;
 
     CSSStyleDeclaration* style() const;
 
@@ -59,7 +59,7 @@ public:
 private:
     CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);
 
-    virtual CSSRule::Type type() const override { return VIEWPORT_RULE; }
+    CSSRule::Type type() const override { return VIEWPORT_RULE; }
 
     RefPtrWillBeMember<StyleRuleViewport> m_viewportRule;
     mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;

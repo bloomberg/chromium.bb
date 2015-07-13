@@ -70,16 +70,16 @@ private:
     public:
         explicit CanvasObserverProxy(CSSCanvasValue* ownerValue) : m_ownerValue(ownerValue) { }
 
-        virtual void canvasChanged(HTMLCanvasElement* canvas, const FloatRect& changedRect) override
+        void canvasChanged(HTMLCanvasElement* canvas, const FloatRect& changedRect) override
         {
             m_ownerValue->canvasChanged(canvas, changedRect);
         }
-        virtual void canvasResized(HTMLCanvasElement* canvas) override
+        void canvasResized(HTMLCanvasElement* canvas) override
         {
             m_ownerValue->canvasResized(canvas);
         }
 #if !ENABLE(OILPAN)
-        virtual void canvasDestroyed(HTMLCanvasElement* canvas) override
+        void canvasDestroyed(HTMLCanvasElement* canvas) override
         {
             m_ownerValue->canvasDestroyed(canvas);
         }

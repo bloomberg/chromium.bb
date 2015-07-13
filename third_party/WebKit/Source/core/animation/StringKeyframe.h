@@ -35,7 +35,7 @@ public:
         return m_svgPropertyMap.get(&attributeName);
     }
 
-    virtual PropertyHandleSet properties() const override;
+    PropertyHandleSet properties() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -46,11 +46,11 @@ public:
         CSSValue* value() const { return m_value.get(); }
 
         virtual void populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle* baseStyle) const;
-        virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const override final { return m_animatableValueCache.get(); }
+        const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const final { return m_animatableValueCache.get(); }
         void setAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value) { m_animatableValueCache = value; }
 
-        virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const override final;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const override final;
+        PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
+        PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const final;
 
         DECLARE_VIRTUAL_TRACE();
 
@@ -58,7 +58,7 @@ public:
         CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*);
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const;
-        virtual bool isCSSPropertySpecificKeyframe() const override { return true; }
+        bool isCSSPropertySpecificKeyframe() const override { return true; }
 
         static bool createInterpolationsFromCSSValues(CSSPropertyID, CSSValue* fromCSSValue, CSSValue* toCSSValue, Element*, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& interpolations);
 
@@ -74,19 +74,19 @@ public:
 
         const String& value() const { return m_value; }
 
-        virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const override final;
+        PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const final;
 
-        virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const override final { return nullptr; }
+        const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const final { return nullptr; }
 
-        virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const override final;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const override final;
+        PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
+        PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const final;
 
         DECLARE_VIRTUAL_TRACE();
 
     private:
         SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String&);
 
-        virtual bool isSVGPropertySpecificKeyframe() const override { return true; }
+        bool isSVGPropertySpecificKeyframe() const override { return true; }
 
         String m_value;
     };
@@ -98,10 +98,10 @@ private:
 
     StringKeyframe(const StringKeyframe& copyFrom);
 
-    virtual PassRefPtrWillBeRawPtr<Keyframe> clone() const override;
-    virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
+    PassRefPtrWillBeRawPtr<Keyframe> clone() const override;
+    PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
 
-    virtual bool isStringKeyframe() const override { return true; }
+    bool isStringKeyframe() const override { return true; }
 
     RefPtrWillBeMember<MutableStylePropertySet> m_propertySet;
     HashMap<const QualifiedName*, String> m_svgPropertyMap;

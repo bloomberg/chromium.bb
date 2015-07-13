@@ -21,7 +21,7 @@ public:
 private:
     KeyframeStyleRuleCSSStyleDeclaration(MutableStylePropertySet&, CSSKeyframeRule*);
 
-    virtual void didMutate(MutationType) override;
+    void didMutate(MutationType) override;
 };
 
 } // namespace blink

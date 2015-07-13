@@ -39,7 +39,7 @@ namespace blink {
 
 class CORE_EXPORT AnimatableClipPathOperation final : public AnimatableValue {
 public:
-    virtual ~AnimatableClipPathOperation() { }
+    ~AnimatableClipPathOperation() override { }
     static PassRefPtrWillBeRawPtr<AnimatableClipPathOperation> create(ClipPathOperation* operation)
     {
         return adoptRefWillBeNoop(new AnimatableClipPathOperation(operation));
@@ -49,8 +49,8 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableClipPathOperation(ClipPathOperation* operation)
@@ -58,8 +58,8 @@ private:
     {
         ASSERT(m_operation);
     }
-    virtual AnimatableType type() const override { return TypeClipPathOperation; }
-    virtual bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeClipPathOperation; }
+    bool equalTo(const AnimatableValue*) const override;
 
     RefPtr<ClipPathOperation> m_operation;
 };

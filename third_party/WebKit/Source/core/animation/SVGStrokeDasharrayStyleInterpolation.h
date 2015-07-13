@@ -17,9 +17,9 @@ class CORE_EXPORT SVGStrokeDasharrayStyleInterpolation : public StyleInterpolati
 public:
     static PassRefPtrWillBeRawPtr<SVGStrokeDasharrayStyleInterpolation> maybeCreate(const CSSValue& start, const CSSValue& end, CSSPropertyID);
 
-    virtual void apply(StyleResolverState&) const override;
+    void apply(StyleResolverState&) const override;
 
-    virtual void trace(Visitor* visitor) override
+    void trace(Visitor* visitor) override
     {
         StyleInterpolation::trace(visitor);
     }

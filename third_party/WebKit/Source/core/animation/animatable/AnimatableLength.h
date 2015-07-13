@@ -53,7 +53,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
     static PassRefPtrWillBeRawPtr<AnimatableLength> create(double pixels, double percent, bool hasPixels, bool hasPercent)
@@ -69,8 +69,8 @@ private:
     {
         ASSERT(m_hasPixels || m_hasPercent);
     }
-    virtual AnimatableType type() const override { return TypeLength; }
-    virtual bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeLength; }
+    bool equalTo(const AnimatableValue*) const override;
 
     double m_pixels;
     double m_percent;

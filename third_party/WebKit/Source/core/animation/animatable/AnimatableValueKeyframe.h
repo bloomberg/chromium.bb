@@ -27,7 +27,7 @@ public:
         ASSERT(m_propertyValues.contains(property));
         return m_propertyValues.get(property);
     }
-    virtual PropertyHandleSet properties() const override;
+    PropertyHandleSet properties() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -36,18 +36,18 @@ public:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, EffectModel::CompositeOperation);
 
         AnimatableValue* value() const { return m_value.get(); }
-        virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const override final { return m_value; }
+        const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const final { return m_value; }
 
-        virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const override final;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const override final;
+        PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
+        PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const final;
 
         DECLARE_VIRTUAL_TRACE();
 
     private:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtrWillBeRawPtr<AnimatableValue>);
 
-        virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const override;
-        virtual bool isAnimatableValuePropertySpecificKeyframe() const override { return true; }
+        PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(double offset) const override;
+        bool isAnimatableValuePropertySpecificKeyframe() const override { return true; }
 
         RefPtrWillBeMember<AnimatableValue> m_value;
     };
@@ -57,10 +57,10 @@ private:
 
     AnimatableValueKeyframe(const AnimatableValueKeyframe& copyFrom);
 
-    virtual PassRefPtrWillBeRawPtr<Keyframe> clone() const override;
-    virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
+    PassRefPtrWillBeRawPtr<Keyframe> clone() const override;
+    PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const override;
 
-    virtual bool isAnimatableValueKeyframe() const override { return true; }
+    bool isAnimatableValueKeyframe() const override { return true; }
 
     using PropertyValueMap = WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<AnimatableValue>>;
     PropertyValueMap m_propertyValues;

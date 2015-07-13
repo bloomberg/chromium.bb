@@ -16,7 +16,7 @@ public:
         return adoptRefWillBeNoop(new DefaultSVGInterpolation(start, end, attribute));
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const override final;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final;
 
     DECLARE_VIRTUAL_TRACE();
 

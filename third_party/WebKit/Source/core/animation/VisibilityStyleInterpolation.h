@@ -26,7 +26,7 @@ public:
     static bool canCreateFrom(const CSSValue&);
     static bool isVisible(const CSSValue&);
 
-    virtual void apply(StyleResolverState&) const override;
+    void apply(StyleResolverState&) const override;
     DECLARE_VIRTUAL_TRACE();
 
 private:

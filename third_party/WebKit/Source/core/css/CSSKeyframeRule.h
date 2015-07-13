@@ -39,10 +39,10 @@ class KeyframeStyleRuleCSSStyleDeclaration;
 class CSSKeyframeRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~CSSKeyframeRule();
+    ~CSSKeyframeRule() override;
 
-    virtual String cssText() const override { return m_keyframe->cssText(); }
-    virtual void reattach(StyleRuleBase*) override;
+    String cssText() const override { return m_keyframe->cssText(); }
+    void reattach(StyleRuleBase*) override;
 
     String keyText() const { return m_keyframe->keyText(); }
     void setKeyText(const String&, ExceptionState&);
@@ -54,7 +54,7 @@ public:
 private:
     CSSKeyframeRule(StyleRuleKeyframe*, CSSKeyframesRule* parent);
 
-    virtual CSSRule::Type type() const override { return KEYFRAME_RULE; }
+    CSSRule::Type type() const override { return KEYFRAME_RULE; }
 
     RefPtrWillBeMember<StyleRuleKeyframe> m_keyframe;
     mutable RefPtrWillBeMember<KeyframeStyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;

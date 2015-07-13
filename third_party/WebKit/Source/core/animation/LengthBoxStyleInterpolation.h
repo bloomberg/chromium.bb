@@ -18,7 +18,7 @@ public:
 
     static bool usesDefaultInterpolation(const CSSValue&, const CSSValue&);
 
-    virtual void apply(StyleResolverState&) const override;
+    void apply(StyleResolverState&) const override;
     DECLARE_VIRTUAL_TRACE();
 
 private:

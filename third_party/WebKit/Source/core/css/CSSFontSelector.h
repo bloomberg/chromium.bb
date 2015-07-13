@@ -48,12 +48,12 @@ public:
     {
         return adoptRefWillBeNoop(new CSSFontSelector(document));
     }
-    virtual ~CSSFontSelector();
+    ~CSSFontSelector() override;
 
-    virtual unsigned version() const override { return m_fontFaceCache.version(); }
+    unsigned version() const override { return m_fontFaceCache.version(); }
 
-    virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) override;
-    virtual void willUseFontData(const FontDescription&, const AtomicString& family, UChar32) override;
+    PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) override;
+    void willUseFontData(const FontDescription&, const AtomicString& family, UChar32) override;
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString& family);
 
 #if !ENABLE(OILPAN)
@@ -63,7 +63,7 @@ public:
     void fontFaceInvalidated();
 
     // FontCacheClient implementation
-    virtual void fontCacheInvalidated() override;
+    void fontCacheInvalidated() override;
 
     void registerForInvalidationCallbacks(CSSFontSelectorClient*);
 #if !ENABLE(OILPAN)

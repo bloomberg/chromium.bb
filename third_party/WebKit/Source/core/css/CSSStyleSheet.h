@@ -53,15 +53,15 @@ public:
     static PassRefPtrWillBeRawPtr<CSSStyleSheet> createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
     static PassRefPtrWillBeRawPtr<CSSStyleSheet> createInline(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
 
-    virtual ~CSSStyleSheet();
+    ~CSSStyleSheet() override;
 
-    virtual CSSStyleSheet* parentStyleSheet() const override;
-    virtual Node* ownerNode() const override { return m_ownerNode; }
-    virtual MediaList* media() const override;
-    virtual String href() const override;
-    virtual String title() const override { return m_title; }
-    virtual bool disabled() const override { return m_isDisabled; }
-    virtual void setDisabled(bool) override;
+    CSSStyleSheet* parentStyleSheet() const override;
+    Node* ownerNode() const override { return m_ownerNode; }
+    MediaList* media() const override;
+    String href() const override;
+    String title() const override { return m_title; }
+    bool disabled() const override { return m_isDisabled; }
+    void setDisabled(bool) override;
 
     PassRefPtrWillBeRawPtr<CSSRuleList> cssRules();
     unsigned insertRule(const String& rule, unsigned index, ExceptionState&);
@@ -78,11 +78,11 @@ public:
     unsigned length() const;
     CSSRule* item(unsigned index);
 
-    virtual void clearOwnerNode() override;
+    void clearOwnerNode() override;
 
-    virtual CSSRule* ownerRule() const override { return m_ownerRule; }
-    virtual KURL baseURL() const override;
-    virtual bool isLoading() const override;
+    CSSRule* ownerRule() const override { return m_ownerRule; }
+    KURL baseURL() const override;
+    bool isLoading() const override;
 
     void clearOwnerRule() { m_ownerRule = nullptr; }
     Document* ownerDocument() const;
@@ -125,8 +125,8 @@ private:
     CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule);
     CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
 
-    virtual bool isCSSStyleSheet() const override { return true; }
-    virtual String type() const override { return "text/css"; }
+    bool isCSSStyleSheet() const override { return true; }
+    String type() const override { return "text/css"; }
 
     void reattachChildRuleCSSOMWrappers();
 

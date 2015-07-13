@@ -39,7 +39,7 @@ namespace blink {
 
 class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
 public:
-    virtual ~AnimatableTransform() { }
+    ~AnimatableTransform() override { }
     static PassRefPtrWillBeRawPtr<AnimatableTransform> create(const TransformOperations&);
     const TransformOperations& transformOperations() const
     {
@@ -49,15 +49,15 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
     explicit AnimatableTransform(const TransformOperations& transform)
         : m_transform(transform)
     {
     }
-    virtual AnimatableType type() const override { return TypeTransform; }
-    virtual bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeTransform; }
+    bool equalTo(const AnimatableValue*) const override;
     const TransformOperations m_transform;
 };
 

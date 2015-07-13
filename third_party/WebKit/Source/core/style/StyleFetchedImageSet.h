@@ -45,32 +45,32 @@ public:
     {
         return adoptRef(new StyleFetchedImageSet(image, imageScaleFactor, value));
     }
-    virtual ~StyleFetchedImageSet();
+    ~StyleFetchedImageSet() override;
 
-    virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
+    PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
 
     // FIXME: This is used by StyleImage for equals comparison, but this implementation
     // only looks at the image from the set that we have loaded. I'm not sure if that is
     // meaningful enough or not.
-    virtual WrappedImagePtr data() const override { return m_bestFitImage.get(); }
+    WrappedImagePtr data() const override { return m_bestFitImage.get(); }
 
     void clearImageSetValue() { m_imageSetValue = 0; }
 
-    virtual bool canRender(const LayoutObject&, float multiplier) const override;
-    virtual bool isLoaded() const override;
-    virtual bool errorOccurred() const override;
-    virtual LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
-    virtual bool imageHasRelativeWidth() const override;
-    virtual bool imageHasRelativeHeight() const override;
-    virtual void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
-    virtual bool usesImageContainerSize() const override;
-    virtual void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override;
-    virtual void addClient(LayoutObject*) override;
-    virtual void removeClient(LayoutObject*) override;
-    virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
-    virtual float imageScaleFactor() const override { return m_imageScaleFactor; }
-    virtual bool knownToBeOpaque(const LayoutObject*) const override;
-    virtual ImageResource* cachedImage() const override { return m_bestFitImage.get(); }
+    bool canRender(const LayoutObject&, float multiplier) const override;
+    bool isLoaded() const override;
+    bool errorOccurred() const override;
+    LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
+    bool imageHasRelativeWidth() const override;
+    bool imageHasRelativeHeight() const override;
+    void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
+    bool usesImageContainerSize() const override;
+    void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override;
+    void addClient(LayoutObject*) override;
+    void removeClient(LayoutObject*) override;
+    PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
+    float imageScaleFactor() const override { return m_imageScaleFactor; }
+    bool knownToBeOpaque(const LayoutObject*) const override;
+    ImageResource* cachedImage() const override { return m_bestFitImage.get(); }
 
 private:
     StyleFetchedImageSet(ImageResource*, float imageScaleFactor, CSSImageSetValue*);

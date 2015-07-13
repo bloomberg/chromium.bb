@@ -110,11 +110,11 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(finish);
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
+    bool hasPendingActivity() const override;
+    void stop() override;
+    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     double playbackRate() const;
     void setPlaybackRate(double);
@@ -177,7 +177,7 @@ public:
         return animation1->sequenceNumber() < animation2->sequenceNumber();
     }
 
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -48,8 +48,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    virtual void updateChildrenAndEffects() const override { }
-    virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
+    void updateChildrenAndEffects() const override { }
+    double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
 
 private:
     InertEffect(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);

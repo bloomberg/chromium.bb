@@ -39,20 +39,20 @@ public:
         return adoptRef(new StyleGeneratedImage(value));
     }
 
-    virtual WrappedImagePtr data() const override { return m_imageGeneratorValue.get(); }
+    WrappedImagePtr data() const override { return m_imageGeneratorValue.get(); }
 
-    virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
+    PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
 
-    virtual LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
-    virtual bool imageHasRelativeWidth() const override { return !m_fixedSize; }
-    virtual bool imageHasRelativeHeight() const override { return !m_fixedSize; }
-    virtual void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
-    virtual bool usesImageContainerSize() const override { return !m_fixedSize; }
-    virtual void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize& containerSize, float) override { m_containerSize = containerSize; }
-    virtual void addClient(LayoutObject*) override;
-    virtual void removeClient(LayoutObject*) override;
-    virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
-    virtual bool knownToBeOpaque(const LayoutObject*) const override;
+    LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
+    bool imageHasRelativeWidth() const override { return !m_fixedSize; }
+    bool imageHasRelativeHeight() const override { return !m_fixedSize; }
+    void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
+    bool usesImageContainerSize() const override { return !m_fixedSize; }
+    void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize& containerSize, float) override { m_containerSize = containerSize; }
+    void addClient(LayoutObject*) override;
+    void removeClient(LayoutObject*) override;
+    PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
+    bool knownToBeOpaque(const LayoutObject*) const override;
 
 private:
     StyleGeneratedImage(PassRefPtrWillBeRawPtr<CSSImageGeneratorValue>);

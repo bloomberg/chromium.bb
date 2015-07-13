@@ -39,7 +39,7 @@ namespace blink {
 
 class AnimatableSVGPaint final : public AnimatableValue {
 public:
-    virtual ~AnimatableSVGPaint() { }
+    ~AnimatableSVGPaint() override { }
     static PassRefPtrWillBeRawPtr<AnimatableSVGPaint> create(
         SVGPaintType type, SVGPaintType visitedLinkType,
         const Color& color, const Color& visitedLinkColor,
@@ -68,8 +68,8 @@ public:
     }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableSVGPaint(SVGPaintType type, SVGPaintType visitedLinkType, PassRefPtrWillBeRawPtr<AnimatableColor> color, const String& uri, const String& visitedLinkURI)
@@ -80,8 +80,8 @@ private:
         , m_visitedLinkURI(visitedLinkURI)
     {
     }
-    virtual AnimatableType type() const override { return TypeSVGPaint; }
-    virtual bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeSVGPaint; }
+    bool equalTo(const AnimatableValue*) const override;
 
     SVGPaintType m_type;
     SVGPaintType m_visitedLinkType;

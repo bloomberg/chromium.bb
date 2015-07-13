@@ -38,7 +38,7 @@ namespace blink {
 
 class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
 public:
-    virtual ~AnimatableDouble() { }
+    ~AnimatableDouble() override { }
 
     enum Constraint {
         Unconstrained,
@@ -55,8 +55,8 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+    PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableDouble(double number, Constraint constraint)
@@ -64,8 +64,8 @@ private:
         , m_constraint(constraint)
     {
     }
-    virtual AnimatableType type() const override { return TypeDouble; }
-    virtual bool equalTo(const AnimatableValue*) const override;
+    AnimatableType type() const override { return TypeDouble; }
+    bool equalTo(const AnimatableValue*) const override;
 
     double m_number;
     Constraint m_constraint;

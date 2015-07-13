@@ -88,8 +88,8 @@ private:
         : m_ownerValue(ownerValue)
         , m_ready(false) { }
 
-        virtual ~CrossfadeSubimageObserverProxy() { }
-        virtual void imageChanged(ImageResource*, const IntRect* = nullptr) override;
+        ~CrossfadeSubimageObserverProxy() override { }
+        void imageChanged(ImageResource*, const IntRect* = nullptr) override;
         void setReady(bool ready) { m_ready = ready; }
     private:
         CSSCrossfadeValue* m_ownerValue;

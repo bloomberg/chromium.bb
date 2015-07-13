@@ -59,9 +59,9 @@ public:
     static PassRefPtrWillBeRawPtr<KeyframeEffect> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, const KeyframeEffectOptions& timingInput, ExceptionState&);
     static PassRefPtrWillBeRawPtr<KeyframeEffect> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
 
-    virtual ~KeyframeEffect();
+    ~KeyframeEffect() override;
 
-    virtual bool isAnimation() const override { return true; }
+    bool isAnimation() const override { return true; }
 
     bool affects(PropertyHandle) const;
     const EffectModel* model() const { return m_model.get(); }
@@ -96,11 +96,11 @@ public:
 protected:
     void applyEffects();
     void clearEffects();
-    virtual void updateChildrenAndEffects() const override;
-    virtual void attach(Animation*) override;
-    virtual void detach() override;
-    virtual void specifiedTimingChanged() override;
-    virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
+    void updateChildrenAndEffects() const override;
+    void attach(Animation*) override;
+    void detach() override;
+    void specifiedTimingChanged() override;
+    double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
     virtual bool hasIncompatibleStyle();
     bool hasMultipleTransformProperties() const;
 

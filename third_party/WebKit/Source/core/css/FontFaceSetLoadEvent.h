@@ -58,11 +58,11 @@ public:
         return adoptRefWillBeNoop(new FontFaceSetLoadEvent(type, fontfaces));
     }
 
-    virtual ~FontFaceSetLoadEvent();
+    ~FontFaceSetLoadEvent() override;
 
     FontFaceArray fontfaces() const { return m_fontfaces; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

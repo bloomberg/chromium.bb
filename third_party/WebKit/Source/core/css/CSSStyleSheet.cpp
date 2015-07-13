@@ -61,14 +61,14 @@ private:
     StyleSheetCSSRuleList(CSSStyleSheet* sheet) : m_styleSheet(sheet) { }
 
 #if !ENABLE(OILPAN)
-    virtual void ref() override { m_styleSheet->ref(); }
-    virtual void deref() override { m_styleSheet->deref(); }
+    void ref() override { m_styleSheet->ref(); }
+    void deref() override { m_styleSheet->deref(); }
 #endif
 
-    virtual unsigned length() const override { return m_styleSheet->length(); }
-    virtual CSSRule* item(unsigned index) const override { return m_styleSheet->item(index); }
+    unsigned length() const override { return m_styleSheet->length(); }
+    CSSRule* item(unsigned index) const override { return m_styleSheet->item(index); }
 
-    virtual CSSStyleSheet* styleSheet() const override { return m_styleSheet; }
+    CSSStyleSheet* styleSheet() const override { return m_styleSheet; }
 
     RawPtrWillBeMember<CSSStyleSheet> m_styleSheet;
 };

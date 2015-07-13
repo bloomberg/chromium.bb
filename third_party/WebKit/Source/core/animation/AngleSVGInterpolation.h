@@ -24,7 +24,7 @@ public:
         return toSVGAngle(value)->orientType()->enumValue() == SVGMarkerOrientAngle;
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const override final
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final
     {
         return fromInterpolableValue(m_cachedValue.get());
     }

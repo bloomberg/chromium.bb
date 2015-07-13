@@ -15,12 +15,12 @@ class SharedBuffer;
 
 class BinaryDataFontFaceSource final : public CSSFontFaceSource {
 public:
-    explicit BinaryDataFontFaceSource(SharedBuffer*, String&);
-    virtual ~BinaryDataFontFaceSource();
-    virtual bool isValid() const override;
+    BinaryDataFontFaceSource(SharedBuffer*, String&);
+    ~BinaryDataFontFaceSource() override;
+    bool isValid() const override;
 
 private:
-    virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
+    PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
 
     OwnPtr<FontCustomPlatformData> m_customPlatformData;
 };

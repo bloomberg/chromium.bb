@@ -43,28 +43,28 @@ class StylePendingImage final : public StyleImage {
 public:
     static PassRefPtr<StylePendingImage> create(CSSValue* value) { return adoptRef(new StylePendingImage(value)); }
 
-    virtual WrappedImagePtr data() const override { return m_value; }
+    WrappedImagePtr data() const override { return m_value; }
 
-    virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override { return m_value; }
+    PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override { return m_value; }
     CSSImageValue* cssImageValue() const { return m_value->isImageValue() ? toCSSImageValue(m_value) : 0; }
     CSSImageGeneratorValue* cssImageGeneratorValue() const { return m_value->isImageGeneratorValue() ? toCSSImageGeneratorValue(m_value) : 0; }
     CSSCursorImageValue* cssCursorImageValue() const { return m_value->isCursorImageValue() ? toCSSCursorImageValue(m_value) : 0; }
     CSSImageSetValue* cssImageSetValue() const { return m_value->isImageSetValue() ? toCSSImageSetValue(m_value) : 0; }
 
-    virtual LayoutSize imageSize(const LayoutObject*, float /*multiplier*/) const override { return LayoutSize(); }
-    virtual bool imageHasRelativeWidth() const override { return false; }
-    virtual bool imageHasRelativeHeight() const override { return false; }
-    virtual void computeIntrinsicDimensions(const LayoutObject*, Length& /* intrinsicWidth */ , Length& /* intrinsicHeight */, FloatSize& /* intrinsicRatio */) override { }
-    virtual bool usesImageContainerSize() const override { return false; }
-    virtual void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override { }
-    virtual void addClient(LayoutObject*) override { }
-    virtual void removeClient(LayoutObject*) override { }
-    virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override
+    LayoutSize imageSize(const LayoutObject*, float /*multiplier*/) const override { return LayoutSize(); }
+    bool imageHasRelativeWidth() const override { return false; }
+    bool imageHasRelativeHeight() const override { return false; }
+    void computeIntrinsicDimensions(const LayoutObject*, Length& /* intrinsicWidth */ , Length& /* intrinsicHeight */, FloatSize& /* intrinsicRatio */) override { }
+    bool usesImageContainerSize() const override { return false; }
+    void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override { }
+    void addClient(LayoutObject*) override { }
+    void removeClient(LayoutObject*) override { }
+    PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override
     {
         ASSERT_NOT_REACHED();
         return nullptr;
     }
-    virtual bool knownToBeOpaque(const LayoutObject*) const override { return false; }
+    bool knownToBeOpaque(const LayoutObject*) const override { return false; }
 
 private:
     StylePendingImage(CSSValue* value)

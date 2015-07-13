@@ -19,7 +19,7 @@ public:
         return adoptRefWillBeNoop(new RectSVGInterpolation(toInterpolableValue(start), toInterpolableValue(end), attribute));
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const override final
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const final
     {
         return fromInterpolableValue(*m_cachedValue);
     }

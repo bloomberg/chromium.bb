@@ -37,27 +37,27 @@ class StyleFetchedImage final : public StyleImage, private ImageResourceClient {
     WTF_MAKE_FAST_ALLOCATED(StyleFetchedImage);
 public:
     static PassRefPtr<StyleFetchedImage> create(ImageResource* image, Document* document) { return adoptRef(new StyleFetchedImage(image, document)); }
-    virtual ~StyleFetchedImage();
+    ~StyleFetchedImage() override;
 
-    virtual WrappedImagePtr data() const override { return m_image.get(); }
+    WrappedImagePtr data() const override { return m_image.get(); }
 
-    virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
+    PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
 
-    virtual bool canRender(const LayoutObject&, float multiplier) const override;
-    virtual bool isLoaded() const override;
-    virtual bool errorOccurred() const override;
-    virtual LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
-    virtual bool imageHasRelativeWidth() const override;
-    virtual bool imageHasRelativeHeight() const override;
-    virtual void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
-    virtual bool usesImageContainerSize() const override;
-    virtual void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override;
-    virtual void addClient(LayoutObject*) override;
-    virtual void removeClient(LayoutObject*) override;
-    virtual void notifyFinished(Resource*) override;
-    virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
-    virtual bool knownToBeOpaque(const LayoutObject*) const override;
-    virtual ImageResource* cachedImage() const override { return m_image.get(); }
+    bool canRender(const LayoutObject&, float multiplier) const override;
+    bool isLoaded() const override;
+    bool errorOccurred() const override;
+    LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
+    bool imageHasRelativeWidth() const override;
+    bool imageHasRelativeHeight() const override;
+    void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
+    bool usesImageContainerSize() const override;
+    void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override;
+    void addClient(LayoutObject*) override;
+    void removeClient(LayoutObject*) override;
+    void notifyFinished(Resource*) override;
+    PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
+    bool knownToBeOpaque(const LayoutObject*) const override;
+    ImageResource* cachedImage() const override { return m_image.get(); }
 
 private:
     StyleFetchedImage(ImageResource*, Document*);
