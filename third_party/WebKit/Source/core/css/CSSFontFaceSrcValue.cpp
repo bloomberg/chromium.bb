@@ -77,7 +77,7 @@ bool CSSFontFaceSrcValue::shouldSetCrossOriginAccessControl(const KURL& resource
 {
     if (resource.isLocalFile() || resource.protocolIsData())
         return false;
-    return !securityOrigin->canRequest(resource);
+    return !securityOrigin->canRequestNoSuborigin(resource);
 }
 
 FontResource* CSSFontFaceSrcValue::fetch(Document* document)
