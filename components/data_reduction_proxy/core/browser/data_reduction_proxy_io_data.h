@@ -94,7 +94,8 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   void UpdateContentLengths(int64 received_content_length,
                             int64 original_content_length,
                             bool data_reduction_proxy_enabled,
-                            DataReductionProxyRequestType request_type);
+                            DataReductionProxyRequestType request_type,
+                            const std::string& mime_type);
   void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
 
   // Overrides of DataReductionProxyEventStorageDelegate. Bridges to the UI

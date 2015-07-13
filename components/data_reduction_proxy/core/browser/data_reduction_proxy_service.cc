@@ -84,12 +84,13 @@ void DataReductionProxyService::UpdateContentLengths(
     int64 received_content_length,
     int64 original_content_length,
     bool data_reduction_proxy_enabled,
-    DataReductionProxyRequestType request_type) {
+    DataReductionProxyRequestType request_type,
+    const std::string& mime_type) {
   DCHECK(CalledOnValidThread());
   if (compression_stats_) {
     compression_stats_->UpdateContentLengths(
         received_content_length, original_content_length,
-        data_reduction_proxy_enabled, request_type);
+        data_reduction_proxy_enabled, request_type, mime_type);
   }
 }
 

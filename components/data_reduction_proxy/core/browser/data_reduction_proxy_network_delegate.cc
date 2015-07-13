@@ -233,9 +233,11 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         GetAdjustedOriginalContentLength(request_type,
                                          original_content_length,
                                          received_content_length);
+    std::string mime_type;
+    request->GetMimeType(&mime_type);
     AccumulateContentLength(received_content_length,
-                            adjusted_original_content_length,
-                            request_type);
+                            adjusted_original_content_length, request_type,
+                            mime_type);
 
     DCHECK(data_reduction_proxy_config_);
 
@@ -266,13 +268,14 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
 void DataReductionProxyNetworkDelegate::AccumulateContentLength(
     int64 received_content_length,
     int64 original_content_length,
-    DataReductionProxyRequestType request_type) {
+    DataReductionProxyRequestType request_type,
+    const std::string& mime_type) {
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
   if (data_reduction_proxy_io_data_) {
     data_reduction_proxy_io_data_->UpdateContentLengths(
         received_content_length, original_content_length,
-        data_reduction_proxy_io_data_->IsEnabled(), request_type);
+        data_reduction_proxy_io_data_->IsEnabled(), request_type, mime_type);
   }
   received_content_length_ += received_content_length;
   original_content_length_ += original_content_length;

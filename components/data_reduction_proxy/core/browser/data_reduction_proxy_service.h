@@ -81,7 +81,8 @@ class DataReductionProxyService
   void UpdateContentLengths(int64 received_content_length,
                             int64 original_content_length,
                             bool data_reduction_proxy_enabled,
-                            DataReductionProxyRequestType request_type);
+                            DataReductionProxyRequestType request_type,
+                            const std::string& mime_type);
 
   // Overrides of DataReductionProxyEventStorageDelegate.
   void AddEvent(scoped_ptr<base::Value> event) override;

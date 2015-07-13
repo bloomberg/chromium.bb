@@ -70804,6 +70804,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.PT_StartToFinish"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="DataReductionProxy.MimeType">
+  <suffix name="Application" label="Application mime-type"/>
+  <suffix name="Unknown" label="Unknown mime-type"/>
+  <suffix name="Video" label="Video mime-type"/>
+  <affected-histogram name="Net.DailyContentLength"/>
+  <affected-histogram name="Net.DailyContentLength_DataReductionProxyEnabled"/>
+  <affected-histogram name="Net.DailyContentLength_ViaDataReductionProxy"/>
+  <affected-histogram name="Net.DailyOriginalContentLength"/>
+  <affected-histogram
+      name="Net.DailyOriginalContentLength_DataReductionProxyEnabled"/>
+  <affected-histogram
+      name="Net.DailyOriginalContentLength_ViaDataReductionProxy"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="DataReductionProxy.NetworkTypes" separator=".">
   <suffix name="Unknown" label="On Unknown network"/>
   <suffix name="Ethernet" label="On Ethernet network"/>

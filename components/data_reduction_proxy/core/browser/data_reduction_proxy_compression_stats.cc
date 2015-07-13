@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "net/base/mime_util.h"
 
 namespace data_reduction_proxy {
 
@@ -96,7 +97,8 @@ void RecordDailyContentLengthHistograms(
     int64 https_length_with_data_reduction_enabled,
     int64 short_bypass_length_with_data_reduction_enabled,
     int64 long_bypass_length_with_data_reduction_enabled,
-    int64 unknown_length_with_data_reduction_enabled) {
+    int64 unknown_length_with_data_reduction_enabled,
+    const std::string& mime_type) {
   // Report daily UMA only for days having received content.
   if (original_length <= 0 || received_length <= 0)
     return;
@@ -106,6 +108,25 @@ void RecordDailyContentLengthHistograms(
       "Net.DailyOriginalContentLength", original_length >> 10);
   UMA_HISTOGRAM_COUNTS(
       "Net.DailyContentLength", received_length >> 10);
+
+  bool is_application = net::MatchesMimeType("application/*", mime_type);
+  bool is_video = net::MatchesMimeType("video/*", mime_type);
+  bool is_mime_type_empty = mime_type.empty();
+  if (is_application) {
+    UMA_HISTOGRAM_COUNTS("Net.DailyOriginalContentLength_Application",
+                         original_length >> 10);
+    UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_Application",
+                         received_length >> 10);
+  } else if (is_video) {
+    UMA_HISTOGRAM_COUNTS("Net.DailyOriginalContentLength_Video",
+                         original_length >> 10);
+    UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_Video", received_length >> 10);
+  } else if (is_mime_type_empty) {
+    UMA_HISTOGRAM_COUNTS("Net.DailyOriginalContentLength_Unknown",
+                         original_length >> 10);
+    UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_Unknown",
+                         received_length >> 10);
+  }
   int percent = 0;
   // UMA percentage cannot be negative.
   if (original_length > received_length) {
@@ -124,6 +145,29 @@ void RecordDailyContentLengthHistograms(
   UMA_HISTOGRAM_COUNTS(
       "Net.DailyContentLength_DataReductionProxyEnabled",
       received_length_with_data_reduction_enabled >> 10);
+
+  if (is_application) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyOriginalContentLength_DataReductionProxyEnabled_Application",
+        original_length_with_data_reduction_enabled >> 10);
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_DataReductionProxyEnabled_Application",
+        received_length_with_data_reduction_enabled >> 10);
+  } else if (is_video) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyOriginalContentLength_DataReductionProxyEnabled_Video",
+        original_length_with_data_reduction_enabled >> 10);
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_DataReductionProxyEnabled_Video",
+        received_length_with_data_reduction_enabled >> 10);
+  } else if (is_mime_type_empty) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyOriginalContentLength_DataReductionProxyEnabled_Unknown",
+        original_length_with_data_reduction_enabled >> 10);
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_DataReductionProxyEnabled_Unknown",
+        received_length_with_data_reduction_enabled >> 10);
+  }
 
   int percent_data_reduction_proxy_enabled = 0;
   // UMA percentage cannot be negative.
@@ -185,6 +229,28 @@ void RecordDailyContentLengthHistograms(
   UMA_HISTOGRAM_COUNTS(
       "Net.DailyContentLength_ViaDataReductionProxy",
       received_length_via_data_reduction_proxy >> 10);
+
+  if (is_application) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyOriginalContentLength_ViaDataReductionProxy_Application",
+        original_length_via_data_reduction_proxy >> 10);
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_ViaDataReductionProxy_Application",
+        received_length_via_data_reduction_proxy >> 10);
+  } else if (is_video) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyOriginalContentLength_ViaDataReductionProxy_Video",
+        original_length_via_data_reduction_proxy >> 10);
+    UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_ViaDataReductionProxy_Video",
+                         received_length_via_data_reduction_proxy >> 10);
+  } else if (is_mime_type_empty) {
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyOriginalContentLength_ViaDataReductionProxy_Unknown",
+        original_length_via_data_reduction_proxy >> 10);
+    UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_ViaDataReductionProxy_Unknown",
+                         received_length_via_data_reduction_proxy >> 10);
+  }
+
   int percent_via_data_reduction_proxy = 0;
   if (original_length_via_data_reduction_proxy >
       received_length_via_data_reduction_proxy) {
@@ -370,7 +436,8 @@ void DataReductionProxyCompressionStats::UpdateContentLengths(
     int64 received_content_length,
     int64 original_content_length,
     bool data_reduction_proxy_enabled,
-    DataReductionProxyRequestType request_type) {
+    DataReductionProxyRequestType request_type,
+    const std::string& mime_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   int64 total_received = GetInt64(
       data_reduction_proxy::prefs::kHttpReceivedContentLength);
@@ -383,12 +450,9 @@ void DataReductionProxyCompressionStats::UpdateContentLengths(
   SetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength,
            total_original);
 
-  RecordContentLengthPrefs(
-      received_content_length,
-      original_content_length,
-      data_reduction_proxy_enabled,
-      request_type,
-      base::Time::Now());
+  RecordContentLengthPrefs(received_content_length, original_content_length,
+                           data_reduction_proxy_enabled, request_type,
+                           mime_type, base::Time::Now());
 }
 
 void DataReductionProxyCompressionStats::InitInt64Pref(const char* pref) {
@@ -598,6 +662,7 @@ void DataReductionProxyCompressionStats::RecordContentLengthPrefs(
     int64 original_content_length,
     bool with_data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
+    const std::string& mime_type,
     base::Time now) {
   // TODO(bengr): Remove this check once the underlying cause of
   // http://crbug.com/287821 is fixed. For now, only continue if the current
@@ -717,7 +782,7 @@ void DataReductionProxyCompressionStats::RecordContentLengthPrefs(
           https.GetListPrefValue(kNumDaysInHistory - 2),
           short_bypass.GetListPrefValue(kNumDaysInHistory - 2),
           long_bypass.GetListPrefValue(kNumDaysInHistory - 2),
-          unknown.GetListPrefValue(kNumDaysInHistory - 2));
+          unknown.GetListPrefValue(kNumDaysInHistory - 2), mime_type);
     }
   }
 }

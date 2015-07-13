@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_COMPRESSION_STATS_H_
 
 #include <map>
+#include <string>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
@@ -50,7 +51,8 @@ class DataReductionProxyCompressionStats {
   void UpdateContentLengths(int64 received_content_length,
                             int64 original_content_length,
                             bool data_reduction_proxy_enabled,
-                            DataReductionProxyRequestType request_type);
+                            DataReductionProxyRequestType request_type,
+                            const std::string& mime_type);
 
   // Creates a |Value| summary of the persistent state of the network session.
   // The caller is responsible for deleting the returned value.
@@ -130,6 +132,7 @@ class DataReductionProxyCompressionStats {
                                 int64 original_content_length,
                                 bool with_data_reduction_proxy_enabled,
                                 DataReductionProxyRequestType request_type,
+                                const std::string& mime_type,
                                 base::Time now);
 
   // Record UMA with data savings bytes and percent over the past

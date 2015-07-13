@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -276,7 +278,7 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
                                 base::Time now) {
     compression_stats_->RecordContentLengthPrefs(
         received_content_length, original_content_length,
-        with_data_reduction_proxy_enabled, request_type, now);
+        with_data_reduction_proxy_enabled, request_type, std::string(), now);
   }
 
   DataReductionProxyCompressionStats* compression_stats() {
@@ -418,7 +420,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
       kReceivedLength, kOriginalLength,
       pref_service()->GetBoolean(
           data_reduction_proxy::prefs::kDataReductionProxyEnabled),
-      UNKNOWN_TYPE);
+      UNKNOWN_TYPE, std::string());
 
   EXPECT_EQ(kReceivedLength,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
@@ -432,7 +434,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
       kReceivedLength, kOriginalLength,
       pref_service()->GetBoolean(
           data_reduction_proxy::prefs::kDataReductionProxyEnabled),
-      UNKNOWN_TYPE);
+      UNKNOWN_TYPE, std::string());
 
   EXPECT_EQ(kReceivedLength * 2,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
