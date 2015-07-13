@@ -96,36 +96,50 @@ Unconditional message logging for failure cases only is
 
 @section zunitc_execution Controlling Execution
 
-To control execution, the various zuc_set_* functions can be called before invoking ZUC_RUN_TESTS(). 
+To control execution, the various zuc_set_* functions can be called
+before invoking ZUC_RUN_TESTS().
 
 @subsection zunitc_execution_commandline Commandline Parameters
 
-The current implementation defers processing of command-line parameters to the main application hosting the testing. It is possible that a helper to process certain parameters may be added.
+The current implementation defers processing of command-line parameters
+to the main application hosting the testing. It is possible that a
+helper to process certain parameters may be added.
 
 @subsection zunitc_execution_matching Matching Patterns for Tests
 
-The function zuc_set_filter() can be used to specify a pattern for matching or excluding tests from a run. The general form is
+The function zuc_set_filter() can be used to specify a pattern for
+matching or excluding tests from a run. The general form is
  match1[:match2[:match3..n]][:-exclude1[:exclude2[:exclude3..n]]]
 
 @subsection zunitc_execution_wildcards Matching Wildcards
 
-Wildcards can be used in the match/exclude patterns and recognize the following two special characters:
+Wildcards can be used in the match/exclude patterns and recognize the
+following two special characters:
 - '*' matches any number of characters including zero.
 - '?' matches any single character.
 
-Calling zuc_list_tests() after zuc_set_filter() can be done to show the effects of the matching without needing to actually run tests.
+Calling zuc_list_tests() after zuc_set_filter() can be done to show the
+effects of the matching without needing to actually run tests.
 
 @subsection zunitc_execution_repeat Repeating Tests
 
-Setting the repeat count higher than 1 ( via zuc_set_repeat() ) will cause the tests to be executed several times in a row. This can be useful for stress testing, checking for leaks, etc.
+Setting the repeat count higher than 1 ( via zuc_set_repeat() ) will
+cause the tests to be executed several times in a row. This can be
+useful for stress testing, checking for leaks, etc.
 
 @subsection zunitc_execution_randomize Randomizing Tests
 
-Test ordering can be randomized by setting a non-zero positive value to zuc_set_random(). Setting it to 1 will cause the framework to pick a random seed based on the time. A value greater than 1 will be taken as a random seed itself. And setting it to 0 will disable randomization and allow the test to be executed in their natural ordering.
+Test ordering can be randomized by setting a non-zero positive value to
+zuc_set_random(). Setting it to 1 will cause the framework to pick a
+random seed based on the time. A value greater than 1 will be taken as a
+random seed itself. And setting it to 0 will disable randomization and
+allow the test to be executed in their natural ordering.
 
 @section zunitc_fixtures Fixtures
 
-Per-suite and per-test setup and teardown fixtures can be implemented by defining an instance of struct zuc_fixture and using it as the first parameter to ZUC_TEST_F().
+Per-suite and per-test setup and teardown fixtures can be implemented by
+defining an instance of struct zuc_fixture and using it as the first
+parameter to ZUC_TEST_F().
 
 @section zunitc_functions Functions
 
