@@ -25,53 +25,20 @@ namespace {
 // Disk cache entry data indices (Copied from appcache_diskcache.cc).
 enum { kResponseInfoIndex, kResponseContentIndex, kResponseMetadataIndex };
 
-#if defined(OS_ANDROID)
-ServiceWorkerStatusCode MigrateForAndroid(const base::FilePath& src_path,
-                                          const base::FilePath& dest_path) {
-  // Continue the migration regardless of the deletion result. If the migrator
-  // cannot proceed or the diskcache gets corrupted due to the failure, the
-  // storage detects it and recovers by DeleteAndStartOver.
-  base::DeleteFile(dest_path, true);
-
-  if (!base::DirectoryExists(src_path))
-    return SERVICE_WORKER_OK;
-
-  // Android has alredy used the Simple backend. Just move the existing
-  // diskcache files to a new location.
-  if (base::Move(src_path, dest_path))
-    return SERVICE_WORKER_OK;
-  return SERVICE_WORKER_ERROR_FAILED;
-}
-#endif  // defined(OS_ANDROID)
-
-void RecordMigrationResult(ServiceWorkerStatusCode status) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.DiskCacheMigrator.MigrationResult",
-                            status, SERVICE_WORKER_ERROR_MAX_VALUE);
-}
-
-void RecordNumberOfMigratedResources(size_t migrated_resources) {
-  UMA_HISTOGRAM_COUNTS_1000(
-      "ServiceWorker.DiskCacheMigrator.NumberOfMigratedResources",
-      migrated_resources);
-}
-
-void RecordMigrationTime(const base::TimeDelta& time) {
-  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.DiskCacheMigrator.MigrationTime",
-                             time);
-}
-
 }  // namespace
 
 // A task to move a cached resource from the src DiskCache to the dest
 // DiskCache. This is owned by ServiceWorkerDiskCacheMigrator.
 class ServiceWorkerDiskCacheMigrator::Task {
  public:
+  using MigrationStatusCallback = base::Callback<void(MigrationStatus)>;
+
   Task(InflightTaskMap::KeyType task_id,
        int64 resource_id,
        int32 data_size,
        ServiceWorkerDiskCache* src,
        ServiceWorkerDiskCache* dest,
-       const StatusCallback& callback);
+       const MigrationStatusCallback& callback);
   ~Task();
 
   void Run();
@@ -99,7 +66,7 @@ class ServiceWorkerDiskCacheMigrator::Task {
   InflightTaskMap::KeyType task_id_;
   int64 resource_id_;
   int32 data_size_;
-  StatusCallback callback_;
+  MigrationStatusCallback callback_;
 
   scoped_ptr<ServiceWorkerResponseReader> reader_;
   scoped_ptr<ServiceWorkerResponseWriter> writer_;
@@ -135,12 +102,13 @@ class ServiceWorkerDiskCacheMigrator::WrappedEntry {
   DISALLOW_COPY_AND_ASSIGN(WrappedEntry);
 };
 
-ServiceWorkerDiskCacheMigrator::Task::Task(InflightTaskMap::KeyType task_id,
-                                           int64 resource_id,
-                                           int32 data_size,
-                                           ServiceWorkerDiskCache* src,
-                                           ServiceWorkerDiskCache* dest,
-                                           const StatusCallback& callback)
+ServiceWorkerDiskCacheMigrator::Task::Task(
+    InflightTaskMap::KeyType task_id,
+    int64 resource_id,
+    int32 data_size,
+    ServiceWorkerDiskCache* src,
+    ServiceWorkerDiskCache* dest,
+    const MigrationStatusCallback& callback)
     : task_id_(task_id),
       resource_id_(resource_id),
       data_size_(data_size),
@@ -173,7 +141,7 @@ void ServiceWorkerDiskCacheMigrator::Task::OnReadResponseInfo(
     int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to read the response info";
-    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(MigrationStatus::ERROR_READ_RESPONSE_INFO);
     return;
   }
   writer_->WriteInfo(info_buffer.get(),
@@ -186,7 +154,7 @@ void ServiceWorkerDiskCacheMigrator::Task::OnWriteResponseInfo(
     int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to write the response info";
-    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(MigrationStatus::ERROR_WRITE_RESPONSE_INFO);
     return;
   }
 
@@ -220,7 +188,7 @@ void ServiceWorkerDiskCacheMigrator::Task::OnWriteResponseMetadata(
     int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to write the response metadata";
-    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(MigrationStatus::ERROR_WRITE_RESPONSE_METADATA);
     return;
   }
   DCHECK_EQ(info_buffer->http_info->metadata->size(), result);
@@ -239,7 +207,7 @@ void ServiceWorkerDiskCacheMigrator::Task::OnReadResponseData(
     int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to read the response data";
-    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(MigrationStatus::ERROR_READ_RESPONSE_DATA);
     return;
   }
   DCHECK_EQ(data_size_, result);
@@ -251,11 +219,11 @@ void ServiceWorkerDiskCacheMigrator::Task::OnReadResponseData(
 void ServiceWorkerDiskCacheMigrator::Task::OnWriteResponseData(int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to write the response data";
-    callback_.Run(SERVICE_WORKER_ERROR_FAILED);
+    callback_.Run(MigrationStatus::ERROR_WRITE_RESPONSE_DATA);
     return;
   }
   DCHECK_EQ(data_size_, result);
-  callback_.Run(SERVICE_WORKER_OK);
+  callback_.Run(MigrationStatus::OK);
 }
 
 ServiceWorkerDiskCacheMigrator::ServiceWorkerDiskCacheMigrator(
@@ -292,6 +260,28 @@ void ServiceWorkerDiskCacheMigrator::Start(const StatusCallback& callback) {
 #endif  // defined(OS_ANDROID)
 }
 
+#if defined(OS_ANDROID)
+// static
+ServiceWorkerDiskCacheMigrator::MigrationStatus
+ServiceWorkerDiskCacheMigrator::MigrateForAndroid(
+    const base::FilePath& src_path,
+    const base::FilePath& dest_path) {
+  // Continue the migration regardless of the deletion result. If the migrator
+  // cannot proceed or the diskcache gets corrupted due to the failure, the
+  // storage detects it and recovers by DeleteAndStartOver.
+  base::DeleteFile(dest_path, true);
+
+  if (!base::DirectoryExists(src_path))
+    return MigrationStatus::OK;
+
+  // Android has alredy used the Simple backend. Just move the existing
+  // diskcache files to a new location.
+  if (base::Move(src_path, dest_path))
+    return MigrationStatus::OK;
+  return MigrationStatus::ERROR_MOVE_DISKCACHE;
+}
+#endif  // defined(OS_ANDROID)
+
 void ServiceWorkerDiskCacheMigrator::DidDeleteDestDirectory(bool deleted) {
   // Continue the migration regardless of the deletion result. If the migrator
   // cannot proceed or the diskcache gets corrupted due to the failure, the
@@ -299,27 +289,31 @@ void ServiceWorkerDiskCacheMigrator::DidDeleteDestDirectory(bool deleted) {
 
   src_ = ServiceWorkerDiskCache::CreateWithBlockFileBackend();
   dest_ = ServiceWorkerDiskCache::CreateWithSimpleBackend();
-  bool* is_failed = new bool(false);
+
+  scoped_ptr<MigrationStatus> status(new MigrationStatus(MigrationStatus::OK));
+  MigrationStatus* status_ptr = status.get();
 
   // This closure is called when both diskcaches are initialized.
   base::Closure barrier_closure = base::BarrierClosure(
       2, base::Bind(&ServiceWorkerDiskCacheMigrator::DidInitializeAllDiskCaches,
-                    weak_factory_.GetWeakPtr(), base::Owned(is_failed)));
+                    weak_factory_.GetWeakPtr(), base::Passed(status.Pass())));
 
-  // Initialize the src DiskCache.
+  // Initialize the src DiskCache. |status_ptr| is guaranteed to be valid until
+  // calling |barrier_closure| which is the owner of the object.
   net::CompletionCallback src_callback =
-      base::Bind(&ServiceWorkerDiskCacheMigrator::DidInitializeDiskCache,
-                 weak_factory_.GetWeakPtr(), is_failed, barrier_closure);
+      base::Bind(&ServiceWorkerDiskCacheMigrator::DidInitializeSrcDiskCache,
+                 weak_factory_.GetWeakPtr(), barrier_closure, status_ptr);
   int result = src_->InitWithDiskBackend(src_path_, max_disk_cache_size_,
                                          false /* force */, disk_cache_thread_,
                                          src_callback);
   if (result != net::ERR_IO_PENDING)
     src_callback.Run(result);
 
-  // Initialize the dest DiskCache.
+  // Initialize the dest DiskCache. |status_ptr| is guaranteed to be valid until
+  // calling |barrier_closure| which is the owner of the object.
   net::CompletionCallback dest_callback =
-      base::Bind(&ServiceWorkerDiskCacheMigrator::DidInitializeDiskCache,
-                 weak_factory_.GetWeakPtr(), is_failed, barrier_closure);
+      base::Bind(&ServiceWorkerDiskCacheMigrator::DidInitializeDestDiskCache,
+                 weak_factory_.GetWeakPtr(), barrier_closure, status_ptr);
   result = dest_->InitWithDiskBackend(dest_path_, max_disk_cache_size_,
                                       false /* force */, disk_cache_thread_,
                                       dest_callback);
@@ -327,20 +321,29 @@ void ServiceWorkerDiskCacheMigrator::DidDeleteDestDirectory(bool deleted) {
     dest_callback.Run(result);
 }
 
-void ServiceWorkerDiskCacheMigrator::DidInitializeDiskCache(
-    bool* is_failed,
+void ServiceWorkerDiskCacheMigrator::DidInitializeSrcDiskCache(
     const base::Closure& barrier_closure,
+    MigrationStatus* status_ptr,
     int result) {
   if (result != net::OK)
-    *is_failed = true;
+    *status_ptr = MigrationStatus::ERROR_INIT_SRC_DISKCACHE;
+  barrier_closure.Run();
+}
+
+void ServiceWorkerDiskCacheMigrator::DidInitializeDestDiskCache(
+    const base::Closure& barrier_closure,
+    MigrationStatus* status_ptr,
+    int result) {
+  if (result != net::OK)
+    *status_ptr = MigrationStatus::ERROR_INIT_DEST_DISKCACHE;
   barrier_closure.Run();
 }
 
 void ServiceWorkerDiskCacheMigrator::DidInitializeAllDiskCaches(
-    bool* is_failed) {
-  if (*is_failed) {
+    scoped_ptr<MigrationStatus> status) {
+  if (*status != MigrationStatus::OK) {
     LOG(ERROR) << "Failed to initialize the diskcache";
-    Complete(SERVICE_WORKER_ERROR_FAILED);
+    Complete(*status);
     return;
   }
 
@@ -375,14 +378,14 @@ void ServiceWorkerDiskCacheMigrator::OnNextEntryOpened(
   if (result == net::ERR_FAILED) {
     // ERR_FAILED means the iterator reached the end of the enumeration.
     if (inflight_tasks_.IsEmpty())
-      Complete(SERVICE_WORKER_OK);
+      Complete(MigrationStatus::OK);
     return;
   }
 
   if (result != net::OK) {
     LOG(ERROR) << "Failed to open the next entry";
     inflight_tasks_.Clear();
-    Complete(SERVICE_WORKER_ERROR_FAILED);
+    Complete(MigrationStatus::ERROR_OPEN_NEXT_ENTRY);
     return;
   }
 
@@ -393,7 +396,7 @@ void ServiceWorkerDiskCacheMigrator::OnNextEntryOpened(
   if (!base::StringToInt64(scoped_entry->GetKey(), &resource_id)) {
     LOG(ERROR) << "Failed to read the resource id";
     inflight_tasks_.Clear();
-    Complete(SERVICE_WORKER_ERROR_FAILED);
+    Complete(MigrationStatus::ERROR_READ_ENTRY_KEY);
     return;
   }
 
@@ -421,11 +424,11 @@ void ServiceWorkerDiskCacheMigrator::RunPendingTask() {
 
 void ServiceWorkerDiskCacheMigrator::OnEntryMigrated(
     InflightTaskMap::KeyType task_id,
-    ServiceWorkerStatusCode status) {
+    MigrationStatus status) {
   DCHECK(inflight_tasks_.Lookup(task_id));
   inflight_tasks_.Remove(task_id);
 
-  if (status != SERVICE_WORKER_OK) {
+  if (status != MigrationStatus::OK) {
     inflight_tasks_.Clear();
     pending_task_.reset();
     Complete(status);
@@ -444,14 +447,14 @@ void ServiceWorkerDiskCacheMigrator::OnEntryMigrated(
     return;
 
   if (inflight_tasks_.IsEmpty())
-    Complete(SERVICE_WORKER_OK);
+    Complete(MigrationStatus::OK);
 }
 
-void ServiceWorkerDiskCacheMigrator::Complete(ServiceWorkerStatusCode status) {
+void ServiceWorkerDiskCacheMigrator::Complete(MigrationStatus status) {
   DCHECK(inflight_tasks_.IsEmpty());
   DCHECK(!pending_task_);
 
-  if (status == SERVICE_WORKER_OK) {
+  if (status == MigrationStatus::OK) {
     RecordMigrationTime(base::TimeTicks().Now() - start_time_);
     RecordNumberOfMigratedResources(number_of_migrated_resources_);
   }
@@ -464,8 +467,11 @@ void ServiceWorkerDiskCacheMigrator::Complete(ServiceWorkerStatusCode status) {
   // Use PostTask to avoid deleting AppCacheDiskCache in the middle of the
   // execution (see http://crbug.com/502420).
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ServiceWorkerDiskCacheMigrator::RunUserCallback,
-                            weak_factory_.GetWeakPtr(), status));
+      FROM_HERE,
+      base::Bind(&ServiceWorkerDiskCacheMigrator::RunUserCallback,
+                 weak_factory_.GetWeakPtr(),
+                 status == MigrationStatus::OK ? SERVICE_WORKER_OK
+                                               : SERVICE_WORKER_ERROR_FAILED));
 }
 
 void ServiceWorkerDiskCacheMigrator::RunUserCallback(
@@ -473,6 +479,26 @@ void ServiceWorkerDiskCacheMigrator::RunUserCallback(
   src_.reset();
   dest_.reset();
   callback_.Run(status);
+}
+
+void ServiceWorkerDiskCacheMigrator::RecordMigrationResult(
+    MigrationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.DiskCacheMigrator.MigrationResult",
+                            static_cast<int>(status),
+                            static_cast<int>(MigrationStatus::NUM_TYPES));
+}
+
+void ServiceWorkerDiskCacheMigrator::RecordNumberOfMigratedResources(
+    size_t migrated_resources) {
+  UMA_HISTOGRAM_COUNTS_1000(
+      "ServiceWorker.DiskCacheMigrator.NumberOfMigratedResources",
+      migrated_resources);
+}
+
+void ServiceWorkerDiskCacheMigrator::RecordMigrationTime(
+    const base::TimeDelta& time) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.DiskCacheMigrator.MigrationTime",
+                             time);
 }
 
 }  // namespace content

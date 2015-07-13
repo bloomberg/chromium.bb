@@ -45,19 +45,48 @@ class CONTENT_EXPORT ServiceWorkerDiskCacheMigrator {
 
   using InflightTaskMap = IDMap<Task, IDMapOwnPointer>;
 
+  // Used for UMA. Append only.
+  enum class MigrationStatus {
+    OK = 0,
+    ERROR_FAILED = 1,  // unused, for backwards compatibility.
+    ERROR_MOVE_DISKCACHE = 2,
+    ERROR_INIT_SRC_DISKCACHE = 3,
+    ERROR_INIT_DEST_DISKCACHE = 4,
+    ERROR_OPEN_NEXT_ENTRY = 5,
+    ERROR_READ_ENTRY_KEY = 6,
+    ERROR_READ_RESPONSE_INFO = 7,
+    ERROR_WRITE_RESPONSE_INFO = 8,
+    ERROR_WRITE_RESPONSE_METADATA = 9,
+    ERROR_READ_RESPONSE_DATA = 10,
+    ERROR_WRITE_RESPONSE_DATA = 11,
+    NUM_TYPES,
+  };
+
+#if defined(OS_ANDROID)
+  static MigrationStatus MigrateForAndroid(const base::FilePath& src_path,
+                                           const base::FilePath& dest_path);
+#endif  // defined(OS_ANDROID)
+
   void DidDeleteDestDirectory(bool deleted);
-  void DidInitializeDiskCache(bool* is_failed,
-                              const base::Closure& barrier_closure,
-                              int result);
-  void DidInitializeAllDiskCaches(bool* is_failed);
+  void DidInitializeSrcDiskCache(const base::Closure& barrier_closure,
+                                 MigrationStatus* status_ptr,
+                                 int result);
+  void DidInitializeDestDiskCache(const base::Closure& barrier_closure,
+                                  MigrationStatus* status_ptr,
+                                  int result);
+  void DidInitializeAllDiskCaches(scoped_ptr<MigrationStatus> status);
 
   void OpenNextEntry();
   void OnNextEntryOpened(scoped_ptr<WrappedEntry> entry, int result);
   void RunPendingTask();
   void OnEntryMigrated(InflightTaskMap::KeyType task_id,
-                       ServiceWorkerStatusCode status);
-  void Complete(ServiceWorkerStatusCode status);
+                       MigrationStatus status);
+  void Complete(MigrationStatus status);
   void RunUserCallback(ServiceWorkerStatusCode status);
+
+  void RecordMigrationResult(MigrationStatus status);
+  void RecordNumberOfMigratedResources(size_t migrated_resources);
+  void RecordMigrationTime(const base::TimeDelta& time);
 
   void set_max_number_of_inflight_tasks(size_t max_number) {
     max_number_of_inflight_tasks_ = max_number;

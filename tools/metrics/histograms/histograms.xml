@@ -37795,10 +37795,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ServiceWorker.DiskCacheMigrator.MigrationResult"
-    enum="ServiceWorkerStatusCode">
+    enum="ServiceWorkerDiskCacheMigrationStatus">
   <owner>nhiroki@chromium.org</owner>
   <summary>
-    Records result of ServiceWorkerDiskCache migration from BlockFile to Simple.
+    Records result of ServiceWorkerDiskCacheMigrator::Start that migrates
+    resources in BlockFile backend to Simple backend.
   </summary>
 </histogram>
 
@@ -38058,7 +38059,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="ServiceWorkerDiskCacheMigrationResult">
   <owner>nhiroki@chromium.org</owner>
   <summary>
-    Records result of diskcache migration operations in ServiceWorkerStorage.
+    Records the final result of diskcache migration in ServiceWorkerStorage.
+    ServiceWorker.DiskCacheMigrator.MigrationResult records more detailed status
+    of migration operations.
   </summary>
 </histogram>
 
@@ -66883,7 +66886,23 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="ServiceWorkerDiskCacheMigrationResult" type="int">
   <int value="0" label="MIGRATION_OK"/>
   <int value="1" label="MIGRATION_NOT_NECESSARY"/>
-  <int value="2" label="MIGRATION_ERROR_FAILED"/>
+  <int value="2" label="MIGRATION_ERROR_MIGRATION_FAILED"/>
+  <int value="3" label="MIGRATION_ERROR_UPDATE_DATABASE"/>
+</enum>
+
+<enum name="ServiceWorkerDiskCacheMigrationStatus" type="int">
+  <int value="0" label="MIGRATION_STATUS_OK"/>
+  <int value="1" label="MIGRATION_ERROR_FAILED"/>
+  <int value="2" label="MIGRATION_ERROR_MOVE_DISKCACHE"/>
+  <int value="3" label="MIGRATION_ERROR_INIT_SRC_DISKCACHE"/>
+  <int value="4" label="MIGRATION_ERROR_INIT_DEST_DISKCACHE"/>
+  <int value="5" label="MIGRATION_ERROR_OPEN_NEXT_ENTRY"/>
+  <int value="6" label="MIGRATION_ERROR_READ_ENTRY_KEY"/>
+  <int value="7" label="MIGRATION_ERROR_READ_RESPONSE_INFO"/>
+  <int value="8" label="MIGRATION_ERROR_WRITE_RESPONSE_INFO"/>
+  <int value="9" label="MIGRATION_ERROR_WRITE_RESPONSE_METADATA"/>
+  <int value="10" label="MIGRATION_ERROR_READ_RESPONSE_DATA"/>
+  <int value="11" label="MIGRATION_ERROR_WRITE_RESPONSE_DATA"/>
 </enum>
 
 <enum name="ServiceWorkerEventHandleRatioType" type="int">

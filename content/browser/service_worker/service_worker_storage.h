@@ -394,7 +394,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void MigrateDiskCache();
   void DidMigrateDiskCache(ServiceWorkerStatusCode status);
   void DidSetDiskCacheMigrationNotNeeded(ServiceWorkerDatabase::Status status);
-  void OnDiskCacheMigrationFailed();
+  void OnDiskCacheMigrationFailed(
+      ServiceWorkerMetrics::DiskCacheMigrationResult result);
   void InitializeDiskCache();
   void OnDiskCacheInitialized(int rv);
 

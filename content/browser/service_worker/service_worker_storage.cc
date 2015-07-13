@@ -1314,7 +1314,8 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
 void ServiceWorkerStorage::DidMigrateDiskCache(ServiceWorkerStatusCode status) {
   disk_cache_migrator_.reset();
   if (status != SERVICE_WORKER_OK) {
-    OnDiskCacheMigrationFailed();
+    OnDiskCacheMigrationFailed(
+        ServiceWorkerMetrics::MIGRATION_ERROR_MIGRATION_FAILED);
     return;
   }
 
@@ -1329,7 +1330,8 @@ void ServiceWorkerStorage::DidMigrateDiskCache(ServiceWorkerStatusCode status) {
 void ServiceWorkerStorage::DidSetDiskCacheMigrationNotNeeded(
     ServiceWorkerDatabase::Status status) {
   if (status != ServiceWorkerDatabase::STATUS_OK) {
-    OnDiskCacheMigrationFailed();
+    OnDiskCacheMigrationFailed(
+        ServiceWorkerMetrics::MIGRATION_ERROR_UPDATE_DATABASE);
     return;
   }
 
@@ -1344,9 +1346,12 @@ void ServiceWorkerStorage::DidSetDiskCacheMigrationNotNeeded(
   InitializeDiskCache();
 }
 
-void ServiceWorkerStorage::OnDiskCacheMigrationFailed() {
-  ServiceWorkerMetrics::RecordDiskCacheMigrationResult(
-      ServiceWorkerMetrics::MIGRATION_ERROR_FAILED);
+void ServiceWorkerStorage::OnDiskCacheMigrationFailed(
+    ServiceWorkerMetrics::DiskCacheMigrationResult result) {
+  DCHECK(ServiceWorkerMetrics::MIGRATION_ERROR_MIGRATION_FAILED == result ||
+         ServiceWorkerMetrics::MIGRATION_ERROR_UPDATE_DATABASE == result)
+      << result;
+  ServiceWorkerMetrics::RecordDiskCacheMigrationResult(result);
 
   // Give up migration and recreate the whole storage.
   ScheduleDeleteAndStartOver();
