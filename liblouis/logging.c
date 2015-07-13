@@ -68,7 +68,7 @@ void logWidecharBuf(logLevels level, const char *msg, const widechar *wbuf, int 
 		p++;
 	}	
   *p = '\0';
-  logMessage(level, logMsg);
+  logMessage(level, "%s", logMsg);
   free(logMsg);
 }
 
