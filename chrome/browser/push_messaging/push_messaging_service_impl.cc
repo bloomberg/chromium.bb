@@ -354,8 +354,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
     return;
   }
 
-  // TODO(miguelg) need to send this over IPC when bubble support is
-  // implemented.
+  // Push does not allow permission requests from iframes.
   int request_id = -1;
 
   profile_->GetPermissionManager()->RequestPermission(
@@ -383,9 +382,6 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
     return;
   }
 
-  // TODO(peter): Consider |user_visible| when getting the permission status
-  // for registering from a worker.
-
   GURL embedding_origin = requesting_origin;
   blink::WebPushPermissionStatus permission_status =
       PushMessagingServiceImpl::GetPermissionStatus(requesting_origin,
@@ -409,7 +405,8 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_visible) {
-  // TODO(peter): Consider |user_visible| when checking Push permission.
+  if (!user_visible)
+    return blink::WebPushPermissionStatusDenied;
 
   return ToPushPermission(profile_->GetPermissionManager()->GetPermissionStatus(
       content::PermissionType::PUSH_MESSAGING, requesting_origin,

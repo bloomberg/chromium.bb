@@ -61,12 +61,6 @@ ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
 #endif
 }
 
-void PushMessagingPermissionContext::CancelPermissionRequest(
-    content::WebContents* web_contents, const PermissionRequestID& id) {
-  // TODO(peter): consider implementing this method.
-  NOTIMPLEMENTED() << "CancelPermission not implemented for push messaging";
-}
-
 // Unlike other permissions, push is decided by the following algorithm
 //  - You need to request it from a top level domain
 //  - You need to have notification permission granted.
