@@ -41,6 +41,7 @@
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
 #endif
 
@@ -230,8 +231,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // Called when WKWebView estimatedProgress has been changed.
 - (void)webViewEstimatedProgressDidChange;
 
-// Called when WKWebView hasOnlySecureContent property has changed.
-- (void)webViewContentSecurityDidChange;
+// Called when WKWebView certificateChain or hasOnlySecureContent property has
+// changed.
+- (void)webViewSecurityFeaturesDidChange;
 #endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
 // Called when WKWebView loading state has been changed.
@@ -466,7 +468,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return @{
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
     @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
-    @"hasOnlySecureContent" : @"webViewContentSecurityDidChange",
+    @"certificateChain" : @"webViewSecurityFeaturesDidChange",
+    @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
 #endif
     @"loading" : @"webViewLoadingStateDidChange",
     @"title" : @"webViewTitleDidChange",
@@ -678,21 +681,44 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 - (void)updateSSLStatusForCurrentNavigationItem {
+  if ([self isBeingDestroyed])
+    return;
+
   DCHECK(self.webStateImpl);
   web::NavigationItem* item =
       self.webStateImpl->GetNavigationManagerImpl().GetLastCommittedItem();
   if (!item)
     return;
 
-  // WKWebView will not load unauthenticated content.
-  item->GetSSL().security_style = item->GetURL().SchemeIsCryptographic()
-                                      ? web::SECURITY_STYLE_AUTHENTICATED
-                                      : web::SECURITY_STYLE_UNAUTHENTICATED;
-  int contentStatus = [_wkWebView hasOnlySecureContent] ?
-      web::SSLStatus::NORMAL_CONTENT :
-      web::SSLStatus::DISPLAYED_INSECURE_CONTENT;
-  item->GetSSL().content_status = contentStatus;
-  [self didUpdateSSLStatusForCurrentNavigationItem];
+  web::SSLStatus previousSSLStatus = item->GetSSL();
+  web::SSLStatus& SSLStatus = item->GetSSL();
+  if (item->GetURL().SchemeIsCryptographic()) {
+    // TODO(eugenebut): Do not set security style to authenticated once
+    // proceeding with bad ssl cert is implemented.
+    SSLStatus.security_style = web::SECURITY_STYLE_AUTHENTICATED;
+    SSLStatus.content_status = [_wkWebView hasOnlySecureContent]
+                                   ? web::SSLStatus::NORMAL_CONTENT
+                                   : web::SSLStatus::DISPLAYED_INSECURE_CONTENT;
+
+    if (base::ios::IsRunningOnIOS9OrLater()) {
+      scoped_refptr<net::X509Certificate> cert(web::CreateCertFromChain(
+          [_wkWebView performSelector:@selector(certificateChain)]));
+      if (cert) {
+        SSLStatus.cert_id = web::CertStore::GetInstance()->StoreCert(
+            cert.get(), self.certGroupID);
+      } else {
+        SSLStatus.security_style = web::SECURITY_STYLE_UNAUTHENTICATED;
+        SSLStatus.cert_id = 0;
+      }
+    }
+  } else {
+    SSLStatus.security_style = web::SECURITY_STYLE_UNAUTHENTICATED;
+    SSLStatus.cert_id = 0;
+  }
+
+  if (!previousSSLStatus.Equals(SSLStatus)) {
+    [self didUpdateSSLStatusForCurrentNavigationItem];
+  }
 }
 #endif  // !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 
@@ -872,7 +898,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   }
 }
 
-- (void)webViewContentSecurityDidChange {
+- (void)webViewSecurityFeaturesDidChange {
+  if (self.loadPhase == web::LOAD_REQUESTED) {
+    // Do not update SSL Status for pending load. It will be updated in
+    // |webView:didCommitNavigation:| callback.
+    return;
+  }
   [self updateSSLStatusForCurrentNavigationItem];
 }
 
