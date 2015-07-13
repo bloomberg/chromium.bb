@@ -83,6 +83,16 @@ private:
 
 void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
 {
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+
+    // For example, calling isValidEmailAddress in EmailInputType.cpp with a
+    // non-empty string creates a static ScriptRegexp value which holds a
+    // V8PerContextData indirectly. This affects the number of V8PerContextData.
+    // To ensure that context data is created, call ensureScriptRegexpContext
+    // here.
+    V8PerIsolateData::from(isolate)->ensureScriptRegexpContext();
+
     WebEmbeddedWorkerImpl::terminateAll();
     memoryCache()->evictResources();
 
@@ -95,7 +105,7 @@ void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
     // FIXME: HTML5 Notification should be closed because notification affects the result of number of DOM objects.
 
     for (int i = 0; i < kNumberOfGCsToClaimChains; ++i)
-        V8GCController::collectGarbage(v8::Isolate::GetCurrent());
+        V8GCController::collectGarbage(isolate);
     // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
     // Task queue may contain delayed object destruction tasks.
