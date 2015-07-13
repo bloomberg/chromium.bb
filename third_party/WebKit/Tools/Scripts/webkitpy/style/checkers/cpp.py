@@ -2804,6 +2804,100 @@ def check_conditional_and_loop_bodies_for_brace_violations(clean_lines, line_num
             search_for_else_clause = False
     # End while loop
 
+
+def check_redundant_virtual(clean_lines, linenum, error):
+    """Checks if line contains a redundant "virtual" function-specifier.
+
+    Args:
+      clean_lines: A CleansedLines instance containing the file.
+      linenum: The number of the line to check.
+      error: The function to call with any errors found.
+    """
+
+    # Look for "virtual" on current line.
+    line = clean_lines.elided[linenum]
+    virtual = match(r'^(.*)(\bvirtual\b)(.*)$', line)
+    if not virtual:
+        return
+
+    # Ignore "virtual" keywords that are near access-specifiers.  These
+    # are only used in class base-specifier and do not apply to member
+    # functions.
+    if (search(r'\b(public|protected|private)\s+$', virtual.group(1)) or
+            match(r'^\s+(public|protected|private)\b', virtual.group(3))):
+        return
+
+    # Ignore the "virtual" keyword from virtual base classes.  Usually
+    # there is a column on the same line in these cases (virtual base
+    # classes are rare in google3 because multiple inheritance is rare).
+    if match(r'^.*[^:]:[^:].*$', line):
+        return
+
+    # Look for the next opening parenthesis.  This is the start of the
+    # parameter list (possibly on the next line shortly after virtual).
+    # TODO(unknown): doesn't work if there are virtual functions with
+    # decltype() or other things that use parentheses, but csearch suggests
+    # that this is rare.
+    end_position = Position(-1, -1)
+    start_col = len(virtual.group(2))
+    for start_line in xrange(linenum, min(linenum + 3, clean_lines.num_lines())):
+        line = clean_lines.elided[start_line][start_col:]
+        parameter_list = match(r'^([^(]*)\(', line)
+        if parameter_list:
+            # Match parentheses to find the end of the parameter list
+            end_position = close_expression(
+                clean_lines.elided, Position(start_line, start_col + len(parameter_list.group(1))))
+            break
+        start_col = 0
+
+    if end_position.column < 0:
+        return  # Couldn't find end of parameter list, give up
+
+    # Look for "override" or "final" after the parameter list
+    # (possibly on the next few lines).
+    for i in xrange(end_position.row, min(end_position.row + 3, clean_lines.num_lines())):
+        line = clean_lines.elided[i][end_position.column:]
+        override_or_final = search(r'\b(override|final)\b', line)
+        if override_or_final:
+            error(linenum, 'readability/inheritance', 4,
+                  ('"virtual" is redundant since function is '
+                   'already declared as "%s"' % override_or_final.group(1)))
+
+        # Set end_col to check whole lines after we are done with the
+        # first line.
+        end_col = 0
+        if search(r'[^\w]\s*$', line):
+            break
+
+
+def check_redundant_override(clean_lines, linenum, error):
+    """Checks if line contains a redundant "override" virt-specifier.
+
+    Args:
+      clean_lines: A CleansedLines instance containing the file.
+      linenum: The number of the line to check.
+      error: The function to call with any errors found.
+    """
+    # Look for closing parenthesis nearby.  We need one to confirm where
+    # the declarator ends and where the virt-specifier starts to avoid
+    # false positives.
+    line = clean_lines.elided[linenum]
+    declarator_end = line.rfind(')')
+    if declarator_end >= 0:
+        fragment = line[declarator_end:]
+    else:
+        if linenum > 1 and clean_lines.elided[linenum - 1].rfind(')') >= 0:
+            fragment = line
+        else:
+            return
+
+        # Check that at most one of "override" or "final" is present, not both
+    if search(r'\boverride\b', fragment) and search(r'\bfinal\b', fragment):
+        error(linenum, 'readability/inheritance', 4,
+              ('"override" is redundant since function is '
+               'already declared as "final"'))
+
+
 def check_style(clean_lines, line_number, file_extension, class_state, file_state, enum_state, error):
     """Checks rules from the 'C++ style rules' section of cppguide.html.
 
@@ -3923,6 +4017,8 @@ def process_line(filename, file_extension,
     check_posix_threading(clean_lines, line, error)
     check_invalid_increment(clean_lines, line, error)
     check_conditional_and_loop_bodies_for_brace_violations(clean_lines, line, error)
+    check_redundant_virtual(clean_lines, line, error)
+    check_redundant_override(clean_lines, line, error)
 
 def _process_lines(filename, file_extension, lines, error, min_confidence):
     """Performs lint checks and reports any errors to the given error function.
@@ -3998,6 +4094,7 @@ class CppChecker(object):
         'readability/enum_casing',
         'readability/fn_size',
         'readability/function',
+        'readability/inheritance',
         'readability/multiline_comment',
         'readability/multiline_string',
         'readability/parameter_name',

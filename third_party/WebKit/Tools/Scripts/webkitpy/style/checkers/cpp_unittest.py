@@ -5129,6 +5129,18 @@ class WebKitStyleTest(CppStyleTestBase):
                          'One space before end of line comments'
                          '  [whitespace/comments] [5]')
 
+    def test_redundant_virtual(self):
+        self.assert_lint('virtual void fooMethod() override;', '"virtual" is redundant since function is already declared as "override"  [readability/inheritance] [4]')
+        self.assert_lint('virtual void fooMethod(\n) override {}', '"virtual" is redundant since function is already declared as "override"  [readability/inheritance] [4]')
+        self.assert_lint('virtual void fooMethod() final;', '"virtual" is redundant since function is already declared as "final"  [readability/inheritance] [4]')
+        self.assert_lint('virtual void fooMethod(\n) final {}', '"virtual" is redundant since function is already declared as "final"  [readability/inheritance] [4]')
+
+    def test_redundant_override(self):
+        self.assert_lint('void fooMethod() override final;', '"override" is redundant since function is already declared as "final"  [readability/inheritance] [4]')
+        self.assert_lint('void fooMethod(\n) override final {}', '"override" is redundant since function is already declared as "final"  [readability/inheritance] [4]')
+        self.assert_lint('void fooMethod() final override;', '"override" is redundant since function is already declared as "final"  [readability/inheritance] [4]')
+        self.assert_lint('void fooMethod(\n) final override {}', '"override" is redundant since function is already declared as "final"  [readability/inheritance] [4]')
+
     def test_webkit_export_check(self):
         webkit_export_error_rules = ('-',
                                   '+readability/webkit_export')
