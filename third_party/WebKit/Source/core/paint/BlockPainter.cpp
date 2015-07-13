@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/BlockPainter.h"
 
+#include "core/editing/DragCaretController.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutFlexibleBox.h"

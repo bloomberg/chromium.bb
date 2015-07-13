@@ -74,34 +74,6 @@ private:
     CaretVisibility m_caretVisibility;
 };
 
-class DragCaretController final : public NoBaseWillBeGarbageCollected<DragCaretController>, private CaretBase {
-    WTF_MAKE_NONCOPYABLE(DragCaretController);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DragCaretController);
-public:
-    static PassOwnPtrWillBeRawPtr<DragCaretController> create();
-
-    LayoutBlock* caretLayoutObject() const { return CaretBase::caretPainter(); }
-    void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
-
-    bool isContentEditable() const { return m_position.rootEditableElement(); }
-    bool isContentRichlyEditable() const;
-
-    bool hasCaret() const { return m_position.isNotNull(); }
-    const VisiblePosition& caretPosition() { return m_position; }
-    void setCaretPosition(const VisiblePosition&);
-    void clear() { setCaretPosition(VisiblePosition()); }
-
-    void nodeWillBeRemoved(Node&);
-
-    DECLARE_TRACE();
-
-private:
-    DragCaretController();
-
-    VisiblePosition m_position;
-};
-
 } // namespace blink
-
 
 #endif // Caret_h

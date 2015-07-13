@@ -26,15 +26,11 @@
 #include "config.h"
 #include "core/editing/Caret.h"
 
-#include "core/dom/Document.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
-#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -43,75 +39,6 @@ CaretBase::CaretBase(CaretVisibility visibility)
     : m_caretPainter(nullptr)
     , m_caretVisibility(visibility)
 {
-}
-
-DragCaretController::DragCaretController()
-    : CaretBase(Visible)
-{
-}
-
-PassOwnPtrWillBeRawPtr<DragCaretController> DragCaretController::create()
-{
-    return adoptPtrWillBeNoop(new DragCaretController);
-}
-
-bool DragCaretController::isContentRichlyEditable() const
-{
-    return isRichlyEditablePosition(m_position.deepEquivalent());
-}
-
-void DragCaretController::setCaretPosition(const VisiblePosition& position)
-{
-    // for querying Layer::compositingState()
-    // This code is probably correct, since it doesn't occur in a stack that involves updating compositing state.
-    DisableCompositingQueryAsserts disabler;
-
-    if (Node* node = m_position.deepEquivalent().deprecatedNode())
-        invalidateCaretRect(node);
-    m_position = position;
-    Document* document = nullptr;
-    if (Node* node = m_position.deepEquivalent().deprecatedNode()) {
-        invalidateCaretRect(node);
-        document = &node->document();
-    }
-    if (m_position.isNull() || m_position.isOrphan()) {
-        clearCaretRect();
-    } else {
-        document->updateLayoutTreeIfNeeded();
-        updateCaretRect(document, m_position);
-    }
-}
-
-static bool removingNodeRemovesPosition(Node& node, const Position& position)
-{
-    if (!position.anchorNode())
-        return false;
-
-    if (position.anchorNode() == node)
-        return true;
-
-    if (!node.isElementNode())
-        return false;
-
-    Element& element = toElement(node);
-    return element.containsIncludingShadowDOM(position.anchorNode());
-}
-
-void DragCaretController::nodeWillBeRemoved(Node& node)
-{
-    if (!hasCaret() || !node.inActiveDocument())
-        return;
-
-    if (!removingNodeRemovesPosition(node, m_position.deepEquivalent()))
-        return;
-
-    m_position.deepEquivalent().document()->layoutView()->clearSelection();
-    clear();
-}
-
-DEFINE_TRACE(DragCaretController)
-{
-    visitor->trace(m_position);
 }
 
 void CaretBase::clearCaretRect()
@@ -276,10 +203,4 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
     context->fillRect(caret, caretColor);
 }
 
-void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
-{
-    if (m_position.deepEquivalent().deprecatedNode()->document().frame() == frame)
-        paintCaret(m_position.deepEquivalent().deprecatedNode(), p, paintOffset, clipRect);
-}
-
-}
+} // namespace blink

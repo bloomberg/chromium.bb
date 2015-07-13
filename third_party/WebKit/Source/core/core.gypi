@@ -1278,6 +1278,8 @@
             'editing/DeleteFromTextNodeCommand.cpp',
             'editing/DeleteFromTextNodeCommand.h',
             'editing/DeleteSelectionCommand.cpp',
+            'editing/DragCaretController.cpp',
+            'editing/DragCaretController.h',
             'editing/EditCommand.cpp',
             'editing/EditingBehavior.cpp',
             'editing/EditingBehavior.h',

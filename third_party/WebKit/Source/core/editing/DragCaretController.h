@@ -26,53 +26,9 @@
 #ifndef DragCaretController_h
 #define DragCaretController_h
 
-#include "core/CoreExport.h"
-#include "core/editing/VisiblePosition.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "wtf/Noncopyable.h"
+#include "core/editing/Caret.h"
 
 namespace blink {
-
-class LocalFrame;
-class GraphicsContext;
-class LayoutBlock;
-class LayoutView;
-
-class CORE_EXPORT CaretBase {
-    WTF_MAKE_NONCOPYABLE(CaretBase);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CaretBase);
-protected:
-    enum CaretVisibility { Visible, Hidden };
-    explicit CaretBase(CaretVisibility = Hidden);
-
-    void invalidateCaretRect(Node*, bool caretRectChanged = false);
-    void clearCaretRect();
-    // Creating VisiblePosition causes synchronous layout so we should use the
-    // PositionWithAffinity version if possible.
-    // A position in HTMLTextFromControlElement is a typical example.
-    bool updateCaretRect(Document*, const PositionWithAffinity& caretPosition);
-    bool updateCaretRect(Document*, const VisiblePosition& caretPosition);
-    IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
-    bool shouldRepaintCaret(Node&) const;
-    bool shouldRepaintCaret(const LayoutView*) const;
-    void paintCaret(Node*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
-
-    const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }
-    LayoutBlock* caretPainter() const { return m_caretPainter; }
-
-    void setCaretVisibility(CaretVisibility visibility) { m_caretVisibility = visibility; }
-    bool caretIsVisible() const { return m_caretVisibility == Visible; }
-    CaretVisibility caretVisibility() const { return m_caretVisibility; }
-
-    static LayoutBlock* caretLayoutObject(Node*);
-    static void invalidateLocalCaretRect(Node*, const LayoutRect&);
-
-private:
-    LayoutBlock* m_caretPainter; // layout object responsible for painting the caret
-    LayoutRect m_caretLocalRect; // caret rect in coords local to the layoutObject responsible for painting the caret
-    CaretVisibility m_caretVisibility;
-};
 
 class DragCaretController final : public NoBaseWillBeGarbageCollected<DragCaretController>, private CaretBase {
     WTF_MAKE_NONCOPYABLE(DragCaretController);
@@ -102,6 +58,5 @@ private:
 };
 
 } // namespace blink
-
 
 #endif // DragCaretController_h
