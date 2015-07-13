@@ -19,6 +19,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 
 #if defined(OS_MACOSX)
@@ -438,6 +439,7 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
 
 void MessageLoop::RunTask(const PendingTask& pending_task) {
   DCHECK(nestable_tasks_allowed_);
+  TRACE_EVENT0("toplevel", "MessageLoop::RunTask.WithObservers");
 
 #if defined(OS_WIN)
   if (pending_task.is_high_res) {
