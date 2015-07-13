@@ -6,3 +6,5 @@
 # and wait for kouhei@ or hajimehoshi@ to maintain this file.
 
 crbug.com/390094 svg/custom/svg-element-destructor-iteration-crash.html [ Leak ]
+
+crbug.com/506186 accessibility/axobjectcache-leaks-node.html [ Leak ]
