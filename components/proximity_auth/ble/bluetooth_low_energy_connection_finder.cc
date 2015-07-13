@@ -278,7 +278,8 @@ void BluetoothLowEnergyConnectionFinder::OnGattConnectionCreated(
     return;
   }
 
-  PA_LOG(INFO) << "GATT connection created";
+  PA_LOG(INFO) << "GATT connection with " << gatt_connection->GetDeviceAddress()
+               << " created.";
   connected_ = true;
   pending_connections_.clear();
 
@@ -304,10 +305,8 @@ void BluetoothLowEnergyConnectionFinder::CompleteConnection() {
 
 void BluetoothLowEnergyConnectionFinder::CreateGattConnection(
     device::BluetoothDevice* remote_device) {
-  PA_LOG(INFO) << "SmartLock service found ("
-               << remote_service_uuid_.canonical_value() << ")\n"
-               << "device = " << remote_device->GetAddress()
-               << ", name = " << remote_device->GetName();
+  PA_LOG(INFO) << "Creating GATT connection with "
+               << remote_device->GetAddress();
   remote_device->CreateGattConnection(
       base::Bind(&BluetoothLowEnergyConnectionFinder::OnGattConnectionCreated,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -319,6 +318,8 @@ void BluetoothLowEnergyConnectionFinder::CreateGattConnection(
 void BluetoothLowEnergyConnectionFinder::CloseGattConnection(
     scoped_ptr<device::BluetoothGattConnection> gatt_connection) {
   DCHECK(gatt_connection);
+  PA_LOG(INFO) << "Closing GATT connection with "
+               << gatt_connection->GetDeviceAddress();
 
   // Destroying the BluetoothGattConnection also disconnects it.
   gatt_connection.reset();
@@ -358,6 +359,8 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
 }
 
 void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionWhenReady() {
+  PA_LOG(INFO) << "Trying to restart discovery.";
+
   // To restart scanning for devices, it's necessary to ensure that:
   // (i) the GATT connection to |remove_device_| is closed;
   // (ii) there is no pending call to
@@ -366,6 +369,7 @@ void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionWhenReady() {
   // |discovery_session_| is reset.
   if ((!gatt_connection_ || !gatt_connection_->IsConnected()) &&
       !discovery_session_) {
+    PA_LOG(INFO) << "Ready to start discovery.";
     connection_.reset();
     connected_ = false;
     StartDiscoverySession();

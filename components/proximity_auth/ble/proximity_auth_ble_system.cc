@@ -296,6 +296,7 @@ void ProximityAuthBleSystem::OnConnectionStatusChanged(
                << new_status;
   if (old_status == Connection::CONNECTED &&
       new_status == Connection::DISCONNECTED) {
+    device_authenticated_ = false;
     StopPollingScreenState();
 
     // Note: it's not necessary to destroy the |connection_| here, as it's
@@ -312,14 +313,13 @@ void ProximityAuthBleSystem::OnConnectionStatusChanged(
 }
 
 void ProximityAuthBleSystem::StartPollingScreenState() {
-  PA_LOG(INFO) << "Start polling.";
+  PA_LOG(INFO) << "Polling screen state.";
   if (is_polling_screen_state_) {
     if (!connection_ || !connection_->IsConnected()) {
       PA_LOG(INFO) << "Polling stopped.";
       is_polling_screen_state_ = false;
       return;
     }
-
     // Sends message requesting screen state.
     connection_->SendMessage(
         make_scoped_ptr(new FakeWireMessage(kPollScreenState)));
@@ -329,6 +329,8 @@ void ProximityAuthBleSystem::StartPollingScreenState() {
         FROM_HERE, base::Bind(&ProximityAuthBleSystem::StartPollingScreenState,
                               weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kPollingIntervalSeconds));
+
+    PA_LOG(INFO) << "Next poll iteration posted.";
   }
 }
 

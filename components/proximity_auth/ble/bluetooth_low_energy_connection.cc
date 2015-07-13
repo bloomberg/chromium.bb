@@ -104,19 +104,12 @@ void BluetoothLowEnergyConnection::Disconnect() {
       // Destroying BluetoothGattConnection also disconnects it.
       gatt_connection_.reset();
     }
+
     // Only transition to the DISCONNECTED state after perfoming all necessary
     // operations. Otherwise, it'll trigger observers that can pontentially
     // destroy the current instance (causing a crash).
     SetSubStatus(SubStatus::DISCONNECTED);
   }
-}
-
-void BluetoothLowEnergyConnection::OnDisconnected() {
-  PA_LOG(INFO) << "Disconnected.";
-}
-
-void BluetoothLowEnergyConnection::OnDisconnectError() {
-  PA_LOG(WARNING) << "Disconnection failed.";
 }
 
 void BluetoothLowEnergyConnection::SetSubStatus(SubStatus new_sub_status) {
@@ -171,15 +164,25 @@ void BluetoothLowEnergyConnection::SendMessageImpl(
 // so the object can notify its observers put itself in the right state.
 void BluetoothLowEnergyConnection::DeviceChanged(BluetoothAdapter* adapter,
                                                  BluetoothDevice* device) {
+  if (sub_status_ == SubStatus::DISCONNECTED)
+    return;
+
   if (device && device->GetAddress() == GetRemoteDeviceAddress() &&
       !device->IsConnected()) {
-    PA_LOG(INFO) << "GATT connection dropped " << GetRemoteDeviceAddress();
+    PA_LOG(INFO) << "GATT connection dropped " << GetRemoteDeviceAddress()
+                 << "\ndevice connected: " << device->IsConnected()
+                 << "\ngatt connection: "
+                 << (gatt_connection_ ? gatt_connection_->IsConnected()
+                                      : false);
     Disconnect();
   }
 }
 
 void BluetoothLowEnergyConnection::DeviceRemoved(BluetoothAdapter* adapter,
                                                  BluetoothDevice* device) {
+  if (sub_status_ == SubStatus::DISCONNECTED)
+    return;
+
   if (device && device->GetAddress() == GetRemoteDeviceAddress()) {
     PA_LOG(INFO) << "Device removed " << GetRemoteDeviceAddress();
     Disconnect();
@@ -190,6 +193,9 @@ void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic,
     const std::vector<uint8>& value) {
+  if (sub_status_ == SubStatus::DISCONNECTED)
+    return;
+
   DCHECK_EQ(adapter, adapter_.get());
 
   PA_LOG(INFO) << "Characteristic value changed: "
