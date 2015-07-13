@@ -945,6 +945,7 @@ void AutofillManager::UploadFormData(const FormStructure& submitted_form) {
 
 bool AutofillManager::UploadPasswordForm(
     const FormData& form,
+    const base::string16& username_field,
     const ServerFieldType& password_type) {
   FormStructure form_structure(form);
 
@@ -954,9 +955,11 @@ bool AutofillManager::UploadPasswordForm(
   if (!form_structure.ShouldBeCrowdsourced())
     return false;
 
-  // Find the first password field to label. We don't try to label anything
-  // else.
+  // Find the first password field to label. If the provided username field name
+  // is not empty, then also find the first field with that name to label.
+  // We don't try to label anything else.
   bool found_password_field = false;
+  bool found_username_field = username_field.empty();
   for (size_t i = 0; i < form_structure.field_count(); ++i) {
     AutofillField* field = form_structure.field(i);
 
@@ -964,6 +967,9 @@ bool AutofillManager::UploadPasswordForm(
     if (!found_password_field && field->form_control_type == "password") {
       types.insert(password_type);
       found_password_field = true;
+    } else if (!found_username_field && field->name == username_field) {
+      types.insert(USERNAME);
+      found_username_field = true;
     } else {
       types.insert(UNKNOWN_TYPE);
     }
@@ -971,9 +977,10 @@ bool AutofillManager::UploadPasswordForm(
   }
   DCHECK(found_password_field);
 
-  // Only one field type should be present.
+  // Only the USERNAME type and one password field type should be present.
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(password_type);
+  available_field_types.insert(USERNAME);
 
   // Force uploading as these events are relatively rare and we want to make
   // sure to receive them. It also makes testing easier if these requests

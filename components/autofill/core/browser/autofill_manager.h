@@ -189,11 +189,14 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   //   - This function will only label the first <input type="password"> field
   //     as |password_type|. Other fields will stay unlabeled, as they
   //     should have been labeled during the upload for OnFormSubmitted().
+  //   - If the |username_field| attribute is nonempty, we will additionally
+  //     label the field with that name as the username field.
   //   - This function does not assume that |form| is being uploaded during
   //     the same browsing session as it was originally submitted (as we may
   //     not have the necessary information to classify the form at that time)
   //     so it bypasses the cache and doesn't log the same quality UMA metrics.
   virtual bool UploadPasswordForm(const FormData& form,
+                                  const base::string16& username_field,
                                   const ServerFieldType& pasword_type);
 
   // Resets cache.

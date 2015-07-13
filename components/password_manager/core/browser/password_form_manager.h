@@ -293,11 +293,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Check to see if |pending| corresponds to an account creation form. If we
   // think that it does, we label it as such and upload this state to the
-  // Autofill server, so that we will trigger password generation in the future.
-  // This function will update generation_upload_status of |pending| if an
-  // upload is performed.
-  void CheckForAccountCreationForm(const autofill::PasswordForm& observed,
-                                   autofill::PasswordForm* pending);
+  // Autofill server to vote for the correct username field, and also so that
+  // we will trigger password generation in the future. This function will
+  // update generation_upload_status of |pending| if an upload is performed.
+  void SendAutofillVotes(const autofill::PasswordForm& observed,
+                         autofill::PasswordForm* pending);
 
   // Update all login matches to reflect new preferred state - preferred flag
   // will be reset on all matched logins that different than the current
@@ -331,6 +331,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Helper function to delegate uploading to the AutofillManager. Returns true
   // on success.
   bool UploadPasswordForm(const autofill::FormData& form_data,
+                          const base::string16& username_field,
                           const autofill::ServerFieldType& password_type);
 
   // Create pending credentials from provisionally saved form and forms received

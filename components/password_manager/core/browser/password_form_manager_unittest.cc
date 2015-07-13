@@ -56,8 +56,9 @@ class MockAutofillManager : public autofill::AutofillManager {
                       autofill::PersonalDataManager* data_manager)
       : AutofillManager(driver, client, data_manager) {}
 
-  MOCK_METHOD2(UploadPasswordForm,
+  MOCK_METHOD3(UploadPasswordForm,
                bool(const autofill::FormData&,
+                    const base::string16&,
                     const autofill::ServerFieldType&));
 
  private:
@@ -257,21 +258,31 @@ class PasswordFormManagerTest : public testing::Test {
     result.push_back(CreateSavedMatch(false));
     result[0]->generation_upload_status = status;
     result[0]->times_used = times_used;
+    result[0]->username_element = ASCIIToUTF16("matched-form-username-field");
 
     PasswordForm form_to_save(form);
     form_to_save.preferred = true;
+    form_to_save.username_element = ASCIIToUTF16("observed-username-field");
     form_to_save.username_value = result[0]->username_value;
     form_to_save.password_value = result[0]->password_value;
+
+    // When we're voting for an account creation form, we should also vote
+    // for its username field.
+    base::string16 username_vote =
+        (field_type && *field_type == autofill::ACCOUNT_CREATION_PASSWORD)
+            ? result[0]->username_element
+            : base::string16();
 
     form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
     form_manager.OnGetPasswordStoreResults(result.Pass());
 
     if (field_type) {
-      EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-                  UploadPasswordForm(_, *field_type)).Times(1);
+      EXPECT_CALL(
+          *client_with_store.mock_driver()->mock_autofill_manager(),
+          UploadPasswordForm(_, username_vote, *field_type)).Times(1);
     } else {
       EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-                  UploadPasswordForm(_, _)).Times(0);
+                  UploadPasswordForm(_, _, _)).Times(0);
     }
     form_manager.ProvisionallySave(
         form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
@@ -413,7 +424,7 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   PasswordForm actual_saved_form;
 
   EXPECT_CALL(*(client_with_store.mock_driver()->mock_autofill_manager()),
-              UploadPasswordForm(_, autofill::ACCOUNT_CREATION_PASSWORD))
+              UploadPasswordForm(_, _, autofill::ACCOUNT_CREATION_PASSWORD))
       .Times(1);
   EXPECT_CALL(*mock_store(), AddLogin(_))
       .WillOnce(SaveArg<0>(&actual_saved_form));
@@ -1233,7 +1244,8 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   TestPasswordManagerClient client_with_store(mock_store());
   TestPasswordManager password_manager(&client_with_store);
 
-  // For newly saved passwords, upload a vote for autofill::PASSWORD.
+  // For newly saved passwords, upload a password vote for autofill::PASSWORD.
+  // Don't vote for the username field yet.
   PasswordFormManager form_manager(&password_manager, &client_with_store,
                                    client_with_store.driver(), *saved_match(),
                                    false);
@@ -1245,7 +1257,9 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   form_to_save.password_value = ASCIIToUTF16("1234");
 
   EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-              UploadPasswordForm(_, autofill::PASSWORD)).Times(1);
+              UploadPasswordForm(_,
+                                 base::string16(),
+                                 autofill::PASSWORD)).Times(1);
   form_manager.ProvisionallySave(
       form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   form_manager.Save();
@@ -1258,7 +1272,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   SimulateMatchingPhase(&blacklist_form_manager, RESULT_NO_MATCH);
 
   EXPECT_CALL(*client_with_store.mock_driver()->mock_autofill_manager(),
-              UploadPasswordForm(_, autofill::PASSWORD)).Times(0);
+              UploadPasswordForm(_, _, autofill::PASSWORD)).Times(0);
   blacklist_form_manager.PermanentlyBlacklist();
   Mock::VerifyAndClearExpectations(&blacklist_form_manager);
 }
