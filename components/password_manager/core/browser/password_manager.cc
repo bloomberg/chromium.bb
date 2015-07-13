@@ -607,6 +607,9 @@ void PasswordManager::OnPasswordFormsRendered(
   if (did_stop_loading) {
     if (provisional_save_manager_->pending_credentials().scheme ==
         PasswordForm::SCHEME_HTML) {
+      // Generated passwords should always be saved.
+      if (provisional_save_manager_->has_generated_password())
+        all_visible_forms_.clear();
       for (size_t i = 0; i < all_visible_forms_.size(); ++i) {
         // TODO(vabr): The similarity check is just action equality up to
         // HTTP<->HTTPS substitution for now. If it becomes more complex, it may
