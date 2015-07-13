@@ -33,7 +33,7 @@ if env.Bit('build_x86') or env.Bit('build_mips32'):
   env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
                          'run_validation_cache_test')
 
-if env.Bit('build_x86_32'):
+if env.Bit('build_x86_32') or env.Bit('build_x86_64'):
   gtest_env = env.MakeGTestEnv()
 
   validator_debug_stub_test_exe = gtest_env.ComponentProgram(
