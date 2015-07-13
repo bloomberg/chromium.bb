@@ -71,13 +71,13 @@
 // and a reference to the main frame is kept by the Page.
 //
 // When frame content is replaced, all subframes are destroyed. This happens
-// in FrameLoader::detachFromParent for each subframe in a pre-order depth-first
+// in Frame::detachChildren for each subframe in a pre-order depth-first
 // traversal. Note that child node order may not match DOM node order!
-// detachFromParent() calls FrameLoaderClient::detachedFromParent(), which calls
-// WebFrame::frameDetached(). This triggers WebFrame to clear its reference to
-// LocalFrame, and also notifies the embedder via WebFrameClient that the frame is
-// detached. Most embedders will invoke close() on the WebFrame at this point,
-// triggering its deletion unless something else is still retaining a reference.
+// detachChildren() (virtually) calls Frame::detach(), which again calls
+// FrameLoaderClient::detached(). This triggers WebFrame to clear its reference to
+// LocalFrame. FrameLoaderClient::detached() also notifies the embedder via WebFrameClient
+// that the frame is detached. Most embedders will invoke close() on the WebFrame
+// at this point, triggering its deletion unless something else is still retaining a reference.
 //
 // The client is expected to be set whenever the WebLocalFrameImpl is attached to
 // the DOM.

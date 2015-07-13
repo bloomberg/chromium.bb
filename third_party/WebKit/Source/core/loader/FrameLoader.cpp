@@ -993,7 +993,7 @@ void FrameLoader::stopAllLoaders()
 
     m_inStopAllLoaders = false;
 
-    // detachFromParent() can be called multiple times on same LocalFrame, which
+    // LocalFrame::detach() can be called multiple times which
     // means we may no longer have a FrameLoaderClient to talk to.
     if (client())
         client()->didStopAllLoaders();
