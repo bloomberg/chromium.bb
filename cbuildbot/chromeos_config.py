@@ -13,7 +13,8 @@ from chromite.cbuildbot import constants
 from chromite.lib import factory
 
 
-# Set to 'True' if this is a release branch.
+# Set to 'True' if this is a release branch. This updates the '-release' builder
+# configuration to the shape used by the release waterfall.
 IS_RELEASE_BRANCH = False
 
 
@@ -653,6 +654,9 @@ _waterfall_config_map = {
         # Toolchain Builders.
         'internal-toolchain-major',
         'internal-toolchain-minor',
+    ]),
+
+    constants.WATERFALL_RELEASE: frozenset([
     ]),
 }
 
@@ -1872,7 +1876,7 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'master-release',
       boards=[],
-      master=True,
+      master=(not IS_RELEASE_BRANCH),
       sync_chrome=False,
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
