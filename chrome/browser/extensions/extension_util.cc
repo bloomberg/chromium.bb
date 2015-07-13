@@ -342,34 +342,6 @@ scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension) {
   return dict.Pass();
 }
 
-bool HasIsolatedStorage(const ExtensionInfo& info) {
-  if (!info.extension_manifest.get())
-    return false;
-
-  std::string error;
-  scoped_refptr<const Extension> extension(Extension::Create(
-      info.extension_path,
-      info.extension_location,
-      *info.extension_manifest,
-      Extension::NO_FLAGS,
-      info.extension_id,
-      &error));
-  if (!extension.get())
-    return false;
-
-  return AppIsolationInfo::HasIsolatedStorage(extension.get());
-}
-
-bool SiteHasIsolatedStorage(const GURL& extension_site_url,
-                            content::BrowserContext* context) {
-  const Extension* extension = ExtensionRegistry::Get(context)->
-      enabled_extensions().GetExtensionOrAppByURL(extension_site_url);
-  if (!extension)
-    return false;
-
-  return AppIsolationInfo::HasIsolatedStorage(extension);
-}
-
 const gfx::ImageSkia& GetDefaultAppIcon() {
   return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_APP_DEFAULT_ICON);

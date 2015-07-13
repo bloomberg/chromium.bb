@@ -114,14 +114,6 @@ GURL GetSiteForExtensionId(const std::string& extension_id,
 // returned dictionary.
 scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension);
 
-// Returns true if the extension has isolated storage.
-bool HasIsolatedStorage(const ExtensionInfo& info);
-
-// Returns true if the site URL corresponds to an extension or app and has
-// isolated storage.
-bool SiteHasIsolatedStorage(const GURL& extension_site_url,
-                            content::BrowserContext* context);
-
 // Returns the default extension/app icon (for extensions or apps that don't
 // have one).
 const gfx::ImageSkia& GetDefaultExtensionIcon();
