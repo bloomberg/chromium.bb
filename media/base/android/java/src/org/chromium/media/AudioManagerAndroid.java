@@ -334,6 +334,10 @@ class AudioManagerAndroid {
             }
 
             stopObservingVolumeChanges();
+            stopBluetoothSco();
+            synchronized (mLock) {
+                mRequestedAudioDevice = DEVICE_INVALID;
+            }
 
             // Restore previously stored audio states.
             setMicrophoneMute(mSavedIsMicrophoneMute);
@@ -790,11 +794,7 @@ class AudioManagerAndroid {
                         break;
                 }
 
-                // Update the existing device selection, but only if a specific
-                // device has already been selected explicitly.
-                if (deviceHasBeenRequested()) {
-                    updateDeviceActivation();
-                } else if (DEBUG) {
+                if (DEBUG) {
                     reportUpdate();
                 }
             }
@@ -834,6 +834,14 @@ class AudioManagerAndroid {
                         mBluetoothScoState = STATE_BLUETOOTH_SCO_ON;
                         break;
                     case AudioManager.SCO_AUDIO_STATE_DISCONNECTED:
+                        if (mBluetoothScoState != STATE_BLUETOOTH_SCO_TURNING_OFF) {
+                            // Bluetooth is probably powered off during the call.
+                            // Update the existing device selection, but only if a specific
+                            // device has already been selected explicitly.
+                            if (deviceHasBeenRequested()) {
+                                updateDeviceActivation();
+                            }
+                        }
                         mBluetoothScoState = STATE_BLUETOOTH_SCO_OFF;
                         break;
                     case AudioManager.SCO_AUDIO_STATE_CONNECTING:
@@ -892,6 +900,7 @@ class AudioManagerAndroid {
         if (!mAudioManager.isBluetoothScoOn()) {
             // TODO(henrika): can we do anything else than logging here?
             loge("Unable to stop BT SCO since it is already disabled");
+            mBluetoothScoState = STATE_BLUETOOTH_SCO_OFF;
             return;
         }
 
