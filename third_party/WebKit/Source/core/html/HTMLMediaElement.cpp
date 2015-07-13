@@ -3279,6 +3279,9 @@ void HTMLMediaElement::setTextTrackKindUserPreferenceForAllMediaElements(Documen
 
 void HTMLMediaElement::automaticTrackSelectionForUpdatedUserPreference()
 {
+    if (!m_textTracks || !m_textTracks->length())
+        return;
+
     markCaptionAndSubtitleTracksAsUnconfigured();
     m_processingPreferenceChange = true;
     m_closedCaptionsVisible = false;
@@ -3287,8 +3290,7 @@ void HTMLMediaElement::automaticTrackSelectionForUpdatedUserPreference()
 
     // If a track is set to 'showing' post performing automatic track selection,
     // set closed captions state to visible to update the CC button and display the track.
-    if (m_textTracks)
-        m_closedCaptionsVisible = m_textTracks->hasShowingTracks();
+    m_closedCaptionsVisible = m_textTracks->hasShowingTracks();
     updateTextTrackDisplay();
 }
 
