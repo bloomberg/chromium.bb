@@ -1959,7 +1959,7 @@ void Heap::doShutdown()
 #if ENABLE(ASSERT)
 BasePage* Heap::findPageFromAddress(Address address)
 {
-    MutexLocker lock(ThreadState::threadAttachMutex());
+    SafePointAwareMutexLocker lock(ThreadState::threadAttachMutex(), ThreadState::HeapPointersOnStack);
     for (ThreadState* state : ThreadState::attachedThreads()) {
         if (BasePage* page = state->findPageFromAddress(address))
             return page;
