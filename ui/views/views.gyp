@@ -84,8 +84,6 @@
       'controls/link.h',
       'controls/link_listener.h',
       'controls/menu/display_change_listener_mac.cc',
-      'controls/menu/menu.cc',
-      'controls/menu/menu.h',
       'controls/menu/menu_config.cc',
       'controls/menu/menu_config.h',
       'controls/menu/menu_config_mac.cc',
