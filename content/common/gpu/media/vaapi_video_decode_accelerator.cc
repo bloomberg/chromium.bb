@@ -658,9 +658,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 
   std::vector<VASurfaceID> va_surface_ids;
   RETURN_AND_NOTIFY_ON_FAILURE(
-      vaapi_wrapper_->CreateSurfaces(requested_pic_size_,
-                                     buffers.size(),
-                                     &va_surface_ids),
+      vaapi_wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, requested_pic_size_,
+                                     buffers.size(), &va_surface_ids),
       "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
 

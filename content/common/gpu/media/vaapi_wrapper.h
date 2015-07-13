@@ -77,14 +77,16 @@ class CONTENT_EXPORT VaapiWrapper {
 
   ~VaapiWrapper();
 
-  // Create |num_surfaces| backing surfaces in driver for VASurfaces, each
-  // of size |size|. Returns true when successful, with the created IDs in
-  // |va_surfaces| to be managed and later wrapped in VASurfaces.
+  // Create |num_surfaces| backing surfaces in driver for VASurfaces of
+  // |va_format|, each of size |size|. Returns true when successful, with the
+  // created IDs in |va_surfaces| to be managed and later wrapped in
+  // VASurfaces.
   // The client must DestroySurfaces() each time before calling this method
   // again to free the allocated surfaces first, but is not required to do so
   // at destruction time, as this will be done automatically from
   // the destructor.
-  bool CreateSurfaces(const gfx::Size& size,
+  bool CreateSurfaces(unsigned int va_format,
+                      const gfx::Size& size,
                       size_t num_surfaces,
                       std::vector<VASurfaceID>* va_surfaces);
 
