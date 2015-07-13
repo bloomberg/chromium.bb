@@ -170,45 +170,48 @@ class HttpCache::Transaction : public HttpTransaction {
   };
 
   enum State {
+    // Normally, states are traversed in approximately this order.
     STATE_NONE,
     STATE_GET_BACKEND,
     STATE_GET_BACKEND_COMPLETE,
-    STATE_SEND_REQUEST,
-    STATE_SEND_REQUEST_COMPLETE,
-    STATE_SUCCESSFUL_SEND_REQUEST,
-    STATE_NETWORK_READ,
-    STATE_NETWORK_READ_COMPLETE,
     STATE_INIT_ENTRY,
     STATE_OPEN_ENTRY,
     STATE_OPEN_ENTRY_COMPLETE,
-    STATE_CREATE_ENTRY,
-    STATE_CREATE_ENTRY_COMPLETE,
     STATE_DOOM_ENTRY,
     STATE_DOOM_ENTRY_COMPLETE,
+    STATE_CREATE_ENTRY,
+    STATE_CREATE_ENTRY_COMPLETE,
     STATE_ADD_TO_ENTRY,
     STATE_ADD_TO_ENTRY_COMPLETE,
+    STATE_CACHE_READ_RESPONSE,
+    STATE_CACHE_READ_RESPONSE_COMPLETE,
+    STATE_TOGGLE_UNUSED_SINCE_PREFETCH,
+    STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE,
+    STATE_CACHE_DISPATCH_VALIDATION,
+    STATE_CACHE_QUERY_DATA,
+    STATE_CACHE_QUERY_DATA_COMPLETE,
     STATE_START_PARTIAL_CACHE_VALIDATION,
     STATE_COMPLETE_PARTIAL_CACHE_VALIDATION,
+    STATE_SEND_REQUEST,
+    STATE_SEND_REQUEST_COMPLETE,
+    STATE_SUCCESSFUL_SEND_REQUEST,
     STATE_UPDATE_CACHED_RESPONSE,
     STATE_UPDATE_CACHED_RESPONSE_COMPLETE,
     STATE_OVERWRITE_CACHED_RESPONSE,
+    STATE_CACHE_WRITE_RESPONSE,
+    STATE_CACHE_WRITE_TRUNCATED_RESPONSE,
+    STATE_CACHE_WRITE_RESPONSE_COMPLETE,
     STATE_TRUNCATE_CACHED_DATA,
     STATE_TRUNCATE_CACHED_DATA_COMPLETE,
     STATE_TRUNCATE_CACHED_METADATA,
     STATE_TRUNCATE_CACHED_METADATA_COMPLETE,
     STATE_PARTIAL_HEADERS_RECEIVED,
-    STATE_CACHE_READ_RESPONSE,
-    STATE_CACHE_READ_RESPONSE_COMPLETE,
-    STATE_CACHE_DISPATCH_VALIDATION,
-    STATE_TOGGLE_UNUSED_SINCE_PREFETCH,
-    STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE,
-    STATE_CACHE_WRITE_RESPONSE,
-    STATE_CACHE_WRITE_TRUNCATED_RESPONSE,
-    STATE_CACHE_WRITE_RESPONSE_COMPLETE,
     STATE_CACHE_READ_METADATA,
     STATE_CACHE_READ_METADATA_COMPLETE,
-    STATE_CACHE_QUERY_DATA,
-    STATE_CACHE_QUERY_DATA_COMPLETE,
+
+    // These states are entered from Read/Write
+    STATE_NETWORK_READ,
+    STATE_NETWORK_READ_COMPLETE,
     STATE_CACHE_READ_DATA,
     STATE_CACHE_READ_DATA_COMPLETE,
     STATE_CACHE_WRITE_DATA,
@@ -247,42 +250,42 @@ class HttpCache::Transaction : public HttpTransaction {
   // corresponding callback.
   int DoGetBackend();
   int DoGetBackendComplete(int result);
-  int DoSendRequest();
-  int DoSendRequestComplete(int result);
-  int DoSuccessfulSendRequest();
-  int DoNetworkRead();
-  int DoNetworkReadComplete(int result);
   int DoInitEntry();
   int DoOpenEntry();
   int DoOpenEntryComplete(int result);
-  int DoCreateEntry();
-  int DoCreateEntryComplete(int result);
   int DoDoomEntry();
   int DoDoomEntryComplete(int result);
+  int DoCreateEntry();
+  int DoCreateEntryComplete(int result);
   int DoAddToEntry();
   int DoAddToEntryComplete(int result);
+  int DoCacheReadResponse();
+  int DoCacheReadResponseComplete(int result);
+  int DoCacheToggleUnusedSincePrefetch();
+  int DoCacheToggleUnusedSincePrefetchComplete(int result);
+  int DoCacheDispatchValidation();
+  int DoCacheQueryData();
+  int DoCacheQueryDataComplete(int result);
   int DoStartPartialCacheValidation();
   int DoCompletePartialCacheValidation(int result);
+  int DoSendRequest();
+  int DoSendRequestComplete(int result);
+  int DoSuccessfulSendRequest();
   int DoUpdateCachedResponse();
   int DoUpdateCachedResponseComplete(int result);
   int DoOverwriteCachedResponse();
+  int DoCacheWriteResponse();
+  int DoCacheWriteTruncatedResponse();
+  int DoCacheWriteResponseComplete(int result);
   int DoTruncateCachedData();
   int DoTruncateCachedDataComplete(int result);
   int DoTruncateCachedMetadata();
   int DoTruncateCachedMetadataComplete(int result);
   int DoPartialHeadersReceived();
-  int DoCacheReadResponse();
-  int DoCacheReadResponseComplete(int result);
-  int DoCacheDispatchValidation();
-  int DoCacheToggleUnusedSincePrefetch();
-  int DoCacheToggleUnusedSincePrefetchComplete(int result);
-  int DoCacheWriteResponse();
-  int DoCacheWriteTruncatedResponse();
-  int DoCacheWriteResponseComplete(int result);
   int DoCacheReadMetadata();
   int DoCacheReadMetadataComplete(int result);
-  int DoCacheQueryData();
-  int DoCacheQueryDataComplete(int result);
+  int DoNetworkRead();
+  int DoNetworkReadComplete(int result);
   int DoCacheReadData();
   int DoCacheReadDataComplete(int result);
   int DoCacheWriteData(int num_bytes);
