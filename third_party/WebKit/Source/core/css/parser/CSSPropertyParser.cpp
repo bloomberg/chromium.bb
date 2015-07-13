@@ -1348,7 +1348,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
 
     case CSSPropertyWebkitTapHighlightColor:
-        parsedValue = parseTapHighlightColor(m_valueList->current());
+        parsedValue = parseColor(m_valueList->current());
         if (parsedValue)
             m_valueList->next();
         break;
@@ -2326,45 +2326,6 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(const CS
     return cssValuePool().createColorValue(c);
 }
 
-// Used to parse background-color when part of a shorthand.
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseBackgroundColor(const CSSParserValue* value)
-{
-    CSSValueID id = value->id;
-    // Allow -webkit-text regardless of quirks.
-    if (id == CSSValueWebkitText)
-        return cssValuePool().createIdentifierValue(id);
-    return parseColor(value);
-}
-
-// Used to parse the '-webkit-tap-highlight-color' property.
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseTapHighlightColor(const CSSParserValue* value)
-{
-    CSSValueID id = value->id;
-    // Disallow -webkit-text regardless of quirks.
-    if (id == CSSValueWebkitText)
-        return nullptr;
-    return parseColor(value);
-}
-
-// Used to parse <color> for CSS gradients.
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseGradientStopColor(const CSSParserValue* value)
-{
-    CSSValueID id = value->id;
-    // Allow -webkit-text regardless of quirks.
-    if (id == CSSValueWebkitText)
-        return cssValuePool().createIdentifierValue(id);
-    return parseColor(value);
-}
-
-// Used to parse colors for -webkit-gradient(...).
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseDeprecatedGradientStopColor(const CSSParserValue* value)
-{
-    // Disallow currentcolor.
-    if (value->id == CSSValueCurrentcolor)
-        return nullptr;
-    return parseGradientStopColor(value);
-}
-
 bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& value)
 {
     if (valueList->current()->id == CSSValueNone) {
@@ -2853,7 +2814,7 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
 
         switch (propId) {
         case CSSPropertyBackgroundColor:
-            currValue = parseBackgroundColor(val);
+            currValue = parseColor(val);
             if (currValue)
                 m_valueList->next();
             break;
@@ -6057,6 +6018,15 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseDeprecatedGradientPoint(CS
     return result;
 }
 
+// Used to parse colors for -webkit-gradient(...).
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseDeprecatedGradientStopColor(const CSSParserValue* value)
+{
+    // Disallow currentcolor.
+    if (value->id == CSSValueCurrentcolor)
+        return nullptr;
+    return parseColor(value);
+}
+
 bool CSSPropertyParser::parseDeprecatedGradientColorStop(CSSParserValue* a, CSSGradientColorStop& stop)
 {
     if (a->unit != CSSParserValue::Function)
@@ -6668,7 +6638,7 @@ bool CSSPropertyParser::parseGradientColorStops(CSSParserValueList* valueList, C
         // <color-stop> = <color> [ <percentage> | <length> ]?
         // <color-hint> = <length> | <percentage>
         CSSGradientColorStop stop;
-        stop.m_color = parseGradientStopColor(a);
+        stop.m_color = parseColor(a);
 
         // Two hints in a row are not allowed.
         if (!stop.m_color && (!supportsColorHints || previousStopWasColorHint))

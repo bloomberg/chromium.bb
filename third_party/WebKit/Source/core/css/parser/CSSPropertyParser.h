@@ -194,10 +194,6 @@ private:
     bool parseColorFromValue(const CSSParserValue*, RGBA32&, bool acceptQuirkyColors = false);
 
     bool acceptQuirkyColors(CSSPropertyID) const;
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseBackgroundColor(const CSSParserValue*);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseTapHighlightColor(const CSSParserValue*);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGradientStopColor(const CSSParserValue*);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseDeprecatedGradientStopColor(const CSSParserValue*);
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseLineHeight();
     bool parseFontSize(bool important);
@@ -360,6 +356,7 @@ private:
     bool buildBorderImageParseContext(CSSPropertyID, BorderImageParseContext&);
 
     bool parseDeprecatedGradientColorStop(CSSParserValue*, CSSGradientColorStop&);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseDeprecatedGradientStopColor(const CSSParserValue*);
 
     void commitBorderImageProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important);
 
