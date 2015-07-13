@@ -53,6 +53,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
+#if defined(OS_IOS)
+#include "components/autofill/ios/browser/autofill_field_trial_ios.h"
+#endif
+
 namespace autofill {
 
 using base::TimeTicks;
@@ -551,9 +555,10 @@ bool AutofillManager::WillFillCreditCardNumber(const FormData& form,
     return true;
 
 #if defined(OS_IOS)
-  // On iOS, we only fill out one field at a time. So we only need to check the
-  // current field.
-  return false;
+  // On iOS, we only fill out one field at a time (assuming the new full-form
+  // feature isn't enabled). So we only need to check the current field.
+  if (!AutofillFieldTrialIOS::IsFullFormAutofillEnabled())
+    return false;
 #endif
 
   // If the relevant section is already autofilled, the new fill operation will

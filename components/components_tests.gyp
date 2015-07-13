@@ -994,6 +994,7 @@
             '../ios/ios_tests.gyp:test_support_ios',
             '../ios/web/ios_web.gyp:test_support_ios_web',
             '../third_party/ocmock/ocmock.gyp:ocmock',
+            'components.gyp:autofill_ios_browser',
             'components.gyp:open_from_clipboard',
             'components.gyp:sessions_ios',
             'components.gyp:signin_ios_browser',
