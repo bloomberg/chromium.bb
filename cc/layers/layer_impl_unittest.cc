@@ -310,6 +310,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   // Unrelated functions, always set to new values, always set needs update.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4)));
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(

@@ -7176,6 +7176,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   // Add a mask layer to child.
   child_raw->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 6).Pass());
+  child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
   member_id = render_surface_layer_list_count();
@@ -7267,6 +7268,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   EXPECT_EQ(expected, actual);
 
   child_raw->TakeMaskLayer();
+  child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   // Now everyone's a member!
   grand_parent_raw->SetDrawsContent(true);

@@ -972,6 +972,9 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
     // This should cause scroll child and its descendants to be affected by
     // |child|'s clip.
     scroll_child->SetScrollParent(child.get());
+    scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+    scroll_children->insert(scroll_child.get());
+    child->SetScrollChildren(scroll_children.release());
 
     SetLayerPropertiesForTesting(grand_child.get(), identity_matrix,
                                  transform_origin, position, bounds, true,

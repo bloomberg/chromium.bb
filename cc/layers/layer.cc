@@ -1215,6 +1215,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
+  layer->set_is_clipped(is_clipped_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
     layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
@@ -1416,6 +1417,7 @@ void Layer::SetHasRenderSurface(bool has_render_surface) {
   // We do not need SetNeedsCommit here, since this is only ever called
   // during a commit, from CalculateDrawProperties.
   SetNeedsPushProperties();
+  layer_tree_host_->property_trees()->needs_rebuild = true;
 }
 
 void Layer::CreateRenderSurface() {
