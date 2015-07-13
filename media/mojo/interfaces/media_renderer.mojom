@@ -9,12 +9,10 @@ import "media/mojo/interfaces/media_types.mojom";
 
 interface MediaRenderer {
   // Initializes the Renderer with one or both of an audio and video stream,
-  // calling back upon completion.
-  // NOTE: If an error occurs, MediaRendererClient::OnError() will be called
-  // before the callback is executed.
+  // executing the callback with whether the initialization succeeded.
   Initialize(MediaRendererClient client,
              DemuxerStream? audio,
-             DemuxerStream? video) => ();
+             DemuxerStream? video) => (bool success);
 
   // Discards any buffered data, executing callback when completed.
   // NOTE: If an error occurs, MediaRendererClient::OnError() can be called

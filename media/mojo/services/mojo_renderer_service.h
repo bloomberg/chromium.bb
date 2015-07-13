@@ -49,7 +49,7 @@ class MEDIA_EXPORT MojoRendererService
   void Initialize(mojo::MediaRendererClientPtr client,
                   mojo::DemuxerStreamPtr audio,
                   mojo::DemuxerStreamPtr video,
-                  const mojo::Closure& callback) final;
+                  const mojo::Callback<void(bool)>& callback) final;
   void Flush(const mojo::Closure& callback) final;
   void StartPlayingFrom(int64_t time_delta_usec) final;
   void SetPlaybackRate(double playback_rate) final;
@@ -67,10 +67,10 @@ class MEDIA_EXPORT MojoRendererService
 
   // Called when the DemuxerStreamProviderShim is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.
-  void OnStreamReady(const mojo::Closure& callback);
+  void OnStreamReady(const mojo::Callback<void(bool)>& callback);
 
   // Called when |audio_renderer_| initialization has completed.
-  void OnRendererInitializeDone(const mojo::Closure& callback,
+  void OnRendererInitializeDone(const mojo::Callback<void(bool)>& callback,
                                 PipelineStatus status);
 
   // Callback executed by filters to update statistics.

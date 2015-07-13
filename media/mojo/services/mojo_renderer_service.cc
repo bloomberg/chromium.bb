@@ -69,10 +69,11 @@ MojoRendererService::MojoRendererService(
 MojoRendererService::~MojoRendererService() {
 }
 
-void MojoRendererService::Initialize(mojo::MediaRendererClientPtr client,
-                                     mojo::DemuxerStreamPtr audio,
-                                     mojo::DemuxerStreamPtr video,
-                                     const mojo::Closure& callback) {
+void MojoRendererService::Initialize(
+    mojo::MediaRendererClientPtr client,
+    mojo::DemuxerStreamPtr audio,
+    mojo::DemuxerStreamPtr video,
+    const mojo::Callback<void(bool)>& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   client_ = client.Pass();
@@ -129,7 +130,8 @@ void MojoRendererService::SetCdm(int32_t cdm_id,
                                             weak_this_, callback));
 }
 
-void MojoRendererService::OnStreamReady(const mojo::Closure& callback) {
+void MojoRendererService::OnStreamReady(
+    const mojo::Callback<void(bool)>& callback) {
   DCHECK_EQ(state_, STATE_INITIALIZING);
 
   renderer_->Initialize(
@@ -144,20 +146,19 @@ void MojoRendererService::OnStreamReady(const mojo::Closure& callback) {
 }
 
 void MojoRendererService::OnRendererInitializeDone(
-    const mojo::Closure& callback, PipelineStatus status) {
+    const mojo::Callback<void(bool)>& callback,
+    PipelineStatus status) {
   DVLOG(1) << __FUNCTION__;
+  DCHECK_EQ(state_, STATE_INITIALIZING);
 
-  if (status != PIPELINE_OK && state_ != STATE_ERROR)
-    OnError(status);
-
-  if (state_ == STATE_ERROR) {
-    renderer_.reset();
-  } else {
-    DCHECK_EQ(state_, STATE_INITIALIZING);
-    state_ = STATE_PLAYING;
+  if (status != PIPELINE_OK) {
+    state_ = STATE_ERROR;
+    callback.Run(false);
+    return;
   }
 
-  callback.Run();
+  state_ = STATE_PLAYING;
+  callback.Run(true);
 }
 
 void MojoRendererService::OnUpdateStatistics(const PipelineStatistics& stats) {

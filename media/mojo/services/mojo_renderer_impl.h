@@ -58,7 +58,7 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
 
  private:
   // Called when |remote_media_renderer_| has finished initializing.
-  void OnInitialized();
+  void OnInitialized(bool success);
 
   // Task runner used to execute pipeline tasks.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

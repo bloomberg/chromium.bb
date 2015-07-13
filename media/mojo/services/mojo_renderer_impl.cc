@@ -188,6 +188,7 @@ void MojoRendererImpl::OnEnded() {
 
 void MojoRendererImpl::OnError() {
   DVLOG(1) << __FUNCTION__;
+  DCHECK(init_cb_.is_null());
 
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
@@ -198,17 +199,16 @@ void MojoRendererImpl::OnError() {
 
   // TODO(tim): Should we plumb error code from remote renderer?
   // http://crbug.com/410451.
-  if (init_cb_.is_null())  // We have initialized already.
-    error_cb_.Run(PIPELINE_ERROR_DECODE);
-  else
-    init_cb_.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
+  error_cb_.Run(PIPELINE_ERROR_DECODE);
 }
 
-void MojoRendererImpl::OnInitialized() {
+void MojoRendererImpl::OnInitialized(bool success) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
+  DCHECK(!init_cb_.is_null());
+
+  base::ResetAndReturn(&init_cb_)
+      .Run(success ? PIPELINE_OK : PIPELINE_ERROR_INITIALIZATION_FAILED);
 }
 
 }  // namespace media

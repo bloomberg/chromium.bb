@@ -83,9 +83,10 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
         base::Bind(&MediaAppTest::OnCdmInitialized, base::Unretained(this)));
   }
 
-  MOCK_METHOD0(OnRendererInitialized, void());
+  MOCK_METHOD1(OnRendererInitialized, void(bool));
 
-  void InitializeRenderer(const VideoDecoderConfig& video_config) {
+  void InitializeRenderer(const VideoDecoderConfig& video_config,
+                          bool expected_result) {
     video_demuxer_stream_.set_video_decoder_config(video_config);
 
     mojo::DemuxerStreamPtr video_stream;
@@ -94,9 +95,9 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
     mojo::MediaRendererClientPtr client_ptr;
     media_renderer_client_binding_.Bind(GetProxy(&client_ptr));
 
-    EXPECT_CALL(*this, OnRendererInitialized())
+    EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .Times(Exactly(1))
-        .WillOnce(Invoke(run_loop_.get(), &base::RunLoop::Quit));
+        .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     media_renderer_->Initialize(client_ptr.Pass(), nullptr, video_stream.Pass(),
                                 base::Bind(&MediaAppTest::OnRendererInitialized,
                                            base::Unretained(this)));
@@ -133,13 +134,12 @@ TEST_F(MediaAppTest, InitializeCdm_InvalidKeySystem) {
 }
 
 TEST_F(MediaAppTest, InitializeRenderer_Success) {
-  InitializeRenderer(TestVideoConfig::Normal());
+  InitializeRenderer(TestVideoConfig::Normal(), true);
   run_loop_->Run();
 }
 
 TEST_F(MediaAppTest, InitializeRenderer_InvalidConfig) {
-  EXPECT_CALL(media_renderer_client_, OnError());
-  InitializeRenderer(TestVideoConfig::Invalid());
+  InitializeRenderer(TestVideoConfig::Invalid(), false);
   run_loop_->Run();
 }
 
