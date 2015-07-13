@@ -84,6 +84,18 @@ class CleanCommand(command.CliCommand):
 
   def Run(self):
     """Perfrom the cros clean command."""
+
+    # If no option is set, default to "--safe"
+    if not (self.options.safe or
+            self.options.clobber or
+            self.options.chroot or
+            self.options.cache or
+            self.options.deploy or
+            self.options.flash or
+            self.options.images or
+            self.options.incrementals):
+      self.options.safe = True
+
     if self.options.clobber:
       self.options.chroot = True
       self.options.safe = True
