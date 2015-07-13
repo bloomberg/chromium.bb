@@ -386,8 +386,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, MAYBE_WaitForNTP) {
 // See crbug.com/248437
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, DISABLED_IncognitoSplitMode) {
   // Open incognito window.
-  Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
-      browser()->profile(), GURL("about:blank"));
+  Browser* incognito_browser =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
   // Load the extension with incognito enabled.
   {

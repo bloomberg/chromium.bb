@@ -590,8 +590,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, TargetBlankIncognito) {
   GURL url = embedded_test_server()->GetURL(
       "/extensions/api_test/webnavigation/targetBlank/a.html");
 
-  Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
-      browser()->profile(), url);
+  Browser* otr_browser = OpenURLOffTheRecord(browser()->profile(), url);
   WebContents* tab = otr_browser->tab_strip_model()->GetActiveWebContents();
 
   // There's a link with target=_blank on a.html. Click on it to open it in a

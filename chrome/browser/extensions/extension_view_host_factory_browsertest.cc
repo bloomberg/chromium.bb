@@ -53,8 +53,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest, CreateExtensionHosts) {
 IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest,
                        DISABLED_IncognitoExtensionHosts) {
   // Open an incognito browser.
-  Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
-      browser()->profile(), GURL("about:blank"));
+  Browser* incognito_browser =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
   // Load a non-split-mode extension, enabled in incognito.
   scoped_refptr<const Extension> regular_extension =

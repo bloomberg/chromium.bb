@@ -534,8 +534,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_IncognitoSplit) {
                                                  false);
 
   // Open an incognito window.
-  Browser* browser_incognito = ui_test_utils::OpenURLOffTheRecord(
-      browser()->profile(), GURL("about:blank"));
+  Browser* browser_incognito =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
   ASSERT_TRUE(LoadContextMenuExtensionIncognito("incognito"));
 

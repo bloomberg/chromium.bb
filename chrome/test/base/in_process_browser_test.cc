@@ -20,11 +20,13 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -45,6 +47,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/os_crypt/os_crypt.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/browser_test_utils.h"
@@ -440,6 +443,26 @@ bool InProcessBrowserTest::SetUpUserDataDirectory() {
   return true;
 }
 
+#if !defined(OS_MACOSX)
+void InProcessBrowserTest::OpenDevToolsWindow(
+    content::WebContents* web_contents) {
+  ASSERT_FALSE(content::DevToolsAgentHost::HasFor(web_contents));
+  DevToolsWindow::OpenDevToolsWindow(web_contents);
+  ASSERT_TRUE(content::DevToolsAgentHost::HasFor(web_contents));
+}
+
+Browser* InProcessBrowserTest::OpenURLOffTheRecord(Profile* profile,
+                                                   const GURL& url) {
+  chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
+  chrome::OpenURLOffTheRecord(profile, url, active_desktop);
+  Browser* browser = chrome::FindTabbedBrowser(
+      profile->GetOffTheRecordProfile(), false, active_desktop);
+  content::TestNavigationObserver observer(
+      browser->tab_strip_model()->GetActiveWebContents());
+  observer.Wait();
+  return browser;
+}
+
 // Creates a browser with a single tab (about:blank), waits for the tab to
 // finish loading and shows the browser.
 Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
@@ -476,6 +499,7 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(
   AddBlankTabAndShow(browser);
   return browser;
 }
+#endif  // !defined(OS_MACOSX)
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WindowedNotificationObserver observer(

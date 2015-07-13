@@ -41,6 +41,7 @@ source_set("test_support") {
     "base/history_index_restore_observer.h",
     "base/in_process_browser_test.cc",
     "base/in_process_browser_test.h",
+    "base/in_process_browser_test_mac.cc",
     "base/profile_mock.cc",
     "base/profile_mock.h",
     "base/scoped_browser_locale.cc",

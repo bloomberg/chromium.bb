@@ -27,8 +27,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CookiesEventsSpanning) {
   // incognito cookie store. Otherwise, the chrome.cookies.set operation is just
   // ignored and we won't be notified about a newly set cookie for which we want
   // to test whether the storeId is set correctly.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-                                     GURL("chrome://newtab/"));
+  OpenURLOffTheRecord(browser()->profile(), GURL("chrome://newtab/"));
   ASSERT_TRUE(RunExtensionTestIncognito("cookies/events_spanning")) << message_;
 }
 

@@ -3929,8 +3929,7 @@ class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {
  public:
   void SetUpOnMainThread() override {
     Profile* normal_profile = current_browser()->profile();
-    set_browser(ui_test_utils::OpenURLOffTheRecord(
-        normal_profile, GURL("about:blank")));
+    set_browser(OpenURLOffTheRecord(normal_profile, GURL("about:blank")));
     PrerenderBrowserTest::SetUpOnMainThread();
   }
 };

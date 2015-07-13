@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest, ZoomEventsWorkForOffTheRecord) {
   std::string test_host(test_url.host());
   std::string test_scheme(test_url.scheme());
   Browser* incognito_browser =
-      ui_test_utils::OpenURLOffTheRecord(browser()->profile(), test_url);
+      OpenURLOffTheRecord(browser()->profile(), test_url);
 
   content::WebContents* web_contents =
       incognito_browser->tab_strip_model()->GetActiveWebContents();

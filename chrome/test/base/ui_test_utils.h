@@ -74,12 +74,6 @@ enum BrowserTestWaitFlags {
 // Puts the current tab title in |title|. Returns true on success.
 bool GetCurrentTabTitle(const Browser* browser, base::string16* title);
 
-// Opens |url| in an incognito browser window with the incognito profile of
-// |profile|, blocking until the navigation finishes. This will create a new
-// browser if a browser with the incognito profile does not exist. Returns the
-// incognito window Browser.
-Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url);
-
 // Performs the provided navigation process, blocking until the navigation
 // finishes. May change the params in some cases (i.e. if the navigation
 // opens a new browser window). Uses chrome::Navigate.

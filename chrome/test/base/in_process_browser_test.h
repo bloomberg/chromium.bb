@@ -143,6 +143,15 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // BrowserTestBase:
   void RunTestOnMainThreadLoop() override;
 
+  // Ensures that no devtools are open, and then opens the devtools.
+  void OpenDevToolsWindow(content::WebContents* web_contents);
+
+  // Opens |url| in an incognito browser window with the incognito profile of
+  // |profile|, blocking until the navigation finishes. This will create a new
+  // browser if a browser with the incognito profile does not exist. Returns the
+  // incognito window Browser.
+  Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url);
+
   // Creates a browser with a single tab (about:blank), waits for the tab to
   // finish loading and shows the browser.
   //

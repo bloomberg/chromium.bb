@@ -216,8 +216,8 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
   EXPECT_EQ(expected_content_regular_window, body);
 
   // Test that navigation in OTR window is properly redirected.
-  Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
-      browser()->profile(), GURL("about:blank"));
+  Browser* otr_browser =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
   if (wait_for_extension_loaded_in_incognito)
     EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());
@@ -307,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
       test_data_dir_.AppendASCII("webrequest_reload"),
       kFlagEnableIncognito);
   ASSERT_TRUE(extension);
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());

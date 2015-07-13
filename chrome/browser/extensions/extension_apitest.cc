@@ -317,7 +317,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
     }
 
     if (use_incognito)
-      ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
+      OpenURLOffTheRecord(browser()->profile(), url);
     else
       ui_test_utils::NavigateToURL(browser(), url);
   } else if (launch_platform_app) {

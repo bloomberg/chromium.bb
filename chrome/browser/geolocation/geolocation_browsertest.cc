@@ -291,8 +291,7 @@ bool GeolocationBrowserTest::Initialize(InitializationOptions options) {
 
   current_url_ = embedded_test_server()->GetURL(html_for_tests_);
   if (options == INITIALIZATION_OFFTHERECORD) {
-    current_browser_ = ui_test_utils::OpenURLOffTheRecord(
-        browser()->profile(), current_url_);
+    current_browser_ = OpenURLOffTheRecord(browser()->profile(), current_url_);
   } else {
     current_browser_ = browser();
     if (options == INITIALIZATION_NEWTAB)

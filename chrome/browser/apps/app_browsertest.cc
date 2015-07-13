@@ -850,10 +850,7 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
   content::WebContents* web_contents = window->web_contents();
   ASSERT_TRUE(web_contents);
 
-  // Ensure no DevTools open for the AppWindow, then open one.
-  ASSERT_FALSE(DevToolsAgentHost::HasFor(web_contents));
-  DevToolsWindow::OpenDevToolsWindow(web_contents);
-  ASSERT_TRUE(DevToolsAgentHost::HasFor(web_contents));
+  OpenDevToolsWindow(web_contents);
 
   if (test_flags & RELAUNCH) {
     // Close the AppWindow, and ensure it is gone.

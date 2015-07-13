@@ -538,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoSplit) {
                                         browser()->host_desktop_type()));
   base::RunLoop().RunUntilIdle();  // Wait for profile initialization.
   // Navigate just to have a tab in this window, otherwise wonky things happen.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
   ASSERT_EQ(1,
             BrowserActionTestUtil(incognito_browser).NumberOfBrowserActions());
 

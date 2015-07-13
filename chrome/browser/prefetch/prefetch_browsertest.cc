@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, IncognitoTest) {
 
   // Navigate just to have a tab in this window, otherwise there is no
   // WebContents for the incognito browser.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
   EXPECT_TRUE(RunPrefetchExperiment(true, incognito_browser));
 }

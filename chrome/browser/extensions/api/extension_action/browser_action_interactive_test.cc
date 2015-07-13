@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   listener.set_extension_id(extension->id());
 
   Browser* incognito_browser =
-      ui_test_utils::OpenURLOffTheRecord(profile(), GURL("chrome://newtab/"));
+      OpenURLOffTheRecord(profile(), GURL("chrome://newtab/"));
   listener.WaitUntilSatisfied();
   EXPECT_EQ(std::string("opened"), listener.message());
   EXPECT_TRUE(BrowserActionTestUtil(incognito_browser).HasPopup());

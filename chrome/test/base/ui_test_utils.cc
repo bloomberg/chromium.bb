@@ -146,17 +146,6 @@ bool GetCurrentTabTitle(const Browser* browser, base::string16* title) {
   return true;
 }
 
-Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url) {
-  chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
-  chrome::OpenURLOffTheRecord(profile, url, active_desktop);
-  Browser* browser = chrome::FindTabbedBrowser(
-      profile->GetOffTheRecordProfile(), false, active_desktop);
-  content::TestNavigationObserver observer(
-      browser->tab_strip_model()->GetActiveWebContents());
-  observer.Wait();
-  return browser;
-}
-
 void NavigateToURL(chrome::NavigateParams* params) {
   chrome::Navigate(params);
   content::WaitForLoadStop(params->target_contents);
