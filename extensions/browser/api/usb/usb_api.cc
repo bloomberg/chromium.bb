@@ -10,6 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/memory/scoped_ptr.h"
 #include "device/core/device_client.h"
+#include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -938,7 +939,7 @@ ExtensionFunction::ResponseAction UsbControlTransferFunction::Run() {
   }
 
   const ControlTransferInfo& transfer = parameters->transfer_info;
-  UsbEndpointDirection direction;
+  UsbEndpointDirection direction = device::USB_DIRECTION_INBOUND;
   UsbDeviceHandle::TransferRequestType request_type;
   UsbDeviceHandle::TransferRecipient recipient;
   size_t size = 0;
@@ -995,7 +996,7 @@ ExtensionFunction::ResponseAction UsbBulkTransferFunction::Run() {
   }
 
   const GenericTransferInfo& transfer = parameters->transfer_info;
-  UsbEndpointDirection direction;
+  UsbEndpointDirection direction = device::USB_DIRECTION_INBOUND;
   size_t size = 0;
 
   if (!ConvertDirectionFromApi(transfer.direction, &direction)) {
@@ -1041,7 +1042,7 @@ ExtensionFunction::ResponseAction UsbInterruptTransferFunction::Run() {
   }
 
   const GenericTransferInfo& transfer = parameters->transfer_info;
-  UsbEndpointDirection direction;
+  UsbEndpointDirection direction = device::USB_DIRECTION_INBOUND;
   size_t size = 0;
 
   if (!ConvertDirectionFromApi(transfer.direction, &direction)) {
@@ -1089,7 +1090,7 @@ ExtensionFunction::ResponseAction UsbIsochronousTransferFunction::Run() {
   const IsochronousTransferInfo& transfer = parameters->transfer_info;
   const GenericTransferInfo& generic_transfer = transfer.transfer_info;
   size_t size = 0;
-  UsbEndpointDirection direction;
+  UsbEndpointDirection direction = device::USB_DIRECTION_INBOUND;
 
   if (!ConvertDirectionFromApi(generic_transfer.direction, &direction)) {
     return RespondNow(Error(kErrorConvertDirection));
