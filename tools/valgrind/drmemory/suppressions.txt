@@ -782,3 +782,18 @@ name=http://crbug.com/508634
 *!base::internal::InvokeHelper<>::MakeItSo
 *!base::internal::Invoker<>::Run
 *!base::debug::TaskAnnotator::RunTask
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/509508
+*!blink::WebLocalFrameImpl::setFrameWidget
+*!blink::WebFrameWidgetImpl::close
+*!scheduler::TaskQueueManager::ProcessTaskFromWorkQueue
+*!scheduler::TaskQueueManager::DoWork
+*!base::internal::Invoker<>::Run
+...
+*!content::RendererMain
+*!content::RunNamedProcessTypeMain
+*!content::ContentMainRunnerImpl::Run
+*!content::ContentMain
+*!content::LaunchTests
+*!main
