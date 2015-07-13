@@ -120,8 +120,6 @@ class AutofillProfileSyncableService
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
                            UpdateField);
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
-                           UpdateMultivaluedField);
-  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
                            MergeProfile);
 
   // The map of the guid to profiles owned by the |profiles_| vector.
@@ -163,11 +161,6 @@ class AutofillProfileSyncableService
   static bool UpdateField(ServerFieldType field_type,
                           const std::string& new_value,
                           AutofillProfile* autofill_profile);
-  // The same as |UpdateField|, but for multi-valued fields.
-  static bool UpdateMultivaluedField(
-      ServerFieldType field_type,
-      const ::google::protobuf::RepeatedPtrField<std::string>& new_value,
-      AutofillProfile* autofill_profile);
 
   // Calls merge_into->OverwriteWithOrAddTo() and then checks if the
   // |merge_into| has extra data. Returns true if |merge_from| needs updating to

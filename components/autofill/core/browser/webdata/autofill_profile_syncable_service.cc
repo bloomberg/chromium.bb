@@ -324,24 +324,36 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     DCHECK(!was_verified || profile->IsVerified());
   }
 
-  // Update all multivalued fields: names, emails, and phones.
-  diff = UpdateMultivaluedField(NAME_FIRST,
-                                specifics.name_first(), profile) || diff;
-  diff = UpdateMultivaluedField(NAME_MIDDLE,
-                                specifics.name_middle(), profile) || diff;
-  diff = UpdateMultivaluedField(NAME_LAST,
-                                specifics.name_last(), profile) || diff;
+  // Update name, email, and phone fields.
+  diff = UpdateField(NAME_FIRST,
+                     specifics.name_first_size() ? specifics.name_first(0)
+                                                 : std::string(),
+                     profile) || diff;
+  diff = UpdateField(NAME_MIDDLE,
+                     specifics.name_middle_size() ? specifics.name_middle(0)
+                                                  : std::string(),
+                     profile) || diff;
+  diff =
+      UpdateField(NAME_LAST, specifics.name_last_size() ? specifics.name_last(0)
+                                                        : std::string(),
+                  profile) || diff;
   // Older versions don't have a separate full name; don't overwrite full name
   // in this case.
-  if (specifics.name_full().size() > 0) {
-    diff = UpdateMultivaluedField(NAME_FULL,
-                                  specifics.name_full(), profile) || diff;
+  if (specifics.name_full_size() > 0) {
+    diff = UpdateField(NAME_FULL,
+                       specifics.name_full_size() ? specifics.name_full(0)
+                                                  : std::string(),
+                       profile) || diff;
   }
-  diff = UpdateMultivaluedField(EMAIL_ADDRESS,
-                                specifics.email_address(), profile) || diff;
-  diff = UpdateMultivaluedField(PHONE_HOME_WHOLE_NUMBER,
-                                specifics.phone_home_whole_number(),
-                                profile) || diff;
+  diff = UpdateField(EMAIL_ADDRESS,
+                     specifics.email_address_size() ? specifics.email_address(0)
+                                                    : std::string(),
+                     profile) || diff;
+  diff = UpdateField(PHONE_HOME_WHOLE_NUMBER,
+                     specifics.phone_home_whole_number_size()
+                         ? specifics.phone_home_whole_number(0)
+                         : std::string(),
+                     profile) || diff;
 
   // Update all simple single-valued address fields.
   diff = UpdateField(COMPANY_NAME, specifics.company_name(), profile) || diff;
@@ -456,7 +468,6 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   // TODO(estade): this should be set_email_address.
   specifics->add_email_address(
       LimitData(UTF16ToUTF8(profile.GetRawInfo(EMAIL_ADDRESS))));
-  std::vector<base::string16> values;
 
   specifics->set_company_name(
       LimitData(UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME))));
@@ -622,16 +633,6 @@ bool AutofillProfileSyncableService::UpdateField(
     return false;
   autofill_profile->SetRawInfo(field_type, UTF8ToUTF16(new_value));
   return true;
-}
-
-// TODO(estade): remove this function.
-bool AutofillProfileSyncableService::UpdateMultivaluedField(
-    ServerFieldType field_type,
-    const ::google::protobuf::RepeatedPtrField<std::string>& new_values,
-    AutofillProfile* autofill_profile) {
-  return UpdateField(field_type,
-                     new_values.size() < 1 ? std::string() : new_values.Get(0),
-                     autofill_profile);
 }
 
 bool AutofillProfileSyncableService::MergeProfile(
