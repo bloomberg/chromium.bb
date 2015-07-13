@@ -174,7 +174,7 @@ zuc_cleanup(void);
 
 /**
  * Displays all known tests.
- * The list returned is affected to any filtering in place.
+ * The list returned is affected by any filtering in place.
  *
  * @see zuc_set_filter()
  */
