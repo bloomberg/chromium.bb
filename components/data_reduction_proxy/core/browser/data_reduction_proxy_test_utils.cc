@@ -75,11 +75,6 @@ void TestDataReductionProxyRequestOptions::set_offset(
   now_offset_ = now_offset;
 }
 
-const std::string& TestDataReductionProxyRequestOptions::GetSecureSession()
-    const {
-  return DataReductionProxyRequestOptions::GetSecureSession();
-}
-
 MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
     Client client,
     const std::string& version,

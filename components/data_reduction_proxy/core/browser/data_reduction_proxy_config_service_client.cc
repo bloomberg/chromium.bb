@@ -281,8 +281,14 @@ void DataReductionProxyConfigServiceClient::ReadAndApplyStaticConfig() {
 }
 
 void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
+  CreateClientConfigRequest request;
+  std::string serialized_request;
+  const std::string& session_key = request_options_->GetSecureSession();
+  if (!session_key.empty())
+    request.set_session_key(request_options_->GetSecureSession());
+  request.SerializeToString(&serialized_request);
   scoped_ptr<net::URLFetcher> fetcher =
-      GetURLFetcherForConfig(config_service_url_, std::string());
+      GetURLFetcherForConfig(config_service_url_, serialized_request);
   if (!fetcher.get()) {
     HandleResponse(std::string(),
                    net::URLRequestStatus(net::URLRequestStatus::CANCELED, 0),
@@ -312,7 +318,7 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
   scoped_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
       secure_proxy_check_url, net::URLFetcher::POST, this));
   fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY);
-  fetcher->SetUploadData("application/x-profobuf", request_body);
+  fetcher->SetUploadData("application/x-protobuf", request_body);
   DCHECK(url_request_context_getter_);
   fetcher->SetRequestContext(url_request_context_getter_);
   // Configure max retries to be at most kMaxRetries times for 5xx errors.

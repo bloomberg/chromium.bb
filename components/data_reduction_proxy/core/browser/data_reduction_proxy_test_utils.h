@@ -71,9 +71,6 @@ class TestDataReductionProxyRequestOptions
   // Time after the unix epoch that Now() reports.
   void set_offset(const base::TimeDelta& now_offset);
 
-  // Visible for testing.
-  const std::string& GetSecureSession() const override;
-
  private:
   base::TimeDelta now_offset_;
 };

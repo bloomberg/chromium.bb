@@ -128,6 +128,9 @@ class DataReductionProxyRequestOptions {
   // Sets the credentials for sending to the Data Reduction Proxy.
   void SetSecureSession(const std::string& secure_session);
 
+  // Retrieves the credentials for sending to the Data Reduction Proxy.
+  const std::string& GetSecureSession() const;
+
   // Invalidates the secure session credentials.
   void Invalidate();
 
@@ -151,9 +154,6 @@ class DataReductionProxyRequestOptions {
   DataReductionProxyRequestOptions(Client client,
                                    const std::string& version,
                                    DataReductionProxyConfig* config);
-
-  // Visible for testing.
-  virtual const std::string& GetSecureSession() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,

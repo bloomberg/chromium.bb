@@ -67,4 +67,6 @@ message ProxyServer {
 
 // Request object to create a client configuration object.
 message CreateClientConfigRequest {
+  // A previous per-session key that was assigned by the service.
+  optional string session_key = 1;
 }
