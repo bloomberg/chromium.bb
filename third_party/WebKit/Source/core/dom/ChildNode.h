@@ -11,21 +11,6 @@ namespace blink {
 
 class ChildNode {
 public:
-    static void before(Node& node, const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
-    {
-        return node.before(nodes, exceptionState);
-    }
-
-    static void after(Node& node, const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
-    {
-        return node.after(nodes, exceptionState);
-    }
-
-    static void replaceWith(Node& node, const HeapVector<NodeOrString>& nodes, ExceptionState& exceptionState)
-    {
-        return node.replaceWith(nodes, exceptionState);
-    }
-
     static void remove(Node& node, ExceptionState& exceptionState)
     {
         return node.remove(exceptionState);

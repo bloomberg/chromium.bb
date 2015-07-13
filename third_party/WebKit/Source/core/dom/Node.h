@@ -26,7 +26,6 @@
 #define Node_h
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/SimulatedClickOptions.h"
@@ -210,11 +209,6 @@ public:
     Node* firstChild() const;
     Node* lastChild() const;
 
-    void prepend(const HeapVector<NodeOrString>&, ExceptionState&);
-    void append(const HeapVector<NodeOrString>&, ExceptionState&);
-    void before(const HeapVector<NodeOrString>&, ExceptionState&);
-    void after(const HeapVector<NodeOrString>&, ExceptionState&);
-    void replaceWith(const HeapVector<NodeOrString>&, ExceptionState&);
     void remove(ExceptionState&);
 
     Node* pseudoAwareNextSibling() const;
