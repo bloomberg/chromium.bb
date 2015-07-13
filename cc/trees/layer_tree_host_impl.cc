@@ -1349,6 +1349,12 @@ void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
       settings_.using_synchronous_renderer_compositor) {
     ReleaseTreeResources();
     CleanUpTileManager();
+
+    // Force a call to NotifyAllTileTasks completed - otherwise this logic may
+    // be skipped if no work was enqueued at the time the tile manager was
+    // destroyed.
+    NotifyAllTileTasksCompleted();
+
     CreateTileManagerResources();
     RecreateTreeResources();
   }

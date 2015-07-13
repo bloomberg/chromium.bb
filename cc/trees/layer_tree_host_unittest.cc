@@ -353,6 +353,22 @@ class LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimit
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimit);
 
+// Test if the LTH successfully frees resources on the worker context when
+// hard memory limit is set to zero while using a synchronous compositor (like
+// Android WebView).
+class LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimitSynchronous
+    : public LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimit {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    LayerTreeHostFreeWorkerContextResourcesTest::InitializeSettings(settings);
+    settings->use_external_begin_frame_source = true;
+    settings->using_synchronous_renderer_compositor = true;
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostFreeWorkerContextResourcesOnZeroMemoryLimitSynchronous);
+
 // Two setNeedsCommits in a row should lead to at least 1 commit and at least 1
 // draw with frame 0.
 class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
