@@ -19,13 +19,11 @@ public:
     static MemoryInfo* memory(Console&);
     static void setMemory(Console&, MemoryInfo*) { }
 
-    DECLARE_VIRTUAL_TRACE();
+    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<Console>::trace(visitor); }
 
 private:
     static const char* supplementName() { return "ConsoleMemory"; }
     MemoryInfo* memory();
-
-    Member<MemoryInfo> m_memory;
 };
 
 } // namespace blink

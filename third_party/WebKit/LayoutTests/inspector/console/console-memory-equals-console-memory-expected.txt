@@ -1,5 +1,5 @@
-Tests that console.memory is strictly equal to itself.
+Tests that console.memory returns fresh instance/samples.
 
 console.memory === console.memory
-true
+false
 
