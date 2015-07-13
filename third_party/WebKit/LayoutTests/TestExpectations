@@ -253,10 +253,6 @@ crbug.com/504596 [ Linux ] fast/dom/shadow/event-path-after-iframe-removed.html 
 
 crbug.com/501543 fast/images/size-failure.html [ Crash Timeout Pass ]
 
-crbug.com/498356 fast/canvas/downsample-quality.html [ NeedsRebaseline ]
-crbug.com/498356 virtual/gpu/fast/canvas/downsample-quality.html [ NeedsRebaseline ]
-crbug.com/498356 virtual/display_list_2d_canvas/fast/canvas/downsample-quality.html [ NeedsRebaseline ]
-
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
