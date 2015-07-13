@@ -125,7 +125,7 @@ void GCMDriver::UnregisterInternal(const std::string& app_id,
 
 void GCMDriver::Send(const std::string& app_id,
                      const std::string& receiver_id,
-                     const GCMClient::OutgoingMessage& message,
+                     const OutgoingMessage& message,
                      const SendCallback& callback) {
   DCHECK(!app_id.empty());
   DCHECK(!receiver_id.empty());

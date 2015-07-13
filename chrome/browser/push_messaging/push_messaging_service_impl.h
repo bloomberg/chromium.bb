@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -54,7 +55,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // gcm::GCMAppHandler implementation.
   void ShutdownHandler() override;
   void OnMessage(const std::string& app_id,
-                 const gcm::GCMClient::IncomingMessage& message) override;
+                 const gcm::IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;
   void OnSendError(
       const std::string& app_id,
@@ -114,7 +115,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void DeliverMessageCallback(const std::string& app_id,
                               const GURL& requesting_origin,
                               int64 service_worker_registration_id,
-                              const gcm::GCMClient::IncomingMessage& message,
+                              const gcm::IncomingMessage& message,
                               const base::Closure& message_handled_closure,
                               content::PushDeliveryStatus status);
 

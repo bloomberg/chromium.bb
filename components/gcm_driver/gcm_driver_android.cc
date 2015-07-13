@@ -64,7 +64,7 @@ void GCMDriverAndroid::OnMessageReceived(JNIEnv* env,
                                          jobjectArray j_data_keys_and_values) {
   std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
 
-  GCMClient::IncomingMessage message;
+  IncomingMessage message;
   message.sender_id = ConvertJavaStringToUTF8(env, j_sender_id);
   message.collapse_key = ConvertJavaStringToUTF8(env, j_collapse_key);
   // Expand j_data_keys_and_values from array to map.
@@ -205,7 +205,7 @@ void GCMDriverAndroid::UnregisterWithSenderIdImpl(
 
 void GCMDriverAndroid::SendImpl(const std::string& app_id,
                                 const std::string& receiver_id,
-                                const GCMClient::OutgoingMessage& message) {
+                                const OutgoingMessage& message) {
   NOTIMPLEMENTED();
 }
 

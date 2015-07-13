@@ -134,7 +134,7 @@ class GCMDriverTest : public testing::Test {
                 WaitToFinish wait_to_finish);
   void Send(const std::string& app_id,
             const std::string& receiver_id,
-            const GCMClient::OutgoingMessage& message,
+            const OutgoingMessage& message,
             WaitToFinish wait_to_finish);
   void Unregister(const std::string& app_id, WaitToFinish wait_to_finish);
 
@@ -278,7 +278,7 @@ void GCMDriverTest::Register(const std::string& app_id,
 
 void GCMDriverTest::Send(const std::string& app_id,
                          const std::string& receiver_id,
-                         const GCMClient::OutgoingMessage& message,
+                         const OutgoingMessage& message,
                          WaitToFinish wait_to_finish) {
   base::RunLoop run_loop;
   async_operation_completed_callback_ = run_loop.QuitClosure();
@@ -466,7 +466,7 @@ TEST_F(GCMDriverTest, UnregisterFailed) {
 }
 
 TEST_F(GCMDriverTest, SendFailed) {
-  GCMClient::OutgoingMessage message;
+  OutgoingMessage message;
   message.id = "1";
   message.data["key1"] = "value1";
 
@@ -528,7 +528,7 @@ TEST_F(GCMDriverTest, GCMClientNotReadyBeforeSending) {
   AddAppHandlers();
 
   // The sending is on hold until GCMClient is ready.
-  GCMClient::OutgoingMessage message;
+  OutgoingMessage message;
   message.id = "1";
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
@@ -734,7 +734,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAfterUnfinishedUnregister) {
 }
 
 TEST_F(GCMDriverFunctionalTest, Send) {
-  GCMClient::OutgoingMessage message;
+  OutgoingMessage message;
   message.id = "1@ack";
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
@@ -749,7 +749,7 @@ TEST_F(GCMDriverFunctionalTest, Send) {
 }
 
 TEST_F(GCMDriverFunctionalTest, SendError) {
-  GCMClient::OutgoingMessage message;
+  OutgoingMessage message;
   // Embedding error in id will tell the mock to simulate the send error.
   message.id = "1@error";
   message.data["key1"] = "value1";
@@ -776,7 +776,7 @@ TEST_F(GCMDriverFunctionalTest, MessageReceived) {
   // GCM registration has to be performed otherwise GCM will not be started.
   Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
 
-  GCMClient::IncomingMessage message;
+  IncomingMessage message;
   message.data["key1"] = "value1";
   message.data["key2"] = "value2";
   message.sender_id = "sender";
@@ -794,7 +794,7 @@ TEST_F(GCMDriverFunctionalTest, MessageWithCollapseKeyReceived) {
   // GCM registration has to be performed otherwise GCM will not be started.
   Register(kTestAppID1, ToSenderList("sender"), GCMDriverTest::WAIT);
 
-  GCMClient::IncomingMessage message;
+  IncomingMessage message;
   message.data["key1"] = "value1";
   message.collapse_key = "collapse_key_value";
   message.sender_id = "sender";

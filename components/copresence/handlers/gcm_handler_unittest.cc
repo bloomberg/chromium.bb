@@ -12,8 +12,6 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using gcm::GCMClient;
-
 namespace copresence {
 
 namespace {
@@ -43,7 +41,7 @@ class GCMHandlerTest : public testing::Test {
   }
 
  protected:
-  void ProcessMessage(const GCMClient::IncomingMessage& message) {
+  void ProcessMessage(const gcm::IncomingMessage& message) {
     gcm_handler_.OnMessage(GCMHandlerImpl::kCopresenceAppId, message);
   }
 
@@ -67,7 +65,7 @@ TEST_F(GCMHandlerTest, OnMessage) {
   base::Base64Encode(serialized_proto, &encoded_proto);
 
   // Send it in a GCM message.
-  GCMClient::IncomingMessage gcm_message;
+  gcm::IncomingMessage gcm_message;
   gcm_message.data[GCMHandlerImpl::kGcmMessageKey] = ToUrlSafe(encoded_proto);
   ProcessMessage(gcm_message);
 

@@ -140,7 +140,7 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
   ~FakeExtensionGCMAppHandler() override {}
 
   void OnMessage(const std::string& app_id,
-                 const gcm::GCMClient::IncomingMessage& message) override {}
+                 const gcm::IncomingMessage& message) override {}
 
   void OnMessagesDeleted(const std::string& app_id) override {}
 

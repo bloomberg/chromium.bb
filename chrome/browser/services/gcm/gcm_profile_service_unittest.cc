@@ -63,7 +63,7 @@ class GCMProfileServiceTest : public testing::Test {
 
   void RegisterAndWaitForCompletion(const std::vector<std::string>& sender_ids);
   void UnregisterAndWaitForCompletion();
-  void SendAndWaitForCompletion(const GCMClient::OutgoingMessage& message);
+  void SendAndWaitForCompletion(const OutgoingMessage& message);
 
   void RegisterCompleted(const base::Closure& callback,
                          const std::string& registration_id,
@@ -159,7 +159,7 @@ void GCMProfileServiceTest::UnregisterAndWaitForCompletion() {
 }
 
 void GCMProfileServiceTest::SendAndWaitForCompletion(
-    const GCMClient::OutgoingMessage& message) {
+    const OutgoingMessage& message) {
   base::RunLoop run_loop;
   gcm_profile_service_->driver()->Send(
       kTestAppID,
@@ -215,7 +215,7 @@ TEST_F(GCMProfileServiceTest, RegisterAndUnregister) {
 TEST_F(GCMProfileServiceTest, Send) {
   CreateGCMProfileService();
 
-  GCMClient::OutgoingMessage message;
+  OutgoingMessage message;
   message.id = "1";
   message.data["key1"] = "value1";
   SendAndWaitForCompletion(message);

@@ -2,6 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP version: components/gcm_driver.gypi:gcm_driver_common
+component("common") {
+  sources = [
+    "common/gcm_driver_export.h",
+    "common/gcm_messages.cc",
+    "common/gcm_messages.h",
+  ]
+
+  defines = [ "GCM_DRIVER_IMPLEMENTATION" ]
+}
+
 # GYP version: components/gcm_driver.gypi:gcm_driver
 static_library("gcm_driver") {
   sources = [
@@ -51,6 +62,7 @@ static_library("gcm_driver") {
     "//google_apis/gcm",
     "//net",
     "//sync/protocol",
+    ":common",
   ]
 
   if (is_chromeos) {

@@ -31,7 +31,7 @@ class GCMAccountMapper : public GCMAppHandler {
   // List of account mappings.
   typedef std::vector<AccountMapping> AccountMappings;
   typedef base::Callback<void(const std::string& app_id,
-                              const GCMClient::IncomingMessage& message)>
+                              const IncomingMessage& message)>
       DispatchMessageCallback;
 
   explicit GCMAccountMapper(GCMDriver* gcm_driver);
@@ -48,7 +48,7 @@ class GCMAccountMapper : public GCMAppHandler {
   // Implementation of GCMAppHandler:
   void ShutdownHandler() override;
   void OnMessage(const std::string& app_id,
-                 const GCMClient::IncomingMessage& message) override;
+                 const IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;
   void OnSendError(
       const std::string& app_id,
@@ -60,7 +60,7 @@ class GCMAccountMapper : public GCMAppHandler {
  private:
   friend class GCMAccountMapperTest;
 
-  typedef std::map<std::string, GCMClient::OutgoingMessage> OutgoingMessages;
+  typedef std::map<std::string, OutgoingMessage> OutgoingMessages;
 
   // Checks whether account mapper is ready to process new account tokens.
   bool IsReady();

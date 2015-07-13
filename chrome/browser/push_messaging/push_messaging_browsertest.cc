@@ -32,6 +32,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -162,7 +163,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   void SendMessageAndWaitUntilHandled(
       const PushMessagingAppIdentifier& app_identifier,
-      const gcm::GCMClient::IncomingMessage& message);
+      const gcm::IncomingMessage& message);
 
   net::SpawnedTestServer* https_server() const { return https_server_.get(); }
 
@@ -261,7 +262,7 @@ PushMessagingBrowserTest::GetAppIdentifierForServiceWorkerRegistration(
 
 void PushMessagingBrowserTest::SendMessageAndWaitUntilHandled(
     const PushMessagingAppIdentifier& app_identifier,
-    const gcm::GCMClient::IncomingMessage& message) {
+    const gcm::IncomingMessage& message) {
   base::RunLoop run_loop;
   push_service()->SetMessageCallbackForTesting(run_loop.QuitClosure());
   push_service()->OnMessage(app_identifier.app_id(), message);
@@ -417,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
 
-  gcm::GCMClient::IncomingMessage message;
+  gcm::IncomingMessage message;
   message.sender_id = "1234567890";
   message.data["data"] = "testdata";
   push_service()->OnMessage(app_identifier.app_id(), message);
@@ -453,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   gcm_service()->SetUnregisterCallback(base::Bind(&UnregistrationCallback::Run,
                                                   base::Unretained(&callback)));
 
-  gcm::GCMClient::IncomingMessage message;
+  gcm::IncomingMessage message;
   message.sender_id = "1234567890";
   message.data["data"] = "testdata";
   push_service()->OnMessage(app_identifier.app_id(), message);
@@ -496,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
-  gcm::GCMClient::IncomingMessage message;
+  gcm::IncomingMessage message;
   message.sender_id = "1234567890";
   for (int n = 0; n < 2; n++) {
     message.data["data"] = "testdata";
@@ -599,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   std::vector<size_t> number_of_notifications_shown;
 
-  gcm::GCMClient::IncomingMessage message;
+  gcm::IncomingMessage message;
   message.sender_id = "1234567890";
 
   {
@@ -651,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   notification_manager()->SetNotificationAddedCallback(
       message_loop_runner->QuitClosure());
 
-  gcm::GCMClient::IncomingMessage message;
+  gcm::IncomingMessage message;
   message.sender_id = "1234567890";
   message.data["data"] = "shownotification-without-waituntil";
   push_service()->OnMessage(app_identifier.app_id(), message);

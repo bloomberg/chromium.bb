@@ -120,7 +120,7 @@ class GCMDriverDesktop : public GCMDriver,
   void UnregisterImpl(const std::string& app_id) override;
   void SendImpl(const std::string& app_id,
                 const std::string& receiver_id,
-                const GCMClient::OutgoingMessage& message) override;
+                const OutgoingMessage& message) override;
 
  private:
   class IOWorker;
@@ -141,7 +141,7 @@ class GCMDriverDesktop : public GCMDriver,
   void DoUnregister(const std::string& app_id);
   void DoSend(const std::string& app_id,
               const std::string& receiver_id,
-              const GCMClient::OutgoingMessage& message);
+              const OutgoingMessage& message);
   void DoAddInstanceIDData(const std::string& app_id,
                            const std::string& instance_id,
                            const std::string& extra_data);
@@ -157,7 +157,7 @@ class GCMDriverDesktop : public GCMDriver,
 
   // Callbacks posted from IO thread to UI thread.
   void MessageReceived(const std::string& app_id,
-                       const GCMClient::IncomingMessage& message);
+                       const IncomingMessage& message);
   void MessagesDeleted(const std::string& app_id);
   void MessageSendError(const std::string& app_id,
                         const GCMClient::SendErrorDetails& send_error_details);

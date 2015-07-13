@@ -123,7 +123,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
  protected:
   void SendImpl(const std::string& app_id,
                 const std::string& receiver_id,
-                const GCMClient::OutgoingMessage& message) override;
+                const OutgoingMessage& message) override;
 
  private:
   AccountMapping account_mapping_;
@@ -201,7 +201,7 @@ void CustomFakeGCMDriver::MessageSendError(const std::string& message_id) {
 
 void CustomFakeGCMDriver::SendImpl(const std::string& app_id,
                                    const std::string& receiver_id,
-                                   const GCMClient::OutgoingMessage& message) {
+                                   const OutgoingMessage& message) {
   DCHECK_EQ(kGCMAccountMapperAppId, app_id);
   DCHECK_EQ(kGCMAccountMapperSendTo, receiver_id);
 
@@ -257,7 +257,7 @@ class GCMAccountMapperTest : public testing::Test {
     return account_mapper_->accounts_;
   }
   void MessageReceived(const std::string& app_id,
-                       const GCMClient::IncomingMessage& message);
+                       const IncomingMessage& message);
 
   GCMAccountMapper* mapper() { return account_mapper_.get(); }
 
@@ -267,7 +267,7 @@ class GCMAccountMapperTest : public testing::Test {
   const std::string& last_received_app_id() const {
     return last_received_app_id_;
   }
-  const GCMClient::IncomingMessage& last_received_message() const {
+  const IncomingMessage& last_received_message() const {
     return last_received_message_;
   }
 
@@ -276,7 +276,7 @@ class GCMAccountMapperTest : public testing::Test {
   scoped_ptr<GCMAccountMapper> account_mapper_;
   base::SimpleTestClock* clock_;
   std::string last_received_app_id_;
-  GCMClient::IncomingMessage last_received_message_;
+  IncomingMessage last_received_message_;
 };
 
 GCMAccountMapperTest::GCMAccountMapperTest() {
@@ -303,9 +303,8 @@ void GCMAccountMapperTest::Initialize(
                                   base::Unretained(this)));
 }
 
-void GCMAccountMapperTest::MessageReceived(
-    const std::string& app_id,
-    const GCMClient::IncomingMessage& message) {
+void GCMAccountMapperTest::MessageReceived(const std::string& app_id,
+                                           const IncomingMessage& message) {
   last_received_app_id_ = app_id;
   last_received_message_ = message;
 }
@@ -947,7 +946,7 @@ TEST_F(GCMAccountMapperTest, MultipleAccountMappings) {
 TEST_F(GCMAccountMapperTest, DispatchMessageSentToGaiaID) {
   Initialize(GCMAccountMapper::AccountMappings());
   gcm_driver().AddAppHandler(kGCMAccountMapperAppId, mapper());
-  GCMClient::IncomingMessage message;
+  IncomingMessage message;
   message.data[kEmbeddedAppIdKey] = kTestAppId;
   message.data[kTestDataKey] = kTestDataValue;
   message.collapse_key = kTestCollapseKey;
@@ -956,7 +955,7 @@ TEST_F(GCMAccountMapperTest, DispatchMessageSentToGaiaID) {
 
   EXPECT_EQ(kTestAppId, last_received_app_id());
   EXPECT_EQ(1UL, last_received_message().data.size());
-  GCMClient::MessageData::const_iterator it =
+  MessageData::const_iterator it =
       last_received_message().data.find(kTestDataKey);
   EXPECT_TRUE(it != last_received_message().data.end());
   EXPECT_EQ(kTestDataValue, it->second);

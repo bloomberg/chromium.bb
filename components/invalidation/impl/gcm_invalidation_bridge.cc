@@ -318,10 +318,9 @@ void GCMInvalidationBridge::ShutdownHandler() {
   // Nothing to do.
 }
 
-void GCMInvalidationBridge::OnMessage(
-    const std::string& app_id,
-    const gcm::GCMClient::IncomingMessage& message) {
-  gcm::GCMClient::MessageData::const_iterator it;
+void GCMInvalidationBridge::OnMessage(const std::string& app_id,
+                                      const gcm::IncomingMessage& message) {
+  gcm::MessageData::const_iterator it;
   std::string content;
   std::string echo_token;
   it = message.data.find(kContentKey);

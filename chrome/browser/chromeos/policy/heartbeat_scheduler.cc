@@ -306,7 +306,7 @@ void HeartbeatScheduler::SendHeartbeat() {
   if (!gcm_driver_ || !heartbeat_enabled_)
     return;
 
-  gcm::GCMClient::OutgoingMessage message;
+  gcm::OutgoingMessage message;
   message.time_to_live = heartbeat_interval_.InSeconds();
   // Just use the current timestamp as the message ID - if the user changes the
   // time and we send a message with the same ID that we previously used, no
@@ -351,9 +351,8 @@ void HeartbeatScheduler::ShutdownHandler() {
   NOTREACHED() << "HeartbeatScheduler should be destroyed before GCMDriver";
 }
 
-void HeartbeatScheduler::OnMessage(
-    const std::string& app_id,
-    const gcm::GCMClient::IncomingMessage& message) {
+void HeartbeatScheduler::OnMessage(const std::string& app_id,
+                                   const gcm::IncomingMessage& message) {
   // Should never be called because we don't get any incoming messages
   // for our app ID.
   NOTREACHED() << "Received incoming message for " << app_id;

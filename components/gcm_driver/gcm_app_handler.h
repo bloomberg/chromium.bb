@@ -26,7 +26,7 @@ class GCMAppHandler {
 
   // Called when a GCM message has been received.
   virtual void OnMessage(const std::string& app_id,
-                         const GCMClient::IncomingMessage& message) = 0;
+                         const IncomingMessage& message) = 0;
 
   // Called when some GCM messages have been deleted from the server.
   virtual void OnMessagesDeleted(const std::string& app_id) = 0;

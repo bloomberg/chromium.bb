@@ -83,9 +83,8 @@ void CryptAuthGCMManagerImpl::RemoveObserver(Observer* observer) {
 void CryptAuthGCMManagerImpl::ShutdownHandler() {
 }
 
-void CryptAuthGCMManagerImpl::OnMessage(
-    const std::string& app_id,
-    const gcm::GCMClient::IncomingMessage& message) {
+void CryptAuthGCMManagerImpl::OnMessage(const std::string& app_id,
+                                        const gcm::IncomingMessage& message) {
   std::vector<std::string> fields;
   for (const auto& kv : message.data) {
     fields.push_back(std::string(kv.first) + ": " + std::string(kv.second));

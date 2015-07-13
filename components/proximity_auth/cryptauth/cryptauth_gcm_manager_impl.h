@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/proximity_auth/cryptauth/cryptauth_gcm_manager.h"
@@ -46,7 +47,7 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
   // GCMAppHandler:
   void ShutdownHandler() override;
   void OnMessage(const std::string& app_id,
-                 const gcm::GCMClient::IncomingMessage& message) override;
+                 const gcm::IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;
   void OnSendError(const std::string& app_id,
                    const gcm::GCMClient::SendErrorDetails& details) override;

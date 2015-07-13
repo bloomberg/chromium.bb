@@ -168,7 +168,7 @@ TEST_F(ProximityAuthCryptAuthGCMManagerImplTest, ConcurrentRegistrations) {
 TEST_F(ProximityAuthCryptAuthGCMManagerImplTest, ReenrollmentMessagesReceived) {
   EXPECT_CALL(*this, OnReenrollMessageProxy()).Times(2);
 
-  gcm::GCMClient::IncomingMessage message;
+  gcm::IncomingMessage message;
   message.data["registrationTickleType"] = "1";  // FORCE_ENROLLMENT
   message.collapse_key = kCryptAuthMessageCollapseKey;
   message.sender_id = kCryptAuthGCMSenderId;
@@ -183,7 +183,7 @@ TEST_F(ProximityAuthCryptAuthGCMManagerImplTest, ReenrollmentMessagesReceived) {
 TEST_F(ProximityAuthCryptAuthGCMManagerImplTest, ResyncMessagesReceived) {
   EXPECT_CALL(*this, OnResyncMessageProxy()).Times(2);
 
-  gcm::GCMClient::IncomingMessage message;
+  gcm::IncomingMessage message;
   message.data["registrationTickleType"] = "3";  // DEVICES_SYNC
   message.collapse_key = kCryptAuthMessageCollapseKey;
   message.sender_id = kCryptAuthGCMSenderId;

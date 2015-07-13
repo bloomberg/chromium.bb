@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/default_gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
 
@@ -113,7 +114,7 @@ class GCMDriver {
   // |callback|: to be called once the asynchronous operation is done.
   void Send(const std::string& app_id,
             const std::string& receiver_id,
-            const GCMClient::OutgoingMessage& message,
+            const OutgoingMessage& message,
             const SendCallback& callback);
 
   const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
@@ -230,7 +231,7 @@ class GCMDriver {
   // Platform-specific implementation of Send.
   virtual void SendImpl(const std::string& app_id,
                         const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) = 0;
+                        const OutgoingMessage& message) = 0;
 
   // Runs the Register callback.
   void RegisterFinished(const std::string& app_id,

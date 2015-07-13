@@ -42,7 +42,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
   void UnregisterImpl(const std::string& app_id) override;
   void SendImpl(const std::string& app_id,
                 const std::string& receiver_id,
-                const GCMClient::OutgoingMessage& message) override;
+                const OutgoingMessage& message) override;
 
  private:
   FakeGCMProfileService* service_;
@@ -73,7 +73,7 @@ void CustomFakeGCMDriver::UnregisterImpl(const std::string& app_id) {
 
 void CustomFakeGCMDriver::SendImpl(const std::string& app_id,
                                    const std::string& receiver_id,
-                                   const GCMClient::OutgoingMessage& message) {
+                                   const OutgoingMessage& message) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMProfileService::SendFinished,
@@ -151,10 +151,9 @@ void FakeGCMProfileService::UnregisterFinished(const std::string& app_id) {
     unregister_callback_.Run(app_id);
 }
 
-void FakeGCMProfileService::SendFinished(
-    const std::string& app_id,
-    const std::string& receiver_id,
-    const GCMClient::OutgoingMessage& message) {
+void FakeGCMProfileService::SendFinished(const std::string& app_id,
+                                         const std::string& receiver_id,
+                                         const OutgoingMessage& message) {
   if (collect_) {
     last_sent_message_ = message;
     last_receiver_id_ = receiver_id;

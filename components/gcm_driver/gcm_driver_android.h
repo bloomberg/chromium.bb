@@ -78,7 +78,7 @@ class GCMDriverAndroid : public GCMDriver {
                                   const std::string& sender_id) override;
   void SendImpl(const std::string& app_id,
                 const std::string& receiver_id,
-                const GCMClient::OutgoingMessage& message) override;
+                const OutgoingMessage& message) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

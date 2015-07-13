@@ -51,7 +51,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
                       const std::string& message_id,
                       GCMClient::Result result) override;
   void OnMessageReceived(const std::string& app_id,
-                         const GCMClient::IncomingMessage& message) override;
+                         const IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;
   void OnMessageSendError(
       const std::string& app_id,
@@ -79,7 +79,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   void Unregister(const std::string& app_id);
   void Send(const std::string& app_id,
             const std::string& receiver_id,
-            const GCMClient::OutgoingMessage& message);
+            const OutgoingMessage& message);
   void GetGCMStatistics(bool clear_logs);
   void SetGCMRecording(bool recording);
 
@@ -229,7 +229,7 @@ void GCMDriverDesktop::IOWorker::OnSendFinished(const std::string& app_id,
 
 void GCMDriverDesktop::IOWorker::OnMessageReceived(
     const std::string& app_id,
-    const GCMClient::IncomingMessage& message) {
+    const IncomingMessage& message) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
   ui_thread_->PostTask(
@@ -335,10 +335,9 @@ void GCMDriverDesktop::IOWorker::Unregister(const std::string& app_id) {
       make_linked_ptr<RegistrationInfo>(gcm_info.release()));
 }
 
-void GCMDriverDesktop::IOWorker::Send(
-    const std::string& app_id,
-    const std::string& receiver_id,
-    const GCMClient::OutgoingMessage& message) {
+void GCMDriverDesktop::IOWorker::Send(const std::string& app_id,
+                                      const std::string& receiver_id,
+                                      const OutgoingMessage& message) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
   gcm_client_->Send(app_id, receiver_id, message);
@@ -692,7 +691,7 @@ void GCMDriverDesktop::DoUnregister(const std::string& app_id) {
 
 void GCMDriverDesktop::SendImpl(const std::string& app_id,
                                 const std::string& receiver_id,
-                                const GCMClient::OutgoingMessage& message) {
+                                const OutgoingMessage& message) {
   // Delay the send operation until all GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
     delayed_task_controller_->AddTask(base::Bind(&GCMDriverDesktop::DoSend,
@@ -708,7 +707,7 @@ void GCMDriverDesktop::SendImpl(const std::string& app_id,
 
 void GCMDriverDesktop::DoSend(const std::string& app_id,
                               const std::string& receiver_id,
-                              const GCMClient::OutgoingMessage& message) {
+                              const OutgoingMessage& message) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
   io_thread_->PostTask(
       FROM_HERE,
@@ -1187,9 +1186,8 @@ void GCMDriverDesktop::RemoveCachedData() {
   ClearCallbacks();
 }
 
-void GCMDriverDesktop::MessageReceived(
-    const std::string& app_id,
-    const GCMClient::IncomingMessage& message) {
+void GCMDriverDesktop::MessageReceived(const std::string& app_id,
+                                       const IncomingMessage& message) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
   // Drop the event if the service has been stopped.

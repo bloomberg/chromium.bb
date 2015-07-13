@@ -14,22 +14,6 @@ GCMClient::ChromeBuildInfo::ChromeBuildInfo()
 GCMClient::ChromeBuildInfo::~ChromeBuildInfo() {
 }
 
-// static
-const int GCMClient::OutgoingMessage::kMaximumTTL = 24 * 60 * 60;  // 1 day.
-
-GCMClient::OutgoingMessage::OutgoingMessage()
-    : time_to_live(kMaximumTTL) {
-}
-
-GCMClient::OutgoingMessage::~OutgoingMessage() {
-}
-
-GCMClient::IncomingMessage::IncomingMessage() {
-}
-
-GCMClient::IncomingMessage::~IncomingMessage() {
-}
-
 GCMClient::SendErrorDetails::SendErrorDetails() : result(UNKNOWN_ERROR) {}
 
 GCMClient::SendErrorDetails::~SendErrorDetails() {}

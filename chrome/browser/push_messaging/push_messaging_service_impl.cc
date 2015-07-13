@@ -164,9 +164,8 @@ void PushMessagingServiceImpl::ShutdownHandler() {
 
 // OnMessage methods -----------------------------------------------------------
 
-void PushMessagingServiceImpl::OnMessage(
-    const std::string& app_id,
-    const gcm::GCMClient::IncomingMessage& message) {
+void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
+                                         const gcm::IncomingMessage& message) {
   in_flight_message_deliveries_.insert(app_id);
 
   base::Closure message_handled_closure =
@@ -214,7 +213,7 @@ void PushMessagingServiceImpl::OnMessage(
   // https://crbug.com/449184
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePushMessagePayload)) {
-    gcm::GCMClient::MessageData::const_iterator it = message.data.find("data");
+    gcm::MessageData::const_iterator it = message.data.find("data");
     if (it != message.data.end())
       data = it->second;
   }
@@ -235,7 +234,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     const std::string& app_id,
     const GURL& requesting_origin,
     int64 service_worker_registration_id,
-    const gcm::GCMClient::IncomingMessage& message,
+    const gcm::IncomingMessage& message,
     const base::Closure& message_handled_closure,
     content::PushDeliveryStatus status) {
   // Remove a single in-flight delivery for |app_id|. This has to be done using

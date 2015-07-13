@@ -25,7 +25,7 @@ void FakeGCMAppHandler::ShutdownHandler() {
 }
 
 void FakeGCMAppHandler::OnMessage(const std::string& app_id,
-                                  const GCMClient::IncomingMessage& message) {
+                                  const IncomingMessage& message) {
   ClearResults();
   received_event_ = MESSAGE_EVENT;
   app_id_ = app_id;
@@ -67,7 +67,7 @@ void FakeGCMAppHandler::ClearResults() {
   received_event_ = NO_EVENT;
   app_id_.clear();
   acked_message_id_.clear();
-  message_ = GCMClient::IncomingMessage();
+  message_ = IncomingMessage();
   send_error_details_ = GCMClient::SendErrorDetails();
 }
 

@@ -32,9 +32,9 @@ class MockGCMDriver : public testing::StrictMock<gcm::FakeGCMDriver> {
   MOCK_METHOD2(RegisterImpl,
                void(const std::string&, const std::vector<std::string>&));
   MOCK_METHOD3(SendImpl,
-               void(const std::string&, const std::string&,
-                    const gcm::GCMClient::OutgoingMessage& message));
-
+               void(const std::string&,
+                    const std::string&,
+                    const gcm::OutgoingMessage& message));
 
   // Helper function to complete a registration previously started by
   // Register().
@@ -153,7 +153,7 @@ TEST_F(HeartbeatSchedulerTest, ChangeHeartbeatFrequency) {
   const int new_delay = 1234*1000;  // 1234 seconds.
   settings_helper_.SetInteger(chromeos::kHeartbeatFrequency, new_delay);
   // Now run pending heartbeat task, should send a heartbeat.
-  gcm::GCMClient::OutgoingMessage message;
+  gcm::OutgoingMessage message;
   EXPECT_CALL(gcm_driver_, SendImpl(kHeartbeatGCMAppID, _, _))
       .WillOnce(SaveArg<2>(&message));
   task_runner_->RunPendingTasks();
@@ -172,7 +172,7 @@ TEST_F(HeartbeatSchedulerTest, DisableHeartbeats) {
   // Makes sure that we can disable heartbeats on the fly.
   EXPECT_CALL(gcm_driver_, RegisterImpl(kHeartbeatGCMAppID, _));
   settings_helper_.SetBoolean(chromeos::kHeartbeatEnabled, true);
-  gcm::GCMClient::OutgoingMessage message;
+  gcm::OutgoingMessage message;
   EXPECT_CALL(gcm_driver_, SendImpl(kHeartbeatGCMAppID, _, _))
       .WillOnce(SaveArg<2>(&message));
   gcm_driver_.CompleteRegistration(
@@ -200,7 +200,7 @@ TEST_F(HeartbeatSchedulerTest, DisableHeartbeats) {
 }
 
 TEST_F(HeartbeatSchedulerTest, CheckMessageContents) {
-  gcm::GCMClient::OutgoingMessage message;
+  gcm::OutgoingMessage message;
   EXPECT_CALL(gcm_driver_, RegisterImpl(kHeartbeatGCMAppID, _));
   EXPECT_CALL(gcm_driver_, SendImpl(kHeartbeatGCMAppID, _, _))
       .WillOnce(SaveArg<2>(&message));

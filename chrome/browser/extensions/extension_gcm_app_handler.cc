@@ -68,9 +68,8 @@ void ExtensionGCMAppHandler::ShutdownHandler() {
   js_event_router_.reset();
 }
 
-void ExtensionGCMAppHandler::OnMessage(
-    const std::string& app_id,
-    const gcm::GCMClient::IncomingMessage& message) {
+void ExtensionGCMAppHandler::OnMessage(const std::string& app_id,
+                                       const gcm::IncomingMessage& message) {
   js_event_router_->OnMessage(app_id, message);
 }
 

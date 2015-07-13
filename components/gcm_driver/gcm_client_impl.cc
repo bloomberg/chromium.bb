@@ -211,8 +211,7 @@ bool DeserializeInstanceIDData(const std::string& serialized_data,
   return !instance_id->empty() && !extra_data->empty();
 }
 
-void RecordOutgoingMessageToUMA(
-    const gcm::GCMClient::OutgoingMessage& message) {
+void RecordOutgoingMessageToUMA(const gcm::OutgoingMessage& message) {
   OutgoingMessageTTLCategory ttl_category;
   if (message.time_to_live == 0)
     ttl_category = TTL_ZERO;

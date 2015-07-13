@@ -78,7 +78,7 @@ void GCMHandlerImpl::ShutdownHandler() {
 }
 
 void GCMHandlerImpl::OnMessage(const std::string& app_id,
-                               const GCMClient::IncomingMessage& message) {
+                               const gcm::IncomingMessage& message) {
   DCHECK_EQ(kCopresenceAppId, app_id);
   DVLOG(2) << "Incoming GCM message";
 

@@ -74,7 +74,7 @@ void FakeGCMDriver::UnregisterImpl(const std::string& app_id) {
 
 void FakeGCMDriver::SendImpl(const std::string& app_id,
                              const std::string& receiver_id,
-                             const GCMClient::OutgoingMessage& message) {
+                             const OutgoingMessage& message) {
 }
 
 void FakeGCMDriver::SetAccountTokens(

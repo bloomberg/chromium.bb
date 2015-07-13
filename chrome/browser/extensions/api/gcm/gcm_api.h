@@ -88,7 +88,7 @@ class GcmSendFunction : public GcmApiFunction {
 
   // Validates that message data do not carry invalid keys and fit into
   // allowable size limits.
-  bool ValidateMessageData(const gcm::GCMClient::MessageData& data) const;
+  bool ValidateMessageData(const gcm::MessageData& data) const;
 };
 
 class GcmJsEventRouter {
@@ -98,7 +98,7 @@ class GcmJsEventRouter {
   virtual ~GcmJsEventRouter();
 
   void OnMessage(const std::string& app_id,
-                 const gcm::GCMClient::IncomingMessage& message);
+                 const gcm::IncomingMessage& message);
   void OnMessagesDeleted(const std::string& app_id);
   void OnSendError(const std::string& app_id,
                    const gcm::GCMClient::SendErrorDetails& send_error_details);

@@ -16,6 +16,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/extensions/api/gcm.h"
+#include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
@@ -159,7 +160,7 @@ bool GcmSendFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(
       ValidateMessageData(params->message.data.additional_properties));
 
-  gcm::GCMClient::OutgoingMessage outgoing_message;
+  gcm::OutgoingMessage outgoing_message;
   outgoing_message.id = params->message.message_id;
   outgoing_message.data = params->message.data.additional_properties;
   if (params->message.time_to_live.get())
@@ -182,8 +183,7 @@ void GcmSendFunction::CompleteFunctionWithResult(
   SendResponse(gcm::GCMClient::SUCCESS == result);
 }
 
-bool GcmSendFunction::ValidateMessageData(
-    const gcm::GCMClient::MessageData& data) const {
+bool GcmSendFunction::ValidateMessageData(const gcm::MessageData& data) const {
   size_t total_size = 0u;
   for (std::map<std::string, std::string>::const_iterator iter = data.begin();
        iter != data.end(); ++iter) {
@@ -205,9 +205,8 @@ GcmJsEventRouter::GcmJsEventRouter(Profile* profile) : profile_(profile) {
 GcmJsEventRouter::~GcmJsEventRouter() {
 }
 
-void GcmJsEventRouter::OnMessage(
-    const std::string& app_id,
-    const gcm::GCMClient::IncomingMessage& message) {
+void GcmJsEventRouter::OnMessage(const std::string& app_id,
+                                 const gcm::IncomingMessage& message) {
   api::gcm::OnMessage::Message message_arg;
   message_arg.data.additional_properties = message.data;
   if (!message.sender_id.empty())

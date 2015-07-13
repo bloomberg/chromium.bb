@@ -51,7 +51,7 @@ class GCMHandlerImpl final : public GCMHandler,
   // GCMAppHandler overrides
   void ShutdownHandler() override;
   void OnMessage(const std::string& app_id,
-                 const gcm::GCMClient::IncomingMessage& message) override;
+                 const gcm::IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;
   void OnSendError(
       const std::string& /* app_id */,

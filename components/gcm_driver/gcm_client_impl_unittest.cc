@@ -285,7 +285,7 @@ class GCMClientImplTest : public testing::Test,
                       const std::string& message_id,
                       GCMClient::Result result) override {}
   void OnMessageReceived(const std::string& registration_id,
-                         const GCMClient::IncomingMessage& message) override;
+                         const IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;
   void OnMessageSendError(
       const std::string& app_id,
@@ -330,9 +330,7 @@ class GCMClientImplTest : public testing::Test,
   }
   const std::string& last_message_id() const { return last_message_id_; }
   GCMClient::Result last_result() const { return last_result_; }
-  const GCMClient::IncomingMessage& last_message() const {
-    return last_message_;
-  }
+  const IncomingMessage& last_message() const { return last_message_; }
   const GCMClient::SendErrorDetails& last_error_details() const {
     return last_error_details_;
   }
@@ -380,7 +378,7 @@ class GCMClientImplTest : public testing::Test,
   std::string last_registration_id_;
   std::string last_message_id_;
   GCMClient::Result last_result_;
-  GCMClient::IncomingMessage last_message_;
+  IncomingMessage last_message_;
   GCMClient::SendErrorDetails last_error_details_;
   base::Time last_token_fetch_time_;
   std::vector<AccountMapping> last_account_mappings_;
@@ -577,9 +575,8 @@ void GCMClientImplTest::OnGCMReady(
   last_token_fetch_time_ = last_token_fetch_time;
 }
 
-void GCMClientImplTest::OnMessageReceived(
-    const std::string& registration_id,
-    const GCMClient::IncomingMessage& message) {
+void GCMClientImplTest::OnMessageReceived(const std::string& registration_id,
+                                          const IncomingMessage& message) {
   last_event_ = MESSAGE_RECEIVED;
   last_app_id_ = registration_id;
   last_message_ = message;
@@ -867,7 +864,7 @@ TEST_F(GCMClientImplTest, DispatchDownstreamMessageSendError) {
   EXPECT_EQ(kAppId, last_app_id());
   EXPECT_EQ("007", last_error_details().message_id);
   EXPECT_EQ(1UL, last_error_details().additional_data.size());
-  GCMClient::MessageData::const_iterator iter =
+  MessageData::const_iterator iter =
       last_error_details().additional_data.find("error_details");
   EXPECT_TRUE(iter != last_error_details().additional_data.end());
   EXPECT_EQ("some details", iter->second);
@@ -886,7 +883,7 @@ TEST_F(GCMClientImplTest, DispatchDownstreamMessgaesDeleted) {
 }
 
 TEST_F(GCMClientImplTest, SendMessage) {
-  GCMClient::OutgoingMessage message;
+  OutgoingMessage message;
   message.id = "007";
   message.time_to_live = 500;
   message.data["key"] = "value";

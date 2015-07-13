@@ -30,7 +30,7 @@ class FakeGCMAppHandler : public GCMAppHandler {
   const Event& received_event() const { return received_event_; }
   const std::string& app_id() const { return app_id_; }
   const std::string& acked_message_id() const { return acked_message_id_; }
-  const GCMClient::IncomingMessage& message() const { return message_; }
+  const IncomingMessage& message() const { return message_; }
   const GCMClient::SendErrorDetails& send_error_details() const {
     return send_error_details_;
   }
@@ -40,7 +40,7 @@ class FakeGCMAppHandler : public GCMAppHandler {
   // GCMAppHandler implementation.
   void ShutdownHandler() override;
   void OnMessage(const std::string& app_id,
-                 const GCMClient::IncomingMessage& message) override;
+                 const IncomingMessage& message) override;
   void OnMessagesDeleted(const std::string& app_id) override;
   void OnSendError(
       const std::string& app_id,
@@ -56,7 +56,7 @@ class FakeGCMAppHandler : public GCMAppHandler {
   Event received_event_;
   std::string app_id_;
   std::string acked_message_id_;
-  GCMClient::IncomingMessage message_;
+  IncomingMessage message_;
   GCMClient::SendErrorDetails send_error_details_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMAppHandler);

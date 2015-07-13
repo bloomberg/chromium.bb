@@ -5,6 +5,23 @@
 {
   'targets': [
     {
+      # GN version: //components/gcm_driver:common
+      'target_name': 'gcm_driver_common',
+      'type': '<(component)',
+      'include_dirs': [
+        '..',
+      ],
+      'defines': [
+        'GCM_DRIVER_IMPLEMENTATION',
+      ],
+      'sources': [
+         # Note: file list duplicated in GN build.
+        'gcm_driver/common/gcm_driver_export.h',
+        'gcm_driver/common/gcm_messages.cc',
+        'gcm_driver/common/gcm_messages.h',
+      ],
+    },
+    {
       # GN version: //components/gcm_driver
       'target_name': 'gcm_driver',
       'type': 'static_library',
@@ -14,6 +31,7 @@
         '../google_apis/gcm/gcm.gyp:gcm',
         '../net/net.gyp:net',
         '../sync/sync.gyp:sync_proto',
+        'gcm_driver_common',
       ],
       'include_dirs': [
         '..',
