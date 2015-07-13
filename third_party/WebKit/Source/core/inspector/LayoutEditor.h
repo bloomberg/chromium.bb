@@ -43,7 +43,7 @@ private:
     void overlayPropertyChanged(float) override;
     void overlayEndedPropertyChange() override;
 
-    RefPtrWillBeMember<Node> m_node;
+    RefPtrWillBeMember<Element> m_element;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     CSSPropertyID m_changingProperty;
     float m_propertyInitialValue;

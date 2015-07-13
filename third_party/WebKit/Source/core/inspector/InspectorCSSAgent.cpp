@@ -1536,36 +1536,27 @@ void InspectorCSSAgent::resetPseudoStates()
         document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
-void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* element, CSSPropertyID propertyId, const String& value)
+CSSStyleDeclaration* InspectorCSSAgent::findEffectiveDeclaration(Element* element, CSSPropertyID propertyId)
 {
     PseudoId elementPseudoId = element->pseudoId();
+    CSSStyleDeclaration* inlineStyle =  element->style();
+
     if (elementPseudoId) {
         element = element->parentOrShadowHostElement();
-        if (!element) {
-            *errorString = "Pseudo element has no parent";
-            return;
-        }
+        if (!element)
+            return nullptr;
     }
 
     Document* ownerDocument = element->ownerDocument();
     // A non-active document has no styles.
-    if (!ownerDocument->isActive()) {
-        *errorString = "Can't edit a node from a non-active document";
-        return;
-    }
+    if (!ownerDocument->isActive())
+        return nullptr;
 
-    // Matched rules.
-
-    Vector<StylePropertyShorthand, 4> shorthands;
-    getMatchingShorthandsForLonghand(propertyId, &shorthands);
-
-    String shorthand =  shorthands.size() > 0 ? getPropertyNameString(shorthands[0].id()) : String();
     String longhand = getPropertyNameString(propertyId);
 
     CSSStyleDeclaration* foundStyle = nullptr;
     bool isImportant = false;
 
-    CSSStyleDeclaration* inlineStyle =  element->style();
     if (inlineStyle && !inlineStyle->getPropertyValue(longhand).isEmpty()) {
         foundStyle = inlineStyle;
         isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
@@ -1598,6 +1589,25 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
             foundStyle = style;
     }
 
+    return foundStyle;
+}
+
+void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* element, CSSPropertyID propertyId, const String& value)
+{
+    Document* ownerDocument = element->ownerDocument();
+    if (!ownerDocument->isActive()) {
+        *errorString = "Can't edit a node from a non-active document";
+        return;
+    }
+
+    Vector<StylePropertyShorthand, 4> shorthands;
+    getMatchingShorthandsForLonghand(propertyId, &shorthands);
+
+    String shorthand =  shorthands.size() > 0 ? getPropertyNameString(shorthands[0].id()) : String();
+    String longhand = getPropertyNameString(propertyId);
+
+    CSSStyleDeclaration* foundStyle = findEffectiveDeclaration(element, propertyId);
+    CSSStyleDeclaration* inlineStyle =  element->style();
     if (!foundStyle || !foundStyle->parentStyleSheet())
         foundStyle = inlineStyle;
 
@@ -1649,6 +1659,7 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     String styleText = styleSheetText.substring(bodyRange.start, bodyRange.length());
 
     if (foundIndex == -1) {
+        bool isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
         String newPropertyText = "\n" + longhand + ": " + value + (isImportant ? " !important" : "") + ";";
         styleText.append(newPropertyText);
     } else {

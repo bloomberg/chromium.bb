@@ -52,7 +52,7 @@ FloatPoint orthogonalVector(FloatPoint from, FloatPoint to, FloatPoint defaultVe
 } // namespace
 
 LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent)
-    : m_node(nullptr)
+    : m_element(nullptr)
     , m_cssAgent(cssAgent)
     , m_changingProperty(CSSPropertyInvalid)
     , m_propertyInitialValue(0)
@@ -61,23 +61,23 @@ LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent)
 
 DEFINE_TRACE(LayoutEditor)
 {
-    visitor->trace(m_node);
+    visitor->trace(m_element);
     visitor->trace(m_cssAgent);
 }
 
 void LayoutEditor::setNode(Node* node)
 {
-    m_node = node;
+    m_element = node && node->isElementNode() ? toElement(node) : nullptr;
     m_changingProperty = CSSPropertyInvalid;
     m_propertyInitialValue = 0;
 }
 
 PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
 {
-    if (!m_node)
+    if (!m_element)
         return nullptr;
 
-    LayoutObject* layoutObject = m_node->layoutObject();
+    LayoutObject* layoutObject = m_element->layoutObject();
 
     if (!layoutObject)
         return nullptr;
@@ -135,8 +135,10 @@ PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
 
 RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
 {
-    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(m_node, true);
-    RefPtrWillBeRawPtr<CSSValue> cssValue = computedStyleInfo->getPropertyCSSValue(property);
+    CSSStyleDeclaration* style = m_cssAgent->findEffectiveDeclaration(m_element.get(), property);
+    if (!style)
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSValue> cssValue = style->getPropertyCSSValueInternal(property);
     if (!cssValue->isPrimitiveValue())
         return nullptr;
 
@@ -146,11 +148,11 @@ RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPrope
 PassRefPtr<JSONObject> LayoutEditor::createValueDescription(const String& propertyName) const
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
-    if (!cssValue)
+    if (cssValue && !cssValue->isPx())
         return nullptr;
 
     RefPtr<JSONObject> object = JSONObject::create();
-    object->setNumber("value", cssValue->getFloatValue());
+    object->setNumber("value", cssValue ? cssValue->getFloatValue() : 0);
     object->setString("unit", "px");
     return object.release();
 }
@@ -158,23 +160,21 @@ PassRefPtr<JSONObject> LayoutEditor::createValueDescription(const String& proper
 void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
 {
     m_changingProperty = cssPropertyID(anchorName);
-    if (!m_node || !m_changingProperty)
+    if (!m_element || !m_changingProperty)
         return;
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(m_changingProperty);
-    if (!cssValue) {
-        m_changingProperty = CSSPropertyInvalid;
+    if (cssValue && !cssValue->isPx())
         return;
-    }
 
-    m_propertyInitialValue = cssValue->getFloatValue();
+    m_propertyInitialValue = cssValue ? cssValue->getFloatValue() : 0;
 }
 
 void LayoutEditor::overlayPropertyChanged(float cssDelta)
 {
-    if (m_changingProperty && m_node->isElementNode()) {
+    if (m_changingProperty) {
         String errorString;
-        m_cssAgent->setCSSPropertyValue(&errorString, toElement(m_node.get()), m_changingProperty, String::number(cssDelta + m_propertyInitialValue) + "px");
+        m_cssAgent->setCSSPropertyValue(&errorString, m_element.get(), m_changingProperty, String::number(cssDelta + m_propertyInitialValue) + "px");
     }
 }
 
