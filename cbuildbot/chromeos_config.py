@@ -614,6 +614,7 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins
+        'stumpy_moblab-paladin',
         'lakitu-paladin',
 
         # Experimental Canaries (Group)
@@ -1521,7 +1522,6 @@ def GetConfig():
       'stout',
       'strago',
       'stumpy',
-      'stumpy_moblab',
       'tricky',
       'veyron_pinky',
       'whirlwind',
