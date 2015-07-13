@@ -172,7 +172,7 @@ InstalledBubbleContent::InstalledBubbleContent(
   // Extra info can include a promo for signing into sync.
 
   const Extension* extension = bubble.extension();
-  if (extensions::sync_helper::IsSyncableExtension(extension) &&
+  if (extensions::sync_helper::IsSyncable(extension) &&
       SyncPromoUI::ShouldShowSyncPromo(browser->profile()))
     flavors_ |= SIGN_IN_PROMO;
 

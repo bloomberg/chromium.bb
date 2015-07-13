@@ -75,24 +75,8 @@ ExtensionSyncData::OptionalBoolean GetAllowedOnAllUrlsOptionalBoolean(
 
 // Returns true if the sync type of |extension| matches |type|.
 bool IsCorrectSyncType(const Extension& extension, syncer::ModelType type) {
-  if (type == syncer::EXTENSIONS &&
-      extensions::sync_helper::IsSyncableExtension(&extension)) {
-    return true;
-  }
-
-  if (type == syncer::APPS &&
-      extensions::sync_helper::IsSyncableApp(&extension)) {
-    return true;
-  }
-
-  return false;
-}
-
-// Returns whether the given app or extension should be synced.
-bool ShouldSync(const Extension& extension, Profile* profile) {
-  if (extension.is_app())
-    return extensions::util::ShouldSyncApp(&extension, profile);
-  return extensions::util::ShouldSyncExtension(&extension, profile);
+  return (type == syncer::EXTENSIONS && extension.is_extension()) ||
+         (type == syncer::APPS && extension.is_app());
 }
 
 }  // namespace
@@ -139,7 +123,7 @@ syncer::SyncData ExtensionSyncService::PrepareToSyncUninstallExtension(
   syncer::ModelType type =
       extension.is_app() ? syncer::APPS : syncer::EXTENSIONS;
   const SyncBundle* bundle = GetSyncBundle(type);
-  if (ShouldSync(extension, profile_)) {
+  if (extensions::util::ShouldSync(&extension, profile_)) {
     if (bundle->IsSyncing())
       return CreateSyncData(extension).GetSyncData();
     if (extension_service_->is_ready() && !flare_.is_null())
@@ -159,29 +143,23 @@ void ExtensionSyncService::ProcessSyncUninstallExtension(
 
 void ExtensionSyncService::SyncEnableExtension(const Extension& extension) {
   // Syncing may not have started yet, so handle pending enables.
-  if (extensions::util::ShouldSyncApp(&extension, profile_))
-    pending_app_enables_.Add(extension.id());
-
-  if (extensions::util::ShouldSyncExtension(&extension, profile_))
-    pending_extension_enables_.Add(extension.id());
+  if (extensions::util::ShouldSync(&extension, profile_))
+    GetPendingEnables(extension.is_app())->Add(extension.id());
 
   SyncExtensionChangeIfNeeded(extension);
 }
 
 void ExtensionSyncService::SyncDisableExtension(const Extension& extension) {
   // Syncing may not have started yet, so handle pending enables.
-  if (extensions::util::ShouldSyncApp(&extension, profile_))
-    pending_app_enables_.Remove(extension.id());
-
-  if (extensions::util::ShouldSyncExtension(&extension, profile_))
-    pending_extension_enables_.Remove(extension.id());
+  if (extensions::util::ShouldSync(&extension, profile_))
+    GetPendingEnables(extension.is_app())->Remove(extension.id());
 
   SyncExtensionChangeIfNeeded(extension);
 }
 
 void ExtensionSyncService::SyncExtensionChangeIfNeeded(
     const Extension& extension) {
-  if (!ShouldSync(extension, profile_))
+  if (!extensions::util::ShouldSync(&extension, profile_))
     return;
 
   syncer::ModelType type =
@@ -204,11 +182,9 @@ syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
 
   SyncBundle* bundle = GetSyncBundle(type);
   bool is_apps = (type == syncer::APPS);
-  PendingEnables* pending_enables =
-      is_apps ? &pending_app_enables_ : &pending_extension_enables_;
 
   bundle->MergeDataAndStartSyncing(initial_sync_data, sync_processor.Pass());
-  pending_enables->OnSyncStarted(extension_service_);
+  GetPendingEnables(is_apps)->OnSyncStarted(extension_service_);
 
   // Process local extensions.
   // TODO(yoz): Determine whether pending extensions should be considered too.
@@ -389,9 +365,12 @@ SyncBundle* ExtensionSyncService::GetSyncBundle(syncer::ModelType type) {
 
 const SyncBundle* ExtensionSyncService::GetSyncBundle(
     syncer::ModelType type) const {
-  if (type == syncer::APPS)
-    return &app_sync_bundle_;
-  return &extension_sync_bundle_;
+  return (type == syncer::APPS) ? &app_sync_bundle_ : &extension_sync_bundle_;
+}
+
+extensions::PendingEnables* ExtensionSyncService::GetPendingEnables(
+    bool is_apps) {
+  return is_apps ? &pending_app_enables_ : &pending_extension_enables_;
 }
 
 std::vector<ExtensionSyncData> ExtensionSyncService::GetSyncDataList(
@@ -419,7 +398,7 @@ void ExtensionSyncService::FillSyncDataList(
   const SyncBundle* bundle = GetSyncBundle(type);
   for (const scoped_refptr<const Extension>& extension : extensions) {
     if (IsCorrectSyncType(*extension, type) &&
-        ShouldSync(*extension, profile_) &&
+        extensions::util::ShouldSync(extension.get(), profile_) &&
         bundle->ShouldIncludeInLocalSyncDataList(*extension)) {
       sync_data_list->push_back(CreateSyncData(*extension));
     }
@@ -530,14 +509,10 @@ bool ExtensionSyncService::ApplyExtensionSyncDataHelper(
     }
   } else {
     CHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
-    extensions::PendingExtensionInfo::ShouldAllowInstallPredicate filter =
-        (type == syncer::APPS) ? extensions::sync_helper::IsSyncableApp :
-                                 extensions::sync_helper::IsSyncableExtension;
-
     if (!extension_service_->pending_extension_manager()->AddFromSync(
             id,
             extension_sync_data.update_url(),
-            filter,
+            extensions::sync_helper::IsSyncable,
             extension_sync_data.remote_install(),
             extension_sync_data.installed_by_custodian())) {
       LOG(WARNING) << "Could not add pending extension for " << id;

@@ -13,15 +13,15 @@ namespace sync_helper {
 
 // NOTE: The check in the functions here only considers the data in extension
 // itself, not the environment it is in. To determine whether an extension
-// should be synced, you probably want to use util::ShoudSyncExtension and
-// util::ShouldSyncApp.
+// should be synced, you probably want to use util::ShouldSync.
 
-// Returns true if the extension should be synced.
+// Returns true if |extension| should be synced.
 bool IsSyncable(const Extension* extension);
 
-// Returns true if the extension uses the sync bucket of this type.
-bool IsSyncableExtension(const Extension* extension);
-bool IsSyncableApp(const Extension* extension);
+// Component extensions usually aren't synced, but some are so that they'll
+// retain their position in the app list. Returns true for component extensions
+// on that whitelist.
+bool IsSyncableComponentExtension(const Extension* extension);
 
 }  // namespace sync_helper
 }  // namespace extensions

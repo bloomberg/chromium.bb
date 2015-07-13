@@ -99,7 +99,8 @@ const base::FilePath::CharType kExtensionFilePath[] =
 
 static scoped_refptr<extensions::Extension> CreateExtension(
     const std::string& name,
-    const std::string& id) {
+    const std::string& id,
+    extensions::Manifest::Location location) {
   base::DictionaryValue manifest;
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
   manifest.SetString(extensions::manifest_keys::kName, name);
@@ -107,7 +108,7 @@ static scoped_refptr<extensions::Extension> CreateExtension(
   scoped_refptr<extensions::Extension> extension =
     extensions::Extension::Create(
         base::FilePath(kExtensionFilePath).AppendASCII(name),
-        extensions::Manifest::INTERNAL,
+        location,
         manifest,
         extensions::Extension::NO_FLAGS,
         id,
@@ -209,7 +210,9 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
 
   // (The web store doesn't count.)
   scoped_refptr<extensions::Extension> webstore =
-      CreateExtension("web store", extensions::kWebStoreAppId);
+      CreateExtension("web store",
+                      extensions::kWebStoreAppId,
+                      extensions::Manifest::COMPONENT);
   extensions::ExtensionPrefs::Get(profile_.get())->AddGrantedPermissions(
       webstore->id(), make_scoped_refptr(new extensions::PermissionSet).get());
   extensions->AddExtension(webstore.get());
@@ -217,7 +220,7 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
       base::Bind(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 
   scoped_refptr<extensions::Extension> extension =
-      CreateExtension("foo", std::string());
+      CreateExtension("foo", std::string(), extensions::Manifest::INTERNAL);
   extensions::ExtensionPrefs::Get(profile_.get())->AddGrantedPermissions(
       extension->id(), make_scoped_refptr(new extensions::PermissionSet).get());
   extensions->AddExtension(extension.get());

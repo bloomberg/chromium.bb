@@ -583,8 +583,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DoNotSync) {
   const ExtensionPrefs* extension_prefs =
       ExtensionPrefs::Get(browser()->profile());
   EXPECT_TRUE(extension_prefs->DoNotSync(crx_installer->extension()->id()));
-  EXPECT_FALSE(extensions::util::ShouldSyncApp(crx_installer->extension(),
-                                               browser()->profile()));
+  EXPECT_FALSE(extensions::util::ShouldSync(crx_installer->extension(),
+                                            browser()->profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, ManagementPolicy) {

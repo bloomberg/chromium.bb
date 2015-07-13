@@ -214,8 +214,8 @@ bool HasSyncedExtensions(Profile* profile) {
       // page, but since it's installed by default we don't want to
       // consider it when determining if the profile is dirty.
       if (extensions::sync_helper::IsSyncable(extension.get()) &&
-          extension->id() != extensions::kWebStoreAppId &&
-          extension->id() != extension_misc::kChromeAppId) {
+          !extensions::sync_helper::IsSyncableComponentExtension(
+              extension.get())) {
         DVLOG(1) << "ProfileSigninConfirmationHelper: "
                  << "profile contains a synced extension: " << extension->id();
         return true;

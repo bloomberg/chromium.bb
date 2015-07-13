@@ -16,18 +16,16 @@
 namespace extensions {
 namespace sync_helper {
 
-namespace {
-
-enum SyncType {
-  SYNC_TYPE_NONE = 0,
-  SYNC_TYPE_EXTENSION,
-  SYNC_TYPE_APP
-};
-
-SyncType GetSyncType(const Extension* extension) {
-  if (!IsSyncable(extension)) {
+bool IsSyncable(const Extension* extension) {
+  // Default apps are not synced because otherwise they will pollute profiles
+  // that don't already have them. Specially, if a user doesn't have default
+  // apps, creates a new profile (which get default apps) and then enables sync
+  // for it, then their profile everywhere gets the default apps.
+  bool is_syncable = (extension->location() == Manifest::INTERNAL &&
+                      !extension->was_installed_by_default());
+  if (!is_syncable && !IsSyncableComponentExtension(extension)) {
     // We have a non-standard location.
-    return SYNC_TYPE_NONE;
+    return false;
   }
 
   // Disallow extensions with non-gallery auto-update URLs for now.
@@ -36,7 +34,7 @@ SyncType GetSyncType(const Extension* extension) {
   // approve synced extensions.
   if (!ManifestURL::GetUpdateURL(extension).is_empty() &&
       !ManifestURL::UpdatesFromGallery(extension)) {
-    return SYNC_TYPE_NONE;
+    return false;
   }
 
   // Disallow extensions with native code plugins.
@@ -45,62 +43,39 @@ SyncType GetSyncType(const Extension* extension) {
   // approve synced extensions.
   if (PluginInfo::HasPlugins(extension) ||
       extension->permissions_data()->HasAPIPermission(APIPermission::kPlugin)) {
-    return SYNC_TYPE_NONE;
+    return false;
   }
 
   switch (extension->GetType()) {
     case Manifest::TYPE_EXTENSION:
-      return SYNC_TYPE_EXTENSION;
+    case Manifest::TYPE_HOSTED_APP:
+    case Manifest::TYPE_LEGACY_PACKAGED_APP:
+    case Manifest::TYPE_PLATFORM_APP:
+    case Manifest::TYPE_THEME:
+      return true;
 
     case Manifest::TYPE_USER_SCRIPT:
       // We only want to sync user scripts with gallery update URLs.
       if (ManifestURL::UpdatesFromGallery(extension))
-        return SYNC_TYPE_EXTENSION;
-      return SYNC_TYPE_NONE;
-
-    case Manifest::TYPE_HOSTED_APP:
-    case Manifest::TYPE_LEGACY_PACKAGED_APP:
-    case Manifest::TYPE_PLATFORM_APP:
-      return SYNC_TYPE_APP;
+        return true;
+      return false;
 
     case Manifest::TYPE_UNKNOWN:
-    // Confusingly, themes are actually synced.
-    // TODO(yoz): Make this look less inconsistent.
-    case Manifest::TYPE_THEME:
     case Manifest::TYPE_SHARED_MODULE:
-      return SYNC_TYPE_NONE;
+      return false;
 
     case Manifest::NUM_LOAD_TYPES:
       NOTREACHED();
   }
   NOTREACHED();
-  return SYNC_TYPE_NONE;
+  return false;
 }
 
-}  // namespace
-
-bool IsSyncable(const Extension* extension) {
-  // TODO(akalin): Figure out if we need to allow some other types.
-
-  // Default apps are not synced because otherwise they will pollute profiles
-  // that don't already have them. Specially, if a user doesn't have default
-  // apps, creates a new profile (which get default apps) and then enables sync
-  // for it, then their profile everywhere gets the default apps.
-  bool is_syncable = (extension->location() == Manifest::INTERNAL &&
-                      !extension->was_installed_by_default());
-  // Sync the chrome web store to maintain its position on the new tab page.
-  is_syncable |= (extension->id() == extensions::kWebStoreAppId);
-  // Sync the chrome component app to maintain its position on the app list.
-  is_syncable |= (extension->id() == extension_misc::kChromeAppId);
-  return is_syncable;
-}
-
-bool IsSyncableExtension(const Extension* extension) {
-  return GetSyncType(extension) == SYNC_TYPE_EXTENSION;
-}
-
-bool IsSyncableApp(const Extension* extension) {
-  return GetSyncType(extension) == SYNC_TYPE_APP;
+bool IsSyncableComponentExtension(const Extension* extension) {
+  if (!Manifest::IsComponentLocation(extension->location()))
+    return false;
+  return (extension->id() == extensions::kWebStoreAppId) ||
+         (extension->id() == extension_misc::kChromeAppId);
 }
 
 }  // namespace sync_helper

@@ -157,7 +157,7 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
 - (BOOL)showSyncPromo {
   if (type_ == extension_installed_bubble::kBundle)
     return false;
-  return extensions::sync_helper::IsSyncableExtension([self extension]) &&
+  return extensions::sync_helper::IsSyncable([self extension]) &&
       SyncPromoUI::ShouldShowSyncPromo(browser_->profile());
 }
 

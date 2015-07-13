@@ -29,6 +29,8 @@ class SyncChangeProcessor;
 class SyncErrorFactory;
 }
 
+// SyncableService implementation responsible for the APPS and EXTENSIONS data
+// types, i.e. "proper" apps/extensions (not themes).
 class ExtensionSyncService : public syncer::SyncableService,
                              public KeyedService {
  public:
@@ -93,6 +95,9 @@ class ExtensionSyncService : public syncer::SyncableService,
   // Gets the SyncBundle for the given |type|.
   extensions::SyncBundle* GetSyncBundle(syncer::ModelType type);
   const extensions::SyncBundle* GetSyncBundle(syncer::ModelType type) const;
+
+  // Gets the PendingEnables for apps/extensions.
+  extensions::PendingEnables* GetPendingEnables(bool for_apps);
 
   // Gets the ExtensionSyncData for all apps or extensions.
   std::vector<extensions::ExtensionSyncData> GetSyncDataList(

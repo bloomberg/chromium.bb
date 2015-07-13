@@ -138,11 +138,13 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
     if (!extension->can_be_incognito_enabled())
       return;
 
+    // TODO(treib,kalman): Should this be Manifest::IsComponentLocation(..)?
+    // (which also checks for EXTERNAL_COMPONENT).
     if (extension->location() == Manifest::COMPONENT) {
       // This shouldn't be called for component extensions unless it is called
       // by sync, for syncable component extensions.
       // See http://crbug.com/112290 and associated CLs for the sordid history.
-      DCHECK(sync_helper::IsSyncable(extension));
+      DCHECK(sync_helper::IsSyncableComponentExtension(extension));
 
       // If we are here, make sure the we aren't trying to change the value.
       DCHECK_EQ(enabled, IsIncognitoEnabled(extension_id, context));
@@ -265,16 +267,11 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
       extension_id, ExtensionRegistry::ENABLED) != NULL;
 }
 
-bool ShouldSyncExtension(const Extension* extension,
-                         content::BrowserContext* context) {
-  return sync_helper::IsSyncableExtension(extension) &&
+bool ShouldSync(const Extension* extension,
+                content::BrowserContext* context) {
+  return sync_helper::IsSyncable(extension) &&
+         !util::IsEphemeralApp(extension->id(), context) &&
          !ExtensionPrefs::Get(context)->DoNotSync(extension->id());
-}
-
-bool ShouldSyncApp(const Extension* app, content::BrowserContext* context) {
-  return sync_helper::IsSyncableApp(app) &&
-         !util::IsEphemeralApp(app->id(), context) &&
-         !ExtensionPrefs::Get(context)->DoNotSync(app->id());
 }
 
 bool IsExtensionIdle(const std::string& extension_id,

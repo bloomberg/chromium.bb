@@ -104,7 +104,8 @@ TEST_F(ExtensionSyncTypeTest, NormalExtensionNoUpdateUrl) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(sync_helper::IsSyncableExtension(extension.get()));
+  EXPECT_TRUE(extension->is_extension());
+  EXPECT_TRUE(sync_helper::IsSyncable(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, UserScriptValidUpdateUrl) {
@@ -112,7 +113,8 @@ TEST_F(ExtensionSyncTypeTest, UserScriptValidUpdateUrl) {
       MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
                             Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(sync_helper::IsSyncableExtension(extension.get()));
+  EXPECT_TRUE(extension->is_extension());
+  EXPECT_TRUE(sync_helper::IsSyncable(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, UserScriptNoUpdateUrl) {
@@ -120,7 +122,8 @@ TEST_F(ExtensionSyncTypeTest, UserScriptNoUpdateUrl) {
       MakeSyncTestExtension(USER_SCRIPT, GURL(), GURL(),
                             Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
+  EXPECT_TRUE(extension->is_extension());
+  EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, ThemeNoUpdateUrl) {
@@ -128,8 +131,8 @@ TEST_F(ExtensionSyncTypeTest, ThemeNoUpdateUrl) {
       MakeSyncTestExtension(THEME, GURL(), GURL(),
                             Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
-  EXPECT_FALSE(sync_helper::IsSyncableApp(extension.get()));
+  EXPECT_TRUE(extension->is_theme());
+  EXPECT_TRUE(sync_helper::IsSyncable(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, AppWithLaunchUrl) {
@@ -137,7 +140,8 @@ TEST_F(ExtensionSyncTypeTest, AppWithLaunchUrl) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL("http://www.google.com"),
                             Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(sync_helper::IsSyncableApp(extension.get()));
+  EXPECT_TRUE(extension->is_app());
+  EXPECT_TRUE(sync_helper::IsSyncable(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionExternal) {
@@ -145,7 +149,8 @@ TEST_F(ExtensionSyncTypeTest, ExtensionExternal) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::EXTERNAL_PREF, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
+  EXPECT_TRUE(extension->is_extension());
+  EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, UserScriptThirdPartyUpdateUrl) {
@@ -153,7 +158,8 @@ TEST_F(ExtensionSyncTypeTest, UserScriptThirdPartyUpdateUrl) {
       MakeSyncTestExtension(
           USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
           Manifest::INTERNAL, base::FilePath(), Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
+  EXPECT_TRUE(extension->is_extension());
+  EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, OnlyDisplayAppsInLauncher) {
@@ -253,8 +259,10 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithEmptyPlugins) {
           EXTENSION, GURL(), GURL(),
           Manifest::INTERNAL, base::FilePath(),
           Extension::NO_FLAGS, 0, false, ""));
-  if (extension.get())
-    EXPECT_TRUE(sync_helper::IsSyncableExtension(extension.get()));
+  if (extension.get()) {
+    EXPECT_TRUE(extension->is_extension());
+    EXPECT_TRUE(sync_helper::IsSyncable(extension.get()));
+  }
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionWithPlugin) {
@@ -263,8 +271,10 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithPlugin) {
           EXTENSION, GURL(), GURL(),
           Manifest::INTERNAL, base::FilePath(),
           Extension::NO_FLAGS, 1, false, ""));
-  if (extension.get())
-    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
+  if (extension.get()) {
+    EXPECT_TRUE(extension->is_extension());
+    EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
+  }
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
@@ -273,8 +283,10 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
           EXTENSION, GURL(), GURL(),
           Manifest::INTERNAL, base::FilePath(),
           Extension::NO_FLAGS, 2, false, ""));
-  if (extension.get())
-    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
+  if (extension.get()) {
+    EXPECT_TRUE(extension->is_extension());
+    EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
+  }
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionWithPluginPermission) {
