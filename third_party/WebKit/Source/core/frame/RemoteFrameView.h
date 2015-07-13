@@ -17,9 +17,9 @@ class RemoteFrameView final : public Widget {
 public:
     static PassRefPtrWillBeRawPtr<RemoteFrameView> create(RemoteFrame*);
 
-    virtual ~RemoteFrameView();
+    ~RemoteFrameView() override;
 
-    virtual bool isRemoteFrameView() const override { return true; }
+    bool isRemoteFrameView() const override { return true; }
 
     RemoteFrame& frame() const
     {
@@ -28,11 +28,11 @@ public:
     }
 
     // Override to notify remote frame that its viewport size has changed.
-    virtual void frameRectsChanged() override;
+    void frameRectsChanged() override;
 
-    virtual void invalidateRect(const IntRect&) override;
+    void invalidateRect(const IntRect&) override;
 
-    virtual void setFrameRect(const IntRect&) override;
+    void setFrameRect(const IntRect&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

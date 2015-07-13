@@ -78,7 +78,7 @@ public:
     void disable(ErrorString*) override;
     void restore() override;
 
-    virtual ~InspectorResourceAgent();
+    ~InspectorResourceAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Called from instrumentation.
@@ -126,20 +126,20 @@ public:
     void didReceiveWebSocketFrameError(unsigned long identifier, const String&);
 
     // Called from frontend
-    virtual void enable(ErrorString*) override;
-    virtual void setUserAgentOverride(ErrorString*, const String& userAgent) override;
-    virtual void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&) override;
-    virtual void getResponseBody(ErrorString*, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>) override;
+    void enable(ErrorString*) override;
+    void setUserAgentOverride(ErrorString*, const String& userAgent) override;
+    void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&) override;
+    void getResponseBody(ErrorString*, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>) override;
 
-    virtual void replayXHR(ErrorString*, const String& requestId) override;
-    virtual void setMonitoringXHREnabled(ErrorString*, bool) override;
+    void replayXHR(ErrorString*, const String& requestId) override;
+    void setMonitoringXHREnabled(ErrorString*, bool) override;
 
-    virtual void canClearBrowserCache(ErrorString*, bool*) override;
-    virtual void canClearBrowserCookies(ErrorString*, bool*) override;
-    virtual void emulateNetworkConditions(ErrorString*, bool, double, double, double) override;
-    virtual void setCacheDisabled(ErrorString*, bool cacheDisabled) override;
+    void canClearBrowserCache(ErrorString*, bool*) override;
+    void canClearBrowserCookies(ErrorString*, bool*) override;
+    void emulateNetworkConditions(ErrorString*, bool, double, double, double) override;
+    void setCacheDisabled(ErrorString*, bool cacheDisabled) override;
 
-    virtual void setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource) override;
+    void setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource) override;
 
     // Called from other agents.
     void setHostId(const String&);

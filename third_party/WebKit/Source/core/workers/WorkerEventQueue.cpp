@@ -66,7 +66,7 @@ public:
         return adoptPtr(new EventDispatcherTask(event, eventQueue));
     }
 
-    virtual ~EventDispatcherTask()
+    ~EventDispatcherTask() override
     {
         if (m_event)
             m_eventQueue->removeEvent(m_event.get());

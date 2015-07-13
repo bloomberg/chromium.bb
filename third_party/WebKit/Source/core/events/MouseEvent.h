@@ -55,7 +55,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(ScriptState*, const AtomicString& eventType, const MouseEventInit&);
 
-    virtual ~MouseEvent();
+    ~MouseEvent() override;
 
     static unsigned short platformModifiersToButtons(unsigned modifiers);
 
@@ -86,11 +86,11 @@ public:
 
     bool fromTouch() const { return m_syntheticEventType == PlatformMouseEvent::FromTouch; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
-    virtual bool isMouseEvent() const override;
-    virtual bool isDragEvent() const override final;
-    virtual int which() const override final;
+    bool isMouseEvent() const override;
+    bool isDragEvent() const final;
+    int which() const final;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -117,7 +117,7 @@ private:
 class SimulatedMouseEvent final : public MouseEvent {
 public:
     static PassRefPtrWillBeRawPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtrWillBeRawPtr<Event> underlyingEvent);
-    virtual ~SimulatedMouseEvent();
+    ~SimulatedMouseEvent() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -134,7 +134,7 @@ private:
     explicit MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent>, MouseEventType);
     MouseEvent& event() const;
 
-    virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool dispatchEvent(EventDispatcher&) const override;
     bool isSyntheticMouseEvent() const { return m_mouseEventType == SyntheticMouseEvent; }
     MouseEventType m_mouseEventType;
 };

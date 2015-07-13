@@ -51,25 +51,25 @@ public:
     {
         return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, pageAgent));
     }
-    virtual ~PageConsoleAgent();
+    ~PageConsoleAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
+    void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
 
     void workerTerminated(WorkerInspectorProxy*);
 
     void workerConsoleAgentEnabled(WorkerGlobalScopeProxy*);
 
 protected:
-    virtual ConsoleMessageStorage* messageStorage() override;
+    ConsoleMessageStorage* messageStorage() override;
 
-    virtual void enableStackCapturingIfNeeded() override;
-    virtual void disableStackCapturingIfNeeded() override;
+    void enableStackCapturingIfNeeded() override;
+    void disableStackCapturingIfNeeded() override;
 
 private:
     PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorPageAgent*);
-    virtual void clearMessages(ErrorString*) override;
+    void clearMessages(ErrorString*) override;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;

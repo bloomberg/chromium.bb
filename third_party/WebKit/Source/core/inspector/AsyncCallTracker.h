@@ -58,7 +58,7 @@ class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFi
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AsyncCallTracker);
 public:
     AsyncCallTracker(InspectorDebuggerAgent*, InstrumentingAgents*);
-    virtual ~AsyncCallTracker();
+    ~AsyncCallTracker() override;
 
     // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
     void asyncCallTrackingStateChanged(bool tracking) override;

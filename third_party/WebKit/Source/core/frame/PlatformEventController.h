@@ -38,7 +38,7 @@ protected:
 
 private:
     // Inherited from PageLifecycleObserver.
-    virtual void pageVisibilityChanged() override;
+    void pageVisibilityChanged() override;
 
     void oneShotCallback(Timer<PlatformEventController>*);
 

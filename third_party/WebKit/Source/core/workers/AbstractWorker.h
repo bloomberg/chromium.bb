@@ -52,12 +52,12 @@ class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData, public RefC
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 public:
     // EventTarget APIs
-    virtual ExecutionContext* executionContext() const override final { return ActiveDOMObject::executionContext(); }
+    ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
 
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);
 
     AbstractWorker(ExecutionContext*);
-    virtual ~AbstractWorker();
+    ~AbstractWorker() override;
 
     DECLARE_VIRTUAL_TRACE();
 

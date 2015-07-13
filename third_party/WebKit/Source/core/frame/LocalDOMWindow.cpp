@@ -127,7 +127,7 @@ public:
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
     ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
-    virtual void stop() override
+    void stop() override
     {
         SuspendableTimer::stop();
 
@@ -149,7 +149,7 @@ public:
     }
 
 private:
-    virtual void fired() override
+    void fired() override
     {
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(executionContext(), m_asyncOperationId);
         // Prevent calls to stop triggered from the event handler to

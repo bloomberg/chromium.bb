@@ -67,7 +67,7 @@ public:
     HostWindow* hostWindow() const override;
     void serviceScrollAnimations(double) override;
     void updateCompositorScrollAnimations() override;
-    virtual ScrollBehavior scrollBehaviorStyle() const override;
+    ScrollBehavior scrollBehaviorStyle() const override;
     // TODO(bokan): This method should be removed. It should be replaced by
     // making EventHandler::handleWheelEvent unpack the WheelEvent and make a
     // call to this class' scroll method.

@@ -22,11 +22,11 @@ public:
     }
 
 #if !ENABLE(OILPAN)
-    virtual ~DocumentFragmentPluginPlaceholder() override { }
+    ~DocumentFragmentPluginPlaceholder() override { }
 #endif
     DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_fragment); }
 
-    virtual void loadIntoContainer(ContainerNode& container) override
+    void loadIntoContainer(ContainerNode& container) override
     {
         RefPtrWillBeRawPtr<Node> clonedFragment = container.document().importNode(m_fragment.get(), true /* deep */, ASSERT_NO_EXCEPTION);
         container.appendChild(clonedFragment.release(), ASSERT_NO_EXCEPTION);

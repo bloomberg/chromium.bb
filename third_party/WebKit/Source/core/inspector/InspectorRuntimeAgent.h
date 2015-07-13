@@ -58,7 +58,7 @@ public:
         virtual bool isRunRequired() { return false; }
     };
 
-    virtual ~InspectorRuntimeAgent();
+    ~InspectorRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Part of the protocol.

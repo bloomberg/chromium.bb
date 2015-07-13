@@ -48,7 +48,7 @@ public:
     {
         return adoptPtrWillBeNoop(new InspectorApplicationCacheAgent(pageAgent));
     }
-    virtual ~InspectorApplicationCacheAgent() { }
+    ~InspectorApplicationCacheAgent() override { }
     DECLARE_VIRTUAL_TRACE();
 
     // InspectorBaseAgent
@@ -60,10 +60,10 @@ public:
     void networkStateChanged(LocalFrame*, bool online);
 
     // ApplicationCache API for InspectorFrontend
-    virtual void enable(ErrorString*) override;
-    virtual void getFramesWithManifests(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest> >& result) override;
-    virtual void getManifestForFrame(ErrorString*, const String& frameId, String* manifestURL) override;
-    virtual void getApplicationCacheForFrame(ErrorString*, const String& frameId, RefPtr<TypeBuilder::ApplicationCache::ApplicationCache>&) override;
+    void enable(ErrorString*) override;
+    void getFramesWithManifests(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest>>& result) override;
+    void getManifestForFrame(ErrorString*, const String& frameId, String* manifestURL) override;
+    void getApplicationCacheForFrame(ErrorString*, const String& frameId, RefPtr<TypeBuilder::ApplicationCache::ApplicationCache>&) override;
 
 private:
     InspectorApplicationCacheAgent(InspectorPageAgent*);

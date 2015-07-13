@@ -41,7 +41,7 @@ class ResourceResponse;
 
 class PluginView : public Widget {
 public:
-    virtual bool isPluginView() const override final { return true; }
+    bool isPluginView() const final { return true; }
 
     virtual WebLayer* platformLayer() const { return 0; }
     virtual v8::Local<v8::Object> scriptableObject(v8::Isolate*) { return v8::Local<v8::Object>(); }

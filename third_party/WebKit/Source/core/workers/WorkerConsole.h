@@ -51,13 +51,13 @@ public:
     {
         return new WorkerConsole(scope);
     }
-    virtual ~WorkerConsole();
+    ~WorkerConsole() override;
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    virtual ExecutionContext* context() override;
-    virtual void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    ExecutionContext* context() override;
+    void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
 
 private:
     explicit WorkerConsole(WorkerGlobalScope*);

@@ -54,7 +54,7 @@ class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<Inspe
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorProfilerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*);
-    virtual ~InspectorProfilerAgent();
+    ~InspectorProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     void consoleProfile(ExecutionContext*, const String& title);

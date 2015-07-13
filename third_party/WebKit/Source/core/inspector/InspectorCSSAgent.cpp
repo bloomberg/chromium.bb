@@ -153,7 +153,7 @@ class InspectorCSSAgent::InspectorResourceContentLoaderCallback final : public V
 public:
     InspectorResourceContentLoaderCallback(InspectorCSSAgent*, PassRefPtrWillBeRawPtr<EnableCallback>);
     DECLARE_VIRTUAL_TRACE();
-    virtual void handleEvent() override;
+    void handleEvent() override;
 
 private:
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
@@ -193,29 +193,29 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         if (!m_styleSheet->getText(&m_oldText))
             return false;
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         return m_styleSheet->setText(m_oldText, exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         return m_styleSheet->setText(m_text, exceptionState);
     }
 
-    virtual String mergeId() override
+    String mergeId() override
     {
         return String::format("SetStyleSheetText %s", m_styleSheet->id().utf8().data());
     }
 
-    virtual void merge(PassRefPtrWillBeRawPtr<Action> action) override
+    void merge(PassRefPtrWillBeRawPtr<Action> action) override
     {
         ASSERT(action->mergeId() == mergeId());
 
@@ -254,12 +254,12 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         switch (m_type) {
         case SetRuleSelector:
@@ -274,7 +274,7 @@ public:
         return false;
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         switch (m_type) {
         case SetRuleSelector:
@@ -306,17 +306,17 @@ public:
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
     }
 
-    virtual String mergeId() override
+    String mergeId() override
     {
         return String::format("ModifyRuleAction:%d %s:%d", m_type, m_styleSheet->id().utf8().data(), m_oldRange.start);
     }
 
-    virtual bool isNoop() override
+    bool isNoop() override
     {
         return m_oldText == m_newText;
     }
 
-    virtual void merge(PassRefPtrWillBeRawPtr<Action> action) override
+    void merge(PassRefPtrWillBeRawPtr<Action> action) override
     {
         ASSERT(action->mergeId() == mergeId());
 
@@ -345,17 +345,17 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         return m_styleSheet->setText(m_oldText, exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         if (!m_styleSheet->getText(&m_oldText))
             return false;
@@ -368,12 +368,12 @@ public:
         InspectorCSSAgent::StyleSheetAction::trace(visitor);
     }
 
-    virtual String mergeId() override
+    String mergeId() override
     {
         return String::format("SetElementStyleAction:%s", m_styleSheet->id().utf8().data());
     }
 
-    virtual void merge(PassRefPtrWillBeRawPtr<Action> action) override
+    void merge(PassRefPtrWillBeRawPtr<Action> action) override
     {
         ASSERT(action->mergeId() == mergeId());
 
@@ -398,17 +398,17 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         return m_styleSheet->deleteRule(m_addedRange, exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         m_cssRule = m_styleSheet->addRule(m_ruleText, m_location, &m_addedRange, exceptionState);
         if (exceptionState.hadException())

@@ -64,7 +64,7 @@ public:
         return new Blob(blobDataHandle);
     }
 
-    virtual ~Blob();
+    ~Blob() override;
 
     virtual unsigned long long size() const { return m_blobDataHandle->size(); }
     virtual Blob* slice(long long start, long long end, const String& contentType, ExceptionState&) const;
@@ -98,7 +98,7 @@ public:
     virtual void appendTo(BlobData&) const;
 
     // URLRegistrable to support PublicURLs.
-    virtual URLRegistry& registry() const override final;
+    URLRegistry& registry() const final;
 
     DEFINE_INLINE_TRACE() { }
 

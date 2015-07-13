@@ -39,7 +39,7 @@ class SerializedScriptValue;
 class PopStateEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~PopStateEvent();
+    ~PopStateEvent() override;
     static PassRefPtrWillBeRawPtr<PopStateEvent> create();
     static PassRefPtrWillBeRawPtr<PopStateEvent> create(PassRefPtr<SerializedScriptValue>, History*);
     static PassRefPtrWillBeRawPtr<PopStateEvent> create(const AtomicString&, const PopStateEventInit&);
@@ -53,7 +53,7 @@ public:
     }
     History* history() const { return m_history.get(); }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

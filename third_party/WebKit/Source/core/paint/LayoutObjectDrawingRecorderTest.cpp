@@ -28,7 +28,7 @@ protected:
     const DisplayItems& newDisplayItemsBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
 
 private:
-    virtual void SetUp() override
+    void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
 
@@ -39,7 +39,7 @@ private:
         ASSERT_TRUE(m_layoutView);
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
     }

@@ -21,26 +21,26 @@ class NullExecutionContext final : public RefCountedWillBeGarbageCollectedFinali
 public:
     NullExecutionContext();
 
-    virtual void disableEval(const String&) override { }
-    virtual String userAgent(const KURL&) const override { return String(); }
+    void disableEval(const String&) override { }
+    String userAgent(const KURL&) const override { return String(); }
 
-    virtual void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override;
+    void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override;
 
-    virtual EventTarget* errorEventTarget() override { return nullptr; }
-    virtual EventQueue* eventQueue() const override { return m_queue.get(); }
+    EventTarget* errorEventTarget() override { return nullptr; }
+    EventQueue* eventQueue() const override { return m_queue.get(); }
 
-    virtual bool tasksNeedSuspension() override { return m_tasksNeedSuspension; }
+    bool tasksNeedSuspension() override { return m_tasksNeedSuspension; }
     void setTasksNeedSuspension(bool flag) { m_tasksNeedSuspension = flag; }
 
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) override { }
-    virtual void didUpdateSecurityOrigin() override { }
-    virtual SecurityContext& securityContext() override { return *this; }
-    virtual DOMTimerCoordinator* timers() override { return nullptr; }
+    void reportBlockedScriptExecutionToInspector(const String& directiveText) override { }
+    void didUpdateSecurityOrigin() override { }
+    SecurityContext& securityContext() override { return *this; }
+    DOMTimerCoordinator* timers() override { return nullptr; }
 
     double timerAlignmentInterval() const;
 
-    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
-    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
+    void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
+    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
 
     bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const override;
 
@@ -54,13 +54,13 @@ public:
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
 
-    virtual void refExecutionContext() override { ref(); }
-    virtual void derefExecutionContext() override { deref(); }
+    void refExecutionContext() override { ref(); }
+    void derefExecutionContext() override { deref(); }
 #endif
 
 protected:
-    virtual const KURL& virtualURL() const override { return m_dummyURL; }
-    virtual KURL virtualCompleteURL(const String&) const override { return m_dummyURL; }
+    const KURL& virtualURL() const override { return m_dummyURL; }
+    KURL virtualCompleteURL(const String&) const override { return m_dummyURL; }
 
 private:
     bool m_tasksNeedSuspension;

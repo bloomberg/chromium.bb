@@ -18,7 +18,7 @@ class HTMLMenuItemElement;
 
 class CustomContextMenuProvider final : public ContextMenuProvider {
 public:
-    virtual ~CustomContextMenuProvider();
+    ~CustomContextMenuProvider() override;
 
     static PassRefPtrWillBeRawPtr<CustomContextMenuProvider> create(HTMLMenuElement& menu, HTMLElement& subject)
     {
@@ -30,9 +30,9 @@ public:
 private:
     CustomContextMenuProvider(HTMLMenuElement&, HTMLElement&);
 
-    virtual void populateContextMenu(ContextMenu*) override;
-    virtual void contextMenuItemSelected(const ContextMenuItem*) override;
-    virtual void contextMenuCleared() override;
+    void populateContextMenu(ContextMenu*) override;
+    void contextMenuItemSelected(const ContextMenuItem*) override;
+    void contextMenuCleared() override;
     void populateContextMenuItems(const HTMLMenuElement&, ContextMenu&);
     void appendSeparator(ContextMenu&);
     void appendMenuItem(HTMLMenuItemElement*, ContextMenu&);

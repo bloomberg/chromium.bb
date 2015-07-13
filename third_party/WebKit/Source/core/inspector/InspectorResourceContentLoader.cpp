@@ -42,8 +42,8 @@ public:
 private:
     InspectorResourceContentLoader* m_loader;
 
-    virtual void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource*) override;
-    virtual void notifyFinished(Resource*) override;
+    void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource*) override;
+    void notifyFinished(Resource*) override;
     void resourceFinished(Resource*);
 
     friend class InspectorResourceContentLoader;

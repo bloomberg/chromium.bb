@@ -20,13 +20,13 @@ public:
     virtual ~DeviceSingleWindowEventController();
 
     // Inherited from DeviceEventControllerBase.
-    virtual void didUpdateData() override;
+    void didUpdateData() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Inherited from DOMWindowLifecycleObserver.
-    virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
-    virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
-    virtual void didRemoveAllEventListeners(LocalDOMWindow*) override;
+    void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+    void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
+    void didRemoveAllEventListeners(LocalDOMWindow*) override;
 
 protected:
     explicit DeviceSingleWindowEventController(Document&);

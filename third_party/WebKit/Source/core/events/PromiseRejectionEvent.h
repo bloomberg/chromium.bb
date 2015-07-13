@@ -33,11 +33,11 @@ public:
 
     void setWrapperReference(v8::Isolate*, const v8::Persistent<v8::Object>&);
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     // PromiseRejectionEvents are similar to ErrorEvents in that they can't be
     // observed across different worlds.
-    virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const override;
+    bool canBeDispatchedInWorld(const DOMWrapperWorld&) const override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -53,8 +53,8 @@ public:
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
     void setRelatedTarget(EventTarget* relatedTarget) { m_relatedTarget = relatedTarget; }
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual bool isFocusEvent() const override;
+    const AtomicString& interfaceName() const override;
+    bool isFocusEvent() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -74,7 +74,7 @@ public:
 private:
     explicit FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
-    virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 class BlurEventDispatchMediator final : public EventDispatchMediator {
@@ -83,7 +83,7 @@ public:
 private:
     explicit BlurEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
-    virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 class FocusInEventDispatchMediator final : public EventDispatchMediator {
@@ -92,7 +92,7 @@ public:
 private:
     explicit FocusInEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
-    virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 class FocusOutEventDispatchMediator final : public EventDispatchMediator {
@@ -101,7 +101,7 @@ public:
 private:
     explicit FocusOutEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
-    virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 } // namespace blink

@@ -47,9 +47,9 @@ public:
     {
         return adoptPtrWillBeNoop(new InspectorMemoryAgent());
     }
-    virtual ~InspectorMemoryAgent();
+    ~InspectorMemoryAgent() override;
 
-    virtual void getDOMCounters(ErrorString*, int* documents, int* nodes, int* jsEventListeners) override;
+    void getDOMCounters(ErrorString*, int* documents, int* nodes, int* jsEventListeners) override;
 
 private:
     InspectorMemoryAgent();

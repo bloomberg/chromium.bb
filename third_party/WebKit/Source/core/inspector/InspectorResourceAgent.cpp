@@ -111,7 +111,7 @@ public:
         m_loader = FileReaderLoader::create(FileReaderLoader::ReadByClient, this);
     }
 
-    virtual ~InspectorFileReaderLoaderClient() { }
+    ~InspectorFileReaderLoaderClient() override { }
 
     void start(ExecutionContext* executionContext)
     {

@@ -54,19 +54,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         m_anchorNode = m_node->nextSibling();
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), exceptionState);
         return !exceptionState.hadException();
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         m_parentNode->removeChild(m_node.get(), exceptionState);
         return !exceptionState.hadException();
@@ -97,7 +97,7 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         if (m_node->parentNode()) {
             m_removeChildAction = adoptRefWillBeNoop(new RemoveChildAction(m_node->parentNode(), m_node.get()));
@@ -108,7 +108,7 @@ public:
         return !exceptionState.hadException();
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         m_parentNode->removeChild(m_node.get(), exceptionState);
         if (exceptionState.hadException())
@@ -118,7 +118,7 @@ public:
         return true;
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         if (m_removeChildAction && !m_removeChildAction->redo(exceptionState))
             return false;
@@ -152,19 +152,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         m_value = m_element->getAttribute(m_name);
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         m_element->setAttribute(m_name, m_value, exceptionState);
         return true;
     }
 
-    virtual bool redo(ExceptionState&) override
+    bool redo(ExceptionState&) override
     {
         m_element->removeAttribute(m_name);
         return true;
@@ -194,7 +194,7 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         const AtomicString& value = m_element->getAttribute(m_name);
         m_hadAttribute = !value.isNull();
@@ -203,7 +203,7 @@ public:
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         if (m_hadAttribute)
             m_element->setAttribute(m_name, m_oldValue, exceptionState);
@@ -212,7 +212,7 @@ public:
         return true;
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         m_element->setAttribute(m_name, m_value, exceptionState);
         return true;
@@ -246,7 +246,7 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         m_oldHTML = createMarkup(m_node.get());
         ASSERT(m_node->ownerDocument());
@@ -255,12 +255,12 @@ public:
         return !exceptionState.hadException();
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         return m_history->undo(exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         return m_history->redo(exceptionState);
     }
@@ -300,19 +300,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         m_oldText = m_textNode->wholeText();
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState&) override
+    bool undo(ExceptionState&) override
     {
         m_textNode->replaceWholeText(m_oldText);
         return true;
     }
 
-    virtual bool redo(ExceptionState&) override
+    bool redo(ExceptionState&) override
     {
         m_textNode->replaceWholeText(m_text);
         return true;
@@ -341,18 +341,18 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState) override
+    bool perform(ExceptionState& exceptionState) override
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState) override
+    bool undo(ExceptionState& exceptionState) override
     {
         m_parentNode->replaceChild(m_oldNode, m_newNode.get(), exceptionState);
         return !exceptionState.hadException();
     }
 
-    virtual bool redo(ExceptionState& exceptionState) override
+    bool redo(ExceptionState& exceptionState) override
     {
         m_parentNode->replaceChild(m_newNode, m_oldNode.get(), exceptionState);
         return !exceptionState.hadException();
@@ -382,19 +382,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState&) override
+    bool perform(ExceptionState&) override
     {
         m_oldValue = m_node->nodeValue();
         return redo(IGNORE_EXCEPTION);
     }
 
-    virtual bool undo(ExceptionState&) override
+    bool undo(ExceptionState&) override
     {
         m_node->setNodeValue(m_oldValue);
         return true;
     }
 
-    virtual bool redo(ExceptionState&) override
+    bool redo(ExceptionState&) override
     {
         m_node->setNodeValue(m_value);
         return true;

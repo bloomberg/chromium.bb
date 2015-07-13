@@ -65,14 +65,14 @@ public:
     {
     }
 
-    virtual void willProcessTask() override
+    void willProcessTask() override
     {
         // No tasks should get executed after we have closed.
         WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope();
         ASSERT_UNUSED(globalScope, !globalScope || !globalScope->isClosing());
     }
 
-    virtual void didProcessTask() override
+    void didProcessTask() override
     {
         Microtask::performCheckpoint(m_workerThread->isolate());
         if (WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope()) {
@@ -117,9 +117,9 @@ public:
         return adoptPtr(new WorkerThreadTask(workerThread, task, isInstrumented));
     }
 
-    virtual ~WorkerThreadTask() { }
+    ~WorkerThreadTask() override { }
 
-    virtual void run() override
+    void run() override
     {
         WorkerGlobalScope* workerGlobalScope = m_workerThread.workerGlobalScope();
         // If the thread is terminated before it had a chance initialize (see

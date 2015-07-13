@@ -78,9 +78,9 @@ public:
     bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
     RailsMode railsMode() const { return m_railsMode; }
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual bool isMouseEvent() const override;
-    virtual bool isWheelEvent() const override;
+    const AtomicString& interfaceName() const override;
+    bool isMouseEvent() const override;
+    bool isWheelEvent() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -109,7 +109,7 @@ public:
 private:
     WheelEventDispatchMediator(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
     WheelEvent& event() const;
-    virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 } // namespace blink

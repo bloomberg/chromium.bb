@@ -43,8 +43,8 @@ public:
         return new WorkerLocation(url);
     }
 
-    virtual KURL url() const override { return m_url; }
-    virtual String input() const override
+    KURL url() const override { return m_url; }
+    String input() const override
     {
         ASSERT_NOT_REACHED();
         return String();

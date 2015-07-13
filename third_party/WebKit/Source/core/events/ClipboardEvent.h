@@ -32,7 +32,7 @@ namespace blink {
 class ClipboardEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~ClipboardEvent();
+    ~ClipboardEvent() override;
     static PassRefPtrWillBeRawPtr<ClipboardEvent> create()
     {
         return adoptRefWillBeNoop(new ClipboardEvent());
@@ -51,8 +51,8 @@ private:
     ClipboardEvent();
     ClipboardEvent(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* clipboardData);
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual bool isClipboardEvent() const override;
+    const AtomicString& interfaceName() const override;
+    bool isClipboardEvent() const override;
 
     PersistentWillBeMember<DataTransfer> m_clipboardData;
 };

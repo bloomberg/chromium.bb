@@ -17,12 +17,12 @@ public:
     static PassRefPtrWillBeRawPtr<RelatedEvent> create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget);
     static PassRefPtrWillBeRawPtr<RelatedEvent> create(const AtomicString& eventType, const RelatedEventInit&);
 
-    virtual ~RelatedEvent();
+    ~RelatedEvent() override;
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::RelatedEvent; }
-    virtual bool isRelatedEvent() const override { return true; }
+    const AtomicString& interfaceName() const override { return EventNames::RelatedEvent; }
+    bool isRelatedEvent() const override { return true; }
 
     DECLARE_VIRTUAL_TRACE();
 

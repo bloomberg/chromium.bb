@@ -50,12 +50,12 @@ public:
         return adoptPtrWillBeNoop(new InspectorTimelineAgent());
     }
 
-    virtual ~InspectorTimelineAgent();
+    ~InspectorTimelineAgent() override;
 
-    virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
-    virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const String* liveEvents, const bool* includeCounters, const bool* includeGPUEvents) override;
-    virtual void stop(ErrorString*) override;
+    void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
+    void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const String* liveEvents, const bool* includeCounters, const bool* includeGPUEvents) override;
+    void stop(ErrorString*) override;
 
 private:
     InspectorTimelineAgent();

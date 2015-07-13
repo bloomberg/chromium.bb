@@ -53,9 +53,9 @@ using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 class CORE_EXPORT PerformanceBase : public RefCountedGarbageCollectedEventTargetWithInlineData<PerformanceBase> {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PerformanceBase);
 public:
-    virtual ~PerformanceBase();
+    ~PerformanceBase() override;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     virtual PerformanceTiming* timing() const;
     double now() const;

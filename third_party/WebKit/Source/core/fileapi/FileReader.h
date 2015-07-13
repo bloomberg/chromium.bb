@@ -56,7 +56,7 @@ class CORE_EXPORT FileReader final : public RefCountedGarbageCollectedEventTarge
 public:
     static FileReader* create(ExecutionContext*);
 
-    virtual ~FileReader();
+    ~FileReader() override;
 
     enum ReadyState {
         EMPTY = 0,
@@ -78,18 +78,18 @@ public:
     void result(StringOrArrayBuffer& resultAttribute) const;
 
     // ActiveDOMObject
-    virtual void stop() override;
-    virtual bool hasPendingActivity() const override;
+    void stop() override;
+    bool hasPendingActivity() const override;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
 
     // FileReaderLoaderClient
-    virtual void didStartLoading() override;
-    virtual void didReceiveData() override;
-    virtual void didFinishLoading() override;
-    virtual void didFail(FileError::ErrorCode) override;
+    void didStartLoading() override;
+    void didReceiveData() override;
+    void didFinishLoading() override;
+    void didFail(FileError::ErrorCode) override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);

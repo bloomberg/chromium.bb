@@ -36,10 +36,10 @@ public:
     void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     // Protocol method implementations
-    virtual void getPlaybackRate(ErrorString*, double* playbackRate) override;
-    virtual void setPlaybackRate(ErrorString*, double playbackRate) override;
-    virtual void setCurrentTime(ErrorString*, double currentTime) override;
-    virtual void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
+    void getPlaybackRate(ErrorString*, double* playbackRate) override;
+    void setPlaybackRate(ErrorString*, double playbackRate) override;
+    void setCurrentTime(ErrorString*, double currentTime) override;
+    void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimation(Animation*);
@@ -47,7 +47,7 @@ public:
     void didClearDocumentOfWindowObject(LocalFrame*);
 
     // API for InspectorFrontend
-    virtual void enable(ErrorString*) override;
+    void enable(ErrorString*) override;
 
     // Methods for other agents to use.
     Animation* assertAnimation(ErrorString*, const String& id);

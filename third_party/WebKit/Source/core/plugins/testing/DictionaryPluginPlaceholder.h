@@ -30,11 +30,11 @@ public:
     }
 
 #if !ENABLE(OILPAN)
-    virtual ~DictionaryPluginPlaceholder() override { }
+    ~DictionaryPluginPlaceholder() override { }
 #endif
     DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_pluginPlaceholderElement); }
 
-    virtual void loadIntoContainer(ContainerNode& container) override
+    void loadIntoContainer(ContainerNode& container) override
     {
         container.removeChildren();
         container.appendChild(m_pluginPlaceholderElement, ASSERT_NO_EXCEPTION);

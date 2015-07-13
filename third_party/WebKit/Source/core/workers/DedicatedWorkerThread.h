@@ -42,7 +42,7 @@ class DedicatedWorkerThread final : public WorkerThread {
 public:
     static PassRefPtr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
-    virtual ~DedicatedWorkerThread();
+    ~DedicatedWorkerThread() override;
 
 protected:
     PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;

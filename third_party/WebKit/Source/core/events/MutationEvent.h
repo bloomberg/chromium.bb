@@ -32,7 +32,7 @@ namespace blink {
 class MutationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~MutationEvent();
+    ~MutationEvent() override;
 
     enum AttrChangeType {
         MODIFICATION    = 1, // NOLINT
@@ -60,7 +60,7 @@ public:
     String attrName() const { return m_attrName; }
     unsigned short attrChange() const { return m_attrChange; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

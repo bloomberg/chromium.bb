@@ -50,7 +50,7 @@ public:
         return adoptPtr(new EventFactory());
     }
 
-    virtual PassRefPtrWillBeRawPtr<Event> create(const String& eventType) override;
+    PassRefPtrWillBeRawPtr<Event> create(const String& eventType) override;
 };
 
 }

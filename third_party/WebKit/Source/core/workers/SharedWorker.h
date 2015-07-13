@@ -46,15 +46,15 @@ class CORE_EXPORT SharedWorker final : public AbstractWorker, public WillBeHeapS
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 public:
     static PassRefPtrWillBeRawPtr<SharedWorker> create(ExecutionContext*, const String& url, const String& name, ExceptionState&);
-    virtual ~SharedWorker();
+    ~SharedWorker() override;
 
     MessagePort* port() const { return m_port.get(); }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     void setIsBeingConnected(bool b) { m_isBeingConnected = b; }
 
-    virtual bool hasPendingActivity() const override;
+    bool hasPendingActivity() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

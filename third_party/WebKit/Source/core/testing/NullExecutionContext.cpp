@@ -16,10 +16,10 @@ namespace {
 class NullEventQueue final : public EventQueue {
 public:
     NullEventQueue() { }
-    virtual ~NullEventQueue() { }
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override { return true; }
-    virtual bool cancelEvent(Event*) override { return true; }
-    virtual void close() override { }
+    ~NullEventQueue() override { }
+    bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override { return true; }
+    bool cancelEvent(Event*) override { return true; }
+    void close() override { }
 };
 
 } // namespace

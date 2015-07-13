@@ -72,7 +72,7 @@ public:
         return adoptRefWillBeNoop(new MessageEvent(data, origin));
     }
     static PassRefPtrWillBeRawPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
-    virtual ~MessageEvent();
+    ~MessageEvent() override;
 
     void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, ScriptValue data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray*);
     void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray*);
@@ -84,7 +84,7 @@ public:
     MessagePortArray ports() const;
     MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : 0; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     enum DataType {
         DataTypeScriptValue,
@@ -110,7 +110,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
+    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
 
 private:
     MessageEvent();

@@ -63,7 +63,7 @@ public:
         return adoptRefWillBeNoop(new FrontendMenuProvider(devtoolsHost, devtoolsApiObject, items));
     }
 
-    virtual ~FrontendMenuProvider()
+    ~FrontendMenuProvider() override
     {
         // Verify that this menu provider has been detached.
         ASSERT(!m_devtoolsHost);
@@ -81,7 +81,7 @@ public:
         m_devtoolsHost = nullptr;
     }
 
-    virtual void contextMenuCleared() override
+    void contextMenuCleared() override
     {
         if (m_devtoolsHost) {
             ScriptFunctionCall function(m_devtoolsApiObject, "contextMenuCleared");
@@ -93,13 +93,13 @@ public:
         m_items.clear();
     }
 
-    virtual void populateContextMenu(ContextMenu* menu) override
+    void populateContextMenu(ContextMenu* menu) override
     {
         for (size_t i = 0; i < m_items.size(); ++i)
             menu->appendItem(m_items[i]);
     }
 
-    virtual void contextMenuItemSelected(const ContextMenuItem* item) override
+    void contextMenuItemSelected(const ContextMenuItem* item) override
     {
         if (!m_devtoolsHost)
             return;

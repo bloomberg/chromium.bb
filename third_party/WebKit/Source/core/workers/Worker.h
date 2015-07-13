@@ -17,7 +17,7 @@ class CORE_EXPORT Worker final : public InProcessWorkerBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);
-    virtual ~Worker();
+    ~Worker() override;
 
 protected:
     explicit Worker(ExecutionContext*);

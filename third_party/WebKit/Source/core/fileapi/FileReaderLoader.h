@@ -69,17 +69,17 @@ public:
     }
 
     FileReaderLoader(ReadType, FileReaderLoaderClient*);
-    virtual ~FileReaderLoader();
+    ~FileReaderLoader() override;
 
     void start(ExecutionContext*, PassRefPtr<BlobDataHandle>);
     void start(ExecutionContext*, const Stream&, unsigned readSize);
     void cancel();
 
     // ThreadableLoaderClient
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    virtual void didReceiveData(const char*, unsigned) override;
-    virtual void didFinishLoading(unsigned long, double) override;
-    virtual void didFail(const ResourceError&) override;
+    void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveData(const char*, unsigned) override;
+    void didFinishLoading(unsigned long, double) override;
+    void didFail(const ResourceError&) override;
 
     String stringResult();
     PassRefPtr<DOMArrayBuffer> arrayBufferResult() const;

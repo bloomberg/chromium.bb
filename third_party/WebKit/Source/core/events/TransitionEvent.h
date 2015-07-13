@@ -48,13 +48,13 @@ public:
         return adoptRefWillBeNoop(new TransitionEvent(type, initializer));
     }
 
-    virtual ~TransitionEvent();
+    ~TransitionEvent() override;
 
     const String& propertyName() const;
     double elapsedTime() const;
     const String& pseudoElement() const;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

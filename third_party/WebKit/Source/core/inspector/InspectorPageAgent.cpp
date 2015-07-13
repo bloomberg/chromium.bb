@@ -117,7 +117,7 @@ class InspectorPageAgent::GetResourceContentLoadListener final : public VoidCall
 public:
     GetResourceContentLoadListener(InspectorPageAgent*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
     DECLARE_VIRTUAL_TRACE();
-    virtual void handleEvent() override;
+    void handleEvent() override;
 private:
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     String m_frameId;

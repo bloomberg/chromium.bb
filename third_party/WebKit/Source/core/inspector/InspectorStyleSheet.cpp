@@ -82,17 +82,17 @@ public:
     }
 
 private:
-    virtual void startRuleHeader(StyleRule::Type, unsigned) override;
-    virtual void endRuleHeader(unsigned) override;
-    virtual void observeSelector(unsigned startOffset, unsigned endOffset) override;
-    virtual void startRuleBody(unsigned) override;
-    virtual void endRuleBody(unsigned) override;
-    virtual void observeProperty(unsigned startOffset, unsigned endOffset, bool isImportant, bool isParsed) override;
-    virtual void observeComment(unsigned startOffset, unsigned endOffset) override;
-    virtual void startMediaQueryExp(unsigned offset) override;
-    virtual void endMediaQueryExp(unsigned offset) override;
-    virtual void startMediaQuery() override;
-    virtual void endMediaQuery() override;
+    void startRuleHeader(StyleRule::Type, unsigned) override;
+    void endRuleHeader(unsigned) override;
+    void observeSelector(unsigned startOffset, unsigned endOffset) override;
+    void startRuleBody(unsigned) override;
+    void endRuleBody(unsigned) override;
+    void observeProperty(unsigned startOffset, unsigned endOffset, bool isImportant, bool isParsed) override;
+    void observeComment(unsigned startOffset, unsigned endOffset) override;
+    void startMediaQueryExp(unsigned offset) override;
+    void endMediaQueryExp(unsigned offset) override;
+    void startMediaQuery() override;
+    void endMediaQuery() override;
 
     void addNewRuleToSourceTree(PassRefPtrWillBeRawPtr<CSSRuleSourceData>);
     PassRefPtrWillBeRawPtr<CSSRuleSourceData> popRuleData();

@@ -45,17 +45,17 @@ public:
     {
         return adoptPtrWillBeNoop(new WorkerConsoleAgent(injectedScriptManager, workerGlobalScope));
     }
-    virtual ~WorkerConsoleAgent();
+    ~WorkerConsoleAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void enable(ErrorString*) override;
-    virtual void clearMessages(ErrorString*) override;
+    void enable(ErrorString*) override;
+    void clearMessages(ErrorString*) override;
 
 protected:
-    virtual ConsoleMessageStorage* messageStorage() override;
+    ConsoleMessageStorage* messageStorage() override;
 
-    virtual void enableStackCapturingIfNeeded() override;
-    virtual void disableStackCapturingIfNeeded() override;
+    void enableStackCapturingIfNeeded() override;
+    void disableStackCapturingIfNeeded() override;
 
 private:
     WorkerConsoleAgent(InjectedScriptManager*, WorkerGlobalScope*);

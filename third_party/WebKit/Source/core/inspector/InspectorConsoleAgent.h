@@ -44,7 +44,7 @@ class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorCon
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
     explicit InspectorConsoleAgent(InjectedScriptManager*);
-    virtual ~InspectorConsoleAgent();
+    ~InspectorConsoleAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     void setDebuggerAgent(InspectorDebuggerAgent* debuggerAgent) { m_debuggerAgent = debuggerAgent; }
@@ -53,7 +53,7 @@ public:
     bool enabled() { return m_enabled; }
 
     void disable(ErrorString*) override;
-    void restore() override final;
+    void restore() final;
 
     void addMessageToConsole(ConsoleMessage*);
     void consoleMessagesCleared();

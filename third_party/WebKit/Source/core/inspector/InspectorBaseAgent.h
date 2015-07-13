@@ -100,15 +100,15 @@ private:
 template<typename AgentClass, typename FrontendClass>
 class InspectorBaseAgent : public InspectorAgent {
 public:
-    virtual ~InspectorBaseAgent() { }
+    ~InspectorBaseAgent() override { }
 
-    void setFrontend(InspectorFrontend* frontend) override final
+    void setFrontend(InspectorFrontend* frontend) final
     {
         ASSERT(!m_frontend);
         m_frontend = FrontendClass::from(frontend);
     }
 
-    void clearFrontend() override final
+    void clearFrontend() final
     {
         ErrorString error;
         disable(&error);
@@ -116,7 +116,7 @@ public:
         m_frontend = nullptr;
     }
 
-    virtual void registerInDispatcher(InspectorBackendDispatcher* dispatcher) override final
+    void registerInDispatcher(InspectorBackendDispatcher* dispatcher) final
     {
         dispatcher->registerAgent(static_cast<AgentClass*>(this));
     }

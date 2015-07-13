@@ -61,13 +61,13 @@ public:
     String vendor() const;
     String vendorSub() const;
 
-    virtual String userAgent() const override;
+    String userAgent() const override;
 
     // Relinquishes the storage lock, if one exists.
     void getStorageUpdates();
 
     // NavigatorLanguage
-    virtual Vector<String> languages() override;
+    Vector<String> languages() override;
 
     DECLARE_VIRTUAL_TRACE();
 

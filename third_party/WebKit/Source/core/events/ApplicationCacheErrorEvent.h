@@ -15,7 +15,7 @@ namespace blink {
 class ApplicationCacheErrorEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~ApplicationCacheErrorEvent();
+    ~ApplicationCacheErrorEvent() override;
 
     static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create()
     {
@@ -37,7 +37,7 @@ public:
     int status() const { return m_status; }
     const String& message() const { return m_message; }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::ApplicationCacheErrorEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::ApplicationCacheErrorEvent; }
 
     DECLARE_VIRTUAL_TRACE();
 

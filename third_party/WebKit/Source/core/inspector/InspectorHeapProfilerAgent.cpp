@@ -120,7 +120,7 @@ public:
     {
     }
 
-    virtual void write(const uint32_t* chunk, const int size) override
+    void write(const uint32_t* chunk, const int size) override
     {
         ASSERT(chunk);
         ASSERT(size > 0);
@@ -207,18 +207,18 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
         explicit HeapSnapshotProgress(InspectorFrontend::HeapProfiler* frontend)
             : m_frontend(frontend)
             , m_totalWork(0) { }
-        virtual void Start(int totalWork) override
+        void Start(int totalWork) override
         {
             m_totalWork = totalWork;
         }
-        virtual void Worked(int workDone) override
+        void Worked(int workDone) override
         {
             if (m_frontend) {
                 m_frontend->reportHeapSnapshotProgress(workDone, m_totalWork, 0);
                 m_frontend->flush();
             }
         }
-        virtual void Done() override
+        void Done() override
         {
             const bool finished = true;
             if (m_frontend) {
@@ -226,7 +226,7 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
                 m_frontend->flush();
             }
         }
-        virtual bool isCanceled() override { return false; }
+        bool isCanceled() override { return false; }
     private:
         InspectorFrontend::HeapProfiler* m_frontend;
         int m_totalWork;
@@ -285,7 +285,7 @@ void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, con
 class InspectableHeapObject final : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableHeapObject(unsigned heapObjectId) : m_heapObjectId(heapObjectId) { }
-    virtual ScriptValue get(ScriptState*) override
+    ScriptValue get(ScriptState*) override
     {
         return ScriptProfiler::objectByHeapObjectId(m_heapObjectId);
     }

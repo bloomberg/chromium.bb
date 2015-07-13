@@ -120,12 +120,12 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
 public:
     static PassRefPtrWillBeRawPtr<InspectorStyleSheet> create(InspectorResourceAgent*, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
 
-    virtual ~InspectorStyleSheet();
+    ~InspectorStyleSheet() override;
     DECLARE_VIRTUAL_TRACE();
 
     String finalURL();
-    virtual bool setText(const String&, ExceptionState&) override;
-    virtual bool getText(String* result) override;
+    bool setText(const String&, ExceptionState&) override;
+    bool getText(String* result) override;
     RefPtrWillBeRawPtr<CSSStyleRule>  setRuleSelector(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
     RefPtrWillBeRawPtr<CSSStyleRule>  setStyleText(const SourceRange&, const String& text, SourceRange* newRange, String* oldSelector, ExceptionState&);
     RefPtrWillBeRawPtr<CSSMediaRule>  setMediaRuleText(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
@@ -145,7 +145,7 @@ public:
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceDataForRule(RefPtrWillBeRawPtr<CSSRule>);
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyle(RefPtrWillBeRawPtr<CSSStyleDeclaration>) override;
+    PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyle(RefPtrWillBeRawPtr<CSSStyleDeclaration>) override;
 
 private:
     InspectorStyleSheet(InspectorResourceAgent*, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
@@ -192,15 +192,15 @@ public:
     static PassRefPtrWillBeRawPtr<InspectorStyleSheetForInlineStyle> create(PassRefPtrWillBeRawPtr<Element>, Listener*);
 
     void didModifyElementAttribute();
-    virtual bool setText(const String&, ExceptionState&) override;
-    virtual bool getText(String* result) override;
+    bool setText(const String&, ExceptionState&) override;
+    bool getText(String* result) override;
     CSSStyleDeclaration* inlineStyle();
     RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData();
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyle(RefPtrWillBeRawPtr<CSSStyleDeclaration>) override;
+    PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyle(RefPtrWillBeRawPtr<CSSStyleDeclaration>) override;
 
     // Also accessed by friend class InspectorStyle.
     bool isInlineStyle() override { return true; }

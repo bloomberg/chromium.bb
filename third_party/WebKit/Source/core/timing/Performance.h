@@ -49,9 +49,9 @@ public:
     {
         return new Performance(frame);
     }
-    virtual ~Performance();
+    ~Performance() override;
 
-    virtual ExecutionContext* executionContext() const override;
+    ExecutionContext* executionContext() const override;
 
     MemoryInfo* memory();
     PerformanceNavigation* navigation() const;

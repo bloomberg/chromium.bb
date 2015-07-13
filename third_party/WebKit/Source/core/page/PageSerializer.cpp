@@ -103,15 +103,15 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
     STACK_ALLOCATED();
 public:
     SerializerMarkupAccumulator(PageSerializer*, const Document&, WillBeHeapVector<RawPtrWillBeMember<Node>>&);
-    virtual ~SerializerMarkupAccumulator();
+    ~SerializerMarkupAccumulator() override;
 
 protected:
-    virtual void appendText(StringBuilder& out, Text&) override;
-    virtual bool shouldIgnoreAttribute(const Attribute&) override;
-    virtual void appendElement(StringBuilder& out, Element&, Namespaces*) override;
-    virtual void appendCustomAttributes(StringBuilder& out, const Element&, Namespaces*) override;
-    virtual void appendStartTag(Node&, Namespaces* = nullptr) override;
-    virtual void appendEndTag(const Element&) override;
+    void appendText(StringBuilder& out, Text&) override;
+    bool shouldIgnoreAttribute(const Attribute&) override;
+    void appendElement(StringBuilder& out, Element&, Namespaces*) override;
+    void appendCustomAttributes(StringBuilder& out, const Element&, Namespaces*) override;
+    void appendStartTag(Node&, Namespaces* = nullptr) override;
+    void appendEndTag(const Element&) override;
 
     const Document& document();
 

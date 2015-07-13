@@ -170,8 +170,8 @@ private:
 
 class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
 protected:
-    virtual EventTargetData* eventTargetData() override final { return &m_eventTargetData; }
-    virtual EventTargetData& ensureEventTargetData() override final { return m_eventTargetData; }
+    EventTargetData* eventTargetData() final { return &m_eventTargetData; }
+    EventTargetData& ensureEventTargetData() final { return m_eventTargetData; }
 private:
     EventTargetData m_eventTargetData;
 };
@@ -292,8 +292,8 @@ public: \
     using baseClass::ref; \
     using baseClass::deref; \
 private: \
-    virtual void refEventTarget() override final { ref(); } \
-    virtual void derefEventTarget() override final { deref(); } \
+    void refEventTarget() final { ref(); } \
+    void derefEventTarget() final { deref(); } \
     typedef int thisIsHereToForceASemiColonAfterThisEventTargetMacro
 #define REFCOUNTED_EVENT_TARGET(baseClass) DEFINE_EVENT_TARGET_REFCOUNTING(RefCounted<baseClass>)
 #define REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(baseClass) DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<baseClass>)

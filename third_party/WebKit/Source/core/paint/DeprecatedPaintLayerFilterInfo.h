@@ -57,12 +57,12 @@ public:
     void setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder>);
 
     void updateReferenceFilterClients(const FilterOperations&);
-    virtual void notifyFinished(Resource*) override;
+    void notifyFinished(Resource*) override;
     void removeReferenceFilterClients();
 
 private:
     DeprecatedPaintLayerFilterInfo(DeprecatedPaintLayer*);
-    virtual ~DeprecatedPaintLayerFilterInfo();
+    ~DeprecatedPaintLayerFilterInfo() override;
 
     DeprecatedPaintLayer* m_layer;
 

@@ -58,7 +58,7 @@ public:
     {
         return adoptRefWillBeNoop(new ErrorEvent("Script error.", String(), 0, 0, world));
     }
-    virtual ~ErrorEvent();
+    ~ErrorEvent() override;
 
     // As 'message' is exposed to JavaScript, never return unsanitizedMessage.
     const String& message() const { return m_sanitizedMessage; }
@@ -70,7 +70,7 @@ public:
     // 'messageForConsole' is not exposed to JavaScript, and prefers 'm_unsanitizedMessage'.
     const String& messageForConsole() const { return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage : m_sanitizedMessage; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DOMWrapperWorld* world() const { return m_world.get(); }
 

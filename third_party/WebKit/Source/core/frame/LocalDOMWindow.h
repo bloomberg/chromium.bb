@@ -74,19 +74,19 @@ public:
         return adoptRefWillBeNoop(new LocalDOMWindow(frame));
     }
 
-    virtual ~LocalDOMWindow();
+    ~LocalDOMWindow() override;
 
     DECLARE_VIRTUAL_TRACE();
 
     PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
     // EventTarget overrides:
-    virtual ExecutionContext* executionContext() const override;
-    virtual LocalDOMWindow* toDOMWindow() override;
+    ExecutionContext* executionContext() const override;
+    LocalDOMWindow* toDOMWindow() override;
 
     // DOMWindow overrides:
     bool isLocalDOMWindow() const override { return true; }
-    virtual LocalFrame* frame() const override;
+    LocalFrame* frame() const override;
     Screen* screen() const override;
     History* history() const override;
     BarProp* locationbar() const override;
@@ -171,9 +171,9 @@ public:
 
     // Events
     // EventTarget API
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
-    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
-    virtual void removeAllEventListeners() override;
+    bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    void removeAllEventListeners() override;
 
     using EventTarget::dispatchEvent;
     bool dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtrWillBeRawPtr<EventTarget> prpTarget);

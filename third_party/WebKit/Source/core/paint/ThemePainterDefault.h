@@ -35,20 +35,20 @@ namespace blink {
 
 class ThemePainterDefault final : public ThemePainter {
 private:
-    virtual bool paintCheckbox(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintRadio(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMenuList(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintInnerSpinButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintProgressBar(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintCheckbox(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintRadio(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintMenuList(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintInnerSpinButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintProgressBar(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
 };
 
 } // namespace blink

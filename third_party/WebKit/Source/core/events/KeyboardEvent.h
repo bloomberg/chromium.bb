@@ -64,7 +64,7 @@ public:
         ctrlKey, altKey, shiftKey, metaKey));
     }
 
-    virtual ~KeyboardEvent();
+    ~KeyboardEvent() override;
 
     void initKeyboardEvent(ScriptState*, const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         const String& keyIdentifier, unsigned location,
@@ -80,13 +80,13 @@ public:
 
     const PlatformKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
 
-    virtual int keyCode() const override; // key code for keydown and keyup, character for keypress
-    virtual int charCode() const override; // character code for keypress, 0 for keydown and keyup
+    int keyCode() const override; // key code for keydown and keyup, character for keypress
+    int charCode() const override; // character code for keypress, 0 for keydown and keyup
     bool repeat() const { return m_isAutoRepeat; }
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual bool isKeyboardEvent() const override;
-    virtual int which() const override;
+    const AtomicString& interfaceName() const override;
+    bool isKeyboardEvent() const override;
+    int which() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -111,7 +111,7 @@ public:
     static PassRefPtrWillBeRawPtr<KeyboardEventDispatchMediator> create(PassRefPtrWillBeRawPtr<KeyboardEvent>);
 private:
     explicit KeyboardEventDispatchMediator(PassRefPtrWillBeRawPtr<KeyboardEvent>);
-    virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);

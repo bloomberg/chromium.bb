@@ -62,7 +62,7 @@ public:
     {
         ASSERT(!proxy->pageInspector());
     }
-    virtual ~WorkerAgentClient()
+    ~WorkerAgentClient() override
     {
         disconnectFromWorker();
     }
@@ -88,12 +88,12 @@ public:
 
 private:
     // WorkerInspectorProxy::PageInspector implementation
-    virtual void dispatchMessageFromWorker(const String& message) override
+    void dispatchMessageFromWorker(const String& message) override
     {
         m_frontend->dispatchMessageFromWorker(m_id, message);
     }
     // WorkerInspectorProxy::PageInspector implementation
-    virtual void workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy) override
+    void workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy) override
     {
         m_consoleAgent->workerConsoleAgentEnabled(proxy);
     }

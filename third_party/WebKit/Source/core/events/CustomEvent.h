@@ -37,7 +37,7 @@ class SerializedScriptValue;
 class CORE_EXPORT CustomEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~CustomEvent();
+    ~CustomEvent() override;
 
     static PassRefPtrWillBeRawPtr<CustomEvent> create()
     {
@@ -51,7 +51,7 @@ public:
 
     void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue>);
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
 

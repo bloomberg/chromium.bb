@@ -37,7 +37,7 @@ namespace blink {
 class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~TouchEvent();
+    ~TouchEvent() override;
 
     // We only initialize sourceDevice when we create TouchEvent from EventHandler, null if it is from JavaScript.
     static PassRefPtrWillBeRawPtr<TouchEvent> create()
@@ -70,11 +70,11 @@ public:
 
     bool causesScrollingIfUncanceled() const { return m_causesScrollingIfUncanceled; }
 
-    virtual bool isTouchEvent() const override;
+    bool isTouchEvent() const override;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
-    virtual void preventDefault() override;
+    void preventDefault() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -99,7 +99,7 @@ public:
 private:
     explicit TouchEventDispatchMediator(PassRefPtrWillBeRawPtr<TouchEvent>);
     TouchEvent& event() const;
-    virtual bool dispatchEvent(EventDispatcher&) const override;
+    bool dispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(TouchEvent);

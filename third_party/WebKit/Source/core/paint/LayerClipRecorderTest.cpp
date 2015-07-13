@@ -29,7 +29,7 @@ protected:
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
 
 private:
-    virtual void SetUp() override
+    void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
 
@@ -39,7 +39,7 @@ private:
         m_layoutView = document().view()->layoutView();
         ASSERT_TRUE(m_layoutView);
     }
-    virtual void TearDown() override
+    void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
     }

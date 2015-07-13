@@ -47,7 +47,7 @@ public:
     {
         return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, client, debugger, pageAgent));
     }
-    virtual ~PageRuntimeAgent();
+    ~PageRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
     void init() override;
     void enable(ErrorString*) override;
@@ -60,9 +60,9 @@ public:
 private:
     PageRuntimeAgent(InjectedScriptManager*, Client*, V8Debugger*, InspectorPageAgent*);
 
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
-    virtual void muteConsole() override;
-    virtual void unmuteConsole() override;
+    InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
+    void muteConsole() override;
+    void unmuteConsole() override;
     void reportExecutionContextCreation();
     void reportExecutionContext(ScriptState*, bool isPageContext, const String& origin, const String& frameId);
 

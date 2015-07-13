@@ -72,7 +72,7 @@ public:
     {
     }
 
-    virtual void contextDestroyed() override
+    void contextDestroyed() override
     {
         ASSERT(executionContext());
         OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());

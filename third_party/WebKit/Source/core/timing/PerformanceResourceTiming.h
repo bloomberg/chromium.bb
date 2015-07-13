@@ -69,11 +69,11 @@ public:
     double responseStart() const;
     double responseEnd() const;
 
-    virtual bool isResource() override { return true; }
+    bool isResource() override { return true; }
 
 private:
     PerformanceResourceTiming(const ResourceTimingInfo&, double timeOrigin, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
-    virtual ~PerformanceResourceTiming();
+    ~PerformanceResourceTiming() override;
 
     double workerReady() const;
 

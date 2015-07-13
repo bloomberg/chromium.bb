@@ -26,12 +26,12 @@ public:
         return adoptRefWillBeNoop(new AnimationPlayerEvent(type, initializer));
     }
 
-    virtual ~AnimationPlayerEvent();
+    ~AnimationPlayerEvent() override;
 
     double currentTime() const;
     double timelineTime() const;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

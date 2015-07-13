@@ -51,7 +51,7 @@ public:
 
     MockCanvas() : SkCanvas(kPageWidth, kPageHeight) { }
 
-    virtual void onDrawRect(const SkRect& rect, const SkPaint& paint) override
+    void onDrawRect(const SkRect& rect, const SkPaint& paint) override
     {
         if (!paint.getAnnotation())
             return;
@@ -60,7 +60,7 @@ public:
         m_recordedOperations.append(operation);
     }
 
-    virtual void onDrawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint) override
+    void onDrawPoints(PointMode mode, size_t count, const SkPoint pts[], const SkPaint& paint) override
     {
         if (!paint.getAnnotation())
             return;
@@ -142,8 +142,8 @@ class SingleChildFrameLoaderClient : public EmptyFrameLoaderClient {
 public:
     SingleChildFrameLoaderClient() : m_child(nullptr) { }
 
-    virtual Frame* firstChild() const override { return m_child; }
-    virtual Frame* lastChild() const override { return m_child; }
+    Frame* firstChild() const override { return m_child; }
+    Frame* lastChild() const override { return m_child; }
 
     void setChild(Frame* child) { m_child = child; }
 
@@ -155,7 +155,7 @@ class FrameLoaderClientWithParent : public EmptyFrameLoaderClient {
 public:
     FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
 
-    virtual Frame* parent() const override { return m_parent; }
+    Frame* parent() const override { return m_parent; }
 
 private:
     Frame* m_parent;
@@ -195,12 +195,12 @@ public:
         : m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
 
 protected:
-    virtual void SetUp() override
+    void SetUp() override
     {
         PrintContextTest::SetUp();
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
     }
-    virtual void TearDown() override
+    void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
         PrintContextTest::TearDown();

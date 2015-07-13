@@ -45,8 +45,8 @@ namespace {
 
 class BlobURLRegistry final : public URLRegistry {
 public:
-    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
-    virtual void unregisterURL(const KURL&) override;
+    void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
+    void unregisterURL(const KURL&) override;
 
     static URLRegistry& registry();
 };

@@ -53,7 +53,7 @@ class WorkerMessagingProxy;
 class CORE_EXPORT WorkerObjectProxy : public WorkerReportingProxy {
 public:
     static PassOwnPtr<WorkerObjectProxy> create(ExecutionContext*, WorkerMessagingProxy*);
-    virtual ~WorkerObjectProxy() { }
+    ~WorkerObjectProxy() override { }
 
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
     void postTaskToMainExecutionContext(PassOwnPtr<ExecutionContextTask>);
@@ -61,15 +61,15 @@ public:
     void reportPendingActivity(bool hasPendingActivity);
 
     // WorkerReportingProxy overrides.
-    virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;
-    virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
-    virtual void postMessageToPageInspector(const String&) override;
-    virtual void postWorkerConsoleAgentEnabled() override;
-    virtual void didEvaluateWorkerScript(bool success) override { }
-    virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override { }
-    virtual void workerGlobalScopeClosed() override;
-    virtual void workerThreadTerminated() override;
-    virtual void willDestroyWorkerGlobalScope() override { }
+    void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;
+    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    void postMessageToPageInspector(const String&) override;
+    void postWorkerConsoleAgentEnabled() override;
+    void didEvaluateWorkerScript(bool success) override { }
+    void workerGlobalScopeStarted(WorkerGlobalScope*) override { }
+    void workerGlobalScopeClosed() override;
+    void workerThreadTerminated() override;
+    void willDestroyWorkerGlobalScope() override { }
 
 protected:
     WorkerObjectProxy(ExecutionContext*, WorkerMessagingProxy*);

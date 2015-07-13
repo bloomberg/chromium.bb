@@ -46,7 +46,7 @@ public:
     }
     virtual ~WorkerNavigator();
 
-    virtual String userAgent() const override;
+    String userAgent() const override;
 
     DECLARE_TRACE();
 

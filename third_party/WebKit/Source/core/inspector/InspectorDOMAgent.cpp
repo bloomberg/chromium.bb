@@ -2111,7 +2111,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
 class InspectableNode final : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableNode(Node* node) : m_node(node) { }
-    virtual ScriptValue get(ScriptState* state) override
+    ScriptValue get(ScriptState* state) override
     {
         return InjectedScriptHost::nodeAsScriptValue(state, m_node);
     }

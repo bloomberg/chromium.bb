@@ -56,7 +56,7 @@ class EventSource final : public RefCountedGarbageCollectedEventTargetWithInline
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventSource);
 public:
     static EventSource* create(ExecutionContext*, const String& url, const EventSourceInit&, ExceptionState&);
-    virtual ~EventSource();
+    ~EventSource() override;
 
     static const unsigned long long defaultReconnectDelay;
 
@@ -76,8 +76,8 @@ public:
 
     void close();
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
     //
@@ -85,21 +85,21 @@ public:
     // Page::setDefersLoading() and it defers delivery of events from the
     // loader, and therefore the methods of this class for receiving
     // asynchronous events from the loader won't be invoked.
-    virtual void stop() override;
+    void stop() override;
 
-    virtual bool hasPendingActivity() const override;
+    bool hasPendingActivity() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    virtual void didReceiveData(const char*, unsigned) override;
-    virtual void didFinishLoading(unsigned long, double) override;
-    virtual void didFail(const ResourceError&) override;
-    virtual void didFailAccessControlCheck(const ResourceError&) override;
-    virtual void didFailRedirectCheck() override;
+    void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveData(const char*, unsigned) override;
+    void didFinishLoading(unsigned long, double) override;
+    void didFail(const ResourceError&) override;
+    void didFailAccessControlCheck(const ResourceError&) override;
+    void didFailRedirectCheck() override;
 
     void scheduleInitialConnect();
     void connect();

@@ -16,7 +16,7 @@ class ResourceRequest;
 
 class RemoteFrameClient : public FrameClient {
 public:
-    virtual ~RemoteFrameClient() { }
+    ~RemoteFrameClient() override { }
 
     virtual void navigate(const ResourceRequest&, bool shouldReplaceCurrentEntry) = 0;
     virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;

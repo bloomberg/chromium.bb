@@ -64,18 +64,18 @@ class PageInspectorProxy final : public InspectorFrontendChannel {
     WTF_MAKE_FAST_ALLOCATED(PageInspectorProxy);
 public:
     explicit PageInspectorProxy(WorkerGlobalScope* workerGlobalScope) : m_workerGlobalScope(workerGlobalScope) { }
-    virtual ~PageInspectorProxy() { }
+    ~PageInspectorProxy() override { }
 private:
-    virtual void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override
+    void sendProtocolResponse(int callId, PassRefPtr<JSONObject> message) override
     {
         // Worker messages are wrapped, no need to handle callId.
         m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
     }
-    virtual void sendProtocolNotification(PassRefPtr<JSONObject> message) override
+    void sendProtocolNotification(PassRefPtr<JSONObject> message) override
     {
         m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
     }
-    virtual void flush() override { }
+    void flush() override { }
     WorkerGlobalScope* m_workerGlobalScope;
 };
 
@@ -83,18 +83,18 @@ class WorkerStateClient final : public InspectorStateClient {
     WTF_MAKE_FAST_ALLOCATED(WorkerStateClient);
 public:
     WorkerStateClient(WorkerGlobalScope* context) { }
-    virtual ~WorkerStateClient() { }
+    ~WorkerStateClient() override { }
 
 private:
-    virtual void updateInspectorStateCookie(const String& cookie) override { }
+    void updateInspectorStateCookie(const String& cookie) override { }
 };
 
 class RunInspectorCommandsTask final : public InspectorTaskRunner::Task {
 public:
     explicit RunInspectorCommandsTask(WorkerThread* thread)
         : m_thread(thread) { }
-    virtual ~RunInspectorCommandsTask() { }
-    virtual void run() override
+    ~RunInspectorCommandsTask() override { }
+    void run() override
     {
         // Process all queued debugger commands. WorkerThread is certainly
         // alive if this task is being executed.

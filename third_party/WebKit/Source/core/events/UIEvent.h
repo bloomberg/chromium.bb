@@ -51,7 +51,7 @@ public:
     {
         return adoptRefWillBeNoop(new UIEvent(type, initializer));
     }
-    virtual ~UIEvent();
+    ~UIEvent() override;
 
     void initUIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int detail);
 
@@ -59,8 +59,8 @@ public:
     int detail() const { return m_detail; }
     InputDevice* sourceDevice() const { return m_sourceDevice.get(); }
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual bool isUIEvent() const override final;
+    const AtomicString& interfaceName() const override;
+    bool isUIEvent() const final;
 
     virtual int keyCode() const;
     virtual int charCode() const;

@@ -54,7 +54,7 @@ public:
     int columnNumber() const { return m_columnNumber; }
     int statusCode() const { return m_statusCode; }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::SecurityPolicyViolationEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::SecurityPolicyViolationEvent; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 

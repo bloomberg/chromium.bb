@@ -89,7 +89,7 @@ public:
     void hostDestroyed() { m_page = nullptr; }
 #endif
 
-    virtual ~InternalSettings();
+    ~InternalSettings() override;
     void resetToConsistentState();
 
     void setStandardFontFamily(const AtomicString& family, const String& script, ExceptionState&);

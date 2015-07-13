@@ -47,9 +47,9 @@ public:
         return adoptRefWillBeNoop(new PageTransitionEvent(type, initializer));
     }
 
-    virtual ~PageTransitionEvent();
+    ~PageTransitionEvent() override;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     bool persisted() const { return m_persisted; }
 

@@ -48,13 +48,13 @@ class ExecutionContext;
 class DOMWindowEventQueue final : DOMWINDOWEVENTQUEUE_BASE_CLASSES {
 public:
     static PassRefPtrWillBeRawPtr<DOMWindowEventQueue> create(ExecutionContext*);
-    virtual ~DOMWindowEventQueue();
+    ~DOMWindowEventQueue() override;
 
     // EventQueue
     DECLARE_VIRTUAL_TRACE();
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override;
-    virtual bool cancelEvent(Event*) override;
-    virtual void close() override;
+    bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override;
+    bool cancelEvent(Event*) override;
+    void close() override;
 
 private:
     explicit DOMWindowEventQueue(ExecutionContext*);

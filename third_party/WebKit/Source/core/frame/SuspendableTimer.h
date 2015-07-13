@@ -36,16 +36,16 @@ namespace blink {
 class CORE_EXPORT SuspendableTimer : public TimerBase, public ActiveDOMObject {
 public:
     explicit SuspendableTimer(ExecutionContext*);
-    virtual ~SuspendableTimer();
+    ~SuspendableTimer() override;
 
     // ActiveDOMObject
-    virtual bool hasPendingActivity() const override final;
-    virtual void stop() override;
-    virtual void suspend() override final;
-    virtual void resume() override final;
+    bool hasPendingActivity() const final;
+    void stop() override;
+    void suspend() final;
+    void resume() final;
 
 private:
-    virtual void fired() override = 0;
+    void fired() override = 0;
 
     double m_nextFireInterval;
     double m_repeatInterval;

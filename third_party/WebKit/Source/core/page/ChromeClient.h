@@ -248,7 +248,7 @@ public:
     virtual void unregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
 
 protected:
-    virtual ~ChromeClient() { }
+    ~ChromeClient() override { }
 
     virtual void showMouseOverURL(const HitTestResult&) = 0;
     virtual void setWindowRect(const IntRect&) = 0;

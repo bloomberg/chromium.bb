@@ -41,7 +41,7 @@ class WorkerThreadStartupData;
 class CORE_EXPORT SharedWorkerThread : public WorkerThread {
 public:
     static PassRefPtr<SharedWorkerThread> create(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
-    virtual ~SharedWorkerThread();
+    ~SharedWorkerThread() override;
 
 protected:
     PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;

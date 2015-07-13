@@ -82,7 +82,7 @@ namespace blink {
             ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
 
         // Frame overrides:
-        virtual ~LocalFrame();
+        ~LocalFrame() override;
         DECLARE_VIRTUAL_TRACE();
         bool isLocalFrame() const override { return true; }
         DOMWindow* domWindow() const override;

@@ -49,13 +49,13 @@ public:
     {
         return new Console(frame);
     }
-    virtual ~Console();
+    ~Console() override;
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    virtual ExecutionContext* context() override;
-    virtual void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    ExecutionContext* context() override;
+    void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
 
 private:
     explicit Console(LocalFrame*);

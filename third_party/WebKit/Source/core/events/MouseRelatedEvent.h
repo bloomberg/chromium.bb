@@ -74,7 +74,7 @@ namespace blink {
 
         void initCoordinates();
         void initCoordinates(const LayoutPoint& clientLocation);
-        virtual void receivedTarget() override final;
+        void receivedTarget() final;
 
         void computePageLocation();
         void computeRelativePosition();

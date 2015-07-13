@@ -52,7 +52,7 @@ public:
         return new WorkerPerformance(context);
     }
 
-    virtual ExecutionContext* executionContext() const override;
+    ExecutionContext* executionContext() const override;
 
     MemoryInfo* memory();
 

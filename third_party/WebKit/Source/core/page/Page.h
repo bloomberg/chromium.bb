@@ -90,7 +90,7 @@ public:
     };
 
     explicit Page(PageClients&);
-    virtual ~Page();
+    ~Page() override;
 
     void makeOrdinary();
 
@@ -209,7 +209,7 @@ private:
     void setNeedsLayoutInAllFrames();
 
     // SettingsDelegate overrides.
-    virtual void settingsChanged(SettingsDelegate::ChangeType) override;
+    void settingsChanged(SettingsDelegate::ChangeType) override;
 
     RefPtrWillBeMember<PageAnimator> m_animator;
     const OwnPtr<AutoscrollController> m_autoscrollController;

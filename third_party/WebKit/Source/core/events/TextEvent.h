@@ -43,13 +43,13 @@ public:
     static PassRefPtrWillBeRawPtr<TextEvent> createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtrWillBeRawPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle);
     static PassRefPtrWillBeRawPtr<TextEvent> createForDrop(PassRefPtrWillBeRawPtr<AbstractView>, const String& data);
 
-    virtual ~TextEvent();
+    ~TextEvent() override;
 
     void initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, const String& data);
 
     String data() const { return m_data; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     bool isLineBreak() const { return m_inputType == TextEventInputLineBreak; }
     bool isComposition() const { return m_inputType == TextEventInputComposition; }

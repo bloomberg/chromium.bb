@@ -50,13 +50,13 @@ public:
         return adoptRefWillBeNoop(new CompositionEvent(type, initializer));
     }
 
-    virtual ~CompositionEvent();
+    ~CompositionEvent() override;
 
     void initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, const String& data);
 
     String data() const { return m_data; }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

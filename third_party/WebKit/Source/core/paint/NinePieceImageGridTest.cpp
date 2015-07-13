@@ -27,7 +27,7 @@ public:
     }
 
 private:
-    virtual void SetUp() override
+    void SetUp() override
     {
         RenderingTest::SetUp();
     }

@@ -41,13 +41,13 @@ public:
     int height() const { return m_cropRect.height(); }
     IntSize size() const { return m_cropRect.size(); }
 
-    virtual ~ImageBitmap();
+    ~ImageBitmap() override;
 
     // CanvasImageSource implementation
-    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
-    virtual bool wouldTaintOrigin(SecurityOrigin*) const override { return false; }
-    virtual void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const override;
-    virtual FloatSize elementSize() const override;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
+    bool wouldTaintOrigin(SecurityOrigin*) const override { return false; }
+    void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const override;
+    FloatSize elementSize() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -60,8 +60,8 @@ private:
     ImageBitmap(Image*, const IntRect&);
 
     // ImageLoaderClient
-    virtual void notifyImageSourceChanged() override;
-    virtual bool requestsHighLiveResourceCachePriority() override { return true; }
+    void notifyImageSourceChanged() override;
+    bool requestsHighLiveResourceCachePriority() override { return true; }
 
     // ImageBitmaps constructed from HTMLImageElements hold a reference to the HTMLImageElement until
     // the image source changes.

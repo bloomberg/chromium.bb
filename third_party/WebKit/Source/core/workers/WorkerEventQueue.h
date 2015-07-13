@@ -43,13 +43,13 @@ class WorkerEventQueue final : public EventQueue {
 public:
 
     static PassOwnPtrWillBeRawPtr<WorkerEventQueue> create(ExecutionContext*);
-    virtual ~WorkerEventQueue();
+    ~WorkerEventQueue() override;
     DECLARE_TRACE();
 
     // EventQueue
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override;
-    virtual bool cancelEvent(Event*) override;
-    virtual void close() override;
+    bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override;
+    bool cancelEvent(Event*) override;
+    void close() override;
 
 private:
     explicit WorkerEventQueue(ExecutionContext*);

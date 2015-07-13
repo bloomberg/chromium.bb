@@ -54,11 +54,11 @@ class CORE_EXPORT WorkerMessagingProxy
 public:
     // Implementations of WorkerGlobalScopeProxy.
     // (Only use these methods in the worker object thread.)
-    virtual void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode) override;
-    virtual void terminateWorkerGlobalScope() override;
-    virtual void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) override;
-    virtual bool hasPendingActivity() const override;
-    virtual void workerObjectDestroyed() override;
+    void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode) override;
+    void terminateWorkerGlobalScope() override;
+    void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) override;
+    bool hasPendingActivity() const override;
+    void workerObjectDestroyed() override;
 
     // These methods come from worker context thread via WorkerObjectProxy
     // and are called on the worker object thread (e.g. main thread).
@@ -77,7 +77,7 @@ public:
 
 protected:
     WorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);
-    virtual ~WorkerMessagingProxy();
+    ~WorkerMessagingProxy() override;
 
     virtual PassRefPtr<WorkerThread> createWorkerThread(double originTime) = 0;
 
@@ -91,8 +91,8 @@ private:
     // WorkerLoaderProxyProvider
     // These methods are called on different threads to schedule loading
     // requests and to send callbacks back to WorkerGlobalScope.
-    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
+    void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
+    bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
 
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
     OwnPtr<WorkerObjectProxy> m_workerObjectProxy;

@@ -53,11 +53,11 @@ public:
         return adoptPtrWillBeNoop(new InspectorInputAgent(pageAgent));
     }
 
-    virtual ~InspectorInputAgent();
+    ~InspectorInputAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Methods called from the frontend for simulating input.
-    virtual void dispatchTouchEvent(ErrorString*, const String& type, const RefPtr<JSONArray>& touchPoints, const int* modifiers, const double* timestamp) override;
+    void dispatchTouchEvent(ErrorString*, const String& type, const RefPtr<JSONArray>& touchPoints, const int* modifiers, const double* timestamp) override;
 private:
     explicit InspectorInputAgent(InspectorPageAgent*);
 

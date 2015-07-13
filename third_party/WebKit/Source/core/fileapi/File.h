@@ -112,14 +112,14 @@ public:
 
     File* clone(const String& name = String()) const;
 
-    virtual unsigned long long size() const override;
-    virtual Blob* slice(long long start, long long end, const String& contentType, ExceptionState&) const override;
-    virtual void close(ExecutionContext*, ExceptionState&) override;
+    unsigned long long size() const override;
+    Blob* slice(long long start, long long end, const String& contentType, ExceptionState&) const override;
+    void close(ExecutionContext*, ExceptionState&) override;
 
-    virtual bool isFile() const override { return true; }
-    virtual bool hasBackingFile() const override { return m_hasBackingFile; }
+    bool isFile() const override { return true; }
+    bool hasBackingFile() const override { return m_hasBackingFile; }
 
-    virtual void appendTo(BlobData&) const override;
+    void appendTo(BlobData&) const override;
 
     const String& path() const { ASSERT(hasValidFilePath()); return m_path; }
     const String name() const { return m_name; }

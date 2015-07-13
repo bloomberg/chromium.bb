@@ -51,13 +51,13 @@ public:
 
     unsigned sourceFrame() const;
 
-    virtual bool isRender() override { return true; }
+    bool isRender() override { return true; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     PerformanceRenderTiming(Document* requestingDocument, unsigned sourceFrame, double startTime, double finishTime);
-    virtual ~PerformanceRenderTiming();
+    ~PerformanceRenderTiming() override;
 
     unsigned m_sourceFrame;
     RefPtrWillBeMember<Document> m_requestingDocument;

@@ -58,7 +58,7 @@ public:
     const String& oldURL() const { return m_oldURL; }
     const String& newURL() const { return m_newURL; }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::HashChangeEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::HashChangeEvent; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 

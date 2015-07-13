@@ -81,10 +81,10 @@ public:
     static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*);
     static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*, const IntSize& initialSize);
 
-    virtual ~FrameView();
+    ~FrameView() override;
 
-    virtual void invalidateRect(const IntRect&) override;
-    virtual void setFrameRect(const IntRect&) override;
+    void invalidateRect(const IntRect&) override;
+    void setFrameRect(const IntRect&) override;
 
     LocalFrame& frame() const
     {
@@ -171,7 +171,7 @@ public:
     IntSize inputEventsOffsetForEmulation() const;
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
-    virtual void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant) override;
+    void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant) override;
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
     void setElasticOverscroll(const FloatSize&);
@@ -267,24 +267,24 @@ public:
     };
 
     ScrollingReasons scrollingReasons();
-    virtual bool isScrollable() override;
-    virtual bool isProgrammaticallyScrollable() override;
+    bool isScrollable() override;
+    bool isProgrammaticallyScrollable() override;
 
     enum ScrollbarModesCalculationStrategy { RulesFromWebContentOnly, AnyRule };
     void calculateScrollbarModesForLayout(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy = AnyRule);
 
-    virtual IntPoint lastKnownMousePosition() const override;
+    IntPoint lastKnownMousePosition() const override;
     bool shouldSetCursor() const;
 
     void setCursor(const Cursor&);
 
-    virtual bool scrollbarsCanBeActive() const override;
+    bool scrollbarsCanBeActive() const override;
 
     // FIXME: Remove this method once plugin loading is decoupled from layout.
     void flushAnyPendingPostLayoutTasks();
 
-    virtual bool shouldSuspendScrollAnimations() const override;
-    virtual void scrollbarStyleChanged() override;
+    bool shouldSuspendScrollAnimations() const override;
+    void scrollbarStyleChanged() override;
 
     LayoutBox* embeddedContentBox() const;
 
@@ -316,12 +316,12 @@ public:
     // we need this function in order to do the scroll ourselves.
     ScrollResult wheelEvent(const PlatformWheelEvent&);
 
-    virtual bool shouldUseIntegerScrollOffset() const override;
+    bool shouldUseIntegerScrollOffset() const override;
 
-    virtual bool isActive() const override;
+    bool isActive() const override;
 
     // Override scrollbar notifications to update the AXObject cache.
-    virtual void didAddScrollbar(Scrollbar*, ScrollbarOrientation) override;
+    void didAddScrollbar(Scrollbar*, ScrollbarOrientation) override;
 
     // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
     // passed around the FrameView layout methods can be true while this returns
@@ -344,23 +344,23 @@ public:
     // our scroll extents to prevent clamping the scroll offsets.
     void setTopControlsViewportAdjustment(float);
 
-    virtual IntPoint maximumScrollPosition() const override;
+    IntPoint maximumScrollPosition() const override;
 
     // ScrollableArea interface
-    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
-    virtual void getTickmarks(Vector<IntRect>&) const override;
+    void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
+    void getTickmarks(Vector<IntRect>&) const override;
     void scrollTo(const DoublePoint&);
-    virtual IntRect scrollableAreaBoundingBox() const override;
-    virtual bool scrollAnimatorEnabled() const override;
-    virtual bool usesCompositedScrolling() const override;
-    virtual GraphicsLayer* layerForScrolling() const override;
-    virtual GraphicsLayer* layerForHorizontalScrollbar() const override;
-    virtual GraphicsLayer* layerForVerticalScrollbar() const override;
-    virtual GraphicsLayer* layerForScrollCorner() const override;
-    virtual int scrollSize(ScrollbarOrientation) const override;
-    virtual bool isScrollCornerVisible() const override;
-    virtual bool userInputScrollable(ScrollbarOrientation) const override;
-    virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
+    IntRect scrollableAreaBoundingBox() const override;
+    bool scrollAnimatorEnabled() const override;
+    bool usesCompositedScrolling() const override;
+    GraphicsLayer* layerForScrolling() const override;
+    GraphicsLayer* layerForHorizontalScrollbar() const override;
+    GraphicsLayer* layerForVerticalScrollbar() const override;
+    GraphicsLayer* layerForScrollCorner() const override;
+    int scrollSize(ScrollbarOrientation) const override;
+    bool isScrollCornerVisible() const override;
+    bool userInputScrollable(ScrollbarOrientation) const override;
+    bool shouldPlaceVerticalScrollbarOnLeft() const override;
     virtual LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
         const ScrollAlignment& alignX,
@@ -376,15 +376,15 @@ public:
     typedef WillBeHeapHashSet<RefPtrWillBeMember<Widget>> ChildrenWidgetSet;
 
     // Functions for child manipulation and inspection.
-    virtual void setParent(Widget*) override;
+    void setParent(Widget*) override;
     void removeChild(Widget*);
     void addChild(PassRefPtrWillBeRawPtr<Widget>);
     const ChildrenWidgetSet* children() const { return &m_children; }
 
     // If the scroll view does not use a native widget, then it will have cross-platform Scrollbars. These functions
     // can be used to obtain those scrollbars.
-    virtual Scrollbar* horizontalScrollbar() const override { return m_horizontalScrollbar.get(); }
-    virtual Scrollbar* verticalScrollbar() const override { return m_verticalScrollbar.get(); }
+    Scrollbar* horizontalScrollbar() const override { return m_horizontalScrollbar.get(); }
+    Scrollbar* verticalScrollbar() const override { return m_verticalScrollbar.get(); }
     LayoutScrollbarPart* scrollCorner() { return m_scrollCorner; }
 
     void positionScrollbarLayers();
@@ -418,12 +418,12 @@ public:
     // the document. The width and height are the layout viewport width and
     // height. By default the scrollbars themselves are excluded from this
     // rectangle, but an optional boolean argument allows them to be included.
-    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
+    IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     IntSize visibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
 
     // Functions for getting/setting the size of the document contained inside the FrameView (as an IntSize or as individual width and height
     // values).
-    virtual IntSize contentsSize() const override; // Always at least as big as the visibleWidth()/visibleHeight().
+    IntSize contentsSize() const override; // Always at least as big as the visibleWidth()/visibleHeight().
     int contentsWidth() const { return contentsSize().width(); }
     int contentsHeight() const { return contentsSize().height(); }
 
@@ -431,12 +431,12 @@ public:
     // Be careful in using the Double version scrollPositionDouble() and scrollOffsetDouble(). They are meant to be
     // used to communicate the fractional scroll position/offset with chromium compositor which can do sub-pixel positioning.
     // Do not call these if the scroll position/offset is used in Blink for positioning. Use the Int version instead.
-    virtual IntPoint scrollPosition() const override { return visibleContentRect().location(); }
-    virtual DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
+    IntPoint scrollPosition() const override { return visibleContentRect().location(); }
+    DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
     IntSize scrollOffset() const { return toIntSize(visibleContentRect().location()); } // Gets the scrolled position as an IntSize. Convenient for adding to other sizes.
     DoubleSize scrollOffsetDouble() const { return DoubleSize(m_scrollPosition.x(), m_scrollPosition.y()); }
     DoubleSize pendingScrollDelta() const { return m_pendingScrollDelta; }
-    virtual IntPoint minimumScrollPosition() const override; // The minimum position we can be scrolled to.
+    IntPoint minimumScrollPosition() const override; // The minimum position we can be scrolled to.
     int scrollX() const { return scrollPosition().x(); }
     int scrollY() const { return scrollPosition().y(); }
 
@@ -495,7 +495,7 @@ public:
     Scrollbar* scrollbarAtRootFramePoint(const IntPoint&);
     Scrollbar* scrollbarAtFramePoint(const IntPoint&);
 
-    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const override
+    IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const override
     {
         IntPoint newPoint = point;
         if (!isFrameViewScrollbar(child))
@@ -504,7 +504,7 @@ public:
         return newPoint;
     }
 
-    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint& point) const override
+    IntPoint convertSelfToChild(const Widget* child, const IntPoint& point) const override
     {
         IntPoint newPoint = point;
         if (!isFrameViewScrollbar(child))
@@ -514,24 +514,24 @@ public:
     }
 
     // Widget override. Handles painting of the contents of the view as well as the scrollbars.
-    virtual void paint(GraphicsContext*, const IntRect&) override;
+    void paint(GraphicsContext*, const IntRect&) override;
     void paintContents(GraphicsContext*, const IntRect& damageRect);
 
     // Widget overrides to ensure that our children's visibility status is kept up to date when we get shown and hidden.
-    virtual void show() override;
-    virtual void hide() override;
-    virtual void setParentVisible(bool) override;
+    void show() override;
+    void hide() override;
+    void setParentVisible(bool) override;
 
     bool isPointInScrollbarCorner(const IntPoint&);
     bool scrollbarCornerPresent() const;
-    virtual IntRect scrollCornerRect() const override;
+    IntRect scrollCornerRect() const override;
 
-    virtual IntRect convertFromScrollbarToContainingView(const Scrollbar*, const IntRect&) const override;
-    virtual IntRect convertFromContainingViewToScrollbar(const Scrollbar*, const IntRect&) const override;
-    virtual IntPoint convertFromScrollbarToContainingView(const Scrollbar*, const IntPoint&) const override;
-    virtual IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const override;
+    IntRect convertFromScrollbarToContainingView(const Scrollbar*, const IntRect&) const override;
+    IntRect convertFromContainingViewToScrollbar(const Scrollbar*, const IntRect&) const override;
+    IntPoint convertFromScrollbarToContainingView(const Scrollbar*, const IntPoint&) const override;
+    IntPoint convertFromContainingViewToScrollbar(const Scrollbar*, const IntPoint&) const override;
 
-    virtual bool isFrameView() const override { return true; }
+    bool isFrameView() const override { return true; }
 
     DECLARE_VIRTUAL_TRACE();
     void notifyPageThatContentAreaWillPaint() const;
@@ -574,8 +574,8 @@ protected:
     void setHasHorizontalScrollbar(bool);
     void setHasVerticalScrollbar(bool);
 
-    virtual void invalidateScrollCornerRect(const IntRect&) override;
-    virtual ScrollBehavior scrollBehaviorStyle() const override;
+    void invalidateScrollCornerRect(const IntRect&) override;
+    ScrollBehavior scrollBehaviorStyle() const override;
 
     void scrollContentsIfNeeded();
 
@@ -607,8 +607,8 @@ protected:
 private:
     explicit FrameView(LocalFrame*);
 
-    virtual void setScrollOffset(const IntPoint&, ScrollType) override;
-    virtual void setScrollOffset(const DoublePoint&, ScrollType) override;
+    void setScrollOffset(const IntPoint&, ScrollType) override;
+    void setScrollOffset(const DoublePoint&, ScrollType) override;
 
     void updateAllLifecyclePhasesInternal();
     void invalidateTreeIfNeededRecursive();
@@ -622,7 +622,7 @@ private:
     void clearLayoutSubtreeRootsAndMarkContainingBlocks();
 
     // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
-    virtual void frameRectsChanged() override;
+    void frameRectsChanged() override;
 
     friend class LayoutPart;
 
@@ -640,15 +640,15 @@ private:
     DocumentLifecycle& lifecycle() const;
 
     void contentRectangleForPaintInvalidation(const IntRect&);
-    virtual void contentsResized() override;
+    void contentsResized() override;
     void scrollbarExistenceDidChange();
 
     // Override Widget methods to do point conversion via layoutObjects, in order to
     // take transforms into account.
-    virtual IntRect convertToContainingView(const IntRect&) const override;
-    virtual IntRect convertFromContainingView(const IntRect&) const override;
-    virtual IntPoint convertToContainingView(const IntPoint&) const override;
-    virtual IntPoint convertFromContainingView(const IntPoint&) const override;
+    IntRect convertToContainingView(const IntRect&) const override;
+    IntRect convertFromContainingView(const IntRect&) const override;
+    IntPoint convertToContainingView(const IntPoint&) const override;
+    IntPoint convertFromContainingView(const IntPoint&) const override;
 
     void updateWidgetPositionsIfNeeded();
 

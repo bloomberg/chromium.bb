@@ -112,7 +112,7 @@ private:
     typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<InspectorState> > InspectorStateMap;
 
     // From InspectorStateUpdateListener.
-    virtual void inspectorStateUpdated() override;
+    void inspectorStateUpdated() override;
 
     InspectorStateClient* m_client;
     RefPtr<JSONObject> m_stateObject;

@@ -52,7 +52,7 @@ public:
         return adoptPtrWillBeNoop(new InspectorInspectorAgent(injectedScriptManager));
     }
 
-    virtual ~InspectorInspectorAgent();
+    ~InspectorInspectorAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Inspector front-end API.

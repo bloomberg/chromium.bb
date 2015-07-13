@@ -23,7 +23,7 @@ class CORE_EXPORT RemoteFrame: public Frame {
 public:
     static PassRefPtrWillBeRawPtr<RemoteFrame> create(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
-    virtual ~RemoteFrame();
+    ~RemoteFrame() override;
 
     // Frame overrides:
     DECLARE_VIRTUAL_TRACE();

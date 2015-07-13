@@ -26,7 +26,7 @@ protected:
     LayoutText* layoutText() { return m_layoutText; }
 
 private:
-    virtual void SetUp() override
+    void SetUp() override
     {
         RenderingTest::SetUp();
         setBodyInnerHTML("Hello world");

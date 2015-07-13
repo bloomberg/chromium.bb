@@ -44,7 +44,7 @@ public:
     {
         return adoptPtrWillBeNoop(new WorkerRuntimeAgent(injectedScriptManager, debugger, context, client));
     }
-    virtual ~WorkerRuntimeAgent();
+    ~WorkerRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Protocol commands.

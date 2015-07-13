@@ -69,7 +69,7 @@ public:
     {
         return adoptPtrWillBeNoop(new PinchViewport(host));
     }
-    virtual ~PinchViewport();
+    ~PinchViewport() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -164,40 +164,40 @@ public:
     IntPoint rootFrameToViewport(const IntPoint&) const;
 
     // ScrollableArea implementation
-    virtual DoubleRect visibleContentRectDouble(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
-    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
-    virtual bool shouldUseIntegerScrollOffset() const override;
-    virtual bool isActive() const override { return false; }
-    virtual int scrollSize(ScrollbarOrientation) const override;
-    virtual bool isScrollCornerVisible() const override { return false; }
-    virtual IntRect scrollCornerRect() const override { return IntRect(); }
-    virtual IntPoint scrollPosition() const override { return flooredIntPoint(m_offset); }
-    virtual DoublePoint scrollPositionDouble() const override { return m_offset; }
-    virtual IntPoint minimumScrollPosition() const override;
-    virtual IntPoint maximumScrollPosition() const override;
-    virtual DoublePoint maximumScrollPositionDouble() const override;
-    virtual int visibleHeight() const override { return visibleRect().height(); }
-    virtual int visibleWidth() const override { return visibleRect().width(); }
-    virtual IntSize contentsSize() const override;
-    virtual bool scrollbarsCanBeActive() const override { return false; }
-    virtual IntRect scrollableAreaBoundingBox() const override;
-    virtual bool userInputScrollable(ScrollbarOrientation) const override { return true; }
-    virtual bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
-    virtual void invalidateScrollCornerRect(const IntRect&) override { }
-    virtual void setScrollOffset(const IntPoint&, ScrollType) override;
-    virtual void setScrollOffset(const DoublePoint&, ScrollType) override;
-    virtual GraphicsLayer* layerForContainer() const override;
-    virtual GraphicsLayer* layerForScrolling() const override;
-    virtual GraphicsLayer* layerForHorizontalScrollbar() const override;
-    virtual GraphicsLayer* layerForVerticalScrollbar() const override;
+    DoubleRect visibleContentRectDouble(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
+    IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
+    bool shouldUseIntegerScrollOffset() const override;
+    bool isActive() const override { return false; }
+    int scrollSize(ScrollbarOrientation) const override;
+    bool isScrollCornerVisible() const override { return false; }
+    IntRect scrollCornerRect() const override { return IntRect(); }
+    IntPoint scrollPosition() const override { return flooredIntPoint(m_offset); }
+    DoublePoint scrollPositionDouble() const override { return m_offset; }
+    IntPoint minimumScrollPosition() const override;
+    IntPoint maximumScrollPosition() const override;
+    DoublePoint maximumScrollPositionDouble() const override;
+    int visibleHeight() const override { return visibleRect().height(); }
+    int visibleWidth() const override { return visibleRect().width(); }
+    IntSize contentsSize() const override;
+    bool scrollbarsCanBeActive() const override { return false; }
+    IntRect scrollableAreaBoundingBox() const override;
+    bool userInputScrollable(ScrollbarOrientation) const override { return true; }
+    bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
+    void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
+    void invalidateScrollCornerRect(const IntRect&) override { }
+    void setScrollOffset(const IntPoint&, ScrollType) override;
+    void setScrollOffset(const DoublePoint&, ScrollType) override;
+    GraphicsLayer* layerForContainer() const override;
+    GraphicsLayer* layerForScrolling() const override;
+    GraphicsLayer* layerForHorizontalScrollbar() const override;
+    GraphicsLayer* layerForVerticalScrollbar() const override;
 
 private:
     explicit PinchViewport(FrameHost&);
 
     // GraphicsLayerClient implementation.
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;
-    virtual String debugName(const GraphicsLayer*) override;
+    void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;
+    String debugName(const GraphicsLayer*) override;
 
     void setupScrollbar(WebScrollbar::Orientation);
     FloatPoint clampOffsetToBoundaries(const FloatPoint&);

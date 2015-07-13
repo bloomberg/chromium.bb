@@ -50,7 +50,7 @@ public:
 
     const String& reason() const { return m_reason; }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::AutocompleteErrorEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::AutocompleteErrorEvent; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
