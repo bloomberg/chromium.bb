@@ -253,6 +253,8 @@
             'installer/setup/setup_util.h',
             'installer/setup/uninstall.cc',
             'installer/setup/uninstall.h',
+            'installer/setup/update_active_setup_version_work_item.cc',
+            'installer/setup/update_active_setup_version_work_item.h',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

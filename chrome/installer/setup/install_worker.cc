@@ -32,6 +32,7 @@
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/setup/update_active_setup_version_work_item.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/callback_work_item.h"
@@ -56,12 +57,6 @@ using base::win::RegKey;
 namespace installer {
 
 namespace {
-
-// The version identifying the work done by setup.exe --configure-user-settings
-// on user login by way of Active Setup.  Increase this value if the work done
-// in setup_main.cc's handling of kConfigureUserSettings changes and should be
-// executed again for all users.
-const wchar_t kActiveSetupVersion[] = L"43,0,0,0";
 
 // Although the UUID of the ChromeFrame class is used for the "current" value,
 // this is done only as a convenience; there is no need for the GUID of the Low
@@ -1457,12 +1452,8 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
                                static_cast<DWORD>(1U),
                                true);
 
-  list->AddSetRegValueWorkItem(root,
-                               active_setup_path,
-                               WorkItem::kWow64Default,
-                               L"Version",
-                               kActiveSetupVersion,
-                               true);
+  list->AddWorkItem(new UpdateActiveSetupVersionWorkItem(
+      active_setup_path, UpdateActiveSetupVersionWorkItem::UPDATE));
 }
 
 void AddDeleteOldIELowRightsPolicyWorkItems(

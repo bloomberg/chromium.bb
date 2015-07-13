@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
+#include "chrome/installer/setup/update_active_setup_version_work_item.h"
 #include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/installer/util/beacons.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -628,8 +629,22 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
 
     UpdateOsUpgradeBeacon(installer_state.system_install(),
                           BrowserDistribution::GetDistribution());
-    if (!installer_state.system_install())
+
+    // Update the per-user default browser beacon. For user-level installs this
+    // can be done directly; whereas it requires triggering Active Setup for
+    // each user's subsequent login on system-level installs.
+    if (!installer_state.system_install()) {
       UpdateDefaultBrowserBeaconForPath(chrome_exe);
+    } else {
+      UpdateActiveSetupVersionWorkItem active_setup_work_item(
+          InstallUtil::GetActiveSetupPath(chrome.distribution()),
+          UpdateActiveSetupVersionWorkItem::
+              UPDATE_AND_BUMP_OS_UPGRADES_COMPONENT);
+      if (active_setup_work_item.Do())
+        VLOG(1) << "Bumped Active Setup Version on-os-upgrade.";
+      else
+        LOG(ERROR) << "Failed to bump Active Setup Version on-os-upgrade.";
+    }
   }
 }
 
