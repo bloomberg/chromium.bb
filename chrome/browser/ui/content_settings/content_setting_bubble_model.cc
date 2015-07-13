@@ -384,7 +384,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     block_setting_ = setting;
   }
 
-  set_setting_is_managed(setting_source != SETTING_SOURCE_USER);
+  set_setting_is_managed(setting_source != SETTING_SOURCE_USER &&
+                         setting != CONTENT_SETTING_ASK);
   if (setting_source != SETTING_SOURCE_USER) {
     set_radio_group_enabled(false);
   } else {
