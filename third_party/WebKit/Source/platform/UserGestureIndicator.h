@@ -52,7 +52,6 @@ public:
 
 class PLATFORM_EXPORT UserGestureIndicator {
     WTF_MAKE_NONCOPYABLE(UserGestureIndicator);
-    friend class UserGestureIndicatorDisabler;
 public:
     static bool processingUserGesture();
     static bool consumeUserGesture();
@@ -63,7 +62,6 @@ public:
     explicit UserGestureIndicator(ProcessingUserGestureState);
     explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
     ~UserGestureIndicator();
-
 
 private:
     static ProcessingUserGestureState s_state;
