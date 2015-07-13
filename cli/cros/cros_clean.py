@@ -102,6 +102,8 @@ class CleanCommand(command.CliCommand):
     chroot_dir = os.path.join(constants.SOURCE_ROOT,
                               constants.DEFAULT_CHROOT_DIR)
 
+    cros_build_lib.AssertOutsideChroot()
+
     def Clean(path):
       """Helper wrapper for the dry-run checks"""
       if self.options.dry_run:
