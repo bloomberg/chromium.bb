@@ -21,8 +21,9 @@ TombstoneEntity::~TombstoneEntity() { }
 
 // static
 scoped_ptr<FakeServerEntity> TombstoneEntity::Create(const string& id) {
-  return scoped_ptr<FakeServerEntity>(
-      new TombstoneEntity(id, GetModelTypeFromId(id)));
+  const ModelType model_type = GetModelTypeFromId(id);
+  CHECK_NE(model_type, syncer::UNSPECIFIED) << "Invalid ID was given: " << id;
+  return scoped_ptr<FakeServerEntity>(new TombstoneEntity(id, model_type));
 }
 
 TombstoneEntity::TombstoneEntity(const string& id,
