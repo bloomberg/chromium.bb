@@ -242,10 +242,10 @@ bool VisibleSelection::intersectsNode(Node* node) const
 
 PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
 {
-    Position start, end;
-    if (toNormalizedPositions(start, end))
-        return Range::create(*start.document(), start, end);
-    return nullptr;
+    const EphemeralRange range = toNormalizedEphemeralRange();
+    if (range.isNull())
+        return nullptr;
+    return Range::create(range.document(), range.startPosition(), range.endPosition());
 }
 
 template <typename Strategy>
@@ -275,10 +275,10 @@ EphemeralRangeInComposedTree VisibleSelection::normalizeRange(const EphemeralRan
     return normalizeRangeAlgorithm<EditingInComposedTreeStrategy>(range);
 }
 
-bool VisibleSelection::toNormalizedPositions(Position& start, Position& end) const
+EphemeralRange VisibleSelection::toNormalizedEphemeralRange() const
 {
     if (isNone())
-        return false;
+        return EphemeralRange();
 
     // Make sure we have an updated layout since this function is called
     // in the course of running edit commands which modify the DOM.
@@ -288,36 +288,28 @@ bool VisibleSelection::toNormalizedPositions(Position& start, Position& end) con
 
     // Check again, because updating layout can clear the selection.
     if (isNone())
-        return false;
+        return EphemeralRange();
 
     if (isCaret()) {
-        // If the selection is a caret, move the range start upstream. This helps us match
-        // the conventions of text editors tested, which make style determinations based
-        // on the character before the caret, if any.
-        start = m_start.upstream().parentAnchoredEquivalent();
-        end = start;
-    } else {
-        // If the selection is a range, select the minimum range that encompasses the selection.
-        // Again, this is to match the conventions of text editors tested, which make style
-        // determinations based on the first character of the selection.
-        // For instance, this operation helps to make sure that the "X" selected below is the
-        // only thing selected. The range should not be allowed to "leak" out to the end of the
-        // previous text node, or to the beginning of the next text node, each of which has a
-        // different style.
-        //
-        // On a treasure map, <b>X</b> marks the spot.
-        //                       ^ selected
-        //
-        ASSERT(isRange());
-        EphemeralRange range = normalizeRange(EphemeralRange(m_start, m_end));
-        start = range.startPosition();
-        end = range.endPosition();
+        // If the selection is a caret, move the range start upstream. This
+        // helps us match the conventions of text editors tested, which make
+        // style determinations based on the character before the caret, if any.
+        const Position start = m_start.upstream().parentAnchoredEquivalent();
+        return EphemeralRange(start, start);
     }
-
-    if (!start.containerNode() || !end.containerNode())
-        return false;
-
-    return true;
+    // If the selection is a range, select the minimum range that encompasses
+    // the selection. Again, this is to match the conventions of text editors
+    // tested, which make style determinations based on the first character of
+    // the selection. For instance, this operation helps to make sure that the
+    // "X" selected below is the only thing selected. The range should not be
+    // allowed to "leak" out to the end of the previous text node, or to the
+    // beginning of the next text node, each of which has a different style.
+    //
+    // On a treasure map, <b>X</b> marks the spot.
+    //                       ^ selected
+    //
+    ASSERT(isRange());
+    return normalizeRange(EphemeralRange(m_start, m_end));
 }
 
 bool VisibleSelection::expandUsingGranularity(TextGranularity granularity)

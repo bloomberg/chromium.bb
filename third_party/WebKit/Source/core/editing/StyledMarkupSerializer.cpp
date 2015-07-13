@@ -154,10 +154,8 @@ template<typename Strategy>
 static bool areSameRanges(Node* node, const PositionAlgorithm<Strategy>& startPosition, const PositionAlgorithm<Strategy>& endPosition)
 {
     ASSERT(node);
-    Position otherStartPosition;
-    Position otherEndPosition;
-    VisibleSelection::selectionFromContentsOfNode(node).toNormalizedPositions(otherStartPosition, otherEndPosition);
-    return toPositionInDOMTree(startPosition) == otherStartPosition && toPositionInDOMTree(endPosition) == otherEndPosition;
+    const EphemeralRange range = VisibleSelection::selectionFromContentsOfNode(node).toNormalizedEphemeralRange();
+    return toPositionInDOMTree(startPosition) == range.startPosition() && toPositionInDOMTree(endPosition) == range.endPosition();
 }
 
 static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(const HTMLElement* element)

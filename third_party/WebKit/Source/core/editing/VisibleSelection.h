@@ -155,12 +155,10 @@ public:
 
     // FIXME: Most callers probably don't want these functions, but
     // are using them for historical reasons. toNormalizedRange and
-    // toNormalizedPositions contracts the range around text, and
+    // toNormalizedEphemeralRange contracts the range around text, and
     // moves the caret upstream before returning the range/positions.
     PassRefPtrWillBeRawPtr<Range> toNormalizedRange() const;
-    // TODO(yosin) We should make |toNormalizedRange()| to return
-    // |EphemeralRange| instead of output parameters.
-    bool toNormalizedPositions(Position& start, Position& end) const;
+    EphemeralRange toNormalizedEphemeralRange() const;
     static EphemeralRange normalizeRange(const EphemeralRange&);
     static EphemeralRangeInComposedTree normalizeRange(const EphemeralRangeInComposedTree&);
 

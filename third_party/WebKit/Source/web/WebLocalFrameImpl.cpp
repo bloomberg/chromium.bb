@@ -1263,12 +1263,11 @@ WebString WebLocalFrameImpl::selectionAsMarkup() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsMarkup();
 
-    Position startPosition;
-    Position endPosition;
-    if (!frame()->selection().selection().toNormalizedPositions(startPosition, endPosition))
+    const EphemeralRange range = frame()->selection().selection().toNormalizedEphemeralRange();
+    if (range.isNull())
         return WebString();
 
-    return createMarkup(startPosition, endPosition, AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
+    return createMarkup(range.startPosition(), range.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
 void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame, VisiblePosition position)

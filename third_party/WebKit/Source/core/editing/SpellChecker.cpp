@@ -159,11 +159,10 @@ void SpellChecker::didBeginEditing(Element* element)
 
 void SpellChecker::ignoreSpelling()
 {
-    Position startPosition;
-    Position endPosition;
-    if (!frame().selection().selection().toNormalizedPositions(startPosition, endPosition))
+    const EphemeralRange range = frame().selection().selection().toNormalizedEphemeralRange();
+    if (range.isNull())
         return;
-    frame().document()->markers().removeMarkers(startPosition, endPosition, DocumentMarker::Spelling);
+    frame().document()->markers().removeMarkers(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
 }
 
 void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
@@ -340,11 +339,10 @@ void SpellChecker::showSpellingGuessPanel()
 
 void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
 {
-    Position startPosition;
-    Position endPosition;
-    if (!movingSelection.toNormalizedPositions(startPosition, endPosition))
+    const EphemeralRange range = movingSelection.toNormalizedEphemeralRange();
+    if (range.isNull())
         return;
-    frame().document()->markers().removeMarkers(startPosition, endPosition, DocumentMarker::MisspellingMarkers());
+    frame().document()->markers().removeMarkers(range.startPosition(), range.endPosition(), DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
@@ -446,19 +444,19 @@ void SpellChecker::markMisspellingsOrBadGrammar(const VisibleSelection& selectio
     if (!isContinuousSpellCheckingEnabled())
         return;
 
-    Position start, end;
-    if (!selection.toNormalizedPositions(start, end))
+    const EphemeralRange range = selection.toNormalizedEphemeralRange();
+    if (range.isNull())
         return;
 
     // If we're not in an editable node, bail.
-    Node* editableNode = start.containerNode();
+    Node* editableNode = range.startPosition().containerNode();
     if (!editableNode || !editableNode->hasEditableStyle())
         return;
 
     if (!isSpellCheckingEnabledFor(editableNode))
         return;
 
-    TextCheckingHelper checker(spellCheckerClient(), start, end);
+    TextCheckingHelper checker(spellCheckerClient(), range.startPosition(), range.endPosition());
     if (checkSpelling)
         checker.markAllMisspellings(firstMisspellingRange);
     else if (isGrammarCheckingEnabled())
@@ -817,14 +815,14 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         // shouldEraseMarkersAfterChangeSelection is true, we cause synchronous
         // layout.
         if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
-            Position start, end;
-            if (newAdjacentWords.toNormalizedPositions(start, end))
-                frame().document()->markers().removeMarkers(start, end, DocumentMarker::Spelling);
+            const EphemeralRange range = newAdjacentWords.toNormalizedEphemeralRange();
+            if (range.isNotNull())
+                frame().document()->markers().removeMarkers(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
         }
         if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeGrammar)) {
-            Position start, end;
-            if (newSelectedSentence.toNormalizedPositions(start, end))
-                frame().document()->markers().removeMarkers(start, end, DocumentMarker::Grammar);
+            const EphemeralRange range = newSelectedSentence.toNormalizedEphemeralRange();
+            if (range.isNotNull())
+                frame().document()->markers().removeMarkers(range.startPosition(), range.endPosition(), DocumentMarker::Grammar);
         }
     }
 

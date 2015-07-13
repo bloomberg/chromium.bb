@@ -307,9 +307,8 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
     // that case, and nothing in the text field will be removed.
     unsigned selectionLength = 0;
     if (focused()) {
-        Position start, end;
-        document().frame()->selection().selection().toNormalizedPositions(start, end);
-        selectionLength = computeLengthForSubmission(plainText(start, end));
+        const EphemeralRange range = document().frame()->selection().selection().toNormalizedEphemeralRange();
+        selectionLength = computeLengthForSubmission(plainText(range.startPosition(), range.endPosition()));
     }
     ASSERT(currentLength >= selectionLength);
     unsigned baseLength = currentLength - selectionLength;
