@@ -573,13 +573,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
-  // Allows to override browser Mojo services exposed through the
+  // Allows to register browser Mojo services exposed through the
   // RenderProcessHost.
-  virtual void OverrideRenderProcessMojoServices(ServiceRegistry* registry) {}
+  virtual void RegisterRenderProcessMojoServices(ServiceRegistry* registry) {}
 
-  // Allows to override browser Mojo services exposed through the
+  // Allows to register browser Mojo services exposed through the
   // FrameMojoShell.
-  virtual void OverrideFrameMojoShellServices(
+  virtual void RegisterFrameMojoShellServices(
       ServiceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 

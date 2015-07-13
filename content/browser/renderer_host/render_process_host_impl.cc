@@ -960,7 +960,7 @@ void RenderProcessHostImpl::RegisterMojoServices() {
       mojo_application_host_->service_registry_android());
 #endif
 
-  GetContentClient()->browser()->OverrideRenderProcessMojoServices(
+  GetContentClient()->browser()->RegisterRenderProcessMojoServices(
       mojo_application_host_->service_registry());
 }
 

@@ -48,7 +48,7 @@ ServiceRegistryImpl* FrameMojoShell::GetServiceRegistry() {
   if (!service_registry_) {
     service_registry_.reset(new ServiceRegistryImpl());
 
-    GetContentClient()->browser()->OverrideFrameMojoShellServices(
+    GetContentClient()->browser()->RegisterFrameMojoShellServices(
         service_registry_.get(), frame_host_);
   }
 
