@@ -902,7 +902,7 @@ bool InspectorDebuggerAgent::callStackForId(ErrorString* errorString, const Stri
         *errorString = "Async call stack not found";
         return false;
     }
-    RefPtr<AsyncCallStack> asyncStack = m_currentAsyncCallChain->callStacks()[asyncOrdinal - 1];
+    RefPtrWillBeRawPtr<AsyncCallStack> asyncStack = m_currentAsyncCallChain->callStacks()[asyncOrdinal - 1];
     *callStack = asyncStack->callFrames();
     *isAsync = true;
     return true;
