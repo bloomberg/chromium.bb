@@ -78,6 +78,18 @@ EphemeralRangeTemplate<Strategy>& EphemeralRangeTemplate<Strategy>::operator=(co
 }
 
 template <typename Strategy>
+bool EphemeralRangeTemplate<Strategy>::operator==(const EphemeralRangeTemplate<Strategy>& other) const
+{
+    return startPosition() == other.startPosition() && endPosition() == other.endPosition();
+}
+
+template <typename Strategy>
+bool EphemeralRangeTemplate<Strategy>::operator!=(const EphemeralRangeTemplate<Strategy>& other) const
+{
+    return !operator==(other);
+}
+
+template <typename Strategy>
 Document& EphemeralRangeTemplate<Strategy>::document() const
 {
     ASSERT(isNotNull());
@@ -133,5 +145,6 @@ bool EphemeralRangeTemplate<Strategy>::isValid() const
 #endif
 
 template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
 
 } // namespace blink

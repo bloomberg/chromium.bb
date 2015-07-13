@@ -49,6 +49,9 @@ public:
 
     EphemeralRangeTemplate<Strategy>& operator=(const EphemeralRangeTemplate<Strategy>& other);
 
+    bool operator==(const EphemeralRangeTemplate<Strategy>& other) const;
+    bool operator!=(const EphemeralRangeTemplate<Strategy>& other) const;
+
     Document& document() const;
     PositionAlgorithm<Strategy> startPosition() const;
     PositionAlgorithm<Strategy> endPosition() const;
@@ -80,6 +83,9 @@ private:
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;
 using EphemeralRange = EphemeralRangeTemplate<EditingStrategy>;
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
+using EphemeralRangeInComposedTree = EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
 
 } // namespace blink
 

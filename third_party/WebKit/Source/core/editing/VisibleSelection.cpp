@@ -248,32 +248,31 @@ PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
     return nullptr;
 }
 
-template <typename PositionType>
-void normalizePositionsAlgorithm(const PositionType& start, const PositionType& end, PositionType* outStart, PositionType* outEnd)
+template <typename Strategy>
+static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralRangeTemplate<Strategy>& range)
 {
-    ASSERT(start.isNotNull());
-    ASSERT(end.isNotNull());
-    ASSERT(start.compareTo(end) <= 0);
-    start.document()->updateLayoutIgnorePendingStylesheets();
+    ASSERT(range.isNotNull());
+    range.document().updateLayoutIgnorePendingStylesheets();
 
-    PositionType normalizedStart = start.downstream();
-    PositionType normalizedEnd = end.upstream();
+    // TODO(yosin) We should not call |parentAnchoredEquivalent()|, it is
+    // redundant.
+    const PositionAlgorithm<Strategy> normalizedStart = range.startPosition().downstream().parentAnchoredEquivalent();
+    const PositionAlgorithm<Strategy> normalizedEnd = range.endPosition().upstream().parentAnchoredEquivalent();
     // The order of the positions of |start| and |end| can be swapped after
     // upstream/downstream. e.g. editing/pasteboard/copy-display-none.html
     if (normalizedStart.compareTo(normalizedEnd) > 0)
-        std::swap(normalizedStart, normalizedEnd);
-    *outStart = normalizedStart.parentAnchoredEquivalent();
-    *outEnd = normalizedEnd.parentAnchoredEquivalent();
+        return EphemeralRangeTemplate<Strategy>(normalizedEnd, normalizedStart);
+    return EphemeralRangeTemplate<Strategy>(normalizedStart, normalizedEnd);
 }
 
-void VisibleSelection::normalizePositions(const Position& start, const Position& end, Position* outStart, Position* outEnd)
+EphemeralRange VisibleSelection::normalizeRange(const EphemeralRange& range)
 {
-    return normalizePositionsAlgorithm<Position>(start, end, outStart, outEnd);
+    return normalizeRangeAlgorithm<EditingStrategy>(range);
 }
 
-void VisibleSelection::normalizePositions(const PositionInComposedTree& start, const PositionInComposedTree& end, PositionInComposedTree* outStart, PositionInComposedTree* outEnd)
+EphemeralRangeInComposedTree VisibleSelection::normalizeRange(const EphemeralRangeInComposedTree& range)
 {
-    return normalizePositionsAlgorithm<PositionInComposedTree>(start, end, outStart, outEnd);
+    return normalizeRangeAlgorithm<EditingInComposedTreeStrategy>(range);
 }
 
 bool VisibleSelection::toNormalizedPositions(Position& start, Position& end) const
@@ -310,7 +309,9 @@ bool VisibleSelection::toNormalizedPositions(Position& start, Position& end) con
         //                       ^ selected
         //
         ASSERT(isRange());
-        normalizePositions(m_start, m_end, &start, &end);
+        EphemeralRange range = normalizeRange(EphemeralRange(m_start, m_end));
+        start = range.startPosition();
+        end = range.endPosition();
     }
 
     if (!start.containerNode() || !end.containerNode())
@@ -1133,6 +1134,16 @@ void VisibleSelection::validatePositionsIfNeeded()
 {
     if (!isValidPosition(m_base) || !isValidPosition(m_extent) || !isValidPosition(m_start) || !isValidPosition(m_end))
         validate();
+}
+
+EphemeralRange VisibleSelection::InDOMTree::asRange(const VisibleSelection& selection)
+{
+    return EphemeralRange(selectionStart(selection), selectionEnd(selection));
+}
+
+EphemeralRangeInComposedTree VisibleSelection::InComposedTree::asRange(const VisibleSelection& selection)
+{
+    return EphemeralRangeInComposedTree(selectionStart(selection), selectionEnd(selection));
 }
 
 bool VisibleSelection::InDOMTree::equalSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)

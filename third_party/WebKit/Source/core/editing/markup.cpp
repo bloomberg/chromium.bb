@@ -180,17 +180,6 @@ static bool isPresentationalHTMLElement(const Node* node)
         || element.hasTagName(iTag) || element.hasTagName(emTag) || element.hasTagName(bTag) || element.hasTagName(strongTag);
 }
 
-template<typename PositionType>
-static bool areSameRanges(Node* node, const PositionType& startPosition, const PositionType& endPosition)
-{
-    ASSERT(node);
-
-    PositionType otherStartPosition;
-    PositionType otherEndPosition;
-    VisibleSelection::normalizePositions(PositionType::firstPositionInNode(node), PositionType::lastPositionInNode(node), &otherStartPosition, &otherEndPosition);
-    return startPosition == otherStartPosition && endPosition == otherEndPosition;
-}
-
 template<typename Strategy>
 static HTMLElement* highestAncestorToWrapMarkup(const typename Strategy::PositionType& startPosition, const typename Strategy::PositionType& endPosition, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
 {
@@ -205,7 +194,9 @@ static HTMLElement* highestAncestorToWrapMarkup(const typename Strategy::Positio
         // the structure and appearance of the copied markup.
         specialCommonAncestor = ancestorToRetainStructureAndAppearance(commonAncestor);
         if (Node* parentListNode = enclosingNodeOfType(firstPositionInOrBeforeNode(firstNode), isListItem)) {
-            if (areSameRanges(parentListNode, startPosition, endPosition)) {
+            EphemeralRangeTemplate<Strategy> markupRange = EphemeralRangeTemplate<Strategy>(startPosition, endPosition);
+            EphemeralRangeTemplate<Strategy> nodeRange = VisibleSelection::normalizeRange(EphemeralRangeTemplate<Strategy>::rangeOfContents(*parentListNode));
+            if (nodeRange == markupRange) {
                 ContainerNode* ancestor = parentListNode->parentNode();
                 while (ancestor && !isHTMLListElement(ancestor))
                     ancestor = ancestor->parentNode();

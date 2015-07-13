@@ -1706,17 +1706,13 @@ void FrameSelection::setFocusedNodeIfNeeded()
         m_frame->page()->focusController().setFocusedElement(0, m_frame);
 }
 
-template <typename Strategy>
+template <typename SelectionType>
 String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
-    using PositionType = typename Strategy::PositionType;
-
-    PositionType start;
-    PositionType end;
     VisibleSelection visibleSelection = selection.selection();
-    VisibleSelection::normalizePositions(Strategy::selectionStart(visibleSelection), Strategy::selectionEnd(visibleSelection), &start, &end);
+    EphemeralRangeTemplate<typename SelectionType::Strategy> range = VisibleSelection::normalizeRange(SelectionType::asRange(visibleSelection));
     // We remove '\0' characters because they are not visibly rendered to the user.
-    return plainText(start, end, behavior).replace(0, "");
+    return plainText(range.startPosition(), range.endPosition(), behavior).replace(0, "");
 }
 
 static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
@@ -1726,15 +1722,12 @@ static String extractSelectedText(const FrameSelection& selection, TextIteratorB
     return extractSelectedTextAlgorithm<VisibleSelection::InDOMTree>(selection, behavior);
 }
 
-template <typename Strategy>
+template <typename SelectionType>
 static String extractSelectedHTMLAlgorithm(const FrameSelection& selection)
 {
-    using PositionType = typename Strategy::PositionType;
-    PositionType start;
-    PositionType end;
     VisibleSelection visibleSelection = selection.selection();
-    VisibleSelection::normalizePositions(Strategy::selectionStart(visibleSelection), Strategy::selectionEnd(visibleSelection), &start, &end);
-    return createMarkup(start, end, AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
+    EphemeralRangeTemplate<typename SelectionType::Strategy> range = VisibleSelection::normalizeRange(SelectionType::asRange(visibleSelection));
+    return createMarkup(range.startPosition(), range.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 
 String FrameSelection::selectedHTMLForClipboard() const

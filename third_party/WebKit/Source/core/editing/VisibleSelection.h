@@ -48,7 +48,9 @@ public:
     class InDOMTree {
     public:
         using PositionType = Position;
+        using Strategy = EditingStrategy;
 
+        static EphemeralRange asRange(const VisibleSelection&);
         static bool equalSelections(const VisibleSelection&, const VisibleSelection&);
         static PositionType selectionBase(const VisibleSelection& selection) { return selection.base(); }
         static PositionType selectionExtent(const VisibleSelection& selection) { return selection.extent(); }
@@ -63,7 +65,9 @@ public:
     class InComposedTree {
     public:
         using PositionType = PositionInComposedTree;
+        using Strategy = EditingInComposedTreeStrategy;
 
+        static EphemeralRangeInComposedTree asRange(const VisibleSelection&);
         static bool equalSelections(const VisibleSelection&, const VisibleSelection&);
         static bool isRange(const VisibleSelection& selection) { return selectionType(selection) == RangeSelection; }
         static PositionType selectionBase(const VisibleSelection& selection) { return selection.baseInComposedTree(); }
@@ -154,9 +158,11 @@ public:
     // toNormalizedPositions contracts the range around text, and
     // moves the caret upstream before returning the range/positions.
     PassRefPtrWillBeRawPtr<Range> toNormalizedRange() const;
+    // TODO(yosin) We should make |toNormalizedRange()| to return
+    // |EphemeralRange| instead of output parameters.
     bool toNormalizedPositions(Position& start, Position& end) const;
-    static void normalizePositions(const Position& start, const Position& end, Position* normalizedStart, Position* normalizedEnd);
-    static void normalizePositions(const PositionInComposedTree& start, const PositionInComposedTree& end, PositionInComposedTree* outStart, PositionInComposedTree* outEnd);
+    static EphemeralRange normalizeRange(const EphemeralRange&);
+    static EphemeralRangeInComposedTree normalizeRange(const EphemeralRangeInComposedTree&);
 
     Element* rootEditableElement() const;
     bool isContentEditable() const;
