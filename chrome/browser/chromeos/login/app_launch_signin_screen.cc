@@ -220,4 +220,9 @@ void AppLaunchSigninScreen::HandleGetUsers() {
 void AppLaunchSigninScreen::CheckUserStatus(const std::string& user_id) {
 }
 
+bool AppLaunchSigninScreen::IsUserWhitelisted(const std::string& user_id) {
+  NOTREACHED();
+  return true;
+}
+
 }  // namespace chromeos

@@ -170,6 +170,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.onAuthCompletedMessage_.bind(this));
       this.gaiaAuthHost_.addEventListener('loadAbort',
         this.onLoadAbortMessage_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
 
       $('enterprise-info-hint-link').addEventListener('click', function(e) {
         chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
@@ -780,6 +782,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
+     * Invoked when identifierEntered message received.
+     * @param {!Object} e Payload of the received HTML5 message.
+     * @private
+     */
+    onIdentifierEnteredMessage_: function(e) {
+      this.onIdentifierEntered(e.detail);
+    },
+
+    /**
      * Clears input fields and switches to input mode.
      * @param {boolean} takeFocus True to take focus.
      * @param {boolean} forceOnline Whether online sign-in should be forced.
@@ -913,6 +924,15 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onWebviewError: function(data) {
       chrome.send('webviewLoadAborted', [data.error]);
+    },
+
+    /**
+     * Handler for identifierEntered event.
+     * @param {!Object} data The identifier entered by user:
+     * {string} accountIdentifier User identifier.
+     */
+    onIdentifierEntered: function(data) {
+      chrome.send('identifierEntered', [data.accountIdentifier]);
     },
 
     /**

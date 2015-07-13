@@ -93,6 +93,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void SetDisplayEmail(const std::string& email) override;
   void ShowWrongHWIDScreen() override;
   void Signout() override;
+  bool IsUserWhitelisted(const std::string& user_id) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,

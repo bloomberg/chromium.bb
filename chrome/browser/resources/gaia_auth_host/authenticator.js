@@ -530,6 +530,10 @@ cr.define('cr.login', function() {
       this.dispatchEvent(new CustomEvent('backButton', {detail: msg.show}));
     } else if (msg.method == 'showView') {
       this.dispatchEvent(new Event('showView'));
+    } else if (msg.method == 'identifierEntered') {
+      this.dispatchEvent(new CustomEvent(
+          'identifierEntered',
+          {detail: {accountIdentifier: msg.accountIdentifier}}));
     } else {
       console.warn('Unrecognized message from GAIA: ' + msg.method);
     }

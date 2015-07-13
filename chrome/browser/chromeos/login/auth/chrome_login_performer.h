@@ -34,11 +34,12 @@ class ChromeLoginPerformer : public LoginPerformer {
   explicit ChromeLoginPerformer(Delegate* delegate);
   ~ChromeLoginPerformer() override;
 
+  bool IsUserWhitelisted(const std::string& user_id,
+                         bool* wildcard_match) override;
+
  protected:
   bool RunTrustedCheck(const base::Closure& callback) override;
   void DidRunTrustedCheck(const base::Closure& callback);
-  bool IsUserWhitelisted(const std::string& user_id,
-                         bool* wildcard_match) override;
 
   void RunOnlineWhitelistCheck(const std::string& user_id,
                                bool wildcard_match,

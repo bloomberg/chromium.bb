@@ -452,6 +452,14 @@ void ExistingUserController::Signout() {
   NOTREACHED();
 }
 
+bool ExistingUserController::IsUserWhitelisted(const std::string& user_id) {
+  bool wildcard_match = false;
+  if (login_performer_.get())
+    return login_performer_->IsUserWhitelisted(user_id, &wildcard_match);
+
+  return chromeos::CrosSettings::IsWhitelisted(user_id, &wildcard_match);
+}
+
 void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(
     KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
   if (status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE)

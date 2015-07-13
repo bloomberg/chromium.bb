@@ -193,6 +193,9 @@ class SigninScreenHandlerDelegate {
   // Runs an OAuth token validation check for user.
   virtual void CheckUserStatus(const std::string& user_id) = 0;
 
+  // Returns true if user is allowed to log in by domain policy.
+  virtual bool IsUserWhitelisted(const std::string& user_id) = 0;
+
  protected:
   virtual ~SigninScreenHandlerDelegate() {}
 };

@@ -449,6 +449,13 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleToggleWebviewSignin);
   AddCallback("toggleEasyBootstrap",
               &GaiaScreenHandler::HandleToggleEasyBootstrap);
+  AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
+}
+
+void GaiaScreenHandler::HandleIdentifierEntered(
+    const std::string& account_identifier) {
+  if (!Delegate()->IsUserWhitelisted(account_identifier))
+    ShowWhitelistCheckFailedError();
 }
 
 void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {

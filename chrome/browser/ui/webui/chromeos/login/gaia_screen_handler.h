@@ -136,6 +136,8 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   void HandleToggleWebviewSignin();
 
+  void HandleIdentifierEntered(const std::string& account_identifier);
+
   // This is called when ConsumerManagementService::SetOwner() returns.
   void OnSetOwnerDone(const std::string& gaia_id,
                       const std::string& typed_email,

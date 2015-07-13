@@ -117,6 +117,12 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
 
   AuthorizationMode auth_mode() const { return auth_mode_; }
 
+  // Check if user is allowed to sign in on device. |wildcard_match| will
+  // contain additional information whether this user is explicitly listed or
+  // not (may be relevant for extension-based sign-in).
+  virtual bool IsUserWhitelisted(const std::string& user_id,
+                                 bool* wildcard_match) = 0;
+
  protected:
   // Implements OnlineAttemptHost::Delegate.
   void OnChecked(const std::string& user_id, bool success) override;
@@ -127,12 +133,6 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
   // asynchronously, |false| will be returned, and either delegate's
   // PolicyLoadFailed() or |callback| will be called upon actual check.
   virtual bool RunTrustedCheck(const base::Closure& callback) = 0;
-
-  // Check if user is allowed to sign in on device. |wildcard_match| will
-  // contain additional information whether this user is explicitly listed or
-  // not (may be relevant for extension-based sign-in).
-  virtual bool IsUserWhitelisted(const std::string& user_id,
-                                 bool* wildcard_match) = 0;
 
   // This method should run addional online check if user can sign in on device.
   // Either |success_callback| or |failure_callback| should be called upon this

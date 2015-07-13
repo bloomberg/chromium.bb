@@ -93,6 +93,9 @@ class LoginDisplay {
     // Restarts the public-session auto-login timer if it is running.
     virtual void ResetPublicSessionAutoLoginTimer() = 0;
 
+    // Returns true if user is allowed to log in by domain policy.
+    virtual bool IsUserWhitelisted(const std::string& user_id) = 0;
+
    protected:
     virtual ~Delegate();
   };
