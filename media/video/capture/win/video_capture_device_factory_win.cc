@@ -274,7 +274,7 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
       format.pixel_format =
           VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
               media_type->subtype);
-      if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
+      if (format.pixel_format == VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN)
         continue;
       VIDEOINFOHEADER* h =
           reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);

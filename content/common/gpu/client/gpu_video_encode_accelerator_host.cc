@@ -78,7 +78,7 @@ GpuVideoEncodeAcceleratorHost::GetSupportedProfiles() {
 }
 
 bool GpuVideoEncodeAcceleratorHost::Initialize(
-    media::VideoFrame::Format input_format,
+    media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate,

@@ -140,12 +140,9 @@ class VideoDecoder::Vp8Impl : public VideoDecoder::ImplBase {
 
     const gfx::Size frame_size(image->d_w, image->d_h);
     // Note: Timestamp for the VideoFrame will be set in VideoReceiver.
-    const scoped_refptr<VideoFrame> decoded_frame =
-        VideoFrame::CreateFrame(VideoFrame::YV12,
-                                frame_size,
-                                gfx::Rect(frame_size),
-                                frame_size,
-                                base::TimeDelta());
+    const scoped_refptr<VideoFrame> decoded_frame = VideoFrame::CreateFrame(
+        PIXEL_FORMAT_YV12, frame_size, gfx::Rect(frame_size), frame_size,
+        base::TimeDelta());
     CopyYPlane(image->planes[VPX_PLANE_Y],
                image->stride[VPX_PLANE_Y],
                image->d_h,

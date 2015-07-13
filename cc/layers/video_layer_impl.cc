@@ -225,10 +225,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       int videoframe_color_space;
       if (frame_->metadata()->GetInteger(media::VideoFrameMetadata::COLOR_SPACE,
                                          &videoframe_color_space)) {
-        if (videoframe_color_space == media::VideoFrame::COLOR_SPACE_JPEG) {
+        if (videoframe_color_space == media::COLOR_SPACE_JPEG) {
           color_space = YUVVideoDrawQuad::JPEG;
-        } else if (videoframe_color_space ==
-                   media::VideoFrame::COLOR_SPACE_HD_REC709) {
+        } else if (videoframe_color_space == media::COLOR_SPACE_HD_REC709) {
           color_space = YUVVideoDrawQuad::REC_709;
         }
       }
@@ -237,7 +236,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       gfx::Size uv_tex_size;
 
       if (frame_->HasTextures()) {
-        DCHECK_EQ(media::VideoFrame::I420, frame_->format());
+        DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_->format());
         DCHECK_EQ(3u, frame_resources_.size());  // Alpha is not supported yet.
         DCHECK(visible_rect.origin().IsOrigin());
         DCHECK(visible_rect.size() == coded_size);

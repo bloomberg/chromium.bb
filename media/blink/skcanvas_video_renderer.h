@@ -32,7 +32,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
 
   // Paints |video_frame| on |canvas|, scaling and rotating the result to fit
   // dimensions specified by |dest_rect|.
-  // If the format of |video_frame| is VideoFrame::NATIVE_TEXTURE, |context_3d|
+  // If the format of |video_frame| is PIXEL_FORMAT_NATIVE_TEXTURE, |context_3d|
   // must be provided.
   //
   // Black will be painted on |canvas| if |video_frame| is null.
@@ -45,7 +45,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
              const Context3D& context_3d);
 
   // Copy |video_frame| on |canvas|.
-  // If the format of |video_frame| is VideoFrame::NATIVE_TEXTURE, |context_3d|
+  // If the format of |video_frame| is PIXEL_FORMAT_NATIVE_TEXTURE, |context_3d|
   // must be provided.
   void Copy(const scoped_refptr<VideoFrame>& video_frame,
             SkCanvas* canvas,

@@ -147,20 +147,21 @@ ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
 }
 
 // static
-VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
+VideoCapturePixelFormat
+VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
     const GUID& sub_type) {
   static struct {
     const GUID& sub_type;
-    VideoPixelFormat format;
+    VideoCapturePixelFormat format;
   } pixel_formats[] = {
-      {kMediaSubTypeI420, PIXEL_FORMAT_I420},
-      {MEDIASUBTYPE_IYUV, PIXEL_FORMAT_I420},
-      {MEDIASUBTYPE_RGB24, PIXEL_FORMAT_RGB24},
-      {MEDIASUBTYPE_YUY2, PIXEL_FORMAT_YUY2},
-      {MEDIASUBTYPE_MJPG, PIXEL_FORMAT_MJPEG},
-      {MEDIASUBTYPE_UYVY, PIXEL_FORMAT_UYVY},
-      {MEDIASUBTYPE_ARGB32, PIXEL_FORMAT_ARGB},
-      {kMediaSubTypeHDYC, PIXEL_FORMAT_UYVY},
+      {kMediaSubTypeI420, VIDEO_CAPTURE_PIXEL_FORMAT_I420},
+      {MEDIASUBTYPE_IYUV, VIDEO_CAPTURE_PIXEL_FORMAT_I420},
+      {MEDIASUBTYPE_RGB24, VIDEO_CAPTURE_PIXEL_FORMAT_RGB24},
+      {MEDIASUBTYPE_YUY2, VIDEO_CAPTURE_PIXEL_FORMAT_YUY2},
+      {MEDIASUBTYPE_MJPG, VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG},
+      {MEDIASUBTYPE_UYVY, VIDEO_CAPTURE_PIXEL_FORMAT_UYVY},
+      {MEDIASUBTYPE_ARGB32, VIDEO_CAPTURE_PIXEL_FORMAT_ARGB},
+      {kMediaSubTypeHDYC, VIDEO_CAPTURE_PIXEL_FORMAT_UYVY},
   };
   for (size_t i = 0; i < arraysize(pixel_formats); ++i) {
     if (sub_type == pixel_formats[i].sub_type)
@@ -171,7 +172,7 @@ VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
   StringFromGUID2(sub_type, guid_str, arraysize(guid_str));
   DVLOG(2) << "Device (also) supports an unknown media type " << guid_str;
 #endif
-  return PIXEL_FORMAT_UNKNOWN;
+  return VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
 }
 
 void VideoCaptureDeviceWin::ScopedMediaType::Free() {
@@ -499,7 +500,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
       VideoCaptureFormat format;
       format.pixel_format =
           TranslateMediaSubtypeToPixelFormat(media_type->subtype);
-      if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
+      if (format.pixel_format == VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN)
         continue;
 
       VIDEOINFOHEADER* h =

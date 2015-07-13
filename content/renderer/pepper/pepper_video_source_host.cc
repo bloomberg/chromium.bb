@@ -211,7 +211,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
     // allocated one of correct size.
     if (!scaled_frame_.get() || scaled_frame_->coded_size() != dst_size) {
       scaled_frame_ = media::VideoFrame::CreateFrame(
-          media::VideoFrame::I420, dst_size, gfx::Rect(dst_size), dst_size,
+          media::PIXEL_FORMAT_I420, dst_size, gfx::Rect(dst_size), dst_size,
           last_frame_->timestamp());
       if (!scaled_frame_.get()) {
         LOG(ERROR) << "Failed to allocate a media::VideoFrame";

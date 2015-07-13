@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_MEDIA_CODEC_BRIDGE_H_
 
 #include <jni.h>
+#include <set>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"

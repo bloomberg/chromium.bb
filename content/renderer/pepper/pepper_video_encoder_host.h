@@ -97,7 +97,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
                              PP_VideoProfile ouput_profile,
                              PP_HardwareAcceleration acceleration);
   bool EnsureGpuChannel();
-  bool InitializeHardware(media::VideoFrame::Format input_format,
+  bool InitializeHardware(media::VideoPixelFormat input_format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,
                           uint32_t initial_bitrate);
@@ -152,7 +152,7 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   uint32_t frame_count_;
 
   // Format of the frames to give to the encoder.
-  media::VideoFrame::Format media_input_format_;
+  media::VideoPixelFormat media_input_format_;
 
   base::WeakPtrFactory<PepperVideoEncoderHost> weak_ptr_factory_;
 

@@ -60,7 +60,7 @@ class VideoCaptureDeviceWin
                                               PIN_DIRECTION pin_dir,
                                               REFGUID category,
                                               REFGUID major_type);
-  static VideoPixelFormat TranslateMediaSubtypeToPixelFormat(
+  static VideoCapturePixelFormat TranslateMediaSubtypeToPixelFormat(
       const GUID& sub_type);
 
   explicit VideoCaptureDeviceWin(const Name& device_name);

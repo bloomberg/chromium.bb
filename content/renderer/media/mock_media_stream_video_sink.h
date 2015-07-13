@@ -30,7 +30,7 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
   VideoCaptureDeliverFrameCB GetDeliverFrameCB();
 
   int number_of_frames() const { return number_of_frames_; }
-  media::VideoFrame::Format format() const { return format_; }
+  media::VideoPixelFormat format() const { return format_; }
   gfx::Size frame_size() const { return frame_size_; }
   scoped_refptr<media::VideoFrame> last_frame() const { return last_frame_; };
 
@@ -43,7 +43,7 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
 
   int number_of_frames_;
   bool enabled_;
-  media::VideoFrame::Format format_;
+  media::VideoPixelFormat format_;
   blink::WebMediaStreamSource::ReadyState state_;
   gfx::Size frame_size_;
   scoped_refptr<media::VideoFrame> last_frame_;

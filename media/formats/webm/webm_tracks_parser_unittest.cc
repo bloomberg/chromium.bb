@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "media/base/buffers.h"
 #include "media/base/channel_layout.h"
 #include "media/formats/webm/tracks_builder.h"
 #include "media/formats/webm/webm_constants.h"

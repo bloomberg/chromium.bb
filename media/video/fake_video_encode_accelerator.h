@@ -29,7 +29,7 @@ class MEDIA_EXPORT FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   ~FakeVideoEncodeAccelerator() override;
 
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
-  bool Initialize(VideoFrame::Format input_format,
+  bool Initialize(VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
                   VideoCodecProfile output_profile,
                   uint32 initial_bitrate,

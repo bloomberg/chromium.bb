@@ -89,7 +89,7 @@ enum SampleFormat {
   Max = PlanarS32,
 };
 
-// See media/base/video_frame.h for descriptions.
+// See media/base/video_types.h for descriptions.
 // Kept in sync with media::VideoFrame::Format via static_asserts.
 enum VideoFormat {
   UNKNOWN = 0,

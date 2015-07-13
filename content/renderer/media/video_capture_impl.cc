@@ -230,7 +230,7 @@ void VideoCaptureImpl::OnBufferReceived(
     int buffer_id,
     base::TimeTicks timestamp,
     const base::DictionaryValue& metadata,
-    media::VideoFrame::Format pixel_format,
+    media::VideoPixelFormat pixel_format,
     media::VideoFrame::StorageType storage_type,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
@@ -254,7 +254,7 @@ void VideoCaptureImpl::OnBufferReceived(
   scoped_refptr<ClientBuffer> buffer;
 
   if (mailbox_holder.mailbox.IsZero()) {
-    DCHECK_EQ(media::VideoFrame::I420, pixel_format);
+    DCHECK_EQ(media::PIXEL_FORMAT_I420, pixel_format);
     const ClientBufferMap::const_iterator iter =
         client_buffers_.find(buffer_id);
     DCHECK(iter != client_buffers_.end());
@@ -271,7 +271,7 @@ void VideoCaptureImpl::OnBufferReceived(
         timestamp - first_frame_timestamp_);
 
   } else {
-    DCHECK_EQ(media::VideoFrame::ARGB, pixel_format);
+    DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format);
     DCHECK(mailbox_holder.mailbox.Verify());  // Paranoia?
     // To be deleted in DidFinishConsumingFrame().
     release_sync_point_storage = new uint32(0);

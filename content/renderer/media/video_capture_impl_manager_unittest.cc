@@ -72,7 +72,7 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
       : manager_(new MockVideoCaptureImplManager(
           BindToCurrentLoop(cleanup_run_loop_.QuitClosure()))) {
     params_.requested_format = media::VideoCaptureFormat(
-        gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
+        gfx::Size(176, 144), 30, media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
     child_process_.reset(new ChildProcess());
   }
 

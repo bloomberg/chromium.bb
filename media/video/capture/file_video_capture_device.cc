@@ -46,7 +46,7 @@ void ParseY4MRational(const base::StringPiece& token,
 // This code was inspired by third_party/libvpx/.../y4minput.* .
 void ParseY4MTags(const std::string& file_header,
                   media::VideoCaptureFormat* video_format) {
-  video_format->pixel_format = media::PIXEL_FORMAT_I420;
+  video_format->pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   video_format->frame_size.set_width(0);
   video_format->frame_size.set_height(0);
   size_t index = 0;
@@ -169,7 +169,7 @@ void FileVideoCaptureDevice::StopAndDeAllocate() {
 }
 
 int FileVideoCaptureDevice::CalculateFrameSize() const {
-  DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_I420);
+  DCHECK_EQ(capture_format_.pixel_format, VIDEO_CAPTURE_PIXEL_FORMAT_I420);
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
   return capture_format_.ImageAllocationSize();
 }

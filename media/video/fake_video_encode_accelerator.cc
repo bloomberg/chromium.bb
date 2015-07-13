@@ -41,12 +41,11 @@ FakeVideoEncodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
-bool FakeVideoEncodeAccelerator::Initialize(
-    VideoFrame::Format input_format,
-    const gfx::Size& input_visible_size,
-    VideoCodecProfile output_profile,
-    uint32 initial_bitrate,
-    Client* client) {
+bool FakeVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
+                                            const gfx::Size& input_visible_size,
+                                            VideoCodecProfile output_profile,
+                                            uint32 initial_bitrate,
+                                            Client* client) {
   if (!will_initialization_succeed_) {
     return false;
   }

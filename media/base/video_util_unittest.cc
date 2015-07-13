@@ -38,9 +38,8 @@ class VideoUtilTest : public testing::Test {
 
   void CreateDestinationFrame(int width, int height) {
     gfx::Size size(width, height);
-    destination_frame_ =
-        VideoFrame::CreateFrame(VideoFrame::YV12, size, gfx::Rect(size), size,
-                                base::TimeDelta());
+    destination_frame_ = VideoFrame::CreateFrame(
+        PIXEL_FORMAT_YV12, size, gfx::Rect(size), size, base::TimeDelta());
   }
 
   void CopyPlanes() {
@@ -396,9 +395,8 @@ TEST_F(VideoUtilTest, LetterboxYUV) {
   int width = 40;
   int height = 30;
   gfx::Size size(width, height);
-  scoped_refptr<VideoFrame> frame(
-      VideoFrame::CreateFrame(VideoFrame::YV12, size, gfx::Rect(size), size,
-                              base::TimeDelta()));
+  scoped_refptr<VideoFrame> frame(VideoFrame::CreateFrame(
+      PIXEL_FORMAT_YV12, size, gfx::Rect(size), size, base::TimeDelta()));
 
   for (int left_margin = 0; left_margin <= 10; left_margin += 10) {
     for (int right_margin = 0; right_margin <= 10; right_margin += 10) {

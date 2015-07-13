@@ -42,7 +42,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // media::VideoEncodeAccelerator implementation.
   media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles()
       override;
-  bool Initialize(media::VideoFrame::Format format,
+  bool Initialize(media::VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
                   uint32 initial_bitrate,
@@ -161,13 +161,13 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   void RequestEncodingParametersChangeTask(uint32 bitrate, uint32 framerate);
 
   // Set up formats and initialize the device for them.
-  bool SetFormats(media::VideoFrame::Format input_format,
+  bool SetFormats(media::VideoPixelFormat input_format,
                   media::VideoCodecProfile output_profile);
 
   // Try to set up the device to the input format we were Initialized() with,
   // or if the device doesn't support it, use one it can support, so that we
   // can later instantiate a V4L2ImageProcessor to convert to it.
-  bool NegotiateInputFormat(media::VideoFrame::Format input_format);
+  bool NegotiateInputFormat(media::VideoPixelFormat input_format);
 
   // Set up the device to the output format requested in Initialize().
   bool SetOutputFormat(media::VideoCodecProfile output_profile);
@@ -195,7 +195,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   size_t output_buffer_byte_size_;
 
   // Formats for input frames and the output stream.
-  media::VideoFrame::Format device_input_format_;
+  media::VideoPixelFormat device_input_format_;
   size_t input_planes_count_;
   uint32 output_format_fourcc_;
 

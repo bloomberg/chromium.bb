@@ -31,7 +31,7 @@ class VideoFrameProviderClientImplTest : public testing::Test,
   VideoFrameProviderClientImplTest()
       : client_impl_(VideoFrameProviderClientImpl::Create(&provider_, this)),
         video_layer_impl_(nullptr),
-        test_frame_(media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+        test_frame_(media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12,
                                                    gfx::Size(10, 10),
                                                    gfx::Rect(10, 10),
                                                    gfx::Size(10, 10),

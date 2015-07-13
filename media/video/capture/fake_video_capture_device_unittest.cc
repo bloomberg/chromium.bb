@@ -76,11 +76,11 @@ class MockClient : public VideoCaptureDevice::Client {
 
   // Virtual methods for capturing using Client's Buffers.
   scoped_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
-                                         media::VideoPixelFormat format,
+                                         media::VideoCapturePixelFormat format,
                                          media::VideoPixelStorage storage) {
-    EXPECT_TRUE((format == media::PIXEL_FORMAT_I420 &&
+    EXPECT_TRUE((format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 &&
                  storage == media::PIXEL_STORAGE_CPU) ||
-                (format == media::PIXEL_FORMAT_ARGB &&
+                (format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB &&
                  storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER));
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
@@ -96,7 +96,8 @@ class MockClient : public VideoCaptureDevice::Client {
       scoped_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) {
-    VideoCaptureFormat format(frame->natural_size(), 30.0, PIXEL_FORMAT_I420);
+    VideoCaptureFormat format(frame->natural_size(), 30.0,
+                              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
     frame_cb_.Run(format);
   }
 
@@ -186,7 +187,8 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
-  capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   capture_params.use_gpu_memory_buffers = ::testing::get<1>(GetParam());
   device->AllocateAndStart(capture_params, client_.Pass());
 
@@ -216,19 +218,23 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     ASSERT_EQ(supported_formats.size(), 4u);
     EXPECT_EQ(supported_formats[0].frame_size.width(), 320);
     EXPECT_EQ(supported_formats[0].frame_size.height(), 240);
-    EXPECT_EQ(supported_formats[0].pixel_format, PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[0].pixel_format,
+              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[0].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[1].frame_size.width(), 640);
     EXPECT_EQ(supported_formats[1].frame_size.height(), 480);
-    EXPECT_EQ(supported_formats[1].pixel_format, PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[1].pixel_format,
+              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[1].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[2].frame_size.width(), 1280);
     EXPECT_EQ(supported_formats[2].frame_size.height(), 720);
-    EXPECT_EQ(supported_formats[2].pixel_format, PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[2].pixel_format,
+              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[2].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[3].frame_size.width(), 1920);
     EXPECT_EQ(supported_formats[3].frame_size.height(), 1080);
-    EXPECT_EQ(supported_formats[3].pixel_format, PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[3].pixel_format,
+              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[3].frame_rate, 20.0);
   }
 }

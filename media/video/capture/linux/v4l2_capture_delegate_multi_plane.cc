@@ -65,7 +65,7 @@ void V4L2CaptureDelegateMultiPlane::SetPayloadSize(
 void V4L2CaptureDelegateMultiPlane::SendBuffer(
     const scoped_refptr<BufferTracker>& buffer_tracker,
     const v4l2_format& format) const {
-  DCHECK_EQ(capture_format().pixel_format, PIXEL_FORMAT_I420);
+  DCHECK_EQ(capture_format().pixel_format, VIDEO_CAPTURE_PIXEL_FORMAT_I420);
   const size_t y_stride = format.fmt.pix_mp.plane_fmt[0].bytesperline;
   const size_t u_stride = format.fmt.pix_mp.plane_fmt[1].bytesperline;
   const size_t v_stride = format.fmt.pix_mp.plane_fmt[2].bytesperline;

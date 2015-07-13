@@ -186,11 +186,8 @@ class VideoRendererImplTest : public testing::TestWithParam<bool> {
       if (base::StringToInt(tokens[i], &timestamp_in_ms)) {
         gfx::Size natural_size = TestVideoConfig::NormalCodedSize();
         scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
-            VideoFrame::YV12,
-            natural_size,
-            gfx::Rect(natural_size),
-            natural_size,
-            base::TimeDelta::FromMilliseconds(timestamp_in_ms));
+            PIXEL_FORMAT_YV12, natural_size, gfx::Rect(natural_size),
+            natural_size, base::TimeDelta::FromMilliseconds(timestamp_in_ms));
         decode_results_.push_back(std::make_pair(VideoDecoder::kOk, frame));
         continue;
       }

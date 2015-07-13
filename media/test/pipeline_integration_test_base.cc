@@ -39,12 +39,11 @@ const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
-      pipeline_(
-          new Pipeline(message_loop_.task_runner(), new MediaLog())),
+      pipeline_(new Pipeline(message_loop_.task_runner(), new MediaLog())),
       ended_(false),
       pipeline_status_(PIPELINE_OK),
-      last_video_frame_format_(VideoFrame::UNKNOWN),
-      last_video_frame_color_space_(VideoFrame::COLOR_SPACE_UNSPECIFIED),
+      last_video_frame_format_(PIXEL_FORMAT_UNKNOWN),
+      last_video_frame_color_space_(COLOR_SPACE_UNSPECIFIED),
       hardware_config_(AudioParameters(), AudioParameters()) {
   base::MD5Init(&md5_context_);
 }
@@ -305,7 +304,7 @@ void PipelineIntegrationTestBase::OnVideoFramePaint(
   last_video_frame_format_ = frame->format();
   int result;
   if (frame->metadata()->GetInteger(VideoFrameMetadata::COLOR_SPACE, &result))
-    last_video_frame_color_space_ = static_cast<VideoFrame::ColorSpace>(result);
+    last_video_frame_color_space_ = static_cast<ColorSpace>(result);
   if (!hashing_enabled_)
     return;
   VideoFrame::HashFrameForTesting(&md5_context_, frame);

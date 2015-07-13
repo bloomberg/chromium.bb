@@ -63,7 +63,7 @@ scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
 
   scoped_refptr<::media::VideoFrame> frame =
       ::media::VideoFrame::WrapNativeTexture(
-          ::media::VideoFrame::XRGB,
+          ::media::PIXEL_FORMAT_XRGB,
           gpu::MailboxHolder(mailbox_, GL_TEXTURE_2D, sync_point_),
           ::media::VideoFrame::ReleaseMailboxCB(),
           size,                // coded_size

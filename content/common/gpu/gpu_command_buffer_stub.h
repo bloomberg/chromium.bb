@@ -188,7 +188,7 @@ class GpuCommandBufferStub
   void OnCreateVideoDecoder(media::VideoCodecProfile profile,
                             int32 route_id,
                             IPC::Message* reply_message);
-  void OnCreateVideoEncoder(media::VideoFrame::Format input_format,
+  void OnCreateVideoEncoder(media::VideoPixelFormat input_format,
                             const gfx::Size& input_visible_size,
                             media::VideoCodecProfile output_profile,
                             uint32 initial_bitrate,

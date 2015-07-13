@@ -126,8 +126,8 @@ static VideoDecoderConfig GetTestConfig(VideoCodec codec,
   gfx::Size natural_size = coded_size;
 
   return VideoDecoderConfig(codec, VIDEO_CODEC_PROFILE_UNKNOWN,
-      VideoFrame::YV12, coded_size, visible_rect, natural_size,
-      NULL, 0, is_encrypted);
+                            PIXEL_FORMAT_YV12, coded_size, visible_rect,
+                            natural_size, NULL, 0, is_encrypted);
 }
 
 static const gfx::Size kNormalSize(320, 240);

@@ -70,8 +70,8 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       client_->ReserveOutputBuffer(coded_size,
                                    (params_.requested_format.pixel_storage !=
                                     media::PIXEL_STORAGE_TEXTURE)
-                                       ? media::PIXEL_FORMAT_I420
-                                       : media::PIXEL_FORMAT_ARGB,
+                                       ? media::VIDEO_CAPTURE_PIXEL_FORMAT_I420
+                                       : media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB,
                                    params_.requested_format.pixel_storage));
   // Get the current buffer pool utilization and attenuate it: The utilization
   // reported to the oracle is in terms of a maximum sustainable amount (not the
@@ -119,13 +119,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   // We do not construct those frames.
   if (params_.requested_format.pixel_storage != media::PIXEL_STORAGE_TEXTURE) {
     *storage = VideoFrame::WrapExternalData(
-        VideoFrame::I420,
-        coded_size,
-        gfx::Rect(visible_size),
-        visible_size,
-        static_cast<uint8*>(output_buffer->data()),
-        output_buffer->size(),
-        base::TimeDelta());
+        media::PIXEL_FORMAT_I420, coded_size, gfx::Rect(visible_size),
+        visible_size, static_cast<uint8*>(output_buffer->data()),
+        output_buffer->size(), base::TimeDelta());
     DCHECK(*storage);
   }
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,

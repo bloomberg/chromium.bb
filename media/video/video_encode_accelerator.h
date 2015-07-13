@@ -112,7 +112,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   //  |client| is the client of this video encoder.  The provided pointer must
   //  be valid until Destroy() is called.
   // TODO(sheu): handle resolution changes.  http://crbug.com/249944
-  virtual bool Initialize(VideoFrame::Format input_format,
+  virtual bool Initialize(VideoPixelFormat input_format,
                           const gfx::Size& input_visible_size,
                           VideoCodecProfile output_profile,
                           uint32 initial_bitrate,

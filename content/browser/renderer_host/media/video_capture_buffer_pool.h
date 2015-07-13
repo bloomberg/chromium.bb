@@ -83,7 +83,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   // On occasion, this call will decide to free an old buffer to make room for a
   // new allocation at a larger size. If so, the ID of the destroyed buffer is
   // returned via |buffer_id_to_drop|.
-  int ReserveForProducer(media::VideoPixelFormat format,
+  int ReserveForProducer(media::VideoCapturePixelFormat format,
                          media::VideoPixelStorage storage,
                          const gfx::Size& dimensions,
                          int* buffer_id_to_drop);
@@ -118,15 +118,17 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
     Tracker()
         : pixel_count_(0), held_by_producer_(false), consumer_hold_count_(0) {}
-    virtual bool Init(media::VideoPixelFormat format,
+    virtual bool Init(media::VideoCapturePixelFormat format,
                       media::VideoPixelStorage storage_type,
                       const gfx::Size& dimensions) = 0;
     virtual ~Tracker();
 
     size_t pixel_count() const { return pixel_count_; }
     void set_pixel_count(size_t count) { pixel_count_ = count; }
-    media::VideoPixelFormat pixel_format() const { return pixel_format_; }
-    void set_pixel_format(media::VideoPixelFormat format) {
+    media::VideoCapturePixelFormat pixel_format() const {
+      return pixel_format_;
+    }
+    void set_pixel_format(media::VideoCapturePixelFormat format) {
       pixel_format_ = format;
     }
     media::VideoPixelStorage storage_type() const { return storage_type_; }
@@ -149,7 +151,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
    private:
     size_t pixel_count_;
-    media::VideoPixelFormat pixel_format_;
+    media::VideoCapturePixelFormat pixel_format_;
     media::VideoPixelStorage storage_type_;
     // Indicates whether this Tracker is currently referenced by the producer.
     bool held_by_producer_;
@@ -160,7 +162,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   friend class base::RefCountedThreadSafe<VideoCaptureBufferPool>;
   virtual ~VideoCaptureBufferPool();
 
-  int ReserveForProducerInternal(media::VideoPixelFormat format,
+  int ReserveForProducerInternal(media::VideoCapturePixelFormat format,
                                  media::VideoPixelStorage storage,
                                  const gfx::Size& dimensions,
                                  int* tracker_id_to_drop);

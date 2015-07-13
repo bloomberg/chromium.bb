@@ -771,9 +771,8 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
   }
 
   media::VideoCaptureFormat capture_format(
-      gfx::Size(max_width, max_height),
-      fps,
-      media::PIXEL_FORMAT_I420);
+      gfx::Size(max_width, max_height), fps,
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
 
   video_config.target_frame_rate = fps;
   audio_config.target_frame_rate = 100;

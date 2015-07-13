@@ -299,9 +299,9 @@
       frameSize = frameHeight * expectedBytesPerRow;
     }
 
-    media::VideoCaptureFormat captureFormat(gfx::Size(frameWidth, frameHeight),
-                                            frameRate_,
-                                            media::PIXEL_FORMAT_UYVY);
+    media::VideoCaptureFormat captureFormat(
+        gfx::Size(frameWidth, frameHeight), frameRate_,
+        media::VIDEO_CAPTURE_PIXEL_FORMAT_UYVY);
 
     // The aspect ratio dictionary is often missing, in which case we report
     // a pixel aspect ratio of 0:0.

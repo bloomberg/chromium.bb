@@ -308,7 +308,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
 
   if (capture_params_.requested_format.pixel_storage ==
       media::PIXEL_STORAGE_TEXTURE) {
-    DCHECK_EQ(media::PIXEL_FORMAT_ARGB,
+    DCHECK_EQ(media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB,
               capture_params_.requested_format.pixel_format);
     DCHECK(!video_frame.get());
     cc::TextureMailbox texture_mailbox;
@@ -318,7 +318,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     if (!texture_mailbox.IsTexture())
       return false;
     video_frame = media::VideoFrame::WrapNativeTexture(
-        media::VideoFrame::ARGB,
+        media::PIXEL_FORMAT_ARGB,
         gpu::MailboxHolder(texture_mailbox.mailbox(), texture_mailbox.target(),
                            texture_mailbox.sync_point()),
         base::Bind(&RunSingleReleaseCallback, base::Passed(&release_callback)),

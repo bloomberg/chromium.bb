@@ -279,14 +279,8 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps) {
     return false;
 
   VideoDecoderConfig video_decoder_config(
-      kCodecH264,
-      VIDEO_CODEC_PROFILE_UNKNOWN,
-      VideoFrame::YV12,
-      coded_size,
-      visible_rect,
-      natural_size,
-      NULL, 0,
-      false);
+      kCodecH264, VIDEO_CODEC_PROFILE_UNKNOWN, PIXEL_FORMAT_YV12, coded_size,
+      visible_rect, natural_size, NULL, 0, false);
 
   if (!video_decoder_config.Matches(last_video_decoder_config_)) {
     DVLOG(1) << "Profile IDC: " << sps->profile_idc;

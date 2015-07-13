@@ -172,9 +172,9 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
       CHECK(source_audio_params_.IsValid());
       LOG(INFO) << "Source file has audio.";
     } else if (av_codec->type == AVMEDIA_TYPE_VIDEO) {
-      VideoFrame::Format format =
-          PixelFormatToVideoFormat(av_codec_context->pix_fmt);
-      if (format != VideoFrame::YV12) {
+      VideoPixelFormat format =
+          PixelFormatToVideoPixelFormat(av_codec_context->pix_fmt);
+      if (format != PIXEL_FORMAT_YV12) {
         LOG(ERROR) << "Cannot handle non YV12 video format: " << format;
         continue;
       }
@@ -547,19 +547,10 @@ void FakeMediaSource::DecodeVideo(ScopedAVPacket packet) {
     video_first_pts_ = avframe->pkt_pts - adjustment_pts;
   }
 
-  video_frame_queue_.push(
-      VideoFrame::WrapExternalYuvData(
-          media::VideoFrame::YV12,
-          size,
-          gfx::Rect(size),
-          size,
-          avframe->linesize[0],
-          avframe->linesize[1],
-          avframe->linesize[2],
-          avframe->data[0],
-          avframe->data[1],
-          avframe->data[2],
-          timestamp));
+  video_frame_queue_.push(VideoFrame::WrapExternalYuvData(
+      media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size,
+      avframe->linesize[0], avframe->linesize[1], avframe->linesize[2],
+      avframe->data[0], avframe->data[1], avframe->data[2], timestamp));
   video_frame_queue_.back()->AddDestructionObserver(
       base::Bind(&AVFreeFrame, avframe));
   last_video_frame_timestamp_ = timestamp;

@@ -22,7 +22,7 @@ const int kHeight = 48;
 const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1337);
 
 struct FormatPair {
-  VideoFrame::Format chrome;
+  VideoPixelFormat chrome;
   OSType corevideo;
 };
 
@@ -34,7 +34,7 @@ void Increment(int* i) {
 
 TEST(VideoFrameMac, CheckBasicAttributes) {
   gfx::Size size(kWidth, kHeight);
-  auto frame = VideoFrame::CreateFrame(VideoFrame::I420, size, gfx::Rect(size),
+  auto frame = VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size, gfx::Rect(size),
                                        size, kTimestamp);
   ASSERT_TRUE(frame.get());
 
@@ -42,7 +42,7 @@ TEST(VideoFrameMac, CheckBasicAttributes) {
   ASSERT_TRUE(pb.get());
 
   gfx::Size coded_size = frame->coded_size();
-  VideoFrame::Format format = frame->format();
+  VideoPixelFormat format = frame->format();
 
   EXPECT_EQ(coded_size.width(), static_cast<int>(CVPixelBufferGetWidth(pb)));
   EXPECT_EQ(coded_size.height(), static_cast<int>(CVPixelBufferGetHeight(pb)));
@@ -63,11 +63,11 @@ TEST(VideoFrameMac, CheckBasicAttributes) {
 TEST(VideoFrameMac, CheckFormats) {
   // CreateFrame() does not support non planar YUV, e.g. NV12.
   const FormatPair format_pairs[] = {
-      {VideoFrame::I420, kCVPixelFormatType_420YpCbCr8Planar},
-      {VideoFrame::YV12, 0},
-      {VideoFrame::YV16, 0},
-      {VideoFrame::YV12A, 0},
-      {VideoFrame::YV24, 0},
+      {PIXEL_FORMAT_I420, kCVPixelFormatType_420YpCbCr8Planar},
+      {PIXEL_FORMAT_YV12, 0},
+      {PIXEL_FORMAT_YV16, 0},
+      {PIXEL_FORMAT_YV12A, 0},
+      {PIXEL_FORMAT_YV24, 0},
   };
 
   gfx::Size size(kWidth, kHeight);
@@ -86,7 +86,7 @@ TEST(VideoFrameMac, CheckFormats) {
 
 TEST(VideoFrameMac, CheckLifetime) {
   gfx::Size size(kWidth, kHeight);
-  auto frame = VideoFrame::CreateFrame(VideoFrame::I420, size, gfx::Rect(size),
+  auto frame = VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size, gfx::Rect(size),
                                        size, kTimestamp);
   ASSERT_TRUE(frame.get());
 
@@ -108,8 +108,8 @@ TEST(VideoFrameMac, CheckLifetime) {
 
 TEST(VideoFrameMac, CheckWrapperFrame) {
   const FormatPair format_pairs[] = {
-      {VideoFrame::I420, kCVPixelFormatType_420YpCbCr8Planar},
-      {VideoFrame::NV12,
+      {PIXEL_FORMAT_I420, kCVPixelFormatType_420YpCbCr8Planar},
+      {PIXEL_FORMAT_NV12,
        CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange},
   };
 

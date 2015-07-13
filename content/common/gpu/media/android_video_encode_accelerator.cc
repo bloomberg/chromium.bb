@@ -143,7 +143,7 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
 }
 
 bool AndroidVideoEncodeAccelerator::Initialize(
-    VideoFrame::Format format,
+    media::VideoPixelFormat format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate,
@@ -158,7 +158,7 @@ bool AndroidVideoEncodeAccelerator::Initialize(
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
 
   if (!(media::MediaCodecBridge::SupportsSetParameters() &&
-        format == VideoFrame::I420)) {
+        format == media::PIXEL_FORMAT_I420)) {
     DLOG(ERROR) << "Unexpected combo: " << format << ", " << output_profile;
     return false;
   }
@@ -237,9 +237,8 @@ void AndroidVideoEncodeAccelerator::Encode(
     bool force_keyframe) {
   DVLOG(3) << __PRETTY_FUNCTION__ << ": " << force_keyframe;
   DCHECK(thread_checker_.CalledOnValidThread());
-  RETURN_ON_FAILURE(frame->format() == VideoFrame::I420,
-                    "Unexpected format",
-                    kInvalidArgumentError);
+  RETURN_ON_FAILURE(frame->format() == media::PIXEL_FORMAT_I420,
+                    "Unexpected format", kInvalidArgumentError);
 
   // MediaCodec doesn't have a way to specify stride for non-Packed formats, so
   // we insist on being called with packed frames and no cropping :(
@@ -336,7 +335,7 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
   media_codec_->GetInputBuffer(input_buf_index, &buffer, &capacity);
 
   size_t queued_size =
-      VideoFrame::AllocationSize(VideoFrame::I420, frame->coded_size());
+      VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, frame->coded_size());
   RETURN_ON_FAILURE(capacity >= queued_size,
                     "Failed to get input buffer: " << input_buf_index,
                     kPlatformFailureError);

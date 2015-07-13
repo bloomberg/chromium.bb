@@ -64,8 +64,8 @@ V4L2ImageProcessor::JobRecord::~JobRecord() {
 }
 
 V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device)
-    : input_format_(media::VideoFrame::UNKNOWN),
-      output_format_(media::VideoFrame::UNKNOWN),
+    : input_format_(media::PIXEL_FORMAT_UNKNOWN),
+      output_format_(media::PIXEL_FORMAT_UNKNOWN),
       input_format_fourcc_(0),
       output_format_fourcc_(0),
       input_planes_count_(0),
@@ -97,8 +97,8 @@ void V4L2ImageProcessor::NotifyError() {
     error_cb_.Run();
 }
 
-bool V4L2ImageProcessor::Initialize(media::VideoFrame::Format input_format,
-                                    media::VideoFrame::Format output_format,
+bool V4L2ImageProcessor::Initialize(media::VideoPixelFormat input_format,
+                                    media::VideoPixelFormat output_format,
                                     gfx::Size input_visible_size,
                                     gfx::Size output_visible_size,
                                     gfx::Size output_allocated_size,
@@ -108,14 +108,14 @@ bool V4L2ImageProcessor::Initialize(media::VideoFrame::Format input_format,
 
   // TODO(posciak): Replace Exynos-specific format/parameter hardcoding in this
   // class with proper capability enumeration.
-  DCHECK_EQ(input_format, media::VideoFrame::I420);
-  DCHECK_EQ(output_format, media::VideoFrame::NV12);
+  DCHECK_EQ(input_format, media::PIXEL_FORMAT_I420);
+  DCHECK_EQ(output_format, media::PIXEL_FORMAT_NV12);
 
   input_format_ = input_format;
   output_format_ = output_format;
-  input_format_fourcc_ = V4L2Device::VideoFrameFormatToV4L2PixFmt(input_format);
+  input_format_fourcc_ = V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format);
   output_format_fourcc_ =
-      V4L2Device::VideoFrameFormatToV4L2PixFmt(output_format);
+      V4L2Device::VideoPixelFormatToV4L2PixFmt(output_format);
 
   if (!input_format_fourcc_ || !output_format_fourcc_) {
     LOG(ERROR) << "Unrecognized format(s)";
@@ -158,10 +158,9 @@ bool V4L2ImageProcessor::Initialize(media::VideoFrame::Format input_format,
                  base::Unretained(this)));
 
   DVLOG(1) << "V4L2ImageProcessor initialized for "
-           << " input_format:"
-           << media::VideoFrame::FormatToString(input_format)
+           << " input_format:" << media::VideoPixelFormatToString(input_format)
            << ", output_format:"
-           << media::VideoFrame::FormatToString(output_format)
+           << media::VideoPixelFormatToString(output_format)
            << ", input_visible_size: " << input_visible_size.ToString()
            << ", input_allocated_size: " << input_allocated_size_.ToString()
            << ", output_visible_size: " << output_visible_size.ToString()

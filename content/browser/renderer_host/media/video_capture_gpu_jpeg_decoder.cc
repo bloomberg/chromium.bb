@@ -202,7 +202,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
   base::SharedMemoryHandle out_handle = out_buffer->AsPlatformFile();
   scoped_refptr<media::VideoFrame> out_frame =
       media::VideoFrame::WrapExternalSharedMemory(
-          media::VideoFrame::I420,                    // format
+          media::PIXEL_FORMAT_I420,                   // format
           dimensions,                                 // coded_size
           gfx::Rect(dimensions),                      // visible_rect
           dimensions,                                 // natural_size

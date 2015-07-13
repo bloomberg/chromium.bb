@@ -207,11 +207,12 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
         max_requested_width : MediaStreamVideoSource::kDefaultWidth;
     const int height = max_requested_height ?
         max_requested_height : MediaStreamVideoSource::kDefaultHeight;
-    callback.Run(media::VideoCaptureFormats(1, media::VideoCaptureFormat(
-        gfx::Size(width, height),
-        static_cast<float>(std::min(kMaxScreenCastFrameRate,
-                                    max_requested_frame_rate)),
-        media::PIXEL_FORMAT_I420)));
+    callback.Run(media::VideoCaptureFormats(
+        1, media::VideoCaptureFormat(
+               gfx::Size(width, height),
+               static_cast<float>(
+                   std::min(kMaxScreenCastFrameRate, max_requested_frame_rate)),
+               media::VIDEO_CAPTURE_PIXEL_FORMAT_I420)));
     return;
   }
 
@@ -339,9 +340,8 @@ void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
     for (const auto& resolution : kVideoResolutions) {
       for (const auto frame_rate : kVideoFrameRates) {
         default_formats.push_back(media::VideoCaptureFormat(
-            gfx::Size(resolution.width, resolution.height),
-            frame_rate,
-            media::PIXEL_FORMAT_I420));
+            gfx::Size(resolution.width, resolution.height), frame_rate,
+            media::VIDEO_CAPTURE_PIXEL_FORMAT_I420));
       }
     }
     base::ResetAndReturn(&source_formats_callback_).Run(default_formats);

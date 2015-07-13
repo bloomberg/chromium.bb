@@ -89,7 +89,7 @@ class GpuMemoryBufferBufferHandle
 class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
  public:
   SharedMemTracker();
-  bool Init(media::VideoPixelFormat format,
+  bool Init(media::VideoCapturePixelFormat format,
             media::VideoPixelStorage storage_type,
             const gfx::Size& dimensions) override;
 
@@ -115,7 +115,7 @@ class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
 class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
  public:
   GpuMemoryBufferTracker();
-  bool Init(media::VideoPixelFormat format,
+  bool Init(media::VideoCapturePixelFormat format,
             media::VideoPixelStorage storage_type,
             const gfx::Size& dimensions) override;
   ~GpuMemoryBufferTracker() override;
@@ -140,7 +140,7 @@ VideoCaptureBufferPool::SharedMemTracker::SharedMemTracker() : Tracker() {
 }
 
 bool VideoCaptureBufferPool::SharedMemTracker::Init(
-    media::VideoPixelFormat format,
+    media::VideoCapturePixelFormat format,
     media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions) {
   DVLOG(2) << "allocating ShMem of " << dimensions.ToString();
@@ -166,7 +166,7 @@ VideoCaptureBufferPool::GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
 }
 
 bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
-    media::VideoPixelFormat format,
+    media::VideoCapturePixelFormat format,
     media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions) {
   DVLOG(2) << "allocating GMB for " << dimensions.ToString();
@@ -248,10 +248,11 @@ VideoCaptureBufferPool::GetBufferHandle(int buffer_id) {
   return tracker->GetBufferHandle();
 }
 
-int VideoCaptureBufferPool::ReserveForProducer(media::VideoPixelFormat format,
-                                               media::VideoPixelStorage storage,
-                                               const gfx::Size& dimensions,
-                                               int* buffer_id_to_drop) {
+int VideoCaptureBufferPool::ReserveForProducer(
+    media::VideoCapturePixelFormat format,
+    media::VideoPixelStorage storage,
+    const gfx::Size& dimensions,
+    int* buffer_id_to_drop) {
   base::AutoLock lock(lock_);
   return ReserveForProducerInternal(format, storage, dimensions,
                                     buffer_id_to_drop);
@@ -312,7 +313,7 @@ double VideoCaptureBufferPool::GetBufferPoolUtilization() const {
 }
 
 int VideoCaptureBufferPool::ReserveForProducerInternal(
-    media::VideoPixelFormat pixel_format,
+    media::VideoCapturePixelFormat pixel_format,
     media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions,
     int* buffer_id_to_drop) {

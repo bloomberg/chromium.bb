@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
-#include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -77,11 +77,12 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // |extra_data|, otherwise the memory is copied.
   VideoDecoderConfig(VideoCodec codec,
                      VideoCodecProfile profile,
-                     VideoFrame::Format format,
+                     VideoPixelFormat format,
                      const gfx::Size& coded_size,
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
-                     const uint8* extra_data, size_t extra_data_size,
+                     const uint8* extra_data,
+                     size_t extra_data_size,
                      bool is_encrypted);
 
   ~VideoDecoderConfig();
@@ -89,12 +90,13 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // Resets the internal state of this object.
   void Initialize(VideoCodec codec,
                   VideoCodecProfile profile,
-                  VideoFrame::Format format,
-                  VideoFrame::ColorSpace color_space,
+                  VideoPixelFormat format,
+                  ColorSpace color_space,
                   const gfx::Size& coded_size,
                   const gfx::Rect& visible_rect,
                   const gfx::Size& natural_size,
-                  const uint8* extra_data, size_t extra_data_size,
+                  const uint8* extra_data,
+                  size_t extra_data_size,
                   bool is_encrypted,
                   bool record_stats);
 
@@ -116,7 +118,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   VideoCodecProfile profile() const;
 
   // Video format used to determine YUV buffer sizes.
-  VideoFrame::Format format() const;
+  VideoPixelFormat format() const;
 
   // Width and height of video frame immediately post-decode. Not all pixels
   // in this region are valid.
@@ -143,7 +145,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   VideoCodec codec_;
   VideoCodecProfile profile_;
 
-  VideoFrame::Format format_;
+  VideoPixelFormat format_;
 
   gfx::Size coded_size_;
   gfx::Rect visible_rect_;

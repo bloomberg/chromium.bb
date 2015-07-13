@@ -86,10 +86,7 @@ class ExternalVideoEncoder::VEAClientImpl
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     encoder_active_ = video_encode_accelerator_->Initialize(
-        media::VideoFrame::I420,
-        frame_size,
-        codec_profile,
-        start_bit_rate,
+        media::PIXEL_FORMAT_I420, frame_size, codec_profile, start_bit_rate,
         this);
     next_frame_id_ = first_frame_id;
 

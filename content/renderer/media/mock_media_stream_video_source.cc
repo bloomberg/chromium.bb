@@ -17,12 +17,11 @@ MockMediaStreamVideoSource::MockMediaStreamVideoSource(
       max_requested_width_(0),
       max_requested_frame_rate_(0.0),
       attempted_to_start_(false) {
-  supported_formats_.push_back(
-      media::VideoCaptureFormat(
-          gfx::Size(MediaStreamVideoSource::kDefaultWidth,
-                    MediaStreamVideoSource::kDefaultHeight),
-          MediaStreamVideoSource::kDefaultFrameRate,
-          media::PIXEL_FORMAT_I420));
+  supported_formats_.push_back(media::VideoCaptureFormat(
+      gfx::Size(MediaStreamVideoSource::kDefaultWidth,
+                MediaStreamVideoSource::kDefaultHeight),
+      MediaStreamVideoSource::kDefaultFrameRate,
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420));
 }
 
 MockMediaStreamVideoSource::~MockMediaStreamVideoSource() {}

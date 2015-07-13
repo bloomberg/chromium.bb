@@ -190,12 +190,12 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     ResourceProvider* resource_provider) {
-  const bool with_alpha = (video_frame->format() == media::VideoFrame::YV12A);
+  const bool with_alpha = (video_frame->format() == media::PIXEL_FORMAT_YV12A);
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
   int video_frame_color_space;
   if (video_frame->metadata()->GetInteger(
           media::VideoFrameMetadata::COLOR_SPACE, &video_frame_color_space) &&
-      video_frame_color_space == media::VideoFrame::COLOR_SPACE_JPEG) {
+      video_frame_color_space == media::COLOR_SPACE_JPEG) {
     color_space = YUVVideoDrawQuad::JPEG;
   }
 
@@ -269,7 +269,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
 
 void CreateTestYUVVideoDrawQuad_Striped(
     const SharedQuadState* shared_state,
-    media::VideoFrame::Format format,
+    media::VideoPixelFormat format,
     bool is_transparent,
     const gfx::RectF& tex_coord_rect,
     RenderPass* render_pass,
@@ -316,8 +316,8 @@ void CreateTestYUVVideoDrawQuad_Striped(
 // by 2 because YUV is a block format.
 void CreateTestYUVVideoDrawQuad_TwoColor(
     const SharedQuadState* shared_state,
-    media::VideoFrame::Format format,
-    media::VideoFrame::ColorSpace color_space,
+    media::VideoPixelFormat format,
+    media::ColorSpace color_space,
     bool is_transparent,
     const gfx::RectF& tex_coord_rect,
     const gfx::Size& background_size,
@@ -380,8 +380,8 @@ void CreateTestYUVVideoDrawQuad_TwoColor(
 
 void CreateTestYUVVideoDrawQuad_Solid(
     const SharedQuadState* shared_state,
-    media::VideoFrame::Format format,
-    media::VideoFrame::ColorSpace color_space,
+    media::VideoPixelFormat format,
+    media::ColorSpace color_space,
     bool is_transparent,
     const gfx::RectF& tex_coord_rect,
     uint8 y,
@@ -843,17 +843,15 @@ TYPED_TEST(IntersectingQuadGLPixelTest, YUVVideoQuads) {
       (this->quad_rect_.height() / 2) & ~0xF);
 
   CreateTestYUVVideoDrawQuad_TwoColor(
-      this->front_quad_state_, media::VideoFrame::YV12,
-      media::VideoFrame::COLOR_SPACE_JPEG, false,
-      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), this->quad_rect_.size(),
-      this->quad_rect_, 0, 128, 128, inner_rect, 29, 255, 107,
-      this->render_pass_.get(), this->video_resource_updater_.get(),
+      this->front_quad_state_, media::PIXEL_FORMAT_YV12,
+      media::COLOR_SPACE_JPEG, false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
+      this->quad_rect_.size(), this->quad_rect_, 0, 128, 128, inner_rect, 29,
+      255, 107, this->render_pass_.get(), this->video_resource_updater_.get(),
       this->resource_provider_.get());
 
   CreateTestYUVVideoDrawQuad_TwoColor(
-      this->back_quad_state_, media::VideoFrame::YV12,
-      media::VideoFrame::COLOR_SPACE_JPEG, false,
-      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), this->quad_rect_.size(),
+      this->back_quad_state_, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_JPEG,
+      false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), this->quad_rect_.size(),
       this->quad_rect_, 149, 43, 21, inner_rect, 0, 128, 128,
       this->render_pass_.get(), this->video_resource_updater2_.get(),
       this->resource_provider_.get());
@@ -930,8 +928,8 @@ TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithBackground) {
 
 class VideoGLRendererPixelTest : public GLRendererPixelTest {
  protected:
-  void CreateEdgeBleedPass(media::VideoFrame::Format format,
-                           media::VideoFrame::ColorSpace color_space,
+  void CreateEdgeBleedPass(media::VideoPixelFormat format,
+                           media::ColorSpace color_space,
                            RenderPassList* pass_list) {
     gfx::Rect rect(200, 200);
 
@@ -985,7 +983,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::VideoFrame::YV12,
+  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::PIXEL_FORMAT_YV12,
                                      false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
                                      pass.get(), video_resource_updater_.get(),
                                      rect, rect, resource_provider_.get());
@@ -1010,7 +1008,7 @@ TEST_F(VideoGLRendererPixelTest, ClippedYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), viewport, pass.get());
 
-  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::VideoFrame::YV12,
+  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::PIXEL_FORMAT_YV12,
                                      false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
                                      pass.get(), video_resource_updater_.get(),
                                      draw_rect, viewport,
@@ -1034,7 +1032,7 @@ TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
 
   // Intentionally sets frame format to I420 for testing coverage.
   CreateTestYUVVideoDrawQuad_Striped(
-      shared_state, media::VideoFrame::I420, false,
+      shared_state, media::PIXEL_FORMAT_I420, false,
       gfx::RectF(0.125f, 0.25f, 0.75f, 0.5f), pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
@@ -1058,9 +1056,8 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
 
   // In MPEG color range YUV values of (15,128,128) should produce black.
   CreateTestYUVVideoDrawQuad_Solid(
-      shared_state, media::VideoFrame::YV12,
-      media::VideoFrame::COLOR_SPACE_UNSPECIFIED, false,
-      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 15, 128, 128, pass.get(),
+      shared_state, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_UNSPECIFIED,
+      false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 15, 128, 128, pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
@@ -1084,8 +1081,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
 
   // YUV of (149,43,21) should be green (0,255,0) in RGB.
   CreateTestYUVVideoDrawQuad_Solid(
-      shared_state, media::VideoFrame::YV12,
-      media::VideoFrame::COLOR_SPACE_JPEG, false,
+      shared_state, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_JPEG, false,
       gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 43, 21, pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
@@ -1101,8 +1097,8 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
 // tex coord rect is only a partial subrectangle of the coded contents.
 TEST_F(VideoGLRendererPixelTest, YUVEdgeBleed) {
   RenderPassList pass_list;
-  CreateEdgeBleedPass(media::VideoFrame::YV12,
-                      media::VideoFrame::COLOR_SPACE_JPEG, &pass_list);
+  CreateEdgeBleedPass(media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_JPEG,
+                      &pass_list);
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
                                  FuzzyPixelOffByOneComparator(true)));
@@ -1110,8 +1106,8 @@ TEST_F(VideoGLRendererPixelTest, YUVEdgeBleed) {
 
 TEST_F(VideoGLRendererPixelTest, YUVAEdgeBleed) {
   RenderPassList pass_list;
-  CreateEdgeBleedPass(media::VideoFrame::YV12A,
-                      media::VideoFrame::COLOR_SPACE_UNSPECIFIED, &pass_list);
+  CreateEdgeBleedPass(media::PIXEL_FORMAT_YV12A, media::COLOR_SPACE_UNSPECIFIED,
+                      &pass_list);
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
                                  FuzzyPixelOffByOneComparator(true)));
@@ -1128,8 +1124,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRectGrey) {
 
   // Dark grey in JPEG color range (in MPEG, this is black).
   CreateTestYUVVideoDrawQuad_Solid(
-      shared_state, media::VideoFrame::YV12,
-      media::VideoFrame::COLOR_SPACE_JPEG, false,
+      shared_state, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_JPEG, false,
       gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 15, 128, 128, pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
 
@@ -1151,7 +1146,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::VideoFrame::YV12A,
+  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::PIXEL_FORMAT_YV12A,
                                      false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
                                      pass.get(), video_resource_updater_.get(),
                                      rect, rect, resource_provider_.get());
@@ -1178,7 +1173,7 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::VideoFrame::YV12A,
+  CreateTestYUVVideoDrawQuad_Striped(shared_state, media::PIXEL_FORMAT_YV12A,
                                      true, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
                                      pass.get(), video_resource_updater_.get(),
                                      rect, rect, resource_provider_.get());

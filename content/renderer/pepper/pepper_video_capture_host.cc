@@ -138,7 +138,7 @@ void PepperVideoCaptureHost::OnFrameReady(
 
   for (uint32_t i = 0; i < buffers_.size(); ++i) {
     if (!buffers_[i].in_use) {
-      DCHECK_EQ(frame->format(), media::VideoFrame::I420);
+      DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_I420);
       if (buffers_[i].buffer->size() <
           media::VideoFrame::AllocationSize(frame->format(), alloc_size_)) {
         // TODO(ihf): handle size mismatches gracefully here.
@@ -176,7 +176,7 @@ void PepperVideoCaptureHost::AllocBuffers(const gfx::Size& resolution,
   ReleaseBuffers();
 
   const size_t size = media::VideoFrame::AllocationSize(
-      media::VideoFrame::I420, gfx::Size(info.width, info.height));
+      media::PIXEL_FORMAT_I420, gfx::Size(info.width, info.height));
 
   ppapi::proxy::ResourceMessageReplyParams params(pp_resource(), 0);
 
@@ -350,9 +350,8 @@ void PepperVideoCaptureHost::SetRequestedInfo(
                static_cast<uint32_t>(media::limits::kMaxFramesPerSecond - 1));
 
   video_capture_params_.requested_format = media::VideoCaptureFormat(
-      gfx::Size(device_info.width, device_info.height),
-      frames_per_second,
-      media::PIXEL_FORMAT_I420);
+      gfx::Size(device_info.width, device_info.height), frames_per_second,
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
 }
 
 void PepperVideoCaptureHost::DetachPlatformVideoCapture() {

@@ -20,7 +20,7 @@ class VideoFramePool::PoolImpl
   // Returns a frame from the pool that matches the specified
   // parameters or creates a new frame if no suitable frame exists in
   // the pool. The pool is drained if no matching frame is found.
-  scoped_refptr<VideoFrame> CreateFrame(VideoFrame::Format format,
+  scoped_refptr<VideoFrame> CreateFrame(VideoPixelFormat format,
                                         const gfx::Size& coded_size,
                                         const gfx::Rect& visible_rect,
                                         const gfx::Size& natural_size,
@@ -56,7 +56,7 @@ VideoFramePool::PoolImpl::~PoolImpl() {
 }
 
 scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
-    VideoFrame::Format format,
+    VideoPixelFormat format,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
@@ -115,7 +115,7 @@ VideoFramePool::~VideoFramePool() {
 }
 
 scoped_refptr<VideoFrame> VideoFramePool::CreateFrame(
-    VideoFrame::Format format,
+    VideoPixelFormat format,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,

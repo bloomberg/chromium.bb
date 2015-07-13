@@ -73,12 +73,9 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
   void FeedMoreVideo(int num_dropped_frames) {
     // Prepare a simulated EncodedFrame to feed into the VideoDecoder.
 
-    const scoped_refptr<VideoFrame> video_frame =
-        VideoFrame::CreateFrame(VideoFrame::YV12,
-                                next_frame_size_,
-                                gfx::Rect(next_frame_size_),
-                                next_frame_size_,
-                                next_frame_timestamp_);
+    const scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
+        PIXEL_FORMAT_YV12, next_frame_size_, gfx::Rect(next_frame_size_),
+        next_frame_size_, next_frame_timestamp_);
     const base::TimeTicks reference_time =
         base::TimeTicks::UnixEpoch() + next_frame_timestamp_;
     next_frame_timestamp_ += base::TimeDelta::FromSeconds(1) / kFrameRate;

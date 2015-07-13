@@ -14,6 +14,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_frame.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 
 namespace media {

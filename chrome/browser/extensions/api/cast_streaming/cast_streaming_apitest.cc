@@ -197,9 +197,9 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
                     bool is_continuous) override {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
-    CHECK(video_frame->format() == media::VideoFrame::YV12 ||
-          video_frame->format() == media::VideoFrame::I420 ||
-          video_frame->format() == media::VideoFrame::YV12A);
+    CHECK(video_frame->format() == media::PIXEL_FORMAT_YV12 ||
+          video_frame->format() == media::PIXEL_FORMAT_I420 ||
+          video_frame->format() == media::PIXEL_FORMAT_YV12A);
 
     if (done_callback_.is_null() || expected_yuv_colors_.empty())
       return;  // No need to waste CPU doing analysis on the frame.

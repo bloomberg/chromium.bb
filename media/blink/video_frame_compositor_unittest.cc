@@ -51,7 +51,7 @@ class VideoFrameCompositorTest : public testing::Test,
 
   scoped_refptr<VideoFrame> CreateOpaqueFrame() {
     gfx::Size size(8, 8);
-    return VideoFrame::CreateFrame(VideoFrame::YV12, size, gfx::Rect(size),
+    return VideoFrame::CreateFrame(PIXEL_FORMAT_YV12, size, gfx::Rect(size),
                                    size, base::TimeDelta());
   }
 
@@ -220,7 +220,7 @@ TEST_F(VideoFrameCompositorTest, OpacityChanged) {
   gfx::Size size(8, 8);
   scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   scoped_refptr<VideoFrame> not_opaque_frame = VideoFrame::CreateFrame(
-      VideoFrame::YV12A, size, gfx::Rect(size), size, base::TimeDelta());
+      PIXEL_FORMAT_YV12A, size, gfx::Rect(size), size, base::TimeDelta());
 
   // Initial expectations.
   EXPECT_FALSE(opaque());

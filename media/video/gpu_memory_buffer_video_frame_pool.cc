@@ -59,10 +59,10 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
 
   // All the resources needed to compose a frame.
   struct FrameResources {
-    FrameResources(VideoFrame::Format format, const gfx::Size& size)
+    FrameResources(VideoPixelFormat format, const gfx::Size& size)
         : format(format), size(size) {}
     bool in_use = true;
-    VideoFrame::Format format;
+    VideoPixelFormat format;
     gfx::Size size;
     PlaneResource plane_resources[VideoFrame::kMaxPlanes];
   };
@@ -71,7 +71,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // specific |format| and |size|.
   static bool AreFrameResourcesCompatible(const FrameResources* resources,
                                           const gfx::Size& size,
-                                          VideoFrame::Format format) {
+                                          VideoPixelFormat format) {
     return size == resources->size && format == resources->format;
   }
 
@@ -79,7 +79,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // necessary.
   // This also drops the LRU resources that can't be reuse for this frame.
   FrameResources* GetOrCreateFrameResources(const gfx::Size& size,
-                                            VideoFrame::Format format);
+                                            VideoPixelFormat format);
 
   // Callback called when a VideoFrame generated with GetFrameResources is no
   // longer referenced.
@@ -155,7 +155,7 @@ GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
   if (!gles2)
     return video_frame;
 
-  VideoFrame::Format format = video_frame->format();
+  VideoPixelFormat format = video_frame->format();
   size_t planes = VideoFrame::NumPlanes(format);
   DCHECK(video_frame->visible_rect().origin().IsOrigin());
   gfx::Size size = video_frame->visible_rect().size();
@@ -230,7 +230,7 @@ GpuMemoryBufferVideoFramePool::PoolImpl::~PoolImpl() {
 GpuMemoryBufferVideoFramePool::PoolImpl::FrameResources*
 GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     const gfx::Size& size,
-    VideoFrame::Format format) {
+    VideoPixelFormat format) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   auto it = resources_pool_.begin();
@@ -334,19 +334,19 @@ GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
     const scoped_refptr<VideoFrame>& video_frame) {
   switch (video_frame->format()) {
     // Supported cases.
-    case VideoFrame::YV12:
-    case VideoFrame::I420:
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
       return pool_impl_->CreateHardwareFrame(video_frame);
     // Unsupported cases.
-    case VideoFrame::YV12A:
-    case VideoFrame::YV16:
-    case VideoFrame::YV24:
+    case PIXEL_FORMAT_YV12A:
+    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_YV24:
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    case VideoFrame::NV12:
+    case PIXEL_FORMAT_NV12:
 #endif
-    case VideoFrame::ARGB:
-    case VideoFrame::XRGB:
-    case VideoFrame::UNKNOWN:
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_UNKNOWN:
       break;
   }
   return video_frame;

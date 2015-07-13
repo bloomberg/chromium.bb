@@ -127,22 +127,20 @@ ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
                    DemuxerStream::STATUS_CONFIG_CHANGED);
 
 // VideoFormat.
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
-                   VideoFrame::UNKNOWN,
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
+                   PIXEL_FORMAT_UNKNOWN,
                    VIDEO_FORMAT_UNKNOWN);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV12, VIDEO_FORMAT_YV12);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::I420, VIDEO_FORMAT_I420);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV16, VIDEO_FORMAT_YV16);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV12A, VIDEO_FORMAT_YV12A);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::YV24, VIDEO_FORMAT_YV24);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV12, VIDEO_FORMAT_YV12);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_I420, VIDEO_FORMAT_I420);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV16, VIDEO_FORMAT_YV16);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV12A, VIDEO_FORMAT_YV12A);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV24, VIDEO_FORMAT_YV24);
 #if defined(OS_MACOSX)
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::NV12, VIDEO_FORMAT_NV12);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_NV12, VIDEO_FORMAT_NV12);
 #endif
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::ARGB, VIDEO_FORMAT_ARGB);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format, VideoFrame::XRGB, VIDEO_FORMAT_XRGB);
-ASSERT_ENUM_EQ_RAW(VideoFrame::Format,
-                   VideoFrame::FORMAT_MAX,
-                   VIDEO_FORMAT_FORMAT_MAX);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_ARGB, VIDEO_FORMAT_ARGB);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_XRGB, VIDEO_FORMAT_XRGB);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MAX, VIDEO_FORMAT_FORMAT_MAX);
 
 // VideoCodec
 ASSERT_ENUM_EQ_RAW(VideoCodec, kUnknownVideoCodec, VIDEO_CODEC_UNKNOWN);
@@ -447,15 +445,11 @@ TypeConverter<media::VideoDecoderConfig, VideoDecoderConfigPtr>::Convert(
   config.Initialize(
       static_cast<media::VideoCodec>(input->codec),
       static_cast<media::VideoCodecProfile>(input->profile),
-      static_cast<media::VideoFrame::Format>(input->format),
-      media::VideoFrame::COLOR_SPACE_UNSPECIFIED,
-      input->coded_size.To<gfx::Size>(),
-      input->visible_rect.To<gfx::Rect>(),
-      input->natural_size.To<gfx::Size>(),
+      static_cast<media::VideoPixelFormat>(input->format),
+      media::COLOR_SPACE_UNSPECIFIED, input->coded_size.To<gfx::Size>(),
+      input->visible_rect.To<gfx::Rect>(), input->natural_size.To<gfx::Size>(),
       input->extra_data.size() ? &input->extra_data.front() : NULL,
-      input->extra_data.size(),
-      input->is_encrypted,
-      false);
+      input->extra_data.size(), input->is_encrypted, false);
   return config;
 }
 

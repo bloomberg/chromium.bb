@@ -43,7 +43,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
     virtual void OnBufferReceived(int buffer_id,
                                   base::TimeTicks timestamp,
                                   const base::DictionaryValue& metadata,
-                                  media::VideoFrame::Format pixel_format,
+                                  media::VideoPixelFormat pixel_format,
                                   media::VideoFrame::StorageType storage_type,
                                   const gfx::Size& coded_size,
                                   const gfx::Rect& visible_rect,

@@ -42,7 +42,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   static const int kFakeCapturePeriodMs = 50;
 
   void CaptureUsingOwnBuffers(base::TimeTicks expected_execution_time);
-  void CaptureUsingClientBuffers(VideoPixelFormat pixel_format,
+  void CaptureUsingClientBuffers(VideoCapturePixelFormat pixel_format,
                                  VideoPixelStorage pixel_storage,
                                  base::TimeTicks expected_execution_time);
   void BeepAndScheduleNextCapture(

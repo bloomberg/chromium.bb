@@ -49,7 +49,7 @@ class VideoEncoderShim::EncoderImpl {
   explicit EncoderImpl(const base::WeakPtr<VideoEncoderShim>& shim);
   ~EncoderImpl();
 
-  void Initialize(media::VideoFrame::Format input_format,
+  void Initialize(media::VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
                   uint32 initial_bitrate);
@@ -111,7 +111,7 @@ VideoEncoderShim::EncoderImpl::~EncoderImpl() {
 }
 
 void VideoEncoderShim::EncoderImpl::Initialize(
-    media::VideoFrame::Format input_format,
+    media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate) {
@@ -316,7 +316,7 @@ VideoEncoderShim::GetSupportedProfiles() {
 }
 
 bool VideoEncoderShim::Initialize(
-    media::VideoFrame::Format input_format,
+    media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate,
@@ -324,7 +324,7 @@ bool VideoEncoderShim::Initialize(
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(client, host_);
 
-  if (input_format != media::VideoFrame::I420)
+  if (input_format != media::PIXEL_FORMAT_I420)
     return false;
 
   media_task_runner_->PostTask(

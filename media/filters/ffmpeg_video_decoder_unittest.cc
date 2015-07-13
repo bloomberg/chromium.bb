@@ -36,7 +36,7 @@ using ::testing::StrictMock;
 
 namespace media {
 
-static const VideoFrame::Format kVideoFormat = VideoFrame::YV12;
+static const VideoPixelFormat kVideoFormat = PIXEL_FORMAT_YV12;
 static const gfx::Size kCodedSize(320, 240);
 static const gfx::Rect kVisibleRect(320, 240);
 static const gfx::Size kNaturalSize(320, 240);
@@ -223,9 +223,8 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_UnsupportedDecoder) {
 TEST_F(FFmpegVideoDecoderTest, Initialize_UnsupportedPixelFormat) {
   // Ensure decoder handles unsupported pixel formats without crashing.
   VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            VideoFrame::UNKNOWN,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, false);
+                            PIXEL_FORMAT_UNKNOWN, kCodedSize, kVisibleRect,
+                            kNaturalSize, NULL, 0, false);
   InitializeWithConfigWithResult(config, false);
 }
 

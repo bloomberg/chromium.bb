@@ -406,17 +406,18 @@ void AVStreamToVideoDecoderConfig(
                               AVCOL_RANGE_NB);  // PRESUBMIT_IGNORE_UMA_MAX
   }
 
-  VideoFrame::Format format = PixelFormatToVideoFormat(stream->codec->pix_fmt);
+  VideoPixelFormat format =
+      PixelFormatToVideoPixelFormat(stream->codec->pix_fmt);
   if (codec == kCodecVP9) {
     // TODO(tomfinegan): libavcodec doesn't know about VP9.
-    format = VideoFrame::YV12;
+    format = PIXEL_FORMAT_YV12;
     coded_size = visible_rect.size();
   }
 
   // Pad out |coded_size| for subsampled YUV formats.
-  if (format != VideoFrame::YV24) {
+  if (format != PIXEL_FORMAT_YV24) {
     coded_size.set_width((coded_size.width() + 1) / 2 * 2);
-    if (format != VideoFrame::YV16)
+    if (format != PIXEL_FORMAT_YV16)
       coded_size.set_height((coded_size.height() + 1) / 2 * 2);
   }
 
@@ -428,19 +429,15 @@ void AVStreamToVideoDecoderConfig(
   AVDictionaryEntry* webm_alpha =
       av_dict_get(stream->metadata, "alpha_mode", NULL, 0);
   if (webm_alpha && !strcmp(webm_alpha->value, "1")) {
-    format = VideoFrame::YV12A;
+    format = PIXEL_FORMAT_YV12A;
   }
 
-  config->Initialize(codec,
-                     profile,
-                     format,
-                     (stream->codec->colorspace == AVCOL_SPC_BT709)
-                         ? VideoFrame::COLOR_SPACE_HD_REC709
-                         : VideoFrame::COLOR_SPACE_UNSPECIFIED,
-                     coded_size, visible_rect, natural_size,
-                     stream->codec->extradata, stream->codec->extradata_size,
-                     is_encrypted,
-                     record_stats);
+  config->Initialize(
+      codec, profile, format,
+      (stream->codec->colorspace == AVCOL_SPC_BT709) ? COLOR_SPACE_HD_REC709
+                                                     : COLOR_SPACE_UNSPECIFIED,
+      coded_size, visible_rect, natural_size, stream->codec->extradata,
+      stream->codec->extradata_size, is_encrypted, record_stats);
 }
 
 void VideoDecoderConfigToAVCodecContext(
@@ -451,7 +448,7 @@ void VideoDecoderConfigToAVCodecContext(
   codec_context->profile = VideoCodecProfileToProfileID(config.profile());
   codec_context->coded_width = config.coded_size().width();
   codec_context->coded_height = config.coded_size().height();
-  codec_context->pix_fmt = VideoFormatToPixelFormat(config.format());
+  codec_context->pix_fmt = VideoPixelFormatToPixelFormat(config.format());
 
   if (config.extra_data()) {
     codec_context->extradata_size = config.extra_data_size();
@@ -532,34 +529,34 @@ ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout, int channels) {
   }
 }
 
-VideoFrame::Format PixelFormatToVideoFormat(PixelFormat pixel_format) {
+VideoPixelFormat PixelFormatToVideoPixelFormat(PixelFormat pixel_format) {
   switch (pixel_format) {
     case PIX_FMT_YUV422P:
-      return VideoFrame::YV16;
+      return PIXEL_FORMAT_YV16;
     case PIX_FMT_YUV444P:
-      return VideoFrame::YV24;
+      return PIXEL_FORMAT_YV24;
     case PIX_FMT_YUV420P:
-      return VideoFrame::YV12;
+      return PIXEL_FORMAT_YV12;
     case PIX_FMT_YUVA420P:
-      return VideoFrame::YV12A;
+      return PIXEL_FORMAT_YV12A;
     default:
       DVLOG(1) << "Unsupported PixelFormat: " << pixel_format;
   }
-  return VideoFrame::UNKNOWN;
+  return PIXEL_FORMAT_UNKNOWN;
 }
 
-PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format) {
+PixelFormat VideoPixelFormatToPixelFormat(VideoPixelFormat video_format) {
   switch (video_format) {
-    case VideoFrame::YV16:
+    case PIXEL_FORMAT_YV16:
       return PIX_FMT_YUV422P;
-    case VideoFrame::YV12:
+    case PIXEL_FORMAT_YV12:
       return PIX_FMT_YUV420P;
-    case VideoFrame::YV12A:
+    case PIXEL_FORMAT_YV12A:
       return PIX_FMT_YUVA420P;
-    case VideoFrame::YV24:
+    case PIXEL_FORMAT_YV24:
       return PIX_FMT_YUV444P;
     default:
-      DVLOG(1) << "Unsupported VideoFrame::Format: " << video_format;
+      DVLOG(1) << "Unsupported Format: " << video_format;
   }
   return PIX_FMT_NONE;
 }

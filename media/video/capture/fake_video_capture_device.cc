@@ -88,7 +88,8 @@ void FakeVideoCaptureDevice::AllocateAndStart(
   // Incoming |params| can be none of the supported formats, so we get the
   // closest thing rounded up. TODO(mcasas): Use the |params|, if they belong to
   // the supported ones, when http://crbug.com/309554 is verified.
-  DCHECK_EQ(params.requested_format.pixel_format, PIXEL_FORMAT_I420);
+  DCHECK_EQ(params.requested_format.pixel_format,
+            VIDEO_CAPTURE_PIXEL_FORMAT_I420);
   capture_format_.pixel_format = params.requested_format.pixel_format;
   capture_format_.frame_rate = 30.0;
   if (params.requested_format.frame_size.width() > 1280)
@@ -104,7 +105,7 @@ void FakeVideoCaptureDevice::AllocateAndStart(
       device_type_ == USING_OWN_BUFFERS_TRIPLANAR) {
     capture_format_.pixel_storage = PIXEL_STORAGE_CPU;
     fake_frame_.reset(new uint8[VideoFrame::AllocationSize(
-        VideoFrame::I420, capture_format_.frame_size)]);
+        PIXEL_FORMAT_I420, capture_format_.frame_size)]);
     BeepAndScheduleNextCapture(
         base::TimeTicks::Now(),
         base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
@@ -114,13 +115,13 @@ void FakeVideoCaptureDevice::AllocateAndStart(
              << (params.use_gpu_memory_buffers ? "GMB" : "ShMem");
     BeepAndScheduleNextCapture(
         base::TimeTicks::Now(),
-        base::Bind(
-            &FakeVideoCaptureDevice::CaptureUsingClientBuffers,
-            weak_factory_.GetWeakPtr(),
-            params.use_gpu_memory_buffers ? PIXEL_FORMAT_ARGB
-                                          : PIXEL_FORMAT_I420,
-            params.use_gpu_memory_buffers ? PIXEL_STORAGE_GPUMEMORYBUFFER
-                                          : PIXEL_STORAGE_CPU));
+        base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
+                   weak_factory_.GetWeakPtr(),
+                   params.use_gpu_memory_buffers
+                       ? VIDEO_CAPTURE_PIXEL_FORMAT_ARGB
+                       : VIDEO_CAPTURE_PIXEL_FORMAT_I420,
+                   params.use_gpu_memory_buffers ? PIXEL_STORAGE_GPUMEMORYBUFFER
+                                                 : PIXEL_STORAGE_CPU));
   } else {
     client_->OnError("Unknown Fake Video Capture Device type.");
   }
@@ -169,7 +170,7 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
 }
 
 void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
-    VideoPixelFormat pixel_format,
+    VideoCapturePixelFormat pixel_format,
     VideoPixelStorage pixel_storage,
     base::TimeTicks expected_execution_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -184,9 +185,10 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     DCHECK(data_ptr) << "Buffer has NO backing memory";
     memset(data_ptr, 0, capture_buffer->size());
 
-    DrawPacman((pixel_format == media::PIXEL_FORMAT_ARGB), /* use_argb */
-               data_ptr, frame_count_, kFakeCapturePeriodMs,
-               capture_format_.frame_size);
+    DrawPacman(
+        (pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB), /* use_argb */
+        data_ptr, frame_count_, kFakeCapturePeriodMs,
+        capture_format_.frame_size);
 
     // Give the captured frame to the client.
     const VideoCaptureFormat format(capture_format_.frame_size,

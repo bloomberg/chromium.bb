@@ -21,6 +21,7 @@
 #include "chromecast/media/cma/pipeline/decrypt_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
 
 namespace chromecast {

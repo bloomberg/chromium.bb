@@ -89,7 +89,7 @@ bool VaapiJpegDecoderTest::VerifyDecode(
 
   base::StringPiece result(
       reinterpret_cast<const char*>(mem),
-      media::VideoFrame::AllocationSize(media::VideoFrame::I420, size));
+      media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, size));
   EXPECT_EQ(expected_md5sum, base::MD5String(result));
 
   wrapper_->ReturnVaImage(&image);

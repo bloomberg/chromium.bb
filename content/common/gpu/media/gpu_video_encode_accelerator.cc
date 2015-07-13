@@ -52,7 +52,7 @@ GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(int32 host_route_id,
                                                      GpuCommandBufferStub* stub)
     : host_route_id_(host_route_id),
       stub_(stub),
-      input_format_(media::VideoFrame::UNKNOWN),
+      input_format_(media::PIXEL_FORMAT_UNKNOWN),
       output_buffer_size_(0),
       weak_this_factory_(this) {
   stub_->AddDestructionObserver(this);
@@ -67,7 +67,7 @@ GpuVideoEncodeAccelerator::~GpuVideoEncodeAccelerator() {
 }
 
 void GpuVideoEncodeAccelerator::Initialize(
-    media::VideoFrame::Format input_format,
+    media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate,

@@ -259,11 +259,8 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     return;
   }
   input_visible_size_ = input_visible_size;
-  if (!video_encoder_->Initialize(media::VideoFrame::I420,
-                                  input_visible_size_,
-                                  profile,
-                                  bitrate * 1000,
-                                  this)) {
+  if (!video_encoder_->Initialize(media::PIXEL_FORMAT_I420, input_visible_size_,
+                                  profile, bitrate * 1000, this)) {
     NOTIFY_ERROR(media::VideoEncodeAccelerator::kInvalidArgumentError);
     return;
   }
@@ -361,7 +358,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   for (unsigned int i = 0; i < input_count + kInputBufferExtraCount; ++i) {
     scoped_ptr<base::SharedMemory> shm =
         gpu_factories_->CreateSharedMemory(media::VideoFrame::AllocationSize(
-            media::VideoFrame::I420, input_coded_size));
+            media::PIXEL_FORMAT_I420, input_coded_size));
     if (!shm) {
       DLOG(ERROR) << "Impl::RequireBitstreamBuffers(): "
                      "failed to create input buffer " << i;
@@ -499,14 +496,10 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   } else {
     base::SharedMemory* input_buffer = input_buffers_[index];
     frame = media::VideoFrame::WrapExternalSharedMemory(
-        media::VideoFrame::I420,
-        input_frame_coded_size_,
-        gfx::Rect(input_visible_size_),
-        input_visible_size_,
+        media::PIXEL_FORMAT_I420, input_frame_coded_size_,
+        gfx::Rect(input_visible_size_), input_visible_size_,
         reinterpret_cast<uint8*>(input_buffer->memory()),
-        input_buffer->mapped_size(),
-        input_buffer->handle(),
-        0,
+        input_buffer->mapped_size(), input_buffer->handle(), 0,
         base::TimeDelta());
     if (!frame.get()) {
       DLOG(ERROR) << "Impl::EncodeOneFrame(): failed to create frame";

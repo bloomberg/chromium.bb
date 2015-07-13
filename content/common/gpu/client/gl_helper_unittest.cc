@@ -1391,7 +1391,7 @@ class GLHelperTest : public testing::Test {
 
     scoped_refptr<media::VideoFrame> output_frame =
         media::VideoFrame::CreateFrame(
-            media::VideoFrame::YV12,
+            media::PIXEL_FORMAT_YV12,
             // The coded size of the output frame is rounded up to the next
             // 16-byte boundary.  This tests that the readback is being
             // positioned inside the frame's visible region, and not dependent
@@ -1402,8 +1402,7 @@ class GLHelperTest : public testing::Test {
             base::TimeDelta::FromSeconds(0));
     scoped_refptr<media::VideoFrame> truth_frame =
         media::VideoFrame::CreateFrame(
-            media::VideoFrame::YV12,
-            gfx::Size(output_xsize, output_ysize),
+            media::PIXEL_FORMAT_YV12, gfx::Size(output_xsize, output_ysize),
             gfx::Rect(0, 0, output_xsize, output_ysize),
             gfx::Size(output_xsize, output_ysize),
             base::TimeDelta::FromSeconds(0));

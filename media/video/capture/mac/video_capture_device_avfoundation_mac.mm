@@ -17,16 +17,16 @@ static const int kMjpegHeightThreshold = 480;
 
 // This function translates Mac Core Video pixel formats to Chromium pixel
 // formats. Chromium pixel formats are sorted in order of preference.
-media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
+media::VideoCapturePixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   switch (code) {
     case kCVPixelFormatType_422YpCbCr8:
-      return media::PIXEL_FORMAT_UYVY;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_UYVY;
     case CoreMediaGlue::kCMPixelFormat_422YpCbCr8_yuvs:
-      return media::PIXEL_FORMAT_YUY2;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_YUY2;
     case CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML:
-      return media::PIXEL_FORMAT_MJPEG;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG;
     default:
-      return media::PIXEL_FORMAT_UNKNOWN;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
   }
 }
 
@@ -74,9 +74,10 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   for (CrAVCaptureDeviceFormat* format in device.formats) {
     // MediaSubType is a CMPixelFormatType but can be used as CVPixelFormatType
     // as well according to CMFormatDescription.h
-    const media::VideoPixelFormat pixelFormat = FourCCToChromiumPixelFormat(
-        CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
-            [format formatDescription]));
+    const media::VideoCapturePixelFormat pixelFormat =
+        FourCCToChromiumPixelFormat(
+            CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
+                [format formatDescription]));
 
     CoreMediaGlue::CMVideoDimensions dimensions =
         CoreMediaGlue::CMVideoFormatDescriptionGetDimensions(

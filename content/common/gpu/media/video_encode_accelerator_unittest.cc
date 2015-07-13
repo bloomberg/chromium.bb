@@ -48,7 +48,7 @@ using media::VideoEncodeAccelerator;
 namespace content {
 namespace {
 
-const media::VideoFrame::Format kInputFormat = media::VideoFrame::I420;
+const media::VideoPixelFormat kInputFormat = media::PIXEL_FORMAT_I420;
 
 // Arbitrarily chosen to add some depth to the pipeline.
 const unsigned int kNumOutputBuffers = 4;

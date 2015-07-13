@@ -1074,7 +1074,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
                            video_codec->time_base.num,
                            video_codec->time_base.den));
     media_log_->SetStringProperty(
-        "video_format", VideoFrame::FormatToString(video_config.format()));
+        "video_format", VideoPixelFormatToString(video_config.format()));
     media_log_->SetBooleanProperty("video_is_encrypted",
                                    video_config.is_encrypted());
   } else {

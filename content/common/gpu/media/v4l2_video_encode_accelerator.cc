@@ -72,7 +72,7 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
     const scoped_refptr<V4L2Device>& device)
     : child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       output_buffer_byte_size_(0),
-      device_input_format_(media::VideoFrame::UNKNOWN),
+      device_input_format_(media::PIXEL_FORMAT_UNKNOWN),
       input_planes_count_(0),
       output_format_fourcc_(0),
       encoder_state_(kUninitialized),
@@ -99,13 +99,13 @@ V4L2VideoEncodeAccelerator::~V4L2VideoEncodeAccelerator() {
 }
 
 bool V4L2VideoEncodeAccelerator::Initialize(
-    media::VideoFrame::Format input_format,
+    media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate,
     Client* client) {
-  DVLOG(3) << __func__ << ": input_format="
-           << media::VideoFrame::FormatToString(input_format)
+  DVLOG(3) << __func__
+           << ": input_format=" << media::VideoPixelFormatToString(input_format)
            << ", input_visible_size=" << input_visible_size.ToString()
            << ", output_profile=" << output_profile
            << ", initial_bitrate=" << initial_bitrate;
@@ -136,7 +136,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(
 
   if (input_format != device_input_format_) {
     DVLOG(1) << "Input format not supported by the HW, will convert to "
-             << media::VideoFrame::FormatToString(device_input_format_);
+             << media::VideoPixelFormatToString(device_input_format_);
 
     scoped_refptr<V4L2Device> device =
         V4L2Device::Create(V4L2Device::kImageProcessor);
@@ -870,17 +870,17 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
 }
 
 bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
-    media::VideoFrame::Format input_format) {
+    media::VideoPixelFormat input_format) {
   DVLOG(3) << "NegotiateInputFormat()";
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
   DCHECK(!output_streamon_);
 
-  device_input_format_ = media::VideoFrame::UNKNOWN;
+  device_input_format_ = media::PIXEL_FORMAT_UNKNOWN;
   input_planes_count_ = 0;
 
   uint32 input_format_fourcc =
-      V4L2Device::VideoFrameFormatToV4L2PixFmt(input_format);
+      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format);
   if (!input_format_fourcc) {
     LOG(ERROR) << "Unsupported input format";
     return false;
@@ -901,8 +901,8 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     // Error or format unsupported by device, try to negotiate a fallback.
     input_format_fourcc = device_->PreferredInputFormat();
     input_format =
-        V4L2Device::V4L2PixFmtToVideoFrameFormat(input_format_fourcc);
-    if (input_format == media::VideoFrame::UNKNOWN)
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(input_format_fourcc);
+    if (input_format == media::PIXEL_FORMAT_UNKNOWN)
       return false;
 
     input_planes_count = media::VideoFrame::NumPlanes(input_format);
@@ -929,7 +929,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
 }
 
 bool V4L2VideoEncodeAccelerator::SetFormats(
-    media::VideoFrame::Format input_format,
+    media::VideoPixelFormat input_format,
     media::VideoCodecProfile output_profile) {
   DVLOG(3) << "SetFormats()";
   DCHECK(child_task_runner_->BelongsToCurrentThread());

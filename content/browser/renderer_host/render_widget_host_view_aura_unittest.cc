@@ -200,10 +200,8 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
                           scoped_refptr<media::VideoFrame>* storage,
                           DeliverFrameCallback* callback) override {
     last_present_time_ = present_time;
-    *storage = media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                              size_,
-                                              gfx::Rect(size_),
-                                              size_,
+    *storage = media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12, size_,
+                                              gfx::Rect(size_), size_,
                                               base::TimeDelta());
     *callback = base::Bind(&FakeFrameSubscriber::CallbackMethod, callback_);
     return true;

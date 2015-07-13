@@ -35,10 +35,9 @@ class WebRtcVideoCapturerAdapterTest
     gfx::Size coded_size(capture_width, capture_height);
     gfx::Size natural_size(natural_width, natural_height);
     gfx::Rect view_rect(horiz_crop, vert_crop, cropped_width, cropped_height);
-    scoped_refptr<media::VideoFrame> frame =
-        media::VideoFrame::CreateFrame(media::VideoFrame::I420,
-                                       coded_size, view_rect, natural_size,
-                                       base::TimeDelta());
+    scoped_refptr<media::VideoFrame> frame = media::VideoFrame::CreateFrame(
+        media::PIXEL_FORMAT_I420, coded_size, view_rect, natural_size,
+        base::TimeDelta());
     adapter_.OnFrameCaptured(frame);
     EXPECT_EQ(natural_width, output_frame_width_);
     EXPECT_EQ(natural_height, output_frame_height_);

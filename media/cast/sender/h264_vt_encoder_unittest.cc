@@ -252,7 +252,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     video_sender_config_.codec = CODEC_VIDEO_H264;
     const gfx::Size size(kVideoWidth, kVideoHeight);
     frame_ = media::VideoFrame::CreateFrame(
-        VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
+        PIXEL_FORMAT_I420, size, gfx::Rect(size), size, base::TimeDelta());
     PopulateVideoFrame(frame_.get(), 123);
   }
 

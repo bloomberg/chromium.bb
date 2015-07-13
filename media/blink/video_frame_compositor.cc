@@ -19,18 +19,18 @@ const int kBackgroundRenderingTimeoutMs = 250;
 // Returns true if the format has no Alpha channel (hence is always opaque).
 static bool IsOpaque(const scoped_refptr<VideoFrame>& frame) {
   switch (frame->format()) {
-    case VideoFrame::UNKNOWN:
-    case VideoFrame::YV12:
-    case VideoFrame::I420:
-    case VideoFrame::YV16:
-    case VideoFrame::YV24:
+    case PIXEL_FORMAT_UNKNOWN:
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_YV24:
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    case VideoFrame::NV12:
+    case PIXEL_FORMAT_NV12:
 #endif
-    case VideoFrame::XRGB:
+    case PIXEL_FORMAT_XRGB:
       return true;
-    case VideoFrame::YV12A:
-    case VideoFrame::ARGB:
+    case PIXEL_FORMAT_YV12A:
+    case PIXEL_FORMAT_ARGB:
       break;
   }
   return false;

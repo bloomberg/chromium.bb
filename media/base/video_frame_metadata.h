@@ -28,7 +28,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
     CAPTURE_END_TIME,
 
     // Some VideoFrames have an indication of the color space used.  Use
-    // GetInteger()/SetInteger() and VideoFrame::ColorSpace enumeration.
+    // GetInteger()/SetInteger() and ColorSpace enumeration.
     COLOR_SPACE,
 
     // Indicates if the current frame is the End of its current Stream. Use

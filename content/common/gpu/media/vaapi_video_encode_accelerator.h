@@ -31,7 +31,7 @@ class CONTENT_EXPORT VaapiVideoEncodeAccelerator
   // media::VideoEncodeAccelerator implementation.
   media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles()
       override;
-  bool Initialize(media::VideoFrame::Format format,
+  bool Initialize(media::VideoPixelFormat format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
                   uint32 initial_bitrate,

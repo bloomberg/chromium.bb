@@ -96,7 +96,7 @@ static void GetSupportedFormatsForV4L2BufferType(
         VideoCaptureDeviceLinux::V4l2FourCcToChromiumPixelFormat(
             v4l2_format.pixelformat);
 
-    if (supported_format.pixel_format == PIXEL_FORMAT_UNKNOWN)
+    if (supported_format.pixel_format == VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN)
       continue;
 
     v4l2_frmsizeenum frame_size = {};

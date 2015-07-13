@@ -23,7 +23,7 @@ using base::MD5DigestToBase16;
 // lines based on the |white_to_black| parameter.  If 0, then the entire
 // frame will be black, if 1 then the entire frame will be white.
 void InitializeYV12Frame(VideoFrame* frame, double white_to_black) {
-  EXPECT_EQ(VideoFrame::YV12, frame->format());
+  EXPECT_EQ(PIXEL_FORMAT_YV12, frame->format());
   const int first_black_row =
       static_cast<int>(frame->coded_size().height() * white_to_black);
   uint8* y_plane = frame->data(VideoFrame::kYPlane);
@@ -45,7 +45,7 @@ void InitializeYV12Frame(VideoFrame* frame, double white_to_black) {
 // Given a |yv12_frame| this method converts the YV12 frame to RGBA and
 // makes sure that all the pixels of the RBG frame equal |expect_rgb_color|.
 void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
-  ASSERT_EQ(VideoFrame::YV12, yv12_frame->format());
+  ASSERT_EQ(PIXEL_FORMAT_YV12, yv12_frame->format());
   ASSERT_EQ(yv12_frame->stride(VideoFrame::kUPlane),
             yv12_frame->stride(VideoFrame::kVPlane));
   ASSERT_EQ(
@@ -87,7 +87,7 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
 // Fill each plane to its reported extents and verify accessors report non
 // zero values.  Additionally, for the first plane verify the rows and
 // row_bytes values are correct.
-void ExpectFrameExtents(VideoFrame::Format format, const char* expected_hash) {
+void ExpectFrameExtents(VideoPixelFormat format, const char* expected_hash) {
   const unsigned char kFillByte = 0x80;
   const int kWidth = 61;
   const int kHeight = 31;
@@ -125,13 +125,12 @@ TEST(VideoFrame, CreateFrame) {
 
   // Create a YV12 Video Frame.
   gfx::Size size(kWidth, kHeight);
-  scoped_refptr<media::VideoFrame> frame =
-      VideoFrame::CreateFrame(media::VideoFrame::YV12, size, gfx::Rect(size),
-                              size, kTimestamp);
+  scoped_refptr<media::VideoFrame> frame = VideoFrame::CreateFrame(
+      media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size, kTimestamp);
   ASSERT_TRUE(frame.get());
 
   // Test VideoFrame implementation.
-  EXPECT_EQ(media::VideoFrame::YV12, frame->format());
+  EXPECT_EQ(media::PIXEL_FORMAT_YV12, frame->format());
   {
     SCOPED_TRACE("");
     InitializeYV12Frame(frame.get(), 0.0f);
@@ -176,7 +175,7 @@ TEST(VideoFrame, CreateBlackFrame) {
       frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 
   // Test |frame| properties.
-  EXPECT_EQ(VideoFrame::YV12, frame->format());
+  EXPECT_EQ(PIXEL_FORMAT_YV12, frame->format());
   EXPECT_EQ(kWidth, frame->coded_size().width());
   EXPECT_EQ(kHeight, frame->coded_size().height());
 
@@ -237,10 +236,10 @@ TEST(VideoFrame, WrapVideoFrame) {
 // Ensure each frame is properly sized and allocated.  Will trigger OOB reads
 // and writes as well as incorrect frame hashes otherwise.
 TEST(VideoFrame, CheckFrameExtents) {
-  // Each call consists of a VideoFrame::Format and the expected hash of all
+  // Each call consists of a Format and the expected hash of all
   // planes if filled with kFillByte (defined in ExpectFrameExtents).
-  ExpectFrameExtents(VideoFrame::YV12, "8e5d54cb23cd0edca111dd35ffb6ff05");
-  ExpectFrameExtents(VideoFrame::YV16, "cce408a044b212db42a10dfec304b3ef");
+  ExpectFrameExtents(PIXEL_FORMAT_YV12, "8e5d54cb23cd0edca111dd35ffb6ff05");
+  ExpectFrameExtents(PIXEL_FORMAT_YV16, "cce408a044b212db42a10dfec304b3ef");
 }
 
 static void TextureCallback(uint32* called_sync_point,
@@ -255,14 +254,14 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        VideoFrame::ARGB,
+        PIXEL_FORMAT_ARGB,
         gpu::MailboxHolder(gpu::Mailbox::Generate(), 5, 0 /* sync_point */),
         base::Bind(&TextureCallback, &called_sync_point),
-        gfx::Size(10, 10),  // coded_size
-        gfx::Rect(10, 10),  // visible_rect
-        gfx::Size(10, 10),  // natural_size
-        base::TimeDelta()); // timestamp
-    EXPECT_EQ(VideoFrame::ARGB, frame->format());
+        gfx::Size(10, 10),   // coded_size
+        gfx::Rect(10, 10),   // visible_rect
+        gfx::Size(10, 10),   // natural_size
+        base::TimeDelta());  // timestamp
+    EXPECT_EQ(PIXEL_FORMAT_ARGB, frame->format());
     EXPECT_EQ(VideoFrame::STORAGE_OPAQUE, frame->storage_type());
     EXPECT_TRUE(frame->HasTextures());
   }
@@ -313,7 +312,7 @@ TEST(VideoFrame,
         base::TimeDelta()); // timestamp
 
     EXPECT_EQ(VideoFrame::STORAGE_OPAQUE, frame->storage_type());
-    EXPECT_EQ(VideoFrame::I420, frame->format());
+    EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
     EXPECT_EQ(3u, VideoFrame::NumPlanes(frame->format()));
     EXPECT_TRUE(frame->HasTextures());
     for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i) {
@@ -338,7 +337,7 @@ TEST(VideoFrame, ZeroInitialized) {
 
   gfx::Size size(kWidth, kHeight);
   scoped_refptr<media::VideoFrame> frame = VideoFrame::CreateFrame(
-      media::VideoFrame::YV12, size, gfx::Rect(size), size, kTimestamp);
+      media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size, kTimestamp);
 
   for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i)
     EXPECT_EQ(0, frame->data(i)[0]);

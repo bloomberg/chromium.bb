@@ -38,34 +38,34 @@ scoped_refptr<V4L2Device> V4L2Device::Create(Type type) {
 }
 
 // static
-media::VideoFrame::Format V4L2Device::V4L2PixFmtToVideoFrameFormat(
+media::VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(
     uint32 pix_fmt) {
   switch (pix_fmt) {
     case V4L2_PIX_FMT_NV12:
     case V4L2_PIX_FMT_NV12M:
-      return media::VideoFrame::NV12;
+      return media::PIXEL_FORMAT_NV12;
 
     case V4L2_PIX_FMT_YUV420:
     case V4L2_PIX_FMT_YUV420M:
-      return media::VideoFrame::I420;
+      return media::PIXEL_FORMAT_I420;
 
     case V4L2_PIX_FMT_RGB32:
-      return media::VideoFrame::ARGB;
+      return media::PIXEL_FORMAT_ARGB;
 
     default:
       LOG(FATAL) << "Add more cases as needed";
-      return media::VideoFrame::UNKNOWN;
+      return media::PIXEL_FORMAT_UNKNOWN;
   }
 }
 
 // static
-uint32 V4L2Device::VideoFrameFormatToV4L2PixFmt(
-    media::VideoFrame::Format format) {
+uint32 V4L2Device::VideoPixelFormatToV4L2PixFmt(
+    media::VideoPixelFormat format) {
   switch (format) {
-    case media::VideoFrame::NV12:
+    case media::PIXEL_FORMAT_NV12:
       return V4L2_PIX_FMT_NV12M;
 
-    case media::VideoFrame::I420:
+    case media::PIXEL_FORMAT_I420:
       return V4L2_PIX_FMT_YUV420M;
 
     default:
@@ -123,7 +123,7 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
 gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   gfx::Size coded_size;
   gfx::Size visible_size;
-  media::VideoFrame::Format frame_format = media::VideoFrame::UNKNOWN;
+  media::VideoPixelFormat frame_format = media::PIXEL_FORMAT_UNKNOWN;
   size_t bytesperline = 0;
   // Total bytes in the frame.
   size_t sizeimage = 0;
@@ -139,14 +139,14 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix_mp.width),
                          base::checked_cast<int>(format.fmt.pix_mp.height));
     frame_format =
-        V4L2Device::V4L2PixFmtToVideoFrameFormat(format.fmt.pix_mp.pixelformat);
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(format.fmt.pix_mp.pixelformat);
   } else {
     bytesperline = base::checked_cast<int>(format.fmt.pix.bytesperline);
     sizeimage = base::checked_cast<int>(format.fmt.pix.sizeimage);
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix.width),
                          base::checked_cast<int>(format.fmt.pix.height));
     frame_format =
-        V4L2Device::V4L2PixFmtToVideoFrameFormat(format.fmt.pix.pixelformat);
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(format.fmt.pix.pixelformat);
   }
 
   // V4L2 does not provide per-plane bytesperline (bpl) when different

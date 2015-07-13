@@ -258,7 +258,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
 
   // In VP8 videos, only those with alpha are handled by VpxVideoDecoder. All
   // other VP8 videos go to FFmpegVideoDecoder.
-  if (config.codec() == kCodecVP8 && config.format() != VideoFrame::YV12A)
+  if (config.codec() == kCodecVP8 && config.format() != PIXEL_FORMAT_YV12A)
     return false;
 
   CloseDecoder();
@@ -280,7 +280,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     }
   }
 
-  if (config.format() == VideoFrame::YV12A) {
+  if (config.format() == PIXEL_FORMAT_YV12A) {
     vpx_codec_alpha_ = InitializeVpxContext(vpx_codec_alpha_, config);
     if (!vpx_codec_alpha_)
       return false;
@@ -459,19 +459,19 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
         vpx_image->fmt == VPX_IMG_FMT_YV12 ||
         vpx_image->fmt == VPX_IMG_FMT_I444);
 
-  VideoFrame::Format codec_format = VideoFrame::YV12;
+  VideoPixelFormat codec_format = PIXEL_FORMAT_YV12;
   int uv_rows = (vpx_image->d_h + 1) / 2;
 
-  VideoFrame::ColorSpace color_space = VideoFrame::COLOR_SPACE_UNSPECIFIED;
+  ColorSpace color_space = COLOR_SPACE_UNSPECIFIED;
   if (vpx_image->fmt == VPX_IMG_FMT_I444) {
     CHECK(!vpx_codec_alpha_);
-    codec_format = VideoFrame::YV24;
+    codec_format = PIXEL_FORMAT_YV24;
     uv_rows = vpx_image->d_h;
   } else if (vpx_codec_alpha_) {
-    codec_format = VideoFrame::YV12A;
+    codec_format = PIXEL_FORMAT_YV12A;
   }
   if (vpx_image->cs == VPX_CS_BT_709)
-    color_space = VideoFrame::COLOR_SPACE_HD_REC709;
+    color_space = COLOR_SPACE_HD_REC709;
 
   // The mixed |w|/|d_h| in |coded_size| is intentional. Setting the correct
   // coded width is necessary to allow coalesced memory access, which may avoid

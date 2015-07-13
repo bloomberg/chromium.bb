@@ -26,7 +26,7 @@
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
@@ -567,7 +567,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateVideoDecoder,
 // Created encoders should be freed with AcceleratedVideoEncoderMsg_Destroy when
 // no longer needed.
 IPC_SYNC_MESSAGE_ROUTED5_1(GpuCommandBufferMsg_CreateVideoEncoder,
-                           media::VideoFrame::Format /* input_format */,
+                           media::VideoPixelFormat /* input_format */,
                            gfx::Size /* input_visible_size */,
                            media::VideoCodecProfile /* output_profile */,
                            uint32 /* initial_bitrate */,

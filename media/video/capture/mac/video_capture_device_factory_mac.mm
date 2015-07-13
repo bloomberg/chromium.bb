@@ -189,7 +189,7 @@ void VideoCaptureDeviceFactoryMac::GetDeviceSupportedFormats(
               gfx::Size(kBlacklistedCameras[i].capture_width,
                         kBlacklistedCameras[i].capture_height),
               kBlacklistedCameras[i].capture_frame_rate,
-              media::PIXEL_FORMAT_UYVY));
+              media::VIDEO_CAPTURE_PIXEL_FORMAT_UYVY));
           break;
         }
       }

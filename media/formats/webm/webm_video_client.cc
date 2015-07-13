@@ -48,8 +48,8 @@ bool WebMVideoClient::InitializeConfig(
     return false;
   }
 
-  VideoFrame::Format format =
-      (alpha_mode_ == 1) ? VideoFrame::YV12A : VideoFrame::YV12;
+  VideoPixelFormat format =
+      (alpha_mode_ == 1) ? PIXEL_FORMAT_YV12A : PIXEL_FORMAT_YV12;
 
   if (pixel_width_ <= 0 || pixel_height_ <= 0)
     return false;
@@ -95,10 +95,9 @@ bool WebMVideoClient::InitializeConfig(
     extra_data_size = codec_private.size();
   }
 
-  config->Initialize(video_codec, profile, format,
-                     VideoFrame::COLOR_SPACE_UNSPECIFIED, coded_size,
-                     visible_rect, natural_size, extra_data, extra_data_size,
-                     is_encrypted, true);
+  config->Initialize(video_codec, profile, format, COLOR_SPACE_UNSPECIFIED,
+                     coded_size, visible_rect, natural_size, extra_data,
+                     extra_data_size, is_encrypted, true);
   return config->IsValidConfig();
 }
 

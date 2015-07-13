@@ -314,17 +314,18 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       if (client->session_closed || client->paused)
         continue;
 
-      CHECK((frame->IsMappable() && frame->format() == VideoFrame::I420) ||
+      CHECK((frame->IsMappable() &&
+             frame->format() == media::PIXEL_FORMAT_I420) ||
             (!frame->IsMappable() && frame->HasTextures() &&
-             frame->format() == VideoFrame::ARGB))
+             frame->format() == media::PIXEL_FORMAT_ARGB))
           << "Format and/or storage type combination not supported (received: "
-          << VideoFrame::FormatToString(frame->format()) << ")";
+          << media::VideoPixelFormatToString(frame->format()) << ")";
 
       if (frame->HasTextures()) {
         DCHECK(frame->coded_size() == frame->visible_rect().size())
             << "Textures are always supposed to be tightly packed.";
         DCHECK_EQ(1u, VideoFrame::NumPlanes(frame->format()));
-      } else if (frame->format() == VideoFrame::I420) {
+      } else if (frame->format() == media::PIXEL_FORMAT_I420) {
         const bool is_new_buffer =
             client->known_buffers.insert(buffer_id).second;
         if (is_new_buffer) {

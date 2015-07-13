@@ -110,10 +110,10 @@ class VideoCaptureImplTest : public ::testing::Test {
 
   VideoCaptureImplTest() {
     params_small_.requested_format = media::VideoCaptureFormat(
-        gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
+        gfx::Size(176, 144), 30, media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
 
     params_large_.requested_format = media::VideoCaptureFormat(
-        gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
+        gfx::Size(320, 240), 30, media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
 
     child_process_.reset(new ChildProcess());
 

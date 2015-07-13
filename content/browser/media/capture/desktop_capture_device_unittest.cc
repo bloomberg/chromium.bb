@@ -80,9 +80,9 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   // Trampoline methods to workaround GMOCK problems with scoped_ptr<>.
   scoped_ptr<Buffer> ReserveOutputBuffer(
       const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
+      media::VideoCapturePixelFormat format,
       media::VideoPixelStorage storage) override {
-    EXPECT_TRUE(format == media::PIXEL_FORMAT_I420 &&
+    EXPECT_TRUE(format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 &&
                 storage == media::PIXEL_STORAGE_CPU);
     DoReserveOutputBuffer();
     return scoped_ptr<Buffer>();
@@ -234,7 +234,7 @@ class FormatChecker {
       EXPECT_EQ(size_for_odd_frames_, format.frame_size);
     ++frame_count_;
     EXPECT_EQ(kFrameRate, format.frame_rate);
-    EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
+    EXPECT_EQ(media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB, format.pixel_format);
   }
 
  private:
@@ -292,7 +292,8 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   capture_device_->AllocateAndStart(capture_params, client.Pass());
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   capture_device_->StopAndDeAllocate();
@@ -300,7 +301,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   EXPECT_GT(format.frame_size.width(), 0);
   EXPECT_GT(format.frame_size.height(), 0);
   EXPECT_EQ(kFrameRate, format.frame_rate);
-  EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
+  EXPECT_EQ(media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB, format.pixel_format);
 
   EXPECT_EQ(format.frame_size.GetArea() * 4, frame_size);
 }
@@ -327,7 +328,8 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
                                                      kTestFrameHeight1);
   capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_RESOLUTION;
 
@@ -371,7 +373,8 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
             std::max(kTestFrameHeight1, kTestFrameHeight2));
   capture_params.requested_format.frame_size = high_def_16_by_9;
   capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
 
@@ -416,7 +419,8 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
             std::max(kTestFrameHeight1, kTestFrameHeight2));
   capture_params.requested_format.frame_size = high_def_16_by_9;
   capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
 
@@ -459,7 +463,8 @@ TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
   capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
                                                      kTestFrameHeight1);
   capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
 
   capture_device_->AllocateAndStart(capture_params, client.Pass());
 
@@ -501,7 +506,8 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
   capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
                                                      kTestFrameHeight1);
   capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
 
   capture_device_->AllocateAndStart(capture_params, client.Pass());
 

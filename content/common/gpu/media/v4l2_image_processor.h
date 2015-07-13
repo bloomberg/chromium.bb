@@ -31,8 +31,8 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   // Request the output buffers to be of at least |output_allocated_size|.
   // Provided |error_cb| will be called if an error occurs.
   // Return true if the requested configuration is supported.
-  bool Initialize(media::VideoFrame::Format input_format,
-                  media::VideoFrame::Format output_format,
+  bool Initialize(media::VideoPixelFormat input_format,
+                  media::VideoPixelFormat output_format,
                   gfx::Size input_visible_size,
                   gfx::Size output_visible_size,
                   gfx::Size output_allocated_size,
@@ -125,8 +125,8 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   gfx::Size output_visible_size_;
   gfx::Size output_allocated_size_;
 
-  media::VideoFrame::Format input_format_;
-  media::VideoFrame::Format output_format_;
+  media::VideoPixelFormat input_format_;
+  media::VideoPixelFormat output_format_;
   uint32 input_format_fourcc_;
   uint32 output_format_fourcc_;
 

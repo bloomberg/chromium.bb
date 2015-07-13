@@ -205,7 +205,7 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
       external_jpeg_decoder_initialized_(false),
       buffer_pool_(buffer_pool),
       capture_task_runner_(capture_task_runner),
-      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {
+      last_captured_pixel_format_(media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
@@ -229,7 +229,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
           VideoCaptureFormat::PixelFormatToString(frame_format.pixel_format));
     last_captured_pixel_format_ = frame_format.pixel_format;
 
-    if (frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
+    if (frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG &&
         VideoCaptureGpuJpegDecoder::Supported()) {
       if (!external_jpeg_decoder_initialized_) {
         external_jpeg_decoder_initialized_ = true;
@@ -275,23 +275,24 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     rotation_mode = libyuv::kRotate270;
 
   const gfx::Size dimensions(destination_width, destination_height);
-  if (!VideoFrame::IsValidConfig(VideoFrame::I420,
-                                 VideoFrame::STORAGE_UNKNOWN,
-                                 dimensions,
-                                 gfx::Rect(dimensions),
-                                 dimensions)) {
+  if (!VideoFrame::IsValidConfig(media::PIXEL_FORMAT_I420,
+                                 VideoFrame::STORAGE_UNKNOWN, dimensions,
+                                 gfx::Rect(dimensions), dimensions)) {
     return;
   }
 
-  scoped_ptr<Buffer> buffer(ReserveOutputBuffer(
-      dimensions, media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU));
+  scoped_ptr<Buffer> buffer(
+      ReserveOutputBuffer(dimensions, media::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
+                          media::PIXEL_STORAGE_CPU));
   if (!buffer.get())
     return;
 
-  const size_t y_plane_size = VideoFrame::PlaneSize(
-      VideoFrame::I420, VideoFrame::kYPlane, dimensions).GetArea();
-  const size_t u_plane_size = VideoFrame::PlaneSize(
-      VideoFrame::I420, VideoFrame::kUPlane, dimensions).GetArea();
+  const size_t y_plane_size =
+      VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420, VideoFrame::kYPlane,
+                            dimensions).GetArea();
+  const size_t u_plane_size =
+      VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420, VideoFrame::kUPlane,
+                            dimensions).GetArea();
   uint8* const yplane = reinterpret_cast<uint8*>(buffer->data());
   uint8* const uplane = yplane + y_plane_size;
   uint8* const vplane = uplane + u_plane_size;
@@ -304,33 +305,33 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   bool flip = false;
   switch (frame_format.pixel_format) {
-    case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN:  // Color format not set.
       break;
-    case media::PIXEL_FORMAT_I420:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_I420:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_I420;
       break;
-    case media::PIXEL_FORMAT_YV12:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_YV12:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_YV12;
       break;
-    case media::PIXEL_FORMAT_NV12:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_NV12:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_NV12;
       break;
-    case media::PIXEL_FORMAT_NV21:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_NV21:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_NV21;
       break;
-    case media::PIXEL_FORMAT_YUY2:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_YUY2:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_YUY2;
       break;
-    case media::PIXEL_FORMAT_UYVY:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_UYVY:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_UYVY;
       break;
-    case media::PIXEL_FORMAT_RGB24:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_RGB24:
       origin_colorspace = libyuv::FOURCC_24BG;
 #if defined(OS_WIN)
       // TODO(wjia): Currently, for RGB24 on WIN, capture device always
@@ -340,15 +341,16 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       flip = true;
 #endif
       break;
-    case media::PIXEL_FORMAT_RGB32:
-// Fallback to PIXEL_FORMAT_ARGB setting |flip| in Windows platforms.
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_RGB32:
+// Fallback to VIDEO_CAPTURE_PIXEL_FORMAT_ARGB setting |flip| in Windows
+// platforms.
 #if defined(OS_WIN)
       flip = true;
 #endif
-    case media::PIXEL_FORMAT_ARGB:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB:
       origin_colorspace = libyuv::FOURCC_ARGB;
       break;
-    case media::PIXEL_FORMAT_MJPEG:
+    case media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG:
       origin_colorspace = libyuv::FOURCC_MJPG;
       break;
     default:
@@ -360,8 +362,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   DCHECK_GE(static_cast<size_t>(length), frame_format.ImageAllocationSize());
 
   if (external_jpeg_decoder_ &&
-      frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG && rotation == 0 &&
-      !flip && external_jpeg_decoder_->ReadyToDecode()) {
+      frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG &&
+      rotation == 0 && !flip && external_jpeg_decoder_->ReadyToDecode()) {
     external_jpeg_decoder_->DecodeCapturedData(data, length, frame_format,
                                                timestamp, buffer.Pass());
     return;
@@ -390,8 +392,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   }
 
   const VideoCaptureFormat output_format = VideoCaptureFormat(
-      dimensions, frame_format.frame_rate, media::PIXEL_FORMAT_I420,
-      media::PIXEL_STORAGE_CPU);
+      dimensions, frame_format.frame_rate,
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU);
   OnIncomingCapturedBuffer(buffer.Pass(), output_format, timestamp);
 }
 
@@ -407,7 +409,7 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
     int clockwise_rotation,
     const base::TimeTicks& timestamp) {
   TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedYuvData");
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_format.pixel_format);
+  DCHECK_EQ(media::VIDEO_CAPTURE_PIXEL_FORMAT_I420, frame_format.pixel_format);
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
   DCHECK_EQ(0, clockwise_rotation) << "Rotation not supported";
 
@@ -419,20 +421,25 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
 
   // Blit (copy) here from y,u,v into buffer.data()). Needed so we can return
   // the parameter buffer synchronously to the driver.
-  const size_t y_plane_size = VideoFrame::PlaneSize(
-      VideoFrame::I420, VideoFrame::kYPlane, frame_format.frame_size).GetArea();
-  const size_t u_plane_size = VideoFrame::PlaneSize(
-      VideoFrame::I420, VideoFrame::kUPlane, frame_format.frame_size).GetArea();
+  const size_t y_plane_size =
+      VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420, VideoFrame::kYPlane,
+                            frame_format.frame_size).GetArea();
+  const size_t u_plane_size =
+      VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420, VideoFrame::kUPlane,
+                            frame_format.frame_size).GetArea();
   uint8* const dst_y = reinterpret_cast<uint8*>(buffer->data());
   uint8* const dst_u = dst_y + y_plane_size;
   uint8* const dst_v = dst_u + u_plane_size;
 
-  const size_t dst_y_stride = VideoFrame::RowBytes(
-      VideoFrame::kYPlane, VideoFrame::I420, frame_format.frame_size.width());
-  const size_t dst_u_stride = VideoFrame::RowBytes(
-      VideoFrame::kUPlane, VideoFrame::I420, frame_format.frame_size.width());
-  const size_t dst_v_stride = VideoFrame::RowBytes(
-      VideoFrame::kVPlane, VideoFrame::I420, frame_format.frame_size.width());
+  const size_t dst_y_stride =
+      VideoFrame::RowBytes(VideoFrame::kYPlane, media::PIXEL_FORMAT_I420,
+                           frame_format.frame_size.width());
+  const size_t dst_u_stride =
+      VideoFrame::RowBytes(VideoFrame::kUPlane, media::PIXEL_FORMAT_I420,
+                           frame_format.frame_size.width());
+  const size_t dst_v_stride =
+      VideoFrame::RowBytes(VideoFrame::kVPlane, media::PIXEL_FORMAT_I420,
+                           frame_format.frame_size.width());
   DCHECK_GE(y_stride, dst_y_stride);
   DCHECK_GE(u_stride, dst_u_stride);
   DCHECK_GE(v_stride, dst_v_stride);
@@ -455,10 +462,10 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
 scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveOutputBuffer(
     const gfx::Size& frame_size,
-    media::VideoPixelFormat pixel_format,
+    media::VideoCapturePixelFormat pixel_format,
     media::VideoPixelStorage pixel_storage) {
-  DCHECK(pixel_format == media::PIXEL_FORMAT_I420 ||
-         pixel_format == media::PIXEL_FORMAT_ARGB);
+  DCHECK(pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 ||
+         pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB);
   DCHECK_GT(frame_size.width(), 0);
   DCHECK_GT(frame_size.height(), 0);
 
@@ -502,18 +509,16 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
                    frame_format,
                    timestamp));
   } else {
-    DCHECK(frame_format.pixel_format == media::PIXEL_FORMAT_I420 ||
-           frame_format.pixel_format == media::PIXEL_FORMAT_ARGB);
-    scoped_refptr<VideoFrame> video_frame =
-        VideoFrame::WrapExternalData(
-            VideoFrame::I420,
-            frame_format.frame_size,
-            gfx::Rect(frame_format.frame_size),
-            frame_format.frame_size,
-            reinterpret_cast<uint8*>(buffer->data()),
-            VideoFrame::AllocationSize(VideoFrame::I420,
-                                       frame_format.frame_size),
-            base::TimeDelta());
+    DCHECK(frame_format.pixel_format ==
+               media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 ||
+           frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB);
+    scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalData(
+        media::PIXEL_FORMAT_I420, frame_format.frame_size,
+        gfx::Rect(frame_format.frame_size), frame_format.frame_size,
+        reinterpret_cast<uint8*>(buffer->data()),
+        VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
+                                   frame_format.frame_size),
+        base::TimeDelta());
     DCHECK(video_frame.get());
     video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                        frame_format.frame_rate);
@@ -577,7 +582,7 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
         const media::VideoCaptureFormat& frame_format,
         const base::TimeTicks& timestamp) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(media::PIXEL_FORMAT_ARGB, frame_format.pixel_format);
+  DCHECK_EQ(media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB, frame_format.pixel_format);
   DCHECK_EQ(media::PIXEL_STORAGE_GPUMEMORYBUFFER, frame_format.pixel_storage);
   if (!gl_helper_) {
     // |gl_helper_| might not exist due to asynchronous initialization not
@@ -609,8 +614,7 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
 
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::WrapNativeTexture(
-          media::VideoFrame::ARGB,
-          mailbox_holder,
+          media::PIXEL_FORMAT_ARGB, mailbox_holder,
           media::BindToCurrentLoop(base::Bind(
               &VideoCaptureDeviceClient::TextureWrapHelper::ReleaseCallback,
               this, image_id, texture_id)),

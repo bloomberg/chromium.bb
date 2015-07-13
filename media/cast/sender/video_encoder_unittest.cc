@@ -154,8 +154,8 @@ class VideoEncoderTest
     if (video_frame_factory_)
       frame = video_frame_factory_->MaybeCreateFrame(size, timestamp);
     if (!frame) {
-      frame = media::VideoFrame::CreateFrame(
-          VideoFrame::I420, size, gfx::Rect(size), size, timestamp);
+      frame = media::VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size,
+                                             gfx::Rect(size), size, timestamp);
     }
     PopulateVideoFrame(frame.get(), 123);
     return frame;

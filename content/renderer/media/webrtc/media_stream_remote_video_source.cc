@@ -87,7 +87,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
     // TODO(magjed): Update media::VideoFrame to support const data so we don't
     // need to const cast here.
     video_frame = media::VideoFrame::WrapExternalYuvData(
-        media::VideoFrame::YV12, size, gfx::Rect(size), size,
+        media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size,
         frame->GetYPitch(), frame->GetUPitch(), frame->GetVPitch(),
         const_cast<uint8_t*>(frame->GetYPlane()),
         const_cast<uint8_t*>(frame->GetUPlane()),

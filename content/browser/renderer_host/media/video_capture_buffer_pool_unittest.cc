@@ -23,17 +23,19 @@
 namespace content {
 
 struct PixelFormatAndStorage {
-  media::VideoPixelFormat pixel_format;
+  media::VideoCapturePixelFormat pixel_format;
   media::VideoPixelStorage pixel_storage;
 };
 
 static const PixelFormatAndStorage kCapturePixelFormatAndStorages[] = {
-    {media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU},
-    {media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_CPU},
-    {media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_TEXTURE},
+    {media::VIDEO_CAPTURE_PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU},
+    {media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_CPU},
+    {media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_TEXTURE},
 #if !defined(OS_ANDROID)
-    {media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_GPUMEMORYBUFFER},
-    {media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_GPUMEMORYBUFFER},
+    {media::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
+     media::PIXEL_STORAGE_GPUMEMORYBUFFER},
+    {media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB,
+     media::PIXEL_STORAGE_GPUMEMORYBUFFER},
 #endif
 };
 

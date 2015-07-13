@@ -47,7 +47,7 @@ namespace {
 const int kTemporaryResourceDeletionDelay = 3;  // Seconds;
 
 bool CheckColorSpace(const scoped_refptr<VideoFrame>& video_frame,
-                     VideoFrame::ColorSpace color_space) {
+                     ColorSpace color_space) {
   int result;
   return video_frame->metadata()->GetInteger(
              VideoFrameMetadata::COLOR_SPACE, &result) &&
@@ -108,7 +108,7 @@ scoped_ptr<SkImage> CreateSkImageFromVideoFrameYUVTextures(
     const Context3D& context_3d) {
   // Support only TEXTURE_YUV_420.
   DCHECK(video_frame->HasTextures());
-  DCHECK_EQ(media::VideoFrame::I420, video_frame->format());
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, video_frame->format());
   DCHECK_EQ(3u, media::VideoFrame::NumPlanes(video_frame->format()));
 
   gpu::gles2::GLES2Interface* gl = context_3d.gl;
@@ -154,9 +154,9 @@ scoped_ptr<SkImage> CreateSkImageFromVideoFrameYUVTextures(
   };
 
   // TODO(dcastagna): Skia currently doesn't support Rec709 YUV conversion.
-  DCHECK(!CheckColorSpace(video_frame, VideoFrame::COLOR_SPACE_HD_REC709));
+  DCHECK(!CheckColorSpace(video_frame, media::COLOR_SPACE_HD_REC709));
   SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
-  if (CheckColorSpace(video_frame, VideoFrame::COLOR_SPACE_JPEG))
+  if (CheckColorSpace(video_frame, media::COLOR_SPACE_JPEG))
     color_space = kJPEG_SkYUVColorSpace;
 
   SkImage* img = SkImage::NewFromYUVTexturesCopy(context_3d.gr_context,
@@ -231,17 +231,17 @@ class VideoImageGenerator : public SkImageGenerator {
                        void* planes[3],
                        size_t row_bytes[3],
                        SkYUVColorSpace* color_space) override {
-    if (!frame_.get() || !VideoFrame::IsYuvPlanar(frame_->format()) ||
+    if (!frame_.get() || !media::IsYuvPlanar(frame_->format()) ||
         // TODO(rileya): Skia currently doesn't support Rec709 YUV conversion,
         // or YUVA conversion. Remove this case once it does. As-is we will
         // fall back on the pure-software path in this case.
-        CheckColorSpace(frame_, VideoFrame::COLOR_SPACE_HD_REC709) ||
-        frame_->format() == VideoFrame::YV12A) {
+        CheckColorSpace(frame_, COLOR_SPACE_HD_REC709) ||
+        frame_->format() == PIXEL_FORMAT_YV12A) {
       return false;
     }
 
     if (color_space) {
-      if (CheckColorSpace(frame_, VideoFrame::COLOR_SPACE_JPEG))
+      if (CheckColorSpace(frame_, COLOR_SPACE_JPEG))
         *color_space = kJPEG_SkYUVColorSpace;
       else
         *color_space = kRec601_SkYUVColorSpace;
@@ -258,7 +258,8 @@ class VideoImageGenerator : public SkImageGenerator {
       }
       if (row_bytes && planes) {
         size_t offset;
-        const int y_shift = (frame_->format() == VideoFrame::YV16) ? 0 : 1;
+        const int y_shift =
+            (frame_->format() == media::PIXEL_FORMAT_YV16) ? 0 : 1;
         if (plane == VideoFrame::kYPlane) {
           offset = (frame_->stride(VideoFrame::kYPlane) *
                     frame_->visible_rect().y()) +
@@ -339,7 +340,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   // Paint black rectangle if there isn't a frame available or the
   // frame has an unexpected format.
   if (!video_frame.get() || video_frame->natural_size().IsEmpty() ||
-      !(VideoFrame::IsYuvPlanar(video_frame->format()) ||
+      !(media::IsYuvPlanar(video_frame->format()) ||
         video_frame->HasTextures())) {
     canvas->drawRect(dest, paint);
     canvas->flush();
@@ -502,7 +503,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     NOTREACHED() << "Cannot extract pixels from non-CPU frame formats.";
     return;
   }
-  if (!VideoFrame::IsYuvPlanar(video_frame->format())) {
+  if (!media::IsYuvPlanar(video_frame->format())) {
     NOTREACHED() << "Non YUV formats are not supported";
     return;
   }
@@ -511,7 +512,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
             video_frame->stride(VideoFrame::kVPlane));
 
   const int y_shift =
-      (video_frame->format() == VideoFrame::YV16) ? 0 : 1;
+      (video_frame->format() == media::PIXEL_FORMAT_YV16) ? 0 : 1;
   // Use the "left" and "top" of the destination rect to locate the offset
   // in Y, U and V planes.
   const size_t y_offset = (video_frame->stride(VideoFrame::kYPlane) *
@@ -524,9 +525,9 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
                            (video_frame->visible_rect().x() >> 1);
 
   switch (video_frame->format()) {
-    case VideoFrame::YV12:
-    case VideoFrame::I420:
-      if (CheckColorSpace(video_frame, VideoFrame::COLOR_SPACE_JPEG)) {
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
+      if (CheckColorSpace(video_frame, COLOR_SPACE_JPEG)) {
         ConvertYUVToRGB32(
           video_frame->data(VideoFrame::kYPlane) + y_offset,
           video_frame->data(VideoFrame::kUPlane) + uv_offset,
@@ -538,8 +539,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
           video_frame->stride(VideoFrame::kUPlane),
           row_bytes,
           YV12J);
-      } else if (CheckColorSpace(video_frame,
-                                 VideoFrame::COLOR_SPACE_HD_REC709)) {
+      } else if (CheckColorSpace(video_frame, COLOR_SPACE_HD_REC709)) {
         ConvertYUVToRGB32(video_frame->data(VideoFrame::kYPlane) + y_offset,
                           video_frame->data(VideoFrame::kUPlane) + uv_offset,
                           video_frame->data(VideoFrame::kVPlane) + uv_offset,
@@ -563,7 +563,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
             video_frame->visible_rect().height());
       }
       break;
-    case VideoFrame::YV16:
+    case PIXEL_FORMAT_YV16:
       LIBYUV_I422_TO_ARGB(
           video_frame->data(VideoFrame::kYPlane) + y_offset,
           video_frame->stride(VideoFrame::kYPlane),
@@ -577,7 +577,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
           video_frame->visible_rect().height());
       break;
 
-    case VideoFrame::YV12A:
+    case PIXEL_FORMAT_YV12A:
       // Since libyuv doesn't support YUVA, fallback to media, which is not ARM
       // optimized.
       // TODO(fbarchard, mtomasz): Use libyuv, then copy the alpha channel.
@@ -596,7 +596,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
           YV12);
       break;
 
-    case VideoFrame::YV24:
+    case PIXEL_FORMAT_YV24:
       libyuv::I444ToARGB(
           video_frame->data(VideoFrame::kYPlane) + y_offset,
           video_frame->stride(VideoFrame::kYPlane),
@@ -619,11 +619,11 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
 #endif
       break;
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    case VideoFrame::NV12:
+    case PIXEL_FORMAT_NV12:
 #endif
-    case VideoFrame::ARGB:
-    case VideoFrame::XRGB:
-    case VideoFrame::UNKNOWN:
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_UNKNOWN:
       NOTREACHED();
   }
 }

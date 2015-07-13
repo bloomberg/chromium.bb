@@ -64,7 +64,7 @@ bool VerifyDecodeParams(const AcceleratedJpegDecoderMsg_Decode_Params& params) {
   }
 
   if (params.output_buffer_size <
-      media::VideoFrame::AllocationSize(media::VideoFrame::I420,
+      media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
                                         params.coded_size)) {
     LOG(ERROR) << "output_buffer_size is too small: "
                << params.output_buffer_size;
@@ -237,7 +237,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
     uint8_t* shm_memory = static_cast<uint8_t*>(output_shm->memory());
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::WrapExternalSharedMemory(
-            media::VideoFrame::I420,           // format
+            media::PIXEL_FORMAT_I420,          // format
             params.coded_size,                 // coded_size
             gfx::Rect(params.coded_size),      // visible_rect
             params.coded_size,                 // natural_size

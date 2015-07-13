@@ -78,14 +78,9 @@ void MockFrameProvider::DoRead(const ReadCB& read_cb) {
     gfx::Rect visible_rect(640, 480);
     gfx::Size natural_size(640, 480);
     video_config = ::media::VideoDecoderConfig(
-        ::media::kCodecH264,
-        ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
-        ::media::VideoFrame::YV12,
-        coded_size,
-        visible_rect,
-        natural_size,
-        NULL, 0,
-        false);
+        ::media::kCodecH264, ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
+        ::media::PIXEL_FORMAT_YV12, coded_size, visible_rect, natural_size,
+        NULL, 0, false);
 
     audio_config = ::media::AudioDecoderConfig(
       ::media::kCodecAAC,

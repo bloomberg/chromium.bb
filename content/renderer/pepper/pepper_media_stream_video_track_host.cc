@@ -41,7 +41,31 @@ const char kPepperVideoSourceName[] = "PepperVideoSourceName";
 // Default config for output mode.
 const int kDefaultOutputFrameRate = 30;
 
-media::VideoPixelFormat ToPixelFormat(PP_VideoFrame_Format format) {
+media::VideoCapturePixelFormat ToPixelFormat(PP_VideoFrame_Format format) {
+  switch (format) {
+    case PP_VIDEOFRAME_FORMAT_YV12:
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_YV12;
+    case PP_VIDEOFRAME_FORMAT_I420:
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+    default:
+      DVLOG(1) << "Unsupported pixel format " << format;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
+  }
+}
+
+PP_VideoFrame_Format ToPpapiFormat(media::VideoPixelFormat format) {
+  switch (format) {
+    case media::PIXEL_FORMAT_YV12:
+      return PP_VIDEOFRAME_FORMAT_YV12;
+    case media::PIXEL_FORMAT_I420:
+      return PP_VIDEOFRAME_FORMAT_I420;
+    default:
+      DVLOG(1) << "Unsupported pixel format " << format;
+      return PP_VIDEOFRAME_FORMAT_UNKNOWN;
+  }
+}
+
+media::VideoPixelFormat FromPpapiFormat(PP_VideoFrame_Format format) {
   switch (format) {
     case PP_VIDEOFRAME_FORMAT_YV12:
       return media::PIXEL_FORMAT_YV12;
@@ -50,30 +74,6 @@ media::VideoPixelFormat ToPixelFormat(PP_VideoFrame_Format format) {
     default:
       DVLOG(1) << "Unsupported pixel format " << format;
       return media::PIXEL_FORMAT_UNKNOWN;
-  }
-}
-
-PP_VideoFrame_Format ToPpapiFormat(VideoFrame::Format format) {
-  switch (format) {
-    case VideoFrame::YV12:
-      return PP_VIDEOFRAME_FORMAT_YV12;
-    case VideoFrame::I420:
-      return PP_VIDEOFRAME_FORMAT_I420;
-    default:
-      DVLOG(1) << "Unsupported pixel format " << format;
-      return PP_VIDEOFRAME_FORMAT_UNKNOWN;
-  }
-}
-
-VideoFrame::Format FromPpapiFormat(PP_VideoFrame_Format format) {
-  switch (format) {
-    case PP_VIDEOFRAME_FORMAT_YV12:
-      return VideoFrame::YV12;
-    case PP_VIDEOFRAME_FORMAT_I420:
-      return VideoFrame::I420;
-    default:
-      DVLOG(1) << "Unsupported pixel format " << format;
-      return VideoFrame::UNKNOWN;
   }
 }
 
@@ -95,7 +95,8 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
                                 PP_VideoFrame_Format dst_format,
                                 const gfx::Size& dst_size,
                                 uint8_t* dst) {
-  CHECK(src->format() == VideoFrame::YV12 || src->format() == VideoFrame::I420);
+  CHECK(src->format() == media::PIXEL_FORMAT_YV12 ||
+        src->format() == media::PIXEL_FORMAT_I420);
   if (dst_format == PP_VIDEOFRAME_FORMAT_BGRA) {
     if (src->visible_rect().size() == dst_size) {
       libyuv::I420ToARGB(src->visible_data(VideoFrame::kYPlane),

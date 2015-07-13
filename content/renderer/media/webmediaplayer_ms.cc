@@ -47,16 +47,13 @@ namespace {
 scoped_refptr<media::VideoFrame> CopyFrameToYV12(
     const scoped_refptr<media::VideoFrame>& frame,
     media::SkCanvasVideoRenderer* video_renderer) {
-  scoped_refptr<media::VideoFrame> new_frame =
-      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
-                                     frame->coded_size(),
-                                     frame->visible_rect(),
-                                     frame->natural_size(),
-                                     frame->timestamp());
+  scoped_refptr<media::VideoFrame> new_frame = media::VideoFrame::CreateFrame(
+      media::PIXEL_FORMAT_YV12, frame->coded_size(), frame->visible_rect(),
+      frame->natural_size(), frame->timestamp());
 
   if (frame->HasTextures()) {
-    DCHECK(frame->format() == media::VideoFrame::ARGB ||
-           frame->format() == media::VideoFrame::XRGB);
+    DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
+           frame->format() == media::PIXEL_FORMAT_XRGB);
     SkBitmap bitmap;
     bitmap.allocN32Pixels(frame->visible_rect().width(),
                           frame->visible_rect().height());
@@ -79,8 +76,8 @@ scoped_refptr<media::VideoFrame> CopyFrameToYV12(
                                new_frame.get());
   } else {
     DCHECK(frame->IsMappable());
-    DCHECK(frame->format() == media::VideoFrame::YV12 ||
-           frame->format() == media::VideoFrame::I420);
+    DCHECK(frame->format() == media::PIXEL_FORMAT_YV12 ||
+           frame->format() == media::PIXEL_FORMAT_I420);
     for (size_t i = 0; i < media::VideoFrame::NumPlanes(frame->format()); ++i) {
       media::CopyPlane(i, frame->data(i), frame->stride(i),
                        frame->rows(i), new_frame.get());

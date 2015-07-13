@@ -32,8 +32,10 @@ class V4L2CaptureDelegate
 
   // Retrieves the #planes for a given |fourcc|, or 0 if unknown.
   static size_t GetNumPlanesForFourCc(uint32_t fourcc);
-  // Returns the Chrome pixel format for |v4l2_fourcc| or PIXEL_FORMAT_UNKNOWN.
-  static VideoPixelFormat V4l2FourCcToChromiumPixelFormat(uint32_t v4l2_fourcc);
+  // Returns the Chrome pixel format for |v4l2_fourcc| or
+  // VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN.
+  static VideoCapturePixelFormat V4l2FourCcToChromiumPixelFormat(
+      uint32_t v4l2_fourcc);
 
   // Composes a list of usable and supported pixel formats, in order of
   // preference, with MJPEG prioritised depending on |prefer_mjpeg|.

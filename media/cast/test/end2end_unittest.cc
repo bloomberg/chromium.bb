@@ -385,8 +385,8 @@ class TestReceiverVideoCallback
 
     const gfx::Size size(kVideoHdWidth, kVideoHdHeight);
     scoped_refptr<media::VideoFrame> expected_I420_frame =
-        media::VideoFrame::CreateFrame(
-            VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
+        media::VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size, gfx::Rect(size),
+                                       size, base::TimeDelta());
     PopulateVideoFrame(expected_I420_frame.get(),
                        expected_video_frame.start_value);
 
@@ -656,13 +656,12 @@ class End2EndTest : public ::testing::Test {
     // since the video clock may not be the same as the reference clock.
     const base::TimeDelta time_diff = reference_time - start_time_;
     const gfx::Size size(kVideoHdWidth, kVideoHdHeight);
-    EXPECT_TRUE(VideoFrame::IsValidConfig(VideoFrame::I420,
+    EXPECT_TRUE(VideoFrame::IsValidConfig(PIXEL_FORMAT_I420,
                                           VideoFrame::STORAGE_UNKNOWN, size,
                                           gfx::Rect(size), size));
     scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::CreateFrame(
-            VideoFrame::I420, size, gfx::Rect(size), size,
-            time_diff);
+        media::VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size, gfx::Rect(size),
+                                       size, time_diff);
     PopulateVideoFrame(video_frame.get(), start_value);
     video_frame_input_->InsertRawVideoFrame(video_frame, reference_time);
   }

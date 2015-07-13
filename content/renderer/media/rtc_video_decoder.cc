@@ -427,7 +427,7 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   // underlying platform can handle the former format natively. Make sure the
   // correct format is used and everyone down the line understands it.
   scoped_refptr<media::VideoFrame> frame(media::VideoFrame::WrapNativeTexture(
-      media::VideoFrame::ARGB,
+      media::PIXEL_FORMAT_ARGB,
       gpu::MailboxHolder(pb.texture_mailbox(), decoder_texture_target_, 0),
       media::BindToCurrentLoop(base::Bind(
           &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),

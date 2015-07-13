@@ -36,7 +36,7 @@ class GpuVideoEncodeAccelerator
 
   // Initialize this accelerator with the given parameters and send
   // |init_done_msg| when complete.
-  void Initialize(media::VideoFrame::Format input_format,
+  void Initialize(media::VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
                   uint32 initial_bitrate,
@@ -105,7 +105,7 @@ class GpuVideoEncodeAccelerator
   base::Callback<bool(void)> make_context_current_;
 
   // Video encoding parameters.
-  media::VideoFrame::Format input_format_;
+  media::VideoPixelFormat input_format_;
   gfx::Size input_visible_size_;
   gfx::Size input_coded_size_;
   size_t output_buffer_size_;

@@ -52,17 +52,17 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     gfx::Size size(dimension, dimension);
 
     return media::VideoFrame::WrapExternalYuvData(
-        media::VideoFrame::YV12,  // format
-        size,                     // coded_size
-        gfx::Rect(size),          // visible_rect
-        size,                     // natural_size
-        size.width(),             // y_stride
-        size.width() / 2,         // u_stride
-        size.width() / 2,         // v_stride
-        y_data,                   // y_data
-        u_data,                   // u_data
-        v_data,                   // v_data
-        base::TimeDelta());       // timestamp
+        media::PIXEL_FORMAT_YV12,  // format
+        size,                      // coded_size
+        gfx::Rect(size),           // visible_rect
+        size,                      // natural_size
+        size.width(),              // y_stride
+        size.width() / 2,          // u_stride
+        size.width() / 2,          // v_stride
+        y_data,                    // y_data
+        u_data,                    // u_data
+        v_data,                    // v_data
+        base::TimeDelta());        // timestamp
   }
 
  protected:

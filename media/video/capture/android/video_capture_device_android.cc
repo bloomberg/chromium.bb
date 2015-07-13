@@ -80,7 +80,8 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
   capture_format_.frame_rate =
       Java_VideoCapture_queryFrameRate(env, j_capture_.obj());
   capture_format_.pixel_format = GetColorspace();
-  DCHECK_NE(capture_format_.pixel_format, media::PIXEL_FORMAT_UNKNOWN);
+  DCHECK_NE(capture_format_.pixel_format,
+            media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN);
   CHECK(capture_format_.frame_size.GetArea() > 0);
   CHECK(!(capture_format_.frame_size.width() % 2));
   CHECK(!(capture_format_.frame_size.height() % 2));
@@ -179,20 +180,20 @@ void VideoCaptureDeviceAndroid::OnError(JNIEnv* env,
   env->ReleaseStringUTFChars(message, native_string);
 }
 
-VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
+VideoCapturePixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
   JNIEnv* env = AttachCurrentThread();
   int current_capture_colorspace =
       Java_VideoCapture_getColorspace(env, j_capture_.obj());
   switch (current_capture_colorspace) {
     case ANDROID_IMAGE_FORMAT_YV12:
-      return media::PIXEL_FORMAT_YV12;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_YV12;
     case ANDROID_IMAGE_FORMAT_YUV_420_888:
-      return media::PIXEL_FORMAT_I420;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
     case ANDROID_IMAGE_FORMAT_NV21:
-      return media::PIXEL_FORMAT_NV21;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_NV21;
     case ANDROID_IMAGE_FORMAT_UNKNOWN:
     default:
-      return media::PIXEL_FORMAT_UNKNOWN;
+      return media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
   }
 }
 

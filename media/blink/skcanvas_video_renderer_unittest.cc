@@ -97,16 +97,16 @@ static SkBitmap AllocBitmap(int width, int height) {
 
 SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
     : natural_frame_(VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight))),
-      larger_frame_(VideoFrame::CreateBlackFrame(
-          gfx::Size(kWidth * 2, kHeight * 2))),
-      smaller_frame_(VideoFrame::CreateBlackFrame(
-          gfx::Size(kWidth / 2, kHeight / 2))),
-      cropped_frame_(VideoFrame::CreateFrame(
-          VideoFrame::YV12,
-          gfx::Size(16, 16),
-          gfx::Rect(6, 6, 8, 6),
-          gfx::Size(8, 6),
-          base::TimeDelta::FromMilliseconds(4))),
+      larger_frame_(
+          VideoFrame::CreateBlackFrame(gfx::Size(kWidth * 2, kHeight * 2))),
+      smaller_frame_(
+          VideoFrame::CreateBlackFrame(gfx::Size(kWidth / 2, kHeight / 2))),
+      cropped_frame_(
+          VideoFrame::CreateFrame(PIXEL_FORMAT_YV12,
+                                  gfx::Size(16, 16),
+                                  gfx::Rect(6, 6, 8, 6),
+                                  gfx::Size(8, 6),
+                                  base::TimeDelta::FromMilliseconds(4))),
       target_canvas_(AllocBitmap(kWidth, kHeight)) {
   // Give each frame a unique timestamp.
   natural_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(1));

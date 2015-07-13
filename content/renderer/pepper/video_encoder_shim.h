@@ -35,7 +35,7 @@ class VideoEncoderShim : public media::VideoEncodeAccelerator {
   // media::VideoEncodeAccelerator implementation.
   media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles()
       override;
-  bool Initialize(media::VideoFrame::Format input_format,
+  bool Initialize(media::VideoPixelFormat input_format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,
                   uint32 initial_bitrate,

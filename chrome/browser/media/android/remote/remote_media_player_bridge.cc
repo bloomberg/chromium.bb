@@ -13,6 +13,7 @@
 #include "jni/RemoteMediaPlayerBridge_jni.h"
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_resource_getter.h"
+#include "media/base/buffers.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 

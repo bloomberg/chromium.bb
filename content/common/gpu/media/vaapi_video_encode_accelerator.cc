@@ -151,7 +151,7 @@ VaapiVideoEncodeAccelerator::~VaapiVideoEncodeAccelerator() {
 }
 
 bool VaapiVideoEncodeAccelerator::Initialize(
-    media::VideoFrame::Format format,
+    media::VideoPixelFormat format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate,
@@ -161,7 +161,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
   DCHECK_EQ(state_, kUninitialized);
 
   DVLOGF(1) << "Initializing VAVEA, input_format: "
-            << media::VideoFrame::FormatToString(format)
+            << media::VideoPixelFormatToString(format)
             << ", input_visible_size: " << input_visible_size.ToString()
             << ", output_profile: " << output_profile
             << ", initial_bitrate: " << initial_bitrate;
@@ -175,9 +175,9 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  if (format != media::VideoFrame::I420) {
+  if (format != media::PIXEL_FORMAT_I420) {
     DVLOGF(1) << "Unsupported input format: "
-              << media::VideoFrame::FormatToString(format);
+              << media::VideoPixelFormatToString(format);
     return false;
   }
 

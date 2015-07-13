@@ -23,8 +23,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::ChannelLayout,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
                               media::VIDEO_CODEC_PROFILE_MIN,
                               media::VIDEO_CODEC_PROFILE_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::Format,
-                          media::VideoFrame::FORMAT_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 
 namespace IPC {
 
@@ -98,7 +97,7 @@ bool ParamTraits<media::VideoDecoderConfig>::Read(
     media::VideoDecoderConfig* r) {
   media::VideoCodec codec;
   media::VideoCodecProfile profile;
-  media::VideoFrame::Format format;
+  media::VideoPixelFormat format;
   gfx::Size coded_size;
   gfx::Rect visible_rect;
   gfx::Size natural_size;

@@ -351,9 +351,9 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
   scoped_ptr<media::VideoCaptureDevice::Client::Buffer> ReserveOutputBuffer(
       const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
+      media::VideoCapturePixelFormat format,
       media::VideoPixelStorage storage) override {
-    CHECK_EQ(format, media::PIXEL_FORMAT_I420);
+    CHECK_EQ(format, media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
     int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
     const int buffer_id = buffer_pool_->ReserveForProducer(
         format, storage, dimensions, &buffer_id_to_drop);
@@ -376,7 +376,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override {
     EXPECT_FALSE(frame->visible_rect().IsEmpty());
-    EXPECT_EQ(media::VideoFrame::I420, frame->format());
+    EXPECT_EQ(media::PIXEL_FORMAT_I420, frame->format());
     double frame_rate = 0;
     EXPECT_TRUE(
         frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
@@ -703,7 +703,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, InvalidInitialWebContentsError) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   device()->AllocateAndStart(capture_params, client_observer()->PassClient());
   ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
   device()->StopAndDeAllocate();
@@ -721,7 +722,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, WebContentsDestroyed) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   device()->AllocateAndStart(capture_params, client_observer()->PassClient());
   // Do one capture to prove
   source()->SetSolidColor(SK_ColorRED);
@@ -748,7 +750,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest,
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   device()->AllocateAndStart(capture_params, client_observer()->PassClient());
 
   // Make a point of not running the UI messageloop here.
@@ -769,7 +772,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, StopWithRendererWorkToDo) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   device()->AllocateAndStart(capture_params, client_observer()->PassClient());
 
   base::RunLoop().RunUntilIdle();
@@ -788,7 +792,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, DeviceRestart) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   device()->AllocateAndStart(capture_params, client_observer()->PassClient());
   base::RunLoop().RunUntilIdle();
   source()->SetSolidColor(SK_ColorRED);
@@ -826,7 +831,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   device()->AllocateAndStart(capture_params, client_observer()->PassClient());
 
   for (int i = 0; i < 6; i++) {
@@ -876,7 +882,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   // 1x1 is too small to process; we intend for this to result in an error.
   source()->SetCopyResultSize(1, 1);
   source()->SetSolidColor(SK_ColorRED);
@@ -907,7 +914,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_FixedAspectRatio) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
 
@@ -963,7 +971,8 @@ TEST_F(WebContentsVideoCaptureDeviceTest, VariableResolution_AnyWithinLimits) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
   capture_params.requested_format.frame_rate = kTestFramesPerSecond;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   capture_params.resolution_change_policy =
       media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
 

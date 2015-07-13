@@ -66,7 +66,7 @@ class VideoDecoderShim::YUVConverter {
 
   GLuint internal_format_;
   GLuint format_;
-  media::VideoFrame::Format video_format_;
+  media::VideoPixelFormat video_format_;
 
   GLuint y_width_;
   GLuint y_height_;
@@ -95,7 +95,7 @@ VideoDecoderShim::YUVConverter::YUVConverter(
       a_texture_(0),
       internal_format_(0),
       format_(0),
-      video_format_(media::VideoFrame::UNKNOWN),
+      video_format_(media::PIXEL_FORMAT_UNKNOWN),
       y_width_(2),
       y_height_(2),
       uv_width_(2),
@@ -375,16 +375,16 @@ void VideoDecoderShim::YUVConverter::Convert(
     };
 
     switch (frame->format()) {
-      case media::VideoFrame::YV12:  // 420
-      case media::VideoFrame::YV12A:
-      case media::VideoFrame::I420:
+      case media::PIXEL_FORMAT_YV12:  // 420
+      case media::PIXEL_FORMAT_YV12A:
+      case media::PIXEL_FORMAT_I420:
         uv_height_divisor_ = 2;
         uv_width_divisor_ = 2;
         yuv_adjust = yuv_adjust_constrained;
         int result;
         if (frame->metadata()->GetInteger(
                 media::VideoFrameMetadata::COLOR_SPACE, &result)) {
-          if (result == media::VideoFrame::COLOR_SPACE_JPEG) {
+          if (result == media::COLOR_SPACE_JPEG) {
             yuv_matrix = yuv_to_rgb_jpeg;
             yuv_adjust = yuv_adjust_full;
           } else {
@@ -394,13 +394,13 @@ void VideoDecoderShim::YUVConverter::Convert(
           yuv_matrix = yuv_to_rgb_rec601;
         }
         break;
-      case media::VideoFrame::YV16:  // 422
+      case media::PIXEL_FORMAT_YV16:  // 422
         uv_width_divisor_ = 2;
         uv_height_divisor_ = 1;
         yuv_matrix = yuv_to_rgb_rec601;
         yuv_adjust = yuv_adjust_constrained;
         break;
-      case media::VideoFrame::YV24:  // 444
+      case media::PIXEL_FORMAT_YV24:  // 444
         uv_width_divisor_ = 1;
         uv_height_divisor_ = 1;
         yuv_matrix = yuv_to_rgb_rec601;
@@ -447,7 +447,7 @@ void VideoDecoderShim::YUVConverter::Convert(
                     format_, GL_UNSIGNED_BYTE,
                     frame->data(media::VideoFrame::kYPlane));
 
-    if (video_format_ == media::VideoFrame::YV12A) {
+    if (video_format_ == media::PIXEL_FORMAT_YV12A) {
       DCHECK_EQ(frame->stride(media::VideoFrame::kYPlane),
                 frame->stride(media::VideoFrame::kAPlane));
       gl_->ActiveTexture(GL_TEXTURE3);
@@ -487,7 +487,7 @@ void VideoDecoderShim::YUVConverter::Convert(
                        GL_UNSIGNED_BYTE,
                        frame->data(media::VideoFrame::kYPlane));
 
-    if (video_format_ == media::VideoFrame::YV12A) {
+    if (video_format_ == media::PIXEL_FORMAT_YV12A) {
       DCHECK_EQ(frame->stride(media::VideoFrame::kYPlane),
                 frame->stride(media::VideoFrame::kAPlane));
       gl_->ActiveTexture(GL_TEXTURE3);
@@ -861,15 +861,11 @@ bool VideoDecoderShim::Initialize(
   }
 
   media::VideoDecoderConfig config(
-      codec,
-      profile,
-      media::VideoFrame::YV12,
+      codec, profile, media::PIXEL_FORMAT_YV12,
       gfx::Size(32, 24),  // Small sizes that won't fail.
-      gfx::Rect(32, 24),
-      gfx::Size(32, 24),
+      gfx::Rect(32, 24), gfx::Size(32, 24),
       NULL /* extra_data */,  // TODO(bbudge) Verify this isn't needed.
-      0 /* extra_data_size */,
-      false /* decryption */);
+      0 /* extra_data_size */, false /* decryption */);
 
   media_task_runner_->PostTask(
       FROM_HERE,

@@ -23,7 +23,7 @@ class SinkInputPin : public PinBase {
  public:
   SinkInputPin(IBaseFilter* filter, SinkFilterObserver* observer);
 
-  void SetRequestedMediaFormat(VideoPixelFormat pixel_format,
+  void SetRequestedMediaFormat(VideoCapturePixelFormat pixel_format,
                                float frame_rate,
                                const BITMAPINFOHEADER& info_header);
   // Returns the capability that is negotiated when this
@@ -39,7 +39,7 @@ class SinkInputPin : public PinBase {
  private:
   ~SinkInputPin() override;
 
-  VideoPixelFormat requested_pixel_format_;
+  VideoCapturePixelFormat requested_pixel_format_;
   float requested_frame_rate_;
   BITMAPINFOHEADER requested_info_header_;
   VideoCaptureFormat resulting_format_;

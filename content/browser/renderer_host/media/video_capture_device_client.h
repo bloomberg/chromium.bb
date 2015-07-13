@@ -57,7 +57,7 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
                                  const base::TimeTicks& timestamp) override;
   scoped_ptr<Buffer> ReserveOutputBuffer(
       const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
+      media::VideoCapturePixelFormat format,
       media::VideoPixelStorage storage) override;
   void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& frame_format,
@@ -90,7 +90,7 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   // lives.
   const scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
 
-  media::VideoPixelFormat last_captured_pixel_format_;
+  media::VideoCapturePixelFormat last_captured_pixel_format_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceClient);
 };

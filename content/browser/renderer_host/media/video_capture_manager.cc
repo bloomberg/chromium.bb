@@ -71,7 +71,7 @@ void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
   // anyhow: the actual pixel format is decided at the device level.
   for (media::VideoCaptureFormats::iterator it = formats->begin();
        it != formats->end(); ++it) {
-    it->pixel_format = media::PIXEL_FORMAT_I420;
+    it->pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   }
 }
 

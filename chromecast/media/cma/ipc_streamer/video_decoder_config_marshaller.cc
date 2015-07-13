@@ -73,7 +73,7 @@ void VideoDecoderConfigMarshaller::Write(
     MediaMessage* msg) {
   ::media::VideoCodec codec;
   ::media::VideoCodecProfile profile;
-  ::media::VideoFrame::Format format;
+  ::media::VideoPixelFormat format;
   gfx::Size coded_size;
   gfx::Rect visible_rect;
   gfx::Size natural_size;
@@ -94,8 +94,8 @@ void VideoDecoderConfigMarshaller::Write(
   CHECK_LE(codec, ::media::kVideoCodecMax);
   CHECK_GE(profile, ::media::VIDEO_CODEC_PROFILE_UNKNOWN);
   CHECK_LE(profile, ::media::VIDEO_CODEC_PROFILE_MAX);
-  CHECK_GE(format, ::media::VideoFrame::UNKNOWN);
-  CHECK_LE(format, ::media::VideoFrame::FORMAT_MAX);
+  CHECK_GE(format, ::media::PIXEL_FORMAT_UNKNOWN);
+  CHECK_LE(format, ::media::PIXEL_FORMAT_MAX);
   CHECK_LT(extra_data_size, kMaxExtraDataSize);
   if (extra_data_size > 0) {
     extra_data.reset(new uint8[extra_data_size]);

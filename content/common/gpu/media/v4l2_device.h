@@ -28,8 +28,8 @@ class CONTENT_EXPORT V4L2Device
     : public base::RefCountedThreadSafe<V4L2Device> {
  public:
   // Utility format conversion functions
-  static media::VideoFrame::Format V4L2PixFmtToVideoFrameFormat(uint32 format);
-  static uint32 VideoFrameFormatToV4L2PixFmt(media::VideoFrame::Format format);
+  static media::VideoPixelFormat V4L2PixFmtToVideoPixelFormat(uint32 format);
+  static uint32 VideoPixelFormatToV4L2PixFmt(media::VideoPixelFormat format);
   static uint32 VideoCodecProfileToV4L2PixFmt(media::VideoCodecProfile profile,
                                               bool slice_based);
   static uint32_t V4L2PixFmtToDrmFormat(uint32_t format);

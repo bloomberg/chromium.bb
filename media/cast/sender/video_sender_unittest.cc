@@ -198,7 +198,7 @@ class VideoSenderTest : public ::testing::Test {
     gfx::Size size(kWidth, kHeight);
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
-            VideoFrame::I420, size, gfx::Rect(size), size,
+            PIXEL_FORMAT_I420, size, gfx::Rect(size), size,
             testing_clock_->NowTicks() - first_frame_timestamp_);
     PopulateVideoFrame(video_frame.get(), last_pixel_value_++);
     return video_frame;
@@ -210,7 +210,7 @@ class VideoSenderTest : public ::testing::Test {
     gfx::Size size(kWidth, kHeight);
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
-            VideoFrame::I420, size, gfx::Rect(size), size,
+            PIXEL_FORMAT_I420, size, gfx::Rect(size), size,
             testing_clock_->NowTicks() - first_frame_timestamp_);
     PopulateVideoFrameWithNoise(video_frame.get());
     return video_frame;

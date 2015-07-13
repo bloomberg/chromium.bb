@@ -115,28 +115,28 @@ PP_VideoProfile PP_FromMediaVideoProfile(media::VideoCodecProfile profile) {
   }
 }
 
-media::VideoFrame::Format PP_ToMediaVideoFormat(PP_VideoFrame_Format format) {
+media::VideoPixelFormat PP_ToMediaVideoFormat(PP_VideoFrame_Format format) {
   switch (format) {
     case PP_VIDEOFRAME_FORMAT_UNKNOWN:
-      return media::VideoFrame::UNKNOWN;
+      return media::PIXEL_FORMAT_UNKNOWN;
     case PP_VIDEOFRAME_FORMAT_YV12:
-      return media::VideoFrame::YV12;
+      return media::PIXEL_FORMAT_YV12;
     case PP_VIDEOFRAME_FORMAT_I420:
-      return media::VideoFrame::I420;
+      return media::PIXEL_FORMAT_I420;
     case PP_VIDEOFRAME_FORMAT_BGRA:
-      return media::VideoFrame::UNKNOWN;
+      return media::PIXEL_FORMAT_UNKNOWN;
     // No default case, to catch unhandled PP_VideoFrame_Format values.
   }
-  return media::VideoFrame::UNKNOWN;
+  return media::PIXEL_FORMAT_UNKNOWN;
 }
 
-PP_VideoFrame_Format PP_FromMediaVideoFormat(media::VideoFrame::Format format) {
+PP_VideoFrame_Format PP_FromMediaVideoFormat(media::VideoPixelFormat format) {
   switch (format) {
-    case media::VideoFrame::UNKNOWN:
+    case media::PIXEL_FORMAT_UNKNOWN:
       return PP_VIDEOFRAME_FORMAT_UNKNOWN;
-    case media::VideoFrame::YV12:
+    case media::PIXEL_FORMAT_YV12:
       return PP_VIDEOFRAME_FORMAT_YV12;
-    case media::VideoFrame::I420:
+    case media::PIXEL_FORMAT_I420:
       return PP_VIDEOFRAME_FORMAT_I420;
     default:
       return PP_VIDEOFRAME_FORMAT_UNKNOWN;
@@ -194,7 +194,7 @@ PepperVideoEncoderHost::PepperVideoEncoderHost(RendererPpapiHost* host,
       initialized_(false),
       encoder_last_error_(PP_ERROR_FAILED),
       frame_count_(0),
-      media_input_format_(media::VideoFrame::UNKNOWN),
+      media_input_format_(media::PIXEL_FORMAT_UNKNOWN),
       weak_ptr_factory_(this) {
 }
 
@@ -251,7 +251,7 @@ int32_t PepperVideoEncoderHost::OnHostMsgInitialize(
     return PP_ERROR_FAILED;
 
   media_input_format_ = PP_ToMediaVideoFormat(input_format);
-  if (media_input_format_ == media::VideoFrame::UNKNOWN)
+  if (media_input_format_ == media::PIXEL_FORMAT_UNKNOWN)
     return PP_ERROR_BADARGUMENT;
 
   media::VideoCodecProfile media_profile =
@@ -521,7 +521,7 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
 }
 
 bool PepperVideoEncoderHost::InitializeHardware(
-    media::VideoFrame::Format input_format,
+    media::VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32_t initial_bitrate) {

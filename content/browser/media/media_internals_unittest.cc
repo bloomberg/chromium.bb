@@ -151,7 +151,8 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   // be updated at the same time as the media internals JS files.
   const float kFrameRate = 30.0f;
   const gfx::Size kFrameSize(1280, 720);
-  const media::VideoPixelFormat kPixelFormat = media::PIXEL_FORMAT_I420;
+  const media::VideoCapturePixelFormat kPixelFormat =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   const media::VideoPixelStorage kPixelStorage = media::PIXEL_STORAGE_CPU;
   const media::VideoCaptureFormat capture_format(kFrameSize, kFrameRate,
                                                  kPixelFormat, kPixelStorage);
@@ -169,7 +170,8 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   const int kWidth = 1280;
   const int kHeight = 720;
   const float kFrameRate = 30.0f;
-  const media::VideoPixelFormat kPixelFormat = media::PIXEL_FORMAT_I420;
+  const media::VideoCapturePixelFormat kPixelFormat =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   const media::VideoCaptureFormat format_hd({kWidth, kHeight},
       kFrameRate, kPixelFormat);
   media::VideoCaptureFormats formats{};
