@@ -21,7 +21,7 @@ class CONTENT_EXPORT V8SamplingProfiler final
     : public base::trace_event::TraceLog::EnabledStateObserver {
  public:
   explicit V8SamplingProfiler(bool underTest = false);
-  ~V8SamplingProfiler();
+  ~V8SamplingProfiler() override;
 
   // Implementation of TraceLog::EnabledStateObserver
   void OnTraceLogEnabled() override;

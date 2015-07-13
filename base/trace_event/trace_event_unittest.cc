@@ -1021,7 +1021,7 @@ class AfterStateChangeEnabledStateObserver
     : public TraceLog::EnabledStateObserver {
  public:
   AfterStateChangeEnabledStateObserver() {}
-  virtual ~AfterStateChangeEnabledStateObserver() {}
+  ~AfterStateChangeEnabledStateObserver() override {}
 
   // TraceLog::EnabledStateObserver overrides:
   void OnTraceLogEnabled() override {
@@ -1052,7 +1052,7 @@ class SelfRemovingEnabledStateObserver
     : public TraceLog::EnabledStateObserver {
  public:
   SelfRemovingEnabledStateObserver() {}
-  virtual ~SelfRemovingEnabledStateObserver() {}
+  ~SelfRemovingEnabledStateObserver() override {}
 
   // TraceLog::EnabledStateObserver overrides:
   void OnTraceLogEnabled() override {}

@@ -15,7 +15,7 @@ extern const char kFileTracingEventCategoryGroup[];
 class FileTracingProviderImpl : public base::FileTracing::Provider {
  public:
   FileTracingProviderImpl();
-  ~FileTracingProviderImpl();
+  ~FileTracingProviderImpl() override;
 
   // base::FileTracing::Provider:
   bool FileTracingCategoryIsEnabled() const override;

@@ -367,6 +367,8 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // on-demand.
   class BASE_EXPORT EnabledStateObserver {
    public:
+    virtual ~EnabledStateObserver() = default;
+
     // Called just after the tracing system becomes enabled, outside of the
     // |lock_|. TraceLog::IsEnabled() is true at this point.
     virtual void OnTraceLogEnabled() = 0;

@@ -161,7 +161,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   static const int kMaxConsecutiveFailuresCount;
 
   MemoryDumpManager();
-  virtual ~MemoryDumpManager();
+  ~MemoryDumpManager() override;
 
   static void SetInstanceForTesting(MemoryDumpManager* instance);
   static void FinalizeDumpAndAddToTrace(
