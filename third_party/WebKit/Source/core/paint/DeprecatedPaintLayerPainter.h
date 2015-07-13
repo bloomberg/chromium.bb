@@ -24,13 +24,13 @@ public:
 
     // The paint() method paints the layers that intersect the damage rect from back to front.
     //  paint() assumes that the caller will clip to the bounds of damageRect if necessary.
-    void paint(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior = PaintBehaviorNormal, LayoutObject* paintingRoot = 0, PaintLayerFlags = 0);
+    void paint(GraphicsContext*, const LayoutRect& damageRect, const GlobalPaintFlags = GlobalPaintNormalPhase, LayoutObject* paintingRoot = 0, PaintLayerFlags = 0);
     // paintLayer() assumes that the caller will clip to the bounds of the painting dirty if necessary.
     void paintLayer(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
     // paintLayerContents() assumes that the caller will clip to the bounds of the painting dirty rect if necessary.
     void paintLayerContents(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, FragmentPolicy = AllowMultipleFragments);
 
-    void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior, LayoutObject* paintingRoot = 0);
+    void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, const GlobalPaintFlags, LayoutObject* paintingRoot = 0);
 
 private:
     enum ClipState { HasNotClipped, HasClipped };
@@ -57,7 +57,7 @@ private:
 
     // Returns whether this layer should be painted during sofware painting (i.e., not via calls from CompositedDeprecatedPaintLayerMapping to draw into composited
     // layers).
-    bool shouldPaintLayerInSoftwareMode(const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags paintFlags);
+    bool shouldPaintLayerInSoftwareMode(const GlobalPaintFlags, PaintLayerFlags paintFlags);
 
     DeprecatedPaintLayer& m_paintLayer;
 };

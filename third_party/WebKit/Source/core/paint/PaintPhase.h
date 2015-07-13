@@ -57,6 +57,7 @@ enum PaintPhase {
 
 enum PaintBehaviorFlags {
     PaintBehaviorNormal = 0,
+    // TODO(jchaffraix): Remove those 2 once we have migrated to GlobalPaintFlags.
     PaintBehaviorSelectionOnly = 1 << 0,
     PaintBehaviorFlattenCompositingLayers = 1 << 2,
     PaintBehaviorRenderingClipPathAsMask = 1 << 3,
@@ -65,6 +66,45 @@ enum PaintBehaviorFlags {
 };
 
 typedef unsigned PaintBehavior;
+
+// Those flags are meant as global tree operations. This means
+// that they should be constant for a paint phase.
+// TODO(jchaffraix): We should pass these as a const variable
+// during paint to ensure they are not modified.
+enum GlobalPaintFlag {
+    GlobalPaintNormalPhase = 0,
+    // Used when painting selection as part of a drag-image. This
+    // flag disables a lot of the painting code and specifically
+    // triggers a PaintPhaseSelection.
+    GlobalPaintSelectionOnly = 1 << 0,
+    // Used when painting a drag-image or printing in order to
+    // ignore the hardware layers and paint the whole tree
+    // into the topmost layer.
+    GlobalPaintFlattenCompositingLayers = 1 << 1
+};
+
+typedef unsigned GlobalPaintFlags;
+
+// TODO(jchaffraix): This is a scaffolding as we roll in GlobalPaintFlags
+// as a replacement for PaintBehavior. Remove when it's fully done.
+inline PaintBehavior toPaintBehavior(GlobalPaintFlags flags)
+{
+    PaintBehavior behavior = PaintBehaviorNormal;
+    if (flags & GlobalPaintSelectionOnly)
+        behavior |= PaintBehaviorSelectionOnly;
+    if (flags & GlobalPaintFlattenCompositingLayers)
+        behavior |= PaintBehaviorFlattenCompositingLayers;
+    return behavior;
+}
+inline GlobalPaintFlags toGlobalPaintFlags(PaintBehavior behavior)
+{
+    GlobalPaintFlags flags = GlobalPaintNormalPhase;
+    if (behavior & PaintBehaviorSelectionOnly)
+        flags |= GlobalPaintSelectionOnly;
+    if (behavior & PaintBehaviorFlattenCompositingLayers)
+        flags |= GlobalPaintFlattenCompositingLayers;
+    return flags;
+}
 
 } // namespace blink
 

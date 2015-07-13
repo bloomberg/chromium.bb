@@ -129,10 +129,11 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);
 
-    layerPainter.paint(context, LayoutRect(rect), m_frameView.paintBehavior(), layoutObject);
+    // TODO(jchaffraix): Convert to GlobalPaintFlags for real here and below.
+    layerPainter.paint(context, LayoutRect(rect), toGlobalPaintFlags(m_frameView.paintBehavior()), layoutObject);
 
     if (rootLayer->containsDirtyOverlayScrollbars())
-        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), m_frameView.paintBehavior(), layoutObject);
+        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), toGlobalPaintFlags(m_frameView.paintBehavior()), layoutObject);
 
     m_frameView.setIsPainting(false);
 

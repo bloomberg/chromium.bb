@@ -42,10 +42,10 @@ static inline bool shouldSuppressPaintingLayer(DeprecatedPaintLayer* layer)
     return false;
 }
 
-void DeprecatedPaintLayerPainter::paint(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, LayoutObject* paintingRoot, PaintLayerFlags paintFlags)
+void DeprecatedPaintLayerPainter::paint(GraphicsContext* context, const LayoutRect& damageRect, const GlobalPaintFlags globalPaintFlags, LayoutObject* paintingRoot, PaintLayerFlags paintFlags)
 {
-    DeprecatedPaintLayerPaintingInfo paintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(damageRect)), paintBehavior, LayoutSize(), paintingRoot);
-    if (shouldPaintLayerInSoftwareMode(paintingInfo, paintFlags))
+    DeprecatedPaintLayerPaintingInfo paintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(damageRect)), toPaintBehavior(globalPaintFlags), LayoutSize(), paintingRoot);
+    if (shouldPaintLayerInSoftwareMode(globalPaintFlags, paintFlags))
         paintLayer(context, paintingInfo, paintFlags);
 }
 
@@ -428,7 +428,7 @@ void DeprecatedPaintLayerPainter::paintChildren(unsigned childrenToVisit, Graphi
         DeprecatedPaintLayerPainter childPainter(*child->layer());
         // If this Layer should paint into its own backing or a grouped backing, that will be done via CompositedDeprecatedPaintLayerMapping::paintContents()
         // and CompositedDeprecatedPaintLayerMapping::doPaintTask().
-        if (!childPainter.shouldPaintLayerInSoftwareMode(paintingInfo, paintFlags))
+        if (!childPainter.shouldPaintLayerInSoftwareMode(toGlobalPaintFlags(paintingInfo.paintBehavior), paintFlags))
             continue;
 
         DeprecatedPaintLayerPaintingInfo childPaintingInfo = paintingInfo;
@@ -449,12 +449,12 @@ static bool paintForFixedRootBackground(const DeprecatedPaintLayer* layer, Paint
     return layer->layoutObject()->isDocumentElement() && (paintFlags & PaintLayerPaintingRootBackgroundOnly);
 }
 
-bool DeprecatedPaintLayerPainter::shouldPaintLayerInSoftwareMode(const DeprecatedPaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+bool DeprecatedPaintLayerPainter::shouldPaintLayerInSoftwareMode(const GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags)
 {
     DisableCompositingQueryAsserts disabler;
 
     return m_paintLayer.compositingState() == NotComposited
-        || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)
+        || (globalPaintFlags & GlobalPaintFlattenCompositingLayers)
         || ((paintFlags & PaintLayerPaintingReflection) && !m_paintLayer.has3DTransform())
         || paintForFixedRootBackground(&m_paintLayer, paintFlags);
 }
@@ -603,12 +603,12 @@ void DeprecatedPaintLayerPainter::paintChildClippingMaskForFragments(const Depre
     }
 }
 
-void DeprecatedPaintLayerPainter::paintOverlayScrollbars(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, LayoutObject* paintingRoot)
+void DeprecatedPaintLayerPainter::paintOverlayScrollbars(GraphicsContext* context, const LayoutRect& damageRect, const GlobalPaintFlags paintFlags, LayoutObject* paintingRoot)
 {
     if (!m_paintLayer.containsDirtyOverlayScrollbars())
         return;
 
-    DeprecatedPaintLayerPaintingInfo paintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(damageRect)), paintBehavior, LayoutSize(), paintingRoot);
+    DeprecatedPaintLayerPaintingInfo paintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(damageRect)), paintFlags, LayoutSize(), paintingRoot);
     paintLayer(context, paintingInfo, PaintLayerPaintingOverlayScrollbars);
 
     m_paintLayer.setContainsDirtyOverlayScrollbars(false);
