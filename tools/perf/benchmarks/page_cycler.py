@@ -162,8 +162,8 @@ class PageCyclerNetsimTop10(_PageCycler):
         report_speed_index = options.report_speed_index,
         clear_cache_before_each_run = True)
 
-
-@benchmark.Enabled('android')
+#@benchmark.Enabled('android')
+@benchmark.Disabled  # crbug.com/509690
 class PageCyclerTop10Mobile(_PageCycler):
   """Page load time benchmark for the top 10 mobile web pages.
 
