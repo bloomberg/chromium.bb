@@ -788,7 +788,6 @@ TEST(ExtensionAPITest, NoPermissions) {
     { "windows.update",   true },
     // Test some whitelisted functions. These require no permissions.
     { "app.getDetails",           true },
-    { "app.getDetailsForFrame",   true },
     { "app.getIsInstalled",       true },
     { "app.installState",         true },
     { "app.runningState",         true },

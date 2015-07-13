@@ -34,11 +34,10 @@ class AppBindings : public ObjectBackedNativeHandler,
 
   void GetIsInstalled(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetDetails(const v8::FunctionCallbackInfo<v8::Value>& args);
-  void GetDetailsForFrame(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetInstallState(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetRunningState(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  v8::Local<v8::Value> GetDetailsForFrameImpl(blink::WebFrame* frame);
+  v8::Local<v8::Value> GetDetailsImpl(blink::WebLocalFrame* frame);
 
   void OnAppInstallStateResponse(const std::string& state, int callback_id);
 

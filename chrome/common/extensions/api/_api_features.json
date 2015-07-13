@@ -59,10 +59,6 @@
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
     "matches": []
   },
-  "app.getDetailsForFrame": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
-    "matches": []
-  },
   "app.getIsInstalled": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
     "matches": []

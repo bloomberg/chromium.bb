@@ -188,66 +188,6 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, MAYBE_IsInstalled) {
   EXPECT_EQ("true", result);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, GetDetailsForFrame) {
-  const char kAppHost[] = "app.com";
-  const char kNonAppHost[] = "nonapp.com";
-  const char kCheckoutHost[] = "checkout.com";
-
-  host_resolver()->AddRule(kAppHost, "127.0.0.1");
-  host_resolver()->AddRule(kNonAppHost, "127.0.0.1");
-  host_resolver()->AddRule(kCheckoutHost, "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL test_file_url(test_server()->GetURL(
-      "files/extensions/get_app_details_for_frame.html"));
-  GURL::Replacements replace_host;
-
-  replace_host.SetHostStr(kCheckoutHost);
-  GURL checkout_url(test_file_url.ReplaceComponents(replace_host));
-
-  replace_host.SetHostStr(kAppHost);
-  GURL app_url(test_file_url.ReplaceComponents(replace_host));
-
-  // Load an app which includes app.com in its extent.
-  const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("app_dot_com_app"));
-  ASSERT_TRUE(extension);
-
-  // Test that normal pages (even apps) cannot use getDetailsForFrame().
-  ui_test_utils::NavigateToURL(browser(), app_url);
-  const char kTestUnsuccessfulAccess[] =
-      "window.domAutomationController.send(window.testUnsuccessfulAccess())";
-  bool result = false;
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractBool(
-          browser()->tab_strip_model()->GetActiveWebContents(),
-          kTestUnsuccessfulAccess,
-          &result));
-  EXPECT_TRUE(result);
-
-  // Test that checkout can use getDetailsForFrame() and that it works
-  // correctly.
-  ui_test_utils::NavigateToURL(browser(), checkout_url);
-  const char kGetDetailsForFrame[] =
-      "window.domAutomationController.send("
-      "    JSON.stringify(chrome.app.getDetailsForFrame(frames[0])))";
-  std::string json;
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(
-          browser()->tab_strip_model()->GetActiveWebContents(),
-          kGetDetailsForFrame,
-          &json));
-
-  scoped_ptr<base::DictionaryValue> app_details(
-      static_cast<base::DictionaryValue*>(
-          base::JSONReader::DeprecatedRead(json)));
-  // extension->manifest() does not contain the id.
-  app_details->Remove("id", NULL);
-  EXPECT_TRUE(app_details.get());
-  EXPECT_TRUE(app_details->Equals(extension->manifest()->value()));
-}
-
-
 IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningState) {
   static const char kAppHost[] = "app.com";
   static const char kNonAppHost[] = "nonapp.com";

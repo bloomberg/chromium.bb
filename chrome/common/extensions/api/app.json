@@ -71,23 +71,6 @@
           "optional": true,
           "description": "TODO"
         }
-      },
-      {
-        "name": "getDetailsForFrame",
-        "description": "TODO",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "frame",
-            "description": "TODO",
-            "$ref": "DOMWindow"
-          }
-        ],
-        "returns": {
-          "$ref": "Details",
-          "optional": true,
-          "description": "TODO"
-        }
       }
     ]
   }

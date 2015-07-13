@@ -33,7 +33,6 @@ function wrapForLogging(fun) {
 var app = {
   getIsInstalled: wrapForLogging(appNatives.GetIsInstalled),
   getDetails: wrapForLogging(appNatives.GetDetails),
-  getDetailsForFrame: wrapForLogging(appNatives.GetDetailsForFrame),
   runningState: wrapForLogging(appNatives.GetRunningState)
 };
 

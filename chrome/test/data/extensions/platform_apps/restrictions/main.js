@@ -178,7 +178,6 @@ chrome.test.runTests([
       assertEq('undefined', typeof(chrome.app.getIsInstalled));
       assertEq('undefined', typeof(chrome.app.isInstalled));
       assertEq('undefined', typeof(chrome.app.getDetails));
-      assertEq('undefined', typeof(chrome.app.getDetailsForFrame));
       assertEq('undefined', typeof(chrome.app.runningState));
     }
     assertEq('undefined', typeof(chrome.extension));
