@@ -42,6 +42,8 @@ class Mutex;
 
 namespace blink {
 
+class LocalFrame;
+
 class CORE_EXPORT MainThreadDebugger final : public NoBaseWillBeGarbageCollectedFinalized<MainThreadDebugger>, public ScriptDebuggerBase {
     WTF_MAKE_NONCOPYABLE(MainThreadDebugger);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MainThreadDebugger);

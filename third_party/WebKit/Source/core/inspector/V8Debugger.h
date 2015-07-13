@@ -43,7 +43,6 @@
 
 namespace blink {
 
-class ScriptState;
 class ScriptDebugListener;
 class ScriptValue;
 class JavaScriptCallFrame;
@@ -129,7 +128,7 @@ private:
     ScriptDebugListener::ParsedScript createParsedScript(v8::Local<v8::Object> sourceObject, CompileResult);
 
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    void handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
+    void handleProgramBreak(v8::Local<v8::Context> pausedContext, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
     static void v8DebugEventCallback(const v8::Debug::EventDetails&);
     v8::Local<v8::Value> callInternalGetterFunction(v8::Local<v8::Object>, const char* functionName);
     void handleV8DebugEvent(const v8::Debug::EventDetails&);
@@ -143,8 +142,8 @@ private:
     };
     ScriptValue currentCallFramesInner(ScopeInfoDetails);
     PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
-    void handleV8AsyncTaskEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
-    void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    void handleV8AsyncTaskEvent(ScriptDebugListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    void handleV8PromiseEvent(ScriptDebugListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
     v8::Isolate* m_isolate;
     Client* m_client;
@@ -154,7 +153,7 @@ private:
     v8::UniquePersistent<v8::Context> m_debuggerContext;
     v8::UniquePersistent<v8::FunctionTemplate> m_callFrameWrapperTemplate;
     v8::Local<v8::Object> m_executionState;
-    RefPtr<ScriptState> m_pausedScriptState;
+    v8::Local<v8::Context> m_pausedContext;
     bool m_runningNestedMessageLoop;
 };
 

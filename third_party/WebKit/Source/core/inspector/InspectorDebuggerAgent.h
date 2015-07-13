@@ -201,13 +201,15 @@ protected:
 
     virtual void enable();
     virtual void disable();
-    SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
+
     void didContinue() final;
     void reset();
     void resetModifiedSources();
 
 private:
     bool checkEnabled(ErrorString*);
+
+    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
 
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
@@ -226,9 +228,9 @@ private:
 
     void didParseSource(const ParsedScript&) final;
     bool v8AsyncTaskEventsEnabled() const final;
-    void didReceiveV8AsyncTaskEvent(ScriptState*, const String& eventType, const String& eventName, int id) final;
+    void didReceiveV8AsyncTaskEvent(v8::Local<v8::Context>, const String& eventType, const String& eventName, int id) final;
     bool v8PromiseEventsEnabled() const final;
-    void didReceiveV8PromiseEvent(ScriptState*, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status) final;
+    void didReceiveV8PromiseEvent(v8::Local<v8::Context>, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status) final;
 
     void setPauseOnExceptionsImpl(ErrorString*, int);
 

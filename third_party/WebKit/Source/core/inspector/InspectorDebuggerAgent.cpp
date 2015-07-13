@@ -747,9 +747,10 @@ bool InspectorDebuggerAgent::v8AsyncTaskEventsEnabled() const
     return trackingAsyncCalls();
 }
 
-void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ScriptState* state, const String& eventType, const String& eventName, int id)
+void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> context, const String& eventType, const String& eventName, int id)
 {
     ASSERT(trackingAsyncCalls());
+    ScriptState* state = ScriptState::from(context);
     m_v8AsyncCallTracker->didReceiveV8AsyncTaskEvent(state, eventType, eventName, id);
 }
 
@@ -758,8 +759,9 @@ bool InspectorDebuggerAgent::v8PromiseEventsEnabled() const
     return promiseTracker().isEnabled() || (m_listener && m_listener->canPauseOnPromiseEvent());
 }
 
-void InspectorDebuggerAgent::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
+void InspectorDebuggerAgent::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
 {
+    ScriptState* scriptState = ScriptState::from(context);
     if (promiseTracker().isEnabled())
         promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
     if (!m_listener)
@@ -1552,8 +1554,12 @@ void InspectorDebuggerAgent::didParseSource(const ParsedScript& parsedScript)
     }
 }
 
-ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection)
+ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(v8::Local<v8::Context> context, v8::Local<v8::Value> v8callFrames, v8::Local<v8::Value> v8exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection)
 {
+    ScriptState* scriptState = ScriptState::from(context);
+    ScriptValue callFrames(scriptState, v8callFrames);
+    ScriptValue exception(scriptState, v8exception);
+
     ScriptDebugListener::SkipPauseRequest result;
     if (m_skipAllPauses)
         result = ScriptDebugListener::Continue;
