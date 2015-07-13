@@ -52,8 +52,7 @@ namespace mojo {
 // app.AddService<BarImpl>(&context);
 //
 //
-class ApplicationImpl : public Application,
-                        public ErrorHandler {
+class ApplicationImpl : public Application {
  public:
   // Does not take ownership of |delegate|, which must remain valid for the
   // lifetime of ApplicationImpl.
@@ -125,8 +124,7 @@ class ApplicationImpl : public Application,
                         const String& url) override;
   void OnQuitRequested(const Callback<void(bool)>& callback) override;
 
-  // ErrorHandler implementation.
-  void OnConnectionError() override;
+  void OnConnectionError();
 
   void ClearConnections();
 

@@ -30,7 +30,7 @@ ShellImpl::ShellImpl(ApplicationPtr application,
       application_(application.Pass()),
       binding_(this),
       queue_requests_(false) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
 ShellImpl::~ShellImpl() {

@@ -21,14 +21,11 @@ TestServiceImpl::TestServiceImpl(ApplicationImpl* app_impl,
     : application_(application),
       app_impl_(app_impl),
       binding_(this, request.Pass()) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(
+      [this]() { application_->ReleaseRef(); });
 }
 
 TestServiceImpl::~TestServiceImpl() {
-}
-
-void TestServiceImpl::OnConnectionError() {
-  application_->ReleaseRef();
 }
 
 void TestServiceImpl::Ping(const mojo::Callback<void()>& callback) {

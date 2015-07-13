@@ -170,7 +170,7 @@ class AppContext : public embedder::ProcessDelegate {
 
 // ChildControllerImpl ------------------------------------------------------
 
-class ChildControllerImpl : public ChildController, public ErrorHandler {
+class ChildControllerImpl : public ChildController {
  public:
   ~ChildControllerImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -205,8 +205,7 @@ class ChildControllerImpl : public ChildController, public ErrorHandler {
 
   void Bind(ScopedMessagePipeHandle handle) { binding_.Bind(handle.Pass()); }
 
-  // |ErrorHandler| methods:
-  void OnConnectionError() override {
+  void OnConnectionError() {
     // A connection error means the connection to the shell is lost. This is not
     // recoverable.
     LOG(ERROR) << "Connection error to the shell.";
@@ -242,7 +241,7 @@ class ChildControllerImpl : public ChildController, public ErrorHandler {
         unblocker_(unblocker),
         channel_info_(nullptr),
         binding_(this) {
-    binding_.set_error_handler(this);
+    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
   // Callback for |embedder::CreateChannel()|.

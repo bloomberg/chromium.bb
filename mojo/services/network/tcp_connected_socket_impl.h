@@ -18,7 +18,7 @@ namespace mojo {
 class MojoToNetPendingBuffer;
 class NetToMojoPendingBuffer;
 
-class TCPConnectedSocketImpl : public TCPConnectedSocket, public ErrorHandler {
+class TCPConnectedSocketImpl : public TCPConnectedSocket {
  public:
   TCPConnectedSocketImpl(scoped_ptr<net::TCPSocket> socket,
                          ScopedDataPipeConsumerHandle send_stream,
@@ -28,8 +28,7 @@ class TCPConnectedSocketImpl : public TCPConnectedSocket, public ErrorHandler {
   ~TCPConnectedSocketImpl() override;
 
  private:
-    // ErrorHandler methods:
-    void OnConnectionError() override;
+  void OnConnectionError();
 
   // "Receiving" in this context means reading from TCPSocket and writing to
   // the Mojo receive_stream.

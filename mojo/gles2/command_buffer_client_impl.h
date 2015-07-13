@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
 
 namespace base {
 class RunLoop;
@@ -29,7 +28,6 @@ class CommandBufferDelegate {
 };
 
 class CommandBufferClientImpl : public mojo::CommandBufferLostContextObserver,
-                                public mojo::ErrorHandler,
                                 public gpu::CommandBuffer,
                                 public gpu::GpuControl {
  public:
@@ -80,9 +78,6 @@ class CommandBufferClientImpl : public mojo::CommandBufferLostContextObserver,
 
   // mojo::CommandBufferLostContextObserver implementation:
   void DidLoseContext(int32_t lost_reason) override;
-
-  // mojo::ErrorHandler implementation:
-  void OnConnectionError() override;
 
   void TryUpdateState();
   void MakeProgressAndUpdateState();

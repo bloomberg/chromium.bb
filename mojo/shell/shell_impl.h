@@ -9,7 +9,6 @@
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/shell/identity.h"
 #include "url/gurl.h"
 
@@ -18,7 +17,7 @@ namespace shell {
 
 class ApplicationManager;
 
-class ShellImpl : public Shell, public ErrorHandler {
+class ShellImpl : public Shell {
  public:
   ShellImpl(ApplicationPtr application,
             ApplicationManager* manager,
@@ -45,8 +44,7 @@ class ShellImpl : public Shell, public ErrorHandler {
                             ServiceProviderPtr exposed_services) override;
   void QuitApplication() override;
 
-  // ErrorHandler implementation:
-  void OnConnectionError() override;
+  void OnConnectionError();
 
   void OnQuitRequestedResult(bool can_quit);
 

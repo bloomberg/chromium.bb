@@ -28,7 +28,8 @@ ContentHandlerConnection::ContentHandlerConnection(
   content_handler_.Bind(
       InterfacePtrInfo<ContentHandler>(pipe.handle0.Pass(), 0u));
   services->ConnectToService(ContentHandler::Name_, pipe.handle1.Pass());
-  content_handler_.set_error_handler(this);
+  content_handler_.set_connection_error_handler(
+      [this]() { CloseConnection(); });
 }
 
 void ContentHandlerConnection::CloseConnection() {
@@ -43,10 +44,6 @@ ContentHandlerConnection::~ContentHandlerConnection() {
   // If this DCHECK fails then something has tried to delete this object without
   // calling CloseConnection.
   DCHECK(connection_closed_);
-}
-
-void ContentHandlerConnection::OnConnectionError() {
-  CloseConnection();
 }
 
 }  // namespace shell

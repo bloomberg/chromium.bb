@@ -39,7 +39,7 @@ class TestHttpServer : public net::HttpServer::Delegate {
   // Creates an http server. By default it accepts WebSockets and echoes
   // WebSocket messages back.
   TestHttpServer();
-  virtual ~TestHttpServer();
+  ~TestHttpServer() override;
 
   // Starts the server. Returns whether it was started successfully.
   bool Start();

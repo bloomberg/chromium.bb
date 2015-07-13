@@ -98,7 +98,7 @@ class ServerWrapper : net::HttpServer::Delegate {
 
   void WriteActivePortToUserProfile(const base::FilePath& output_directory);
 
-  virtual ~ServerWrapper() {}
+  ~ServerWrapper() override {}
 
  private:
   // net::HttpServer::Delegate implementation.

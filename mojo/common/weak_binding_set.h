@@ -19,18 +19,29 @@ class WeakBinding;
 // Use this class to manage a set of weak pointers to bindings each of which is
 // owned by the pipe they are bound to.
 template <typename Interface>
-class WeakBindingSet : public ErrorHandler {
+class WeakBindingSet {
  public:
-  WeakBindingSet() : error_handler_(nullptr) {}
+  WeakBindingSet() {}
   ~WeakBindingSet() { CloseAllBindings(); }
 
-  void set_error_handler(ErrorHandler* error_handler) {
+  void set_connection_error_handler(const Closure& error_handler) {
     error_handler_ = error_handler;
+  }
+
+  // NOTE: Deprecated. Please use the method above.
+  // TODO(yzshen): Remove this method once all callsites are converted.
+  void set_error_handler(ErrorHandler* error_handler) {
+    if (error_handler) {
+      set_connection_error_handler(
+          [error_handler]() { error_handler->OnConnectionError(); });
+    } else {
+      set_connection_error_handler(Closure());
+    }
   }
 
   void AddBinding(Interface* impl, InterfaceRequest<Interface> request) {
     auto binding = new WeakBinding<Interface>(impl, request.Pass());
-    binding->set_error_handler(this);
+    binding->set_connection_error_handler([this]() { OnConnectionError(); });
     bindings_.push_back(binding->GetWeakPtr());
   }
 
@@ -45,8 +56,7 @@ class WeakBindingSet : public ErrorHandler {
   bool empty() const { return bindings_.empty(); }
 
  private:
-  // ErrorHandler implementation.
-  void OnConnectionError() override {
+  void OnConnectionError() {
     // Clear any deleted bindings.
     bindings_.erase(
         std::remove_if(bindings_.begin(), bindings_.end(),
@@ -55,29 +65,27 @@ class WeakBindingSet : public ErrorHandler {
         }),
         bindings_.end());
 
-    if (error_handler_)
-      error_handler_->OnConnectionError();
+    error_handler_.Run();
   }
 
-  ErrorHandler* error_handler_;
+  Closure error_handler_;
   std::vector<base::WeakPtr<WeakBinding<Interface>>> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WeakBindingSet);
 };
 
 template <typename Interface>
-class WeakBinding : public ErrorHandler {
+class WeakBinding {
  public:
   WeakBinding(Interface* impl, InterfaceRequest<Interface> request)
       : binding_(impl, request.Pass()),
-        error_handler_(nullptr),
         weak_ptr_factory_(this) {
-    binding_.set_error_handler(this);
+    binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
-  ~WeakBinding() override {}
+  ~WeakBinding() {}
 
-  void set_error_handler(ErrorHandler* error_handler) {
+  void set_connection_error_handler(const Closure& error_handler) {
     error_handler_ = error_handler;
   }
 
@@ -87,17 +95,15 @@ class WeakBinding : public ErrorHandler {
 
   void Close() { binding_.Close(); }
 
-  // ErrorHandler implementation.
-  void OnConnectionError() override {
-    ErrorHandler* error_handler = error_handler_;
+  void OnConnectionError() {
+    Closure error_handler = error_handler_;
     delete this;
-    if (error_handler)
-      error_handler->OnConnectionError();
+    error_handler.Run();
   }
 
  private:
-  mojo::Binding<Interface> binding_;
-  ErrorHandler* error_handler_;
+  Binding<Interface> binding_;
+  Closure error_handler_;
   base::WeakPtrFactory<WeakBinding> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WeakBinding);

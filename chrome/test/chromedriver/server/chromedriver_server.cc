@@ -51,7 +51,7 @@ class HttpServer : public net::HttpServer::Delegate {
       : handle_request_func_(handle_request_func),
         weak_factory_(this) {}
 
-  virtual ~HttpServer() {}
+  ~HttpServer() override {}
 
   bool Start(uint16 port, bool allow_remote) {
     std::string binding_ip = kLocalHostAddress;

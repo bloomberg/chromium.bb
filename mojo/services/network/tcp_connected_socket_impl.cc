@@ -23,7 +23,7 @@ TCPConnectedSocketImpl::TCPConnectedSocketImpl(
       app_refcount_(app_refcount.Pass()),
       weak_ptr_factory_(this) {
   // Queue up async communication.
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   ListenForReceivePeerClosed();
   ListenForSendPeerClosed();
   ReceiveMore();

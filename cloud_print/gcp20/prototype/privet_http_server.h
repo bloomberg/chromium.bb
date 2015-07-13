@@ -131,7 +131,7 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
   explicit PrivetHttpServer(Delegate* delegate);
 
   // Destroys the object.
-  virtual ~PrivetHttpServer();
+  ~PrivetHttpServer() override;
 
   // Starts HTTP server: start listening port |port| for HTTP requests.
   bool Start(uint16 port);

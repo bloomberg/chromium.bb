@@ -103,7 +103,7 @@ void ApplicationImpl::CloseConnection(ApplicationConnection* connection) {
 
 void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
   shell_ = shell.Pass();
-  shell_.set_error_handler(this);
+  shell_.set_connection_error_handler([this]() { OnConnectionError(); });
   url_ = url;
   delegate_->Initialize(this);
 }

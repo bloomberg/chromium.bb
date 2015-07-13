@@ -86,8 +86,7 @@ class HttpConnectionImpl::SimpleDataPipeReader {
   DISALLOW_COPY_AND_ASSIGN(SimpleDataPipeReader);
 };
 
-class HttpConnectionImpl::WebSocketImpl : public WebSocket,
-                                          public ErrorHandler {
+class HttpConnectionImpl::WebSocketImpl : public WebSocket {
  public:
   // |connection| must outlive this object.
   WebSocketImpl(HttpConnectionImpl* connection,
@@ -104,8 +103,8 @@ class HttpConnectionImpl::WebSocketImpl : public WebSocket,
     DCHECK(client_);
     DCHECK(send_stream_.is_valid());
 
-    binding_.set_error_handler(this);
-    client_.set_error_handler(this);
+    binding_.set_connection_error_handler([this]() { Close(); });
+    client_.set_connection_error_handler([this]() { Close(); });
 
     DataPipe data_pipe;
     receive_stream_ = data_pipe.producer_handle.Pass();
@@ -173,9 +172,6 @@ class HttpConnectionImpl::WebSocketImpl : public WebSocket,
   void Close(uint16_t code, const String& reason) override {
     Close();
   }
-
-  // ErrorHandler implementation.
-  void OnConnectionError() override { Close(); }
 
   void OnFinishedReadingSendStream(uint32_t num_bytes, const char* data) {
     DCHECK_GT(pending_send_count_, 0u);
@@ -264,8 +260,8 @@ HttpConnectionImpl::HttpConnectionImpl(int connection_id,
       delegate_(delegate.Pass()),
       binding_(this, connection) {
   DCHECK(delegate_);
-  binding_.set_error_handler(this);
-  delegate_.set_error_handler(this);
+  binding_.set_connection_error_handler([this]() { Close(); });
+  delegate_.set_connection_error_handler([this]() { Close(); });
 }
 
 HttpConnectionImpl::~HttpConnectionImpl() {
@@ -343,14 +339,6 @@ void HttpConnectionImpl::SetReceiveBufferSize(
   server_->server()->SetReceiveBufferSize(connection_id_,
                                           static_cast<int32_t>(size));
   callback.Run(MakeNetworkError(net::OK));
-}
-
-void HttpConnectionImpl::OnConnectionError() {
-  // This method is called when the proxy side of |binding_| or the impl side of
-  // |delegate_| has closed the pipe. Although it is set as error handler for
-  // both |binding_| and |delegate_|, it will only be called at most once
-  // because when called it closes/resets |binding_| and |delegate_|.
-  Close();
 }
 
 void HttpConnectionImpl::OnFinishedReadingResponseBody(

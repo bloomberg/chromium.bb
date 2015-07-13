@@ -8,7 +8,6 @@
 #include <string>
 
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -22,7 +21,7 @@ class ApplicationManager;
 // A ContentHandlerConnection manages its own lifetime and cannot be used with
 // a scoped_ptr to avoid reentrant calls into ApplicationManager late in
 // destruction.
-class ContentHandlerConnection : public ErrorHandler {
+class ContentHandlerConnection {
  public:
   ContentHandlerConnection(ApplicationManager* manager,
                            const GURL& content_handler_url,
@@ -39,10 +38,7 @@ class ContentHandlerConnection : public ErrorHandler {
   }
 
  private:
-  ~ContentHandlerConnection() override;
-
-  // ErrorHandler implementation:
-  void OnConnectionError() override;
+  ~ContentHandlerConnection();
 
   ApplicationManager* manager_;
   GURL content_handler_url_;

@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/test_service/test_request_tracker.mojom.h"
@@ -71,20 +70,6 @@ class ShellTestBaseTest : public ShellTestBase {
   TestTrackedRequestServicePtr request_tracking_;
 };
 
-class QuitMessageLoopErrorHandler : public ErrorHandler {
- public:
-  QuitMessageLoopErrorHandler() {}
-  ~QuitMessageLoopErrorHandler() override {}
-
-  // |ErrorHandler| implementation:
-  void OnConnectionError() override {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuitMessageLoopErrorHandler);
-};
-
 // Tests that we can connect to a single service within a single app.
 TEST_F(ShellTestBaseTest, ConnectBasic) {
   InterfacePtr<TestService> service;
@@ -119,8 +104,8 @@ TEST_F(ShellTestBaseTest, ConnectInvalidService) {
 
   // It may have quit before an error was processed.
   if (!test_service.encountered_error()) {
-    QuitMessageLoopErrorHandler quitter;
-    test_service.set_error_handler(&quitter);
+    test_service.set_connection_error_handler(
+        []() { base::MessageLoop::current()->QuitWhenIdle(); });
     message_loop()->Run();
     EXPECT_TRUE(test_service.encountered_error());
   }
@@ -162,8 +147,8 @@ TEST_F(ShellTestBaseTest, DISABLED_ConnectInvalidServiceNetwork) {
   InterfacePtr<TestService> test_service;
   ConnectToService(GURL("http://example.com/non_existent_service"),
                    &test_service);
-  QuitMessageLoopErrorHandler quitter;
-  test_service.set_error_handler(&quitter);
+  test_service.set_connection_error_handler(
+      []() { base::MessageLoop::current()->QuitWhenIdle(); });
   bool was_run = false;
   test_service->Ping(SetAndQuit<bool>(&was_run, true));
   message_loop()->Run();

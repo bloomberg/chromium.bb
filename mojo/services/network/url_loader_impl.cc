@@ -142,7 +142,7 @@ URLLoaderImpl::URLLoaderImpl(NetworkContext* context,
       binding_(this, request.Pass()),
       app_refcount_(app_refcount.Pass()),
       weak_ptr_factory_(this) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   context_->RegisterURLLoader(this);
 }
 

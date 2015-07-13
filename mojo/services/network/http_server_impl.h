@@ -14,7 +14,6 @@
 #include "mojo/services/network/public/interfaces/http_server.mojom.h"
 #include "mojo/services/network/public/interfaces/net_address.mojom.h"
 #include "net/server/http_server.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace net {
 class HttpServer;
@@ -24,8 +23,7 @@ namespace mojo {
 
 class HttpConnectionImpl;
 
-class HttpServerImpl : public net::HttpServer::Delegate,
-                       public ErrorHandler {
+class HttpServerImpl : public net::HttpServer::Delegate {
  public:
   static void Create(
       NetAddressPtr local_address,
@@ -55,9 +53,6 @@ class HttpServerImpl : public net::HttpServer::Delegate,
                           const net::HttpServerRequestInfo& info) override;
   void OnWebSocketMessage(int connection_id, const std::string& data) override;
   void OnClose(int connection_id) override;
-
-  // ErrorHandler implementation.
-  void OnConnectionError() override;
 
   HttpServerDelegatePtr delegate_;
   scoped_ptr<mojo::AppRefCount> app_refcount_;
