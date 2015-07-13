@@ -420,7 +420,7 @@ deps_os = {
      Var('chromium_git') + '/external/github.com/googlesamples/cardboard-java.git' + '@' + '08ad25a04f2801bd822c3f2cd28301b68d74aef6',
 
     'src/third_party/errorprone/lib':
-      Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '6c66e56c0f9d750aef83190466df834f9d6af8ab',
+      Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '72560c97fb38e3eb93db2e85c29db7b72420fad8',
 
     'src/third_party/findbugs':
      Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '7f69fa78a6db6dc31866d09572a0e356e921bf12',
@@ -453,7 +453,7 @@ deps_os = {
       Var('chromium_git') + '/chromium/third_party/robolectric.git' + '@' + '6b63c99a8b6967acdb42cbed0adb067c80efc810',
 
     'src/third_party/ub-uiautomator/lib':
-      Var('chromium_git') + '/chromium/third_party/ub-uiautomator.git' + '@' + 'e6f02481bada8bdbdfdd7987dd6e648c44a3adcb',
+      Var('chromium_git') + '/chromium/third_party/ub-uiautomator.git' + '@' + '00270549ce3161ae72ceb24712618ea28b4f9434',
 
     'src/third_party/lss':
       Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
