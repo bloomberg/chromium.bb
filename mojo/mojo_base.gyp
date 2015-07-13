@@ -343,7 +343,24 @@
           },
           'includes': [ '../build/java.gypi' ],
         },
-      ]
-    }]
+      ],
+    }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'mojo_common_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_common_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'mojo_common_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ]
 }
