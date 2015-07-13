@@ -170,7 +170,6 @@ MessageLoop::~MessageLoop() {
   // Tell the incoming queue that we are dying.
   incoming_task_queue_->WillDestroyCurrentMessageLoop();
   incoming_task_queue_ = NULL;
-  unbound_task_runner_ = NULL;
   task_runner_ = NULL;
 
   // OK, now make it so that no one can find us.
@@ -368,7 +367,6 @@ bool MessageLoop::IsIdleForTesting() {
 
 //------------------------------------------------------------------------------
 
-// static
 scoped_ptr<MessageLoop> MessageLoop::CreateUnbound(
     Type type, MessagePumpFactoryCallback pump_factory) {
   return make_scoped_ptr(new MessageLoop(type, pump_factory));
@@ -388,9 +386,7 @@ MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
       message_histogram_(NULL),
       run_loop_(NULL),
       incoming_task_queue_(new internal::IncomingTaskQueue(this)),
-      unbound_task_runner_(
-          new internal::MessageLoopTaskRunner(incoming_task_queue_)),
-      task_runner_(unbound_task_runner_) {
+      task_runner_(new internal::MessageLoopTaskRunner(incoming_task_queue_)) {
   // If type is TYPE_CUSTOM non-null pump_factory must be given.
   DCHECK_EQ(type_ == TYPE_CUSTOM, !pump_factory_.is_null());
 }
@@ -406,19 +402,7 @@ void MessageLoop::BindToCurrentThread() {
   lazy_tls_ptr.Pointer()->Set(this);
 
   incoming_task_queue_->StartScheduling();
-  unbound_task_runner_->BindToCurrentThread();
-  SetTaskRunner(unbound_task_runner_.Pass());
-}
-
-void MessageLoop::SetTaskRunner(
-    scoped_refptr<SingleThreadTaskRunner> task_runner) {
-  DCHECK_EQ(this, current());
-  DCHECK(task_runner->BelongsToCurrentThread());
-  DCHECK(!unbound_task_runner_);
-  task_runner_ = task_runner.Pass();
-  // Clear the previous thread task runner first because only one can exist at
-  // a time.
-  thread_task_runner_handle_.reset();
+  task_runner_->BindToCurrentThread();
   thread_task_runner_handle_.reset(new ThreadTaskRunnerHandle(task_runner_));
 }
 
