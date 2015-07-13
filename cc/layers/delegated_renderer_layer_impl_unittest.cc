@@ -1250,7 +1250,6 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   SetUpTest();
 
   LayerTreeHostImpl::FrameData frame;
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
   ASSERT_EQ(2u, frame.render_passes.size());
@@ -1281,7 +1280,6 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   SetUpTest();
 
   LayerTreeHostImpl::FrameData frame;
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
   ASSERT_EQ(2u, frame.render_passes.size());
@@ -1372,7 +1370,6 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
   ASSERT_EQ(3u, frame.render_passes.size());
@@ -1401,7 +1398,6 @@ TEST_F(DelegatedRendererLayerImplTestClip, QuadsClipped_LayerClipped_Surface) {
   delegated_renderer_layer_->SetHasRenderSurface(true);
 
   LayerTreeHostImpl::FrameData frame;
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
 
   ASSERT_EQ(3u, frame.render_passes.size());

@@ -2047,7 +2047,7 @@ static void CalculateDrawPropertiesInternal(
   // reduce how much would be drawn, and instead it would create unnecessary
   // changes to scissor state affecting GPU performance. Our clip information
   // is used in the recursion below, so we must set it beforehand.
-  DCHECK_EQ(layer_or_ancestor_clips_descendants, layer->is_clipped());
+  layer_draw_properties.is_clipped = layer_or_ancestor_clips_descendants;
   if (layer_or_ancestor_clips_descendants) {
     layer_draw_properties.clip_rect = clip_rect_in_target_space;
   } else {
@@ -2487,7 +2487,6 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
       << "expected: " << current_layer->draw_opacity()
       << " actual: " << DrawOpacityFromPropertyTrees(
                             current_layer, property_trees->opacity_tree);
-
   const bool can_use_lcd_text_match =
       CanUseLcdTextFromPropertyTrees(
           current_layer, layers_always_allowed_lcd_text, can_use_lcd_text,
@@ -2537,6 +2536,22 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
       inputs->verify_property_trees &&
       (property_tree_option == BUILD_PROPERTY_TREES_IF_NEEDED);
 
+  if (should_measure_property_tree_performance) {
+    TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+                       "LayerTreeHostCommon::CalculateDrawProperties");
+  }
+
+  std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
+  CalculateDrawPropertiesInternal<LayerType>(
+      inputs->root_layer, globals, data_for_recursion,
+      inputs->render_surface_layer_list, &dummy_layer_list,
+      &accumulated_surface_state, inputs->current_render_surface_layer_list_id);
+
+  if (should_measure_property_tree_performance) {
+    TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+                     "LayerTreeHostCommon::CalculateDrawProperties");
+  }
+
   if (inputs->verify_property_trees) {
     typename LayerType::LayerListType update_layer_list;
 
@@ -2579,26 +2594,9 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
         break;
       }
     }
-  }
 
-  if (should_measure_property_tree_performance) {
-    TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-                       "LayerTreeHostCommon::CalculateDrawProperties");
-  }
-
-  std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
-  CalculateDrawPropertiesInternal<LayerType>(
-      inputs->root_layer, globals, data_for_recursion,
-      inputs->render_surface_layer_list, &dummy_layer_list,
-      &accumulated_surface_state, inputs->current_render_surface_layer_list_id);
-
-  if (should_measure_property_tree_performance) {
-    TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
-                     "LayerTreeHostCommon::CalculateDrawProperties");
-  }
-
-  if (inputs->verify_property_trees)
     VerifyPropertyTreeValues(inputs);
+  }
 
   // The dummy layer list should not have been used.
   DCHECK_EQ(0u, dummy_layer_list.size());

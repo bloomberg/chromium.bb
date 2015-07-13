@@ -1333,7 +1333,6 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   pending_layer_->SetMaskLayer(mask_ptr.Pass());
   pending_layer_->SetHasRenderSurface(true);
 
-  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
@@ -1463,7 +1462,6 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   pending_layer_->SetMaskLayer(mask_ptr.Pass());
   pending_layer_->SetHasRenderSurface(true);
 
-  host_impl_.pending_tree()->BuildPropertyTreesForTesting();
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   bool update_lcd_text = false;
   host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);

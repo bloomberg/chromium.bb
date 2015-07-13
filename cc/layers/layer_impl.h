@@ -183,12 +183,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return should_flatten_transform_from_property_tree_;
   }
 
-  void set_is_clipped(bool is_clipped) {
-    is_clipped_ = is_clipped;
-    SetNeedsPushProperties();
-  }
-  bool is_clipped() const { return is_clipped_; }
-
   void UpdatePropertyTreeTransform();
   void UpdatePropertyTreeOpacity();
   void UpdatePropertyTreeScrollOffset();
@@ -399,6 +393,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return draw_properties_.screen_space_opacity_is_animating;
   }
   bool can_use_lcd_text() const { return draw_properties_.can_use_lcd_text; }
+  bool is_clipped() const { return draw_properties_.is_clipped; }
   gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }
   gfx::Rect drawable_content_rect() const {
     return draw_properties_.drawable_content_rect;
@@ -776,7 +771,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool double_sided_ : 1;
   bool should_flatten_transform_ : 1;
   bool should_flatten_transform_from_property_tree_ : 1;
-  bool is_clipped_ : 1;
 
   // Tracks if drawing-related properties have changed since last redraw.
   bool layer_property_changed_ : 1;

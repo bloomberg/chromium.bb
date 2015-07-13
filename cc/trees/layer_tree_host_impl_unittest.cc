@@ -2310,7 +2310,6 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   EXPECT_FALSE(layer->will_draw_called());
   EXPECT_FALSE(layer->did_draw_called());
 
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -5633,7 +5632,6 @@ TEST_F(LayerTreeHostImplTest, NoPartialSwap) {
   harness.MustSetScissor(0, 0, 10, 10);
   {
     LayerTreeHostImpl::FrameData frame;
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);

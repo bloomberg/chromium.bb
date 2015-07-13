@@ -60,7 +60,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       double_sided_(true),
       should_flatten_transform_(true),
       should_flatten_transform_from_property_tree_(false),
-      is_clipped_(false),
       layer_property_changed_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
@@ -291,7 +290,7 @@ void LayerImpl::ClearRenderSurfaceLayerList() {
 void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
   state->SetAll(draw_properties_.target_space_transform, bounds(),
                 draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
-                is_clipped_, draw_properties_.opacity,
+                draw_properties_.is_clipped, draw_properties_.opacity,
                 draw_properties_.blend_mode, sorting_context_id_);
 }
 
@@ -306,7 +305,7 @@ void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
   scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
 
   state->SetAll(scaled_draw_transform, scaled_bounds, scaled_visible_layer_rect,
-                draw_properties().clip_rect, is_clipped_,
+                draw_properties().clip_rect, draw_properties().is_clipped,
                 draw_properties().opacity, draw_properties().blend_mode,
                 sorting_context_id_);
 }
@@ -547,7 +546,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
-  layer->set_is_clipped(is_clipped_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
 

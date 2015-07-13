@@ -252,6 +252,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool screen_space_opacity_is_animating() const {
     return draw_properties_.screen_space_opacity_is_animating;
   }
+  bool is_clipped() const { return draw_properties_.is_clipped; }
   gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }
   gfx::Rect drawable_content_rect() const {
     return draw_properties_.drawable_content_rect;
@@ -499,14 +500,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return should_flatten_transform_from_property_tree_;
   }
 
-  void set_is_clipped(bool is_clipped) {
-    if (is_clipped_ == is_clipped)
-      return;
-    is_clipped_ = is_clipped;
-    SetNeedsPushProperties();
-  }
-  bool is_clipped() const { return is_clipped_; }
-
   // TODO(vollick): These values are temporary and will be removed as soon as
   // render surface determinations are moved out of CDP. They only exist because
   // certain logic depends on whether or not a layer would render to a separate
@@ -705,7 +698,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int num_children_with_scroll_parent_;
   gfx::Vector2dF offset_to_transform_parent_;
   bool should_flatten_transform_from_property_tree_ : 1;
-  bool is_clipped_ : 1;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;

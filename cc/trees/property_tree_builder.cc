@@ -100,8 +100,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   int parent_id = parent->id;
 
   bool ancestor_clips_subtree =
-      data_from_ancestor.ancestor_clips_subtree ||
-      (layer->clip_parent() && layer->clip_parent()->is_clipped());
+      data_from_ancestor.ancestor_clips_subtree || layer->clip_parent();
 
   data_for_children->ancestor_clips_subtree = false;
   bool has_unclipped_surface = false;
@@ -145,8 +144,6 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
 
   layer->SetClipTreeIndex(
       has_unclipped_surface ? 0 : data_for_children->clip_tree_parent);
-
-  layer->set_is_clipped(data_for_children->ancestor_clips_subtree);
 
   // TODO(awoloszyn): Right now when we hit a node with a replica, we reset the
   // clip for all children since we may need to draw. We need to figure out a
