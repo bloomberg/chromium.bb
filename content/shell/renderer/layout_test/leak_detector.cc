@@ -28,11 +28,16 @@ const int kInitialNumberOfLiveRenderObjects = 3;
 const int kInitialNumberOfLiveResources = 0;
 const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
-const int kInitialNumberOfV8PerContextData = 1;
 
 // In the initial state, there are two ActiveDOMObjects (FontFaceSet created by
 // HTMLDocument and SuspendableTimer created by DocumentLoader).
 const int kInitialNumberOfLiveActiveDOMObject = 2;
+
+// This includes not only about:blank's context but also ScriptRegexp (e.g.
+// created by isValidEmailAddress in EmailInputType.cpp). The leak detector
+// always creates the latter to stabilize the number of V8PerContextData
+// objects.
+const int kInitialNumberOfV8PerContextData = 2;
 
 LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
     : test_runner_(test_runner),
