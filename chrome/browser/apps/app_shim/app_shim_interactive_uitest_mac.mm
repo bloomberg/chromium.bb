@@ -314,7 +314,9 @@ namespace apps {
 #define MAYBE_Launch Launch
 #define MAYBE_HostedAppLaunch HostedAppLaunch
 #define MAYBE_ShowWindow ShowWindow
-#define MAYBE_RebuildShim RebuildShim
+// http://crbug.com/509774 this test is flaky so is disabled even in the
+// static build.
+#define MAYBE_RebuildShim DISABLED_RebuildShim
 #endif
 
 IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
