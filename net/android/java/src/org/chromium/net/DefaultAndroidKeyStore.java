@@ -11,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.interfaces.ECKey;
-import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.ECParameterSpec;
@@ -78,12 +77,13 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
         // Hint: Algorithm names come from:
         // http://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html
         try {
-            if (javaKey instanceof RSAPrivateKey) {
+            String keyAlgorithm = javaKey.getAlgorithm();
+            if ("RSA".equalsIgnoreCase(keyAlgorithm)) {
                 // IMPORTANT: Due to a platform bug, this will throw NoSuchAlgorithmException
                 // on Android 4.0.x and 4.1.x. Fixed in 4.2 and higher.
                 // See https://android-review.googlesource.com/#/c/40352/
                 signature = Signature.getInstance("NONEwithRSA");
-            } else if (javaKey instanceof ECPrivateKey) {
+            } else if ("EC".equalsIgnoreCase(keyAlgorithm)) {
                 signature = Signature.getInstance("NONEwithECDSA");
             }
         } catch (NoSuchAlgorithmException e) {
@@ -110,8 +110,10 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
     @Override
     public int getPrivateKeyType(AndroidPrivateKey key) {
         PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
-        if (javaKey instanceof RSAPrivateKey) return PrivateKeyType.RSA;
-        if (javaKey instanceof ECPrivateKey) {
+        String keyAlgorithm = javaKey.getAlgorithm();
+        if ("RSA".equalsIgnoreCase(keyAlgorithm)) {
+            return PrivateKeyType.RSA;
+        } else if ("EC".equalsIgnoreCase(keyAlgorithm)) {
             return PrivateKeyType.ECDSA;
         } else {
             return PrivateKeyType.INVALID;
