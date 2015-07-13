@@ -161,17 +161,13 @@ void MediaRouterUI::InitCommon(const content::WebContents* initiator,
   query_result_manager_->AddObserver(this);
 
   // These modes are always available.
-  // Use the same MediaSource for all mirroring modes for now.
-  // TODO(imcheng): Figure out MediaSources for the different modes.
+  query_result_manager_->StartSinksQuery(
+      MediaCastMode::DESKTOP_MIRROR, MediaSourceForDesktop());
   initiator_ = initiator;
   MediaSource mirroring_source(
       MediaSourceForTab(SessionTabHelper::IdForTab(initiator)));
   query_result_manager_->StartSinksQuery(
-      MediaCastMode::DESKTOP_OR_WINDOW_MIRROR, MediaSourceForDesktop());
-  query_result_manager_->StartSinksQuery(
-      MediaCastMode::SOUND_OPTIMIZED_TAB_MIRROR, mirroring_source);
-  query_result_manager_->StartSinksQuery(MediaCastMode::TAB_MIRROR,
-                                         mirroring_source);
+      MediaCastMode::TAB_MIRROR, mirroring_source);
 
   OnDefaultMediaSourceChanged(default_source, default_frame_url);
 }

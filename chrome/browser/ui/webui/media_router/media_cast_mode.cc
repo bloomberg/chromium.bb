@@ -19,12 +19,9 @@ std::string MediaCastModeToTitle(MediaCastMode mode, const std::string& host) {
     case MediaCastMode::TAB_MIRROR:
       return l10n_util::GetStringUTF8(
           IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE_TITLE);
-    case MediaCastMode::DESKTOP_OR_WINDOW_MIRROR:
+    case MediaCastMode::DESKTOP_MIRROR:
       return l10n_util::GetStringUTF8(
-          IDS_MEDIA_ROUTER_DESKTOP_OR_WINDOW_MIRROR_CAST_MODE_TITLE);
-    case MediaCastMode::SOUND_OPTIMIZED_TAB_MIRROR:
-      return l10n_util::GetStringUTF8(
-          IDS_MEDIA_ROUTER_SOUND_OPTIMIZED_TAB_MIRROR_CAST_MODE_TITLE);
+          IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE_TITLE);
     default:
       NOTREACHED();
       return "";
@@ -40,12 +37,9 @@ std::string MediaCastModeToDescription(
     case MediaCastMode::TAB_MIRROR:
       return l10n_util::GetStringUTF8(
           IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE);
-    case MediaCastMode::DESKTOP_OR_WINDOW_MIRROR:
+    case MediaCastMode::DESKTOP_MIRROR:
       return l10n_util::GetStringUTF8(
-          IDS_MEDIA_ROUTER_DESKTOP_OR_WINDOW_MIRROR_CAST_MODE);
-    case MediaCastMode::SOUND_OPTIMIZED_TAB_MIRROR:
-      return l10n_util::GetStringUTF8(
-          IDS_MEDIA_ROUTER_SOUND_OPTIMIZED_TAB_MIRROR_CAST_MODE);
+          IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE);
     default:
       NOTREACHED();
       return "";

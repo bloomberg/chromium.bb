@@ -12,12 +12,8 @@ TEST(MediaCastModeTest, PreferredCastMode) {
 
   EXPECT_EQ(MediaCastMode::DEFAULT, GetPreferredCastMode(cast_modes));
 
-  cast_modes.insert(MediaCastMode::SOUND_OPTIMIZED_TAB_MIRROR);
-  EXPECT_EQ(MediaCastMode::SOUND_OPTIMIZED_TAB_MIRROR,
-            GetPreferredCastMode(cast_modes));
-
-  cast_modes.insert(MediaCastMode::DESKTOP_OR_WINDOW_MIRROR);
-  EXPECT_EQ(MediaCastMode::DESKTOP_OR_WINDOW_MIRROR,
+  cast_modes.insert(MediaCastMode::DESKTOP_MIRROR);
+  EXPECT_EQ(MediaCastMode::DESKTOP_MIRROR,
             GetPreferredCastMode(cast_modes));
 
   cast_modes.insert(MediaCastMode::TAB_MIRROR);
@@ -32,11 +28,7 @@ TEST(MediaCastModeTest, PreferredCastMode) {
   EXPECT_EQ(MediaCastMode::DEFAULT,
             GetPreferredCastMode(cast_modes));
 
-  cast_modes.erase(MediaCastMode::DESKTOP_OR_WINDOW_MIRROR);
-  EXPECT_EQ(MediaCastMode::DEFAULT,
-            GetPreferredCastMode(cast_modes));
-
-  cast_modes.erase(MediaCastMode::SOUND_OPTIMIZED_TAB_MIRROR);
+  cast_modes.erase(MediaCastMode::DESKTOP_MIRROR);
   EXPECT_EQ(MediaCastMode::DEFAULT,
             GetPreferredCastMode(cast_modes));
 }

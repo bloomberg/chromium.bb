@@ -13,17 +13,11 @@
   <message name="IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE_TITLE" desc="Title for default cast mode.">
     Cast <ph name="HOST_NAME">$1<ex>google.com</ex></ph> to...
   </message>
-  <message name="IDS_MEDIA_ROUTER_DESKTOP_OR_WINDOW_MIRROR_CAST_MODE" desc="Message for desktop/window mirror cast mode.">
-    Cast desktop or window
+  <message name="IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE" desc="Message for desktop mirror cast mode.">
+    Cast desktop
   </message>
-  <message name="IDS_MEDIA_ROUTER_DESKTOP_OR_WINDOW_MIRROR_CAST_MODE_TITLE" desc="Title for desktop/window mirror cast mode.">
-    Cast desktop or window to...
-  </message>
-  <message name="IDS_MEDIA_ROUTER_SOUND_OPTIMIZED_TAB_MIRROR_CAST_MODE" desc="Message for default cast mode.">
-    Cast this tab (optimized for audio)
-  </message>
-  <message name="IDS_MEDIA_ROUTER_SOUND_OPTIMIZED_TAB_MIRROR_CAST_MODE_TITLE" desc="Title for sound optimized tab mirror cast mode.">
-    Cast this tab (optimized for audio) to...
+  <message name="IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE_TITLE" desc="Title for desktop mirror cast mode.">
+    Cast desktop to...
   </message>
   <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE" desc="Message for tab mirror cast mode.">
     Cast this tab
