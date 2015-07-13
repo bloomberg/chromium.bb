@@ -137,9 +137,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
         rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
     back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                     views::ImageButton::ALIGN_MIDDLE);
-    base::string16 back_title(l10n_util::GetStringUTF16(IDS_APP_LIST_BACK));
-    back_button_->SetAccessibleName(back_title);
-    back_button_->SetTooltipText(back_title);
+    SetBackButtonLabel(false);
     content_container_->AddChildView(back_button_);
 
     content_container_->set_background(new ExperimentalSearchBoxBackground());
@@ -306,6 +304,17 @@ void SearchBoxView::ResetTabFocus(bool on_contents) {
   if (speech_button_)
     speech_button_->SetSelected(false);
   focused_view_ = on_contents ? FOCUS_CONTENTS_VIEW : FOCUS_SEARCH_BOX;
+}
+
+void SearchBoxView::SetBackButtonLabel(bool folder) {
+  if (!back_button_)
+    return;
+
+  base::string16 back_button_label(l10n_util::GetStringUTF16(
+      folder ? IDS_APP_LIST_FOLDER_CLOSE_FOLDER_ACCESSIBILE_NAME
+             : IDS_APP_LIST_BACK));
+  back_button_->SetAccessibleName(back_button_label);
+  back_button_->SetTooltipText(back_button_label);
 }
 
 gfx::Size SearchBoxView::GetPreferredSize() const {

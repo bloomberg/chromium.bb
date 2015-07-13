@@ -52,8 +52,7 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
 
   apps_grid_view_->SetModel(model_);
   apps_grid_view_->SetItemList(model_->top_level_item_list());
-  SetShowState(SHOW_APPS,
-               false);  /* show apps without animation */
+  SetShowState(SHOW_APPS, false);
 }
 
 AppsContainerView::~AppsContainerView() {
@@ -78,12 +77,11 @@ void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
     return;
 
   PrepareToShowApps(folder_item);
-  SetShowState(SHOW_APPS,
-               true);  /* show apps with animation */
+  SetShowState(SHOW_APPS, true);
 }
 
 void AppsContainerView::ResetForShowApps() {
-  SetShowState(SHOW_APPS, false /* show apps without animation */);
+  SetShowState(SHOW_APPS, false);
   folder_background_view_->UpdateFolderContainerBubble(
       FolderBackgroundView::NO_BUBBLE);
 }
@@ -212,6 +210,7 @@ void AppsContainerView::SetShowState(ShowState show_state,
       NOTREACHED();
   }
 
+  app_list_folder_view_->SetBackButtonLabel(IsInFolderView());
   Layout();
 }
 

@@ -50,6 +50,7 @@ class AppListFolderView : public views::View,
   gfx::Rect GetItemIconBoundsAt(int index);
 
   void UpdateFolderNameVisibility(bool visible);
+  void SetBackButtonLabel(bool folder);
 
   // Hides the view immediately without animation.
   void HideViewImmediately();
