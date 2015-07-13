@@ -64,6 +64,7 @@ public:
     void setMouseDownMayStartSelect(bool);
     bool mouseDownMayStartSelect() const;
     bool mouseDownWasSingleClickInSelection() const;
+    void notifySelectionChanged();
 
 private:
     explicit SelectionController(LocalFrame&);

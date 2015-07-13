@@ -41,6 +41,7 @@
 #include "core/editing/GranularityStrategy.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/SelectionController.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/TypingCommand.h"
 #include "core/editing/VisibleUnits.h"
@@ -327,6 +328,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
 
     notifyAccessibilityForSelectionChange();
     notifyCompositorForSelectionChange();
+    notifyEventHandlerForSelectionChange();
     m_frame->localDOMWindow()->enqueueDocumentEvent(Event::create(EventTypeNames::selectionchange));
 }
 
@@ -1506,6 +1508,11 @@ void FrameSelection::notifyCompositorForSelectionChange()
         return;
 
     scheduleVisualUpdate();
+}
+
+void FrameSelection::notifyEventHandlerForSelectionChange()
+{
+    m_frame->eventHandler().selectionController().notifySelectionChanged();
 }
 
 void FrameSelection::focusedOrActiveStateChanged()

@@ -193,7 +193,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
             granularity = selection().granularity();
             expandSelectionUsingGranularity(newSelection, selection().granularity());
         }
-    } else {
+    } else if (m_selectionState != SelectionState::ExtendedSelection) {
         newSelection = expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(visiblePos));
     }
 
@@ -616,6 +616,16 @@ bool SelectionController::mouseDownMayStartSelect() const
 bool SelectionController::mouseDownWasSingleClickInSelection() const
 {
     return m_mouseDownWasSingleClickInSelection;
+}
+
+void SelectionController::notifySelectionChanged()
+{
+    if (selection().selectionType() == SelectionType::RangeSelection)
+        m_selectionState = SelectionState::ExtendedSelection;
+    else if (selection().selectionType() == SelectionType::CaretSelection)
+        m_selectionState = SelectionState::PlacedCaret;
+    else
+        m_selectionState = SelectionState::HaveNotStartedSelection;
 }
 
 FrameSelection& SelectionController::selection() const
