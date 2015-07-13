@@ -99,22 +99,18 @@ function runTests() {
           TESTING_ACTIONS_DIR.name,
           {create: false},
           chrome.test.callbackPass(function(dirEntry) {
-            test_util.toExternalEntry(dirEntry).then(
-                chrome.test.callbackPass(function(externalEntry) {
-                  chrome.test.assertTrue(!!externalEntry);
-                  chrome.fileManagerPrivate.getEntryActions(
-                      externalEntry.toURL(),
-                      chrome.test.callbackPass(function(actions) {
-                        chrome.test.assertEq(2, actions.length);
-                        chrome.test.assertEq(TESTING_ACTIONS_DIR_ACTIONS[0].id,
-                            actions[0].id);
-                        chrome.test.assertFalse(!!actions[0].title);
-                        chrome.test.assertEq(TESTING_ACTIONS_DIR_ACTIONS[1].id,
-                            actions[1].id);
-                        chrome.test.assertEq(
-                            TESTING_ACTIONS_DIR_ACTIONS[1].title,
-                            actions[1].title);
-                      }));
+            chrome.fileManagerPrivate.getEntryActions(
+                dirEntry,
+                chrome.test.callbackPass(function(actions) {
+                  chrome.test.assertEq(2, actions.length);
+                  chrome.test.assertEq(TESTING_ACTIONS_DIR_ACTIONS[0].id,
+                      actions[0].id);
+                  chrome.test.assertFalse(!!actions[0].title);
+                  chrome.test.assertEq(TESTING_ACTIONS_DIR_ACTIONS[1].id,
+                      actions[1].id);
+                  chrome.test.assertEq(
+                      TESTING_ACTIONS_DIR_ACTIONS[1].title,
+                      actions[1].title);
                 }));
           }),
           function(error) {
@@ -128,14 +124,10 @@ function runTests() {
           TESTING_NO_ACTIONS_DIR.name,
           {create: false},
           chrome.test.callbackPass(function(dirEntry) {
-            test_util.toExternalEntry(dirEntry).then(
-                chrome.test.callbackPass(function(externalEntry) {
-                  chrome.test.assertTrue(!!externalEntry);
-                  chrome.fileManagerPrivate.getEntryActions(
-                      externalEntry.toURL(),
-                      chrome.test.callbackPass(function(actions) {
-                        chrome.test.assertEq(0, actions.length);
-                      }));
+            chrome.fileManagerPrivate.getEntryActions(
+                dirEntry,
+                chrome.test.callbackPass(function(actions) {
+                  chrome.test.assertEq(0, actions.length);
                 }));
           }),
           function(error) {

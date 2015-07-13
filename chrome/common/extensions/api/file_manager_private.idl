@@ -931,12 +931,14 @@ interface Functions {
 
   // Requests list of actions for the specified file. If not possible, then an
   // error via chrome.runtime.lastError is returned.
-  static void getEntryActions(DOMString entryUrl,
+  [nocompile]
+  static void getEntryActions([instanceof=Entry] object entry,
                               GetEntryActionsCallback callback);
 
   // Executes the entry action. If not possible, then an error via
   // chrome.runtime.lastError is returned.
-  static void executeEntryAction(DOMString entryUrl,
+  [nocompile]
+  static void executeEntryAction([instanceof=Entry] object entry,
                                  DOMString actionId,
                                  SimpleCallback callback);
 };

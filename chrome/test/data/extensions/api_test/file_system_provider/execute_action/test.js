@@ -67,14 +67,10 @@ function runTests() {
           TESTING_ACTIONS_DIR.name,
           {create: false},
           chrome.test.callbackPass(function(dirEntry) {
-            test_util.toExternalEntry(dirEntry).then(
-                chrome.test.callbackPass(function(externalEntry) {
-                  chrome.test.assertTrue(!!externalEntry);
-                  chrome.fileManagerPrivate.executeEntryAction(
-                      externalEntry.toURL(),
-                      TESTING_ACTION_ID,
-                      chrome.test.callbackPass(function() {}));
-                }));
+            chrome.fileManagerPrivate.executeEntryAction(
+                dirEntry,
+                TESTING_ACTION_ID,
+                chrome.test.callbackPass(function() {}));
           }),
           function(error) {
             chrome.test.fail(error.name);
@@ -100,15 +96,11 @@ function runTests() {
           TESTING_ACTIONS_DIR.name,
           {create: false},
           chrome.test.callbackPass(function(dirEntry) {
-            test_util.toExternalEntry(dirEntry).then(
-                chrome.test.callbackPass(function(externalEntry) {
-                  chrome.test.assertTrue(!!externalEntry);
-                  chrome.fileManagerPrivate.executeEntryAction(
-                      externalEntry.toURL(),
-                      TESTING_UNKNOWN_ACTION_ID,
-                      chrome.test.callbackFail('Failed to execute the action.',
-                          function() {}));
-                }));
+            chrome.fileManagerPrivate.executeEntryAction(
+                dirEntry,
+                TESTING_UNKNOWN_ACTION_ID,
+                chrome.test.callbackFail('Failed to execute the action.',
+                    function() {}));
           }),
           function(error) {
             chrome.test.fail(error.name);

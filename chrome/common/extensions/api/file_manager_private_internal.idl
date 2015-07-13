@@ -14,11 +14,13 @@ namespace fileManagerPrivateInternal {
     boolean fileIsDirectory;
   };
 
+  callback SimpleCallback = void();
   callback ResolveIsolatedEntriesCallback = void(EntryDescription[] entries);
   callback GetEntryPropertiesCallback = void(
       fileManagerPrivate.EntryProperties[] entryProperties);
   callback AddFileWatchCallback = void(optional boolean success);
   callback RemoveFileWatchCallback = void(optional boolean success);
+  callback GetEntryActionsCallback = void(fileSystemProvider.Action[] actions);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -33,5 +35,10 @@ namespace fileManagerPrivateInternal {
     static void removeFileWatch(
         DOMString url,
         RemoveFileWatchCallback callback);
+    static void getEntryActions(DOMString url,
+                                GetEntryActionsCallback callback);
+    static void executeEntryAction(DOMString url,
+                                   DOMString actionId,
+                                   SimpleCallback callback);
   };
 };

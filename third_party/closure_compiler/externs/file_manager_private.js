@@ -632,20 +632,20 @@ chrome.fileManagerPrivate.configureVolume = function(volumeId, callback) {};
 /**
  * Requests fetching list of actions for the specified entry. If not possible,
  * then returns an error via chrome.runtime.lastError.
- * @param {string} entryUrl
+ * @param {!Entry} entry
  * @param {function(!Array<!EntryAction>)} callback
  */
-chrome.fileManagerPrivate.getEntryActions = function(entryUrl, callback) {};
+chrome.fileManagerPrivate.getEntryActions = function(entry, callback) {};
 
 /**
  * Executes the action on the specified entry. If not possible, then returns an
  * error via chrome.runtime.lastError.
- * @param {string} entryUrl
+ * @param {!Entry} entry
  * @param {string} actionId
  * @param {function()} callback
  */
 chrome.fileManagerPrivate.executeAction = function(
-    entryUrl, actionId, callback) {};
+    entry, actionId, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

@@ -231,14 +231,14 @@ class FileManagerPrivateConfigureVolumeFunction
 };
 
 // Implements the chrome.fileManagerPrivate.getEntryActions method.
-class FileManagerPrivateGetEntryActionsFunction
+class FileManagerPrivateInternalGetEntryActionsFunction
     : public UIThreadExtensionFunction {
  public:
-  FileManagerPrivateGetEntryActionsFunction();
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getEntryActions",
-                             FILEMANAGERPRIVATE_GETENTRYACTIONS)
+  FileManagerPrivateInternalGetEntryActionsFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getEntryActions",
+                             FILEMANAGERPRIVATEINTERNAL_GETENTRYACTIONS)
  protected:
-  ~FileManagerPrivateGetEntryActionsFunction() override {}
+  ~FileManagerPrivateInternalGetEntryActionsFunction() override {}
 
  private:
   ResponseAction Run() override;
@@ -246,25 +246,26 @@ class FileManagerPrivateGetEntryActionsFunction
                    base::File::Error result);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGetEntryActionsFunction);
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateInternalGetEntryActionsFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.executeEntryAction method.
-class FileManagerPrivateExecuteEntryActionFunction
+class FileManagerPrivateInternalExecuteEntryActionFunction
     : public UIThreadExtensionFunction {
  public:
-  FileManagerPrivateExecuteEntryActionFunction();
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.executeEntryAction",
-                             FILEMANAGERPRIVATE_EXECUTEENTRYACTION)
+  FileManagerPrivateInternalExecuteEntryActionFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.executeEntryAction",
+                             FILEMANAGERPRIVATEINTERNAL_EXECUTEENTRYACTION)
  protected:
-  ~FileManagerPrivateExecuteEntryActionFunction() override {}
+  ~FileManagerPrivateInternalExecuteEntryActionFunction() override {}
 
  private:
   ResponseAction Run() override;
   void OnCompleted(base::File::Error result);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateExecuteEntryActionFunction);
+  DISALLOW_COPY_AND_ASSIGN(
+      FileManagerPrivateInternalExecuteEntryActionFunction);
 };
 
 }  // namespace extensions

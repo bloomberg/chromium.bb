@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -535,14 +536,14 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
   Respond(NoArguments());
 }
 
-FileManagerPrivateGetEntryActionsFunction::
-    FileManagerPrivateGetEntryActionsFunction()
+FileManagerPrivateInternalGetEntryActionsFunction::
+    FileManagerPrivateInternalGetEntryActionsFunction()
     : chrome_details_(this) {
 }
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateGetEntryActionsFunction::Run() {
-  using extensions::api::file_manager_private::GetEntryActions::Params;
+FileManagerPrivateInternalGetEntryActionsFunction::Run() {
+  using extensions::api::file_manager_private_internal::GetEntryActions::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -551,7 +552,7 @@ FileManagerPrivateGetEntryActionsFunction::Run() {
           chrome_details_.GetProfile(), render_frame_host());
 
   const storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(params->entry_url)));
+      file_system_context->CrackURL(GURL(params->url)));
 
   chromeos::file_system_provider::util::FileSystemURLParser parser(
       file_system_url);
@@ -560,12 +561,13 @@ FileManagerPrivateGetEntryActionsFunction::Run() {
 
   parser.file_system()->GetActions(
       parser.file_path(),
-      base::Bind(&FileManagerPrivateGetEntryActionsFunction::OnCompleted,
-                 this));
+      base::Bind(
+          &FileManagerPrivateInternalGetEntryActionsFunction::OnCompleted,
+          this));
   return RespondLater();
 }
 
-void FileManagerPrivateGetEntryActionsFunction::OnCompleted(
+void FileManagerPrivateInternalGetEntryActionsFunction::OnCompleted(
     const chromeos::file_system_provider::Actions& actions,
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
@@ -583,17 +585,19 @@ void FileManagerPrivateGetEntryActionsFunction::OnCompleted(
   }
 
   Respond(ArgumentList(
-      api::file_manager_private::GetEntryActions::Results::Create(items)));
+      api::file_manager_private_internal::GetEntryActions::Results::Create(
+          items)));
 }
 
-FileManagerPrivateExecuteEntryActionFunction::
-    FileManagerPrivateExecuteEntryActionFunction()
+FileManagerPrivateInternalExecuteEntryActionFunction::
+    FileManagerPrivateInternalExecuteEntryActionFunction()
     : chrome_details_(this) {
 }
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateExecuteEntryActionFunction::Run() {
-  using extensions::api::file_manager_private::ExecuteEntryAction::Params;
+FileManagerPrivateInternalExecuteEntryActionFunction::Run() {
+  using extensions::api::file_manager_private_internal::ExecuteEntryAction::
+      Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -602,7 +606,7 @@ FileManagerPrivateExecuteEntryActionFunction::Run() {
           chrome_details_.GetProfile(), render_frame_host());
 
   const storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(params->entry_url)));
+      file_system_context->CrackURL(GURL(params->url)));
 
   chromeos::file_system_provider::util::FileSystemURLParser parser(
       file_system_url);
@@ -611,12 +615,13 @@ FileManagerPrivateExecuteEntryActionFunction::Run() {
 
   parser.file_system()->ExecuteAction(
       parser.file_path(), params->action_id,
-      base::Bind(&FileManagerPrivateExecuteEntryActionFunction::OnCompleted,
-                 this));
+      base::Bind(
+          &FileManagerPrivateInternalExecuteEntryActionFunction::OnCompleted,
+          this));
   return RespondLater();
 }
 
-void FileManagerPrivateExecuteEntryActionFunction::OnCompleted(
+void FileManagerPrivateInternalExecuteEntryActionFunction::OnCompleted(
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
     Respond(Error("Failed to execute the action."));

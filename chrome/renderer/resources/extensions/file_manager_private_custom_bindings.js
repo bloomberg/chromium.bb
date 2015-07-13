@@ -86,6 +86,17 @@ binding.registerCustomHook(function(bindingsAPI) {
     var url = fileBrowserHandlerNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.removeFileWatch(url, callback);
   });
+
+  apiFunctions.setHandleRequest('getEntryActions', function(entry, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.getEntryActions(url, callback);
+  });
+
+  apiFunctions.setHandleRequest('executeEntryAction', function(
+        entry, actionId, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.executeEntryAction(url, actionId, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(
