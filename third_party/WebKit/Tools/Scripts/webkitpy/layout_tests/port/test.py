@@ -364,7 +364,7 @@ class TestPort(Port):
 
     """Test implementation of the Port interface."""
     ALL_BASELINE_VARIANTS = (
-        'test-linux-x86_64',
+        'test-linux-trusty', 'test-linux-precise', 'test-linux-x86',
         'test-mac-snowleopard', 'test-mac-leopard',
         'test-win-win7', 'test-win-xp',
     )
@@ -374,7 +374,9 @@ class TestPort(Port):
         'win7':        ['test-win-win7'],
         'leopard':     ['test-mac-leopard', 'test-mac-snowleopard'],
         'snowleopard': ['test-mac-snowleopard'],
-        'lucid':       ['test-linux-x86_64', 'test-win-win7'],
+        'trusty':      ['test-linux-trusty', 'test-win-win7'],
+        'precise':     ['test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
+        'linux32':     ['test-linux-x86', 'test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
     }
 
     @classmethod
@@ -411,9 +413,14 @@ class TestPort(Port):
             'test-win-win7': 'win7',
             'test-mac-leopard': 'leopard',
             'test-mac-snowleopard': 'snowleopard',
-            'test-linux-x86_64': 'lucid',
+            'test-linux-x86': 'linux32',
+            'test-linux-precise': 'precise',
+            'test-linux-trusty': 'trusty',
         }
         self._version = version_map[self._name]
+
+        if self._operating_system == 'linux' and self._version != 'linux32':
+            self._architecture = 'x86_64'
 
     def repository_paths(self):
         """Returns a list of (repository_name, repository_path) tuples of its depending code base."""
@@ -533,15 +540,20 @@ class TestPort(Port):
                 ('snowleopard', 'x86'),
                 ('xp', 'x86'),
                 ('win7', 'x86'),
-                ('lucid', 'x86'),
-                ('lucid', 'x86_64'))
+                ('linux32', 'x86'),
+                ('precise', 'x86_64'),
+                ('trusty', 'x86_64'))
 
     def _all_build_types(self):
         return ('debug', 'release')
 
     def configuration_specifier_macros(self):
         """To avoid surprises when introducing new macros, these are intentionally fixed in time."""
-        return {'mac': ['leopard', 'snowleopard'], 'win': ['xp', 'win7'], 'linux': ['lucid']}
+        return {
+            'mac': ['leopard', 'snowleopard'],
+            'win': ['xp', 'win7'],
+            'linux': ['linux32', 'precise', 'trusty']
+        }
 
     def all_baseline_variants(self):
         return self.ALL_BASELINE_VARIANTS

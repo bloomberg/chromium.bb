@@ -105,8 +105,11 @@ class Port(object):
         ('yosemite', 'x86'),
         ('xp', 'x86'),
         ('win7', 'x86'),
-        ('lucid', 'x86'),
-        ('lucid', 'x86_64'),
+        # FIXME: We handle 32bit Linux similarly to Mac retina above treating it
+        # as a different system for now.
+        ('linux32', 'x86'),
+        ('precise', 'x86_64'),
+        ('trusty', 'x86_64'),
         # FIXME: Technically this should be 'arm', but adding a third architecture type breaks TestConfigurationConverter.
         # If we need this to be 'arm' in the future, then we first have to fix TestConfigurationConverter.
         ('icecreamsandwich', 'x86'),
@@ -115,13 +118,13 @@ class Port(object):
     ALL_BASELINE_VARIANTS = [
         'mac-yosemite', 'mac-mavericks', 'mac-retina', 'mac-mountainlion', 'mac-lion', 'mac-snowleopard',
         'win-win7', 'win-xp',
-        'linux-x86_64', 'linux-x86',
+        'linux-trusty', 'linux-precise', 'linux-x86',
     ]
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': ['snowleopard', 'lion', 'mountainlion', 'retina', 'mavericks', 'yosemite'],
         'win': ['xp', 'win7'],
-        'linux': ['lucid'],
+        'linux': ['linux32', 'precise', 'trusty'],
         'android': ['icecreamsandwich'],
     }
 
@@ -968,7 +971,7 @@ class Port(object):
 
     def name(self):
         """Returns a name that uniquely identifies this particular type of port
-        (e.g., "mac-snowleopard" or "linux-x86_x64" and can be passed
+        (e.g., "mac-snowleopard" or "linux-trusty" and can be passed
         to factory.get() to instantiate the port."""
         return self._name
 
@@ -1253,7 +1256,7 @@ class Port(object):
         refer to them as one term or alias specific values to more generic ones. For example:
 
         (xp, vista, win7) -> win # Abbreviate all Windows versions into one namesake.
-        (lucid) -> linux  # Change specific name of the Linux distro to a more generic term.
+        (precise, trusty) -> linux  # Change specific name of Linux distro to a more generic term.
 
         Returns a dictionary, each key representing a macro term ('win', for example),
         and value being a list of valid configuration specifiers (such as ['xp', 'vista', 'win7'])."""
@@ -1264,7 +1267,7 @@ class Port(object):
 
         The list should be sorted so that a later platform  will reuse
         an earlier platform's baselines if they are the same (e.g.,
-        'snowleopard' should precede 'leopard')."""
+        'yosemite' should precede 'mavericks')."""
         return self.ALL_BASELINE_VARIANTS
 
     def _generate_all_test_configurations(self):
@@ -1276,15 +1279,6 @@ class Port(object):
             for build_type in self.ALL_BUILD_TYPES:
                 test_configurations.append(TestConfiguration(version, architecture, build_type))
         return test_configurations
-
-    try_builder_names = frozenset([
-        'linux_layout',
-        'mac_layout',
-        'win_layout',
-        'linux_layout_rel',
-        'mac_layout_rel',
-        'win_layout_rel',
-    ])
 
     def warn_if_bug_missing_in_test_expectations(self):
         return True

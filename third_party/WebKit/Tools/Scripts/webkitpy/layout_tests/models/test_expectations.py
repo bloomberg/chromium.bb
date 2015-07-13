@@ -215,7 +215,7 @@ class TestExpectationParser(object):
     _configuration_tokens_list = [
         'Mac', 'SnowLeopard', 'Lion', 'MountainLion', 'Retina', 'Mavericks', 'Yosemite',
         'Win', 'XP', 'Win7',
-        'Linux',
+        'Linux', 'Linux32', 'Precise', 'Trusty',
         'Android',
         'Release',
         'Debug',

@@ -33,7 +33,13 @@ from webkitpy.layout_tests.models.test_configuration import *
 
 def make_mock_all_test_configurations_set():
     all_test_configurations = set()
-    for version, architecture in (('snowleopard', 'x86'), ('xp', 'x86'), ('win7', 'x86'), ('vista', 'x86'), ('lucid', 'x86'), ('lucid', 'x86_64')):
+    for version, architecture in (('snowleopard', 'x86'),
+                                  ('xp', 'x86'),
+                                  ('win7', 'x86'),
+                                  ('vista', 'x86'),
+                                  ('linux32', 'x86'),
+                                  ('precise', 'x86_64'),
+                                  ('trusty', 'x86_64')):
         for build_type in ('debug', 'release'):
             all_test_configurations.add(TestConfiguration(version, architecture, build_type))
     return all_test_configurations
@@ -41,7 +47,7 @@ def make_mock_all_test_configurations_set():
 MOCK_MACROS = {
     'mac': ['snowleopard'],
     'win': ['xp', 'vista', 'win7'],
-    'linux': ['lucid'],
+    'linux': ['linux32', 'precise', 'trusty'],
 }
 
 
@@ -181,41 +187,48 @@ class TestConfigurationConverterTest(unittest.TestCase):
             TestConfiguration('vista', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'release'),
             TestConfiguration('xp', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86_64', 'release'),
-       ])
+            TestConfiguration('linux32', 'x86', 'release'),
+            TestConfiguration('precise', 'x86_64', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
+        ])
         self.assertEqual(converter.to_config_set(set(['release'])), configs_to_match)
 
         configs_to_match = set([
-             TestConfiguration('lucid', 'x86_64', 'release'),
-             TestConfiguration('lucid', 'x86_64', 'debug'),
+            TestConfiguration('precise', 'x86_64', 'release'),
+            TestConfiguration('precise', 'x86_64', 'debug'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'debug'),
         ])
         self.assertEqual(converter.to_config_set(set(['x86_64'])), configs_to_match)
 
         configs_to_match = set([
-            TestConfiguration('lucid', 'x86_64', 'release'),
-            TestConfiguration('lucid', 'x86_64', 'debug'),
-            TestConfiguration('lucid', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86', 'debug'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'debug'),
+            TestConfiguration('precise', 'x86_64', 'release'),
+            TestConfiguration('precise', 'x86_64', 'debug'),
             TestConfiguration('snowleopard', 'x86', 'release'),
             TestConfiguration('snowleopard', 'x86', 'debug'),
         ])
-        self.assertEqual(converter.to_config_set(set(['lucid', 'snowleopard'])), configs_to_match)
+        self.assertEqual(converter.to_config_set(set(['trusty', 'precise', 'snowleopard'])),
+                         configs_to_match)
 
         configs_to_match = set([
-            TestConfiguration('lucid', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86', 'debug'),
+            TestConfiguration('linux32', 'x86', 'release'),
+            TestConfiguration('linux32', 'x86', 'debug'),
             TestConfiguration('snowleopard', 'x86', 'release'),
             TestConfiguration('snowleopard', 'x86', 'debug'),
         ])
-        self.assertEqual(converter.to_config_set(set(['lucid', 'snowleopard', 'x86'])), configs_to_match)
+        self.assertEqual(converter.to_config_set(set(['linux32', 'snowleopard', 'x86'])),
+                         configs_to_match)
 
         configs_to_match = set([
-            TestConfiguration('lucid', 'x86_64', 'release'),
-            TestConfiguration('lucid', 'x86', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
+            TestConfiguration('linux32', 'x86', 'release'),
             TestConfiguration('snowleopard', 'x86', 'release'),
         ])
-        self.assertEqual(converter.to_config_set(set(['lucid', 'snowleopard', 'release'])), configs_to_match)
+        self.assertEqual(
+            converter.to_config_set(set(['trusty', 'linux32', 'snowleopard', 'release'])),
+            configs_to_match)
 
     def test_macro_expansion(self):
         converter = TestConfigurationConverter(self._all_test_configurations, MOCK_MACROS)
@@ -231,10 +244,11 @@ class TestConfigurationConverterTest(unittest.TestCase):
             TestConfiguration('xp', 'x86', 'release'),
             TestConfiguration('vista', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86_64', 'release'),
+            TestConfiguration('linux32', 'x86', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
         ])
-        self.assertEqual(converter.to_config_set(set(['win', 'lucid', 'release'])), configs_to_match)
+        self.assertEqual(converter.to_config_set(set(['win', 'linux32', 'trusty', 'release'])),
+                         configs_to_match)
 
         configs_to_match = set([
             TestConfiguration('xp', 'x86', 'release'),
@@ -262,28 +276,35 @@ class TestConfigurationConverterTest(unittest.TestCase):
         self.assertEqual(converter.to_specifiers_list(configs_to_match), [set(['xp'])])
 
         configs_to_match = set([
-            TestConfiguration('lucid', 'x86_64', 'debug'),
+            TestConfiguration('linux32', 'x86', 'debug'),
+            TestConfiguration('precise', 'x86_64', 'debug'),
+            TestConfiguration('trusty', 'x86_64', 'debug'),
             TestConfiguration('xp', 'x86', 'release'),
         ])
-        self.assertEqual(converter.to_specifiers_list(configs_to_match), [set(['release', 'xp']), set(['debug', 'x86_64', 'linux'])])
+        self.assertEqual(converter.to_specifiers_list(configs_to_match),
+                         [set(['release', 'xp']), set(['debug', 'linux'])])
 
         configs_to_match = set([
             TestConfiguration('xp', 'x86', 'release'),
             TestConfiguration('xp', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86_64', 'debug'),
-            TestConfiguration('lucid', 'x86', 'debug'),
-            TestConfiguration('lucid', 'x86_64', 'debug'),
-            TestConfiguration('lucid', 'x86', 'debug'),
+            TestConfiguration('trusty', 'x86_64', 'debug'),
+            TestConfiguration('precise', 'x86_64', 'debug'),
+            TestConfiguration('linux32', 'x86', 'debug'),
+            TestConfiguration('trusty', 'x86_64', 'debug'),
+            TestConfiguration('precise', 'x86_64', 'debug'),
+            TestConfiguration('linux32', 'x86', 'debug'),
         ])
-        self.assertEqual(converter.to_specifiers_list(configs_to_match), [set(['release', 'xp']), set(['debug', 'linux'])])
+        self.assertEqual(converter.to_specifiers_list(configs_to_match),
+                         [set(['release', 'xp']), set(['debug', 'linux'])])
 
         configs_to_match = set([
             TestConfiguration('xp', 'x86', 'release'),
             TestConfiguration('snowleopard', 'x86', 'release'),
             TestConfiguration('vista', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86_64', 'release'),
+            TestConfiguration('linux32', 'x86', 'release'),
+            TestConfiguration('precise', 'x86_64', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
         ])
         self.assertEqual(converter.to_specifiers_list(configs_to_match), [set(['release'])])
 
@@ -298,9 +319,10 @@ class TestConfigurationConverterTest(unittest.TestCase):
             TestConfiguration('snowleopard', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'debug'),
-            TestConfiguration('lucid', 'x86', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
         ])
-        self.assertEqual(converter.to_specifiers_list(configs_to_match), [set(['win7']), set(['release', 'linux', 'x86']), set(['release', 'xp', 'mac'])])
+        self.assertEqual(converter.to_specifiers_list(configs_to_match),
+                         [set(['win7']), set(['release', 'xp', 'mac', 'trusty'])])
 
     def test_macro_collapsing(self):
         macros = {'foo': ['bar', 'baz'], 'people': ['bob', 'alice', 'john']}
@@ -335,8 +357,9 @@ class TestConfigurationConverterTest(unittest.TestCase):
             TestConfiguration('xp', 'x86', 'release'),
             TestConfiguration('vista', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86_64', 'release'),
+            TestConfiguration('linux32', 'x86', 'release'),
+            TestConfiguration('precise', 'x86_64', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
         ])
         self.assertEqual(converter.to_specifiers_list(configs_to_match), [set(['win', 'linux', 'release'])])
 

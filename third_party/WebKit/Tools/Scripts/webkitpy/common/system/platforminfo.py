@@ -49,7 +49,7 @@ class PlatformInfo(object):
         self._platform_module = platform_module
         self.os_name = self._determine_os_name(sys_module.platform)
         if self.os_name == 'linux':
-            self.os_version = self._determine_linux_version()
+            self.os_version = self._determine_linux_version(platform_module)
         if self.os_name == 'freebsd':
             self.os_version = platform_module.release()
         if self.os_name.startswith('mac'):
@@ -157,9 +157,11 @@ class PlatformInfo(object):
         assert release_version >= min(version_strings.keys())
         return version_strings.get(release_version, 'future')
 
-    def _determine_linux_version(self):
-        # FIXME: we ignore whatever the real version is and pretend it's lucid for now.
-        return 'lucid'
+    def _determine_linux_version(self, platform_module):
+        # Default to trusty if version is not recognized, this supports third party integrations.
+        version = platform_module.linux_distribution()[2]
+        officially_supported_versions = ['precise', 'trusty']
+        return 'trusty' if version not in officially_supported_versions else version
 
     def _determine_win_version(self, win_version_tuple):
         if win_version_tuple[:3] == (6, 1, 7600):

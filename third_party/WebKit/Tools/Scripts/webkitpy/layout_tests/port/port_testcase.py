@@ -38,7 +38,6 @@ import time
 import unittest
 
 from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
-from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.system.platforminfo_mock import MockPlatformInfo
 from webkitpy.common.system.systemhost import SystemHost
@@ -296,10 +295,12 @@ class PortTestCase(unittest.TestCase):
             TestConfiguration('xp', 'x86', 'release'),
             TestConfiguration('win7', 'x86', 'debug'),
             TestConfiguration('win7', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86', 'debug'),
-            TestConfiguration('lucid', 'x86', 'release'),
-            TestConfiguration('lucid', 'x86_64', 'debug'),
-            TestConfiguration('lucid', 'x86_64', 'release'),
+            TestConfiguration('linux32', 'x86', 'debug'),
+            TestConfiguration('linux32', 'x86', 'release'),
+            TestConfiguration('precise', 'x86_64', 'debug'),
+            TestConfiguration('precise', 'x86_64', 'release'),
+            TestConfiguration('trusty', 'x86_64', 'debug'),
+            TestConfiguration('trusty', 'x86_64', 'release'),
             TestConfiguration('icecreamsandwich', 'x86', 'debug'),
             TestConfiguration('icecreamsandwich', 'x86', 'release'),
         ]))

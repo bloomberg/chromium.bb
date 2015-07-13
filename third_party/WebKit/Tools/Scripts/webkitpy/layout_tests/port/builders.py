@@ -44,9 +44,11 @@ _exact_matches = {
     "WebKit XP": {"port_name": "win-xp", "specifiers": ['XP', 'Release']},
     "WebKit Win7": {"port_name": "win-win7", "specifiers": ['Win7', 'Release']},
     "WebKit Win7 (dbg)": {"port_name": "win-win7", "specifiers": ['Win7', 'Debug']},
-    "WebKit Linux": {"port_name": "linux-x86_64", "specifiers": ['Linux', 'Release']},
-    "WebKit Linux 32": {"port_name": "linux-x86", "specifiers": ['Linux', 'Release']},
-    "WebKit Linux (dbg)": {"port_name": "linux-x86_64", "specifiers": ['Linux', 'Debug']},
+    # FIXME: Rename this to 'WebKit Linux Precise'
+    "WebKit Linux": {"port_name": "linux-precise", "specifiers": ['Precise', 'Release']},
+    "WebKit Linux Trusty": {"port_name": "linux-trusty", "specifiers": ['Trusty', 'Release']},
+    "WebKit Linux 32": {"port_name": "linux-x86", "specifiers": ['Linux32', 'Release']},
+    "WebKit Linux (dbg)": {"port_name": "linux-precise", "specifiers": ['Precise', 'Debug']},
     "WebKit Mac10.6": {"port_name": "mac-snowleopard", "specifiers": ['SnowLeopard', 'Release']},
     "WebKit Mac10.6 (dbg)": {"port_name": "mac-snowleopard", "specifiers": ['SnowLeopard', 'Debug']},
     "WebKit Mac10.7": {"port_name": "mac-lion", "specifiers": ['Lion', 'Release']},
@@ -62,7 +64,8 @@ _exact_matches = {
 # Mapping from port name to the deps builder of the same os:
 _deps_builders = {
     "linux-x86": "WebKit Linux (deps)",
-    "linux-x86_64": "WebKit Linux (deps)",
+    "linux-precise": "WebKit Linux (deps)",
+    "linux-trusty": "WebKit Linux (deps)",
     "win-xp": "WebKit XP (deps)",
     "win-win7": "WebKit XP (deps)",
     "mac-snowleopard": "WebKit Mac10.6 (deps)",

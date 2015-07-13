@@ -47,11 +47,14 @@ def fake_sys(platform_str='darwin', windows_version_tuple=None):
     return FakeSysModule()
 
 
-def fake_platform(mac_version_string='10.6.3', release_string='bar'):
+def fake_platform(mac_version_string='10.6.3', release_string='bar', linux_version='trusty'):
 
     class FakePlatformModule(object):
         def mac_ver(self):
             return tuple([mac_version_string, tuple(['', '', '']), 'i386'])
+
+        def linux_distribution(self):
+            return tuple([None, None, linux_version])
 
         def platform(self):
             return 'foo'
@@ -142,7 +145,11 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.10.0')).os_version, 'yosemite')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.11.0')).os_version, 'future')
 
-        self.assertEqual(self.make_info(fake_sys('linux2')).os_version, 'lucid')
+        self.assertEqual(self.make_info(fake_sys('linux2')).os_version, 'trusty')
+        info = self.make_info(fake_sys('linux2'), fake_platform(linux_version='precise'))
+        self.assertEqual(info.os_version, 'precise')
+        info = self.make_info(fake_sys('linux2'), fake_platform(linux_version='utopic'))
+        self.assertEqual(info.os_version, 'trusty')
 
         self.assertEqual(self.make_info(fake_sys('freebsd8'), fake_platform('', '8.3-PRERELEASE')).os_version, '8.3-PRERELEASE')
         self.assertEqual(self.make_info(fake_sys('freebsd9'), fake_platform('', '9.0-RELEASE')).os_version, '9.0-RELEASE')

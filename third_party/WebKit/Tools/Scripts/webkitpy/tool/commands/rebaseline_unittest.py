@@ -142,7 +142,9 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
         try:
             builders._exact_matches = {
                 "MOCK Leopard": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
-                "MOCK Linux": {"port_name": "test-linux-x86_64", "specifiers": set(["mock-specifier"])},
+                "MOCK Trusty": {"port_name": "test-linux-trusty", "specifiers": set(["mock-specifier"])},
+                "MOCK Precise": {"port_name": "test-linux-precise", "specifiers": set(["mock-specifier"])},
+                "MOCK Linux 32": {"port_name": "test-linux-x86", "specifiers": set(["mock-specifier"])},
                 "MOCK Win7": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
             }
 
@@ -154,8 +156,10 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
             out, _, _ = oc.restore_output()
             builders._exact_matches = old_exact_matches
 
-        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-x86_64/failures/expected/image-expected.txt')), 'original win7 result')
-        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/mac-leopard/userscripts/another-test-expected.txt')))
+        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-trusty/failures/expected/image-expected.txt')), 'original win7 result')
+        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-precise/userscripts/another-test-expected.txt')))
+        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-x86/userscripts/another-test-expected.txt')))
+        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-mac-leopard/userscripts/another-test-expected.txt')))
         self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [], "delete": []}\n')
 
     def test_no_copy_existing_baseline(self):
@@ -170,7 +174,8 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
         try:
             builders._exact_matches = {
                 "MOCK Leopard": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
-                "MOCK Linux": {"port_name": "test-linux-x86_64", "specifiers": set(["mock-specifier"])},
+                "MOCK Trusty": {"port_name": "test-linux-trusty", "specifiers": set(["mock-specifier"])},
+                "MOCK Linux 32": {"port_name": "test-linux-x86", "specifiers": set(["mock-specifier"])},
                 "MOCK Win7": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
             }
 
@@ -182,14 +187,14 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
             out, _, _ = oc.restore_output()
             builders._exact_matches = old_exact_matches
 
-        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-x86_64/failures/expected/image-expected.txt')), 'original win7 result')
+        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-trusty/failures/expected/image-expected.txt')), 'original win7 result')
         self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')), 'original win7 result')
-        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/mac-leopard/userscripts/another-test-expected.txt')))
+        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-x86/userscripts/another-test-expected.txt')))
+        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-mac-leopard/userscripts/another-test-expected.txt')))
         self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [], "delete": []}\n')
 
     def test_no_copy_skipped_test(self):
         self.tool.executive = MockExecutive2()
-
         port = self.tool.port_factory.get('test-win-win7')
         fs = self.tool.filesystem
         self._write(fs.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt'), 'original win7 result')
@@ -201,8 +206,10 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
         oc = OutputCapture()
         try:
             builders._exact_matches = {
-                "MOCK Linux": {"port_name": "test-linux-x86_64", "specifiers": set(["mock-specifier"])},
                 "MOCK Leopard": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
+                "MOCK Trusty": {"port_name": "test-linux-trusty", "specifiers": set(["mock-specifier"])},
+                "MOCK Precise": {"port_name": "test-linux-precise", "specifiers": set(["mock-specifier"])},
+                "MOCK Linux 32": {"port_name": "test-linux-x86", "specifiers": set(["mock-specifier"])},
                 "MOCK Win7": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
             }
 
@@ -214,7 +221,10 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
             out, _, _ = oc.restore_output()
             builders._exact_matches = old_exact_matches
 
-        self.assertFalse(fs.exists(fs.join(port.layout_tests_dir(), 'platform/test-linux-x86_64/failures/expected/image-expected.txt')))
+        self.assertFalse(fs.exists(fs.join(port.layout_tests_dir(), 'platform/test-mac-leopard/failures/expected/image-expected.txt')))
+        self.assertFalse(fs.exists(fs.join(port.layout_tests_dir(), 'platform/test-linux-trusty/failures/expected/image-expected.txt')))
+        self.assertFalse(fs.exists(fs.join(port.layout_tests_dir(), 'platform/test-linux-precise/failures/expected/image-expected.txt')))
+        self.assertFalse(fs.exists(fs.join(port.layout_tests_dir(), 'platform/test-linux-x86/failures/expected/image-expected.txt')))
         self.assertEqual(self._read(fs.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')),
                          'original win7 result')
 
@@ -230,6 +240,9 @@ class TestRebaselineTest(_BaseTestCase):
         command = self.command
         self.assertMultiLineEqual(command._baseline_directory("WebKit Mac10.7"), "/mock-checkout/third_party/WebKit/LayoutTests/platform/mac-lion")
         self.assertMultiLineEqual(command._baseline_directory("WebKit Mac10.6"), "/mock-checkout/third_party/WebKit/LayoutTests/platform/mac-snowleopard")
+        self.assertMultiLineEqual(command._baseline_directory("WebKit Linux Trusty"), "/mock-checkout/third_party/WebKit/LayoutTests/platform/linux")
+        self.assertMultiLineEqual(command._baseline_directory("WebKit Linux"), "/mock-checkout/third_party/WebKit/LayoutTests/platform/linux-precise")
+        self.assertMultiLineEqual(command._baseline_directory("WebKit Linux 32"), "/mock-checkout/third_party/WebKit/LayoutTests/platform/linux-x86")
 
     def test_rebaseline_updates_expectations_file_noop(self):
         self._zero_out_test_expectations()
@@ -253,7 +266,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
 """)
 
     def test_rebaseline_test(self):
-        self.command._rebaseline_test("WebKit Linux", "userscripts/another-test.html", "txt", self.WEB_PREFIX)
+        self.command._rebaseline_test("WebKit Linux Trusty", "userscripts/another-test.html", "txt", self.WEB_PREFIX)
         self.assertItemsEqual(self.tool.web.urls_fetched, [self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
 
     def test_rebaseline_test_with_results_directory(self):
@@ -275,7 +288,7 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         self.command._scm_changes = {'add': [], 'delete': []}
         self.tool._scm.exists = lambda x: False
 
-        self.command._rebaseline_test("WebKit Linux", "userscripts/another-test.html", "txt", None)
+        self.command._rebaseline_test("WebKit Linux Trusty", "userscripts/another-test.html", "txt", None)
 
         self.assertDictEqual(self.command._scm_changes, {'add': ['/mock-checkout/third_party/WebKit/LayoutTests/platform/linux/userscripts/another-test-expected.txt'], 'delete': []})
 

@@ -69,6 +69,8 @@ class _BrowserTestTestCaseMixin(object):
 class BrowserTestLinuxTest(_BrowserTestTestCaseMixin, port_testcase.PortTestCase):
     port_name = 'linux'
     port_maker = browser_test.BrowserTestLinuxPort
+    os_name = 'linux'
+    os_version = 'trusty'
     driver_name_endswith = 'browser_tests'
     timeout_ms = 10 * 1000
 

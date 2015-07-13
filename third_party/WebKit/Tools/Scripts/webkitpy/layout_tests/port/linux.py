@@ -43,10 +43,12 @@ _log = logging.getLogger(__name__)
 class LinuxPort(base.Port):
     port_name = 'linux'
 
-    SUPPORTED_VERSIONS = ('x86', 'x86_64')
+    SUPPORTED_VERSIONS = ('linux32', 'precise', 'trusty')
 
-    FALLBACK_PATHS = { 'x86_64': [ 'linux' ] + win.WinPort.latest_platform_fallback_path() }
-    FALLBACK_PATHS['x86'] = ['linux-x86'] + FALLBACK_PATHS['x86_64']
+    FALLBACK_PATHS = {}
+    FALLBACK_PATHS['trusty'] = ['linux'] + win.WinPort.latest_platform_fallback_path()
+    FALLBACK_PATHS['precise'] = ['linux-precise'] + FALLBACK_PATHS['trusty']
+    FALLBACK_PATHS['linux32'] = ['linux-x86'] + FALLBACK_PATHS['precise']
 
     DEFAULT_BUILD_DIRECTORIES = ('out',)
 
@@ -91,17 +93,28 @@ class LinuxPort(base.Port):
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('linux'):
-            return port_name + '-' + cls._determine_architecture(host.filesystem, host.executive, cls._determine_driver_path_statically(host, options))
+            arch = cls._determine_architecture(host.filesystem, host.executive,
+                                               cls._determine_driver_path_statically(host, options))
+            if arch == 'x86':
+                return port_name + '-x86'
+            else:
+                return port_name + '-' + host.platform.os_version  # e.g. linux-trusty
         return port_name
 
     def __init__(self, host, port_name, **kwargs):
         super(LinuxPort, self).__init__(host, port_name, **kwargs)
-        (base, arch) = port_name.rsplit('-', 1)
-        assert base == 'linux'
-        assert arch in self.SUPPORTED_VERSIONS
-        assert port_name in ('linux', 'linux-x86', 'linux-x86_64')
-        self._version = 'lucid'  # We only support lucid right now.
-        self._architecture = arch
+
+        # FIXME: Rename 32-bit port name from linux-x86 to linux-linux32 to avoid confusion.
+        assert port_name.startswith('linux-')
+        port_name_suffix = port_name.replace('linux-', '', 1)
+        if port_name_suffix == "x86":
+            self._version = "linux32"
+            self._architecture = "x86"
+        else:
+            self._version = port_name_suffix
+            self._architecture = "x86_64"
+        assert self._version in self.SUPPORTED_VERSIONS
+
         if not self.get_option('disable_breakpad'):
             self._dump_reader = DumpReaderLinux(host, self._build_path())
 
@@ -110,10 +123,6 @@ class LinuxPort(base.Port):
         if not self.get_option('disable_breakpad'):
             flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
         return flags
-
-    def default_baseline_search_path(self):
-        port_names = self.FALLBACK_PATHS[self._architecture]
-        return map(self._webkit_baseline_path, port_names)
 
     def _modules_to_search_for_symbols(self):
         return [self._build_path('libffmpegsumo.so')]
@@ -139,6 +148,15 @@ class LinuxPort(base.Port):
     def operating_system(self):
         return 'linux'
 
+    def path_to_apache(self):
+        # The Apache binary path can vary depending on OS and distribution
+        # See http://wiki.apache.org/httpd/DistrosDefaultLayout
+        for path in ["/usr/sbin/httpd", "/usr/sbin/apache2"]:
+            if self._filesystem.exists(path):
+                return path
+        _log.error("Could not find apache. Not installed or unknown path.")
+        return None
+
     #
     # PROTECTED METHODS
     #
@@ -153,15 +171,6 @@ class LinuxPort(base.Port):
 
     def _wdiff_missing_message(self):
         return 'wdiff is not installed; please install using "sudo apt-get install wdiff"'
-
-    def path_to_apache(self):
-        # The Apache binary path can vary depending on OS and distribution
-        # See http://wiki.apache.org/httpd/DistrosDefaultLayout
-        for path in ["/usr/sbin/httpd", "/usr/sbin/apache2"]:
-            if self._filesystem.exists(path):
-                return path
-        _log.error("Could not find apache. Not installed or unknown path.")
-        return None
 
     def _path_to_driver(self, configuration=None):
         binary_name = self.driver_name()

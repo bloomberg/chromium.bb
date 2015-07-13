@@ -59,8 +59,11 @@ class FactoryTest(unittest.TestCase):
                          cls=mac.MacPort)
 
     def test_linux(self):
-        self.assert_port(port_name='linux', cls=linux.LinuxPort)
-        self.assert_port(port_name='chromium', os_name='linux', os_version='lucid',
+        self.assert_port(port_name='linux', os_name='linux', os_version='trusty',
+                         cls=linux.LinuxPort)
+        self.assert_port(port_name='chromium', os_name='linux', os_version='trusty',
+                         cls=linux.LinuxPort)
+        self.assert_port(port_name='chromium', os_name='linux', os_version='precise',
                          cls=linux.LinuxPort)
 
     def test_android(self):
