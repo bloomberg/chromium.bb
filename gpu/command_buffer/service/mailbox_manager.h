@@ -17,6 +17,8 @@ class Texture;
 // Manages resources scoped beyond the context or context group level.
 class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
  public:
+  static scoped_refptr<MailboxManager> Create();
+
   // Look up the texture definition from the named mailbox.
   virtual Texture* ConsumeTexture(const Mailbox& mailbox) = 0;
 

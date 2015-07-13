@@ -92,6 +92,7 @@ source_set("service_sources") {
     "in_process_command_buffer.h",
     "logger.cc",
     "logger.h",
+    "mailbox_manager.cc",
     "mailbox_manager.h",
     "mailbox_manager_impl.cc",
     "mailbox_manager_impl.h",

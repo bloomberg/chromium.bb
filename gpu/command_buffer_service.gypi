@@ -96,6 +96,7 @@
     'command_buffer/service/in_process_command_buffer.h',
     'command_buffer/service/logger.cc',
     'command_buffer/service/logger.h',
+    'command_buffer/service/mailbox_manager.cc',
     'command_buffer/service/mailbox_manager.h',
     'command_buffer/service/mailbox_manager_impl.cc',
     'command_buffer/service/mailbox_manager_impl.h',

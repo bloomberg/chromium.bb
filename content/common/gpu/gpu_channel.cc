@@ -32,7 +32,7 @@
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "gpu/command_buffer/service/mailbox_manager_impl.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ipc/ipc_channel.h"
@@ -413,7 +413,9 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       messages_processed_(0),
       client_id_(client_id),
       share_group_(share_group ? share_group : new gfx::GLShareGroup),
-      mailbox_manager_(mailbox ? mailbox : new gpu::gles2::MailboxManagerImpl),
+      mailbox_manager_(mailbox
+                           ? scoped_refptr<gpu::gles2::MailboxManager>(mailbox)
+                           : gpu::gles2::MailboxManager::Create()),
       watchdog_(watchdog),
       software_(software),
       handle_messages_scheduled_(false),
