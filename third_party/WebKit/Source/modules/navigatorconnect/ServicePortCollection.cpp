@@ -146,7 +146,7 @@ void ServicePortCollection::postMessage(WebServicePortID portId, const WebString
     MessagePortArray* ports = MessagePort::entanglePorts(*executionContext(), channels.release());
     RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports, message.release());
     // TODO(mek): Lookup ServicePort and set events source attribute.
-    dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
+    dispatchEvent(evt.release());
 }
 
 void ServicePortCollection::dispatchConnectEvent(PassOwnPtr<WebServicePortConnectEventCallbacks> callbacks, const WebURL& targetURL, const WebString& origin, WebServicePortID portID)

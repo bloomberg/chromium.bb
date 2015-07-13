@@ -1287,7 +1287,7 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
         0, MouseEvent::platformModifiersToButtons(event.modifiers()), nullptr, dataTransfer, false, event.syntheticEventType(), event.timestamp());
 
-    dragTarget->dispatchEvent(me.get(), IGNORE_EXCEPTION);
+    dragTarget->dispatchEvent(me.get());
     return me->defaultPrevented();
 }
 
@@ -3045,13 +3045,13 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     keydown->setTarget(node);
 
     if (initialKeyEvent.type() == PlatformEvent::RawKeyDown) {
-        node->dispatchEvent(keydown, IGNORE_EXCEPTION);
+        node->dispatchEvent(keydown);
         // If frame changed as a result of keydown dispatch, then return true to avoid sending a subsequent keypress message to the new frame.
         bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController().focusedOrMainFrame();
         return keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
     }
 
-    node->dispatchEvent(keydown, IGNORE_EXCEPTION);
+    node->dispatchEvent(keydown);
     // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
     bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController().focusedOrMainFrame();
     bool keydownResult = keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
@@ -3072,7 +3072,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     keypress->setTarget(node);
     if (keydownResult)
         keypress->setDefaultPrevented(true);
-    node->dispatchEvent(keypress, IGNORE_EXCEPTION);
+    node->dispatchEvent(keypress);
 
     return keydownResult || keypress->defaultPrevented() || keypress->defaultHandled();
 }
@@ -3319,7 +3319,7 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
     RefPtrWillBeRawPtr<TextEvent> event = TextEvent::create(m_frame->domWindow(), text, inputType);
     event->setUnderlyingEvent(underlyingEvent);
 
-    target->dispatchEvent(event, IGNORE_EXCEPTION);
+    target->dispatchEvent(event);
     return event->defaultHandled();
 }
 

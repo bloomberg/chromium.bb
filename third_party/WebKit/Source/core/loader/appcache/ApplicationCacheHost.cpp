@@ -229,6 +229,8 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int p
         return;
 
     const AtomicString& eventType = ApplicationCache::toEventType(id);
+    if (eventType.isEmpty() || !m_domApplicationCache->executionContext())
+        return;
     RefPtrWillBeRawPtr<Event> event = nullptr;
     if (id == PROGRESS_EVENT)
         event = ProgressEvent::create(eventType, true, progressDone, progressTotal);
@@ -236,7 +238,7 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int p
         event = ApplicationCacheErrorEvent::create(errorReason, errorURL, errorStatus, errorMessage);
     else
         event = Event::create(eventType);
-    m_domApplicationCache->dispatchEvent(event, ASSERT_NO_EXCEPTION);
+    m_domApplicationCache->dispatchEvent(event);
 }
 
 ApplicationCacheHost::Status ApplicationCacheHost::status() const

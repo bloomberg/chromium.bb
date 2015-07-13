@@ -343,7 +343,7 @@ void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace)
     Element* target = findEventTargetFromSelection();
     if (!target)
         return;
-    target->dispatchEvent(TextEvent::createForPlainTextPaste(frame().domWindow(), pastingText, smartReplace), IGNORE_EXCEPTION);
+    target->dispatchEvent(TextEvent::createForPlainTextPaste(frame().domWindow(), pastingText, smartReplace));
 }
 
 void Editor::pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment> pastingFragment, bool smartReplace, bool matchStyle)
@@ -351,7 +351,7 @@ void Editor::pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment> pastingFra
     Element* target = findEventTargetFromSelection();
     if (!target)
         return;
-    target->dispatchEvent(TextEvent::createForFragmentPaste(frame().domWindow(), pastingFragment, smartReplace, matchStyle), IGNORE_EXCEPTION);
+    target->dispatchEvent(TextEvent::createForFragmentPaste(frame().domWindow(), pastingFragment, smartReplace, matchStyle));
 }
 
 bool Editor::tryDHTMLCopy()
@@ -479,7 +479,7 @@ bool Editor::dispatchCPPEvent(const AtomicString& eventType, DataTransferAccessP
             : DataObject::createFromPasteboard(pasteMode));
 
     RefPtrWillBeRawPtr<Event> evt = ClipboardEvent::create(eventType, true, true, dataTransfer);
-    target->dispatchEvent(evt, IGNORE_EXCEPTION);
+    target->dispatchEvent(evt);
     bool noDefaultProcessing = evt->defaultPrevented();
     if (noDefaultProcessing && policy == DataTransferWritable)
         Pasteboard::generalPasteboard()->writeDataObject(dataTransfer->dataObject());
@@ -647,9 +647,9 @@ String Editor::selectionStartCSSPropertyValue(CSSPropertyID propertyID)
 static void dispatchEditableContentChangedEvents(PassRefPtrWillBeRawPtr<Element> startRoot, PassRefPtrWillBeRawPtr<Element> endRoot)
 {
     if (startRoot)
-        startRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged), IGNORE_EXCEPTION);
+        startRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged));
     if (endRoot && endRoot != startRoot)
-        endRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged), IGNORE_EXCEPTION);
+        endRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged));
 }
 
 void Editor::appliedEditing(PassRefPtrWillBeRawPtr<CompositeEditCommand> cmd)

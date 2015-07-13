@@ -212,7 +212,7 @@ void MessagePort::dispatchMessages()
         MessagePortArray* ports = MessagePort::entanglePorts(*executionContext(), channels.release());
         RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports, message.release());
 
-        dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
+        dispatchEvent(evt.release());
     }
 }
 

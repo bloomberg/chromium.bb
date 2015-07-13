@@ -126,7 +126,11 @@ public:
     virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
     virtual void removeAllEventListeners();
     virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>, ExceptionState&); // DOM API
+
+    // dispatchEventForBindings is intended to only be called from
+    // javascript originated calls. This method will validate and may adjust
+    // the Event object before dispatching.
+    bool dispatchEventForBindings(PassRefPtrWillBeRawPtr<Event>, ExceptionState&);
     virtual void uncaughtExceptionInEventHandler();
 
     // Used for legacy "onEvent" attribute APIs.

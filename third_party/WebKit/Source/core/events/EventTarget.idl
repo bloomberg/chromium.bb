@@ -30,5 +30,5 @@
     // FIXME: type should not be nullable.
     [Custom=(CallPrologue,CallEpilogue)] void addEventListener(optional DOMString? type = null, optional EventListener? listener = null, optional boolean capture = false);
     [Custom=(CallPrologue,CallEpilogue)] void removeEventListener(optional DOMString? type = null, optional EventListener? listener = null, optional boolean capture = false);
-    [RaisesException] boolean dispatchEvent(Event event);
+    [ImplementedAs=dispatchEventForBindings, RaisesException] boolean dispatchEvent(Event event);
 };

@@ -66,7 +66,7 @@ void StashedMessagePort::dispatchMessages()
         MessagePortArray* ports = MessagePort::entanglePorts(*executionContext(), channels.release());
         RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports, message.release(), String(), String(), this);
 
-        stashedPorts->dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
+        stashedPorts->dispatchEvent(evt.release());
     }
 }
 

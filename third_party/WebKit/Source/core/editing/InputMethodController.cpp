@@ -183,7 +183,7 @@ bool InputMethodController::finishComposition(const String& text, FinishComposit
     // the DOM Event specification.
     if (Element* target = frame().document()->focusedElement()) {
         RefPtrWillBeRawPtr<CompositionEvent> event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text);
-        target->dispatchEvent(event, IGNORE_EXCEPTION);
+        target->dispatchEvent(event);
     }
 
     // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
@@ -251,7 +251,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
                 event = CompositionEvent::create(EventTypeNames::compositionend, frame().domWindow(), text);
         }
         if (event.get())
-            target->dispatchEvent(event, IGNORE_EXCEPTION);
+            target->dispatchEvent(event);
     }
 
     // If text is empty, then delete the old composition here. If text is non-empty, InsertTextCommand::input
