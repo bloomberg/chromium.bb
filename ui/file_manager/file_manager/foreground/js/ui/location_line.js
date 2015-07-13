@@ -88,7 +88,7 @@ LocationLine.prototype.getComponents_ = function(entry) {
   // Add directory components to the target path.
   var paths = relativePath.split('/');
   for (var i = 0; i < paths.length; i++) {
-    currentUrl += '/' + paths[i];
+    currentUrl += '/' + encodeURIComponent(paths[i]);
     components.push(new LocationLine.PathComponent(paths[i], currentUrl));
   }
 
