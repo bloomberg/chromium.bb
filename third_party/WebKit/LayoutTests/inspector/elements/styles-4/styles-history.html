@@ -65,7 +65,7 @@ function test()
                 function step1(style)
                 {
                     var property = style.getLiveProperty("margin");
-                    property.setText("margin:25px;", false, true, dumpHistory(next));
+                    property.setText("margin:25px;", false, true).then(dumpHistory(next));
                 }
             },
 

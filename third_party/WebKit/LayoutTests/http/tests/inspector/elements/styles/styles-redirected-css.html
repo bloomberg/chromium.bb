@@ -12,7 +12,7 @@ function test()
     function step1()
     {
         var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("background-color");
-        treeItem.property.setDisabled(true, step2);
+        treeItem.property.setDisabled(true).then(step2);
     }
 
     function step2(newStyle)
