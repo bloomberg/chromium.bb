@@ -7,6 +7,7 @@
     'files': [
       '__init__.py',
       'common_lib.py',
+      'jsonrpclib.py',
       'legion_test_case.py',
       'legion.isolate',
       'process.py',
@@ -17,6 +18,7 @@
       'task_controller.py',
       'task_registration_server.py',
       'test_controller.py',
+      'SimpleJSONRPCServer.py',
       '../../tools/swarming_client/',
     ],
   },

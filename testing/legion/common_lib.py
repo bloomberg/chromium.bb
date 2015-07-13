@@ -8,7 +8,6 @@ import argparse
 import logging
 import os
 import socket
-import xmlrpclib
 
 LOGGING_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'WARN', 'ERROR']
 MY_IP = socket.gethostbyname(socket.gethostname())

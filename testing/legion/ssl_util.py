@@ -8,11 +8,11 @@ import logging
 import ssl
 import subprocess
 import tempfile
-import xmlrpclib
-import SimpleXMLRPCServer
 
 #pylint: disable=relative-import
 import common_lib
+import jsonrpclib
+import SimpleJSONRPCServer
 
 
 class Error(Exception):
@@ -87,11 +87,11 @@ def _RunCommand(cmd):
   return out
 
 
-class SslRpcServer(SimpleXMLRPCServer.SimpleXMLRPCServer):
+class SslRpcServer(SimpleJSONRPCServer.SimpleJSONRPCServer):
   """Class to add SSL support to the RPC server."""
 
   def __init__(self, *args, **kwargs):
-    SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(self, *args, **kwargs)
+    SimpleJSONRPCServer.SimpleJSONRPCServer.__init__(self, *args, **kwargs)
     self.socket = ssl.wrap_socket(self.socket, certfile=CreatePemFile(),
                                   server_side=True)
 
@@ -100,4 +100,4 @@ class SslRpcServer(SimpleXMLRPCServer.SimpleXMLRPCServer):
     """Creates and returns a connection to an SSL RPC server."""
     addr = 'https://%s:%d' % (server, port)
     logging.debug('Connecting to RPC server at %s', addr)
-    return xmlrpclib.Server(addr, allow_none=True)
+    return jsonrpclib.ServerProxy(addr, allow_none=True)

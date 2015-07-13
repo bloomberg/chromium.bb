@@ -11,7 +11,6 @@ is based on an OTP passed to the run_task binary on startup.
 
 import logging
 import threading
-import xmlrpclib
 
 #pylint: disable=relative-import
 import common_lib

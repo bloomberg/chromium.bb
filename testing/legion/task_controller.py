@@ -13,12 +13,12 @@ import subprocess
 import sys
 import tempfile
 import threading
-import xmlrpclib
 
 #pylint: disable=relative-import
 import common_lib
 import process
 import ssl_util
+import jsonrpclib
 
 ISOLATE_PY = os.path.join(common_lib.SWARMING_DIR, 'isolate.py')
 SWARMING_PY = os.path.join(common_lib.SWARMING_DIR, 'swarming.py')
@@ -164,7 +164,7 @@ class TaskController(object):
       logging.info('Releasing %s', self._name)
       try:
         self._rpc.Quit()
-      except (socket.error, xmlrpclib.Fault):
+      except (socket.error, jsonrpclib.Fault):
         logging.error('Unable to connect to %s to call Quit', self.name)
       self._rpc = None
       self._connected = False
