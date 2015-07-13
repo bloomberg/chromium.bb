@@ -305,6 +305,38 @@ class WindowSelectorTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };
 
+// Tests that the text field in the overview menu is repositioned and resized
+// after a screen rotation.
+TEST_F(WindowSelectorTest, OverviewScreenRotation) {
+  gfx::Rect bounds(0, 0, 400, 300);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
+
+  // In overview mode the windows should no longer overlap and the text filter
+  // widget should be focused.
+  ToggleOverview();
+
+  views::Widget* text_filter = text_filter_widget();
+  UpdateDisplay("400x300");
+
+  // Formula for initial placement found in window_selector.cc using
+  // width = 400, height = 300:
+  // x: root_window->bounds().width() / 2 * (1 - kTextFilterScreenProportion).
+  // y: -kTextFilterDistanceFromTop (since there's no text in the filter).
+  // w: root_window->bounds().width() * kTextFilterScreenProportion.
+  // h: kTextFilterHeight.
+  EXPECT_EQ("150,-32 100x32",
+            text_filter->GetClientAreaBoundsInScreen().ToString());
+
+  // Rotates the display, which triggers the WindowSelector's
+  // RepositionTextFilterOnDisplayMetricsChange method.
+  UpdateDisplay("400x300/r");
+
+  // Uses the same formulas as abuve using width = 300, height = 400.
+  EXPECT_EQ("112,-32 75x32",
+            text_filter->GetClientAreaBoundsInScreen().ToString());
+}
+
 // Tests that an a11y alert is sent on entering overview mode.
 TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {
   gfx::Rect bounds(0, 0, 400, 400);

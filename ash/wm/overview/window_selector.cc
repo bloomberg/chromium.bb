@@ -482,6 +482,7 @@ void WindowSelector::OnDisplayRemoved(const gfx::Display& display) {
 void WindowSelector::OnDisplayMetricsChanged(const gfx::Display& display,
                                              uint32_t metrics) {
   PositionWindows(/* animate */ false);
+  RepositionTextFilterOnDisplayMetricsChange();
 }
 
 void WindowSelector::OnWindowAdded(aura::Window* new_window) {
@@ -585,6 +586,23 @@ void WindowSelector::PositionWindows(bool animate) {
       iter != grid_list_.end(); iter++) {
     (*iter)->PositionWindows(animate);
   }
+}
+
+void WindowSelector::RepositionTextFilterOnDisplayMetricsChange() {
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  gfx::Rect rect(
+      root_window->bounds().width() / 2 * (1 - kTextFilterScreenProportion),
+      kTextFilterDistanceFromTop,
+      root_window->bounds().width() * kTextFilterScreenProportion,
+      kTextFilterHeight);
+
+  text_filter_widget_->SetBounds(rect);
+
+  gfx::Transform transform;
+  transform.Translate(0, text_filter_string_length_ == 0
+                             ? -WindowSelector::kTextFilterBottomEdge
+                             : 0);
+  text_filter_widget_->GetNativeWindow()->SetTransform(transform);
 }
 
 void WindowSelector::ResetFocusRestoreWindow(bool focus) {

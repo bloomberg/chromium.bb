@@ -124,6 +124,10 @@ class ASH_EXPORT WindowSelector
   // Position all of the windows in the overview.
   void PositionWindows(bool animate);
 
+  // Repositions and resizes |text_filter_widget_| on
+  // DisplayMetricsChanged event.
+  void RepositionTextFilterOnDisplayMetricsChange();
+
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
 
