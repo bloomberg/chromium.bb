@@ -2142,7 +2142,7 @@ static void
 markEmphases()
 {
 	const TranslationTableOffset *offset;
-	int caps_start = -1;
+	int caps_start = -1, last_caps = -1, caps_cnt = 0;
 	int under_start = -1;
 	int bold_start = -1;
 	int italic_start = -1;
@@ -2154,7 +2154,14 @@ markEmphases()
 	for(i = 0; i < srcmax; i++)
 	{
 		if(!checkAttr(currentInput[i], CTC_Space, 0))
+		{
 			wordBuffer[i] |= WORD_CHAR;
+		}
+		else if(caps_cnt > 0)
+		{
+			last_caps = i;
+			caps_cnt = 0;
+		}
 			
 		if(typebuf[i] & word_reset
 		)//   || checkAttr(currentInput[i], CTC_WordReset, 0))
@@ -2164,16 +2171,22 @@ markEmphases()
 		{
 			if(caps_start < 0)
 				caps_start = i;
+			caps_cnt++;
 		}
 		else if(caps_start >= 0)
 		{
 			/*   caps should keep going until this   */
 			if(checkAttr(currentInput[i], CTC_Letter, 0)
-			   && checkAttr(currentInput[i], CTC_LowerCase, 0))
+			  && checkAttr(currentInput[i], CTC_LowerCase, 0))
 			{
 				emphasisBuffer[caps_start] |= CAPS_BEGIN;
-				emphasisBuffer[i] |= CAPS_END;
+				if(caps_cnt > 0)
+					emphasisBuffer[i] |= CAPS_END;
+				else
+					emphasisBuffer[last_caps] |= CAPS_END;
 				caps_start = -1;
+				last_caps = -1;
+				caps_cnt = 0;
 			}
 		}
 		
@@ -2262,7 +2275,10 @@ markEmphases()
 	if(caps_start >= 0)
 	{
 		emphasisBuffer[caps_start] |= CAPS_BEGIN;
-		emphasisBuffer[srcmax] |= CAPS_END;
+		if(caps_cnt > 0)
+			emphasisBuffer[srcmax] |= CAPS_END;
+		else
+			emphasisBuffer[last_caps] |= CAPS_END;
 	}
 
 	if(haveEmphasis)
