@@ -1245,7 +1245,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 void LocationBarView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
 
-  ui::PaintRecorder recorder(context);
+  ui::PaintRecorder recorder(context, size());
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
   // the focus rect to appear on top of children we paint here rather than

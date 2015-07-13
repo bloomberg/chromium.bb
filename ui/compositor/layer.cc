@@ -770,8 +770,8 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
   scoped_refptr<cc::DisplayItemList> display_list =
       cc::DisplayItemList::Create(clip, use_cached_picture);
   if (delegate_) {
-    delegate_->OnPaintLayer(PaintContext(
-        display_list.get(), device_scale_factor_, clip, invalidation));
+    delegate_->OnPaintLayer(
+        PaintContext(display_list.get(), device_scale_factor_, invalidation));
   }
   display_list->Finalize();
   return display_list;

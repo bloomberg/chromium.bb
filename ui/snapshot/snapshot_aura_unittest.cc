@@ -44,7 +44,7 @@ class TestPaintingWindowDelegate : public aura::test::TestWindowDelegate {
   ~TestPaintingWindowDelegate() override {}
 
   void OnPaint(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, window_size_);
     for (int y = 0; y < window_size_.height(); ++y) {
       for (int x = 0; x < window_size_.width(); ++x) {
         recorder.canvas()->FillRect(gfx::Rect(x, y, 1, 1),

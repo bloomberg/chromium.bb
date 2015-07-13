@@ -153,6 +153,7 @@ class COMPOSITOR_EXPORT Layer
   // The bounds, relative to the parent.
   void SetBounds(const gfx::Rect& bounds);
   const gfx::Rect& bounds() const { return bounds_; }
+  const gfx::Size& size() const { return bounds_.size(); }
 
   // The offset from our parent (stored in bounds.origin()) is an integer but we
   // may need to be at a fractional pixel offset to align properly on screen.

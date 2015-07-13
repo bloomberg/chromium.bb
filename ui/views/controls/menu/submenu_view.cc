@@ -208,7 +208,7 @@ void SubmenuView::PaintChildren(const ui::PaintContext& context) {
 
   if (paint_drop_indicator) {
     gfx::Rect bounds = CalculateDropIndicatorBounds(drop_item_, drop_position_);
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, size());
     recorder.canvas()->FillRect(bounds, kDropIndicatorColor);
   }
 }

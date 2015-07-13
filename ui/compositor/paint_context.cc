@@ -11,13 +11,11 @@ namespace ui {
 
 PaintContext::PaintContext(cc::DisplayItemList* list,
                            float device_scale_factor,
-                           const gfx::Rect& bounds,
                            const gfx::Rect& invalidation)
     : list_(list),
       owned_recorder_(new SkPictureRecorder),
       recorder_(owned_recorder_.get()),
       device_scale_factor_(device_scale_factor),
-      bounds_(bounds),
       invalidation_(invalidation) {
 #if DCHECK_IS_ON()
   root_visited_ = nullptr;
@@ -31,7 +29,6 @@ PaintContext::PaintContext(const PaintContext& other,
       owned_recorder_(nullptr),
       recorder_(other.recorder_),
       device_scale_factor_(other.device_scale_factor_),
-      bounds_(other.bounds_),
       invalidation_(other.invalidation_),
       offset_(other.offset_ + offset) {
 #if DCHECK_IS_ON()
@@ -46,7 +43,6 @@ PaintContext::PaintContext(const PaintContext& other,
       owned_recorder_(nullptr),
       recorder_(other.recorder_),
       device_scale_factor_(other.device_scale_factor_),
-      bounds_(other.bounds_),
       invalidation_(),
       offset_(other.offset_) {
 #if DCHECK_IS_ON()

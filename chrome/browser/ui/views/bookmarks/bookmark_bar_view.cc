@@ -1014,7 +1014,7 @@ void BookmarkBarView::PaintChildren(const ui::PaintContext& context) {
                                h);
     indicator_bounds.set_x(GetMirroredXForRect(indicator_bounds));
 
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, size());
     // TODO(sky/glen): make me pretty!
     recorder.canvas()->FillRect(indicator_bounds, kDropIndicatorColor);
   }

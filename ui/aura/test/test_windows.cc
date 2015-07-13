@@ -25,8 +25,8 @@ Window* CreateTestWindow(SkColor color,
                          int id,
                          const gfx::Rect& bounds,
                          Window* parent) {
-  return CreateTestWindowWithDelegate(new ColorTestWindowDelegate(color),
-                                      id, bounds, parent);
+  return CreateTestWindowWithDelegate(new ColorTestWindowDelegate(color), id,
+                                      bounds, parent);
 }
 
 Window* CreateTestWindowWithDelegate(WindowDelegate* delegate,

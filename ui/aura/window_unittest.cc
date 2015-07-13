@@ -2035,10 +2035,11 @@ TEST_F(WindowTest, AcquireLayer) {
 // layer actually do.
 TEST_F(WindowTest, RecreateLayer) {
   // Set properties to non default values.
+  gfx::Rect window_bounds(100, 100);
   Window w(new ColorTestWindowDelegate(SK_ColorWHITE));
   w.set_id(1);
   w.Init(ui::LAYER_SOLID_COLOR);
-  w.SetBounds(gfx::Rect(0, 0, 100, 100));
+  w.SetBounds(window_bounds);
 
   ui::Layer* layer = w.layer();
   layer->SetVisible(false);

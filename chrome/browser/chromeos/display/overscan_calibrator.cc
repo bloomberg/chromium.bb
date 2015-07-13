@@ -117,7 +117,7 @@ void OverscanCalibrator::UpdateInsets(const gfx::Insets& insets) {
 }
 
 void OverscanCalibrator::OnPaintLayer(const ui::PaintContext& context) {
-  ui::PaintRecorder recorder(context);
+  ui::PaintRecorder recorder(context, calibration_layer_->size());
   static const SkColor kTransparent = SkColorSetARGB(0, 0, 0, 0);
   gfx::Rect full_bounds = calibration_layer_->bounds();
   gfx::Rect inner_bounds = full_bounds;

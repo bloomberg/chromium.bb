@@ -94,25 +94,28 @@ class DockedBackgroundWidget : public views::Widget,
   }
 
   void OnNativeWidgetPaint(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context);
+    gfx::Rect local_window_bounds(GetWindowBoundsInScreen().size());
+    ui::PaintRecorder recorder(context, local_window_bounds.size());
     const gfx::ImageSkia& shelf_background(
         alignment_ == DOCKED_ALIGNMENT_LEFT ?
             shelf_background_left_ : shelf_background_right_);
-    gfx::Rect rect = gfx::Rect(GetWindowBoundsInScreen().size());
     SkPaint paint;
     paint.setAlpha(alpha_);
     recorder.canvas()->DrawImageInt(
         shelf_background, 0, 0, shelf_background.width(),
-        shelf_background.height(), alignment_ == DOCKED_ALIGNMENT_LEFT
-                                       ? rect.width() - shelf_background.width()
-                                       : 0,
-        0, shelf_background.width(), rect.height(), false, paint);
+        shelf_background.height(),
+        alignment_ == DOCKED_ALIGNMENT_LEFT
+            ? local_window_bounds.width() - shelf_background.width()
+            : 0,
+        0, shelf_background.width(), local_window_bounds.height(), false,
+        paint);
     recorder.canvas()->DrawImageInt(
         shelf_background,
         alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width() - 1,
         0, 1, shelf_background.height(),
         alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width(), 0,
-        rect.width() - shelf_background.width(), rect.height(), false, paint);
+        local_window_bounds.width() - shelf_background.width(),
+        local_window_bounds.height(), false, paint);
   }
 
   // BackgroundAnimatorDelegate:

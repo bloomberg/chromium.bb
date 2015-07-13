@@ -81,6 +81,8 @@ class ColorTestWindowDelegate : public TestWindowDelegate {
   ui::KeyboardCode last_key_code() const { return last_key_code_; }
 
   // Overridden from TestWindowDelegate:
+  void OnBoundsChanged(const gfx::Rect& old_bounds,
+                       const gfx::Rect& new_bounds) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnWindowDestroyed(Window* window) override;
   void OnPaint(const ui::PaintContext& context) override;
@@ -88,6 +90,7 @@ class ColorTestWindowDelegate : public TestWindowDelegate {
  private:
   SkColor color_;
   ui::KeyboardCode last_key_code_;
+  gfx::Size window_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ColorTestWindowDelegate);
 };

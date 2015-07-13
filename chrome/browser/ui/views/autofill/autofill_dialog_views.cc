@@ -757,7 +757,7 @@ void AutofillDialogViews::NotificationArea::PaintChildren(
     const ui::PaintContext& context) {
   views::View::PaintChildren(context);
   if (HasArrow()) {
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, size());
     DrawArrow(
         recorder.canvas(),
         GetMirroredXInView(width() - arrow_centering_anchor_->width() / 2.0f),

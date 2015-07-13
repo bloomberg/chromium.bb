@@ -480,7 +480,7 @@ TEST_F(ViewTest, PaintEmptyView) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
 
   // The empty view has nothing to paint so it doesn't try build a cache, nor do
   // its children which would be clipped by its (empty) self.
@@ -506,7 +506,7 @@ TEST_F(ViewTest, PaintWithUnknownInvalidation) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -517,13 +517,13 @@ TEST_F(ViewTest, PaintWithUnknownInvalidation) {
   // With a known invalidation, v1 and v2 are not painted.
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 
   // With unknown invalidation, v1 and v2 are painted.
   root_view->Paint(
-      ui::PaintContext(ui::PaintContext(list.get(), 1.f, root_area, paint_area),
+      ui::PaintContext(ui::PaintContext(list.get(), 1.f, paint_area),
                        ui::PaintContext::CLONE_WITHOUT_INVALIDATION));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
@@ -546,7 +546,7 @@ TEST_F(ViewTest, PaintContainsChildren) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -556,7 +556,7 @@ TEST_F(ViewTest, PaintContainsChildren) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -590,7 +590,7 @@ TEST_F(ViewTest, PaintContainsChildrenInRTL) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -600,7 +600,7 @@ TEST_F(ViewTest, PaintContainsChildrenInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -622,7 +622,7 @@ TEST_F(ViewTest, PaintIntersectsChildren) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -632,7 +632,7 @@ TEST_F(ViewTest, PaintIntersectsChildren) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -666,7 +666,7 @@ TEST_F(ViewTest, PaintIntersectsChildrenInRTL) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -676,7 +676,7 @@ TEST_F(ViewTest, PaintIntersectsChildrenInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -698,7 +698,7 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChild) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -708,7 +708,7 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChild) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -742,7 +742,7 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChildInRTL) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -752,7 +752,7 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChildInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -774,7 +774,7 @@ TEST_F(ViewTest, PaintIntersectsNoChildren) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -784,7 +784,7 @@ TEST_F(ViewTest, PaintIntersectsNoChildren) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -818,7 +818,7 @@ TEST_F(ViewTest, PaintIntersectsNoChildrenInRTL) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -828,7 +828,7 @@ TEST_F(ViewTest, PaintIntersectsNoChildrenInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -850,7 +850,7 @@ TEST_F(ViewTest, PaintIntersectsOneChild) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -861,7 +861,7 @@ TEST_F(ViewTest, PaintIntersectsOneChild) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 
@@ -872,7 +872,7 @@ TEST_F(ViewTest, PaintIntersectsOneChild) {
   v2->Reset();
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -906,7 +906,7 @@ TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -917,7 +917,7 @@ TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 
@@ -928,7 +928,7 @@ TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
   v2->Reset();
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(ui::PaintContext(list.get(), 1.f, root_area, paint_area));
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -951,7 +951,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
   gfx::Rect first_paint(1, 1);
   scoped_refptr<cc::DisplayItemList> list =
       cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
-  v1->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+  v1->Paint(ui::PaintContext(list.get(), 1.f, first_paint));
   v1->Reset();
   v2->Reset();
 
@@ -962,7 +962,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
         cc::DisplayItemList::Create(view_area, cc::DisplayItemListSettings());
 
     // The promoted views are not painted as they are separate paint roots.
-    root_view->Paint(ui::PaintContext(list.get(), 1.f, view_area, paint_area));
+    root_view->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
     EXPECT_FALSE(v1->did_paint_);
     EXPECT_FALSE(v2->did_paint_);
   }
@@ -975,7 +975,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
 
     // The |v1| view is painted. If it used its offset incorrect, it would think
     // its at (10,11) instead of at (0,0) since it is the paint root.
-    v1->Paint(ui::PaintContext(list.get(), 1.f, view_area, paint_area));
+    v1->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
     EXPECT_TRUE(v1->did_paint_);
     EXPECT_FALSE(v2->did_paint_);
   }
@@ -990,10 +990,58 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
 
     // The |v2| view is painted also. If it used its offset incorrect, it would
     // think its at (13,15) instead of at (3,4) since |v1| is the paint root.
-    v1->Paint(ui::PaintContext(list.get(), 1.f, view_area, paint_area));
+    v1->Paint(ui::PaintContext(list.get(), 1.f, paint_area));
     EXPECT_TRUE(v1->did_paint_);
     EXPECT_TRUE(v2->did_paint_);
   }
+}
+
+// A derived class for testing paint.
+class TestPaintView : public TestView {
+ public:
+  TestPaintView() : TestView(), canvas_bounds_(gfx::Rect()) {}
+  ~TestPaintView() override {}
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    did_paint_ = true;
+    // Get the bounds from the canvas this view paints to.
+    EXPECT_TRUE(canvas->GetClipBounds(&canvas_bounds_));
+  }
+
+  gfx::Rect canvas_bounds() const { return canvas_bounds_; }
+
+ private:
+  gfx::Rect canvas_bounds_;
+};
+
+TEST_F(ViewTest, PaintLocalBounds) {
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
+  View* root_view = widget->GetRootView();
+  // Make |root_view|'s bounds larger so |v1|'s visible bounds is not clipped by
+  // |root_view|.
+  root_view->SetBounds(0, 0, 200, 200);
+
+  TestPaintView* v1 = new TestPaintView;
+  v1->SetPaintToLayer(true);
+
+  // Set bounds for |v1| such that it has an offset to its parent and only part
+  // of it is visible. The visible bounds does not intersect with |root_view|'s
+  // bounds.
+  v1->SetBounds(0, -1000, 100, 1100);
+  root_view->AddChildView(v1);
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 1100), v1->GetLocalBounds());
+  EXPECT_EQ(gfx::Rect(0, 1000, 100, 100), v1->GetVisibleBounds());
+
+  scoped_refptr<cc::DisplayItemList> list =
+      cc::DisplayItemList::Create(gfx::Rect(), cc::DisplayItemListSettings());
+  ui::PaintContext context(list.get(), 1.f, gfx::Rect());
+
+  v1->Paint(context);
+  EXPECT_TRUE(v1->did_paint_);
+
+  // Check that the canvas produced by |v1| for paint contains all of |v1|'s
+  // visible bounds.
+  EXPECT_TRUE(v1->canvas_bounds().Contains(v1->GetVisibleBounds()));
 }
 
 void TestView::SchedulePaintInRect(const gfx::Rect& rect) {

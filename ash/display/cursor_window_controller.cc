@@ -49,7 +49,7 @@ class CursorWindowDelegate : public aura::WindowDelegate {
   void OnCaptureLost() override {}
   void OnPaint(const ui::PaintContext& context) override {
     // No need to cache the output here, the CursorWindow is not invalidated.
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, size_);
     recorder.canvas()->DrawImageInt(cursor_image_, 0, 0);
   }
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}

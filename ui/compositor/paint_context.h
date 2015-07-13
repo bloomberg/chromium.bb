@@ -31,7 +31,6 @@ class COMPOSITOR_EXPORT PaintContext {
   // |invalidation|.
   PaintContext(cc::DisplayItemList* list,
                float device_scale_factor,
-               const gfx::Rect& bounds,
                const gfx::Rect& invalidation);
 
   // Clone a PaintContext with an additional |offset|.
@@ -88,9 +87,6 @@ class COMPOSITOR_EXPORT PaintContext {
   // The device scale of the frame being painted. Used to determine which bitmap
   // resources to use in the frame.
   float device_scale_factor_;
-  // The bounds of the area being painted. Not all of it may be invalidated from
-  // the previous frame.
-  gfx::Rect bounds_;
   // Invalidation in the space of the paint root (ie the space of the layer
   // backing the paint taking place).
   gfx::Rect invalidation_;

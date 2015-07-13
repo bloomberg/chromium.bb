@@ -268,7 +268,8 @@ void ImageGrid::ImagePainter::SetClipRect(const gfx::Rect& clip_rect,
 }
 
 void ImageGrid::ImagePainter::OnPaintLayer(const ui::PaintContext& context) {
-  ui::PaintRecorder recorder(context);
+  gfx::Size bounding_size(clip_rect_.right(), clip_rect_.bottom());
+  ui::PaintRecorder recorder(context, bounding_size);
   if (!clip_rect_.IsEmpty())
     recorder.canvas()->ClipRect(clip_rect_);
   recorder.canvas()->DrawImageInt(image_, 0, 0);

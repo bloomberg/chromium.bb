@@ -206,7 +206,7 @@ TrayBubbleContentMask::~TrayBubbleContentMask() {
 }
 
 void TrayBubbleContentMask::OnPaintLayer(const ui::PaintContext& context) {
-  ui::PaintRecorder recorder(context);
+  ui::PaintRecorder recorder(context, layer()->size());
   SkPaint paint;
   paint.setAlpha(255);
   paint.setStyle(SkPaint::kFill_Style);

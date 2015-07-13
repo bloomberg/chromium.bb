@@ -91,7 +91,10 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
 
-    ui::PaintRecorder recorder(context);
+    // Set the recording size to be the size of the |arrow_| layer, and draw a
+    // half circle (the other half will be clipped), then an arrow image inside
+    // it.
+    ui::PaintRecorder recorder(context, gfx::Size(kArrowWidth, kArrowHeight));
     recorder.canvas()->DrawCircle(
         gfx::Point(left_arrow_ ? 0 : kArrowWidth, kArrowHeight / 2),
         kArrowWidth, paint);

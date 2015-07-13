@@ -434,7 +434,7 @@ void OmniboxPopupContentsView::PaintChildren(const ui::PaintContext& context) {
   ui::ClipTransformRecorder clip_transform_recorder(context);
   clip_transform_recorder.ClipRect(contents_bounds);
   {
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, size());
     SkColor background_color = result_view_at(0)->GetColor(
         OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND);
     recorder.canvas()->DrawColor(background_color);

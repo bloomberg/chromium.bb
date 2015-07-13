@@ -67,7 +67,7 @@ void ImageWindowDelegate::OnCaptureLost() {
 }
 
 void ImageWindowDelegate::OnPaint(const ui::PaintContext& context) {
-  ui::PaintRecorder recorder(context);
+  ui::PaintRecorder recorder(context, window_size_);
   if (background_color_ != SK_ColorTRANSPARENT &&
       (image_.IsEmpty() || size_mismatch_ || !offset_.IsZero())) {
     recorder.canvas()->DrawColor(background_color_);

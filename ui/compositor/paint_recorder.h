@@ -33,9 +33,11 @@ class PaintContext;
 class COMPOSITOR_EXPORT PaintRecorder {
  public:
   // The |cache| is owned by the caller and must be kept alive while
-  // PaintRecorder is in use.
-  PaintRecorder(const PaintContext& context, PaintCache* cache);
-  explicit PaintRecorder(const PaintContext& context);
+  // PaintRecorder is in use. Canvas is bounded by |recording_size|.
+  PaintRecorder(const PaintContext& context,
+                const gfx::Size& recording_size,
+                PaintCache* cache);
+  PaintRecorder(const PaintContext& context, const gfx::Size& recording_size);
   ~PaintRecorder();
 
   // Gets a gfx::Canvas for painting into.

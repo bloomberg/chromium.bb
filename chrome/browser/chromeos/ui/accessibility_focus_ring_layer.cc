@@ -112,7 +112,7 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
 
 void AccessibilityFocusRingLayer::OnPaintLayer(
     const ui::PaintContext& context) {
-  ui::PaintRecorder recorder(context);
+  ui::PaintRecorder recorder(context, layer()->size());
 
   SkPaint paint;
   paint.setFlags(SkPaint::kAntiAlias_Flag);

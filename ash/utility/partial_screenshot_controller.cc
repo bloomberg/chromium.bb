@@ -73,8 +73,8 @@ class PartialScreenshotController::PartialScreenshotLayer
     // Screenshot area representation: black rectangle with white
     // rectangle inside.  To avoid capturing these rectangles when mouse
     // release, they should be outside of the actual capturing area.
-    ui::PaintRecorder recorder(context);
     gfx::Rect rect(region_);
+    ui::PaintRecorder recorder(context, layer()->size());
     rect.Inset(-1, -1);
     recorder.canvas()->DrawRect(rect, SK_ColorWHITE);
     rect.Inset(-1, -1);

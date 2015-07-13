@@ -1320,7 +1320,7 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
   }
 
   if (GetWidget()->ShouldWindowContentsBeTransparent()) {
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, size());
     // Make sure non-active tabs are somewhat transparent.
     SkPaint paint;
     // If there are multiple tabs selected, fade non-selected tabs more to make

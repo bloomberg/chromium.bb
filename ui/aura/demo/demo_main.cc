@@ -48,7 +48,9 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   gfx::Size GetMaximumSize() const override { return gfx::Size(); }
 
   void OnBoundsChanged(const gfx::Rect& old_bounds,
-                       const gfx::Rect& new_bounds) override {}
+                       const gfx::Rect& new_bounds) override {
+    window_bounds_ = new_bounds;
+  }
   gfx::NativeCursor GetCursor(const gfx::Point& point) override {
     return gfx::kNullCursor;
   }
@@ -63,7 +65,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   bool CanFocus() override { return true; }
   void OnCaptureLost() override {}
   void OnPaint(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, window_bounds_.size());
     recorder.canvas()->DrawColor(color_, SkXfermode::kSrc_Mode);
     gfx::Rect r;
     recorder.canvas()->GetClipBounds(&r);
@@ -83,6 +85,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
 
  private:
   SkColor color_;
+  gfx::Rect window_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoWindowDelegate);
 };
@@ -154,27 +157,30 @@ int DemoMain() {
   aura::client::SetFocusClient(host->window(), &focus_client);
 
   // Create a hierarchy of test windows.
+  gfx::Rect window1_bounds(100, 100, 400, 400);
   DemoWindowDelegate window_delegate1(SK_ColorBLUE);
   aura::Window window1(&window_delegate1);
   window1.set_id(1);
   window1.Init(ui::LAYER_TEXTURED);
-  window1.SetBounds(gfx::Rect(100, 100, 400, 400));
+  window1.SetBounds(window1_bounds);
   window1.Show();
   aura::client::ParentWindowWithContext(&window1, host->window(), gfx::Rect());
 
+  gfx::Rect window2_bounds(200, 200, 350, 350);
   DemoWindowDelegate window_delegate2(SK_ColorRED);
   aura::Window window2(&window_delegate2);
   window2.set_id(2);
   window2.Init(ui::LAYER_TEXTURED);
-  window2.SetBounds(gfx::Rect(200, 200, 350, 350));
+  window2.SetBounds(window2_bounds);
   window2.Show();
   aura::client::ParentWindowWithContext(&window2, host->window(), gfx::Rect());
 
+  gfx::Rect window3_bounds(10, 10, 50, 50);
   DemoWindowDelegate window_delegate3(SK_ColorGREEN);
   aura::Window window3(&window_delegate3);
   window3.set_id(3);
   window3.Init(ui::LAYER_TEXTURED);
-  window3.SetBounds(gfx::Rect(10, 10, 50, 50));
+  window3.SetBounds(window3_bounds);
   window3.Show();
   window2.AddChild(&window3);
 

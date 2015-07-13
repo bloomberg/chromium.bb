@@ -63,7 +63,7 @@ class ColoredLayer : public Layer, public LayerDelegate {
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
     if (draw_) {
-      ui::PaintRecorder recorder(context);
+      ui::PaintRecorder recorder(context, size());
       recorder.canvas()->DrawColor(color_);
     }
   }

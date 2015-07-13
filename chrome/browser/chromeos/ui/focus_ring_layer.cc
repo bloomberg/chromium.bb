@@ -61,7 +61,7 @@ void FocusRingLayer::OnPaintLayer(const ui::PaintContext& context) {
   if (!root_window_ || focus_ring_.IsEmpty())
     return;
 
-  ui::PaintRecorder recorder(context);
+  ui::PaintRecorder recorder(context, layer_->size());
 
   SkPaint paint;
   paint.setColor(kShadowColor);

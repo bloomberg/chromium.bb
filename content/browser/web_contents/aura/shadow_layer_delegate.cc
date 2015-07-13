@@ -49,7 +49,7 @@ void ShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
                                    layer_->bounds().height());
   SkPaint paint;
   paint.setShader(shader.get());
-  ui::PaintRecorder recorder(context);
+  ui::PaintRecorder recorder(context, layer_->size());
   recorder.canvas()->DrawRect(paint_rect, paint);
 }
 

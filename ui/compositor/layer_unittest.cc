@@ -67,7 +67,7 @@ class ColoredLayer : public Layer, public LayerDelegate {
 
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, size());
     recorder.canvas()->DrawColor(color_);
   }
 
@@ -235,9 +235,13 @@ class TestLayerDelegate : public LayerDelegate {
     return device_scale_factor_;
   }
 
+  void set_layer_bounds(const gfx::Rect& layer_bounds) {
+    layer_bounds_ = layer_bounds;
+  }
+
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, layer_bounds_.size());
     recorder.canvas()->DrawColor(colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
@@ -261,6 +265,7 @@ class TestLayerDelegate : public LayerDelegate {
   std::vector<SkColor> colors_;
   int color_index_;
   float device_scale_factor_;
+  gfx::Rect layer_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
 };
@@ -268,7 +273,8 @@ class TestLayerDelegate : public LayerDelegate {
 // LayerDelegate that verifies that a layer was asked to update its canvas.
 class DrawTreeLayerDelegate : public LayerDelegate {
  public:
-  DrawTreeLayerDelegate() : painted_(false) {}
+  DrawTreeLayerDelegate(const gfx::Rect& layer_bounds)
+      : painted_(false), layer_bounds_(layer_bounds) {}
   ~DrawTreeLayerDelegate() override {}
 
   void Reset() {
@@ -281,7 +287,7 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
     painted_ = true;
-    ui::PaintRecorder recorder(context);
+    ui::PaintRecorder recorder(context, layer_bounds_.size());
     recorder.canvas()->DrawColor(SK_ColorWHITE);
   }
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
@@ -291,6 +297,7 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   }
 
   bool painted_;
+  const gfx::Rect layer_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(DrawTreeLayerDelegate);
 };
@@ -554,6 +561,7 @@ TEST_F(LayerWithRealCompositorTest, Delegate) {
 
   TestLayerDelegate delegate;
   l1->set_delegate(&delegate);
+  delegate.set_layer_bounds(l1->bounds());
   delegate.AddColor(SK_ColorWHITE);
   delegate.AddColor(SK_ColorYELLOW);
   delegate.AddColor(SK_ColorGREEN);
@@ -587,11 +595,11 @@ TEST_F(LayerWithRealCompositorTest, DrawTree) {
   GetCompositor()->SetRootLayer(l1.get());
   WaitForDraw();
 
-  DrawTreeLayerDelegate d1;
+  DrawTreeLayerDelegate d1(l1->bounds());
   l1->set_delegate(&d1);
-  DrawTreeLayerDelegate d2;
+  DrawTreeLayerDelegate d2(l2->bounds());
   l2->set_delegate(&d2);
-  DrawTreeLayerDelegate d3;
+  DrawTreeLayerDelegate d3(l3->bounds());
   l3->set_delegate(&d3);
 
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
@@ -624,9 +632,9 @@ TEST_F(LayerWithRealCompositorTest, HierarchyNoTexture) {
   GetCompositor()->SetRootLayer(l1.get());
   WaitForDraw();
 
-  DrawTreeLayerDelegate d2;
+  DrawTreeLayerDelegate d2(l2->bounds());
   l2->set_delegate(&d2);
-  DrawTreeLayerDelegate d3;
+  DrawTreeLayerDelegate d3(l3->bounds());
   l3->set_delegate(&d3);
 
   l2->SchedulePaint(gfx::Rect(5, 5, 5, 5));
@@ -1321,12 +1329,14 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   TestLayerDelegate root_delegate;
   root_delegate.AddColor(SK_ColorWHITE);
   root->set_delegate(&root_delegate);
+  root_delegate.set_layer_bounds(root->bounds());
 
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
                                         gfx::Rect(10, 20, 140, 180)));
   TestLayerDelegate l1_delegate;
   l1_delegate.AddColor(SK_ColorWHITE);
   l1->set_delegate(&l1_delegate);
+  l1_delegate.set_layer_bounds(l1->bounds());
 
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500));
   GetCompositor()->SetRootLayer(root.get());
@@ -1389,6 +1399,7 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   TestLayerDelegate l1_delegate;
   l1_delegate.AddColor(SK_ColorWHITE);
   l1->set_delegate(&l1_delegate);
+  l1_delegate.set_layer_bounds(l1->bounds());
 
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500));
   GetCompositor()->SetRootLayer(root.get());
@@ -1425,7 +1436,7 @@ TEST_F(LayerWithDelegateTest, SetBoundsWhenInvisible) {
 
   scoped_ptr<Layer> child(CreateLayer(LAYER_TEXTURED));
   child->SetBounds(gfx::Rect(0, 0, 500, 500));
-  DrawTreeLayerDelegate delegate;
+  DrawTreeLayerDelegate delegate(child->bounds());
   child->set_delegate(&delegate);
   root->Add(child.get());
 

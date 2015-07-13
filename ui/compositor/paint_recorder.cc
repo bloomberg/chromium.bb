@@ -13,13 +13,16 @@
 
 namespace ui {
 
-PaintRecorder::PaintRecorder(const PaintContext& context, PaintCache* cache)
+PaintRecorder::PaintRecorder(const PaintContext& context,
+                             const gfx::Size& recording_size,
+                             PaintCache* cache)
     : context_(context),
       // The SkCanvas reference returned by beginRecording is shared with
       // the recorder_ so no need to store a RefPtr to it on this class, we just
       // store the gfx::Canvas.
       canvas_(skia::SharePtr(context.recorder_->beginRecording(
-                                 gfx::RectToSkRect(context.bounds_))).get(),
+                                 gfx::RectToSkRect(gfx::Rect(recording_size))))
+                  .get(),
               context.device_scale_factor_),
       cache_(cache) {
 #if DCHECK_IS_ON()
@@ -28,8 +31,9 @@ PaintRecorder::PaintRecorder(const PaintContext& context, PaintCache* cache)
 #endif
 }
 
-PaintRecorder::PaintRecorder(const PaintContext& context)
-    : PaintRecorder(context, nullptr) {
+PaintRecorder::PaintRecorder(const PaintContext& context,
+                             const gfx::Size& recording_size)
+    : PaintRecorder(context, recording_size, nullptr) {
 }
 
 PaintRecorder::~PaintRecorder() {
