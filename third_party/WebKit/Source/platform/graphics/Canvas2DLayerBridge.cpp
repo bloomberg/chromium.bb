@@ -426,8 +426,10 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         // there is no need for animations to be double buffered.
         mailboxInfo.m_image.clear();
     } else {
+        // FIXME: We'd rather insert a syncpoint than perform a flush here,
+        // but currentlythe canvas will flicker if we don't flush here.
         webContext->flush();
-        mailboxInfo.m_mailbox.syncPoint = webContext->insertSyncPoint();
+        // mailboxInfo.m_mailbox.syncPoint = webContext->insertSyncPoint();
     }
     webContext->bindTexture(GL_TEXTURE_2D, 0);
     // Because we are changing the texture binding without going through skia,
