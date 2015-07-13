@@ -1058,8 +1058,8 @@ void ManagePasswordsBubbleView::WebContentMouseHandler::OnKeyEvent(
     ui::KeyEvent* event) {
   content::WebContents* web_contents = bubble_->web_contents();
   content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  if (rvh->IsFocusedElementEditable() &&
-      event->type() == ui::ET_KEY_PRESSED)
+  if ((event->key_code() == ui::VKEY_ESCAPE ||
+       rvh->IsFocusedElementEditable()) && event->type() == ui::ET_KEY_PRESSED)
     bubble_->Close();
 }
 

@@ -229,6 +229,16 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnClick) {
   EXPECT_FALSE(IsBubbleShowing());
 }
 
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnEsc) {
+  ManagePasswordsBubbleView::ShowBubble(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      ManagePasswordsBubble::AUTOMATIC);
+  EXPECT_TRUE(IsBubbleShowing());
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
+      false, false, false, false));
+  EXPECT_FALSE(IsBubbleShowing());
+}
+
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnKey) {
   content::WindowedNotificationObserver focus_observer(
       content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
