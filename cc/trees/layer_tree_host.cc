@@ -741,8 +741,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   TRACE_EVENT1("cc", "LayerTreeHost::DoUpdateLayers", "source_frame_number",
                source_frame_number());
 
-  RenderSurfaceLayerList render_surface_layer_list;
-
   UpdateHudLayer();
 
   Layer* root_scroll = FindFirstScrollableLayer(root_layer);
@@ -756,21 +754,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   }
 
   bool can_render_to_separate_surface = true;
-  // TODO(vmpstr): Passing 0 as the current render surface layer list id means
-  // that we won't be able to detect if a layer is part of
-  // |render_surface_layer_list|.  Change this if this information is
-  // required.
-  int render_surface_layer_list_id = 0;
-  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
-      root_layer, device_viewport_size(), gfx::Transform(),
-      device_scale_factor_, page_scale_factor_, page_scale_layer,
-      inner_viewport_scroll_layer_.get(), outer_viewport_scroll_layer_.get(),
-      elastic_overscroll_, overscroll_elasticity_layer_.get(),
-      GetRendererCapabilities().max_texture_size, settings_.can_use_lcd_text,
-      settings_.layers_always_allowed_lcd_text, can_render_to_separate_surface,
-      settings_.layer_transforms_should_scale_layer_contents,
-      settings_.verify_property_trees, &render_surface_layer_list,
-      render_surface_layer_list_id, &property_trees_);
 
   TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
 
