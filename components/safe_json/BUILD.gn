@@ -2,11 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # GYP version: components/safe_json.gypi:safe_json
 source_set("safe_json") {
   sources = [
+    "android/component_jni_registrar.cc",
+    "android/component_jni_registrar.h",
+    "json_sanitizer.cc",
+    "json_sanitizer.h",
+    "json_sanitizer_android.cc",
     "safe_json_parser.cc",
     "safe_json_parser.h",
+    "safe_json_parser_android.cc",
+    "safe_json_parser_android.h",
     "safe_json_parser_impl.cc",
     "safe_json_parser_impl.h",
   ]
@@ -17,6 +28,30 @@ source_set("safe_json") {
     "//components/strings",
     "//content/public/browser",
     "//ui/base",
+  ]
+
+  if (is_android) {
+    sources -= [
+      "json_sanitizer.cc",
+      "safe_json_parser_impl.cc",
+      "safe_json_parser_impl.h",
+    ]
+    deps += [ "android:safe_json_jni_headers" ]
+  }
+}
+
+# GYP version: components/safe_json.gypi:safe_json_unittest_sources
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "json_sanitizer_unittest.cc",
+  ]
+
+  deps = [
+    ":safe_json",
+    ":test_support",
+    "//base",
+    "//testing/gtest",
   ]
 }
 
@@ -45,7 +80,8 @@ source_set("safe_json_parser_message_filter") {
 
   deps = [
     "//base",
-    "//content/public/browser",
+    "//content/public/common",
+    "//content/public/utility",
     "//ipc",
   ]
 }

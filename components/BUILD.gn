@@ -349,7 +349,10 @@ test("components_unittests") {
   }
 
   if (!is_ios) {
-    deps += [ "//components/scheduler:unit_tests" ]
+    deps += [
+      "//components/safe_json:unit_tests",
+      "//components/scheduler:unit_tests",
+    ]
   }
 }
 

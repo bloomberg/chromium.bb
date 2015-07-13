@@ -23,6 +23,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
+#include "components/safe_json/android/component_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #endif
@@ -48,9 +49,10 @@ class ComponentsTestSuite : public base::TestSuite {
 #if defined(OS_ANDROID)
     // Register JNI bindings for android.
     JNIEnv* env = base::android::AttachCurrentThread();
-    gfx::android::RegisterJni(env);
-    ui::android::RegisterJni(env);
-    invalidation::android::RegisterInvalidationJni(env);
+    ASSERT_TRUE(gfx::android::RegisterJni(env));
+    ASSERT_TRUE(ui::android::RegisterJni(env));
+    ASSERT_TRUE(invalidation::android::RegisterInvalidationJni(env));
+    ASSERT_TRUE(safe_json::android::RegisterSafeJsonJni(env));
 #endif
 
     ui::RegisterPathProvider();

@@ -4,13 +4,31 @@
 
 #include "components/safe_json/safe_json_parser.h"
 
+#if defined(OS_ANDROID)
+#include "components/safe_json/safe_json_parser_android.h"
+#else
 #include "components/safe_json/safe_json_parser_impl.h"
+#endif
 
 namespace safe_json {
 
 namespace {
 
 SafeJsonParser::Factory g_factory = nullptr;
+
+SafeJsonParser* Create(const std::string& unsafe_json,
+                       const SafeJsonParser::SuccessCallback& success_callback,
+                       const SafeJsonParser::ErrorCallback& error_callback) {
+  if (g_factory)
+    return g_factory(unsafe_json, success_callback, error_callback);
+
+#if defined(OS_ANDROID)
+  return new SafeJsonParserAndroid(unsafe_json, success_callback,
+                                   error_callback);
+#else
+  return new SafeJsonParserImpl(unsafe_json, success_callback, error_callback);
+#endif
+}
 
 }  // namespace
 
@@ -24,9 +42,7 @@ void SafeJsonParser::Parse(const std::string& unsafe_json,
                            const SuccessCallback& success_callback,
                            const ErrorCallback& error_callback) {
   SafeJsonParser* parser =
-      g_factory ? g_factory(unsafe_json, success_callback, error_callback)
-                : new SafeJsonParserImpl(unsafe_json, success_callback,
-                                         error_callback);
+      Create(unsafe_json, success_callback, error_callback);
   parser->Start();
 }
 

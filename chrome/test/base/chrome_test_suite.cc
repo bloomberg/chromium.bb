@@ -22,6 +22,11 @@
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "chrome/browser/android/chrome_jni_registrar.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "base/process/process_metrics.h"
 #include "chromeos/chromeos_paths.h"
@@ -76,6 +81,11 @@ void ChromeTestSuite::Initialize() {
     PathService::Override(base::DIR_EXE, browser_dir_);
     PathService::Override(base::DIR_MODULE, browser_dir_);
   }
+
+#if defined(OS_ANDROID)
+  ASSERT_TRUE(chrome::android::RegisterBrowserJNI(
+      base::android::AttachCurrentThread()));
+#endif
 
 #if !defined(OS_IOS)
   // Disable external libraries load if we are under python process in

@@ -1,8 +1,10 @@
 include_rules = [
   "+base",
-  "+content/public",
+  "+content/public/browser",
+  "+content/public/common",
+  "+content/public/utility",
   "+grit",  # For generated headers
-  "+grit/components_strings.h",  # For generated headers
   "+ipc",
+  "+jni",
   "+ui/base",
 ]

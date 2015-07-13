@@ -46,6 +46,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/policy/android/java/src"/>
     <classpathentry kind="src" path="components/precache/android/java/src"/>
     <classpathentry kind="src" path="components/precache/android/javatests/src"/>
+    <classpathentry kind="src" path="components/safe_json/android/java/src"/>
     <classpathentry kind="src" path="components/service_tab_launcher/android/java/src"/>
     <classpathentry kind="src" path="components/variations/android/java/src"/>
     <classpathentry kind="src" path="components/web_contents_delegate_android/android/java/src"/>

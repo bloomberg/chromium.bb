@@ -489,6 +489,9 @@
       'rappor/rappor_utils_unittest.cc',
       'rappor/sampler_unittest.cc',
     ],
+    'safe_json_unittest_sources': [
+      'safe_json/json_sanitizer_unittest.cc',
+    ],
     'scheduler_unittest_sources': [
       'scheduler/child/idle_helper_unittest.cc',
       'scheduler/child/nestable_task_runner_for_test.cc',
@@ -900,6 +903,7 @@
             '<@(navigation_interception_unittest_sources)',
             '<@(network_hints_unittest_sources)',
             '<@(power_unittest_sources)',
+            '<@(safe_json_unittest_sources)',
             '<@(scheduler_unittest_sources)',
             '<@(storage_monitor_unittest_sources)',
             '<@(ui_unittest_sources)',
@@ -929,6 +933,8 @@
             'components.gyp:password_manager_content_common',
             'components.gyp:power',
             'components.gyp:precache_content',
+            'components.gyp:safe_json',
+            'components.gyp:safe_json_test_support',
             'components.gyp:sessions_content',
             'components.gyp:storage_monitor',
             'components.gyp:storage_monitor_test_support',
@@ -1061,6 +1067,7 @@
           'dependencies': [
             'components.gyp:cronet_static',
             'components.gyp:data_reduction_proxy_content',
+            'components.gyp:safe_json_java',
             '../content/content.gyp:content_java',
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
