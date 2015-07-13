@@ -464,6 +464,8 @@ struct amdgpu_gpu_info {
 	uint32_t vram_bit_width;
 	/** constant engine ram size*/
 	uint32_t ce_ram_size;
+	/* vce harvesting instance */
+	uint32_t vce_harvest_config;
 };
 
 
