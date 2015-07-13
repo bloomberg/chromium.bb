@@ -6,6 +6,7 @@
 
 #include <jni.h>
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -109,6 +110,34 @@ jboolean FakeServerHelperAndroid::VerifySessions(
   return result;
 }
 
+base::android::ScopedJavaLocalRef<jobjectArray>
+FakeServerHelperAndroid::GetSyncEntitiesByModelType(JNIEnv* env,
+                                                    jobject obj,
+                                                    jlong fake_server,
+                                                    jstring model_type_string) {
+  fake_server::FakeServer* fake_server_ptr =
+      reinterpret_cast<fake_server::FakeServer*>(fake_server);
+
+  syncer::ModelType model_type;
+  if (!NotificationTypeToRealModelType(
+      base::android::ConvertJavaStringToUTF8(env, model_type_string),
+      &model_type)) {
+    LOG(WARNING) << "Invalid ModelType string.";
+    NOTREACHED();
+  }
+
+  std::vector<sync_pb::SyncEntity> entities =
+      fake_server_ptr->GetSyncEntitiesByModelType(model_type);
+
+  std::vector<std::string> entity_strings;
+  for (size_t i = 0; i < entities.size(); ++i) {
+    std::string s;
+    entities[i].SerializeToString(&s);
+    entity_strings.push_back(s);
+  }
+  return base::android::ToJavaArrayOfByteArray(env, entity_strings);
+}
+
 void FakeServerHelperAndroid::InjectUniqueClientEntity(
     JNIEnv* env,
     jobject obj,
@@ -202,8 +231,9 @@ void FakeServerHelperAndroid::ModifyBookmarkEntity(JNIEnv* env,
       CreateBookmarkEntity(env, title, url, parent_id);
   sync_pb::SyncEntity proto;
   bookmark->SerializeAsProto(&proto);
-  fake_server_ptr->ModifyEntitySpecifics(
+  fake_server_ptr->ModifyBookmarkEntity(
       base::android::ConvertJavaStringToUTF8(env, entity_id),
+      base::android::ConvertJavaStringToUTF8(env, parent_id),
       proto.specifics());
 }
 
@@ -225,8 +255,9 @@ void FakeServerHelperAndroid::ModifyBookmarkFolderEntity(JNIEnv* env,
 
   sync_pb::SyncEntity proto;
   bookmark_builder.BuildFolder()->SerializeAsProto(&proto);
-  fake_server_ptr->ModifyEntitySpecifics(
+  fake_server_ptr->ModifyBookmarkEntity(
       base::android::ConvertJavaStringToUTF8(env, entity_id),
+      base::android::ConvertJavaStringToUTF8(env, parent_id),
       proto.specifics());
 }
 

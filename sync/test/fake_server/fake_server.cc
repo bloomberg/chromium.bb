@@ -556,6 +556,27 @@ bool FakeServer::ModifyEntitySpecifics(
 
   scoped_ptr<FakeServerEntity> entity = entities_.take_and_erase(iter);
   entity->SetSpecifics(updated_specifics);
+  UpdateEntityVersion(entity.get());
+  entities_.insert(id, entity.Pass());
+  return true;
+}
+
+bool FakeServer::ModifyBookmarkEntity(
+    const std::string& id,
+    const std::string& parent_id,
+    const sync_pb::EntitySpecifics& updated_specifics) {
+  EntityMap::const_iterator iter = entities_.find(id);
+  if (iter == entities_.end() ||
+      iter->second->GetModelType() != syncer::BOOKMARKS ||
+      GetModelTypeFromSpecifics(updated_specifics) != syncer::BOOKMARKS) {
+    return false;
+  }
+
+  scoped_ptr<BookmarkEntity> entity(
+      static_cast<BookmarkEntity*>(entities_.take_and_erase(iter).release()));
+
+  entity->SetParentId(parent_id);
+  entity->SetSpecifics(updated_specifics);
   if (updated_specifics.has_bookmark()) {
     entity->SetName(updated_specifics.bookmark().title());
   }

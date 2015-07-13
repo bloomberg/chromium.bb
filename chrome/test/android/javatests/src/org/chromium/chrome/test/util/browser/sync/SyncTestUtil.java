@@ -399,6 +399,12 @@ public final class SyncTestUtil {
         if (keysIterator.hasNext()) {
             throw new JSONException("Specifics object has more than 1 key.");
         }
+
+        if (key.equals("bookmark")) {
+            JSONObject bookmarkSpecifics = specifics.getJSONObject(key);
+            bookmarkSpecifics.put("parent_id", node.getString("PARENT_ID"));
+            return bookmarkSpecifics;
+        }
         return specifics.getJSONObject(key);
     }
 

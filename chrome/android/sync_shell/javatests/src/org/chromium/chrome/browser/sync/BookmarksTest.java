@@ -16,6 +16,8 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.protocol.BookmarkSpecifics;
+import org.chromium.sync.protocol.SyncEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,6 +36,7 @@ public class BookmarksTest extends SyncTestBase {
     private static final String URL = "http://chromium.org/";
     private static final String TITLE = "Chromium";
     private static final String MODIFIED_TITLE = "Chromium2";
+    private static final String FOLDER_TITLE = "Tech";
 
     private BookmarksBridge mBookmarksBridge;
 
@@ -42,11 +45,13 @@ public class BookmarksTest extends SyncTestBase {
         public final String id;
         public final String title;
         public final String url;
+        public final String parentId;
 
-        private Bookmark(String id, String title, String url) {
+        private Bookmark(String id, String title, String url, String parentId) {
             this.id = id;
             this.title = title;
             this.url = url;
+            this.parentId = parentId;
         }
 
         public boolean isFolder() {
@@ -121,6 +126,36 @@ public class BookmarksTest extends SyncTestBase {
         waitForServerBookmarkCountWithName(0, TITLE);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         waitForClientBookmarkCount(0);
+    }
+
+    // Test syncing a bookmark modification from server to client.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadMovedBookmark() throws Exception {
+        // Add the entity to test moving.
+        addServerBookmark(TITLE, URL);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        waitForServerBookmarkCountWithName(1, TITLE);
+        waitForClientBookmarkCount(1);
+
+        // Add the folder to move to.
+        addServerBookmarkFolder(FOLDER_TITLE);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        waitForServerBookmarkCountWithName(1, FOLDER_TITLE);
+        waitForClientBookmarkCount(2);
+
+        // The folder comes first because new entities are inserted at index 0.
+        Bookmark folder = getClientBookmarks().get(0);
+        Bookmark bookmark = getClientBookmarks().get(1);
+        assertTrue(folder.isFolder());
+        assertFalse(bookmark.isFolder());
+
+        // Move on server, sync, and verify the move locally.
+        mFakeServerHelper.modifyBookmarkEntity(bookmark.id, TITLE, URL, folder.id);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        bookmark = getClientBookmarks().get(1);
+        // The "s" is prepended because the server adds one to the parentId.
+        assertEquals("The bookmark was not moved.", "s" + folder.id, bookmark.parentId);
     }
 
     // Test syncing a new bookmark folder from server to client.
@@ -212,6 +247,45 @@ public class BookmarksTest extends SyncTestBase {
         waitForClientBookmarkCount(0);
         waitForServerBookmarkCountWithName(0, TITLE);
         assertServerBookmarkCountWithName(0, MODIFIED_TITLE);
+    }
+
+    // Test syncing a bookmark modification from client to server.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testUploadMovedBookmark() throws Exception {
+        // Add the entity to test moving.
+        BookmarkId bookmarkId = addClientBookmark(TITLE, URL);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        waitForServerBookmarkCountWithName(1, TITLE);
+        waitForClientBookmarkCount(1);
+
+        // Add the folder to move to.
+        BookmarkId folderId = addClientBookmarkFolder(FOLDER_TITLE);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        waitForServerBookmarkCountWithName(1, FOLDER_TITLE);
+        waitForClientBookmarkCount(2);
+
+        List<Bookmark> bookmarks = getServerBookmarks();
+        Bookmark bookmark;
+        Bookmark folder;
+        if (bookmarks.get(0).isFolder()) {
+            folder = bookmarks.get(0);
+            bookmark = bookmarks.get(1);
+        } else {
+            bookmark = bookmarks.get(0);
+            folder = bookmarks.get(1);
+        }
+
+        // Move on client, sync, and verify the move on the server.
+        moveClientBookmark(bookmarkId, folderId);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        bookmarks = getServerBookmarks();
+        if (bookmarks.get(0).isFolder()) {
+            bookmark = getServerBookmarks().get(1);
+        } else {
+            bookmark = getServerBookmarks().get(0);
+        }
+        assertEquals("The bookmark was not moved.", folder.id, bookmark.parentId);
     }
 
     // Test syncing a new bookmark folder from client to server.
@@ -337,6 +411,15 @@ public class BookmarksTest extends SyncTestBase {
         });
     }
 
+    private void moveClientBookmark(final BookmarkId id, final BookmarkId newParentId) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mBookmarksBridge.moveBookmark(id, newParentId, 0 /* new index */);
+            }
+        });
+    }
+
     private List<Bookmark> getClientBookmarks() throws JSONException {
         List<Pair<String, JSONObject>> rawBookmarks = SyncTestUtil.getLocalData(
                 mContext, BOOKMARKS_TYPE_STRING);
@@ -344,7 +427,21 @@ public class BookmarksTest extends SyncTestBase {
         for (Pair<String, JSONObject> rawBookmark : rawBookmarks) {
             String id = rawBookmark.first;
             JSONObject json = rawBookmark.second;
-            bookmarks.add(new Bookmark(id, json.getString("title"), json.optString("url", null)));
+            bookmarks.add(new Bookmark(id, json.getString("title"), json.optString("url", null),
+                    json.getString("parent_id")));
+        }
+        return bookmarks;
+    }
+
+    private List<Bookmark> getServerBookmarks() throws Exception {
+        List<SyncEntity> entities =
+                mFakeServerHelper.getSyncEntitiesByModelType(ModelType.BOOKMARK);
+        List<Bookmark> bookmarks = new ArrayList<Bookmark>(entities.size());
+        for (SyncEntity entity : entities) {
+            String id = entity.idString;
+            String parentId = entity.parentIdString;
+            BookmarkSpecifics specifics = entity.specifics.bookmark;
+            bookmarks.add(new Bookmark(id, specifics.title, specifics.url, parentId));
         }
         return bookmarks;
     }

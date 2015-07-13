@@ -49,6 +49,8 @@ class BookmarkEntity : public FakeServerEntity {
                  int64 creation_time,
                  int64 last_modified_time);
 
+  void SetParentId(std::string parent_id);
+
   // FakeServerEntity implementation.
   std::string GetParentId() const override;
   void SerializeAsProto(sync_pb::SyncEntity* proto) const override;

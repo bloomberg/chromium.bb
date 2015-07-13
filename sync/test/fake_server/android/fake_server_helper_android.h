@@ -48,6 +48,13 @@ class FakeServerHelperAndroid {
                           jlong fake_server,
                           jobjectArray url_array);
 
+  // Return the entities for |model_type_string| on |fake_server|.
+  base::android::ScopedJavaLocalRef<jobjectArray> GetSyncEntitiesByModelType(
+      JNIEnv* env,
+      jobject obj,
+      jlong fake_server,
+      jstring model_type_string);
+
   // Injects a UniqueClientEntity into |fake_server|.
   void InjectUniqueClientEntity(JNIEnv* env,
                                 jobject obj,

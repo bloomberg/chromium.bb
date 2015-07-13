@@ -81,6 +81,10 @@ class FakeServer {
   bool ModifyEntitySpecifics(const std::string& id,
                              const sync_pb::EntitySpecifics& updated_specifics);
 
+  bool ModifyBookmarkEntity(const std::string& id,
+                            const std::string& parent_id,
+                            const sync_pb::EntitySpecifics& updated_specifics);
+
   // Clears server data simulating a "dashboard stop and clear" and sets a new
   // store birthday.
   void ClearServerData();
