@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/threading/simple_thread.h"
 #include "components/view_manager/android_loader.h"
 #include "jni/ShellMain_jni.h"
 #include "mojo/common/message_pump_mojo.h"
@@ -45,27 +44,10 @@ const char kLogTag[] = "chromium";
 // Command line argument for the communication fifo.
 const char kFifoPath[] = "fifo-path";
 
-class MojoShellRunner : public base::DelegateSimpleThread::Delegate {
- public:
-  MojoShellRunner(const std::vector<std::string>& parameters) {}
-  ~MojoShellRunner() override {}
-
- private:
-  void Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoShellRunner);
-};
-
 LazyInstance<scoped_ptr<base::MessageLoop>> g_java_message_loop =
     LAZY_INSTANCE_INITIALIZER;
 
 LazyInstance<scoped_ptr<Context>> g_context = LAZY_INSTANCE_INITIALIZER;
-
-LazyInstance<scoped_ptr<MojoShellRunner>> g_shell_runner =
-    LAZY_INSTANCE_INITIALIZER;
-
-LazyInstance<scoped_ptr<base::DelegateSimpleThread>> g_shell_thread =
-    LAZY_INSTANCE_INITIALIZER;
 
 LazyInstance<base::android::ScopedJavaGlobalRef<jobject>> g_main_activiy =
     LAZY_INSTANCE_INITIALIZER;
@@ -87,23 +69,10 @@ void ConfigureAndroidServices(Context* context) {
       GURL("mojo:android_handler"));
 }
 
-void QuitShellThread() {
-  g_shell_thread.Get()->Join();
-  g_shell_thread.Pointer()->reset();
+void ExitShell() {
   Java_ShellMain_finishActivity(base::android::AttachCurrentThread(),
                                 g_main_activiy.Get().obj());
   exit(0);
-}
-
-void MojoShellRunner::Run() {
-  base::MessageLoop loop(common::MessagePumpMojo::Create());
-  Context* context = g_context.Pointer()->get();
-  ConfigureAndroidServices(context);
-  context->RunCommandLineApplication();
-  loop.Run();
-
-  g_java_message_loop.Pointer()->get()->PostTask(FROM_HERE,
-                                                 base::Bind(&QuitShellThread));
 }
 
 // Initialize stdout redirection if the command line switch is present.
@@ -153,7 +122,6 @@ static void Init(JNIEnv* env,
                                                      &parameters);
   base::CommandLine::Init(0, nullptr);
   base::CommandLine::ForCurrentProcess()->InitFromArgv(parameters);
-  g_shell_runner.Get().reset(new MojoShellRunner(parameters));
 
   InitializeLogging();
   mojo::runner::WaitForDebuggerIfNecessary();
@@ -170,6 +138,8 @@ static void Init(JNIEnv* env,
 
   g_java_message_loop.Get().reset(new base::MessageLoopForUI);
   base::MessageLoopForUI::current()->Start();
+
+  ConfigureAndroidServices(shell_context);
   shell_context->Init();
 
   // This is done after the main message loop is started since it may post
@@ -190,9 +160,8 @@ static void Start(JNIEnv* env, jclass clazz) {
   sleep(5);
 #endif
 
-  g_shell_thread.Get().reset(new base::DelegateSimpleThread(
-      g_shell_runner.Get().get(), "ShellThread"));
-  g_shell_thread.Get()->Start();
+  Context* context = g_context.Pointer()->get();
+  context->RunCommandLineApplication(base::Bind(ExitShell));
 }
 
 static void AddApplicationURL(JNIEnv* env, jclass clazz, jstring jurl) {

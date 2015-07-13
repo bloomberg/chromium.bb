@@ -347,6 +347,7 @@ void Context::OnShutdownComplete() {
 }
 
 void Context::Run(const GURL& url) {
+  DCHECK(app_complete_callback_.is_null());
   ServiceProviderPtr services;
   ServiceProviderPtr exposed_services;
 
@@ -359,13 +360,16 @@ void Context::Run(const GURL& url) {
       base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
 }
 
-void Context::RunCommandLineApplication() {
+void Context::RunCommandLineApplication(const base::Closure& callback) {
+  DCHECK(app_urls_.empty());
+  DCHECK(app_complete_callback_.is_null());
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringVector args = command_line->GetArgs();
   for (size_t i = 0; i < args.size(); ++i) {
     GURL possible_app(args[i]);
     if (possible_app.SchemeIs("mojo")) {
       Run(possible_app);
+      app_complete_callback_ = callback;
       break;
     }
   }
@@ -377,7 +381,11 @@ void Context::OnApplicationEnd(const GURL& url) {
     if (app_urls_.empty() && base::MessageLoop::current()->is_running()) {
       DCHECK_EQ(base::MessageLoop::current()->task_runner(),
                 task_runners_->shell_runner());
-      base::MessageLoop::current()->Quit();
+      if (app_complete_callback_.is_null()) {
+        base::MessageLoop::current()->Quit();
+      } else {
+        app_complete_callback_.Run();
+      }
     }
   }
 }

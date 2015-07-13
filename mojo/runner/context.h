@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/runner/task_runners.h"
@@ -53,10 +54,14 @@ class Context : public shell::ApplicationManager::Delegate,
   // If Init() was called and succeeded, this must be called before destruction.
   void Shutdown();
 
+  // NOTE: call either Run() or RunCommandLineApplication(), but not both.
+
+  // Runs the app specified by |url|.
   void Run(const GURL& url);
 
-  // Run the application specified on the commandline.
-  void RunCommandLineApplication();
+  // Run the application specified on the commandline. When the app finishes,
+  // |callback| is run if not null, otherwise the message loop is quit.
+  void RunCommandLineApplication(const base::Closure& callback);
 
   TaskRunners* task_runners() { return task_runners_.get(); }
   shell::ApplicationManager* application_manager() {
@@ -85,6 +90,7 @@ class Context : public shell::ApplicationManager::Delegate,
   URLResolver url_resolver_;
   GURL shell_file_root_;
   GURL command_line_cwd_;
+  base::Closure app_complete_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

@@ -108,9 +108,10 @@ int LauncherProcessMain(int argc, char** argv) {
                                    base::TimeDelta::FromSeconds(5));
     }
 
-    message_loop.PostTask(FROM_HERE,
-                          base::Bind(&Context::RunCommandLineApplication,
-                                     base::Unretained(&shell_context)));
+    message_loop.PostTask(
+        FROM_HERE,
+        base::Bind(&Context::RunCommandLineApplication,
+                   base::Unretained(&shell_context), base::Closure()));
     message_loop.Run();
 
     // Must be called before |message_loop| is destroyed.
