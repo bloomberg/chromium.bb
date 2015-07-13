@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/condition_variable.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -133,60 +132,10 @@ class ScopedEvent {
 
 // This wrapper adds the WaitSyncPoint which allows waiting on a sync point
 // on the service thread, implemented using a condition variable.
-class SyncPointManagerWrapper {
- public:
-  SyncPointManagerWrapper();
-
-  uint32 GenerateSyncPoint();
-  void RetireSyncPoint(uint32 sync_point);
-  void AddSyncPointCallback(uint32 sync_point, const base::Closure& callback);
-
-  void WaitSyncPoint(uint32 sync_point);
-
- private:
-  void OnSyncPointRetired();
-
-  const scoped_refptr<SyncPointManager> manager_;
-  base::Lock retire_lock_;
-  base::ConditionVariable retire_cond_var_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncPointManagerWrapper);
+struct SyncPointManagerWrapper {
+  SyncPointManagerWrapper() : manager(SyncPointManager::Create(true)) {}
+  const scoped_refptr<SyncPointManager> manager;
 };
-
-SyncPointManagerWrapper::SyncPointManagerWrapper()
-    : manager_(SyncPointManager::Create(true)),
-      retire_cond_var_(&retire_lock_) {
-}
-
-uint32 SyncPointManagerWrapper::GenerateSyncPoint() {
-  uint32 sync_point = manager_->GenerateSyncPoint();
-  manager_->AddSyncPointCallback(
-      sync_point, base::Bind(&SyncPointManagerWrapper::OnSyncPointRetired,
-                             base::Unretained(this)));
-  return sync_point;
-}
-
-void SyncPointManagerWrapper::RetireSyncPoint(uint32 sync_point) {
-  manager_->RetireSyncPoint(sync_point);
-}
-
-void SyncPointManagerWrapper::AddSyncPointCallback(
-    uint32 sync_point,
-    const base::Closure& callback) {
-  manager_->AddSyncPointCallback(sync_point, callback);
-}
-
-void SyncPointManagerWrapper::WaitSyncPoint(uint32 sync_point) {
-  base::AutoLock lock(retire_lock_);
-  while (!manager_->IsSyncPointRetired(sync_point)) {
-    retire_cond_var_.Wait();
-  }
-}
-
-void SyncPointManagerWrapper::OnSyncPointRetired() {
-  base::AutoLock lock(retire_lock_);
-  retire_cond_var_.Broadcast();
-}
 
 base::LazyInstance<SyncPointManagerWrapper> g_sync_point_manager =
     LAZY_INSTANCE_INITIALIZER;
@@ -835,7 +784,7 @@ int32 InProcessCommandBuffer::CreateGpuMemoryBufferImage(
 }
 
 uint32 InProcessCommandBuffer::InsertSyncPoint() {
-  uint32 sync_point = g_sync_point_manager.Get().GenerateSyncPoint();
+  uint32 sync_point = g_sync_point_manager.Get().manager->GenerateSyncPoint();
   QueueTask(base::Bind(&InProcessCommandBuffer::RetireSyncPointOnGpuThread,
                        base::Unretained(this),
                        sync_point));
@@ -843,7 +792,7 @@ uint32 InProcessCommandBuffer::InsertSyncPoint() {
 }
 
 uint32 InProcessCommandBuffer::InsertFutureSyncPoint() {
-  return g_sync_point_manager.Get().GenerateSyncPoint();
+  return g_sync_point_manager.Get().manager->GenerateSyncPoint();
 }
 
 void InProcessCommandBuffer::RetireSyncPoint(uint32 sync_point) {
@@ -864,7 +813,7 @@ void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
     if (make_current_success)
       mailbox_manager->PushTextureUpdates(sync_point);
   }
-  g_sync_point_manager.Get().RetireSyncPoint(sync_point);
+  g_sync_point_manager.Get().manager->RetireSyncPoint(sync_point);
 }
 
 void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
@@ -877,7 +826,7 @@ void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
 }
 
 bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
-  g_sync_point_manager.Get().WaitSyncPoint(sync_point);
+  g_sync_point_manager.Get().manager->ThreadedWaitSyncPoint(sync_point);
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();
   mailbox_manager->PullTextureUpdates(sync_point);
@@ -887,7 +836,8 @@ bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
 void InProcessCommandBuffer::SignalSyncPointOnGpuThread(
     unsigned sync_point,
     const base::Closure& callback) {
-  g_sync_point_manager.Get().AddSyncPointCallback(sync_point, callback);
+  g_sync_point_manager.Get().manager->AddSyncPointCallback(sync_point,
+                                                           callback);
 }
 
 void InProcessCommandBuffer::SignalQuery(unsigned query_id,

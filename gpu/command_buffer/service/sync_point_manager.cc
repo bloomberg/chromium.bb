@@ -15,17 +15,18 @@ namespace gpu {
 static const int kMaxSyncBase = INT_MAX;
 
 // static
-SyncPointManager* SyncPointManager::Create(bool allow_threaded_calls) {
-  return new SyncPointManager(allow_threaded_calls);
+SyncPointManager* SyncPointManager::Create(bool allow_threaded_calls_and_wait) {
+  return new SyncPointManager(allow_threaded_calls_and_wait);
 }
 
-SyncPointManager::SyncPointManager(bool allow_threaded_calls)
-    : next_sync_point_(base::RandInt(1, kMaxSyncBase)) {
-  // To reduce the risk that a sync point created in a previous GPU process
-  // will be in flight in the next GPU process, randomize the starting sync
-  // point number. http://crbug.com/373452
-
-  if (!allow_threaded_calls) {
+SyncPointManager::SyncPointManager(bool allow_threaded_calls_and_wait)
+    : allow_threaded_calls_and_wait_(allow_threaded_calls_and_wait),
+      // To reduce the risk that a sync point created in a previous GPU process
+      // will be in flight in the next GPU process, randomize the starting sync
+      // point number. http://crbug.com/373452
+      next_sync_point_(base::RandInt(1, kMaxSyncBase)),
+      retire_cond_var_(&retire_lock_) {
+  if (!allow_threaded_calls_and_wait_) {
     sequence_checker_.reset(new base::SequenceChecker);
   }
 }
@@ -64,6 +65,10 @@ void SyncPointManager::RetireSyncPoint(uint32 sync_point) {
     list.swap(it->second);
     sync_point_map_.erase(it);
   }
+  if (allow_threaded_calls_and_wait_) {
+    base::AutoLock lock(retire_lock_);
+    retire_cond_var_.Broadcast();
+  }
   for (ClosureList::iterator i = list.begin(); i != list.end(); ++i)
     i->Run();
 }
@@ -91,8 +96,16 @@ bool SyncPointManager::IsSyncPointRetired(uint32 sync_point) {
   }
 }
 
+void SyncPointManager::ThreadedWaitSyncPoint(uint32 sync_point) {
+  DCHECK(allow_threaded_calls_and_wait_);
+  base::AutoLock lock(retire_lock_);
+  while (!IsSyncPointRetired(sync_point)) {
+    retire_cond_var_.Wait();
+  }
+}
+
 void SyncPointManager::CheckSequencedThread() {
-  DCHECK(!sequence_checker_ ||
+  DCHECK(allow_threaded_calls_and_wait_ ||
          sequence_checker_->CalledOnValidSequencedThread());
 }
 
