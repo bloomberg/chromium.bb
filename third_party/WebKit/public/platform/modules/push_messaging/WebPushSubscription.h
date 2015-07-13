@@ -8,19 +8,26 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
 struct WebPushSubscription {
+    // The |endpoint| must be unique for each subscription.
+    WebPushSubscription(const WebURL& endpoint, const WebVector<unsigned char>& curve25519dh)
+        : endpoint(endpoint)
+        , curve25519dh(curve25519dh)
+    {
+    }
+
+    // TODO(peter): Remove this constructor when the embedder doesn't use it anymore.
     explicit WebPushSubscription(const WebURL& endpoint)
         : endpoint(endpoint)
     {
     }
 
-    // TODO(peter): Remove this constructor when the embedder switched over to the one above.
-    BLINK_PLATFORM_EXPORT WebPushSubscription(const WebString& endpointWithoutSubscriptionId, const WebString& subscriptionId);
-
     WebURL endpoint;
+    WebVector<unsigned char> curve25519dh;
 };
 
 } // namespace blink
