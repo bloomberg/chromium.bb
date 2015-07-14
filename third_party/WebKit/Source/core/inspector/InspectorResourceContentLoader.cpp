@@ -159,7 +159,6 @@ InspectorResourceContentLoader::~InspectorResourceContentLoader()
 
 DEFINE_TRACE(InspectorResourceContentLoader)
 {
-    visitor->trace(m_callbacks);
     visitor->trace(m_inspectedFrame);
 }
 
@@ -196,7 +195,7 @@ void InspectorResourceContentLoader::checkDone()
 {
     if (!hasFinished())
         return;
-    WillBeHeapVector<OwnPtrWillBeMember<Closure>> callbacks;
+    Vector<OwnPtr<Closure>> callbacks;
     callbacks.swap(m_callbacks);
     for (const auto& callback : callbacks)
         (*callback)();
