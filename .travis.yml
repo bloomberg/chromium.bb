@@ -22,6 +22,8 @@ env:
 
 script: "./autogen.sh && ./configure $ENABLE_UCS4 && make && make check"
 
+after_failure: cat tests/test-suite.log
+
 # tell the irc channel about the results of the build
 notifications:
   irc: "irc.oftc.net#liblouis"
