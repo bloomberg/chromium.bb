@@ -30,7 +30,7 @@
 
 {
   'includes': [
-    '../build/win/precompile.gypi',
+    'win/precompile-core.gypi',
     '../build/features.gypi',
     '../build/scripts/scripts.gypi',
     '../bindings/core/core.gypi',  # core can depend on bindings/core, but not on bindings
@@ -485,7 +485,7 @@
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
-            ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
+            ['include', '<(DEPTH)/third_party/WebKit/Source/core/win/Precompile-core.cpp'],
           ],
         }],
         ['OS=="mac"', {
@@ -573,7 +573,7 @@
         }],
         ['OS=="win" and chromium_win_pch==1', {
           'sources/': [
-            ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
+            ['include', '<(DEPTH)/third_party/WebKit/Source/core/win/Precompile-core.cpp'],
           ],
         }],
         ['use_default_render_theme==0 and OS != "android"', {
@@ -801,7 +801,7 @@
             }],
             ['OS=="win" and chromium_win_pch==1', {
               'sources/': [
-                ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
+                ['include', '<(DEPTH)/third_party/WebKit/Source/core/win/Precompile-core.cpp'],
               ],
             }],
             ['OS=="mac"', {

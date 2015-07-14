@@ -3157,6 +3157,11 @@ def check_include_line(filename, file_extension, clean_lines, line_number, inclu
                                                            file_extension == "h",
                                                            primary_header_exists)
 
+    # Normally including a _CONFIG_HEADER in another header file would be an error
+    # but not when included in a precompile header since that one will need it.
+    if error_message and "config.h" in error_message and "precompile" in filename.lower():
+        error_message = None
+
     # Check to make sure we have a blank line after primary header.
     if not error_message and header_type == _PRIMARY_HEADER:
          next_line = clean_lines.raw_lines[line_number + 1]
