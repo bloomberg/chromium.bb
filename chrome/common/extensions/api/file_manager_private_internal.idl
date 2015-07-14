@@ -46,5 +46,8 @@ namespace fileManagerPrivateInternal {
                                 ComputeChecksumCallback callback);
     static void getMimeType(DOMString url,
                             GetMimeTypeCallback callback);
+    static void pinDriveFile(DOMString url,
+                             boolean pin,
+                             optional SimpleCallback callback);
   };
 };

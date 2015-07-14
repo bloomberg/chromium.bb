@@ -107,6 +107,11 @@ binding.registerCustomHook(function(bindingsAPI) {
     var url = fileBrowserHandlerNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.getMimeType(url, callback);
   });
+
+  apiFunctions.setHandleRequest('pinDriveFile', function(entry, pin, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.pinDriveFile(url, pin, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(

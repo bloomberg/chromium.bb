@@ -346,11 +346,11 @@ chrome.fileManagerPrivate.getEntryProperties = function(entries, names, callback
  * Pins/unpins a Drive file in the cache. |fileUrl| URL of a file to pin/unpin.
  * |pin| Pass true to pin the file. |callback| Completion callback.
  * $(ref:runtime.lastError) will be set if     there was an error.
- * @param {string} fileUrl
+ * @param {!Entry} entry
  * @param {boolean} pin
  * @param {Function=} callback Callback that does not take arguments.
  */
-chrome.fileManagerPrivate.pinDriveFile = function(fileUrl, pin, callback) {};
+chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {};
 
 /**
  * Resolves file entries in the isolated file system and returns corresponding

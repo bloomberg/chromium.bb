@@ -567,10 +567,10 @@ void FileManagerPrivateInternalGetEntryPropertiesFunction::
   SendResponse(true);
 }
 
-bool FileManagerPrivatePinDriveFileFunction::RunAsync() {
+bool FileManagerPrivateInternalPinDriveFileFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  using extensions::api::file_manager_private::PinDriveFile::Params;
+  using extensions::api::file_manager_private_internal::PinDriveFile::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -581,21 +581,25 @@ bool FileManagerPrivatePinDriveFileFunction::RunAsync() {
 
   const base::FilePath drive_path =
       drive::util::ExtractDrivePath(file_manager::util::GetLocalPathFromURL(
-          render_frame_host(), GetProfile(), GURL(params->file_url)));
+          render_frame_host(), GetProfile(), GURL(params->url)));
   if (params->pin) {
-    file_system->Pin(drive_path,
-                     base::Bind(&FileManagerPrivatePinDriveFileFunction::
-                                    OnPinStateSet, this));
+    file_system->Pin(
+        drive_path,
+        base::Bind(
+            &FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet,
+            this));
   } else {
-    file_system->Unpin(drive_path,
-                       base::Bind(&FileManagerPrivatePinDriveFileFunction::
-                                      OnPinStateSet, this));
+    file_system->Unpin(
+        drive_path,
+        base::Bind(
+            &FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet,
+            this));
   }
   return true;
 }
 
-void FileManagerPrivatePinDriveFileFunction::
-    OnPinStateSet(drive::FileError error) {
+void FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet(
+    drive::FileError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error == drive::FILE_ERROR_OK) {

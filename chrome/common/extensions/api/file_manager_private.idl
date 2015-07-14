@@ -745,11 +745,12 @@ interface Functions {
       GetEntryPropertiesCallback callback);
 
   // Pins/unpins a Drive file in the cache.
-  // |fileUrl| URL of a file to pin/unpin.
+  // |entry| Entry to pin/unpin.
   // |pin| Pass true to pin the file.
   // |callback| Completion callback. $(ref:runtime.lastError) will be set if
   //     there was an error.
-  static void pinDriveFile(DOMString fileUrl,
+  [nocompile]
+  static void pinDriveFile([instanceof=Entry] object entry,
                            boolean pin,
                            optional SimpleCallback callback);
 

@@ -962,7 +962,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
           return;
         currentEntry = entries.shift();
         chrome.fileManagerPrivate.pinDriveFile(
-            currentEntry.toURL(),
+            currentEntry,
             pin,
             steps.entryPinned);
       },

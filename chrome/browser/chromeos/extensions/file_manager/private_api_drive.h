@@ -65,14 +65,14 @@ class FileManagerPrivateInternalGetEntryPropertiesFunction
 };
 
 // Implements the chrome.fileManagerPrivate.pinDriveFile method.
-class FileManagerPrivatePinDriveFileFunction
+class FileManagerPrivateInternalPinDriveFileFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.pinDriveFile",
-                             FILEMANAGERPRIVATE_PINDRIVEFILE)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.pinDriveFile",
+                             FILEMANAGERPRIVATEINTERNAL_PINDRIVEFILE)
 
  protected:
-  ~FileManagerPrivatePinDriveFileFunction() override {}
+  ~FileManagerPrivateInternalPinDriveFileFunction() override {}
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;

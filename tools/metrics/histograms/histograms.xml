@@ -54999,7 +54999,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="19" label="DELETED_FILEMANAGERPRIVATE_REQUESTDIRECTORYREFRESH"/>
   <int value="20" label="BLUETOOTH_GETADAPTERSTATE"/>
   <int value="21" label="FILEMANAGERPRIVATE_CANCELFILETRANSFERS"/>
-  <int value="22" label="FILEMANAGERPRIVATE_PINDRIVEFILE"/>
+  <int value="22" label="FILEMANAGERPRIVATEINTERNAL_PINDRIVEFILE"/>
   <int value="23" label="SOCKET_WRITE"/>
   <int value="24" label="OMNIBOX_SETDEFAULTSUGGESTION"/>
   <int value="25" label="TTS_SPEAK"/>
