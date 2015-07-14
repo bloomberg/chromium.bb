@@ -189,8 +189,9 @@ class MasterPreferences {
   // OTHER NOTE: Not thread safe.
   static const MasterPreferences& ForCurrentProcess();
 
- protected:
+ private:
   void InitializeFromCommandLine(const base::CommandLine& cmd_line);
+  void InitializeFromFilePath(const base::FilePath& prefs_path);
 
   // Initializes the instance from a given JSON string, returning true if the
   // string was successfully parsed.

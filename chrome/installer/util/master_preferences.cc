@@ -90,16 +90,7 @@ MasterPreferences::MasterPreferences(const base::FilePath& prefs_path)
       preferences_read_from_file_(false),
       chrome_(true),
       multi_install_(false) {
-  std::string json_data;
-  // Failure to read the file is ignored as |json_data| will be the empty string
-  // and the remainder of this MasterPreferences object should still be
-  // initialized as best as possible.
-  if (base::PathExists(prefs_path) &&
-      !base::ReadFileToString(prefs_path, &json_data)) {
-    LOG(ERROR) << "Failed to read preferences from " << prefs_path.value();
-  }
-  if (InitializeFromString(json_data))
-    preferences_read_from_file_ = true;
+  InitializeFromFilePath(prefs_path);
 }
 
 MasterPreferences::MasterPreferences(const std::string& prefs)
@@ -119,7 +110,7 @@ void MasterPreferences::InitializeFromCommandLine(
   if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
     base::FilePath prefs_path(cmd_line.GetSwitchValuePath(
         installer::switches::kInstallerData));
-    this->MasterPreferences::MasterPreferences(prefs_path);
+    InitializeFromFilePath(prefs_path);
   } else {
     master_dictionary_.reset(new base::DictionaryValue());
   }
@@ -193,6 +184,20 @@ void MasterPreferences::InitializeFromCommandLine(
 
   InitializeProductFlags();
 #endif
+}
+
+void MasterPreferences::InitializeFromFilePath(
+    const base::FilePath& prefs_path) {
+  std::string json_data;
+  // Failure to read the file is ignored as |json_data| will be the empty string
+  // and the remainder of this MasterPreferences object should still be
+  // initialized as best as possible.
+  if (base::PathExists(prefs_path) &&
+      !base::ReadFileToString(prefs_path, &json_data)) {
+    LOG(ERROR) << "Failed to read preferences from " << prefs_path.value();
+  }
+  if (InitializeFromString(json_data))
+    preferences_read_from_file_ = true;
 }
 
 bool MasterPreferences::InitializeFromString(const std::string& json_data) {
