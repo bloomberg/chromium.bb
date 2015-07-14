@@ -8,6 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
@@ -547,7 +548,8 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED),
             GetDisplayNotificationText());
   EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION),
+      ash::SubstituteChromeOSDeviceType(
+        IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION),
       GetDisplayNotificationAdditionalText());
 }
 

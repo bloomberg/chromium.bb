@@ -10,6 +10,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
@@ -254,7 +255,7 @@ class DisplayView : public ActionableView {
     if (gfx::Display::HasInternalDisplay() &&
         !(gfx::Display::InternalDisplayId() == primary_id)) {
       if (additional_message_out) {
-        *additional_message_out = l10n_util::GetStringUTF16(
+        *additional_message_out = ash::SubstituteChromeOSDeviceType(
             IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION);
       }
       return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED);

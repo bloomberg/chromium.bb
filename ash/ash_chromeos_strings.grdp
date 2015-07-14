@@ -235,7 +235,7 @@
     Docked mode
   </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION" desc="The body of the notification indicating that the system is in docked mode.">
-    You can keep using your Chromebook while it's connected to an external display, even with the lid closed.
+    You can keep using your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> while it's connected to an external display, even with the lid closed.
   </message>
   <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
     <ph name="DISPLAY_NAME">$1</ph> resolution was changed to <ph name="RESOLUTION">$2</ph>
