@@ -425,7 +425,7 @@ main(int argc, char *argv[]) {
   }
   yaml_event_delete(&event);
 
-  char *tables_list = malloc(sizeof(char) * 512);
+  char tables_list[512];
   read_tables(&parser, tables_list);
 
   if (!yaml_parser_parse(&parser, &event) ||
