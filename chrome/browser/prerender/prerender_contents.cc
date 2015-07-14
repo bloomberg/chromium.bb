@@ -195,7 +195,6 @@ PrerenderContents::PrerenderContents(
       prerender_url_(url),
       referrer_(referrer),
       profile_(profile),
-      page_id_(0),
       has_stopped_loading_(false),
       has_finished_loading_(false),
       final_status_(FINAL_STATUS_MAX),
