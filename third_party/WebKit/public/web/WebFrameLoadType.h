@@ -16,7 +16,7 @@ enum class WebFrameLoadType {
     BackForward,
     Reload,
     Same, // user loads same URL again (but not reload button)
-    RedirectWithLockedBackForwardList,
+    ReplaceCurrentItem,
     InitialInChildFrame,
     InitialHistoryLoad, // history navigation in a newly created frame
     ReloadFromOrigin, // reload bypassing cache

@@ -87,7 +87,7 @@ namespace blink {
         bool isLocalFrame() const override { return true; }
         DOMWindow* domWindow() const override;
         WindowProxy* windowProxy(DOMWrapperWorld&) override;
-        void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
+        void navigate(Document& originDocument, const KURL&, bool replaceCurrentItem, UserGestureStatus) override;
         void navigate(const FrameLoadRequest&) override;
         void reload(FrameLoadType, ClientRedirectPolicy) override;
         void detach(FrameDetachType) override;

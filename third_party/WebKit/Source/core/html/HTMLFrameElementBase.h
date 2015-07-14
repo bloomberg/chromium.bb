@@ -64,7 +64,7 @@ private:
 
     void setLocation(const String&);
     void setNameAndOpenURL();
-    void openURL(bool lockBackForwardList = true);
+    void openURL(bool replaceCurrentItem = true);
 
     AtomicString m_URL;
     AtomicString m_frameName;

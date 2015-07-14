@@ -233,7 +233,7 @@ WindowProxy* LocalFrame::windowProxy(DOMWrapperWorld& world)
     return m_script->windowProxy(world);
 }
 
-void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBackForwardList, UserGestureStatus userGestureStatus)
+void LocalFrame::navigate(Document& originDocument, const KURL& url, bool replaceCurrentItem, UserGestureStatus userGestureStatus)
 {
     // TODO(dcheng): Special case for window.open("about:blank") to ensure it loads synchronously into
     // a new window. This is our historical behavior, and it's consistent with the creation of
@@ -247,7 +247,7 @@ void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBa
         request.resourceRequest().setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
         m_loader.load(request);
     } else {
-        m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), lockBackForwardList);
+        m_navigationScheduler.scheduleLocationChange(&originDocument, url.string(), replaceCurrentItem);
     }
 }
 

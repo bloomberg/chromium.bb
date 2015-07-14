@@ -70,7 +70,7 @@ bool HTMLFrameElementBase::isURLAllowed() const
     return true;
 }
 
-void HTMLFrameElementBase::openURL(bool lockBackForwardList)
+void HTMLFrameElementBase::openURL(bool replaceCurrentItem)
 {
     if (!isURLAllowed())
         return;
@@ -90,7 +90,7 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
         url = blankURL();
     }
 
-    if (!loadOrRedirectSubframe(url, m_frameName, lockBackForwardList))
+    if (!loadOrRedirectSubframe(url, m_frameName, replaceCurrentItem))
         return;
     if (!contentFrame() || scriptURL.isEmpty() || !contentFrame()->isLocalFrame())
         return;

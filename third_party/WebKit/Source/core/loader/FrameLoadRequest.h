@@ -41,7 +41,7 @@ struct FrameLoadRequest {
 public:
     explicit FrameLoadRequest(Document* originDocument)
         : m_originDocument(originDocument)
-        , m_lockBackForwardList(false)
+        , m_replacesCurrentItem(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
@@ -53,7 +53,7 @@ public:
     FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest)
         : m_originDocument(originDocument)
         , m_resourceRequest(resourceRequest)
-        , m_lockBackForwardList(false)
+        , m_replacesCurrentItem(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
@@ -66,7 +66,7 @@ public:
         : m_originDocument(originDocument)
         , m_resourceRequest(resourceRequest)
         , m_frameName(frameName)
-        , m_lockBackForwardList(false)
+        , m_replacesCurrentItem(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
@@ -79,7 +79,7 @@ public:
         : m_originDocument(originDocument)
         , m_resourceRequest(resourceRequest)
         , m_frameName(frameName)
-        , m_lockBackForwardList(false)
+        , m_replacesCurrentItem(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(shouldCheckMainWorldContentSecurityPolicy)
@@ -92,7 +92,7 @@ public:
         : m_originDocument(originDocument)
         , m_resourceRequest(resourceRequest)
         , m_substituteData(substituteData)
-        , m_lockBackForwardList(false)
+        , m_replacesCurrentItem(false)
         , m_clientRedirect(NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldCheckMainWorldContentSecurityPolicy(CheckContentSecurityPolicy)
@@ -111,8 +111,8 @@ public:
 
     const SubstituteData& substituteData() const { return m_substituteData; }
 
-    bool lockBackForwardList() const { return m_lockBackForwardList; }
-    void setLockBackForwardList(bool lockBackForwardList) { m_lockBackForwardList = lockBackForwardList; }
+    bool replacesCurrentItem() const { return m_replacesCurrentItem; }
+    void setReplacesCurrentItem(bool replacesCurrentItem) { m_replacesCurrentItem = replacesCurrentItem; }
 
     ClientRedirectPolicy clientRedirect() const { return m_clientRedirect; }
     void setClientRedirect(ClientRedirectPolicy clientRedirect) { m_clientRedirect = clientRedirect; }
@@ -133,7 +133,7 @@ private:
     ResourceRequest m_resourceRequest;
     AtomicString m_frameName;
     SubstituteData m_substituteData;
-    bool m_lockBackForwardList;
+    bool m_replacesCurrentItem;
     ClientRedirectPolicy m_clientRedirect;
     RefPtrWillBeMember<Event> m_triggeringEvent;
     RefPtrWillBeMember<HTMLFormElement> m_form;

@@ -65,7 +65,7 @@ public:
 
     void replaceState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, const StateOptions& options, ExceptionState& exceptionState)
     {
-        stateObjectAdded(data, title, url, options, FrameLoadTypeRedirectWithLockedBackForwardList, exceptionState);
+        stateObjectAdded(data, title, url, options, FrameLoadTypeReplaceCurrentItem, exceptionState);
     }
 
     bool stateChanged() const;

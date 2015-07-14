@@ -72,7 +72,7 @@ public:
     virtual DOMWindow* domWindow() const = 0;
     virtual WindowProxy* windowProxy(DOMWrapperWorld&) = 0;
 
-    virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) = 0;
+    virtual void navigate(Document& originDocument, const KURL&, bool replaceCurrentItem, UserGestureStatus) = 0;
     // This version of Frame::navigate assumes the resulting navigation is not
     // to be started on a timer. Use the method above in such cases.
     virtual void navigate(const FrameLoadRequest&) = 0;

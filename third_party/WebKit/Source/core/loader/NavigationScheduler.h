@@ -92,7 +92,7 @@ public:
     bool locationChangePending();
 
     void scheduleRedirect(double delay, const String& url);
-    void scheduleLocationChange(Document*, const String& url, bool lockBackForwardList = true);
+    void scheduleLocationChange(Document*, const String& url, bool replacesCurrentItem = true);
     void schedulePageBlock(Document*);
     void scheduleFormSubmission(Document*, PassRefPtrWillBeRawPtr<FormSubmission>);
     void scheduleReload();
@@ -115,7 +115,7 @@ private:
     void timerFired(Timer<NavigationScheduler>*);
     void schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation>);
 
-    static bool mustLockBackForwardList(LocalFrame* targetFrame);
+    static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
 
     RawPtrWillBeMember<LocalFrame> m_frame;
     Timer<NavigationScheduler> m_timer;

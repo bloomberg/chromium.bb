@@ -1017,7 +1017,7 @@ void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType,
 
     FrameLoadRequest frameRequest(0, request, SubstituteData(data, mimeType, textEncoding, unreachableURL));
     ASSERT(frameRequest.substituteData().isValid());
-    frameRequest.setLockBackForwardList(replace);
+    frameRequest.setReplacesCurrentItem(replace);
     frame()->loader().load(frameRequest);
 }
 
