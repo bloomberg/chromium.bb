@@ -149,40 +149,6 @@ public:
     }
 };
 
-class InspectorCSSAgent::InspectorResourceContentLoaderCallback final : public VoidCallback {
-public:
-    InspectorResourceContentLoaderCallback(InspectorCSSAgent*, PassRefPtrWillBeRawPtr<EnableCallback>);
-    DECLARE_VIRTUAL_TRACE();
-    void handleEvent() override;
-
-private:
-    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
-    RefPtrWillBeMember<EnableCallback> m_callback;
-};
-
-InspectorCSSAgent::InspectorResourceContentLoaderCallback::InspectorResourceContentLoaderCallback(InspectorCSSAgent* cssAgent, PassRefPtrWillBeRawPtr<EnableCallback> callback)
-    : m_cssAgent(cssAgent)
-    , m_callback(callback)
-{
-}
-
-DEFINE_TRACE(InspectorCSSAgent::InspectorResourceContentLoaderCallback)
-{
-    visitor->trace(m_cssAgent);
-    visitor->trace(m_callback);
-    VoidCallback::trace(visitor);
-}
-
-void InspectorCSSAgent::InspectorResourceContentLoaderCallback::handleEvent()
-{
-    // enable always succeeds.
-    if (!m_callback->isActive())
-        return;
-
-    m_cssAgent->wasEnabled();
-    m_callback->sendSuccess();
-}
-
 class InspectorCSSAgent::SetStyleSheetTextAction final : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetStyleSheetTextAction);
 public:
@@ -521,7 +487,15 @@ void InspectorCSSAgent::enable(ErrorString* errorString, PassRefPtrWillBeRawPtr<
         return;
     }
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, true);
-    m_resourceContentLoader->ensureResourcesContentLoaded(new InspectorCSSAgent::InspectorResourceContentLoaderCallback(this, prpCallback));
+    m_resourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorCSSAgent::resourceContentLoaded, this, prpCallback));
+}
+
+void InspectorCSSAgent::resourceContentLoaded(PassRefPtrWillBeRawPtr<EnableCallback> callback)
+{
+    if (!callback->isActive())
+        return;
+    wasEnabled();
+    callback->sendSuccess();
 }
 
 void InspectorCSSAgent::wasEnabled()

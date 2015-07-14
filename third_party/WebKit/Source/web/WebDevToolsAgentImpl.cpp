@@ -431,7 +431,7 @@ void WebDevToolsAgentImpl::willBeDestroyed()
 
     detach();
     m_injectedScriptManager->disconnect();
-    m_resourceContentLoader->stop();
+    m_resourceContentLoader->dispose();
     m_agents.discardAgents();
     m_instrumentingAgents->reset();
 }

@@ -16,7 +16,6 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/page/Page.h"
@@ -145,7 +144,7 @@ void InspectorResourceContentLoader::start()
     checkDone();
 }
 
-void InspectorResourceContentLoader::ensureResourcesContentLoaded(VoidCallback* callback)
+void InspectorResourceContentLoader::ensureResourcesContentLoaded(PassOwnPtr<Closure> callback)
 {
     if (!m_started)
         start();
@@ -170,6 +169,11 @@ void InspectorResourceContentLoader::didCommitLoadForLocalFrame(LocalFrame* fram
         stop();
 }
 
+void InspectorResourceContentLoader::dispose()
+{
+    stop();
+}
+
 void InspectorResourceContentLoader::stop()
 {
     HashSet<ResourceClient*> pendingResourceClients;
@@ -192,10 +196,10 @@ void InspectorResourceContentLoader::checkDone()
 {
     if (!hasFinished())
         return;
-    PersistentHeapVectorWillBeHeapVector<Member<VoidCallback> > callbacks;
+    WillBeHeapVector<OwnPtrWillBeMember<Closure>> callbacks;
     callbacks.swap(m_callbacks);
     for (const auto& callback : callbacks)
-        callback->handleEvent();
+        (*callback)();
 }
 
 void InspectorResourceContentLoader::resourceFinished(ResourceClient* client)

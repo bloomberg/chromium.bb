@@ -134,8 +134,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    class GetResourceContentLoadListener;
-
     InspectorPageAgent(LocalFrame* inspectedFrame, InspectorOverlay*, InspectorResourceContentLoader*);
 
     void finishReload();

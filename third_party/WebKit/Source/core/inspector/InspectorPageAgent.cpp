@@ -113,40 +113,6 @@ TypeBuilder::Page::DialogType::Enum dialogTypeToProtocol(ChromeClient::DialogTyp
 
 }
 
-class InspectorPageAgent::GetResourceContentLoadListener final : public VoidCallback {
-public:
-    GetResourceContentLoadListener(InspectorPageAgent*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
-    DECLARE_VIRTUAL_TRACE();
-    void handleEvent() override;
-private:
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    String m_frameId;
-    String m_url;
-    RefPtrWillBeMember<GetResourceContentCallback> m_callback;
-};
-
-InspectorPageAgent::GetResourceContentLoadListener::GetResourceContentLoadListener(InspectorPageAgent* pageAgent, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
-    : m_pageAgent(pageAgent)
-    , m_frameId(frameId)
-    , m_url(url)
-    , m_callback(callback)
-{
-}
-
-DEFINE_TRACE(InspectorPageAgent::GetResourceContentLoadListener)
-{
-    visitor->trace(m_pageAgent);
-    visitor->trace(m_callback);
-    VoidCallback::trace(visitor);
-}
-
-void InspectorPageAgent::GetResourceContentLoadListener::handleEvent()
-{
-    if (!m_callback->isActive())
-        return;
-    m_pageAgent->getResourceContentAfterResourcesContentLoaded(m_frameId, m_url, m_callback);
-}
-
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
 {
     if (buffer) {
@@ -544,6 +510,9 @@ void InspectorPageAgent::finishReload()
 
 void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
 {
+    if (!callback->isActive())
+        return;
+
     ErrorString errorString;
     LocalFrame* frame = assertFrame(&errorString, frameId);
     if (!frame) {
@@ -571,7 +540,7 @@ void InspectorPageAgent::getResourceContent(ErrorString* errorString, const Stri
         callback->sendFailure("Agent is not enabled.");
         return;
     }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(new GetResourceContentLoadListener(this, frameId, url, callback));
+    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(bind(&InspectorPageAgent::getResourceContentAfterResourcesContentLoaded, this, frameId, url, callback));
 }
 
 static bool textContentForResource(Resource* cachedResource, String* result)

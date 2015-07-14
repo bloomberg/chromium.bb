@@ -152,7 +152,6 @@ private:
     class ModifyRuleAction;
     class SetElementStyleAction;
     class AddRuleAction;
-    class InspectorResourceContentLoaderCallback;
 
     static void collectStyleSheets(CSSStyleSheet*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&);
 
@@ -163,6 +162,7 @@ private:
     typedef WillBeHeapHashMap<RawPtrWillBeMember<Node>, RefPtrWillBeMember<InspectorStyleSheetForInlineStyle> > NodeToInspectorStyleSheet; // bogus "stylesheets" with elements' inline styles
     typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
 
+    void resourceContentLoaded(PassRefPtrWillBeRawPtr<EnableCallback>);
     void wasEnabled();
     void resetNonPersistentData();
     InspectorStyleSheetForInlineStyle* asInspectorStyleSheet(Element* element);
