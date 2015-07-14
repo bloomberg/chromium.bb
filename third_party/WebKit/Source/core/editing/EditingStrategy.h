@@ -25,20 +25,13 @@ public:
     static int lastOffsetForEditing(const Node*);
 };
 
-// DOM tree version of editing algorithm
-class EditingStrategy : public EditingAlgorithm<NodeTraversal> {
-public:
-    using PositionType = PositionAlgorithm<EditingStrategy>;
-};
-
-// Composed tree version of editing algorithm
-class EditingInComposedTreeStrategy : public EditingAlgorithm<ComposedTreeTraversal> {
-public:
-    using PositionType = PositionAlgorithm<EditingInComposedTreeStrategy>;
-};
-
 extern template class EditingAlgorithm<NodeTraversal>;
 extern template class EditingAlgorithm<ComposedTreeTraversal>;
+
+// DOM tree version of editing algorithm
+using EditingStrategy = EditingAlgorithm<NodeTraversal>;
+// Composed tree version of editing algorithm
+using EditingInComposedTreeStrategy = EditingAlgorithm<ComposedTreeTraversal>;
 
 } // namespace blink
 

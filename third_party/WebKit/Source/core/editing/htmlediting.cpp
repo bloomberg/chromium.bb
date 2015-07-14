@@ -331,16 +331,15 @@ Element* unsplittableElementForPosition(const Position& p)
 }
 
 template <typename Strategy>
-typename Strategy::PositionType nextCandidateAlgorithm(const typename Strategy::PositionType& position)
+PositionAlgorithm<Strategy> nextCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
-    using PositionType = typename Strategy::PositionType;
     PositionIteratorAlgorithm<Strategy> p(position);
     while (!p.atEnd()) {
         p.increment();
         if (p.isCandidate())
             return p;
     }
-    return PositionType();
+    return PositionAlgorithm<Strategy>();
 }
 
 Position nextCandidate(const Position& position)
@@ -366,16 +365,15 @@ Position nextVisuallyDistinctCandidate(const Position& position)
 }
 
 template <typename Strategy>
-typename Strategy::PositionType previousCandidateAlgorithm(const typename Strategy::PositionType& position)
+PositionAlgorithm<Strategy> previousCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
-    using PositionType = typename Strategy::PositionType;
     PositionIteratorAlgorithm<Strategy> p(position);
     while (!p.atStart()) {
         p.decrement();
         if (p.isCandidate())
             return p;
     }
-    return PositionType();
+    return PositionAlgorithm<Strategy>();
 }
 
 Position previousCandidate(const Position& position)

@@ -14,24 +14,23 @@ namespace blink {
 // in layout tests.
 class StyledMarkupSerializerTest : public EditingTestBase {
 protected:
-    template <typename Tree>
+    template <typename Strategy>
     std::string serialize(EAnnotateForInterchange = DoNotAnnotateForInterchange);
 
-    template <typename Tree>
-    std::string serializePart(const typename Tree::PositionType& start, const typename Tree::PositionType& end, EAnnotateForInterchange = DoNotAnnotateForInterchange);
+    template <typename Strategy>
+    std::string serializePart(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, EAnnotateForInterchange = DoNotAnnotateForInterchange);
 };
 
-template <typename Tree>
+template <typename Strategy>
 std::string StyledMarkupSerializerTest::serialize(EAnnotateForInterchange shouldAnnotate)
 {
-    using PositionType = typename Tree::PositionType;
-    PositionType start = PositionType(document().body(), PositionAnchorType::BeforeChildren);
-    PositionType end = PositionType(document().body(), PositionAnchorType::AfterChildren);
+    PositionAlgorithm<Strategy> start = PositionAlgorithm<Strategy>(document().body(), PositionAnchorType::BeforeChildren);
+    PositionAlgorithm<Strategy> end = PositionAlgorithm<Strategy>(document().body(), PositionAnchorType::AfterChildren);
     return createMarkup(start, end, shouldAnnotate).utf8().data();
 }
 
-template <typename Tree>
-std::string StyledMarkupSerializerTest::serializePart(const typename Tree::PositionType& start, const typename Tree::PositionType& end, EAnnotateForInterchange shouldAnnotate)
+template <typename Strategy>
+std::string StyledMarkupSerializerTest::serializePart(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, EAnnotateForInterchange shouldAnnotate)
 {
     return createMarkup(start, end, shouldAnnotate).utf8().data();
 }

@@ -119,7 +119,7 @@ int shadowDepthOf<EditingInComposedTreeStrategy>(const Node& startContainer, con
 } // namespace
 
 template<typename Strategy>
-TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, TextIteratorBehaviorFlags behavior)
+TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_startContainer(nullptr)
     , m_startOffset(0)
@@ -1039,19 +1039,19 @@ Node* TextIteratorAlgorithm<Strategy>::currentContainer() const
 }
 
 template<typename Strategy>
-typename Strategy::PositionType TextIteratorAlgorithm<Strategy>::startPositionInCurrentContainer() const
+PositionAlgorithm<Strategy> TextIteratorAlgorithm<Strategy>::startPositionInCurrentContainer() const
 {
-    return Strategy::PositionType::createLegacyEditingPosition(currentContainer(), startOffsetInCurrentContainer());
+    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(currentContainer(), startOffsetInCurrentContainer());
 }
 
 template<typename Strategy>
-typename Strategy::PositionType TextIteratorAlgorithm<Strategy>::endPositionInCurrentContainer() const
+PositionAlgorithm<Strategy> TextIteratorAlgorithm<Strategy>::endPositionInCurrentContainer() const
 {
-    return Strategy::PositionType::createLegacyEditingPosition(currentContainer(), endOffsetInCurrentContainer());
+    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(currentContainer(), endOffsetInCurrentContainer());
 }
 
 template<typename Strategy>
-int TextIteratorAlgorithm<Strategy>::rangeLength(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, bool forSelectionPreservation)
+int TextIteratorAlgorithm<Strategy>::rangeLength(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, bool forSelectionPreservation)
 {
     int length = 0;
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
@@ -1066,7 +1066,7 @@ int TextIteratorAlgorithm<Strategy>::rangeLength(const typename Strategy::Positi
 // --------
 
 template <typename Strategy>
-static String createPlainText(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, TextIteratorBehaviorFlags behavior)
+static String createPlainText(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
 {
     TextIteratorAlgorithm<Strategy> it(start, end, behavior);
     // The initial buffer size can be critical for performance: https://bugs.webkit.org/show_bug.cgi?id=81192
