@@ -166,12 +166,9 @@ void ShapeResult::RunInfo::setGlyphAndPositions(unsigned index,
 
 ShapeResult::~ShapeResult()
 {
-    unsigned destroyed = 0;
     for (unsigned i = 0; i < m_runs.size(); i++) {
-        if (m_runs[i]) {
+        if (m_runs[i])
             delete m_runs[i];
-            destroyed++;
-        }
     }
 }
 
