@@ -155,8 +155,14 @@ public class ChildAccountService {
             Log.v(TAG, "Child account detection disabled");
             return false;
         }
-        Account[] googleAccounts =
-                AccountManagerHelper.get(mContext).getGoogleAccounts();
+        AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
+        // This isn't strictly necessary, as getGoogleAccounts() will return an empty list if the
+        // GET_ACCOUNTS permission is not granted, but it makes the behavior explicit.
+        if (!accountManagerHelper.hasGetAccountsPermission()) {
+            Log.v(TAG, "GET_ACCOUNTS permission not granted");
+            return false;
+        }
+        Account[] googleAccounts = accountManagerHelper.getGoogleAccounts();
         if (googleAccounts.length != 1) {
             if (CommandLine.getInstance().hasSwitch(ChromeSwitches.CHILD_ACCOUNT)) {
                 Log.w(TAG, "Ignoring --" + ChromeSwitches.CHILD_ACCOUNT + " command line flag "
@@ -184,12 +190,6 @@ public class ChildAccountService {
         final int traceId = System.identityHashCode(this);
         TraceEvent.startAsync("ChildAccountService.checkFeatures", traceId);
         AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
-        if (!accountManagerHelper.hasGetAccountsPermission()) {
-            // This will call {@link AccountManagerHelper#getGoogleAccounts()}, which will return an
-            // empty array of accounts, which results in storing the child account state as false.
-            maybeUpdatePredeterminedChildAccountStatus();
-            return;
-        }
         final AccountManagerFuture<Boolean> future = accountManagerHelper.checkChildAccount(
                 accountManagerHelper.getSingleGoogleAccount(),
                 new AccountManagerCallback<Boolean>() {
