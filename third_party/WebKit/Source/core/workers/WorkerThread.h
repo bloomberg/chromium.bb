@@ -148,6 +148,7 @@ private:
     // Called on the worker thread.
     void initialize(PassOwnPtr<WorkerThreadStartupData>);
     void shutdown();
+    void performShutdownTask();
     void performIdleWork(double deadlineSeconds);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 

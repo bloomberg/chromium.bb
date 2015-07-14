@@ -261,7 +261,8 @@ void WorkerThread::shutdown()
     ASSERT(isCurrentThread());
     {
         MutexLocker lock(m_threadStateMutex);
-        ASSERT(!m_shutdown);
+        if (m_shutdown)
+            return;
         m_shutdown = true;
     }
 
@@ -271,10 +272,21 @@ void WorkerThread::shutdown()
     // This should be called before we start the shutdown procedure.
     workerReportingProxy().willDestroyWorkerGlobalScope();
 
+    backingThread().removeTaskObserver(m_microtaskRunner.get());
+    postTask(FROM_HERE, createSameThreadTask(&WorkerThread::performShutdownTask, this));
+}
+
+void WorkerThread::performShutdownTask()
+{
+    // The below assignment will destroy the context, which will in turn notify messaging proxy.
+    // We cannot let any objects survive past thread exit, because no other thread will run GC or otherwise destroy them.
+    // If Oilpan is enabled, we detach of the context/global scope, with the final heap cleanup below sweeping it out.
+#if !ENABLE(OILPAN)
+    ASSERT(m_workerGlobalScope->hasOneRef());
+#endif
     m_workerGlobalScope->notifyContextDestroyed();
     m_workerGlobalScope = nullptr;
 
-    backingThread().removeTaskObserver(m_microtaskRunner.get());
     shutdownBackingThread();
     destroyIsolate();
     m_isolate = nullptr;
