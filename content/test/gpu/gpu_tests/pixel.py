@@ -12,6 +12,7 @@ import page_sets
 import pixel_expectations
 
 from catapult_base import cloud_storage
+from telemetry import benchmark
 from telemetry.page import page_test
 from telemetry.util import image_util
 
@@ -52,7 +53,7 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+  def ValidateAndMeasurePage(self, page, tab, results):
     if not _DidTestSucceed(tab):
       raise page_test.Failure('Page indicated a failure')
 
@@ -134,7 +135,7 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
 
     try:
       ref_png = image_util.FromPngFile(image_path)
-    except:
+    except IOError:
       ref_png = None
 
     if ref_png is not None:
@@ -161,10 +162,10 @@ class Pixel(cloud_storage_test_base.TestBase):
         default=default_reference_image_dir)
 
   def CreateStorySet(self, options):
-    story_set = page_sets.PixelTestsStorySet(self.GetExpectations())
+    story_set = page_sets.PixelTestsStorySet()
     for page in story_set:
       page.script_to_evaluate_on_commit = test_harness_script
     return story_set
 
-  def _CreateExpectations(self):
+  def CreateExpectations(self):
     return pixel_expectations.PixelExpectations()

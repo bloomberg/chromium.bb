@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import test_expectations
+from telemetry.page import test_expectations
 
 # Valid expectation conditions are:
 #
@@ -38,6 +38,10 @@ class _FlakyExpectation(object):
     self.expectation = expectation
     self.max_num_retries = max_num_retries
 
+class _FakeSharedPageState(object):
+  def __init__(self, browser):
+    self.browser = browser
+
 class GpuTestExpectations(test_expectations.TestExpectations):
   def __init__(self):
     self._flaky_expectations = []
@@ -51,7 +55,7 @@ class GpuTestExpectations(test_expectations.TestExpectations):
   def GetFlakyRetriesForPage(self, page, browser):
     for fe in self._flaky_expectations:
       e = fe.expectation
-      if self.ExpectationAppliesToPage(e, browser, page):
+      if self.ExpectationAppliesToPage(e, _FakeSharedPageState(browser), page):
         return fe.max_num_retries
     return 0
 
@@ -65,9 +69,9 @@ class GpuTestExpectations(test_expectations.TestExpectations):
     return super(GpuTestExpectations,
         self).IsValidUserDefinedCondition(condition)
 
-  def ModifiersApply(self, browser, expectation):
+  def ModifiersApply(self, shared_page_state, expectation):
     if not super(GpuTestExpectations, self).ModifiersApply(
-        browser, expectation):
+        shared_page_state, expectation):
       return False
 
     # We'll only get here if the OS and GPU matched the expectation.
@@ -78,6 +82,7 @@ class GpuTestExpectations(test_expectations.TestExpectations):
     # crbug.com/495868 crbug.com/495870
 
     # Check for presence of Android WebView.
+    browser = shared_page_state.browser
     browser_expectations = [x for x in expectation.user_defined_conditions
                             if x in BROWSER_TYPE_MODIFIERS]
     browser_matches = ((not browser_expectations) or

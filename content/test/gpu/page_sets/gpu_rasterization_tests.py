@@ -1,18 +1,17 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import page as page_module
 from telemetry.story import story_set as story_set_module
 
-from gpu_tests import gpu_test_base
 
-class GpuRasterizationBlueBoxPage(gpu_test_base.PageBase):
+class GpuRasterizationBlueBoxPage(page_module.Page):
 
-  def __init__(self, story_set, expectations):
+  def __init__(self, story_set):
     super(GpuRasterizationBlueBoxPage, self).__init__(
       url='file://../../data/gpu/pixel_background.html',
       page_set=story_set,
-      name='GpuRasterization.BlueBox',
-      expectations=expectations)
+      name='GpuRasterization.BlueBox')
 
     self.expectations = [
       {'comment': 'body-t',
@@ -66,19 +65,19 @@ class GpuRasterizationBlueBoxPage(gpu_test_base.PageBase):
     ]
     self.test_rect = [0, 0, 220, 220]
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(GpuRasterizationBlueBoxPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 
 
-class GpuRasterizationConcavePathsPage(gpu_test_base.PageBase):
+class GpuRasterizationConcavePathsPage(page_module.Page):
 
-  def __init__(self, story_set, expectations):
+  def __init__(self, story_set):
     super(GpuRasterizationConcavePathsPage, self).__init__(
       url='file://../../data/gpu/concave_paths.html',
       page_set=story_set,
-      name='GpuRasterization.ConcavePaths',
-      expectations=expectations)
+      name='GpuRasterization.ConcavePaths')
 
     self.expectations = [
       {'comment': 'outside',
@@ -92,7 +91,9 @@ class GpuRasterizationConcavePathsPage(gpu_test_base.PageBase):
     ]
     self.test_rect = [0, 0, 100, 100]
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(GpuRasterizationConcavePathsPage, self).\
+      RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 
@@ -100,8 +101,8 @@ class GpuRasterizationTestsStorySet(story_set_module.StorySet):
 
   """ Basic test cases for GPU rasterization. """
 
-  def __init__(self, expectations):
+  def __init__(self):
     super(GpuRasterizationTestsStorySet, self).__init__()
 
-    self.AddStory(GpuRasterizationBlueBoxPage(self, expectations))
-    self.AddStory(GpuRasterizationConcavePathsPage(self, expectations))
+    self.AddStory(GpuRasterizationBlueBoxPage(self))
+    self.AddStory(GpuRasterizationConcavePathsPage(self))

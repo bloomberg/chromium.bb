@@ -1,9 +1,10 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import gpu_test_base
 import hardware_accelerated_feature_expectations as expectations
 
+from telemetry import benchmark
+from telemetry.page import page as page_module
 from telemetry.page import page_test
 from telemetry.story import story_set as story_set_module
 
@@ -24,8 +25,8 @@ test_harness_script = r"""
   };
 """;
 
-class _HardwareAcceleratedFeatureValidator(gpu_test_base.ValidatorBase):
-  def ValidateAndMeasurePageInner(self, page, tab, results):
+class _HardwareAcceleratedFeatureValidator(page_test.PageTest):
+  def ValidateAndMeasurePage(self, page, tab, results):
     feature = page.feature
     if not tab.EvaluateJavaScript('VerifyHardwareAccelerated("%s")' % feature):
       print 'Test failed. Printing page contents:'
@@ -35,17 +36,16 @@ class _HardwareAcceleratedFeatureValidator(gpu_test_base.ValidatorBase):
 def safe_feature_name(feature):
   return feature.lower().replace(' ', '_')
 
-class ChromeGpuPage(gpu_test_base.PageBase):
-  def __init__(self, story_set, feature, expectations):
+class ChromeGpuPage(page_module.Page):
+  def __init__(self, story_set, feature):
     super(ChromeGpuPage, self).__init__(
       url='chrome://gpu', page_set=story_set, base_dir=story_set.base_dir,
       name=('HardwareAcceleratedFeature.%s_accelerated' %
-            safe_feature_name(feature)),
-      expectations=expectations)
+            safe_feature_name(feature)))
     self.feature = feature
     self.script_to_evaluate_on_commit = test_harness_script
 
-class HardwareAcceleratedFeature(gpu_test_base.TestBase):
+class HardwareAcceleratedFeature(benchmark.Benchmark):
   """Tests GPU acceleration is reported as active for various features"""
   test = _HardwareAcceleratedFeatureValidator
 
@@ -53,7 +53,7 @@ class HardwareAcceleratedFeature(gpu_test_base.TestBase):
   def Name(cls):
     return 'hardware_accelerated_feature'
 
-  def _CreateExpectations(self):
+  def CreateExpectations(self):
     return expectations.HardwareAcceleratedFeatureExpectations()
 
   def CreateStorySet(self, options):
@@ -62,6 +62,5 @@ class HardwareAcceleratedFeature(gpu_test_base.TestBase):
     ps = story_set_module.StorySet()
 
     for feature in features:
-      ps.AddStory(ChromeGpuPage(story_set=ps, feature=feature,
-                                expectations=self.GetExpectations()))
+      ps.AddStory(ChromeGpuPage(story_set=ps, feature=feature))
     return ps

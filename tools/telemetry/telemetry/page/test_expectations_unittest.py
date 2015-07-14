@@ -3,11 +3,10 @@
 # found in the LICENSE file.
 import unittest
 
-import test_expectations
-
 from telemetry import story
 from telemetry.core import system_info
 from telemetry.page import page as page_module
+from telemetry.page import test_expectations
 
 VENDOR_NVIDIA = 0x10DE
 VENDOR_AMD = 0x1002
@@ -47,6 +46,10 @@ class StubBrowser(object):
   def GetSystemInfo(self):
     return self.system_info
 
+class StubSharedPageState(object):
+  def __init__(self, browser):
+    self.browser = browser
+
 class SampleTestExpectations(test_expectations.TestExpectations):
   def SetExpectations(self):
     self.Fail('page1.html', ['win', 'mac'], bug=123)
@@ -82,8 +85,8 @@ class TestExpectationsTest(unittest.TestCase):
 
   def assertExpectationEquals(self, expected, page, platform='', gpu=0,
       device=0, vendor_string='', device_string=''):
-    result = self.expectations.GetExpectationForPage(StubBrowser(
-      platform, gpu, device, vendor_string, device_string), page)
+    result = self.expectations.GetExpectationForPage(StubSharedPageState(
+        StubBrowser(platform, gpu, device, vendor_string, device_string)), page)
     self.assertEquals(expected, result)
 
   # Pages with no expectations should always return 'pass'
