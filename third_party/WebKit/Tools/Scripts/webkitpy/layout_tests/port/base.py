@@ -1023,6 +1023,9 @@ class Port(object):
             self._results_directory = self._filesystem.abspath(option_val)
         return self._results_directory
 
+    def bot_test_times_path(self):
+        return self._build_path('webkit_test_times', 'bot_times_ms.json')
+
     def perf_results_directory(self):
         return self._build_path()
 

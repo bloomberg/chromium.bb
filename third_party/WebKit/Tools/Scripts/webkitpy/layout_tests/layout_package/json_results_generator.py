@@ -60,17 +60,16 @@ def write_json(filesystem, json_object, file_path, callback=None):
     filesystem.write_text_file(file_path, json_string)
 
 
-def convert_trie_to_flat_paths(trie, prefix=None):
+def convert_times_trie_to_flat_paths(trie, prefix=None):
     """Converts the directory structure in the given trie to flat paths, prepending a prefix to each."""
     result = {}
     for name, data in trie.iteritems():
         if prefix:
             name = prefix + "/" + name
-
-        if len(data) and not "results" in data:
-            result.update(convert_trie_to_flat_paths(data, name))
-        else:
+        if isinstance(data, int):
             result[name] = data
+        else:
+            result.update(convert_times_trie_to_flat_paths(data, name))
 
     return result
 

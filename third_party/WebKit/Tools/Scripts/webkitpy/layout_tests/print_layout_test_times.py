@@ -29,6 +29,7 @@
 import json
 import optparse
 
+from webkitpy.layout_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
 from webkitpy.layout_tests.port import Port
 
 
@@ -62,7 +63,7 @@ def main(host, argv):
 
     times_trie = json.loads(host.filesystem.read_text_file(times_ms_path))
 
-    times = convert_trie_to_flat_paths(times_trie)
+    times = convert_times_trie_to_flat_paths(times_trie)
 
     if options.fastest:
         if options.forward is None and options.backward is None:
@@ -135,16 +136,3 @@ def times_by_key(times, forward, backward):
         else:
             by_key[key] = times[test_name]
     return by_key
-
-
-def convert_trie_to_flat_paths(trie, prefix=None):
-    result = {}
-    for name, data in trie.iteritems():
-        if prefix:
-            name = prefix + "/" + name
-        if isinstance(data, int):
-            result[name] = data
-        else:
-            result.update(convert_trie_to_flat_paths(data, name))
-
-    return result

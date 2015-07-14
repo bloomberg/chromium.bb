@@ -95,7 +95,8 @@ class Manager(object):
         self._runner = LayoutTestRunner(self._options, self._port, self._printer, self._results_directory, self._test_is_slow)
 
     def _collect_tests(self, args):
-        return self._finder.find_tests(self._options, args)
+        return self._finder.find_tests(args, test_list=self._options.test_list,
+            fastest_percentile=self._options.fastest)
 
     def _is_http_test(self, test):
         return (
@@ -236,8 +237,9 @@ class Manager(object):
         """Run the tests and return a RunDetails object with the results."""
         start_time = time.time()
         self._printer.write_update("Collecting tests ...")
+        running_all_tests = False
         try:
-            paths, test_names = self._collect_tests(args)
+            paths, test_names, running_all_tests = self._collect_tests(args)
         except IOError:
             # This is raised if --test-list doesn't exist
             return test_run_results.RunDetails(exit_code=test_run_results.NO_TESTS_EXIT_STATUS)
@@ -309,7 +311,7 @@ class Manager(object):
             exit_code = test_run_results.MAX_FAILURES_EXIT_STATUS
 
         if not self._options.dry_run:
-            self._write_json_files(summarized_full_results, summarized_failing_results, initial_results)
+            self._write_json_files(summarized_full_results, summarized_failing_results, initial_results, running_all_tests)
 
             if self._options.write_full_results_to:
                 self._filesystem.copyfile(self._filesystem.join(self._results_directory, "full_results.json"),
@@ -450,13 +452,19 @@ class Manager(object):
     def _tests_to_retry(self, run_results):
         return [result.test_name for result in run_results.unexpected_results_by_name.values() if result.type != test_expectations.PASS]
 
-    def _write_json_files(self, summarized_full_results, summarized_failing_results, initial_results):
+    def _write_json_files(self, summarized_full_results, summarized_failing_results, initial_results, running_all_tests):
         _log.debug("Writing JSON files in %s." % self._results_directory)
 
         # FIXME: Upload stats.json to the server and delete times_ms.
         times_trie = json_results_generator.test_timings_trie(initial_results.results_by_name.values())
         times_json_path = self._filesystem.join(self._results_directory, "times_ms.json")
         json_results_generator.write_json(self._filesystem, times_trie, times_json_path)
+
+        # Save out the times data so we can use it for --fastest in the future.
+        if running_all_tests:
+            bot_test_times_path = self._port.bot_test_times_path()
+            self._filesystem.maybe_make_directory(self._filesystem.dirname(bot_test_times_path))
+            json_results_generator.write_json(self._filesystem, times_trie, bot_test_times_path)
 
         stats_trie = self._stats_trie(initial_results)
         stats_path = self._filesystem.join(self._results_directory, "stats.json")

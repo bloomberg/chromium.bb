@@ -27,9 +27,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import errno
+import json
 import logging
 import re
+import urllib2
 
+from webkitpy.layout_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
 from webkitpy.layout_tests.models import test_expectations
 
 
@@ -43,12 +46,67 @@ class LayoutTestFinder(object):
         self._filesystem = self._port.host.filesystem
         self.LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
 
-    def find_tests(self, options, args):
+    def find_tests(self, args, test_list=None, fastest_percentile=None):
         paths = self._strip_test_dir_prefixes(args)
-        if options.test_list:
-            paths += self._strip_test_dir_prefixes(self._read_test_names_from_file(options.test_list, self._port.TEST_PATH_SEPARATOR))
-        test_files = self._port.tests(paths)
-        return (paths, test_files)
+        if test_list:
+            paths += self._strip_test_dir_prefixes(self._read_test_names_from_file(test_list, self._port.TEST_PATH_SEPARATOR))
+
+        all_tests = []
+        if not paths or fastest_percentile:
+            all_tests = self._port.tests(None)
+
+        path_tests = []
+        if paths:
+            path_tests = self._port.tests(paths)
+
+        test_files = None
+        running_all_tests = False
+        if fastest_percentile:
+            times_trie = self._times_trie()
+            if times_trie:
+                fastest_tests = self._fastest_tests(times_trie, all_tests, fastest_percentile)
+                test_files = list(set(fastest_tests).union(path_tests))
+            else:
+                _log.warning('Running all the tests the first time to generate timing data.')
+                test_files = all_tests
+                running_all_tests = True
+        elif paths:
+            test_files = path_tests
+        else:
+            test_files = all_tests
+            running_all_tests = True
+
+        return (paths, test_files, running_all_tests)
+
+    def _times_trie(self):
+        times_ms_path = self._port.bot_test_times_path()
+        if self._filesystem.exists(times_ms_path):
+            return json.loads(self._filesystem.read_text_file(times_ms_path))
+        else:
+            return {}
+
+    # The following line should run the fastest 50% of tests *and*
+    # the css3/flexbox tests. It should *not* run the fastest 50%
+    # of the css3/flexbox tests.
+    #
+    # run-webkit-tests --fastest=50 css3/flexbox
+    def _fastest_tests(self, times_trie, all_tests, fastest_percentile):
+        times = convert_times_trie_to_flat_paths(times_trie)
+
+        # Ignore tests with a time==0 because those are skipped tests.
+        sorted_times = sorted([test for (test, time) in times.iteritems() if time],
+                              key=lambda t: (times[t], t))
+        clamped_percentile = max(0, min(100, fastest_percentile))
+        number_of_tests_to_return = int(len(sorted_times) * clamped_percentile / 100)
+        fastest_tests = sorted_times[:number_of_tests_to_return]
+
+        # For fastest tests, include any tests not in the times_ms.json so that
+        # new tests get run in the fast set.
+        unaccounted_tests = set(all_tests) - set(times.keys())
+
+        # Using a set to dedupe here means that --order=None won't work, but that's
+        # ok because --fastest already runs in an arbitrary order.
+        return list(set(fastest_tests).union(unaccounted_tests))
 
     def _strip_test_dir_prefixes(self, paths):
         return [self._strip_test_dir_prefix(path) for path in paths if path]

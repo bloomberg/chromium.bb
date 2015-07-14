@@ -243,6 +243,8 @@ def parse_args(args):
                  "'ignore' == Run them anyway, "
                  "'only' == only run the SKIP tests, "
                  "'always' == always skip, even if listed on the command line.")),
+        optparse.make_option('--fastest', action='store', type='float',
+            help='Run the N% fastest tests as well as any tests listed on the commandline'),
         optparse.make_option("--test-list", action="append",
             help="read list of tests to run from file", metavar="FILE"),
         optparse.make_option("--time-out-ms",
