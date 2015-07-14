@@ -44705,6 +44705,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SyncFileSystem.TrackerDB.Open" enum="LevelDBStatus">
+  <owner>tzik@chromium.org</owner>
+  <summary>The result of opening the Sync FileSystem tracker database.</summary>
+</histogram>
+
 <histogram name="SyncFileSystem.TrackerNumber">
   <owner>tzik@chromium.org</owner>
   <summary>
