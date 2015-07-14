@@ -193,7 +193,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
 
 void TouchEventConverterEvdev::Reinitialize() {
   EventDeviceInfo info;
-  if (!info.Initialize(fd_)) {
+  if (!info.Initialize(fd_, path_)) {
     LOG(ERROR) << "Failed to synchronize state for touch device: "
                << path_.value();
     Stop();

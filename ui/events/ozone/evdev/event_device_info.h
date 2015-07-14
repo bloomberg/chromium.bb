@@ -24,6 +24,10 @@
 #define EVDEV_ABS_MT_LAST ABS_MT_TOOL_Y
 #define EVDEV_ABS_MT_COUNT (EVDEV_ABS_MT_LAST - EVDEV_ABS_MT_FIRST + 1)
 
+namespace base {
+class FilePath;
+}
+
 namespace ui {
 
 // Input device types.
@@ -47,7 +51,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   ~EventDeviceInfo();
 
   // Initialize device information from an open device.
-  bool Initialize(int fd);
+  bool Initialize(int fd, const base::FilePath& path);
 
   // Manual initialization.
   void SetEventTypes(const unsigned long* ev_bits, size_t len);

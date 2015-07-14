@@ -148,8 +148,8 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
     PLOG(ERROR) << "failed to set CLOCK_MONOTONIC";
 
   EventDeviceInfo devinfo;
-  if (!devinfo.Initialize(fd)) {
-    LOG(ERROR) << "failed to get device information for " << path.value();
+  if (!devinfo.Initialize(fd, path)) {
+    LOG(ERROR) << "Failed to get device information for " << path.value();
     close(fd);
     reply_runner->PostTask(
         FROM_HERE, base::Bind(reply_callback, base::Passed(&converter)));

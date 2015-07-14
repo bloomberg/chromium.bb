@@ -6,6 +6,7 @@
 
 #include <linux/input.h>
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -22,46 +23,61 @@ namespace {
 // unusual.
 const size_t kMaximumDeviceNameLength = 256;
 
-bool GetEventBits(int fd, unsigned int type, void* buf, unsigned int size) {
+bool GetEventBits(int fd,
+                  const base::FilePath& path,
+                  unsigned int type,
+                  void* buf,
+                  unsigned int size) {
   if (ioctl(fd, EVIOCGBIT(type, size), buf) < 0) {
-    PLOG(ERROR) << "EVIOCGBIT(" << type << ", " << size << ") on fd " << fd;
+    PLOG(ERROR) << "Failed EVIOCGBIT (path=" << path.value() << " type=" << type
+                << " size=" << size << ")";
     return false;
   }
 
   return true;
 }
 
-bool GetPropBits(int fd, void* buf, unsigned int size) {
+bool GetPropBits(int fd,
+                 const base::FilePath& path,
+                 void* buf,
+                 unsigned int size) {
   if (ioctl(fd, EVIOCGPROP(size), buf) < 0) {
-    PLOG(ERROR) << "EVIOCGPROP(" << size << ") on fd " << fd;
+    PLOG(ERROR) << "Failed EVIOCGPROP (path=" << path.value() << ")";
     return false;
   }
 
   return true;
 }
 
-bool GetAbsInfo(int fd, int code, struct input_absinfo* absinfo) {
+bool GetAbsInfo(int fd,
+                const base::FilePath& path,
+                int code,
+                struct input_absinfo* absinfo) {
   if (ioctl(fd, EVIOCGABS(code), absinfo)) {
-    PLOG(ERROR) << "EVIOCGABS(" << code << ") on fd " << fd;
+    PLOG(ERROR) << "Failed EVIOCGABS (path=" << path.value() << " code=" << code
+                << ")";
     return false;
   }
   return true;
 }
 
-bool GetDeviceName(int fd, std::string* name) {
+bool GetDeviceName(int fd, const base::FilePath& path, std::string* name) {
   char device_name[kMaximumDeviceNameLength];
   if (ioctl(fd, EVIOCGNAME(kMaximumDeviceNameLength - 1), &device_name) < 0) {
-    PLOG(INFO) << "Can't read device name on fd " << fd;
+    PLOG(INFO) << "Failed EVIOCGNAME (path=" << path.value() << ")";
     return false;
   }
   *name = device_name;
   return true;
 }
 
-bool GetDeviceIdentifiers(int fd, uint16_t* vendor, uint16_t* product) {
+bool GetDeviceIdentifiers(int fd,
+                          const base::FilePath& path,
+                          uint16_t* vendor,
+                          uint16_t* product) {
   struct input_id evdev_id;
   if (ioctl(fd, EVIOCGID, &evdev_id) < 0) {
-    PLOG(INFO) << "Can't read device name on fd " << fd;
+    PLOG(INFO) << "Failed EVIOCGID (path=" << path.value() << ")";
     return false;
   }
   *vendor = evdev_id.vendor;
@@ -76,15 +92,15 @@ bool GetDeviceIdentifiers(int fd, uint16_t* vendor, uint16_t* product) {
 // };
 //
 // |size| is num_slots + 1 (for code).
-bool GetSlotValues(int fd, int32_t* request, unsigned int size) {
+void GetSlotValues(int fd,
+                   const base::FilePath& path,
+                   int32_t* request,
+                   unsigned int size) {
   size_t data_size = size * sizeof(*request);
-
   if (ioctl(fd, EVIOCGMTSLOTS(data_size), request) < 0) {
-    PLOG(ERROR) << "EVIOCGMTSLOTS(" << request[0] << ") on fd " << fd;
-    return false;
+    PLOG(ERROR) << "Failed EVIOCGMTSLOTS (code=" << request[0]
+                << " path=" << path.value() << ")";
   }
-
-  return true;
 }
 
 void AssignBitset(const unsigned long* src,
@@ -112,34 +128,34 @@ EventDeviceInfo::EventDeviceInfo() {
 
 EventDeviceInfo::~EventDeviceInfo() {}
 
-bool EventDeviceInfo::Initialize(int fd) {
-  if (!GetEventBits(fd, 0, ev_bits_, sizeof(ev_bits_)))
+bool EventDeviceInfo::Initialize(int fd, const base::FilePath& path) {
+  if (!GetEventBits(fd, path, 0, ev_bits_, sizeof(ev_bits_)))
     return false;
 
-  if (!GetEventBits(fd, EV_KEY, key_bits_, sizeof(key_bits_)))
+  if (!GetEventBits(fd, path, EV_KEY, key_bits_, sizeof(key_bits_)))
     return false;
 
-  if (!GetEventBits(fd, EV_REL, rel_bits_, sizeof(rel_bits_)))
+  if (!GetEventBits(fd, path, EV_REL, rel_bits_, sizeof(rel_bits_)))
     return false;
 
-  if (!GetEventBits(fd, EV_ABS, abs_bits_, sizeof(abs_bits_)))
+  if (!GetEventBits(fd, path, EV_ABS, abs_bits_, sizeof(abs_bits_)))
     return false;
 
-  if (!GetEventBits(fd, EV_MSC, msc_bits_, sizeof(msc_bits_)))
+  if (!GetEventBits(fd, path, EV_MSC, msc_bits_, sizeof(msc_bits_)))
     return false;
 
-  if (!GetEventBits(fd, EV_SW, sw_bits_, sizeof(sw_bits_)))
+  if (!GetEventBits(fd, path, EV_SW, sw_bits_, sizeof(sw_bits_)))
     return false;
 
-  if (!GetEventBits(fd, EV_LED, led_bits_, sizeof(led_bits_)))
+  if (!GetEventBits(fd, path, EV_LED, led_bits_, sizeof(led_bits_)))
     return false;
 
-  if (!GetPropBits(fd, prop_bits_, sizeof(prop_bits_)))
+  if (!GetPropBits(fd, path, prop_bits_, sizeof(prop_bits_)))
     return false;
 
   for (unsigned int i = 0; i < ABS_CNT; ++i)
     if (HasAbsEvent(i))
-      if (!GetAbsInfo(fd, i, &abs_info_[i]))
+      if (!GetAbsInfo(fd, path, i, &abs_info_[i]))
         return false;
 
   int max_num_slots = GetAbsMtSlotCount();
@@ -154,17 +170,16 @@ bool EventDeviceInfo::Initialize(int fd) {
 
     memset(request, 0, sizeof(request));
     *request_code = i;
-    if (!GetSlotValues(fd, request, max_num_slots + 1))
-      LOG(WARNING) << "Failed to get multitouch values for code " << i;
+    GetSlotValues(fd, path, request, max_num_slots + 1);
 
     std::vector<int32_t>* slots = &slot_values_[i - EVDEV_ABS_MT_FIRST];
     slots->assign(request_slots, request_slots + max_num_slots);
   }
 
-  if (!GetDeviceName(fd, &name_))
+  if (!GetDeviceName(fd, path, &name_))
     return false;
 
-  if (!GetDeviceIdentifiers(fd, &vendor_id_, &product_id_))
+  if (!GetDeviceIdentifiers(fd, path, &vendor_id_, &product_id_))
     return false;
 
   return true;
