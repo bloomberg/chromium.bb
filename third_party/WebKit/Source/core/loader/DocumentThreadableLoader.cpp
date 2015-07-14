@@ -394,7 +394,7 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
     String accessControlErrorDescription;
 
     if (!passesAccessControlCheck(response, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription)) {
-        handlePreflightFailure(response.url().string(), accessControlErrorDescription);
+        handlePreflightFailure(response.url().string(), "Response to preflight request doesn't pass access control check: " + accessControlErrorDescription);
         return;
     }
 

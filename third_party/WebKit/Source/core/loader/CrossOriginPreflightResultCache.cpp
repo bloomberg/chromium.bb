@@ -89,13 +89,13 @@ bool CrossOriginPreflightResultCacheItem::parse(const ResourceResponse& response
 {
     m_methods.clear();
     if (!parseAccessControlAllowList(response.httpHeaderField("Access-Control-Allow-Methods"), m_methods)) {
-        errorDescription = "Cannot parse Access-Control-Allow-Methods response header field.";
+        errorDescription = "Cannot parse Access-Control-Allow-Methods response header field in preflight response.";
         return false;
     }
 
     m_headers.clear();
     if (!parseAccessControlAllowList(response.httpHeaderField("Access-Control-Allow-Headers"), m_headers)) {
-        errorDescription = "Cannot parse Access-Control-Allow-Headers response header field.";
+        errorDescription = "Cannot parse Access-Control-Allow-Headers response header field in preflight response.";
         return false;
     }
 
@@ -116,7 +116,7 @@ bool CrossOriginPreflightResultCacheItem::allowsCrossOriginMethod(const String& 
     if (m_methods.contains(method) || FetchUtils::isSimpleMethod(method))
         return true;
 
-    errorDescription = "Method " + method + " is not allowed by Access-Control-Allow-Methods.";
+    errorDescription = "Method " + method + " is not allowed by Access-Control-Allow-Methods in preflight response.";
     return false;
 }
 
@@ -124,7 +124,7 @@ bool CrossOriginPreflightResultCacheItem::allowsCrossOriginHeaders(const HTTPHea
 {
     for (const auto& header : requestHeaders) {
         if (!m_headers.contains(header.key) && !FetchUtils::isSimpleHeader(header.key, header.value) && !FetchUtils::isForbiddenHeaderName(header.key)) {
-            errorDescription = "Request header field " + header.key.string() + " is not allowed by Access-Control-Allow-Headers.";
+            errorDescription = "Request header field " + header.key.string() + " is not allowed by Access-Control-Allow-Headers in preflight response.";
             return false;
         }
     }
