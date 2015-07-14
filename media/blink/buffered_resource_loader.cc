@@ -363,6 +363,9 @@ void BufferedResourceLoader::didReceiveResponse(
                "Unknown")
            << " " << response.httpStatusCode();
   DCHECK(active_loader_.get());
+  response_original_url_ = response.wasFetchedViaServiceWorker()
+                               ? response.originalURLViaServiceWorker()
+                               : response.url();
 
   // The loader may have been stopped and |start_cb| is destroyed.
   // In this case we shouldn't do anything.

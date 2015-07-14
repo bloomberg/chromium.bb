@@ -41,13 +41,25 @@ WebURLResponse TestResponseGenerator::Generate200() {
 }
 
 WebURLResponse TestResponseGenerator::Generate206(int64 first_byte_offset) {
-  return Generate206(first_byte_offset, kNormal);
+  return GeneratePartial206(first_byte_offset, content_length_ - 1, kNormal);
 }
 
 WebURLResponse TestResponseGenerator::Generate206(int64 first_byte_offset,
                                                   Flags flags) {
+  return GeneratePartial206(first_byte_offset, content_length_ - 1, flags);
+}
+
+WebURLResponse TestResponseGenerator::GeneratePartial206(
+    int64 first_byte_offset,
+    int64 last_byte_offset) {
+  return GeneratePartial206(first_byte_offset, last_byte_offset, kNormal);
+}
+
+WebURLResponse TestResponseGenerator::GeneratePartial206(
+    int64 first_byte_offset,
+    int64 last_byte_offset,
+    Flags flags) {
   int64 range_content_length = content_length_ - first_byte_offset;
-  int64 last_byte_offset = content_length_ - 1;
 
   WebURLResponse response(gurl_);
   response.setHTTPStatusCode(206);

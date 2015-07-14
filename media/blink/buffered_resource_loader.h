@@ -205,6 +205,11 @@ class MEDIA_EXPORT BufferedResourceLoader
   // playback rate).
   void CancelUponDeferral();
 
+  // Returns the original URL of the response. If the request is redirected to
+  // another URL it is the URL after redirected. If the response is generated in
+  // a Service Worker it is empty.
+  const GURL response_original_url() const { return response_original_url_; }
+
  private:
   friend class BufferedDataSourceTest;
   friend class BufferedResourceLoaderTest;
@@ -315,6 +320,8 @@ class MEDIA_EXPORT BufferedResourceLoader
 
   // Playback rate of the media.
   double playback_rate_;
+
+  GURL response_original_url_;
 
   scoped_refptr<MediaLog> media_log_;
 

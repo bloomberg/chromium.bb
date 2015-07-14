@@ -42,6 +42,18 @@ class TestResponseGenerator {
   // headers via |flags|.
   blink::WebURLResponse Generate206(int64 first_byte_offset, Flags flags);
 
+  // Generates a regular HTTP 206 response starting from |first_byte_offset|
+  // until |last_byte_offset|.
+  blink::WebURLResponse GeneratePartial206(int64 first_byte_offset,
+                                           int64 last_byte_offset);
+
+  // Generates a custom HTTP 206 response starting from |first_byte_offset|
+  // until |last_byte_offset|. You can tweak what gets included in the
+  // headers via |flags|.
+  blink::WebURLResponse GeneratePartial206(int64 first_byte_offset,
+                                           int64 last_byte_offset,
+                                           Flags flags);
+
   // Generates a regular HTTP 404 response.
   blink::WebURLResponse Generate404();
 

@@ -159,6 +159,9 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
   // when accessing ranges that are outside initial buffered region).
   void PartialReadStartCallback(BufferedResourceLoader::Status status);
 
+  // Returns true if we can accept the new partial response.
+  bool CheckPartialResponseURL(const GURL& partial_response_original_url) const;
+
   // BufferedResourceLoader callbacks.
   void ReadCallback(BufferedResourceLoader::Status status, int bytes_read);
   void LoadingStateChangedCallback(BufferedResourceLoader::LoadingState state);
@@ -237,6 +240,13 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
   BufferedDataSourceHost* host_;
 
   DownloadingCB downloading_cb_;
+
+  // The original URL of the first response. If the request is redirected to
+  // another URL it is the URL after redirected. If the response is generated in
+  // a Service Worker this URL is empty. BufferedDataSource checks the original
+  // URL of each successive response. If the origin URL of it is different from
+  // the original URL of the first response, it is treated as an error.
+  GURL response_original_url_;
 
   // Disallow rebinding WeakReference ownership to a different thread by keeping
   // a persistent reference. This avoids problems with the thread-safety of
