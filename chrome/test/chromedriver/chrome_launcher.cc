@@ -182,7 +182,14 @@ Status WaitForDevToolsAndCheckVersion(
   Status status = client->Init(deadline - base::TimeTicks::Now());
   if (status.IsError())
     return status;
-  if (client->browser_info()->build_no < kMinimumSupportedChromeBuildNo) {
+
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch("disable-build-check")) {
+    LOG(WARNING) << "You are using an unsupported command-line switch: "
+                    "--disable-build-check. Please don't report bugs that "
+                    "cannot be reproduced with this switch removed.";
+  } else if (client->browser_info()->build_no <
+             kMinimumSupportedChromeBuildNo) {
     return Status(kUnknownError, "Chrome version must be >= " +
         GetMinimumSupportedChromeVersion());
   }
