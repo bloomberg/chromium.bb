@@ -3379,6 +3379,66 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   client_->Reset();
 }
 
+TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  scheduler_settings_.use_external_begin_frame_source = true;
+
+  SetUpScheduler(true);
+
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  client_->Reset();
+
+  // Next vsync.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
+  client_->Reset();
+
+  // Android onDraw.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_FALSE(scheduler_->PrepareTilesPending());
+  client_->Reset();
+
+  // Simulate SetNeedsCommit due to input event.
+  scheduler_->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginMainFrame", client_);
+  client_->Reset();
+
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
+  client_->Reset();
+
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
+  client_->Reset();
+
+  // Next vsync.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
+  client_->Reset();
+
+  // Android onDraw.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_FALSE(scheduler_->PrepareTilesPending());
+  client_->Reset();
+
+  // Simulate SetNeedsCommit due to input event.
+  scheduler_->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionSendBeginMainFrame", client_);
+  client_->Reset();
+}
+
 TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
   SetUpScheduler(true);
   base::TimeDelta initial_interval = scheduler_->BeginImplFrameInterval();

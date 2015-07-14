@@ -28,7 +28,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_invalidate_output_surface_performed_(-1),
       animate_funnel_(false),
       request_swap_funnel_(false),
-      send_begin_main_frame_funnel_(false),
+      send_begin_main_frame_funnel_(true),
       invalidate_output_surface_funnel_(false),
       prepare_tiles_funnel_(0),
       consecutive_checkerboard_animations_(0),
@@ -417,7 +417,8 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!CouldSendBeginMainFrame())
     return false;
 
-  // Do not send begin main frame too many times in a single frame.
+  // Do not send begin main frame too many times in a single frame or before
+  // the first BeginFrame.
   if (send_begin_main_frame_funnel_)
     return false;
 
@@ -435,14 +436,16 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     return false;
   }
 
-  // We should not send BeginMainFrame while we are in
-  // BEGIN_IMPL_FRAME_STATE_IDLE since we might have new
-  // user input arriving soon.
+  // We should not send BeginMainFrame while we are in the idle state since we
+  // might have new user input arriving soon. It's okay to send BeginMainFrame
+  // for the synchronous compositor because the main thread is always high
+  // latency in that case.
   // TODO(brianderson): Allow sending BeginMainFrame while idle when the main
-  // thread isn't consuming user input.
-  if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_IDLE &&
-      BeginFrameNeeded())
+  // thread isn't consuming user input for non-synchronous compositor.
+  if (!settings_.using_synchronous_renderer_compositor &&
+      begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_IDLE) {
     return false;
+  }
 
   // We need a new commit for the forced redraw. This honors the
   // single commit per interval because the result will be swapped to screen.
@@ -879,6 +882,11 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
 
   skip_next_begin_main_frame_to_reduce_latency_ = false;
+
+  // If we're entering a state where we won't get BeginFrames set all the
+  // funnels so that we don't perform any actions that we shouldn't.
+  if (!BeginFrameNeeded())
+    send_begin_main_frame_funnel_ = true;
 }
 
 SchedulerStateMachine::BeginImplFrameDeadlineMode

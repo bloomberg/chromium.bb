@@ -202,14 +202,15 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
 
-    EXPECT_FALSE(state.BeginFrameNeeded());
-
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    EXPECT_FALSE(state.BeginFrameNeeded());
+    EXPECT_FALSE(state.NeedsCommit());
+
     state.OnBeginImplFrame();
-
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
     state.OnBeginImplFrameDeadline();
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+    EXPECT_FALSE(state.NeedsCommit());
   }
 
   // If commit requested but can_start is still false, do nothing.
@@ -220,13 +221,15 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.SetVisible(true);
     state.SetNeedsCommit();
 
-    EXPECT_FALSE(state.BeginFrameNeeded());
-
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-    EXPECT_FALSE(state.BeginFrameNeeded());
+    EXPECT_TRUE(state.NeedsCommit());
+
     state.OnBeginImplFrame();
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
     state.OnBeginImplFrameDeadline();
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+    EXPECT_TRUE(state.NeedsCommit());
   }
 
   // If commit requested, begin a main frame.
@@ -240,16 +243,19 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.SetVisible(true);
     state.SetNeedsCommit();
 
-    EXPECT_TRUE(state.BeginFrameNeeded());
-
     // Expect nothing to happen until after OnBeginImplFrame.
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
     EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
     EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
-    EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
+    EXPECT_TRUE(state.NeedsCommit());
+    EXPECT_TRUE(state.BeginFrameNeeded());
 
     state.OnBeginImplFrame();
     EXPECT_ACTION_UPDATE_STATE(
         SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+    EXPECT_COMMIT_STATE(
+        SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
+    EXPECT_FALSE(state.NeedsCommit());
   }
 
   // If commit requested and can't draw, still begin a main frame.
@@ -264,26 +270,15 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.SetNeedsCommit();
     state.SetCanDraw(false);
 
-    EXPECT_TRUE(state.BeginFrameNeeded());
-
     // Expect nothing to happen until after OnBeginImplFrame.
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
     EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
     EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
-    EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
+    EXPECT_TRUE(state.BeginFrameNeeded());
 
     state.OnBeginImplFrame();
     EXPECT_ACTION_UPDATE_STATE(
         SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
-  }
-
-  // Begin the frame, make sure needs_commit and commit_state update correctly.
-  {
-    StateMachine state(default_scheduler_settings);
-    state.SetCanStart();
-    state.UpdateState(state.NextAction());
-    state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
-    state.SetVisible(true);
-    state.UpdateState(SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
     EXPECT_COMMIT_STATE(
         SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
     EXPECT_FALSE(state.NeedsCommit());
