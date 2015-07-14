@@ -102,16 +102,28 @@ const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(163, 163, 163);
 // ui::MaterialDesignController::Mode, see
 // ui/base/resource/material_design/material_design_controller.h
 
+// The spacing between a ToolbarButton's image and its border.
+const int kToolbarButtonBorderInset[] = {2, 6, 6};
+
+// Non-ash uses a rounded content area with no shadow in the assets.
+const int kToolbarViewContentShadowHeight[] = {0, 0, 0};
+
+// Ash doesn't use a rounded content area and its top edge has an extra shadow.
+const int kToolbarViewContentShadowHeightAsh[] = {2, 0, 0};
+
+// Additional horizontal padding between the elements in the toolbar.
+const int kToolbarViewElementPadding[] = {0, 0, 8};
+
+// Padding between the right-edge of the location bar and browser actions.
+const int kToolbarViewLocationBarRightPadding[] = {0, 4, 8};
+
 // The edge graphics have some built-in spacing/shadowing, so we have to adjust
 // our spacing to make it match.
 const int kToolbarViewLeftEdgeSpacing[] = {3, 4, 8};
 const int kToolbarViewRightEdgeSpacing[] = {2, 4, 8};
 
-// Ash doesn't use a rounded content area and its top edge has an extra shadow.
-const int kToolbarViewContentShadowHeightAsh[] = {2, 0, 0};
-
-// Non-ash uses a rounded content area with no shadow in the assets.
-const int kToolbarViewContentShadowHeight[] = {0, 0, 0};
+// The horizontal space between most items.
+const int kToolbarViewStandardSpacing[] = {3, 4, 8};
 
 // ----------------------------------------------------------------------------
 
@@ -325,14 +337,22 @@ int ThemeProperties::GetDefaultDisplayProperty(int id) {
       return kDefaultDisplayPropertyNTPTiling;
     case ThemeProperties::NTP_LOGO_ALTERNATE:
       return kDefaultDisplayPropertyNTPAlternateLogo;
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING:
-      return kToolbarViewLeftEdgeSpacing[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING:
-      return kToolbarViewRightEdgeSpacing[mode];
-    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
-      return kToolbarViewContentShadowHeightAsh[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET:
+      return kToolbarButtonBorderInset[mode];
     case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
       return kToolbarViewContentShadowHeight[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
+      return kToolbarViewContentShadowHeightAsh[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_ELEMENT_PADDING:
+      return kToolbarViewElementPadding[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING:
+      return kToolbarViewLeftEdgeSpacing[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING:
+      return kToolbarViewLocationBarRightPadding[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING:
+      return kToolbarViewRightEdgeSpacing[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING:
+      return kToolbarViewStandardSpacing[mode];
     default:
       return -1;
   }

@@ -8,10 +8,12 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -54,6 +56,17 @@ gfx::Size ToolbarButton::GetPreferredSize() const {
   gfx::Size label_size = label()->GetPreferredSize();
   if (label_size.width() > 0)
     size.Enlarge(label_size.width() + LocationBarView::kItemPadding, 0);
+  // For non-material assets the entire size of the button is captured in the
+  // image resource. For Material Design the excess whitespace is being removed
+  // from the image assets. Enlarge the button by the theme provided insets.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    ui::ThemeProvider* provider = GetThemeProvider();
+    if (provider && provider->UsingSystemTheme()) {
+      int inset = provider->GetDisplayProperty(
+          ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET);
+      size.Enlarge(2 * inset, 2 * inset);
+    }
+  }
   return size;
 }
 
@@ -137,9 +150,10 @@ ToolbarButton::CreateDefaultBorder() const {
 
   ui::ThemeProvider* provider = GetThemeProvider();
   if (provider && provider->UsingSystemTheme()) {
-    // We set smaller insets here to accommodate the slightly larger GTK+
-    // icons.
-    border->set_insets(gfx::Insets(2, 2, 2, 2));
+    // Theme provided insets.
+    int inset = provider->GetDisplayProperty(
+        ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET);
+    border->set_insets(gfx::Insets(inset, inset, inset, inset));
   }
 
   return border.Pass();

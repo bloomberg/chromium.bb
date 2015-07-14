@@ -488,14 +488,25 @@ gfx::Size ToolbarView::GetPreferredSize() const {
   gfx::Size size(location_bar_->GetPreferredSize());
   ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (is_display_mode_normal()) {
-    int content_width =
+    const int element_padding = theme_provider->GetDisplayProperty(
+        ThemeProperties::PROPERTY_TOOLBAR_VIEW_ELEMENT_PADDING);
+    const int browser_actions_width =
+        browser_actions_->GetPreferredSize().width();
+    const int content_width =
         theme_provider->GetDisplayProperty(
             ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING) +
-        back_->GetPreferredSize().width() +
-        forward_->GetPreferredSize().width() +
+        back_->GetPreferredSize().width() + element_padding +
+        forward_->GetPreferredSize().width() + element_padding +
         reload_->GetPreferredSize().width() +
-        (show_home_button_.GetValue() ? home_->GetPreferredSize().width() : 0) +
-        kStandardSpacing + browser_actions_->GetPreferredSize().width() +
+        (show_home_button_.GetValue()
+             ? element_padding + home_->GetPreferredSize().width()
+             : 0) +
+        theme_provider->GetDisplayProperty(
+            ThemeProperties::PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING) +
+        theme_provider->GetDisplayProperty(
+            ThemeProperties::PROPERTY_TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING) +
+        browser_actions_width +
+        (browser_actions_width > 0 ? element_padding : 0) +
         app_menu_->GetPreferredSize().width() +
         theme_provider->GetDisplayProperty(
             ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING);
@@ -508,13 +519,25 @@ gfx::Size ToolbarView::GetMinimumSize() const {
   gfx::Size size(location_bar_->GetMinimumSize());
   ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (is_display_mode_normal()) {
-    int content_width =
+    const int element_padding = theme_provider->GetDisplayProperty(
+        ThemeProperties::PROPERTY_TOOLBAR_VIEW_ELEMENT_PADDING);
+    const int browser_actions_width =
+        browser_actions_->GetMinimumSize().width();
+    const int content_width =
         theme_provider->GetDisplayProperty(
             ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING) +
-        back_->GetMinimumSize().width() + forward_->GetMinimumSize().width() +
+        back_->GetMinimumSize().width() + element_padding +
+        forward_->GetMinimumSize().width() + element_padding +
         reload_->GetMinimumSize().width() +
-        (show_home_button_.GetValue() ? home_->GetMinimumSize().width() : 0) +
-        kStandardSpacing + browser_actions_->GetMinimumSize().width() +
+        (show_home_button_.GetValue()
+             ? element_padding + home_->GetMinimumSize().width()
+             : 0) +
+        theme_provider->GetDisplayProperty(
+            ThemeProperties::PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING) +
+        theme_provider->GetDisplayProperty(
+            ThemeProperties::PROPERTY_TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING) +
+        browser_actions_width +
+        (browser_actions_width > 0 ? element_padding : 0) +
         app_menu_->GetMinimumSize().width() +
         theme_provider->GetDisplayProperty(
             ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING);
@@ -560,11 +583,13 @@ void ToolbarView::Layout() {
     back_->SetBounds(left_edge_spacing, child_y, back_width, child_height);
     back_->SetLeadingMargin(0);
   }
-  int next_element_x = back_->bounds().right();
+  const int element_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_TOOLBAR_VIEW_ELEMENT_PADDING);
+  int next_element_x = back_->bounds().right() + element_padding;
 
   forward_->SetBounds(next_element_x, child_y,
                       forward_->GetPreferredSize().width(), child_height);
-  next_element_x = forward_->bounds().right();
+  next_element_x = forward_->bounds().right() + element_padding;
 
   reload_->SetBounds(next_element_x, child_y,
                      reload_->GetPreferredSize().width(), child_height);
@@ -572,6 +597,7 @@ void ToolbarView::Layout() {
 
   if (show_home_button_.GetValue() ||
       (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled())) {
+    next_element_x += element_padding;
     home_->SetVisible(true);
     home_->SetBounds(next_element_x, child_y,
                      home_->GetPreferredSize().width(), child_height);
@@ -579,25 +605,32 @@ void ToolbarView::Layout() {
     home_->SetVisible(false);
     home_->SetBounds(next_element_x, child_y, 0, child_height);
   }
-  next_element_x = home_->bounds().right() + kStandardSpacing;
+  next_element_x = home_->bounds().right() +
+                   theme_provider->GetDisplayProperty(
+                       ThemeProperties::PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING);
 
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
   int app_menu_width = app_menu_->GetPreferredSize().width();
   const int right_edge_spacing = theme_provider->GetDisplayProperty(
       ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING);
-  int available_width =
-      std::max(0, width() - right_edge_spacing - app_menu_width -
-                      browser_actions_width - next_element_x);
+  const int location_bar_right_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING);
+  int available_width = std::max(
+      0, width() - right_edge_spacing - app_menu_width - browser_actions_width -
+             (browser_actions_width > 0 ? element_padding : 0) -
+             location_bar_right_padding - next_element_x);
 
   int location_height = location_bar_->GetPreferredSize().height();
   int location_y = (height() - location_height + 1) / 2;
   location_bar_->SetBounds(next_element_x, location_y,
                            std::max(available_width, 0), location_height);
-  next_element_x = location_bar_->bounds().right();
+  next_element_x = location_bar_->bounds().right() + location_bar_right_padding;
 
   browser_actions_->SetBounds(
       next_element_x, child_y, browser_actions_width, child_height);
   next_element_x = browser_actions_->bounds().right();
+  if (browser_actions_width > 0)
+    next_element_x += element_padding;
 
   // The browser actions need to do a layout explicitly, because when an
   // extension is loaded/unloaded/changed, BrowserActionContainer removes and
