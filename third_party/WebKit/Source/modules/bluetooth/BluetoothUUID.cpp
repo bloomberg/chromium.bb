@@ -260,9 +260,9 @@ String getUUIDForGATTAttribute(GATTAttribute attribute, StringOrUnsignedLong nam
 {
     // Implementation of BluetoothUUID.getService, BluetoothUUID.getCharacteristic
     // and BluetoothUUID.getDescriptor algorithms:
-    // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothuuid-getservice
-    // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothuuid-getcharacteristic
-    // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothuuid-getdescriptor
+    // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getservice
+    // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getcharacteristic
+    // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getdescriptor
 
     // If name is an unsigned long, return BluetoothUUID.cannonicalUUI(name) and
     // abort this steps.

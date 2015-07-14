@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothuuid
+// https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothuuid
 
 // Implement BluetoothUUID: http://crbug.com/491441
 // Significant TODOs remain in BluetoothUUID.cpp.
