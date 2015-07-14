@@ -11,6 +11,8 @@
       'deprecated_serialized_origin.h',
       'gurl.cc',
       'gurl.h',
+      'scheme_host_port.cc',
+      'scheme_host_port.h',
       'third_party/mozilla/url_parse.cc',
       'third_party/mozilla/url_parse.h',
       'url_canon.h',
