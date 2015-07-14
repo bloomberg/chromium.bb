@@ -133,18 +133,6 @@ void WebRemoteFrameImpl::setScrollOffset(const WebSize&)
     ASSERT_NOT_REACHED();
 }
 
-WebSize WebRemoteFrameImpl::minimumScrollOffset() const
-{
-    ASSERT_NOT_REACHED();
-    return WebSize();
-}
-
-WebSize WebRemoteFrameImpl::maximumScrollOffset() const
-{
-    ASSERT_NOT_REACHED();
-    return WebSize();
-}
-
 WebSize WebRemoteFrameImpl::contentsSize() const
 {
     ASSERT_NOT_REACHED();

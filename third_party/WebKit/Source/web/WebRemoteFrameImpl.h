@@ -40,8 +40,6 @@ public:
     void setCanHaveScrollbars(bool) override;
     WebSize scrollOffset() const override;
     void setScrollOffset(const WebSize&) override;
-    WebSize minimumScrollOffset() const override;
-    WebSize maximumScrollOffset() const override;
     WebSize contentsSize() const override;
     bool hasVisibleContent() const override;
     WebRect visibleContentRect() const override;

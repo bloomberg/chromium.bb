@@ -185,10 +185,6 @@ public:
     virtual WebSize scrollOffset() const = 0;
     virtual void setScrollOffset(const WebSize&) = 0;
 
-    // The minimum and maxium scroll positions in pixels.
-    virtual WebSize minimumScrollOffset() const = 0;
-    virtual WebSize maximumScrollOffset() const = 0;
-
     // The size of the contents area.
     virtual WebSize contentsSize() const = 0;
 

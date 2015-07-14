@@ -683,20 +683,6 @@ WebSize WebLocalFrameImpl::scrollOffset() const
     return WebSize();
 }
 
-WebSize WebLocalFrameImpl::minimumScrollOffset() const
-{
-    if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
-        return toIntSize(scrollableArea->minimumScrollPosition());
-    return WebSize();
-}
-
-WebSize WebLocalFrameImpl::maximumScrollOffset() const
-{
-    if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
-        return toIntSize(scrollableArea->maximumScrollPosition());
-    return WebSize();
-}
-
 void WebLocalFrameImpl::setScrollOffset(const WebSize& offset)
 {
     if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
