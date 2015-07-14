@@ -1241,8 +1241,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * on both cold and warm starts.
      */
     public void onActivityStart() {
+        onActivityStartInternal(true);
+    }
+
+    protected void onActivityStartInternal(boolean showNow) {
         if (isHidden()) {
-            show(TabSelectionType.FROM_USER);
+            if (showNow) show(TabSelectionType.FROM_USER);
         } else {
             // The visible Tab's renderer process may have died after the activity was paused.
             // Ensure that it's restored appropriately.

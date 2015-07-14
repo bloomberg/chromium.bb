@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -124,7 +125,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                         runnable);
             }
         };
-        return launchUrlViaRunnable(incognito, runnable, expectedTitle);
+        return launchUrlViaRunnable(incognito, runnable, expectedTitle, false);
     }
 
     /** Starts a DocumentActivity using {@ref ChromeLauncherActivity.launchDocumentInstance().} */
@@ -138,7 +139,23 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                 ChromeLauncherActivity.launchDocumentInstance(null, incognito, asyncParams);
             }
         };
-        return launchUrlViaRunnable(incognito, runnable, expectedTitle);
+        return launchUrlViaRunnable(incognito, runnable, expectedTitle, false);
+    }
+
+    /** Starts a DocumentActivity in background using
+     * {@ref ChromeLauncherActivity.launchDocumentInstance().} */
+    protected int launchViaLaunchDocumentInstanceInBackground(final boolean incognito,
+            final String url, final String expectedTitle) throws Exception {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                AsyncTabCreationParams asyncParams =
+                        new AsyncTabCreationParams(new LoadUrlParams(url));
+                asyncParams.setDocumentLaunchMode(ChromeLauncherActivity.LAUNCH_MODE_AFFILIATED);
+                ChromeLauncherActivity.launchDocumentInstance(null, incognito, asyncParams);
+            }
+        };
+        return launchUrlViaRunnable(incognito, runnable, expectedTitle, true);
     }
 
     /**
@@ -149,7 +166,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
      * @return ID of the Tab that was launched.
      */
     protected int launchUrlViaRunnable(final boolean incognito, final Runnable runnable,
-            final String expectedTitle) throws Exception {
+            final String expectedTitle, final boolean launchedInBackground) throws Exception {
         final int tabCount =
                 ChromeApplication.isDocumentTabModelSelectorInitializedForTests()
                 ? ChromeApplication.getDocumentTabModelSelector().getModel(incognito)
@@ -184,7 +201,11 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
             }
         }));
 
-        waitForFullLoad(newActivity, expectedTitle);
+        if (launchedInBackground) {
+            ChromeTabUtils.waitForTabPageLoaded(newActivity.getActivityTab(), (String) null);
+        } else {
+            waitForFullLoad(newActivity, expectedTitle);
+        }
         return ChromeApplication.getDocumentTabModelSelector().getCurrentTabId();
     }
 

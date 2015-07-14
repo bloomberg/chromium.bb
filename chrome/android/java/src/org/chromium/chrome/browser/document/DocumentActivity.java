@@ -455,9 +455,9 @@ public class DocumentActivity extends ChromeActivity {
                 ActivityDelegate.getTabIdFromIntent(getIntent()));
         int tabId = determineTabId();
         TabState tabState = mTabModel.getTabStateForDocument(tabId);
-        mDocumentTab = DocumentTab.create(DocumentActivity.this, isIncognito(),
-                getWindowAndroid(), determineLastKnownUrl(),
-                asyncParams != null ? asyncParams.getWebContents() : null, tabState);
+        mDocumentTab = DocumentTab.create(DocumentActivity.this, isIncognito(), getWindowAndroid(),
+                determineLastKnownUrl(), asyncParams != null ? asyncParams.getWebContents() : null,
+                tabState, asyncParams != null ? asyncParams.isInitiallyHidden() : false);
 
         if (asyncParams != null && asyncParams.getWebContents() != null) {
             Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),

@@ -65,13 +65,14 @@ public class DocumentTab extends ChromeTab {
      * @param windowAndroid The window that this tab should be using.
      * @param url The url to load on creation.
      * @param parentTabId The id of the parent tab.
+     * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
      */
-    private DocumentTab(DocumentActivity activity, boolean incognito,
-            WindowAndroid windowAndroid, String url, int parentTabId) {
+    private DocumentTab(DocumentActivity activity, boolean incognito, WindowAndroid windowAndroid,
+            String url, int parentTabId, boolean initiallyHidden) {
         super(ActivityDelegate.getTabIdFromIntent(activity.getIntent()), activity,
                 incognito, windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
         mActivity = activity;
-        initialize(url, null, activity.getTabContentManager(), false);
+        initialize(url, null, activity.getTabContentManager(), false, initiallyHidden);
     }
 
     /**
@@ -89,7 +90,7 @@ public class DocumentTab extends ChromeTab {
                 incognito, windowAndroid, TabLaunchType.FROM_RESTORE, parentTabId,
                 TabCreationState.FROZEN_ON_RESTORE, tabState);
         mActivity = activity;
-        initialize(url, null, activity.getTabContentManager(), true);
+        initialize(url, null, activity.getTabContentManager(), true, false);
     }
 
     /**
@@ -107,7 +108,7 @@ public class DocumentTab extends ChromeTab {
                 incognito, windowAndroid, TabLaunchType.FROM_LONGPRESS_FOREGROUND,
                 parentTabId, null, null);
         mActivity = activity;
-        initialize(url, webContents, activity.getTabContentManager(), false);
+        initialize(url, webContents, activity.getTabContentManager(), false, false);
         mCreatedFromWebContents = true;
     }
 
@@ -122,18 +123,19 @@ public class DocumentTab extends ChromeTab {
      * @param url The url to use for looking up potentially pre-rendered web contents.
      * @param webContents Optionally, a pre-created web contents.
      * @param unfreeze Whether we want to initialize the tab from tab state.
+     * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
      */
     private void initialize(String url, WebContents webContents,
-            TabContentManager tabContentManager, boolean unfreeze) {
+            TabContentManager tabContentManager, boolean unfreeze, boolean initiallyHidden) {
         mDesiredIconSizePx = (int) (DESIRED_ICON_SIZE_DP
                 * mActivity.getResources().getDisplayMetrics().density);
 
         if (!unfreeze && webContents == null) {
             webContents = WarmupManager.getInstance().hasPrerenderedUrl(url)
                     ? WarmupManager.getInstance().takePrerenderedWebContents()
-                    : WebContentsFactory.createWebContents(isIncognito(), false);
+                    : WebContentsFactory.createWebContents(isIncognito(), initiallyHidden);
         }
-        initialize(webContents, tabContentManager, false);
+        initialize(webContents, tabContentManager, initiallyHidden);
         if (unfreeze) mDidRestoreState = unfreezeContents();
 
         getView().requestFocus();
@@ -198,9 +200,10 @@ public class DocumentTab extends ChromeTab {
      * @param webContents A {@link WebContents} object.
      * @param tabState State that was previously persisted to disk for the Tab.
      * @return The created {@link DocumentTab}.
+     * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
      */
     static DocumentTab create(DocumentActivity activity, boolean incognito, WindowAndroid window,
-            String url, WebContents webContents, TabState tabState) {
+            String url, WebContents webContents, TabState tabState, boolean initiallyHidden) {
         int parentTabId = activity.getIntent().getIntExtra(
                 IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
         if (webContents != null) {
@@ -211,7 +214,7 @@ public class DocumentTab extends ChromeTab {
         }
 
         if (tabState == null) {
-            return new DocumentTab(activity, incognito, window, url, parentTabId);
+            return new DocumentTab(activity, incognito, window, url, parentTabId, initiallyHidden);
         } else {
             return new DocumentTab(activity, incognito, window, "", tabState, parentTabId);
         }
@@ -233,5 +236,17 @@ public class DocumentTab extends ChromeTab {
                 ((DocumentTabObserver) observer).onSetCoveredByChildActivity();
             }
         }
+    }
+
+    @Override
+    public void onActivityStart() {
+        // DocumentActivity#onResumeWithNative() will call Tab.show(), and so we don't need to call
+        // it at this point.
+        onActivityStartInternal(false /* showNow */);
+    }
+
+    @VisibleForTesting
+    public DocumentActivity getActivity() {
+        return mActivity;
     }
 }

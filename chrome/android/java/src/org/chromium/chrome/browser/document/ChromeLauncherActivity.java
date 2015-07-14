@@ -537,8 +537,11 @@ public class ChromeLauncherActivity extends Activity
         AsyncTabCreationParamsManager.add(tabId, asyncParams);
         isWebContentsPending = asyncParams.getWebContents() != null;
 
-        Bundle options = affiliated && !isWebContentsPending
-                ? ActivityOptions.makeTaskLaunchBehind().toBundle() : null;
+        Bundle options = null;
+        if (affiliated && !isWebContentsPending) {
+            options = ActivityOptions.makeTaskLaunchBehind().toBundle();
+            asyncParams.setIsInitiallyHidden(true);
+        }
         if (incognito && !CipherFactory.getInstance().hasCipher()
                 && ChromeApplication.getDocumentTabModelSelector().getModel(true)
                         .getCount() > 0) {
