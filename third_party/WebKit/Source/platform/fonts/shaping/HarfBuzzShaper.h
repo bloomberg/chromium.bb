@@ -115,26 +115,7 @@ public:
     ~HarfBuzzShaper() { }
 
 private:
-    class PLATFORM_EXPORT HarfBuzzRun {
-    public:
-        HarfBuzzRun(const HarfBuzzRun&);
-        ~HarfBuzzRun();
-
-        static PassOwnPtr<HarfBuzzRun> create(const SimpleFontData* fontData, unsigned startIndex, unsigned numCharacters, hb_direction_t direction, hb_script_t script)
-        {
-            return adoptPtr(new HarfBuzzRun(fontData, startIndex, numCharacters, direction, script));
-        }
-
-        const SimpleFontData* fontData() { return m_fontData; }
-        unsigned startIndex() const { return m_startIndex; }
-        unsigned numCharacters() const { return m_numCharacters; }
-        hb_direction_t direction() { return m_direction; }
-        bool rtl() { return m_direction == HB_DIRECTION_RTL; }
-        hb_script_t script() { return m_script; }
-
-    private:
-        HarfBuzzRun(const SimpleFontData*, unsigned startIndex, unsigned numCharacters, hb_direction_t, hb_script_t);
-
+    struct HarfBuzzRun {
         const SimpleFontData* m_fontData;
         unsigned m_startIndex;
         size_t m_numCharacters;
@@ -149,7 +130,7 @@ private:
     bool createHarfBuzzRuns();
     bool createHarfBuzzRunsForSingleCharacter();
     bool shapeHarfBuzzRuns(ShapeResult*);
-    void shapeResult(ShapeResult*, unsigned, HarfBuzzRun*, hb_buffer_t*);
+    void shapeResult(ShapeResult*, unsigned, const HarfBuzzRun*, hb_buffer_t*);
     float adjustSpacing(ShapeResult::RunInfo*, size_t glyphIndex, unsigned currentCharacterIndex, float& offsetX, float& totalAdvance);
     void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
 
@@ -161,7 +142,7 @@ private:
     unsigned m_expansionOpportunityCount;
 
     Vector<hb_feature_t, 4> m_features;
-    Vector<OwnPtr<HarfBuzzRun>, 16> m_harfBuzzRuns;
+    Vector<HarfBuzzRun, 16> m_harfBuzzRuns;
 };
 
 } // namespace blink
