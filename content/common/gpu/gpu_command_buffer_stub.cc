@@ -560,7 +560,8 @@ void GpuCommandBufferStub::OnInitialize(
   if (!context->GetTotalGpuMemory(&total_gpu_memory_))
     total_gpu_memory_ = 0;
 
-  if (!context_group_->has_program_cache()) {
+  if (!context_group_->has_program_cache() &&
+      !context_group_->feature_info()->workarounds().disable_program_cache) {
     context_group_->set_program_cache(
         channel_->gpu_channel_manager()->program_cache());
   }
