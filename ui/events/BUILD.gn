@@ -290,6 +290,7 @@ source_set("test_support") {
 
   if (use_x11 || use_ozone) {
     sources += [ "test/device_data_manager_test_api_impl.cc" ]
+    deps += [ "//ui/events/devices" ]
   } else {
     sources += [ "test/device_data_manager_test_api_stub.cc" ]
   }

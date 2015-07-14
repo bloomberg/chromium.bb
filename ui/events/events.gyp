@@ -288,11 +288,6 @@
             'gesture_detection/gesture_configuration_default.cc',
           ],
         }],
-        ['use_aura==1 and OS=="android"', {
-          'sources!': [
-            'gesture_detection/gesture_configuration_aura.cc',
-          ],
-        }],
       ],
     },
     {
@@ -337,15 +332,13 @@
           # The cocoa files don't apply to iOS.
           'sources/': [['exclude', 'cocoa']],
         }],
-        ['use_x11==1', {
-          'dependencies': [
-            'devices/events_devices.gyp:events_devices',
-          ],
-        }],
         ['use_x11==1 or use_ozone==1', {
           'sources' : [
               'test/device_data_manager_test_api_impl.cc',
-            ]
+            ],
+          'dependencies': [
+            'devices/events_devices.gyp:events_devices',
+            ],
         }, { # else use_x11=1 or use_ozone=1
           'sources' : [
               'test/device_data_manager_test_api_stub.cc',
