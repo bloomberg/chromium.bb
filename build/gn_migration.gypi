@@ -631,6 +631,7 @@
         }],
         ['chromeos==1', {
           'dependencies': [
+            '../content/content_shell_and_tests.gyp:jpeg_decode_accelerator_unittest',
             '../content/content_shell_and_tests.gyp:video_encode_accelerator_unittest',
           ],
         }],
