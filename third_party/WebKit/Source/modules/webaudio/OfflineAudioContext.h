@@ -26,13 +26,13 @@
 #define OfflineAudioContext_h
 
 #include "modules/ModulesExport.h"
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 
 namespace blink {
 
 class ExceptionState;
 
-class MODULES_EXPORT OfflineAudioContext final : public AudioContext {
+class MODULES_EXPORT OfflineAudioContext final : public AbstractAudioContext {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static OfflineAudioContext* create(ExecutionContext*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
@@ -40,6 +40,13 @@ public:
     ~OfflineAudioContext() override;
 
     ScriptPromise startOfflineRendering(ScriptState*);
+
+    ScriptPromise closeContext(ScriptState*) final;
+    ScriptPromise suspendContext(ScriptState*) final;
+    ScriptPromise resumeContext(ScriptState*) final;
+
+    bool hasRealtimeConstraint() final { return false; }
+
 private:
     OfflineAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
 };

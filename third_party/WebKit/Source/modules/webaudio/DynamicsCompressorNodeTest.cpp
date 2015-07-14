@@ -6,6 +6,7 @@
 #include "modules/webaudio/DynamicsCompressorNode.h"
 
 #include "core/testing/DummyPageHolder.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/OfflineAudioContext.h"
 #include <gtest/gtest.h>
 
@@ -18,7 +19,7 @@ TEST(DynamicsCompressorNodeTest, ProcessorLifetime)
     DynamicsCompressorNode* node = context->createDynamicsCompressor(ASSERT_NO_EXCEPTION);
     DynamicsCompressorHandler& handler = node->dynamicsCompressorHandler();
     EXPECT_TRUE(handler.m_dynamicsCompressor);
-    AudioContext::AutoLocker locker(context);
+    AbstractAudioContext::AutoLocker locker(context);
     handler.dispose();
     // m_dynamicsCompressor should live after dispose() because an audio thread
     // is using it.

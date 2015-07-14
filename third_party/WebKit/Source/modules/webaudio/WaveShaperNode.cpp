@@ -29,13 +29,13 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
-#include "modules/webaudio/AudioContext.h"
 #include "wtf/MainThread.h"
 
 namespace blink {
 
-WaveShaperNode::WaveShaperNode(AudioContext& context)
+WaveShaperNode::WaveShaperNode(AbstractAudioContext& context)
     : AudioNode(context)
 {
     setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeWaveShaper, *this, context.sampleRate(), adoptPtr(new WaveShaperProcessor(context.sampleRate(), 1))));
@@ -77,7 +77,7 @@ void WaveShaperNode::setOversample(const String& type)
     // This is to synchronize with the changes made in
     // AudioBasicProcessorNode::checkNumberOfChannelsForInput() where we can
     // initialize() and uninitialize().
-    AudioContext::AutoLocker contextLocker(context());
+    AbstractAudioContext::AutoLocker contextLocker(context());
 
     if (type == "none") {
         waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSampleNone);

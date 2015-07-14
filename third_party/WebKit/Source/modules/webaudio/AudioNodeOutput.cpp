@@ -26,7 +26,7 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioNodeOutput.h"
 
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "wtf/Threading.h"
 
@@ -44,7 +44,7 @@ inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler, unsigned numberOf
     , m_renderingFanOutCount(0)
     , m_renderingParamFanOutCount(0)
 {
-    ASSERT(numberOfChannels <= AudioContext::maxNumberOfChannels());
+    ASSERT(numberOfChannels <= AbstractAudioContext::maxNumberOfChannels());
 
     m_internalBus = AudioBus::create(numberOfChannels, AudioHandler::ProcessingSizeInFrames);
 }
@@ -67,7 +67,7 @@ void AudioNodeOutput::dispose()
 
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
 {
-    ASSERT(numberOfChannels <= AudioContext::maxNumberOfChannels());
+    ASSERT(numberOfChannels <= AbstractAudioContext::maxNumberOfChannels());
     ASSERT(deferredTaskHandler().isGraphOwner());
 
     m_desiredNumberOfChannels = numberOfChannels;

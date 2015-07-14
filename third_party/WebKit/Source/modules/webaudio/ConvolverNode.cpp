@@ -29,7 +29,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBuffer.h"
-#include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/Reverb.h"
@@ -127,8 +126,7 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionS
     bufferBus->setSampleRate(buffer->sampleRate());
 
     // Create the reverb with the given impulse response.
-    bool useBackgroundThreads = !context()->isOfflineContext();
-    OwnPtr<Reverb> reverb = adoptPtr(new Reverb(bufferBus.get(), ProcessingSizeInFrames, MaxFFTSize, 2, useBackgroundThreads, m_normalize));
+    OwnPtr<Reverb> reverb = adoptPtr(new Reverb(bufferBus.get(), ProcessingSizeInFrames, MaxFFTSize, 2, context() && context()->hasRealtimeConstraint(), m_normalize));
 
     {
         // Synchronize with process().
@@ -166,13 +164,13 @@ double ConvolverHandler::latencyTime() const
 
 // ----------------------------------------------------------------
 
-ConvolverNode::ConvolverNode(AudioContext& context, float sampleRate)
+ConvolverNode::ConvolverNode(AbstractAudioContext& context, float sampleRate)
     : AudioNode(context)
 {
     setHandler(ConvolverHandler::create(*this, sampleRate));
 }
 
-ConvolverNode* ConvolverNode::create(AudioContext& context, float sampleRate)
+ConvolverNode* ConvolverNode::create(AbstractAudioContext& context, float sampleRate)
 {
     return new ConvolverNode(context, sampleRate);
 }

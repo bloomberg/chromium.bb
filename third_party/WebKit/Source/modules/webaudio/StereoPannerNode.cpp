@@ -10,7 +10,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/StereoPanner.h"
@@ -86,7 +86,7 @@ void StereoPannerHandler::initialize()
 void StereoPannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     // A PannerNode only supports 1 or 2 channels
     if (channelCount > 0 && channelCount <= 2) {
@@ -111,7 +111,7 @@ void StereoPannerHandler::setChannelCount(unsigned long channelCount, ExceptionS
 void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     ChannelCountMode oldMode = m_channelCountMode;
 
@@ -137,14 +137,14 @@ void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState
 
 // ----------------------------------------------------------------
 
-StereoPannerNode::StereoPannerNode(AudioContext& context, float sampleRate)
+StereoPannerNode::StereoPannerNode(AbstractAudioContext& context, float sampleRate)
     : AudioNode(context)
     , m_pan(AudioParam::create(context, 0))
 {
     setHandler(StereoPannerHandler::create(*this, sampleRate, m_pan->handler()));
 }
 
-StereoPannerNode* StereoPannerNode::create(AudioContext& context, float sampleRate)
+StereoPannerNode* StereoPannerNode::create(AbstractAudioContext& context, float sampleRate)
 {
     return new StereoPannerNode(context, sampleRate);
 }

@@ -18,7 +18,7 @@ TEST(StereoPannerNodeTest, StereoPannerLifetime)
     StereoPannerNode* node = context->createStereoPanner(ASSERT_NO_EXCEPTION);
     StereoPannerHandler& handler = static_cast<StereoPannerHandler&>(node->handler());
     EXPECT_TRUE(handler.m_stereoPanner);
-    AudioContext::AutoLocker locker(context);
+    AbstractAudioContext::AutoLocker locker(context);
     handler.dispose();
     // m_stereoPanner should live after dispose() because an audio thread is
     // using it.

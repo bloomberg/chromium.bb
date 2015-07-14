@@ -33,7 +33,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/AudioUtilities.h"
@@ -43,7 +43,7 @@ namespace blink {
 
 AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
 {
-    if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate) || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfChannels || !numberOfFrames)
+    if (!AudioUtilities::isValidAudioBufferSampleRate(sampleRate) || numberOfChannels > AbstractAudioContext::maxNumberOfChannels() || !numberOfChannels || !numberOfFrames)
         return nullptr;
 
     AudioBuffer* buffer = new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate);
@@ -55,7 +55,7 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrame
 
 AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
 {
-    if (!numberOfChannels || numberOfChannels > AudioContext::maxNumberOfChannels()) {
+    if (!numberOfChannels || numberOfChannels > AbstractAudioContext::maxNumberOfChannels()) {
         exceptionState.throwDOMException(
             NotSupportedError,
             ExceptionMessages::indexOutsideRange(
@@ -63,7 +63,7 @@ AudioBuffer* AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrame
                 numberOfChannels,
                 1u,
                 ExceptionMessages::InclusiveBound,
-                AudioContext::maxNumberOfChannels(),
+                AbstractAudioContext::maxNumberOfChannels(),
                 ExceptionMessages::InclusiveBound));
         return nullptr;
     }

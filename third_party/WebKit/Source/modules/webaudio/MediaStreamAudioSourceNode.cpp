@@ -26,7 +26,7 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
 
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Logging.h"
 #include "wtf/Locker.h"
@@ -61,7 +61,7 @@ void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels, float sou
 {
     if (numberOfChannels != m_sourceNumberOfChannels || sourceSampleRate != sampleRate()) {
         // The sample-rate must be equal to the context's sample-rate.
-        if (!numberOfChannels || numberOfChannels > AudioContext::maxNumberOfChannels() || sourceSampleRate != sampleRate()) {
+        if (!numberOfChannels || numberOfChannels > AbstractAudioContext::maxNumberOfChannels() || sourceSampleRate != sampleRate()) {
             // process() will generate silence for these uninitialized values.
             WTF_LOG(Media, "MediaStreamAudioSourceNode::setFormat(%u, %f) - unhandled format change", static_cast<unsigned>(numberOfChannels), sourceSampleRate);
             m_sourceNumberOfChannels = 0;
@@ -75,7 +75,7 @@ void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels, float sou
 
         {
             // The context must be locked when changing the number of output channels.
-            AudioContext::AutoLocker contextLocker(context());
+            AbstractAudioContext::AutoLocker contextLocker(context());
 
             // Do any necesssary re-configuration to the output's number of channels.
             output(0).setNumberOfChannels(numberOfChannels);
@@ -111,13 +111,13 @@ void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
 
 // ----------------------------------------------------------------
 
-MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AbstractAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
     : AudioSourceNode(context)
 {
     setHandler(MediaStreamAudioSourceHandler::create(*this, mediaStream, audioTrack, audioSourceProvider));
 }
 
-MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AbstractAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
 {
     return new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, audioSourceProvider);
 }

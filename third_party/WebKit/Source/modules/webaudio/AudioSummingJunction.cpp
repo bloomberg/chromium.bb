@@ -26,7 +26,6 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioSummingJunction.h"
 
-#include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include <algorithm>
 

@@ -36,6 +36,8 @@
 
 namespace blink {
 
+class AbstractAudioContext;
+
 // PannerNode is an AudioNode with one input and one output.
 // It positions a sound in 3D space, with the exact effect dependent on the panning model.
 // It has a position and an orientation in 3D space which is relative to the position and orientation of the context's AudioListener.
@@ -105,7 +107,7 @@ public:
 
 private:
     PannerHandler(AudioNode&, float sampleRate);
-    // AudioContext's listener
+    // AbstractAudioContext's listener
     AudioListener* listener();
 
     bool setPanningModel(unsigned); // Returns true on success.
@@ -156,7 +158,7 @@ private:
 class PannerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PannerNode* create(AudioContext&, float sampleRate);
+    static PannerNode* create(AbstractAudioContext&, float sampleRate);
     PannerHandler& pannerHandler() const;
 
     String panningModel() const;
@@ -180,7 +182,7 @@ public:
     void setConeOuterGain(double);
 
 private:
-    PannerNode(AudioContext&, float sampleRate);
+    PannerNode(AbstractAudioContext&, float sampleRate);
 };
 
 } // namespace blink

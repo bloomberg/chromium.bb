@@ -30,7 +30,7 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/EventModules.h"
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
@@ -217,7 +217,7 @@ void AudioScheduledSourceHandler::notifyEnded()
 
 // ----------------------------------------------------------------
 
-AudioScheduledSourceNode::AudioScheduledSourceNode(AudioContext& context)
+AudioScheduledSourceNode::AudioScheduledSourceNode(AbstractAudioContext& context)
     : AudioSourceNode(context)
 {
 }

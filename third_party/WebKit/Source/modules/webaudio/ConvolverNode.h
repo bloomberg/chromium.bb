@@ -75,7 +75,7 @@ private:
 class MODULES_EXPORT ConvolverNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ConvolverNode* create(AudioContext&, float sampleRate);
+    static ConvolverNode* create(AbstractAudioContext&, float sampleRate);
 
     AudioBuffer* buffer() const;
     void setBuffer(AudioBuffer*, ExceptionState&);
@@ -83,7 +83,7 @@ public:
     void setNormalize(bool);
 
 private:
-    ConvolverNode(AudioContext&, float sampleRate);
+    ConvolverNode(AbstractAudioContext&, float sampleRate);
     ConvolverHandler& convolverHandler() const;
 
     // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h

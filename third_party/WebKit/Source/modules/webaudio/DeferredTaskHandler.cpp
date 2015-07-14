@@ -26,7 +26,6 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/DeferredTaskHandler.h"
 
-#include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/ThreadSafeFunctional.h"
@@ -227,7 +226,7 @@ void DeferredTaskHandler::contextWillBeDestroyed()
     // Some handlers might live because of their cross thread tasks.
 }
 
-DeferredTaskHandler::AutoLocker::AutoLocker(AudioContext* context)
+DeferredTaskHandler::AutoLocker::AutoLocker(AbstractAudioContext* context)
     : m_handler(context->deferredTaskHandler())
 {
     m_handler.lock();

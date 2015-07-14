@@ -1365,6 +1365,8 @@
       'vr/VRHardwareUnitCollection.h',
       'vr/VRPositionState.cpp',
       'vr/VRPositionState.h',
+      'webaudio/AbstractAudioContext.cpp',
+      'webaudio/AbstractAudioContext.h',
       'webaudio/AnalyserNode.cpp',
       'webaudio/AnalyserNode.h',
       'webaudio/AsyncAudioDecoder.cpp',

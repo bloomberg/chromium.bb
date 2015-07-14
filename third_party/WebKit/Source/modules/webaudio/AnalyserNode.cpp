@@ -116,13 +116,13 @@ void AnalyserHandler::setSmoothingTimeConstant(double k, ExceptionState& excepti
 
 // ----------------------------------------------------------------
 
-AnalyserNode::AnalyserNode(AudioContext& context, float sampleRate)
+AnalyserNode::AnalyserNode(AbstractAudioContext& context, float sampleRate)
     : AudioBasicInspectorNode(context)
 {
     setHandler(AnalyserHandler::create(*this, sampleRate));
 }
 
-AnalyserNode* AnalyserNode::create(AudioContext& context, float sampleRate)
+AnalyserNode* AnalyserNode::create(AbstractAudioContext& context, float sampleRate)
 {
     return new AnalyserNode(context, sampleRate);
 }

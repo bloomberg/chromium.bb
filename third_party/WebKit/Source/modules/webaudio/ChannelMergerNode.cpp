@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 
@@ -97,7 +97,7 @@ void ChannelMergerHandler::process(size_t framesToProcess)
 void ChannelMergerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     // channelCount must be 1.
     if (channelCount != 1) {
@@ -110,7 +110,7 @@ void ChannelMergerHandler::setChannelCount(unsigned long channelCount, Exception
 void ChannelMergerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     // channcelCountMode must be 'explicit'.
     if (mode != "explicit") {
@@ -122,15 +122,15 @@ void ChannelMergerHandler::setChannelCountMode(const String& mode, ExceptionStat
 
 // ----------------------------------------------------------------
 
-ChannelMergerNode::ChannelMergerNode(AudioContext& context, float sampleRate, unsigned numberOfInputs)
+ChannelMergerNode::ChannelMergerNode(AbstractAudioContext& context, float sampleRate, unsigned numberOfInputs)
     : AudioNode(context)
 {
     setHandler(ChannelMergerHandler::create(*this, sampleRate, numberOfInputs));
 }
 
-ChannelMergerNode* ChannelMergerNode::create(AudioContext& context, float sampleRate, unsigned numberOfInputs)
+ChannelMergerNode* ChannelMergerNode::create(AbstractAudioContext& context, float sampleRate, unsigned numberOfInputs)
 {
-    if (!numberOfInputs || numberOfInputs > AudioContext::maxNumberOfChannels())
+    if (!numberOfInputs || numberOfInputs > AbstractAudioContext::maxNumberOfChannels())
         return nullptr;
     return new ChannelMergerNode(context, sampleRate, numberOfInputs);
 }

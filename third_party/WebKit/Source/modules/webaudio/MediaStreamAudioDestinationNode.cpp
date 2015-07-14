@@ -26,7 +26,7 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/MediaStreamAudioDestinationNode.h"
 
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "platform/UUID.h"
 #include "platform/mediastream/MediaStreamCenter.h"
@@ -69,13 +69,13 @@ void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)
 
 // ----------------------------------------------------------------
 
-MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext& context, size_t numberOfChannels)
+MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AbstractAudioContext& context, size_t numberOfChannels)
     : AudioBasicInspectorNode(context)
 {
     setHandler(MediaStreamAudioDestinationHandler::create(*this, numberOfChannels));
 }
 
-MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AudioContext& context, size_t numberOfChannels)
+MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AbstractAudioContext& context, size_t numberOfChannels)
 {
     return new MediaStreamAudioDestinationNode(context, numberOfChannels);
 }

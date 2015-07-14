@@ -141,13 +141,13 @@ void DefaultAudioDestinationHandler::setChannelCount(unsigned long channelCount,
 
 // ----------------------------------------------------------------
 
-DefaultAudioDestinationNode::DefaultAudioDestinationNode(AudioContext& context)
+DefaultAudioDestinationNode::DefaultAudioDestinationNode(AbstractAudioContext& context)
     : AudioDestinationNode(context)
 {
     setHandler(DefaultAudioDestinationHandler::create(*this));
 }
 
-DefaultAudioDestinationNode* DefaultAudioDestinationNode::create(AudioContext* context)
+DefaultAudioDestinationNode* DefaultAudioDestinationNode::create(AbstractAudioContext* context)
 {
     return new DefaultAudioDestinationNode(*context);
 }

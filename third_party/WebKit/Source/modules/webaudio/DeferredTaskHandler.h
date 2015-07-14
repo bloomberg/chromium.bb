@@ -37,22 +37,22 @@
 
 namespace blink {
 
-class AudioContext;
+class AbstractAudioContext;
 class AudioHandler;
 class AudioNodeOutput;
 class AudioSummingJunction;
 
 // DeferredTaskHandler manages the major part of pre- and post- rendering tasks,
 // and provides a lock mechanism against the audio rendering graph. A
-// DeferredTaskHandler object is created when an AudioContext object is created.
+// DeferredTaskHandler object is created when an AbstractAudioContext object is created.
 //
-// DeferredTaskHandler outlives the AudioContext only if all of the following
+// DeferredTaskHandler outlives the AbstractAudioContext only if all of the following
 // conditions match:
 // - An audio rendering thread is running,
 // - It is requested to stop,
 // - The audio rendering thread calls requestToDeleteHandlersOnMainThread(),
 // - It posts a task of deleteHandlersOnMainThread(), and
-// - GC happens and it collects the AudioContext before the task execution.
+// - GC happens and it collects the AbstractAudioContext before the task execution.
 //
 class MODULES_EXPORT DeferredTaskHandler final : public ThreadSafeRefCounted<DeferredTaskHandler> {
 public:
@@ -62,7 +62,7 @@ public:
     void handleDeferredTasks();
     void contextWillBeDestroyed();
 
-    // AudioContext can pull node(s) at the end of each render quantum even when
+    // AbstractAudioContext can pull node(s) at the end of each render quantum even when
     // they are not connected to any downstream nodes.  These two methods are
     // called by the nodes who want to add/remove themselves into/from the
     // automatic pull lists.
@@ -123,7 +123,7 @@ public:
         {
             m_handler.lock();
         }
-        explicit AutoLocker(AudioContext*);
+        explicit AutoLocker(AbstractAudioContext*);
 
         ~AutoLocker() { m_handler.unlock(); }
 

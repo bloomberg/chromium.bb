@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class AudioContext;
+class AbstractAudioContext;
 class ExceptionState;
 
 class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
@@ -61,10 +61,10 @@ private:
 
 class DefaultAudioDestinationNode final : public AudioDestinationNode {
 public:
-    static DefaultAudioDestinationNode* create(AudioContext*);
+    static DefaultAudioDestinationNode* create(AbstractAudioContext*);
 
 private:
-    explicit DefaultAudioDestinationNode(AudioContext&);
+    explicit DefaultAudioDestinationNode(AbstractAudioContext&);
 };
 
 } // namespace blink

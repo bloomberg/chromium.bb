@@ -33,6 +33,7 @@
 
 namespace blink {
 
+class AbstractAudioContext;
 class AudioBus;
 
 class AudioScheduledSourceHandler : public AudioHandler {
@@ -111,7 +112,7 @@ public:
     void setOnended(PassRefPtr<EventListener>);
 
 protected:
-    explicit AudioScheduledSourceNode(AudioContext&);
+    explicit AudioScheduledSourceNode(AbstractAudioContext&);
     AudioScheduledSourceHandler& audioScheduledSourceHandler() const;
 };
 

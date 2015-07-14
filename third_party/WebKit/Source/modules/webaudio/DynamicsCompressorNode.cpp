@@ -26,7 +26,6 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/DynamicsCompressorNode.h"
 
-#include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/DynamicsCompressor.h"
@@ -117,7 +116,7 @@ double DynamicsCompressorHandler::latencyTime() const
 
 // ----------------------------------------------------------------
 
-DynamicsCompressorNode::DynamicsCompressorNode(AudioContext& context, float sampleRate)
+DynamicsCompressorNode::DynamicsCompressorNode(AbstractAudioContext& context, float sampleRate)
     : AudioNode(context)
     , m_threshold(AudioParam::create(context, -24))
     , m_knee(AudioParam::create(context, 30))
@@ -129,7 +128,7 @@ DynamicsCompressorNode::DynamicsCompressorNode(AudioContext& context, float samp
     setHandler(DynamicsCompressorHandler::create(*this, sampleRate, m_threshold->handler(), m_knee->handler(), m_ratio->handler(), m_reduction->handler(), m_attack->handler(), m_release->handler()));
 }
 
-DynamicsCompressorNode* DynamicsCompressorNode::create(AudioContext& context, float sampleRate)
+DynamicsCompressorNode* DynamicsCompressorNode::create(AbstractAudioContext& context, float sampleRate)
 {
     return new DynamicsCompressorNode(context, sampleRate);
 }

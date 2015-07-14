@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class AbstractAudioContext;
+
 // StereoPannerNode is an AudioNode with one input and one output. It is
 // specifically designed for equal-power stereo panning.
 class StereoPannerHandler final : public AudioHandler {
@@ -40,13 +42,13 @@ private:
 class StereoPannerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static StereoPannerNode* create(AudioContext&, float sampleRate);
+    static StereoPannerNode* create(AbstractAudioContext&, float sampleRate);
     DECLARE_VIRTUAL_TRACE();
 
     AudioParam* pan() const;
 
 private:
-    StereoPannerNode(AudioContext&, float sampleRate);
+    StereoPannerNode(AbstractAudioContext&, float sampleRate);
 
     Member<AudioParam> m_pan;
 };

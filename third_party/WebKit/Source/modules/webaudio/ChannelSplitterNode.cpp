@@ -26,7 +26,7 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/ChannelSplitterNode.h"
 
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 
@@ -74,15 +74,15 @@ void ChannelSplitterHandler::process(size_t framesToProcess)
 
 // ----------------------------------------------------------------
 
-ChannelSplitterNode::ChannelSplitterNode(AudioContext& context, float sampleRate, unsigned numberOfOutputs)
+ChannelSplitterNode::ChannelSplitterNode(AbstractAudioContext& context, float sampleRate, unsigned numberOfOutputs)
     : AudioNode(context)
 {
     setHandler(ChannelSplitterHandler::create(*this, sampleRate, numberOfOutputs));
 }
 
-ChannelSplitterNode* ChannelSplitterNode::create(AudioContext& context, float sampleRate, unsigned numberOfOutputs)
+ChannelSplitterNode* ChannelSplitterNode::create(AbstractAudioContext& context, float sampleRate, unsigned numberOfOutputs)
 {
-    if (!numberOfOutputs || numberOfOutputs > AudioContext::maxNumberOfChannels())
+    if (!numberOfOutputs || numberOfOutputs > AbstractAudioContext::maxNumberOfChannels())
         return nullptr;
     return new ChannelSplitterNode(context, sampleRate, numberOfOutputs);
 }

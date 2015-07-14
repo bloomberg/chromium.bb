@@ -31,6 +31,7 @@
 
 namespace blink {
 
+class AbstractAudioContext;
 class ExceptionState;
 
 class AnalyserHandler final : public AudioBasicInspectorHandler {
@@ -69,7 +70,7 @@ private:
 class AnalyserNode final : public AudioBasicInspectorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AnalyserNode* create(AudioContext&, float sampleRate);
+    static AnalyserNode* create(AbstractAudioContext&, float sampleRate);
 
     unsigned fftSize() const;
     void setFftSize(unsigned size, ExceptionState&);
@@ -86,7 +87,7 @@ public:
     void getByteTimeDomainData(DOMUint8Array*);
 
 private:
-    AnalyserNode(AudioContext&, float sampleRate);
+    AnalyserNode(AbstractAudioContext&, float sampleRate);
     AnalyserHandler& analyserHandler() const;
 };
 

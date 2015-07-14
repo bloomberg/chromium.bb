@@ -35,6 +35,7 @@ enum AudioContextState {
     Conditional=WEB_AUDIO,
     Constructor,
     ConstructorCallWith=Document,
+    ImplementedAs=AbstractAudioContext,
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface AudioContext : EventTarget {

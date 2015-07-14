@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -52,7 +53,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
         return nullptr;
     }
 
-    if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
+    if (numberOfChannels > AbstractAudioContext::maxNumberOfChannels()) {
         exceptionState.throwDOMException(
             IndexSizeError,
             ExceptionMessages::indexOutsideRange<unsigned>(
@@ -60,7 +61,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
                 numberOfChannels,
                 0,
                 ExceptionMessages::InclusiveBound,
-                AudioContext::maxNumberOfChannels(),
+                AbstractAudioContext::maxNumberOfChannels(),
                 ExceptionMessages::InclusiveBound));
         return nullptr;
     }
@@ -91,7 +92,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
 }
 
 OfflineAudioContext::OfflineAudioContext(Document* document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
-    : AudioContext(document, numberOfChannels, numberOfFrames, sampleRate)
+    : AbstractAudioContext(document, numberOfChannels, numberOfFrames, sampleRate)
 {
 }
 
@@ -123,6 +124,31 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(ScriptState* scriptStat
     m_offlineResolver = ScriptPromiseResolver::create(scriptState);
     startRendering();
     return m_offlineResolver->promise();
+}
+
+ScriptPromise OfflineAudioContext::closeContext(ScriptState* scriptState)
+{
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(InvalidAccessError, "cannot close an OfflineAudioContext."));
+}
+
+ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState)
+{
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(
+            InvalidAccessError,
+            "cannot suspend an OfflineAudioContext"));
+}
+
+ScriptPromise OfflineAudioContext::resumeContext(ScriptState* scriptState)
+{
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(
+            InvalidAccessError,
+            "cannot resume an OfflineAudioContext"));
 }
 
 } // namespace blink

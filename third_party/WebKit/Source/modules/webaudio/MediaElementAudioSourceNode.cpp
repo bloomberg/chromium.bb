@@ -30,7 +30,7 @@
 #include "core/frame/ConsoleTypes.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Logging.h"
 #include "platform/audio/AudioUtilities.h"
@@ -77,7 +77,7 @@ void MediaElementAudioSourceHandler::dispose()
 void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float sourceSampleRate)
 {
     if (numberOfChannels != m_sourceNumberOfChannels || sourceSampleRate != m_sourceSampleRate) {
-        if (!numberOfChannels || numberOfChannels > AudioContext::maxNumberOfChannels() || !AudioUtilities::isValidAudioBufferSampleRate(sourceSampleRate)) {
+        if (!numberOfChannels || numberOfChannels > AbstractAudioContext::maxNumberOfChannels() || !AudioUtilities::isValidAudioBufferSampleRate(sourceSampleRate)) {
             // process() will generate silence for these uninitialized values.
             WTF_LOG(Media, "MediaElementAudioSourceNode::setFormat(%u, %f) - unhandled format change", static_cast<unsigned>(numberOfChannels), sourceSampleRate);
             m_sourceNumberOfChannels = 0;
@@ -101,7 +101,7 @@ void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float so
 
         {
             // The context must be locked when changing the number of output channels.
-            AudioContext::AutoLocker contextLocker(context());
+            AbstractAudioContext::AutoLocker contextLocker(context());
 
             // Do any necesssary re-configuration to the output's number of channels.
             output(0).setNumberOfChannels(numberOfChannels);
@@ -211,13 +211,13 @@ void MediaElementAudioSourceHandler::unlock()
 
 // ----------------------------------------------------------------
 
-MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext& context, HTMLMediaElement& mediaElement)
+MediaElementAudioSourceNode::MediaElementAudioSourceNode(AbstractAudioContext& context, HTMLMediaElement& mediaElement)
     : AudioSourceNode(context)
 {
     setHandler(MediaElementAudioSourceHandler::create(*this, mediaElement));
 }
 
-MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext& context, HTMLMediaElement& mediaElement)
+MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AbstractAudioContext& context, HTMLMediaElement& mediaElement)
 {
     return new MediaElementAudioSourceNode(context, mediaElement);
 }

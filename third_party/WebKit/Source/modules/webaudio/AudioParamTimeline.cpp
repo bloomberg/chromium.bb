@@ -179,7 +179,7 @@ void AudioParamTimeline::cancelScheduledValues(double startTime, ExceptionState&
     }
 }
 
-float AudioParamTimeline::valueForContextTime(AudioContext* context, float defaultValue, bool& hasValue)
+float AudioParamTimeline::valueForContextTime(AbstractAudioContext* context, float defaultValue, bool& hasValue)
 {
     ASSERT(context);
 

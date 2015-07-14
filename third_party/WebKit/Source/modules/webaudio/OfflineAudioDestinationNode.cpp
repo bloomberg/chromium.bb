@@ -27,7 +27,7 @@
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 
 #include "core/dom/CrossThreadTask.h"
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "platform/Task.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
@@ -150,27 +150,27 @@ void OfflineAudioDestinationHandler::offlineRenderInternal()
         framesToProcess -= framesAvailableToCopy;
     }
 
-    // Our work is done. Let the AudioContext know.
+    // Our work is done. Let the AbstractAudioContext know.
     if (context()->executionContext())
         context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, PassRefPtr<OfflineAudioDestinationHandler>(this)));
 }
 
 void OfflineAudioDestinationHandler::notifyComplete()
 {
-    // The AudioContext might be gone.
+    // The AbstractAudioContext might be gone.
     if (context())
         context()->fireCompletionEvent();
 }
 
 // ----------------------------------------------------------------
 
-OfflineAudioDestinationNode::OfflineAudioDestinationNode(AudioContext& context, AudioBuffer* renderTarget)
+OfflineAudioDestinationNode::OfflineAudioDestinationNode(AbstractAudioContext& context, AudioBuffer* renderTarget)
     : AudioDestinationNode(context)
 {
     setHandler(OfflineAudioDestinationHandler::create(*this, renderTarget));
 }
 
-OfflineAudioDestinationNode* OfflineAudioDestinationNode::create(AudioContext* context, AudioBuffer* renderTarget)
+OfflineAudioDestinationNode* OfflineAudioDestinationNode::create(AbstractAudioContext* context, AudioBuffer* renderTarget)
 {
     return new OfflineAudioDestinationNode(*context, renderTarget);
 }

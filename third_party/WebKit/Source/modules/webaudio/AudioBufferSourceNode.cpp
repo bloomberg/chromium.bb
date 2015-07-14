@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"
 #include "platform/audio/AudioUtilities.h"
@@ -347,7 +347,7 @@ void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& ex
     }
 
     // The context must be locked since changing the buffer can re-configure the number of channels that are output.
-    AudioContext::AutoLocker contextLocker(context());
+    AbstractAudioContext::AutoLocker contextLocker(context());
 
     // This synchronizes with process().
     MutexLocker processLocker(m_processLock);
@@ -358,7 +358,7 @@ void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& ex
 
         // This should not be possible since AudioBuffers can't be created with too many channels
         // either.
-        if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
+        if (numberOfChannels > AbstractAudioContext::maxNumberOfChannels()) {
             exceptionState.throwDOMException(
                 NotSupportedError,
                 ExceptionMessages::indexOutsideRange(
@@ -366,7 +366,7 @@ void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& ex
                     numberOfChannels,
                     1u,
                     ExceptionMessages::InclusiveBound,
-                    AudioContext::maxNumberOfChannels(),
+                    AbstractAudioContext::maxNumberOfChannels(),
                     ExceptionMessages::InclusiveBound));
             return;
         }
@@ -509,9 +509,9 @@ double AudioBufferSourceHandler::computePlaybackRate()
     if (m_pannerNode)
         dopplerRate = m_pannerNode->dopplerRate();
 
-    // Incorporate buffer's sample-rate versus AudioContext's sample-rate.
+    // Incorporate buffer's sample-rate versus AbstractAudioContext's sample-rate.
     // Normally it's not an issue because buffers are loaded at the
-    // AudioContext's sample-rate, but we can handle it in any case.
+    // AbstractAudioContext's sample-rate, but we can handle it in any case.
     double sampleRateFactor = 1.0;
     if (buffer()) {
         // Use doubles to compute this to full accuracy.
@@ -608,7 +608,7 @@ void AudioBufferSourceHandler::finish()
 }
 
 // ----------------------------------------------------------------
-AudioBufferSourceNode::AudioBufferSourceNode(AudioContext& context, float sampleRate)
+AudioBufferSourceNode::AudioBufferSourceNode(AbstractAudioContext& context, float sampleRate)
     : AudioScheduledSourceNode(context)
     , m_playbackRate(AudioParam::create(context, 1.0))
     , m_detune(AudioParam::create(context, 0.0))
@@ -616,7 +616,7 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext& context, float sample
     setHandler(AudioBufferSourceHandler::create(*this, sampleRate, m_playbackRate->handler(), m_detune->handler()));
 }
 
-AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext& context, float sampleRate)
+AudioBufferSourceNode* AudioBufferSourceNode::create(AbstractAudioContext& context, float sampleRate)
 {
     return new AudioBufferSourceNode(context, sampleRate);
 }

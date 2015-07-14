@@ -30,8 +30,8 @@
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBuffer.h"
-#include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioProcessingEvent.h"
@@ -53,7 +53,7 @@ ScriptProcessorHandler::ScriptProcessorHandler(AudioNode& node, float sampleRate
     if (m_bufferSize < ProcessingSizeInFrames)
         m_bufferSize = ProcessingSizeInFrames;
 
-    ASSERT(numberOfInputChannels <= AudioContext::maxNumberOfChannels());
+    ASSERT(numberOfInputChannels <= AbstractAudioContext::maxNumberOfChannels());
 
     addInput();
     addOutput(numberOfOutputChannels);
@@ -217,7 +217,7 @@ double ScriptProcessorHandler::latencyTime() const
 void ScriptProcessorHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     if (channelCount != m_channelCount) {
         exceptionState.throwDOMException(
@@ -229,7 +229,7 @@ void ScriptProcessorHandler::setChannelCount(unsigned long channelCount, Excepti
 void ScriptProcessorHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     if ((mode == "max") || (mode == "clamped-max")) {
         exceptionState.throwDOMException(
@@ -240,7 +240,7 @@ void ScriptProcessorHandler::setChannelCountMode(const String& mode, ExceptionSt
 
 // ----------------------------------------------------------------
 
-ScriptProcessorNode::ScriptProcessorNode(AudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+ScriptProcessorNode::ScriptProcessorNode(AbstractAudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
     : AudioNode(context)
 {
     setHandler(ScriptProcessorHandler::create(*this, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
@@ -262,7 +262,7 @@ static size_t chooseBufferSize()
     return bufferSize;
 }
 
-ScriptProcessorNode* ScriptProcessorNode::create(AudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+ScriptProcessorNode* ScriptProcessorNode::create(AbstractAudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
 {
     // Check for valid buffer size.
     switch (bufferSize) {
@@ -284,10 +284,10 @@ ScriptProcessorNode* ScriptProcessorNode::create(AudioContext& context, float sa
     if (!numberOfInputChannels && !numberOfOutputChannels)
         return nullptr;
 
-    if (numberOfInputChannels > AudioContext::maxNumberOfChannels())
+    if (numberOfInputChannels > AbstractAudioContext::maxNumberOfChannels())
         return nullptr;
 
-    if (numberOfOutputChannels > AudioContext::maxNumberOfChannels())
+    if (numberOfOutputChannels > AbstractAudioContext::maxNumberOfChannels())
         return nullptr;
 
     return new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);

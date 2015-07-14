@@ -26,7 +26,7 @@
 #if ENABLE(WEB_AUDIO)
 #include "modules/webaudio/AudioBasicInspectorNode.h"
 
-#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 
@@ -53,7 +53,7 @@ void AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputInd
 {
     ASSERT(isMainThread());
 
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     AudioNode::connect(destination, outputIndex, inputIndex, exceptionState);
     static_cast<AudioBasicInspectorHandler&>(handler()).updatePullStatus();
@@ -63,7 +63,7 @@ void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& e
 {
     ASSERT(isMainThread());
 
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     AudioNode::disconnect(outputIndex, exceptionState);
     static_cast<AudioBasicInspectorHandler&>(handler()).updatePullStatus();

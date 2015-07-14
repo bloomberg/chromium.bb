@@ -30,8 +30,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBufferSourceNode.h"
-#include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/HRTFPanner.h"
@@ -107,14 +107,15 @@ void PannerHandler::process(size_t framesToProcess)
     MutexTryLocker tryListenerLocker(listener()->listenerLock());
 
     if (tryLocker.locked() && tryListenerLocker.locked()) {
-        // HRTFDatabase should be loaded before proceeding for offline audio context when the panning model is HRTF.
+        // HRTFDatabase should be loaded before proceeding when the panning model is HRTF.
         if (m_panningModel == Panner::PanningModelHRTF && !listener()->isHRTFDatabaseLoaded()) {
-            if (context()->isOfflineContext()) {
-                listener()->waitForHRTFDatabaseLoaderThreadCompletion();
-            } else {
+            if (context()->hasRealtimeConstraint()) {
+                // Some AbstractAudioContexts cannot block on the HRTFDatabase loader.
                 destination->zero();
                 return;
             }
+
+            listener()->waitForHRTFDatabaseLoaderThreadCompletion();
         }
 
         // Apply the panning effect.
@@ -529,7 +530,7 @@ void PannerHandler::markPannerAsDirty(unsigned dirty)
 void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     // A PannerNode only supports 1 or 2 channels
     if (channelCount > 0 && channelCount <= 2) {
@@ -554,7 +555,7 @@ void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& 
 void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(context());
+    AbstractAudioContext::AutoLocker locker(context());
 
     ChannelCountMode oldMode = m_channelCountMode;
 
@@ -579,13 +580,13 @@ void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exce
 
 // ----------------------------------------------------------------
 
-PannerNode::PannerNode(AudioContext& context, float sampelRate)
+PannerNode::PannerNode(AbstractAudioContext& context, float sampelRate)
     : AudioNode(context)
 {
     setHandler(PannerHandler::create(*this, sampelRate));
 }
 
-PannerNode* PannerNode::create(AudioContext& context, float sampleRate)
+PannerNode* PannerNode::create(AbstractAudioContext& context, float sampleRate)
 {
     return new PannerNode(context, sampleRate);
 }

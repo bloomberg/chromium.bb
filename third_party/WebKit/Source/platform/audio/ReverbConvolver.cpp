@@ -70,10 +70,6 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse, size_t renderSli
     // processing slices.  This way we amortize the cost over more processing slices.
     m_maxRealtimeFFTSize = MaxRealtimeFFTSize;
 
-    // For the moment, a good way to know if we have real-time constraint is to check if we're using background threads.
-    // Otherwise, assume we're being run from a command-line tool.
-    bool hasRealtimeConstraint = useBackgroundThreads;
-
     const float* response = impulseResponse->data();
     size_t totalResponseLength = impulseResponse->length();
 
@@ -114,7 +110,7 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse, size_t renderSli
             fftSize *= 2;
         }
 
-        if (hasRealtimeConstraint && !isBackgroundStage && fftSize > m_maxRealtimeFFTSize)
+        if (useBackgroundThreads && !isBackgroundStage && fftSize > m_maxRealtimeFFTSize)
             fftSize = m_maxRealtimeFFTSize;
         if (fftSize > m_maxFFTSize)
             fftSize = m_maxFFTSize;

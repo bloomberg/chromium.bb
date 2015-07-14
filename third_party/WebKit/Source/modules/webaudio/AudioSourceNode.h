@@ -33,10 +33,12 @@
 
 namespace blink {
 
+class AbstractAudioContext;
+
 class AudioSourceNode : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    AudioSourceNode(AudioContext& context)
+    AudioSourceNode(AbstractAudioContext& context)
         : AudioNode(context) { }
 };
 
