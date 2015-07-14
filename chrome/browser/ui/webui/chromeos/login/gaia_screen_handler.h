@@ -241,9 +241,6 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // clean-up finish.
   bool show_when_dns_and_cookies_cleared_;
 
-  // Is focus still stolen from Gaia page?
-  bool focus_stolen_;
-
   // Has Gaia page silent load been started for the current sign-in attempt?
   bool gaia_silent_load_;
 
