@@ -11,13 +11,9 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class TracedArrayValue;
-class TracedDictionaryValue;
-class InternalValue;
-
-// TODO(bashi): Use Allocator which counts allocation size as tracing overhead.
-typedef Vector<RefPtr<InternalValue>> TracedValueVector;
-typedef HashMap<String, RefPtr<InternalValue>> TracedValueHashMap;
+class JSONArray;
+class JSONObject;
+class JSONValue;
 
 class PLATFORM_EXPORT TracedValue : public TraceEvent::ConvertableToTraceFormat {
     WTF_MAKE_NONCOPYABLE(TracedValue);
@@ -48,10 +44,10 @@ private:
     TracedValue();
     ~TracedValue() override;
 
-    TracedDictionaryValue* currentDictionary() const;
-    TracedArrayValue* currentArray() const;
+    JSONObject* currentDictionary() const;
+    JSONArray* currentArray() const;
 
-    TracedValueVector m_stack;
+    Vector<RefPtr<JSONValue>> m_stack;
 };
 
 } // namespace blink

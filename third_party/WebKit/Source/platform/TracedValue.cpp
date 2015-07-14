@@ -6,10 +6,7 @@
 
 #include "platform/TracedValue.h"
 
-#include "platform/Decimal.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
+#include "platform/JSONValues.h"
 
 namespace blink {
 
@@ -23,145 +20,7 @@ String threadSafeCopy(const String& string)
     return string.isolatedCopy();
 }
 
-} // namespace
-
-class InternalValue : public RefCounted<InternalValue> {
-public:
-    typedef enum {
-        TypeNone,
-        TypeNumber,
-        TypeBoolean,
-        TypeString,
-        TypeArray,
-        TypeDictionary,
-    } Type;
-    virtual ~InternalValue() { }
-    virtual Type type()
-    {
-        ASSERT_NOT_REACHED();
-        return TypeNone;
-    }
-    virtual void toJSON(StringBuilder* builder)
-    {
-        ASSERT_NOT_REACHED();
-    }
-};
-
-class TracedNumberValue : public InternalValue {
-public:
-    static PassRefPtr<TracedNumberValue> create(double value)
-    {
-        return adoptRef(new TracedNumberValue(value));
-    }
-    virtual ~TracedNumberValue() { }
-    virtual Type type() { return TypeNumber; }
-    virtual void toJSON(StringBuilder* builder)
-    {
-        builder->append(Decimal::fromDouble(m_value).toString());
-    }
-
-private:
-    explicit TracedNumberValue(double value) : m_value(value) { }
-    double m_value;
-};
-
-class TracedBooleanValue : public InternalValue {
-public:
-    static PassRefPtr<TracedBooleanValue> create(bool value)
-    {
-        return adoptRef(new TracedBooleanValue(value));
-    }
-    virtual ~TracedBooleanValue() { }
-    virtual Type type() { return TypeBoolean; }
-    virtual void toJSON(StringBuilder* builder)
-    {
-        builder->append(m_value ? "true" : "false");
-    }
-
-private:
-    explicit TracedBooleanValue(bool value) : m_value(value) { }
-    bool m_value;
-};
-
-class TracedStringValue : public InternalValue {
-public:
-    static PassRefPtr<TracedStringValue> create(String value)
-    {
-        return adoptRef(new TracedStringValue(value));
-    }
-    virtual ~TracedStringValue() { }
-    virtual Type type() { return TypeString; }
-    virtual void toJSON(StringBuilder* builder)
-    {
-        builder->append('"');
-        builder->append(m_value);
-        builder->append('"');
-    }
-
-private:
-    explicit TracedStringValue(String value) : m_value(threadSafeCopy(value)) { }
-    String m_value;
-};
-
-class TracedArrayValue : public InternalValue {
-public:
-    static PassRefPtr<TracedArrayValue> create()
-    {
-        return adoptRef(new TracedArrayValue());
-    }
-    virtual ~TracedArrayValue() { }
-    virtual Type type() { return TypeArray; }
-    virtual void toJSON(StringBuilder* builder)
-    {
-        builder->append('[');
-        for (TracedValueVector::const_iterator it = m_value.begin(); it != m_value.end(); ++it) {
-            if (it != m_value.begin())
-                builder->append(',');
-            (*it)->toJSON(builder);
-        }
-        builder->append(']');
-    }
-    void push(PassRefPtr<InternalValue> value) { m_value.append(value); }
-
-private:
-    TracedArrayValue() { }
-    TracedValueVector m_value;
-};
-
-class TracedDictionaryValue : public InternalValue {
-public:
-    static PassRefPtr<TracedDictionaryValue> create()
-    {
-        return adoptRef(new TracedDictionaryValue());
-    }
-    virtual ~TracedDictionaryValue() { }
-    virtual Type type() { return TypeDictionary; }
-    virtual void toJSON(StringBuilder* builder)
-    {
-        builder->append('{');
-        for (size_t i = 0; i < m_order.size(); ++i) {
-            TracedValueHashMap::const_iterator it = m_value.find(m_order[i]);
-            if (i)
-                builder->append(',');
-            builder->append('"');
-            builder->append(it->key);
-            builder->append("\":");
-            it->value->toJSON(builder);
-        }
-        builder->append('}');
-    }
-    void set(const char* name, PassRefPtr<InternalValue> value)
-    {
-        String nameString = String(name);
-        if (m_value.set(nameString, value).isNewEntry)
-            m_order.append(nameString);
-    }
-
-private:
-    TracedDictionaryValue() { }
-    TracedValueHashMap m_value;
-    Vector<String> m_order;
-};
+}
 
 PassRefPtr<TracedValue> TracedValue::create()
 {
@@ -170,7 +29,7 @@ PassRefPtr<TracedValue> TracedValue::create()
 
 TracedValue::TracedValue()
 {
-    m_stack.append(TracedDictionaryValue::create());
+    m_stack.append(JSONObject::create());
 }
 
 TracedValue::~TracedValue()
@@ -180,35 +39,35 @@ TracedValue::~TracedValue()
 
 void TracedValue::setInteger(const char* name, int value)
 {
-    currentDictionary()->set(name, TracedNumberValue::create(value));
+    currentDictionary()->setNumber(name, value);
 }
 
 void TracedValue::setDouble(const char* name, double value)
 {
-    currentDictionary()->set(name, TracedNumberValue::create(value));
+    currentDictionary()->setNumber(name, value);
 }
 
 void TracedValue::setBoolean(const char* name, bool value)
 {
-    currentDictionary()->set(name, TracedBooleanValue::create(value));
+    currentDictionary()->setBoolean(name, value);
 }
 
 void TracedValue::setString(const char* name, const String& value)
 {
-    currentDictionary()->set(name, TracedStringValue::create(value));
+    currentDictionary()->setString(name, threadSafeCopy(value));
 }
 
 void TracedValue::beginDictionary(const char* name)
 {
-    RefPtr<TracedDictionaryValue> dictionary = TracedDictionaryValue::create();
-    currentDictionary()->set(name, dictionary);
+    RefPtr<JSONObject> dictionary = JSONObject::create();
+    currentDictionary()->setObject(name, dictionary);
     m_stack.append(dictionary);
 }
 
 void TracedValue::beginArray(const char* name)
 {
-    RefPtr<TracedArrayValue> array = TracedArrayValue::create();
-    currentDictionary()->set(name, array);
+    RefPtr<JSONArray> array = JSONArray::create();
+    currentDictionary()->setArray(name, array);
     m_stack.append(array);
 }
 
@@ -221,35 +80,35 @@ void TracedValue::endDictionary()
 
 void TracedValue::pushInteger(int value)
 {
-    currentArray()->push(TracedNumberValue::create(value));
+    currentArray()->pushInt(value);
 }
 
 void TracedValue::pushDouble(double value)
 {
-    currentArray()->push(TracedNumberValue::create(value));
+    currentArray()->pushNumber(value);
 }
 
 void TracedValue::pushBoolean(bool value)
 {
-    currentArray()->push(TracedBooleanValue::create(value));
+    currentArray()->pushBoolean(value);
 }
 
 void TracedValue::pushString(const String& value)
 {
-    currentArray()->push(TracedStringValue::create(value));
+    currentArray()->pushString(threadSafeCopy(value));
 }
 
 void TracedValue::beginArray()
 {
-    RefPtr<TracedArrayValue> array = TracedArrayValue::create();
-    currentArray()->push(array);
+    RefPtr<JSONArray> array = JSONArray::create();
+    currentArray()->pushArray(array);
     m_stack.append(array);
 }
 
 void TracedValue::beginDictionary()
 {
-    RefPtr<TracedDictionaryValue> dictionary = TracedDictionaryValue::create();
-    currentArray()->push(dictionary);
+    RefPtr<JSONObject> dictionary = JSONObject::create();
+    currentArray()->pushObject(dictionary);
     m_stack.append(dictionary);
 }
 
@@ -263,23 +122,21 @@ void TracedValue::endArray()
 String TracedValue::asTraceFormat() const
 {
     ASSERT(m_stack.size() == 1);
-    StringBuilder builder;
-    m_stack.first()->toJSON(&builder);
-    return builder.toString();
+    return m_stack.first()->toJSONString();
 }
 
-TracedDictionaryValue* TracedValue::currentDictionary() const
+JSONObject* TracedValue::currentDictionary() const
 {
     ASSERT(!m_stack.isEmpty());
-    ASSERT(m_stack.last()->type() == InternalValue::TypeDictionary);
-    return static_cast<TracedDictionaryValue*>(m_stack.last().get());
+    ASSERT(m_stack.last()->type() == JSONValue::TypeObject);
+    return static_cast<JSONObject*>(m_stack.last().get());
 }
 
-TracedArrayValue* TracedValue::currentArray() const
+JSONArray* TracedValue::currentArray() const
 {
     ASSERT(!m_stack.isEmpty());
-    ASSERT(m_stack.last()->type() == InternalValue::TypeArray);
-    return static_cast<TracedArrayValue*>(m_stack.last().get());
+    ASSERT(m_stack.last()->type() == JSONValue::TypeArray);
+    return static_cast<JSONArray*>(m_stack.last().get());
 }
 
 }
