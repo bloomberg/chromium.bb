@@ -101,7 +101,7 @@ String ServiceWorker::state() const
     }
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext, WebType* worker)
+PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext, WebServiceWorker* worker)
 {
     if (!worker)
         return nullptr;
@@ -124,7 +124,7 @@ void ServiceWorker::stop()
     m_wasStopped = true;
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::getOrCreate(ExecutionContext* executionContext, WebType* outerWorker)
+PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::getOrCreate(ExecutionContext* executionContext, WebServiceWorker* outerWorker)
 {
     if (!outerWorker)
         return nullptr;

@@ -11,9 +11,9 @@
 
 namespace blink {
 
-DOMException* SyncError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
+DOMException* SyncError::take(ScriptPromiseResolver*, WebSyncError* webErrorRaw)
 {
-    OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
+    OwnPtr<WebSyncError> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {
     case WebSyncError::ErrorTypeAbort:
         return DOMException::create(AbortError, webError->message);
@@ -28,7 +28,7 @@ DOMException* SyncError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
     return DOMException::create(UnknownError);
 }
 
-void SyncError::dispose(WebType* webErrorRaw)
+void SyncError::dispose(WebSyncError* webErrorRaw)
 {
     delete webErrorRaw;
 }

@@ -43,11 +43,9 @@ public:
     void setWaiting(WebServiceWorker*) override;
     void setActive(WebServiceWorker*) override;
 
-    // For CallbackPromiseAdapter.
-    typedef WebServiceWorkerRegistration WebType;
-    static ServiceWorkerRegistration* from(ExecutionContext*, WebType* registration);
-    static ServiceWorkerRegistration* take(ScriptPromiseResolver*, WebType* registration);
-    static void dispose(WebType* registration);
+    static ServiceWorkerRegistration* from(ExecutionContext*, WebServiceWorkerRegistration*);
+    static ServiceWorkerRegistration* take(ScriptPromiseResolver*, WebServiceWorkerRegistration*);
+    static void dispose(WebServiceWorkerRegistration*);
 
     PassRefPtrWillBeRawPtr<ServiceWorker> installing() { return m_installing.get(); }
     PassRefPtrWillBeRawPtr<ServiceWorker> waiting() { return m_waiting.get(); }
@@ -87,8 +85,7 @@ private:
 
 class ServiceWorkerRegistrationArray {
 public:
-    typedef WebVector<WebServiceWorkerRegistration*> WebType;
-    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebType> webServiceWorkerRegistrations)
+    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webServiceWorkerRegistrations)
     {
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
         for (WebServiceWorkerRegistration* registration : *webServiceWorkerRegistrations)
@@ -96,7 +93,7 @@ public:
         return registrations;
     }
 
-    static void dispose(PassOwnPtr<WebType> webServiceWorkerRegistrations)
+    static void dispose(PassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webServiceWorkerRegistrations)
     {
         for (WebServiceWorkerRegistration* registration : *webServiceWorkerRegistrations)
             ServiceWorkerRegistration::dispose(registration);

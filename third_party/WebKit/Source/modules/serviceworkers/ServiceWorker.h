@@ -49,8 +49,7 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    typedef WebServiceWorker WebType;
-    static PassRefPtrWillBeRawPtr<ServiceWorker> from(ExecutionContext*, WebType*);
+    static PassRefPtrWillBeRawPtr<ServiceWorker> from(ExecutionContext*, WebServiceWorker*);
 
     ~ServiceWorker() override;
 
@@ -75,7 +74,7 @@ public:
 
     void internalsTerminate();
 private:
-    static PassRefPtrWillBeRawPtr<ServiceWorker> getOrCreate(ExecutionContext*, WebType*);
+    static PassRefPtrWillBeRawPtr<ServiceWorker> getOrCreate(ExecutionContext*, WebServiceWorker*);
     ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker>);
 
     // ActiveDOMObject overrides.
