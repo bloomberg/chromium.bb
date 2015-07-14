@@ -762,6 +762,13 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
     LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
     if (!pageLogicalHeight)
         return;
+    if (lineHeight > pageLogicalHeight) {
+        // Too tall to fit in one page / column. Give up. Don't push to the next page / column.
+        // TODO(mstensho): Get rid of this. This is just utter weirdness, but the other browsers
+        // also do something slightly similar, although in much more specific cases than we do here,
+        // and printing Google Docs depends on it.
+        return;
+    }
     LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, ExcludePageBoundary);
 
     int lineIndex = lineCount(&lineBox);
