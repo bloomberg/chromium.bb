@@ -285,6 +285,10 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                     }
                 }
         );
-        waitForFullLoad(newActivity, "Page 4");
+        if (selectIncognitoItem) {
+            waitForFullLoad(newActivity, "Page 4");
+        } else {
+            ChromeTabUtils.waitForTabPageLoaded(newActivity.getActivityTab(), (String) null);
+        }
     }
 }
