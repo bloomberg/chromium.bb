@@ -294,9 +294,13 @@ LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(StoreOpenMode open_mode,
   leveldb::Options options;
   options.create_if_missing = open_mode == CREATE_IF_MISSING;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+  options.paranoid_checks = true;
   leveldb::DB* db;
   leveldb::Status status =
       leveldb::DB::Open(options, path_.AsUTF8Unsafe(), &db);
+  UMA_HISTOGRAM_ENUMERATION("GCM.Database.Open",
+                            leveldb_env::GetLevelDBStatusUMAValue(status),
+                            leveldb_env::LEVELDB_STATUS_MAX);
   if (!status.ok()) {
     LOG(ERROR) << "Failed to open database " << path_.value() << ": "
                << status.ToString();

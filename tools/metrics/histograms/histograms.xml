@@ -12265,6 +12265,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GCM.Database.Open" enum="LevelDBStatus">
+  <owner>cmumford@chromium.org</owner>
+  <summary>The result of a database open attempt by the GCM store.</summary>
+</histogram>
+
 <histogram name="GCM.DataMessageBurstReceivedInterval" units="milliseconds">
   <owner>juyik@chromium.org</owner>
   <summary>
