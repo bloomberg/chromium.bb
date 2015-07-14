@@ -87,6 +87,11 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
   this.volumeManager_.addEventListener(
       'externally-unmounted', this.onEventBound_);
 
+  // Dispatch 'drive-connection-changed' to listeners, since the return value of
+  // VolumeManagerWrapper.getDriveConnectionState() can be changed by setting
+  // this.volumeManager_.
+  cr.dispatchSimpleEvent(this, 'drive-connection-changed');
+
   // Cache volumeInfoList.
   var volumeInfoList = [];
   for (var i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
