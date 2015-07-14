@@ -116,6 +116,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -191,6 +192,7 @@
 #include "content/renderer/vr/vr_dispatcher.h"
 #endif
 
+using blink::WebContentDecryptionModule;
 using blink::WebContextMenuData;
 using blink::WebData;
 using blink::WebDataSource;
@@ -206,6 +208,7 @@ using blink::WebHTTPBody;
 using blink::WebLocalFrame;
 using blink::WebMediaPlayer;
 using blink::WebMediaPlayerClient;
+using blink::WebMediaPlayerEncryptedMediaClient;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
@@ -1995,8 +1998,17 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
-    blink::WebMediaPlayerClient* client,
-    blink::WebContentDecryptionModule* initial_cdm) {
+    WebMediaPlayerClient* client,
+    WebContentDecryptionModule* initial_cdm) {
+  return createMediaPlayer(frame, url, client, client, initial_cdm);
+}
+
+blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
+    blink::WebLocalFrame* frame,
+    const blink::WebURL& url,
+    WebMediaPlayerClient* client,
+    WebMediaPlayerEncryptedMediaClient* encrypted_client,
+    WebContentDecryptionModule* initial_cdm) {
 #if defined(VIDEO_HOLE)
   if (!contains_media_player_) {
     render_view_->RegisterVideoHoleFrame(this);
@@ -2010,7 +2022,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     return CreateWebMediaPlayerForMediaStream(client);
 
 #if defined(OS_ANDROID)
-  return CreateAndroidWebMediaPlayer(client, GetMediaPermission(), initial_cdm);
+  return CreateAndroidWebMediaPlayer(client, encrypted_client,
+                                     GetMediaPermission(), initial_cdm);
 #else
   scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
 
@@ -2041,8 +2054,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #endif  // defined(ENABLE_MOJO_MEDIA)
 
   return new media::WebMediaPlayerImpl(
-      frame, client, weak_factory_.GetWeakPtr(), media_renderer_factory.Pass(),
-      GetCdmFactory(), params);
+      frame, client, encrypted_client, weak_factory_.GetWeakPtr(),
+      media_renderer_factory.Pass(), GetCdmFactory(), params);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -3818,18 +3831,18 @@ blink::WebVRClient* RenderFrameImpl::webVRClient() {
 }
 #endif
 
-void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {
+void RenderFrameImpl::DidPlay(WebMediaPlayer* player) {
   Send(new FrameHostMsg_MediaPlayingNotification(
       routing_id_, reinterpret_cast<int64>(player), player->hasVideo(),
       player->hasAudio(), player->isRemote()));
 }
 
-void RenderFrameImpl::DidPause(blink::WebMediaPlayer* player) {
+void RenderFrameImpl::DidPause(WebMediaPlayer* player) {
   Send(new FrameHostMsg_MediaPausedNotification(
       routing_id_, reinterpret_cast<int64>(player)));
 }
 
-void RenderFrameImpl::PlayerGone(blink::WebMediaPlayer* player) {
+void RenderFrameImpl::PlayerGone(WebMediaPlayer* player) {
   DidPause(player);
 }
 
@@ -4947,9 +4960,9 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
 
 WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
     WebMediaPlayerClient* client,
+    WebMediaPlayerEncryptedMediaClient* encrypted_client,
     media::MediaPermission* media_permission,
-    blink::WebContentDecryptionModule* initial_cdm) {
-
+    WebContentDecryptionModule* initial_cdm) {
   scoped_refptr<StreamTextureFactory> stream_texture_factory;
   if (SynchronousCompositorFactory* factory =
           SynchronousCompositorFactory::GetInstance()) {
@@ -4977,8 +4990,9 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
   }
 
   return new WebMediaPlayerAndroid(
-      frame_, client, weak_factory_.GetWeakPtr(), GetMediaPlayerManager(),
-      GetCdmFactory(), media_permission, initial_cdm, stream_texture_factory,
+      frame_, client, encrypted_client, weak_factory_.GetWeakPtr(),
+      GetMediaPlayerManager(), GetCdmFactory(), media_permission, initial_cdm,
+      stream_texture_factory,
       RenderThreadImpl::current()->GetMediaThreadTaskRunner(),
       new RenderMediaLog());
 }

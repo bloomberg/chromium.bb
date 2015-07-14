@@ -24,6 +24,7 @@ class WebMediaPlayer;
 class WebLocalFrame;
 class WebURL;
 class WebMediaPlayerClient;
+class WebMediaPlayerEncryptedMediaClient;
 }
 
 namespace media {
@@ -55,6 +56,7 @@ class MediaFactory {
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
+      blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
       mojo::Shell* shell);
 

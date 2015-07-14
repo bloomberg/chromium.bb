@@ -46,6 +46,7 @@ class WebContentDecryptionModule;
 class WebContentDecryptionModuleResult;
 class WebFrame;
 class WebMediaPlayerClient;
+class WebMediaPlayerEncryptedMediaClient;
 class WebURL;
 }
 
@@ -89,6 +90,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   WebMediaPlayerAndroid(
       blink::WebFrame* frame,
       blink::WebMediaPlayerClient* client,
+      blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
       RendererMediaPlayerManager* player_manager,
       media::CdmFactory* cdm_factory,
@@ -340,6 +342,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   blink::WebFrame* const frame_;
 
   blink::WebMediaPlayerClient* const client_;
+  blink::WebMediaPlayerEncryptedMediaClient* const encrypted_client_;
 
   // |delegate_| is used to notify the browser process of the player status, so
   // that the browser process can control screen locks.

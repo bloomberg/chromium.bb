@@ -29,12 +29,13 @@
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "url/gurl.h"
 
 namespace blink {
 class WebGraphicsContext3D;
 class WebLocalFrame;
+class WebMediaPlayerClient;
+class WebMediaPlayerEncryptedMediaClient;
 }
 
 namespace base {
@@ -68,12 +69,14 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   // internal renderer will be created.
   // TODO(xhwang): Drop the internal renderer path and always pass in a renderer
   // here.
-  WebMediaPlayerImpl(blink::WebLocalFrame* frame,
-                     blink::WebMediaPlayerClient* client,
-                     base::WeakPtr<WebMediaPlayerDelegate> delegate,
-                     scoped_ptr<RendererFactory> renderer_factory,
-                     CdmFactory* cdm_factory,
-                     const WebMediaPlayerParams& params);
+  WebMediaPlayerImpl(
+      blink::WebLocalFrame* frame,
+      blink::WebMediaPlayerClient* client,
+      blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
+      base::WeakPtr<WebMediaPlayerDelegate> delegate,
+      scoped_ptr<RendererFactory> renderer_factory,
+      CdmFactory* cdm_factory,
+      const WebMediaPlayerParams& params);
   virtual ~WebMediaPlayerImpl();
 
   virtual void load(LoadType load_type,
@@ -289,6 +292,7 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   bool should_notify_time_changed_;
 
   blink::WebMediaPlayerClient* client_;
+  blink::WebMediaPlayerEncryptedMediaClient* encrypted_client_;
 
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 

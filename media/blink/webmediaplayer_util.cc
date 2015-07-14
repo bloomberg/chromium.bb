@@ -10,17 +10,17 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_client.h"
 #include "media/base/media_keys.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerEncryptedMediaClient.h"
 
 namespace media {
 
 // Compile asserts shared by all platforms.
 
-#define STATIC_ASSERT_MATCHING_ENUM(name) \
-  static_assert( \
-  static_cast<int>(blink::WebMediaPlayerClient::MediaKeyErrorCode ## name) == \
-  static_cast<int>(MediaKeys::k ## name ## Error), \
-  "mismatching enum values: " #name)
+#define STATIC_ASSERT_MATCHING_ENUM(name)                                    \
+  static_assert(static_cast<int>(blink::WebMediaPlayerEncryptedMediaClient:: \
+                                     MediaKeyErrorCode##name) ==             \
+                    static_cast<int>(MediaKeys::k##name##Error),             \
+                "mismatching enum values: " #name)
 STATIC_ASSERT_MATCHING_ENUM(Unknown);
 STATIC_ASSERT_MATCHING_ENUM(Client);
 #undef STATIC_ASSERT_MATCHING_ENUM

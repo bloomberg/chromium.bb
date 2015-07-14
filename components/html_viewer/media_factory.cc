@@ -71,6 +71,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     blink::WebLocalFrame* frame,
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
+    blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     blink::WebContentDecryptionModule* initial_cdm,
     mojo::Shell* shell) {
 #if defined(OS_ANDROID)
@@ -97,8 +98,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       initial_cdm);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
-  return new media::WebMediaPlayerImpl(frame, client, delegate,
-                                       media_renderer_factory.Pass(),
+  return new media::WebMediaPlayerImpl(frame, client, encrypted_client,
+                                       delegate, media_renderer_factory.Pass(),
                                        GetCdmFactory(), params);
 #endif  // defined(OS_ANDROID)
 }

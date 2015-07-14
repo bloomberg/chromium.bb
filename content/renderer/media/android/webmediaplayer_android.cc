@@ -50,6 +50,7 @@
 #include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerEncryptedMediaClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -150,6 +151,7 @@ namespace content {
 WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
+    blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     RendererMediaPlayerManager* player_manager,
     media::CdmFactory* cdm_factory,
@@ -161,6 +163,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
       frame_(frame),
       client_(client),
+      encrypted_client_(encrypted_client),
       delegate_(delegate),
       buffered_(static_cast<size_t>(1)),
       media_task_runner_(task_runner),
@@ -1697,7 +1700,7 @@ void WebMediaPlayerAndroid::ContentDecryptionModuleAttached(
 void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
 
-  client_->keyAdded(
+  encrypted_client_->keyAdded(
       WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id));
 }
@@ -1716,7 +1719,7 @@ void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
     short_system_code = static_cast<unsigned short>(system_code);
   }
 
-  client_->keyError(
+  encrypted_client_->keyError(
       WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
       static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
@@ -1728,12 +1731,10 @@ void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
                                          const GURL& destination_url) {
   DCHECK(destination_url.is_empty() || destination_url.is_valid());
 
-  client_->keyMessage(
+  encrypted_client_->keyMessage(
       WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
-      WebString::fromUTF8(session_id),
-      message.empty() ? NULL : &message[0],
-      message.size(),
-      destination_url);
+      WebString::fromUTF8(session_id), message.empty() ? NULL : &message[0],
+      message.size(), destination_url);
 }
 
 void WebMediaPlayerAndroid::OnMediaSourceOpened(
@@ -1761,17 +1762,17 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
   if (init_data_type_ == media::EmeInitDataType::UNKNOWN)
     init_data_type_ = init_data_type;
 
-  client_->encrypted(ConvertToWebInitDataType(init_data_type),
-                     vector_as_array(&init_data), init_data.size());
+  encrypted_client_->encrypted(ConvertToWebInitDataType(init_data_type),
+                               vector_as_array(&init_data), init_data.size());
 }
 
 void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {
-  client_->didBlockPlaybackWaitingForKey();
+  encrypted_client_->didBlockPlaybackWaitingForKey();
 
   // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
   // when a key has been successfully added (e.g. OnSessionKeysChange() with
   // |has_additional_usable_key| = true). http://crbug.com/461903
-  client_->didResumePlaybackBlockedForKey();
+  encrypted_client_->didResumePlaybackBlockedForKey();
 }
 
 void WebMediaPlayerAndroid::OnCdmContextReady(media::CdmContext* cdm_context) {

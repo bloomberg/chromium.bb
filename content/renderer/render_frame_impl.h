@@ -355,10 +355,17 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebPluginParams&) override;
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                          const blink::WebPluginParams& params);
+  // TODO(srirama): Remove this method once blink updated.
   virtual blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
+      blink::WebContentDecryptionModule* initial_cdm);
+  virtual blink::WebMediaPlayer* createMediaPlayer(
+      blink::WebLocalFrame* frame,
+      const blink::WebURL& url,
+      blink::WebMediaPlayerClient* client,
+      blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm);
   virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
       blink::WebLocalFrame* frame,
@@ -808,6 +815,7 @@ class CONTENT_EXPORT RenderFrameImpl
 #if defined(OS_ANDROID)
   blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
       blink::WebMediaPlayerClient* client,
+      blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       media::MediaPermission* media_permission,
       blink::WebContentDecryptionModule* initial_cdm);
 

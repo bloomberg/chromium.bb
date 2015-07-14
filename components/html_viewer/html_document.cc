@@ -33,6 +33,7 @@
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -325,8 +326,18 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
+  return createMediaPlayer(frame, url, client, client, initial_cdm);
+}
+
+blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
+    blink::WebLocalFrame* frame,
+    const blink::WebURL& url,
+    blink::WebMediaPlayerClient* client,
+    blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
+    blink::WebContentDecryptionModule* initial_cdm) {
   return global_state_->media_factory()->CreateMediaPlayer(
-      frame, url, client, initial_cdm, html_document_app_->shell());
+      frame, url, client, encrypted_client, initial_cdm,
+      html_document_app_->shell());
 }
 
 blink::WebFrame* HTMLDocument::createChildFrame(

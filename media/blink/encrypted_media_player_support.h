@@ -22,7 +22,7 @@
 namespace blink {
 class WebContentDecryptionModule;
 class WebLocalFrame;
-class WebMediaPlayerClient;
+class WebMediaPlayerEncryptedMediaClient;
 class WebString;
 }
 
@@ -41,7 +41,7 @@ class EncryptedMediaPlayerSupport
 
   // |cdm_context_ready_cb| is called when the CDM instance creation completes.
   EncryptedMediaPlayerSupport(CdmFactory* cdm_factory,
-                              blink::WebMediaPlayerClient* client,
+                              blink::WebMediaPlayerEncryptedMediaClient* client,
                               MediaPermission* media_permission,
                               const CdmContextReadyCB& cdm_context_ready_cb);
   ~EncryptedMediaPlayerSupport();
@@ -95,7 +95,7 @@ class EncryptedMediaPlayerSupport
 
   CdmFactory* cdm_factory_;
 
-  blink::WebMediaPlayerClient* client_;
+  blink::WebMediaPlayerEncryptedMediaClient* client_;
 
   MediaPermission* media_permission_;
 

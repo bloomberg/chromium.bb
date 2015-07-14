@@ -38,6 +38,8 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerEncryptedMediaClient.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -103,6 +105,7 @@ STATIC_ASSERT_MATCHING_ENUM(UseCredentials);
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
+    blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     scoped_ptr<RendererFactory> renderer_factory,
     CdmFactory* cdm_factory,
@@ -124,6 +127,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pending_seek_(false),
       should_notify_time_changed_(false),
       client_(client),
+      encrypted_client_(encrypted_client),
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
       context_3d_cb_(params.context_3d_cb()),
@@ -139,7 +143,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
       encrypted_media_support_(cdm_factory,
-                               client,
+                               encrypted_client,
                                params.media_permission(),
                                base::Bind(&WebMediaPlayerImpl::SetCdm,
                                           AsWeakPtr(),
@@ -704,18 +708,18 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
 
   encrypted_media_support_.SetInitDataType(init_data_type);
 
-  client_->encrypted(ConvertToWebInitDataType(init_data_type),
-                     vector_as_array(&init_data),
-                     base::saturated_cast<unsigned int>(init_data.size()));
+  encrypted_client_->encrypted(
+      ConvertToWebInitDataType(init_data_type), vector_as_array(&init_data),
+      base::saturated_cast<unsigned int>(init_data.size()));
 }
 
 void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
-  client_->didBlockPlaybackWaitingForKey();
+  encrypted_client_->didBlockPlaybackWaitingForKey();
 
   // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
   // when a key has been successfully added (e.g. OnSessionKeysChange() with
   // |has_additional_usable_key| = true). http://crbug.com/461903
-  client_->didResumePlaybackBlockedForKey();
+  encrypted_client_->didResumePlaybackBlockedForKey();
 }
 
 void WebMediaPlayerImpl::SetCdm(const CdmAttachedCB& cdm_attached_cb,
