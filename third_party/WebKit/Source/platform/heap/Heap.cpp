@@ -706,7 +706,11 @@ bool NormalPageHeap::coalesce()
 
             if (header->isPromptlyFreed()) {
                 ASSERT(size >= sizeof(HeapObjectHeader));
-                FILL_ZERO_IF_PRODUCTION(headerAddress, sizeof(HeapObjectHeader));
+                // Zero the memory in the free list header to maintain the
+                // invariant that memory on the free list is zero filled.
+                // The rest of the memory is already on the free list and is
+                // therefore already zero filled.
+                SET_MEMORY_INACCESSIBLE(headerAddress, sizeof(HeapObjectHeader));
                 freedSize += size;
                 headerAddress += size;
                 continue;
@@ -716,7 +720,7 @@ bool NormalPageHeap::coalesce()
                 // invariant that memory on the free list is zero filled.
                 // The rest of the memory is already on the free list and is
                 // therefore already zero filled.
-                FILL_ZERO_IF_PRODUCTION(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
+                SET_MEMORY_INACCESSIBLE(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
                 headerAddress += size;
                 continue;
             }
@@ -758,10 +762,10 @@ void NormalPageHeap::promptlyFreeObject(HeapObjectHeader* header)
                 m_lastRemainingAllocationSize += size;
             }
             m_remainingAllocationSize += size;
-            FILL_ZERO_IF_PRODUCTION(address, size);
+            SET_MEMORY_INACCESSIBLE(address, size);
             return;
         }
-        FILL_ZERO_IF_PRODUCTION(payload, payloadSize);
+        SET_MEMORY_INACCESSIBLE(payload, payloadSize);
         header->markPromptlyFreed();
     }
 
@@ -784,7 +788,7 @@ bool NormalPageHeap::expandObject(HeapObjectHeader* header, size_t newSize)
         m_remainingAllocationSize -= expandSize;
 
         // Unpoison the memory used for the object (payload).
-        FILL_ZERO_IF_NOT_PRODUCTION(header->payloadEnd(), expandSize);
+        SET_MEMORY_ACCESSIBLE(header->payloadEnd(), expandSize);
         header->setSize(allocationSize);
         ASSERT(findPageFromAddress(header->payloadEnd() - 1));
         return true;
@@ -802,19 +806,19 @@ bool NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
     if (header->payloadEnd() == m_currentAllocationPoint) {
         m_currentAllocationPoint -= shrinkSize;
         m_remainingAllocationSize += shrinkSize;
-        FILL_ZERO_IF_PRODUCTION(m_currentAllocationPoint, shrinkSize);
+        SET_MEMORY_INACCESSIBLE(m_currentAllocationPoint, shrinkSize);
         header->setSize(allocationSize);
         return true;
     }
     ASSERT(shrinkSize >= sizeof(HeapObjectHeader));
     ASSERT(header->gcInfoIndex() > 0);
     Address shrinkAddress = header->payloadEnd() - shrinkSize;
-    FILL_ZERO_IF_PRODUCTION(shrinkAddress, shrinkSize);
     HeapObjectHeader* freedHeader = new (NotNull, shrinkAddress) HeapObjectHeader(shrinkSize, header->gcInfoIndex());
     freedHeader->markPromptlyFreed();
     ASSERT(pageFromObject(reinterpret_cast<Address>(header)) == findPageFromAddress(reinterpret_cast<Address>(header)));
     m_promptlyFreedSize += shrinkSize;
     header->setSize(allocationSize);
+    SET_MEMORY_INACCESSIBLE(shrinkAddress + sizeof(HeapObjectHeader), shrinkSize - sizeof(HeapObjectHeader));
     return false;
 }
 
@@ -1305,7 +1309,7 @@ void NormalPage::sweep()
             // invariant that memory on the free list is zero filled.
             // The rest of the memory is already on the free list and is
             // therefore already zero filled.
-            FILL_ZERO_IF_PRODUCTION(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
+            SET_MEMORY_INACCESSIBLE(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
             headerAddress += size;
             continue;
         }
@@ -1316,16 +1320,16 @@ void NormalPage::sweep()
             // This is a fast version of header->payloadSize().
             size_t payloadSize = size - sizeof(HeapObjectHeader);
             Address payload = header->payload();
-            // For ASan we unpoison the specific object when calling the
-            // finalizer and poison it again when done to allow the object's own
-            // finalizer to operate on the object. Given all other unmarked
-            // objects are poisoned, ASan will detect an error if the finalizer
-            // touches any other on-heap object that die at the same GC cycle.
+            // For ASan, unpoison the object before calling the finalizer. The
+            // finalized object will be zero-filled and poison'ed afterwards.
+            // Given all other unmarked objects are poisoned, ASan will detect
+            // an error if the finalizer touches any other on-heap object that
+            // die at the same GC cycle.
             ASAN_UNPOISON_MEMORY_REGION(payload, payloadSize);
             header->finalize(payload, payloadSize);
             // This memory will be added to the freelist. Maintain the invariant
             // that memory on the freelist is zero filled.
-            FILL_ZERO_IF_PRODUCTION(headerAddress, size);
+            SET_MEMORY_INACCESSIBLE(headerAddress, size);
             headerAddress += size;
             continue;
         }
@@ -1382,7 +1386,7 @@ void NormalPage::makeConsistentForMutator()
             // invariant that memory on the free list is zero filled.
             // The rest of the memory is already on the free list and is
             // therefore already zero filled.
-            FILL_ZERO_IF_PRODUCTION(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
+            SET_MEMORY_INACCESSIBLE(headerAddress, size < sizeof(FreeListEntry) ? size : sizeof(FreeListEntry));
             headerAddress += size;
             continue;
         }

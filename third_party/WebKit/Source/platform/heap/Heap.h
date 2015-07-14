@@ -79,15 +79,15 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
 // In production builds, memory is not zapped (for performance). The memory
 // is just zeroed out when it is added to the free list.
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define FILL_ZERO_IF_PRODUCTION(address, size) \
+#define SET_MEMORY_INACCESSIBLE(address, size) \
     FreeList::zapFreedMemory(address, size);   \
     ASAN_POISON_MEMORY_REGION(address, size)
-#define FILL_ZERO_IF_NOT_PRODUCTION(address, size) \
+#define SET_MEMORY_ACCESSIBLE(address, size) \
     ASAN_UNPOISON_MEMORY_REGION(address, size);    \
     memset((address), 0, (size))
 #else
-#define FILL_ZERO_IF_PRODUCTION(address, size) memset((address), 0, (size))
-#define FILL_ZERO_IF_NOT_PRODUCTION(address, size) do { } while (false)
+#define SET_MEMORY_INACCESSIBLE(address, size) memset((address), 0, (size))
+#define SET_MEMORY_ACCESSIBLE(address, size) do { } while (false)
 #endif
 
 class CallbackStack;
@@ -1327,8 +1327,7 @@ inline Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcIn
         Address result = headerAddress + sizeof(HeapObjectHeader);
         ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
 
-        // Unpoison the memory used for the object (payload).
-        FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(HeapObjectHeader));
+        SET_MEMORY_ACCESSIBLE(result, allocationSize - sizeof(HeapObjectHeader));
         ASSERT(findPageFromAddress(headerAddress + allocationSize - 1));
         return result;
     }
