@@ -1,4 +1,5 @@
-Weston
+			Weston
+			======
 
 Weston is the reference implementation of a Wayland compositor, and a
 useful compositor in its own right.  Weston has various backends that
@@ -16,3 +17,143 @@ weston and its dependencies.
 
 The test suite can be invoked via `make check`; see
 http://wayland.freedesktop.org/testing.html for additional details.
+
+
+
+			Libweston
+			=========
+
+Libweston is an effort to separate the re-usable parts of Weston into
+a library. Libweston provides most of the boring and tedious bits of
+correctly implementing core Wayland protocols and interfacing with
+input and output systems, so that people who just want to write a new
+"Wayland window manager" (WM) or a small desktop environment (DE) can
+focus on the WM part.
+
+Libweston was first introduced in Weston 1.9, and is expected to
+continue evolving through many Weston releases before it achieves a
+stable API and feature completeness.
+
+
+API (in)stability and parallel installability
+---------------------------------------------
+
+As libweston's API surface is huge, it is impossible to get it right
+in one go. Therefore developers reserve the right to break the API
+between every 1.x.0 Weston release (minor version bumps), just like
+Weston's plugin API does. For git snapshots of the master branch, the
+API can break any time without warning or version bump.
+
+Libweston API or ABI will not be broken between Weston's stable
+releases 1.x.0 and 1.x.y, where y < 90.
+
+To make things tolerable for libweston users despite ABI breakages,
+libweston is designed to be perfectly parallel-installable. An
+ABI-version is defined for libweston, and it is bumped for releases as
+needed. Different ABI-versions of libweston can be installed in
+parallel, so that external projects can easily depend on a particular
+ABI-version, and they do not have to fight over which ABI-version is
+installed in a user's system. This allows a user to install many
+different compositors each requiring a different libweston ABI-version
+without tricks or conflicts.
+
+Note, that versions of Weston itself will not be parallel-installable,
+only libweston is.
+
+For more information about parallel installability, see
+http://ometer.com/parallel.html
+
+
+Libweston design goals
+----------------------
+
+The high-level goal of libweston is that what used to be shell plugins
+will be main executables. Instead of launching 'weston' with various
+arguments to choose the shell, one would be launching
+'weston-desktop', 'weston-ivi', 'orbital', etc. The main executable
+(the hosting program) links to libweston for a fundamental compositor
+implementation. Libweston is also intended for use by other projects
+who want to create new "Wayland WMs".
+
+The libweston API/ABI will be separating the shell logic and main
+program from the rest of the "Weston compositor" (libweston
+internals).
+
+Details:
+
+- All configuration and user interfaces will be outside of libweston.
+  This includes command line parsing, configuration files, and runtime
+  (graphical) UI.
+
+- The hosting program (main executable) will be in full control of all
+  libweston options. Libweston should not have user settable options
+  that would work behind the hosting program's back, except perhaps
+  debugging features and such.
+
+- Signal handling will be outside of libweston.
+
+- Child process execution and management will be outside of libweston.
+
+- The different backends (drm, fbdev, x11, etc) will be an internal
+  detail of libweston. Libweston will not support third party
+  backends. However, hosting programs need to handle
+  backend-specific configuration due to differences in behaviour and
+  available features.
+
+- Renderers will be libweston internal details too, though again the
+  hosting program may affect the choice of renderer if the backend
+  allows, and maybe set renderer-specific options.
+
+- plugin design ???
+
+- xwayland ???
+
+There are still many more details to be decided.
+
+
+For packagers
+-------------
+
+Always build Weston with --with-cairo=image.
+
+The Weston project is (will be) intended to be split into several
+binary packages, each with its own dependencies. The maximal split
+would be roughly like this:
+
+- libweston (minimal dependencies):
+	+ headless backend
+	+ wayland backend
+
+- gl-renderer (depends on GL libs etc.)
+
+- drm-backend (depends on libdrm, libgbm, libudev, libinput, ...)
+
+- x11-backend (depends of X11/xcb libs)
+
+- xwayland (depends on X11/xcb libs)
+
+- rpi-backend (depends on DispmanX, libudev, ...)
+
+- fbdev-backend (depends on libudev...)
+
+- rdp-backend (depends on freerdp)
+	+ screen-share
+
+- weston (the executable, not parallel-installable):
+	+ desktop shell
+	+ ivi-shell
+	+ fullscreen shell
+	+ weston-info, weston-terminal, etc. we install by default
+
+- weston demos (not parallel-installable)
+	+ weston-simple-* programs
+	+ possibly all the programs we build but do not install by
+	  default
+
+- and possibly more...
+
+Everything should be parallel-installable across libweston
+ABI-versions, except those explicitly mentioned.
+
+Weston's build may not sanely allow this yet, but this is the
+intention.
