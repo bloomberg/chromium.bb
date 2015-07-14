@@ -46,6 +46,7 @@ const char kUserAgentRedirectResponsePath[] = "/detect-user-agent";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestServerPort[] = "testServer.port";
 const char kTestWebSocketPort[] = "testWebSocketPort";
+const char kSitePerProcess[] = "sitePerProcess";
 
 class EmptyHttpResponse : public net::test_server::HttpResponse {
  public:
@@ -189,6 +190,9 @@ void WebViewAPITest::SetUpOnMainThread() {
   TestGetConfigFunction::set_test_config_state(&test_config_);
   base::FilePath test_data_dir;
   test_config_.SetInteger(kTestWebSocketPort, 0);
+  test_config_.SetBoolean(kSitePerProcess,
+                          base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              switches::kSitePerProcess));
 }
 
 void WebViewAPITest::StartTestServer() {

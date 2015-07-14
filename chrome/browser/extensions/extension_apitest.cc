@@ -36,6 +36,7 @@ const char kTestCustomArg[] = "customArg";
 const char kTestServerPort[] = "testServer.port";
 const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
+const char kSitePerProcess[] = "sitePerProcess";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kSpawnedTestServerPort[] = "spawnedTestServer.port";
 
@@ -154,6 +155,9 @@ void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
   test_config_->SetString(kTestDataDirectory,
                           net::FilePathToFileURL(test_data_dir_).spec());
   test_config_->SetInteger(kTestWebSocketPort, 0);
+  test_config_->SetBoolean(kSitePerProcess,
+                           base::CommandLine::ForCurrentProcess()->HasSwitch(
+                               switches::kSitePerProcess));
   extensions::TestGetConfigFunction::set_test_config_state(
       test_config_.get());
 }

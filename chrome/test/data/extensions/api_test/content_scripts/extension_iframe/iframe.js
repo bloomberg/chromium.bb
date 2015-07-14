@@ -5,23 +5,45 @@
 // Simple success test: we want content-script APIs to be available (like
 // sendRequest), but other APIs to be undefined or throw exceptions on access.
 
-var success = true;
+chrome.test.getConfig(function(config) {
+  'use strict';
 
-// The whole of chrome.storage (arbitrary unprivileged) is unavailable.
-if (chrome.storage) {
-  console.log('Error: chrome.storage exists, it shouldn\'t.');
-  success = false;
-}
+  let success = true;
+  let isSitePerProcess = config.sitePerProcess;
 
-// Ditto chrome.tabs, though it's special because it's a dependency of the
-// partially unprivileged chrome.extension.
-if (chrome.tabs) {
-  console.log('Error: chrome.tabs exists, it shouldn\'t.');
-  success = false;
-}
+  // chrome.storage should exist, since the extension has the permission, and
+  // the storage api is allowed in content scripts.
+  if (!chrome.storage) {
+    console.log("Error: chrome.storage doesn't exist; it should");
+    success = false;
+  }
 
-// Parts of chrome.extension are unavailable.
-if (typeof(chrome.extension.getViews) != 'undefined')
-  success = false;
+  let checkPrivilegedApi = function(api, name) {
+    if (api && !isSitePerProcess) {
+      console.log("Error: " + name +
+                  " exists, but shouldn't without site-per-process.");
+      return false;
+    }
+    if (!api && isSitePerProcess) {
+      console.log("Error: " + name +
+                  " doesn't exist, but should with site-per-process.");
+      return false;
+    }
+    return true;
+  };
 
-chrome.extension.sendRequest({success: success});
+  // For other permissions, they should only be available if this is a trusted
+  // extension process - which is the case only with site-per-process.
+  // The whole of chrome.bookmarks (arbitrary unprivileged) is unavailable
+  // without site-per-process.
+  success = success && checkPrivilegedApi(chrome.bookmarks, 'chrome.bookmarks');
+  // We test chrome.tabs as a special case, because it's a dependency of the
+  // partially unprivileged chrome.extension.
+  success = success && checkPrivilegedApi(chrome.tabs, 'chrome.tabs');
+  // And parts of chrome.extension should be unavailable to unprivileged
+  // contexts.
+  success = success && checkPrivilegedApi(chrome.extension.getViews,
+                                          'chrome.extension.getViews');
+
+  chrome.extension.sendRequest({success: success});
+});

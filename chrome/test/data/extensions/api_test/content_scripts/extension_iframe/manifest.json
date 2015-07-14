@@ -6,7 +6,7 @@
   "background": {
     "page": "test.html"
   },
-  "permissions": ["tabs"],
+  "permissions": ["tabs", "bookmarks", "storage"],
   "content_scripts": [
     {
       "matches": ["http://*/*"],

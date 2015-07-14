@@ -71,6 +71,10 @@
                     "description": "The port on which the test WebSocket server is listening.",
                     "minimum": 0,
                     "maximum": 65535
+                  },
+                  "sitePerProcess": {
+                    "type": "boolean",
+                    "description": "Whether or not the site-per-process flag is enabled."
                   }
                 }
               }
