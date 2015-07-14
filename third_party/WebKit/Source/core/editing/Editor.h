@@ -192,9 +192,6 @@ public:
 
     EphemeralRange selectedRange();
 
-    // TODO(yosin) We should get rid of |addToKillRing()| with |Range| for
-    // Oilpan.
-    void addToKillRing(Range*, bool prepend);
     void addToKillRing(const EphemeralRange&, bool prepend);
 
     void pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment>, bool smartReplace, bool matchStyle);

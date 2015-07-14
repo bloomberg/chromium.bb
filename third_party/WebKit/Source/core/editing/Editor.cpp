@@ -1051,11 +1051,6 @@ void Editor::transpose()
     replaceSelectionWithText(transposed, false, false);
 }
 
-void Editor::addToKillRing(Range* range, bool prepend)
-{
-    addToKillRing(EphemeralRange(range), prepend);
-}
-
 void Editor::addToKillRing(const EphemeralRange& range, bool prepend)
 {
     if (m_shouldStartNewKillRingSequence)
