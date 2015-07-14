@@ -1385,6 +1385,18 @@ if (!is_android && !is_mac) {
       "//url",
     ]
 
+    data = [
+      "data/",
+    ]
+    if (is_linux || is_mac || is_win) {
+      deps += [
+        "//third_party/pyftpdlib/",
+        "//third_party/pywebsocket/",
+        "//third_party/tlslite/",
+      ]
+      data += [ "tools/testserver/" ]
+    }
+
     if (is_desktop_linux) {
       deps += [ ":epoll_quic_tools" ]
     }
@@ -1651,6 +1663,15 @@ if (!is_android && !is_mac) {
         "base/net_util_icu_unittest.cc",
       ]
       deps -= [ "//base:i18n" ]
+    }
+
+    # Symbols for crashes when running tests on swarming.
+    if (symbol_level > 0) {
+      if (is_win) {
+        data += [ "$root_out_dir/net_unittests.exe.pdb" ]
+      } else if (is_mac) {
+        data += [ "$root_out_dir/net_unittests.dSYM/" ]
+      }
     }
   }
 }  # !is_android && !is_win && !is_mac

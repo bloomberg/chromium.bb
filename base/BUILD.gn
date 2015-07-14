@@ -645,6 +645,8 @@ component("base") {
     "sys_info_openbsd.cc",
   ]
 
+  data = []
+
   configs += [ ":base_implementation" ]
 
   deps = [
@@ -749,6 +751,30 @@ component("base") {
       "sha1_win.cc",
     ]
 
+    # Required for base/stack_trace_win.cc to symbolize correctly.
+    data += [ "$root_build_dir/dbghelp.dll" ]
+
+    if (is_component_build) {
+      # Copy the VS runtime DLLs into the isolate so that they don't have to be
+      # preinstalled on the target machine. The debug runtimes have a "d" at
+      # the end.
+      if (is_debug) {
+        vcrt_suffix = "d"
+      } else {
+        vcrt_suffix = ""
+      }
+
+      # These runtime files are copied to the output directory by the
+      # vs_toolchain script that runs as part of toolchain configuration.
+      data += [
+        "$root_out_dir/msvcp120${vcrt_suffix}.dll",
+        "$root_out_dir/msvcr120${vcrt_suffix}.dll",
+      ]
+      if (is_asan) {
+        data += [ "//third_party/llvm-build/Release+Asserts/lib/clang/3.7.0/lib/windows/clang_rt.asan_dynamic-i386.dll" ]
+      }
+    }
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -773,6 +799,11 @@ component("base") {
       "threading/platform_thread_internal_posix.cc",
     ]
 
+    if (is_asan) {
+      # TODO(GYP) hook up asan on Mac. GYP has this extra dylib:
+      #data += [ "$root_out_dir/libclang_rt.asan_osx_dynamic.dylib" ]
+    }
+
     if (is_ios) {
       sources -= [
         "files/file_path_watcher_fsevents.cc",
@@ -791,6 +822,11 @@ component("base") {
 
   # Linux.
   if (is_linux) {
+    if (is_asan || is_lsan || is_msan || is_tsan) {
+      # For llvm-sanitizer.
+      data += [ "//third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6" ]
+    }
+
     # TODO(brettw) this will need to be parameterized at some point.
     linux_configs = []
     if (use_glib) {
@@ -870,6 +906,16 @@ component("base") {
       "message_loop/message_pump_glib.cc",
       "message_loop/message_pump_glib.h",
     ]
+  }
+
+  if (is_asan || is_lsan || is_msan || is_tsan) {
+    data += [ "//tools/valgrind/asan/" ]
+    if (is_win) {
+      data +=
+          [ "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer.exe" ]
+    } else {
+      data += [ "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer" ]
+    }
   }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -1380,9 +1426,6 @@ test("base_unittests") {
 
   data = [
     "test/data/",
-
-    # TODO(dpranke): Remove when icu declares this directly.
-    "$root_out_dir/icudtl.dat",
   ]
 
   # Allow more direct string conversions on platforms with native utf8
@@ -1396,6 +1439,9 @@ test("base_unittests") {
       ":base_java",
       ":base_java_unittest_support",
     ]
+
+    # TODO(brettw) I think this should not be here, we should not be using
+    # isolate files.
     isolate_file = "base_unittests.isolate"
   }
 
@@ -1449,6 +1495,15 @@ test("base_unittests") {
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  # Symbols for crashes when running tests on swarming.
+  if (symbol_level > 0) {
+    if (is_win) {
+      data += [ "$root_out_dir/base_unittests.exe.pdb" ]
+    } else if (is_mac) {
+      data += [ "$root_out_dir/base_unittests.dSYM/" ]
+    }
+  }
 }
 
 if (is_android) {
