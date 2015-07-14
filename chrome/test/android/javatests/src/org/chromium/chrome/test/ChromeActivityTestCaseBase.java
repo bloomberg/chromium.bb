@@ -4,19 +4,13 @@
 
 package org.chromium.chrome.test;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.ActivityManager.AppTask;
 import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.PowerManager;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.util.Log;
@@ -40,11 +34,9 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
-import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omaha.OmahaClient;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
@@ -63,11 +55,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -121,42 +112,21 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     }
 
     protected boolean mSkipClearAppData = false;
-    private PowerManager.WakeLock mWakeLock = null;
     protected boolean mSkipCheckHttpServer = false;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        ApplicationTestUtils.setUp(
+                getInstrumentation().getTargetContext(), !mSkipClearAppData, !mSkipCheckHttpServer);
 
         setActivityInitialTouchMode(false);
-        if (!mSkipClearAppData) {
-            // We shouldn't clear the data at the end of test, it is needed for debugging.
-            assertTrue("Unable to clear the app data", clearAppData());
-            if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
-                closeAllChromeActivityAppTasks();
-            }
-        }
-        // Make sure the screen is on during test runs.
-        PowerManager pm = (PowerManager) getInstrumentation().getTargetContext()
-                .getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK
-                | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, TAG);
-        mWakeLock.acquire();
-
-        // Disable Omaha related activities.
-        OmahaClient.setEnableCommunication(false);
-        OmahaClient.setEnableUpdateDetection(false);
-
-        if (!mSkipCheckHttpServer) {
-            TestHttpServerClient.checkServerIsUp();
-        }
         startMainActivity();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        assertNotNull("Uninitialized wake lock", mWakeLock);
-        mWakeLock.release();
+        ApplicationTestUtils.tearDown(getInstrumentation().getTargetContext());
         super.tearDown();
     }
 
@@ -203,33 +173,9 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         Log.d(TAG, "startActivityCompletely <<");
     }
 
-    /**
-     * Clear all files and folders in the Chrome application directory except 'lib'.
-     *
-     * The 'cache' directory is recreated as an empty directory.
-     *
-     * @return Whether clearing the application data was successful.
-     */
-    protected boolean clearAppData() throws InterruptedException {
-        return ApplicationData.clearAppData(getInstrumentation().getTargetContext());
-    }
-
-    /**
-     * Closes all Chrome activity app tasks. This is for cleaning up Chrome tasks in the recent,
-     * those are not necessarily associated with a live activity.
-     */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void closeAllChromeActivityAppTasks() throws ClassNotFoundException {
-        ActivityManager am = (ActivityManager) getInstrumentation().getTargetContext()
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        PackageManager pm = getInstrumentation().getTargetContext().getPackageManager();
-        List<AppTask> taskList = am.getAppTasks();
-        for (AppTask task : taskList) {
-            String className = DocumentUtils.getTaskClassName(task, pm);
-            if (ChromeActivity.class.isAssignableFrom(Class.forName(className))) {
-                task.finishAndRemoveTask();
-            }
-        }
+    /** Convenience function for {@link ApplicationTestUtils#clearAppData(Context)}. */
+    protected void clearAppData() throws Exception {
+        ApplicationTestUtils.clearAppData(getInstrumentation().getContext());
     }
 
     /**
@@ -898,21 +844,10 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     /**
      * Waits till the ContentViewCore receives the expected page scale factor
      * from the compositor and asserts that this happens.
-     *
-     * Upstream {@code ContentShellTestBase} has the same copy. Also, this is a temporary solution
-     * for waiting a page load. Please refer to the bug at the upstream function.
      */
     protected void assertWaitForPageScaleFactorMatch(final float expectedScale)
             throws InterruptedException {
-        boolean scaleFactorMatch = CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return Math.abs(getActivity().getCurrentContentViewCore().getScale()
-                        - expectedScale) < FLOAT_EPSILON;
-            }
-        });
-        assertTrue("Expecting scale factor of: " + expectedScale + ", got: "
-                    + getActivity().getCurrentContentViewCore().getScale(), scaleFactorMatch);
+        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(getActivity(), expectedScale);
     }
 
     /**

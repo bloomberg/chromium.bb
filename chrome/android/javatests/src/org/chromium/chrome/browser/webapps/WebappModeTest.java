@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
@@ -67,7 +68,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             public boolean isSatisfied() {
                 Context context = getInstrumentation().getTargetContext();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                        && MultiActivityTestBase.getNumChromeTasks(context) != numActivities) {
+                        && ApplicationTestUtils.getNumChromeTasks(context) != numActivities) {
                     return false;
                 }
 
@@ -102,7 +103,7 @@ public class WebappModeTest extends MultiActivityTestBase {
 
         getInstrumentation().getTargetContext().startActivity(intent);
         getInstrumentation().waitForIdleSync();
-        MultiActivityTestBase.waitUntilChromeInForeground();
+        ApplicationTestUtils.waitUntilChromeInForeground();
     }
 
     /**
@@ -208,13 +209,13 @@ public class WebappModeTest extends MultiActivityTestBase {
         // Return home.
         final WebappActivity activity =
                 (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity();
-        MultiActivityTestBase.launchHomescreenIntent(context);
+        ApplicationTestUtils.fireHomeScreenIntent(context);
         getInstrumentation().waitForIdleSync();
 
         // Bring it back via the Tab.
         activity.getActivityTab().getChromeWebContentsDelegateAndroid().activateContents();
         getInstrumentation().waitForIdleSync();
-        MultiActivityTestBase.waitUntilChromeInForeground();
+        ApplicationTestUtils.waitUntilChromeInForeground();
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -352,6 +353,6 @@ public class WebappModeTest extends MultiActivityTestBase {
                 return webappActivity == ApplicationStatus.getLastTrackedFocusedActivity();
             }
         }));
-        MultiActivityTestBase.waitUntilChromeInForeground();
+        ApplicationTestUtils.waitUntilChromeInForeground();
     }
 }

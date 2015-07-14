@@ -4,24 +4,16 @@
 
 package org.chromium.chrome.test;
 
-import android.annotation.TargetApi;
-import android.app.ActivityManager;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
-
-import org.chromium.base.ApplicationState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.browser.omaha.OmahaClient;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -92,8 +84,6 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
             + "  </body>"
             + "</html>");
 
-    private static final float FLOAT_EPSILON = 0.001f;
-
     protected MockStorageDelegate mStorageDelegate;
     protected Context mContext;
 
@@ -102,16 +92,7 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
         super.setUp();
         mContext = getInstrumentation().getTargetContext();
         CommandLineFlags.setUp(mContext, getClass().getMethod(getName()));
-
-        // Disable Omaha related activities.
-        OmahaClient.setEnableCommunication(false);
-        OmahaClient.setEnableUpdateDetection(false);
-
-        // Kill any tasks, if we have the API for it.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Context context = getInstrumentation().getTargetContext();
-            MultiActivityTestBase.finishAllChromeTasks(context);
-        }
+        ApplicationTestUtils.setUp(mContext, true, true);
 
         // Make the DocumentTabModelSelector use a mocked out directory so that test runs don't
         // interfere with each other.
@@ -122,76 +103,8 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Context context = getInstrumentation().getTargetContext();
-            MultiActivityTestBase.finishAllChromeTasks(context);
-        }
         mStorageDelegate.ensureDirectoryDestroyed();
-    }
-
-    /** Counts how many tasks Chrome has listed in Android's Overview. */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static int getNumChromeTasks(Context context) {
-        int count = 0;
-        ActivityManager activityManager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        return activityManager.getAppTasks().size();
-    }
-
-    /** Finishes all tasks Chrome has listed in Android's Overview. */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private static void finishAllChromeTasks(final Context context) throws Exception {
-        // Go to the Home screen so that Android has no good reason to keep Chrome Activities alive.
-        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-        homeIntent.addCategory(Intent.CATEGORY_HOME);
-        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(homeIntent);
-
-        // Close all of the tasks one by one.
-        ActivityManager activityManager =
-                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-            task.finishAndRemoveTask();
-        }
-
-        Assert.assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getNumChromeTasks(context) == 0;
-            }
-        }));
-    }
-
-    /** Send the user to the home screen. */
-    public static void launchHomescreenIntent(Context context) throws Exception {
-        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-        homeIntent.addCategory(Intent.CATEGORY_HOME);
-        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(homeIntent);
-        waitUntilChromeInBackground();
-    }
-
-    /** Waits until Chrome is in the foreground. */
-    public static void waitUntilChromeInForeground() throws Exception {
-        Assert.assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int state = ApplicationStatus.getStateForApplication();
-                return state == ApplicationState.HAS_RUNNING_ACTIVITIES;
-            }
-        }));
-    }
-
-    /** Waits until Chrome is in the background. */
-    public static void waitUntilChromeInBackground() throws Exception {
-        Assert.assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int state = ApplicationStatus.getStateForApplication();
-                return state == ApplicationState.HAS_STOPPED_ACTIVITIES
-                        || state == ApplicationState.HAS_DESTROYED_ACTIVITIES;
-            }
-        }));
+        ApplicationTestUtils.tearDown(mContext);
     }
 
     /**
@@ -200,7 +113,7 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
      */
     protected void waitForFullLoad(final ChromeActivity activity, final String expectedTitle)
             throws Exception {
-        assertWaitForPageScaleFactorMatch(activity, 0.5f);
+        ApplicationTestUtils.assertWaitForPageScaleFactorMatch(activity, 0.5f);
         final Tab tab = activity.getActivityTab();
         assert tab != null;
 
@@ -210,24 +123,6 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
                 if (!tab.isLoadingAndRenderingDone()) return false;
                 if (!TextUtils.equals(expectedTitle, tab.getTitle())) return false;
                 return true;
-            }
-        }));
-    }
-
-    /**
-     * Proper use of this function requires waiting for a page scale factor that isn't 1.0f because
-     * the default seems to be 1.0f.
-     * TODO(dfalcantara): Combine this one and ChromeActivityTestCaseBase's (crbug.com/498973)
-     */
-    private void assertWaitForPageScaleFactorMatch(
-            final ChromeActivity activity, final float expectedScale) throws Exception {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (activity.getCurrentContentViewCore() == null) return false;
-
-                return Math.abs(activity.getCurrentContentViewCore().getScale() - expectedScale)
-                        < FLOAT_EPSILON;
             }
         }));
     }

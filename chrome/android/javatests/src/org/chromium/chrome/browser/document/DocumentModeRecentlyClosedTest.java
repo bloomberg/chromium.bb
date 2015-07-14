@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -96,13 +97,13 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
         assertEquals("Wrong tab count", 2, selector.getTotalTabCount());
 
         // Return to the Android Home screen.
-        launchHomeIntent(mContext);
+        ApplicationTestUtils.fireHomeScreenIntent(mContext);
         assertEquals("Wrong tab count", 2, selector.getTotalTabCount());
 
         // Remove the fake task, then bring Chrome back to the foreground to make the
         // DocumentTabModel update.
         activityDelegate.mExtraRegularTask = null;
-        launchMainIntent(mContext);
+        ApplicationTestUtils.launchChrome(mContext);
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {

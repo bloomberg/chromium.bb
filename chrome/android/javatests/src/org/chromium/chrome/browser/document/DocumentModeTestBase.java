@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.document;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
@@ -52,30 +52,6 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         public void onContextMenuShown(Tab tab, ContextMenu menu) {
             mContextMenu = menu;
         }
-    }
-
-    protected void launchHomeIntent(Context context) throws Exception {
-        Intent startMain = new Intent(Intent.ACTION_MAIN);
-        startMain.addCategory(Intent.CATEGORY_HOME);
-        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(startMain);
-        MultiActivityTestBase.waitUntilChromeInBackground();
-    }
-
-    protected void launchMainIntent(Context context) throws Exception {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.setPackage(context.getPackageName());
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
-        MultiActivityTestBase.waitUntilChromeInForeground();
-    }
-
-    protected void fireViewIntent(Context context, Uri data) throws Exception {
-        Intent intent = new Intent(Intent.ACTION_VIEW, data);
-        intent.setClassName(context.getPackageName(), ChromeLauncherActivity.class.getName());
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
-        MultiActivityTestBase.waitUntilChromeInForeground();
     }
 
     /**
@@ -182,7 +158,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                 incognito ? IncognitoDocumentActivity.class : DocumentActivity.class, runnable);
 
         assertTrue(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
-        MultiActivityTestBase.waitUntilChromeInForeground();
+        ApplicationTestUtils.waitUntilChromeInForeground();
 
         // Wait until the selector is ready and the Tabs have been added to the DocumentTabModel.
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {

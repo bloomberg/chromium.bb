@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -43,7 +44,7 @@ public class ManageBookmarkActivityTest extends ChromeTabbedActivityTestBase {
         // TODO(tedchoc): figure out why.
         //
         // Disable for debugging a particular test.
-        clearAppData();
+        ApplicationTestUtils.clearAppData(getInstrumentation().getTargetContext());
     }
 
     @Override

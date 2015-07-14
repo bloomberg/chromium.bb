@@ -7,11 +7,11 @@ package org.chromium.chrome.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 /**
@@ -60,13 +60,9 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertEquals("title does not update", newTitle, mTab.getTitle());
     }
 
-    /**
-      * @SmallTest
-      * @Feature({"Tab"})
-      * Bug: http://crbug.com/508524
-      */
-    @DisabledTest
-    public void testTabRestoredIfKilledWhileActivityStopped() {
+    @SmallTest
+    @Feature({"Tab"})
+    public void testTabRestoredIfKilledWhileActivityStopped() throws Exception {
         // Ensure the tab is showing before stopping the activity.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -80,11 +76,10 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertFalse(mTab.isShowingSadTab());
 
         // Stop the activity and simulate a killed renderer.
+        ApplicationTestUtils.fireHomeScreenIntent(getInstrumentation().getTargetContext());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getInstrumentation().callActivityOnPause(getActivity());
-                getInstrumentation().callActivityOnStop(getActivity());
                 mTab.simulateRendererKilledForTesting(false);
             }
         });
@@ -93,14 +88,7 @@ public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertFalse(mTab.isHidden());
         assertFalse(mTab.isShowingSadTab());
 
-        // Resume the activity.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                getInstrumentation().callActivityOnStart(getActivity());
-                getInstrumentation().callActivityOnResume(getActivity());
-            }
-        });
+        ApplicationTestUtils.launchChrome(getInstrumentation().getTargetContext());
 
         // The tab should be restored and visible.
         assertFalse(mTab.isHidden());

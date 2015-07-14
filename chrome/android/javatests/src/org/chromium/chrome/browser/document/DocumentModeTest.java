@@ -29,8 +29,8 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Initializa
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.OffTheRecordDocumentTabModel;
-import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -97,7 +97,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final Activity lastTrackedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
 
         // Send the user home, then fire an Intent with invalid data.
-        MultiActivityTestBase.launchHomescreenIntent(mContext);
+        ApplicationTestUtils.fireHomeScreenIntent(mContext);
         Intent intent = new Intent(lastTrackedActivity.getIntent());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         intent.setData(Uri.parse("toteslegitscheme://"));
@@ -137,7 +137,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final Activity lastTrackedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
 
         // Send the user home, then fire an Intent with an old Tab ID and a new URL.
-        MultiActivityTestBase.launchHomescreenIntent(mContext);
+        ApplicationTestUtils.fireHomeScreenIntent(mContext);
         Intent intent = new Intent(lastTrackedActivity.getIntent());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         intent.setData(Uri.parse("document://" + lastTabId + "?" + URL_4));
@@ -184,8 +184,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final Activity lastTrackedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
 
         // Send Chrome to the background, then bring it back.
-        MultiActivityTestBase.launchHomescreenIntent(mContext);
-        fireViewIntent(mContext, null);
+        ApplicationTestUtils.fireHomeScreenIntent(mContext);
+        Intent intent = new Intent(Intent.ACTION_VIEW, null);
+        intent.setClassName(mContext, ChromeLauncherActivity.class.getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mContext.startActivity(intent);
+        ApplicationTestUtils.waitUntilChromeInForeground();
 
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
@@ -213,8 +217,8 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final int lastTabId = selector.getCurrentTabId();
 
         // Send Chrome to the background, then bring it back.
-        MultiActivityTestBase.launchHomescreenIntent(mContext);
-        launchMainIntent(mContext);
+        ApplicationTestUtils.fireHomeScreenIntent(mContext);
+        ApplicationTestUtils.launchChrome(mContext);
 
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
@@ -264,7 +268,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final DocumentTabModelSelector selector =
                 ChromeApplication.getDocumentTabModelSelector();
         assertEquals(1, selector.getModel(false).getCount());
-        launchHomescreenIntent(mContext);
+        ApplicationTestUtils.fireHomeScreenIntent(mContext);
 
         // Fire an Intent to reuse the same tab as before.
         Runnable runnable = new Runnable() {
@@ -278,7 +282,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
             }
         };
         ActivityUtils.waitForActivity(getInstrumentation(), ChromeLauncherActivity.class, runnable);
-        waitUntilChromeInForeground();
+        ApplicationTestUtils.waitUntilChromeInForeground();
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
