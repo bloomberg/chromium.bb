@@ -295,7 +295,7 @@ bool Editor::deleteWithDirection(SelectionDirection direction, TextGranularity g
             revealSelectionAfterEditingOperation();
         } else {
             if (killRing)
-                addToKillRing(selectedRange(), false);
+                addToKillRing(selectedRange());
             deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
             // Implicitly calls revealSelectionAfterEditingOperation().
         }
@@ -885,7 +885,7 @@ void Editor::performDelete()
 {
     if (!canDelete())
         return;
-    addToKillRing(selectedRange(), false);
+    addToKillRing(selectedRange());
     deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
 
     // clear the "start new kill ring sequence" setting, because it was set to true
@@ -1051,16 +1051,13 @@ void Editor::transpose()
     replaceSelectionWithText(transposed, false, false);
 }
 
-void Editor::addToKillRing(const EphemeralRange& range, bool prepend)
+void Editor::addToKillRing(const EphemeralRange& range)
 {
     if (m_shouldStartNewKillRingSequence)
         killRing().startNewSequence();
 
     String text = plainText(range);
-    if (prepend)
-        killRing().prepend(text);
-    else
-        killRing().append(text);
+    killRing().append(text);
     m_shouldStartNewKillRingSequence = false;
 }
 

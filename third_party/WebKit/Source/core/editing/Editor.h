@@ -192,7 +192,7 @@ public:
 
     EphemeralRange selectedRange();
 
-    void addToKillRing(const EphemeralRange&, bool prepend);
+    void addToKillRing(const EphemeralRange&);
 
     void pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment>, bool smartReplace, bool matchStyle);
     void pasteAsPlainText(const String&, bool smartReplace);
