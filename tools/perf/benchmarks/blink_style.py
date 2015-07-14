@@ -9,7 +9,7 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Disabled('reference', 'win8', 'android') # crbug.com/506322 (Android)
+@benchmark.Disabled('reference', 'win8')
 class BlinkStyleTop25(perf_benchmark.PerfBenchmark):
   """Measures performance of Blink's style engine (CSS Parsing, Style Recalc,
   etc.) on the top 25 pages.
