@@ -12,7 +12,7 @@
           '../../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../../ui/webui/resources/js/cr.js',
           '../../../../../ui/webui/resources/js/util.js',
-          '../../../../../ui/webui/resources/js/i18n_template_no_process.js',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:i18n_template_no_process',
           '../../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../../ui/webui/resources/js/cr/ui.js',
           '../../../../../ui/webui/resources/js/cr/event_target.js',

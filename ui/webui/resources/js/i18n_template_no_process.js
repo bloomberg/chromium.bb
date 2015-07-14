@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @typedef {Document|DocumentFragment|Element} */
+var ProcessingRoot;
+
 /**
  * @fileoverview This is a simple template engine inspired by JsTemplates
  * optimized for i18n.
@@ -38,8 +41,9 @@ var i18nTemplate = (function() {
      * @param {HTMLElement} element The node to modify.
      * @param {string} key The name of the value in the dictionary.
      * @param {LoadTimeData} dictionary The dictionary of strings to draw from.
+     * @param {!Array<ProcessingRoot>} visited
      */
-    'i18n-content': function(element, key, dictionary) {
+    'i18n-content': function(element, key, dictionary, visited) {
       element.textContent = dictionary.getString(key);
     },
 
@@ -51,8 +55,9 @@ var i18nTemplate = (function() {
      *     if a pair, represents [content, value]. Otherwise, it should be a
      *     content string with no value.
      * @param {LoadTimeData} dictionary The dictionary of strings to draw from.
+     * @param {!Array<ProcessingRoot>} visited
      */
-    'i18n-options': function(select, key, dictionary) {
+    'i18n-options': function(select, key, dictionary, visited) {
       var options = dictionary.getValue(key);
       options.forEach(function(optionData) {
         var option = typeof optionData == 'string' ?
@@ -72,8 +77,9 @@ var i18nTemplate = (function() {
      *     followed by a colon, and the name of the value in the dictionary.
      *     Multiple attribute/key pairs may be separated by semicolons.
      * @param {LoadTimeData} dictionary The dictionary of strings to draw from.
+     * @param {!Array<ProcessingRoot>} visited
      */
-    'i18n-values': function(element, attributeAndKeys, dictionary) {
+    'i18n-values': function(element, attributeAndKeys, dictionary, visited) {
       var parts = attributeAndKeys.replace(/\s/g, '').split(/;/);
       parts.forEach(function(part) {
         if (!part)
@@ -98,10 +104,14 @@ var i18nTemplate = (function() {
           }
           if (targetObject) {
             targetObject[path] = value;
-            // In case we set innerHTML (ignoring others) we need to
-            // recursively check the content.
-            if (path == 'innerHTML')
-              process(element, dictionary);
+            // In case we set innerHTML (ignoring others) we need to recursively
+            // check the content.
+            if (path == 'innerHTML') {
+              for (var temp = element.firstElementChild; temp;
+                   temp = temp.nextElementSibling) {
+                processWithoutCycles(temp, dictionary, visited);
+              }
+            }
           }
         } else {
           element.setAttribute(propName, /** @type {string} */(value));
@@ -111,33 +121,85 @@ var i18nTemplate = (function() {
   };
 
   var attributeNames = Object.keys(handlers);
-  // Chrome for iOS must use Apple's UIWebView, which (as of April 2015) does
-  // not have native shadow DOM support. If shadow DOM is supported (or
-  // polyfilled), search for i18n attributes using the /deep/ selector;
-  // otherwise, do not attempt to search within the shadow DOM.
-  var selector =
-      (window.document.body && window.document.body.createShadowRoot) ?
-      'html /deep/ [' + attributeNames.join('],[') + ']' :
-      '[' + attributeNames.join('],[') + ']';
+  // Only use /deep/ when shadow DOM is supported. As of April 2015 iOS Chrome
+  // doesn't support shadow DOM.
+  var prefix = Element.prototype.createShadowRoot ? ':root /deep/ ' : '';
+  var selector = prefix + '[' + attributeNames.join('],' + prefix + '[') + ']';
 
   /**
    * Processes a DOM tree with the {@code dictionary} map.
-   * @param {Document|Element} root The root of the DOM tree to process.
+   * @param {ProcessingRoot} root The root of the DOM tree to process.
    * @param {LoadTimeData} dictionary The dictionary to draw from.
    */
   function process(root, dictionary) {
-    var elements = root.querySelectorAll(selector);
-    for (var element, i = 0; element = elements[i]; i++) {
-      for (var j = 0; j < attributeNames.length; j++) {
-        var name = attributeNames[j];
-        var attribute = element.getAttribute(name);
-        if (attribute != null)
-          handlers[name](element, attribute, dictionary);
+    processWithoutCycles(root, dictionary, []);
+  }
+
+  /**
+   * Internal process() method that stops cycles while processing.
+   * @param {ProcessingRoot} root
+   * @param {LoadTimeData} dictionary
+   * @param {!Array<ProcessingRoot>} visited Already visited roots.
+   */
+  function processWithoutCycles(root, dictionary, visited) {
+    if (visited.indexOf(root) >= 0) {
+      // Found a cycle. Stop it.
+      return;
+    }
+
+    // Mark the node as visited before recursing.
+    visited.push(root);
+
+    var importLinks = root.querySelectorAll('link[rel=import]');
+    for (var i = 0; i < importLinks.length; ++i) {
+      var importLink = /** @type {!HTMLLinkElement} */(importLinks[i]);
+      if (!importLink.import) {
+        // Happens when a <link rel=import> is inside a <template>.
+        // TODO(dbeam): should we log an error if we detect that here?
+        continue;
+      }
+      processWithoutCycles(importLink.import, dictionary, visited);
+    }
+
+    var templates = root.querySelectorAll('template');
+    for (var i = 0; i < templates.length; ++i) {
+      var template = /** @type {HTMLTemplateElement} */(templates[i]);
+      processWithoutCycles(template.content, dictionary, visited);
+    }
+
+    var firstElement = root instanceof Element ? root : root.querySelector('*');
+
+    if (prefix) {
+      // Prefixes skip root level elements. This is typically <html> but can
+      // differ inside of DocumentFragments (i.e. <template>s). Process them
+      // explicitly.
+      for (var temp = firstElement; temp; temp = temp.nextElementSibling) {
+        processElement(/** @type {Element} */(temp), dictionary, visited);
       }
     }
-    var doc = root instanceof Document ? root : root.ownerDocument;
-    if (doc)
-      doc.documentElement.classList.add('i18n-processed');
+
+    var elements = root.querySelectorAll(selector);
+    for (var element, i = 0; element = elements[i]; i++) {
+      processElement(element, dictionary, visited);
+    }
+
+    if (firstElement)
+      firstElement.setAttribute('i18n-processed', '');
+  }
+
+  /**
+   * Run through various [i18n-*] attributes and do activate replacements.
+   * @param {Element} element
+   * @param {LoadTimeData} dictionary
+   * @param {!Array<ProcessingRoot>} visited
+   */
+  function processElement(element, dictionary, visited) {
+    for (var i = 0; i < attributeNames.length; i++) {
+      var name = attributeNames[i];
+      var attribute = element.getAttribute(name);
+      if (attribute != null)
+        handlers[name](element, attribute, dictionary, visited);
+    }
   }
 
   return {

@@ -14,7 +14,7 @@ testcase.checkInitialElements = function() {
       var appId = args[0];
       var videoPlayer = args[1];
       return Promise.all([
-        remoteCallVideoPlayer.waitForElement(appId, 'html.i18n-processed'),
+        remoteCallVideoPlayer.waitForElement(appId, 'html[i18n-processed]'),
         remoteCallVideoPlayer.waitForElement(appId, 'div#video-player'),
         remoteCallVideoPlayer.waitForElement(
             appId, '#video-container > video'),

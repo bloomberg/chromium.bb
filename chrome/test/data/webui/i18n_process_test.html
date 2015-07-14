@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <title i18n-content="title"></title>
+    <link rel="import" href="data:text/html,
+        <link rel=import href='data:text/html,<div i18n-content=nested>'>">
+    <script>
+      document.write('<link id=cycle rel=import href="' + location.href + '">');
+    </script>
+  </head>
+  <body i18n-values="type:type">
+    <span i18n-values=".innerHTML:content;.style.display:display">&lt;3</span>
+    <template>
+      <template>
+        <div i18n-content="nested"></div>
+      </template>
+    </template>
+    <script>
+function runI18nProcess() {
+  i18nTemplate.process(document, loadTimeData);
+}
+
+function setUpPage() {
+  loadTimeData.data = {
+    'content': "doesn't matter; you can't see me!",
+    'display': 'none',
+    'title': 'BUY NOW!',
+    'type': 'ectomorph',
+    'nested': 'real deep',
+  };
+  runI18nProcess();
+}
+
+function testI18nProcess_Attributes() {
+  assertNotEqual('', document.title);
+  assertTrue(document.body.hasAttribute('type'));
+  assertTrue(document.querySelector('span').textContent.length > 5);
+  assertEquals('none', document.querySelector('span').style.display);
+}
+
+function testI18nProcess_Cycles() {
+  assertEquals(document.URL, $('cycle').import.URL);
+}
+
+function testI18nProcess_Imports() {
+  var outerImportDoc = document.querySelector('link').import;
+  var innerImportDoc = outerImportDoc.querySelector('link').import;
+  assertNotEqual('', innerImportDoc.querySelector('div').textContent);
+}
+
+function testI18nProcess_ReRun() {
+  document.body.removeAttribute('type');
+  runI18nProcess();
+  assertTrue(document.body.hasAttribute('type'));
+}
+
+function testI18nProcess_Templates() {
+  var outerDocFrag = document.querySelector('template').content;
+  var innerDocFrag = outerDocFrag.querySelector('template').content;
+  assertNotEqual('', innerDocFrag.querySelector('div').textContent);
+}
+    </script>
+  </body>
+</html>

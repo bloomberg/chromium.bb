@@ -49,6 +49,10 @@
       'includes': ['../externs_js.gypi'],
     },
     {
+      'target_name': 'pending_compiler_externs',
+      'includes': ['../externs_js.gypi'],
+    },
+    {
       'target_name': 'search_engines_private',
       'includes': ['../externs_js.gypi'],
     },

@@ -150,6 +150,12 @@ function assertDeepEquals(expected, observed, opt_message) {
       console.error('Failed to find test cases.');
       cleanTestRun = false;
     }
+    try {
+      if (window.setUpPage)
+        window.setUpPage();
+    } catch(err) {
+      cleanTestRun = false;
+    }
     continueTesting();
   }
 
