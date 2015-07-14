@@ -2619,7 +2619,7 @@ int drmOpenOnceWithType(const char *BusID, int *newlyopened, int type)
 	}
 
     fd = drmOpenWithType(NULL, BusID, type);
-    if (fd <= 0 || nr_fds == DRM_MAX_FDS)
+    if (fd < 0 || nr_fds == DRM_MAX_FDS)
 	return fd;
    
     connection[nr_fds].BusID = strdup(BusID);
