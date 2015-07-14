@@ -1452,7 +1452,7 @@ void FrameSelection::selectAll()
     notifyLayoutObjectOfSelectionChange(UserTriggered);
 }
 
-bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, DirectoinalOption directional, SetSelectionOptions options)
+bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, DirectionalOption directional, SetSelectionOptions options)
 {
     if (!range || !range->startContainer() || !range->endContainer())
         return false;
@@ -1460,7 +1460,7 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, Directoi
     return setSelectedRange(EphemeralRange(range), affinity, directional, options);
 }
 
-bool FrameSelection::setSelectedRange(const EphemeralRange& range, EAffinity affinity, DirectoinalOption directional, SetSelectionOptions options)
+bool FrameSelection::setSelectedRange(const EphemeralRange& range, EAffinity affinity, DirectionalOption directional, SetSelectionOptions options)
 {
     if (range.isNull())
         return false;
