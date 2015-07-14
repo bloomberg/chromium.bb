@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.LargeTest;
@@ -14,6 +16,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.document.DocumentModeTestBase;
 import org.chromium.chrome.browser.document.DocumentTab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -104,6 +107,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
      * Verifies that the .setProcessInForeground() signal is called correctly as the tabs are
      * created and switched.
      */
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testTabSwitching() throws Exception {
@@ -225,6 +229,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
      * Ensures correctness of the visibilityDetermined() calls, that should be always preceded by
      * setInForeground().
      */
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @LargeTest
     @Feature({"ProcessManagement"})
     public void testVisibilityDetermined() throws Exception {

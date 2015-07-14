@@ -241,13 +241,22 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
 
     /**
      * Long presses at the center of the page and opens a new Tab via a link's context menu.
-     * @param selectIncognitoItem If true, selects "Open in incognito tab".
-     *                            If false, selects "Open in new tab".
+     *
+     * Note that incognito context menus don't display the "Open in incognito tab" menu item.
+     * Instead, selecting "Open in new tab" when in incognito mode will open a new incognito
+     * tab in the background.  Specifically:
+     *     Regular tab + "Open in new tab" -> Opens new regular tab in the background
+     *     Regular tab + "Open in incognito tab" -> Opens new incognito tab in the foreground
+     *     Incognito tab + "Open in new tab" -> Opens new incognito tab in the background
+     *     Incognito tab + "Open in incognito tab" -> Can't happen.
+     *
+     * @param selectOpenInIncognitoTab If true, selects "Open in incognito tab".
+     *                                 If false, selects "Open in new tab".
      * @param waitForIncognito If true, waits for an IncognitoDocumentActivity to start.
      *                         If false, waits for a DocumentActivity to start.
      */
-    protected void openLinkInNewTabViaContextMenu(
-            final boolean selectIncognitoItem, final boolean waitForIncognito) throws Exception {
+    protected void openLinkInNewTabViaContextMenu(final boolean selectOpenInIncognitoTab,
+            final boolean waitForIncognito) throws Exception {
         // Long press the center of the page, which should bring up the context menu.
         final TestTabObserver observer = new TestTabObserver();
         final DocumentActivity activity =
@@ -275,7 +284,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (selectIncognitoItem) {
+                        if (selectOpenInIncognitoTab) {
                             assertTrue(observer.mContextMenu.performIdentifierAction(
                                     R.id.contextmenu_open_in_incognito_tab, 0));
                         } else {
@@ -285,7 +294,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
                     }
                 }
         );
-        if (selectIncognitoItem) {
+        if (selectOpenInIncognitoTab) {
             waitForFullLoad(newActivity, "Page 4");
         } else {
             ChromeTabUtils.waitForTabPageLoaded(newActivity.getActivityTab(), (String) null);
