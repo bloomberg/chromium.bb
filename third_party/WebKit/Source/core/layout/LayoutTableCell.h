@@ -102,7 +102,9 @@ public:
 
     int logicalHeightFromStyle() const
     {
-        int styleLogicalHeight = valueForLength(style()->logicalHeight(), 0);
+        Length height = style()->logicalHeight();
+        int styleLogicalHeight = height.isIntrinsic() ? LayoutUnit() : valueForLength(height, LayoutUnit());
+
         // In strict mode, box-sizing: content-box do the right thing and actually add in the border and padding.
         // Call computedCSSPadding* directly to avoid including implicitPadding.
         if (!document().inQuirksMode() && style()->boxSizing() != BORDER_BOX)
