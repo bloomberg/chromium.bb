@@ -124,7 +124,7 @@ class NotificationAddObserver : public MessageCenterChangeObserver {
 
     notification_ids_.push_back(notification_id);
 
-    if (waiting_)
+    if (waiting_ && count_ == 0)
       QuitRunLoop();
   }
 
