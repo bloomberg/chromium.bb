@@ -160,6 +160,9 @@ template("gcc_toolchain") {
       # overrides it (in which case {{output_extension}} will be what the target
       # specifies).
       default_output_extension = ".so"
+      if (defined(invoker.default_output_extension)) {
+        default_output_extension = invoker.default_output_extension
+      }
 
       output_prefix = "lib"
 

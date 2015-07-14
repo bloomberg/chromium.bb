@@ -162,7 +162,7 @@ if (is_android) {
   android_gdbserver =
       "$android_ndk_root/prebuilt/$android_prebuilt_arch/gdbserver/gdbserver"
 
-  # libc++ stuff ---------------------------------------------------------------
+  # Toolchain stuff ------------------------------------------------------------
 
   android_libcpp_root = "$android_ndk_root/sources/cxx-stl/llvm-libc++"
   if (component_mode == "shared_library") {
@@ -170,6 +170,10 @@ if (is_android) {
   } else {
     android_libcpp_library = "c++_static"
   }
+
+  # By appending .cr, we prevent name collisions with libraries already
+  # loaded by the Android zygote.
+  android_product_extension = ".cr.so"
 
   # ABI ------------------------------------------------------------------------
 

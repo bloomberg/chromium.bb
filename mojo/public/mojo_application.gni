@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("mojo.gni")
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
 
 # Generate a binary Mojo application in a self-named directory.
 # Application resources are copied to a "resources" directory alongside the app.
@@ -39,8 +42,10 @@ template("mojo_native_application") {
     output = base_target_name + ".mojo"
     library_target_name = base_target_name + "_library"
 
-    if (is_linux || is_android) {
+    if (is_linux) {
       library_name = "lib${library_target_name}.so"
+    } else if (is_android) {
+      library_name = "lib${library_target_name}${android_product_extension}"
     } else if (is_win) {
       library_name = "${library_target_name}.dll"
     } else if (is_mac) {

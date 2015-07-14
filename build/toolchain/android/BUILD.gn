@@ -69,6 +69,7 @@ template("android_gcc_toolchain") {
     replace_command = "if ! cmp -s $temp_stripped_soname $stripped_soname; then mv $temp_stripped_soname $stripped_soname; fi"
     postsolink = "$strip_command && $replace_command"
     solink_outputs = [ stripped_soname ]
+    default_output_extension = android_product_extension
 
     # We make the assumption that the gcc_toolchain will produce an exe with
     # the following definition.

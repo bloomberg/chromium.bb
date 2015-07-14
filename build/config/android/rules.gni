@@ -1432,20 +1432,22 @@ template("android_apk") {
              "Relocation packing requires use of the" + " Chromium linker.")
     }
 
-    _native_libs = []
     if (is_component_build) {
       _native_libs += [ "$root_out_dir/lib.stripped/libc++_shared.so" ]
       _chromium_linker_dep += [ "//build/android:cpplib_stripped" ]
     }
+
+    # Allow native_libs to be in the form "foo.so" or "foo.cr.so"
+    _first_ext_removed =
+        process_file_template(invoker.native_libs, "{{source_name_part}}")
     _native_libs += process_file_template(
-            invoker.native_libs,
-            "$root_build_dir/lib.stripped/{{source_file_part}}")
+            _first_ext_removed,
+            "$root_build_dir/lib.stripped/{{source_name_part}}$android_product_extension")
 
     _native_libs_dir = base_path + "/libs"
 
     if (_use_chromium_linker) {
-      _native_libs +=
-          [ "$root_build_dir/lib.stripped/libchromium_android_linker.so" ]
+      _native_libs += [ "$root_build_dir/lib.stripped/libchromium_android_linker$android_product_extension" ]
     }
 
     _enable_relocation_packing = false
@@ -1656,7 +1658,7 @@ template("android_apk") {
 
       skip_packing_list = [
         "gdbserver",
-        "libchromium_android_linker.so",
+        "libchromium_android_linker$android_product_extension",
       ]
 
       enable_packing_arg = 0
@@ -1940,7 +1942,7 @@ template("unittest_apk") {
   if (defined(invoker.unittests_binary)) {
     unittests_binary = invoker.unittests_binary
   } else {
-    unittests_binary = "lib" + test_suite_name + ".so"
+    unittests_binary = "lib${test_suite_name}${android_product_extension}"
   }
 
   if (defined(invoker.apk_name)) {

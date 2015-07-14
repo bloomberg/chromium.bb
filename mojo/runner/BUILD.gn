@@ -289,7 +289,7 @@ if (is_android) {
       "//mojo/services/network",
     ]
     sources = [
-      "$root_out_dir/lib.stripped/libbootstrap.so",
+      "$root_out_dir/lib.stripped/libbootstrap$android_product_extension",
       "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
     ]
 
@@ -310,7 +310,7 @@ if (is_android) {
       "$root_out_dir/exe.stripped/mojo_runner",
     ]
     outputs = [
-      "$root_out_dir/lib.stripped/libmojo_runner.so",
+      "$root_out_dir/lib.stripped/libmojo_runner$android_product_extension",
     ]
     deps = [
       ":mojo_runner",
@@ -338,7 +338,7 @@ if (is_android) {
 
     android_manifest = "android/apk/AndroidManifest.xml"
 
-    native_libs = [ "libmojo_runner.so" ]
+    native_libs = [ "libmojo_runner$android_product_extension" ]
 
     asset_location = mojo_runner_assets_dir
 

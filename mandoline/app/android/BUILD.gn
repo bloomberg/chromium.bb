@@ -44,7 +44,7 @@ copy("copy_mandoline_runner") {
     "$root_out_dir/exe.stripped/mandoline_runner",
   ]
   outputs = [
-    "$root_out_dir/lib.stripped/libmandoline_runner.so",
+    "$root_out_dir/lib.stripped/libmandoline_runner$android_product_extension",
   ]
 }
 
@@ -61,7 +61,7 @@ copy_ex("copy_mandoline_assets") {
     "//mojo/runner:bootstrap_java",
   ]
   sources = [
-    "$root_out_dir/lib.stripped/libbootstrap.so",
+    "$root_out_dir/lib.stripped/libbootstrap$android_product_extension",
     "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
   ]
 
@@ -120,7 +120,7 @@ android_apk("mandoline_apk") {
 
   android_manifest = "apk/AndroidManifest.xml"
 
-  native_libs = [ "libmandoline_runner.so" ]
+  native_libs = [ "libmandoline_runner$android_product_extension" ]
 
   asset_location = mandoline_assets_dir
 
