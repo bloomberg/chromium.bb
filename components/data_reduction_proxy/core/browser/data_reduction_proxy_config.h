@@ -236,10 +236,6 @@ class DataReductionProxyConfig
       const net::NetworkQualityEstimator* network_quality_estimator);
 
  protected:
-  // Writes a warning to the log that is used in backend processing of
-  // customer feedback. Virtual so tests can mock it for verification.
-  virtual void LogProxyState(bool enabled, bool restricted, bool at_startup);
-
   // Virtualized for mocking. Records UMA containing the result of requesting
   // the secure proxy check.
   virtual void RecordSecureProxyCheckFetchResult(
@@ -276,9 +272,7 @@ class DataReductionProxyConfig
   void OnIPAddressChanged() override;
 
   // Updates the Data Reduction Proxy configurator with the current config.
-  virtual void UpdateConfigurator(bool enabled,
-                                  bool restricted,
-                                  bool at_startup);
+  virtual void UpdateConfigurator(bool enabled, bool restricted);
 
   // Populates the parameters for the Lo-Fi field trial if the session is part
   // of either Lo-Fi enabled or Lo-Fi control field trial group.

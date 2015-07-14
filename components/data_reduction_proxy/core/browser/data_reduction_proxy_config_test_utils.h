@@ -109,8 +109,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
 
   MOCK_METHOD1(RecordSecureProxyCheckFetchResult,
                void(SecureProxyCheckFetchResult result));
-  MOCK_METHOD3(LogProxyState,
-               void(bool enabled, bool restricted, bool at_startup));
   MOCK_METHOD2(SetProxyPrefs, void(bool enabled, bool at_startup));
   MOCK_CONST_METHOD2(IsDataReductionProxy,
                      bool(const net::HostPortPair& host_port_pair,
@@ -136,10 +134,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   MOCK_CONST_METHOD0(IsIncludedInLoFiEnabledFieldTrial, bool());
   MOCK_CONST_METHOD0(IsIncludedInLoFiControlFieldTrial, bool());
 
-  // UpdateConfigurator should always call LogProxyState exactly once.
-  void UpdateConfigurator(bool enabled,
-                          bool restricted,
-                          bool at_startup) override;
+  void UpdateConfigurator(bool enabled, bool restricted) override;
 
   // Resets the Lo-Fi status to default state.
   void ResetLoFiStatusForTest();

@@ -273,8 +273,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(const scoped_refptr<
 
 void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  UpdateConfigurator(enabled_by_user_, secure_proxy_allowed_,
-                     false /* at_startup */);
+  UpdateConfigurator(enabled_by_user_, secure_proxy_allowed_);
 }
 
 bool DataReductionProxyConfig::WasDataReductionProxyUsed(
@@ -579,7 +578,7 @@ bool DataReductionProxyConfig::promo_allowed() const {
 void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
   enabled_by_user_ = enabled;
-  UpdateConfigurator(enabled_by_user_, secure_proxy_allowed_, at_startup);
+  UpdateConfigurator(enabled_by_user_, secure_proxy_allowed_);
 
   // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled) {
@@ -594,10 +593,8 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
 }
 
 void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
-                                                  bool secure_proxy_allowed,
-                                                  bool at_startup) {
+                                                  bool secure_proxy_allowed) {
   DCHECK(configurator_);
-  LogProxyState(enabled, secure_proxy_allowed, at_startup);
   std::vector<net::ProxyServer> proxies_for_http =
       config_values_->proxies_for_http();
   std::vector<net::ProxyServer> proxies_for_https =
@@ -609,26 +606,6 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
   } else {
     configurator_->Disable();
   }
-}
-
-void DataReductionProxyConfig::LogProxyState(bool enabled,
-                                             bool secure_proxy_allowed,
-                                             bool at_startup) {
-  const char kAtStartup[] = "at startup";
-  const char kByUser[] = "by user action";
-  const char kOn[] = "ON";
-  const char kOff[] = "OFF";
-  const char kRestricted[] = "(Restricted)";
-  const char kUnrestricted[] = "(Unrestricted)";
-
-  std::string annotated_on =
-      kOn + std::string(" ") +
-      (secure_proxy_allowed ? kUnrestricted : kRestricted);
-
-  // This must stay a LOG(WARNING); the output is used in processing customer
-  // feedback.
-  LOG(WARNING) << "SPDY proxy " << (enabled ? annotated_on : kOff) << " "
-               << (at_startup ? kAtStartup : kByUser);
 }
 
 void DataReductionProxyConfig::HandleSecureProxyCheckResponse(

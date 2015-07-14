@@ -76,7 +76,6 @@ class DataReductionProxyConfigTest : public testing::Test {
     if (holdback)
       flags |= DataReductionProxyParams::kHoldback;
     config()->ResetParamFlagsForTest(flags);
-    EXPECT_CALL(*config(), LogProxyState(_, _, _)).Times(0);
   }
 
   void ExpectSecureProxyCheckResult(SecureProxyCheckFetchResult result) {
@@ -179,7 +178,7 @@ TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
 
   std::vector<net::ProxyServer> expected_http_proxies;
   std::vector<net::ProxyServer> expected_https_proxies;
-  config()->UpdateConfigurator(true, false, false);
+  config()->UpdateConfigurator(true, false);
   EXPECT_TRUE(configurator()->enabled());
   expected_http_proxies.push_back(net::ProxyServer::FromURI(
       params()->DefaultOrigin(), net::ProxyServer::SCHEME_HTTP));
@@ -190,7 +189,7 @@ TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
   EXPECT_THAT(configurator()->proxies_for_https(),
               testing::ContainerEq(expected_https_proxies));
 
-  config()->UpdateConfigurator(false, false, false);
+  config()->UpdateConfigurator(false, false);
   EXPECT_FALSE(configurator()->enabled());
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -199,7 +198,7 @@ TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfiguratorHoldback) {
   ResetSettings(true, true, true, true);
 
-  config()->UpdateConfigurator(true, false, false);
+  config()->UpdateConfigurator(true, false);
   EXPECT_FALSE(configurator()->enabled());
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -209,7 +208,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
   config()->secure_proxy_allowed_ = true;
-  config()->UpdateConfigurator(true, true, true);
+  config()->UpdateConfigurator(true, true);
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.
   CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ALREADY_ENABLED, false,
@@ -262,7 +261,7 @@ TEST_F(DataReductionProxyConfigTest,
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
   config()->secure_proxy_allowed_ = false;
-  config()->UpdateConfigurator(true, false, true);
+  config()->UpdateConfigurator(true, false);
 
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // becomes unrestricted.

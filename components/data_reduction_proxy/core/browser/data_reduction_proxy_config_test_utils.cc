@@ -126,13 +126,10 @@ MockDataReductionProxyConfig::MockDataReductionProxyConfig(
 MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
 }
 
-void MockDataReductionProxyConfig::UpdateConfigurator(bool enabled,
-                                                      bool secure_proxy_allowed,
-                                                      bool at_startup) {
-  EXPECT_CALL(*this, LogProxyState(enabled, secure_proxy_allowed, at_startup))
-      .Times(1);
-  DataReductionProxyConfig::UpdateConfigurator(enabled, secure_proxy_allowed,
-                                               at_startup);
+void MockDataReductionProxyConfig::UpdateConfigurator(
+    bool enabled,
+    bool secure_proxy_allowed) {
+  DataReductionProxyConfig::UpdateConfigurator(enabled, secure_proxy_allowed);
 }
 
 void MockDataReductionProxyConfig::ResetLoFiStatusForTest() {
