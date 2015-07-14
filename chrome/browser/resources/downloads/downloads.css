@@ -104,6 +104,7 @@ html[dir=rtl] .progress {
 }
 
 .title-area {
+  align-items: baseline;
   display: flex;
 }
 
