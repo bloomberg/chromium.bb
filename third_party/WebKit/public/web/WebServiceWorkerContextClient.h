@@ -187,6 +187,12 @@ public:
     // should delete the callback after calling either onSuccess or onError.
     virtual void focus(const WebString& uuid, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 
+    // Ownership of the passed callbacks is transferred to the callee, callee
+    // should delete the callbacks after calling either onSuccess or onError.
+    // WebServiceWorkerClientInfo and WebServiceWorkerError ownerships are
+    // passed to the WebServiceWorkerClientsCallbacks implementation.
+    virtual void navigate(const WebString& uuid, const WebURL&, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+
     // Ownership of the passed WebMessagePortChannel is NOT passed to the callee.
     virtual void stashMessagePort(WebMessagePortChannel*, const WebString& name) { BLINK_ASSERT_NOT_REACHED(); }
 };

@@ -32,6 +32,7 @@ public:
     String visibilityState() const;
     bool focused() const { return m_isFocused; }
     ScriptPromise focus(ScriptState*);
+    ScriptPromise navigate(ScriptState*, const String& url);
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -138,6 +138,11 @@ void ServiceWorkerGlobalScopeClientImpl::focus(const WebString& clientUUID, WebS
     m_client.focus(clientUUID, callback);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::navigate(const WebString& clientUUID, const WebURL& url, WebServiceWorkerClientCallbacks* callback)
+{
+    m_client.navigate(clientUUID, url, callback);
+}
+
 void ServiceWorkerGlobalScopeClientImpl::stashMessagePort(WebMessagePortChannel* channel, const WebString& name)
 {
     m_client.stashMessagePort(channel, name);
