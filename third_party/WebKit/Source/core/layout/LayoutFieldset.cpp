@@ -63,6 +63,8 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
 {
     LayoutBox* legend = findInFlowLegend();
     if (legend) {
+        LayoutRect oldLegendFrameRect = legend->frameRect();
+
         if (relayoutChildren)
             legend->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::FieldsetChanged);
         legend->layoutIfNeeded();
@@ -119,6 +121,11 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
 
         setLogicalTopForChild(*legend, legendLogicalTop);
         setLogicalHeight(paddingBefore() + collapsedLegendExtent);
+
+        if (legend->frameRect() != oldLegendFrameRect) {
+            // We need to invalidate the fieldset border if the legend's frame changed.
+            setShouldDoFullPaintInvalidation();
+        }
     }
     return legend;
 }
