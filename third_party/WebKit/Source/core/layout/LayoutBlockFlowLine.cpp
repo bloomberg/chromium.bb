@@ -1304,15 +1304,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 // Go ahead and terminate the current line as far as
                 // minwidth is concerned.
                 LayoutUnit childMinPreferredLogicalWidth, childMaxPreferredLogicalWidth;
-                if (child->isBox() && child->isHorizontalWritingMode() != isHorizontalWritingMode()) {
-                    LayoutBox* childBox = toLayoutBox(child);
-                    LogicalExtentComputedValues computedValues;
-                    childBox->computeLogicalHeight(childBox->borderAndPaddingLogicalHeight(), 0, computedValues);
-                    childMinPreferredLogicalWidth = childMaxPreferredLogicalWidth = computedValues.m_extent;
-                } else {
-                    childMinPreferredLogicalWidth = child->minPreferredLogicalWidth();
-                    childMaxPreferredLogicalWidth = child->maxPreferredLogicalWidth();
-                }
+                computeChildPreferredLogicalWidths(*child, childMinPreferredLogicalWidth, childMaxPreferredLogicalWidth);
                 childMin += childMinPreferredLogicalWidth;
                 childMax += childMaxPreferredLogicalWidth;
 

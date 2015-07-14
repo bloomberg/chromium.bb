@@ -2069,12 +2069,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
         margin = marginStart + marginEnd;
 
         LayoutUnit childMinPreferredLogicalWidth, childMaxPreferredLogicalWidth;
-        if (child->isBox() && child->isHorizontalWritingMode() != isHorizontalWritingMode()) {
-            childMinPreferredLogicalWidth = childMaxPreferredLogicalWidth = toLayoutBox(child)->computeLogicalHeightWithoutLayout();
-        } else {
-            childMinPreferredLogicalWidth = child->minPreferredLogicalWidth();
-            childMaxPreferredLogicalWidth = child->maxPreferredLogicalWidth();
-        }
+        computeChildPreferredLogicalWidths(*child, childMinPreferredLogicalWidth, childMaxPreferredLogicalWidth);
 
         LayoutUnit w = childMinPreferredLogicalWidth + margin;
         minLogicalWidth = std::max(w, minLogicalWidth);
@@ -2120,6 +2115,16 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
     maxLogicalWidth = std::max<LayoutUnit>(0, maxLogicalWidth);
 
     maxLogicalWidth = std::max(floatLeftWidth + floatRightWidth, maxLogicalWidth);
+}
+
+void LayoutBlock::computeChildPreferredLogicalWidths(LayoutObject& child, LayoutUnit& minPreferredLogicalWidth, LayoutUnit& maxPreferredLogicalWidth) const
+{
+    if (child.isBox() && child.isHorizontalWritingMode() != isHorizontalWritingMode()) {
+        minPreferredLogicalWidth = maxPreferredLogicalWidth = toLayoutBox(child).computeLogicalHeightWithoutLayout();
+        return;
+    }
+    minPreferredLogicalWidth = child.minPreferredLogicalWidth();
+    maxPreferredLogicalWidth = child.maxPreferredLogicalWidth();
 }
 
 bool LayoutBlock::hasLineIfEmpty() const

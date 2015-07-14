@@ -253,6 +253,7 @@ protected:
 
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     void computePreferredLogicalWidths() override;
+    void computeChildPreferredLogicalWidths(LayoutObject& child, LayoutUnit& minPreferredLogicalWidth, LayoutUnit& maxPreferredLogicalWidth) const;
 
     int firstLineBoxBaseline() const override;
     int inlineBlockBaseline(LineDirectionMode) const override;
