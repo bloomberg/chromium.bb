@@ -141,8 +141,62 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/data/gles2/shaders/qualification_order.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
 
-    # Skip all WebGL CTS on OpenGL+AMD/Intel
-    self.Skip('*', ['win', 'opengl', 'amd'], bug=1007) # angle bug ID
+    # Win / OpenGL / AMD failures
+    self.Fail('conformance/extensions/oes-texture-half-float-linear.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/extensions/' +
+        'oes-texture-half-float-with-image-data.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-half-float-with-image.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/textures/tex-sub-image-2d.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/textures/texture-formats-test.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/textures/texture-npot.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/copyTexImage2D.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/copyTexSubImage2D.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/uniformf.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/uniformfBadArgs.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/uniformfArrayLen1.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/uniformi.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/uniformiBadArgs.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/uniformMatrix.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/more/functions/uniformMatrixBadArgs.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/swizzles.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/glsl/misc/' +
+        'shader-with-array-of-structs-containing-arrays.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/glsl/misc/' +
+        'shader-with-similar-uniform-array-names.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/rendering/gl-scissor-test.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/state/gl-get-calls.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/uniforms/gl-uniform-arrays.html',
+        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+
+    # Skip all WebGL CTS on OpenGL+Intel
     self.Skip('*', ['win', 'opengl', 'intel'], bug=1007) # angle bug ID
 
     # Mac failures
