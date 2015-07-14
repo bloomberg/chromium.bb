@@ -141,13 +141,13 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   // Get the set of active data types. These are the types currently being
   // synced. Note that control types are always included here.
   // Returns a bit map of the values from
-  // profile_sync_service_model_type_selection_android.h.
+  // profile_sync_service_android.cc.
   jlong GetActiveDataTypes(JNIEnv* env, jobject obj);
 
   // Get the set of preferred data types. These are the types that the user
   // has requested be synced.
   // Returns a bit map of the values from
-  // profile_sync_service_model_type_selection_android.h.
+  // profile_sync_service_android.cc.
   jlong GetPreferredDataTypes(JNIEnv* env, jobject obj);
 
   // Enables the passed data types.
@@ -155,7 +155,7 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   // contents of |model_type_selection| is
   // ignored.
   // Otherwise, the values of |model_type_selection| must contain a bit map of
-  // values from profile_sync_service_model_type_selection_android.h.
+  // values from profile_sync_service_android.cc.
   void SetPreferredDataTypes(JNIEnv* env,
                              jobject obj,
                              jboolean sync_everything,

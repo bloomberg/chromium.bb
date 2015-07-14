@@ -16,7 +16,6 @@
       'issues_observer.cc',
       'media_route.cc',
       'media_route.h',
-      'media_route_id.h',
       'media_router.h',
       'media_router_mojo_impl.cc',
       'media_router_mojo_impl.h',

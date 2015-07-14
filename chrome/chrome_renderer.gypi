@@ -23,7 +23,6 @@
       'renderer/external_extension.cc',
       'renderer/external_extension.h',
       'renderer/instant_restricted_id_cache.h',
-      'renderer/chrome_isolated_world_ids.h',
       'renderer/loadtimes_extension_bindings.cc',
       'renderer/loadtimes_extension_bindings.h',
       'renderer/media/chrome_key_systems.cc',
