@@ -269,8 +269,8 @@ bool Target::IsInitialBreakpointActive() {
 }
 
 bool Target::IsOnValidInstBoundary(uint32_t addr) {
-  // TODO(leslieb): Remove when x86-64 and arm have validator implementations.
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  // TODO(leslieb): Remove when arm has a validator implementation.
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   uint8_t code_buf[NACL_INSTR_BLOCK_SIZE];
   // Calculate nearest bundle address.
   uint32_t bundle_addr = addr & ~(NACL_INSTR_BLOCK_SIZE - 1);

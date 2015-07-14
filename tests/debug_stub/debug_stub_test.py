@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import operator
 import os
 import re
 import struct
@@ -841,8 +842,8 @@ class DebugStubTest(unittest.TestCase):
       self.assertEqual(reply, 'F-1,%x' % GDB_EBADF)
 
   def test_register_constraints(self):
-    if ARCH != 'x86-32':
-      # This has only been implemented for x86-32.
+    if ARCH != 'x86-32' and ARCH != 'x86-64':
+      # This has only been implemented for x86-32 and x86-64.
       return
     with LaunchDebugStub('test_super_instruction') as connection:
       reply = connection.RspRequest('c')
@@ -850,38 +851,57 @@ class DebugStubTest(unittest.TestCase):
 
       regs = DecodeRegs(connection.RspRequest('g'))
 
-      # Allowed to change all General registers besides eip.
-      self.assertEquals(ChangeReg(connection, 'eax', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'ebx', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'ecx', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'edx', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'esp', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'ebp', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'esi', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'edi', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'eflags', lambda x: x + 1), 'OK')
+      if ARCH == 'x86-32':
+        valid_regs = ['eax', 'ebx', 'ecx', 'edx', 'esp',
+                      'ebp', 'esi', 'edi', 'eflags']
+        restricted_regs = []
+        read_only_regs = ['cs', 'ss', 'ds', 'es', 'fs', 'gs']
+        super_inst_len = 5
+      elif ARCH == 'x86-64':
+        valid_regs = ['rax', 'rbx', 'rcx', 'rdx', 'rsi', 'rdi', 'eflags',
+                      'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14']
+        restricted_regs = ['rsp', 'rbp']
+        read_only_regs = ['cs', 'ss', 'ds', 'es', 'fs', 'gs', 'r15']
+        super_inst_len = 8
+      else:
+        raise AssertionError('Unknown architecture')
+
+      # Allowed to change all valid registers.
+      for reg in valid_regs:
+        self.assertEquals(ChangeReg(connection, reg, lambda x: x + 1), 'OK')
 
       # Cannot change read only registers, however error is suppressed.
-      self.assertEquals(ChangeReg(connection, 'cs', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'ss', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'ds', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'es', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'fs', lambda x: x + 1), 'OK')
-      self.assertEquals(ChangeReg(connection, 'gs', lambda x: x + 1), 'OK')
+      for reg in read_only_regs:
+        self.assertEquals(ChangeReg(connection, reg, lambda x: x + 1), 'OK')
+
+      # Cannot change the upper 32 bits of restricted registers.
+      # However error is suppressed.
+      for reg in restricted_regs:
+        self.assertEquals(ChangeReg(connection, reg, lambda x: 0), 'OK')
+        self.assertEquals(ChangeReg(connection, reg,
+          lambda x: x + 0xf00000000), 'OK')
 
       # Next instruction is a super instruction.
       # Therefore cannot jump anywhere in the middle.
-      for i in xrange(1,5):
-        self.assertEquals(ChangeReg(connection, 'eip', lambda x: x + i), 'E03')
+      for i in xrange(1, super_inst_len):
+        self.assertEquals(ChangeReg(connection, IP_REG[ARCH],
+          lambda x: x + i), 'E03')
 
       # Allowed to jump over the entire super instruction.
-      self.assertEquals(ChangeReg(connection, 'eip', lambda x: x + 5), 'OK')
+      self.assertEquals(ChangeReg(connection, IP_REG[ARCH],
+        lambda x: x + super_inst_len), 'OK')
 
   def test_step_inside_super_instruction(self):
-    if ARCH != 'x86-32':
-      # This has only been implemented for x86-32.
+    if not SingleSteppingWorks():
       return
     with LaunchDebugStub('test_super_instruction') as connection:
+      if ARCH == 'x86-32':
+        reg = 'eax'
+      elif ARCH == 'x86-64':
+        reg = 'rax'
+      else:
+        raise AssertionError('Unknown architecture')
+
       reply = connection.RspRequest('c')
       SkipBreakpoint(connection, reply)
 
@@ -891,7 +911,7 @@ class DebugStubTest(unittest.TestCase):
       regs = DecodeRegs(connection.RspRequest('g'))
 
       # Cannot change registers within super-instruction.
-      self.assertEquals(ChangeReg(connection, 'eax', lambda x: x + 1), 'E03')
+      self.assertEquals(ChangeReg(connection, reg, lambda x: x + 1), 'E03')
 
 class DebugStubBreakpointTest(unittest.TestCase):
 
@@ -974,8 +994,8 @@ class DebugStubBreakpointTest(unittest.TestCase):
       self.assertEquals(new_memory, old_memory[:1])
 
   def test_setting_breakpoint_in_super_instruction(self):
-    if ARCH != 'x86-32':
-      # This has only been implemented for x86-32.
+    if ARCH != 'x86-32' and ARCH != 'x86-64':
+      # This has only been implemented for x86-32 and x86-64.
       return
     with LaunchDebugStub('test_super_instruction') as connection:
       reply = connection.RspRequest('c')
