@@ -24,6 +24,15 @@
         ],
       },
     }],
+    # These PDBs are needed in order to get reasonable stack traces if
+    # an assertion fires or a crash occurs. Add more as necessary.
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/sbox_integration_tests.exe.pdb',
+        ],
+      },
+    }],
   ],
   'includes': [
     '../base/base.isolate',
