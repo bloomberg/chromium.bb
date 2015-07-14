@@ -44,9 +44,9 @@
 
     <event name="prepare_lock_surface">
       <description summary="tell the client to create, set the lock surface">
-	Tell the shell we want it to create and set the lock surface, which is
+	Tell the client we want it to create and set the lock surface, which is
 	a GUI asking the user to unlock the screen. The lock surface is
-	announced with 'set_lock_surface'. Whether or not the shell actually
+	announced with 'set_lock_surface'. Whether or not the client actually
 	implements locking, it MUST send 'unlock' request to let the normal
         desktop resume.
       </description>
