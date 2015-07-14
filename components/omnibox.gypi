@@ -120,7 +120,7 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'components/omnibox/omnibox_focus_state.h',
+        'omnibox/common/omnibox_focus_state.h',
       ],
     },
     {
