@@ -10,6 +10,7 @@
 #include "media/base/android/media_codec_player.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/test_data_factory.h"
+#include "media/base/android/test_statistics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -36,7 +37,8 @@ namespace media {
 namespace {
 
 const base::TimeDelta kDefaultTimeout = base::TimeDelta::FromMilliseconds(200);
-const base::TimeDelta kAudioFramePeriod = base::TimeDelta::FromMilliseconds(20);
+const base::TimeDelta kAudioFramePeriod =
+    base::TimeDelta::FromSecondsD(1024.0 / 44100);  // 1024 samples @ 44100 Hz
 
 // Mock of MediaPlayerManager for testing purpose.
 
@@ -48,9 +50,13 @@ class MockMediaPlayerManager : public MediaPlayerManager {
 
   MediaResourceGetter* GetMediaResourceGetter() override { return nullptr; }
   MediaUrlInterceptor* GetMediaUrlInterceptor() override { return nullptr; }
+
   void OnTimeUpdate(int player_id,
                     base::TimeDelta current_timestamp,
-                    base::TimeTicks current_time_ticks) override {}
+                    base::TimeTicks current_time_ticks) override {
+    pts_stat_.AddValue(current_timestamp);
+  }
+
   void OnMediaMetadataChanged(int player_id,
                               base::TimeDelta duration,
                               int width,
@@ -65,6 +71,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnPlaybackComplete(int player_id) override {
     playback_completed_ = true;
   }
+
   void OnMediaInterrupted(int player_id) override {}
   void OnBufferingUpdate(int player_id, int percentage) override {}
   void OnSeekComplete(int player_id,
@@ -96,6 +103,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   };
   MediaMetadata media_metadata_;
 
+  Minimax<base::TimeDelta> pts_stat_;
+
  private:
   bool playback_completed_;
 
@@ -109,7 +118,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
 DemuxerConfigs CreateAudioVideoConfigs(const base::TimeDelta& duration,
                                        const gfx::Size& video_size) {
   DemuxerConfigs configs =
-      TestDataFactory::CreateAudioConfigs(kCodecVorbis, duration);
+      TestDataFactory::CreateAudioConfigs(kCodecAAC, duration);
   configs.video_codec = kCodecVP8;
   configs.video_size = video_size;
   configs.is_video_encrypted = false;
@@ -132,18 +141,15 @@ DemuxerConfigs CreateAudioVideoConfigs(const TestDataFactory* audio,
 class AudioFactory : public TestDataFactory {
  public:
   AudioFactory(const base::TimeDelta& duration)
-      : TestDataFactory("vorbis-packet-%d", duration, kAudioFramePeriod) {}
+      : TestDataFactory("aac-44100-packet-%d", duration, kAudioFramePeriod) {}
 
   DemuxerConfigs GetConfigs() const override {
-    return TestDataFactory::CreateAudioConfigs(kCodecVorbis, duration_);
+    return TestDataFactory::CreateAudioConfigs(kCodecAAC, duration_);
   }
 
  protected:
   void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override {
-    // Vorbis needs 4 extra bytes padding on Android to decode properly.
-    // Check NuMediaExtractor.cpp in Android source code.
-    uint8 padding[4] = {0xff, 0xff, 0xff, 0xff};
-    unit->data.insert(unit->data.end(), padding, padding + 4);
+    unit->is_key_frame = true;
   }
 };
 
@@ -331,7 +337,7 @@ TEST_F(MediaCodecPlayerTest, SetAudioConfigsBeforePlayerCreation) {
   base::TimeDelta duration = base::TimeDelta::FromSeconds(10);
 
   demuxer_->PostConfigs(
-      TestDataFactory::CreateAudioConfigs(kCodecVorbis, duration));
+      TestDataFactory::CreateAudioConfigs(kCodecAAC, duration));
 
   // Wait until the configuration gets to the media thread.
   EXPECT_TRUE(WaitForCondition(base::Bind(
@@ -360,7 +366,7 @@ TEST_F(MediaCodecPlayerTest, SetAudioConfigsAfterPlayerCreation) {
   // Post configuration after the player has been initialized.
   base::TimeDelta duration = base::TimeDelta::FromSeconds(10);
   demuxer_->PostConfigs(
-      TestDataFactory::CreateAudioConfigs(kCodecVorbis, duration));
+      TestDataFactory::CreateAudioConfigs(kCodecAAC, duration));
 
   // Configuration should propagate through the player and to the manager.
   EXPECT_TRUE(
@@ -397,7 +403,7 @@ TEST_F(MediaCodecPlayerTest, PlayAudioTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
-  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1100);
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(2000);
 
   demuxer_->SetAudioFactory(
       scoped_ptr<AudioFactory>(new AudioFactory(duration)));
@@ -419,6 +425,11 @@ TEST_F(MediaCodecPlayerTest, PlayAudioTillCompletion) {
       WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
                                   base::Unretained(&manager_)),
                        timeout));
+
+  // Current timestamp reflects "now playing" time. It might come with delay
+  // relative to the frame's PTS. Allow for 100 ms delay here.
+  base::TimeDelta audio_pts_delay = base::TimeDelta::FromMilliseconds(100);
+  EXPECT_LT(duration - audio_pts_delay, manager_.pts_stat_.max());
 }
 
 }  // namespace media

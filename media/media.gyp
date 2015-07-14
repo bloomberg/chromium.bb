@@ -1131,6 +1131,7 @@
         'base/android/media_source_player_unittest.cc',
         'base/android/test_data_factory.cc',
         'base/android/test_data_factory.h',
+        'base/android/test_statistics.h',
         'base/audio_block_fifo_unittest.cc',
         'base/audio_buffer_converter_unittest.cc',
         'base/audio_buffer_queue_unittest.cc',

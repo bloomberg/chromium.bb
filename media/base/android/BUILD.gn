@@ -83,6 +83,7 @@ source_set("unittests") {
     "media_source_player_unittest.cc",
     "test_data_factory.cc",
     "test_data_factory.h",
+    "test_statistics.h",
   ]
   deps = [
     ":android",

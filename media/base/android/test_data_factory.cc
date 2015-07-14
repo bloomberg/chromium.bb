@@ -30,10 +30,8 @@ DemuxerConfigs TestDataFactory::CreateAudioConfigs(
     } break;
 
     case kCodecAAC: {
-      configs.audio_sampling_rate = 48000;
-      uint8 aac_extra_data[] = {0x13, 0x10};
-      configs.audio_extra_data =
-          std::vector<uint8>(aac_extra_data, aac_extra_data + 2);
+      configs.audio_sampling_rate = 44100;
+      configs.audio_extra_data = {0x12, 0x10};
     } break;
 
     default:
@@ -74,9 +72,6 @@ bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
   DCHECK(delay);
 
   *delay = base::TimeDelta();
-
-  if (regular_pts_ > duration_)
-    return false;
 
   for (int i = 0; i < 4; ++i) {
     chunk->access_units.push_back(AccessUnit());

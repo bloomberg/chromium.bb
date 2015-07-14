@@ -29,6 +29,13 @@ vp8-I-frame-320x480 - The first I frame of a 320x480 reencode of bear-320x240.we
 vp8-I-frame-640x240 - The first I frame of a 640x240 reencode of bear-320x240.webm.
 vp8-corrupt-I-frame - A copy of vp8-I-frame-320x240 w/ all bytes XORed w/ 0xA5.
 
+AAC test data from MPEG-DASH demoplayer (44100 Hz, stereo)
+Duration of each packet is (1024/44100 Hz), approximately 23.22 ms.
+aac-44100-packet-0  - timestamp: 0ms
+aac-44100-packet-1  - timestamp: 23.22ms
+aac-44100-packet-2  - timestamp: 46.44ms
+aac-44100-packet-3  - timestamp: 69.66ms
+
 Vorbis test data from bear.ogv (44100 Hz, 16 bits, stereo)
 vorbis-extradata - Vorbis extradata section
 vorbis-packet-0  - timestamp: 0ms, duration: 0ms

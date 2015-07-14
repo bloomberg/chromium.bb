@@ -10,6 +10,7 @@
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_codec_video_decoder.h"
 #include "media/base/android/test_data_factory.h"
+#include "media/base/android/test_statistics.h"
 #include "media/base/buffers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/surface_texture.h"
@@ -28,7 +29,8 @@ namespace media {
 namespace {
 
 const base::TimeDelta kDefaultTimeout = base::TimeDelta::FromMilliseconds(200);
-const base::TimeDelta kAudioFramePeriod = base::TimeDelta::FromMilliseconds(20);
+const base::TimeDelta kAudioFramePeriod =
+    base::TimeDelta::FromSecondsD(1024.0 / 44100);  // 1024 samples @ 44100 Hz
 const base::TimeDelta kVideoFramePeriod = base::TimeDelta::FromMilliseconds(20);
 
 class AudioFactory : public TestDataFactory {
@@ -50,18 +52,15 @@ class VideoFactory : public TestDataFactory {
 };
 
 AudioFactory::AudioFactory(const base::TimeDelta& duration)
-    : TestDataFactory("vorbis-packet-%d", duration, kAudioFramePeriod) {
+    : TestDataFactory("aac-44100-packet-%d", duration, kAudioFramePeriod) {
 }
 
 DemuxerConfigs AudioFactory::GetConfigs() const {
-  return TestDataFactory::CreateAudioConfigs(kCodecVorbis, duration_);
+  return TestDataFactory::CreateAudioConfigs(kCodecAAC, duration_);
 }
 
 void AudioFactory::ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) {
-  // Vorbis needs 4 extra bytes padding on Android to decode properly. Check
-  // NuMediaExtractor.cpp in Android source code.
-  uint8 padding[4] = {0xff, 0xff, 0xff, 0xff};
-  unit->data.insert(unit->data.end(), padding, padding + 4);
+  unit->is_key_frame = true;
 }
 
 VideoFactory::VideoFactory(const base::TimeDelta& duration)
@@ -92,33 +91,6 @@ void VideoFactory::ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) {
   if (index_in_chunk == 0)
     unit->is_key_frame = true;
 }
-
-// Class that computes statistics: number of calls, minimum and maximum values.
-// It is used for PTS statistics to verify that playback did actually happen.
-
-template <typename T>
-class Minimax {
- public:
-  Minimax() : num_values_(0) {}
-  ~Minimax() {}
-
-  void AddValue(const T& value) {
-    ++num_values_;
-    if (value < min_)
-      min_ = value;
-    else if (max_ < value)
-      max_ = value;
-  }
-
-  const T& min() const { return min_; }
-  const T& max() const { return max_; }
-  int num_values() const { return num_values_; }
-
- private:
-  T min_;
-  T max_;
-  int num_values_;
-};
 
 }  // namespace (anonymous)
 
@@ -172,7 +144,10 @@ class MediaCodecDecoderTest : public testing::Test {
   void OnError() {}
   void OnUpdateCurrentTime(base::TimeDelta now_playing,
                            base::TimeDelta last_buffered) {
-    pts_stat_.AddValue(now_playing);
+    // Add the |last_buffered| value for PTS. For video it is the same as
+    // |now_playing| and is equal to PTS, for audio |last_buffered| should
+    // exceed PTS.
+    pts_stat_.AddValue(last_buffered);
 
     if (stop_request_time_ != kNoTimestamp() &&
         now_playing >= stop_request_time_) {
@@ -467,7 +442,7 @@ TEST_F(MediaCodecDecoderTest, AudioPlayTillCompletion) {
   CreateAudioDecoder();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(600);
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1500);
 
   SetDataFactory(scoped_ptr<AudioFactory>(new AudioFactory(duration)));
 
@@ -491,9 +466,9 @@ TEST_F(MediaCodecDecoderTest, AudioPlayTillCompletion) {
   EXPECT_TRUE(decoder_->IsStopped());
   EXPECT_TRUE(decoder_->IsCompleted());
 
-  // It is hard to properly estimate minimum and maximum values because
-  // reported times are different from PTS.
-  EXPECT_EQ(25, pts_stat_.num_values());
+  // Last buffered timestamp should be no less than PTS.
+  EXPECT_EQ(22, pts_stat_.num_values());
+  EXPECT_LE(data_factory_->last_pts(), pts_stat_.max());
 }
 
 TEST_F(MediaCodecDecoderTest, VideoPlayTillCompletion) {
