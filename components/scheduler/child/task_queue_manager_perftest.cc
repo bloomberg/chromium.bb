@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/threading/thread.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/task_queue_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -68,8 +68,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     selector_ = make_scoped_ptr(new SelectorForTest);
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        num_queues,
-        SchedulerTaskRunnerDelegateImpl::Create(message_loop_.get()),
+        num_queues, SchedulerMessageLoopDelegate::Create(message_loop_.get()),
         selector_.get(), "fake.category", "fake.category.debug"));
   }
 

@@ -63,7 +63,11 @@ bool NestableTaskRunnerForTest::RunsTasksOnCurrentThread() const {
 }
 
 bool NestableTaskRunnerForTest::IsNested() const {
-  return false;
+  return is_nested_;
+}
+
+void NestableTaskRunnerForTest::SetNested(bool is_nested) {
+  is_nested_ = is_nested;
 }
 
 void NestableTaskRunnerForTest::AddTaskObserver(

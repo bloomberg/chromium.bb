@@ -10,7 +10,7 @@
 #include "base/threading/thread.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/child/nestable_task_runner_for_test.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/task_queue_selector.h"
 #include "components/scheduler/child/test_time_source.h"
 #include "components/scheduler/test/test_always_fail_time_source.h"
@@ -133,12 +133,10 @@ class TaskQueueManagerTest : public testing::Test {
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     test_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(now_src_.get(), false));
-    main_task_runner_ =
-        NestableTaskRunnerForTest::Create(test_task_runner_.get());
     selector_ = make_scoped_ptr(createSelectorForTest(type));
-    manager_ = make_scoped_ptr(
-        new TaskQueueManager(num_queues, main_task_runner_, selector_.get(),
-                             "test.scheduler", "test.scheduler.debug"));
+    manager_ = make_scoped_ptr(new TaskQueueManager(
+        num_queues, NestableTaskRunnerForTest::Create(test_task_runner_.get()),
+        selector_.get(), "test.scheduler", "test.scheduler.debug"));
     manager_->SetTimeSourceForTesting(
         make_scoped_ptr(new TestTimeSource(now_src_.get())));
 
@@ -149,8 +147,7 @@ class TaskQueueManagerTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     selector_ = make_scoped_ptr(createSelectorForTest(type));
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        num_queues,
-        SchedulerTaskRunnerDelegateImpl::Create(message_loop_.get()),
+        num_queues, SchedulerMessageLoopDelegate::Create(message_loop_.get()),
         selector_.get(), "test.scheduler", "test.scheduler.debug"));
     EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
@@ -191,12 +188,11 @@ class TaskQueueManagerTest : public testing::Test {
         &TaskQueueManager::WakeupPolicyToString);
   }
 
-  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<base::SimpleTestTickClock> now_src_;
-  scoped_refptr<NestableTaskRunnerForTest> main_task_runner_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner_;
   scoped_ptr<SelectorForTest> selector_;
   scoped_ptr<TaskQueueManager> manager_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 };
 
 void PostFromNestedRunloop(base::MessageLoop* message_loop,

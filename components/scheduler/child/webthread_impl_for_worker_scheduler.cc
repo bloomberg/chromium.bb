@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
@@ -18,23 +19,15 @@ WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
     const char* name)
     : thread_(new base::Thread(name)) {
   thread_->Start();
-  thread_task_runner_ = thread_->task_runner();
 
   base::WaitableEvent completion(false, false);
-  thread_task_runner_->PostTask(
+  thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&WebThreadImplForWorkerScheduler::InitOnThread,
                             base::Unretained(this), &completion));
   completion.Wait();
 }
 
 WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
-  base::WaitableEvent completion(false, false);
-  // Shut down the scheduler on the thread to restore the original task runner
-  // so that the thread can tear itself down.
-  thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebThreadImplForWorkerScheduler::ShutdownOnThread,
-                            base::Unretained(this), &completion));
-  completion.Wait();
   thread_->Stop();
 }
 
@@ -49,12 +42,6 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
       worker_scheduler_->DefaultTaskRunner(),
       worker_scheduler_->DefaultTaskRunner()));
   base::MessageLoop::current()->AddDestructionObserver(this);
-  completion->Signal();
-}
-
-void WebThreadImplForWorkerScheduler::ShutdownOnThread(
-    base::WaitableEvent* completion) {
-  worker_scheduler_->Shutdown();
   completion->Signal();
 }
 

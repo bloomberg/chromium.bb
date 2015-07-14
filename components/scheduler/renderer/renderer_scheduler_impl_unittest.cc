@@ -8,8 +8,8 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_for_test.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/nestable_task_runner_for_test.h"
+#include "components/scheduler/child/scheduler_message_loop_delegate.h"
 #include "components/scheduler/child/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -148,7 +148,7 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
   using RendererSchedulerImpl::PolicyToString;
 
   RendererSchedulerImplForTest(
-      scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner)
+      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
       : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
 
   void UpdatePolicyLocked(UpdateType update_type) override {
@@ -197,16 +197,16 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void SetUp() override {
     if (message_loop_) {
-      main_task_runner_ =
-          SchedulerTaskRunnerDelegateImpl::Create(message_loop_.get());
+      nestable_task_runner_ =
+          SchedulerMessageLoopDelegate::Create(message_loop_.get());
     } else {
       mock_task_runner_ = make_scoped_refptr(
           new cc::OrderedSimpleTaskRunner(clock_.get(), false));
-      main_task_runner_ =
-          SchedulerTaskRunnerDelegateForTest::Create(mock_task_runner_);
+      nestable_task_runner_ =
+          NestableTaskRunnerForTest::Create(mock_task_runner_);
     }
-    Initialize(
-        make_scoped_ptr(new RendererSchedulerImplForTest(main_task_runner_)));
+    Initialize(make_scoped_ptr(
+        new RendererSchedulerImplForTest(nestable_task_runner_)));
   }
 
   void Initialize(scoped_ptr<RendererSchedulerImplForTest> scheduler) {
@@ -352,7 +352,7 @@ class RendererSchedulerImplTest : public testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   scoped_ptr<base::MessageLoop> message_loop_;
 
-  scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner_;
+  scoped_refptr<NestableSingleThreadTaskRunner> nestable_task_runner_;
   scoped_ptr<RendererSchedulerImplForTest> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -1204,9 +1204,9 @@ class RendererSchedulerImplWithMockSchedulerTest
   void SetUp() override {
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
-    main_task_runner_ =
-        SchedulerTaskRunnerDelegateForTest::Create(mock_task_runner_);
-    mock_scheduler_ = new RendererSchedulerImplForTest(main_task_runner_);
+    nestable_task_runner_ =
+        NestableTaskRunnerForTest::Create(mock_task_runner_);
+    mock_scheduler_ = new RendererSchedulerImplForTest(nestable_task_runner_);
     Initialize(make_scoped_ptr(mock_scheduler_));
   }
 

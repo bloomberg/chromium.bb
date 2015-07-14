@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate.h"
+#include "components/scheduler/child/nestable_single_thread_task_runner.h"
 
 namespace scheduler {
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
-    scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner)
+    scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
     : helper_(main_task_runner,
               "worker.scheduler",
               TRACE_DISABLED_BY_DEFAULT("worker.scheduler"),

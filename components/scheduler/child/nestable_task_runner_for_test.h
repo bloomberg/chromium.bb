@@ -14,6 +14,8 @@ class NestableTaskRunnerForTest : public NestableSingleThreadTaskRunner {
   static scoped_refptr<NestableTaskRunnerForTest> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
+  void SetNested(bool is_nested);
+
   // NestableSingleThreadTaskRunner implementation
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,

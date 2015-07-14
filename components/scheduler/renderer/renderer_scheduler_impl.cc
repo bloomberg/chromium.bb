@@ -9,13 +9,13 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/begin_frame_args.h"
+#include "components/scheduler/child/nestable_single_thread_task_runner.h"
 #include "components/scheduler/child/prioritizing_task_queue_selector.h"
-#include "components/scheduler/child/scheduler_task_runner_delegate.h"
 
 namespace scheduler {
 
 RendererSchedulerImpl::RendererSchedulerImpl(
-    scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner)
+    scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
     : helper_(main_task_runner,
               "renderer.scheduler",
               TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
