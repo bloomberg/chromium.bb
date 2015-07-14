@@ -742,7 +742,7 @@ bool InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassRe
     if (!resourceData)
         return false;
     if (BlobDataHandle* blob = resourceData->downloadedFileBlob()) {
-        if (LocalFrame* frame = m_pageAgent->frameForId(resourceData->frameId())) {
+        if (LocalFrame* frame = IdentifiersFactory::frameById(m_pageAgent->inspectedFrame(), resourceData->frameId())) {
             if (Document* document = frame->document()) {
                 InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, InspectorPageAgent::createResourceTextDecoder(resourceData->mimeType(), resourceData->textEncodingName()), callback);
                 client->start(document);

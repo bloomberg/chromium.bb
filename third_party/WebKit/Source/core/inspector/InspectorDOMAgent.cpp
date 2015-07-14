@@ -1318,7 +1318,7 @@ void InspectorDOMAgent::highlightFrame(
     const RefPtr<JSONObject>* color,
     const RefPtr<JSONObject>* outlineColor)
 {
-    LocalFrame* frame = m_pageAgent->frameForId(frameId);
+    LocalFrame* frame = IdentifiersFactory::frameById(m_pageAgent->inspectedFrame(), frameId);
     // FIXME: Inspector doesn't currently work cross process.
     if (frame && frame->deprecatedLocalOwner()) {
         OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());

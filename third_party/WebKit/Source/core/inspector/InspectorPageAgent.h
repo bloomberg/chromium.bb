@@ -123,9 +123,6 @@ public:
     void restore() override;
 
     // Cross-agents API
-    static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
-    LocalFrame* frameForId(const String& frameId);
-    LocalFrame* assertFrame(ErrorString*, const String& frameId);
     FrameHost* frameHost();
     LocalFrame* inspectedFrame() const { return m_inspectedFrame.get(); }
     LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);

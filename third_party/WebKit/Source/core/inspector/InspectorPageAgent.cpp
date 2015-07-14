@@ -180,10 +180,6 @@ PassOwnPtr<TextResourceDecoder> InspectorPageAgent::createResourceTextDecoder(co
 
 static void resourceContent(ErrorString* errorString, LocalFrame* frame, const KURL& url, String* result, bool* base64Encoded)
 {
-    DocumentLoader* loader = InspectorPageAgent::assertDocumentLoader(errorString, frame);
-    if (!loader)
-        return;
-
     if (!InspectorPageAgent::cachedResourceContent(InspectorPageAgent::cachedResource(frame, url), result, base64Encoded))
         *errorString = "No resource with given URL found";
 }
@@ -513,12 +509,12 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
     if (!callback->isActive())
         return;
 
-    ErrorString errorString;
-    LocalFrame* frame = assertFrame(&errorString, frameId);
+    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrame, frameId);
     if (!frame) {
-        callback->sendFailure(errorString);
+        callback->sendFailure("No frame for given id found");
         return;
     }
+    ErrorString errorString;
     String content;
     bool base64Encoded;
     resourceContent(&errorString, frame, KURL(ParsedURLString, url), &content, &base64Encoded);
@@ -560,7 +556,7 @@ void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, c
 {
     results = TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>::create();
 
-    LocalFrame* frame = frameForId(frameId);
+    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrame, frameId);
     KURL kurl(ParsedURLString, url);
 
     FrameLoader* frameLoader = frame ? &frame->loader() : nullptr;
@@ -582,9 +578,11 @@ void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, c
 
 void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const String& frameId, const String& html)
 {
-    LocalFrame* frame = assertFrame(errorString, frameId);
-    if (!frame)
+    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrame, frameId);
+    if (!frame) {
+        *errorString = "No frame for given id found";
         return;
+    }
 
     Document* document = frame->document();
     if (!document) {
@@ -653,12 +651,6 @@ FrameHost* InspectorPageAgent::frameHost()
     return m_inspectedFrame->host();
 }
 
-LocalFrame* InspectorPageAgent::frameForId(const String& frameId)
-{
-    LocalFrame* frame = IdentifiersFactory::frameById(frameId);
-    return frame && frame->instrumentingAgents() == m_inspectedFrame->instrumentingAgents() ? frame : nullptr;
-}
-
 LocalFrame* InspectorPageAgent::findFrameWithSecurityOrigin(const String& originRawString)
 {
     for (Frame* frame = inspectedFrame(); frame; frame = frame->tree().traverseNext(inspectedFrame())) {
@@ -671,26 +663,9 @@ LocalFrame* InspectorPageAgent::findFrameWithSecurityOrigin(const String& origin
     return nullptr;
 }
 
-LocalFrame* InspectorPageAgent::assertFrame(ErrorString* errorString, const String& frameId)
-{
-    LocalFrame* frame = frameForId(frameId);
-    if (!frame)
-        *errorString = "No frame for given id found";
-    return frame;
-}
-
 bool InspectorPageAgent::screencastEnabled()
 {
     return m_enabled && m_state->getBoolean(PageAgentState::screencastEnabled);
-}
-
-// static
-DocumentLoader* InspectorPageAgent::assertDocumentLoader(ErrorString* errorString, LocalFrame* frame)
-{
-    DocumentLoader* documentLoader = frame->loader().documentLoader();
-    if (!documentLoader)
-        *errorString = "No documentLoader for given frame found";
-    return documentLoader;
 }
 
 void InspectorPageAgent::frameStartedLoading(LocalFrame* frame)

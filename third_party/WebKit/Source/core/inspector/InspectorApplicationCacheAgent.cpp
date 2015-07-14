@@ -117,11 +117,16 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr
 
 DocumentLoader* InspectorApplicationCacheAgent::assertFrameWithDocumentLoader(ErrorString* errorString, String frameId)
 {
-    LocalFrame* frame = m_pageAgent->assertFrame(errorString, frameId);
-    if (!frame)
+    LocalFrame* frame = IdentifiersFactory::frameById(m_pageAgent->inspectedFrame(), frameId);
+    if (!frame) {
+        *errorString = "No frame for given id found";
         return nullptr;
+    }
 
-    return InspectorPageAgent::assertDocumentLoader(errorString, frame);
+    DocumentLoader* documentLoader = frame->loader().documentLoader();
+    if (!documentLoader)
+        *errorString = "No documentLoader for given frame found";
+    return documentLoader;
 }
 
 void InspectorApplicationCacheAgent::getManifestForFrame(ErrorString* errorString, const String& frameId, String* manifestURL)

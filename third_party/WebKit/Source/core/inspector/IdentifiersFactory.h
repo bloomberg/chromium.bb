@@ -42,10 +42,10 @@ public:
     static String requestId(unsigned long identifier);
 
     static String frameId(LocalFrame*);
-    static LocalFrame* frameById(const String&);
+    static LocalFrame* frameById(LocalFrame* inspectedFrame, const String&);
 
     static String loaderId(DocumentLoader*);
-    static DocumentLoader* loaderById(const String&);
+    static DocumentLoader* loaderById(LocalFrame* inspectedFrame, const String&);
 
 private:
     static String addProcessIdPrefixTo(int id);
