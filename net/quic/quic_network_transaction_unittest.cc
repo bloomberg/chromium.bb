@@ -252,6 +252,8 @@ class QuicNetworkTransactionTest
 
     session_ = new HttpNetworkSession(params_);
     session_->quic_stream_factory()->set_require_confirmation(false);
+    ASSERT_EQ(params_.quic_socket_receive_buffer_size,
+              session_->quic_stream_factory()->socket_receive_buffer_size());
   }
 
   void CheckWasQuicResponse(const scoped_ptr<HttpNetworkTransaction>& trans) {

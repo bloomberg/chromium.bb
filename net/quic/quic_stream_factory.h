@@ -223,6 +223,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     enable_connection_racing_ = enable_connection_racing;
   }
 
+  int socket_receive_buffer_size() const { return socket_receive_buffer_size_; }
+
  private:
   class Job;
   friend class test::QuicStreamFactoryPeer;
