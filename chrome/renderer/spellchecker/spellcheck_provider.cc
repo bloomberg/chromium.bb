@@ -264,6 +264,7 @@ void SpellCheckProvider::OnAdvanceToNextMisspelling() {
 
 void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
+    const base::string16& line,
     const std::vector<SpellCheckResult>& results) {
   // TODO(groby): Unify with SpellCheckProvider::OnRespondSpellingService
   DCHECK(spellcheck_);
@@ -275,7 +276,7 @@ void SpellCheckProvider::OnRespondTextCheck(
   blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
   spellcheck_->CreateTextCheckingResults(SpellCheck::DO_NOT_MODIFY,
                                          0,
-                                         base::string16(),
+                                         line,
                                          results,
                                          &textcheck_results);
   completion->didFinishCheckingText(textcheck_results);

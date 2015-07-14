@@ -1238,20 +1238,6 @@ TEST_F(SpellCheckTest, CreateTextCheckingResultsKeepsTypographicalApostrophe) {
   }
 }
 
-// Verify that the SpellCheck class does not crash with empty |line_text|. This
-// happens only with DO_NOT_MODIFY flag.
-TEST_F(SpellCheckTest, CreateTextCheckingResultsDoesNotCrashWithEmptyLineText) {
-  std::vector<SpellCheckResult> spellcheck_results;
-  spellcheck_results.push_back(
-      SpellCheckResult(SpellCheckResult::SPELLING, 0, 1, base::string16()));
-  spellcheck_results.push_back(
-      SpellCheckResult(SpellCheckResult::SPELLING, 1, 1, base::string16()));
-  blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
-  spell_check()->CreateTextCheckingResults(SpellCheck::DO_NOT_MODIFY, 0,
-                                           base::string16(), spellcheck_results,
-                                           &textcheck_results);
-}
-
 // Checks some words that should be present in all English dictionaries.
 TEST_F(SpellCheckTest, EnglishWords) {
   static const struct {

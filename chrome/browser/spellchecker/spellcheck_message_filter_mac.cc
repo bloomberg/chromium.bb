@@ -43,11 +43,11 @@ class SpellingRequest {
                     int document_tag,
                     const std::vector<SpellCheckMarker>& markers);
  private:
-  // Request server-side checking.
-  void RequestRemoteCheck(const base::string16& text);
+  // Request server-side checking for |text_|.
+  void RequestRemoteCheck();
 
-  // Request a check from local spell checker.
-  void RequestLocalCheck(const base::string16& text, int document_tag);
+  // Request a check for |text_| from local spell checker.
+  void RequestLocalCheck();
 
   // Check if all pending requests are done, send reply to render process if so.
   void OnCheckCompleted();
@@ -71,6 +71,7 @@ class SpellingRequest {
   content::BrowserMessageFilter* destination_;  // ref-counted.
   int render_process_id_;
 
+  base::string16 text_;
   int route_id_;
   int identifier_;
   int document_tag_;
@@ -99,6 +100,7 @@ void SpellingRequest::RequestCheck(
   DCHECK(!text.empty());
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  text_ = text;
   route_id_ = route_id;
   identifier_ = identifier;
   document_tag_ = document_tag;
@@ -110,11 +112,11 @@ void SpellingRequest::RequestCheck(
       BarrierClosure(2,
                      base::Bind(&SpellingRequest::OnCheckCompleted,
                      base::Owned(this)));
-  RequestRemoteCheck(text);
-  RequestLocalCheck(text, document_tag_);
+  RequestRemoteCheck();
+  RequestLocalCheck();
 }
 
-void SpellingRequest::RequestRemoteCheck(const base::string16& text) {
+void SpellingRequest::RequestRemoteCheck() {
   BrowserContext* context = NULL;
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id_);
@@ -124,16 +126,15 @@ void SpellingRequest::RequestRemoteCheck(const base::string16& text) {
   client_->RequestTextCheck(
     context,
     SpellingServiceClient::SPELLCHECK,
-    text,
+    text_,
     base::Bind(&SpellingRequest::OnRemoteCheckCompleted,
                base::Unretained(this)));
 }
 
-void SpellingRequest::RequestLocalCheck(const base::string16& text,
-                                        int document_tag) {
+void SpellingRequest::RequestLocalCheck() {
   spellcheck_mac::RequestTextCheck(
-      document_tag,
-      text,
+      document_tag_,
+      text_,
       base::Bind(&SpellingRequest::OnLocalCheckCompleted,
                  base::Unretained(this)));
 }
@@ -153,6 +154,7 @@ void SpellingRequest::OnCheckCompleted() {
       new SpellCheckMsg_RespondTextCheck(
           route_id_,
           identifier_,
+          text_,
           *check_results));
   destination_->Release();
 

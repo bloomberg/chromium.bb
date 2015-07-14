@@ -407,34 +407,35 @@ void SpellCheck::CreateTextCheckingResults(
     const base::string16& line_text,
     const std::vector<SpellCheckResult>& spellcheck_results,
     WebVector<WebTextCheckingResult>* textcheck_results) {
+  DCHECK(!line_text.empty());
+
   std::vector<WebTextCheckingResult> results;
   for (const SpellCheckResult& spellcheck_result : spellcheck_results) {
+    DCHECK_LE(static_cast<size_t>(spellcheck_result.location),
+              line_text.length());
+    DCHECK_LE(static_cast<size_t>(spellcheck_result.location +
+                                  spellcheck_result.length),
+              line_text.length());
+
+    const base::string16& misspelled_word =
+        line_text.substr(spellcheck_result.location, spellcheck_result.length);
     base::string16 replacement = spellcheck_result.replacement;
     SpellCheckResult::Decoration decoration = spellcheck_result.decoration;
+
+    // Ignore words in custom dictionary.
+    if (custom_dictionary_.SpellCheckWord(misspelled_word, 0,
+                                          misspelled_word.length())) {
+      continue;
+    }
+
+    // Use the same types of appostrophes as in the mispelled word.
+    PreserveOriginalApostropheTypes(misspelled_word, &replacement);
+
+    // Ignore misspellings due the typographical apostrophe.
+    if (misspelled_word == replacement)
+      continue;
+
     if (filter == USE_NATIVE_CHECKER) {
-      DCHECK(!line_text.empty());
-      DCHECK_LE(static_cast<size_t>(spellcheck_result.location),
-                line_text.length());
-      DCHECK_LE(static_cast<size_t>(spellcheck_result.location +
-                                    spellcheck_result.length),
-                line_text.length());
-
-      const base::string16& misspelled_word = line_text.substr(
-          spellcheck_result.location, spellcheck_result.length);
-
-      // Ignore words in custom dictionary.
-      if (custom_dictionary_.SpellCheckWord(misspelled_word, 0,
-                                            misspelled_word.length())) {
-        continue;
-      }
-
-      // Use the same types of appostrophes as in the mispelled word.
-      PreserveOriginalApostropheTypes(misspelled_word, &replacement);
-
-      // Ignore misspellings due the typographical apostrophe.
-      if (misspelled_word == replacement)
-        continue;
-
       // Double-check misspelled words with out spellchecker and attach grammar
       // markers to them if our spellchecker tells us they are correct words,
       // i.e. they are probably contextually-misspelled words.
@@ -446,8 +447,6 @@ void SpellCheck::CreateTextCheckingResults(
                          nullptr)) {
         decoration = SpellCheckResult::GRAMMAR;
       }
-    } else {
-      DCHECK(line_text.empty());
     }
 
     results.push_back(WebTextCheckingResult(

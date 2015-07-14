@@ -83,8 +83,9 @@ IPC_MESSAGE_ROUTED0(SpellCheckMsg_AdvanceToNextMisspelling)
 
 // Sends when NSSpellChecker finishes checking text received by a preceding
 // SpellCheckHostMsg_RequestTextCheck message.
-IPC_MESSAGE_ROUTED2(SpellCheckMsg_RespondTextCheck,
-                    int        /* request identifier given by WebKit */,
+IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondTextCheck,
+                    int             /* request identifier given by WebKit */,
+                    base::string16  /* sentence */,
                     std::vector<SpellCheckResult>)
 
 IPC_MESSAGE_ROUTED1(SpellCheckMsg_ToggleSpellPanel,

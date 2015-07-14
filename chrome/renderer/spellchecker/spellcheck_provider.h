@@ -107,6 +107,7 @@ class SpellCheckProvider
   void OnAdvanceToNextMisspelling();
   void OnRespondTextCheck(
       int identifier,
+      const base::string16& line,
       const std::vector<SpellCheckResult>& results);
   void OnToggleSpellPanel(bool is_currently_visible);
 #endif

@@ -24,6 +24,7 @@ void FakeMessageArrival(
       SpellCheckMsg_RespondTextCheck(
           0,
           base::get<1>(parameters),
+          base::ASCIIToUTF16("test"),
           fake_result));
   EXPECT_TRUE(handled);
 }
