@@ -71,8 +71,10 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
   void UpdateContextFocusState();
 
   // Processes a key event that was already filtered by the input method.
-  // A VKEY_PROCESSKEY may be dispatched to the focused View.
-  void ProcessFilteredKeyPressEvent(const ui::KeyEvent& event);
+  // A VKEY_PROCESSKEY may be dispatched to the EventTargets.
+  // It returns the result of whether the event has been stopped propagation
+  // when dispatching post IME.
+  bool ProcessFilteredKeyPressEvent(const ui::KeyEvent& event);
 
   // Processes a key event that was not filtered by the input method.
   void ProcessUnfilteredKeyPressEvent(const ui::KeyEvent& event);

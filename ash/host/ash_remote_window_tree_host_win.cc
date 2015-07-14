@@ -63,7 +63,7 @@ bool AshRemoteWindowTreeHostWin::DispatchKeyEventPostIME(
   input_method_handler()->SetPostIME(true);
   ui::EventSource::DeliverEventToProcessor(&event_copy);
   input_method_handler()->SetPostIME(false);
-  return event_copy.handled();
+  return event_copy.stopped_propagation();
 }
 
 ui::EventDispatchDetails AshRemoteWindowTreeHostWin::DeliverEventToProcessor(

@@ -198,7 +198,7 @@ bool WindowTreeHost::DispatchKeyEventPostIME(const ui::KeyEvent& event) {
   ui::EventDispatchDetails details =
       event_processor()->OnEventFromSource(&copied_event);
   DCHECK(!details.dispatcher_destroyed);
-  return copied_event.handled();
+  return copied_event.stopped_propagation();
 }
 
 void WindowTreeHost::Show() {
@@ -309,13 +309,11 @@ ui::EventProcessor* WindowTreeHost::GetEventProcessor() {
 ui::EventDispatchDetails WindowTreeHost::DeliverEventToProcessor(
     ui::Event* event) {
   if (event->IsKeyEvent()) {
-    if (GetInputMethod()->DispatchKeyEvent(
-            *static_cast<ui::KeyEvent*>(event))) {
-      event->StopPropagation();
-      // TODO(shuchen): pass around the EventDispatchDetails from
-      // DispatchKeyEventPostIME instead of creating new from here.
-      return ui::EventDispatchDetails();
-    }
+    GetInputMethod()->DispatchKeyEvent(*static_cast<ui::KeyEvent*>(event));
+    event->StopPropagation();
+    // TODO(shuchen): pass around the EventDispatchDetails from
+    // DispatchKeyEventPostIME instead of creating new from here.
+    return ui::EventDispatchDetails();
   }
   return ui::EventSource::DeliverEventToProcessor(event);
 }

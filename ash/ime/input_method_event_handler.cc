@@ -30,7 +30,10 @@ void InputMethodEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   // Never send synthesized key event.
   if (event->flags() & ui::EF_IS_SYNTHESIZED)
     return;
-  if (!post_ime_ && input_method_->DispatchKeyEvent(*event))
-    event->StopPropagation();
+  if (post_ime_)
+    return;
+  input_method_->DispatchKeyEvent(*event);
+  event->StopPropagation();
 }
-}
+
+}  // namespace ash

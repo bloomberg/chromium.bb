@@ -350,8 +350,12 @@ void InputMethodChromeOS::ProcessKeyEventPostIME(const ui::KeyEvent& event,
     return;
   }
 
-  if (event.type() == ET_KEY_PRESSED && handled)
-    ProcessFilteredKeyPressEvent(event);
+  if (event.type() == ET_KEY_PRESSED && handled) {
+    if (ProcessFilteredKeyPressEvent(event)) {
+      ResetContext();
+      return;
+    }
+  }
 
   // In case the focus was changed by the key event. The |context_| should have
   // been reset when the focused window changed.
@@ -375,22 +379,23 @@ void InputMethodChromeOS::ProcessKeyEventPostIME(const ui::KeyEvent& event,
     DispatchKeyEventPostIME(event);
 }
 
-void InputMethodChromeOS::ProcessFilteredKeyPressEvent(
+bool InputMethodChromeOS::ProcessFilteredKeyPressEvent(
     const ui::KeyEvent& event) {
-  if (NeedInsertChar()) {
-    DispatchKeyEventPostIME(event);
-  } else {
-    const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
-                                        VKEY_PROCESSKEY,
-                                        event.flags());
-    DispatchKeyEventPostIME(fabricated_event);
-  }
+  if (NeedInsertChar())
+    return DispatchKeyEventPostIME(event);
+  const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
+                                      VKEY_PROCESSKEY,
+                                      event.flags());
+  return DispatchKeyEventPostIME(fabricated_event);
 }
 
 void InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
     const ui::KeyEvent& event) {
   const TextInputClient* prev_client = GetTextInputClient();
-  DispatchKeyEventPostIME(event);
+  if (DispatchKeyEventPostIME(event)) {
+    ResetContext();
+    return;
+  }
 
   // We shouldn't dispatch the character anymore if the key event dispatch
   // caused focus change. For example, in the following scenario,
@@ -412,7 +417,7 @@ void InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
 }
 
 void InputMethodChromeOS::ProcessInputMethodResult(const ui::KeyEvent& event,
-                                               bool handled) {
+                                                   bool handled) {
   TextInputClient* client = GetTextInputClient();
   DCHECK(client);
 

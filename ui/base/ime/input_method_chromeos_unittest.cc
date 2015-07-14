@@ -198,7 +198,8 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
                                 public DummyTextInputClient {
  public:
   InputMethodChromeOSTest()
-      : dispatched_key_event_(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN, ui::EF_NONE) {
+      : dispatched_key_event_(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN, ui::EF_NONE),
+        stop_propagation_post_ime_(false) {
     ResetFlags();
   }
 
@@ -237,7 +238,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   // Overridden from ui::internal::InputMethodDelegate:
   bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
     dispatched_key_event_ = event;
-    return false;
+    return stop_propagation_post_ime_;
   }
 
   // Overridden from ui::TextInputClient:
@@ -328,6 +329,8 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   scoped_ptr<chromeos::MockIMEEngineHandler> mock_ime_engine_handler_;
   scoped_ptr<chromeos::MockIMECandidateWindowHandler>
       mock_ime_candidate_window_handler_;
+
+  bool stop_propagation_post_ime_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOSTest);
 };
@@ -981,6 +984,31 @@ TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   EXPECT_EQ(L'C', inserted_char_);
 }
 
-// TODO(nona): Introduce ProcessKeyEventPostIME tests(crbug.com/156593).
+TEST_F(InputMethodChromeOSKeyEventTest, StopPropagationTest) {
+  // Preparation
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+
+  // Do key event with event being stopped propagation.
+  stop_propagation_post_ime_ = true;
+  ui::KeyEvent eventA(ui::ET_KEY_PRESSED, ui::VKEY_A, EF_NONE);
+  eventA.set_character(L'A');
+  ime_->DispatchKeyEvent(eventA);
+  mock_ime_engine_handler_->last_passed_callback().Run(false);
+
+  const ui::KeyEvent* key_event =
+      mock_ime_engine_handler_->last_processed_key_event();
+  EXPECT_EQ(ui::VKEY_A, key_event->key_code());
+  EXPECT_EQ(0, inserted_char_);
+
+  // Do key event with event not being stopped propagation.
+  stop_propagation_post_ime_ = false;
+  ime_->DispatchKeyEvent(eventA);
+  mock_ime_engine_handler_->last_passed_callback().Run(false);
+
+  key_event = mock_ime_engine_handler_->last_processed_key_event();
+  EXPECT_EQ(ui::VKEY_A, key_event->key_code());
+  EXPECT_EQ(L'A', inserted_char_);
+}
 
 }  // namespace ui
