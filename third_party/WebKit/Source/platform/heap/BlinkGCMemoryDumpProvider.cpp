@@ -34,7 +34,6 @@ bool BlinkGCMemoryDumpProvider::onMemoryDump(blink::WebProcessMemoryDump* memory
     dumpName.append("/allocated_objects");
     WebMemoryAllocatorDump* objectsDump = memoryDump->createMemoryAllocatorDump(dumpName);
     objectsDump->AddScalar("size", "bytes", Heap::allocatedObjectSize() + Heap::markedObjectSize());
-    objectsDump->AddScalar("estimated_live_object_size", "bytes", Heap::liveObjectSizeAtLastSweep());
 
     // Merge all dumps collected by Heap::collectGarbage.
     memoryDump->takeAllDumpsFrom(m_currentProcessMemoryDump.get());

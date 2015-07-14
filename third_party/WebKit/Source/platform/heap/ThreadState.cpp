@@ -558,10 +558,25 @@ void ThreadState::updatePersistentCounters()
 
 size_t ThreadState::estimatedLiveObjectSize()
 {
-    size_t liveObjectSizeAtLastSweep = Heap::liveObjectSizeAtLastSweep();
+    // We estimate the live object size with the following equations.
+    //
+    //   heapSizePerPersistent = (marked(t0, t1) + partitionAlloc(t0)) / persistentCount(t0)
+    //   estimatedLiveObjectSize = marked(t0, t) + allocated(t0, t) + partitionAlloc(t) - heapSizePerPersistent * collectedPersistentCount(t0, t)
+    //
+    // t0:                 The time when the last collectGarbage runs.
+    // t1:                 The time when the last completeSweep runs.
+    // t:                  The current time.
+    // marked(t0, t):      The size of marked objects between t0 and t.
+    // allocated(t0, t):   The size of newly allocated objects between t0 and t.
+    // persistentCount(t): The number of existing persistent handles at t.
+    // collectedPersistentCount(t0, t):
+    //                     The number of persistent handles collected between
+    //                     t0 and t.
+    // partitionAlloc(t):  The size of allocated memory in PartitionAlloc at t.
+    size_t currentHeapSize = currentObjectSize();
     size_t heapSizeRetainedByCollectedPersistents = Heap::heapSizePerPersistent() * Heap::collectedPersistentCount();
-    if (liveObjectSizeAtLastSweep > heapSizeRetainedByCollectedPersistents)
-        return liveObjectSizeAtLastSweep - heapSizeRetainedByCollectedPersistents;
+    if (currentHeapSize > heapSizeRetainedByCollectedPersistents)
+        return currentHeapSize - heapSizeRetainedByCollectedPersistents;
     return 0;
 }
 
@@ -1112,13 +1127,14 @@ void ThreadState::postSweep()
     Heap::reportMemoryUsageForTracing();
 
     if (isMainThread()) {
-        // At the point where the main thread finishes lazy sweeping,
-        // we estimate the live object size. Heap::markedObjectSize()
-        // may be underestimated if any other thread has not yet finished
-        // lazy sweeping.
-        Heap::setLiveObjectSizeAtLastSweep(currentObjectSize());
-        if (Heap::persistentCountAtLastGC() > 0)
-            Heap::setHeapSizePerPersistent(currentObjectSize() / Heap::persistentCountAtLastGC());
+        // See the comment in estimatedLiveObjectSize() for what we're
+        // calculating here.
+        //
+        // Heap::markedObjectSize() may be underestimated here if any other
+        // thread has not yet finished lazy sweeping.
+        if (Heap::persistentCountAtLastGC() > 0) {
+            Heap::setHeapSizePerPersistent((Heap::markedObjectSize() + Heap::partitionAllocSizeAtLastGC()) / Heap::persistentCountAtLastGC());
+        }
     }
 
     switch (gcState()) {

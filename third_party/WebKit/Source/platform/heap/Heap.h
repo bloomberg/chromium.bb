@@ -1026,8 +1026,7 @@ public:
     static size_t persistentCountAtLastGC() { return acquireLoad(&s_persistentCountAtLastGC); }
     static void increaseCollectedPersistentCount(size_t delta) { atomicAdd(&s_collectedPersistentCount, static_cast<long>(delta)); }
     static size_t collectedPersistentCount() { return acquireLoad(&s_collectedPersistentCount); }
-    static size_t liveObjectSizeAtLastSweep() { return acquireLoad(&s_liveObjectSizeAtLastSweep); }
-    static void setLiveObjectSizeAtLastSweep(size_t size) { releaseStore(&s_liveObjectSizeAtLastSweep, size); }
+    static size_t partitionAllocSizeAtLastGC() { return acquireLoad(&s_partitionAllocSizeAtLastGC); }
     static size_t heapSizePerPersistent() { return acquireLoad(&s_heapSizePerPersistent); }
     static void setHeapSizePerPersistent(size_t size) { releaseStore(&s_heapSizePerPersistent, size); }
 
@@ -1081,7 +1080,7 @@ private:
     static size_t s_persistentCount;
     static size_t s_persistentCountAtLastGC;
     static size_t s_collectedPersistentCount;
-    static size_t s_liveObjectSizeAtLastSweep;
+    static size_t s_partitionAllocSizeAtLastGC;
     static size_t s_heapSizePerPersistent;
     static double s_estimatedMarkingTimePerByte;
 

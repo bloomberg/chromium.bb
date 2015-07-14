@@ -6261,9 +6261,7 @@ private:
         , m_traceCounter(TraceCounter::create())
     {
         ASSERT(!ThreadState::current()->isGCForbidden());
-        // The large object allocation should trigger a GC.
-        LargeHeapObject* largeObject = LargeHeapObject::create();
-        EXPECT_TRUE(largeObject);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
         EXPECT_GT(member->traceCount(), 0);
         EXPECT_GT(traceCount(), 0);
     }

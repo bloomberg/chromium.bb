@@ -1922,9 +1922,7 @@ void Heap::init()
     s_persistentCount = 0;
     s_persistentCountAtLastGC = 0;
     s_collectedPersistentCount = 0;
-    // We don't want to use 0 KB for the initial value because it may end up
-    // triggering the first GC too prematurely.
-    s_liveObjectSizeAtLastSweep = 1024 * 1024;
+    s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     // Initially, the total heap size is very small. Thus we'll hit the GC
     // condition (i.e., 50% increase on the heap size etc) even if we don't
     // take into account the memory usage explained by the collected persistent
@@ -2509,6 +2507,7 @@ void Heap::resetHeapCounters()
 
     s_allocatedObjectSize = 0;
     s_markedObjectSize = 0;
+    s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_persistentCountAtLastGC = s_persistentCount;
     s_collectedPersistentCount = 0;
 }
@@ -2528,7 +2527,7 @@ size_t Heap::s_markedObjectSize = 0;
 size_t Heap::s_persistentCount = 0;
 size_t Heap::s_persistentCountAtLastGC = 0;
 size_t Heap::s_collectedPersistentCount = 0;
-size_t Heap::s_liveObjectSizeAtLastSweep = 0;
+size_t Heap::s_partitionAllocSizeAtLastGC = 0;
 size_t Heap::s_heapSizePerPersistent = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
 
