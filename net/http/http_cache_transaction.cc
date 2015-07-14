@@ -327,7 +327,7 @@ bool HttpCache::Transaction::AddTruncatedFlag() {
   DCHECK(mode_ & WRITE || mode_ == NONE);
 
   // Don't set the flag for sparse entries.
-  if (partial_.get() && !truncated_)
+  if (partial_ && !truncated_)
     return true;
 
   if (!CanResume(true))
@@ -477,7 +477,7 @@ int HttpCache::Transaction::Read(IOBuffer* buf, int buf_len,
 
   switch (mode_) {
     case READ_WRITE:
-      DCHECK(partial_.get());
+      DCHECK(partial_);
       if (!network_trans_.get()) {
         // We are just reading from the cache, but we may be writing later.
         rv = ReadFromEntry(buf, buf_len);
@@ -1016,7 +1016,7 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
     return ERR_CACHE_MISS;
 
   if (mode_ == NONE) {
-    if (partial_.get()) {
+    if (partial_) {
       partial_->RestoreHeaders(&custom_request_->extra_headers);
       partial_.reset();
     }
@@ -1143,7 +1143,7 @@ int HttpCache::Transaction::DoCreateEntryComplete(int result) {
     // OpenOrCreate() method exposed by the disk cache.
     DLOG(WARNING) << "Unable to create cache entry";
     mode_ = NONE;
-    if (partial_.get())
+    if (partial_)
       partial_->RestoreHeaders(&custom_request_->extra_headers);
     next_state_ = STATE_SEND_REQUEST;
   }
@@ -1230,7 +1230,7 @@ int HttpCache::Transaction::DoAddToEntryComplete(int result) {
   }
 
   if (mode_ == WRITE) {
-    if (partial_.get())
+    if (partial_)
       partial_->RestoreHeaders(&custom_request_->extra_headers);
     next_state_ = STATE_SEND_REQUEST;
   } else {
@@ -1602,7 +1602,7 @@ int HttpCache::Transaction::DoUpdateCachedResponseComplete(int result) {
     DoneWritingToEntry(true);
   } else if (entry_ && !handling_206_) {
     DCHECK_EQ(READ_WRITE, mode_);
-    if (!partial_.get() || partial_->IsLastRange()) {
+    if (!partial_ || partial_->IsLastRange()) {
       cache_->ConvertWriterToReader(entry_);
       mode_ = READ;
     }
@@ -1631,7 +1631,7 @@ int HttpCache::Transaction::DoOverwriteCachedResponse() {
   }
 
   // We change the value of Content-Length for partial content.
-  if (handling_206_ && partial_.get())
+  if (handling_206_ && partial_)
     partial_->FixContentLength(new_response_->headers.get());
 
   response_ = *new_response_;
@@ -1648,7 +1648,7 @@ int HttpCache::Transaction::DoOverwriteCachedResponse() {
     // There is no point in storing this resource because it will never be used.
     // This may change if we support LOAD_ONLY_FROM_CACHE with sparse entries.
     DoneWritingToEntry(false);
-    if (partial_.get())
+    if (partial_)
       partial_->FixResponseHeaders(response_.headers.get(), true);
     next_state_ = STATE_PARTIAL_HEADERS_RECEIVED;
     return OK;
@@ -1744,11 +1744,10 @@ int HttpCache::Transaction::DoTruncateCachedMetadataComplete(int result) {
 
 int HttpCache::Transaction::DoPartialHeadersReceived() {
   new_response_ = NULL;
-  if (entry_ && !partial_.get() &&
-      entry_->disk_entry->GetDataSize(kMetadataIndex))
+  if (entry_ && !partial_ && entry_->disk_entry->GetDataSize(kMetadataIndex))
     next_state_ = STATE_CACHE_READ_METADATA;
 
-  if (!partial_.get())
+  if (!partial_)
     return OK;
 
   if (reading_) {
@@ -1813,7 +1812,7 @@ int HttpCache::Transaction::DoCacheReadData() {
 
   if (net_log_.IsCapturing())
     net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_READ_DATA);
-  if (partial_.get()) {
+  if (partial_) {
     return partial_->CacheRead(entry_->disk_entry, read_buf_.get(), io_buf_len_,
                                io_callback_);
   }
@@ -1832,7 +1831,7 @@ int HttpCache::Transaction::DoCacheReadDataComplete(int result) {
   if (!cache_.get())
     return ERR_UNEXPECTED;
 
-  if (partial_.get()) {
+  if (partial_) {
     // Partial requests are confusing to report in histograms because they may
     // have multiple underlying requests.
     UpdateTransactionPattern(PATTERN_NOT_COVERED);
@@ -1892,19 +1891,21 @@ int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
       done_reading_ = true;
   }
 
-  if (partial_.get()) {
+  if (partial_) {
     // This may be the last request.
-    if (!(result == 0 && !truncated_ &&
-          (partial_->IsLastRange() || mode_ == WRITE)))
+    if (result != 0 || truncated_ ||
+        !(partial_->IsLastRange() || mode_ == WRITE)) {
       return DoPartialNetworkReadCompleted(result);
+    }
   }
 
   if (result == 0) {
     // End of file. This may be the result of a connection problem so see if we
     // have to keep the entry around to be flagged as truncated later on.
-    if (done_reading_ || !entry_ || partial_.get() ||
-        response_.headers->GetContentLength() <= 0)
+    if (done_reading_ || !entry_ || partial_ ||
+        response_.headers->GetContentLength() <= 0) {
       DoneWritingToEntry(true);
+    }
   }
 
   return result;
@@ -2097,7 +2098,7 @@ bool HttpCache::Transaction::ShouldPassThrough() {
 
 int HttpCache::Transaction::BeginCacheRead() {
   // We don't support any combination of LOAD_ONLY_FROM_CACHE and byte ranges.
-  if (response_.headers->response_code() == 206 || partial_.get()) {
+  if (response_.headers->response_code() == 206 || partial_) {
     NOTREACHED();
     return ERR_CACHE_MISS;
   }
@@ -2141,7 +2142,7 @@ int HttpCache::Transaction::BeginCacheValidation() {
     skip_validation = !partial_->initial_validation();
   }
 
-  if (partial_.get() && (is_sparse_ || truncated_) &&
+  if (partial_ && (is_sparse_ || truncated_) &&
       (!partial_->IsCurrentRangeCached() || invalid_range_)) {
     // Force revalidation for sparse or truncated entries. Note that we don't
     // want to ignore the regular validation logic just because a byte range was
@@ -2162,7 +2163,7 @@ int HttpCache::Transaction::BeginCacheValidation() {
     if (!ConditionalizeRequest()) {
       couldnt_conditionalize_request_ = true;
       UpdateTransactionPattern(PATTERN_ENTRY_CANT_CONDITIONALIZE);
-      if (partial_.get())
+      if (partial_)
         return DoRestartPartialRequest();
 
       DCHECK_NE(206, response_.headers->response_code());
@@ -2173,12 +2174,10 @@ int HttpCache::Transaction::BeginCacheValidation() {
 }
 
 int HttpCache::Transaction::BeginPartialCacheValidation() {
-  DCHECK(mode_ == READ_WRITE);
+  DCHECK_EQ(mode_, READ_WRITE);
 
-  if (response_.headers->response_code() != 206 && !partial_.get() &&
-      !truncated_) {
+  if (response_.headers->response_code() != 206 && !partial_ && !truncated_)
     return BeginCacheValidation();
-  }
 
   // Partial requests should not be recorded in histograms.
   UpdateTransactionPattern(PATTERN_NOT_COVERED);
@@ -2383,15 +2382,15 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
   if (etag_value.empty() && last_modified_value.empty())
     return false;
 
-  if (!partial_.get()) {
+  if (!partial_) {
     // Need to customize the request, so this forces us to allocate :(
     custom_request_.reset(new HttpRequestInfo(*request_));
     request_ = custom_request_.get();
   }
   DCHECK(custom_request_.get());
 
-  bool use_if_range = partial_.get() && !partial_->IsCurrentRangeCached() &&
-                      !invalid_range_;
+  bool use_if_range =
+      partial_ && !partial_->IsCurrentRangeCached() && !invalid_range_;
 
   if (!use_if_range) {
     // stale-while-revalidate is not useful when we only have a partial response
@@ -2425,7 +2424,7 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
     }
     // For byte-range requests, make sure that we use only one way to validate
     // the request.
-    if (partial_.get() && !partial_->IsCurrentRangeCached())
+    if (partial_ && !partial_->IsCurrentRangeCached())
       return true;
   }
 
@@ -2489,7 +2488,7 @@ bool HttpCache::Transaction::ValidatePartialResponse() {
     return true;
   }
 
-  if (!partial_.get()) {
+  if (!partial_) {
     // We are not expecting 206 but we may have one.
     if (partial_response)
       IgnoreRangeRequest();
@@ -2590,7 +2589,7 @@ void HttpCache::Transaction::FixHeadersForHead() {
 int HttpCache::Transaction::SetupEntryForRead() {
   if (network_trans_)
     ResetNetworkTransaction();
-  if (partial_.get()) {
+  if (partial_) {
     if (truncated_ || is_sparse_ || !invalid_range_) {
       // We are going to return the saved response headers to the caller, so
       // we may need to adjust them first.
@@ -2635,7 +2634,7 @@ int HttpCache::Transaction::WriteToEntry(int index, int offset,
     return data_len;
 
   int rv = 0;
-  if (!partial_.get() || !data_len) {
+  if (!partial_ || !data_len) {
     rv = entry_->disk_entry->WriteData(index, offset, data, data_len, callback,
                                        true);
   } else {
