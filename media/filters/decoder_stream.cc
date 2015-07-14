@@ -299,7 +299,7 @@ void DecoderStream<StreamType>::Decode(
   TRACE_EVENT_ASYNC_BEGIN2(
       "media", GetTraceString<StreamType>(), this, "key frame",
       !buffer->end_of_stream() && buffer->is_key_frame(), "timestamp (ms)",
-      buffer->timestamp().InMilliseconds());
+      !buffer->end_of_stream() ? buffer->timestamp().InMilliseconds() : 0);
 
   if (buffer->end_of_stream())
     decoding_eos_ = true;
