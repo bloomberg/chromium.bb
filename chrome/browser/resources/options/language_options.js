@@ -229,17 +229,14 @@ cr.define('options', function() {
         // Show experimental features if enabled.
         if (loadTimeData.getBoolean('enableSpellingAutoCorrect'))
           $('auto-spell-correction-option').hidden = false;
-
-        // Handle spell check enable/disable.
-        if (!cr.isMac) {
-          Preferences.getInstance().addEventListener(
-              ENABLE_SPELL_CHECK_PREF,
-              this.updateEnableSpellCheck_.bind(this));
-        }
       }
 
-      // Handle clicks on "Use this language for spell checking" button.
       if (!cr.isMac) {
+        // Handle spell check enable/disable.
+        Preferences.getInstance().addEventListener(ENABLE_SPELL_CHECK_PREF,
+            this.updateEnableSpellCheck_.bind(this));
+
+        // Handle clicks on "Use this language for spell checking" button.
         if (loadTimeData.getBoolean('enableMultilingualSpellChecker')) {
           $('spellcheck-language-checkbox').addEventListener(
               'change',
@@ -604,7 +601,8 @@ cr.define('options', function() {
     },
 
     /**
-     * Updates the spell check language button.
+     * Updates the spell check language button/checkbox, dictionary download
+     * dialog, and the "Enable spell checking" checkbox.
      * @param {string} languageCode Language code (ex. "fr").
      * @private
      */
@@ -674,6 +672,11 @@ cr.define('options', function() {
             dictionaryDownloadFailHelp.hidden = false;
           break;
       }
+
+      var areNoLanguagesSelected =
+          Object.keys(this.spellCheckLanguages_).length == 0;
+      $('enable-spellcheck-container').hidden = areNoLanguagesSelected;
+      $('edit-dictionary-button').hidden = areNoLanguagesSelected;
     },
 
     /**
@@ -938,11 +941,14 @@ cr.define('options', function() {
      * @private
      */
     updateEnableSpellCheck_: function(e) {
-       var value = !$('enable-spellcheck').checked;
-       $('spellcheck-language-button').disabled = value;
-       if (!cr.isMac)
-         $('edit-dictionary-button').hidden = value;
-     },
+      var value = !$('enable-spellcheck').checked;
+      var languageControl =
+          loadTimeData.getBoolean('enableMultilingualSpellChecker') ?
+          $('spellcheck-language-checkbox') : $('spellcheck-language-button');
+      languageControl.disabled = value;
+      if (!cr.isMac)
+        $('edit-dictionary-button').hidden = value;
+    },
 
     /**
      * Handles translateBlockedLanguagesPref change.

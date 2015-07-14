@@ -75,11 +75,13 @@ void SpellCheckerSubMenuObserver::InitMenu(
       IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
       IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
 
-  // Add a 'Check spelling while typing' item in the sub menu.
-  submenu_model_.AddCheckItem(
-      IDC_CHECK_SPELLING_WHILE_TYPING,
-      l10n_util::GetStringUTF16(
-          IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING));
+  if (num_selected_languages_ > 0) {
+    // Add a 'Check spelling while typing' item in the sub menu.
+    submenu_model_.AddCheckItem(
+        IDC_CHECK_SPELLING_WHILE_TYPING,
+        l10n_util::GetStringUTF16(
+            IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING));
+  }
 
   // Add a check item "Ask Google for spelling suggestions" item. (This class
   // does not handle this item because the SpellingMenuObserver class handles it
