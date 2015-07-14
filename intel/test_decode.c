@@ -56,7 +56,7 @@ read_file(const char *filename, void **ptr, size_t *size)
 	struct stat st;
 
 	fd = open(filename, O_RDONLY);
-	if (fd == -1)
+	if (fd < 0)
 		errx(1, "couldn't open `%s'", filename);
 
 	ret = fstat(fd, &st);

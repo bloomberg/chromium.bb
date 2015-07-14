@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 	char *v;
 
 	fd = open("/dev/dri/card0", O_RDWR);
-	if (fd == -1)
+	if (fd < 0)
 		return 0;
 
 	v = drmGetDeviceNameFromFd(fd);
