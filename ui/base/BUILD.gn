@@ -484,6 +484,9 @@ component("base") {
         ]
       }
     }
+    if (is_android) {
+      sources += [ "cursor/cursor_loader_android.cc" ]
+    }
   }
   if (use_ozone) {
     sources += [

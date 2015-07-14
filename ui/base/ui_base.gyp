@@ -137,6 +137,7 @@
         'cursor/cursor.h',
         'cursor/cursor_android.cc',
         'cursor/cursor_loader.h',
+        'cursor/cursor_loader_android.cc',
         'cursor/cursor_loader_ozone.cc',
         'cursor/cursor_loader_ozone.h',
         'cursor/cursor_loader_win.cc',
@@ -387,6 +388,7 @@
           'sources!': [
             'cursor/cursor.cc',
             'cursor/cursor.h',
+            'cursor/cursor_loader_android.cc',
             'cursor/cursor_loader_x11.cc',
             'cursor/cursor_loader_x11.h',
             'cursor/cursor_win.cc',
