@@ -104,7 +104,7 @@ class FileHelper {
                 line = line.trim();
                 // These two are read by the system and don't need to be extracted.
                 if (!line.isEmpty() && !line.equals("bootstrap_java.dex.jar")
-                        && !line.equals("libbootstrap.so")) {
+                        && !line.equals("libbootstrap.cr.so")) {
                     results.add(line);
                 }
             }
