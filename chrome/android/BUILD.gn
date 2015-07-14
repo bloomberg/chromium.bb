@@ -447,15 +447,11 @@ android_library("chrome_javatests") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/dom_distiller/android:dom_distiller_core_java",
     "//components/invalidation/impl:java",
-    "//components/invalidation/impl:javatests",
     "//components/navigation_interception/android:navigation_interception_java",
-    "//components/precache/android:precache_java",
-    "//components/precache/android:precache_javatests",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//sync/android:sync_java",
-    "//sync/android:sync_javatests",
     "//sync:sync_java_test_support",
     "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_tools:android_support_v13_java",
@@ -490,8 +486,6 @@ instrumentation_test_apk("chrome_shell_test_apk") {
   deps = [
     ":chrome_javatests",
     ":chrome_shell_test_java",
-    "//sync/android:sync_javatests",
-    "//ui/android:ui_javatests",
   ]
   apk_name = "ChromeShellTest"
   android_manifest = "shell/javatests/AndroidManifest.xml"
@@ -613,6 +607,7 @@ android_library("chrome_shared_test_java") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/dom_distiller/android:dom_distiller_core_java",
     "//components/invalidation/impl:java",
+    "//components/invalidation/impl:javatests",
     "//components/precache/android:precache_java",
     "//components/precache/android:precache_javatests",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
@@ -622,6 +617,7 @@ android_library("chrome_shared_test_java") {
     "//net/android:net_java_test_support",
     "//printing:printing_java",
     "//sync/android:sync_java",
+    "//sync/android:sync_javatests",
     "//sync:sync_java_test_support",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:android_support_v7_recyclerview_java",
@@ -629,6 +625,7 @@ android_library("chrome_shared_test_java") {
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
+    "//ui/android:ui_javatests",
   ]
 }
 
