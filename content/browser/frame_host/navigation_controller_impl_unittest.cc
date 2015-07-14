@@ -22,6 +22,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -5007,6 +5008,44 @@ TEST_F(NavigationControllerTest, StaleNavigationsResurrected) {
   EXPECT_EQ(url_a, controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url_c, controller.GetEntryAtIndex(1)->GetURL());
   EXPECT_EQ(url_b, controller.GetEntryAtIndex(2)->GetURL());
+}
+
+// Test that if a renderer provides bogus security info (that fails to
+// deserialize properly) when reporting a navigation, the renderer gets
+// killed.
+TEST_F(NavigationControllerTest, RendererNavigateBogusSecurityInfo) {
+  GURL url("http://foo.test");
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.page_id = 0;
+  params.nav_entry_id = 0;
+  params.did_create_new_entry = true;
+  params.url = url;
+  params.transition = ui::PAGE_TRANSITION_LINK;
+  params.should_update_history = true;
+  params.gesture = NavigationGestureUser;
+  params.is_post = false;
+  params.page_state = PageState::CreateFromURL(url);
+  params.was_within_same_page = false;
+  params.security_info = "bogus security info!";
+
+  LoadCommittedDetails details;
+  EXPECT_EQ(0, main_test_rfh()->GetProcess()->bad_msg_count());
+  EXPECT_TRUE(
+      controller_impl().RendererDidNavigate(main_test_rfh(), params, &details));
+
+  SSLStatus default_ssl_status;
+  EXPECT_EQ(default_ssl_status.security_style,
+            details.ssl_status.security_style);
+  EXPECT_EQ(default_ssl_status.cert_id, details.ssl_status.cert_id);
+  EXPECT_EQ(default_ssl_status.cert_status, details.ssl_status.cert_status);
+  EXPECT_EQ(default_ssl_status.security_bits, details.ssl_status.security_bits);
+  EXPECT_EQ(default_ssl_status.connection_status,
+            details.ssl_status.connection_status);
+  EXPECT_EQ(default_ssl_status.content_status,
+            details.ssl_status.content_status);
+  EXPECT_EQ(0u, details.ssl_status.signed_certificate_timestamp_ids.size());
+
+  EXPECT_EQ(1, main_test_rfh()->GetProcess()->bad_msg_count());
 }
 
 }  // namespace content

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/public/common/ssl_status.h"
 
@@ -21,9 +22,14 @@ CONTENT_EXPORT std::string SerializeSecurityInfo(
     const SignedCertificateTimestampIDStatusList&
         signed_certificate_timestamp_ids);
 
-// Deserializes the given security info. Note that this returns the
-// SecurityStyle and ContentStatus fields with default values.
-SSLStatus DeserializeSecurityInfo(const std::string& state);
+// Deserializes the given security info into |ssl_status|. Note that
+// this returns the SecurityStyle and ContentStatus fields with default
+// values. Returns true on success and false if the state couldn't be
+// deserialized. If false, all fields in |ssl_status| will be set to their
+// default values.
+bool CONTENT_EXPORT
+DeserializeSecurityInfo(const std::string& state,
+                        SSLStatus* ssl_status) WARN_UNUSED_RESULT;
 
 }  // namespace content
 

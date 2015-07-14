@@ -63,7 +63,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
 
   // Deserialize the SSL info.
   if (!data.securityInfo.isEmpty())
-    params.security_info = DeserializeSecurityInfo(data.securityInfo);
+    CHECK(DeserializeSecurityInfo(data.securityInfo, &params.security_info));
 
   return params;
 }

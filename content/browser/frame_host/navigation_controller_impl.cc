@@ -59,6 +59,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -943,8 +944,17 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // Now prep the rest of the details for the notification and broadcast.
   details->entry = active_entry;
   details->is_main_frame = !rfh->GetParent();
-  details->serialized_security_info = params.security_info;
   details->http_status_code = params.http_status_code;
+
+  // Deserialize the security info and kill the renderer if
+  // deserialization fails. The navigation will continue with default
+  // SSLStatus values.
+  if (!DeserializeSecurityInfo(params.security_info, &details->ssl_status)) {
+    bad_message::ReceivedBadMessage(
+        rfh->GetProcess(),
+        bad_message::WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO);
+  }
+
   NotifyNavigationEntryCommitted(details);
 
   return true;

@@ -2928,9 +2928,15 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const std::string& http_method,
     const std::string& mime_type,
     ResourceType resource_type) {
+  SSLStatus status;
+  if (!DeserializeSecurityInfo(security_info, &status)) {
+    bad_message::ReceivedBadMessage(
+        GetRenderProcessHost(),
+        bad_message::WC_MEMORY_CACHE_RESOURCE_BAD_SECURITY_INFO);
+    return;
+  }
 
   // Send out a notification that we loaded a resource from our memory cache.
-  SSLStatus status = DeserializeSecurityInfo(security_info);
   // TODO(alcutter,eranm): Pass signed_certificate_timestamp_ids into details.
   LoadFromMemoryCacheDetails details(
       url, GetRenderProcessHost()->GetID(), status.cert_id, status.cert_status,

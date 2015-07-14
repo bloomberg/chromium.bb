@@ -8,6 +8,7 @@
 #include <string>
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_type.h"
+#include "content/public/common/ssl_status.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -49,11 +50,12 @@ struct CONTENT_EXPORT LoadCommittedDetails {
   // sub-frame.
   bool is_main_frame;
 
-  // When the committed load is a web page from the renderer, this string
-  // specifies the security state if the page is secure.
+  // When the committed load is a web page from the renderer, this contains
+  // the security state if the page is secure.
   // See FrameHostMsg_DidCommitProvisionalLoad_Params.security_info, where it
-  // comes from. Use SSLManager::DeserializeSecurityInfo to decode it.
-  std::string serialized_security_info;
+  // comes from, after being deserialized with
+  // SSLManager::DeserializeSecurityInfo.
+  SSLStatus ssl_status;
 
   // Returns whether the main frame navigated to a different page (e.g., not
   // scrolling to a fragment inside the current page). We often need this logic

@@ -50905,6 +50905,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="88" label="SWDH_UPDATE_CANNOT"/>
   <int value="89" label="SWDH_UNREGISTER_BAD_REGISTRATION_ID"/>
   <int value="90" label="BDH_INVALID_WRITE_VALUE_LENGTH"/>
+  <int value="91" label="WC_MEMORY_CACHE_RESOURCE_BAD_SECURITY_INFO"/>
+  <int value="92" label="WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
@@ -50914,6 +50916,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="EVG_BAD_ORIGIN"/>
   <int value="2" label="BH_BLOB_NOT_OWNED"/>
   <int value="3" label="EH_BAD_EVENT_ID"/>
+  <int value="4" label="AVG_BAD_INST_ID"/>
+  <int value="5" label="AVG_BAD_EXT_ID"/>
+  <int value="6" label="AVG_NULL_AVG"/>
 </enum>
 
 <enum name="BadMessageReasonNaCl" type="int">

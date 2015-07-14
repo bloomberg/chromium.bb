@@ -644,6 +644,7 @@
       'common/sandbox_mac_system_access_unittest.mm',
       'common/sandbox_mac_unittest_helper.h',
       'common/sandbox_mac_unittest_helper.mm',
+      'common/ssl_status_serialization_unittest.cc',
       'common/webplugininfo_unittest.cc',
       'renderer/android/email_detector_unittest.cc',
       'renderer/android/phone_number_detector_unittest.cc',

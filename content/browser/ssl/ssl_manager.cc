@@ -117,8 +117,7 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
     if (entry) {
       // We may not have an entry if this is a navigation to an initial blank
       // page. Add the new data we have.
-      entry->GetSSL() =
-          DeserializeSecurityInfo(details.serialized_security_info);
+      entry->GetSSL() = details.ssl_status;
     }
   }
 

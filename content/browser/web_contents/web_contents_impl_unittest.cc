@@ -3211,4 +3211,17 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   EXPECT_EQ(SK_ColorGREEN, observer.last_theme_color());
 }
 
+// Test that if a renderer reports that it has loaded a resource from
+// memory cache with bad security info (i.e. can't be deserialized), the
+// renderer gets killed.
+TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithBadSecurityInfo) {
+  MockRenderProcessHost* rph = contents()->GetMainFrame()->GetProcess();
+  EXPECT_EQ(0, rph->bad_msg_count());
+
+  contents()->OnDidLoadResourceFromMemoryCache(
+      GURL("http://example.test"), "not valid security info", "GET",
+      "mime type", RESOURCE_TYPE_MAIN_FRAME);
+  EXPECT_EQ(1, rph->bad_msg_count());
+}
+
 }  // namespace content
