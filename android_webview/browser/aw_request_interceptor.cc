@@ -50,7 +50,8 @@ AwRequestInterceptor::QueryForAwWebResourceResponse(
     return scoped_ptr<AwWebResourceResponse>();
 
   GURL referrer(request->referrer());
-  if (referrer.is_valid()) {
+  if (referrer.is_valid() &&
+      (!request->is_pending() || request->is_redirecting())) {
     request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kReferer,
                                          referrer.spec(), true);
   }
