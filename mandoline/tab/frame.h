@@ -62,6 +62,13 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   FrameUserData* user_data() { return user_data_.get(); }
 
+  // Returns true if this Frame or any child Frame is loading.
+  bool IsLoading() const;
+
+  // Returns the sum total of loading progress from this Frame and all of its
+  // children, as well as the number of Frames accumulated.
+  double GatherProgress(int* frame_count) const;
+
  private:
   friend class FrameTree;
 
@@ -84,6 +91,9 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
                                MessageEventPtr event) override;
   void NavigateFrame(uint32_t frame_id) override;
   void ReloadFrame(uint32_t frame_id) override;
+  void LoadingStarted() override;
+  void LoadingStopped() override;
+  void ProgressChanged(double progress) override;
 
   FrameTree* const tree_;
   mojo::View* view_;
@@ -93,6 +103,9 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   scoped_ptr<FrameUserData> user_data_;
 
   FrameTreeClient* frame_tree_client_;
+
+  bool loading_;
+  double progress_;
 
   mojo::Binding<FrameTreeServer> frame_tree_server_binding_;
 

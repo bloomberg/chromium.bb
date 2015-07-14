@@ -28,6 +28,8 @@ class AndroidUI : public BrowserUI,
   // Overridden from BrowserUI:
   void Init(mojo::View* root) override;
   void OnURLChanged() override;
+  void LoadingStateChanged(bool loading) override;
+  void ProgressChanged(double progress) override;
 
   // Overriden from mojo::ViewObserver:
   virtual void OnViewBoundsChanged(mojo::View* view,

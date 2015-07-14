@@ -47,6 +47,9 @@ class TestFrameTreeServer : public mandoline::FrameTreeServer {
                                mandoline::MessageEventPtr event) override {}
   void NavigateFrame(uint32_t frame_id) override {}
   void ReloadFrame(uint32_t frame_id) override {}
+  void LoadingStarted() override {}
+  void LoadingStopped() override {}
+  void ProgressChanged(double progress) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeServer);

@@ -16,6 +16,9 @@ class FrameTreeDelegate {
                                           const Frame* target,
                                           MessageEvent* event) = 0;
 
+  virtual void LoadingStateChanged(bool loading) = 0;
+  virtual void ProgressChanged(double progress) = 0;
+
  protected:
   virtual ~FrameTreeDelegate() {}
 };
