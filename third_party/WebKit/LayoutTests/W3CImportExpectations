@@ -399,33 +399,6 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_
 # https://github.com/w3c/web-platform-tests/issues/1875  The test has a syntax error.
 imported/web-platform-tests/html/semantics/forms/the-input-element/email.html [ Skip ]
 
-# CSS Writing Modes Level 3: Following tests are "combo", import only one from each combo group (or improve the script to handle automatically).
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001a.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001b.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001c.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001d.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001e.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001f.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001g.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001h.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001i.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001j.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001k.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001l.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001m.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001n.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001o.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001p.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001q.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001r.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001s.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001t.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001u.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001v.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001w.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001x.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-orientation-script-001.html [ Skip ]
-
 # CSS Writing Modes Level 3: Following tests require applying writing-mode to table-cell, which we do not support today. crbug.com/409155
 imported/csswg-test/css-writing-modes-3/block-flow-direction-017.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/block-flow-direction-018.xht [ Skip ]
