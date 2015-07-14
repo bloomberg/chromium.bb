@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SQL_EXPORT_H_
-#define SQL_EXPORT_H_
+#ifndef SQL_SQL_EXPORT_H_
+#define SQL_SQL_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
@@ -26,4 +26,4 @@
 #define SQL_EXPORT
 #endif
 
-#endif  // SQL_EXPORT_H_
+#endif  // SQL_SQL_EXPORT_H_

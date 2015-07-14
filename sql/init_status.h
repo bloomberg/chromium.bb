@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_SQL_INIT_STATUS_H_
-#define APP_SQL_INIT_STATUS_H_
+#ifndef SQL_INIT_STATUS_H_
+#define SQL_INIT_STATUS_H_
 
 namespace sql {
 
@@ -20,4 +20,4 @@ enum InitStatus {
 
 }  // namespace sql
 
-#endif  // APP_SQL_INIT_STATUS_H_
+#endif  // SQL_INIT_STATUS_H_
