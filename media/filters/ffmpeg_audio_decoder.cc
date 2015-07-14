@@ -126,11 +126,11 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
 
 FFmpegAudioDecoder::FFmpegAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const LogCB& log_cb)
+    const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       state_(kUninitialized),
       av_sample_format_(0),
-      log_cb_(log_cb) {
+      media_log_(media_log) {
 }
 
 FFmpegAudioDecoder::~FFmpegAudioDecoder() {
@@ -262,7 +262,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
           << "This is quite possibly a bug in the audio decoder not handling "
           << "end of stream AVPackets correctly.";
 
-      MEDIA_LOG(DEBUG, log_cb_)
+      MEDIA_LOG(DEBUG, media_log_)
           << "Dropping audio frame which failed decode with timestamp: "
           << buffer->timestamp().InMicroseconds()
           << " us, duration: " << buffer->duration().InMicroseconds()
@@ -292,9 +292,10 @@ bool FFmpegAudioDecoder::FFmpegDecode(
 
         if (config_.codec() == kCodecAAC &&
             av_frame_->sample_rate == 2 * config_.samples_per_second()) {
-          MEDIA_LOG(DEBUG, log_cb_) << "Implicit HE-AAC signalling is being"
-                                    << " used. Please use mp4a.40.5 instead of"
-                                    << " mp4a.40.2 in the mimetype.";
+          MEDIA_LOG(DEBUG, media_log_)
+              << "Implicit HE-AAC signalling is being"
+              << " used. Please use mp4a.40.5 instead of"
+              << " mp4a.40.2 in the mimetype.";
         }
         // This is an unrecoverable error, so bail out.
         av_frame_unref(av_frame_.get());

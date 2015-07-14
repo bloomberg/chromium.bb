@@ -170,7 +170,7 @@ void Mp2tStreamParser::Init(
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewMediaSegmentCB& new_segment_cb,
     const base::Closure& end_of_segment_cb,
-    const LogCB& log_cb) {
+    const scoped_refptr<MediaLog>& media_log) {
   DCHECK(!is_initialized_);
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
@@ -185,7 +185,7 @@ void Mp2tStreamParser::Init(
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
-  log_cb_ = log_cb;
+  media_log_ = media_log;
 }
 
 void Mp2tStreamParser::Flush() {
@@ -351,15 +351,12 @@ void Mp2tStreamParser::RegisterPes(int pmt_pid,
             sbr_in_mimetype_));
     is_audio = true;
   } else if (stream_type == kStreamTypeMpeg1Audio) {
-    es_parser.reset(
-        new EsParserMpeg1Audio(
-            base::Bind(&Mp2tStreamParser::OnAudioConfigChanged,
-                       base::Unretained(this),
-                       pes_pid),
-            base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer,
-                       base::Unretained(this),
-                       pes_pid),
-            log_cb_));
+    es_parser.reset(new EsParserMpeg1Audio(
+        base::Bind(&Mp2tStreamParser::OnAudioConfigChanged,
+                   base::Unretained(this), pes_pid),
+        base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer, base::Unretained(this),
+                   pes_pid),
+        media_log_));
     is_audio = true;
   } else {
     return;

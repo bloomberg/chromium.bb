@@ -48,7 +48,7 @@ void MP4StreamParser::Init(
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewMediaSegmentCB& new_segment_cb,
     const base::Closure& end_of_segment_cb,
-    const LogCB& log_cb) {
+    const scoped_refptr<MediaLog>& media_log) {
   DCHECK_EQ(state_, kWaitingForInit);
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
@@ -64,7 +64,7 @@ void MP4StreamParser::Init(
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
-  log_cb_ = log_cb;
+  media_log_ = media_log;
 }
 
 void MP4StreamParser::Reset() {
@@ -142,7 +142,7 @@ bool MP4StreamParser::ParseBox(bool* err) {
   if (!size) return false;
 
   scoped_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(buf, size, log_cb_, err));
+      BoxReader::ReadTopLevelBox(buf, size, media_log_, err));
   if (reader.get() == NULL) return false;
 
   if (reader->type() == FOURCC_MOOV) {
@@ -216,18 +216,19 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       if (!(entry.format == FOURCC_MP4A ||
             (entry.format == FOURCC_ENCA &&
              entry.sinf.format.format == FOURCC_MP4A))) {
-        MEDIA_LOG(ERROR, log_cb_) << "Unsupported audio format 0x" << std::hex
-                                  << entry.format << " in stsd box.";
+        MEDIA_LOG(ERROR, media_log_) << "Unsupported audio format 0x"
+                                     << std::hex << entry.format
+                                     << " in stsd box.";
         return false;
       }
 
       uint8 audio_type = entry.esds.object_type;
       DVLOG(1) << "audio_type " << std::hex << static_cast<int>(audio_type);
       if (audio_object_types_.find(audio_type) == audio_object_types_.end()) {
-        MEDIA_LOG(ERROR, log_cb_) << "audio object type 0x" << std::hex
-                                  << audio_type
-                                  << " does not match what is specified in the"
-                                  << " mimetype.";
+        MEDIA_LOG(ERROR, media_log_)
+            << "audio object type 0x" << std::hex << audio_type
+            << " does not match what is specified in the"
+            << " mimetype.";
         return false;
       }
 
@@ -245,8 +246,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         extra_data = aac.codec_specific_data();
 #endif
       } else {
-        MEDIA_LOG(ERROR, log_cb_) << "Unsupported audio object type 0x"
-                                  << std::hex << audio_type << " in esds.";
+        MEDIA_LOG(ERROR, media_log_) << "Unsupported audio object type 0x"
+                                     << std::hex << audio_type << " in esds.";
         return false;
       }
 
@@ -279,8 +280,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       const VideoSampleEntry& entry = samp_descr.video_entries[desc_idx];
 
       if (!entry.IsFormatValid()) {
-        MEDIA_LOG(ERROR, log_cb_) << "Unsupported video format 0x" << std::hex
-                                  << entry.format << " in stsd box.";
+        MEDIA_LOG(ERROR, media_log_) << "Unsupported video format 0x"
+                                     << std::hex << entry.format
+                                     << " in stsd box.";
         return false;
       }
 
@@ -341,7 +343,7 @@ bool MP4StreamParser::ParseMoof(BoxReader* reader) {
   MovieFragment moof;
   RCHECK(moof.Parse(reader));
   if (!runs_)
-    runs_.reset(new TrackRunIterator(moov_.get(), log_cb_));
+    runs_.reset(new TrackRunIterator(moov_.get(), media_log_));
   RCHECK(runs_->Init(moof));
   RCHECK(ComputeHighestEndOffset(moof));
 
@@ -494,7 +496,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
   if (video) {
     if (!PrepareAVCBuffer(runs_->video_description().avcc,
                           &frame_buf, &subsamples)) {
-      MEDIA_LOG(ERROR, log_cb_) << "Failed to prepare AVC sample for decode";
+      MEDIA_LOG(ERROR, media_log_) << "Failed to prepare AVC sample for decode";
       *err = true;
       return false;
     }
@@ -504,7 +506,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
     if (ESDescriptor::IsAAC(runs_->audio_description().esds.object_type) &&
         !PrepareAACBuffer(runs_->audio_description().esds.aac,
                           &frame_buf, &subsamples)) {
-      MEDIA_LOG(ERROR, log_cb_) << "Failed to prepare AAC sample for decode";
+      MEDIA_LOG(ERROR, media_log_) << "Failed to prepare AAC sample for decode";
       *err = true;
       return false;
     }
@@ -590,13 +592,14 @@ bool MP4StreamParser::ReadAndDiscardMDATsUntil(int64 max_clear_offset) {
 
     FourCC type;
     int box_sz;
-    if (!BoxReader::StartTopLevelBox(buf, size, log_cb_,
-                                     &type, &box_sz, &err))
+    if (!BoxReader::StartTopLevelBox(buf, size, media_log_, &type, &box_sz,
+                                     &err))
       break;
 
     if (type != FOURCC_MDAT) {
-      MEDIA_LOG(DEBUG, log_cb_) << "Unexpected box type while parsing MDATs: "
-                                << FourCCToString(type);
+      MEDIA_LOG(DEBUG, media_log_)
+          << "Unexpected box type while parsing MDATs: "
+          << FourCCToString(type);
     }
     mdat_tail_ += box_sz;
   }
@@ -623,7 +626,7 @@ bool MP4StreamParser::HaveEnoughDataToEnqueueSamples() {
 bool MP4StreamParser::ComputeHighestEndOffset(const MovieFragment& moof) {
   highest_end_offset_ = 0;
 
-  TrackRunIterator runs(moov_.get(), log_cb_);
+  TrackRunIterator runs(moov_.get(), media_log_);
   RCHECK(runs.Init(moof));
 
   while (runs.IsRunValid()) {

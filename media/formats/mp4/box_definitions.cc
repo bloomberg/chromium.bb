@@ -409,16 +409,17 @@ AVCDecoderConfigurationRecord::~AVCDecoderConfigurationRecord() {}
 FourCC AVCDecoderConfigurationRecord::BoxType() const { return FOURCC_AVCC; }
 
 bool AVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
-  return ParseInternal(reader, reader->log_cb());
+  return ParseInternal(reader, reader->media_log());
 }
 
 bool AVCDecoderConfigurationRecord::Parse(const uint8* data, int data_size) {
   BufferReader reader(data, data_size);
-  return ParseInternal(&reader, LogCB());
+  return ParseInternal(&reader, new MediaLog());
 }
 
-bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader,
-                                                  const LogCB& log_cb) {
+bool AVCDecoderConfigurationRecord::ParseInternal(
+    BufferReader* reader,
+    const scoped_refptr<MediaLog>& media_log) {
   RCHECK(reader->Read1(&version) && version == 1 &&
          reader->Read1(&profile_indication) &&
          reader->Read1(&profile_compatibility) &&
@@ -441,11 +442,11 @@ bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader,
            reader->ReadVec(&sps_list[i], sps_length));
     RCHECK(sps_list[i].size() > 4);
 
-    if (!log_cb.is_null()) {
-      MEDIA_LOG(INFO, log_cb) << "Video codec: avc1." << std::hex
-                              << static_cast<int>(sps_list[i][1])
-                              << static_cast<int>(sps_list[i][2])
-                              << static_cast<int>(sps_list[i][3]);
+    if (media_log.get()) {
+      MEDIA_LOG(INFO, media_log) << "Video codec: avc1." << std::hex
+                                 << static_cast<int>(sps_list[i][1])
+                                 << static_cast<int>(sps_list[i][2])
+                                 << static_cast<int>(sps_list[i][3]);
     }
   }
 
@@ -538,12 +539,12 @@ bool ElementaryStreamDescriptor::Parse(BoxReader* reader) {
   object_type = es_desc.object_type();
 
   if (object_type != 0x40) {
-    MEDIA_LOG(INFO, reader->log_cb()) << "Audio codec: mp4a." << std::hex
-                                      << static_cast<int>(object_type);
+    MEDIA_LOG(INFO, reader->media_log()) << "Audio codec: mp4a." << std::hex
+                                         << static_cast<int>(object_type);
   }
 
   if (es_desc.IsAAC(object_type))
-    RCHECK(aac.Parse(es_desc.decoder_specific_info(), reader->log_cb()));
+    RCHECK(aac.Parse(es_desc.decoder_specific_info(), reader->media_log()));
 
   return true;
 }
@@ -709,7 +710,7 @@ bool Movie::Parse(BoxReader* reader) {
   RCHECK(reader->ScanChildren() && reader->ReadChild(&header) &&
          reader->ReadChildren(&tracks));
 
-  RCHECK_MEDIA_LOGGED(reader->ReadChild(&extends), reader->log_cb(),
+  RCHECK_MEDIA_LOGGED(reader->ReadChild(&extends), reader->media_log(),
                       "Detected unfragmented MP4. Media Source Extensions "
                       "require ISO BMFF moov to contain mvex to indicate that "
                       "Movie Fragments are to be expected.");

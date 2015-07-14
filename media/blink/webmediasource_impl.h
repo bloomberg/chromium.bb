@@ -18,7 +18,8 @@ class ChunkDemuxer;
 class MEDIA_EXPORT WebMediaSourceImpl
     : NON_EXPORTED_BASE(public blink::WebMediaSource) {
  public:
-  WebMediaSourceImpl(ChunkDemuxer* demuxer, LogCB log_cb);
+  WebMediaSourceImpl(ChunkDemuxer* demuxer,
+                     const scoped_refptr<MediaLog>& media_log);
   virtual ~WebMediaSourceImpl();
 
   // blink::WebMediaSource implementation.
@@ -33,7 +34,7 @@ class MEDIA_EXPORT WebMediaSourceImpl
 
  private:
   ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.
-  LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaSourceImpl);
 };

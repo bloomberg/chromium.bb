@@ -125,7 +125,7 @@ class MEDIA_EXPORT StreamParser {
       const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
       const NewMediaSegmentCB& new_segment_cb,
       const base::Closure& end_of_segment_cb,
-      const LogCB& log_cb) = 0;
+      const scoped_refptr<MediaLog>& media_log) = 0;
 
   // Called when a seek occurs. This flushes the current parser state
   // and puts the parser in a state where it can receive data for the new seek

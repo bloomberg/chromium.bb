@@ -62,7 +62,7 @@ void MPEGAudioStreamParserBase::Init(
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewMediaSegmentCB& new_segment_cb,
     const base::Closure& end_of_segment_cb,
-    const LogCB& log_cb) {
+    const scoped_refptr<MediaLog>& media_log) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, UNINITIALIZED);
   init_cb_ = init_cb;
@@ -70,7 +70,7 @@ void MPEGAudioStreamParserBase::Init(
   new_buffers_cb_ = new_buffers_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
-  log_cb_ = log_cb;
+  media_log_ = media_log;
 
   ChangeState(INITIALIZED);
 }
@@ -262,7 +262,7 @@ int MPEGAudioStreamParserBase::ParseIcecastHeader(const uint8* data, int size) {
   int offset = LocateEndOfHeaders(data, locate_size, 4);
   if (offset < 0) {
     if (locate_size == kMaxIcecastHeaderSize) {
-      MEDIA_LOG(ERROR, log_cb_) << "Icecast header is too large.";
+      MEDIA_LOG(ERROR, media_log_) << "Icecast header is too large.";
       return -1;
     }
 
@@ -323,7 +323,7 @@ bool MPEGAudioStreamParserBase::ParseSyncSafeInt(BitReader* reader,
   for (int i = 0; i < 4; ++i) {
     uint8 tmp;
     if (!reader->ReadBits(1, &tmp) || tmp != 0) {
-      MEDIA_LOG(ERROR, log_cb_) << "ID3 syncsafe integer byte MSb is not 0!";
+      MEDIA_LOG(ERROR, media_log_) << "ID3 syncsafe integer byte MSb is not 0!";
       return false;
     }
 

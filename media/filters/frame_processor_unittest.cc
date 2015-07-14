@@ -274,15 +274,14 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
                                           0,
                                           false);
         frame_processor_->OnPossibleAudioConfigUpdate(decoder_config);
-        ASSERT_TRUE(audio_->UpdateAudioConfig(decoder_config,
-                                              base::Bind(&AddLogEntryForTest)));
+        ASSERT_TRUE(audio_->UpdateAudioConfig(decoder_config, new MediaLog()));
         break;
       }
       case DemuxerStream::VIDEO: {
         ASSERT_FALSE(video_);
         video_.reset(new ChunkDemuxerStream(DemuxerStream::VIDEO, true));
         ASSERT_TRUE(video_->UpdateVideoConfig(TestVideoConfig::Normal(),
-                                              base::Bind(&AddLogEntryForTest)));
+                                              new MediaLog()));
         break;
       }
       // TODO(wolenetz): Test text coded frame processing.

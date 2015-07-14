@@ -30,7 +30,7 @@ class WebMStreamParser : public StreamParser {
             const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
             const NewMediaSegmentCB& new_segment_cb,
             const base::Closure& end_of_segment_cb,
-            const LogCB& log_cb) override;
+            const scoped_refptr<MediaLog>& media_log) override;
   void Flush() override;
   bool Parse(const uint8* buf, int size) override;
 
@@ -75,7 +75,7 @@ class WebMStreamParser : public StreamParser {
 
   NewMediaSegmentCB new_segment_cb_;
   base::Closure end_of_segment_cb_;
-  LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
 
   bool unknown_segment_size_;
 

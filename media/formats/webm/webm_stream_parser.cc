@@ -33,7 +33,7 @@ void WebMStreamParser::Init(
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewMediaSegmentCB& new_segment_cb,
     const base::Closure& end_of_segment_cb,
-    const LogCB& log_cb) {
+    const scoped_refptr<MediaLog>& media_log) {
   DCHECK_EQ(state_, kWaitingForInit);
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
@@ -51,7 +51,7 @@ void WebMStreamParser::Init(
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
-  log_cb_ = log_cb;
+  media_log_ = media_log;
 }
 
 void WebMStreamParser::Flush() {
@@ -154,7 +154,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       break;
     case kWebMIdCluster:
       if (!cluster_parser_) {
-        MEDIA_LOG(ERROR, log_cb_) << "Found Cluster element before Info.";
+        MEDIA_LOG(ERROR, media_log_) << "Found Cluster element before Info.";
         return -1;
       }
       ChangeState(kParsingClusters);
@@ -172,7 +172,8 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
       // We've found the element we are looking for.
       break;
     default: {
-      MEDIA_LOG(ERROR, log_cb_) << "Unexpected element ID 0x" << std::hex << id;
+      MEDIA_LOG(ERROR, media_log_) << "Unexpected element ID 0x" << std::hex
+                                   << id;
       return -1;
     }
   }
@@ -187,7 +188,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   cur_size -= result;
   bytes_parsed += result;
 
-  WebMTracksParser tracks_parser(log_cb_, ignore_text_tracks_);
+  WebMTracksParser tracks_parser(media_log_, ignore_text_tracks_);
   result = tracks_parser.Parse(cur, cur_size);
 
   if (result <= 0)
@@ -230,17 +231,14 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   }
 
   cluster_parser_.reset(new WebMClusterParser(
-      info_parser.timecode_scale(),
-      tracks_parser.audio_track_num(),
+      info_parser.timecode_scale(), tracks_parser.audio_track_num(),
       tracks_parser.GetAudioDefaultDuration(timecode_scale_in_us),
       tracks_parser.video_track_num(),
       tracks_parser.GetVideoDefaultDuration(timecode_scale_in_us),
-      tracks_parser.text_tracks(),
-      tracks_parser.ignored_tracks(),
+      tracks_parser.text_tracks(), tracks_parser.ignored_tracks(),
       tracks_parser.audio_encryption_key_id(),
-      tracks_parser.video_encryption_key_id(),
-      audio_config.codec(),
-      log_cb_));
+      tracks_parser.video_encryption_key_id(), audio_config.codec(),
+      media_log_));
 
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(params);

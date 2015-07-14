@@ -51,7 +51,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     Track(int track_num,
           bool is_video,
           base::TimeDelta default_duration,
-          const LogCB& log_cb);
+          const scoped_refptr<MediaLog>& media_log);
     ~Track();
 
     int track_num() const { return track_num_; }
@@ -143,7 +143,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // splicing when these estimates are observed in SourceBufferStream.
     base::TimeDelta estimated_next_frame_duration_;
 
-    LogCB log_cb_;
+    scoped_refptr<MediaLog> media_log_;
   };
 
   typedef std::map<int, Track> TextTrackMap;
@@ -158,8 +158,8 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
                     const std::set<int64>& ignored_tracks,
                     const std::string& audio_encryption_key_id,
                     const std::string& video_encryption_key_id,
-                    const AudioCodec audio_codec_,
-                    const LogCB& log_cb);
+                    const AudioCodec audio_codec,
+                    const scoped_refptr<MediaLog>& media_log);
   ~WebMClusterParser() override;
 
   // Resets the parser state so it can accept a new cluster.
@@ -315,7 +315,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   // kInfiniteDuration() if no buffers are currently missing duration.
   DecodeTimestamp ready_buffer_upper_bound_;
 
-  LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMClusterParser);
 };

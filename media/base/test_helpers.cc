@@ -274,10 +274,4 @@ void CallbackPairChecker::RecordBCalled() {
   expecting_b_ = false;
 }
 
-void AddLogEntryForTest(MediaLog::MediaLogLevel level,
-                        const std::string& message) {
-  DVLOG(1) << "Media log (" << MediaLog::MediaLogLevelToString(level)
-           << "): " << message;
-}
-
 }  // namespace media

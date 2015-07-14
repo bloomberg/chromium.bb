@@ -450,7 +450,6 @@ class MockMediaSource {
             base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
             base::Bind(&MockMediaSource::OnEncryptedMediaInitData,
                        base::Unretained(this)),
-            LogCB(),
             scoped_refptr<MediaLog>(new MediaLog()),
             true)),
         owned_chunk_demuxer_(chunk_demuxer_) {

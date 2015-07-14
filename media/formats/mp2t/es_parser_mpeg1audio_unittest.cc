@@ -40,9 +40,8 @@ bool EsParserMpeg1AudioTest::Process(
   EsParserMpeg1Audio es_parser(
       base::Bind(&EsParserMpeg1AudioTest::NewAudioConfig,
                  base::Unretained(this)),
-      base::Bind(&EsParserMpeg1AudioTest::EmitBuffer,
-                 base::Unretained(this)),
-      LogCB());
+      base::Bind(&EsParserMpeg1AudioTest::EmitBuffer, base::Unretained(this)),
+      new MediaLog());
   return ProcessPesPackets(&es_parser, pes_packets, force_timing);
 }
 

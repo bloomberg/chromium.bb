@@ -54,13 +54,13 @@ class MEDIA_EXPORT SourceBufferStream {
   };
 
   SourceBufferStream(const AudioDecoderConfig& audio_config,
-                     const LogCB& log_cb,
+                     const scoped_refptr<MediaLog>& media_log,
                      bool splice_frames_enabled);
   SourceBufferStream(const VideoDecoderConfig& video_config,
-                     const LogCB& log_cb,
+                     const scoped_refptr<MediaLog>& media_log,
                      bool splice_frames_enabled);
   SourceBufferStream(const TextTrackConfig& text_config,
-                     const LogCB& log_cb,
+                     const scoped_refptr<MediaLog>& media_log,
                      bool splice_frames_enabled);
 
   ~SourceBufferStream();
@@ -328,9 +328,9 @@ class MEDIA_EXPORT SourceBufferStream {
   // appropriately and returns true.  Otherwise returns false.
   bool SetPendingBuffer(scoped_refptr<StreamParserBuffer>* out_buffer);
 
-  // Callback used to report log messages that can help the web developer figure
-  // out what is wrong with the content.
-  LogCB log_cb_;
+  // Used to report log messages that can help the web developer figure out what
+  // is wrong with the content.
+  scoped_refptr<MediaLog> media_log_;
 
   // List of disjoint buffered ranges, ordered by start time.
   RangeList ranges_;

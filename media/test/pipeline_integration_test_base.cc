@@ -262,7 +262,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
   audio_decoders.push_back(
-      new FFmpegAudioDecoder(message_loop_.task_runner(), LogCB()));
+      new FFmpegAudioDecoder(message_loop_.task_runner(), new MediaLog()));
 #endif
 
   audio_decoders.push_back(

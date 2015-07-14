@@ -73,9 +73,12 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // Called when midstream config updates occur.
   // Returns true if the new config is accepted.
   // Returns false if the new config should trigger an error.
-  bool UpdateAudioConfig(const AudioDecoderConfig& config, const LogCB& log_cb);
-  bool UpdateVideoConfig(const VideoDecoderConfig& config, const LogCB& log_cb);
-  void UpdateTextConfig(const TextTrackConfig& config, const LogCB& log_cb);
+  bool UpdateAudioConfig(const AudioDecoderConfig& config,
+                         const scoped_refptr<MediaLog>& media_log);
+  bool UpdateVideoConfig(const VideoDecoderConfig& config,
+                         const scoped_refptr<MediaLog>& media_log);
+  void UpdateTextConfig(const TextTrackConfig& config,
+                        const scoped_refptr<MediaLog>& media_log);
 
   void MarkEndOfStream();
   void UnmarkEndOfStream();
@@ -149,21 +152,21 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   //   is ready to receive media data via AppenData().
   // |encrypted_media_init_data_cb| Run when the demuxer determines that an
   //   encryption key is needed to decrypt the content.
-  // |enable_text| Process inband text tracks in the normal way when true,
-  //   otherwise ignore them.
-  // |log_cb| Run when the demuxer needs to emit MediaLog messages.
+  // |media_log| Used to report content and engine debug messages.
   // |splice_frames_enabled| Indicates that it's okay to generate splice frames
   //   per the MSE specification.  Renderers must understand DecoderBuffer's
   //   splice_timestamp() field.
   ChunkDemuxer(const base::Closure& open_cb,
                const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-               const LogCB& log_cb,
                const scoped_refptr<MediaLog>& media_log,
                bool splice_frames_enabled);
   ~ChunkDemuxer() override;
 
   // Demuxer implementation.
   std::string GetDisplayName() const override;
+
+  // |enable_text| Process inband text tracks in the normal way when true,
+  //   otherwise ignore them.
   void Initialize(DemuxerHost* host,
                   const PipelineStatusCB& cb,
                   bool enable_text_tracks) override;
@@ -360,9 +363,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::Closure open_cb_;
   EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   bool enable_text_;
-  // Callback used to report log messages that can help the web developer
-  // figure out what is wrong with the content.
-  LogCB log_cb_;
+
+  // MediaLog for reporting messages and properties to debug content and engine.
   scoped_refptr<MediaLog> media_log_;
 
   PipelineStatusCB init_cb_;

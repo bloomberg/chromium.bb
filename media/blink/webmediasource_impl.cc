@@ -24,10 +24,9 @@ STATIC_ASSERT_MATCHING_STATUS_ENUM(AddStatusNotSupported, kNotSupported);
 STATIC_ASSERT_MATCHING_STATUS_ENUM(AddStatusReachedIdLimit, kReachedIdLimit);
 #undef STATIC_ASSERT_MATCHING_STATUS_ENUM
 
-WebMediaSourceImpl::WebMediaSourceImpl(
-    ChunkDemuxer* demuxer, LogCB log_cb)
-    : demuxer_(demuxer),
-      log_cb_(log_cb) {
+WebMediaSourceImpl::WebMediaSourceImpl(ChunkDemuxer* demuxer,
+                                       const scoped_refptr<MediaLog>& media_log)
+    : demuxer_(demuxer), media_log_(media_log) {
   DCHECK(demuxer_);
 }
 

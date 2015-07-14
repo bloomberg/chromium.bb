@@ -51,8 +51,8 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   ScopedVector<AudioDecoder> audio_decoders;
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
-  audio_decoders.push_back(new FFmpegAudioDecoder(
-      media_task_runner, base::Bind(&MediaLog::AddLogEvent, media_log_)));
+  audio_decoders.push_back(
+      new FFmpegAudioDecoder(media_task_runner, media_log_));
 #endif
 
 #if !defined(OS_ANDROID)

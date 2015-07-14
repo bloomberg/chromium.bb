@@ -77,10 +77,10 @@ bool BufferReader::Read4sInto8s(int64* v) {
 
 BoxReader::BoxReader(const uint8* buf,
                      const int size,
-                     const LogCB& log_cb,
+                     const scoped_refptr<MediaLog>& media_log,
                      bool is_EOS)
     : BufferReader(buf, size),
-      log_cb_(log_cb),
+      media_log_(media_log),
       type_(FOURCC_NULL),
       version_(0),
       flags_(0),
@@ -100,14 +100,13 @@ BoxReader::~BoxReader() {
 // static
 BoxReader* BoxReader::ReadTopLevelBox(const uint8* buf,
                                       const int buf_size,
-                                      const LogCB& log_cb,
+                                      const scoped_refptr<MediaLog>& media_log,
                                       bool* err) {
-  scoped_ptr<BoxReader> reader(
-      new BoxReader(buf, buf_size, log_cb, false));
+  scoped_ptr<BoxReader> reader(new BoxReader(buf, buf_size, media_log, false));
   if (!reader->ReadHeader(err))
     return NULL;
 
-  if (!IsValidTopLevelBox(reader->type(), log_cb)) {
+  if (!IsValidTopLevelBox(reader->type(), media_log)) {
     *err = true;
     return NULL;
   }
@@ -121,13 +120,13 @@ BoxReader* BoxReader::ReadTopLevelBox(const uint8* buf,
 // static
 bool BoxReader::StartTopLevelBox(const uint8* buf,
                                  const int buf_size,
-                                 const LogCB& log_cb,
+                                 const scoped_refptr<MediaLog>& media_log,
                                  FourCC* type,
                                  int* box_size,
                                  bool* err) {
-  BoxReader reader(buf, buf_size, log_cb, false);
+  BoxReader reader(buf, buf_size, media_log, false);
   if (!reader.ReadHeader(err)) return false;
-  if (!IsValidTopLevelBox(reader.type(), log_cb)) {
+  if (!IsValidTopLevelBox(reader.type(), media_log)) {
     *err = true;
     return false;
   }
@@ -139,12 +138,12 @@ bool BoxReader::StartTopLevelBox(const uint8* buf,
 // static
 BoxReader* BoxReader::ReadConcatentatedBoxes(const uint8* buf,
                                              const int buf_size) {
-  return new BoxReader(buf, buf_size, LogCB(), true);
+  return new BoxReader(buf, buf_size, new MediaLog(), true);
 }
 
 // static
 bool BoxReader::IsValidTopLevelBox(const FourCC& type,
-                                   const LogCB& log_cb) {
+                                   const scoped_refptr<MediaLog>& media_log) {
   switch (type) {
     case FOURCC_FTYP:
     case FOURCC_PDIN:
@@ -166,8 +165,8 @@ bool BoxReader::IsValidTopLevelBox(const FourCC& type,
       return true;
     default:
       // Hex is used to show nonprintable characters and aid in debugging
-      MEDIA_LOG(DEBUG, log_cb) << "Unrecognized top-level box type "
-                               << FourCCToString(type);
+      MEDIA_LOG(DEBUG, media_log) << "Unrecognized top-level box type "
+                                  << FourCCToString(type);
       return false;
   }
 }
@@ -178,7 +177,7 @@ bool BoxReader::ScanChildren() {
 
   bool err = false;
   while (pos() < size()) {
-    BoxReader child(&buf_[pos_], size_ - pos_, log_cb_, is_EOS_);
+    BoxReader child(&buf_[pos_], size_ - pos_, media_log_, is_EOS_);
     if (!child.ReadHeader(&err)) break;
 
     children_.insert(std::pair<FourCC, BoxReader>(child.type(), child));
@@ -237,7 +236,7 @@ bool BoxReader::ReadHeader(bool* err) {
       // All the data bytes are expected to be provided.
       size = size_;
     } else {
-      MEDIA_LOG(DEBUG, log_cb_)
+      MEDIA_LOG(DEBUG, media_log_)
           << "ISO BMFF boxes that run to EOS are not supported";
       *err = true;
       return false;

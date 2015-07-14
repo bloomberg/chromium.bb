@@ -28,15 +28,14 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   MP4StreamParser(const std::set<int>& audio_object_types, bool has_sbr);
   ~MP4StreamParser() override;
 
-  void Init(
-      const InitCB& init_cb,
-      const NewConfigCB& config_cb,
-      const NewBuffersCB& new_buffers_cb,
-      bool ignore_text_tracks,
-      const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-      const NewMediaSegmentCB& new_segment_cb,
-      const base::Closure& end_of_segment_cb,
-      const LogCB& log_cb) override;
+  void Init(const InitCB& init_cb,
+            const NewConfigCB& config_cb,
+            const NewBuffersCB& new_buffers_cb,
+            bool ignore_text_tracks,
+            const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+            const NewMediaSegmentCB& new_segment_cb,
+            const base::Closure& end_of_segment_cb,
+            const scoped_refptr<MediaLog>& media_log) override;
   void Flush() override;
   bool Parse(const uint8* buf, int size) override;
 
@@ -99,7 +98,7 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   NewMediaSegmentCB new_segment_cb_;
   base::Closure end_of_segment_cb_;
-  LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
 
   OffsetByteQueue queue_;
 

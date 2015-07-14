@@ -94,9 +94,9 @@ static SourceBufferRange::GapPolicy TypeToGapPolicy(
 }
 
 SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
-                                       const LogCB& log_cb,
+                                       const scoped_refptr<MediaLog>& media_log,
                                        bool splice_frames_enabled)
-    : log_cb_(log_cb),
+    : media_log_(media_log),
       current_config_index_(0),
       append_config_index_(0),
       seek_pending_(false),
@@ -120,9 +120,9 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
 }
 
 SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
-                                       const LogCB& log_cb,
+                                       const scoped_refptr<MediaLog>& media_log,
                                        bool splice_frames_enabled)
-    : log_cb_(log_cb),
+    : media_log_(media_log),
       current_config_index_(0),
       append_config_index_(0),
       seek_pending_(false),
@@ -146,9 +146,9 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
 }
 
 SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
-                                       const LogCB& log_cb,
+                                       const scoped_refptr<MediaLog>& media_log,
                                        bool splice_frames_enabled)
-    : log_cb_(log_cb),
+    : media_log_(media_log),
       current_config_index_(0),
       append_config_index_(0),
       text_track_config_(text_config),
@@ -223,7 +223,8 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
   // New media segments must begin with a keyframe.
   // TODO(wolenetz): Relax this requirement. See http://crbug.com/229412.
   if (new_media_segment_ && !buffers.front()->is_key_frame()) {
-    MEDIA_LOG(ERROR, log_cb_) << "Media segment did not begin with key frame.";
+    MEDIA_LOG(ERROR, media_log_)
+        << "Media segment did not begin with key frame.";
     return false;
   }
 
@@ -233,7 +234,7 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
 
   if (media_segment_start_time_ < DecodeTimestamp() ||
       buffers.front()->GetDecodeTimestamp() < DecodeTimestamp()) {
-    MEDIA_LOG(ERROR, log_cb_)
+    MEDIA_LOG(ERROR, media_log_)
         << "Cannot append a media segment with negative timestamps.";
     return false;
   }
@@ -241,8 +242,9 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
   if (!IsNextTimestampValid(buffers.front()->GetDecodeTimestamp(),
                             buffers.front()->is_key_frame())) {
     const DecodeTimestamp& dts = buffers.front()->GetDecodeTimestamp();
-    MEDIA_LOG(ERROR, log_cb_) << "Invalid same timestamp construct detected at"
-                              << " time " << dts.InSecondsF();
+    MEDIA_LOG(ERROR, media_log_)
+        << "Invalid same timestamp construct detected at"
+        << " time " << dts.InSecondsF();
 
     return false;
   }
@@ -530,16 +532,17 @@ bool SourceBufferStream::IsMonotonicallyIncreasing(
 
     if (prev_timestamp != kNoDecodeTimestamp()) {
       if (current_timestamp < prev_timestamp) {
-        MEDIA_LOG(ERROR, log_cb_) << "Buffers did not monotonically increase.";
+        MEDIA_LOG(ERROR, media_log_)
+            << "Buffers did not monotonically increase.";
         return false;
       }
 
       if (current_timestamp == prev_timestamp &&
           !SourceBufferRange::AllowSameTimestamp(prev_is_keyframe,
                                                  current_is_keyframe)) {
-        MEDIA_LOG(ERROR, log_cb_) << "Unexpected combination of buffers with"
-                                  << " the same timestamp detected at "
-                                  << current_timestamp.InSecondsF();
+        MEDIA_LOG(ERROR, media_log_) << "Unexpected combination of buffers with"
+                                     << " the same timestamp detected at "
+                                     << current_timestamp.InSecondsF();
         return false;
       }
     }
@@ -1266,12 +1269,12 @@ bool SourceBufferStream::UpdateAudioConfig(const AudioDecoderConfig& config) {
   DVLOG(3) << "UpdateAudioConfig.";
 
   if (audio_configs_[0].codec() != config.codec()) {
-    MEDIA_LOG(ERROR, log_cb_) << "Audio codec changes not allowed.";
+    MEDIA_LOG(ERROR, media_log_) << "Audio codec changes not allowed.";
     return false;
   }
 
   if (audio_configs_[0].is_encrypted() != config.is_encrypted()) {
-    MEDIA_LOG(ERROR, log_cb_) << "Audio encryption changes not allowed.";
+    MEDIA_LOG(ERROR, media_log_) << "Audio encryption changes not allowed.";
     return false;
   }
 
@@ -1297,12 +1300,12 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
   DVLOG(3) << "UpdateVideoConfig.";
 
   if (video_configs_[0].codec() != config.codec()) {
-    MEDIA_LOG(ERROR, log_cb_) << "Video codec changes not allowed.";
+    MEDIA_LOG(ERROR, media_log_) << "Video codec changes not allowed.";
     return false;
   }
 
   if (video_configs_[0].is_encrypted() != config.is_encrypted()) {
-    MEDIA_LOG(ERROR, log_cb_) << "Video encryption changes not allowed.";
+    MEDIA_LOG(ERROR, media_log_) << "Video encryption changes not allowed.";
     return false;
   }
 

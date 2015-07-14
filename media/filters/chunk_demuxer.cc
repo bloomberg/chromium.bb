@@ -94,11 +94,10 @@ class SourceState {
   typedef base::Callback<void(
       ChunkDemuxerStream*, const TextTrackConfig&)> NewTextTrackCB;
 
-  SourceState(
-      scoped_ptr<StreamParser> stream_parser,
-      scoped_ptr<FrameProcessor> frame_processor, const LogCB& log_cb,
-      const CreateDemuxerStreamCB& create_demuxer_stream_cb,
-      const scoped_refptr<MediaLog>& media_log);
+  SourceState(scoped_ptr<StreamParser> stream_parser,
+              scoped_ptr<FrameProcessor> frame_processor,
+              const CreateDemuxerStreamCB& create_demuxer_stream_cb,
+              const scoped_refptr<MediaLog>& media_log);
 
   ~SourceState();
 
@@ -234,7 +233,6 @@ class SourceState {
   TextStreamMap text_stream_map_;  // |this| owns the map's stream pointers.
 
   scoped_ptr<FrameProcessor> frame_processor_;
-  LogCB log_cb_;
   scoped_refptr<MediaLog> media_log_;
   StreamParser::InitCB init_cb_;
 
@@ -256,7 +254,6 @@ class SourceState {
 
 SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
                          scoped_ptr<FrameProcessor> frame_processor,
-                         const LogCB& log_cb,
                          const CreateDemuxerStreamCB& create_demuxer_stream_cb,
                          const scoped_refptr<MediaLog>& media_log)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
@@ -267,7 +264,6 @@ SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
       audio_(NULL),
       video_(NULL),
       frame_processor_(frame_processor.release()),
-      log_cb_(log_cb),
       media_log_(media_log),
       auto_update_timestamp_offset_(false) {
   DCHECK(!create_demuxer_stream_cb_.is_null());
@@ -297,7 +293,7 @@ void SourceState::Init(
       new_text_track_cb_.is_null(), encrypted_media_init_data_cb,
       base::Bind(&SourceState::OnNewMediaSegment, base::Unretained(this)),
       base::Bind(&SourceState::OnEndOfMediaSegment, base::Unretained(this)),
-      log_cb_);
+      media_log_);
 }
 
 void SourceState::SetSequenceMode(bool sequence_mode) {
@@ -333,7 +329,7 @@ bool SourceState::Append(
   // append window and timestamp offset pointer. See http://crbug.com/351454.
   bool result = stream_parser_->Parse(data, length);
   if (!result) {
-    MEDIA_LOG(ERROR, log_cb_)
+    MEDIA_LOG(ERROR, media_log_)
         << __FUNCTION__ << ": stream parsing failed."
         << " Data size=" << length
         << " append_window_start=" << append_window_start.InSecondsF()
@@ -571,7 +567,7 @@ bool SourceState::OnNewConfigs(
   // Signal an error if we get configuration info for stream types that weren't
   // specified in AddId() or more configs after a stream is initialized.
   if (allow_audio != audio_config.IsValidConfig()) {
-    MEDIA_LOG(ERROR, log_cb_)
+    MEDIA_LOG(ERROR, media_log_)
         << "Initialization segment"
         << (audio_config.IsValidConfig() ? " has" : " does not have")
         << " an audio track, but the mimetype"
@@ -581,7 +577,7 @@ bool SourceState::OnNewConfigs(
   }
 
   if (allow_video != video_config.IsValidConfig()) {
-    MEDIA_LOG(ERROR, log_cb_)
+    MEDIA_LOG(ERROR, media_log_)
         << "Initialization segment"
         << (video_config.IsValidConfig() ? " has" : " does not have")
         << " a video track, but the mimetype"
@@ -616,7 +612,7 @@ bool SourceState::OnNewConfigs(
     }
 
     frame_processor_->OnPossibleAudioConfigUpdate(audio_config);
-    success &= audio_->UpdateAudioConfig(audio_config, log_cb_);
+    success &= audio_->UpdateAudioConfig(audio_config, media_log_);
   }
 
   if (video_config.IsValidConfig()) {
@@ -643,7 +639,7 @@ bool SourceState::OnNewConfigs(
       }
     }
 
-    success &= video_->UpdateVideoConfig(video_config, log_cb_);
+    success &= video_->UpdateVideoConfig(video_config, media_log_);
   }
 
   typedef StreamParser::TextTrackConfigMap::const_iterator TextConfigItr;
@@ -654,11 +650,11 @@ bool SourceState::OnNewConfigs(
           create_demuxer_stream_cb_.Run(DemuxerStream::TEXT);
       if (!frame_processor_->AddTrack(itr->first, text_stream)) {
         success &= false;
-        MEDIA_LOG(ERROR, log_cb_) << "Failed to add text track ID "
-                                  << itr->first << " to frame processor.";
+        MEDIA_LOG(ERROR, media_log_) << "Failed to add text track ID "
+                                     << itr->first << " to frame processor.";
         break;
       }
-      text_stream->UpdateTextConfig(itr->second, log_cb_);
+      text_stream->UpdateTextConfig(itr->second, media_log_);
       text_stream_map_[itr->first] = text_stream;
       new_text_track_cb_.Run(text_stream, itr->second);
     }
@@ -666,7 +662,8 @@ bool SourceState::OnNewConfigs(
     const size_t text_count = text_stream_map_.size();
     if (text_configs.size() != text_count) {
       success &= false;
-      MEDIA_LOG(ERROR, log_cb_) << "The number of text track configs changed.";
+      MEDIA_LOG(ERROR, media_log_)
+          << "The number of text track configs changed.";
     } else if (text_count == 1) {
       TextConfigItr config_itr = text_configs.begin();
       TextStreamMap::iterator stream_itr = text_stream_map_.begin();
@@ -678,7 +675,7 @@ bool SourceState::OnNewConfigs(
                                  old_config.id());
       if (!new_config.Matches(old_config)) {
         success &= false;
-        MEDIA_LOG(ERROR, log_cb_)
+        MEDIA_LOG(ERROR, media_log_)
             << "New text track config does not match old one.";
       } else {
         StreamParser::TrackId old_id = stream_itr->first;
@@ -689,7 +686,7 @@ bool SourceState::OnNewConfigs(
             text_stream_map_[config_itr->first] = text_stream;
           } else {
             success &= false;
-            MEDIA_LOG(ERROR, log_cb_)
+            MEDIA_LOG(ERROR, media_log_)
                 << "Error remapping single text track number";
           }
         }
@@ -701,7 +698,7 @@ bool SourceState::OnNewConfigs(
             text_stream_map_.find(config_itr->first);
         if (stream_itr == text_stream_map_.end()) {
           success &= false;
-          MEDIA_LOG(ERROR, log_cb_)
+          MEDIA_LOG(ERROR, media_log_)
               << "Unexpected text track configuration for track ID "
               << config_itr->first;
           break;
@@ -712,9 +709,9 @@ bool SourceState::OnNewConfigs(
         TextTrackConfig old_config = stream->text_track_config();
         if (!new_config.Matches(old_config)) {
           success &= false;
-          MEDIA_LOG(ERROR, log_cb_) << "New text track config for track ID "
-                                    << config_itr->first
-                                    << " does not match old one.";
+          MEDIA_LOG(ERROR, media_log_) << "New text track config for track ID "
+                                       << config_itr->first
+                                       << " does not match old one.";
           break;
         }
       }
@@ -924,8 +921,9 @@ void ChunkDemuxerStream::OnNewMediaSegment(DecodeTimestamp start_timestamp) {
   stream_->OnNewMediaSegment(start_timestamp);
 }
 
-bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
-                                           const LogCB& log_cb) {
+bool ChunkDemuxerStream::UpdateAudioConfig(
+    const AudioDecoderConfig& config,
+    const scoped_refptr<MediaLog>& media_log) {
   DCHECK(config.IsValidConfig());
   DCHECK_EQ(type_, AUDIO);
   base::AutoLock auto_lock(lock_);
@@ -942,15 +940,16 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
         splice_frames_enabled_ && codec_supported;
 
     stream_.reset(
-        new SourceBufferStream(config, log_cb, splice_frames_enabled_));
+        new SourceBufferStream(config, media_log, splice_frames_enabled_));
     return true;
   }
 
   return stream_->UpdateAudioConfig(config);
 }
 
-bool ChunkDemuxerStream::UpdateVideoConfig(const VideoDecoderConfig& config,
-                                           const LogCB& log_cb) {
+bool ChunkDemuxerStream::UpdateVideoConfig(
+    const VideoDecoderConfig& config,
+    const scoped_refptr<MediaLog>& media_log) {
   DCHECK(config.IsValidConfig());
   DCHECK_EQ(type_, VIDEO);
   base::AutoLock auto_lock(lock_);
@@ -958,20 +957,22 @@ bool ChunkDemuxerStream::UpdateVideoConfig(const VideoDecoderConfig& config,
   if (!stream_) {
     DCHECK_EQ(state_, UNINITIALIZED);
     stream_.reset(
-        new SourceBufferStream(config, log_cb, splice_frames_enabled_));
+        new SourceBufferStream(config, media_log, splice_frames_enabled_));
     return true;
   }
 
   return stream_->UpdateVideoConfig(config);
 }
 
-void ChunkDemuxerStream::UpdateTextConfig(const TextTrackConfig& config,
-                                          const LogCB& log_cb) {
+void ChunkDemuxerStream::UpdateTextConfig(
+    const TextTrackConfig& config,
+    const scoped_refptr<MediaLog>& media_log) {
   DCHECK_EQ(type_, TEXT);
   base::AutoLock auto_lock(lock_);
   DCHECK(!stream_);
   DCHECK_EQ(state_, UNINITIALIZED);
-  stream_.reset(new SourceBufferStream(config, log_cb, splice_frames_enabled_));
+  stream_.reset(
+      new SourceBufferStream(config, media_log, splice_frames_enabled_));
 }
 
 void ChunkDemuxerStream::MarkEndOfStream() {
@@ -1103,7 +1104,6 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
 ChunkDemuxer::ChunkDemuxer(
     const base::Closure& open_cb,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-    const LogCB& log_cb,
     const scoped_refptr<MediaLog>& media_log,
     bool splice_frames_enabled)
     : state_(WAITING_FOR_INIT),
@@ -1112,7 +1112,6 @@ ChunkDemuxer::ChunkDemuxer(
       open_cb_(open_cb),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
       enable_text_(false),
-      log_cb_(log_cb),
       media_log_(media_log),
       duration_(kNoTimestamp()),
       user_specified_duration_(-1),
@@ -1252,9 +1251,8 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   bool has_audio = false;
   bool has_video = false;
-  scoped_ptr<media::StreamParser> stream_parser(
-      StreamParserFactory::Create(type, codecs, log_cb_,
-                                  &has_audio, &has_video));
+  scoped_ptr<media::StreamParser> stream_parser(StreamParserFactory::Create(
+      type, codecs, media_log_, &has_audio, &has_video));
 
   if (!stream_parser)
     return ChunkDemuxer::kNotSupported;
@@ -1273,12 +1271,10 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
       new FrameProcessor(base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
                          base::Unretained(this))));
 
-  scoped_ptr<SourceState> source_state(
-      new SourceState(stream_parser.Pass(),
-                      frame_processor.Pass(), log_cb_,
-                      base::Bind(&ChunkDemuxer::CreateDemuxerStream,
-                                 base::Unretained(this)),
-                      media_log_));
+  scoped_ptr<SourceState> source_state(new SourceState(
+      stream_parser.Pass(), frame_processor.Pass(),
+      base::Bind(&ChunkDemuxer::CreateDemuxerStream, base::Unretained(this)),
+      media_log_));
 
   SourceState::NewTextTrackCB new_text_track_cb;
 
@@ -1661,7 +1657,7 @@ void ChunkDemuxer::OnSourceInitDone(
   if (!params.timeline_offset.is_null()) {
     if (!timeline_offset_.is_null() &&
         params.timeline_offset != timeline_offset_) {
-      MEDIA_LOG(ERROR, log_cb_)
+      MEDIA_LOG(ERROR, media_log_)
           << "Timeline offset is not the same across all SourceBuffers.";
       ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
       return;

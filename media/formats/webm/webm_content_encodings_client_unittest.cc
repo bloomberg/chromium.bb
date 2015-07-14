@@ -13,8 +13,7 @@ namespace media {
 class WebMContentEncodingsClientTest : public testing::Test {
  public:
   WebMContentEncodingsClientTest()
-      : client_(LogCB()),
-        parser_(kWebMIdContentEncodings, &client_) {}
+      : client_(new MediaLog()), parser_(kWebMIdContentEncodings, &client_) {}
 
   void ParseAndExpectToFail(const uint8* buf, int size) {
     int result = parser_.Parse(buf, size);

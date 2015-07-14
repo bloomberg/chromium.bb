@@ -24,8 +24,8 @@ class MEDIA_EXPORT StreamParserFactory {
       const std::string& type, const std::vector<std::string>& codecs);
 
   // Creates a new StreamParser object if the specified |type| and |codecs| list
-  // are supported. |log_cb| can be used to report errors if there is something
-  // wrong with |type| or the codec IDs in |codecs|.
+  // are supported. |media_log| can be used to report errors if there is
+  // something wrong with |type| or the codec IDs in |codecs|.
   // Returns a new StreamParser object if |type| and all codecs listed in
   //   |codecs| are supported.
   //   |has_audio| is true if an audio codec was specified.
@@ -33,8 +33,11 @@ class MEDIA_EXPORT StreamParserFactory {
   // Returns NULL otherwise. The values of |has_audio| and |has_video| are
   //   undefined.
   static scoped_ptr<StreamParser> Create(
-      const std::string& type, const std::vector<std::string>& codecs,
-      const LogCB& log_cb, bool* has_audio, bool* has_video);
+      const std::string& type,
+      const std::vector<std::string>& codecs,
+      const scoped_refptr<MediaLog>& media_log,
+      bool* has_audio,
+      bool* has_video);
 };
 
 }  // namespace media

@@ -13,7 +13,7 @@ namespace mp4 {
 class AACTest : public testing::Test {
  public:
   bool Parse(const std::vector<uint8>& data) {
-    return aac_.Parse(data, LogCB());
+    return aac_.Parse(data, new MediaLog());
   }
 
   AAC aac_;

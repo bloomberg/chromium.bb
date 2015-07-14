@@ -144,11 +144,6 @@ class CallbackPairChecker {
   bool expecting_b_;
 };
 
-// Test implementation of a media log LogCB that sends media log messages to
-// DVLOG(1).
-void AddLogEntryForTest(MediaLog::MediaLogLevel level,
-                        const std::string& message);
-
 }  // namespace media
 
 #endif  // MEDIA_BASE_TEST_HELPERS_H_

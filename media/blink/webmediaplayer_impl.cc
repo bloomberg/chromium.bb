@@ -847,8 +847,8 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  client_->mediaSourceOpened(new WebMediaSourceImpl(
-      chunk_demuxer_, base::Bind(&MediaLog::AddLogEvent, media_log_)));
+  client_->mediaSourceOpened(
+      new WebMediaSourceImpl(chunk_demuxer_, media_log_));
 }
 
 void WebMediaPlayerImpl::OnAddTextTrack(
@@ -915,8 +915,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     chunk_demuxer_ = new ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        encrypted_media_init_data_cb,
-        base::Bind(&MediaLog::AddLogEvent, media_log_), media_log_, true);
+        encrypted_media_init_data_cb, media_log_, true);
     demuxer_.reset(chunk_demuxer_);
   }
 

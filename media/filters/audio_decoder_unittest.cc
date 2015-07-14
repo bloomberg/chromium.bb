@@ -99,8 +99,8 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
         last_decode_status_(AudioDecoder::kDecodeError) {
     switch (GetParam().decoder_type) {
       case FFMPEG:
-        decoder_.reset(new FFmpegAudioDecoder(
-            message_loop_.task_runner(), LogCB()));
+        decoder_.reset(new FFmpegAudioDecoder(message_loop_.task_runner(),
+                                              new MediaLog()));
         break;
       case OPUS:
         decoder_.reset(

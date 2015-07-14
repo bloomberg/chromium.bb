@@ -38,7 +38,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
             const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
             const NewMediaSegmentCB& new_segment_cb,
             const base::Closure& end_of_segment_cb,
-            const LogCB& log_cb) override;
+            const scoped_refptr<MediaLog>& media_log) override;
   void Flush() override;
   bool Parse(const uint8* buf, int size) override;
 
@@ -81,7 +81,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
                                int* sample_count,
                                bool* metadata_frame) const = 0;
 
-  const LogCB& log_cb() const { return log_cb_; }
+  const scoped_refptr<MediaLog>& media_log() const { return media_log_; }
 
  private:
   enum State {
@@ -137,7 +137,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   NewBuffersCB new_buffers_cb_;
   NewMediaSegmentCB new_segment_cb_;
   base::Closure end_of_segment_cb_;
-  LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
 
   ByteQueue queue_;
 

@@ -32,7 +32,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
  public:
   FFmpegAudioDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      const LogCB& log_cb);
+      const scoped_refptr<MediaLog>& media_log);
   ~FFmpegAudioDecoder() override;
 
   // AudioDecoder implementation.
@@ -107,7 +107,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
 
   scoped_ptr<AudioDiscardHelper> discard_helper_;
 
-  LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FFmpegAudioDecoder);
 };

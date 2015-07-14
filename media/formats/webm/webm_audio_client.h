@@ -17,7 +17,7 @@ class AudioDecoderConfig;
 // Helper class used to parse an Audio element inside a TrackEntry element.
 class WebMAudioClient : public WebMParserClient {
  public:
-  explicit WebMAudioClient(const LogCB& log_cb);
+  explicit WebMAudioClient(const scoped_refptr<MediaLog>& media_log);
   ~WebMAudioClient() override;
 
   // Reset this object's state so it can process a new audio track element.
@@ -41,7 +41,7 @@ class WebMAudioClient : public WebMParserClient {
   bool OnUInt(int id, int64 val) override;
   bool OnFloat(int id, double val) override;
 
-  LogCB log_cb_;
+  scoped_refptr<MediaLog> media_log_;
   int channels_;
   double samples_per_second_;
   double output_samples_per_second_;

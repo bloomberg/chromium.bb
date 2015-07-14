@@ -185,7 +185,8 @@ struct MEDIA_EXPORT AVCDecoderConfigurationRecord : Box {
   std::vector<PPS> pps_list;
 
  private:
-  bool ParseInternal(BufferReader* reader, const LogCB& log_cb);
+  bool ParseInternal(BufferReader* reader,
+                     const scoped_refptr<MediaLog>& media_log);
 };
 
 struct MEDIA_EXPORT PixelAspectRatioBox : Box {

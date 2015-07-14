@@ -145,7 +145,7 @@ class MP4StreamParserTest : public testing::Test {
         base::Bind(&MP4StreamParserTest::KeyNeededF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewSegmentF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::EndOfSegmentF, base::Unretained(this)),
-        LogCB());
+        new MediaLog());
   }
 
   void InitializeParser() {

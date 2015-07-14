@@ -38,7 +38,7 @@ StreamParserTestBase::StreamParserTestBase(
       base::Bind(&StreamParserTestBase::OnKeyNeeded, base::Unretained(this)),
       base::Bind(&StreamParserTestBase::OnNewSegment, base::Unretained(this)),
       base::Bind(&StreamParserTestBase::OnEndOfSegment, base::Unretained(this)),
-      LogCB());
+      new MediaLog());
 }
 
 StreamParserTestBase::~StreamParserTestBase() {}

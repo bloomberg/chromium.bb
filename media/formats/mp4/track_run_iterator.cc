@@ -81,8 +81,8 @@ DecodeTimestamp DecodeTimestampFromRational(int64 numer, int64 denom) {
 }
 
 TrackRunIterator::TrackRunIterator(const Movie* moov,
-                                   const LogCB& log_cb)
-    : moov_(moov), log_cb_(log_cb), sample_offset_(0) {
+                                   const scoped_refptr<MediaLog>& media_log)
+    : moov_(moov), media_log_(media_log), sample_offset_(0) {
   CHECK(moov);
 }
 
@@ -95,7 +95,7 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
                                const uint32 i,
                                SampleInfo* sample_info,
                                const SampleDependsOn sdtp_sample_depends_on,
-                               const LogCB& log_cb) {
+                               const scoped_refptr<MediaLog>& media_log) {
   if (i < trun.sample_sizes.size()) {
     sample_info->size = trun.sample_sizes[i];
   } else if (tfhd.default_sample_size > 0) {
@@ -157,8 +157,8 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
       break;
 
     case kSampleDependsOnReserved:
-      MEDIA_LOG(ERROR, log_cb) << "Reserved value used in sample dependency"
-                                  " info.";
+      MEDIA_LOG(ERROR, media_log) << "Reserved value used in sample dependency"
+                                     " info.";
       return false;
   }
   return true;
@@ -304,10 +304,9 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
 
       tri.samples.resize(trun.sample_count);
       for (size_t k = 0; k < trun.sample_count; k++) {
-        if (!PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset,
-                                k, &tri.samples[k],
-                                traf.sdtp.sample_depends_on(k),
-                                log_cb_)) {
+        if (!PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset, k,
+                                &tri.samples[k], traf.sdtp.sample_depends_on(k),
+                                media_log_)) {
           return false;
         }
 
@@ -519,7 +518,7 @@ scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
 
   if (cenc_info_.empty()) {
     DCHECK_EQ(0, aux_info_size());
-    MEDIA_LOG(ERROR, log_cb_) << "Aux Info is not available.";
+    MEDIA_LOG(ERROR, media_log_) << "Aux Info is not available.";
     return scoped_ptr<DecryptConfig>();
   }
 
@@ -531,7 +530,7 @@ scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
   if (!cenc_info.subsamples.empty() &&
       (!cenc_info.GetTotalSizeOfSubsamples(&total_size) ||
        total_size != static_cast<size_t>(sample_size()))) {
-    MEDIA_LOG(ERROR, log_cb_) << "Incorrect CENC subsample size.";
+    MEDIA_LOG(ERROR, media_log_) << "Incorrect CENC subsample size.";
     return scoped_ptr<DecryptConfig>();
   }
 
