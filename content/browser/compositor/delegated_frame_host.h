@@ -119,11 +119,14 @@ class CONTENT_EXPORT DelegatedFrameHost
   bool CanCopyToBitmap() const;
 
   // Public interface exposed to RenderWidgetHostView.
+
+  // Note: |satisfies_sequences| is cleared in calls to this function.
   void SwapDelegatedFrame(
       uint32 output_surface_id,
       scoped_ptr<cc::DelegatedFrameData> frame_data,
       float frame_device_scale_factor,
-      const std::vector<ui::LatencyInfo>& latency_info);
+      const std::vector<ui::LatencyInfo>& latency_info,
+      std::vector<uint32_t>* satifies_sequences);
   void WasHidden();
   void WasShown(const ui::LatencyInfo& latency_info);
   void WasResized();

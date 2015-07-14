@@ -299,7 +299,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::DelegatedFrameData> frame_data,
     float frame_device_scale_factor,
-    const std::vector<ui::LatencyInfo>& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info,
+    std::vector<uint32_t>* satisfies_sequences) {
   DCHECK(!frame_data->render_pass_list.empty());
 
   cc::RenderPass* root_pass = frame_data->render_pass_list.back();
@@ -400,6 +401,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
           compositor_frame->metadata.latency_info.end(),
           latency_info.begin(),
           latency_info.end());
+      compositor_frame->metadata.satisfies_sequences.swap(*satisfies_sequences);
 
       gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
       if (desired_size != frame_size_in_dip && !desired_size.IsEmpty())

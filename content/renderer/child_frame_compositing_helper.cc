@@ -279,6 +279,16 @@ void ChildFrameCompositingHelper::SatisfyCallback(
 }
 
 // static
+void ChildFrameCompositingHelper::SatisfyCallbackBrowserPlugin(
+    scoped_refptr<ThreadSafeSender> sender,
+    int host_routing_id,
+    int browser_plugin_instance_id,
+    cc::SurfaceSequence sequence) {
+  sender->Send(new BrowserPluginHostMsg_SatisfySequence(
+      host_routing_id, browser_plugin_instance_id, sequence));
+}
+
+// static
 void ChildFrameCompositingHelper::RequireCallback(
     scoped_refptr<ThreadSafeSender> sender,
     int host_routing_id,
@@ -316,8 +326,13 @@ void ChildFrameCompositingHelper::OnSetSurface(
     scoped_refptr<ThreadSafeSender> sender(
         RenderThreadImpl::current()->thread_safe_sender());
     cc::SurfaceLayer::SatisfyCallback satisfy_callback =
-        base::Bind(&ChildFrameCompositingHelper::SatisfyCallback, sender,
-                   host_routing_id_);
+        render_frame_proxy_
+            ? base::Bind(&ChildFrameCompositingHelper::SatisfyCallback, sender,
+                         host_routing_id_)
+            : base::Bind(
+                  &ChildFrameCompositingHelper::SatisfyCallbackBrowserPlugin,
+                  sender, host_routing_id_,
+                  browser_plugin_->browser_plugin_instance_id());
     cc::SurfaceLayer::RequireCallback require_callback =
         render_frame_proxy_
             ? base::Bind(&ChildFrameCompositingHelper::RequireCallback, sender,

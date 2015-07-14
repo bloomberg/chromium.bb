@@ -1506,7 +1506,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
         output_surface_id,
         frame->delegated_frame_data.Pass(),
         frame->metadata.device_scale_factor,
-        frame->metadata.latency_info);
+        frame->metadata.latency_info,
+        &frame->metadata.satisfies_sequences);
   } else {
     DLOG(ERROR) << "Received unexpected frame type.";
     bad_message::ReceivedBadMessage(render_widget_host_->GetProcess(),

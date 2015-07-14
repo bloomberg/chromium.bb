@@ -1176,7 +1176,8 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
         output_surface_id,
         frame->delegated_frame_data.Pass(),
         frame->metadata.device_scale_factor,
-        frame->metadata.latency_info);
+        frame->metadata.latency_info,
+        &frame->metadata.satisfies_sequences);
     return;
   }
 
