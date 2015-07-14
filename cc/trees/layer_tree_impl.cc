@@ -47,19 +47,18 @@ LayerTreeImpl::LayerTreeImpl(
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
       hud_layer_(0),
-      currently_scrolling_layer_(NULL),
       root_layer_scroll_offset_delegate_(NULL),
       background_color_(0),
       has_transparent_background_(false),
-      overscroll_elasticity_layer_(NULL),
-      page_scale_layer_(NULL),
-      inner_viewport_scroll_layer_(NULL),
-      outer_viewport_scroll_layer_(NULL),
+      currently_scrolling_layer_id_(Layer::INVALID_ID),
+      overscroll_elasticity_layer_id_(Layer::INVALID_ID),
+      page_scale_layer_id_(Layer::INVALID_ID),
+      inner_viewport_scroll_layer_id_(Layer::INVALID_ID),
+      outer_viewport_scroll_layer_id_(Layer::INVALID_ID),
       page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
       elastic_overscroll_(elastic_overscroll),
-      scrolling_layer_id_from_previous_tree_(0),
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
       needs_full_tree_sync_(true),
@@ -137,30 +136,26 @@ void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   root_layer_ = layer.Pass();
-  currently_scrolling_layer_ = NULL;
-  inner_viewport_scroll_layer_ = NULL;
-  outer_viewport_scroll_layer_ = NULL;
-  page_scale_layer_ = NULL;
 
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
 LayerImpl* LayerTreeImpl::InnerViewportScrollLayer() const {
-  return inner_viewport_scroll_layer_;
+  return LayerById(inner_viewport_scroll_layer_id_);
 }
 
 LayerImpl* LayerTreeImpl::OuterViewportScrollLayer() const {
-  return outer_viewport_scroll_layer_;
+  return LayerById(outer_viewport_scroll_layer_id_);
 }
 
 gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
   gfx::ScrollOffset offset;
 
-  if (inner_viewport_scroll_layer_)
-    offset += inner_viewport_scroll_layer_->CurrentScrollOffset();
+  if (InnerViewportScrollLayer())
+    offset += InnerViewportScrollLayer()->CurrentScrollOffset();
 
-  if (outer_viewport_scroll_layer_)
-    offset += outer_viewport_scroll_layer_->CurrentScrollOffset();
+  if (OuterViewportScrollLayer())
+    offset += OuterViewportScrollLayer()->CurrentScrollOffset();
 
   return offset;
 }
@@ -168,24 +163,16 @@ gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
 gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
   gfx::ScrollOffset offset;
 
-  if (inner_viewport_scroll_layer_)
-    offset += inner_viewport_scroll_layer_->MaxScrollOffset();
+  if (InnerViewportScrollLayer())
+    offset += InnerViewportScrollLayer()->MaxScrollOffset();
 
-  if (outer_viewport_scroll_layer_)
-    offset += outer_viewport_scroll_layer_->MaxScrollOffset();
+  if (OuterViewportScrollLayer())
+    offset += OuterViewportScrollLayer()->MaxScrollOffset();
 
   return offset;
 }
 
 scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
-  // Clear all data structures that have direct references to the layer tree.
-  scrolling_layer_id_from_previous_tree_ =
-    currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
-  inner_viewport_scroll_layer_ = NULL;
-  outer_viewport_scroll_layer_ = NULL;
-  page_scale_layer_ = NULL;
-  currently_scrolling_layer_ = NULL;
-
   render_surface_layer_list_.clear();
   set_needs_update_draw_properties();
   return root_layer_.Pass();
@@ -252,16 +239,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->pending_page_scale_animation_ =
       pending_page_scale_animation_.Pass();
 
-  if (page_scale_layer_ && inner_viewport_scroll_layer_) {
-    target_tree->SetViewportLayersFromIds(
-        overscroll_elasticity_layer_ ? overscroll_elasticity_layer_->id()
-                                     : Layer::INVALID_ID,
-        page_scale_layer_->id(), inner_viewport_scroll_layer_->id(),
-        outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
-                                     : Layer::INVALID_ID);
-  } else {
-    target_tree->ClearViewportLayers();
-  }
+  target_tree->SetViewportLayersFromIds(
+      overscroll_elasticity_layer_id_, page_scale_layer_id_,
+      inner_viewport_scroll_layer_id_, outer_viewport_scroll_layer_id_);
 
   target_tree->RegisterSelection(selection_);
 
@@ -287,38 +267,37 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 }
 
 LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
-  return inner_viewport_scroll_layer_
-             ? inner_viewport_scroll_layer_->scroll_clip_layer()
+  return InnerViewportScrollLayer()
+             ? InnerViewportScrollLayer()->scroll_clip_layer()
              : NULL;
 }
 
 LayerImpl* LayerTreeImpl::OuterViewportContainerLayer() const {
-  return outer_viewport_scroll_layer_
-             ? outer_viewport_scroll_layer_->scroll_clip_layer()
+  return OuterViewportScrollLayer()
+             ? OuterViewportScrollLayer()->scroll_clip_layer()
              : NULL;
 }
 
 LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
   DCHECK(IsActiveTree());
-  return currently_scrolling_layer_;
+  return LayerById(currently_scrolling_layer_id_);
 }
 
 void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
-  if (currently_scrolling_layer_ == layer)
+  int new_id = layer ? layer->id() : Layer::INVALID_ID;
+  if (currently_scrolling_layer_id_ == new_id)
     return;
 
-  if (currently_scrolling_layer_ &&
-      currently_scrolling_layer_->scrollbar_animation_controller())
-    currently_scrolling_layer_->scrollbar_animation_controller()
-        ->DidScrollEnd();
-  currently_scrolling_layer_ = layer;
+  if (CurrentlyScrollingLayer() &&
+      CurrentlyScrollingLayer()->scrollbar_animation_controller())
+    CurrentlyScrollingLayer()->scrollbar_animation_controller()->DidScrollEnd();
+  currently_scrolling_layer_id_ = new_id;
   if (layer && layer->scrollbar_animation_controller())
     layer->scrollbar_animation_controller()->DidScrollBegin();
 }
 
 void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   SetCurrentlyScrollingLayer(NULL);
-  scrolling_layer_id_from_previous_tree_ = 0;
 }
 
 namespace {
@@ -470,22 +449,22 @@ void LayerTreeImpl::DidUpdatePageScale() {
         max_page_scale_factor_);
   }
 
-  if (page_scale_layer() && page_scale_layer()->transform_tree_index() != -1) {
+  if (PageScaleLayer() && PageScaleLayer()->transform_tree_index() != -1) {
     TransformNode* node = property_trees_.transform_tree.Node(
-        page_scale_layer()->transform_tree_index());
+        PageScaleLayer()->transform_tree_index());
     node->data.post_local_scale_factor = current_page_scale_factor();
     node->data.needs_local_transform_update = true;
     // TODO(enne): property trees can't ask the layer these things, but
     // the page scale layer should *just* be the page scale.
-    DCHECK_EQ(page_scale_layer()->position().ToString(),
+    DCHECK_EQ(PageScaleLayer()->position().ToString(),
               gfx::PointF().ToString());
-    DCHECK_EQ(page_scale_layer()->transform_origin().ToString(),
+    DCHECK_EQ(PageScaleLayer()->transform_origin().ToString(),
               gfx::Point3F().ToString());
     node->data.update_post_local_transform(gfx::PointF(), gfx::Point3F());
     property_trees_.transform_tree.set_needs_update(true);
   }
 
-  ForceScrollbarParameterUpdateAfterScaleChange(page_scale_layer());
+  ForceScrollbarParameterUpdateAfterScaleChange(PageScaleLayer());
 
   HideInnerViewportScrollbarsIfNearMinimumScale();
 }
@@ -559,26 +538,19 @@ void LayerTreeImpl::SetViewportLayersFromIds(
     int page_scale_layer_id,
     int inner_viewport_scroll_layer_id,
     int outer_viewport_scroll_layer_id) {
-  overscroll_elasticity_layer_ = LayerById(overscroll_elasticity_layer_id);
-  page_scale_layer_ = LayerById(page_scale_layer_id);
-  DCHECK(page_scale_layer_);
-
-  inner_viewport_scroll_layer_ =
-      LayerById(inner_viewport_scroll_layer_id);
-  DCHECK(inner_viewport_scroll_layer_);
-
-  outer_viewport_scroll_layer_ =
-      LayerById(outer_viewport_scroll_layer_id);
-  DCHECK(outer_viewport_scroll_layer_ ||
-         outer_viewport_scroll_layer_id == Layer::INVALID_ID);
+  overscroll_elasticity_layer_id_ = overscroll_elasticity_layer_id;
+  page_scale_layer_id_ = page_scale_layer_id;
+  inner_viewport_scroll_layer_id_ = inner_viewport_scroll_layer_id;
+  outer_viewport_scroll_layer_id_ = outer_viewport_scroll_layer_id;
 
   HideInnerViewportScrollbarsIfNearMinimumScale();
 }
 
 void LayerTreeImpl::ClearViewportLayers() {
-  page_scale_layer_ = NULL;
-  inner_viewport_scroll_layer_ = NULL;
-  outer_viewport_scroll_layer_ = NULL;
+  overscroll_elasticity_layer_id_ = Layer::INVALID_ID;
+  page_scale_layer_id_ = Layer::INVALID_ID;
+  inner_viewport_scroll_layer_id_ = Layer::INVALID_ID;
+  outer_viewport_scroll_layer_id_ = Layer::INVALID_ID;
 }
 
 bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
@@ -606,8 +578,6 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     TRACE_EVENT2(
         "cc", "LayerTreeImpl::UpdateDrawProperties::CalculateDrawProperties",
         "IsActive", IsActiveTree(), "SourceFrameNumber", source_frame_number_);
-    LayerImpl* page_scale_layer =
-        page_scale_layer_ ? page_scale_layer_ : InnerViewportContainerLayer();
     bool can_render_to_separate_surface =
         (layer_tree_host_impl_->GetDrawMode() !=
          DRAW_MODE_RESOURCELESS_SOFTWARE);
@@ -617,10 +587,10 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(), DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
-        current_page_scale_factor(), page_scale_layer,
-        inner_viewport_scroll_layer_, outer_viewport_scroll_layer_,
+        current_page_scale_factor(), PageScaleLayer(),
+        InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
-        overscroll_elasticity_layer_, resource_provider()->max_texture_size(),
+        OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
         settings().can_use_lcd_text, settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
@@ -753,8 +723,8 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 void LayerTreeImpl::BuildPropertyTreesForTesting() {
   LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer_.get());
   PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer_.get(), page_scale_layer_, inner_viewport_scroll_layer_,
-      outer_viewport_scroll_layer_, current_page_scale_factor(),
+      root_layer_.get(), PageScaleLayer(), InnerViewportScrollLayer(),
+      OuterViewportScrollLayer(), current_page_scale_factor(),
       device_scale_factor(), gfx::Rect(DrawViewportSize()),
       layer_tree_host_impl_->DrawTransform(), &property_trees_);
 }
@@ -808,21 +778,10 @@ size_t LayerTreeImpl::NumLayers() {
   return layer_id_map_.size();
 }
 
-void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
-  pending_tree->SetCurrentlyScrollingLayer(
-      LayerTreeHostCommon::FindLayerInSubtree(pending_tree->root_layer(),
-          currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0));
-}
-
 void LayerTreeImpl::DidBecomeActive() {
   if (next_activation_forces_redraw_) {
     layer_tree_host_impl_->SetFullRootLayerDamage();
     next_activation_forces_redraw_ = false;
-  }
-
-  if (scrolling_layer_id_from_previous_tree_) {
-    currently_scrolling_layer_ = LayerTreeHostCommon::FindLayerInSubtree(
-        root_layer(), scrolling_layer_id_from_previous_tree_);
   }
 
   // Always reset this flag on activation, as we would only have activated

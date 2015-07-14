@@ -1427,7 +1427,7 @@ gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
   if (!scroll_clip_layer_ || bounds().IsEmpty())
     return gfx::ScrollOffset();
 
-  LayerImpl const* page_scale_layer = layer_tree_impl()->page_scale_layer();
+  LayerImpl const* page_scale_layer = layer_tree_impl()->PageScaleLayer();
   DCHECK(this != page_scale_layer);
   DCHECK(this != layer_tree_impl()->InnerViewportScrollLayer() ||
          IsContainerForFixedPositionLayers());
@@ -1473,7 +1473,7 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
                                      LayerImpl* scrollbar_clip_layer,
                                      bool on_resize) const {
   DCHECK(scrollbar_layer);
-  LayerImpl* page_scale_layer = layer_tree_impl()->page_scale_layer();
+  LayerImpl* page_scale_layer = layer_tree_impl()->PageScaleLayer();
 
   DCHECK(this != page_scale_layer);
   DCHECK(scrollbar_clip_layer);

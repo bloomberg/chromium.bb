@@ -166,10 +166,10 @@ class CC_EXPORT LayerTreeImpl {
                                 int inner_viewport_scroll_layer_id,
                                 int outer_viewport_scroll_layer_id);
   void ClearViewportLayers();
-  LayerImpl* overscroll_elasticity_layer() {
-    return overscroll_elasticity_layer_;
+  LayerImpl* OverscrollElasticityLayer() {
+    return LayerById(overscroll_elasticity_layer_id_);
   }
-  LayerImpl* page_scale_layer() { return page_scale_layer_; }
+  LayerImpl* PageScaleLayer() { return LayerById(page_scale_layer_id_); }
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
 
   SkColor background_color() const { return background_color_; }
@@ -256,8 +256,6 @@ class CC_EXPORT LayerTreeImpl {
   size_t NumLayers();
 
   AnimationRegistrar* GetAnimationRegistrar() const;
-
-  void PushPersistedState(LayerTreeImpl* pending_tree);
 
   void DidBecomeActive();
 
@@ -396,15 +394,15 @@ class CC_EXPORT LayerTreeImpl {
   scoped_ptr<LayerImpl> root_layer_;
   HeadsUpDisplayLayerImpl* hud_layer_;
   PropertyTrees property_trees_;
-  LayerImpl* currently_scrolling_layer_;
   LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
   SkColor background_color_;
   bool has_transparent_background_;
 
-  LayerImpl* overscroll_elasticity_layer_;
-  LayerImpl* page_scale_layer_;
-  LayerImpl* inner_viewport_scroll_layer_;
-  LayerImpl* outer_viewport_scroll_layer_;
+  int currently_scrolling_layer_id_;
+  int overscroll_elasticity_layer_id_;
+  int page_scale_layer_id_;
+  int inner_viewport_scroll_layer_id_;
+  int outer_viewport_scroll_layer_id_;
 
   LayerSelection selection_;
 
@@ -419,9 +417,6 @@ class CC_EXPORT LayerTreeImpl {
 
   std::vector<PictureLayerImpl*> picture_layers_;
   std::vector<LayerImpl*> layers_with_copy_output_request_;
-
-  // Persisted state for non-impl-side-painting.
-  int scrolling_layer_id_from_previous_tree_;
 
   // List of visible layers for the most recently prepared frame.
   LayerImplList render_surface_layer_list_;

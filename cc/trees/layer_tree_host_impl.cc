@@ -1905,7 +1905,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
 
     active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
-    active_tree_->PushPersistedState(pending_tree_.get());
     // Process any requests in the UI resource queue.  The request queue is
     // given in LayerTreeHost::FinishCommitOnImplThread.  This must take place
     // before the swap.
