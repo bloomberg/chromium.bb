@@ -1290,6 +1290,60 @@ void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,
 }
 void GLES2InterfaceStub::MatrixLoadIdentityCHROMIUM(GLenum /* matrixMode */) {
 }
+GLuint GLES2InterfaceStub::GenPathsCHROMIUM(GLsizei /* range */) {
+  return 0;
+}
+void GLES2InterfaceStub::DeletePathsCHROMIUM(GLuint /* path */,
+                                             GLsizei /* range */) {
+}
+GLboolean GLES2InterfaceStub::IsPathCHROMIUM(GLuint /* path */) {
+  return 0;
+}
+void GLES2InterfaceStub::PathCommandsCHROMIUM(GLuint /* path */,
+                                              GLsizei /* numCommands */,
+                                              const GLubyte* /* commands */,
+                                              GLsizei /* numCoords */,
+                                              GLenum /* coordType */,
+                                              const GLvoid* /* coords */) {
+}
+void GLES2InterfaceStub::PathParameterfCHROMIUM(GLuint /* path */,
+                                                GLenum /* pname */,
+                                                GLfloat /* value */) {
+}
+void GLES2InterfaceStub::PathParameteriCHROMIUM(GLuint /* path */,
+                                                GLenum /* pname */,
+                                                GLint /* value */) {
+}
+void GLES2InterfaceStub::PathStencilFuncCHROMIUM(GLenum /* func */,
+                                                 GLint /* ref */,
+                                                 GLuint /* mask */) {
+}
+void GLES2InterfaceStub::StencilFillPathCHROMIUM(GLuint /* path */,
+                                                 GLenum /* fillMode */,
+                                                 GLuint /* mask */) {
+}
+void GLES2InterfaceStub::StencilStrokePathCHROMIUM(GLuint /* path */,
+                                                   GLint /* reference */,
+                                                   GLuint /* mask */) {
+}
+void GLES2InterfaceStub::CoverFillPathCHROMIUM(GLuint /* path */,
+                                               GLenum /* coverMode */) {
+}
+void GLES2InterfaceStub::CoverStrokePathCHROMIUM(GLuint /* path */,
+                                                 GLenum /* coverMode */) {
+}
+void GLES2InterfaceStub::StencilThenCoverFillPathCHROMIUM(
+    GLuint /* path */,
+    GLenum /* fillMode */,
+    GLuint /* mask */,
+    GLenum /* coverMode */) {
+}
+void GLES2InterfaceStub::StencilThenCoverStrokePathCHROMIUM(
+    GLuint /* path */,
+    GLint /* reference */,
+    GLuint /* mask */,
+    GLenum /* coverMode */) {
+}
 GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
   return 0;
 }

@@ -71,6 +71,11 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
         .Times(1)
         .RetiresOnSaturation();
   }
+  if (group_->feature_info()->feature_flags().chromium_path_rendering) {
+    EXPECT_CALL(*gl_, PathStencilFuncNV(GL_ALWAYS, 0, 0xFFFFFFFFU))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 4))
       .Times(1)
       .RetiresOnSaturation();

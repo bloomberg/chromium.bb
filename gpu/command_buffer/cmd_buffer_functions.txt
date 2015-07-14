@@ -314,6 +314,19 @@ GL_APICALL void         GL_APIENTRY glSwapInterval (GLint interval);
 // Extension CHROMIUM_path_rendering.
 GL_APICALL void         GL_APIENTRY glMatrixLoadfCHROMIUM (GLenumMatrixMode matrixMode, const GLfloat* m);
 GL_APICALL void         GL_APIENTRY glMatrixLoadIdentityCHROMIUM (GLenumMatrixMode matrixMode);
+GL_APICALL GLuint       GL_APIENTRY glGenPathsCHROMIUM (GLsizei range);
+GL_APICALL void         GL_APIENTRY glDeletePathsCHROMIUM (GLidPath path, GLsizei range);
+GL_APICALL GLboolean    GL_APIENTRY glIsPathCHROMIUM (GLidPath path);
+GL_APICALL void         GL_APIENTRY glPathCommandsCHROMIUM (GLidPath path, GLsizei numCommands, const GLubyte* commands, GLsizei numCoords, GLenumPathCoordType coordType, const GLvoid* coords);
+GL_APICALL void         GL_APIENTRY glPathParameterfCHROMIUM (GLidPath path, GLenumPathParameter pname, GLfloat value);
+GL_APICALL void         GL_APIENTRY glPathParameteriCHROMIUM (GLidPath path, GLenumPathParameter pname, GLint value);
+GL_APICALL void         GL_APIENTRY glPathStencilFuncCHROMIUM (GLenumCmpFunction func, GLint ref, GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilFillPathCHROMIUM (GLidPath path, GLenumPathFillMode fillMode, GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilStrokePathCHROMIUM (GLidPath path, GLint reference, GLuint mask);
+GL_APICALL void         GL_APIENTRY glCoverFillPathCHROMIUM (GLidPath path, GLenumPathCoverMode coverMode);
+GL_APICALL void         GL_APIENTRY glCoverStrokePathCHROMIUM (GLidPath path, GLenumPathCoverMode coverMode);
+GL_APICALL void         GL_APIENTRY glStencilThenCoverFillPathCHROMIUM (GLidPath path, GLenumPathFillMode fillMode, GLuint mask, GLenumPathCoverMode coverMode);
+GL_APICALL void         GL_APIENTRY glStencilThenCoverStrokePathCHROMIUM (GLidPath path, GLint reference, GLuint mask, GLenumPathCoverMode coverMode);
 
 // Extension KHR_robustness
 GL_APICALL GLenum	GL_APIENTRY glGetGraphicsResetStatusKHR (void);

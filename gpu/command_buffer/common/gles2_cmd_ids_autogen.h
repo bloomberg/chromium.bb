@@ -302,7 +302,20 @@
   OP(SwapInterval)                             /* 543 */ \
   OP(MatrixLoadfCHROMIUMImmediate)             /* 544 */ \
   OP(MatrixLoadIdentityCHROMIUM)               /* 545 */ \
-  OP(BlendBarrierKHR)                          /* 546 */
+  OP(GenPathsCHROMIUM)                         /* 546 */ \
+  OP(DeletePathsCHROMIUM)                      /* 547 */ \
+  OP(IsPathCHROMIUM)                           /* 548 */ \
+  OP(PathCommandsCHROMIUM)                     /* 549 */ \
+  OP(PathParameterfCHROMIUM)                   /* 550 */ \
+  OP(PathParameteriCHROMIUM)                   /* 551 */ \
+  OP(PathStencilFuncCHROMIUM)                  /* 552 */ \
+  OP(StencilFillPathCHROMIUM)                  /* 553 */ \
+  OP(StencilStrokePathCHROMIUM)                /* 554 */ \
+  OP(CoverFillPathCHROMIUM)                    /* 555 */ \
+  OP(CoverStrokePathCHROMIUM)                  /* 556 */ \
+  OP(StencilThenCoverFillPathCHROMIUM)         /* 557 */ \
+  OP(StencilThenCoverStrokePathCHROMIUM)       /* 558 */ \
+  OP(BlendBarrierKHR)                          /* 559 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

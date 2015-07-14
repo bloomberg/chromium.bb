@@ -318,6 +318,35 @@ class NonReusedIdHandler : public IdHandlerInterface {
   GLuint last_id_;
 };
 
+class RangeIdHandler : public RangeIdHandlerInterface {
+ public:
+  RangeIdHandler() {}
+
+  void MakeIdRange(GLES2Implementation* /*gl_impl*/,
+                   GLsizei n,
+                   GLuint* first_id) override {
+    base::AutoLock auto_lock(lock_);
+    *first_id = id_allocator_.AllocateIDRange(n);
+  }
+
+  void FreeIdRange(GLES2Implementation* gl_impl,
+                   const GLuint first_id,
+                   GLsizei range,
+                   DeleteRangeFn delete_fn) override {
+    base::AutoLock auto_lock(lock_);
+    DCHECK(range > 0);
+    id_allocator_.FreeIDRange(first_id, range);
+    (gl_impl->*delete_fn)(first_id, range);
+    gl_impl->helper()->CommandBufferHelper::OrderingBarrier();
+  }
+
+  void FreeContext(GLES2Implementation* gl_impl) override {}
+
+ private:
+  base::Lock lock_;
+  IdAllocator id_allocator_;
+};
+
 ShareGroup::ShareGroup(bool bind_generates_resource)
     : bind_generates_resource_(bind_generates_resource) {
   if (bind_generates_resource) {
@@ -338,6 +367,9 @@ ShareGroup::ShareGroup(bool bind_generates_resource)
     }
   }
   program_info_manager_.reset(new ProgramInfoManager);
+  for (auto& range_id_handler : range_id_handlers_) {
+    range_id_handler.reset(new RangeIdHandler());
+  }
 }
 
 void ShareGroup::set_program_info_manager(ProgramInfoManager* manager) {

@@ -107,6 +107,8 @@
     'command_buffer/service/mocks.h',
     'command_buffer/service/program_cache.cc',
     'command_buffer/service/program_cache.h',
+    'command_buffer/service/path_manager.cc',
+    'command_buffer/service/path_manager.h',
     'command_buffer/service/program_manager.cc',
     'command_buffer/service/program_manager.h',
     'command_buffer/service/query_manager.cc',

@@ -209,6 +209,9 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine& command_line) {
   enable_unsafe_es3_apis_switch_ =
       command_line.HasSwitch(switches::kEnableUnsafeES3APIs);
 
+  enable_gl_path_rendering_switch_ =
+      command_line.HasSwitch(switches::kEnableGLPathRendering);
+
   unsafe_es3_apis_enabled_ = false;
 }
 
@@ -1004,14 +1007,18 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (extensions.Contains("GL_NV_path_rendering")) {
-    if (extensions.Contains("GL_EXT_direct_state_access") ||
-        gl_version_info_->is_es3) {
-      AddExtensionString("GL_CHROMIUM_path_rendering");
-      feature_flags_.chromium_path_rendering = true;
-      validators_.g_l_state.AddValue(GL_PATH_MODELVIEW_MATRIX_CHROMIUM);
-      validators_.g_l_state.AddValue(GL_PATH_PROJECTION_MATRIX_CHROMIUM);
-    }
+  if (enable_gl_path_rendering_switch_ &&
+      !workarounds_.disable_gl_path_rendering &&
+      extensions.Contains("GL_NV_path_rendering") &&
+      (extensions.Contains("GL_EXT_direct_state_access") ||
+       gl_version_info_->is_es3)) {
+    AddExtensionString("GL_CHROMIUM_path_rendering");
+    feature_flags_.chromium_path_rendering = true;
+    validators_.g_l_state.AddValue(GL_PATH_MODELVIEW_MATRIX_CHROMIUM);
+    validators_.g_l_state.AddValue(GL_PATH_PROJECTION_MATRIX_CHROMIUM);
+    validators_.g_l_state.AddValue(GL_PATH_STENCIL_FUNC_CHROMIUM);
+    validators_.g_l_state.AddValue(GL_PATH_STENCIL_REF_CHROMIUM);
+    validators_.g_l_state.AddValue(GL_PATH_STENCIL_VALUE_MASK_CHROMIUM);
   }
 
   if ((gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||

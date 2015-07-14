@@ -702,6 +702,23 @@ size_t GLES2Util::GetGLTypeSizeForTexturesAndBuffers(uint32 type) {
   }
 }
 
+size_t GLES2Util::GetGLTypeSizeForPathCoordType(uint32 type) {
+  switch (type) {
+    case GL_BYTE:
+      return sizeof(GLbyte);  // NOLINT
+    case GL_UNSIGNED_BYTE:
+      return sizeof(GLubyte);  // NOLINT
+    case GL_SHORT:
+      return sizeof(GLshort);  // NOLINT
+    case GL_UNSIGNED_SHORT:
+      return sizeof(GLushort);  // NOLINT
+    case GL_FLOAT:
+      return sizeof(GLfloat);  // NOLINT
+    default:
+      return 0;
+  }
+}
+
 uint32 GLES2Util::GLErrorToErrorBit(uint32 error) {
   switch (error) {
     case GL_INVALID_ENUM:

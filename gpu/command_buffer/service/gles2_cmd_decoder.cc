@@ -47,6 +47,7 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -791,6 +792,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
   bool GenVertexArraysOESHelper(GLsizei n, const GLuint* client_ids);
   void DeleteVertexArraysOESHelper(GLsizei n, const GLuint* client_ids);
+  bool GenPathsCHROMIUMHelper(GLuint first_client_id, GLsizei range);
+  bool DeletePathsCHROMIUMHelper(GLuint first_client_id, GLsizei range);
 
   // Helper for async upload token completion notification callback.
   base::Closure AsyncUploadTokenCompletionClosure(uint32 async_upload_token,
@@ -822,6 +825,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   ValuebufferManager* valuebuffer_manager() {
     return group_->valuebuffer_manager();
   }
+
+  PathManager* path_manager() { return group_->path_manager(); }
 
   ProgramManager* program_manager() {
     return group_->program_manager();
@@ -1563,6 +1568,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool DoIsShader(GLuint client_id);
   bool DoIsTexture(GLuint client_id);
   bool DoIsVertexArrayOES(GLuint client_id);
+  bool DoIsPathCHROMIUM(GLuint client_id);
 
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
@@ -3347,6 +3353,42 @@ bool GLES2DecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
     CreateTexture(client_ids[ii], service_ids[ii]);
   }
+  return true;
+}
+
+bool GLES2DecoderImpl::GenPathsCHROMIUMHelper(GLuint first_client_id,
+                                              GLsizei range) {
+  GLuint last_client_id;
+  if (!SafeAddUint32(first_client_id, range - 1, &last_client_id))
+    return false;
+
+  if (path_manager()->HasPathsInRange(first_client_id, last_client_id))
+    return false;
+
+  GLuint first_service_id = glGenPathsNV(range);
+  if (first_service_id == 0) {
+    // We have to fail the connection here, because client has already
+    // succeeded in allocating the ids. This happens if we allocate
+    // the whole path id space (two allocations of 0x7FFFFFFF paths, for
+    // example).
+    return false;
+  }
+  // GenPathsNV does not wrap.
+  DCHECK(first_service_id + range - 1 >= first_service_id);
+
+  path_manager()->CreatePathRange(first_client_id, last_client_id,
+                                  first_service_id);
+
+  return true;
+}
+
+bool GLES2DecoderImpl::DeletePathsCHROMIUMHelper(GLuint first_client_id,
+                                                 GLsizei range) {
+  GLuint last_client_id;
+  if (!SafeAddUint32(first_client_id, range - 1, &last_client_id))
+    return false;
+
+  path_manager()->RemovePaths(first_client_id, last_client_id);
   return true;
 }
 
@@ -11748,6 +11790,12 @@ bool GLES2DecoderImpl::DoIsVertexArrayOES(GLuint client_id) {
   return vao && vao->IsValid() && !vao->IsDeleted();
 }
 
+bool GLES2DecoderImpl::DoIsPathCHROMIUM(GLuint client_id) {
+  GLuint service_id = 0;
+  return path_manager()->GetPath(client_id, &service_id) &&
+         glIsPathNV(service_id) == GL_TRUE;
+}
+
 #if defined(OS_MACOSX)
 void GLES2DecoderImpl::ReleaseIOSurfaceForTexture(GLuint texture_id) {
   TextureToIOSurfaceMap::iterator it = texture_to_io_surface_map_.find(
@@ -13831,6 +13879,455 @@ void GLES2DecoderImpl::OnOutOfMemoryError() {
     }
     group_->LoseContexts(other);
   }
+}
+
+error::Error GLES2DecoderImpl::HandleGenPathsCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glGenPathsCHROMIUM";
+  const gles2::cmds::GenPathsCHROMIUM& c =
+      *static_cast<const gles2::cmds::GenPathsCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+
+  GLsizei range = static_cast<GLsizei>(c.range);
+  if (range < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "range < 0");
+    return error::kNoError;
+  }
+
+  GLuint first_client_id = static_cast<GLuint>(c.first_client_id);
+  if (first_client_id == 0)
+    return error::kInvalidArguments;
+
+  if (range == 0)
+    return error::kNoError;
+
+  if (!GenPathsCHROMIUMHelper(first_client_id, range))
+    return error::kInvalidArguments;
+
+  return error::kNoError;
+}
+error::Error GLES2DecoderImpl::HandleDeletePathsCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glDeletePathsCHROMIUM";
+  const gles2::cmds::DeletePathsCHROMIUM& c =
+      *static_cast<const gles2::cmds::DeletePathsCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+
+  GLsizei range = static_cast<GLsizei>(c.range);
+  if (range < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "range < 0");
+    return error::kNoError;
+  }
+
+  if (range == 0)
+    return error::kNoError;
+
+  GLuint first_client_id = c.first_client_id;
+  // first_client_id can be 0, because non-existing path ids are skipped.
+
+  if (!DeletePathsCHROMIUMHelper(first_client_id, range))
+    return error::kInvalidArguments;
+
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandlePathCommandsCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glPathCommandsCHROMIUM";
+  const gles2::cmds::PathCommandsCHROMIUM& c =
+      *static_cast<const gles2::cmds::PathCommandsCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "invalid path name");
+    return error::kNoError;
+  }
+
+  GLsizei num_commands = static_cast<GLsizei>(c.numCommands);
+  if (num_commands < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "numCommands < 0");
+    return error::kNoError;
+  }
+
+  GLsizei num_coords = static_cast<uint32>(c.numCoords);
+  if (num_coords < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "numCoords < 0");
+    return error::kNoError;
+  }
+
+  GLenum coord_type = static_cast<uint32>(c.coordType);
+  if (!validators_->path_coord_type.IsValid(static_cast<GLint>(coord_type))) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, kFunctionName, "invalid coordType");
+    return error::kNoError;
+  }
+
+  const GLubyte* commands = NULL;
+  base::CheckedNumeric<GLsizei> num_coords_expected = 0;
+
+  if (num_commands > 0) {
+    uint32 commands_shm_id = static_cast<uint32>(c.commands_shm_id);
+    uint32 commands_shm_offset = static_cast<uint32>(c.commands_shm_offset);
+    if (commands_shm_id != 0 || commands_shm_offset != 0)
+      commands = GetSharedMemoryAs<const GLubyte*>(
+          commands_shm_id, commands_shm_offset, num_commands);
+
+    if (!commands)
+      return error::kOutOfBounds;
+
+    for (GLsizei i = 0; i < num_commands; ++i) {
+      switch (commands[i]) {
+        case GL_CLOSE_PATH_CHROMIUM:
+          // Close has no coords.
+          break;
+        case GL_MOVE_TO_CHROMIUM:
+        // Fallthrough.
+        case GL_LINE_TO_CHROMIUM:
+          num_coords_expected += 2;
+          break;
+        case GL_QUADRATIC_CURVE_TO_CHROMIUM:
+          num_coords_expected += 4;
+          break;
+        case GL_CUBIC_CURVE_TO_CHROMIUM:
+          num_coords_expected += 6;
+          break;
+        case GL_CONIC_CURVE_TO_CHROMIUM:
+          num_coords_expected += 5;
+          break;
+        default:
+          LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, kFunctionName, "invalid command");
+          return error::kNoError;
+      }
+    }
+  }
+
+  if (!num_coords_expected.IsValid() ||
+      num_coords != num_coords_expected.ValueOrDie()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "numCoords does not match commands");
+    return error::kNoError;
+  }
+
+  const void* coords = NULL;
+
+  if (num_coords > 0) {
+    uint32 coords_size = 0;
+    uint32 coord_type_size =
+        GLES2Util::GetGLTypeSizeForPathCoordType(coord_type);
+    if (!SafeMultiplyUint32(num_coords, coord_type_size, &coords_size))
+      return error::kOutOfBounds;
+
+    uint32 coords_shm_id = static_cast<uint32>(c.coords_shm_id);
+    uint32 coords_shm_offset = static_cast<uint32>(c.coords_shm_offset);
+    if (coords_shm_id != 0 || coords_shm_offset != 0)
+      coords = GetSharedMemoryAs<const void*>(coords_shm_id, coords_shm_offset,
+                                              coords_size);
+
+    if (!coords)
+      return error::kOutOfBounds;
+  }
+
+  glPathCommandsNV(service_id, num_commands, commands, num_coords, coord_type,
+                   coords);
+
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandlePathParameterfCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glPathParameterfCHROMIUM";
+  const gles2::cmds::PathParameterfCHROMIUM& c =
+      *static_cast<const gles2::cmds::PathParameterfCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "invalid path name");
+    return error::kNoError;
+  }
+
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLfloat value = static_cast<GLfloat>(c.value);
+  bool hasValueError = false;
+
+  switch (pname) {
+    case GL_PATH_STROKE_WIDTH_CHROMIUM:
+    case GL_PATH_MITER_LIMIT_CHROMIUM:
+      hasValueError = std::isnan(value) || !std::isfinite(value) || value < 0;
+      break;
+    case GL_PATH_STROKE_BOUND_CHROMIUM:
+      value = std::max(std::min(1.0f, value), 0.0f);
+      break;
+    case GL_PATH_END_CAPS_CHROMIUM:
+      hasValueError = !validators_->path_parameter_cap_values.IsValid(
+          static_cast<GLint>(value));
+      break;
+    case GL_PATH_JOIN_STYLE_CHROMIUM:
+      hasValueError = !validators_->path_parameter_join_values.IsValid(
+          static_cast<GLint>(value));
+      break;
+    default:
+      DCHECK(!validators_->path_parameter.IsValid(pname));
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, pname, "pname");
+      return error::kNoError;
+  }
+  DCHECK(validators_->path_parameter.IsValid(pname));
+
+  if (hasValueError) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "value not correct");
+    return error::kNoError;
+  }
+
+  glPathParameterfNV(service_id, pname, value);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandlePathParameteriCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glPathParameteriCHROMIUM";
+  const gles2::cmds::PathParameteriCHROMIUM& c =
+      *static_cast<const gles2::cmds::PathParameteriCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "invalid path name");
+    return error::kNoError;
+  }
+
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLint value = static_cast<GLint>(c.value);
+  bool hasValueError = false;
+
+  switch (pname) {
+    case GL_PATH_STROKE_WIDTH_CHROMIUM:
+    case GL_PATH_MITER_LIMIT_CHROMIUM:
+      hasValueError = value < 0;
+      break;
+    case GL_PATH_STROKE_BOUND_CHROMIUM:
+      value = std::max(std::min(1, value), 0);
+      break;
+    case GL_PATH_END_CAPS_CHROMIUM:
+      hasValueError = !validators_->path_parameter_cap_values.IsValid(value);
+      break;
+    case GL_PATH_JOIN_STYLE_CHROMIUM:
+      hasValueError = !validators_->path_parameter_join_values.IsValid(value);
+      break;
+    default:
+      DCHECK(!validators_->path_parameter.IsValid(pname));
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, pname, "pname");
+      return error::kNoError;
+  }
+  DCHECK(validators_->path_parameter.IsValid(pname));
+
+  if (hasValueError) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "value not correct");
+    return error::kNoError;
+  }
+
+  glPathParameteriNV(service_id, pname, value);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleStencilFillPathCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilFillPathCHROMIUM";
+  const gles2::cmds::StencilFillPathCHROMIUM& c =
+      *static_cast<const gles2::cmds::StencilFillPathCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+  GLenum fill_mode = static_cast<GLenum>(c.fillMode);
+  if (!validators_->path_fill_mode.IsValid(fill_mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, fill_mode, "fillMode");
+    return error::kNoError;
+  }
+  GLuint mask = static_cast<GLuint>(c.mask);
+  if ((fill_mode == GL_COUNT_UP_CHROMIUM ||
+       fill_mode == GL_COUNT_DOWN_CHROMIUM) &&
+      GLES2Util::IsNPOT(mask + 1)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName,
+                       "mask + 1 is not power of two");
+    return error::kNoError;
+  }
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id)) {
+    // "If /path/ does not name an existing path object, the command does
+    // nothing (and no error is generated)."
+    // This holds for other rendering functions, too.
+    return error::kNoError;
+  }
+  ApplyDirtyState();
+  glStencilFillPathNV(service_id, fill_mode, mask);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleStencilStrokePathCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilStrokePathCHROMIUM";
+  const gles2::cmds::StencilStrokePathCHROMIUM& c =
+      *static_cast<const gles2::cmds::StencilStrokePathCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id)) {
+    return error::kNoError;
+  }
+  GLint reference = static_cast<GLint>(c.reference);
+  GLuint mask = static_cast<GLuint>(c.mask);
+  ApplyDirtyState();
+  glStencilStrokePathNV(service_id, reference, mask);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleCoverFillPathCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glCoverFillPathCHROMIUM";
+  const gles2::cmds::CoverFillPathCHROMIUM& c =
+      *static_cast<const gles2::cmds::CoverFillPathCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+  if (!validators_->path_cover_mode.IsValid(cover_mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, cover_mode, "coverMode");
+    return error::kNoError;
+  }
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
+    return error::kNoError;
+
+  ApplyDirtyState();
+  glCoverFillPathNV(service_id, cover_mode);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleCoverStrokePathCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glCoverStrokePathCHROMIUM";
+  const gles2::cmds::CoverStrokePathCHROMIUM& c =
+      *static_cast<const gles2::cmds::CoverStrokePathCHROMIUM*>(cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+  if (!validators_->path_cover_mode.IsValid(cover_mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, cover_mode, "coverMode");
+    return error::kNoError;
+  }
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
+    return error::kNoError;
+
+  ApplyDirtyState();
+  glCoverStrokePathNV(service_id, cover_mode);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilThenCoverFillPathCHROMIUM";
+  const gles2::cmds::StencilThenCoverFillPathCHROMIUM& c =
+      *static_cast<const gles2::cmds::StencilThenCoverFillPathCHROMIUM*>(
+          cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+  GLenum fill_mode = static_cast<GLenum>(c.fillMode);
+  if (!validators_->path_fill_mode.IsValid(fill_mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, fill_mode, "fillMode");
+    return error::kNoError;
+  }
+  GLuint mask = static_cast<GLuint>(c.mask);
+  if ((fill_mode == GL_COUNT_UP_CHROMIUM ||
+       fill_mode == GL_COUNT_DOWN_CHROMIUM) &&
+      GLES2Util::IsNPOT(mask + 1)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName,
+                       "mask + 1 is not power of two");
+    return error::kNoError;
+  }
+  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+  if (!validators_->path_cover_mode.IsValid(cover_mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, cover_mode, "coverMode");
+    return error::kNoError;
+  }
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
+    return error::kNoError;
+
+  ApplyDirtyState();
+  glStencilThenCoverFillPathNV(service_id, fill_mode, mask, cover_mode);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleStencilThenCoverStrokePathCHROMIUM(
+    uint32 immediate_data_size,
+    const void* cmd_data) {
+  static const char kFunctionName[] = "glStencilThenCoverStrokePathCHROMIUM";
+  const gles2::cmds::StencilThenCoverStrokePathCHROMIUM& c =
+      *static_cast<const gles2::cmds::StencilThenCoverStrokePathCHROMIUM*>(
+          cmd_data);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       "function not available");
+    return error::kNoError;
+  }
+  GLenum cover_mode = static_cast<GLenum>(c.coverMode);
+  if (!validators_->path_cover_mode.IsValid(cover_mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(kFunctionName, cover_mode, "coverMode");
+    return error::kNoError;
+  }
+  GLuint service_id = 0;
+  if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
+    return error::kNoError;
+
+  GLint reference = static_cast<GLint>(c.reference);
+  GLuint mask = static_cast<GLuint>(c.mask);
+  ApplyDirtyState();
+  glStencilThenCoverStrokePathNV(service_id, reference, mask, cover_mode);
+  return error::kNoError;
 }
 
 // Include the auto-generated part of this file. We split this because it means

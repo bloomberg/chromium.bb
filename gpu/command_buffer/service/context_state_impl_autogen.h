@@ -104,6 +104,9 @@ void ContextState::Initialize() {
   projection_matrix[13] = 0.0f;
   projection_matrix[14] = 0.0f;
   projection_matrix[15] = 1.0f;
+  stencil_path_func = GL_ALWAYS;
+  stencil_path_ref = 0;
+  stencil_path_mask = 0xFFFFFFFFU;
   pack_alignment = 4;
   unpack_alignment = 4;
   polygon_offset_factor = 0.0f;
@@ -276,6 +279,12 @@ void ContextState::InitState(const ContextState* prev_state) const {
         glMatrixLoadfEXT(GL_PATH_PROJECTION_CHROMIUM, projection_matrix);
       }
     }
+    if (feature_info_->feature_flags().chromium_path_rendering)
+      if ((stencil_path_func != prev_state->stencil_path_func) ||
+          (stencil_path_ref != prev_state->stencil_path_ref) ||
+          (stencil_path_mask != prev_state->stencil_path_mask))
+        glPathStencilFuncNV(stencil_path_func, stencil_path_ref,
+                            stencil_path_mask);
     if (prev_state->pack_alignment != pack_alignment) {
       glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
     }
@@ -355,6 +364,9 @@ void ContextState::InitState(const ContextState* prev_state) const {
     if (feature_info_->feature_flags().chromium_path_rendering) {
       glMatrixLoadfEXT(GL_PATH_PROJECTION_CHROMIUM, projection_matrix);
     }
+    if (feature_info_->feature_flags().chromium_path_rendering)
+      glPathStencilFuncNV(stencil_path_func, stencil_path_ref,
+                          stencil_path_mask);
     glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
     glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
     glPolygonOffset(polygon_offset_factor, polygon_offset_units);
@@ -545,6 +557,24 @@ bool ContextState::GetStateAsGLint(GLenum pname,
         for (size_t i = 0; i < 16; ++i) {
           params[i] = static_cast<GLint>(round(projection_matrix[i]));
         }
+      }
+      return true;
+    case GL_PATH_STENCIL_FUNC_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(stencil_path_func);
+      }
+      return true;
+    case GL_PATH_STENCIL_REF_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(stencil_path_ref);
+      }
+      return true;
+    case GL_PATH_STENCIL_VALUE_MASK_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(stencil_path_mask);
       }
       return true;
     case GL_PACK_ALIGNMENT:
@@ -895,6 +925,24 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
       *num_written = 16;
       if (params) {
         memcpy(params, projection_matrix, sizeof(GLfloat) * 16);
+      }
+      return true;
+    case GL_PATH_STENCIL_FUNC_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(stencil_path_func);
+      }
+      return true;
+    case GL_PATH_STENCIL_REF_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(stencil_path_ref);
+      }
+      return true;
+    case GL_PATH_STENCIL_VALUE_MASK_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(stencil_path_mask);
       }
       return true;
     case GL_PACK_ALIGNMENT:

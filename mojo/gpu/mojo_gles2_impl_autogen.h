@@ -786,6 +786,36 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
   void SwapInterval(GLint interval) override;
   void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) override;
   void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) override;
+  GLuint GenPathsCHROMIUM(GLsizei range) override;
+  void DeletePathsCHROMIUM(GLuint path, GLsizei range) override;
+  GLboolean IsPathCHROMIUM(GLuint path) override;
+  void PathCommandsCHROMIUM(GLuint path,
+                            GLsizei numCommands,
+                            const GLubyte* commands,
+                            GLsizei numCoords,
+                            GLenum coordType,
+                            const GLvoid* coords) override;
+  void PathParameterfCHROMIUM(GLuint path,
+                              GLenum pname,
+                              GLfloat value) override;
+  void PathParameteriCHROMIUM(GLuint path, GLenum pname, GLint value) override;
+  void PathStencilFuncCHROMIUM(GLenum func, GLint ref, GLuint mask) override;
+  void StencilFillPathCHROMIUM(GLuint path,
+                               GLenum fillMode,
+                               GLuint mask) override;
+  void StencilStrokePathCHROMIUM(GLuint path,
+                                 GLint reference,
+                                 GLuint mask) override;
+  void CoverFillPathCHROMIUM(GLuint path, GLenum coverMode) override;
+  void CoverStrokePathCHROMIUM(GLuint path, GLenum coverMode) override;
+  void StencilThenCoverFillPathCHROMIUM(GLuint path,
+                                        GLenum fillMode,
+                                        GLuint mask,
+                                        GLenum coverMode) override;
+  void StencilThenCoverStrokePathCHROMIUM(GLuint path,
+                                          GLint reference,
+                                          GLuint mask,
+                                          GLenum coverMode) override;
   GLenum GetGraphicsResetStatusKHR() override;
   void BlendBarrierKHR() override;
 

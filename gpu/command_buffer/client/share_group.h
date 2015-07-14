@@ -19,6 +19,8 @@ class GLES2ImplementationTest;
 class ProgramInfoManager;
 
 typedef void (GLES2Implementation::*DeleteFn)(GLsizei n, const GLuint* ids);
+typedef void (GLES2Implementation::*DeleteRangeFn)(const GLuint first_id,
+                                                   GLsizei range);
 typedef void (GLES2Implementation::*BindFn)(GLenum target, GLuint id);
 typedef void (GLES2Implementation::*BindIndexedFn)( \
     GLenum target, GLuint index, GLuint id);
@@ -86,6 +88,27 @@ class IdHandlerInterface {
   virtual void FreeContext(GLES2Implementation* gl_impl) = 0;
 };
 
+class RangeIdHandlerInterface {
+ public:
+  RangeIdHandlerInterface() {}
+  virtual ~RangeIdHandlerInterface() {}
+
+  // Makes a continuous range of ids. Stores the first allocated id to
+  // |first_id| or 0 if allocation failed.
+  virtual void MakeIdRange(GLES2Implementation* gl_impl,
+                           GLsizei n,
+                           GLuint* first_id) = 0;
+
+  // Frees a continuous |range| of ids beginning at |first_id|.
+  virtual void FreeIdRange(GLES2Implementation* gl_impl,
+                           const GLuint first_id,
+                           GLsizei range,
+                           DeleteRangeFn delete_fn) = 0;
+
+  // Called when a context in the share group is destructed.
+  virtual void FreeContext(GLES2Implementation* gl_impl) = 0;
+};
+
 // ShareGroup manages shared resources for contexts that are sharing resources.
 class GLES2_IMPL_EXPORT ShareGroup
     : public gpu::RefCountedThreadSafe<ShareGroup> {
@@ -100,6 +123,10 @@ class GLES2_IMPL_EXPORT ShareGroup
     return id_handlers_[namespace_id].get();
   }
 
+  RangeIdHandlerInterface* GetRangeIdHandler(int range_namespace_id) const {
+    return range_id_handlers_[range_namespace_id].get();
+  }
+
   ProgramInfoManager* program_info_manager() {
     return program_info_manager_.get();
   }
@@ -107,6 +134,9 @@ class GLES2_IMPL_EXPORT ShareGroup
   void FreeContext(GLES2Implementation* gl_impl) {
     for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
       id_handlers_[i]->FreeContext(gl_impl);
+    }
+    for (auto& range_id_handler : range_id_handlers_) {
+      range_id_handler->FreeContext(gl_impl);
     }
   }
 
@@ -119,6 +149,8 @@ class GLES2_IMPL_EXPORT ShareGroup
   void set_program_info_manager(ProgramInfoManager* manager);
 
   scoped_ptr<IdHandlerInterface> id_handlers_[id_namespaces::kNumIdNamespaces];
+  scoped_ptr<RangeIdHandlerInterface>
+      range_id_handlers_[id_namespaces::kNumRangeIdNamespaces];
   scoped_ptr<ProgramInfoManager> program_info_manager_;
 
   bool bind_generates_resource_;

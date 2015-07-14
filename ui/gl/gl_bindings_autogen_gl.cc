@@ -94,6 +94,8 @@ void DriverGL::InitializeStaticBindings() {
   fn.glCopyTexSubImage2DFn = reinterpret_cast<glCopyTexSubImage2DProc>(
       GetGLProcAddress("glCopyTexSubImage2D"));
   fn.glCopyTexSubImage3DFn = 0;
+  fn.glCoverFillPathNVFn = 0;
+  fn.glCoverStrokePathNVFn = 0;
   fn.glCreateProgramFn = reinterpret_cast<glCreateProgramProc>(
       GetGLProcAddress("glCreateProgram"));
   fn.glCreateShaderFn =
@@ -105,6 +107,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glDeleteFencesAPPLEFn = 0;
   fn.glDeleteFencesNVFn = 0;
   fn.glDeleteFramebuffersEXTFn = 0;
+  fn.glDeletePathsNVFn = 0;
   fn.glDeleteProgramFn = reinterpret_cast<glDeleteProgramProc>(
       GetGLProcAddress("glDeleteProgram"));
   fn.glDeleteQueriesFn = 0;
@@ -168,6 +171,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glGenFencesAPPLEFn = 0;
   fn.glGenFencesNVFn = 0;
   fn.glGenFramebuffersEXTFn = 0;
+  fn.glGenPathsNVFn = 0;
   fn.glGenQueriesFn = 0;
   fn.glGenRenderbuffersEXTFn = 0;
   fn.glGenSamplersFn = 0;
@@ -265,6 +269,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glIsFenceAPPLEFn = 0;
   fn.glIsFenceNVFn = 0;
   fn.glIsFramebufferEXTFn = 0;
+  fn.glIsPathNVFn = 0;
   fn.glIsProgramFn =
       reinterpret_cast<glIsProgramProc>(GetGLProcAddress("glIsProgram"));
   fn.glIsQueryFn = 0;
@@ -285,6 +290,10 @@ void DriverGL::InitializeStaticBindings() {
   fn.glMapBufferRangeFn = 0;
   fn.glMatrixLoadfEXTFn = 0;
   fn.glMatrixLoadIdentityEXTFn = 0;
+  fn.glPathCommandsNVFn = 0;
+  fn.glPathParameterfNVFn = 0;
+  fn.glPathParameteriNVFn = 0;
+  fn.glPathStencilFuncNVFn = 0;
   fn.glPauseTransformFeedbackFn = 0;
   fn.glPixelStoreiFn =
       reinterpret_cast<glPixelStoreiProc>(GetGLProcAddress("glPixelStorei"));
@@ -319,6 +328,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glShaderBinaryFn = 0;
   fn.glShaderSourceFn =
       reinterpret_cast<glShaderSourceProc>(GetGLProcAddress("glShaderSource"));
+  fn.glStencilFillPathNVFn = 0;
   fn.glStencilFuncFn =
       reinterpret_cast<glStencilFuncProc>(GetGLProcAddress("glStencilFunc"));
   fn.glStencilFuncSeparateFn = reinterpret_cast<glStencilFuncSeparateProc>(
@@ -331,6 +341,9 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glStencilOpProc>(GetGLProcAddress("glStencilOp"));
   fn.glStencilOpSeparateFn = reinterpret_cast<glStencilOpSeparateProc>(
       GetGLProcAddress("glStencilOpSeparate"));
+  fn.glStencilStrokePathNVFn = 0;
+  fn.glStencilThenCoverFillPathNVFn = 0;
+  fn.glStencilThenCoverStrokePathNVFn = 0;
   fn.glTestFenceAPPLEFn = 0;
   fn.glTestFenceNVFn = 0;
   fn.glTexImage2DFn =
@@ -764,6 +777,20 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     DCHECK(fn.glCopyTexSubImage3DFn);
   }
 
+  debug_fn.glCoverFillPathNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glCoverFillPathNVFn = reinterpret_cast<glCoverFillPathNVProc>(
+        GetGLProcAddress("glCoverFillPathNV"));
+    DCHECK(fn.glCoverFillPathNVFn);
+  }
+
+  debug_fn.glCoverStrokePathNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glCoverStrokePathNVFn = reinterpret_cast<glCoverStrokePathNVProc>(
+        GetGLProcAddress("glCoverStrokePathNV"));
+    DCHECK(fn.glCoverStrokePathNVFn);
+  }
+
   debug_fn.glDeleteFencesAPPLEFn = 0;
   if (ext.b_GL_APPLE_fence) {
     fn.glDeleteFencesAPPLEFn = reinterpret_cast<glDeleteFencesAPPLEProc>(
@@ -789,6 +816,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         reinterpret_cast<glDeleteFramebuffersEXTProc>(
             GetGLProcAddress("glDeleteFramebuffersEXT"));
     DCHECK(fn.glDeleteFramebuffersEXTFn);
+  }
+
+  debug_fn.glDeletePathsNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glDeletePathsNVFn = reinterpret_cast<glDeletePathsNVProc>(
+        GetGLProcAddress("glDeletePathsNV"));
+    DCHECK(fn.glDeletePathsNVFn);
   }
 
   debug_fn.glDeleteQueriesFn = 0;
@@ -1095,6 +1129,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGenFramebuffersEXTFn = reinterpret_cast<glGenFramebuffersEXTProc>(
         GetGLProcAddress("glGenFramebuffersEXT"));
     DCHECK(fn.glGenFramebuffersEXTFn);
+  }
+
+  debug_fn.glGenPathsNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glGenPathsNVFn =
+        reinterpret_cast<glGenPathsNVProc>(GetGLProcAddress("glGenPathsNV"));
+    DCHECK(fn.glGenPathsNVFn);
   }
 
   debug_fn.glGenQueriesFn = 0;
@@ -1491,6 +1532,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     DCHECK(fn.glIsFramebufferEXTFn);
   }
 
+  debug_fn.glIsPathNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glIsPathNVFn =
+        reinterpret_cast<glIsPathNVProc>(GetGLProcAddress("glIsPathNV"));
+    DCHECK(fn.glIsPathNVFn);
+  }
+
   debug_fn.glIsQueryFn = 0;
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
     fn.glIsQueryFn =
@@ -1592,6 +1640,34 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
         reinterpret_cast<glMatrixLoadIdentityEXTProc>(
             GetGLProcAddress("glMatrixLoadIdentityEXT"));
     DCHECK(fn.glMatrixLoadIdentityEXTFn);
+  }
+
+  debug_fn.glPathCommandsNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glPathCommandsNVFn = reinterpret_cast<glPathCommandsNVProc>(
+        GetGLProcAddress("glPathCommandsNV"));
+    DCHECK(fn.glPathCommandsNVFn);
+  }
+
+  debug_fn.glPathParameterfNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glPathParameterfNVFn = reinterpret_cast<glPathParameterfNVProc>(
+        GetGLProcAddress("glPathParameterfNV"));
+    DCHECK(fn.glPathParameterfNVFn);
+  }
+
+  debug_fn.glPathParameteriNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glPathParameteriNVFn = reinterpret_cast<glPathParameteriNVProc>(
+        GetGLProcAddress("glPathParameteriNV"));
+    DCHECK(fn.glPathParameteriNVFn);
+  }
+
+  debug_fn.glPathStencilFuncNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glPathStencilFuncNVFn = reinterpret_cast<glPathStencilFuncNVProc>(
+        GetGLProcAddress("glPathStencilFuncNV"));
+    DCHECK(fn.glPathStencilFuncNVFn);
   }
 
   debug_fn.glPauseTransformFeedbackFn = 0;
@@ -1770,6 +1846,34 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glShaderBinaryFn = reinterpret_cast<glShaderBinaryProc>(
         GetGLProcAddress("glShaderBinary"));
     DCHECK(fn.glShaderBinaryFn);
+  }
+
+  debug_fn.glStencilFillPathNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glStencilFillPathNVFn = reinterpret_cast<glStencilFillPathNVProc>(
+        GetGLProcAddress("glStencilFillPathNV"));
+    DCHECK(fn.glStencilFillPathNVFn);
+  }
+
+  debug_fn.glStencilStrokePathNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glStencilStrokePathNVFn = reinterpret_cast<glStencilStrokePathNVProc>(
+        GetGLProcAddress("glStencilStrokePathNV"));
+    DCHECK(fn.glStencilStrokePathNVFn);
+  }
+
+  debug_fn.glStencilThenCoverFillPathNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glStencilThenCoverFillPathNVFn =
+        reinterpret_cast<glStencilThenCoverFillPathNVProc>(
+            GetGLProcAddress("glStencilThenCoverFillPathNV"));
+  }
+
+  debug_fn.glStencilThenCoverStrokePathNVFn = 0;
+  if (ext.b_GL_NV_path_rendering) {
+    fn.glStencilThenCoverStrokePathNVFn =
+        reinterpret_cast<glStencilThenCoverStrokePathNVProc>(
+            GetGLProcAddress("glStencilThenCoverStrokePathNV"));
   }
 
   debug_fn.glTestFenceAPPLEFn = 0;
@@ -2508,6 +2612,22 @@ static void GL_BINDING_CALL Debug_glCopyTexSubImage3D(GLenum target,
                                              zoffset, x, y, width, height);
 }
 
+static void GL_BINDING_CALL
+Debug_glCoverFillPathNV(GLuint path, GLenum coverMode) {
+  GL_SERVICE_LOG("glCoverFillPathNV"
+                 << "(" << path << ", " << GLEnums::GetStringEnum(coverMode)
+                 << ")");
+  g_driver_gl.debug_fn.glCoverFillPathNVFn(path, coverMode);
+}
+
+static void GL_BINDING_CALL
+Debug_glCoverStrokePathNV(GLuint name, GLenum coverMode) {
+  GL_SERVICE_LOG("glCoverStrokePathNV"
+                 << "(" << name << ", " << GLEnums::GetStringEnum(coverMode)
+                 << ")");
+  g_driver_gl.debug_fn.glCoverStrokePathNVFn(name, coverMode);
+}
+
 static GLuint GL_BINDING_CALL Debug_glCreateProgram(void) {
   GL_SERVICE_LOG("glCreateProgram"
                  << "("
@@ -2561,6 +2681,12 @@ Debug_glDeleteFramebuffersEXT(GLsizei n, const GLuint* framebuffers) {
                  << "(" << n << ", " << static_cast<const void*>(framebuffers)
                  << ")");
   g_driver_gl.debug_fn.glDeleteFramebuffersEXTFn(n, framebuffers);
+}
+
+static void GL_BINDING_CALL Debug_glDeletePathsNV(GLuint path, GLsizei range) {
+  GL_SERVICE_LOG("glDeletePathsNV"
+                 << "(" << path << ", " << range << ")");
+  g_driver_gl.debug_fn.glDeletePathsNVFn(path, range);
 }
 
 static void GL_BINDING_CALL Debug_glDeleteProgram(GLuint program) {
@@ -2954,6 +3080,14 @@ Debug_glGenFramebuffersEXT(GLsizei n, GLuint* framebuffers) {
                  << "(" << n << ", " << static_cast<const void*>(framebuffers)
                  << ")");
   g_driver_gl.debug_fn.glGenFramebuffersEXTFn(n, framebuffers);
+}
+
+static GLuint GL_BINDING_CALL Debug_glGenPathsNV(GLsizei range) {
+  GL_SERVICE_LOG("glGenPathsNV"
+                 << "(" << range << ")");
+  GLuint result = g_driver_gl.debug_fn.glGenPathsNVFn(range);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
 }
 
 static void GL_BINDING_CALL Debug_glGenQueries(GLsizei n, GLuint* ids) {
@@ -3638,6 +3772,14 @@ static GLboolean GL_BINDING_CALL Debug_glIsFramebufferEXT(GLuint framebuffer) {
   return result;
 }
 
+static GLboolean GL_BINDING_CALL Debug_glIsPathNV(GLuint path) {
+  GL_SERVICE_LOG("glIsPathNV"
+                 << "(" << path << ")");
+  GLboolean result = g_driver_gl.debug_fn.glIsPathNVFn(path);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
 static GLboolean GL_BINDING_CALL Debug_glIsProgram(GLuint program) {
   GL_SERVICE_LOG("glIsProgram"
                  << "(" << program << ")");
@@ -3757,6 +3899,45 @@ static void GL_BINDING_CALL Debug_glMatrixLoadIdentityEXT(GLenum matrixMode) {
   GL_SERVICE_LOG("glMatrixLoadIdentityEXT"
                  << "(" << GLEnums::GetStringEnum(matrixMode) << ")");
   g_driver_gl.debug_fn.glMatrixLoadIdentityEXTFn(matrixMode);
+}
+
+static void GL_BINDING_CALL Debug_glPathCommandsNV(GLuint path,
+                                                   GLsizei numCommands,
+                                                   const GLubyte* commands,
+                                                   GLsizei numCoords,
+                                                   GLenum coordType,
+                                                   const GLvoid* coords) {
+  GL_SERVICE_LOG("glPathCommandsNV"
+                 << "(" << path << ", " << numCommands << ", "
+                 << static_cast<const void*>(commands) << ", " << numCoords
+                 << ", " << GLEnums::GetStringEnum(coordType) << ", "
+                 << static_cast<const void*>(coords) << ")");
+  g_driver_gl.debug_fn.glPathCommandsNVFn(path, numCommands, commands,
+                                          numCoords, coordType, coords);
+}
+
+static void GL_BINDING_CALL
+Debug_glPathParameterfNV(GLuint path, GLenum pname, GLfloat value) {
+  GL_SERVICE_LOG("glPathParameterfNV"
+                 << "(" << path << ", " << GLEnums::GetStringEnum(pname) << ", "
+                 << value << ")");
+  g_driver_gl.debug_fn.glPathParameterfNVFn(path, pname, value);
+}
+
+static void GL_BINDING_CALL
+Debug_glPathParameteriNV(GLuint path, GLenum pname, GLint value) {
+  GL_SERVICE_LOG("glPathParameteriNV"
+                 << "(" << path << ", " << GLEnums::GetStringEnum(pname) << ", "
+                 << value << ")");
+  g_driver_gl.debug_fn.glPathParameteriNVFn(path, pname, value);
+}
+
+static void GL_BINDING_CALL
+Debug_glPathStencilFuncNV(GLenum func, GLint ref, GLuint mask) {
+  GL_SERVICE_LOG("glPathStencilFuncNV"
+                 << "(" << GLEnums::GetStringEnum(func) << ", " << ref << ", "
+                 << mask << ")");
+  g_driver_gl.debug_fn.glPathStencilFuncNVFn(func, ref, mask);
 }
 
 static void GL_BINDING_CALL Debug_glPauseTransformFeedback(void) {
@@ -4033,6 +4214,14 @@ static void GL_BINDING_CALL Debug_glShaderSource(GLuint shader,
 }
 
 static void GL_BINDING_CALL
+Debug_glStencilFillPathNV(GLuint path, GLenum fillMode, GLuint mask) {
+  GL_SERVICE_LOG("glStencilFillPathNV"
+                 << "(" << path << ", " << GLEnums::GetStringEnum(fillMode)
+                 << ", " << mask << ")");
+  g_driver_gl.debug_fn.glStencilFillPathNVFn(path, fillMode, mask);
+}
+
+static void GL_BINDING_CALL
 Debug_glStencilFunc(GLenum func, GLint ref, GLuint mask) {
   GL_SERVICE_LOG("glStencilFunc"
                  << "(" << GLEnums::GetStringEnum(func) << ", " << ref << ", "
@@ -4081,6 +4270,38 @@ static void GL_BINDING_CALL Debug_glStencilOpSeparate(GLenum face,
                  << GLEnums::GetStringEnum(zfail) << ", "
                  << GLEnums::GetStringEnum(zpass) << ")");
   g_driver_gl.debug_fn.glStencilOpSeparateFn(face, fail, zfail, zpass);
+}
+
+static void GL_BINDING_CALL
+Debug_glStencilStrokePathNV(GLuint path, GLint reference, GLuint mask) {
+  GL_SERVICE_LOG("glStencilStrokePathNV"
+                 << "(" << path << ", " << reference << ", " << mask << ")");
+  g_driver_gl.debug_fn.glStencilStrokePathNVFn(path, reference, mask);
+}
+
+static void GL_BINDING_CALL
+Debug_glStencilThenCoverFillPathNV(GLuint path,
+                                   GLenum fillMode,
+                                   GLuint mask,
+                                   GLenum coverMode) {
+  GL_SERVICE_LOG("glStencilThenCoverFillPathNV"
+                 << "(" << path << ", " << GLEnums::GetStringEnum(fillMode)
+                 << ", " << mask << ", " << GLEnums::GetStringEnum(coverMode)
+                 << ")");
+  g_driver_gl.debug_fn.glStencilThenCoverFillPathNVFn(path, fillMode, mask,
+                                                      coverMode);
+}
+
+static void GL_BINDING_CALL
+Debug_glStencilThenCoverStrokePathNV(GLuint path,
+                                     GLint reference,
+                                     GLuint mask,
+                                     GLenum coverMode) {
+  GL_SERVICE_LOG("glStencilThenCoverStrokePathNV"
+                 << "(" << path << ", " << reference << ", " << mask << ", "
+                 << GLEnums::GetStringEnum(coverMode) << ")");
+  g_driver_gl.debug_fn.glStencilThenCoverStrokePathNVFn(path, reference, mask,
+                                                        coverMode);
 }
 
 static GLboolean GL_BINDING_CALL Debug_glTestFenceAPPLE(GLuint fence) {
@@ -4916,6 +5137,14 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glCopyTexSubImage3DFn = fn.glCopyTexSubImage3DFn;
     fn.glCopyTexSubImage3DFn = Debug_glCopyTexSubImage3D;
   }
+  if (!debug_fn.glCoverFillPathNVFn) {
+    debug_fn.glCoverFillPathNVFn = fn.glCoverFillPathNVFn;
+    fn.glCoverFillPathNVFn = Debug_glCoverFillPathNV;
+  }
+  if (!debug_fn.glCoverStrokePathNVFn) {
+    debug_fn.glCoverStrokePathNVFn = fn.glCoverStrokePathNVFn;
+    fn.glCoverStrokePathNVFn = Debug_glCoverStrokePathNV;
+  }
   if (!debug_fn.glCreateProgramFn) {
     debug_fn.glCreateProgramFn = fn.glCreateProgramFn;
     fn.glCreateProgramFn = Debug_glCreateProgram;
@@ -4943,6 +5172,10 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glDeleteFramebuffersEXTFn) {
     debug_fn.glDeleteFramebuffersEXTFn = fn.glDeleteFramebuffersEXTFn;
     fn.glDeleteFramebuffersEXTFn = Debug_glDeleteFramebuffersEXT;
+  }
+  if (!debug_fn.glDeletePathsNVFn) {
+    debug_fn.glDeletePathsNVFn = fn.glDeletePathsNVFn;
+    fn.glDeletePathsNVFn = Debug_glDeletePathsNV;
   }
   if (!debug_fn.glDeleteProgramFn) {
     debug_fn.glDeleteProgramFn = fn.glDeleteProgramFn;
@@ -5137,6 +5370,10 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glGenFramebuffersEXTFn) {
     debug_fn.glGenFramebuffersEXTFn = fn.glGenFramebuffersEXTFn;
     fn.glGenFramebuffersEXTFn = Debug_glGenFramebuffersEXT;
+  }
+  if (!debug_fn.glGenPathsNVFn) {
+    debug_fn.glGenPathsNVFn = fn.glGenPathsNVFn;
+    fn.glGenPathsNVFn = Debug_glGenPathsNV;
   }
   if (!debug_fn.glGenQueriesFn) {
     debug_fn.glGenQueriesFn = fn.glGenQueriesFn;
@@ -5421,6 +5658,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glIsFramebufferEXTFn = fn.glIsFramebufferEXTFn;
     fn.glIsFramebufferEXTFn = Debug_glIsFramebufferEXT;
   }
+  if (!debug_fn.glIsPathNVFn) {
+    debug_fn.glIsPathNVFn = fn.glIsPathNVFn;
+    fn.glIsPathNVFn = Debug_glIsPathNV;
+  }
   if (!debug_fn.glIsProgramFn) {
     debug_fn.glIsProgramFn = fn.glIsProgramFn;
     fn.glIsProgramFn = Debug_glIsProgram;
@@ -5480,6 +5721,22 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glMatrixLoadIdentityEXTFn) {
     debug_fn.glMatrixLoadIdentityEXTFn = fn.glMatrixLoadIdentityEXTFn;
     fn.glMatrixLoadIdentityEXTFn = Debug_glMatrixLoadIdentityEXT;
+  }
+  if (!debug_fn.glPathCommandsNVFn) {
+    debug_fn.glPathCommandsNVFn = fn.glPathCommandsNVFn;
+    fn.glPathCommandsNVFn = Debug_glPathCommandsNV;
+  }
+  if (!debug_fn.glPathParameterfNVFn) {
+    debug_fn.glPathParameterfNVFn = fn.glPathParameterfNVFn;
+    fn.glPathParameterfNVFn = Debug_glPathParameterfNV;
+  }
+  if (!debug_fn.glPathParameteriNVFn) {
+    debug_fn.glPathParameteriNVFn = fn.glPathParameteriNVFn;
+    fn.glPathParameteriNVFn = Debug_glPathParameteriNV;
+  }
+  if (!debug_fn.glPathStencilFuncNVFn) {
+    debug_fn.glPathStencilFuncNVFn = fn.glPathStencilFuncNVFn;
+    fn.glPathStencilFuncNVFn = Debug_glPathStencilFuncNV;
   }
   if (!debug_fn.glPauseTransformFeedbackFn) {
     debug_fn.glPauseTransformFeedbackFn = fn.glPauseTransformFeedbackFn;
@@ -5601,6 +5858,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glShaderSourceFn = fn.glShaderSourceFn;
     fn.glShaderSourceFn = Debug_glShaderSource;
   }
+  if (!debug_fn.glStencilFillPathNVFn) {
+    debug_fn.glStencilFillPathNVFn = fn.glStencilFillPathNVFn;
+    fn.glStencilFillPathNVFn = Debug_glStencilFillPathNV;
+  }
   if (!debug_fn.glStencilFuncFn) {
     debug_fn.glStencilFuncFn = fn.glStencilFuncFn;
     fn.glStencilFuncFn = Debug_glStencilFunc;
@@ -5624,6 +5885,19 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glStencilOpSeparateFn) {
     debug_fn.glStencilOpSeparateFn = fn.glStencilOpSeparateFn;
     fn.glStencilOpSeparateFn = Debug_glStencilOpSeparate;
+  }
+  if (!debug_fn.glStencilStrokePathNVFn) {
+    debug_fn.glStencilStrokePathNVFn = fn.glStencilStrokePathNVFn;
+    fn.glStencilStrokePathNVFn = Debug_glStencilStrokePathNV;
+  }
+  if (!debug_fn.glStencilThenCoverFillPathNVFn) {
+    debug_fn.glStencilThenCoverFillPathNVFn = fn.glStencilThenCoverFillPathNVFn;
+    fn.glStencilThenCoverFillPathNVFn = Debug_glStencilThenCoverFillPathNV;
+  }
+  if (!debug_fn.glStencilThenCoverStrokePathNVFn) {
+    debug_fn.glStencilThenCoverStrokePathNVFn =
+        fn.glStencilThenCoverStrokePathNVFn;
+    fn.glStencilThenCoverStrokePathNVFn = Debug_glStencilThenCoverStrokePathNV;
   }
   if (!debug_fn.glTestFenceAPPLEFn) {
     debug_fn.glTestFenceAPPLEFn = fn.glTestFenceAPPLEFn;
@@ -6231,6 +6505,14 @@ void GLApiBase::glCopyTexSubImage3DFn(GLenum target,
                                     y, width, height);
 }
 
+void GLApiBase::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
+  driver_->fn.glCoverFillPathNVFn(path, coverMode);
+}
+
+void GLApiBase::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
+  driver_->fn.glCoverStrokePathNVFn(name, coverMode);
+}
+
 GLuint GLApiBase::glCreateProgramFn(void) {
   return driver_->fn.glCreateProgramFn();
 }
@@ -6258,6 +6540,10 @@ void GLApiBase::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
 void GLApiBase::glDeleteFramebuffersEXTFn(GLsizei n,
                                           const GLuint* framebuffers) {
   driver_->fn.glDeleteFramebuffersEXTFn(n, framebuffers);
+}
+
+void GLApiBase::glDeletePathsNVFn(GLuint path, GLsizei range) {
+  driver_->fn.glDeletePathsNVFn(path, range);
 }
 
 void GLApiBase::glDeleteProgramFn(GLuint program) {
@@ -6495,6 +6781,10 @@ void GLApiBase::glGenFencesNVFn(GLsizei n, GLuint* fences) {
 
 void GLApiBase::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   driver_->fn.glGenFramebuffersEXTFn(n, framebuffers);
+}
+
+GLuint GLApiBase::glGenPathsNVFn(GLsizei range) {
+  return driver_->fn.glGenPathsNVFn(range);
 }
 
 void GLApiBase::glGenQueriesFn(GLsizei n, GLuint* ids) {
@@ -6899,6 +7189,10 @@ GLboolean GLApiBase::glIsFramebufferEXTFn(GLuint framebuffer) {
   return driver_->fn.glIsFramebufferEXTFn(framebuffer);
 }
 
+GLboolean GLApiBase::glIsPathNVFn(GLuint path) {
+  return driver_->fn.glIsPathNVFn(path);
+}
+
 GLboolean GLApiBase::glIsProgramFn(GLuint program) {
   return driver_->fn.glIsProgramFn(program);
 }
@@ -6960,6 +7254,28 @@ void GLApiBase::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
 
 void GLApiBase::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   driver_->fn.glMatrixLoadIdentityEXTFn(matrixMode);
+}
+
+void GLApiBase::glPathCommandsNVFn(GLuint path,
+                                   GLsizei numCommands,
+                                   const GLubyte* commands,
+                                   GLsizei numCoords,
+                                   GLenum coordType,
+                                   const GLvoid* coords) {
+  driver_->fn.glPathCommandsNVFn(path, numCommands, commands, numCoords,
+                                 coordType, coords);
+}
+
+void GLApiBase::glPathParameterfNVFn(GLuint path, GLenum pname, GLfloat value) {
+  driver_->fn.glPathParameterfNVFn(path, pname, value);
+}
+
+void GLApiBase::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
+  driver_->fn.glPathParameteriNVFn(path, pname, value);
+}
+
+void GLApiBase::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
+  driver_->fn.glPathStencilFuncNVFn(func, ref, mask);
 }
 
 void GLApiBase::glPauseTransformFeedbackFn(void) {
@@ -7123,6 +7439,12 @@ void GLApiBase::glShaderSourceFn(GLuint shader,
   driver_->fn.glShaderSourceFn(shader, count, str, length);
 }
 
+void GLApiBase::glStencilFillPathNVFn(GLuint path,
+                                      GLenum fillMode,
+                                      GLuint mask) {
+  driver_->fn.glStencilFillPathNVFn(path, fillMode, mask);
+}
+
 void GLApiBase::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   driver_->fn.glStencilFuncFn(func, ref, mask);
 }
@@ -7151,6 +7473,27 @@ void GLApiBase::glStencilOpSeparateFn(GLenum face,
                                       GLenum zfail,
                                       GLenum zpass) {
   driver_->fn.glStencilOpSeparateFn(face, fail, zfail, zpass);
+}
+
+void GLApiBase::glStencilStrokePathNVFn(GLuint path,
+                                        GLint reference,
+                                        GLuint mask) {
+  driver_->fn.glStencilStrokePathNVFn(path, reference, mask);
+}
+
+void GLApiBase::glStencilThenCoverFillPathNVFn(GLuint path,
+                                               GLenum fillMode,
+                                               GLuint mask,
+                                               GLenum coverMode) {
+  driver_->fn.glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
+}
+
+void GLApiBase::glStencilThenCoverStrokePathNVFn(GLuint path,
+                                                 GLint reference,
+                                                 GLuint mask,
+                                                 GLenum coverMode) {
+  driver_->fn.glStencilThenCoverStrokePathNVFn(path, reference, mask,
+                                               coverMode);
 }
 
 GLboolean GLApiBase::glTestFenceAPPLEFn(GLuint fence) {
@@ -7949,6 +8292,16 @@ void TraceGLApi::glCopyTexSubImage3DFn(GLenum target,
                                  width, height);
 }
 
+void TraceGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverFillPathNV")
+  gl_api_->glCoverFillPathNVFn(path, coverMode);
+}
+
+void TraceGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCoverStrokePathNV")
+  gl_api_->glCoverStrokePathNVFn(name, coverMode);
+}
+
 GLuint TraceGLApi::glCreateProgramFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glCreateProgram")
   return gl_api_->glCreateProgramFn();
@@ -7983,6 +8336,11 @@ void TraceGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
                                            const GLuint* framebuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteFramebuffersEXT")
   gl_api_->glDeleteFramebuffersEXTFn(n, framebuffers);
+}
+
+void TraceGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeletePathsNV")
+  gl_api_->glDeletePathsNVFn(path, range);
 }
 
 void TraceGLApi::glDeleteProgramFn(GLuint program) {
@@ -8273,6 +8631,11 @@ void TraceGLApi::glGenFencesNVFn(GLsizei n, GLuint* fences) {
 void TraceGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenFramebuffersEXT")
   gl_api_->glGenFramebuffersEXTFn(n, framebuffers);
+}
+
+GLuint TraceGLApi::glGenPathsNVFn(GLsizei range) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenPathsNV")
+  return gl_api_->glGenPathsNVFn(range);
 }
 
 void TraceGLApi::glGenQueriesFn(GLsizei n, GLuint* ids) {
@@ -8753,6 +9116,11 @@ GLboolean TraceGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
   return gl_api_->glIsFramebufferEXTFn(framebuffer);
 }
 
+GLboolean TraceGLApi::glIsPathNVFn(GLuint path) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsPathNV")
+  return gl_api_->glIsPathNVFn(path);
+}
+
 GLboolean TraceGLApi::glIsProgramFn(GLuint program) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsProgram")
   return gl_api_->glIsProgramFn(program);
@@ -8829,6 +9197,34 @@ void TraceGLApi::glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) {
 void TraceGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glMatrixLoadIdentityEXT")
   gl_api_->glMatrixLoadIdentityEXTFn(matrixMode);
+}
+
+void TraceGLApi::glPathCommandsNVFn(GLuint path,
+                                    GLsizei numCommands,
+                                    const GLubyte* commands,
+                                    GLsizei numCoords,
+                                    GLenum coordType,
+                                    const GLvoid* coords) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathCommandsNV")
+  gl_api_->glPathCommandsNVFn(path, numCommands, commands, numCoords, coordType,
+                              coords);
+}
+
+void TraceGLApi::glPathParameterfNVFn(GLuint path,
+                                      GLenum pname,
+                                      GLfloat value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathParameterfNV")
+  gl_api_->glPathParameterfNVFn(path, pname, value);
+}
+
+void TraceGLApi::glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathParameteriNV")
+  gl_api_->glPathParameteriNVFn(path, pname, value);
+}
+
+void TraceGLApi::glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPathStencilFuncNV")
+  gl_api_->glPathStencilFuncNVFn(func, ref, mask);
 }
 
 void TraceGLApi::glPauseTransformFeedbackFn(void) {
@@ -9024,6 +9420,13 @@ void TraceGLApi::glShaderSourceFn(GLuint shader,
   gl_api_->glShaderSourceFn(shader, count, str, length);
 }
 
+void TraceGLApi::glStencilFillPathNVFn(GLuint path,
+                                       GLenum fillMode,
+                                       GLuint mask) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilFillPathNV")
+  gl_api_->glStencilFillPathNVFn(path, fillMode, mask);
+}
+
 void TraceGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilFunc")
   gl_api_->glStencilFuncFn(func, ref, mask);
@@ -9058,6 +9461,31 @@ void TraceGLApi::glStencilOpSeparateFn(GLenum face,
                                        GLenum zpass) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilOpSeparate")
   gl_api_->glStencilOpSeparateFn(face, fail, zfail, zpass);
+}
+
+void TraceGLApi::glStencilStrokePathNVFn(GLuint path,
+                                         GLint reference,
+                                         GLuint mask) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glStencilStrokePathNV")
+  gl_api_->glStencilStrokePathNVFn(path, reference, mask);
+}
+
+void TraceGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
+                                                GLenum fillMode,
+                                                GLuint mask,
+                                                GLenum coverMode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glStencilThenCoverFillPathNV")
+  gl_api_->glStencilThenCoverFillPathNVFn(path, fillMode, mask, coverMode);
+}
+
+void TraceGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
+                                                  GLint reference,
+                                                  GLuint mask,
+                                                  GLenum coverMode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glStencilThenCoverStrokePathNV")
+  gl_api_->glStencilThenCoverStrokePathNVFn(path, reference, mask, coverMode);
 }
 
 GLboolean TraceGLApi::glTestFenceAPPLEFn(GLuint fence) {
@@ -9961,6 +10389,19 @@ void NoContextGLApi::glCopyTexSubImage3DFn(GLenum target,
       << "Trying to call glCopyTexSubImage3D() without current GL context";
 }
 
+void NoContextGLApi::glCoverFillPathNVFn(GLuint path, GLenum coverMode) {
+  NOTREACHED()
+      << "Trying to call glCoverFillPathNV() without current GL context";
+  LOG(ERROR) << "Trying to call glCoverFillPathNV() without current GL context";
+}
+
+void NoContextGLApi::glCoverStrokePathNVFn(GLuint name, GLenum coverMode) {
+  NOTREACHED()
+      << "Trying to call glCoverStrokePathNV() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glCoverStrokePathNV() without current GL context";
+}
+
 GLuint NoContextGLApi::glCreateProgramFn(void) {
   NOTREACHED() << "Trying to call glCreateProgram() without current GL context";
   LOG(ERROR) << "Trying to call glCreateProgram() without current GL context";
@@ -10004,6 +10445,11 @@ void NoContextGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
       << "Trying to call glDeleteFramebuffersEXT() without current GL context";
   LOG(ERROR)
       << "Trying to call glDeleteFramebuffersEXT() without current GL context";
+}
+
+void NoContextGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
+  NOTREACHED() << "Trying to call glDeletePathsNV() without current GL context";
+  LOG(ERROR) << "Trying to call glDeletePathsNV() without current GL context";
 }
 
 void NoContextGLApi::glDeleteProgramFn(GLuint program) {
@@ -10332,6 +10778,12 @@ void NoContextGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
       << "Trying to call glGenFramebuffersEXT() without current GL context";
   LOG(ERROR)
       << "Trying to call glGenFramebuffersEXT() without current GL context";
+}
+
+GLuint NoContextGLApi::glGenPathsNVFn(GLsizei range) {
+  NOTREACHED() << "Trying to call glGenPathsNV() without current GL context";
+  LOG(ERROR) << "Trying to call glGenPathsNV() without current GL context";
+  return 0U;
 }
 
 void NoContextGLApi::glGenQueriesFn(GLsizei n, GLuint* ids) {
@@ -10909,6 +11361,12 @@ GLboolean NoContextGLApi::glIsFramebufferEXTFn(GLuint framebuffer) {
   return GL_FALSE;
 }
 
+GLboolean NoContextGLApi::glIsPathNVFn(GLuint path) {
+  NOTREACHED() << "Trying to call glIsPathNV() without current GL context";
+  LOG(ERROR) << "Trying to call glIsPathNV() without current GL context";
+  return GL_FALSE;
+}
+
 GLboolean NoContextGLApi::glIsProgramFn(GLuint program) {
   NOTREACHED() << "Trying to call glIsProgram() without current GL context";
   LOG(ERROR) << "Trying to call glIsProgram() without current GL context";
@@ -11006,6 +11464,44 @@ void NoContextGLApi::glMatrixLoadIdentityEXTFn(GLenum matrixMode) {
       << "Trying to call glMatrixLoadIdentityEXT() without current GL context";
   LOG(ERROR)
       << "Trying to call glMatrixLoadIdentityEXT() without current GL context";
+}
+
+void NoContextGLApi::glPathCommandsNVFn(GLuint path,
+                                        GLsizei numCommands,
+                                        const GLubyte* commands,
+                                        GLsizei numCoords,
+                                        GLenum coordType,
+                                        const GLvoid* coords) {
+  NOTREACHED()
+      << "Trying to call glPathCommandsNV() without current GL context";
+  LOG(ERROR) << "Trying to call glPathCommandsNV() without current GL context";
+}
+
+void NoContextGLApi::glPathParameterfNVFn(GLuint path,
+                                          GLenum pname,
+                                          GLfloat value) {
+  NOTREACHED()
+      << "Trying to call glPathParameterfNV() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glPathParameterfNV() without current GL context";
+}
+
+void NoContextGLApi::glPathParameteriNVFn(GLuint path,
+                                          GLenum pname,
+                                          GLint value) {
+  NOTREACHED()
+      << "Trying to call glPathParameteriNV() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glPathParameteriNV() without current GL context";
+}
+
+void NoContextGLApi::glPathStencilFuncNVFn(GLenum func,
+                                           GLint ref,
+                                           GLuint mask) {
+  NOTREACHED()
+      << "Trying to call glPathStencilFuncNV() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glPathStencilFuncNV() without current GL context";
 }
 
 void NoContextGLApi::glPauseTransformFeedbackFn(void) {
@@ -11232,6 +11728,15 @@ void NoContextGLApi::glShaderSourceFn(GLuint shader,
   LOG(ERROR) << "Trying to call glShaderSource() without current GL context";
 }
 
+void NoContextGLApi::glStencilFillPathNVFn(GLuint path,
+                                           GLenum fillMode,
+                                           GLuint mask) {
+  NOTREACHED()
+      << "Trying to call glStencilFillPathNV() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glStencilFillPathNV() without current GL context";
+}
+
 void NoContextGLApi::glStencilFuncFn(GLenum func, GLint ref, GLuint mask) {
   NOTREACHED() << "Trying to call glStencilFunc() without current GL context";
   LOG(ERROR) << "Trying to call glStencilFunc() without current GL context";
@@ -11272,6 +11777,35 @@ void NoContextGLApi::glStencilOpSeparateFn(GLenum face,
       << "Trying to call glStencilOpSeparate() without current GL context";
   LOG(ERROR)
       << "Trying to call glStencilOpSeparate() without current GL context";
+}
+
+void NoContextGLApi::glStencilStrokePathNVFn(GLuint path,
+                                             GLint reference,
+                                             GLuint mask) {
+  NOTREACHED()
+      << "Trying to call glStencilStrokePathNV() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glStencilStrokePathNV() without current GL context";
+}
+
+void NoContextGLApi::glStencilThenCoverFillPathNVFn(GLuint path,
+                                                    GLenum fillMode,
+                                                    GLuint mask,
+                                                    GLenum coverMode) {
+  NOTREACHED() << "Trying to call glStencilThenCoverFillPathNV() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glStencilThenCoverFillPathNV() without current "
+                "GL context";
+}
+
+void NoContextGLApi::glStencilThenCoverStrokePathNVFn(GLuint path,
+                                                      GLint reference,
+                                                      GLuint mask,
+                                                      GLenum coverMode) {
+  NOTREACHED() << "Trying to call glStencilThenCoverStrokePathNV() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glStencilThenCoverStrokePathNV() without "
+                "current GL context";
 }
 
 GLboolean NoContextGLApi::glTestFenceAPPLEFn(GLuint fence) {

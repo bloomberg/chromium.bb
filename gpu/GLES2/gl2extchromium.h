@@ -795,12 +795,172 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
 GL_APICALL void GL_APIENTRY
     glMatrixLoadfCHROMIUM(GLenum mode, const GLfloat* m);
 GL_APICALL void GL_APIENTRY glMatrixLoadIdentityCHROMIUM(GLenum mode);
+GL_APICALL GLuint GL_APIENTRY glGenPathsCHROMIUM(GLsizei range);
+GL_APICALL void GL_APIENTRY glDeletePathsCHROMIUM(GLuint path, GLsizei range);
+GL_APICALL GLboolean GL_APIENTRY glIsPathCHROMIUM(GLuint path);
+GL_APICALL void GL_APIENTRY glPathCommandsCHROMIUM(GLuint path,
+                                                   GLsizei numCommands,
+                                                   const GLubyte* commands,
+                                                   GLsizei numCoords,
+                                                   GLenum coordType,
+                                                   const void* coords);
+GL_APICALL void GL_APIENTRY
+glPathParameteriCHROMIUM(GLuint path, GLenum pname, GLint value);
+GL_APICALL void GL_APIENTRY
+glPathParameterfCHROMIUM(GLuint path, GLenum pname, GLfloat value);
+GL_APICALL void GL_APIENTRY
+glPathStencilFuncCHROMIUM(GLenum func, GLint ref, GLuint mask);
+GL_APICALL void GL_APIENTRY
+glStencilFillPathCHROMIUM(GLuint path, GLenum fillMode, GLuint mask);
+GL_APICALL void GL_APIENTRY
+glStencilStrokePathCHROMIUM(GLuint path, GLint reference, GLuint mask);
+GL_APICALL void GL_APIENTRY
+glCoverFillPathCHROMIUM(GLuint path, GLenum coverMode);
+GL_APICALL void GL_APIENTRY
+glCoverStrokePathCHROMIUM(GLuint name, GLenum coverMode);
+GL_APICALL void GL_APIENTRY
+glStencilThenCoverFillPathCHROMIUM(GLuint path,
+                                   GLenum fillMode,
+                                   GLuint mask,
+                                   GLenum coverMode);
+GL_APICALL void GL_APIENTRY
+glStencilThenCoverStrokePathCHROMIUM(GLuint path,
+                                     GLint reference,
+                                     GLuint mask,
+                                     GLenum coverMode);
+
 #endif
 
 typedef void(GL_APIENTRYP PFNGLMATRIXLOADFCHROMIUMPROC)(GLenum matrixMode,
                                                         const GLfloat* m);
 typedef void(GL_APIENTRYP PFNGLMATRIXLOADIDENTITYCHROMIUMPROC)(
     GLenum matrixMode);
+typedef GLuint(GL_APIENTRYP* PFNGLGENPATHSCHROMIUMPROC)(GLsizei range);
+typedef void(GL_APIENTRYP* PFNGLDELETEPATHSCHROMIUMPROC)(GLuint path,
+                                                         GLsizei range);
+typedef GLboolean(GL_APIENTRYP* PFNGLISPATHCHROMIUMPROC)(GLuint path);
+typedef void(GL_APIENTRYP* PFNGLPATHCOMMANDSCHROMIUMPROC)(
+    GLuint path,
+    GLsizei numCommands,
+    const GLubyte* commands,
+    GLsizei numCoords,
+    GLenum coordType,
+    const GLvoid* coords);
+typedef void(GL_APIENTRYP* PFNGLPATHPARAMETERICHROMIUMPROC)(GLuint path,
+                                                            GLenum pname,
+                                                            GLint value);
+typedef void(GL_APIENTRYP* PFNGLPATHPARAMETERFCHROMIUMPROC)(GLuint path,
+                                                            GLenum pname,
+                                                            GLfloat value);
+typedef void(GL_APIENTRYP* PFNGLPATHSTENCILFUNCCHROMIUMPROC)(GLenum func,
+                                                             GLint ref,
+                                                             GLuint mask);
+typedef void(GL_APIENTRYP* PFNGLSTENCILFILLPATHCHROMIUMPROC)(GLuint path,
+                                                             GLenum fillMode,
+                                                             GLuint mask);
+typedef void(GL_APIENTRYP* PFNGLSTENCILSTROKEPATHCHROMIUMPROC)(GLuint path,
+                                                               GLint reference,
+                                                               GLuint mask);
+typedef void(GL_APIENTRYP* PFNGLCOVERFILLPATHCHROMIUMPROC)(GLuint path,
+                                                           GLenum coverMode);
+typedef void(GL_APIENTRYP* PFNGLCOVERSTROKEPATHCHROMIUMPROC)(GLuint name,
+                                                             GLenum coverMode);
+
+typedef void(GL_APIENTRYP* PFNGLSTENCILTHENCOVERFILLPATHCHROMIUMPROC)(
+    GLuint path,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode);
+typedef void(GL_APIENTRYP* PFNGLSTENCILTHENCOVERSTROKEPATHCHROMIUMPROC)(
+    GLuint path,
+    GLint reference,
+    GLuint mask,
+    GLenum coverMode);
+
+#ifndef GL_CLOSE_PATH_CHROMIUM
+#define GL_CLOSE_PATH_CHROMIUM 0x00
+#endif
+#ifndef GL_MOVE_TO_CHROMIUM
+#define GL_MOVE_TO_CHROMIUM 0x02
+#endif
+#ifndef GL_LINE_TO_CHROMIUM
+#define GL_LINE_TO_CHROMIUM 0x04
+#endif
+#ifndef GL_QUADRATIC_CURVE_TO_CHROMIUM
+#define GL_QUADRATIC_CURVE_TO_CHROMIUM 0x0A
+#endif
+#ifndef GL_CUBIC_CURVE_TO_CHROMIUM
+#define GL_CUBIC_CURVE_TO_CHROMIUM 0x0C
+#endif
+#ifndef GL_CONIC_CURVE_TO_CHROMIUM
+#define GL_CONIC_CURVE_TO_CHROMIUM 0x1A
+#endif
+#ifndef GL_PATH_MODELVIEW_MATRIX_CHROMIUM
+#define GL_PATH_MODELVIEW_MATRIX_CHROMIUM 0x0BA6
+#endif
+#ifndef GL_PATH_PROJECTION_MATRIX_CHROMIUM
+#define GL_PATH_PROJECTION_MATRIX_CHROMIUM 0x0BA7
+#endif
+#ifndef GL_PATH_MODELVIEW_CHROMIUM
+#define GL_PATH_MODELVIEW_CHROMIUM 0x1700
+#endif
+#ifndef GL_PATH_PROJECTION_CHROMIUM
+#define GL_PATH_PROJECTION_CHROMIUM 0x1701
+#endif
+#ifndef GL_FLAT_CHROMIUM
+#define GL_FLAT_CHROMIUM 0x1D00
+#endif
+#ifndef GL_PATH_STROKE_WIDTH_CHROMIUM
+#define GL_PATH_STROKE_WIDTH_CHROMIUM 0x9075
+#endif
+#ifndef GL_PATH_END_CAPS_CHROMIUM
+#define GL_PATH_END_CAPS_CHROMIUM 0x9076
+#endif
+#ifndef GL_PATH_JOIN_STYLE_CHROMIUM
+#define GL_PATH_JOIN_STYLE_CHROMIUM 0x9079
+#endif
+#ifndef GL_PATH_MITER_LIMIT_CHROMIUM
+#define GL_PATH_MITER_LIMIT_CHROMIUM 0x907a
+#endif
+#ifndef GL_PATH_STROKE_BOUND_CHROMIUM
+#define GL_PATH_STROKE_BOUND_CHROMIUM 0x9086
+#endif
+#ifndef GL_COUNT_UP_CHROMIUM
+#define GL_COUNT_UP_CHROMIUM 0x9088
+#endif
+#ifndef GL_COUNT_DOWN_CHROMIUM
+#define GL_COUNT_DOWN_CHROMIUM 0x9089
+#endif
+#ifndef GL_CONVEX_HULL_CHROMIUM
+#define GL_CONVEX_HULL_CHROMIUM 0x908B
+#endif
+#ifndef GL_BOUNDING_BOX_CHROMIUM
+#define GL_BOUNDING_BOX_CHROMIUM 0x908D
+#endif
+#ifndef GL_SQUARE_CHROMIUM
+#define GL_SQUARE_CHROMIUM 0x90a3
+#endif
+#ifndef GL_ROUND_CHROMIUM
+#define GL_ROUND_CHROMIUM 0x90a4
+#endif
+#ifndef GL_ROUND_CHROMIUM
+#define GL_ROUND_CHROMIUM 0x90A4
+#endif
+#ifndef GL_BEVEL_CHROMIUM
+#define GL_BEVEL_CHROMIUM 0x90A6
+#endif
+#ifndef GL_MITER_REVERT_CHROMIUM
+#define GL_MITER_REVERT_CHROMIUM 0x90A7
+#endif
+#ifndef GL_PATH_STENCIL_FUNC_CHROMIUM
+#define GL_PATH_STENCIL_FUNC_CHROMIUM 0x90B7
+#endif
+#ifndef GL_PATH_STENCIL_REF_CHROMIUM
+#define GL_PATH_STENCIL_REF_CHROMIUM 0x90B8
+#endif
+#ifndef GL_PATH_STENCIL_VALUE_MASK_CHROMIUM
+#define GL_PATH_STENCIL_VALUE_MASK_CHROMIUM 0x90B9
+#endif
 
 #endif /* GL_CHROMIUM_path_rendering */
 

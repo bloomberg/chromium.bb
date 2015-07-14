@@ -333,6 +333,21 @@
 #define glSwapInterval GLES2_GET_FUN(SwapInterval)
 #define glMatrixLoadfCHROMIUM GLES2_GET_FUN(MatrixLoadfCHROMIUM)
 #define glMatrixLoadIdentityCHROMIUM GLES2_GET_FUN(MatrixLoadIdentityCHROMIUM)
+#define glGenPathsCHROMIUM GLES2_GET_FUN(GenPathsCHROMIUM)
+#define glDeletePathsCHROMIUM GLES2_GET_FUN(DeletePathsCHROMIUM)
+#define glIsPathCHROMIUM GLES2_GET_FUN(IsPathCHROMIUM)
+#define glPathCommandsCHROMIUM GLES2_GET_FUN(PathCommandsCHROMIUM)
+#define glPathParameterfCHROMIUM GLES2_GET_FUN(PathParameterfCHROMIUM)
+#define glPathParameteriCHROMIUM GLES2_GET_FUN(PathParameteriCHROMIUM)
+#define glPathStencilFuncCHROMIUM GLES2_GET_FUN(PathStencilFuncCHROMIUM)
+#define glStencilFillPathCHROMIUM GLES2_GET_FUN(StencilFillPathCHROMIUM)
+#define glStencilStrokePathCHROMIUM GLES2_GET_FUN(StencilStrokePathCHROMIUM)
+#define glCoverFillPathCHROMIUM GLES2_GET_FUN(CoverFillPathCHROMIUM)
+#define glCoverStrokePathCHROMIUM GLES2_GET_FUN(CoverStrokePathCHROMIUM)
+#define glStencilThenCoverFillPathCHROMIUM \
+  GLES2_GET_FUN(StencilThenCoverFillPathCHROMIUM)
+#define glStencilThenCoverStrokePathCHROMIUM \
+  GLES2_GET_FUN(StencilThenCoverStrokePathCHROMIUM)
 #define glGetGraphicsResetStatusKHR GLES2_GET_FUN(GetGraphicsResetStatusKHR)
 #define glBlendBarrierKHR GLES2_GET_FUN(BlendBarrierKHR)
 

@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
@@ -294,6 +295,8 @@ bool ContextGroup::Initialize(
                      feature_info_->workarounds().max_vertex_uniform_vectors));
   }
 
+  path_manager_.reset(new PathManager());
+
   program_manager_.reset(new ProgramManager(
       program_cache_, max_varying_vectors_));
 
@@ -363,6 +366,11 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
   if (texture_manager_ != NULL) {
     texture_manager_->Destroy(have_context);
     texture_manager_.reset();
+  }
+
+  if (path_manager_ != NULL) {
+    path_manager_->Destroy(have_context);
+    path_manager_.reset();
   }
 
   if (program_manager_ != NULL) {

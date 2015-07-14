@@ -4946,6 +4946,58 @@ error::Error GLES2DecoderImpl::HandleMatrixLoadIdentityCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleIsPathCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::IsPathCHROMIUM& c =
+      *static_cast<const gles2::cmds::IsPathCHROMIUM*>(cmd_data);
+  (void)c;
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glIsPathCHROMIUM",
+                       "function not available");
+    return error::kNoError;
+  }
+
+  GLuint path = c.path;
+  typedef cmds::IsPathCHROMIUM::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
+  *result_dst = DoIsPathCHROMIUM(path);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandlePathStencilFuncCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::PathStencilFuncCHROMIUM& c =
+      *static_cast<const gles2::cmds::PathStencilFuncCHROMIUM*>(cmd_data);
+  (void)c;
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glPathStencilFuncCHROMIUM",
+                       "function not available");
+    return error::kNoError;
+  }
+
+  GLenum func = static_cast<GLenum>(c.func);
+  GLint ref = static_cast<GLint>(c.ref);
+  GLuint mask = static_cast<GLuint>(c.mask);
+  if (!validators_->cmp_function.IsValid(func)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glPathStencilFuncCHROMIUM", func, "func");
+    return error::kNoError;
+  }
+  if (state_.stencil_path_func != func || state_.stencil_path_ref != ref ||
+      state_.stencil_path_mask != mask) {
+    state_.stencil_path_func = func;
+    state_.stencil_path_ref = ref;
+    state_.stencil_path_mask = mask;
+    glPathStencilFuncNV(func, ref, mask);
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleBlendBarrierKHR(
     uint32_t immediate_data_size,
     const void* cmd_data) {

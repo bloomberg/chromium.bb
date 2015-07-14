@@ -540,6 +540,31 @@ _STATES = {
       },
     ],
   },
+  'PathStencilFuncCHROMIUM': {
+    'type': 'Normal',
+    'func': 'PathStencilFuncNV',
+    'extension_flag': 'chromium_path_rendering',
+    'states': [
+      {
+        'name': 'stencil_path_func',
+        'type': 'GLenum',
+        'enum': 'GL_PATH_STENCIL_FUNC_CHROMIUM',
+        'default': 'GL_ALWAYS',
+       },
+      {
+        'name': 'stencil_path_ref',
+        'type': 'GLint',
+        'enum': 'GL_PATH_STENCIL_REF_CHROMIUM',
+        'default': '0',
+       },
+      {
+        'name': 'stencil_path_mask',
+        'type': 'GLuint',
+        'enum': 'GL_PATH_STENCIL_VALUE_MASK_CHROMIUM',
+        'default': '0xFFFFFFFFU',
+      },
+    ],
+  },
 }
 
 # Named type info object represents a named type that is used in OpenGL call
@@ -1478,6 +1503,57 @@ _NAMED_TYPE_INFO = {
     'invalid': [
       'GL_UNSIGNED_BYTE_3_3_2',
     ],
+  },
+  'PathCoordType': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_BYTE',
+      'GL_UNSIGNED_BYTE',
+      'GL_SHORT',
+      'GL_UNSIGNED_SHORT',
+      'GL_FLOAT',
+    ],
+  },
+  'PathCoverMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_CONVEX_HULL_CHROMIUM',
+      'GL_BOUNDING_BOX_CHROMIUM',
+    ],
+  },
+  'PathFillMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_INVERT',
+      'GL_COUNT_UP_CHROMIUM',
+      'GL_COUNT_DOWN_CHROMIUM',
+    ],
+  },
+  'PathParameter': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_PATH_STROKE_WIDTH_CHROMIUM',
+      'GL_PATH_END_CAPS_CHROMIUM',
+      'GL_PATH_JOIN_STYLE_CHROMIUM',
+      'GL_PATH_MITER_LIMIT_CHROMIUM',
+      'GL_PATH_STROKE_BOUND_CHROMIUM',
+    ]
+  },
+  'PathParameterCapValues': {
+    'type': 'GLint',
+    'valid': [
+      'GL_FLAT',
+      'GL_SQUARE_CHROMIUM',
+      'GL_ROUND_CHROMIUM',
+    ]
+  },
+  'PathParameterJoinValues': {
+    'type': 'GLint',
+    'valid': [
+      'GL_MITER_REVERT_CHROMIUM',
+      'GL_BEVEL_CHROMIUM',
+      'GL_ROUND_CHROMIUM',
+    ]
   },
   'ReadPixelType': {
     'type': 'GLenum',
@@ -3969,6 +4045,94 @@ _FUNCTION_INFO = {
     'extension': True,
     'extension_flag': 'chromium_path_rendering',
   },
+  'GenPathsCHROMIUM': {
+    'type': 'Custom',
+    'cmd_args': 'GLuint first_client_id, GLsizei range',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'DeletePathsCHROMIUM': {
+    'type': 'Custom',
+    'cmd_args': 'GLuint first_client_id, GLsizei range',
+    'impl_func': False,
+    'unit_test': False,
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'IsPathCHROMIUM': {
+    'type': 'Is',
+    'decoder_func': 'DoIsPathCHROMIUM',
+    'gl_test_func': 'glIsPathNV',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'PathCommandsCHROMIUM': {
+    'type': 'Manual',
+    'immediate': False,
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'PathParameterfCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'PathParameteriCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'PathStencilFuncCHROMIUM': {
+    'type': 'StateSet',
+    'state': 'PathStencilFuncCHROMIUM',
+    'decoder_func': 'glPathStencilFuncNV',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'StencilFillPathCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'StencilStrokePathCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'CoverFillPathCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'CoverStrokePathCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'StencilThenCoverFillPathCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'StencilThenCoverStrokePathCHROMIUM': {
+    'type': 'Custom',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+
 }
 
 
@@ -7939,6 +8103,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     self.WriteServiceHandlerFunctionHeader(func, file)
+    self.WriteHandlerExtensionCheck(func, file)
     args = func.GetOriginalArgs()
     for arg in args:
       arg.WriteGetCode(file)

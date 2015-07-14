@@ -3462,6 +3462,123 @@ void GLES2Implementation::MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
   CheckGLError();
 }
 
+GLboolean GLES2Implementation::IsPathCHROMIUM(GLuint path) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  TRACE_EVENT0("gpu", "GLES2Implementation::IsPathCHROMIUM");
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsPathCHROMIUM(" << path << ")");
+  typedef cmds::IsPathCHROMIUM::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return GL_FALSE;
+  }
+  *result = 0;
+  helper_->IsPathCHROMIUM(path, GetResultShmId(), GetResultShmOffset());
+  WaitForCmd();
+  GLboolean result_value = *result != 0;
+  GPU_CLIENT_LOG("returned " << result_value);
+  CheckGLError();
+  return result_value;
+}
+
+void GLES2Implementation::PathParameterfCHROMIUM(GLuint path,
+                                                 GLenum pname,
+                                                 GLfloat value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glPathParameterfCHROMIUM(" << path
+                     << ", " << GLES2Util::GetStringPathParameter(pname) << ", "
+                     << value << ")");
+  helper_->PathParameterfCHROMIUM(path, pname, value);
+  CheckGLError();
+}
+
+void GLES2Implementation::PathParameteriCHROMIUM(GLuint path,
+                                                 GLenum pname,
+                                                 GLint value) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glPathParameteriCHROMIUM(" << path
+                     << ", " << GLES2Util::GetStringPathParameter(pname) << ", "
+                     << value << ")");
+  helper_->PathParameteriCHROMIUM(path, pname, value);
+  CheckGLError();
+}
+
+void GLES2Implementation::PathStencilFuncCHROMIUM(GLenum func,
+                                                  GLint ref,
+                                                  GLuint mask) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glPathStencilFuncCHROMIUM("
+                     << GLES2Util::GetStringCmpFunction(func) << ", " << ref
+                     << ", " << mask << ")");
+  helper_->PathStencilFuncCHROMIUM(func, ref, mask);
+  CheckGLError();
+}
+
+void GLES2Implementation::StencilFillPathCHROMIUM(GLuint path,
+                                                  GLenum fillMode,
+                                                  GLuint mask) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glStencilFillPathCHROMIUM(" << path
+                     << ", " << GLES2Util::GetStringPathFillMode(fillMode)
+                     << ", " << mask << ")");
+  helper_->StencilFillPathCHROMIUM(path, fillMode, mask);
+  CheckGLError();
+}
+
+void GLES2Implementation::StencilStrokePathCHROMIUM(GLuint path,
+                                                    GLint reference,
+                                                    GLuint mask) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glStencilStrokePathCHROMIUM("
+                     << path << ", " << reference << ", " << mask << ")");
+  helper_->StencilStrokePathCHROMIUM(path, reference, mask);
+  CheckGLError();
+}
+
+void GLES2Implementation::CoverFillPathCHROMIUM(GLuint path, GLenum coverMode) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCoverFillPathCHROMIUM(" << path
+                     << ", " << GLES2Util::GetStringPathCoverMode(coverMode)
+                     << ")");
+  helper_->CoverFillPathCHROMIUM(path, coverMode);
+  CheckGLError();
+}
+
+void GLES2Implementation::CoverStrokePathCHROMIUM(GLuint path,
+                                                  GLenum coverMode) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCoverStrokePathCHROMIUM(" << path
+                     << ", " << GLES2Util::GetStringPathCoverMode(coverMode)
+                     << ")");
+  helper_->CoverStrokePathCHROMIUM(path, coverMode);
+  CheckGLError();
+}
+
+void GLES2Implementation::StencilThenCoverFillPathCHROMIUM(GLuint path,
+                                                           GLenum fillMode,
+                                                           GLuint mask,
+                                                           GLenum coverMode) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glStencilThenCoverFillPathCHROMIUM(" << path
+          << ", " << GLES2Util::GetStringPathFillMode(fillMode) << ", " << mask
+          << ", " << GLES2Util::GetStringPathCoverMode(coverMode) << ")");
+  helper_->StencilThenCoverFillPathCHROMIUM(path, fillMode, mask, coverMode);
+  CheckGLError();
+}
+
+void GLES2Implementation::StencilThenCoverStrokePathCHROMIUM(GLuint path,
+                                                             GLint reference,
+                                                             GLuint mask,
+                                                             GLenum coverMode) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glStencilThenCoverStrokePathCHROMIUM(" << path
+                     << ", " << reference << ", " << mask << ", "
+                     << GLES2Util::GetStringPathCoverMode(coverMode) << ")");
+  helper_->StencilThenCoverStrokePathCHROMIUM(path, reference, mask, coverMode);
+  CheckGLError();
+}
+
 void GLES2Implementation::BlendBarrierKHR() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBlendBarrierKHR("

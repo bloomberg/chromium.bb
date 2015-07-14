@@ -474,6 +474,45 @@ static const GLenum valid_matrix_mode_table[] = {
     GL_PATH_MODELVIEW_CHROMIUM,
 };
 
+static const GLenum valid_path_coord_type_table[] = {
+    GL_BYTE,
+    GL_UNSIGNED_BYTE,
+    GL_SHORT,
+    GL_UNSIGNED_SHORT,
+    GL_FLOAT,
+};
+
+static const GLenum valid_path_cover_mode_table[] = {
+    GL_CONVEX_HULL_CHROMIUM,
+    GL_BOUNDING_BOX_CHROMIUM,
+};
+
+static const GLenum valid_path_fill_mode_table[] = {
+    GL_INVERT,
+    GL_COUNT_UP_CHROMIUM,
+    GL_COUNT_DOWN_CHROMIUM,
+};
+
+static const GLenum valid_path_parameter_table[] = {
+    GL_PATH_STROKE_WIDTH_CHROMIUM,
+    GL_PATH_END_CAPS_CHROMIUM,
+    GL_PATH_JOIN_STYLE_CHROMIUM,
+    GL_PATH_MITER_LIMIT_CHROMIUM,
+    GL_PATH_STROKE_BOUND_CHROMIUM,
+};
+
+static const GLint valid_path_parameter_cap_values_table[] = {
+    GL_FLAT,
+    GL_SQUARE_CHROMIUM,
+    GL_ROUND_CHROMIUM,
+};
+
+static const GLint valid_path_parameter_join_values_table[] = {
+    GL_MITER_REVERT_CHROMIUM,
+    GL_BEVEL_CHROMIUM,
+    GL_ROUND_CHROMIUM,
+};
+
 static const GLenum valid_pixel_store_table[] = {
     GL_PACK_ALIGNMENT,
     GL_UNPACK_ALIGNMENT,
@@ -1148,6 +1187,20 @@ Validators::Validators()
       map_buffer_access(valid_map_buffer_access_table,
                         arraysize(valid_map_buffer_access_table)),
       matrix_mode(valid_matrix_mode_table, arraysize(valid_matrix_mode_table)),
+      path_coord_type(valid_path_coord_type_table,
+                      arraysize(valid_path_coord_type_table)),
+      path_cover_mode(valid_path_cover_mode_table,
+                      arraysize(valid_path_cover_mode_table)),
+      path_fill_mode(valid_path_fill_mode_table,
+                     arraysize(valid_path_fill_mode_table)),
+      path_parameter(valid_path_parameter_table,
+                     arraysize(valid_path_parameter_table)),
+      path_parameter_cap_values(
+          valid_path_parameter_cap_values_table,
+          arraysize(valid_path_parameter_cap_values_table)),
+      path_parameter_join_values(
+          valid_path_parameter_join_values_table,
+          arraysize(valid_path_parameter_join_values_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),
       pixel_store_alignment(valid_pixel_store_alignment_table,
                             arraysize(valid_pixel_store_alignment_table)),

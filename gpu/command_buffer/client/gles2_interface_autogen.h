@@ -781,6 +781,36 @@ virtual void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 virtual void SwapInterval(GLint interval) = 0;
 virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;
 virtual void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) = 0;
+virtual GLuint GenPathsCHROMIUM(GLsizei range) = 0;
+virtual void DeletePathsCHROMIUM(GLuint path, GLsizei range) = 0;
+virtual GLboolean IsPathCHROMIUM(GLuint path) = 0;
+virtual void PathCommandsCHROMIUM(GLuint path,
+                                  GLsizei numCommands,
+                                  const GLubyte* commands,
+                                  GLsizei numCoords,
+                                  GLenum coordType,
+                                  const GLvoid* coords) = 0;
+virtual void PathParameterfCHROMIUM(GLuint path,
+                                    GLenum pname,
+                                    GLfloat value) = 0;
+virtual void PathParameteriCHROMIUM(GLuint path, GLenum pname, GLint value) = 0;
+virtual void PathStencilFuncCHROMIUM(GLenum func, GLint ref, GLuint mask) = 0;
+virtual void StencilFillPathCHROMIUM(GLuint path,
+                                     GLenum fillMode,
+                                     GLuint mask) = 0;
+virtual void StencilStrokePathCHROMIUM(GLuint path,
+                                       GLint reference,
+                                       GLuint mask) = 0;
+virtual void CoverFillPathCHROMIUM(GLuint path, GLenum coverMode) = 0;
+virtual void CoverStrokePathCHROMIUM(GLuint path, GLenum coverMode) = 0;
+virtual void StencilThenCoverFillPathCHROMIUM(GLuint path,
+                                              GLenum fillMode,
+                                              GLuint mask,
+                                              GLenum coverMode) = 0;
+virtual void StencilThenCoverStrokePathCHROMIUM(GLuint path,
+                                                GLint reference,
+                                                GLuint mask,
+                                                GLenum coverMode) = 0;
 virtual GLenum GetGraphicsResetStatusKHR() = 0;
 virtual void BlendBarrierKHR() = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

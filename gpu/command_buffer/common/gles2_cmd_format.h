@@ -70,12 +70,15 @@ enum IdNamespaces {
   kNumIdNamespaces
 };
 
+enum RangeIdNamespaces { kPaths, kNumRangeIdNamespaces };
+
 // These numbers must not change
 static_assert(kBuffers == 0, "kBuffers should equal 0");
 static_assert(kFramebuffers == 1, "kFramebuffers should equal 1");
 static_assert(kProgramsAndShaders == 2, "kProgramsAndShaders should equal 2");
 static_assert(kRenderbuffers == 3, "kRenderbuffers should equal 3");
 static_assert(kTextures == 4, "kTextures should equal 4");
+static_assert(kPaths == 0, "kPaths should equal 0");
 
 }  // namespace id_namespaces
 

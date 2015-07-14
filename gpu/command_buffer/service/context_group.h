@@ -32,6 +32,7 @@ class GLES2Decoder;
 class FramebufferManager;
 class MailboxManager;
 class RenderbufferManager;
+class PathManager;
 class ProgramManager;
 class ShaderManager;
 class TextureManager;
@@ -152,6 +153,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   TextureManager* texture_manager() const {
     return texture_manager_.get();
   }
+
+  PathManager* path_manager() const { return path_manager_.get(); }
 
   ProgramManager* program_manager() const {
     return program_manager_.get();
@@ -290,6 +293,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_ptr<RenderbufferManager> renderbuffer_manager_;
 
   scoped_ptr<TextureManager> texture_manager_;
+
+  scoped_ptr<PathManager> path_manager_;
 
   scoped_ptr<ProgramManager> program_manager_;
 

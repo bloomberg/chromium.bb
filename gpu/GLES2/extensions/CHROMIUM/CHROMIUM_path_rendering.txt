@@ -26,10 +26,43 @@ New Tokens
     PATH_MODELVIEW_CHROMIUM                           0x1700
     PATH_PROJECTION_CHROMIUM                          0x1701
 
+    Accepted in elements of the <commands> array parameter of
+    PathCommandsCHROMIUM:
+    CLOSE_PATH_CHROMIUM                               0x00
+    MOVE_TO_CHROMIUM                                  0x02
+    LINE_TO_CHROMIUM                                  0x04
+    QUADRATIC_CURVE_TO_CHROMIUM                       0x0A
+    CUBIC_CURVE_TO_CHROMIUM                           0x0C
+    CONIC_CURVE_TO_CHROMIUM                           0x1A
+
     Accepted by the <pname> parameter of GetIntegerv,
     GetFloatv:
     PATH_MODELVIEW_MATRIX_CHROMIUM                    0x0BA6
     PATH_PROJECTION_MATRIX_CHROMIUM                   0x0BA7
+
+    Accepted by the <pname> parameter of PathParameter{if}CHROMIUM:
+    PATH_STROKE_WIDTH_CHROMIUM                        0x9075
+    PATH_END_CAPS_CHROMIUM                            0x9076
+    PATH_JOIN_STYLE_CHROMIUM                          0x9079
+    PATH_MITER_LIMIT_CHROMIUM                         0x907a
+    PATH_STROKE_BOUND_CHROMIUM                        0x9086
+
+    Accepted by the <value> parameter of PathParameter{if}CHROMIUM:
+    FLAT_CHROMIUM                                     0x1D00
+    SQUARE_CHROMIUM                                   0x90a3
+    ROUND_CHROMIUM                                    0x90a4
+    BEVEL_CHROMIUM                                    0x90A6
+    MITER_REVERT_CHROMIUM                             0x90A7
+
+    Accepted by the <fillMode> parameter of StencilFillPathCHROMIUM:
+    COUNT_UP_CHROMIUM                                 0x9088
+    COUNT_DOWN_CHROMIUM                               0x9089
+
+    Accepted by the <coverMode> parameter of CoverFillPathCHROMIUM,
+    CoverStrokePath, StencilThenCoverFillPathCHROMIUM and
+    StencilThenCoverStrokePathCHROMIUM:
+    CONVEX_HULL_CHROMIUM                              0x908B
+    BOUNDING_BOX_CHROMIUM                             0x908D
 
 
 New Procedures and Functions
@@ -47,6 +80,445 @@ New Procedures and Functions
 
     Effectively calls MatrixLoadf with the identity matrix.
 
+    uint GenPathsCHROMIUM(sizei range)
+
+    Returns an integer /n/ such that names /n/, ..., /n+range-1/ are
+    previously unused (i.e. there are /range/ previously unused path object
+    names starting at /n/).  These names are marked as used, for the
+    purposes of subsequent GenPathsCHROMIUM only, but they do not acquire
+    path object state until each particular name is used to specify
+    a path object.
+
+    Returns 0 if no new path name was marked as used. Reasons for this
+    include lack of free path names or range being 0 or a GL error
+    was generated.
+
+    INVALID_VALUE error is generated if range is negative.
+
+    INVALID_OPERATION error is generated if range does not fit in
+    32-bit uint.
+
+    void DeletePathsCHROMIUM(uint path, sizei range)
+
+    Deletes a path object where /path/ contains /range/ names of path objects to
+    be delete. After a path object is deleted, its name is again unused.
+    Unused names in /paths/ are silently ignored.
+
+    INVALID_VALUE error is generated if /range/ is negative.
+
+    INVALID_OPERATION error is generated if /range/ does not
+    fit in 32-bit uint.
+
+    INVALID_OPERATION error is generated if /path/ + /range/ does not fit
+    32-bit uint.
+
+    boolean IsPathCHROMIUM(uint path);
+
+    The query returns TRUE if /path/ is the name of a path object.  If path is
+    not the name of a path object, or if an error condition occurs,
+    IsPathCHROMIUM returns FALSE.  A name retuned by GenPathsCHROMIUM, but
+    without a path specified for it yet, is not the name of a path object.
+
+    void PathCommandsCHROMIUM(uint path, sizei numCommands,
+                        const ubyte* commands, sizei numCoords,
+                        enum coordType, const GLvoid* coords)
+
+    Specifies a path object commands for /path/ where /numCommands/
+    indicates the number of path commands, read from the array
+    /commands/, with which to initialize that path's command sequence.
+    The type of the coordinates read from the /coords/ array is
+    determined by the /coordType/ parameter which must be one of BYTE,
+    UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, or FLOAT, otherwise the
+    INVALID_ENUM error is generated.  These path commands reference
+    coordinates read sequentially from the /coords/ array.
+
+    The /numCommands/ elements of the /commands/ array must be tokens
+    in Table 5.pathCommands.  The command sequence matches
+    the element order of the /commands/ array.  Each command references
+    a number of coordinates specified by "Coordinate count" column of
+    Table 5.pathCommands, starting with the first (zero) element of
+    the /coords/ array and advancing by the coordinate count for each
+    command.  If any of these /numCommands/ command values are not
+    listed in the "Token" column of Table
+    5.pathCommands, the INVALID_ENUM error is generated.
+
+    The INVALID_OPERATION error is generated if /numCoords/ does not
+    equal the number of coordinates referenced by the command sequence
+    specified by /numCommands/ and /commands/ (so /numCoords/ provides a
+    sanity check that the /coords/ array is being interpreted properly).
+    The error INVALID_VALUE is generated if either /numCommands/ or
+    /numCoords/ is negative.
+
+    The error INVALID_OPERATION is generated if /path/ is
+    not an existing path object.
+
+    The error INVALID_OPERATION is generated if
+    /numCommands/ + (size of /coordType/ data type) * /numCoords/
+    does not fit in 32-bit uint.
+
+    If the PathCommandsCHROMIUM command results in an error, the path object
+    named /path/ is not changed; if there is no error, the prior contents
+    of /path/, if /path/ was an existent path object, are lost and the
+    path object name /path/ becomes used.
+
+    void PathParameterfCHROMIUM(uint path, enum pname, float value)
+    void PathParameteriCHROMIUM(uint path, enum pname, int value)
+
+    The commands specify the value of path parameters for the specified path
+    object named /path/.  The error INVALID_OPERATION is generated if /path/ is
+    not an existing path object.
+
+    Each parameter has a single (scalar) value.
+
+    /pname/ must be one of the tokens in the "Name" column of
+    Table 5.pathParameters.
+    The required values or range of each allowed parameter name token
+    is listed in Table 5.pathParameter's "Required Values/Range" column.
+
+    For values of /pname/ listed in Table 5.pathsParameters, the specified
+    parameter is specified by /value/ when /value/ is a float or int,
+    or if /value/ is a pointer to a float or int, accessed through that
+    pointer.  The error INVALID_VALUE is generated if the specified
+    value is negative for parameters required to be non-negative in
+    Table 5.pathParameters.
+
+    The error INVALID_VALUE is generated if the specified parameter value
+    is not within the require range for parameters typed float or integer.
+    The error INVALID_ENUM is generated if the specified parameter value
+    is not one of the listed tokens for parameters typed enum.
+
+    void PathStencilFuncCHROMIUM(enum func, int ref, uint mask)
+
+    Configures the stencil function, stencil reference value, and stencil read
+    mask to be used by the StencilFillPathCHROMIUM and StencilStrokePathCHROMIUM
+    commands described subsequently. The parameters accept the same values
+    allowed by the StencilFunc command.
+
+    void StencilFillPathCHROMIUM(uint path, enum fillMode, uint mask)
+
+    The function transforms into window space the outline of the path object
+    named /path/ based on the current modelview, projection and viewport,
+    transforms (ignoring any vertex and/or geometry shader or program that might
+    be active/enabled) and then updates the stencil values of all /accessible
+    samples/ (explained below) in the framebuffer.  Each sample's stencil buffer
+    value is updated based on the winding number of that sample with respect to
+    the transformed outline of the path object with any non-closed subpath
+    forced closed and the specified /fillMode/.
+
+    If /path/ does not name an existing path object, the command does
+    nothing (and no error is generated).
+
+    If the path's command sequence specifies unclosed subpaths (so not
+    contours) due to MOVE_TO_CHROMIUM commands, such subpaths are trivially
+    closed by connecting with a line segment the initial and terminal
+    control points of each such path command subsequence.
+
+    Transformation of a path's outline works by taking all positions on the
+    path's outline in 2D path space (x,y) and constructing an object space
+    position (x,y,0,1) that is then used similar to as with the (xo,yo,zo,wo)
+    position in section 2.12 ("Fixed-Function Vertex Transformation") of OpenGL
+    3.2 (unabridged) Specification (Special Functions) to compute corresponding
+    eye-space coordinates (xe,ye,ze,we) and clip-space coordinates
+    (xc,yc,zc,wc).  A path outline's clip-space coordinates are further
+    transformed into window space similar to as described in section 2.16
+    ("Coordinate Transformations").  This process provides a mapping 2D path
+    coordinates to 2D window coordinates.  The resulting 2D window coordinates
+    are undefined if any of the transformations involved are singular or may be
+    inaccurate if any of the transformations (or their combination) are
+    ill-conditioned.
+
+    The winding number for a sample with respect to the path outline,
+    transformed into window space, is computed by counting the (signed)
+    number of revolutions around the sample point when traversing each
+    (trivially closed if necessary) contour once in the transformed path.
+    This traversal is performed in the order of the path's command
+    sequence.  Starting from an initially zero winding count, each
+    counterclockwise revolution when the front face mode is CCW (or
+    clockwise revolution when the front face mode is CW) around the sample
+    point increments the winding count by one; while each clockwise
+    revolution when the front face mode is CCW (or counterclockwise
+    revolution when the front face mode is CW) around the sample point
+    decrements the winding count by one.
+
+    The /mask/ parameter controls what subset of stencil bits are affected
+    by the command.
+
+    The /fillMode/ parameter must be one of INVERT, COUNT_UP_CHROMIUM
+    or COUNT_DOWN_CHROMIUM; otherwise the INVALID_ENUM error
+    is generated.  INVERT inverts the bits set in the effective /mask/
+    value for each sample's stencil value if the winding number for the
+    given sample is odd.  COUNT_UP_CHROMIUM adds with modulo n arithmetic the
+    winding number of each sample with the sample's prior stencil buffer
+    value; the result of this addition is written into the sample's
+    stencil value but the bits of the stencil value not set in the
+    effective /mask/ value are left unchanged.  COUNT_DOWN_CHROMIUM subtracts
+    with modulo /n/ arithmetic the winding number of each sample with the
+    sample's prior stencil buffer value; the result of this subtraction is
+    written into the sample's stencil value but the bits of the stencil
+    value not set in the effective /mask/ value are left unchanged.
+
+    The value of /n/ for the modulo /n/ arithmetic used by COUNT_UP_CHROMIUM
+    and COUNT_DOWN_CHROMIUM is the effective /mask/+1.  The error INVALID_VALUE
+    is generated if /fillMode/ is COUNT_UP_CHROMIUM or COUNT_DOWN_CHROMIUM and
+    the effective /mask/+1 is not an integer power of two.
+
+    ACCESSIBLE SAMPLES WITH RESPECT TO A TRANSFORMED PATH
+
+    The accessible samples of a transformed path that are updated are
+    the samples that remain after discarding the following samples:
+
+        *   Any sample that would be clipped similar to as specified in section
+            2.22 ("Primitive Clipping") of OpenGL 3.2 (unabridged) Specification
+            (Special Functions) because its corresponding position in clip space
+            (xc,yc,zc,wc) or (xe,ye,ze,we) would be clipped by the clip volume
+            or enabled client-defined clip planes.
+
+        *   Any sample that would fail the pixel ownership test (section
+            4.1.1) if rasterized.
+
+        *   Any sample that would fail the scissor test (section 4.1.2)
+            if SCISSOR_TEST is enabled.
+
+    And for the StencilFillPathCHROMIUM and StencilStrokePathCHROMIUM commands
+    (so not applicable to the CoverFillPathCHROMIUM and CoverStrokePathCHROMIUM
+    commands):
+        *   Any sample that would fail the (implicitly enabled) stencil test
+            with the stencil function configured based on the path stencil
+            function state configured by PathStencilFuncCHROMIUM.  In the case
+            of the StencilFillPathCHROMIUM and StencilStrokePathCHROMIUM
+            commands, the effective stencil read
+            mask for the stencil mask is treated as the value of
+            PATH_STENCIL_VALUE_MASK bit-wise ANDed with the bit-invert of the
+            effective /mask/ parameter value; otherwise, for the cover commands,
+            the stencil test operates normally.  In the case the stencil test
+            fails during a path stencil operation, the stencil fail operation is
+            ignored and the pixel's stencil value is left undisturbed (as if the
+            stencil operation was KEEP).
+
+        *   The state of the face culling (CULL_FACE) enable is ignored.
+
+    void StencilStrokePathCHROMIUM(uint path, int reference, uint mask)
+
+    Transforms into window space the stroked region of the path object named
+    /path/ based on the current modelview, projection and viewport transforms
+    (ignoring any vertex and/or geometry shader or program that might be
+    active/enabled) and then updates the stencil values of a subset of the
+    accessible samples (see above) in the framebuffer.
+
+    If /path/ does not name an existing path object, the command does
+    nothing (and no error is generated).
+
+    The path object's specified stroke width (in path space) determines
+    the width of the path's stroked region.
+
+    The stroke of a transformed path's outline
+    is the region of window space defined by the union of:
+
+        *   Sweeping an orthogonal centered line segment of the (above
+            determined) effective stroke width along each path segment
+            in the path's transformed outline.
+
+        *   End cap regions (explained below) appended to the initial
+            and terminal control points of non-closed command sequences
+            in the path.  For a sequence of commands that form a closed
+            contour, the end cap regions are ignored.
+
+        *   Join style regions (explained below) between connected path
+            segments meet.
+
+    Any accessible samples within the union of these three regions are
+    considered within the path object's stroke.
+
+    If the stroke width is zero, each of the regions in the union will
+    be empty and there are no accessible samples within the stroke.
+
+    The /mask/ parameter controls what subset of stencil bits are affected
+    by the command.
+
+    A sample's stencil bits that are set in the effective /mask/ value
+    are updated with the specified stencil /reference/ value if the
+    sample is accessible (as specified above) and within the stroke of
+    the transformed path's outline.
+
+    Every path object has an end caps parameter
+    PATH_END_CAPS_CHROMIUM) that is one of FLAT_CHROMIUM,
+    SQUARE_CHROMIUM or ROUND_CHROMIUM. This parameter defines the
+    initial and terminal caps type. There are no samples within a
+    FLAT_CHROMIUM cap.  The SQUARE_CHROMIUM cap extends centered and
+    tangent to the given end (initial or terminal) of the subpath for
+    half the effective stroke width; in other words, a square cap is a
+    half-square that kisses watertightly the end of a subpath.  The
+    ROUND_CHROMIUM cap appends a semi-circle, centered and tangent,
+    with the diameter of the effective stroke width to the given end
+    (initial or terminal) of the subpath; in other words, a round cap
+    is a semi-circle that kisses watertightly the end of a subpath.
+
+    Every path object has a join style that is one of BEVEL_CHROMIUM,
+    ROUND_CHROMIUM or MITER_REVERT_CHROMIUM.  Each path object also has a miter
+    limit value.  The BEVEL_CHROMIUM join style inserts a triangle with two
+    vertices at the outside corners where two connected path segments join and a
+    third vertex at the common end point shared by the two path segments.  The
+    ROUND_CHROMIUM join style inserts a wedge-shaped portion of a circle
+    centered at the common end point shared by the two path segments; the radius
+    of the circle is half the effective stroke width. The MITER_REVERT_CHROMIUM
+    join style inserts a quadrilateral with two opposite vertices at the outside
+    corners where the two connected path segments join and two opposite vertices
+    with one on the path's junction between the two joining path segments and
+    the other at the common end point shared by the two path segments.  However,
+    the MITER_REVERT_CHROMIUM join style behaves as the BEVEL_CHROMIUM style if
+    the sine of half the angle between the two joined segments is less than the
+    path object's PATH_STROKE_WIDTH value divided by the path's
+    PATH_MITER_LIMIT_CHROMIUM value.
+
+    Every path object has a stroke approximation bound parameter
+    (PATH_STROKE_BOUND_CHROMIUM) that is a floating-point value /sab/ clamped
+    between 0.0 and 1.0 and set and queried with the PATH_STROKE_BOUND_CHROMIUM
+    path parameter.  Exact determination of samples swept an orthogonal
+    centered line segment along cubic Bezier segments and rational
+    quadratic Bezier curves (so non-circular partial elliptical arcs) is
+    intractable for real-time rendering so an approximation is required;
+    /sab/ intuitively bounds the approximation error as a percentage of
+    the path object's stroke width.  Specifically, this path parameter
+    requests the implementation to stencil any samples within /sweep/
+    object space units of the exact sweep of the path's cubic Bezier
+    segments or partial elliptical arcs to be sampled by the stroke where
+
+      sweep = ((1-sab)*sw)/2
+
+    where /sw/ is the path object's stroke width.  The initial value
+    of /sab/ when a path is created is 0.2.  In practical terms, this
+    initial value means the stencil sample positions coverage within 80%
+    (100%-20%) of the stroke width of cubic and rational quadratic stroke
+    segments should be sampled.
+
+
+    void CoverFillPathCHROMIUM(uint path, enum coverMode)
+
+    The command transforms into window space the outline of the path object
+    named /path/ based on the current modelview, projection and viewport
+    transforms (ignoring any vertex and/or geometry shader or program that might
+    be active/enabled) and rasterizes a subset of the accessible samples in the
+    framebuffer guaranteed to include all samples that would have a net
+    stencil value change if StencilFillPathCHROMIUM were issued with the same
+    modelview, projection, and viewport state.  During this rasterization, the
+    stencil test operates normally and as configured; the expectation is the
+    stencil test will be used to discard samples not determined "covered" by a
+    prior StencilFillPathCHROMIUM command.
+
+    If /path/ does not name an existing path object, the command does
+    nothing (and no error is generated).
+
+    /coverMode/ must be one of CONVEX_HULL_CHROMIUM or BOUNDING_BOX_CHROMIUM.
+    Otherwise, INVALID_ENUM error is generated.
+
+    The subset of accessible pixels that are rasterized are within a bounding
+    box (expected to be reasonably tight) surrounding all the samples guaranteed
+    to be rasterized by CoverFillPathCHROMIUM.  The bounding box must be
+    orthogonally aligned to the path space coordinate system.  (The area of the
+    bounding box in path space is guaranteed to be greater than or equal the
+    area of the convex hull in path space.) Each rasterized sample will be
+    rasterized once and exactly once.
+
+    While samples with a net stencil change /must/ be rasterized,
+    implementations are explicitly allowed to vary in the rasterization
+    of samples for which StencilFillPathCHROMIUM would /not/ change sample's
+    net stencil value.  This means implementations are allowed to (and,
+    in fact, are expected to) conservatively "exceed" the region strictly
+    stenciled by the path object.
+
+    CoverFillPathCHROMIUM /requires/ the following rasterization invariance:
+    calling CoverFillPathCHROMIUM for the same (unchanged) path object with
+    fixed (unchanged) modelview, projection, and viewport transform state
+    with the same (unchanged) set of accessible samples will rasterize
+    the exact same set of samples with identical interpolated values
+    for respective fragment/sample locations.
+
+    void CoverStrokePathCHROMIUM(uint path, enum coverMode)
+
+    The command operates in the same manner as CoverFillPathCHROMIUM except the
+    region guaranteed to be rasterized is, rather than the region within
+    /path/'s filled outline, instead the region within the /path/'s stroked
+    region as determined by StencilStrokePathCHROMIUM.  During this
+    rasterization, the stencil test operates normally and as configured; the
+    expectation is the stencil test will be used to discard samples not
+    determined "covered" by a prior StencilStrokePathCHROMIUM command.
+
+    If /path/ does not name an existing path object, the command does
+    nothing (and no error is generated).
+
+    /coverMode/ must be one of CONVEX_HULL_CHROMIUM or BOUNDING_BOX_CHROMIUM.
+    Otherwise, INVALID_ENUM error is generated.
+
+    Analogous to the rasterization guarantee of CoverFillPathCHROMIUM with
+    respect to StencilFillPathCHROMIUM, CoverStrokePathCHROMIUM guarantees that
+    all samples rasterized by StencilStrokePathCHROMIUM, given the same
+    transforms and accessible pixels and stroke width, will also be rasterized
+    by the corresponding CoverStrokePathCHROMIUM.
+
+    CoverStrokePathCHROMIUM /requires/ the following rasterization invariance:
+    calling CoverStrokePathCHROMIUM for the same (unchanged) path object with
+    fixed (unchanged) modelview, projection, and viewport transform state and
+    with the same (unchanged) set of accessible samples will rasterize the exact
+    same set of samples with identical interpolated values for respective
+    fragment/sample locations.
+
+    void StencilThenCoverFillPathCHROMIUM(uint path, enum fillMode, uint mask, enum coverMode)
+
+    The command is equivalent to the two commands
+
+        StencilFillPathCHROMIUM(path, fillMode, mask);
+        CoverFillPathCHROMIUM(path, coverMode);
+
+    unless either command would generate an error; for any such error
+    other than OUT_OF_MEMORY, only that error is generated.
+
+    void StencilThenCoverStrokePathCHROMIUM(uint path, int reference, uint mask, enum coverMode)
+
+    The command is equivalent to the two commands
+
+        StencilStrokePathCHROMIUM(path, reference, mask);
+        CoverStrokePathCHROMIUM(path, coverMode);
+
+    unless either command would generate an error; for any such error
+    other than OUT_OF_MEMORY, only that error is generated.
+
+
+    PATH COVERING RASTERIZATION DETAILS
+
+    The GL processes fragments rasterized by path cover commands in
+    much the same manner as fragments generated by conventional polygon
+    rasterization.  However path rendering /ignores/ the following
+    operations:
+
+        *  Interpolation of per-vertex data (section 3.6.1).  Path
+           primitives have neither conventional vertices nor per-vertex
+           data.  Instead fragments generate interpolated per-fragment
+           colors, texture coordinate sets, as a
+           linear function of object-space or eye-space path coordinate's
+           or using the current color or texture coordinate set state
+           directly.
+
+    Depth offset (section 3.6.2) and polygon multisample rasterization
+    (3.6.3) do apply to path covering.
+
+    Front and back face determination (explained in section 3.6.1 for
+    polygons) operates somewhat differently for transformed paths than
+    polygons.  The path's convex hull or bounding box
+    (depending on the /coverMode/) is specified to wind counterclockwise
+    in object space, though the transformation of the convex hull into
+    window space could reverse this winding.  Whether the GL's front face
+    state is CW or CCW (as set by the FrontFace command) determines
+    if the path is front facing or not.  Because the specific vertices
+    that belong to the covering geometry are implementation-dependent,
+    when the signed area of the covering geometry (computed with equation
+    3.6) is sufficiently near zero, the facingness of the path in such
+    situations is ill-defined.
+
+    The determination of whether a path transformed into window space is
+    front facing or not affects face culling if enabled (section 3.6.1),
+    the gl_FrontFacing built-in variable (section 3.9.2), and separate
+    (two-sided) stencil testing (section 4.1.4).
+
 Errors
 
     None.
@@ -59,6 +531,102 @@ New State
                                                                  matrix for path rendering
     PATH_PROJECTION_MATRIX_CHROMIUM 16xR   GetFloatv    all 0's  Current projection
                                                                  matrix for path rendering
+    PATH_STENCIL_FUNC_CHROMIUM      Z8     GetIntegerv  ALWAYS   path stenciling function
+    PATH_STENCIL_REF_CHROMIUM       Z+     GetIntegerv  0        path stenciling
+                                                                 reference value
+    PATH_STENCIL_VALUE_MASK_CHROMIUM                             path stencil read
+                                    Z+     GetIntegerv  1's      mask
+
+Tables
+    Table 5.pathCommands: Path Commands
+
+                                                       Coordinate
+    Token                       Description            count
+    ==========================  =====================  ==========
+    MOVE_TO_CHROMIUM            Absolute move          2
+                                current point
+    --------------------------  ---------------------  ----------
+    CLOSE_PATH_CHROMIUM         Close path             0
+    --------------------------  ---------------------  ----------
+    LINE_TO_CHROMIUM            Absolute line          2
+    --------------------------  ---------------------  ----------
+    QUADRATIC_CURVE_TO_CHROMIUM Absolute quadratic     4
+    --------------------------  ---------------------  ----------
+    CUBIC_CURVE_TO_CHROMIUM     Absolute cubic         6
+                                Bezier segment
+    --------------------------  ---------------------  ----------
+    CONIC_CURVE_TO_CHROMIUM     Absolute conic         5
+                                (rational Bezier)
+                                segment
+
+
+    Table 5.pathParameters
+    Name                             Type     Required Values or Range
+    -------------------------------  -------  -----------------------------------------------
+    PATH_STROKE_WIDTH_CHROMIUM       float    non-negative
+    PATH_END_CAPS_CHROMIUM           enum     FLAT, SQUARE_CHROMIUM, ROUND_CHROMIUM
+    PATH_JOIN_STYLE_CHROMIUM         enum     MITER_REVERT_CHROMIUM, BEVEL_CHROMIUM, ROUND_CHROMIUM
+    PATH_MITER_LIMIT_CHROMIUM        float    non-negative
+    PATH_STROKE_BOUND_CHROMIUM       float    will be clamped to [0, 1.0], initially 0.2 (20%)
+
+
+Issues
+
+   1.   Should there be a distinct stencil function state for path
+        stenciling?
+
+        RESOLVED:  YES.  glPathStencilFunc sets the state.  How the
+        stencil state needs to be configured for path covering is
+        different than how the stencil function is configured typically
+        for path stenciling.
+
+        For example, stencil covering might use
+        StencilFunc(NOT_EQUAL,0,~0) while path stenciling would
+        use ALWAYS for the path stenciling stencil test.
+
+        However there are other situations such as path clipping where it
+        is useful to have the path stencil function configured differently
+        such as PathStencilFunc(NOT_EQUAL, 0x00, 0x80) or other
+        similar path clipping test.
+
+   2.   Since Cover*Path* skips the vertex shader, what does it mean exactly
+        wrt a fully linked program? What happens to the fragment shader's input
+        varyings that are not filled by the vertex shader + rasterizer?
+
+        It is possible that input varyings from a shader may not be written
+        as output varyings of a preceding shader.  In this case, the unwritten
+        input varying values are set to constant zeros.
+
+   3.   What is the defined behavior when stroking if PATH_STROKE_WIDTH is
+        zero?
+
+        There will not be any samples within the stroke. I.e. the stroke does
+        not produce any visible results.
+
+   4.   How do you define a program that's valid to use with these calls.
+
+        There is no change with respect to validity of the programs. All
+        programs that are valid before this extension are valid after.
+        All programs that are invalid before this extension is invalid
+        after.
+
+   5.   Can same programs be used to render regular GL primitives as well
+        as in covering paths?
+
+        Yes.
+
+   6.  How is the fragment shader called when covering paths, and with
+       which values for the inputs?
+
+        gl_FragCoord: Interpolated coordinate of the path coverage.
+
+        gl_FrontFacing:
+         * Paths wind by default counterclockwise
+         * Window space transform can reverse this winding
+         * GL front face state CW/CCW selects whether the variable is true
+           or false
+
+        user-defined varyings: constant zeros.
 
 Revision History
 

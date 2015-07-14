@@ -198,6 +198,10 @@ typedef void(GL_BINDING_CALL* glCopyTexSubImage3DProc)(GLenum target,
                                                        GLint y,
                                                        GLsizei width,
                                                        GLsizei height);
+typedef void(GL_BINDING_CALL* glCoverFillPathNVProc)(GLuint path,
+                                                     GLenum coverMode);
+typedef void(GL_BINDING_CALL* glCoverStrokePathNVProc)(GLuint name,
+                                                       GLenum coverMode);
 typedef GLuint(GL_BINDING_CALL* glCreateProgramProc)(void);
 typedef GLuint(GL_BINDING_CALL* glCreateShaderProc)(GLenum type);
 typedef void(GL_BINDING_CALL* glCullFaceProc)(GLenum mode);
@@ -210,6 +214,7 @@ typedef void(GL_BINDING_CALL* glDeleteFencesNVProc)(GLsizei n,
 typedef void(GL_BINDING_CALL* glDeleteFramebuffersEXTProc)(
     GLsizei n,
     const GLuint* framebuffers);
+typedef void(GL_BINDING_CALL* glDeletePathsNVProc)(GLuint path, GLsizei range);
 typedef void(GL_BINDING_CALL* glDeleteProgramProc)(GLuint program);
 typedef void(GL_BINDING_CALL* glDeleteQueriesProc)(GLsizei n,
                                                    const GLuint* ids);
@@ -322,6 +327,7 @@ typedef void(GL_BINDING_CALL* glGenFencesAPPLEProc)(GLsizei n, GLuint* fences);
 typedef void(GL_BINDING_CALL* glGenFencesNVProc)(GLsizei n, GLuint* fences);
 typedef void(GL_BINDING_CALL* glGenFramebuffersEXTProc)(GLsizei n,
                                                         GLuint* framebuffers);
+typedef GLuint(GL_BINDING_CALL* glGenPathsNVProc)(GLsizei range);
 typedef void(GL_BINDING_CALL* glGenQueriesProc)(GLsizei n, GLuint* ids);
 typedef void(GL_BINDING_CALL* glGenRenderbuffersEXTProc)(GLsizei n,
                                                          GLuint* renderbuffers);
@@ -540,6 +546,7 @@ typedef GLboolean(GL_BINDING_CALL* glIsEnabledProc)(GLenum cap);
 typedef GLboolean(GL_BINDING_CALL* glIsFenceAPPLEProc)(GLuint fence);
 typedef GLboolean(GL_BINDING_CALL* glIsFenceNVProc)(GLuint fence);
 typedef GLboolean(GL_BINDING_CALL* glIsFramebufferEXTProc)(GLuint framebuffer);
+typedef GLboolean(GL_BINDING_CALL* glIsPathNVProc)(GLuint path);
 typedef GLboolean(GL_BINDING_CALL* glIsProgramProc)(GLuint program);
 typedef GLboolean(GL_BINDING_CALL* glIsQueryProc)(GLuint query);
 typedef GLboolean(GL_BINDING_CALL* glIsRenderbufferEXTProc)(
@@ -560,6 +567,21 @@ typedef void*(GL_BINDING_CALL* glMapBufferRangeProc)(GLenum target,
 typedef void(GL_BINDING_CALL* glMatrixLoadfEXTProc)(GLenum matrixMode,
                                                     const GLfloat* m);
 typedef void(GL_BINDING_CALL* glMatrixLoadIdentityEXTProc)(GLenum matrixMode);
+typedef void(GL_BINDING_CALL* glPathCommandsNVProc)(GLuint path,
+                                                    GLsizei numCommands,
+                                                    const GLubyte* commands,
+                                                    GLsizei numCoords,
+                                                    GLenum coordType,
+                                                    const GLvoid* coords);
+typedef void(GL_BINDING_CALL* glPathParameterfNVProc)(GLuint path,
+                                                      GLenum pname,
+                                                      GLfloat value);
+typedef void(GL_BINDING_CALL* glPathParameteriNVProc)(GLuint path,
+                                                      GLenum pname,
+                                                      GLint value);
+typedef void(GL_BINDING_CALL* glPathStencilFuncNVProc)(GLenum func,
+                                                       GLint ref,
+                                                       GLuint mask);
 typedef void(GL_BINDING_CALL* glPauseTransformFeedbackProc)(void);
 typedef void(GL_BINDING_CALL* glPixelStoreiProc)(GLenum pname, GLint param);
 typedef void(GL_BINDING_CALL* glPointParameteriProc)(GLenum pname, GLint param);
@@ -644,6 +666,9 @@ typedef void(GL_BINDING_CALL* glShaderSourceProc)(GLuint shader,
                                                   GLsizei count,
                                                   const char* const* str,
                                                   const GLint* length);
+typedef void(GL_BINDING_CALL* glStencilFillPathNVProc)(GLuint path,
+                                                       GLenum fillMode,
+                                                       GLuint mask);
 typedef void(GL_BINDING_CALL* glStencilFuncProc)(GLenum func,
                                                  GLint ref,
                                                  GLuint mask);
@@ -661,6 +686,19 @@ typedef void(GL_BINDING_CALL* glStencilOpSeparateProc)(GLenum face,
                                                        GLenum fail,
                                                        GLenum zfail,
                                                        GLenum zpass);
+typedef void(GL_BINDING_CALL* glStencilStrokePathNVProc)(GLuint path,
+                                                         GLint reference,
+                                                         GLuint mask);
+typedef void(GL_BINDING_CALL* glStencilThenCoverFillPathNVProc)(
+    GLuint path,
+    GLenum fillMode,
+    GLuint mask,
+    GLenum coverMode);
+typedef void(GL_BINDING_CALL* glStencilThenCoverStrokePathNVProc)(
+    GLuint path,
+    GLint reference,
+    GLuint mask,
+    GLenum coverMode);
 typedef GLboolean(GL_BINDING_CALL* glTestFenceAPPLEProc)(GLuint fence);
 typedef GLboolean(GL_BINDING_CALL* glTestFenceNVProc)(GLuint fence);
 typedef void(GL_BINDING_CALL* glTexImage2DProc)(GLenum target,
@@ -999,6 +1037,8 @@ struct ProcsGL {
   glCopyTexImage2DProc glCopyTexImage2DFn;
   glCopyTexSubImage2DProc glCopyTexSubImage2DFn;
   glCopyTexSubImage3DProc glCopyTexSubImage3DFn;
+  glCoverFillPathNVProc glCoverFillPathNVFn;
+  glCoverStrokePathNVProc glCoverStrokePathNVFn;
   glCreateProgramProc glCreateProgramFn;
   glCreateShaderProc glCreateShaderFn;
   glCullFaceProc glCullFaceFn;
@@ -1006,6 +1046,7 @@ struct ProcsGL {
   glDeleteFencesAPPLEProc glDeleteFencesAPPLEFn;
   glDeleteFencesNVProc glDeleteFencesNVFn;
   glDeleteFramebuffersEXTProc glDeleteFramebuffersEXTFn;
+  glDeletePathsNVProc glDeletePathsNVFn;
   glDeleteProgramProc glDeleteProgramFn;
   glDeleteQueriesProc glDeleteQueriesFn;
   glDeleteRenderbuffersEXTProc glDeleteRenderbuffersEXTFn;
@@ -1056,6 +1097,7 @@ struct ProcsGL {
   glGenFencesAPPLEProc glGenFencesAPPLEFn;
   glGenFencesNVProc glGenFencesNVFn;
   glGenFramebuffersEXTProc glGenFramebuffersEXTFn;
+  glGenPathsNVProc glGenPathsNVFn;
   glGenQueriesProc glGenQueriesFn;
   glGenRenderbuffersEXTProc glGenRenderbuffersEXTFn;
   glGenSamplersProc glGenSamplersFn;
@@ -1126,6 +1168,7 @@ struct ProcsGL {
   glIsFenceAPPLEProc glIsFenceAPPLEFn;
   glIsFenceNVProc glIsFenceNVFn;
   glIsFramebufferEXTProc glIsFramebufferEXTFn;
+  glIsPathNVProc glIsPathNVFn;
   glIsProgramProc glIsProgramFn;
   glIsQueryProc glIsQueryFn;
   glIsRenderbufferEXTProc glIsRenderbufferEXTFn;
@@ -1141,6 +1184,10 @@ struct ProcsGL {
   glMapBufferRangeProc glMapBufferRangeFn;
   glMatrixLoadfEXTProc glMatrixLoadfEXTFn;
   glMatrixLoadIdentityEXTProc glMatrixLoadIdentityEXTFn;
+  glPathCommandsNVProc glPathCommandsNVFn;
+  glPathParameterfNVProc glPathParameterfNVFn;
+  glPathParameteriNVProc glPathParameteriNVFn;
+  glPathStencilFuncNVProc glPathStencilFuncNVFn;
   glPauseTransformFeedbackProc glPauseTransformFeedbackFn;
   glPixelStoreiProc glPixelStoreiFn;
   glPointParameteriProc glPointParameteriFn;
@@ -1170,12 +1217,16 @@ struct ProcsGL {
   glSetFenceNVProc glSetFenceNVFn;
   glShaderBinaryProc glShaderBinaryFn;
   glShaderSourceProc glShaderSourceFn;
+  glStencilFillPathNVProc glStencilFillPathNVFn;
   glStencilFuncProc glStencilFuncFn;
   glStencilFuncSeparateProc glStencilFuncSeparateFn;
   glStencilMaskProc glStencilMaskFn;
   glStencilMaskSeparateProc glStencilMaskSeparateFn;
   glStencilOpProc glStencilOpFn;
   glStencilOpSeparateProc glStencilOpSeparateFn;
+  glStencilStrokePathNVProc glStencilStrokePathNVFn;
+  glStencilThenCoverFillPathNVProc glStencilThenCoverFillPathNVFn;
+  glStencilThenCoverStrokePathNVProc glStencilThenCoverStrokePathNVFn;
   glTestFenceAPPLEProc glTestFenceAPPLEFn;
   glTestFenceNVProc glTestFenceNVFn;
   glTexImage2DProc glTexImage2DFn;
@@ -1426,6 +1477,8 @@ class GL_EXPORT GLApi {
                                      GLint y,
                                      GLsizei width,
                                      GLsizei height) = 0;
+  virtual void glCoverFillPathNVFn(GLuint path, GLenum coverMode) = 0;
+  virtual void glCoverStrokePathNVFn(GLuint name, GLenum coverMode) = 0;
   virtual GLuint glCreateProgramFn(void) = 0;
   virtual GLuint glCreateShaderFn(GLenum type) = 0;
   virtual void glCullFaceFn(GLenum mode) = 0;
@@ -1434,6 +1487,7 @@ class GL_EXPORT GLApi {
   virtual void glDeleteFencesNVFn(GLsizei n, const GLuint* fences) = 0;
   virtual void glDeleteFramebuffersEXTFn(GLsizei n,
                                          const GLuint* framebuffers) = 0;
+  virtual void glDeletePathsNVFn(GLuint path, GLsizei range) = 0;
   virtual void glDeleteProgramFn(GLuint program) = 0;
   virtual void glDeleteQueriesFn(GLsizei n, const GLuint* ids) = 0;
   virtual void glDeleteRenderbuffersEXTFn(GLsizei n,
@@ -1525,6 +1579,7 @@ class GL_EXPORT GLApi {
   virtual void glGenFencesAPPLEFn(GLsizei n, GLuint* fences) = 0;
   virtual void glGenFencesNVFn(GLsizei n, GLuint* fences) = 0;
   virtual void glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) = 0;
+  virtual GLuint glGenPathsNVFn(GLsizei range) = 0;
   virtual void glGenQueriesFn(GLsizei n, GLuint* ids) = 0;
   virtual void glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) = 0;
   virtual void glGenSamplersFn(GLsizei n, GLuint* samplers) = 0;
@@ -1710,6 +1765,7 @@ class GL_EXPORT GLApi {
   virtual GLboolean glIsFenceAPPLEFn(GLuint fence) = 0;
   virtual GLboolean glIsFenceNVFn(GLuint fence) = 0;
   virtual GLboolean glIsFramebufferEXTFn(GLuint framebuffer) = 0;
+  virtual GLboolean glIsPathNVFn(GLuint path) = 0;
   virtual GLboolean glIsProgramFn(GLuint program) = 0;
   virtual GLboolean glIsQueryFn(GLuint query) = 0;
   virtual GLboolean glIsRenderbufferEXTFn(GLuint renderbuffer) = 0;
@@ -1728,6 +1784,17 @@ class GL_EXPORT GLApi {
                                    GLbitfield access) = 0;
   virtual void glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) = 0;
   virtual void glMatrixLoadIdentityEXTFn(GLenum matrixMode) = 0;
+  virtual void glPathCommandsNVFn(GLuint path,
+                                  GLsizei numCommands,
+                                  const GLubyte* commands,
+                                  GLsizei numCoords,
+                                  GLenum coordType,
+                                  const GLvoid* coords) = 0;
+  virtual void glPathParameterfNVFn(GLuint path,
+                                    GLenum pname,
+                                    GLfloat value) = 0;
+  virtual void glPathParameteriNVFn(GLuint path, GLenum pname, GLint value) = 0;
+  virtual void glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) = 0;
   virtual void glPauseTransformFeedbackFn(void) = 0;
   virtual void glPixelStoreiFn(GLenum pname, GLint param) = 0;
   virtual void glPointParameteriFn(GLenum pname, GLint param) = 0;
@@ -1801,6 +1868,9 @@ class GL_EXPORT GLApi {
                                 GLsizei count,
                                 const char* const* str,
                                 const GLint* length) = 0;
+  virtual void glStencilFillPathNVFn(GLuint path,
+                                     GLenum fillMode,
+                                     GLuint mask) = 0;
   virtual void glStencilFuncFn(GLenum func, GLint ref, GLuint mask) = 0;
   virtual void glStencilFuncSeparateFn(GLenum face,
                                        GLenum func,
@@ -1813,6 +1883,17 @@ class GL_EXPORT GLApi {
                                      GLenum fail,
                                      GLenum zfail,
                                      GLenum zpass) = 0;
+  virtual void glStencilStrokePathNVFn(GLuint path,
+                                       GLint reference,
+                                       GLuint mask) = 0;
+  virtual void glStencilThenCoverFillPathNVFn(GLuint path,
+                                              GLenum fillMode,
+                                              GLuint mask,
+                                              GLenum coverMode) = 0;
+  virtual void glStencilThenCoverStrokePathNVFn(GLuint path,
+                                                GLint reference,
+                                                GLuint mask,
+                                                GLenum coverMode) = 0;
   virtual GLboolean glTestFenceAPPLEFn(GLuint fence) = 0;
   virtual GLboolean glTestFenceNVFn(GLuint fence) = 0;
   virtual void glTexImage2DFn(GLenum target,
@@ -2097,6 +2178,8 @@ class GL_EXPORT GLApi {
 #define glCopyTexImage2D ::gfx::g_current_gl_context->glCopyTexImage2DFn
 #define glCopyTexSubImage2D ::gfx::g_current_gl_context->glCopyTexSubImage2DFn
 #define glCopyTexSubImage3D ::gfx::g_current_gl_context->glCopyTexSubImage3DFn
+#define glCoverFillPathNV ::gfx::g_current_gl_context->glCoverFillPathNVFn
+#define glCoverStrokePathNV ::gfx::g_current_gl_context->glCoverStrokePathNVFn
 #define glCreateProgram ::gfx::g_current_gl_context->glCreateProgramFn
 #define glCreateShader ::gfx::g_current_gl_context->glCreateShaderFn
 #define glCullFace ::gfx::g_current_gl_context->glCullFaceFn
@@ -2105,6 +2188,7 @@ class GL_EXPORT GLApi {
 #define glDeleteFencesNV ::gfx::g_current_gl_context->glDeleteFencesNVFn
 #define glDeleteFramebuffersEXT \
   ::gfx::g_current_gl_context->glDeleteFramebuffersEXTFn
+#define glDeletePathsNV ::gfx::g_current_gl_context->glDeletePathsNVFn
 #define glDeleteProgram ::gfx::g_current_gl_context->glDeleteProgramFn
 #define glDeleteQueries ::gfx::g_current_gl_context->glDeleteQueriesFn
 #define glDeleteRenderbuffersEXT \
@@ -2169,6 +2253,7 @@ class GL_EXPORT GLApi {
 #define glGenFencesAPPLE ::gfx::g_current_gl_context->glGenFencesAPPLEFn
 #define glGenFencesNV ::gfx::g_current_gl_context->glGenFencesNVFn
 #define glGenFramebuffersEXT ::gfx::g_current_gl_context->glGenFramebuffersEXTFn
+#define glGenPathsNV ::gfx::g_current_gl_context->glGenPathsNVFn
 #define glGenQueries ::gfx::g_current_gl_context->glGenQueriesFn
 #define glGenRenderbuffersEXT \
   ::gfx::g_current_gl_context->glGenRenderbuffersEXTFn
@@ -2263,6 +2348,7 @@ class GL_EXPORT GLApi {
 #define glIsFenceAPPLE ::gfx::g_current_gl_context->glIsFenceAPPLEFn
 #define glIsFenceNV ::gfx::g_current_gl_context->glIsFenceNVFn
 #define glIsFramebufferEXT ::gfx::g_current_gl_context->glIsFramebufferEXTFn
+#define glIsPathNV ::gfx::g_current_gl_context->glIsPathNVFn
 #define glIsProgram ::gfx::g_current_gl_context->glIsProgramFn
 #define glIsQuery ::gfx::g_current_gl_context->glIsQueryFn
 #define glIsRenderbufferEXT ::gfx::g_current_gl_context->glIsRenderbufferEXTFn
@@ -2280,6 +2366,10 @@ class GL_EXPORT GLApi {
 #define glMatrixLoadfEXT ::gfx::g_current_gl_context->glMatrixLoadfEXTFn
 #define glMatrixLoadIdentityEXT \
   ::gfx::g_current_gl_context->glMatrixLoadIdentityEXTFn
+#define glPathCommandsNV ::gfx::g_current_gl_context->glPathCommandsNVFn
+#define glPathParameterfNV ::gfx::g_current_gl_context->glPathParameterfNVFn
+#define glPathParameteriNV ::gfx::g_current_gl_context->glPathParameteriNVFn
+#define glPathStencilFuncNV ::gfx::g_current_gl_context->glPathStencilFuncNVFn
 #define glPauseTransformFeedback \
   ::gfx::g_current_gl_context->glPauseTransformFeedbackFn
 #define glPixelStorei ::gfx::g_current_gl_context->glPixelStoreiFn
@@ -2316,6 +2406,7 @@ class GL_EXPORT GLApi {
 #define glSetFenceNV ::gfx::g_current_gl_context->glSetFenceNVFn
 #define glShaderBinary ::gfx::g_current_gl_context->glShaderBinaryFn
 #define glShaderSource ::gfx::g_current_gl_context->glShaderSourceFn
+#define glStencilFillPathNV ::gfx::g_current_gl_context->glStencilFillPathNVFn
 #define glStencilFunc ::gfx::g_current_gl_context->glStencilFuncFn
 #define glStencilFuncSeparate \
   ::gfx::g_current_gl_context->glStencilFuncSeparateFn
@@ -2324,6 +2415,12 @@ class GL_EXPORT GLApi {
   ::gfx::g_current_gl_context->glStencilMaskSeparateFn
 #define glStencilOp ::gfx::g_current_gl_context->glStencilOpFn
 #define glStencilOpSeparate ::gfx::g_current_gl_context->glStencilOpSeparateFn
+#define glStencilStrokePathNV \
+  ::gfx::g_current_gl_context->glStencilStrokePathNVFn
+#define glStencilThenCoverFillPathNV \
+  ::gfx::g_current_gl_context->glStencilThenCoverFillPathNVFn
+#define glStencilThenCoverStrokePathNV \
+  ::gfx::g_current_gl_context->glStencilThenCoverStrokePathNVFn
 #define glTestFenceAPPLE ::gfx::g_current_gl_context->glTestFenceAPPLEFn
 #define glTestFenceNV ::gfx::g_current_gl_context->glTestFenceNVFn
 #define glTexImage2D ::gfx::g_current_gl_context->glTexImage2DFn

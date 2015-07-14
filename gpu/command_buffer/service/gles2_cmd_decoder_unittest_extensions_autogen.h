@@ -44,6 +44,55 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
+// TODO(gman): GenPathsCHROMIUM
+
+// TODO(gman): DeletePathsCHROMIUM
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering, IsPathCHROMIUMValidArgs) {
+  EXPECT_CALL(*gl_, IsPathNV(kServicePathId));
+  SpecializedSetup<cmds::IsPathCHROMIUM, 0>(true);
+  cmds::IsPathCHROMIUM cmd;
+  cmd.Init(client_path_id_, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
+       IsPathCHROMIUMInvalidArgsBadSharedMemoryId) {
+  EXPECT_CALL(*gl_, IsPathNV(kServicePathId)).Times(0);
+  SpecializedSetup<cmds::IsPathCHROMIUM, 0>(false);
+  cmds::IsPathCHROMIUM cmd;
+  cmd.Init(client_path_id_, kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  cmd.Init(client_path_id_, shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+}
+// TODO(gman): PathCommandsCHROMIUM
+
+// TODO(gman): PathParameterfCHROMIUM
+
+// TODO(gman): PathParameteriCHROMIUM
+
+TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
+       PathStencilFuncCHROMIUMValidArgs) {
+  EXPECT_CALL(*gl_, PathStencilFuncNV(GL_NEVER, 2, 3));
+  SpecializedSetup<cmds::PathStencilFuncCHROMIUM, 0>(true);
+  cmds::PathStencilFuncCHROMIUM cmd;
+  cmd.Init(GL_NEVER, 2, 3);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+// TODO(gman): StencilFillPathCHROMIUM
+
+// TODO(gman): StencilStrokePathCHROMIUM
+
+// TODO(gman): CoverFillPathCHROMIUM
+
+// TODO(gman): CoverStrokePathCHROMIUM
+
+// TODO(gman): StencilThenCoverFillPathCHROMIUM
+
+// TODO(gman): StencilThenCoverStrokePathCHROMIUM
 
 TEST_P(GLES2DecoderTestWithBlendEquationAdvanced, BlendBarrierKHRValidArgs) {
   EXPECT_CALL(*gl_, BlendBarrierKHR());
