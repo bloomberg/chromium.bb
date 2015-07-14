@@ -52,6 +52,14 @@ StringPiece NullDecrypter::GetKey() const { return StringPiece(); }
 
 StringPiece NullDecrypter::GetNoncePrefix() const { return StringPiece(); }
 
+const char* NullDecrypter::cipher_name() const {
+  return "NULL";
+}
+
+uint32 NullDecrypter::cipher_id() const {
+  return 0;
+}
+
 bool NullDecrypter::ReadHash(QuicDataReader* reader, uint128* hash) {
   uint64 lo;
   uint32 hi;

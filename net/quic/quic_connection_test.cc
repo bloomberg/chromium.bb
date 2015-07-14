@@ -153,6 +153,9 @@ class TaggingDecrypter : public QuicDecrypter {
 
   StringPiece GetKey() const override { return StringPiece(); }
   StringPiece GetNoncePrefix() const override { return StringPiece(); }
+  const char* cipher_name() const override { return "Tagging"; }
+  // Use a distinct value starting with 0xFFFFFF, which is never used by TLS.
+  uint32 cipher_id() const override { return 0xFFFFFFF0; }
 
  protected:
   virtual uint8 GetTag(StringPiece ciphertext) {
@@ -184,6 +187,10 @@ class StrictTaggingDecrypter : public TaggingDecrypter {
 
   // TaggingQuicDecrypter
   uint8 GetTag(StringPiece ciphertext) override { return tag_; }
+
+  const char* cipher_name() const override { return "StrictTagging"; }
+  // Use a distinct value starting with 0xFFFFFF, which is never used by TLS.
+  uint32 cipher_id() const override { return 0xFFFFFFF1; }
 
  private:
   const uint8 tag_;

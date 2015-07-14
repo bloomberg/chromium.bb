@@ -29,6 +29,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_alarm.h"
@@ -596,6 +597,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sends an MTU discovery packet of size |mtu_discovery_target_| and updates
   // the MTU discovery alarm.
   void DiscoverMtu();
+
+  // Return the name of the cipher of the primary decrypter of the framer.
+  const char* cipher_name() const { return framer_.decrypter()->cipher_name(); }
+  // Return the id of the cipher of the primary decrypter of the framer.
+  uint32 cipher_id() const { return framer_.decrypter()->cipher_id(); }
 
  protected:
   // Packets which have not been written to the wire.

@@ -33,6 +33,9 @@ class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
   base::StringPiece GetKey() const override;
   base::StringPiece GetNoncePrefix() const override;
 
+  const char* cipher_name() const override;
+  uint32 cipher_id() const override;
+
  private:
   bool ReadHash(QuicDataReader* reader, uint128* hash);
   uint128 ComputeHash(const base::StringPiece& data1,

@@ -155,6 +155,9 @@ class TestDecrypter : public QuicDecrypter {
   }
   StringPiece GetKey() const override { return StringPiece(); }
   StringPiece GetNoncePrefix() const override { return StringPiece(); }
+  const char* cipher_name() const override { return "Test"; }
+  // Use a distinct value starting with 0xFFFFFF, which is never used by TLS.
+  uint32 cipher_id() const override { return 0xFFFFFFF2; }
   QuicPacketSequenceNumber sequence_number_;
   string associated_data_;
   string ciphertext_;

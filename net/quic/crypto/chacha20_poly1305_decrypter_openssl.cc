@@ -5,6 +5,7 @@
 #include "net/quic/crypto/chacha20_poly1305_decrypter.h"
 
 #include <openssl/evp.h>
+#include <openssl/tls1.h>
 
 namespace net {
 
@@ -27,5 +28,13 @@ ChaCha20Poly1305Decrypter::~ChaCha20Poly1305Decrypter() {}
 
 // static
 bool ChaCha20Poly1305Decrypter::IsSupported() { return true; }
+
+const char* ChaCha20Poly1305Decrypter::cipher_name() const {
+  return TLS1_TXT_ECDHE_RSA_WITH_CHACHA20_POLY1305;
+}
+
+uint32 ChaCha20Poly1305Decrypter::cipher_id() const {
+  return TLS1_CK_ECDHE_RSA_CHACHA20_POLY1305;
+}
 
 }  // namespace net
