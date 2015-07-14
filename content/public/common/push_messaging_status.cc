@@ -44,6 +44,9 @@ const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
       // We split this out for UMA, but it must be indistinguishable to JS.
       return PushRegistrationStatusToString(
           PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+
+    case PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE:
+      return "Registration failed - could not retrieve the public key";
   }
   NOTREACHED();
   return "";

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <set>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -68,7 +69,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   GURL GetPushEndpoint() override;
   void SubscribeFromDocument(
       const GURL& requesting_origin,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const std::string& sender_id,
       int renderer_id,
       int render_frame_id,
@@ -76,13 +77,18 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::RegisterCallback& callback) override;
   void SubscribeFromWorker(
       const GURL& requesting_origin,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const std::string& sender_id,
       bool user_visible,
       const content::PushMessagingService::RegisterCallback& callback) override;
+  void GetPublicEncryptionKey(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const content::PushMessagingService::PublicKeyCallback&
+          callback) override;
   void Unsubscribe(
       const GURL& requesting_origin,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const std::string& sender_id,
       const content::PushMessagingService::UnregisterCallback&) override;
   blink::WebPushPermissionStatus GetPermissionStatus(
@@ -124,6 +130,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SubscribeEnd(
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& subscription_id,
+      const std::vector<uint8_t>& curve25519dh,
+      content::PushRegistrationStatus status);
+
+  void SubscribeEndWithError(
+      const content::PushMessagingService::RegisterCallback& callback,
       content::PushRegistrationStatus status);
 
   void DidSubscribe(

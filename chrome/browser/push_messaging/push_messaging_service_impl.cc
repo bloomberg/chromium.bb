@@ -315,6 +315,17 @@ GURL PushMessagingServiceImpl::GetPushEndpoint() {
   return GURL(std::string(kPushMessagingEndpoint));
 }
 
+// GetPublicEncryptionKey method -----------------------------------------------
+
+void PushMessagingServiceImpl::GetPublicEncryptionKey(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    const PushMessagingService::PublicKeyCallback& callback) {
+  // TODO(peter): Get the public key from the GCM Driver. Right now we have to
+  // return success=true here, otherwise subscriptions would fail.
+  callback.Run(true /* success */, std::vector<uint8_t>());
+}
+
 // Subscribe and GetPermissionStatus methods -----------------------------------
 
 void PushMessagingServiceImpl::SubscribeFromDocument(
@@ -331,8 +342,8 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   if (push_subscription_count_ + pending_push_subscription_count_ >=
       kMaxRegistrations) {
-    SubscribeEnd(callback, std::string(),
-                 content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
+    SubscribeEndWithError(callback,
+                          content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
     return;
   }
 
@@ -348,9 +359,8 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
         content::CONSOLE_MESSAGE_LEVEL_ERROR,
         kSilentPushUnsupportedMessage);
 
-    SubscribeEnd(callback,
-                 std::string(),
-                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+    SubscribeEndWithError(callback,
+                          content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
   }
 
@@ -377,8 +387,8 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
 
   if (profile_->GetPrefs()->GetInteger(
           prefs::kPushMessagingRegistrationCount) >= kMaxRegistrations) {
-    SubscribeEnd(register_callback, std::string(),
-                 content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
+    SubscribeEndWithError(register_callback,
+                          content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
     return;
   }
 
@@ -388,8 +398,8 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
                                                     embedding_origin,
                                                     user_visible);
   if (permission_status != blink::WebPushPermissionStatusGranted) {
-    SubscribeEnd(register_callback, std::string(),
-                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+    SubscribeEndWithError(register_callback,
+                          content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
   }
 
@@ -420,8 +430,16 @@ bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
 void PushMessagingServiceImpl::SubscribeEnd(
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& subscription_id,
+    const std::vector<uint8_t>& curve25519dh,
     content::PushRegistrationStatus status) {
-  callback.Run(subscription_id, status);
+  callback.Run(subscription_id, curve25519dh, status);
+}
+
+void PushMessagingServiceImpl::SubscribeEndWithError(
+    const content::PushMessagingService::RegisterCallback& callback,
+    content::PushRegistrationStatus status) {
+  SubscribeEnd(callback, std::string() /* subscription_id */,
+               std::vector<uint8_t>() /* curve25519dh */, status);
 }
 
 void PushMessagingServiceImpl::DidSubscribe(
@@ -431,10 +449,15 @@ void PushMessagingServiceImpl::DidSubscribe(
     gcm::GCMClient::Result result) {
   content::PushRegistrationStatus status =
       content::PUSH_REGISTRATION_STATUS_SERVICE_ERROR;
+  std::vector<uint8_t> curve25519dh;
+
   switch (result) {
     case gcm::GCMClient::SUCCESS:
       status = content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE;
       app_identifier.PersistToPrefs(profile_);
+
+      // TODO(peter): Hook up getting the keys from the GCM Driver.
+
       IncreasePushSubscriptionCount(1, false /* is_pending */);
       break;
     case gcm::GCMClient::INVALID_PARAMETER:
@@ -449,7 +472,8 @@ void PushMessagingServiceImpl::DidSubscribe(
       status = content::PUSH_REGISTRATION_STATUS_NETWORK_ERROR;
       break;
   }
-  SubscribeEnd(callback, subscription_id, status);
+
+  SubscribeEnd(callback, subscription_id, curve25519dh, status);
   DecreasePushSubscriptionCount(1, true /* was_pending */);
 }
 
@@ -459,9 +483,8 @@ void PushMessagingServiceImpl::DidRequestPermission(
     const content::PushMessagingService::RegisterCallback& register_callback,
     content::PermissionStatus permission_status) {
   if (permission_status != content::PERMISSION_STATUS_GRANTED) {
-    SubscribeEnd(register_callback,
-                 std::string(),
-                 content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+    SubscribeEndWithError(register_callback,
+                          content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
   }
 

@@ -49,6 +49,9 @@ enum PushRegistrationStatus {
   // but we tell JS that permission was denied to not reveal incognito.
   PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED = 10,
 
+  // Registration failed because the public key could not be retrieved.
+  PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE = 11,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
@@ -111,6 +114,9 @@ enum PushGetRegistrationStatus {
   // Getting the registration failed because the push service isn't available in
   // incognito, but we tell JS registration not found to not reveal incognito.
   PUSH_GETREGISTRATION_STATUS_INCOGNITO_REGISTRATION_NOT_FOUND = 4,
+
+  // Registration failed because the public key could not be retrieved.
+  PUSH_GETREGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE = 5,
 
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list

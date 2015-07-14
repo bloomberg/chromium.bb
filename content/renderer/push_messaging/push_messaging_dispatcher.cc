@@ -84,13 +84,14 @@ void PushMessagingDispatcher::DoSubscribe(
 
 void PushMessagingDispatcher::OnSubscribeFromDocumentSuccess(
     int32_t request_id,
-    const GURL& endpoint) {
+    const GURL& endpoint,
+    const std::vector<uint8_t>& curve25519dh) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
 
   scoped_ptr<blink::WebPushSubscription> subscription(
-      new blink::WebPushSubscription(endpoint));
+      new blink::WebPushSubscription(endpoint, curve25519dh));
   callbacks->onSuccess(subscription.release());
 
   subscription_callbacks_.Remove(request_id);

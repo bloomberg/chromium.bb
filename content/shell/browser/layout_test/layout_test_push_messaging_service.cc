@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "content/public/browser/permission_type.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
@@ -14,6 +15,16 @@
 namespace content {
 
 namespace {
+
+// Curve25519 public key made available to layout tests. Must be 32 bytes.
+const uint8_t kTestCurve25519dh[] = {
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+  0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+  0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
+};
+
+static_assert(sizeof(kTestCurve25519dh) == 32,
+              "The fake public key must have the size of a real public key.");
 
 blink::WebPushPermissionStatus ToWebPushPermissionStatus(
     PermissionStatus status) {
@@ -62,11 +73,25 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
     const PushMessagingService::RegisterCallback& callback) {
   if (GetPermissionStatus(requesting_origin, requesting_origin, user_visible) ==
       blink::WebPushPermissionStatusGranted) {
-    callback.Run("layoutTestRegistrationId",
+    std::vector<uint8_t> curve25519dh(
+        kTestCurve25519dh, kTestCurve25519dh + arraysize(kTestCurve25519dh));
+
+    callback.Run("layoutTestRegistrationId", curve25519dh,
                  PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
   } else {
-    callback.Run("registration_id", PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+    callback.Run("registration_id", std::vector<uint8_t>(),
+                 PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
   }
+}
+
+void LayoutTestPushMessagingService::GetPublicEncryptionKey(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    const PublicKeyCallback& callback) {
+  std::vector<uint8_t> curve25519dh(
+        kTestCurve25519dh, kTestCurve25519dh + arraysize(kTestCurve25519dh));
+
+  callback.Run(true /* success */, curve25519dh);
 }
 
 blink::WebPushPermissionStatus

@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PUSH_MESSAGING_SERVICE_H_
 #define CONTENT_PUBLIC_BROWSER_PUSH_MESSAGING_SERVICE_H_
 
+#include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
@@ -23,9 +25,14 @@ class ServiceWorkerContext;
 class CONTENT_EXPORT PushMessagingService {
  public:
   using RegisterCallback =
-      base::Callback<void(const std::string& /* registration_id */,
-                          PushRegistrationStatus /* status */)>;
+      base::Callback<void(const std::string& registration_id,
+                          const std::vector<uint8_t>& curve25519dh,
+                          PushRegistrationStatus status)>;
   using UnregisterCallback = base::Callback<void(PushUnregistrationStatus)>;
+
+  using PublicKeyCallback = base::Callback<void(
+      bool success,
+      const std::vector<uint8_t>& curve25519dh)>;
 
   using StringCallback = base::Callback<void(const std::string& data,
                                              bool success,
@@ -44,7 +51,7 @@ class CONTENT_EXPORT PushMessagingService {
   // document context. The frame is known and a permission UI may be displayed
   // to the user.
   virtual void SubscribeFromDocument(const GURL& requesting_origin,
-                                     int64 service_worker_registration_id,
+                                     int64_t service_worker_registration_id,
                                      const std::string& sender_id,
                                      int renderer_id,
                                      int render_frame_id,
@@ -55,16 +62,23 @@ class CONTENT_EXPORT PushMessagingService {
   // is not known so if permission was not previously granted by the user this
   // request should fail.
   virtual void SubscribeFromWorker(const GURL& requesting_origin,
-                                   int64 service_worker_registration_id,
+                                   int64_t service_worker_registration_id,
                                    const std::string& sender_id,
                                    bool user_visible,
                                    const RegisterCallback& callback) = 0;
+
+  // Retrieves the public encryption key associated with |origin| and
+  // |service_worker_registration_id|, and invokes |callback| with the result
+  // when it is available.
+  virtual void GetPublicEncryptionKey(const GURL& origin,
+                                      int64_t service_worker_registration_id,
+                                      const PublicKeyCallback& callback) = 0;
 
   // Unsubscribe the given |sender_id| from the push messaging service. The
   // subscription will be synchronously deactivated locally, and asynchronously
   // sent to the push service, with automatic retry.
   virtual void Unsubscribe(const GURL& requesting_origin,
-                           int64 service_worker_registration_id,
+                           int64_t service_worker_registration_id,
                            const std::string& sender_id,
                            const UnregisterCallback& callback) = 0;
 
@@ -88,11 +102,11 @@ class CONTENT_EXPORT PushMessagingService {
   // registration is deleted.
   static void GetNotificationsShownByLastFewPushes(
       ServiceWorkerContext* service_worker_context,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const StringCallback& callback);
   static void SetNotificationsShownByLastFewPushes(
       ServiceWorkerContext* service_worker_context,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
       const GURL& origin,
       const std::string& notifications_shown,
       const ResultCallback& callback);
@@ -100,14 +114,14 @@ class CONTENT_EXPORT PushMessagingService {
  protected:
   static void GetSenderId(BrowserContext* browser_context,
                           const GURL& origin,
-                          int64 service_worker_registration_id,
+                          int64_t service_worker_registration_id,
                           const StringCallback& callback);
 
   // Clear the push subscription id stored in the service worker with the given
   // |service_worker_registration_id| for the given |origin|.
   static void ClearPushSubscriptionID(BrowserContext* browser_context,
                                       const GURL& origin,
-                                      int64 service_worker_registration_id,
+                                      int64_t service_worker_registration_id,
                                       const base::Closure& callback);
 };
 

@@ -5,7 +5,9 @@
 #ifndef CONTENT_CHILD_PUSH_MESSAGING_PUSH_PROVIDER_H_
 #define CONTENT_CHILD_PUSH_MESSAGING_PUSH_PROVIDER_H_
 
+#include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
@@ -64,7 +66,8 @@ class PushProvider : public blink::WebPushProvider,
 
   // IPC message handlers.
   void OnSubscribeFromWorkerSuccess(int request_id,
-                                    const GURL& endpoint);
+                                    const GURL& endpoint,
+                                    const std::vector<uint8_t>& curve25519dh);
   void OnSubscribeFromWorkerError(int request_id,
                                   PushRegistrationStatus status);
   void OnUnsubscribeSuccess(int request_id, bool did_unsubscribe);
@@ -72,7 +75,8 @@ class PushProvider : public blink::WebPushProvider,
                           blink::WebPushError::ErrorType error_type,
                           const std::string& error_message);
   void OnGetRegistrationSuccess(int request_id,
-                                const GURL& endpoint);
+                                const GURL& endpoint,
+                                const std::vector<uint8_t>& curve25519dh);
   void OnGetRegistrationError(int request_id, PushGetRegistrationStatus status);
   void OnGetPermissionStatusSuccess(int request_id,
                                     blink::WebPushPermissionStatus status);
