@@ -1844,6 +1844,10 @@
     'net_docs_script': 'tools/net_docs/net_docs.py',
     'net_docs_sources': [
       'README.md',
+      'docs/bug-triage.md',
+      'docs/bug-triage-labels.md',
+      'docs/bug-triage-suggested-workflow.md',
+      'docs/life-of-a-url-request.md',
       'sdch/README.md',
     ],
     'net_docs_output_dir': '<(PRODUCT_DIR)/net/docs',
