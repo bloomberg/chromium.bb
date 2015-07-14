@@ -43,10 +43,6 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   ~SavePasswordInfoBarDelegate() override;
 
-  // If the infobar was triggered by the Credential management API, then on
-  // Android it should display the "More" button.
-  bool ShouldShowMoreButton();
-
   const gfx::Range& title_link_range() const { return title_link_range_; }
 
   // ConfirmInfoBarDelegate:

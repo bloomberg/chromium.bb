@@ -62,7 +62,7 @@ public class AccountChooserInfoBar extends InfoBar {
     public void createContent(InfoBarLayout layout) {
         layout.setMessage(getContext().getString(R.string.account_chooser_infobar_title));
         createAccountsView(layout);
-        createCustomButtonsView(layout);
+        layout.setButtons(getContext().getString(R.string.no_thanks), null);
     }
 
     private void createAccountsView(InfoBarLayout layout) {
@@ -132,16 +132,6 @@ public class AccountChooserInfoBar extends InfoBar {
         if (index >= 0 && index < mAvatarViews.length && mAvatarViews[index] != null) {
             mAvatarViews[index].setImageBitmap(avatarBitmap);
         }
-    }
-
-    /**
-     * Creates button row which consists of "No thanks" button and "More" button.
-     * "No thanks" buttons dismisses infobar. "More" button opens a popup menu,
-     * which allows to go to help center article or Settings.
-     */
-    private void createCustomButtonsView(InfoBarLayout layout) {
-        layout.setButtons(getContext().getString(R.string.no_thanks), null);
-        layout.setCustomViewInButtonRow(OverflowSelector.createOverflowSelector(getContext()));
     }
 
     @CalledByNative

@@ -94,11 +94,6 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
       is_smartlock_branding_enabled, &title_, &title_link_range_);
 }
 
-bool SavePasswordInfoBarDelegate::ShouldShowMoreButton() {
-  return source_type_ ==
-         password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API;
-}
-
 infobars::InfoBarDelegate::Type
 SavePasswordInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
