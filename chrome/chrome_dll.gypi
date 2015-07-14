@@ -235,6 +235,9 @@
                   'msvs_settings': {
                     'VCLinkerTool': {
                       'LinkTimeCodeGeneration': '2',
+                      'AdditionalOptions': [
+                        '-PogoSafeMode',
+                      ],
                     },
                   },
                 }],
@@ -357,6 +360,9 @@
                   'msvs_settings': {
                     'VCLinkerTool': {
                       'LinkTimeCodeGeneration': '2',
+                      'AdditionalOptions': [
+                        '-PogoSafeMode',
+                      ],
                     },
                   },
                 }],
