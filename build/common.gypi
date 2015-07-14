@@ -68,7 +68,7 @@
           # implementation. Certificate verification will in most cases be
           # handled by the OS. If OpenSSL's struct X509 is used to represent
           # certificates, use_openssl_certs must be set.
-          'use_openssl%': 0,
+          'use_openssl%': 1,
 
           # Use OpenSSL for representing certificates. When targeting Android,
           # the platform certificate library is used for certificate
@@ -235,9 +235,9 @@
             'enable_topchrome_md%': 1,
           }],
 
-          # Enable the OpenSSL backend on Mac OS and Windows.
-          ['OS=="mac" or OS=="win"', {
-            'use_openssl%': 1,
+          # On iOS, use NSS rather than OpenSSL. See http://crbug.com/338886.
+          ['OS=="ios"', {
+            'use_openssl%': 0,
           }],
 
           # Enable App Launcher everywhere but mobile.
@@ -1804,8 +1804,7 @@
         # developer builds, to avoid spurious re-linking of native files.
         'optimize_jni_generation%': '<(optimize_jni_generation)',
 
-        # Always uses openssl.
-        'use_openssl%': 1,
+        # Use OpenSSL's struct X509 to represent certificates.
         'use_openssl_certs%': 1,
 
         'proprietary_codecs%': '<(proprietary_codecs)',
