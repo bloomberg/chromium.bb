@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <deque>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -88,7 +89,7 @@ uint32_t IVFWriter::WriteFileHeader(uint8_t* mem,
   PutLE32(mem + 8, fourcc('V', 'P', '8', '0'));      // fourcc
   PutLE16(mem + 12, static_cast<uint16_t>(width));   // width
   PutLE16(mem + 14, static_cast<uint16_t>(height));  // height
-  PutLE32(mem + 16, 30);                             // rate
+  PutLE32(mem + 16, 1000);                           // rate
   PutLE32(mem + 20, 1);                              // scale
   PutLE32(mem + 24, 0xffffffff);                     // length
   PutLE32(mem + 28, 0);                              // unused
@@ -179,6 +180,8 @@ class VideoEncoderInstance : public pp::Instance {
   pp::Size frame_size_;
   pp::Size encoder_size_;
   uint32_t encoded_frames_;
+
+  std::deque<uint64_t> frames_timestamps_;
 
   pp::VideoFrame current_track_frame_;
 
@@ -308,6 +311,7 @@ void VideoEncoderInstance::OnEncoderProbed(
 
 void VideoEncoderInstance::StartEncoder() {
   video_encoder_ = pp::VideoEncoder(this);
+  frames_timestamps_.clear();
 
   int32_t error = video_encoder_.Initialize(
       frame_format_, frame_size_, video_profile_, 2000000,
@@ -425,6 +429,8 @@ int32_t VideoEncoderInstance::CopyVideoFrame(pp::VideoFrame dest,
 }
 
 void VideoEncoderInstance::EncodeFrame(const pp::VideoFrame& frame) {
+  frames_timestamps_.push_back(
+      static_cast<uint64_t>(frame.GetTimestamp() * 1000));
   video_encoder_.Encode(
       frame, PP_FALSE,
       callback_factory_.NewCallback(&VideoEncoderInstance::OnEncodeDone));
@@ -552,10 +558,11 @@ void VideoEncoderInstance::PostDataMessage(const void* buffer, uint32_t size) {
           size + ivf_writer_.GetFrameHeaderSize());
       data_ptr = static_cast<uint8_t*>(array_buffer.Map());
     }
-    data_offset = frame_offset +
-      ivf_writer_.WriteFrameHeader(data_ptr + frame_offset,
-                                   encoded_frames_,
-                                   size);
+    uint64_t timestamp = frames_timestamps_.front();
+    frames_timestamps_.pop_front();
+    data_offset =
+        frame_offset +
+        ivf_writer_.WriteFrameHeader(data_ptr + frame_offset, timestamp, size);
   } else {
     array_buffer = pp::VarArrayBuffer(size);
     data_ptr = static_cast<uint8_t*>(array_buffer.Map());
