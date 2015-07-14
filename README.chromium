@@ -302,3 +302,8 @@ This directory contains the source code of ICU 54.1 for C/C++.
      http://bugs.icu-project.org/trac/ticket/11601
 
 18. Apply patches/infinite-recursion.patch , corresponds to upstream r36672
+
+19. Fix a data race in umutex
+   - patches/mutex.patch
+   - upstream bug (fixed in ToT and will be included in 56)
+     http://bugs.icu-project.org/trac/ticket/11599
