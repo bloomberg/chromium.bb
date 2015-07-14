@@ -38,12 +38,12 @@ class ResolverThunkTest : public T {
                         void* thunk_storage,
                         size_t storage_bytes) {
     NTSTATUS ret = STATUS_SUCCESS;
-    ret = ResolverThunk::Init(target_module, interceptor_module, target_name,
-                              interceptor_name, interceptor_entry_point,
-                              thunk_storage, storage_bytes);
+    ret = T::Init(target_module, interceptor_module, target_name,
+                  interceptor_name, interceptor_entry_point, thunk_storage,
+                  storage_bytes);
     EXPECT_EQ(STATUS_SUCCESS, ret);
 
-    target_ = fake_target_;
+    this->target_ = fake_target_;
 
     return ret;
   };
