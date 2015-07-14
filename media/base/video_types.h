@@ -34,14 +34,14 @@ enum VideoPixelFormat {
       PIXEL_FORMAT_XRGB,  // Must always be equal to largest entry logged.
 };
 
-// Color space or color range used for the pixels, in general this is left
-// unspecified, meaning Rec601 (SD) is assumed.
+// Color space or color range used for the pixels.
 // Logged to UMA, so never reuse values. Leave gaps if necessary.
 enum ColorSpace {
   COLOR_SPACE_UNSPECIFIED = 0,  // In general this is Rec601.
   COLOR_SPACE_JPEG = 1,         // JPEG color range.
   COLOR_SPACE_HD_REC709 = 2,    // Rec709 "HD" color space.
-  COLOR_SPACE_MAX = COLOR_SPACE_HD_REC709,
+  COLOR_SPACE_SD_REC601 = 3,    // Rec601 "SD" color space.
+  COLOR_SPACE_MAX = COLOR_SPACE_SD_REC601,
 };
 
 // Returns the name of a Format as a string.

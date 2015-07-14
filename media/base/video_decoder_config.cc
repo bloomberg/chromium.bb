@@ -20,15 +20,15 @@ VideoDecoderConfig::VideoDecoderConfig()
 VideoDecoderConfig::VideoDecoderConfig(VideoCodec codec,
                                        VideoCodecProfile profile,
                                        VideoPixelFormat format,
+                                       ColorSpace color_space,
                                        const gfx::Size& coded_size,
                                        const gfx::Rect& visible_rect,
                                        const gfx::Size& natural_size,
                                        const uint8* extra_data,
                                        size_t extra_data_size,
                                        bool is_encrypted) {
-  Initialize(codec, profile, format, COLOR_SPACE_UNSPECIFIED, coded_size,
-             visible_rect, natural_size, extra_data, extra_data_size,
-             is_encrypted, true);
+  Initialize(codec, profile, format, color_space, coded_size, visible_rect,
+             natural_size, extra_data, extra_data_size, is_encrypted, true);
 }
 
 VideoDecoderConfig::~VideoDecoderConfig() {}
@@ -88,6 +88,7 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
   codec_ = codec;
   profile_ = profile;
   format_ = format;
+  color_space_ = color_space;
   coded_size_ = coded_size;
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
@@ -158,42 +159,10 @@ std::string VideoDecoderConfig::GetHumanReadableCodecName() const {
   return "";
 }
 
-VideoCodec VideoDecoderConfig::codec() const {
-  return codec_;
-}
-
-VideoCodecProfile VideoDecoderConfig::profile() const {
-  return profile_;
-}
-
-VideoPixelFormat VideoDecoderConfig::format() const {
-  return format_;
-}
-
-gfx::Size VideoDecoderConfig::coded_size() const {
-  return coded_size_;
-}
-
-gfx::Rect VideoDecoderConfig::visible_rect() const {
-  return visible_rect_;
-}
-
-gfx::Size VideoDecoderConfig::natural_size() const {
-  return natural_size_;
-}
-
 const uint8* VideoDecoderConfig::extra_data() const {
   if (extra_data_.empty())
     return NULL;
   return &extra_data_[0];
-}
-
-size_t VideoDecoderConfig::extra_data_size() const {
-  return extra_data_.size();
-}
-
-bool VideoDecoderConfig::is_encrypted() const {
-  return is_encrypted_;
 }
 
 }  // namespace media

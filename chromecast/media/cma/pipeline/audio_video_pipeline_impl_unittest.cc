@@ -96,8 +96,9 @@ void AudioVideoPipelineImplTest::Initialize(
   std::vector<::media::VideoDecoderConfig> video_configs;
   video_configs.push_back(::media::VideoDecoderConfig(
       ::media::kCodecH264, ::media::H264PROFILE_MAIN,
-      ::media::PIXEL_FORMAT_I420, gfx::Size(640, 480),
-      gfx::Rect(0, 0, 640, 480), gfx::Size(640, 480), NULL, 0, false));
+      ::media::PIXEL_FORMAT_I420, ::media::COLOR_SPACE_UNSPECIFIED,
+      gfx::Size(640, 480), gfx::Rect(0, 0, 640, 480), gfx::Size(640, 480), NULL,
+      0, false));
 
   // Frame generation on the producer side.
   std::vector<FrameGeneratorForTest::FrameSpec> frame_specs;

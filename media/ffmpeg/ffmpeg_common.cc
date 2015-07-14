@@ -432,12 +432,18 @@ void AVStreamToVideoDecoderConfig(
     format = PIXEL_FORMAT_YV12A;
   }
 
-  config->Initialize(
-      codec, profile, format,
-      (stream->codec->colorspace == AVCOL_SPC_BT709) ? COLOR_SPACE_HD_REC709
-                                                     : COLOR_SPACE_UNSPECIFIED,
-      coded_size, visible_rect, natural_size, stream->codec->extradata,
-      stream->codec->extradata_size, is_encrypted, record_stats);
+  // Prefer the color space found by libavcodec if available.
+  ColorSpace color_space = AVColorSpaceToColorSpace(stream->codec->colorspace);
+  if (color_space == COLOR_SPACE_UNSPECIFIED) {
+    // Otherwise, assume that SD video is usually Rec.601, and HD is usually
+    // Rec.709.
+    color_space = (natural_size.height() < 720) ? COLOR_SPACE_SD_REC601
+                                                : COLOR_SPACE_HD_REC709;
+  }
+
+  config->Initialize(codec, profile, format, color_space, coded_size,
+                     visible_rect, natural_size, stream->codec->extradata,
+                     stream->codec->extradata_size, is_encrypted, record_stats);
 }
 
 void VideoDecoderConfigToAVCodecContext(
@@ -559,6 +565,22 @@ PixelFormat VideoPixelFormatToPixelFormat(VideoPixelFormat video_format) {
       DVLOG(1) << "Unsupported Format: " << video_format;
   }
   return PIX_FMT_NONE;
+}
+
+ColorSpace AVColorSpaceToColorSpace(
+    AVColorSpace color_space) {
+  switch (color_space) {
+    case AVCOL_SPC_UNSPECIFIED:
+      break;
+    case AVCOL_SPC_BT709:
+      return COLOR_SPACE_HD_REC709;
+    case AVCOL_SPC_SMPTE170M:
+    case AVCOL_SPC_BT470BG:
+      return COLOR_SPACE_SD_REC601;
+    default:
+      DVLOG(1) << "Unknown AVColorSpace: " << color_space;
+  }
+  return COLOR_SPACE_UNSPECIFIED;
 }
 
 bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out) {

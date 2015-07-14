@@ -142,6 +142,15 @@ ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_ARGB, VIDEO_FORMAT_ARGB);
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_XRGB, VIDEO_FORMAT_XRGB);
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MAX, VIDEO_FORMAT_FORMAT_MAX);
 
+// ColorSpace.
+ASSERT_ENUM_EQ_RAW(ColorSpace,
+                   COLOR_SPACE_UNSPECIFIED,
+                   COLOR_SPACE_UNSPECIFIED);
+ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_JPEG, COLOR_SPACE_JPEG);
+ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_HD_REC709, COLOR_SPACE_HD_REC709);
+ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_SD_REC601, COLOR_SPACE_SD_REC601);
+ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_MAX, COLOR_SPACE_MAX);
+
 // VideoCodec
 ASSERT_ENUM_EQ_RAW(VideoCodec, kUnknownVideoCodec, VIDEO_CODEC_UNKNOWN);
 ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, H264);
@@ -425,6 +434,7 @@ TypeConverter<VideoDecoderConfigPtr, media::VideoDecoderConfig>::Convert(
   config->codec = static_cast<VideoCodec>(input.codec());
   config->profile = static_cast<VideoCodecProfile>(input.profile());
   config->format = static_cast<VideoFormat>(input.format());
+  config->color_space = static_cast<ColorSpace>(input.color_space());
   config->coded_size = Size::From(input.coded_size());
   config->visible_rect = Rect::From(input.visible_rect());
   config->natural_size = Size::From(input.natural_size());
@@ -446,8 +456,9 @@ TypeConverter<media::VideoDecoderConfig, VideoDecoderConfigPtr>::Convert(
       static_cast<media::VideoCodec>(input->codec),
       static_cast<media::VideoCodecProfile>(input->profile),
       static_cast<media::VideoPixelFormat>(input->format),
-      media::COLOR_SPACE_UNSPECIFIED, input->coded_size.To<gfx::Size>(),
-      input->visible_rect.To<gfx::Rect>(), input->natural_size.To<gfx::Size>(),
+      static_cast<media::ColorSpace>(input->color_space),
+      input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
+      input->natural_size.To<gfx::Size>(),
       input->extra_data.size() ? &input->extra_data.front() : NULL,
       input->extra_data.size(), input->is_encrypted, false);
   return config;

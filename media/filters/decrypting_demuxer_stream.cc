@@ -398,7 +398,7 @@ void DecryptingDemuxerStream::InitializeDecoderConfig() {
           demuxer_stream_->video_decoder_config();
       video_config_.Initialize(
           input_video_config.codec(), input_video_config.profile(),
-          input_video_config.format(), COLOR_SPACE_UNSPECIFIED,
+          input_video_config.format(), input_video_config.color_space(),
           input_video_config.coded_size(), input_video_config.visible_rect(),
           input_video_config.natural_size(), input_video_config.extra_data(),
           input_video_config.extra_data_size(),
