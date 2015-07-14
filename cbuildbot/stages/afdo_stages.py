@@ -28,10 +28,6 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
     """Collect a 'perf' profile and convert it into the AFDO format."""
     super(AFDODataGenerateStage, self).PerformStage()
 
-    if not self._run.attrs.metadata.GetValue('chrome_was_uprevved'):
-      logging.info('Chrome was not uprevved. Nothing to do in this stage')
-      return
-
     board = self._current_board
     if not afdo.CanGenerateAFDOData(board):
       logging.warning('Board %s cannot generate its own AFDO profile.', board)

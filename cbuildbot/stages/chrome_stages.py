@@ -36,7 +36,6 @@ class SyncChromeStage(generic_stages.BuilderStage,
     # PerformStage() will fill this out for us.
     # TODO(mtennant): Replace with a run param.
     self.chrome_version = None
-    self.chrome_uprevved = False
 
   def HandleSkip(self):
     """Set run.attrs.chrome_version to chrome version in buildroot now."""
@@ -92,10 +91,6 @@ class SyncChromeStage(generic_stages.BuilderStage,
       logging.info('Chrome already uprevved. Nothing else to do.')
       sys.exit(0)
 
-    if chrome_atom_to_build:
-      self.chrome_uprevved = True
-
-
   def _WriteChromeVersionToMetadata(self):
     """Write chrome version to metadata and upload partial json file."""
     self._run.attrs.metadata.UpdateKeyDictWithDict(
@@ -109,8 +104,6 @@ class SyncChromeStage(generic_stages.BuilderStage,
     # means something.  In other words, this stage tried to run.
     self._run.attrs.chrome_version = self.chrome_version
     self._WriteChromeVersionToMetadata()
-    self._run.attrs.metadata.UpdateWithDict(
-        {'chrome_was_uprevved': self.chrome_uprevved})
     super(SyncChromeStage, self)._Finish()
 
 

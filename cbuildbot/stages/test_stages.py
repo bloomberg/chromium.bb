@@ -9,6 +9,7 @@ from __future__ import print_function
 import collections
 import os
 
+from chromite.cbuildbot import afdo
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
@@ -23,6 +24,7 @@ from chromite.lib import gs
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
+from chromite.lib import portage_util
 from chromite.lib import timeout_util
 
 
@@ -282,10 +284,15 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                       'See UploadTestArtifacts for details.')
       return
 
-    if (self.suite_config.suite == constants.HWTEST_AFDO_SUITE and
-        not self._run.attrs.metadata.GetValue('chrome_was_uprevved')):
-      logging.info('Chrome was not uprevved. Nothing to do in this stage')
-      return
+    if self.suite_config.suite == constants.HWTEST_AFDO_SUITE:
+      arch = self._GetPortageEnvVar('ARCH', self._current_board)
+      cpv = portage_util.BestVisible(constants.CHROME_CP,
+                                     buildroot=self._build_root)
+      if afdo.CheckAFDOPerfData(cpv, arch, gs.GSContext()):
+        logging.info('AFDO profile already generated for arch %s '
+                     'and Chrome %s. Not generating it again',
+                     arch, cpv.version_no_rev.split('_')[0])
+        return
 
     build = '/'.join([self._bot_id, self.version])
     if (self._run.options.remote_trybot and (self._run.options.hwtest or

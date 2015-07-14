@@ -136,21 +136,19 @@ def GSUploadIfNotPresent(gs_context, src, dest):
     return True
 
 
-def CheckAFDOPerfData(arch, cpv, buildroot, gs_context):
-  """Check whether AFDO perf data exists for the given architecture.
+def GetAFDOPerfDataURL(cpv, arch):
+  """Return the location URL for the AFDO per data file.
 
-  Check if 'perf' data file for this architecture and release is available
-  in GS. If so, copy it into a temp directory in the buildroot.
+  Build the URL for the 'perf' data file given the release and architecture.
 
   Args:
-    arch: architecture we're going to build Chrome for.
     cpv: The portage_util.CPV object for chromeos-chrome.
-    buildroot: buildroot where AFDO data should be stored.
-    gs_context: GS context to retrieve data.
+    arch: architecture we're going to build Chrome for.
 
   Returns:
-    True if AFDO perf data is available. False otherwise.
+    URL of the location of the 'perf' data file.
   """
+
   # The file name of the perf data is based only in the chrome version.
   # The test case that produces it does not know anything about the
   # revision number.
@@ -159,22 +157,38 @@ def CheckAFDOPerfData(arch, cpv, buildroot, gs_context):
   chrome_spec = {'package': cpv.package,
                  'arch': arch,
                  'version': version_number}
-  url = CHROME_PERF_AFDO_URL % chrome_spec
-  if not gs_context.Exists(url):
-    logging.info('Could not find AFDO perf data')
-    return False
-  dest_dir = AFDO_BUILDROOT_LOCAL % {'build_root': buildroot}
-  dest_path = os.path.join(dest_dir, url.rsplit('/', 1)[1])
-  gs_context.Copy(url, dest_path)
+  return CHROME_PERF_AFDO_URL % chrome_spec
 
-  UncompressAFDOFile(dest_path, buildroot)
-  logging.info('Found and retrieved AFDO perf data')
+
+def CheckAFDOPerfData(cpv, arch, gs_context):
+  """Check whether AFDO perf data exists for the given architecture.
+
+  Check if 'perf' data file for this architecture and release is available
+  in GS.
+
+  Args:
+    cpv: The portage_util.CPV object for chromeos-chrome.
+    arch: architecture we're going to build Chrome for.
+    gs_context: GS context to retrieve data.
+
+  Returns:
+    True if AFDO perf data is available. False otherwise.
+  """
+  url = GetAFDOPerfDataURL(cpv, arch)
+  if not gs_context.Exists(url):
+    logging.info('Could not find AFDO perf data at %s', url)
+    return False
+
+  logging.info('Found AFDO perf data at %s', url)
   return True
 
 
 def WaitForAFDOPerfData(cpv, arch, buildroot, gs_context,
                         timeout=constants.AFDO_GENERATE_TIMEOUT):
   """Wait for AFDO perf data to show up (with an appropriate timeout).
+
+  Wait for AFDO 'perf' data to show up in GS and copy it into a temp
+  directory in the buildroot.
 
   Args:
     arch: architecture we're going to build Chrome for.
@@ -190,10 +204,19 @@ def WaitForAFDOPerfData(cpv, arch, buildroot, gs_context,
   try:
     timeout_util.WaitForReturnTrue(
         CheckAFDOPerfData,
-        func_args=(arch, cpv, buildroot, gs_context),
+        func_args=(cpv, arch, gs_context),
         timeout=timeout, period=constants.SLEEP_TIMEOUT)
   except timeout_util.TimeoutError:
+    logging.info('Could not find AFDO perf data before timeout')
     return False
+
+  url = GetAFDOPerfDataURL(cpv, arch)
+  dest_dir = AFDO_BUILDROOT_LOCAL % {'build_root': buildroot}
+  dest_path = os.path.join(dest_dir, url.rsplit('/', 1)[1])
+  gs_context.Copy(url, dest_path)
+
+  UncompressAFDOFile(dest_path, buildroot)
+  logging.info('Retrieved AFDO perf data to %s', dest_path)
   return True
 
 
