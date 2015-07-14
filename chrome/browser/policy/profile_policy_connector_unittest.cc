@@ -18,6 +18,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "policy/policy_constants.h"
+#include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,14 +57,34 @@ class ProfilePolicyConnectorTest : public testing::Test {
   scoped_ptr<CloudPolicyManager> cloud_policy_manager_;
 };
 
+TEST_F(ProfilePolicyConnectorTest, IsManagedForManagedUsers) {
+  ProfilePolicyConnector connector;
+  connector.Init(
+#if defined(OS_CHROMEOS)
+      nullptr,
+#endif
+      &schema_registry_, cloud_policy_manager_.get());
+  EXPECT_FALSE(connector.IsManaged());
+  EXPECT_EQ(connector.GetManagementDomain(), "");
+
+  cloud_policy_store_.policy_.reset(new enterprise_management::PolicyData());
+  cloud_policy_store_.policy_->set_username("test@testdomain.com");
+  cloud_policy_store_.policy_->set_state(
+      enterprise_management::PolicyData::ACTIVE);
+  EXPECT_TRUE(connector.IsManaged());
+  EXPECT_EQ(connector.GetManagementDomain(), "testdomain.com");
+
+  // Cleanup.
+  connector.Shutdown();
+}
+
 TEST_F(ProfilePolicyConnectorTest, IsPolicyFromCloudPolicy) {
   ProfilePolicyConnector connector;
-  connector.Init(false,
+  connector.Init(
 #if defined(OS_CHROMEOS)
-                 nullptr,
+      nullptr,
 #endif
-                 &schema_registry_,
-                 cloud_policy_manager_.get());
+      &schema_registry_, cloud_policy_manager_.get());
 
   // No policy is set initially.
   EXPECT_FALSE(

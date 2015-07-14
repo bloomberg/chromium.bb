@@ -13,7 +13,6 @@ ProfilePolicyConnector::ProfilePolicyConnector() {}
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
 void ProfilePolicyConnector::Init(
-    bool force_immediate_load,
     SchemaRegistry* schema_registry,
     CloudPolicyManager* user_cloud_policy_manager) {
   policy_service_.reset(new PolicyServiceStub());

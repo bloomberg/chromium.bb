@@ -81,7 +81,13 @@ void ManagedBookmarksTracker::Init(BookmarkPermanentNode* managed_node) {
                  base::Bind(&ManagedBookmarksTracker::ReloadManagedBookmarks,
                             base::Unretained(this)));
   // Reload now just in case something changed since the initial load started.
-  ReloadManagedBookmarks();
+  // Note that if we track managed bookmarks rather than supervised bookmarks,
+  // then we must not load them until cloud policy system has been fully
+  // initialized (which will make our preference a managed preference).
+  const bool are_managed_bookmarks_available =
+      is_supervised_ || prefs_->IsManagedPreference(GetPrefName());
+  if (are_managed_bookmarks_available)
+    ReloadManagedBookmarks();
 }
 
 // static

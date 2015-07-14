@@ -4,8 +4,6 @@
 
 #include "chrome/browser/policy/profile_policy_connector.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/values.h"
@@ -15,13 +13,18 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/policy_bundle.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/schema_registry_tracking_policy_provider.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
 #include "components/user_manager/user.h"
@@ -32,12 +35,17 @@ namespace policy {
 
 namespace {
 
-bool HasChromePolicy(ConfigurationPolicyProvider* provider,
-                     const char* name) {
-  if (!provider)
-    return false;
-  PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
-  return provider->policies().Get(chrome_ns).Get(name) != NULL;
+std::string GetCloudPolicyManagementDomain(
+    const CloudPolicyManager* cloud_policy_manager) {
+  const CloudPolicyStore* const store = cloud_policy_manager->core()->store();
+  if (store) {
+    CHECK(store->is_initialized())
+        << "Cloud policy management domain must be "
+           "requested only after the policy system is fully initialized";
+    if (store->is_managed() && store->policy()->has_username())
+      return gaia::ExtractDomainName(store->policy()->username());
+  }
+  return "";
 }
 
 }  // namespace
@@ -45,35 +53,22 @@ bool HasChromePolicy(ConfigurationPolicyProvider* provider,
 ProfilePolicyConnector::ProfilePolicyConnector()
 #if defined(OS_CHROMEOS)
     : is_primary_user_(false),
-      user_cloud_policy_manager_(NULL)
+      user_cloud_policy_manager_(nullptr)
 #else
-    : user_cloud_policy_manager_(NULL)
+    : user_cloud_policy_manager_(nullptr)
 #endif
-      {}
+{
+}
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
 void ProfilePolicyConnector::Init(
-    bool force_immediate_load,
 #if defined(OS_CHROMEOS)
     const user_manager::User* user,
 #endif
     SchemaRegistry* schema_registry,
     CloudPolicyManager* user_cloud_policy_manager) {
   user_cloud_policy_manager_ = user_cloud_policy_manager;
-
-  // |providers| contains a list of the policy providers available for the
-  // PolicyService of this connector, in decreasing order of priority.
-  //
-  // Note: all the providers appended to this vector must eventually become
-  // initialized for every policy domain, otherwise some subsystems will never
-  // use the policies exposed by the PolicyService!
-  // The default ConfigurationPolicyProvider::IsInitializationComplete()
-  // result is true, so take care if a provider overrides that.
-  //
-  // Note: if you append a new provider then make sure IsPolicyFromCloudPolicy()
-  // is also updated below.
-  std::vector<ConfigurationPolicyProvider*> providers;
 
 #if defined(OS_CHROMEOS)
   BrowserPolicyConnectorChromeOS* connector =
@@ -88,16 +83,16 @@ void ProfilePolicyConnector::Init(
         new SchemaRegistryTrackingPolicyProvider(
             connector->GetPlatformProvider()));
     wrapped_platform_policy_provider_->Init(schema_registry);
-    providers.push_back(wrapped_platform_policy_provider_.get());
+    policy_providers_.push_back(wrapped_platform_policy_provider_.get());
   }
 
 #if defined(OS_CHROMEOS)
   if (connector->GetDeviceCloudPolicyManager())
-    providers.push_back(connector->GetDeviceCloudPolicyManager());
+    policy_providers_.push_back(connector->GetDeviceCloudPolicyManager());
 #endif
 
   if (user_cloud_policy_manager)
-    providers.push_back(user_cloud_policy_manager);
+    policy_providers_.push_back(user_cloud_policy_manager);
 
 #if defined(OS_CHROMEOS)
   if (!user) {
@@ -106,20 +101,22 @@ void ProfilePolicyConnector::Init(
     special_user_policy_provider_.reset(
         new LoginProfilePolicyProvider(connector->GetPolicyService()));
   } else {
-    // |user| should never be NULL except for the signin profile.
+    // |user| should never be nullptr except for the signin profile.
     is_primary_user_ =
         user == user_manager::UserManager::Get()->GetPrimaryUser();
+    // Note that |DeviceLocalAccountPolicyProvider::Create| returns nullptr when
+    // the user supplied is not a device-local account user.
     special_user_policy_provider_ = DeviceLocalAccountPolicyProvider::Create(
         user->email(),
         connector->GetDeviceLocalAccountPolicyService());
   }
   if (special_user_policy_provider_) {
     special_user_policy_provider_->Init(schema_registry);
-    providers.push_back(special_user_policy_provider_.get());
+    policy_providers_.push_back(special_user_policy_provider_.get());
   }
 #endif
 
-  policy_service_.reset(new PolicyServiceImpl(providers));
+  policy_service_.reset(new PolicyServiceImpl(policy_providers_));
 
 #if defined(OS_CHROMEOS)
   if (is_primary_user_) {
@@ -144,7 +141,7 @@ void ProfilePolicyConnector::Shutdown() {
   BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (is_primary_user_)
-    connector->SetUserPolicyDelegate(NULL);
+    connector->SetUserPolicyDelegate(nullptr);
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
 #endif
@@ -159,33 +156,40 @@ bool ProfilePolicyConnector::IsManaged() const {
 }
 
 std::string ProfilePolicyConnector::GetManagementDomain() const {
-  if (!user_cloud_policy_manager_)
-    return "";
-  CloudPolicyStore* store = user_cloud_policy_manager_->core()->store();
-  if (store && store->is_managed() && store->policy()->has_username())
-    return gaia::ExtractDomainName(store->policy()->username());
+  if (user_cloud_policy_manager_)
+    return GetCloudPolicyManagementDomain(user_cloud_policy_manager_);
+#if defined(OS_CHROMEOS)
+  if (special_user_policy_provider_) {
+    // |special_user_policy_provider_| is non-null for device-local accounts and
+    // for the login profile.
+    // They receive policy iff the device itself is managed.
+    const DeviceCloudPolicyManagerChromeOS* const device_cloud_policy_manager =
+        g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->GetDeviceCloudPolicyManager();
+    // The device_cloud_policy_manager can be a nullptr in unit tests.
+    if (device_cloud_policy_manager)
+      return GetCloudPolicyManagementDomain(device_cloud_policy_manager);
+  }
+#endif
   return "";
 }
 
 bool ProfilePolicyConnector::IsPolicyFromCloudPolicy(const char* name) const {
-  if (!HasChromePolicy(user_cloud_policy_manager_, name))
-    return false;
+  const ConfigurationPolicyProvider* const provider =
+      DeterminePolicyProviderForPolicy(name);
+  return provider == user_cloud_policy_manager_;
+}
 
-  // Check all the providers that have higher priority than the
-  // |user_cloud_policy_manager_|. These checks must be kept in sync with the
-  // order of the providers in Init().
-
-  if (HasChromePolicy(wrapped_platform_policy_provider_.get(), name))
-    return false;
-
-#if defined(OS_CHROMEOS)
-  BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (HasChromePolicy(connector->GetDeviceCloudPolicyManager(), name))
-    return false;
-#endif
-
-  return true;
+const ConfigurationPolicyProvider*
+ProfilePolicyConnector::DeterminePolicyProviderForPolicy(
+    const char* name) const {
+  const PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
+  for (const ConfigurationPolicyProvider* provider : policy_providers_) {
+    if (provider->policies().Get(chrome_ns).Get(name))
+      return provider;
+  }
+  return nullptr;
 }
 
 }  // namespace policy

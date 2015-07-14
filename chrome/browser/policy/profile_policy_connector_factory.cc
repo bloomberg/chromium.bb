@@ -100,8 +100,8 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
     bool force_immediate_load) {
   DCHECK(connectors_.find(context) == connectors_.end());
 
-  SchemaRegistry* schema_registry = NULL;
-  CloudPolicyManager* user_cloud_policy_manager = NULL;
+  SchemaRegistry* schema_registry = nullptr;
+  CloudPolicyManager* user_cloud_policy_manager = nullptr;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   schema_registry =
@@ -109,7 +109,7 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
 
 #if defined(OS_CHROMEOS)
   Profile* const profile = Profile::FromBrowserContext(context);
-  const user_manager::User* user = NULL;
+  const user_manager::User* user = nullptr;
   if (!chromeos::ProfileHelper::IsSigninProfile(profile)) {
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     CHECK(user);
@@ -126,12 +126,11 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (test_providers_.empty()) {
-    connector->Init(force_immediate_load,
+    connector->Init(
 #if defined(OS_CHROMEOS)
-                    user,
+        user,
 #endif
-                    schema_registry,
-                    user_cloud_policy_manager);
+        schema_registry, user_cloud_policy_manager);
   } else {
     PolicyServiceImpl::Providers providers;
     providers.push_back(test_providers_.front());
@@ -140,7 +139,7 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
     connector->InitForTesting(service.Pass());
   }
 #else
-  connector->Init(false, NULL, NULL);
+  connector->Init(nullptr, nullptr);
 #endif
 
   connectors_[context] = connector.get();
