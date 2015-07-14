@@ -2993,6 +2993,24 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   host_impl_->top_controls_manager()->ScrollEnd();
 }
 
+// Test that if only the top controls are scrolled, we shouldn't request a
+// commit.
+TEST_F(LayerTreeHostImplTopControlsTest, TopControlsDontTriggerCommit) {
+  SetupTopControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(100, 50), gfx::Size(100, 100), gfx::Size(100, 100));
+  DrawFrame();
+
+  // Show top controls
+  EXPECT_EQ(1.f, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+
+  // Scroll 25px to hide top controls
+  gfx::Vector2dF scroll_delta(0.f, 25.f);
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
+  host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+  EXPECT_FALSE(did_request_commit_);
+}
+
 // Test that if a scrollable sublayer doesn't consume the scroll,
 // top controls should hide when scrolling down.
 TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollableSublayer) {
