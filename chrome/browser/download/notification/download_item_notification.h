@@ -91,6 +91,7 @@ class DownloadItemNotification : public DownloadNotification,
   int image_resource_id_ = 0;
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
+  bool previous_dangerous_state_ = false;
   scoped_ptr<Notification> notification_;
   content::DownloadItem* item_;
   scoped_ptr<std::vector<DownloadCommands::Command>> button_actions_;

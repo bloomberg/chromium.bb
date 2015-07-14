@@ -193,10 +193,12 @@ void DownloadItemNotification::CloseNotificationByUser() {
 void DownloadItemNotification::Update() {
   auto download_state = item_->GetState();
 
-  // When the download is just completed (or interrupted), close the
-  // notification once and re-show it immediately so it'll pop up.
+  // When the download is just completed, interrupted or transitions to
+  // dangerous, close the notification once and re-show it immediately so
+  // it'll pop up.
   bool popup =
-      ((download_state == content::DownloadItem::COMPLETE &&
+      ((item_->IsDangerous() && !previous_dangerous_state_) ||
+       (download_state == content::DownloadItem::COMPLETE &&
         previous_download_state_ != content::DownloadItem::COMPLETE) ||
        (download_state == content::DownloadItem::INTERRUPTED &&
         previous_download_state_ != content::DownloadItem::INTERRUPTED));
@@ -212,6 +214,7 @@ void DownloadItemNotification::Update() {
 
   show_next_ = false;
   previous_download_state_ = item_->GetState();
+  previous_dangerous_state_ = item_->IsDangerous();
 }
 
 void DownloadItemNotification::UpdateNotificationData(
