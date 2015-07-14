@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../sources-test.js"></script>
+<script src="./search-test.js"></script>
+<script src="resources/search.js"></script>
+<script>
+function test()
+{
+
+    WebInspector.SourcesPanel.show();
+    InspectorTest.showScriptSource("search.js", didShowScriptSource);
+
+    function didShowScriptSource(sourceFrame)
+    {
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("(REPLACE)ME[38]", true, true);
+        InspectorTest.replaceAndDumpChange(sourceFrame, searchConfig, "$1D", false);
+
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("(REPLACE)ME[45]", true, true);
+        InspectorTest.replaceAndDumpChange(sourceFrame, searchConfig, "$1D", true);
+
+        InspectorTest.completeTest();
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests different types of search-and-replace in SourceFrame</p>
+</body>
+</html>
