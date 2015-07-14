@@ -40,10 +40,6 @@ class StubBrowser(object):
   def GetSystemInfo(self):
     return self.system_info
 
-class StubSharedPageState(object):
-  def __init__(self, browser):
-    self.browser = browser
-
 class SampleTestExpectations(gpu_test_expectations.GpuTestExpectations):
   def SetExpectations(self):
     self.Flaky('test1.html', bug=123, max_num_retries=5)
@@ -56,8 +52,8 @@ class GpuTestExpectationsTest(unittest.TestCase):
 
   def assertExpectationEquals(self, expected, page, platform='', gpu=0,
       device=0, vendor_string='', device_string=''):
-    result = self.expectations.GetExpectationForPage(StubSharedPageState(
-        StubBrowser(platform, gpu, device, vendor_string, device_string)), page)
+    result = self.expectations.GetExpectationForPage(StubBrowser(
+      platform, gpu, device, vendor_string, device_string), page)
     self.assertEquals(expected, result)
 
   def getRetriesForPage(self, page, platform='', gpu=0,

@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import gpu_process_expectations as expectations
+import gpu_test_base
 import page_sets
 
-from telemetry import benchmark
 from telemetry.page import page_test
 
 test_harness_script = r"""
@@ -18,7 +18,7 @@ test_harness_script = r"""
   window.domAutomationController = domAutomationController;
 """
 
-class _GpuProcessValidator(page_test.PageTest):
+class _GpuProcessValidator(gpu_test_base.ValidatorBase):
   def __init__(self):
     super(_GpuProcessValidator, self).__init__(
         needs_browser_restart_after_each_page=True)
@@ -26,7 +26,7 @@ class _GpuProcessValidator(page_test.PageTest):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
-  def ValidateAndMeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePageInner(self, page, tab, results):
     if hasattr(page, 'Validate'):
       page.Validate(tab, results)
     else:
@@ -35,7 +35,7 @@ class _GpuProcessValidator(page_test.PageTest):
       if not has_gpu_process:
         raise page_test.Failure('No GPU process detected')
 
-class GpuProcess(benchmark.Benchmark):
+class GpuProcess(gpu_test_base.TestBase):
   """Tests that accelerated content triggers the creation of a GPU process"""
   test = _GpuProcessValidator
 
@@ -43,11 +43,11 @@ class GpuProcess(benchmark.Benchmark):
   def Name(cls):
     return 'gpu_process'
 
-  def CreateExpectations(self):
+  def _CreateExpectations(self):
     return expectations.GpuProcessExpectations()
 
   def CreateStorySet(self, options):
-    story_set = page_sets.GpuProcessTestsStorySet()
+    story_set = page_sets.GpuProcessTestsStorySet(self.GetExpectations())
     for page in story_set:
       page.script_to_evaluate_on_commit = test_harness_script
     return story_set
