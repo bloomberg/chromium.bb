@@ -372,9 +372,7 @@ public:
     // WaitableEvent -------------------------------------------------------
 
     // Creates an embedder-defined waitable event object.
-    // TODO(toyoshim): Remove "virtual" from the no arguments version API once
-    // the embedder drops the override implementation.
-    virtual WebWaitableEvent* createWaitableEvent() { return createWaitableEvent(WebWaitableEvent::ResetPolicy::Auto, WebWaitableEvent::InitialState::NonSignaled); }
+    WebWaitableEvent* createWaitableEvent() { return createWaitableEvent(WebWaitableEvent::ResetPolicy::Auto, WebWaitableEvent::InitialState::NonSignaled); }
     virtual WebWaitableEvent* createWaitableEvent(WebWaitableEvent::ResetPolicy, WebWaitableEvent::InitialState) { return nullptr; }
 
     // Waits on multiple events and returns the event object that has been
