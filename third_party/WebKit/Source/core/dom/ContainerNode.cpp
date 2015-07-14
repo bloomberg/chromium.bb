@@ -164,7 +164,7 @@ bool ContainerNode::checkAcceptChild(const Node* newChild, const Node* oldChild,
 bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, ExceptionState& exceptionState) const
 {
     ASSERT(isChildTypeAllowed(newChild));
-    if (newChild.contains(this)) {
+    if (newChild.containsIncludingHostElements(*this)) {
         exceptionState.throwDOMException(HierarchyRequestError, "The new child element contains the parent.");
         return false;
     }
