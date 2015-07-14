@@ -126,12 +126,26 @@ struct WrapperTypeInfo {
 
     void refObject(ScriptWrappable* scriptWrappable) const
     {
+        if (gcType == GarbageCollectedObject) {
+            ThreadState::current()->persistentAllocated();
+        } else if (gcType == WillBeGarbageCollectedObject) {
+#if ENABLE(OILPAN)
+            ThreadState::current()->persistentAllocated();
+#endif
+        }
         ASSERT(refObjectFunction);
         refObjectFunction(scriptWrappable);
     }
 
     void derefObject(ScriptWrappable* scriptWrappable) const
     {
+        if (gcType == GarbageCollectedObject) {
+            ThreadState::current()->persistentFreed();
+        } else if (gcType == WillBeGarbageCollectedObject) {
+#if ENABLE(OILPAN)
+            ThreadState::current()->persistentFreed();
+#endif
+        }
         ASSERT(derefObjectFunction);
         derefObjectFunction(scriptWrappable);
     }

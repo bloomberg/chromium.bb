@@ -1020,9 +1020,16 @@ public:
     static void increaseAllocatedSpace(size_t delta) { atomicAdd(&s_allocatedSpace, static_cast<long>(delta)); }
     static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
     static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
-    static size_t estimatedLiveObjectSize() { return acquireLoad(&s_estimatedLiveObjectSize); }
-    static void setEstimatedLiveObjectSize(size_t size) { releaseStore(&s_estimatedLiveObjectSize, size); }
-    static size_t externalObjectSizeAtLastGC() { return acquireLoad(&s_externalObjectSizeAtLastGC); }
+    static void increasePersistentCount(size_t delta) { atomicAdd(&s_persistentCount, static_cast<long>(delta)); }
+    static void decreasePersistentCount(size_t delta) { atomicSubtract(&s_persistentCount, static_cast<long>(delta)); }
+    static size_t persistentCount() { return acquireLoad(&s_persistentCount); }
+    static size_t persistentCountAtLastGC() { return acquireLoad(&s_persistentCountAtLastGC); }
+    static void increaseCollectedPersistentCount(size_t delta) { atomicAdd(&s_collectedPersistentCount, static_cast<long>(delta)); }
+    static size_t collectedPersistentCount() { return acquireLoad(&s_collectedPersistentCount); }
+    static size_t liveObjectSizeAtLastSweep() { return acquireLoad(&s_liveObjectSizeAtLastSweep); }
+    static void setLiveObjectSizeAtLastSweep(size_t size) { releaseStore(&s_liveObjectSizeAtLastSweep, size); }
+    static size_t heapSizePerPersistent() { return acquireLoad(&s_heapSizePerPersistent); }
+    static void setHeapSizePerPersistent(size_t size) { releaseStore(&s_heapSizePerPersistent, size); }
 
     static double estimatedMarkingTime();
     static void reportMemoryUsageHistogram();
@@ -1071,8 +1078,11 @@ private:
     static size_t s_allocatedSpace;
     static size_t s_allocatedObjectSize;
     static size_t s_markedObjectSize;
-    static size_t s_estimatedLiveObjectSize;
-    static size_t s_externalObjectSizeAtLastGC;
+    static size_t s_persistentCount;
+    static size_t s_persistentCountAtLastGC;
+    static size_t s_collectedPersistentCount;
+    static size_t s_liveObjectSizeAtLastSweep;
+    static size_t s_heapSizePerPersistent;
     static double s_estimatedMarkingTimePerByte;
 
     friend class ThreadState;

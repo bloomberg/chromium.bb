@@ -881,6 +881,11 @@ Address NormalPageHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIn
     threadState()->snapshotFreeListIfNecessary();
 #endif
 
+    // Ideally we want to update the persistent count every time a persistent
+    // handle is created or destructed, but that is heavy. So we do the update
+    // only in outOfLineAllocate().
+    threadState()->updatePersistentCounters();
+
     // 1. If this allocation is big enough, allocate a large object.
     if (allocationSize >= largeObjectSizeThreshold) {
         // TODO(sof): support eagerly finalized large objects, if ever needed.
@@ -1907,9 +1912,20 @@ void Heap::init()
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
-    s_allocatedObjectSize = 0;
     s_allocatedSpace = 0;
+    s_allocatedObjectSize = 0;
     s_markedObjectSize = 0;
+    s_persistentCount = 0;
+    s_persistentCountAtLastGC = 0;
+    s_collectedPersistentCount = 0;
+    // We don't want to use 0 KB for the initial value because it may end up
+    // triggering the first GC too prematurely.
+    s_liveObjectSizeAtLastSweep = 1024 * 1024;
+    // Initially, the total heap size is very small. Thus we'll hit the GC
+    // condition (i.e., 50% increase on the heap size etc) even if we don't
+    // take into account the memory usage explained by the collected persistent
+    // handles. So it is OK to set a large initial value.
+    s_heapSizePerPersistent = 1024 * 1024;
     s_estimatedMarkingTimePerByte = 0.0;
 
     GCInfoTable::init();
@@ -2370,7 +2386,7 @@ void Heap::reportMemoryUsageForTracing()
 {
     // These values are divided by 1024 to avoid overflow in practical cases (TRACE_COUNTER values are 32-bit ints).
     // They are capped to INT_MAX just in case.
-    TRACE_COUNTER1("blink_gc", "Heap::estimatedLiveObjectSizeKB", std::min(Heap::estimatedLiveObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::liveObjectSizeAtLastSweepKB", std::min(Heap::liveObjectSizeAtLastSweep() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::markedObjectSizeKB", std::min(Heap::markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
@@ -2489,7 +2505,8 @@ void Heap::resetHeapCounters()
 
     s_allocatedObjectSize = 0;
     s_markedObjectSize = 0;
-    s_externalObjectSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
+    s_persistentCountAtLastGC = s_persistentCount;
+    s_collectedPersistentCount = 0;
 }
 
 CallbackStack* Heap::s_markingStack;
@@ -2501,13 +2518,14 @@ bool Heap::s_shutdownCalled = false;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
 Heap::RegionTree* Heap::s_regionTree = nullptr;
-size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_allocatedSpace = 0;
+size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_markedObjectSize = 0;
-// We don't want to use 0 KB for the initial value because it may end up
-// triggering the first GC of some thread too prematurely.
-size_t Heap::s_estimatedLiveObjectSize = 512 * 1024;
-size_t Heap::s_externalObjectSizeAtLastGC = 0;
+size_t Heap::s_persistentCount = 0;
+size_t Heap::s_persistentCountAtLastGC = 0;
+size_t Heap::s_collectedPersistentCount = 0;
+size_t Heap::s_liveObjectSizeAtLastSweep = 0;
+size_t Heap::s_heapSizePerPersistent = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
 
 } // namespace blink

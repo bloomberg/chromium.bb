@@ -94,6 +94,8 @@ ThreadState::ThreadState()
     , m_sweepForbidden(false)
     , m_noAllocationCount(0)
     , m_gcForbiddenCount(0)
+    , m_persistentAllocated(0)
+    , m_persistentFreed(0)
     , m_vectorBackingHeapIndex(Vector1HeapIndex)
     , m_currentHeapAges(0)
     , m_isTerminating(false)
@@ -543,14 +545,39 @@ CrossThreadPersistentRegion& ThreadState::crossThreadPersistentRegion()
     return persistentRegion;
 }
 
+void ThreadState::updatePersistentCounters()
+{
+    if (m_persistentAllocated >= m_persistentFreed)
+        Heap::increasePersistentCount(m_persistentAllocated - m_persistentFreed);
+    else
+        Heap::decreasePersistentCount(m_persistentFreed - m_persistentAllocated);
+    Heap::increaseCollectedPersistentCount(m_persistentFreed);
+    m_persistentAllocated = 0;
+    m_persistentFreed = 0;
+}
+
+size_t ThreadState::estimatedLiveObjectSize()
+{
+    size_t liveObjectSizeAtLastSweep = Heap::liveObjectSizeAtLastSweep();
+    size_t heapSizeRetainedByCollectedPersistents = Heap::heapSizePerPersistent() * Heap::collectedPersistentCount();
+    if (liveObjectSizeAtLastSweep > heapSizeRetainedByCollectedPersistents)
+        return liveObjectSizeAtLastSweep - heapSizeRetainedByCollectedPersistents;
+    return 0;
+}
+
+size_t ThreadState::currentObjectSize()
+{
+    return Heap::allocatedObjectSize() + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+}
+
 bool ThreadState::shouldForceMemoryPressureGC()
 {
     // Avoid potential overflow by truncating to Kb.
-    size_t currentObjectSizeKb = (Heap::allocatedObjectSize() + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages()) >> 10;
+    size_t currentObjectSizeKb = currentObjectSize() >> 10;
     if (currentObjectSizeKb < 300 * 1024)
         return false;
 
-    size_t estimatedLiveObjectSizeKb = Heap::estimatedLiveObjectSize() >> 10;
+    size_t estimatedLiveObjectSizeKb = estimatedLiveObjectSize() >> 10;
     // If we're consuming too much memory, trigger a conservative GC
     // aggressively. This is a safe guard to avoid OOM.
     return currentObjectSizeKb > (estimatedLiveObjectSizeKb * 3) / 2;
@@ -568,10 +595,10 @@ bool ThreadState::shouldScheduleIdleGC()
     // The estimated size is updated when the main thread finishes lazy
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSizeKb = Heap::estimatedLiveObjectSize() >> 10;
+    size_t estimatedLiveObjectSizeKb = estimatedLiveObjectSize() >> 10;
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
-    size_t currentObjectSizeKb = allocatedObjectSizeKb + ((Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages()) >> 10);
+    size_t currentObjectSizeKb = currentObjectSize() >> 10;
     // Schedule an idle GC if Oilpan has allocated more than 1 MB since
     // the last GC and the current memory usage is >50% larger than
     // the estimated live memory usage.
@@ -595,10 +622,10 @@ bool ThreadState::shouldSchedulePreciseGC()
     // The estimated size is updated when the main thread finishes lazy
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSizeKb = Heap::estimatedLiveObjectSize() >> 10;
+    size_t estimatedLiveObjectSizeKb = estimatedLiveObjectSize() >> 10;
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
-    size_t currentObjectSizeKb = allocatedObjectSizeKb + ((Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages()) >> 10);
+    size_t currentObjectSizeKb = currentObjectSize() >> 10;
     // Schedule a precise GC if Oilpan has allocated more than 1 MB since
     // the last GC and the current memory usage is >50% larger than
     // the estimated live memory usage.
@@ -621,10 +648,10 @@ bool ThreadState::shouldForceConservativeGC()
     // The estimated size is updated when the main thread finishes lazy
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSizeKb = Heap::estimatedLiveObjectSize() >> 10;
+    size_t estimatedLiveObjectSizeKb = estimatedLiveObjectSize() >> 10;
     // Heap::markedObjectSize() may be underestimated if any thread has not
     // finished completeSweep().
-    size_t currentObjectSizeKb = allocatedObjectSizeKb + ((Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages()) >> 10);
+    size_t currentObjectSizeKb = currentObjectSize() >> 10;
     // Schedule a conservative GC if Oilpan has allocated more than 32 MB since
     // the last GC and the current memory usage is >400% larger than
     // the estimated live memory usage.
@@ -837,11 +864,6 @@ void ThreadState::didV8MajorGC()
 {
     ASSERT(checkThread());
     if (isMainThread()) {
-        // Lower the estimated live object size because the V8 major GC is
-        // expected to have collected a lot of DOM wrappers and dropped
-        // references to their DOM objects.
-        Heap::setEstimatedLiveObjectSize(Heap::estimatedLiveObjectSize() / 2);
-
         if (shouldForceMemoryPressureGC()) {
             // Under memory pressure, force a conservative GC.
             Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
@@ -909,6 +931,7 @@ void ThreadState::preGC()
     makeConsistentForGC();
     flushHeapDoesNotContainCacheIfNeeded();
     clearHeapAges();
+    updatePersistentCounters();
 }
 
 void ThreadState::postGC(GCType gcType)
@@ -1091,9 +1114,11 @@ void ThreadState::postSweep()
     if (isMainThread()) {
         // At the point where the main thread finishes lazy sweeping,
         // we estimate the live object size. Heap::markedObjectSize()
-        // may be underestimated if any other thread has not finished
+        // may be underestimated if any other thread has not yet finished
         // lazy sweeping.
-        Heap::setEstimatedLiveObjectSize(Heap::markedObjectSize() + Heap::externalObjectSizeAtLastGC());
+        Heap::setLiveObjectSizeAtLastSweep(currentObjectSize());
+        if (Heap::persistentCountAtLastGC() > 0)
+            Heap::setHeapSizePerPersistent(currentObjectSize() / Heap::persistentCountAtLastGC());
     }
 
     switch (gcState()) {
