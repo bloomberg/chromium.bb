@@ -69,7 +69,7 @@ extern "C"
 /*HASHNUM must be prime */
 #define HASHNUM 1123
 
-#define MAXSTRING 512
+#define MAXSTRING 2048
 
   typedef unsigned int TranslationTableOffset;
 #define OFFSETSIZE sizeof (TranslationTableOffset)
