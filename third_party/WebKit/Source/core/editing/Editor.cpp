@@ -1147,7 +1147,9 @@ bool Editor::findString(const String& target, FindOptions options)
 {
     VisibleSelection selection = frame().selection().selection();
 
-    RefPtrWillBeRawPtr<Range> resultRange = findRangeOfString(target, selection.firstRange().get(), static_cast<FindOptions>(options | FindAPICall));
+    // TODO(yosin) We should make |findRangeOfString()| to return
+    // |EphemeralRange| rather than|Range| object.
+    RefPtrWillBeRawPtr<Range> resultRange = findRangeOfString(target, EphemeralRange(selection.start(), selection.end()), static_cast<FindOptions>(options | FindAPICall));
 
     if (!resultRange)
         return false;
@@ -1159,7 +1161,7 @@ bool Editor::findString(const String& target, FindOptions options)
 
 PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* previousMatch, FindOptions options)
 {
-    RefPtrWillBeRawPtr<Range> nextMatch = findRangeOfString(target, previousMatch, options);
+    RefPtrWillBeRawPtr<Range> nextMatch = findRangeOfString(target, EphemeralRange(previousMatch), options);
     if (!nextMatch)
         return nullptr;
 
@@ -1170,15 +1172,14 @@ PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String&
 }
 
 // TODO(yosin) We should return |EphemeralRange| rather than |Range|.
-static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& target, const Position& start, const Position& end, FindOptions options)
+static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& target, const EphemeralRange& referenceRange, FindOptions options)
 {
-    Position searchStart(start);
-    Position searchEnd(end);
+    EphemeralRange searchRange(referenceRange);
 
     bool forward = !(options & Backwards);
 
     while (true) {
-        EphemeralRange resultRange = findPlainText(EphemeralRange(searchStart, searchEnd), target, options);
+        EphemeralRange resultRange = findPlainText(searchRange, target, options);
         if (resultRange.isCollapsed())
             return nullptr;
 
@@ -1186,56 +1187,61 @@ static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& ta
         if (!rangeObject->collapsed())
             return rangeObject.release();
 
-        // Found text spans over multiple TreeScopes. Since it's impossible to return such section as a Range,
-        // we skip this match and seek for the next occurrence.
-        // FIXME: Handle this case.
+        // Found text spans over multiple TreeScopes. Since it's impossible to
+        // return such section as a Range, we skip this match and seek for the
+        // next occurrence.
+        // TODO(yosin) Handle this case.
         if (forward)
-            searchStart = resultRange.startPosition().next();
+            searchRange = EphemeralRange(resultRange.startPosition().next(), searchRange.endPosition());
         else
-            searchEnd = resultRange.endPosition().previous();
+            searchRange = EphemeralRange(searchRange.startPosition(), resultRange.endPosition().previous());
     }
 
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, Range* referenceRange, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, const EphemeralRange& referenceRange, FindOptions options)
 {
     if (target.isEmpty())
         return nullptr;
 
-    // Start from an edge of the reference range. Which edge is used depends on whether we're searching forward or
-    // backward, and whether startInSelection is set.
-    Position searchStart = firstPositionInNode(frame().document());
-    Position searchEnd = lastPositionInNode(frame().document());
+    // Start from an edge of the reference range. Which edge is used depends on
+    // whether we're searching forward or backward, and whether startInSelection
+    // is set.
+    EphemeralRange documentRange = EphemeralRange::rangeOfContents(*frame().document());
+    EphemeralRange searchRange(documentRange);
 
     bool forward = !(options & Backwards);
-    bool startInReferenceRange = referenceRange && (options & StartInSelection);
-    if (referenceRange) {
-        if (forward)
-            searchStart = startInReferenceRange ? referenceRange->startPosition() : referenceRange->endPosition();
+    bool startInReferenceRange = false;
+    if (referenceRange.isNotNull()) {
+        startInReferenceRange = options & StartInSelection;
+        if (forward && startInReferenceRange)
+            searchRange = EphemeralRange(referenceRange.startPosition(), documentRange.endPosition());
+        else if (forward)
+            searchRange = EphemeralRange(referenceRange.endPosition(), documentRange.endPosition());
+        else if (startInReferenceRange)
+            searchRange = EphemeralRange(documentRange.startPosition(), referenceRange.endPosition());
         else
-            searchEnd = startInReferenceRange ? referenceRange->endPosition() : referenceRange->startPosition();
+            searchRange = EphemeralRange(documentRange.startPosition(), referenceRange.startPosition());
     }
 
-    RefPtrWillBeRawPtr<Range> resultRange = findStringBetweenPositions(target, searchStart, searchEnd, options);
+    RefPtrWillBeRawPtr<Range> resultRange = findStringBetweenPositions(target, searchRange, options);
 
-    // If we started in the reference range and the found range exactly matches the reference range, find again.
-    // Build a selection with the found range to remove collapsed whitespace.
-    // Compare ranges instead of selection objects to ignore the way that the current selection was made.
-    if (resultRange && startInReferenceRange && areRangesEqual(VisibleSelection(resultRange.get()).toNormalizedRange().get(), referenceRange)) {
+    // If we started in the reference range and the found range exactly matches
+    // the reference range, find again. Build a selection with the found range
+    // to remove collapsed whitespace. Compare ranges instead of selection
+    // objects to ignore the way that the current selection was made.
+    if (resultRange && startInReferenceRange && VisibleSelection(resultRange.get()).toNormalizedEphemeralRange() == referenceRange) {
         if (forward)
-            searchStart = resultRange->endPosition();
+            searchRange = EphemeralRange(resultRange->endPosition(), searchRange.endPosition());
         else
-            searchEnd = resultRange->startPosition();
-        resultRange = findStringBetweenPositions(target, searchStart, searchEnd, options);
+            searchRange = EphemeralRange(searchRange.startPosition(), resultRange->startPosition());
+        resultRange = findStringBetweenPositions(target, searchRange, options);
     }
 
-    if (!resultRange && options & WrapAround) {
-        searchStart = firstPositionInNode(frame().document());
-        searchEnd = lastPositionInNode(frame().document());
-        resultRange = findStringBetweenPositions(target, searchStart, searchEnd, options);
-    }
+    if (!resultRange && options & WrapAround)
+        return findStringBetweenPositions(target, documentRange, options);
 
     return resultRange.release();
 }
