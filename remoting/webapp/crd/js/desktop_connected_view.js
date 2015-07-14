@@ -138,6 +138,12 @@ remoting.DesktopConnectedView.prototype.getViewportForTesting = function() {
   return this.viewport_;
 };
 
+/** @return {remoting.ConnectedView} */
+remoting.DesktopConnectedView.prototype.getConnectedViewForTesting =
+    function() {
+  return this.view_;
+};
+
 /** @private */
 remoting.DesktopConnectedView.prototype.initPlugin_ = function() {
   console.assert(remoting.app instanceof remoting.DesktopRemoting,

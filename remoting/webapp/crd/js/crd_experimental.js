@@ -15,6 +15,19 @@ var remoting = remoting || {};
 remoting.experimental = {};
 
 /**
+ * Enables or disables rendering of dirty regions for debugging.
+ * @param {boolean} enable True to enable rendering.
+ */
+remoting.experimental.enableDebugRegion = function(enable) {
+  var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
+  if (drApp instanceof remoting.DesktopRemoting) {
+    var desktopConnectedView = drApp.getConnectedViewForTesting();
+    var connectedView = desktopConnectedView.getConnectedViewForTesting();
+    connectedView.enableDebugRegion(enable);
+  }
+}
+
+/**
  * Sets and stores the scale factor to apply to host sizing requests.
  * The desktopScale applies to the dimensions reported to the host, not
  * to the client DPI reported to it.
