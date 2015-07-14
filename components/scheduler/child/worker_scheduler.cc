@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/null_worker_scheduler.h"
-#include "components/scheduler/child/scheduler_message_loop_delegate.h"
+#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
 #include "components/scheduler/common/scheduler_switches.h"
 
@@ -27,7 +27,7 @@ scoped_ptr<WorkerScheduler> WorkerScheduler::Create(
     return make_scoped_ptr(new NullWorkerScheduler());
   } else {
     return make_scoped_ptr(new WorkerSchedulerImpl(
-        SchedulerMessageLoopDelegate::Create(message_loop)));
+        SchedulerTaskRunnerDelegateImpl::Create(message_loop)));
   }
 }
 

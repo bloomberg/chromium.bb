@@ -18,13 +18,13 @@ class ConvertableToTraceFormat;
 
 namespace scheduler {
 
-class NestableSingleThreadTaskRunner;
+class SchedulerTaskRunnerDelegate;
 
 class SCHEDULER_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
                                              public IdleHelper::Delegate {
  public:
   explicit WorkerSchedulerImpl(
-      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner);
   ~WorkerSchedulerImpl() override;
 
   // WorkerScheduler implementation:

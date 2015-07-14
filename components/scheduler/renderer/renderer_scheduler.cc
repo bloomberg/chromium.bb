@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
-#include "components/scheduler/child/scheduler_message_loop_delegate.h"
+#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
 #include "components/scheduler/common/scheduler_switches.h"
 #include "components/scheduler/renderer/null_renderer_scheduler.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
@@ -38,7 +38,7 @@ scoped_ptr<RendererScheduler> RendererScheduler::Create() {
   } else {
     base::MessageLoop* message_loop = base::MessageLoop::current();
     return make_scoped_ptr(new RendererSchedulerImpl(
-        SchedulerMessageLoopDelegate::Create(message_loop)));
+        SchedulerTaskRunnerDelegateImpl::Create(message_loop)));
   }
 }
 
