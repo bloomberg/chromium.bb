@@ -1188,6 +1188,8 @@ public:                                           \
     {                                             \
         return allocateObject(size, true);        \
     }
+
+#define IS_EAGERLY_FINALIZED() (pageFromObject(this)->heap()->heapIndex() == ThreadState::EagerSweepHeapIndex)
 #if ENABLE(ASSERT) && ENABLE(OILPAN)
 class VerifyEagerFinalization {
 public:
@@ -1201,7 +1203,7 @@ public:
         // eagerly finalized. Declaring and defining an 'operator new'
         // for this class is what's required -- consider using
         // DECLARE_EAGER_FINALIZATION_OPERATOR_NEW().
-        ASSERT(pageFromObject(this)->heap()->heapIndex() == ThreadState::EagerSweepHeapIndex);
+        ASSERT(IS_EAGERLY_FINALIZED());
     }
 };
 #define EAGERLY_FINALIZE()                             \

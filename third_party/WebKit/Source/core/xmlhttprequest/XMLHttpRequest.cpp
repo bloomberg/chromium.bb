@@ -224,6 +224,11 @@ XMLHttpRequest::XMLHttpRequest(ExecutionContext* context, PassRefPtr<SecurityOri
 #ifndef NDEBUG
     xmlHttpRequestCounter.increment();
 #endif
+#if ENABLE(ASSERT) && !ENABLE(OILPAN)
+    // Verify that this object was allocated on the 'eager' heap.
+    // (this check comes 'for free' with Oilpan enabled.)
+    ASSERT(IS_EAGERLY_FINALIZED());
+#endif
 }
 
 XMLHttpRequest::~XMLHttpRequest()
