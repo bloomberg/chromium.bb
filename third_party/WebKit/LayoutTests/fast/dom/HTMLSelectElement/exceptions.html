@@ -10,6 +10,7 @@
         var el = document.createElement('select');
 
         shouldThrow("el[1] = 0;");
+        shouldThrow("el.namedItem()");
     </script>
 </body>
 </html>

@@ -37,8 +37,7 @@ interface HTMLSelectElement : HTMLElement {
     // TODO(philipj): The length setter should never throw.
     [RaisesException=Setter] attribute unsigned long length;
     getter Element? item(unsigned long index);
-    // TODO(philipj): The name argument should not be optional.
-    HTMLOptionElement? namedItem([Default=Undefined] optional DOMString name);
+    HTMLOptionElement? namedItem(DOMString name);
     [RaisesException, TypeChecking=Interface] void add((HTMLOptionElement or HTMLOptGroupElement) element,
                                                        optional (HTMLElement or long)? before = null);
     [RaisesException] void remove(); // ChildNode overload
