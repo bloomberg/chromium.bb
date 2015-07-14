@@ -126,7 +126,7 @@ class DownloadItemNotificationTest : public testing::Test {
   }
 
   bool ShownAsPopUp() {
-    return !download_item_notification_->notification_->shown_as_popup();
+    return !notification()->shown_as_popup();
   }
 
   void CreateDownloadItemNotification() {
