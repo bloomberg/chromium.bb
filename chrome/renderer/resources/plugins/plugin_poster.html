@@ -82,6 +82,12 @@
     document.getElementById('outer').onclick = function() {
       plugin.load();
     };
+
+    window.setPosterMargin = function(marginLeft, marginTop) {
+      var container = document.getElementById('inner_container');
+      container.style.marginLeft = marginLeft;
+      container.style.marginTop = marginTop;
+    };
   </script>
 </body>
 </html>

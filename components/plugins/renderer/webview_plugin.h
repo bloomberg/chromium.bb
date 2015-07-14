@@ -56,8 +56,8 @@ class WebViewPlugin : public blink::WebPlugin,
     // loaded but idle. Doesn't work for blocked plugins, which is not loaded.
     virtual v8::Local<v8::Object> GetV8ScriptableObject(v8::Isolate*) const = 0;
 
-    // Called when the unobscured size of the plugin is updated.
-    virtual void OnUnobscuredSizeUpdate(const gfx::Size& unobscured_size) {}
+    // Called when the unobscured rect of the plugin is updated.
+    virtual void OnUnobscuredRectUpdate(const gfx::Rect& unobscured_rect) {}
   };
 
   // Convenience method to set up a new WebViewPlugin using |preferences|

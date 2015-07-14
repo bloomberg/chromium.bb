@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/json/string_escape.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -35,9 +36,9 @@ using content::RenderThread;
 
 namespace plugins {
 
-// TODO(tommycli): After an unthrottling size update, re-check the size after
-// this delay, as Blink can report incorrect sizes to plugins while the
-// compositing state is dirty. Chosen because it seems to work.
+// TODO(tommycli): After a size update, re-check the size after this delay, as
+// Blink can report incorrect sizes to plugins while the compositing state is
+// dirty. Chosen because it seems to work.
 const int kSizeChangeRecheckDelayMilliseconds = 100;
 
 void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
@@ -178,35 +179,29 @@ v8::Local<v8::Object> LoadablePluginPlaceholder::GetV8ScriptableObject(
   return v8::Local<v8::Object>();
 }
 
-void LoadablePluginPlaceholder::OnUnobscuredSizeUpdate(
-    const gfx::Size& unobscured_size) {
+void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
+    const gfx::Rect& unobscured_rect) {
   DCHECK(
       content::RenderThread::Get()->GetTaskRunner()->BelongsToCurrentThread());
   if (!power_saver_enabled_ || !premade_throttler_ || !finished_loading_)
     return;
 
-  unobscured_size_ = unobscured_size;
+  unobscured_rect_ = unobscured_rect;
 
   // During a size recheck, we will get another notification into this method.
   // Use this flag to early exit to prevent reentrancy issues.
   if (in_size_recheck_)
     return;
 
-  if (PluginInstanceThrottler::IsLargeContent(unobscured_size.width(),
-                                              unobscured_size.height())) {
-    if (!size_update_timer_.IsRunning()) {
-      // TODO(tommycli): We have to post a delayed task to recheck the size, as
-      // Blink can report wrong sizes for partially obscured plugins while the
-      // compositing state is dirty. https://crbug.com/343769
-      size_update_timer_.Start(
-          FROM_HERE, base::TimeDelta::FromMilliseconds(
-                         kSizeChangeRecheckDelayMilliseconds),
-          base::Bind(&LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle,
-                     weak_factory_.GetWeakPtr()));
-    }
-  } else {
-    // Cancel any pending unthrottle due to resize calls.
-    size_update_timer_.Stop();
+  if (!size_update_timer_.IsRunning()) {
+    // TODO(tommycli): We have to post a delayed task to recheck the size, as
+    // Blink can report wrong sizes for partially obscured plugins while the
+    // compositing state is dirty. https://crbug.com/343769
+    size_update_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kSizeChangeRecheckDelayMilliseconds),
+        base::Bind(&LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -340,8 +335,18 @@ void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
   // Re-check the size in case the reported size was incorrect.
   plugin()->container()->reportGeometry();
 
-  if (PluginInstanceThrottler::IsLargeContent(unobscured_size_.width(),
-                                              unobscured_size_.height())) {
+  // Adjust padding using clip coordinates to center play button for plugins
+  // that have their top or left portions obscured.
+  if (is_blocked_for_power_saver_poster_) {
+    std::string script =
+        base::StringPrintf("window.setPosterMargin('%dpx', '%dpx')",
+                           unobscured_rect_.x(), unobscured_rect_.y());
+    plugin()->web_view()->mainFrame()->executeScript(
+        blink::WebScriptSource(base::UTF8ToUTF16(script)));
+  }
+
+  if (PluginInstanceThrottler::IsLargeContent(unobscured_rect_.width(),
+                                              unobscured_rect_.height())) {
     MarkPluginEssential(
         PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE);
   }

@@ -76,7 +76,7 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   void PluginDestroyed() override;
   v8::Local<v8::Object> GetV8ScriptableObject(
       v8::Isolate* isolate) const override;
-  void OnUnobscuredSizeUpdate(const gfx::Size& unobscured_size) override;
+  void OnUnobscuredRectUpdate(const gfx::Rect& unobscured_rect) override;
 
   // RenderFrameObserver methods:
   void WasShown() override;
@@ -118,7 +118,7 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
 
   // Used to prevent re-entrancy during the size recheck for throttled plugins.
   bool in_size_recheck_;
-  gfx::Size unobscured_size_;
+  gfx::Rect unobscured_rect_;
   base::OneShotTimer<LoadablePluginPlaceholder> size_update_timer_;
 
   base::WeakPtrFactory<LoadablePluginPlaceholder> weak_factory_;
