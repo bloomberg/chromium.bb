@@ -591,6 +591,85 @@ class Chapters {
   int m_editions_count;
 };
 
+class Tags {
+  Tags(const Tags&);
+  Tags& operator=(const Tags&);
+
+ public:
+  Segment* const m_pSegment;
+  const long long m_start;
+  const long long m_size;
+  const long long m_element_start;
+  const long long m_element_size;
+
+  Tags(Segment*, long long payload_start, long long payload_size,
+       long long element_start, long long element_size);
+
+  ~Tags();
+
+  long Parse();
+
+  class Tag;
+  class SimpleTag;
+
+  class SimpleTag {
+    friend class Tag;
+    SimpleTag();
+    SimpleTag(const SimpleTag&);
+    ~SimpleTag();
+    SimpleTag& operator=(const SimpleTag&);
+
+   public:
+    const char* GetTagName() const;
+    const char* GetTagString() const;
+
+   private:
+    void Init();
+    void ShallowCopy(SimpleTag&) const;
+    void Clear();
+    long Parse(IMkvReader*, long long pos, long long size);
+
+    char* m_tag_name;
+    char* m_tag_string;
+  };
+
+  class Tag {
+    friend class Tags;
+    Tag();
+    Tag(const Tag&);
+    ~Tag();
+    Tag& operator=(const Tag&);
+
+   public:
+    int GetSimpleTagCount() const;
+    const SimpleTag* GetSimpleTag(int index) const;
+
+   private:
+    void Init();
+    void ShallowCopy(Tag&) const;
+    void Clear();
+    long Parse(IMkvReader*, long long pos, long long size);
+
+    long ParseSimpleTag(IMkvReader*, long long pos, long long size);
+    bool ExpandSimpleTagsArray();
+
+    SimpleTag* m_simple_tags;
+    int m_simple_tags_size;
+    int m_simple_tags_count;
+  };
+
+  int GetTagCount() const;
+  const Tag* GetTag(int index) const;
+
+ private:
+  long ParseTag(long long pos, long long size);
+  bool ExpandTagsArray();
+
+  Tag* m_tags;
+  int m_tags_size;
+  int m_tags_count;
+};
+
 class SegmentInfo {
   SegmentInfo(const SegmentInfo&);
   SegmentInfo& operator=(const SegmentInfo&);
@@ -883,6 +962,7 @@ class Segment {
   const SegmentInfo* GetInfo() const;
   const Cues* GetCues() const;
   const Chapters* GetChapters() const;
+  const Tags* GetTags() const;
 
   long long GetDuration() const;
 
@@ -908,6 +988,7 @@ class Segment {
   Tracks* m_pTracks;
   Cues* m_pCues;
   Chapters* m_pChapters;
+  Tags* m_pTags;
   Cluster** m_clusters;
   long m_clusterCount;  // number of entries for which m_index >= 0
   long m_clusterPreloadCount;  // number of entries for which m_index < 0

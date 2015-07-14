@@ -51,6 +51,7 @@ void Usage() {
   printf("  -audio_track_number <int>   >0 Changes the audio track number\n");
   printf("  -video_track_number <int>   >0 Changes the video track number\n");
   printf("  -chunking <string>          Chunk output\n");
+  printf("  -copy_tags <int>            >0 Copies the tags\n");
   printf("\n");
   printf("Video options:\n");
   printf("  -display_width <int>        Display width in pixels\n");
@@ -159,6 +160,7 @@ int main(int argc, char* argv[]) {
   int audio_track_number = 0;  // 0 tells muxer to decide.
   int video_track_number = 0;  // 0 tells muxer to decide.
   bool chunking = false;
+  bool copy_tags = false;
   const char* chunk_name = NULL;
 
   bool output_cues_block_number = true;
@@ -212,6 +214,8 @@ int main(int argc, char* argv[]) {
     } else if (!strcmp("-chunking", argv[i]) && i < argc_check) {
       chunking = true;
       chunk_name = argv[++i];
+    } else if (!strcmp("-copy_tags", argv[i]) && i < argc_check) {
+      copy_tags = strtol(argv[++i], &end, 10) == 0 ? false : true;
     } else if (!strcmp("-display_width", argv[i]) && i < argc_check) {
       display_width = strtol(argv[++i], &end, 10);
     } else if (!strcmp("-display_height", argv[i]) && i < argc_check) {
@@ -297,6 +301,21 @@ int main(int argc, char* argv[]) {
   mkvmuxer::SegmentInfo* const info = muxer_segment.GetSegmentInfo();
   info->set_timecode_scale(timeCodeScale);
   info->set_writing_app("sample_muxer");
+
+  const mkvparser::Tags* const tags = parser_segment->GetTags();
+  if (copy_tags && tags) {
+    for (int i = 0; i < tags->GetTagCount(); i++) {
+      const mkvparser::Tags::Tag* const tag = tags->GetTag(i);
+      mkvmuxer::Tag* muxer_tag = muxer_segment.AddTag();
+
+      for (int j = 0; j < tag->GetSimpleTagCount(); j++) {
+        const mkvparser::Tags::SimpleTag* const simple_tag =
+            tag->GetSimpleTag(j);
+        muxer_tag->add_simple_tag(simple_tag->GetTagName(),
+                                  simple_tag->GetTagString());
+      }
+    }
+  }
 
   // Set Tracks element attributes
   const mkvparser::Tracks* const parser_tracks = parser_segment->GetTracks();

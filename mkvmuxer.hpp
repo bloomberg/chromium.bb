@@ -737,6 +737,112 @@ class Chapters {
 };
 
 ///////////////////////////////////////////////////////////////
+// Tag element
+//
+class Tag {
+ public:
+  bool add_simple_tag(const char* tag_name, const char* tag_string);
+
+ private:
+  // Tags calls Clear and the destructor of Tag
+  friend class Tags;
+
+  // For storage of simple tags
+  class SimpleTag {
+   public:
+    // Establish representation invariant for new SimpleTag object.
+    void Init();
+
+    // Reclaim resources, in anticipation of destruction.
+    void Clear();
+
+    // Copies the title to the |tag_name_| member.  Returns false on
+    // error.
+    bool set_tag_name(const char* tag_name);
+
+    // Copies the language to the |tag_string_| member.  Returns false
+    // on error.
+    bool set_tag_string(const char* tag_string);
+
+    // If |writer| is non-NULL, serialize the SimpleTag sub-element of
+    // the Atom into the stream.  Returns the SimpleTag element size on
+    // success, 0 if error.
+    uint64 Write(IMkvWriter* writer) const;
+
+   private:
+    char* tag_name_;
+    char* tag_string_;
+  };
+
+  Tag();
+  ~Tag();
+
+  // Copies this Tag object to a different one.  This is used when
+  // expanding a plain array of Tag objects (see Tags).
+  void ShallowCopy(Tag* dst) const;
+
+  // Reclaim resources used by this Tag object, pending its
+  // destruction.
+  void Clear();
+
+  // If there is no storage remaining on the |simple_tags_| array for a
+  // new display object, creates a new, longer array and copies the
+  // existing SimpleTag objects to the new array.  Returns false if the
+  // array cannot be expanded.
+  bool ExpandSimpleTagsArray();
+
+  // If |writer| is non-NULL, serialize the Tag sub-element into the
+  // stream.  Returns the total size of the element on success, 0 if
+  // error.
+  uint64 Write(IMkvWriter* writer) const;
+
+  // The Atom element can contain multiple SimpleTag sub-elements
+  SimpleTag* simple_tags_;
+
+  // The physical length (total size) of the |simple_tags_| array.
+  int simple_tags_size_;
+
+  // The logical length (number of active elements) on the |simple_tags_|
+  // array.
+  int simple_tags_count_;
+
+  LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Tag);
+};
+
+///////////////////////////////////////////////////////////////
+// Tags element
+//
+class Tags {
+ public:
+  Tags();
+  ~Tags();
+
+  Tag* AddTag();
+
+  // Returns the number of tags that have been added.
+  int Count() const;
+
+  // Output the Tags element to the writer. Returns true on success.
+  bool Write(IMkvWriter* writer) const;
+
+ private:
+  // Expands the tags_ array if there is not enough space to contain
+  // another tag object.  Returns true on success.
+  bool ExpandTagsArray();
+
+  // Total length of the tags_ array.
+  int tags_size_;
+
+  // Number of active tags on the tags_ array.
+  int tags_count_;
+
+  // Array for storage of tag objects.
+  Tag* tags_;
+
+  LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Tags);
+};
+
+///////////////////////////////////////////////////////////////
 // Cluster element
 //
 // Notes:
@@ -1029,6 +1135,11 @@ class Segment {
   // populate its fields via the Chapter member functions.
   Chapter* AddChapter();
 
+  // Adds an empty tag to the tags of this segment.  Returns
+  // non-NULL on success.  After adding the tag, the caller should
+  // populate its fields via the Tag member functions.
+  Tag* AddTag();
+
   // Adds a cue point to the Cues element. |timestamp| is the time in
   // nanoseconds of the cue's time. |track| is the Track of the Cue. This
   // function must be called after AddFrame to calculate the correct
@@ -1254,6 +1365,7 @@ class Segment {
   SegmentInfo segment_info_;
   Tracks tracks_;
   Chapters chapters_;
+  Tags tags_;
 
   // Number of chunks written.
   int chunk_count_;

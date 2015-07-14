@@ -336,6 +336,21 @@ int main(int argc, char* argv[]) {
     } while (cue != NULL);
   }
 
+  const mkvparser::Tags* const tags = pSegment->GetTags();
+  if (tags && tags->GetTagCount() > 0) {
+    printf("\t\tTags\n");
+    for (int i = 0; i < tags->GetTagCount(); ++i) {
+      const mkvparser::Tags::Tag* const tag = tags->GetTag(i);
+      printf("\t\t\tTag\n");
+      for (int j = 0; j < tag->GetSimpleTagCount(); j++) {
+        const mkvparser::Tags::SimpleTag* const simple_tag =
+            tag->GetSimpleTag(j);
+        printf("\t\t\t\tSimple Tag \"%s\" Value \"%s\"\n",
+               simple_tag->GetTagName(), simple_tag->GetTagString());
+      }
+    }
+  }
+
   fflush(stdout);
   return 0;
 }
