@@ -73,6 +73,8 @@ def print_landmines():
   print 'Remove NaCl toolchains from the output dir (crbug.com/456902)'
   if platform() == 'ios':
     print 'Clobber iOS to workaround Xcode deps bug (crbug.com/485435)'
+  if platform() == 'win':
+    print 'Clobber to delete stale generated files (crbug.com/510086)'
 
 
 def main():
