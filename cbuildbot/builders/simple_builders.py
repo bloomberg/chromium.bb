@@ -194,7 +194,8 @@ class SimpleBuilder(generic_builders.Builder):
     # The CQ/Chrome PFQ master will not actually run the SyncChrome stage, but
     # we want the logic that gets triggered when SyncChrome stage is skipped.
     self._RunStage(chrome_stages.SyncChromeStage)
-    self._RunStage(build_stages.RegenPortageCacheStage)
+    if self._run.config.build_type == constants.PALADIN_TYPE:
+      self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(test_stages.BinhostTestStage)
     self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
 
