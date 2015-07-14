@@ -65,6 +65,11 @@ def attribute_context(interface, attribute):
         not is_do_not_check_security)
     if is_check_security_for_frame or is_check_security_for_node or is_check_security_for_window:
         includes.add('bindings/core/v8/BindingSecurity.h')
+    # [Constructor]
+    # TODO(yukishiino): Constructors are much like methods although constructors
+    # are not methods.  Constructors must be data-type properties, and we can
+    # support them as a kind of methods.
+    constructor_type = idl_type.constructor_type_name if is_constructor_attribute(attribute) else None
     # [CustomElementCallbacks], [Reflect]
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     is_reflect = 'Reflect' in extended_attributes
@@ -100,8 +105,7 @@ def attribute_context(interface, attribute):
         'argument_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
         'cached_attribute_validation_method': cached_attribute_validation_method,
         'conditional_string': v8_utilities.conditional_string(attribute),
-        'constructor_type': idl_type.constructor_type_name
-                            if is_constructor_attribute(attribute) else None,
+        'constructor_type': constructor_type,
         'cpp_name': cpp_name(attribute),
         'cpp_type': idl_type.cpp_type,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
@@ -119,7 +123,8 @@ def attribute_context(interface, attribute):
         'is_check_security_for_node': is_check_security_for_node,
         'is_check_security_for_window': is_check_security_for_window,
         'is_custom_element_callbacks': is_custom_element_callbacks,
-        'is_expose_js_accessors': is_expose_js_accessors(interface, attribute),
+        # TODO(yukishiino): Make all DOM attributes accessor-type properties.
+        'is_data_type_property': constructor_type or interface.name == 'Window' or interface.name == 'Location',
         'is_getter_raises_exception':  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in (None, 'Getter'),
@@ -487,43 +492,6 @@ def has_custom_setter(attribute):
     return (not attribute.is_read_only and
             'Custom' in extended_attributes and
             extended_attributes['Custom'] in [None, 'Setter'])
-
-
-# [ExposeJSAccessors]
-def is_expose_js_accessors(interface, attribute):
-    # Default behavior
-    is_accessor = True
-
-    if ('ExposeJSAccessors' in interface.extended_attributes and
-            'DoNotExposeJSAccessors' in interface.extended_attributes):
-        raise Exception('Both of ExposeJSAccessors and DoNotExposeJSAccessors are specified at a time in an interface: ' + interface.name)
-    if 'ExposeJSAccessors' in interface.extended_attributes:
-        is_accessor = True
-    if 'DoNotExposeJSAccessors' in interface.extended_attributes:
-        is_accessor = False
-
-    # Note that ExposeJSAccessors and DoNotExposeJSAccessors are more powerful
-    # than 'static', [Unforgeable] and [OverrideBuiltins].
-    if ('ExposeJSAccessors' in attribute.extended_attributes and
-            'DoNotExposeJSAccessors' in attribute.extended_attributes):
-        raise Exception('Both of ExposeJSAccessors and DoNotExposeJSAccessors are specified at a time on an attribute: ' + attribute.name + ' in an interface: ' + interface.name)
-    if 'ExposeJSAccessors' in attribute.extended_attributes:
-        return True
-    if 'DoNotExposeJSAccessors' in attribute.extended_attributes:
-        return False
-
-    # These attributes must not be accessors on prototype chains.
-    if (is_constructor_attribute(attribute) or
-            attribute.is_static or
-            is_unforgeable(interface, attribute) or
-            'OverrideBuiltins' in interface.extended_attributes):
-        return False
-
-    # The members of Window interface must be placed on the instance object.
-    if interface.name == 'Window':
-        return False
-
-    return is_accessor
 
 
 ################################################################################

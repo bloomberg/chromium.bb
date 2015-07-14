@@ -288,17 +288,17 @@ def interface_context(interface):
     context.update({
         'attributes': attributes,
         'has_accessor_configuration': any(
-            attribute['is_expose_js_accessors'] and
-            not (attribute['is_static'] or
+            not (attribute['exposed_test'] or
                  attribute['runtime_enabled_function']) and
+            not attribute['is_data_type_property'] and
             attribute['should_be_exposed_to_script']
             for attribute in attributes),
         'has_attribute_configuration': any(
-             not (attribute['is_expose_js_accessors'] or
-                  attribute['is_static'] or
-                  attribute['runtime_enabled_function'])
-             and attribute['should_be_exposed_to_script']
-             for attribute in attributes),
+            not (attribute['exposed_test'] or
+                 attribute['runtime_enabled_function']) and
+            attribute['is_data_type_property'] and
+            attribute['should_be_exposed_to_script']
+            for attribute in attributes),
         'has_constructor_attributes': any(attribute['constructor_type'] for attribute in attributes),
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
     })

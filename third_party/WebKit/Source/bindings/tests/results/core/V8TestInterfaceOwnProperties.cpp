@@ -37,21 +37,21 @@ const WrapperTypeInfo& TestInterfaceOwnProperties::s_wrapperTypeInfo = V8TestInt
 
 namespace TestInterfaceOwnPropertiesV8Internal {
 
-static void noExposeJSAccessorAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void noExposeJSAccessorAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceOwnProperties* impl = V8TestInterfaceOwnProperties::toImpl(holder);
     v8SetReturnValueInt(info, impl->noExposeJSAccessorAttribute());
 }
 
-static void noExposeJSAccessorAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void noExposeJSAccessorAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceOwnPropertiesV8Internal::noExposeJSAccessorAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void noExposeJSAccessorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void noExposeJSAccessorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "noExposeJSAccessorAttribute", "TestInterfaceOwnProperties", holder, info.GetIsolate());
@@ -62,8 +62,9 @@ static void noExposeJSAccessorAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     impl->setNoExposeJSAccessorAttribute(cppValue);
 }
 
-static void noExposeJSAccessorAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void noExposeJSAccessorAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    v8::Local<v8::Value> v8Value = info[0];
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestInterfaceOwnPropertiesV8Internal::noExposeJSAccessorAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
@@ -102,21 +103,21 @@ static void exposeJSAccessorAttributeAttributeSetterCallback(const v8::FunctionC
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void doNotExposeJSAccessorAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void doNotExposeJSAccessorAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceOwnProperties* impl = V8TestInterfaceOwnProperties::toImpl(holder);
     v8SetReturnValueInt(info, impl->doNotExposeJSAccessorAttribute());
 }
 
-static void doNotExposeJSAccessorAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void doNotExposeJSAccessorAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     TestInterfaceOwnPropertiesV8Internal::doNotExposeJSAccessorAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void doNotExposeJSAccessorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void doNotExposeJSAccessorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doNotExposeJSAccessorAttribute", "TestInterfaceOwnProperties", holder, info.GetIsolate());
@@ -127,8 +128,9 @@ static void doNotExposeJSAccessorAttributeAttributeSetter(v8::Local<v8::Value> v
     impl->setDoNotExposeJSAccessorAttribute(cppValue);
 }
 
-static void doNotExposeJSAccessorAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void doNotExposeJSAccessorAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    v8::Local<v8::Value> v8Value = info[0];
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestInterfaceOwnPropertiesV8Internal::doNotExposeJSAccessorAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
@@ -136,22 +138,10 @@ static void doNotExposeJSAccessorAttributeAttributeSetterCallback(v8::Local<v8::
 
 } // namespace TestInterfaceOwnPropertiesV8Internal
 
-// Suppress warning: global constructors, because AttributeConfiguration is trivial
-// and does not depend on another global objects.
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wglobal-constructors"
-#endif
-static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceOwnPropertiesAttributes[] = {
-    {"noExposeJSAccessorAttribute", TestInterfaceOwnPropertiesV8Internal::noExposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesV8Internal::noExposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-    {"doNotExposeJSAccessorAttribute", TestInterfaceOwnPropertiesV8Internal::doNotExposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesV8Internal::doNotExposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-};
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
-#pragma clang diagnostic pop
-#endif
-
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceOwnPropertiesAccessors[] = {
-    {"exposeJSAccessorAttribute", TestInterfaceOwnPropertiesV8Internal::exposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesV8Internal::exposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"noExposeJSAccessorAttribute", TestInterfaceOwnPropertiesV8Internal::noExposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesV8Internal::noExposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"exposeJSAccessorAttribute", TestInterfaceOwnPropertiesV8Internal::exposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesV8Internal::exposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"doNotExposeJSAccessorAttribute", TestInterfaceOwnPropertiesV8Internal::doNotExposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesV8Internal::doNotExposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestInterfaceOwnPropertiesTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
@@ -160,7 +150,7 @@ static void installV8TestInterfaceOwnPropertiesTemplate(v8::Local<v8::FunctionTe
 
     v8::Local<v8::Signature> defaultSignature;
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceOwnProperties", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterfaceOwnProperties::internalFieldCount,
-        V8TestInterfaceOwnPropertiesAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceOwnPropertiesAttributes),
+        0, 0,
         V8TestInterfaceOwnPropertiesAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceOwnPropertiesAccessors),
         0, 0);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

@@ -227,13 +227,14 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
+    {# [Unforgeable] attributes in Window are defined as shadow_attributes, so
+       excluded here. #}
     {% for attribute in attributes
-       if not (attribute.is_expose_js_accessors or
-               attribute.is_static or
-               attribute.runtime_enabled_function or
-               attribute.exposed_test or
-               (interface_name == 'Window' and attribute.is_unforgeable))
-           and attribute.should_be_exposed_to_script %}
+       if not (attribute.exposed_test or
+               attribute.runtime_enabled_function) and
+          attribute.is_data_type_property and
+          attribute.should_be_exposed_to_script and
+          not (interface_name == 'Window' and attribute.is_unforgeable) %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
@@ -250,12 +251,14 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
 {% from 'attributes.cpp' import attribute_configuration with context %}
 {% if has_accessor_configuration %}
 static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
+    {# [Unforgeable] attributes in Window are defined as shadow_attributes, so
+       excluded here. #}
     {% for attribute in attributes
-       if (attribute.is_expose_js_accessors and
-           not (attribute.is_static or
-                attribute.runtime_enabled_function or
-                attribute.exposed_test) and
-           attribute.should_be_exposed_to_script) %}
+       if not (attribute.exposed_test or
+               attribute.runtime_enabled_function) and
+          not attribute.is_data_type_property and
+          attribute.should_be_exposed_to_script and
+          not (interface_name == 'Window' and attribute.is_unforgeable) %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
@@ -353,14 +356,14 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
           not attribute.is_static %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function}}()) {
-        {% if attribute.is_expose_js_accessors %}
-        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration =\
-        {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
-        {% else %}
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
+        {% if attribute.is_data_type_property %}
+        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = \
         {{attribute_configuration(attribute)}};
         V8DOMConfiguration::installAttribute(isolate, instanceTemplate, prototypeTemplate, attributeConfiguration);
+        {% else %}
+        static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = \
+        {{attribute_configuration(attribute)}};
+        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
         {% endif %}
     }
     {% endfilter %}
@@ -463,16 +466,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% endfilter %}{# runtime_enabled() #}
     {% endfilter %}{# exposed() #}
     {% endfilter %}{# conditional() #}
-    {% endfor %}
-    {% for attribute in attributes if attribute.is_static %}
-    {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
-               (cpp_class, attribute.name) %}
-    {% set setter_callback = '%sV8Internal::%sAttributeSetterCallback' %
-               (cpp_class, attribute.name)
-           if attribute.has_setter else '0' %}
-    {% filter conditional(attribute.conditional_string) %}
-    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "{{attribute.name}}"), {{getter_callback}}, {{setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Local<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    {% endfilter %}
     {% endfor %}
     {# Special interfaces #}
     {% if not is_partial %}

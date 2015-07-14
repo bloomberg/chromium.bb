@@ -422,6 +422,8 @@ def on_instance(interface, member):
     - members on which [DoNotExposeJSAccessors] is specified
     """
     # TODO(yukishiino): Implement this function following the spec.
+    if member.is_static:
+        return False
     return not on_prototype(interface, member)
 
 
@@ -486,6 +488,8 @@ def on_interface(interface, member):
     - static members
     """
     # TODO(yukishiino): Implement this function following the spec.
+    if member.is_static:
+        return True
     return False
 
 
