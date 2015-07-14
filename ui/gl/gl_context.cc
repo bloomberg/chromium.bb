@@ -100,7 +100,7 @@ std::string GLContext::GetExtensions() {
     DCHECK(extension != nullptr);
     exts.push_back(extension);
   }
-  return base::JoinString(exts, " ");
+  return JoinString(exts, " ");
 }
 
 std::string GLContext::GetGLVersion() {

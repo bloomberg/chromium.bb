@@ -337,7 +337,7 @@ std::string TemplateURLRef::ReplaceSearchTerms(
     return url;
 
   GURL::Replacements replacements;
-  std::string query_str = base::JoinString(query_params, "&");
+  std::string query_str = JoinString(query_params, "&");
   replacements.SetQueryStr(query_str);
   return gurl.ReplaceComponents(replacements).possibly_invalid_spec();
 }

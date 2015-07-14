@@ -63,7 +63,7 @@ void DataReductionProxyConfigurator::Enable(
   }
 
   config.proxy_rules().bypass_rules.ParseFromString(
-      base::JoinString(bypass_rules_, ", "));
+      JoinString(bypass_rules_, ", "));
   // The ID is set to a bogus value. It cannot be left uninitialized, else the
   // config will return invalid.
   net::ProxyConfig::ID unused_id = 1;

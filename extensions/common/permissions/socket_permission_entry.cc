@@ -178,7 +178,7 @@ bool SocketPermissionEntry::ParseHostPattern(
     } else {
       result.match_subdomains_ = false;
     }
-    result.pattern_.host = base::JoinString(host_components, ".");
+    result.pattern_.host = JoinString(host_components, kDot);
   }
 
   if (pattern_tokens.size() == 1 || pattern_tokens[1].empty() ||

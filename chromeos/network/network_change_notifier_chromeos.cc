@@ -211,8 +211,9 @@ void NetworkChangeNotifierChromeos::UpdateState(
     NET_LOG_EVENT(
         "NCNDefaultDNSServerChanged",
         base::StringPrintf(
-            "%s -> %s", base::JoinString(dns_servers_, ",").c_str(),
-            base::JoinString(default_network->dns_servers(), ",").c_str()));
+            "%s -> %s",
+            JoinString(dns_servers_, ",").c_str(),
+            JoinString(default_network->dns_servers(), ",").c_str()));
     *dns_changed = true;
   }
 

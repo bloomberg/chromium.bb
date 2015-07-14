@@ -2352,7 +2352,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
     InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
                             current_thread_id,
                             "process_labels", "labels",
-                            base::JoinString(labels, ","));
+                            JoinString(labels, ','));
   }
 
   // Thread sort indices.

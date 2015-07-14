@@ -491,12 +491,6 @@ BASE_EXPORT char16* WriteInto(base::string16* str, size_t length_with_null);
 BASE_EXPORT wchar_t* WriteInto(std::wstring* str, size_t length_with_null);
 #endif
 
-// Does the opposite of SplitString().
-BASE_EXPORT std::string JoinString(const std::vector<std::string>& parts,
-                                   StringPiece separator);
-BASE_EXPORT string16 JoinString(const std::vector<string16>& parts,
-                                StringPiece16 separator);
-
 }  // namespace base
 
 #if defined(OS_WIN)
@@ -506,6 +500,22 @@ BASE_EXPORT string16 JoinString(const std::vector<string16>& parts,
 #else
 #error Define string operations appropriately for your platform
 #endif
+
+//-----------------------------------------------------------------------------
+
+// Does the opposite of SplitString().
+BASE_EXPORT base::string16 JoinString(const std::vector<base::string16>& parts,
+                                      base::char16 s);
+BASE_EXPORT std::string JoinString(
+    const std::vector<std::string>& parts, char s);
+
+// Join |parts| using |separator|.
+BASE_EXPORT std::string JoinString(
+    const std::vector<std::string>& parts,
+    const std::string& separator);
+BASE_EXPORT base::string16 JoinString(
+    const std::vector<base::string16>& parts,
+    const base::string16& separator);
 
 // Replace $1-$2-$3..$9 in the format string with |a|-|b|-|c|..|i| respectively.
 // Additionally, any number of consecutive '$' characters is replaced by that

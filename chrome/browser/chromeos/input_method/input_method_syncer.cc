@@ -92,7 +92,7 @@ std::string CheckAndResolveLocales(const std::string& languages) {
     value_iter = values.erase(value_iter);
   }
 
-  return base::JoinString(values, ",");
+  return JoinString(values, ',');
 }
 
 // Appends tokens from |src| that are not in |dest| to |dest|.
@@ -197,14 +197,14 @@ void InputMethodSyncer::MergeSyncedPrefs() {
 
   // Append the synced values to the current values.
   MergeLists(&new_tokens, synced_tokens);
-  preferred_languages_syncable_.SetValue(base::JoinString(new_tokens, ","));
+  preferred_languages_syncable_.SetValue(JoinString(new_tokens, ','));
 
   base::SplitString(
       enabled_extension_imes_syncable_.GetValue(), ',', &synced_tokens);
   base::SplitString(enabled_extension_imes_.GetValue(), ',', &new_tokens);
 
   MergeLists(&new_tokens, synced_tokens);
-  enabled_extension_imes_syncable_.SetValue(base::JoinString(new_tokens, ","));
+  enabled_extension_imes_syncable_.SetValue(JoinString(new_tokens, ','));
 
   // Revert preload engines to legacy component IDs.
   base::SplitString(preload_engines_.GetValue(), ',', &new_tokens);
@@ -214,7 +214,7 @@ void InputMethodSyncer::MergeSyncedPrefs() {
       preload_engines_syncable_.GetValue(), ',', &synced_tokens);
 
   MergeLists(&new_tokens, synced_tokens);
-  preload_engines_syncable_.SetValue(base::JoinString(new_tokens, ","));
+  preload_engines_syncable_.SetValue(JoinString(new_tokens, ','));
 
   // Second, set the local prefs, incorporating new values from the sync server.
   preload_engines_.SetValue(
@@ -278,7 +278,7 @@ std::string InputMethodSyncer::AddSupportedInputMethodValues(
 
   // Do the actual merging.
   MergeLists(&old_tokens, new_tokens);
-  return base::JoinString(old_tokens, ",");
+  return JoinString(old_tokens, ',');
 }
 
 void InputMethodSyncer::FinishMerge(const std::string& languages) {
@@ -311,7 +311,7 @@ void InputMethodSyncer::OnPreferenceChanged(const std::string& pref_name) {
   base::SplitString(preload_engines_.GetValue(), ',', &engines);
   std::transform(engines.begin(), engines.end(), engines.begin(),
                  extension_ime_util::GetComponentIDByInputMethodID);
-  preload_engines_syncable_.SetValue(base::JoinString(engines, ","));
+  preload_engines_syncable_.SetValue(JoinString(engines, ','));
 }
 
 void InputMethodSyncer::OnIsSyncingChanged() {

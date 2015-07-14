@@ -283,7 +283,7 @@ HRESULT InstallDriver(const base::FilePath& install_path) {
   driver_info.pDriverPath = const_cast<LPWSTR>(xps_path.value().c_str());
   driver_info.pConfigFile = const_cast<LPWSTR>(ui_path.value().c_str());
 
-  base::string16 dependent_files(base::JoinString(dependent_array, L"\n"));
+  base::string16 dependent_files(JoinString(dependent_array, L'\n'));
   dependent_files.push_back(L'\n');
   std::replace(dependent_files.begin(), dependent_files.end(), L'\n', L'\0');
   driver_info.pDependentFiles = &dependent_files[0];

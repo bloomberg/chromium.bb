@@ -99,7 +99,7 @@ void AddVectorHeaderIfNonEmpty(const char* name,
                                HttpRequestHeaders* headers) {
   if (value.empty())
     return;
-  headers->SetHeader(name, base::JoinString(value, ", "));
+  headers->SetHeader(name, JoinString(value, ", "));
 }
 
 GetHeaderResult GetSingleHeaderValue(const HttpResponseHeaders* headers,
@@ -346,7 +346,7 @@ bool ValidateExtensions(const HttpResponseHeaders* headers,
       }
     }
   }
-  *accepted_extensions_descriptor = base::JoinString(header_values, ", ");
+  *accepted_extensions_descriptor = JoinString(header_values, ", ");
   return true;
 }
 

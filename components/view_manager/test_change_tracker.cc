@@ -133,7 +133,7 @@ std::string ChangeViewDescription(const std::vector<Change>& changes) {
   std::vector<std::string> view_strings(changes[0].views.size());
   for (size_t i = 0; i < changes[0].views.size(); ++i)
     view_strings[i] = "[" + changes[0].views[i].ToString() + "]";
-  return base::JoinString(view_strings, ",");
+  return JoinString(view_strings, ',');
 }
 
 TestView ViewDataToTestView(const ViewDataPtr& data) {

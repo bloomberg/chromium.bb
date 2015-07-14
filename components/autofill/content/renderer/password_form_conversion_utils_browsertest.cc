@@ -269,8 +269,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
         EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_value),
                   password_form->username_value);
         EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_other_possible_usernames),
-                  base::JoinString(password_form->other_possible_usernames,
-                                   base::ASCIIToUTF16("+")));
+                  JoinString(password_form->other_possible_usernames, '+'));
       } else {
         EXPECT_TRUE(password_form->username_value.empty());
         EXPECT_TRUE(password_form->other_possible_usernames.empty());

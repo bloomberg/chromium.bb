@@ -125,7 +125,7 @@ NameParts SplitName(const base::string16& name) {
 
   std::vector<base::string16> family_tokens(reverse_family_tokens.rbegin(),
                                             reverse_family_tokens.rend());
-  parts.family = base::JoinString(family_tokens, base::ASCIIToUTF16(" "));
+  parts.family = JoinString(family_tokens, base::char16(' '));
 
   // Take the last remaining token as the middle name (if there are at least 2
   // tokens).
@@ -135,7 +135,7 @@ NameParts SplitName(const base::string16& name) {
   }
 
   // Remainder is given name.
-  parts.given = base::JoinString(name_tokens, base::ASCIIToUTF16(" "));
+  parts.given = JoinString(name_tokens, base::char16(' '));
 
   return parts;
 }
@@ -262,7 +262,7 @@ base::string16 NameInfo::FullName() const {
   if (!family_.empty())
     full_name.push_back(family_);
 
-  return base::JoinString(full_name, base::ASCIIToUTF16(" "));
+  return JoinString(full_name, ' ');
 }
 
 base::string16 NameInfo::MiddleInitial() const {

@@ -78,7 +78,7 @@ void RenderOutputHtml(const SuggestionsProfile& profile,
   }
   out.push_back("</ul>");
   out.push_back(kHtmlFooter);
-  *output = base::JoinString(out, base::StringPiece());
+  *output = JoinString(out, "");
 }
 
 // Fills |output| with the HTML needed to display that no suggestions are
@@ -90,7 +90,7 @@ void RenderOutputHtmlNoSuggestions(std::string* output) {
   out.push_back("<h1>Suggestions</h1>\n");
   out.push_back("<p>You have no suggestions.</p>\n");
   out.push_back(kHtmlFooter);
-  *output = base::JoinString(out, base::StringPiece());
+  *output = JoinString(out, "");
 }
 
 }  // namespace

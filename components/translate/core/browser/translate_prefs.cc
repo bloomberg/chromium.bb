@@ -326,7 +326,7 @@ void TranslatePrefs::GetLanguageList(std::vector<std::string>* languages) {
 void TranslatePrefs::UpdateLanguageList(
     const std::vector<std::string>& languages) {
 #if defined(OS_CHROMEOS)
-  std::string languages_str = base::JoinString(languages, ",");
+  std::string languages_str = JoinString(languages, ',');
   prefs_->SetString(preferred_languages_pref_.c_str(), languages_str);
 #endif
 
@@ -335,7 +335,7 @@ void TranslatePrefs::UpdateLanguageList(
   // some web sites don't understand 'en-US' but 'en'. See crosbug.com/9884.
   std::vector<std::string> accept_languages;
   ExpandLanguageCodes(languages, &accept_languages);
-  std::string accept_languages_str = base::JoinString(accept_languages, ",");
+  std::string accept_languages_str = JoinString(accept_languages, ',');
   prefs_->SetString(accept_languages_pref_.c_str(), accept_languages_str);
 }
 
@@ -485,8 +485,7 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs,
         accept_languages.push_back(lang);
     }
 
-    std::string new_accept_languages_str =
-        base::JoinString(accept_languages, ",");
+    std::string new_accept_languages_str = JoinString(accept_languages, ",");
     user_prefs->SetString(accept_languages_pref, new_accept_languages_str);
   }
 }

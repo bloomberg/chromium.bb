@@ -56,7 +56,7 @@ bool CertificateChainToString(scoped_refptr<net::X509Certificate> cert,
   if (!cert->GetPEMEncodedChain(&pem_encoded_chain))
     return false;
 
-  *result = base::JoinString(pem_encoded_chain, base::StringPiece());
+  *result = JoinString(pem_encoded_chain, std::string());
   return true;
 }
 

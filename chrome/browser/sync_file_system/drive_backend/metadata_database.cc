@@ -1743,7 +1743,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
       std::vector<std::string> parents;
       for (int i = 0; i < details.parent_folder_ids_size(); ++i)
         parents.push_back(details.parent_folder_ids(i));
-      dict->SetString("parents", base::JoinString(parents, ","));
+      dict->SetString("parents", JoinString(parents, ","));
     }
     files->Append(dict);
   }

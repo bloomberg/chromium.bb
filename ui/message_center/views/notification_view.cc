@@ -334,8 +334,7 @@ void NotificationView::SetAccessibleName(const Notification& notification) {
     accessible_lines.push_back(items[i].title + base::ASCIIToUTF16(" ") +
                                items[i].message);
   }
-  set_accessible_name(
-      base::JoinString(accessible_lines, base::ASCIIToUTF16("\n")));
+  set_accessible_name(JoinString(accessible_lines, '\n'));
 }
 
 NotificationView::NotificationView(MessageCenterController* controller,

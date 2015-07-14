@@ -249,7 +249,7 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
       host_components.erase(host_components.begin(),
                             host_components.begin() + 1);
     }
-    host_ = base::JoinString(host_components, ".");
+    host_ = JoinString(host_components, '.');
 
     path_start_pos = host_end_pos;
   }

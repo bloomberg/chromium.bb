@@ -82,7 +82,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 
   [title_ setStringValue:SysUTF16ToNSString(error_->GetBubbleViewTitle())];
   std::vector<base::string16> messages = error_->GetBubbleViewMessages();
-  base::string16 message = base::JoinString(messages, base::ASCIIToUTF16("\n"));
+  base::string16 message = JoinString(messages, '\n');
 
   base::scoped_nsobject<NSMutableAttributedString> messageValue(
       [[NSMutableAttributedString alloc]

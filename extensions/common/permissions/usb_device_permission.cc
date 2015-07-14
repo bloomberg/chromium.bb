@@ -117,11 +117,11 @@ void AddPermissionsToLists(const std::set<UsbDevicePermissionData>& data_set,
     }
 
     if (messages) {
-      messages->push_back(PermissionMessage(
-          PermissionMessage::kUsbDevice,
-          l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
-          base::JoinString(details, base::ASCIIToUTF16("\n"))));
+      messages->push_back(
+          PermissionMessage(PermissionMessage::kUsbDevice,
+                            l10n_util::GetStringUTF16(
+                                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
+                            JoinString(details, base::char16('\n'))));
     }
     if (ids) {
       for (const auto& detail : details)

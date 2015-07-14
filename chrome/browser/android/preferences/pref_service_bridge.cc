@@ -835,7 +835,7 @@ void PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(
       parts.push_back(language);
     }
     parts.push_back(*accept_languages);
-    *accept_languages = base::JoinString(parts, ",");
+    *accept_languages = JoinString(parts, ',');
   }
 }
 

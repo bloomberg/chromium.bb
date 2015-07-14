@@ -112,14 +112,13 @@ void ConvertParameters(const api_vpn::Parameters& parameters,
   parameter_value->SetStringWithoutPathExpansion(
       shill::kSubnetPrefixParameterThirdPartyVpn, cidr_parts[1]);
 
-  std::string ip_delimiter(1, shill::kIPDelimiter);
   parameter_value->SetStringWithoutPathExpansion(
       shill::kExclusionListParameterThirdPartyVpn,
-      base::JoinString(parameters.exclusion_list, ip_delimiter));
+      JoinString(parameters.exclusion_list, shill::kIPDelimiter));
 
   parameter_value->SetStringWithoutPathExpansion(
       shill::kInclusionListParameterThirdPartyVpn,
-      base::JoinString(parameters.inclusion_list, ip_delimiter));
+      JoinString(parameters.inclusion_list, shill::kIPDelimiter));
 
   if (parameters.mtu) {
     parameter_value->SetStringWithoutPathExpansion(
@@ -132,16 +131,15 @@ void ConvertParameters(const api_vpn::Parameters& parameters,
         *parameters.broadcast_address);
   }
 
-  std::string non_ip_delimiter(1, shill::kNonIPDelimiter);
   if (parameters.domain_search) {
     parameter_value->SetStringWithoutPathExpansion(
         shill::kDomainSearchParameterThirdPartyVpn,
-        base::JoinString(*parameters.domain_search, non_ip_delimiter));
+        JoinString(*parameters.domain_search, shill::kNonIPDelimiter));
   }
 
   parameter_value->SetStringWithoutPathExpansion(
       shill::kDnsServersParameterThirdPartyVpn,
-      base::JoinString(parameters.dns_servers, ip_delimiter));
+      JoinString(parameters.dns_servers, shill::kIPDelimiter));
 
   return;
 }

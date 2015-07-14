@@ -845,7 +845,7 @@ void AccessibilityManager::UpdateBrailleImeState() {
   else
     preload_engines.erase(it);
   pref_service->SetString(prefs::kLanguagePreloadEngines,
-                          base::JoinString(preload_engines, ","));
+                          JoinString(preload_engines, ','));
   braille_ime_current_ = false;
 }
 

@@ -610,8 +610,7 @@ void InputMethodManagerImpl::StateImpl::SetInputMethodLoginDefaultFromVPD(
   manager_->MigrateInputMethods(&layouts);
 
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kHardwareKeyboardLayout,
-                   base::JoinString(layouts, ","));
+  prefs->SetString(prefs::kHardwareKeyboardLayout, JoinString(layouts, ","));
 
   // This asks the file thread to save the prefs (i.e. doesn't block).
   // The latest values of Local State reside in memory so we can safely

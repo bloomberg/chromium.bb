@@ -36,8 +36,7 @@ std::string CanonicalizeEmailImpl(const std::string& email_address,
       base::RemoveChars(parts[0], ".", &parts[0]);
   }
 
-  std::string new_email = base::StringToLowerASCII(
-      base::JoinString(parts, "@"));
+  std::string new_email = base::StringToLowerASCII(JoinString(parts, at));
   VLOG(1) << "Canonicalized " << email_address << " to " << new_email;
   return new_email;
 }

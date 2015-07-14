@@ -164,6 +164,6 @@ void ThumbnailListSource::OnMostVisitedURLsAvailable(
   }
   out.push_back(kHtmlFooter);
 
-  std::string out_html = base::JoinString(out, base::StringPiece());
+  std::string out_html = JoinString(out, "");
   callback.Run(base::RefCountedString::TakeString(&out_html));
 }

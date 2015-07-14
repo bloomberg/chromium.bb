@@ -124,8 +124,7 @@ static base::FilePath MakeImagePathRelative(const base::FilePath& path) {
 
   // Note that elsewhere we always normalize path separators to '/' so this
   // should work for all platforms.
-  return base::FilePath(
-      base::JoinString(parts, base::FilePath::StringType(1, '/')));
+  return base::FilePath(JoinString(parts, '/'));
 }
 
 void ContentVerifier::OnExtensionLoaded(

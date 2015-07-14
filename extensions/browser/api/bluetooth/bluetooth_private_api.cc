@@ -227,7 +227,7 @@ void BluetoothPrivateSetAdapterStateFunction::SendError() {
             std::back_inserter(failed_vector));
 
   std::vector<std::string> replacements(1);
-  replacements[0] = base::JoinString(failed_vector, ", ");
+  replacements[0] = JoinString(failed_vector, ", ");
   std::string error =
       ReplaceStringPlaceholders(kSetAdapterPropertyError, replacements, NULL);
   SetError(error);

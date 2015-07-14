@@ -46,7 +46,7 @@ base::string16 GetTooltipText(const base::string16& headline,
         IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
         name2, base::UTF8ToUTF16(data2)));
   }
-  return base::JoinString(lines, base::ASCIIToUTF16("\n"));
+  return JoinString(lines, '\n');
 }
 
 base::string16 GetMirroredTooltipText(const base::string16& headline,

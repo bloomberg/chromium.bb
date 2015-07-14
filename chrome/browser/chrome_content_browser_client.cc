@@ -1231,7 +1231,7 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
   }
 
   command_line->AppendSwitchASCII(switches::kBlinkSettings,
-                                  base::JoinString(blink_settings, ","));
+                                  JoinString(blink_settings, ','));
 }
 
 }  // namespace

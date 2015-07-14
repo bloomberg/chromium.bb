@@ -202,7 +202,7 @@ void DumpAccessibilityTestBase::RunTest(
   // file length differences are found.
   expected_lines.push_back(kMarkEndOfFile);
   actual_lines.push_back(kMarkEndOfFile);
-  std::string actual_contents = base::JoinString(actual_lines, "\n");
+  std::string actual_contents = JoinString(actual_lines, "\n");
 
   std::vector<int> diff_lines = DiffLines(expected_lines, actual_lines);
   bool is_different = diff_lines.size() > 0;

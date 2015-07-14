@@ -141,7 +141,7 @@ base::string16 ExtensionMessageBubbleController::GetExtensionListForDisplay() {
   base::string16 prefix = bullet_point + base::ASCIIToUTF16(" ");
   for (base::string16& str : extension_list)
     str.insert(0, prefix);
-  return base::JoinString(extension_list, base::ASCIIToUTF16("\n"));
+  return JoinString(extension_list, base::ASCIIToUTF16("\n"));
 }
 
 const ExtensionIdList& ExtensionMessageBubbleController::GetExtensionIdList() {

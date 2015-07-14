@@ -80,7 +80,7 @@ const std::string ColumnsForVersion(int version, bool concatenated) {
     columns.push_back("new_tab_url");
   }
 
-  return base::JoinString(columns, std::string(concatenated ? " || " : ", "));
+  return JoinString(columns, std::string(concatenated ? " || " : ", "));
 }
 
 
@@ -115,8 +115,7 @@ void BindURLToStatement(const TemplateURLData& data,
       std::string());
   s->BindInt64(starting_column + 6, data.date_created.ToTimeT());
   s->BindInt(starting_column + 7, data.usage_count);
-  s->BindString(starting_column + 8,
-                base::JoinString(data.input_encodings, ";"));
+  s->BindString(starting_column + 8, JoinString(data.input_encodings, ';'));
   s->BindBool(starting_column + 9, data.show_in_default_list);
   s->BindString(starting_column + 10, data.suggestions_url);
   s->BindInt(starting_column + 11, data.prepopulate_id);

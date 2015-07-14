@@ -63,7 +63,7 @@ std::string AddSafeSearchParameters(const std::string& query) {
 
   new_parameters.push_back(safe_parameter);
   new_parameters.push_back(ssui_parameter);
-  return base::JoinString(new_parameters, "&");
+  return JoinString(new_parameters, '&');
 }
 
 } // namespace

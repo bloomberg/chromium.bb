@@ -527,7 +527,7 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
     if (tests[i].allowed && tests[i].fallback_allowed)
       proxies.push_back(fallback_origin);
 
-    std::string proxy_rules = "http=" + base::JoinString(proxies, ",") +
+    std::string proxy_rules = "http=" + JoinString(proxies, ",") +
                               ",direct://;" + "https=" + ssl_origin +
                               ",direct://;";
 
@@ -578,8 +578,7 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassedRetryDelay) {
   proxies.push_back(origin);
   proxies.push_back(fallback_origin);
 
-  std::string proxy_rules =
-      "http=" + base::JoinString(proxies, ",") + ",direct://;";
+  std::string proxy_rules = "http=" + JoinString(proxies, ",") + ",direct://;";
 
   rules.ParseFromString(proxy_rules);
 

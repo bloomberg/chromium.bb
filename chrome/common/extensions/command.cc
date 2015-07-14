@@ -272,7 +272,7 @@ std::string NormalizeShortcutSuggestion(const std::string& suggestion,
     else if (tokens[i] == values::kKeyMacCtrl)
       tokens[i] = values::kKeyCtrl;
   }
-  return base::JoinString(tokens, "+");
+  return JoinString(tokens, '+');
 }
 
 }  // namespace

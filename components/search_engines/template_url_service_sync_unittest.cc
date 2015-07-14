@@ -68,8 +68,7 @@ syncer::SyncData CreateCustomSyncData(const TemplateURL& turl,
   se_specifics->set_safe_for_autoreplace(turl.safe_for_autoreplace());
   se_specifics->set_originating_url(turl.originating_url().spec());
   se_specifics->set_date_created(turl.date_created().ToInternalValue());
-  se_specifics->set_input_encodings(
-      base::JoinString(turl.input_encodings(), ";"));
+  se_specifics->set_input_encodings(JoinString(turl.input_encodings(), ';'));
   se_specifics->set_show_in_default_list(turl.show_in_default_list());
   se_specifics->set_suggestions_url(turl.suggestions_url());
   se_specifics->set_prepopulate_id(turl.prepopulate_id());

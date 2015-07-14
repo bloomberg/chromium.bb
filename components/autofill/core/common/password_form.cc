@@ -36,8 +36,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("new_password_marked_by_site",
                      form.new_password_marked_by_site);
   target->SetString("other_possible_usernames",
-                    base::JoinString(form.other_possible_usernames,
-                                     base::ASCIIToUTF16("|")));
+                    JoinString(form.other_possible_usernames, '|'));
   target->SetBoolean("blacklisted", form.blacklisted_by_user);
   target->SetBoolean("preferred", form.preferred);
   target->SetBoolean("ssl_valid", form.ssl_valid);

@@ -566,7 +566,7 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
         gpu::GpuControlList::kOsAny, std::string(), gpu_info_);
 
     disabled_extensions_ =
-        base::JoinString(gpu_driver_bug_list_->GetDisabledExtensions(), " ");
+        JoinString(gpu_driver_bug_list_->GetDisabledExtensions(), ' ');
   }
   gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(
       &gpu_driver_bugs_, *base::CommandLine::ForCurrentProcess());

@@ -67,9 +67,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
       unauthenticated_load_allowed_ = false;
 #endif
     } else {
-      base::FilePath::StringType paths =
-          base::JoinString(load_extensions_,
-                           base::FilePath::StringType(1, ','));
+      base::FilePath::StringType paths = JoinString(load_extensions_, ',');
       command_line->AppendSwitchNative(switches::kLoadExtension,
                                        paths);
       command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);

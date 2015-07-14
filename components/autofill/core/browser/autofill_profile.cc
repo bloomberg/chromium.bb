@@ -328,7 +328,7 @@ base::string16 AutofillProfile::GetInfo(const AutofillType& type,
 
     std::vector<std::string> lines;
     ::i18n::addressinput::GetFormattedNationalAddress(*address_data, &lines);
-    return base::UTF8ToUTF16(base::JoinString(lines, "\n"));
+    return base::UTF8ToUTF16(JoinString(lines, '\n'));
   }
 
   const FormGroup* form_group = FormGroupForType(type);

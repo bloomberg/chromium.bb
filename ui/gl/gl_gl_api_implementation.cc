@@ -492,7 +492,7 @@ void RealGLApi::InitializeFilteredExtensions() {
     }
 
     // Construct filtered extensions string for GL_EXTENSIONS string lookups.
-    filtered_exts_str_ = base::JoinString(filtered_exts_, " ");
+    filtered_exts_str_ = JoinString(filtered_exts_, " ");
   }
 }
 
@@ -530,7 +530,7 @@ void VirtualGLApi::Initialize(DriverGL* driver, GLContext* real_context) {
   if (it != ext.end())
     ext.erase(it);
 
-  extensions_ = base::JoinString(ext, " ");
+  extensions_ = JoinString(ext, " ");
 }
 
 bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {

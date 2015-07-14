@@ -108,7 +108,7 @@ class TestGestureManagerDelegate : public GestureManagerDelegate {
   ~TestGestureManagerDelegate() override {}
 
   std::string GetAndClearDescriptions() {
-    const std::string result(base::JoinString(descriptions_, "\n"));
+    const std::string result(JoinString(descriptions_, '\n'));
     descriptions_.clear();
     return result;
   }

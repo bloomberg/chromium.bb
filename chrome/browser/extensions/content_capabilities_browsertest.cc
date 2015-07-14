@@ -74,7 +74,7 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
       v.push_back(s1);
     if (!s2.empty())
       v.push_back(s2);
-    std::string list = base::JoinString(v, "\",\"");
+    std::string list = JoinString(v, "\",\"");
     if (!list.empty())
       list = "\"" + list + "\"";
     return "[" + list + "]";

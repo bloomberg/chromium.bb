@@ -884,35 +884,42 @@ char16* WriteInto(base::string16* str, size_t length_with_null) {
   return WriteIntoT(str, length_with_null);
 }
 
+}  // namespace base
+
 template<typename STR>
-static STR JoinStringT(const std::vector<STR>& parts,
-                       BasicStringPiece<STR> sep) {
+static STR JoinStringT(const std::vector<STR>& parts, const STR& sep) {
   if (parts.empty())
     return STR();
 
   STR result(parts[0]);
-  auto iter = parts.begin();
+  typename std::vector<STR>::const_iterator iter = parts.begin();
   ++iter;
 
   for (; iter != parts.end(); ++iter) {
-    sep.AppendToString(&result);
+    result += sep;
     result += *iter;
   }
 
   return result;
 }
 
+std::string JoinString(const std::vector<std::string>& parts, char sep) {
+  return JoinStringT(parts, std::string(1, sep));
+}
+
+string16 JoinString(const std::vector<string16>& parts, char16 sep) {
+  return JoinStringT(parts, string16(1, sep));
+}
+
 std::string JoinString(const std::vector<std::string>& parts,
-                       StringPiece separator) {
+                       const std::string& separator) {
   return JoinStringT(parts, separator);
 }
 
 string16 JoinString(const std::vector<string16>& parts,
-                    StringPiece16 separator) {
+                    const string16& separator) {
   return JoinStringT(parts, separator);
 }
-
-}  // namespace base
 
 template<class FormatStringType, class OutStringType>
 OutStringType DoReplaceStringPlaceholders(const FormatStringType& format_string,

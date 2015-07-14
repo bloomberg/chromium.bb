@@ -456,12 +456,12 @@ bool Recovery::AutoRecoverTable(const char* table_name,
       "CREATE VIRTUAL TABLE temp.recover_%s USING recover(corrupt.%s, %s)",
       table_name,
       table_name,
-      base::JoinString(create_column_decls, ",").c_str()));
+      JoinString(create_column_decls, ',').c_str()));
 
   std::string recover_insert(base::StringPrintf(
       "INSERT OR REPLACE INTO main.%s SELECT %s FROM temp.recover_%s",
       table_name,
-      base::JoinString(insert_columns, ",").c_str(),
+      JoinString(insert_columns, ',').c_str(),
       table_name));
 
   std::string recover_drop(base::StringPrintf(

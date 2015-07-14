@@ -668,8 +668,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleText) {
                                  TRUNCATE_LONG_WORDS,
                                  &lines));
     if (cases[i].output) {
-      const std::string result =
-          UTF16ToUTF8(base::JoinString(lines, ASCIIToUTF16("|")));
+      const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
       EXPECT_EQ(cases[i].output, result) << "Case " << i << " failed!";
     } else {
       EXPECT_TRUE(lines.empty()) << "Case " << i << " failed!";
@@ -716,8 +715,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextPunctuation) {
                                  wrap_behavior,
                                  &lines));
     if (cases[i].output) {
-      const std::string result =
-          UTF16ToUTF8(base::JoinString(lines, base::ASCIIToUTF16("|")));
+      const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
       EXPECT_EQ(cases[i].output, result) << "Case " << i << " failed!";
     } else {
       EXPECT_TRUE(lines.empty()) << "Case " << i << " failed!";
@@ -786,8 +784,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextLongWords) {
                                  &lines));
     std::string expected_output(cases[i].output);
     base::ReplaceSubstringsAfterOffset(&expected_output, 0, "...", kEllipsis);
-    const std::string result =
-        UTF16ToUTF8(base::JoinString(lines, base::ASCIIToUTF16("|")));
+    const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
     EXPECT_EQ(expected_output, result) << "Case " << i << " failed!";
   }
 }

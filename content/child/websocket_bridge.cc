@@ -220,7 +220,7 @@ void WebSocketBridge::connect(
   url::DeprecatedSerializedOrigin origin_to_pass(origin);
 
   DVLOG(1) << "Bridge#" << channel_id_ << " Connect(" << url << ", ("
-           << base::JoinString(protocols_to_pass, ", ") << "), "
+           << JoinString(protocols_to_pass, ", ") << "), "
            << origin_to_pass.string() << ")";
 
   ChildThreadImpl::current()->Send(new WebSocketHostMsg_AddChannelRequest(

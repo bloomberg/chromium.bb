@@ -6,7 +6,6 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/coalesced_permission_message.h"
@@ -99,8 +98,8 @@ class SpaceSeparatedListFormatter : public ChromePermissionMessageFormatter {
     DCHECK(permissions.size() > 0);
     std::vector<base::string16> hostnames =
         permissions.GetAllPermissionParameters();
-    base::string16 hosts_string =
-        base::JoinString(hostnames, base::ASCIIToUTF16(" "));
+    base::string16 hosts_string = JoinString(
+        std::vector<base::string16>(hostnames.begin(), hostnames.end()), ' ');
     return CoalescedPermissionMessage(
         l10n_util::GetStringFUTF16(hostnames.size() == 1
                                        ? message_id_for_one_host_

@@ -108,7 +108,7 @@ base::string16 GetAllDisplayInfo() {
     lines.push_back(GetDisplayInfoLine(id));
   }
 
-  return base::JoinString(lines, base::ASCIIToUTF16("\n"));
+  return JoinString(lines, '\n');
 }
 
 void OpenSettings() {

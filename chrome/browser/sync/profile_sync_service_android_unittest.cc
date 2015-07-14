@@ -97,7 +97,7 @@ TEST_F(ProfileSyncServiceAndroidTest, ModelTypesToInvalidationNames) {
   }
 
   std::sort(invalidation_names.begin(), invalidation_names.end());
-  EXPECT_EQ(base::JoinString(invalidation_names, ", "),
+  EXPECT_EQ(JoinString(invalidation_names, ", "),
             ProfileSyncServiceAndroid::ModelTypeSelectionToStringForTest(
                 model_type_selection));
 }
