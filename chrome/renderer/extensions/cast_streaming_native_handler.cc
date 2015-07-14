@@ -177,44 +177,63 @@ CastStreamingNativeHandler::CastStreamingNativeHandler(ScriptContext* context)
       last_transport_id_(1),
       weak_factory_(this) {
   RouteFunction("CreateSession",
-      base::Bind(&CastStreamingNativeHandler::CreateCastSession,
-                 base::Unretained(this)));
+                base::Bind(&CastStreamingNativeHandler::CreateCastSession,
+                           weak_factory_.GetWeakPtr()));
   RouteFunction("DestroyCastRtpStream",
-      base::Bind(&CastStreamingNativeHandler::DestroyCastRtpStream,
-                 base::Unretained(this)));
-  RouteFunction("GetSupportedParamsCastRtpStream",
+                base::Bind(&CastStreamingNativeHandler::DestroyCastRtpStream,
+                           weak_factory_.GetWeakPtr()));
+  RouteFunction(
+      "GetSupportedParamsCastRtpStream",
       base::Bind(&CastStreamingNativeHandler::GetSupportedParamsCastRtpStream,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
   RouteFunction("StartCastRtpStream",
-      base::Bind(&CastStreamingNativeHandler::StartCastRtpStream,
-                 base::Unretained(this)));
+                base::Bind(&CastStreamingNativeHandler::StartCastRtpStream,
+                           weak_factory_.GetWeakPtr()));
   RouteFunction("StopCastRtpStream",
-      base::Bind(&CastStreamingNativeHandler::StopCastRtpStream,
-                 base::Unretained(this)));
+                base::Bind(&CastStreamingNativeHandler::StopCastRtpStream,
+                           weak_factory_.GetWeakPtr()));
   RouteFunction("DestroyCastUdpTransport",
-      base::Bind(&CastStreamingNativeHandler::DestroyCastUdpTransport,
-                 base::Unretained(this)));
-  RouteFunction("SetDestinationCastUdpTransport",
+                base::Bind(&CastStreamingNativeHandler::DestroyCastUdpTransport,
+                           weak_factory_.GetWeakPtr()));
+  RouteFunction(
+      "SetDestinationCastUdpTransport",
       base::Bind(&CastStreamingNativeHandler::SetDestinationCastUdpTransport,
-                 base::Unretained(this)));
-  RouteFunction("SetOptionsCastUdpTransport",
+                 weak_factory_.GetWeakPtr()));
+  RouteFunction(
+      "SetOptionsCastUdpTransport",
       base::Bind(&CastStreamingNativeHandler::SetOptionsCastUdpTransport,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
   RouteFunction("ToggleLogging",
                 base::Bind(&CastStreamingNativeHandler::ToggleLogging,
-                           base::Unretained(this)));
+                           weak_factory_.GetWeakPtr()));
   RouteFunction("GetRawEvents",
                 base::Bind(&CastStreamingNativeHandler::GetRawEvents,
-                           base::Unretained(this)));
-  RouteFunction("GetStats",
-                base::Bind(&CastStreamingNativeHandler::GetStats,
-                           base::Unretained(this)));
+                           weak_factory_.GetWeakPtr()));
+  RouteFunction("GetStats", base::Bind(&CastStreamingNativeHandler::GetStats,
+                                       weak_factory_.GetWeakPtr()));
   RouteFunction("StartCastRtpReceiver",
                 base::Bind(&CastStreamingNativeHandler::StartCastRtpReceiver,
-                           base::Unretained(this)));
+                           weak_factory_.GetWeakPtr()));
 }
 
 CastStreamingNativeHandler::~CastStreamingNativeHandler() {
+  // Note: A superclass's destructor will call Invalidate(), but Invalidate()
+  // may also be called at any time before destruction.
+}
+
+void CastStreamingNativeHandler::Invalidate() {
+  // Cancel all function call routing and callbacks.
+  weak_factory_.InvalidateWeakPtrs();
+
+  // Clear all references to V8 and Cast objects, which will trigger
+  // auto-destructions (effectively stopping all sessions).
+  get_stats_callbacks_.clear();
+  get_raw_events_callbacks_.clear();
+  create_callback_.Reset();
+  udp_transport_map_.clear();
+  rtp_stream_map_.clear();
+
+  ObjectBackedNativeHandler::Invalidate();
 }
 
 void CastStreamingNativeHandler::CreateCastSession(
@@ -257,8 +276,6 @@ void CastStreamingNativeHandler::CreateCastSession(
   scoped_ptr<CastUdpTransport> udp_transport(
       new CastUdpTransport(session));
 
-  // TODO(imcheng): Use a weak reference to ensure we don't call into an
-  // invalid context when the callback is invoked.
   create_callback_.Reset(isolate, args[2].As<v8::Function>());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -302,7 +319,7 @@ void CastStreamingNativeHandler::CallCreateCallback(
   create_callback_.Reset();
 }
 
-void CastStreamingNativeHandler::CallStartCallback(int stream_id) {
+void CastStreamingNativeHandler::CallStartCallback(int stream_id) const {
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
@@ -311,7 +328,7 @@ void CastStreamingNativeHandler::CallStartCallback(int stream_id) {
   context()->DispatchEvent("cast.streaming.rtpStream.onStarted", event_args);
 }
 
-void CastStreamingNativeHandler::CallStopCallback(int stream_id) {
+void CastStreamingNativeHandler::CallStopCallback(int stream_id) const {
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
@@ -320,8 +337,9 @@ void CastStreamingNativeHandler::CallStopCallback(int stream_id) {
   context()->DispatchEvent("cast.streaming.rtpStream.onStopped", event_args);
 }
 
-void CastStreamingNativeHandler::CallErrorCallback(int stream_id,
-                                                   const std::string& message) {
+void CastStreamingNativeHandler::CallErrorCallback(
+    int stream_id,
+    const std::string& message) const {
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
@@ -346,7 +364,7 @@ void CastStreamingNativeHandler::DestroyCastRtpStream(
 }
 
 void CastStreamingNativeHandler::GetSupportedParamsCastRtpStream(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
+    const v8::FunctionCallbackInfo<v8::Value>& args) const {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
 
@@ -511,8 +529,6 @@ void CastStreamingNativeHandler::GetRawEvents(
   CHECK(args[2]->IsFunction());
 
   const int transport_id = args[0]->ToInt32(args.GetIsolate())->Value();
-  // TODO(imcheng): Use a weak reference to ensure we don't call into an
-  // invalid context when the callback is invoked.
   linked_ptr<v8::Global<v8::Function>> callback(new v8::Global<v8::Function>(
       args.GetIsolate(), args[2].As<v8::Function>()));
   std::string extra_data;
@@ -543,8 +559,6 @@ void CastStreamingNativeHandler::GetStats(
   if (!transport)
     return;
 
-  // TODO(imcheng): Use a weak reference to ensure we don't call into an
-  // invalid context when the callback is invoked.
   linked_ptr<v8::Global<v8::Function>> callback(new v8::Global<v8::Function>(
       args.GetIsolate(), args[1].As<v8::Function>()));
   get_stats_callbacks_.insert(std::make_pair(transport_id, callback));
@@ -620,8 +634,7 @@ CastUdpTransport* CastStreamingNativeHandler::GetUdpTransportOrThrow(
 bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
     v8::Isolate* isolate,
     const v8::Local<v8::Value>& arg,
-    media::cast::FrameReceiverConfig* config) {
-
+    media::cast::FrameReceiverConfig* config) const {
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   scoped_ptr<base::Value> params_value(
       converter->FromV8Value(arg, context()->v8_context()));
@@ -694,7 +707,7 @@ bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
 bool CastStreamingNativeHandler::IPEndPointFromArg(
     v8::Isolate* isolate,
     const v8::Local<v8::Value>& arg,
-    net::IPEndPoint* ip_endpoint) {
+    net::IPEndPoint* ip_endpoint) const {
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   scoped_ptr<base::Value> destination_value(
       converter->FromV8Value(arg, context()->v8_context()));

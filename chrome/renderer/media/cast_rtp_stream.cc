@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -474,7 +475,9 @@ CastRtpStream::CastRtpStream(const blink::WebMediaStreamTrack& track,
                              const scoped_refptr<CastSession>& session)
     : track_(track), cast_session_(session), weak_factory_(this) {}
 
-CastRtpStream::~CastRtpStream() {}
+CastRtpStream::~CastRtpStream() {
+  Stop();
+}
 
 std::vector<CastRtpParams> CastRtpStream::GetSupportedParams() {
   if (IsAudio())
@@ -489,6 +492,10 @@ void CastRtpStream::Start(const CastRtpParams& params,
                           const base::Closure& start_callback,
                           const base::Closure& stop_callback,
                           const ErrorCallback& error_callback) {
+  DCHECK(!start_callback.is_null());
+  DCHECK(!stop_callback.is_null());
+  DCHECK(!error_callback.is_null());
+
   DVLOG(1) << "CastRtpStream::Start = " << (IsAudio() ? "audio" : "video");
   stop_callback_ = stop_callback;
   error_callback_ = error_callback;
@@ -534,10 +541,13 @@ void CastRtpStream::Start(const CastRtpParams& params,
 
 void CastRtpStream::Stop() {
   DVLOG(1) << "CastRtpStream::Stop = " << (IsAudio() ? "audio" : "video");
+  if (stop_callback_.is_null())
+    return;  // Already stopped.
+  weak_factory_.InvalidateWeakPtrs();
+  error_callback_.Reset();
   audio_sink_.reset();
   video_sink_.reset();
-  if (!stop_callback_.is_null())
-    stop_callback_.Run();
+  base::ResetAndReturn(&stop_callback_).Run();
 }
 
 void CastRtpStream::ToggleLogging(bool enable) {
