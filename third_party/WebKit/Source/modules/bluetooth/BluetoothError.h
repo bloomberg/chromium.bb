@@ -13,7 +13,6 @@ namespace blink {
 
 class DOMException;
 class ScriptPromiseResolver;
-struct WebBluetoothError;
 
 // BluetoothError is used with CallbackPromiseAdapter to receive
 // WebBluetoothError responses. See CallbackPromiseAdapter class comments.

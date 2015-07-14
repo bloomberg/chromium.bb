@@ -6,6 +6,7 @@
 #define WebBluetoothError_h
 
 #include "public/platform/WebString.h"
+#include "public/platform/modules/bluetooth/WebBluetoothErrorMessage.h"
 
 namespace blink {
 
@@ -20,7 +21,10 @@ struct WebBluetoothError {
         NotFoundError,
         NotSupportedError,
         SecurityError,
-        SyntaxError
+        SyntaxError,
+
+        // Transitional; means to look at the errorMessage field instead:
+        ErrorMessage,
     };
 
     WebBluetoothError(ErrorType errorType, const WebString& message)
@@ -29,8 +33,15 @@ struct WebBluetoothError {
     {
     }
 
+    WebBluetoothError(WebBluetoothErrorMessage errorMessage)
+        : errorType(ErrorMessage)
+        , errorMessage(errorMessage)
+    {
+    }
+
     ErrorType errorType;
     WebString message;
+    WebBluetoothErrorMessage errorMessage;
 };
 
 } // namespace blink

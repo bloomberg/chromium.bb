@@ -8,12 +8,12 @@
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/bluetooth/WebBluetoothError.h"
 #include <vector>
 
 namespace blink {
 
 struct WebBluetoothDevice;
-struct WebBluetoothError;
 struct WebBluetoothGATTCharacteristic;
 struct WebBluetoothGATTRemoteServer;
 struct WebBluetoothGATTService;
