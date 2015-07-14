@@ -102,12 +102,11 @@ void LayerTreeHostCommonTestBase::
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
                 root_layer->bounds().height() * device_scale_factor);
-  LayerList update_layer_list;
   BuildPropertyTreesAndComputeVisibleRects(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, page_scale_factor, device_scale_factor,
       gfx::Rect(device_viewport_size), identity_transform,
-      root_layer->layer_tree_host()->property_trees(), &update_layer_list);
+      root_layer->layer_tree_host()->property_trees(), &update_layer_list_);
 }
 
 void LayerTreeHostCommonTestBase::
@@ -168,6 +167,14 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
       render_surface_layer_list_count_;
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+}
+
+bool LayerTreeHostCommonTestBase::UpdateLayerListContains(int id) const {
+  for (size_t i = 0; i < update_layer_list_.size(); ++i) {
+    if (update_layer_list_[i]->id() == id)
+      return true;
+  }
+  return false;
 }
 
 LayerTreeHostCommonTest::LayerTreeHostCommonTest()

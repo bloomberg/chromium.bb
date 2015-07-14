@@ -3618,11 +3618,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
                                true,
                                false);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
 
   // Verify which render surfaces were created.
   EXPECT_FALSE(front_facing_child->render_surface());
@@ -3634,65 +3630,13 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   EXPECT_FALSE(front_facing_child_of_back_facing_surface->render_surface());
   EXPECT_FALSE(back_facing_child_of_back_facing_surface->render_surface());
 
-  // Verify the render_surface_layer_list.
-  ASSERT_EQ(3u, render_surface_layer_list.size());
-  EXPECT_EQ(parent->id(), render_surface_layer_list.at(0)->id());
-  EXPECT_EQ(front_facing_surface->id(), render_surface_layer_list.at(1)->id());
-  // Even though the back facing surface LAYER gets culled, the other
-  // descendants should still be added, so the SURFACE should not be culled.
-  EXPECT_EQ(back_facing_surface->id(), render_surface_layer_list.at(2)->id());
-
-  // Verify root surface's layer list.
-  ASSERT_EQ(
-      3u,
-      render_surface_layer_list.at(0)->render_surface()->layer_list().size());
-  EXPECT_EQ(front_facing_child->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()
-                ->layer_list()
-                .at(0)
-                ->id());
-  EXPECT_EQ(front_facing_surface->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()
-                ->layer_list()
-                .at(1)
-                ->id());
-  EXPECT_EQ(back_facing_surface->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()
-                ->layer_list()
-                .at(2)
-                ->id());
-
-  // Verify front_facing_surface's layer list.
-  ASSERT_EQ(
-      2u,
-      render_surface_layer_list.at(1)->render_surface()->layer_list().size());
-  EXPECT_EQ(front_facing_surface->id(),
-            render_surface_layer_list.at(1)
-                ->render_surface()
-                ->layer_list()
-                .at(0)
-                ->id());
-  EXPECT_EQ(front_facing_child_of_front_facing_surface->id(),
-            render_surface_layer_list.at(1)
-                ->render_surface()
-                ->layer_list()
-                .at(1)
-                ->id());
-
-  // Verify back_facing_surface's layer list; its own layer should be culled
-  // from the surface list.
-  ASSERT_EQ(
-      1u,
-      render_surface_layer_list.at(2)->render_surface()->layer_list().size());
-  EXPECT_EQ(front_facing_child_of_back_facing_surface->id(),
-            render_surface_layer_list.at(2)
-                ->render_surface()
-                ->layer_list()
-                .at(0)
-                ->id());
+  EXPECT_EQ(4u, update_layer_list().size());
+  EXPECT_TRUE(UpdateLayerListContains(front_facing_child->id()));
+  EXPECT_TRUE(UpdateLayerListContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerListContains(
+      front_facing_child_of_front_facing_surface->id()));
+  EXPECT_TRUE(
+      UpdateLayerListContains(front_facing_child_of_back_facing_surface->id()));
 }
 
 TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
@@ -3829,11 +3773,7 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
                                true,
                                true);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
 
   // Verify which render surfaces were created and used.
   EXPECT_FALSE(front_facing_child->render_surface());
@@ -3847,33 +3787,12 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   EXPECT_FALSE(front_facing_child_of_back_facing_surface->render_surface());
   EXPECT_FALSE(back_facing_child_of_back_facing_surface->render_surface());
 
-  // Verify the render_surface_layer_list. The back-facing surface should be
-  // culled.
-  ASSERT_EQ(2u, render_surface_layer_list.size());
-  EXPECT_EQ(parent->id(), render_surface_layer_list.at(0)->id());
-  EXPECT_EQ(front_facing_surface->id(), render_surface_layer_list.at(1)->id());
+  EXPECT_EQ(3u, update_layer_list().size());
 
-  // Verify root surface's layer list.
-  ASSERT_EQ(
-      2u,
-      render_surface_layer_list.at(0)->render_surface()->layer_list().size());
-  EXPECT_EQ(front_facing_child->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(front_facing_surface->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()->layer_list().at(1)->id());
-
-  // Verify front_facing_surface's layer list.
-  ASSERT_EQ(
-      2u,
-      render_surface_layer_list.at(1)->render_surface()->layer_list().size());
-  EXPECT_EQ(front_facing_surface->id(),
-            render_surface_layer_list.at(1)
-                ->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(front_facing_child_of_front_facing_surface->id(),
-            render_surface_layer_list.at(1)
-                ->render_surface()->layer_list().at(1)->id());
+  EXPECT_TRUE(UpdateLayerListContains(front_facing_child->id()));
+  EXPECT_TRUE(UpdateLayerListContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerListContains(
+      front_facing_child_of_front_facing_surface->id()));
 }
 
 TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
@@ -3981,48 +3900,28 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   EXPECT_FALSE(animating_child->render_surface());
   EXPECT_FALSE(child2->render_surface());
 
-  // Verify that the animating_child and child_of_animating_surface were not
-  // culled, but that child was.
-  ASSERT_EQ(2u, render_surface_layer_list.size());
-  EXPECT_EQ(parent->id(), render_surface_layer_list.at(0)->id());
-  EXPECT_EQ(animating_surface->id(), render_surface_layer_list.at(1)->id());
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
+
+  EXPECT_EQ(4u, update_layer_list().size());
 
   // The non-animating child be culled from the layer list for the parent render
   // surface.
-  ASSERT_EQ(
-      3u,
-      render_surface_layer_list.at(0)->render_surface()->layer_list().size());
-  EXPECT_EQ(animating_surface->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(animating_child->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()->layer_list().at(1)->id());
-  EXPECT_EQ(child2->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()->layer_list().at(2)->id());
+  EXPECT_TRUE(UpdateLayerListContains(animating_surface->id()));
+  EXPECT_TRUE(UpdateLayerListContains(animating_child->id()));
+  EXPECT_TRUE(UpdateLayerListContains(child2->id()));
+  EXPECT_TRUE(UpdateLayerListContains(child_of_animating_surface->id()));
 
-  ASSERT_EQ(
-      2u,
-      render_surface_layer_list.at(1)->render_surface()->layer_list().size());
-  EXPECT_EQ(animating_surface->id(),
-            render_surface_layer_list.at(1)
-                ->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(child_of_animating_surface->id(),
-            render_surface_layer_list.at(1)
-                ->render_surface()->layer_list().at(1)->id());
-
-  EXPECT_FALSE(child2->visible_layer_rect().IsEmpty());
+  EXPECT_FALSE(child2->visible_rect_from_property_trees().IsEmpty());
 
   // The animating layers should have a visible content rect that represents the
   // area of the front face that is within the viewport.
-  EXPECT_EQ(animating_child->visible_layer_rect(),
+  EXPECT_EQ(animating_child->visible_rect_from_property_trees(),
             gfx::Rect(animating_child->bounds()));
-  EXPECT_EQ(animating_surface->visible_layer_rect(),
+  EXPECT_EQ(animating_surface->visible_rect_from_property_trees(),
             gfx::Rect(animating_surface->bounds()));
   // And layers in the subtree of the animating layer should have valid visible
   // content rects also.
-  EXPECT_EQ(child_of_animating_surface->visible_layer_rect(),
+  EXPECT_EQ(child_of_animating_surface->visible_rect_from_property_trees(),
             gfx::Rect(child_of_animating_surface->bounds()));
 }
 
@@ -4097,11 +3996,7 @@ TEST_F(LayerTreeHostCommonTest,
   front_facing_surface->Set3dSortingContextId(1);
   back_facing_surface->Set3dSortingContextId(1);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
 
   // Verify which render surfaces were created and used.
   EXPECT_TRUE(front_facing_surface->render_surface());
@@ -4113,30 +4008,9 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_FALSE(child1->render_surface());
   EXPECT_FALSE(child2->render_surface());
 
-  // Verify the render_surface_layer_list. The back-facing surface should be
-  // culled.
-  ASSERT_EQ(2u, render_surface_layer_list.size());
-  EXPECT_EQ(parent->id(), render_surface_layer_list.at(0)->id());
-  EXPECT_EQ(front_facing_surface->id(), render_surface_layer_list.at(1)->id());
-
-  // Verify root surface's layer list.
-  ASSERT_EQ(
-      1u,
-      render_surface_layer_list.at(0)->render_surface()->layer_list().size());
-  EXPECT_EQ(front_facing_surface->id(),
-            render_surface_layer_list.at(0)
-                ->render_surface()->layer_list().at(0)->id());
-
-  // Verify front_facing_surface's layer list.
-  ASSERT_EQ(
-      2u,
-      render_surface_layer_list.at(1)->render_surface()->layer_list().size());
-  EXPECT_EQ(front_facing_surface->id(),
-            render_surface_layer_list.at(1)
-                ->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(child1->id(),
-            render_surface_layer_list.at(1)
-                ->render_surface()->layer_list().at(1)->id());
+  EXPECT_EQ(2u, update_layer_list().size());
+  EXPECT_TRUE(UpdateLayerListContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerListContains(child1->id()));
 }
 
 TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {

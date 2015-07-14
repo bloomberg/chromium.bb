@@ -137,7 +137,8 @@ static bool IsRootLayerOfNewRenderingContext(LayerType* layer) {
 template <typename LayerType>
 static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
   return layer->Is3dSorted() && layer->parent() &&
-         layer->parent()->Is3dSorted();
+         layer->parent()->Is3dSorted() &&
+         layer->parent()->sorting_context_id() == layer->sorting_context_id();
 }
 
 template <typename LayerType>
@@ -170,6 +171,28 @@ static bool IsLayerBackFaceVisible(LayerType* layer,
 }
 
 template <typename LayerType>
+static bool IsSurfaceBackFaceVisible(LayerType* layer,
+                                     const TransformTree& tree) {
+  if (LayerIsInExisting3DRenderingContext(layer)) {
+    const TransformNode* node = tree.Node(layer->transform_tree_index());
+    // Draw transform as a contributing render surface.
+    // TODO(enne): we shouldn't walk the tree during a tree walk.
+    gfx::Transform surface_draw_transform;
+    tree.ComputeTransform(node->id, node->data.target_id,
+                          &surface_draw_transform);
+    return surface_draw_transform.IsBackFaceVisible();
+  }
+
+  if (IsRootLayerOfNewRenderingContext(layer))
+    return layer->transform().IsBackFaceVisible();
+
+  // If the render_surface is not part of a new or existing rendering context,
+  // then the layers that contribute to this surface will decide back-face
+  // visibility for themselves.
+  return false;
+}
+
+template <typename LayerType>
 static bool IsAnimatingTransformToScreen(LayerType* layer,
                                          const TransformTree& tree) {
   const TransformNode* node = tree.Node(layer->transform_tree_index());
@@ -192,7 +215,8 @@ static bool HasInvertibleOrAnimatedTransform(LayerType* layer) {
 }
 
 static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
-                                          bool layer_is_drawn) {
+                                          bool layer_is_drawn,
+                                          const TransformTree& tree) {
   // If the layer transform is not invertible, it should not be drawn.
   // TODO(ajuma): Correctly process subtrees with singular transform for the
   // case where we may animate to a non-singular transform and wish to
@@ -214,6 +238,10 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   if (!layer_is_drawn)
     return true;
 
+  if (layer->render_surface() && !layer->double_sided() &&
+      IsSurfaceBackFaceVisible(layer, tree))
+    return true;
+
   // If layer is on the pending tree and opacity is being animated then
   // this subtree can't be skipped as we need to create, prioritize and
   // include tiles for this layer when deciding if tree can be activated.
@@ -226,7 +254,9 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   return !layer->opacity();
 }
 
-static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
+static inline bool SubtreeShouldBeSkipped(Layer* layer,
+                                          bool layer_is_drawn,
+                                          const TransformTree& tree) {
   // If the layer transform is not invertible, it should not be drawn.
   if (!layer->transform_is_invertible() && !layer->TransformIsAnimating())
     return true;
@@ -243,6 +273,10 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
 
   // If the layer is not drawn, then skip it and its subtree.
   if (!layer_is_drawn)
+    return true;
+
+  if (layer->render_surface() && !layer->double_sided() &&
+      !layer->TransformIsAnimating() && IsSurfaceBackFaceVisible(layer, tree))
     return true;
 
   // If the opacity is being animated then the opacity on the main thread is
@@ -309,7 +343,7 @@ void FindLayersThatNeedUpdates(
       layer->HasCopyRequest() ||
       (subtree_is_visible_from_ancestor && !layer->hide_layer_and_subtree());
 
-  if (layer->parent() && SubtreeShouldBeSkipped(layer, layer_is_drawn))
+  if (layer->parent() && SubtreeShouldBeSkipped(layer, layer_is_drawn, tree))
     return;
 
   if (!LayerShouldBeSkipped(layer, layer_is_drawn, tree)) {

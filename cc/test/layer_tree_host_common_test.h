@@ -119,6 +119,9 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     return render_surface_layer_list_impl_.get();
   }
 
+  const LayerList& update_layer_list() const { return update_layer_list_; }
+  bool UpdateLayerListContains(int id) const;
+
   int render_surface_layer_list_count() const {
     return render_surface_layer_list_count_;
   }
@@ -128,6 +131,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
  private:
   scoped_ptr<RenderSurfaceLayerList> render_surface_layer_list_;
   scoped_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
+  LayerList update_layer_list_;
   LayerSettings layer_settings_;
 
   int render_surface_layer_list_count_;
