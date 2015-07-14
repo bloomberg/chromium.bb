@@ -79,6 +79,7 @@
               '--variables', '<(branding_path)',
               '--template', '<(RULE_INPUT_PATH)',
               '--locale_output', '<@(_outputs)',
+              '--define', 'ENABLE_CARDBOARD=<(enable_cardboard)',
               'en',
             ],
           }],
@@ -104,6 +105,7 @@
             '../third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
             '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
+            '../third_party/cardboard-java/cardboard.gyp:cardboard_jar',
           ],
           'includes': [ '../build/java.gypi' ],
           'conditions' : [

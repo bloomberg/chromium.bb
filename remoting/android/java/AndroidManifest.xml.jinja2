@@ -7,6 +7,12 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+{% if ENABLE_CARDBOARD == "1" %}
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+{% endif %}
+
     <application android:label="@string/product_name_android"
             android:icon="@mipmap/logo_remote_desktop_launcher"
             android:theme="@style/BaseTheme"
@@ -41,6 +47,17 @@
                 android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
                 android:theme="@style/BaseTheme.Desktop"
                 android:windowSoftInputMode="adjustResize"/>
+{% if ENABLE_CARDBOARD == "1" %}
+        <activity android:name="org.chromium.chromoting.CardboardDesktopActivity"
+                android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
+                android:theme="@style/BaseTheme.Desktop"
+                android:windowSoftInputMode="adjustResize"
+                android:screenOrientation="landscape">
+            <intent-filter>    
+                <category android:name="com.google.intent.category.CARDBOARD" />        
+            </intent-filter>
+        </activity>
+ {% endif %}          
         <activity android:name="org.chromium.chromoting.HelpActivity"
                 android:configChanges="orientation|screenSize"
                 android:uiOptions="splitActionBarWhenNarrow"/>

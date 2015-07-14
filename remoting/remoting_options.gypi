@@ -15,6 +15,9 @@
     # Set this to use GCD instead of the remoting directory service.
     'remoting_use_gcd%': 0,
 
+    # Set this to enable Android Chromoting Cardboard Activity.
+    'enable_cardboard%': 0,
+
     'variables': {
       'conditions': [
         # Enable the multi-process host on Windows by default.
