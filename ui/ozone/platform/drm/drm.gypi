@@ -11,7 +11,6 @@
       'ozone_platform_drm_unittests',
     ],
     'internal_ozone_platforms': [
-      'dri',
       'drm',
     ],
     'use_drm_atomic%': 0,
