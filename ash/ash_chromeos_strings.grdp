@@ -25,10 +25,10 @@
     Low-power charger connected
   </message>
   <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE" desc="The message body of a notification indicating that a low-current USB charger has been connected.">
-    Your Chromebook may not charge while it is turned on. Consider using the official charger.
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on. Consider using the official charger.
   </message>
   <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT" desc="The message body of a notification indicating that a low-current USB charger has been connected, short version.">
-    Your Chromebook may not charge while it is turned on.
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> may not charge while it is turned on.
   </message>
 
   <message name="IDS_CHARGER_REPLACEMENT_ACCESSIBILITY_NOTIFICATION" desc="The notification string used in accessibility to tell user to contact Google for replacing the possible bad charger.">

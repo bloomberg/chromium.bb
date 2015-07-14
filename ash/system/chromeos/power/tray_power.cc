@@ -7,6 +7,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "ash/system/chromeos/power/battery_notification.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/system_notifier.h"
@@ -192,7 +193,7 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
         message_center::NOTIFICATION_TYPE_SIMPLE,
         kNotificationId,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
-        rb.GetLocalizedString(
+        ash::SubstituteChromeOSDeviceType(
             IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
         rb.GetImageNamed(IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
         base::string16(),
