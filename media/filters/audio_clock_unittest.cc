@@ -40,16 +40,21 @@ class AudioClockTest : public testing::Test {
   }
 
   int ContiguousAudioDataBufferedInDays() {
-    return clock_.contiguous_audio_data_buffered().InDays();
+    base::TimeDelta total, same_rate_total;
+    clock_.ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
+    return total.InDays();
   }
 
   int ContiguousAudioDataBufferedInMilliseconds() {
-    return clock_.contiguous_audio_data_buffered().InMilliseconds();
+    base::TimeDelta total, same_rate_total;
+    clock_.ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
+    return total.InMilliseconds();
   }
 
   int ContiguousAudioDataBufferedAtSameRateInMilliseconds() {
-    return clock_.contiguous_audio_data_buffered_at_same_rate()
-        .InMilliseconds();
+    base::TimeDelta total, same_rate_total;
+    clock_.ContiguousAudioDataBufferedForTesting(&total, &same_rate_total);
+    return same_rate_total.InMilliseconds();
   }
 
   const int sample_rate_;
@@ -71,15 +76,6 @@ TEST_F(AudioClockTest, BackTimestampStartsAtStartTimestamp) {
   AudioClock clock(expected, sample_rate_);
 
   EXPECT_EQ(expected, clock.back_timestamp());
-}
-
-TEST_F(AudioClockTest, ContiguousAudioDataBufferedStartsAtZero) {
-  EXPECT_EQ(base::TimeDelta(), clock_.contiguous_audio_data_buffered());
-}
-
-TEST_F(AudioClockTest, ContiguousAudioDataBufferedAtSameRateStartsAtZero) {
-  EXPECT_EQ(base::TimeDelta(),
-            clock_.contiguous_audio_data_buffered_at_same_rate());
 }
 
 TEST_F(AudioClockTest, Playback) {

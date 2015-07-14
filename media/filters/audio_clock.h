@@ -95,18 +95,9 @@ class MEDIA_EXPORT AudioClock {
   // |timestamp| must be within front_timestamp() and back_timestamp().
   base::TimeDelta TimeUntilPlayback(base::TimeDelta timestamp) const;
 
-  // Returns the amount of contiguous media time buffered at the head of the
-  // audio hardware buffer. Silence introduced into the audio hardware buffer is
-  // treated as a break in media time.
-  base::TimeDelta contiguous_audio_data_buffered() const {
-    return contiguous_audio_data_buffered_;
-  }
-
-  // Same as above, but also treats changes in playback rate as a break in media
-  // time.
-  base::TimeDelta contiguous_audio_data_buffered_at_same_rate() const {
-    return contiguous_audio_data_buffered_at_same_rate_;
-  }
+  void ContiguousAudioDataBufferedForTesting(
+      base::TimeDelta* total,
+      base::TimeDelta* same_rate_total) const;
 
  private:
   // Even with a ridiculously high sample rate of 256kHz, using 64 bits will
@@ -123,7 +114,7 @@ class MEDIA_EXPORT AudioClock {
   // Helpers for operating on |buffered_|.
   void PushBufferedAudioData(int64_t frames, double playback_rate);
   void PopBufferedAudioData(int64_t frames);
-  base::TimeDelta ComputeBufferedMediaTime(int64_t frames) const;
+  base::TimeDelta ComputeBufferedMediaDuration() const;
 
   const base::TimeDelta start_timestamp_;
   const double microseconds_per_frame_;
@@ -133,10 +124,6 @@ class MEDIA_EXPORT AudioClock {
 
   base::TimeDelta front_timestamp_;
   base::TimeDelta back_timestamp_;
-
-  // Cached results of last call to WroteAudio().
-  base::TimeDelta contiguous_audio_data_buffered_;
-  base::TimeDelta contiguous_audio_data_buffered_at_same_rate_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioClock);
 };
