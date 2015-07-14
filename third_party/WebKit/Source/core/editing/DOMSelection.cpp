@@ -504,9 +504,7 @@ String DOMSelection::toString()
         return String();
 
     const EphemeralRange range = m_frame->selection().selection().toNormalizedEphemeralRange();
-    if (range.isNull())
-        return emptyString();
-    return plainText(range.startPosition(), range.endPosition(), TextIteratorForSelectionToString);
+    return plainText(range, TextIteratorForSelectionToString);
 }
 
 Node* DOMSelection::shadowAdjustedNode(const Position& position) const

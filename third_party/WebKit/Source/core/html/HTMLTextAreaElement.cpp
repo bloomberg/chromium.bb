@@ -308,7 +308,7 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
     unsigned selectionLength = 0;
     if (focused()) {
         const EphemeralRange range = document().frame()->selection().selection().toNormalizedEphemeralRange();
-        selectionLength = computeLengthForSubmission(plainText(range.startPosition(), range.endPosition()));
+        selectionLength = computeLengthForSubmission(plainText(range));
     }
     ASSERT(currentLength >= selectionLength);
     unsigned baseLength = currentLength - selectionLength;

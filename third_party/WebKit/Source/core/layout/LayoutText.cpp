@@ -306,7 +306,7 @@ PassRefPtr<StringImpl> LayoutText::originalText() const
 String LayoutText::plainText() const
 {
     if (node())
-        return blink::plainText(Position(node(), PositionAnchorType::BeforeChildren), Position(node(), PositionAnchorType::AfterChildren));
+        return blink::plainText(EphemeralRange::rangeOfContents(*node()));
 
     // FIXME: this is just a stopgap until TextIterator is adapted to support generated text.
     StringBuilder plainTextBuilder;

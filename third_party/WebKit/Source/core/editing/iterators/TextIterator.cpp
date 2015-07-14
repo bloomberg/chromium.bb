@@ -1066,9 +1066,12 @@ int TextIteratorAlgorithm<Strategy>::rangeLength(const PositionAlgorithm<Strateg
 // --------
 
 template <typename Strategy>
-static String createPlainText(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
+static String createPlainText(const EphemeralRangeTemplate<Strategy>& range, TextIteratorBehaviorFlags behavior)
 {
-    TextIteratorAlgorithm<Strategy> it(start, end, behavior);
+    if (range.isNull())
+        return emptyString();
+
+    TextIteratorAlgorithm<Strategy> it(range.startPosition(), range.endPosition(), behavior);
     // The initial buffer size can be critical for performance: https://bugs.webkit.org/show_bug.cgi?id=81192
     static const unsigned initialCapacity = 1 << 15;
 
@@ -1087,14 +1090,14 @@ static String createPlainText(const PositionAlgorithm<Strategy>& start, const Po
     return builder.toString();
 }
 
-String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+String plainText(const EphemeralRange& range, TextIteratorBehaviorFlags behavior)
 {
-    return createPlainText<EditingStrategy>(start, end, behavior);
+    return createPlainText<EditingStrategy>(range, behavior);
 }
 
-String plainText(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags behavior)
+String plainText(const EphemeralRangeInComposedTree& range, TextIteratorBehaviorFlags behavior)
 {
-    return createPlainText<EditingInComposedTreeStrategy>(start, end, behavior);
+    return createPlainText<EditingInComposedTreeStrategy>(range, behavior);
 }
 
 template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingStrategy>;

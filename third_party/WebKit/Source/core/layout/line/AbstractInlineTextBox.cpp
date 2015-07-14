@@ -160,8 +160,8 @@ String AbstractInlineTextBox::text() const
     unsigned len = m_inlineTextBox->len();
     if (Node* node = m_layoutText->node()) {
         if (node->isTextNode())
-            return plainText(Position(node, start), Position(node, start + len), TextIteratorIgnoresStyleVisibility);
-        return plainText(Position(node, PositionAnchorType::BeforeAnchor), Position(node, PositionAnchorType::AfterAnchor), TextIteratorIgnoresStyleVisibility);
+            return plainText(EphemeralRange(Position(node, start), Position(node, start + len)), TextIteratorIgnoresStyleVisibility);
+        return plainText(EphemeralRange(Position(node, PositionAnchorType::BeforeAnchor), Position(node, PositionAnchorType::AfterAnchor)), TextIteratorIgnoresStyleVisibility);
     }
 
     String result = m_layoutText->text().substring(start, len).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);

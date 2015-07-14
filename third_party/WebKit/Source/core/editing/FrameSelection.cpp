@@ -1719,7 +1719,7 @@ String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIterato
     VisibleSelection visibleSelection = selection.selection();
     EphemeralRangeTemplate<typename SelectionType::Strategy> range = VisibleSelection::normalizeRange(SelectionType::asRange(visibleSelection));
     // We remove '\0' characters because they are not visibly rendered to the user.
-    return plainText(range.startPosition(), range.endPosition(), behavior).replace(0, "");
+    return plainText(range, behavior).replace(0, "");
 }
 
 static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
@@ -1978,7 +1978,7 @@ bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position)
     for (EWordSide wordSide : wordSideList) {
         VisiblePosition start = startOfWord(position, wordSide);
         VisiblePosition end = endOfWord(position, wordSide);
-        String text = plainText(start.deepEquivalent(), end.deepEquivalent());
+        String text = plainText(EphemeralRange(start.deepEquivalent(), end.deepEquivalent()));
         if (!text.isEmpty() && !isSeparator(text.characterStartingAt(0))) {
             setSelection(VisibleSelection(start, end), WordGranularity);
             return true;

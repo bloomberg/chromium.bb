@@ -195,7 +195,7 @@ const String& TextCheckingParagraph::text() const
 {
     ASSERT(m_checkingRange);
     if (m_text.isEmpty())
-        m_text = plainText(paragraphRange()->startPosition(), paragraphRange()->endPosition());
+        m_text = plainText(EphemeralRange(paragraphRange().get()));
     return m_text;
 }
 
@@ -332,7 +332,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
             lastIteration = true;
         }
         if (currentStartOffset < currentEndOffset) {
-            String paragraphString = plainText(paragraphStart, paragraphEnd);
+            String paragraphString = plainText(EphemeralRange(paragraphStart, paragraphEnd));
             if (paragraphString.length() > 0) {
                 bool foundGrammar = false;
                 int spellingLocation = 0;

@@ -420,9 +420,7 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
     unsigned selectionLength = 0;
     if (element().focused()) {
         const VisibleSelection& selection = element().document().frame()->selection().selection();
-        const EphemeralRange range = selection.toNormalizedEphemeralRange();
-        if (range.isNotNull())
-            selectionLength = plainText(range.startPosition(), range.endPosition()).length();
+        selectionLength = plainText(selection.toNormalizedEphemeralRange()).length();
     }
     ASSERT(oldLength >= selectionLength);
 

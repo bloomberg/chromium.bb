@@ -1038,7 +1038,7 @@ void Editor::transpose()
     VisibleSelection newSelection(range.get(), DOWNSTREAM);
 
     // Transpose the two characters.
-    String text = plainText(range->startPosition(), range->endPosition());
+    String text = plainText(EphemeralRange(range.get()));
     if (text.length() != 2)
         return;
     String transposed = text.right(1) + text.left(1);
@@ -1056,7 +1056,7 @@ void Editor::addToKillRing(const EphemeralRange& range, bool prepend)
     if (m_shouldStartNewKillRingSequence)
         killRing().startNewSequence();
 
-    String text = plainText(range.startPosition(), range.endPosition());
+    String text = plainText(range);
     if (prepend)
         killRing().prepend(text);
     else

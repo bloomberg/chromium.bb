@@ -898,7 +898,7 @@ String Range::toString() const
 
 String Range::text() const
 {
-    return plainText(startPosition(), endPosition(), TextIteratorEmitsObjectReplacementCharacter);
+    return plainText(EphemeralRange(this), TextIteratorEmitsObjectReplacementCharacter);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> Range::createContextualFragment(const String& markup, ExceptionState& exceptionState)

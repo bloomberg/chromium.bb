@@ -2519,7 +2519,7 @@ String Element::innerText()
     if (!layoutObject())
         return textContent(true);
 
-    return plainText(Position(this, PositionAnchorType::BeforeChildren), Position(this, PositionAnchorType::AfterChildren), TextIteratorForInnerText);
+    return plainText(EphemeralRange::rangeOfContents(*this), TextIteratorForInnerText);
 }
 
 String Element::outerText()

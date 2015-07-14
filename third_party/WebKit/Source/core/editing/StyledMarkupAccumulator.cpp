@@ -193,7 +193,7 @@ String StyledMarkupAccumulator::renderedText(Text& textNode)
         startOffset = m_start.offset();
     if (m_end.text() == textNode)
         endOffset = m_end.offset();
-    return plainText(Position(&textNode, startOffset), Position(&textNode, endOffset));
+    return plainText(EphemeralRange(Position(&textNode, startOffset), Position(&textNode, endOffset)));
 }
 
 String StyledMarkupAccumulator::stringValueForRange(const Text& node)
