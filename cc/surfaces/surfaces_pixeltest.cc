@@ -83,7 +83,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
   factory_.SubmitFrame(root_surface_id, root_frame.Pass(),
                        SurfaceFactory::DrawCallback());
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get());
+  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
   scoped_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
   factory_.Destroy(root_surface_id);
@@ -167,7 +167,7 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                          SurfaceFactory::DrawCallback());
   }
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get());
+  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
   scoped_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
 
@@ -310,7 +310,7 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                          SurfaceFactory::DrawCallback());
   }
 
-  SurfaceAggregator aggregator(&manager_, resource_provider_.get());
+  SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
   scoped_ptr<CompositorFrame> aggregated_frame =
       aggregator.Aggregate(root_surface_id);
 

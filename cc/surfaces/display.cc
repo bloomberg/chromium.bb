@@ -122,7 +122,12 @@ void Display::InitializeRenderer() {
   }
 
   resource_provider_ = resource_provider.Pass();
-  aggregator_.reset(new SurfaceAggregator(manager_, resource_provider_.get()));
+  // TODO(jbauman): Outputting an incomplete quad list doesn't work when using
+  // overlays.
+  bool output_partial_list = renderer_->Capabilities().using_partial_swap &&
+                             !output_surface_->GetOverlayCandidateValidator();
+  aggregator_.reset(new SurfaceAggregator(manager_, resource_provider_.get(),
+                                          output_partial_list));
 }
 
 void Display::DidLoseOutputSurface() {

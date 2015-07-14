@@ -36,14 +36,16 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
-    aggregator_.reset(
-        new SurfaceAggregator(&manager_, resource_provider_.get()));
   }
 
   void RunTest(int num_surfaces,
                int num_textures,
                float opacity,
+               bool optimize_damage,
+               bool full_damage,
                const std::string& name) {
+    aggregator_.reset(new SurfaceAggregator(&manager_, resource_provider_.get(),
+                                            optimize_damage));
     for (int i = 1; i <= num_surfaces; i++) {
       factory_.Create(SurfaceId(i));
       scoped_ptr<RenderPass> pass(RenderPass::Create());
@@ -60,7 +62,9 @@ class SurfaceAggregatorPerfTest : public testing::Test {
             pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
         const gfx::Rect rect(0, 0, 1, 1);
         const gfx::Rect opaque_rect;
-        const gfx::Rect visible_rect(0, 0, 1, 1);
+        // Half of rects should be visible with partial damage.
+        gfx::Rect visible_rect =
+            j % 2 == 0 ? gfx::Rect(0, 0, 1, 1) : gfx::Rect(1, 1, 1, 1);
         bool needs_blending = false;
         bool premultiplied_alpha = false;
         const gfx::PointF uv_top_left;
@@ -90,16 +94,38 @@ class SurfaceAggregatorPerfTest : public testing::Test {
                            SurfaceFactory::DrawCallback());
     }
 
+    factory_.Create(SurfaceId(num_surfaces + 1));
     timer_.Reset();
     do {
+      scoped_ptr<RenderPass> pass(RenderPass::Create());
+      scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+
+      SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
+      SurfaceDrawQuad* surface_quad =
+          pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+      surface_quad->SetNew(sqs, gfx::Rect(0, 0, 100, 100),
+                           gfx::Rect(0, 0, 100, 100), SurfaceId(num_surfaces));
+
+      if (full_damage)
+        pass->damage_rect = gfx::Rect(0, 0, 100, 100);
+      else
+        pass->damage_rect = gfx::Rect(0, 0, 1, 1);
+
+      frame_data->render_pass_list.push_back(pass.Pass());
+      scoped_ptr<CompositorFrame> frame(new CompositorFrame);
+      frame->delegated_frame_data = frame_data.Pass();
+      factory_.SubmitFrame(SurfaceId(num_surfaces + 1), frame.Pass(),
+                           SurfaceFactory::DrawCallback());
+
       scoped_ptr<CompositorFrame> aggregated =
-          aggregator_->Aggregate(SurfaceId(num_surfaces));
+          aggregator_->Aggregate(SurfaceId(num_surfaces + 1));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("aggregator_speed", "", name, timer_.LapsPerSecond(),
                            "runs/s", true);
 
+    factory_.Destroy(SurfaceId(num_surfaces + 1));
     for (int i = 1; i <= num_surfaces; i++)
       factory_.Destroy(SurfaceId(i));
   }
@@ -117,15 +143,31 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 };
 
 TEST_F(SurfaceAggregatorPerfTest, ManySurfacesOpaque) {
-  RunTest(20, 100, 1.f, "many_surfaces_opaque");
+  RunTest(20, 100, 1.f, false, true, "many_surfaces_opaque");
 }
 
 TEST_F(SurfaceAggregatorPerfTest, ManySurfacesTransparent) {
-  RunTest(20, 100, .5f, "many_surfaces_transparent");
+  RunTest(20, 100, .5f, false, true, "many_surfaces_transparent");
 }
 
 TEST_F(SurfaceAggregatorPerfTest, FewSurfaces) {
-  RunTest(3, 1000, 1.f, "few_surfaces");
+  RunTest(3, 1000, 1.f, false, true, "few_surfaces");
+}
+
+TEST_F(SurfaceAggregatorPerfTest, ManySurfacesOpaqueDamageCalc) {
+  RunTest(20, 100, 1.f, true, true, "many_surfaces_opaque_damage_calc");
+}
+
+TEST_F(SurfaceAggregatorPerfTest, ManySurfacesTransparentDamageCalc) {
+  RunTest(20, 100, .5f, true, true, "many_surfaces_transparent_damage_calc");
+}
+
+TEST_F(SurfaceAggregatorPerfTest, FewSurfacesDamageCalc) {
+  RunTest(3, 1000, 1.f, true, true, "few_surfaces_damage_calc");
+}
+
+TEST_F(SurfaceAggregatorPerfTest, FewSurfacesAggregateDamaged) {
+  RunTest(3, 1000, 1.f, true, false, "few_surfaces_aggregate_damaged");
 }
 
 }  // namespace
