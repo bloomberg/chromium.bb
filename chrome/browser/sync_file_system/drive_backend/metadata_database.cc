@@ -215,12 +215,16 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
+  options.paranoid_checks = true;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (env_override)
     options.env = env_override;
   leveldb::DB* db = nullptr;
   leveldb::Status db_status =
       leveldb::DB::Open(options, path.AsUTF8Unsafe(), &db);
+  UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.Database.Open",
+                            leveldb_env::GetLevelDBStatusUMAValue(db_status),
+                            leveldb_env::LEVELDB_STATUS_MAX);
   SyncStatusCode status = LevelDBStatusToSyncStatusCode(db_status);
   if (status != SYNC_STATUS_OK) {
     delete db;

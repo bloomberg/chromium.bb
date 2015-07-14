@@ -44672,6 +44672,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SyncFileSystem.Database.Open" enum="LevelDBStatus">
+  <owner>tzik@chromium.org</owner>
+  <summary>The result of opening the Sync FileSystem backend database.</summary>
+</histogram>
+
 <histogram name="SyncFileSystem.MetadataNumber">
   <owner>tzik@chromium.org</owner>
   <summary>
