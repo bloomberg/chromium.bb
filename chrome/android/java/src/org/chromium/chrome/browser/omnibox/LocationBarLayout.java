@@ -62,6 +62,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ContextualMenuBar;
 import org.chromium.chrome.browser.ContextualMenuBar.ActionBarDelegate;
@@ -83,6 +84,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggesti
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.Type;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationSnackbarController;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -124,6 +126,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
 
     private static final int OMNIBOX_CONTAINER_BACKGROUND_FADE_MS = 250;
+
+    // Delay showing the geolocation snackbar when the omnibox is focused until the keyboard is
+    // hopefully visible.
+    private static final int GEOLOCATION_SNACKBAR_SHOW_DELAY_MS = 750;
 
     // The minimum confidence threshold that will result in navigating directly to a voice search
     // response (as opposed to treating it like a typed string in the Omnibox).
@@ -1017,6 +1023,15 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (!hasFocus) {
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
+        }
+
+        if (hasFocus && currentTab != null) {
+            ChromeActivity activity = (ChromeActivity) mWindowAndroid.getActivity().get();
+            if (activity != null) {
+                GeolocationSnackbarController.maybeShowSnackbar(activity.getSnackbarManager(),
+                        LocationBarLayout.this, currentTab.isIncognito(),
+                        GEOLOCATION_SNACKBAR_SHOW_DELAY_MS);
+            }
         }
     }
 

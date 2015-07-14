@@ -38,6 +38,13 @@ public class SearchEnginePreference extends DialogPreference
 
     // DialogPreference:
 
+    /**
+     * @see DialogPreference#showDialog
+     */
+    public void showDialog() {
+        super.showDialog(null);
+    }
+
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         super.onPrepareDialogBuilder(builder);

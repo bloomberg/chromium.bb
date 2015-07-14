@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -37,6 +38,7 @@ import org.chromium.sync.signin.ChromeSigninController;
 public class MainPreferences extends PreferenceFragment implements SignInStateObserver {
 
     public static final String PREF_SIGN_IN = "sign_in";
+    public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_DOCUMENT_MODE = "document_mode";
     public static final String PREF_AUTOFILL_SETTINGS = "autofill_settings";
     public static final String PREF_SAVED_PASSWORDS = "saved_passwords";
@@ -44,13 +46,26 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
     public static final String PREF_REDUCE_DATA_USAGE = "reduce_data_usage";
 
     public static final String ACCOUNT_PICKER_DIALOG_TAG = "account_picker_dialog_tag";
+    public static final String EXTRA_SHOW_SEARCH_ENGINE_PICKER = "show_search_engine_picker";
 
     private SignInPreference mSignInPreference;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
+    private boolean mShowSearchEnginePicker;
+
     public MainPreferences() {
         setHasOptionsMenu(true);
         mManagedPreferenceDelegate = createManagedPreferenceDelegate();
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState == null && getArguments() != null
+                && getArguments().getBoolean(EXTRA_SHOW_SEARCH_ENGINE_PICKER, false)) {
+            mShowSearchEnginePicker = true;
+        }
     }
 
     @Override
@@ -80,6 +95,11 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
         super.onResume();
         SigninManager.get(getActivity()).addSignInStateObserver(this);
         updatePreferences();
+
+        if (mShowSearchEnginePicker) {
+            mShowSearchEnginePicker = false;
+            ((SearchEnginePreference) findPreference(PREF_SEARCH_ENGINE)).showDialog();
+        }
     }
 
     @Override
