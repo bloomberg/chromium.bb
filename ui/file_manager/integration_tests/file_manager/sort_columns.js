@@ -79,8 +79,8 @@ testcase.sortColumns = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Click the 'Name' column header and check the list.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil('fakeMouseClick',
                                     appId,
                                     ['.table-header-cell:nth-of-type(1)'],

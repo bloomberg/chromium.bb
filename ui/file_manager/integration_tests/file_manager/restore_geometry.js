@@ -16,8 +16,8 @@ testcase.restoreGeometry = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Resize the window to minimal dimensions.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'resizeWindow', appId, [640, 480], this.next);
     },
@@ -39,8 +39,8 @@ testcase.restoreGeometry = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Check the next window's size.
-    function(inAppId) {
-      appId2 = inAppId;
+    function(results) {
+      appId2 = results.windowId;
       remoteCall.waitForWindowGeometry(appId2, 650, 490).then(this.next);
     },
     // Check for errors.

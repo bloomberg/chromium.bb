@@ -16,8 +16,8 @@ function share(path) {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Select the source file.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'selectFile', appId, [path], this.next);
     },

@@ -28,8 +28,8 @@ testcase.suggestAppDialog = function() {
       };
       setupAndWaitUntilReady(appState, RootPath.DRIVE, this.next);
     },
-    function(inAppId, inFileListBefore) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
 
       remoteCall.callRemoteTestUtil(
           'selectFile', appId, ['unsupported.foo'], this.next);

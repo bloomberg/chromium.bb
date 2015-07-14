@@ -30,8 +30,8 @@ function copyBetweenVolumes(targetFile,
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Select the source volume.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'selectVolume', appId, [srcName], this.next);
     },

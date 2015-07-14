@@ -26,8 +26,9 @@ function fileDisplay(path) {
     },
     // Notify that the list has been verified and a new file can be added
     // in file_manager_browsertest.cc.
-    function(inAppId, actualFilesBefore) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
+      var actualFilesBefore = results.fileList;
       chrome.test.assertEq(expectedFilesBefore, actualFilesBefore);
       addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
     },
@@ -62,8 +63,8 @@ testcase.fileDisplayMtp = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Mount a fake MTP volume.
-    function(inAppId, files) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       chrome.test.sendMessage(JSON.stringify({name: 'mountFakeMtp'}),
                               this.next);
     },
@@ -105,8 +106,8 @@ function searchDownloads(searchTerm, expectedResults) {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Focus the search box.
-    function(inAppId, list) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil('fakeEvent',
                                     appId,
                                     ['#search-box input', 'focus'],
@@ -163,9 +164,8 @@ testcase.searchNotFound = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Focus the search box.
-    function(inAppId, list) {
-      appId = inAppId;
-      console.log(list);
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil('fakeEvent',
                                     appId,
                                     ['#search-box input', 'focus'],

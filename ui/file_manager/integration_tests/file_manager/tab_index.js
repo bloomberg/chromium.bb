@@ -15,8 +15,8 @@ testcase.searchBoxFocus = function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Check that the file list has the focus on launch.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
     },
     // Press the Ctrl-F key.
@@ -62,8 +62,8 @@ testcase.tabindexFocus = function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Check that the file list has the focus on launch.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
     },
     function(element) {
@@ -112,8 +112,8 @@ testcase.tabindexFocusDownloads = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Check that the file list has the focus on launch.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
     },
     // Press the Tab key.
@@ -155,8 +155,8 @@ testcase.tabindexFocusDirectorySelected = function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Check that the file list has the focus on launch.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       Promise.all([
         remoteCall.waitForElement(appId, ['#file-list:focus']),
         remoteCall.waitForElement(appId, ['#drive-welcome-link']),

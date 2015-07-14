@@ -22,8 +22,8 @@ testcase.restoreSortColumn = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Sort by name.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil('fakeMouseClick',
                                     appId,
                                     ['.table-header-cell:nth-of-type(1)'],
@@ -56,8 +56,8 @@ testcase.restoreSortColumn = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Check the sorted style of the header.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.waitForElement(appId, '.table-header-sort-image-desc').
           then(this.next);
     },
@@ -84,8 +84,8 @@ testcase.restoreCurrentView = function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Check the initial view.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.waitForElement(appId, '.thumbnail-grid[hidden]').
           then(this.next);
     },

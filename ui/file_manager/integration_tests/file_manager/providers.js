@@ -24,8 +24,8 @@ function getSetupSteps(manifest) {
           }));
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       this.next();
     }
   ];

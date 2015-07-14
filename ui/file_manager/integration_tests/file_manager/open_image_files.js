@@ -27,8 +27,8 @@ function imageOpen(path) {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Select the song.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
 
       // Add an additional image file.
       addEntries(['local', 'drive'], [ENTRIES.image3], this.next);

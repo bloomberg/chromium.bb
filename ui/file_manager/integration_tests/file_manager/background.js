@@ -56,20 +56,21 @@ function testPromise(promise) {
  */
 function StepsRunner() {
   /**
-   * List of steps.
-   * @type {Array<function>}
+   * Function to notify the end of the current closure.
+   * @type {?function}
    * @private
    */
-  this.steps_ = [];
+  this.next_ = null;
 }
 
 /**
  * Creates a StepsRunner instance and runs the passed steps.
  * @param {!Array<function>} steps
+ * @return {Promise} Promise to be fulfilled after test finishes.
  */
 StepsRunner.run = function(steps) {
   var stepsRunner = new StepsRunner();
-  stepsRunner.run_(steps);
+  return stepsRunner.run_(steps);
 };
 
 /**
@@ -83,35 +84,33 @@ StepsRunner.runGroups = function(groups) {
 
 StepsRunner.prototype = {
   /**
-   * @return {function} The next closure.
+   * @return {?function} The next closure.
    */
   get next() {
-    return this.steps_[0];
+    var next = this.next_;
+    this.next_ = null;
+    return next;
   }
 };
 
 /**
  * Runs a sequence of the added test steps.
  * @type {Array<function>} List of the sequential steps.
+ * @return {Promise} Promise to be fulfilled after test finishes.
  */
 StepsRunner.prototype.run_ = function(steps) {
-  this.steps_ = steps.slice(0);
-
-  // An extra step which acts as an empty callback for optional asynchronous
-  // calls in the last provided step.
-  this.steps_.push(function() {});
-
-  this.steps_ = this.steps_.map(function(f) {
-    return chrome.test.callbackPass(function() {
-      var args = arguments;
+  return steps.reduce(function(previousPromise, currentClosure) {
+    return previousPromise.then(function(arg) {
       return new Promise(function(resolve, reject) {
-        this.steps_.shift();
-        f.apply(this, args);
+        this.next_ = resolve;
+        currentClosure.apply(this, [arg]);
       }.bind(this));
     }.bind(this));
-  }.bind(this));
-
-  this.next();
+  }.bind(this), Promise.resolve())
+  // Adds the last closure to notify the completion of the run.
+  .then(chrome.test.callbackPass(function() {
+    return true;
+  }));
 };
 
 /**
@@ -300,7 +299,8 @@ function openAndWaitForClosingDialog(
  *     directory during initialization. Can be null, for no default path.
  * @param {function(string, Array<Array<string>>)=} opt_callback Callback with
  *     the window ID and with the file list.
- * @return {Promise} Promise to be fulfilled with window ID.
+ * @return {Promise} Promise to be fulfilled with the result object, which
+ *     coutnains the window ID and the file list.
  */
 function setupAndWaitUntilReady(appState, initialRoot, opt_callback) {
   var windowPromise = openNewWindow(appState, initialRoot);
@@ -323,9 +323,10 @@ function setupAndWaitUntilReady(appState, initialRoot, opt_callback) {
     driveEntriesPromise,
     detailedTablePromise
   ]).then(function(results) {
+    var result = {windowId: results[0], fileList: results[3]};
     if (opt_callback)
-      opt_callback(results[0], results[3]);
-    return results[0];
+      opt_callback(result);
+    return result;
   }).catch(function(e) {
     chrome.test.fail(e.stack || e);
   });

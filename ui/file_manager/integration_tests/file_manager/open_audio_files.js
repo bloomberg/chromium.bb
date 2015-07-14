@@ -51,8 +51,8 @@ function audioOpen(path) {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Select the song.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
 
       // Add an additional audio file.
       addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
@@ -170,8 +170,8 @@ function audioAutoAdvance(path) {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Select the song.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
 
       // Add an additional audio file.
       addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
@@ -241,8 +241,8 @@ function audioRepeatSingleFile(path) {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Select the song.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
 
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['Beautiful Song.ogg'], this.next);
@@ -309,8 +309,8 @@ function audioNoRepeatSingleFile(path) {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Select the song.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
 
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['Beautiful Song.ogg'], this.next);
@@ -369,8 +369,8 @@ function audioRepeatMultipleFile(path) {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Select the song.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
 
       // Add an additional audio file.
       addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
@@ -454,8 +454,8 @@ function audioNoRepeatMultipleFile(path) {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Select the song.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
 
       // Add an additional audio file.
       addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);

@@ -53,12 +53,12 @@ var DRIVE_FAKE_TASKS = [
  * @param {Array<FakeTask>} fakeTasks Fake tasks.
  */
 function setupTaskTest(rootPath, fakeTasks) {
-  return setupAndWaitUntilReady(null, rootPath).then(function(windowId) {
+  return setupAndWaitUntilReady(null, rootPath).then(function(results) {
     return remoteCall.callRemoteTestUtil(
         'overrideTasks',
-        windowId,
+        results.windowId,
         [fakeTasks]).then(function() {
-      return windowId;
+      return results.windowId;
     });
   });
 }

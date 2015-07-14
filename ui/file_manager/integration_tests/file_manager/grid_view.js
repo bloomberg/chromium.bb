@@ -19,9 +19,11 @@ function showGridView(rootPath, expectedSet) {
     return entryInfo.nameText;
   }).sort();
   var setupPromise = setupAndWaitUntilReady(null, rootPath);
-  return setupPromise.then(function(windowId) {
+  return setupPromise.then(function(results) {
+    var windowId = results.windowId;
     // Click the grid view button.
-    var clickedPromise = remoteCall.waitForElement(windowId, '#view-button').
+    var clickedPromise = remoteCall.waitForElement(windowId,
+                                                   '#view-button').
         then(function() {
           return remoteCall.callRemoteTestUtil(
               'fakeEvent', windowId, ['#view-button', 'click']);

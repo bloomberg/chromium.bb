@@ -164,8 +164,8 @@ testcase.createNewFolderAfterSelectFile = function() {
   var windowId = null;
   var promise = new Promise(function(callback) {
     setupAndWaitUntilReady(null, PATH, callback);
-  }).then(function(inWindowId) {
-    windowId = inWindowId;
+  }).then(function(results) {
+    windowId = results.windowId;
     return selectFirstListItem(windowId);
   }).then(function() {
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
@@ -183,8 +183,8 @@ testcase.createNewFolderDownloads = function() {
   var windowId = null;
   var promise = new Promise(function(callback) {
     setupAndWaitUntilReady(null, PATH, callback);
-  }).then(function(inWindowId) {
-    windowId = inWindowId
+  }).then(function(results) {
+    windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
   }).then(function() {
     return remoteCall.waitForElement(windowId, '#detail-table')
@@ -200,8 +200,8 @@ testcase.createNewFolderDrive = function() {
   var windowId = null;
   var promise = new Promise(function(callback) {
     setupAndWaitUntilReady(null, PATH, callback);
-  }).then(function(inWindowId) {
-    windowId = inWindowId
+  }).then(function(results) {
+    windowId = results.windowId
     return expandRoot(windowId, TREEITEM_DRIVE);
   }).then(function() {
     return remoteCall.waitForElement(windowId, '#detail-table')

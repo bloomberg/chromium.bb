@@ -36,8 +36,8 @@ function videoOpen(path) {
     function() {
       setupAndWaitUntilReady(null, path, this.next);
     },
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       // Select the song.
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['world.ogv'], this.next);

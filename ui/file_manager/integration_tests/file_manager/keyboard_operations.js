@@ -48,17 +48,17 @@ function keyboardCopy(path, callback) {
   var expectedFilesAfter =
       expectedFilesBefore.concat([['world (1).ogv', '59 KB', 'OGG video']]);
 
-  var appId, fileListBefore;
+  var appId;
   StepsRunner.run([
     // Set up File Manager.
     function() {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Copy the file.
-    function(inAppId, inFileListBefore) {
-      appId = inAppId;
-      fileListBefore = inFileListBefore;
-      chrome.test.assertEq(expectedFilesBefore, inFileListBefore);
+    function(results) {
+      appId = results.windowId;
+      var fileListBefore = results.fileList;
+      chrome.test.assertEq(expectedFilesBefore, fileListBefore);
       remoteCall.callRemoteTestUtil('copyFile', appId, [filename], this.next);
     },
     // Wait for a file list change.
@@ -99,9 +99,9 @@ function keyboardDelete(path, treeItem) {
       setupAndWaitUntilReady(null, path, this.next);
     },
     // Delete the file.
-    function(inAppId, inFileListBefore) {
-      appId = inAppId;
-      fileListBefore = inFileListBefore;
+    function(results) {
+      appId = results.windowId;
+      fileListBefore = results.fileList;
       chrome.test.assertTrue(isFilePresent(filename, fileListBefore));
       this.next();
     },
@@ -199,10 +199,11 @@ function testRenameNewDirectory(path, initialEntrySet, pathInBreadcrumb) {
 
   return new Promise(function(resolve) {
     setupAndWaitUntilReady(null, path, resolve);
-  }).then(function(windowId) {
+  }).then(function(results) {
+    var windowId = results.windowId;
     return remoteCall.waitForFiles(windowId, expectedRows).then(function() {
-      return remoteCall.fakeKeyDown(windowId, '#list-container', 'U+0045',
-          true);
+      return remoteCall.fakeKeyDown(
+          windowId, '#list-container', 'U+0045', true);
     }).then(function() {
       // Wait for rename text field.
       return remoteCall.waitForElement(windowId, 'input.rename');
@@ -261,8 +262,8 @@ function testRenameFile(path, initialEntrySet) {
   // Open a window.
   return new Promise(function(callback) {
     setupAndWaitUntilReady(null, path, callback);
-  }).then(function(inWindowId) {
-    windowId = inWindowId;
+  }).then(function(results) {
+    windowId = results.windowId;
     return remoteCall.waitForFiles(windowId, initialExpectedEntryRows);
   }).then(function(){
     return renameFile(windowId, 'hello.txt', 'New File Name.txt');

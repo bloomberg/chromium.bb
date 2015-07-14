@@ -36,8 +36,8 @@ function getStepsForSearchResultsAutoComplete() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Focus the search box.
-    function(inAppId, list) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil('fakeEvent',
                                     appId,
                                     ['#search-box input', 'focus'],
@@ -99,8 +99,8 @@ testcase.openSidebarRecent = function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Click the icon of the Recent volume.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
         'selectVolume', appId, ['drive_recent'], this.next);
     },
@@ -133,8 +133,8 @@ testcase.openSidebarOffline = function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Click the icon of the Offline volume.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil(
         'selectVolume', appId, ['drive_offline'], this.next);
     },
@@ -166,8 +166,8 @@ testcase.openSidebarSharedWithMe = function() {
       setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Click the icon of the Shared With Me volume.
-    function(inAppId) {
-      appId = inAppId;
+    function(results) {
+      appId = results.windowId;
       // Use the icon for a click target.
       remoteCall.callRemoteTestUtil('selectVolume',
                                     appId,
@@ -282,7 +282,8 @@ testcase.pressEnterToSearch = function() {
  */
 testcase.pinFileOnMobileNetwork = function() {
   testPromise(setupAndWaitUntilReady(null, RootPath.DRIVE).then(
-      function(windowId) {
+      function(results) {
+        var windowId = results.windowId;
         return sendTestMessage(
             {name: 'useCellularNetwork'}).then(function(result) {
           return remoteCall.callRemoteTestUtil(
