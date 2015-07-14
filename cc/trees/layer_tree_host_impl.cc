@@ -220,11 +220,13 @@ LayerTreeHostImpl::LayerTreeHostImpl(
           GetDefaultMemoryAllocationLimit(),
           gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
           ManagedMemoryPolicy::kDefaultNumResourcesLimit),
-      // Must be initialized after settings_ and proxy_.
+      is_synchronous_single_threaded_(!proxy->HasImplThread() &&
+                                      !settings.single_thread_proxy_scheduler),
+      // Must be initialized after is_synchronous_single_threaded_ and proxy_.
       tile_manager_(
           TileManager::Create(this,
                               GetTaskRunner(),
-                              IsSynchronousSingleThreaded()
+                              is_synchronous_single_threaded_
                                   ? std::numeric_limits<size_t>::max()
                                   : settings.scheduled_raster_task_limit)),
       pinch_gesture_active_(false),
@@ -2079,10 +2081,11 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
 void LayerTreeHostImpl::CreateTileManagerResources() {
   CreateResourceAndTileTaskWorkerPool(&tile_task_worker_pool_, &resource_pool_,
                                       &staging_resource_pool_);
+  // TODO(vmpstr): Initialize tile task limit at ctor time.
   tile_manager_->SetResources(
       resource_pool_.get(), tile_task_worker_pool_->AsTileTaskRunner(),
-      IsSynchronousSingleThreaded() ? std::numeric_limits<size_t>::max()
-                                    : settings_.scheduled_raster_task_limit);
+      is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
+                                      : settings_.scheduled_raster_task_limit);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 }
 
@@ -2095,7 +2098,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   // Pass the single-threaded synchronous task graph runner to the worker pool
   // if we're in synchronous single-threaded mode.
   TaskGraphRunner* task_graph_runner = task_graph_runner_;
-  if (IsSynchronousSingleThreaded()) {
+  if (is_synchronous_single_threaded_) {
     DCHECK(!single_thread_synchronous_task_graph_runner_);
     single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
@@ -2146,7 +2149,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     // Synchronous single-threaded mode depends on tiles being ready to
     // draw when raster is complete.  Therefore, it must use one of zero
     // copy, software raster, or GPU raster.
-    DCHECK(!IsSynchronousSingleThreaded());
+    DCHECK(!is_synchronous_single_threaded_);
 
     // We need to create a staging resource pool when using copy rasterizer.
     *staging_resource_pool =
@@ -2169,7 +2172,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   // Synchronous single-threaded mode depends on tiles being ready to
   // draw when raster is complete.  Therefore, it must use one of zero
   // copy, software raster, or GPU raster (in the branches above).
-  DCHECK(!IsSynchronousSingleThreaded());
+  DCHECK(!is_synchronous_single_threaded_);
 
   *resource_pool = ResourcePool::Create(
       resource_provider_.get(), GL_TEXTURE_2D);
@@ -2208,10 +2211,6 @@ void LayerTreeHostImpl::CleanUpTileManager() {
   staging_resource_pool_ = nullptr;
   tile_task_worker_pool_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
-}
-
-bool LayerTreeHostImpl::IsSynchronousSingleThreaded() const {
-  return !proxy_->HasImplThread() && !settings_.single_thread_proxy_scheduler;
 }
 
 bool LayerTreeHostImpl::InitializeRenderer(

@@ -624,8 +624,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void UpdateGpuRasterizationStatus();
 
-  bool IsSynchronousSingleThreaded() const;
-
   Viewport* viewport() { return viewport_.get(); }
 
   // Scroll by preferring to move the outer viewport first, only moving the
@@ -747,6 +745,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool visible_;
   ManagedMemoryPolicy cached_managed_memory_policy_;
 
+  const bool is_synchronous_single_threaded_;
   scoped_ptr<TileManager> tile_manager_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
