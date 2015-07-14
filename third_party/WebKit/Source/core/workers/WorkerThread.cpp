@@ -161,8 +161,12 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_workerReportingProxy(workerReportingProxy)
     , m_webScheduler(nullptr)
     , m_isolate(nullptr)
-    , m_shutdownEvent(adoptPtr(Platform::current()->createWaitableEvent()))
-    , m_terminationEvent(adoptPtr(Platform::current()->createWaitableEvent()))
+    , m_shutdownEvent(adoptPtr(Platform::current()->createWaitableEvent(
+        WebWaitableEvent::ResetPolicy::Manual,
+        WebWaitableEvent::InitialState::NonSignaled)))
+    , m_terminationEvent(adoptPtr(Platform::current()->createWaitableEvent(
+        WebWaitableEvent::ResetPolicy::Manual,
+        WebWaitableEvent::InitialState::NonSignaled)))
 {
     MutexLocker lock(threadSetMutex());
     workerThreads().add(this);

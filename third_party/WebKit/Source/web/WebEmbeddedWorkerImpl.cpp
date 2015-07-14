@@ -115,14 +115,6 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
         m_loaderProxy->detachProvider(this);
 }
 
-void WebEmbeddedWorkerImpl::terminateAll()
-{
-    HashSet<WebEmbeddedWorkerImpl*> instances = runningWorkerInstances();
-    for (HashSet<WebEmbeddedWorkerImpl*>::iterator it = instances.begin(), itEnd = instances.end(); it != itEnd; ++it) {
-        (*it)->terminateWorkerContext();
-    }
-}
-
 void WebEmbeddedWorkerImpl::startWorkerContext(
     const WebEmbeddedWorkerStartData& data)
 {
