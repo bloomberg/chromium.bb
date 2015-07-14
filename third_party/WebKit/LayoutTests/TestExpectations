@@ -269,12 +269,12 @@ crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/active-
 crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Crash Pass ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
 
-crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-002.html [ Failure ]
-crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-003.html [ Failure ]
-crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-005.html [ Failure ]
-crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
-crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
-crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-002.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-003.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-005.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
 
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
@@ -930,8 +930,8 @@ crbug.com/345646 fast/repaint/selection-after-remove.html [ Pass Failure ]
 
 crbug.com/345767 fast/repaint/selection-gap-overflow-scroll-2.html [ Pass Failure ]
 
-crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
-crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
 
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Pass Timeout ]
 
@@ -1058,8 +1058,8 @@ crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-f
 
 crbug.com/231921 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ Pass ImageOnlyFailure ]
 
-crbug.com/353087 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
-crbug.com/353087 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
 crbug.com/353727 virtual/threaded/animations/keyframe-timing-functions-multiple-properties.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] jquery/manipulation.html [ Pass Timeout ]
 crbug.com/353754 virtual/scroll_customization/fast/scrolling/hover-during-scroll.html [ Pass Failure ]
