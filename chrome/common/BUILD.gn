@@ -76,7 +76,6 @@ static_library("common") {
     "//skia",
     "//third_party/icu",
     "//third_party/libxml",
-    "//third_party/sqlite",
     "//third_party/zlib:zip",
     "//ui/resources:resources",
     "//url",
