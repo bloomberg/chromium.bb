@@ -88,10 +88,9 @@ class TestFocusController : public ui::EventHandler {
 
 class TestKeyboardControllerProxy : public KeyboardControllerProxy {
  public:
-  TestKeyboardControllerProxy()
+  TestKeyboardControllerProxy(ui::InputMethod* input_method)
       : KeyboardControllerProxy(nullptr),
-        input_method_(
-            ui::CreateInputMethod(nullptr, gfx::kNullAcceleratedWidget)) {}
+        input_method_(input_method) {}
 
   ~TestKeyboardControllerProxy() override {
     // Destroy the window before the delegate.
@@ -108,7 +107,7 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
     }
     return window_.get();
   }
-  ui::InputMethod* GetInputMethod() override { return input_method_.get(); }
+  ui::InputMethod* GetInputMethod() override { return input_method_; }
   void RequestAudioInput(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
@@ -121,7 +120,7 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
  private:
   scoped_ptr<aura::Window> window_;
   aura::test::TestWindowDelegate delegate_;
-  scoped_ptr<ui::InputMethod> input_method_;
+  ui::InputMethod* input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(TestKeyboardControllerProxy);
 };
@@ -179,12 +178,13 @@ class KeyboardControllerTest : public testing::Test,
     ui::ContextFactory* context_factory =
         ui::InitializeContextFactoryForTests(enable_pixel_output);
 
+    ui::SetUpInputMethodFactoryForTesting();
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp(context_factory);
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
-    ui::SetUpInputMethodFactoryForTesting();
     focus_controller_.reset(new TestFocusController(root_window()));
-    proxy_ = new TestKeyboardControllerProxy();
+    proxy_ = new TestKeyboardControllerProxy(
+        aura_test_helper_->host()->GetInputMethod());
     controller_.reset(new KeyboardController(proxy_));
     controller()->AddObserver(this);
   }

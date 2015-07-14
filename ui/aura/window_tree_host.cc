@@ -182,10 +182,6 @@ ui::InputMethod* WindowTreeHost::GetInputMethod() {
   if (!input_method_) {
     input_method_ =
         ui::CreateInputMethod(this, GetAcceleratedWidget()).release();
-    // Makes sure the input method is focused by default when created, because
-    // some environment doesn't have activated/focused state in WindowTreeHost.
-    // TODO(shuchen): move this to DisplayController so it's only for Ash.
-    input_method_->OnFocus();
     owned_input_method_ = true;
   }
   return input_method_;

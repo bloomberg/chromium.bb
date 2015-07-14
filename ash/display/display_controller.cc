@@ -894,6 +894,9 @@ AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
   if (!input_method_) {  // Singleton input method instance for Ash.
     input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
+    // Makes sure the input method is focused by default when created, because
+    // Ash uses singleton InputMethod and it won't call OnFocus/OnBlur when the
+    // active window changed.
     input_method_->OnFocus();
     input_method_event_handler_.reset(
         new InputMethodEventHandler(input_method_.get()));

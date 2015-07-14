@@ -9,6 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
@@ -44,6 +45,9 @@ TestScreen::~TestScreen() {
 WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
   DCHECK(!host_);
   host_ = WindowTreeHost::Create(gfx::Rect(display_.GetSizeInPixel()));
+  // Some tests don't correctly manage window focus/activation states.
+  // Makes sure InputMethod is default focused so that IME basics can work.
+  host_->GetInputMethod()->OnFocus();
   host_->window()->AddObserver(this);
   host_->InitHost();
   return host_;
