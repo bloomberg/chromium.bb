@@ -3120,4 +3120,176 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
                                       CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
+// Verify that typing "gmail" will match "theking@gmail.com" and
+// "buddy@gmail.com" when substring matching is enabled.
+TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Email", "email", "gmail", "email", &field);
+  GetAutofillSuggestions(form, field);
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
+
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID,
+      Suggestion("theking@gmail.com", "3734 Elvis Presley Blvd.", "", 1),
+      Suggestion("buddy@gmail.com", "123 Apple St.", "", 2));
+}
+
+// Verify that typing "apple" will match "123 Apple St." when substring matching
+// is enabled.
+TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Address Line 2", "addr2", "apple", "text", &field);
+  GetAutofillSuggestions(form, field);
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
+
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID,
+      Suggestion("123 Apple St., unit 6", "123 Apple St.", "", 1));
+}
+
+// Verify that typing "mail" will not match any of the "@gmail.com" email
+// addresses when substring matching is enabled.
+TEST_F(AutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Email", "email", "mail", "email", &field);
+  GetAutofillSuggestions(form, field);
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+// Verify that typing "pres" will match "Elvis Presley" when substring matching
+// is enabled.
+TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "pres", "text",
+                            &field);
+  GetAutofillSuggestions(form, field);
+
+  // No suggestions provided, so send an empty vector as the results.
+  // This triggers the combined message send.
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
+
+#if defined(OS_ANDROID)
+  static const char* kVisaSuggestion =
+      "Visa\xC2\xA0\xE2\x8B\xAF"
+      "3456";
+#else
+  static const char* kVisaSuggestion = "*3456";
+#endif
+
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Elvis Presley", kVisaSuggestion, kVisaCard,
+                                 autofill_manager_->GetPackedCreditCardID(4)));
+}
+
+// Verify that typing "lvis" will not match any of the credit card name when
+// substring matching is enabled.
+TEST_F(AutofillManagerTest, NoCreditCardSuggestionsForNonPrefixTokenMatch) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "lvis", "text",
+                            &field);
+  GetAutofillSuggestions(form, field);
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+// Verify that typing "S" into the middle name field will match and order middle
+// names "Shawn Smith" followed by "Adam Smith" i.e. prefix matched followed by
+// substring matched.
+TEST_F(AutofillManagerTest,
+       DisplaySuggestionsWithPrefixesPrecedeSubstringMatched) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  AutofillProfile* profile1 = new AutofillProfile;
+  profile1->set_guid("00000000-0000-0000-0000-000000000103");
+  profile1->SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Robin"), "en-US");
+  profile1->SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("Adam Smith"),
+                    "en-US");
+  profile1->SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Grimes"), "en-US");
+  profile1->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
+                    ASCIIToUTF16("1234 Smith Blvd."), "en-US");
+  autofill_manager_->AddProfile(profile1);
+
+  AutofillProfile* profile2 = new AutofillProfile;
+  profile2->set_guid("00000000-0000-0000-0000-000000000124");
+  profile2->SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Carl"), "en-US");
+  profile2->SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("Shawn Smith"),
+                    "en-US");
+  profile2->SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Grimes"), "en-US");
+  profile2->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
+                    ASCIIToUTF16("1234 Smith Blvd."), "en-US");
+  autofill_manager_->AddProfile(profile2);
+
+  FormFieldData field;
+  test::CreateTestFormField("Middle Name", "middlename", "S", "text", &field);
+  GetAutofillSuggestions(form, field);
+
+  // No suggestions provided, so send an empty vector as the results.
+  // This triggers the combined message send.
+  AutocompleteSuggestionsReturned(std::vector<base::string16>());
+
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID,
+      Suggestion("Shawn Smith", "1234 Smith Blvd., Robin Adam Smith Grimes", "",
+                 1),
+      Suggestion("Adam Smith", "1234 Smith Blvd., Carl Shawn Smith Grimes", "",
+                 2));
+}
+
 }  // namespace autofill

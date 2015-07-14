@@ -18,6 +18,7 @@
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -226,7 +227,8 @@ bool DoUsernamesMatch(const base::string16& username1,
                       bool exact_match) {
   if (exact_match)
     return username1 == username2;
-  return base::StartsWith(username1, username2, base::CompareCase::SENSITIVE);
+  return FieldIsSuggestionSubstringStartingOnTokenBoundary(username1, username2,
+                                                           true);
 }
 
 // Returns |true| if the given element is editable. Otherwise, returns |false|.
@@ -408,14 +410,12 @@ bool FillUserNameAndPassword(
   // Input matches the username, fill in required values.
   if (!username_element->isNull() &&
       IsElementAutocompletable(*username_element)) {
+    // TODO(vabr): Why not setSuggestedValue? http://crbug.com/507714
     username_element->setValue(username, true);
     (*nonscript_modified_values)[*username_element] = username;
     username_element->setAutofilled(true);
-
-    if (set_selection) {
-      username_element->setSelectionRange(current_username.length(),
-                                          username.length());
-    }
+    if (set_selection)
+      PreviewSuggestion(username, current_username, username_element);
   } else if (current_username != username) {
     // If the username can't be filled and it doesn't match a saved password
     // as is, don't autofill a password.
@@ -561,7 +561,6 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
       logging_state_active_(false),
       was_username_autofilled_(false),
       was_password_autofilled_(false),
-      username_selection_start_(0),
       did_stop_loading_(false),
       weak_ptr_factory_(this) {
   Send(new AutofillHostMsg_PasswordAutofillAgentConstructed(routing_id()));
@@ -752,14 +751,14 @@ bool PasswordAutofillAgent::PreviewSuggestion(
     return false;
   }
 
+  if (username_query_prefix_.empty())
+    username_query_prefix_ = username_element.value();
+
   was_username_autofilled_ = username_element.isAutofilled();
-  username_selection_start_ = username_element.selectionStart();
   username_element.setSuggestedValue(username);
   username_element.setAutofilled(true);
-  username_element.setSelectionRange(
-      username_selection_start_,
-      username_element.suggestedValue().length());
-
+  ::autofill::PreviewSuggestion(username_element.suggestedValue(),
+                                username_query_prefix_, &username_element);
   was_password_autofilled_ = password_info->password_field.isAutofilled();
   password_info->password_field.setSuggestedValue(password);
   password_info->password_field.setAutofilled(true);
@@ -1304,6 +1303,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   Send(new AutofillHostMsg_ShowPasswordSuggestions(
       routing_id(), key_it->second, field.text_direction, username_string,
       options, bounding_box_scaled));
+  username_query_prefix_ = username_string;
   return CanShowSuggestion(fill_data, username_string, show_all);
 }
 
@@ -1339,7 +1339,7 @@ void PasswordAutofillAgent::ClearPreview(
   if (!username->suggestedValue().isEmpty()) {
     username->setSuggestedValue(blink::WebString());
     username->setAutofilled(was_username_autofilled_);
-    username->setSelectionRange(username_selection_start_,
+    username->setSelectionRange(username_query_prefix_.length(),
                                 username->value().length());
   }
   if (!password->suggestedValue().isEmpty()) {

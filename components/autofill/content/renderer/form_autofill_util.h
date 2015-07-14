@@ -176,6 +176,15 @@ bool IsWebElementEmpty(const blink::WebElement& element);
 // Return a gfx::RectF that is the bounding box for |element| scaled by |scale|.
 gfx::RectF GetScaledBoundingBox(float scale, blink::WebElement* element);
 
+// Previews |suggestion| in |input_element| and highlights the suffix of
+// |suggestion| not included in the |input_element| text. |input_element| must
+// not be null. |user_input| should be the text typed by the user into
+// |input_element|. Note that |user_input| cannot be easily derived from
+// |input_element| by calling value(), because of http://crbug.com/507714.
+void PreviewSuggestion(const base::string16& suggestion,
+                       const base::string16& user_input,
+                       blink::WebFormControlElement* input_element);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_AUTOFILL_UTIL_H_

@@ -60513,6 +60513,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
   <int value="-951394314" label="top-chrome-md"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
+  <int value="-938178614" label="enable-suggestions-with-substring-match"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-914210146" label="enable-web-based-signin"/>

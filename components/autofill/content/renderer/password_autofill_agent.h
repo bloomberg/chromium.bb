@@ -272,9 +272,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // True indicates that the password field was autofilled, false otherwise.
   bool was_password_autofilled_;
 
-  // Records original starting point of username element's selection range
-  // before preview.
-  int username_selection_start_;
+  // Records the username typed before suggestions preview.
+  base::string16 username_query_prefix_;
 
   // True indicates that all frames in a page have been rendered.
   bool did_stop_loading_;

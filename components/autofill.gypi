@@ -31,6 +31,8 @@
         'autofill/core/common/autofill_regexes.h',
         'autofill/core/common/autofill_switches.cc',
         'autofill/core/common/autofill_switches.h',
+        'autofill/core/common/autofill_util.cc',
+        'autofill/core/common/autofill_util.h',
         'autofill/core/common/form_data.cc',
         'autofill/core/common/form_data.h',
         'autofill/core/common/form_data_predictions.cc',

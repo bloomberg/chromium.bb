@@ -1138,6 +1138,12 @@ const Experiment kExperiments[] = {
      kOsAndroid | kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSuggestionsService,
                                switches::kDisableSuggestionsService)},
+    {"enable-suggestions-with-substring-match",
+     IDS_FLAGS_ENABLE_SUGGESTIONS_WITH_SUB_STRING_MATCH_NAME,
+     IDS_FLAGS_ENABLE_SUGGESTIONS_WITH_SUB_STRING_MATCH_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(
+         autofill::switches::kEnableSuggestionsWithSubstringMatch)},
     {"enable-supervised-user-managed-bookmarks-folder",
      IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME,
      IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_DESCRIPTION,

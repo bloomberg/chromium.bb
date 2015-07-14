@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,6 +13,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -352,6 +354,182 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
+}
+
+// Verify that typing "foo" into the username field will match usernames
+// "foo.bar@example.com", "bar.foo@example.com" and "example@foo.com".
+TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  base::string16 username = base::ASCIIToUTF16("foo.bar@example.com");
+  data.username_field.value = username;
+  data.password_field.value = base::ASCIIToUTF16("foobar");
+  data.preferred_realm = "http://foo.com/";
+
+  autofill::PasswordAndRealm additional;
+  additional.realm = "https://foobarrealm.org";
+  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
+  data.additional_logins[additional_username] = additional;
+
+  autofill::UsernamesCollectionKey usernames_key;
+  usernames_key.realm = "http://yetanother.net";
+  std::vector<base::string16> other_names;
+  base::string16 other_username(base::ASCIIToUTF16("example@foo.com"));
+  other_names.push_back(other_username);
+  data.other_possible_usernames[usernames_key] = other_names;
+
+  int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(element_bounds, _,
+                        SuggestionVectorValuesAre(testing::UnorderedElementsAre(
+                            username, additional_username, other_username)),
+                        _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo"), false,
+      element_bounds);
+}
+
+// Verify that typing "oo" into the username field will not match any usernames
+// "foo.bar@example.com", "bar.foo@example.com" or "example@foo.com".
+TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  base::string16 username = base::ASCIIToUTF16("foo.bar@example.com");
+  data.username_field.value = username;
+  data.password_field.value = base::ASCIIToUTF16("foobar");
+  data.preferred_realm = "http://foo.com/";
+
+  autofill::PasswordAndRealm additional;
+  additional.realm = "https://foobarrealm.org";
+  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
+  data.additional_logins[additional_username] = additional;
+
+  autofill::UsernamesCollectionKey usernames_key;
+  usernames_key.realm = "http://yetanother.net";
+  std::vector<base::string16> other_names;
+  base::string16 other_username(base::ASCIIToUTF16("example@foo.com"));
+  other_names.push_back(other_username);
+  data.other_possible_usernames[usernames_key] = other_names;
+
+  int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  EXPECT_CALL(*autofill_client, ShowAutofillPopup(_, _, _, _)).Times(0);
+
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("oo"), false,
+      element_bounds);
+}
+
+// Verify that typing "foo@exam" into the username field will match username
+// "bar.foo@example.com" even if the field contents span accross multiple
+// tokens.
+TEST_F(PasswordAutofillManagerTest,
+       MatchingContentsWithSuggestionTokenSeparator) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  base::string16 username = base::ASCIIToUTF16("foo.bar@example.com");
+  data.username_field.value = username;
+  data.password_field.value = base::ASCIIToUTF16("foobar");
+  data.preferred_realm = "http://foo.com/";
+
+  autofill::PasswordAndRealm additional;
+  additional.realm = "https://foobarrealm.org";
+  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
+  data.additional_logins[additional_username] = additional;
+
+  autofill::UsernamesCollectionKey usernames_key;
+  usernames_key.realm = "http://yetanother.net";
+  std::vector<base::string16> other_names;
+  base::string16 other_username(base::ASCIIToUTF16("example@foo.com"));
+  other_names.push_back(other_username);
+  data.other_possible_usernames[usernames_key] = other_names;
+
+  int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(element_bounds, _,
+                        SuggestionVectorValuesAre(
+                            testing::UnorderedElementsAre(additional_username)),
+                        _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo@exam"),
+      false, element_bounds);
+}
+
+// Verify that typing "example" into the username field will match and order
+// usernames "example@foo.com", "foo.bar@example.com" and "bar.foo@example.com"
+// i.e. prefix matched followed by substring matched.
+TEST_F(PasswordAutofillManagerTest,
+       DisplaySuggestionsWithPrefixesPrecedeSubstringMatched) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  base::string16 username = base::ASCIIToUTF16("foo.bar@example.com");
+  data.username_field.value = username;
+  data.password_field.value = base::ASCIIToUTF16("foobar");
+  data.preferred_realm = "http://foo.com/";
+
+  autofill::PasswordAndRealm additional;
+  additional.realm = "https://foobarrealm.org";
+  base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
+  data.additional_logins[additional_username] = additional;
+
+  autofill::UsernamesCollectionKey usernames_key;
+  usernames_key.realm = "http://yetanother.net";
+  std::vector<base::string16> other_names;
+  base::string16 other_username(base::ASCIIToUTF16("example@foo.com"));
+  other_names.push_back(other_username);
+  data.other_possible_usernames[usernames_key] = other_names;
+
+  int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(element_bounds, _,
+                        SuggestionVectorValuesAre(testing::UnorderedElementsAre(
+                            other_username, username, additional_username)),
+                        _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo"), false,
+      element_bounds);
 }
 
 }  // namespace password_manager

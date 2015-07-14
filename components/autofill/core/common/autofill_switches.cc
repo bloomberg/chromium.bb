@@ -63,6 +63,10 @@ const char kEnablePasswordGeneration[]      = "enable-password-generation";
 // Enables/disables suggestions without typing anything (on first click).
 const char kEnableSingleClickAutofill[]     = "enable-single-click-autofill";
 
+// Enables suggestions with substring matching instead of prefix matching.
+const char kEnableSuggestionsWithSubstringMatch[] =
+    "enable-suggestions-with-substring-match";
+
 // Enables syncing usage counts and last use dates of Wallet addresses and
 // cards.
 const char kEnableWalletMetadataSync[]      = "enable-wallet-metadata-sync";

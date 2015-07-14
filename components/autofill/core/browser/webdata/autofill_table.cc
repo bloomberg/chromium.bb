@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -28,6 +29,7 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/webdata/common/web_database.h"
@@ -368,6 +370,28 @@ CreditCard::ServerStatus ServerStatusStringToEnum(const std::string& status) {
   return CreditCard::OK;
 }
 
+// Returns |s| with |escaper| in front of each of occurrence of a character from
+// |special_chars|. Any occurrence of |escaper| in |s| is doubled. For example,
+// Substitute("hello_world!", "_%", '!'') returns "hello!_world!!".
+base::string16 Substitute(const base::string16& s,
+                          const base::string16& special_chars,
+                          const base::char16& escaper) {
+  // Prepend |escaper| to the list of |special_chars|.
+  base::string16 escape_wildcards(special_chars);
+  escape_wildcards.insert(escape_wildcards.begin(), escaper);
+
+  // Prepend the |escaper| just before |special_chars| in |s|.
+  base::string16 result(s);
+  for (base::char16 c : escape_wildcards) {
+    for (size_t pos = 0; (pos = result.find(c, pos)) != base::string16::npos;
+         pos += 2) {
+      result.insert(result.begin() + pos, escaper);
+    }
+  }
+
+  return result;
+}
+
 }  // namespace
 
 // The maximum length allowed for form data.
@@ -456,9 +480,10 @@ bool AutofillTable::GetFormValuesForElementName(
     std::vector<base::string16>* values,
     int limit) {
   DCHECK(values);
-  sql::Statement s;
+  bool succeeded = false;
 
   if (prefix.empty()) {
+    sql::Statement s;
     s.Assign(db_->GetUniqueStatement(
         "SELECT value FROM autofill "
         "WHERE name = ? "
@@ -466,28 +491,62 @@ bool AutofillTable::GetFormValuesForElementName(
         "LIMIT ?"));
     s.BindString16(0, name);
     s.BindInt(1, limit);
+
+    values->clear();
+    while (s.Step())
+      values->push_back(s.ColumnString16(0));
+
+    succeeded = s.Succeeded();
   } else {
     base::string16 prefix_lower = base::i18n::ToLower(prefix);
     base::string16 next_prefix = prefix_lower;
     next_prefix[next_prefix.length() - 1]++;
 
-    s.Assign(db_->GetUniqueStatement(
+    sql::Statement s1;
+    s1.Assign(db_->GetUniqueStatement(
         "SELECT value FROM autofill "
         "WHERE name = ? AND "
         "value_lower >= ? AND "
         "value_lower < ? "
         "ORDER BY count DESC "
         "LIMIT ?"));
-    s.BindString16(0, name);
-    s.BindString16(1, prefix_lower);
-    s.BindString16(2, next_prefix);
-    s.BindInt(3, limit);
+    s1.BindString16(0, name);
+    s1.BindString16(1, prefix_lower);
+    s1.BindString16(2, next_prefix);
+    s1.BindInt(3, limit);
+
+    values->clear();
+    while (s1.Step())
+      values->push_back(s1.ColumnString16(0));
+
+    succeeded = s1.Succeeded();
+
+    if (IsFeatureSubstringMatchEnabled()) {
+      sql::Statement s2;
+      s2.Assign(db_->GetUniqueStatement(
+          "SELECT value FROM autofill "
+          "WHERE name = ? AND ("
+          " value LIKE '% ' || :prefix || '%' ESCAPE '!' OR "
+          " value LIKE '%.' || :prefix || '%' ESCAPE '!' OR "
+          " value LIKE '%,' || :prefix || '%' ESCAPE '!' OR "
+          " value LIKE '%-' || :prefix || '%' ESCAPE '!' OR "
+          " value LIKE '%@' || :prefix || '%' ESCAPE '!' OR "
+          " value LIKE '%!_' || :prefix || '%' ESCAPE '!' ) "
+          "ORDER BY count DESC "
+          "LIMIT ?"));
+
+      s2.BindString16(0, name);
+      // escaper as L'!' -> 0x21.
+      s2.BindString16(1, Substitute(prefix_lower, ASCIIToUTF16("_%"), 0x21));
+      s2.BindInt(2, limit);
+      while (s2.Step())
+        values->push_back(s2.ColumnString16(0));
+
+      succeeded &= s2.Succeeded();
+    }
   }
 
-  values->clear();
-  while (s.Step())
-    values->push_back(s.ColumnString16(0));
-  return s.Succeeded();
+  return succeeded;
 }
 
 bool AutofillTable::HasFormElements() {

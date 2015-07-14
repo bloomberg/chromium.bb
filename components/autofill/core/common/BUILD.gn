@@ -16,6 +16,8 @@ static_library("common") {
     "autofill_regexes.h",
     "autofill_switches.cc",
     "autofill_switches.h",
+    "autofill_util.cc",
+    "autofill_util.h",
     "form_data.cc",
     "form_data.h",
     "form_data_predictions.cc",
@@ -55,6 +57,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "autofill_regexes_unittest.cc",
+    "autofill_util_unittest.cc",
     "form_data_unittest.cc",
     "form_field_data_unittest.cc",
     "password_form_fill_data_unittest.cc",

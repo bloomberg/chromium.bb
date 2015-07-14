@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -60,6 +61,32 @@ base::string16 GetHumanReadableRealm(const std::string& signon_realm) {
   return base::UTF8ToUTF16(signon_realm);
 }
 
+// If |field_suggestion| matches |field_content|, creates a Suggestion out of it
+// and appends to |suggestions|.
+void AppendSuggestionIfMatching(
+    const base::string16& field_suggestion,
+    const base::string16& field_contents,
+    const std::string& signon_realm,
+    bool show_all,
+    std::vector<autofill::Suggestion>* suggestions) {
+  base::string16 lower_suggestion = base::i18n::ToLower(field_suggestion);
+  base::string16 lower_contents = base::i18n::ToLower(field_contents);
+  bool prefix_matched_suggestion =
+      show_all || base::StartsWith(lower_suggestion, lower_contents,
+                                   base::CompareCase::SENSITIVE);
+  if (prefix_matched_suggestion ||
+      autofill::FieldIsSuggestionSubstringStartingOnTokenBoundary(
+          lower_suggestion, lower_contents, true)) {
+    autofill::Suggestion suggestion(ReplaceEmptyUsername(field_suggestion));
+    suggestion.label = GetHumanReadableRealm(signon_realm);
+    suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
+    suggestion.match = prefix_matched_suggestion
+                           ? autofill::Suggestion::PREFIX_MATCH
+                           : autofill::Suggestion::SUBSTRING_MATCH;
+    suggestions->push_back(suggestion);
+  }
+}
+
 // This function attempts to fill |suggestions| and |realms| form |fill_data|
 // based on |current_username|. Unless |show_all| is true, it only picks
 // suggestions where the username has |current_username| as a prefix.
@@ -67,41 +94,27 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                     const base::string16& current_username,
                     std::vector<autofill::Suggestion>* suggestions,
                     bool show_all) {
-  base::string16 lower_username = base::i18n::ToLower(current_username);
-
-  if (show_all ||
-      base::StartsWith(base::i18n::ToLower(fill_data.username_field.value),
-                       lower_username, base::CompareCase::SENSITIVE)) {
-    autofill::Suggestion suggestion(
-        ReplaceEmptyUsername(fill_data.username_field.value));
-    suggestion.label = GetHumanReadableRealm(fill_data.preferred_realm);
-    suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
-    suggestions->push_back(suggestion);
-  }
+  AppendSuggestionIfMatching(fill_data.username_field.value, current_username,
+                             fill_data.preferred_realm, show_all, suggestions);
 
   for (const auto& login : fill_data.additional_logins) {
-    if (show_all ||
-        base::StartsWith(base::i18n::ToLower(login.first), lower_username,
-                         base::CompareCase::SENSITIVE)) {
-      autofill::Suggestion suggestion(ReplaceEmptyUsername(login.first));
-      suggestion.label = GetHumanReadableRealm(login.second.realm);
-      suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
-      suggestions->push_back(suggestion);
-    }
+    AppendSuggestionIfMatching(login.first, current_username,
+                               login.second.realm, show_all, suggestions);
   }
 
   for (const auto& usernames : fill_data.other_possible_usernames) {
     for (size_t i = 0; i < usernames.second.size(); ++i) {
-      if (show_all ||
-          base::StartsWith(base::i18n::ToLower(usernames.second[i]),
-                           lower_username, base::CompareCase::SENSITIVE)) {
-        autofill::Suggestion suggestion(
-            ReplaceEmptyUsername(usernames.second[i]));
-        suggestion.label = GetHumanReadableRealm(usernames.first.realm);
-        suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
-        suggestions->push_back(suggestion);
-      }
+      AppendSuggestionIfMatching(usernames.second[i], current_username,
+                                 usernames.first.realm, show_all, suggestions);
     }
+  }
+
+  // Prefix matches should precede other token matches.
+  if (autofill::IsFeatureSubstringMatchEnabled()) {
+    std::sort(suggestions->begin(), suggestions->end(),
+              [](const autofill::Suggestion& a, const autofill::Suggestion& b) {
+                return a.match < b.match;
+              });
   }
 }
 

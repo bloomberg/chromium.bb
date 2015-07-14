@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
@@ -21,6 +22,8 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/webdata/common/web_database.h"
@@ -1854,6 +1857,62 @@ TEST_F(AutofillTableTest, DeleteUnmaskedCard) {
   EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, outputs[0]->record_type());
   EXPECT_EQ(masked_number, outputs[0]->GetRawInfo(CREDIT_CARD_NUMBER));
   outputs.clear();
+}
+
+TEST_F(AutofillTableTest, GetFormValuesForElementName_SubstringMatchEnabled) {
+  // Token matching is currently behind a flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableSuggestionsWithSubstringMatch);
+
+  const size_t kMaxCount = 2;
+  const struct {
+    const char* const field_suggestion[kMaxCount];
+    const char* const field_contents;
+    size_t expected_suggestion_count;
+    const char* const expected_suggestion[kMaxCount];
+  } kTestCases[] = {
+      {{"user.test", "test_user"}, "TEST",   2, {"test_user", "user.test"}},
+      {{"user test", "test-user"}, "user",   2, {"user test", "test-user"}},
+      {{"user test", "test-rest"}, "user",   1, {"user test", nullptr}},
+      {{"user@test", "test_user"}, "user@t", 1, {"user@test", nullptr}},
+      {{"user.test", "test_user"}, "er.tes", 0, {nullptr,     nullptr}},
+      {{"user test", "test_user"}, "_ser",   0, {nullptr,     nullptr}},
+      {{"user.test", "test_user"}, "%ser",   0, {nullptr,     nullptr}},
+      {{"user.test", "test_user"},
+       "; DROP TABLE autofill;",
+       0,
+       {nullptr, nullptr}},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    SCOPED_TRACE(testing::Message()
+                 << "suggestion = " << kTestCases[i].field_suggestion[0]
+                 << ", contents = " << kTestCases[i].field_contents);
+
+    Time t1 = Time::Now();
+
+    // Simulate the submission of a handful of entries in a field called "Name".
+    AutofillChangeList changes;
+    FormFieldData field;
+    for (size_t k = 0; k < kMaxCount; ++k) {
+      field.name = ASCIIToUTF16("Name");
+      field.value = ASCIIToUTF16(kTestCases[i].field_suggestion[k]);
+      table_->AddFormFieldValue(field, &changes);
+    }
+
+    std::vector<base::string16> v;
+    table_->GetFormValuesForElementName(
+        ASCIIToUTF16("Name"), ASCIIToUTF16(kTestCases[i].field_contents), &v,
+        6);
+
+    EXPECT_EQ(kTestCases[i].expected_suggestion_count, v.size());
+    for (size_t j = 0; j < kTestCases[i].expected_suggestion_count; ++j) {
+      EXPECT_EQ(ASCIIToUTF16(kTestCases[i].expected_suggestion[j]), v[j]);
+    }
+
+    changes.clear();
+    table_->RemoveFormElementsAddedBetween(t1, Time(), &changes);
+  }
 }
 
 }  // namespace autofill

@@ -6415,6 +6415,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_NO_THANKS_BUTTON" desc="Text for the button the user clicks to dismiss save password bubble.">
         No thanks
       </message>
+      <message name="IDS_FLAGS_ENABLE_SUGGESTIONS_WITH_SUB_STRING_MATCH_NAME" desc="Name of the flag to enable substring matching for Autofill suggestions.">
+        Substring matching for Autofill suggestions.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SUGGESTIONS_WITH_SUB_STRING_MATCH_DESCRIPTION" desc="Description of the flag to enable substring matching for Autofill suggestions.">
+        Match Autofill suggestions based on substrings (token prefixes) rather than just prefixes.
+      </message>
       <message name="IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_NAME" desc="Name of the flag to enable affiliation based matching, so that credentials stored for an Android application will also be considered matches for, and be filled into corresponding websites (so-called 'affiliated' websites).">
         Enable affiliation based matching in password manager.
       </message>
