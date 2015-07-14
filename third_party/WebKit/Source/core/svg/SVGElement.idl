@@ -31,6 +31,13 @@ interface SVGElement : Element {
     [CustomElementCallbacks] attribute long tabIndex;
     void focus();
     void blur();
+
+    // TODO(tanay.c): SVGElement.offset* are non-standard. crbug.com/463116
+    [Measure, PerWorldBindings] readonly attribute Element? offsetParent;
+    [Measure] readonly attribute long offsetTop;
+    [Measure] readonly attribute long offsetLeft;
+    [Measure] readonly attribute long offsetWidth;
+    [Measure] readonly attribute long offsetHeight;
 };
 
 SVGElement implements GlobalEventHandlers;

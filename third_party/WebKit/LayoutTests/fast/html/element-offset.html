@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+test(function () {
+    var element = document.createElementNS(null, 'x');
+    element.offsetParent;
+    element.offsetTop;
+    element.offsetLeft;
+    element.offsetWidth;
+    element.offsetHeight;
+    }, "element.offset*() should throw deprecation warning");
+
+</script>
+</html>

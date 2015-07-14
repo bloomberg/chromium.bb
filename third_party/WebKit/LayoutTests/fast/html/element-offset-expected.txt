@@ -1,0 +1,9 @@
+CONSOLE WARNING: 'Element.offsetParent' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.
+CONSOLE WARNING: 'Element.offsetTop' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.
+CONSOLE WARNING: 'Element.offsetLeft' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.
+CONSOLE WARNING: 'Element.offsetWidth' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.
+CONSOLE WARNING: 'Element.offsetHeight' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.
+This is a testharness.js-based test.
+PASS element.offset*() should throw deprecation warning 
+Harness: the test ran to completion.
+

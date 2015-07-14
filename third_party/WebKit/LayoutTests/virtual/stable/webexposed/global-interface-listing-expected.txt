@@ -3432,6 +3432,11 @@ interface SVGDiscardElement
     method constructor
 interface SVGElement
     getter className
+    getter offsetHeight
+    getter offsetLeft
+    getter offsetParent
+    getter offsetTop
+    getter offsetWidth
     getter onabort
     getter onblur
     getter oncancel

@@ -941,6 +941,21 @@ String UseCounter::deprecationMessage(Feature feature)
     case PermissionStatusStatus:
         return "PermissionStatus.status is deprecated and will be removed in M47, around November 2015. Please use PermissionStatus.state instead.";
 
+    case ElementOffsetParent:
+        return "'Element.offsetParent' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+
+    case ElementOffsetTop:
+        return "'Element.offsetTop' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+
+    case ElementOffsetLeft:
+        return "'Element.offsetLeft' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+
+    case ElementOffsetWidth:
+        return "'Element.offsetWidth' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+
+    case ElementOffsetHeight:
+        return "'Element.offsetHeight' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
