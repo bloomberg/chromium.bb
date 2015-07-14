@@ -258,7 +258,7 @@ TaskController.prototype.openSuggestAppsDialog =
  * from metadata. If it fails, this falls back to obtain the MIME type from its
  * content or name.
  *
- * @param {Entry} entry An entry to obtain its mime type.
+ * @param {!Entry} entry An entry to obtain its mime type.
  * @return {!Promise}
  * @private
  */
@@ -269,7 +269,7 @@ TaskController.prototype.getMimeType_ = function(entry) {
           return properties[0].contentMimeType;
         return new Promise(function(fulfill, reject) {
           chrome.fileManagerPrivate.getMimeType(
-              entry.toURL(), function(mimeType) {
+              entry, function(mimeType) {
                 if (!chrome.runtime.lastError)
                   fulfill(mimeType);
                 else

@@ -22,6 +22,7 @@ namespace fileManagerPrivateInternal {
   callback RemoveFileWatchCallback = void(optional boolean success);
   callback GetEntryActionsCallback = void(fileSystemProvider.Action[] actions);
   callback ComputeChecksumCallback = void(DOMString checksum);
+  callback GetMimeTypeCallback = void(DOMString result);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -43,5 +44,7 @@ namespace fileManagerPrivateInternal {
                                    SimpleCallback callback);
     static void computeChecksum(DOMString url,
                                 ComputeChecksumCallback callback);
+    static void getMimeType(DOMString url,
+                            GetMimeTypeCallback callback);
   };
 };

@@ -578,11 +578,11 @@ chrome.fileManagerPrivate.computeChecksum = function(entry, callback) {};
 
 /**
  * Gets the MIME type of a file.
- * @param {string} fileUrl File url.
+ * @param {!Entry} entry
  * @param {function(string)} callback Callback that MIME type of the file is
  *     passed.
  */
-chrome.fileManagerPrivate.getMimeType = function(fileUrl, callback) {};
+chrome.fileManagerPrivate.getMimeType = function(entry, callback) {};
 
 /**
  * Gets a flag indicating whether user metrics reporting is enabled.

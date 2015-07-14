@@ -55939,7 +55939,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="941" label="LAUNCHERPAGE_SETENABLED"/>
   <int value="942" label="DELETED_CRYPTOTOKENPRIVATE_REQUESTPERMISSION"/>
   <int value="943" label="BLUETOOTHPRIVATE_DISCONNECTALL"/>
-  <int value="944" label="FILEMANAGERPRIVATE_GETMIMETYPE"/>
+  <int value="944" label="FILEMANAGERPRIVATEINTERNAL_GETMIMETYPE"/>
   <int value="945" label="USB_SETCONFIGURATION"/>
   <int value="946" label="EASYUNLOCKPRIVATE_GETCONNECTIONINFO"/>
   <int value="947" label="FILEMANAGERPRIVATEINTERNAL_COMPUTECHECKSUM"/>

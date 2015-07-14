@@ -677,9 +677,10 @@ interface Functions {
                            GetFileTasksCallback callback);
 
   // Gets the MIME type of a file.
-  // |fileUrl| File url
+  // |entry| Entry to be checked.
   // |callback|
-  static void getMimeType(DOMString fileUrl,
+  [nocompile]
+  static void getMimeType([instanceof=Entry] object entry,
                           GetMimeTypeCallback callback);
 
   // Gets localized strings and initialization data.

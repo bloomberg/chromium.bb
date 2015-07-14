@@ -373,15 +373,16 @@ bool FileManagerPrivateOpenInspectorFunction::RunSync() {
   return true;
 }
 
-FileManagerPrivateGetMimeTypeFunction::FileManagerPrivateGetMimeTypeFunction() {
+FileManagerPrivateInternalGetMimeTypeFunction::
+    FileManagerPrivateInternalGetMimeTypeFunction() {
 }
 
-FileManagerPrivateGetMimeTypeFunction::
-    ~FileManagerPrivateGetMimeTypeFunction() {
+FileManagerPrivateInternalGetMimeTypeFunction::
+    ~FileManagerPrivateInternalGetMimeTypeFunction() {
 }
 
-bool FileManagerPrivateGetMimeTypeFunction::RunAsync() {
-  using extensions::api::file_manager_private::GetMimeType::Params;
+bool FileManagerPrivateInternalGetMimeTypeFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::GetMimeType::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -390,18 +391,18 @@ bool FileManagerPrivateGetMimeTypeFunction::RunAsync() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           GetProfile(), render_frame_host());
 
-  const GURL file_url(params->file_url);
   storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(file_url));
+      file_system_context->CrackURL(GURL(params->url)));
 
   app_file_handler_util::GetMimeTypeForLocalPath(
       GetProfile(), file_system_url.path(),
-      base::Bind(&FileManagerPrivateGetMimeTypeFunction::OnGetMimeType, this));
+      base::Bind(&FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType,
+                 this));
 
   return true;
 }
 
-void FileManagerPrivateGetMimeTypeFunction::OnGetMimeType(
+void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
     const std::string& mimeType) {
   SetResult(new base::StringValue(mimeType));
   SendResponse(true);

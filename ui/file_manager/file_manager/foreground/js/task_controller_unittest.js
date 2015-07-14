@@ -116,7 +116,7 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
  */
 function testOpenSuggestAppsDialogWithoutMetadata(callback) {
   window.chrome.fileManagerPrivate = {
-    getMimeType: function(url, callback) {
+    getMimeType: function(entry, callback) {
       callback('application/rtf');
     }
   };

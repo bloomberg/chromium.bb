@@ -102,6 +102,11 @@ binding.registerCustomHook(function(bindingsAPI) {
     var url = fileBrowserHandlerNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.computeChecksum(url, callback);
   });
+
+  apiFunctions.setHandleRequest('getMimeType', function(entry, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.getMimeType(url, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(

@@ -148,16 +148,16 @@ class FileManagerPrivateOpenInspectorFunction
 };
 
 // Implements the chrome.fileManagerPrivate.getMimeType method.
-class FileManagerPrivateGetMimeTypeFunction
+class FileManagerPrivateInternalGetMimeTypeFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getMimeType",
-                             FILEMANAGERPRIVATE_GETMIMETYPE)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getMimeType",
+                             FILEMANAGERPRIVATEINTERNAL_GETMIMETYPE)
 
-  FileManagerPrivateGetMimeTypeFunction();
+  FileManagerPrivateInternalGetMimeTypeFunction();
 
  protected:
-  ~FileManagerPrivateGetMimeTypeFunction() override;
+  ~FileManagerPrivateInternalGetMimeTypeFunction() override;
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;
