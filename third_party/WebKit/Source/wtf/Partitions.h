@@ -99,6 +99,7 @@ public:
     static void dumpMemoryStats(PartitionStatsDumper*);
 
 private:
+    static int s_initializationLock;
     static bool s_initialized;
     static PartitionAllocatorGeneric m_fastMallocAllocator;
     static PartitionAllocatorGeneric m_bufferAllocator;

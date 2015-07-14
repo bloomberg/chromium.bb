@@ -37,7 +37,8 @@
 
 namespace WTF {
 
-bool Partitions::s_initialized;
+int Partitions::s_initializationLock = 0;
+bool Partitions::s_initialized = false;
 
 PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
 PartitionAllocatorGeneric Partitions::m_bufferAllocator;
@@ -47,6 +48,8 @@ HistogramEnumerationFunction Partitions::m_histogramEnumeration = nullptr;
 
 void Partitions::initialize()
 {
+    spinLockLock(&s_initializationLock);
+
     if (!s_initialized) {
         m_fastMallocAllocator.init();
         m_bufferAllocator.init();
@@ -54,6 +57,8 @@ void Partitions::initialize()
         m_layoutAllocator.init();
         s_initialized = true;
     }
+
+    spinLockUnlock(&s_initializationLock);
 }
 
 void Partitions::setHistogramEnumeration(HistogramEnumerationFunction histogramEnumeration)
