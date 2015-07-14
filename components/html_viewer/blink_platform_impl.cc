@@ -42,11 +42,16 @@ const char kUserAgentSwitch[] = "user-agent";
 
 class WebWaitableEventImpl : public blink::WebWaitableEvent {
  public:
-  WebWaitableEventImpl() : impl_(new base::WaitableEvent(false, false)) {}
-  ~WebWaitableEventImpl() override {}
+  WebWaitableEventImpl(ResetPolicy policy, InitialState state) {
+    bool manual_reset = policy == ResetPolicy::Manual;
+    bool initially_signaled = state == InitialState::Signaled;
+    impl_.reset(new base::WaitableEvent(manual_reset, initially_signaled));
+  }
+  virtual ~WebWaitableEventImpl() {}
 
-  void wait() override { impl_->Wait(); }
-  void signal() override { impl_->Signal(); }
+  virtual void reset() { impl_->Reset(); }
+  virtual void wait() { impl_->Wait(); }
+  virtual void signal() { impl_->Signal(); }
 
   base::WaitableEvent* impl() {
     return impl_.get();
@@ -239,8 +244,10 @@ void BlinkPlatformImpl::yieldCurrentThread() {
   base::PlatformThread::YieldCurrentThread();
 }
 
-blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent() {
-  return new WebWaitableEventImpl();
+blink::WebWaitableEvent* BlinkPlatformImpl::createWaitableEvent(
+    blink::WebWaitableEvent::ResetPolicy policy,
+    blink::WebWaitableEvent::InitialState state) {
+  return new WebWaitableEventImpl(policy, state);
 }
 
 blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(

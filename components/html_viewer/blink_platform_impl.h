@@ -68,7 +68,9 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
   virtual void yieldCurrentThread();
-  virtual blink::WebWaitableEvent* createWaitableEvent();
+  virtual blink::WebWaitableEvent* createWaitableEvent(
+      blink::WebWaitableEvent::ResetPolicy policy,
+      blink::WebWaitableEvent::InitialState state);
   virtual blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events);
   virtual blink::WebScrollbarBehavior* scrollbarBehavior();
