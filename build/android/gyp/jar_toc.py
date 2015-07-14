@@ -44,6 +44,7 @@ def CallJavap(classpath, classes):
       # -verbose is required to get constant values (which can be inlined in
       # dependents).
       '-verbose',
+      '-J-XX:NewSize=4m',
       '-classpath', classpath
       ] + classes
   return build_utils.CheckOutput(javap_cmd)
