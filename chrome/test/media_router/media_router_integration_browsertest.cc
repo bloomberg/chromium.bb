@@ -5,7 +5,9 @@
 #include "chrome/test/media_router/media_router_integration_browsertest.h"
 
 #include "base/files/file_util.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +20,14 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+// The path relative to <chromium src>/out/<build config> for media router
+// browser test resources.
+const base::FilePath::StringPieceType kResourcePath = FILE_PATH_LITERAL(
+    "media_router/browser_test_resources/");
+}  // namespace
+
 
 namespace media_router {
 
@@ -56,12 +66,7 @@ void MediaRouterIntegrationBrowserTest::ExecuteJavaScriptAPI(
 
 void MediaRouterIntegrationBrowserTest::OpenTestPage(
     base::FilePath::StringPieceType file_name) {
-  base::FilePath base_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_EXE, &base_dir));
-  base::FilePath full_path =
-      base_dir.Append(FILE_PATH_LITERAL("media_router/browser_test_resources/"))
-          .Append(file_name);
-  ASSERT_TRUE(PathExists(full_path));
+  base::FilePath full_path = GetResourceFile(file_name);
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(full_path));
 }
 
@@ -79,6 +84,35 @@ void MediaRouterIntegrationBrowserTest::ChooseSink(
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, script));
 }
 
+void MediaRouterIntegrationBrowserTest::SetTestData(
+    base::FilePath::StringPieceType test_data_file) {
+  base::FilePath full_path = GetResourceFile(test_data_file);
+  JSONFileValueDeserializer deserializer(full_path);
+  int error_code = 0;
+  std::string error_message;
+  scoped_ptr<base::Value> value(
+      deserializer.Deserialize(&error_code, &error_message));
+  CHECK(value.get()) << "Deserialize failed: " << error_message;
+  std::string test_data_str;
+  ASSERT_TRUE(base::JSONWriter::Write(*value, &test_data_str));
+  ExecuteScriptInBackgroundPageNoWait(
+      extension_id_,
+      base::StringPrintf("localStorage['testdata'] = '%s'",
+                         test_data_str.c_str()));
+}
+
+base::FilePath MediaRouterIntegrationBrowserTest::GetResourceFile(
+    base::FilePath::StringPieceType relative_path) const {
+  base::FilePath base_dir;
+  // ASSERT_TRUE can only be used in void returning functions.
+  // Use CHECK instead in non-void returning functions.
+  CHECK(PathService::Get(base::DIR_EXE, &base_dir));
+  base::FilePath full_path =
+      base_dir.Append(kResourcePath).Append(relative_path);
+  CHECK(PathExists(full_path));
+  return full_path;
+}
+
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
@@ -93,6 +127,38 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   ExecuteJavaScriptAPI(web_contents, "checkSession();");
   Wait(base::TimeDelta::FromSeconds(5));
   ExecuteJavaScriptAPI(web_contents, "stopSession();");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_No_Provider) {
+  SetTestData(FILE_PATH_LITERAL("no_provider.json"));
+  OpenTestPage(FILE_PATH_LITERAL("no_provider.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ExecuteJavaScriptAPI(web_contents, "waitUntilDeviceAvailable();");
+  content::TestNavigationObserver test_navigation_observer(web_contents, 1);
+  test_navigation_observer.StartWatchingNewWebContents();
+  ExecuteJavaScriptAPI(web_contents, "startSession();");
+  test_navigation_observer.Wait();
+  ChooseSink(web_contents, "id1");
+  ExecuteJavaScriptAPI(web_contents, "checkSessionFailedToStart();");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       MANUAL_Fail_Create_Route) {
+  SetTestData(FILE_PATH_LITERAL("fail_create_route.json"));
+  OpenTestPage(FILE_PATH_LITERAL("fail_create_route.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ExecuteJavaScriptAPI(web_contents, "waitUntilDeviceAvailable();");
+  content::TestNavigationObserver test_navigation_observer(web_contents, 1);
+  test_navigation_observer.StartWatchingNewWebContents();
+  ExecuteJavaScriptAPI(web_contents, "startSession();");
+  test_navigation_observer.Wait();
+  ChooseSink(web_contents, "id1");
+  ExecuteJavaScriptAPI(web_contents, "checkSessionFailedToStart();");
 }
 
 }  // namespace media_router

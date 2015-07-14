@@ -33,6 +33,16 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
                             const std::string& script);
 
   void OpenTestPage(base::FilePath::StringPieceType file);
+
+  void SetTestData(base::FilePath::StringPieceType test_data_file);
+
+ private:
+  // Get the full path of the resource file.
+  // |relative_path|: The relative path to
+  //                  <chromium src>/out/<build config>/media_router/
+  //                  browser_test_resources/
+  base::FilePath GetResourceFile(
+      base::FilePath::StringPieceType relative_path) const;
 };
 
 }  // namespace media_router
