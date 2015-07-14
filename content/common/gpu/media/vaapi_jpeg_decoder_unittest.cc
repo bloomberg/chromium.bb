@@ -63,7 +63,7 @@ bool VaapiJpegDecoderTest::VerifyDecode(
                  parse_result.frame_header.coded_height);
 
   std::vector<VASurfaceID> va_surfaces;
-  if (!wrapper_->CreateSurfaces(size, 1, &va_surfaces))
+  if (!wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, size, 1, &va_surfaces))
     return false;
 
   if (!VaapiJpegDecoder::Decode(wrapper_.get(), parse_result, va_surfaces[0])) {
@@ -120,7 +120,8 @@ TEST_F(VaapiJpegDecoderTest, DecodeFail) {
                  parse_result.frame_header.coded_height);
 
   std::vector<VASurfaceID> va_surfaces;
-  ASSERT_TRUE(wrapper_->CreateSurfaces(size, 1, &va_surfaces));
+  ASSERT_TRUE(
+      wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, size, 1, &va_surfaces));
 
   EXPECT_FALSE(
       VaapiJpegDecoder::Decode(wrapper_.get(), parse_result, va_surfaces[0]));

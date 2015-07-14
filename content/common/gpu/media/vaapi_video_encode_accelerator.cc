@@ -225,8 +225,9 @@ void VaapiVideoEncodeAccelerator::InitializeTask() {
       base::Bind(&VaapiVideoEncodeAccelerator::RecycleVASurfaceID,
                  base::Unretained(this)));
 
-  if (!vaapi_wrapper_->CreateSurfaces(
-          coded_size_, kNumSurfaces, &available_va_surface_ids_)) {
+  if (!vaapi_wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, coded_size_,
+                                      kNumSurfaces,
+                                      &available_va_surface_ids_)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed creating VASurfaces");
     return;
   }
