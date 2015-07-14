@@ -1,0 +1,9 @@
+{
+  "name": "Register Service Worker",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Test for registering a service worker",
+  "background": {
+    "scripts": ["test.js"]
+  }
+}

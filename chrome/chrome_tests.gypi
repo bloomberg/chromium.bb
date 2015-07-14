@@ -36,7 +36,7 @@
       '../extensions/browser/guest_view/extension_options/extension_options_apitest.cc',
       '../extensions/browser/guest_view/mime_handler_view/mime_handler_view_browsertest.cc',
       '../extensions/renderer/console_apitest.cc',
-      '../extensions/renderer/script_context_browsertest.cc',
+      '../extensions/renderer/script_context_browsertest.cc'
     ],
     'chrome_browser_tests_sources': [
       # The list of sources which is only used by chrome browser tests.
@@ -273,6 +273,7 @@
       'browser/extensions/process_manager_browsertest.cc',
       'browser/extensions/requirements_checker_browsertest.cc',
       'browser/extensions/sandboxed_pages_apitest.cc',
+      'browser/extensions/service_worker_apitest.cc',
       'browser/extensions/shared_module_apitest.cc',
       'browser/extensions/signin/gaia_auth_extension_loader_browsertest.cc',
       'browser/extensions/startup_helper_browsertest.cc',

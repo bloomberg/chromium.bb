@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/grit/content_resources.h"
@@ -28,6 +29,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
@@ -912,6 +914,7 @@ void Dispatcher::OnMessageInvoke(const std::string& extension_id,
 
 void Dispatcher::OnSetChannel(int channel) {
   delegate_->SetChannel(channel);
+  AddChannelSpecificFeatures();
 }
 
 void Dispatcher::OnSetFunctionNames(const std::vector<std::string>& names) {
@@ -1446,6 +1449,15 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
     module_system->Require("guestViewDeny");
   }
+}
+
+void Dispatcher::AddChannelSpecificFeatures() {
+  // chrome-extension: resources should be allowed to register a Service Worker.
+  if (FeatureProvider::GetBehaviorFeature(BehaviorFeature::kServiceWorker)
+          ->IsAvailableToEnvironment()
+          .is_available())
+    WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(
+        WebString::fromUTF8(kExtensionScheme));
 }
 
 }  // namespace extensions

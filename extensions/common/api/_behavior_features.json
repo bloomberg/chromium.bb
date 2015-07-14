@@ -28,6 +28,9 @@
       "9E287A8257E58EFB13E89C86A4B75A3AC4B058D8"   // http://crbug.com/485292
     ]
   },
+  "service_worker": {
+    "channel": "trunk"
+  },
   "whitelisted_for_incognito": {
     "channel": "stable",
     "extension_types": "all",
