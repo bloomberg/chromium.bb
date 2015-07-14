@@ -37,7 +37,7 @@ class ForegroundPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
-    with action_runner.CreateInteraction('measurement'):
+    with action_runner.CreateInteraction('foreground'):
       # TODO(perezju): This should catch a few memory dumps. When available,
       # use the dump API to request dumps on demand crbug.com/505826
       action_runner.Wait(7)
@@ -64,7 +64,7 @@ class BackgroundPage(page_module.Page):
         app_has_webviews=False)
 
     # take measurement
-    with action_runner.CreateInteraction('measurement'):
+    with action_runner.CreateInteraction('background'):
       # TODO(perezju): This should catch a few memory dumps. When available,
       # use the dump API to request dumps on demand crbug.com/505826
       action_runner.Wait(7)
