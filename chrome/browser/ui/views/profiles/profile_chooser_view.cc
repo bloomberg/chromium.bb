@@ -738,6 +738,10 @@ bool ProfileChooserView::AcceleratorPressed(
   return true;
 }
 
+views::View* ProfileChooserView::GetInitiallyFocusedView() {
+  return signin_current_profile_link_;
+}
+
 bool ProfileChooserView::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Suppresses the context menu because some features, such as inspecting

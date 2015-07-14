@@ -168,6 +168,10 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     return ProfileChooserView::profile_bubble_;
   }
 
+  views::View* signin_current_profile_link() {
+    return ProfileChooserView::profile_bubble_->signin_current_profile_link_;
+  }
+
   void ShowSigninView() {
     DCHECK(current_profile_bubble());
     DCHECK(current_profile_bubble()->avatar_menu_);
@@ -183,7 +187,13 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };
 
-// crbug.com/502370
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SigninButtonHasFocus) {
+  ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
+  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+
+  EXPECT_TRUE(signin_current_profile_link()->HasFocus());
+}
+
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ContentAreaHasFocus) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
 
