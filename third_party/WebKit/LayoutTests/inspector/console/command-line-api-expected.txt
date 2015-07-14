@@ -25,11 +25,11 @@ String($('#foo', 'non-node'))
 String($('#foo', $('#bar')))
 "null"
 
-String($$('p#foo'))
-"[object NodeList]"
+String($$('p'))
+"[object HTMLParagraphElement],[object HTMLParagraphElement]"
 
-String($$('p#foo', document.body))
-"[object NodeList]"
+String($$('p', document.body))
+"[object HTMLParagraphElement],[object HTMLParagraphElement]"
 
 String($('foo'))
 "null"

@@ -23,8 +23,8 @@ var test = function()
         "String($('#foo', document.body))",
         "String($('#foo', 'non-node'))",
         "String($('#foo', $('#bar')))",
-        "String($$('p#foo'))",
-        "String($$('p#foo', document.body))",
+        "String($$('p'))",
+        "String($$('p', document.body))",
         "String($('foo'))",
         "console.assert(keys(window).indexOf('__commandLineAPI') === -1)"
     ];

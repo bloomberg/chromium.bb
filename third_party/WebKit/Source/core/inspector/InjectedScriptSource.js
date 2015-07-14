@@ -1770,8 +1770,8 @@ CommandLineAPIImpl.prototype = {
     $$: function (selector, opt_startNode)
     {
         if (this._canQuerySelectorOnNode(opt_startNode))
-            return opt_startNode.querySelectorAll(selector);
-        return inspectedGlobalObject.document.querySelectorAll(selector);
+            return slice(opt_startNode.querySelectorAll(selector));
+        return slice(inspectedGlobalObject.document.querySelectorAll(selector));
     },
 
     /**
