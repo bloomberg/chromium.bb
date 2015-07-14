@@ -159,10 +159,7 @@ void SpellChecker::didBeginEditing(Element* element)
 
 void SpellChecker::ignoreSpelling()
 {
-    const EphemeralRange range = frame().selection().selection().toNormalizedEphemeralRange();
-    if (range.isNull())
-        return;
-    frame().document()->markers().removeMarkers(range, DocumentMarker::Spelling);
+    removeMarkers(frame().selection().selection(), DocumentMarker::Spelling);
 }
 
 void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
@@ -339,10 +336,7 @@ void SpellChecker::showSpellingGuessPanel()
 
 void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
 {
-    const EphemeralRange range = movingSelection.toNormalizedEphemeralRange();
-    if (range.isNull())
-        return;
-    frame().document()->markers().removeMarkers(range, DocumentMarker::MisspellingMarkers());
+    removeMarkers(movingSelection, DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
@@ -814,16 +808,10 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         // FIXME(http://crbug.com/382809):
         // shouldEraseMarkersAfterChangeSelection is true, we cause synchronous
         // layout.
-        if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
-            const EphemeralRange range = newAdjacentWords.toNormalizedEphemeralRange();
-            if (range.isNotNull())
-                frame().document()->markers().removeMarkers(range, DocumentMarker::Spelling);
-        }
-        if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeGrammar)) {
-            const EphemeralRange range = newSelectedSentence.toNormalizedEphemeralRange();
-            if (range.isNotNull())
-                frame().document()->markers().removeMarkers(range, DocumentMarker::Grammar);
-        }
+        if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling))
+            removeMarkers(newAdjacentWords, DocumentMarker::Spelling);
+        if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeGrammar))
+            removeMarkers(newSelectedSentence, DocumentMarker::Grammar);
     }
 
     // When continuous spell checking is off, existing markers disappear after the selection changes.
@@ -928,6 +916,14 @@ TextCheckingTypeMask SpellChecker::resolveTextCheckingTypeMask(TextCheckingTypeM
         checkingTypes |= TextCheckingTypeGrammar;
 
     return checkingTypes;
+}
+
+void SpellChecker::removeMarkers(const VisibleSelection& selection, DocumentMarker::MarkerTypes markerTypes)
+{
+    const EphemeralRange range = selection.toNormalizedEphemeralRange();
+    if (range.isNull())
+        return;
+    frame().document()->markers().removeMarkers(range, markerTypes);
 }
 
 bool SpellChecker::unifiedTextCheckerEnabled() const

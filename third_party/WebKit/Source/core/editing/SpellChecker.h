@@ -102,6 +102,7 @@ private:
     void markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling, RefPtrWillBeRawPtr<Range>& firstMisspellingRange);
     TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);
 
+    void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
     bool unifiedTextCheckerEnabled() const;
 
     void chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask textCheckingOptions, const TextCheckingParagraph& fullParagraphToCheck, bool asynchronous);
