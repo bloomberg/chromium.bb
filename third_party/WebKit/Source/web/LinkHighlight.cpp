@@ -27,7 +27,6 @@
 
 #include "web/LinkHighlight.h"
 
-#include "SkMatrix44.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
@@ -51,6 +50,7 @@
 #include "public/web/WebKit.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
@@ -251,8 +251,10 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect&, WebContentL
     canvas->drawPath(m_path.skPath(), paint);
 }
 
-void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
+void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, size_t& reportedInternalMemoryUsage, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
+    reportedInternalMemoryUsage = 0;
+
     if (!m_node || !m_node->layoutObject())
         return;
 

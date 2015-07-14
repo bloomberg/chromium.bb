@@ -63,6 +63,11 @@ public:
     // Must be called when a painting is finished.
     void commitNewDisplayItems();
 
+    // Returns the approximate memory usage, excluding memory likely to be
+    // shared with the embedder after copying to WebDisplayItemList.
+    // Should only be called right after commitNewDisplayItems.
+    size_t approximateMemoryUsage() const;
+
     // Get the paint list generated after the last painting.
     const DisplayItems& displayItems() const;
 

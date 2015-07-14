@@ -328,6 +328,31 @@ void DisplayItemList::commitNewDisplayItems()
     m_numCachedItems = 0;
 }
 
+size_t DisplayItemList::approximateMemoryUsage() const
+{
+    size_t memoryUsage = sizeof(*this);
+
+    // Memory outside this class due to m_currentDisplayItems.
+    memoryUsage += m_currentDisplayItems.getCapacityInBytes();
+
+    // TODO(jbroman): If display items begin to have significant external memory
+    // usage that's not shared with the embedder, we should account for it here.
+    //
+    // External objects, shared with the embedder, such as SkPicture, should be
+    // excluded to avoid double counting. It is the embedder's responsibility to
+    // count such objects.
+    //
+    // At time of writing, the only known case of unshared external memory was
+    // the rounded clips vector in ClipDisplayItem, which is not expected to
+    // contribute significantly to memory usage.
+
+    // Memory outside this class due to m_newDisplayItems.
+    ASSERT(m_newDisplayItems.empty());
+    memoryUsage += m_newDisplayItems.getCapacityInBytes();
+
+    return memoryUsage;
+}
+
 void DisplayItemList::updateValidlyCachedClientsIfNeeded() const
 {
     if (!m_validlyCachedClientsDirty)
