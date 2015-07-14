@@ -11,24 +11,24 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.FontFamily;
 import org.chromium.components.dom_distiller.core.Theme;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.UiUtils;
 
 /**
  * Test class for {@link DistilledPagePrefs}.
  */
-public class DistilledPagePrefsTest extends ChromeShellTestBase {
+public class DistilledPagePrefsTest extends NativeLibraryTestBase {
 
     private DistilledPagePrefs mDistilledPagePrefs;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
         getDistilledPagePrefs();
     }
 

@@ -7,22 +7,20 @@ package org.chromium.chrome.browser.share;
 import android.content.Intent;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 /**
  * Tests sharing URLs in reader mode (DOM distiller)
  */
-public class ShareUrlTest extends ChromeShellTestBase {
+public class ShareUrlTest extends NativeLibraryTestBase {
     private static final String HTTP_URL = "http://www.google.com/";
     private static final String HTTPS_URL = "https://www.google.com/";
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
-        // load native methods in DomDistillerUrlUtils
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
     }
 
     private void assertCorrectUrl(String originalUrl, String sharedUrl) {

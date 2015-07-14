@@ -14,22 +14,21 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * Tests for PassphraseActivity.
  */
-public class PassphraseActivityTest extends ChromeShellTestBase {
-    private static final String TAG = "PassphraseActivityTest";
+public class PassphraseActivityTest extends NativeLibraryTestBase {
     private static final String TEST_ACCOUNT = "test@gmail.com";
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearAppData();
-        Context context = getInstrumentation().getTargetContext();
-        startChromeBrowserProcessSync(context);
+        ApplicationData.clearAppData(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
     }
 
     @Override
@@ -78,8 +77,7 @@ public class PassphraseActivityTest extends ChromeShellTestBase {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // Clears the task stack above this activity if it already exists.
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        return launchActivityWithIntent(
-                "org.chromium.chrome.shell", PassphraseActivity.class, intent);
+        return launchActivityWithIntent(context.getPackageName(), PassphraseActivity.class, intent);
     }
 
     private void overrideProfileSyncService(final Context context) {

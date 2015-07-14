@@ -11,7 +11,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests for Chrome on Android's usage of the TemplateUrlService API.
  */
-public class TemplateUrlServiceTest extends ChromeShellTestBase {
+public class TemplateUrlServiceTest extends NativeLibraryTestBase {
 
     private static final String QUERY_PARAMETER = "q";
     private static final String QUERY_VALUE = "cat";
@@ -42,8 +43,8 @@ public class TemplateUrlServiceTest extends ChromeShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        clearAppData();
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
+        ApplicationData.clearAppData(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
     }
 
     @SmallTest

@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.invalidation.InvalidationService;
 
@@ -41,6 +42,7 @@ public final class InvalidationServiceFactory {
         return service;
     }
 
+    @VisibleForTesting
     public static InvalidationService getForTest(Context context) {
         return nativeGetForTest(context);
     }

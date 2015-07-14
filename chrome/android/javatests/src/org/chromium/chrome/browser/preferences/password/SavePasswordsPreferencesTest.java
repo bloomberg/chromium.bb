@@ -14,19 +14,19 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.common.ContentSwitches;
 
 /**
  * Tests for the "Save Passwords" settings screen.
  */
-public class SavePasswordsPreferencesTest extends ChromeShellTestBase {
+public class SavePasswordsPreferencesTest extends NativeLibraryTestBase {
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
         CommandLine.getInstance().appendSwitch(ContentSwitches.ENABLE_CREDENTIAL_MANAGER_API);
+        loadNativeLibraryAndInitBrowserProcess();
     }
 
     /**

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 /**
@@ -28,10 +29,12 @@ public class SearchEnginePreference extends DialogPreference
         mSearchEngineAdapter = new SearchEngineAdapter(getContext(), this);
     }
 
+    @VisibleForTesting
     String getValueForTesting() {
         return mSearchEngineAdapter.getValueForTesting();
     }
 
+    @VisibleForTesting
     void setValueForTesting(String value) {
         mSearchEngineAdapter.setValueForTesting(value);
     }

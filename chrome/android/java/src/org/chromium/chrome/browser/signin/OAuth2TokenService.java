@@ -72,11 +72,13 @@ public final class OAuth2TokenService {
         return new OAuth2TokenService(nativeOAuth2Service);
     }
 
+    @VisibleForTesting
     public void addObserver(OAuth2TokenServiceObserver observer) {
         ThreadUtils.assertOnUiThread();
         mObservers.addObserver(observer);
     }
 
+    @VisibleForTesting
     public void removeObserver(OAuth2TokenServiceObserver observer) {
         ThreadUtils.assertOnUiThread();
         mObservers.removeObserver(observer);
@@ -241,6 +243,7 @@ public final class OAuth2TokenService {
      * OAuth2TokenService that a refresh token is now available. This may cause observers to retry
      * operations that require authentication.
      */
+    @VisibleForTesting
     public void fireRefreshTokenAvailable(Account account) {
         ThreadUtils.assertOnUiThread();
         assert account != null;
@@ -261,6 +264,7 @@ public final class OAuth2TokenService {
      * Triggers a notification to all observers of the native and Java instance of the
      * OAuth2TokenService that a refresh token is now revoked.
      */
+    @VisibleForTesting
     public void fireRefreshTokenRevoked(Account account) {
         ThreadUtils.assertOnUiThread();
         assert account != null;
@@ -281,6 +285,7 @@ public final class OAuth2TokenService {
      * Triggers a notification to all observers of the native and Java instance of the
      * OAuth2TokenService that all refresh tokens now have been loaded.
      */
+    @VisibleForTesting
     public void fireRefreshTokensLoaded() {
         ThreadUtils.assertOnUiThread();
         nativeFireRefreshTokensLoadedFromJava(mNativeOAuth2TokenServiceDelegateAndroid);

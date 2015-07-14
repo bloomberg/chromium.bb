@@ -11,10 +11,10 @@ import android.test.suitebuilder.annotation.SmallTest;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.invalidation.IntentSavingContext;
 import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.components.invalidation.InvalidationService;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
@@ -25,13 +25,13 @@ import java.util.Set;
 /**
  * Tests for {@link InvalidationService}.
  */
-public class InvalidationServiceTest extends ChromeShellTestBase {
+public class InvalidationServiceTest extends NativeLibraryTestBase {
     private IntentSavingContext mContext;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
         mContext = new IntentSavingContext(getInstrumentation().getTargetContext());
         // We don't want to use the system content resolver, so we override it.
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();

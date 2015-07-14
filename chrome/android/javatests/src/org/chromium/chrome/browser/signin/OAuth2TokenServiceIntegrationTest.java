@@ -12,7 +12,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.AccountHolder;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * These tests initialize the native part of the service.
  */
-public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
+public class OAuth2TokenServiceIntegrationTest extends NativeLibraryTestBase {
 
     private static final Account TEST_ACCOUNT1 =
             AccountManagerHelper.createAccountFromName("foo@gmail.com");
@@ -45,8 +46,8 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearAppData();
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
+        ApplicationData.clearAppData(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
 
         // Set up AccountManager.
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());

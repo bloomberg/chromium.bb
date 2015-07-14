@@ -22,8 +22,7 @@ import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
-import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.chrome.shell.preferences.ChromeShellMainPreferences;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.UiUtils;
 
@@ -34,16 +33,12 @@ import java.util.List;
 /**
  * Tests for the Settings menu.
  */
-public class PreferencesTest extends ChromeShellTestBase {
-
-    // Category for launching the Notification Preferences screen.
-    private static final String CATEGORY_NOTIFICATION_PREFERENCES =
-            "android.intent.category.NOTIFICATION_PREFERENCES";
+public class PreferencesTest extends NativeLibraryTestBase {
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
+        loadNativeLibraryAndInitBrowserProcess();
     }
 
     /**
@@ -86,7 +81,7 @@ public class PreferencesTest extends ChromeShellTestBase {
         });
 
         final Preferences prefActivity = startPreferences(getInstrumentation(),
-                ChromeShellMainPreferences.class.getName());
+                MainPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -140,7 +135,7 @@ public class PreferencesTest extends ChromeShellTestBase {
         ensureTemplateUrlServiceLoaded();
 
         final Preferences prefActivity = startPreferences(getInstrumentation(),
-                ChromeShellMainPreferences.class.getName());
+                MainPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

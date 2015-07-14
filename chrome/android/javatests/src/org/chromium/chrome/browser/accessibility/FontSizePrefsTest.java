@@ -12,7 +12,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.UiUtils;
 
 import java.util.concurrent.Callable;
@@ -20,7 +20,7 @@ import java.util.concurrent.Callable;
 /**
  * Test class for {@link FontSizePrefs}.
  */
-public class FontSizePrefsTest extends ChromeShellTestBase {
+public class FontSizePrefsTest extends NativeLibraryTestBase {
 
     private FontSizePrefs mFontSizePrefs;
     private SharedPreferences.Editor mSharedPreferencesEditor;
@@ -28,8 +28,8 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        loadNativeLibraryAndInitBrowserProcess();
         Context context = getInstrumentation().getTargetContext();
-        startChromeBrowserProcessSync(context);
         getFontSizePrefs(context);
         mSharedPreferencesEditor = PreferenceManager.getDefaultSharedPreferences(context).edit();
     }
@@ -42,7 +42,7 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
 
     @SmallTest
     @Feature({"Accessibility"})
-    public void testGetAndSetFontAndForceEnableZoom() throws InterruptedException {
+    public void testGetAndSetFontAndForceEnableZoom() {
         // Check default font.
         assertEquals(1f, getFontScale());
         // Check that setting the value of font scale factor works.
@@ -59,7 +59,7 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
 
     @SmallTest
     @Feature({"Accessibility"})
-    public void testGetAndSetUserSetForceEnableZoom() throws InterruptedException {
+    public void testGetAndSetUserSetForceEnableZoom() {
         // Check the default value of user set force enable zoom.
         assertFalse(mFontSizePrefs.getUserSetForceEnableZoom());
         // Check that setting the value of user set force enable zoom works.
@@ -152,7 +152,7 @@ public class FontSizePrefsTest extends ChromeShellTestBase {
 
     @SmallTest
     @Feature({"Accessibility"})
-    public void testMultipleAddMultipleDeleteObservers() throws InterruptedException {
+    public void testMultipleAddMultipleDeleteObservers() {
         TestingObserver test = new TestingObserver();
 
         // Should successfully add the observer the first time.
