@@ -313,10 +313,11 @@ bool PepperTCPSocket::GetCertificateFields(
                    new base::StringValue(issuer.country_name));
   fields->SetField(
       PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_NAME,
-      new base::StringValue(JoinString(issuer.organization_names, '\n')));
+      new base::StringValue(base::JoinString(issuer.organization_names, "\n")));
   fields->SetField(
       PP_X509CERTIFICATE_PRIVATE_ISSUER_ORGANIZATION_UNIT_NAME,
-      new base::StringValue(JoinString(issuer.organization_unit_names, '\n')));
+      new base::StringValue(
+          base::JoinString(issuer.organization_unit_names, "\n")));
 
   const net::CertPrincipal& subject = cert.subject();
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_COMMON_NAME,
@@ -329,10 +330,12 @@ bool PepperTCPSocket::GetCertificateFields(
                    new base::StringValue(subject.country_name));
   fields->SetField(
       PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_NAME,
-      new base::StringValue(JoinString(subject.organization_names, '\n')));
+      new base::StringValue(
+          base::JoinString(subject.organization_names, "\n")));
   fields->SetField(
       PP_X509CERTIFICATE_PRIVATE_SUBJECT_ORGANIZATION_UNIT_NAME,
-      new base::StringValue(JoinString(subject.organization_unit_names, '\n')));
+      new base::StringValue(
+          base::JoinString(subject.organization_unit_names, "\n")));
 
   const std::string& serial_number = cert.serial_number();
   fields->SetField(PP_X509CERTIFICATE_PRIVATE_SERIAL_NUMBER,

@@ -36,7 +36,7 @@ std::string IntersectCapabilities(const std::string& client_capabilities,
       base::STLSetIntersection<std::vector<std::string> >(
           client_caps, host_caps);
 
-  return JoinString(result, " ");
+  return base::JoinString(result, " ");
 }
 
 }  // namespace remoting

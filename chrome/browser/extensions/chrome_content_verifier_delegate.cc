@@ -135,7 +135,7 @@ GURL ChromeContentVerifierDelegate::GetSignatureFetchUrl(
   parts.push_back("id=" + extension_id);
   parts.push_back("v=" + version.GetString());
   std::string x_value =
-      net::EscapeQueryParamValue(JoinString(parts, "&"), true);
+      net::EscapeQueryParamValue(base::JoinString(parts, "&"), true);
   std::string query = "response=redirect&x=" + x_value;
 
   GURL base_url = extension_urls::GetWebstoreUpdateUrl();

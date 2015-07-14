@@ -65,7 +65,7 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
       "  \"entries\": [\n"
       "    {\n"
       "      \"id\": 1,\n"
-      "      \"features\": [\"" + JoinString(features, "\", \"") + "\"]\n"
+      "      \"features\": [\"" + base::JoinString(features, "\", \"") + "\"]\n"
       "    }\n"
       "  ]\n"
       "}";

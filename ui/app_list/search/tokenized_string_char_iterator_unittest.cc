@@ -48,7 +48,7 @@ void TestEveryChar(const std::string& text, const std::string& expects) {
     iter.NextChar();
   }
 
-  EXPECT_EQ(expects, JoinString(results, ' '));
+  EXPECT_EQ(expects, base::JoinString(results, " "));
   TestBeyondTheEnd(&iter);
 }
 
@@ -62,7 +62,7 @@ void TestNextToken(const std::string& text, const std::string& expects) {
     iter.NextToken();
   }
 
-  EXPECT_EQ(expects, JoinString(results, ' '));
+  EXPECT_EQ(expects, base::JoinString(results, " "));
   TestBeyondTheEnd(&iter);
 }
 
@@ -80,7 +80,7 @@ void TestFirstTwoCharInEveryToken(const std::string& text,
     iter.NextToken();
   }
 
-  EXPECT_EQ(expects, JoinString(results, ' '));
+  EXPECT_EQ(expects, base::JoinString(results, " "));
   TestBeyondTheEnd(&iter);
 }
 

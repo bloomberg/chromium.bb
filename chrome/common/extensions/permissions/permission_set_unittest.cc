@@ -69,14 +69,14 @@ std::string LegacyPermissionIDsToString(const PermissionMessageIDs& ids) {
   std::vector<std::string> strs;
   for (const PermissionMessage::ID& id : ids)
     strs.push_back(base::IntToString(id));
-  return base::StringPrintf("[ %s ]", JoinString(strs, ", ").c_str());
+  return base::StringPrintf("[ %s ]", base::JoinString(strs, ", ").c_str());
 }
 
 std::string PermissionIDsToString(const PermissionIDSet& ids) {
   std::vector<std::string> strs;
   for (const PermissionID& id : ids)
     strs.push_back(base::IntToString(id.id()));
-  return base::StringPrintf("[ %s ]", JoinString(strs, ", ").c_str());
+  return base::StringPrintf("[ %s ]", base::JoinString(strs, ", ").c_str());
 }
 
 std::string CoalescedPermissionIDsToString(
@@ -84,7 +84,7 @@ std::string CoalescedPermissionIDsToString(
   std::vector<std::string> strs;
   for (const CoalescedPermissionMessage& msg : msgs)
     strs.push_back(PermissionIDsToString(msg.permissions()));
-  return JoinString(strs, " ");
+  return base::JoinString(strs, " ");
 }
 
 // Check that the given |permissions| produce a single warning message,

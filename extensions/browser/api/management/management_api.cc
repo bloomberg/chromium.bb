@@ -499,7 +499,7 @@ void ManagementSetEnabledFunction::OnRequirementsChecked(
   } else {
     // TODO(devlin): Should we really be noisy here all the time?
     Respond(Error(keys::kMissingRequirementsError,
-                  JoinString(requirements_errors, ' ')));
+                  base::JoinString(requirements_errors, " ")));
   }
 }
 

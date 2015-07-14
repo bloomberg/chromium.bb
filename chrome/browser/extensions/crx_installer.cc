@@ -536,8 +536,8 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
     if (error_on_unsupported_requirements_) {
       ReportFailureFromUIThread(
           CrxInstallError(CrxInstallError::ERROR_DECLINED,
-                          base::UTF8ToUTF16(JoinString(
-                              install_checker_.requirement_errors(), ' '))));
+                          base::UTF8ToUTF16(base::JoinString(
+                              install_checker_.requirement_errors(), " "))));
       return;
     }
     install_flags_ |= kInstallFlagHasRequirementErrors;

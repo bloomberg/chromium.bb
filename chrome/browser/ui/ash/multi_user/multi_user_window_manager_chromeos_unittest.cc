@@ -316,7 +316,7 @@ MultiUserWindowManagerChromeOSTest::GetOwnersOfVisibleWindowsAsString() {
 
   std::vector<std::string> owner_list;
   owner_list.insert(owner_list.begin(), owners.begin(), owners.end());
-  return JoinString(owner_list, ' ');
+  return base::JoinString(owner_list, " ");
 }
 
 // Testing basic assumptions like default state and existence of manager.

@@ -669,26 +669,7 @@ TEST(StringUtilTest, HexDigitToInt) {
   EXPECT_EQ(15, HexDigitToInt('f'));
 }
 
-// Test for JoinString
 TEST(StringUtilTest, JoinString) {
-  std::vector<std::string> in;
-  EXPECT_EQ("", JoinString(in, ','));
-
-  in.push_back("a");
-  EXPECT_EQ("a", JoinString(in, ','));
-
-  in.push_back("b");
-  in.push_back("c");
-  EXPECT_EQ("a,b,c", JoinString(in, ','));
-
-  in.push_back(std::string());
-  EXPECT_EQ("a,b,c,", JoinString(in, ','));
-  in.push_back(" ");
-  EXPECT_EQ("a|b|c|| ", JoinString(in, '|'));
-}
-
-// Test for JoinString overloaded with std::string separator
-TEST(StringUtilTest, JoinStringWithString) {
   std::string separator(", ");
   std::vector<std::string> parts;
   EXPECT_EQ(std::string(), JoinString(parts, separator));
@@ -706,8 +687,7 @@ TEST(StringUtilTest, JoinStringWithString) {
   EXPECT_EQ("a|b|c|| ", JoinString(parts, "|"));
 }
 
-// Test for JoinString overloaded with string16 separator
-TEST(StringUtilTest, JoinStringWithString16) {
+TEST(StringUtilTest, JoinString16) {
   string16 separator = ASCIIToUTF16(", ");
   std::vector<string16> parts;
   EXPECT_EQ(string16(), JoinString(parts, separator));

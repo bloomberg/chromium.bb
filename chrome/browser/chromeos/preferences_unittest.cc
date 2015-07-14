@@ -344,7 +344,7 @@ class InputMethodPreferencesTest : public PreferencesTest {
     base::SplitString(value, ',', &tokens);
     std::transform(tokens.begin(), tokens.end(), tokens.begin(),
                    &extension_ime_util::GetInputMethodIDByEngineID);
-    return JoinString(tokens, ',');
+    return base::JoinString(tokens, ",");
   }
 
   StringPrefMember preferred_languages_;

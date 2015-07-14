@@ -85,7 +85,7 @@ std::string GetRedirects(const MostVisitedURL& url) {
   std::vector<std::string> redirects;
   for (size_t i = 0; i < url.redirects.size(); i++)
     redirects.push_back(url.redirects[i].spec());
-  return JoinString(redirects, ' ');
+  return base::JoinString(redirects, " ");
 }
 
 // Decodes redirects from a string and sets them for the url.

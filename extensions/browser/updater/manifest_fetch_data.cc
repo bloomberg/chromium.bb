@@ -143,7 +143,8 @@ bool ManifestFetchData::AddExtension(const std::string& id,
   }
 
   std::string extra = full_url_.has_query() ? "&" : "?";
-  extra += "x=" + net::EscapeQueryParamValue(JoinString(parts, '&'), true);
+  extra +=
+      "x=" + net::EscapeQueryParamValue(base::JoinString(parts, "&"), true);
 
   // Check against our max url size, exempting the first extension added.
   int new_size = full_url_.possibly_invalid_spec().size() + extra.size();

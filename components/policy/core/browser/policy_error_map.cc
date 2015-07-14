@@ -186,7 +186,7 @@ base::string16 PolicyErrorMap::GetErrors(const std::string& policy) {
   std::vector<base::string16> list;
   for (const_iterator it = range.first; it != range.second; ++it)
     list.push_back(it->second);
-  return JoinString(list, '\n');
+  return base::JoinString(list, base::ASCIIToUTF16("\n"));
 }
 
 bool PolicyErrorMap::empty() {

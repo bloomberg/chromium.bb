@@ -325,7 +325,7 @@ std::string JoinStringRange(const std::vector<const char*>& strings,
                             const std::string& separator) {
   std::vector<std::string> string_vector;
   std::copy(strings.begin(), strings.end(), std::back_inserter(string_vector));
-  return JoinString(string_vector, separator);
+  return base::JoinString(string_vector, separator);
 }
 
 }  // namespace
@@ -952,7 +952,7 @@ bool Validator::ValidateCertificate(base::DictionaryValue* result) {
 }
 
 std::string Validator::MessageHeader() {
-  std::string path = path_.empty() ? "toplevel" : JoinString(path_, ".");
+  std::string path = path_.empty() ? "toplevel" : base::JoinString(path_, ".");
   std::string message = "At " + path + ": ";
   return message;
 }

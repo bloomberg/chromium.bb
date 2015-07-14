@@ -570,7 +570,7 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
           snippet_lines.begin() + truncated_size);
       snippet_lines.insert(snippet_lines.begin(), "<truncated>");
     }
-    fprintf(stdout, "%s", JoinString(snippet_lines, "\n").c_str());
+    fprintf(stdout, "%s", base::JoinString(snippet_lines, "\n").c_str());
     fflush(stdout);
   }
 

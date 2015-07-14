@@ -167,7 +167,7 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
       net::EscapeUrlEncodedData(force_value, true).c_str(),
       net::EscapeUrlEncodedData(response_type_value, true).c_str(),
       net::EscapeUrlEncodedData(
-          JoinString(parameters_.scopes, ' '), true).c_str(),
+          base::JoinString(parameters_.scopes, " "), true).c_str(),
       net::EscapeUrlEncodedData(parameters_.client_id, true).c_str(),
       net::EscapeUrlEncodedData(parameters_.extension_id, true).c_str());
   if (!parameters_.device_id.empty()) {

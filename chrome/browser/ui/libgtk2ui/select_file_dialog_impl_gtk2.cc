@@ -319,7 +319,8 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
       // the extensions themselves if the description is blank.
       std::vector<std::string> fallback_labels_vector(fallback_labels.begin(),
                                                       fallback_labels.end());
-      std::string fallback_label = JoinString(fallback_labels_vector, ',');
+      std::string fallback_label =
+          base::JoinString(fallback_labels_vector, ",");
       gtk_file_filter_set_name(filter, fallback_label.c_str());
     }
 

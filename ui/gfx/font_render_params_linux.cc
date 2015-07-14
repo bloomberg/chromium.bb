@@ -192,7 +192,8 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
 uint32 HashFontRenderParamsQuery(const FontRenderParamsQuery& query) {
   return base::Hash(base::StringPrintf(
       "%d|%d|%d|%s|%f", query.pixel_size, query.point_size, query.style,
-      JoinString(query.families, ',').c_str(), query.device_scale_factor));
+      base::JoinString(query.families, ",").c_str(),
+      query.device_scale_factor));
 }
 
 }  // namespace

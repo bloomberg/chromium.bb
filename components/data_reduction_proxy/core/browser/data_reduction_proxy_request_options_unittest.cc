@@ -129,7 +129,7 @@ void SetHeaderExpectations(const std::string& session,
         std::string(kExperimentsOption) + "=" + experiment);
   }
   if (!expected_options.empty())
-    *expected_header = JoinString(expected_options, ", ");
+    *expected_header = base::JoinString(expected_options, ", ");
 }
 
 }  // namespace

@@ -79,7 +79,7 @@ bool DataModelWrapper::GetDisplayText(
   non_address_info += base::ASCIIToUTF16("\n") + phone;
 
   *vertically_compact = base::UTF8ToUTF16(single_line) + non_address_info;
-  *horizontally_compact = base::UTF8ToUTF16(JoinString(lines, "\n")) +
+  *horizontally_compact = base::UTF8ToUTF16(base::JoinString(lines, "\n")) +
       non_address_info;
 
   return true;

@@ -199,7 +199,7 @@ void OSExchangeDataProviderAuraX11::SetFilenames(
       paths.push_back(url_spec);
   }
 
-  std::string joined_data = JoinString(paths, '\n');
+  std::string joined_data = base::JoinString(paths, "\n");
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&joined_data));
   format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeURIList), mem);

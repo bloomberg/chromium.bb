@@ -749,8 +749,8 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
   }
 
   if (extension_paths.size()) {
-    base::FilePath::StringType extension_paths_value = JoinString(
-        extension_paths, FILE_PATH_LITERAL(','));
+    base::FilePath::StringType extension_paths_value = base::JoinString(
+        extension_paths, base::FilePath::StringType(1, ','));
     UpdateExtensionSwitch(switches, "load-extension", extension_paths_value);
   }
   bg_pages->swap(bg_pages_tmp);

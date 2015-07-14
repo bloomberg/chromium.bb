@@ -17,7 +17,7 @@ bool GetAppOutput(const std::vector<std::string>& argv, std::string* output) {
   DCHECK(output);
 
   // Join the args into one string, creating the command.
-  std::string command = JoinString(argv, ' ');
+  std::string command = base::JoinString(argv, " ");
 
   // Open the process.
   FILE* fp = popen(command.c_str(), "r");

@@ -231,7 +231,7 @@ void CaptureResolutionChooser::UpdateSnappedFrameSizes(
     for (const gfx::Size& size : snapped_sizes_)
       stringified_sizes.push_back(size.ToString());
     VLOG_STREAM(1) << "Recomputed snapped frame sizes: "
-                   << JoinString(stringified_sizes, " <--> ");
+                   << base::JoinString(stringified_sizes, " <--> ");
   }
 }
 

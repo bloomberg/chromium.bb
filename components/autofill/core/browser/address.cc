@@ -71,7 +71,7 @@ base::string16 Address::GetRawInfo(ServerFieldType type) const {
       return base::ASCIIToUTF16(country_code_);
 
     case ADDRESS_HOME_STREET_ADDRESS:
-      return JoinString(street_address_, '\n');
+      return base::JoinString(street_address_, base::ASCIIToUTF16("\n"));
 
     default:
       NOTREACHED();

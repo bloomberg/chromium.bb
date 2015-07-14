@@ -297,7 +297,7 @@ std::string SanitizeContentSecurityPolicy(
     }
   }
 
-  return JoinString(sane_csp_parts, ' ');
+  return base::JoinString(sane_csp_parts, " ");
 }
 
 bool ContentSecurityPolicyIsSandboxed(

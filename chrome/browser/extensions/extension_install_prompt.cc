@@ -269,7 +269,8 @@ void ExtensionInstallPrompt::Prompt::SetPermissions(
                                             detail_line);
       }
 
-      details = JoinString(detail_lines_with_bullets, '\n');
+      details = base::JoinString(detail_lines_with_bullets,
+                                 base::ASCIIToUTF16("\n"));
     }
     install_permissions.details.push_back(details);
     install_permissions.is_showing_details.push_back(false);

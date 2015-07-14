@@ -353,7 +353,7 @@ void WebSocketHost::OnAddChannelRequest(
   DVLOG(3) << "WebSocketHost::OnAddChannelRequest"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
            << "\" requested_protocols=\""
-           << JoinString(requested_protocols, ", ") << "\" origin=\""
+           << base::JoinString(requested_protocols, ", ") << "\" origin=\""
            << origin.string() << "\"";
 
   DCHECK(!channel_);
@@ -377,7 +377,7 @@ void WebSocketHost::AddChannel(
   DVLOG(3) << "WebSocketHost::AddChannel"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
            << "\" requested_protocols=\""
-           << JoinString(requested_protocols, ", ") << "\" origin=\""
+           << base::JoinString(requested_protocols, ", ") << "\" origin=\""
            << origin.string() << "\"";
 
   DCHECK(!channel_);

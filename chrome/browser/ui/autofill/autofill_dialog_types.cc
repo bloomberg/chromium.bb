@@ -34,7 +34,7 @@ DialogNotification::DialogNotification(Type type,
     size_t start = pieces[0].size();
     size_t end = start + pieces[1].size();
     link_range_ = gfx::Range(start, end);
-    display_text_ = JoinString(pieces, base::string16());
+    display_text_ = base::JoinString(pieces, base::StringPiece16());
   }
 }
 

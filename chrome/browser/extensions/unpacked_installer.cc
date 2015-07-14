@@ -251,7 +251,7 @@ void UnpackedInstaller::OnInstallChecksComplete(int failed_checks) {
 
   if (!install_checker_.requirement_errors().empty()) {
     ReportExtensionLoadError(
-        JoinString(install_checker_.requirement_errors(), ' '));
+        base::JoinString(install_checker_.requirement_errors(), " "));
     return;
   }
 

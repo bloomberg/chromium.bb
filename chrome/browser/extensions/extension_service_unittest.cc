@@ -1806,8 +1806,9 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   EXPECT_TRUE(installed_) << "Nothing was installed.";
   EXPECT_FALSE(was_update_) << path.value();
   ASSERT_EQ(1u, loaded_.size()) << "Nothing was loaded.";
-  EXPECT_EQ(0u, errors.size()) << "There were errors: "
-                               << JoinString(errors, ',');
+  EXPECT_EQ(0u, errors.size())
+      << "There were errors: "
+      << base::JoinString(errors, base::ASCIIToUTF16(","));
   EXPECT_TRUE(service()->GetExtensionById(loaded_[0]->id(), false))
       << path.value();
 
