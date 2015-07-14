@@ -591,6 +591,11 @@ crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Tim
 crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout Failure ]
 
+# Various cachestorage Text failure flakes on XP
+crbug.com/510002 [ XP ] http/tests/cachestorage/worker/cache-match.html [ Pass Timeout Failure ]
+crbug.com/510002 [ XP ] http/tests/cachestorage/window/cache-storage-match.html [ Pass Failure ]
+crbug.com/510002 [ XP ] http/tests/cachestorage/worker/cache-add.html [ Pass Failure ]
+
 crbug.com/503175 [ Linux Win ] http/tests/fetch/serviceworker/request-base-https-other-https.html [ Pass Failure ]
 crbug.com/503175 [ Linux Win ] http/tests/fetch/serviceworker/request.html [ Pass Failure ]
 crbug.com/503175 [ Linux Win ] http/tests/fetch/window/request-base-https-other-https.html [ Pass Failure ]
