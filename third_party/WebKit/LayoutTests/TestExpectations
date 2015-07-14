@@ -3600,8 +3600,6 @@ crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/autoscroll.html [
 crbug.com/509025 [ Yosemite ] virtual/pointerevent/fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
 
-crbug.com/504955 [ Trusty ] svg/W3C-SVG-1.1/metadata-example-01-b.svg [ NeedsRebaseline ]
-
 # GrGLConvolutionEffect optimization causes blink layout test image differences
 crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsManualRebaseline ]
 crbug.com/505086 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline ]
