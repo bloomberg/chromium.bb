@@ -4,27 +4,18 @@
 
 #include "android_webview/native/aw_pdf_exporter.h"
 
+#include "android_webview/browser/aw_print_manager.h"
 #include "base/android/jni_android.h"
-#include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "jni/AwPdfExporter_jni.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
-
-using base::android::AttachCurrentThread;
-using base::android::ScopedJavaGlobalRef;
-using content::BrowserThread;
-using content::WebContents;
-using printing::ConvertUnitDouble;
-using printing::PageMargins;
-using printing::PrintSettings;
 
 namespace android_webview {
 
 AwPdfExporter::AwPdfExporter(JNIEnv* env,
                              jobject obj,
-                             WebContents* web_contents)
+                             content::WebContents* web_contents)
     : java_ref_(env, obj),
       web_contents_(web_contents) {
   DCHECK(obj);
@@ -33,7 +24,7 @@ AwPdfExporter::AwPdfExporter(JNIEnv* env,
 }
 
 AwPdfExporter::~AwPdfExporter() {
-  JNIEnv* env = AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
@@ -45,25 +36,26 @@ void AwPdfExporter::ExportToPdf(JNIEnv* env,
                                 jobject obj,
                                 int fd,
                                 jobject cancel_signal) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CreatePdfSettings(env, obj);
-  PrintManager* print_manager =
-      PrintManager::CreateForWebContents(
-          web_contents_, print_settings_.get(), fd, this);
+  AwPrintManager* print_manager =
+      AwPrintManager::CreateForWebContents(
+          web_contents_, *print_settings_, base::FileDescriptor(fd, false),
+          base::Bind(&AwPdfExporter::DidExportPdf, base::Unretained(this)));
+
   if (!print_manager->PrintNow())
-    DidExportPdf(false);
+    DidExportPdf(fd, false);
 }
 
 namespace {
 // Converts from 1/1000 of inches to device units using DPI.
 int MilsToDots(int val, int dpi) {
-  return static_cast<int>(ConvertUnitDouble(val, 1000.0, dpi));
+  return static_cast<int>(printing::ConvertUnitDouble(val, 1000.0, dpi));
 }
-
 }  // anonymous namespace
 
 void AwPdfExporter::CreatePdfSettings(JNIEnv* env, jobject obj) {
-  print_settings_.reset(new PrintSettings);
+  print_settings_.reset(new printing::PrintSettings);
   int dpi = Java_AwPdfExporter_getDpi(env, obj);
   int width = Java_AwPdfExporter_getPageWidth(env, obj);
   int height = Java_AwPdfExporter_getPageHeight(env, obj);
@@ -83,7 +75,7 @@ void AwPdfExporter::CreatePdfSettings(JNIEnv* env, jobject obj) {
                                            printable_area_device_units,
                                            true);
 
-  PageMargins margins;
+  printing::PageMargins margins;
   margins.left =
       MilsToDots(Java_AwPdfExporter_getLeftMargin(env, obj), dpi);
   margins.right =
@@ -96,18 +88,12 @@ void AwPdfExporter::CreatePdfSettings(JNIEnv* env, jobject obj) {
   print_settings_->set_should_print_backgrounds(true);
 }
 
-void AwPdfExporter::DidExportPdf(bool success) {
-  JNIEnv* env = AttachCurrentThread();
+void AwPdfExporter::DidExportPdf(int fd, bool success) {
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
   Java_AwPdfExporter_didExportPdf(env, obj.obj(), success);
-}
-
-bool AwPdfExporter::IsCancelled() {
-  // TODO(sgurun) implement. Needs connecting with the |cancel_signal| passed
-  // in the constructor.
-  return false;
 }
 
 bool RegisterAwPdfExporter(JNIEnv* env) {

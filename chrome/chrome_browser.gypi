@@ -3287,6 +3287,7 @@
             '../components/components.gyp:password_manager_content_browser',
             '../components/components.gyp:plugins_common',
             '../components/components.gyp:power',
+            '../components/components.gyp:printing_browser',
             '../components/components.gyp:safe_json',
             '../components/components.gyp:sessions_content',
             '../components/components.gyp:storage_monitor',

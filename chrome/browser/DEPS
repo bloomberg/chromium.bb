@@ -66,6 +66,7 @@ include_rules = [
   "+components/power",
   "+components/precache",
   "+components/pref_registry",
+  "+components/printing/browser",
   "+components/printing/common",
   "+components/proximity_auth",
   "+components/proxy_config",

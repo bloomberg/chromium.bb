@@ -59,11 +59,9 @@ void ShowWarningMessageBox(const base::string16& message) {
 }  // namespace
 
 PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      number_pages_(0),
+    : PrintManager(web_contents),
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
-      cookie_(0),
       queue_(g_browser_process->print_job_manager()->queue()) {
   DCHECK(queue_.get());
 #if !defined(OS_MACOSX)
@@ -101,6 +99,7 @@ void PrintViewManagerBase::NavigationStopped() {
 }
 
 void PrintViewManagerBase::RenderProcessGone(base::TerminationStatus status) {
+  PrintManager::RenderProcessGone(status);
   ReleasePrinterQuery();
 
   if (!print_job_.get())
@@ -124,14 +123,8 @@ base::string16 PrintViewManagerBase::RenderSourceName() {
 
 void PrintViewManagerBase::OnDidGetPrintedPagesCount(int cookie,
                                                      int number_pages) {
-  DCHECK_GT(cookie, 0);
-  DCHECK_GT(number_pages, 0);
-  number_pages_ = number_pages;
+  PrintManager::OnDidGetPrintedPagesCount(cookie, number_pages);
   OpportunisticallyCreatePrintJob(cookie);
-}
-
-void PrintViewManagerBase::OnDidGetDocumentCookie(int cookie) {
-  cookie_ = cookie;
 }
 
 void PrintViewManagerBase::OnDidPrintPage(
@@ -193,10 +186,7 @@ void PrintViewManagerBase::OnDidPrintPage(
 }
 
 void PrintViewManagerBase::OnPrintingFailed(int cookie) {
-  if (cookie != cookie_) {
-    NOTREACHED();
-    return;
-  }
+  PrintManager::OnPrintingFailed(cookie);
 
 #if defined(ENABLE_PRINT_PREVIEW)
   chrome::ShowPrintErrorDialog();
@@ -224,17 +214,12 @@ void PrintViewManagerBase::DidStartLoading() {
 bool PrintViewManagerBase::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBase, message)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPrintedPagesCount,
-                        OnDidGetPrintedPagesCount)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDocumentCookie,
-                        OnDidGetDocumentCookie)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintingFailed, OnPrintingFailed)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
                         OnShowInvalidPrinterSettingsError);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
+  return handled || PrintManager::OnMessageReceived(message);
 }
 
 void PrintViewManagerBase::Observe(

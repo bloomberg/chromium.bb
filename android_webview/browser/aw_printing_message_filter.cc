@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/aw_printing_message_filter.h"
 
-#include "android_webview/browser/renderer_host/print_manager.h"
+#include "android_webview/browser/aw_print_manager.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -13,21 +13,19 @@
 using content::BrowserThread;
 using content::WebContents;
 
-
 namespace android_webview {
 
 namespace {
 
-PrintManager* GetPrintManager(int render_process_id, int render_view_id) {
+AwPrintManager* GetPrintManager(int render_process_id, int render_view_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::RenderViewHost* rvh = content::RenderViewHost::FromID(
+  content::RenderViewHost* view = content::RenderViewHost::FromID(
       render_process_id, render_view_id);
-  if (rvh == nullptr)
+  if (!view)
     return nullptr;
-  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-  if (web_contents == nullptr)
-    return nullptr;
-  return PrintManager::FromWebContents(web_contents);
+  WebContents* web_contents = WebContents::FromRenderViewHost(view);
+  return web_contents ? AwPrintManager::FromWebContents(web_contents)
+                      : nullptr;
 }
 
 } // namespace
@@ -49,6 +47,7 @@ void AwPrintingMessageFilter::OverrideThreadForMessage(
 }
 
 bool AwPrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  // TODO(timvolodine): move this filter to component (crbug.com/500949).
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AwPrintingMessageFilter, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
@@ -65,22 +64,24 @@ void AwPrintingMessageFilter::OnAllocateTempFileForPrinting(
     base::FileDescriptor* temp_file_fd,
     int* sequence_number) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PrintManager* print_manager =
+  AwPrintManager* print_manager =
       GetPrintManager(render_process_id_, render_view_id);
-  if (print_manager == nullptr)
+  if (!print_manager)
     return;
-  print_manager->OnAllocateTempFileForPrinting(temp_file_fd, sequence_number);
+
+  *sequence_number = 0;  // we don't really use the sequence number.
+  temp_file_fd->fd = print_manager->file_descriptor().fd;
+  temp_file_fd->auto_close = false;
 }
 
 void AwPrintingMessageFilter::OnTempFileForPrintingWritten(
     int render_view_id,
     int sequence_number) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PrintManager* print_manager =
+  AwPrintManager* print_manager =
       GetPrintManager(render_process_id_, render_view_id);
-  if (print_manager == nullptr)
-    return;
-  print_manager->OnTempFileForPrintingWritten(sequence_number);
+  if (print_manager)
+    print_manager->PdfWritingDone(true);
 }
 
 }  // namespace android_webview

@@ -8,10 +8,6 @@
 #include "chrome/browser/printing/print_view_manager_base.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-#if defined(OS_ANDROID)
-#include "base/file_descriptor_posix.h"
-#endif
-
 namespace printing {
 
 // Manages the print commands for a WebContents - basic version.
@@ -21,33 +17,9 @@ class PrintViewManagerBasic
  public:
   ~PrintViewManagerBasic() override;
 
-#if defined(OS_ANDROID)
-  // Sets the file descriptor into which the PDF will be written.
-  void set_file_descriptor(const base::FileDescriptor& file_descriptor) {
-    file_descriptor_ = file_descriptor;
-  }
-
-  // Gets the file descriptor into which the PDF will be written.
-  base::FileDescriptor file_descriptor() const { return file_descriptor_; }
-
-  // content::WebContentsObserver implementation.
-  // Terminates or cancels the print job if one was pending.
-  void RenderProcessGone(base::TerminationStatus status) override;
-
-  // content::WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
-#endif
-
  private:
   explicit PrintViewManagerBasic(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrintViewManagerBasic>;
-
-#if defined(OS_ANDROID)
-  void OnPrintingFailed(int cookie) override;
-
-  // The file descriptor into which the PDF of the page will be written.
-  base::FileDescriptor file_descriptor_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManagerBasic);
 };

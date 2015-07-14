@@ -129,6 +129,7 @@ source_set("browser") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/policy:policy_component",
+    "//components/printing/browser:printing_browser",
     "//components/proxy_config",
     "//components/query_parser",
     "//components/rappor",

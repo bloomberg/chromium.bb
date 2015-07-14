@@ -69,10 +69,6 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void UpdateFileDescriptor(int render_view_id, int fd);
 #endif
 
-  // Given a render_view_id get the corresponding WebContents.
-  // Must be called on the UI thread.
-  content::WebContents* GetWebContentsForRenderView(int render_view_id);
-
   // GetPrintSettingsForRenderView must be called via PostTask and
   // base::Bind.  Collapse the settings-specific params into a
   // struct to avoid running into issues with too many params

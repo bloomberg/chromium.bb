@@ -12,6 +12,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -35,7 +36,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/printing/print_view_manager_basic.h"
-#include "printing/printing_context_android.h"
 #endif
 
 using content::BrowserThread;
@@ -44,35 +44,24 @@ namespace printing {
 
 namespace {
 
-void RenderParamsFromPrintSettings(const PrintSettings& settings,
-                                   PrintMsg_Print_Params* params) {
-  params->page_size = settings.page_setup_device_units().physical_size();
-  params->content_size.SetSize(
-      settings.page_setup_device_units().content_area().width(),
-      settings.page_setup_device_units().content_area().height());
-  params->printable_area.SetRect(
-      settings.page_setup_device_units().printable_area().x(),
-      settings.page_setup_device_units().printable_area().y(),
-      settings.page_setup_device_units().printable_area().width(),
-      settings.page_setup_device_units().printable_area().height());
-  params->margin_top = settings.page_setup_device_units().content_area().y();
-  params->margin_left = settings.page_setup_device_units().content_area().x();
-  params->dpi = settings.dpi();
-  // Currently hardcoded at 1.25. See PrintSettings' constructor.
-  params->min_shrink = settings.min_shrink();
-  // Currently hardcoded at 2.0. See PrintSettings' constructor.
-  params->max_shrink = settings.max_shrink();
-  // Currently hardcoded at 72dpi. See PrintSettings' constructor.
-  params->desired_dpi = settings.desired_dpi();
-  // Always use an invalid cookie.
-  params->document_cookie = 0;
-  params->selection_only = settings.selection_only();
-  params->supports_alpha_blend = settings.supports_alpha_blend();
-  params->should_print_backgrounds = settings.should_print_backgrounds();
-  params->display_header_footer = settings.display_header_footer();
-  params->title = settings.title();
-  params->url = settings.url();
+#if defined(OS_ANDROID)
+content::WebContents* GetWebContentsForRenderView(int render_process_id,
+                                                  int render_view_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::RenderViewHost* view = content::RenderViewHost::FromID(
+      render_process_id, render_view_id);
+  return view ? content::WebContents::FromRenderViewHost(view) : nullptr;
 }
+
+PrintViewManagerBasic* GetPrintManager(int render_process_id,
+                                       int render_view_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::WebContents* web_contents =
+      GetWebContentsForRenderView(render_process_id, render_view_id);
+  return web_contents ? PrintViewManagerBasic::FromWebContents(web_contents)
+                      : nullptr;
+}
+#endif
 
 }  // namespace
 
@@ -144,42 +133,25 @@ void PrintingMessageFilter::OnAllocateTempFileForPrinting(
     base::FileDescriptor* temp_file_fd,
     int* sequence_number) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
-  if (!wc)
-    return;
   PrintViewManagerBasic* print_view_manager =
-      PrintViewManagerBasic::FromWebContents(wc);
+      GetPrintManager(render_process_id_, render_view_id);
+  if (!print_view_manager)
+    return;
   // The file descriptor is originally created in & passed from the Android
   // side, and it will handle the closing.
-  const base::FileDescriptor& file_descriptor =
-      print_view_manager->file_descriptor();
-  temp_file_fd->fd = file_descriptor.fd;
+  temp_file_fd->fd = print_view_manager->file_descriptor().fd;
   temp_file_fd->auto_close = false;
 }
 
 void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_view_id,
                                                          int sequence_number) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
-  if (!wc)
-    return;
   PrintViewManagerBasic* print_view_manager =
-      PrintViewManagerBasic::FromWebContents(wc);
-  const base::FileDescriptor& file_descriptor =
-      print_view_manager->file_descriptor();
-  PrintingContextAndroid::PdfWritingDone(file_descriptor.fd, true);
-  // Invalidate the file descriptor so it doesn't accidentally get reused.
-  print_view_manager->set_file_descriptor(base::FileDescriptor(-1, false));
+      GetPrintManager(render_process_id_, render_view_id);
+  if (print_view_manager)
+    print_view_manager->PdfWritingDone(true);
 }
 #endif  // defined(OS_ANDROID)
-
-content::WebContents* PrintingMessageFilter::GetWebContentsForRenderView(
-    int render_view_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::RenderViewHost* view = content::RenderViewHost::FromID(
-      render_process_id_, render_view_id);
-  return view ? content::WebContents::FromRenderViewHost(view) : NULL;
-}
 
 void PrintingMessageFilter::OnIsPrintingEnabled(bool* is_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -298,12 +270,10 @@ void PrintingMessageFilter::OnScriptedPrintReply(
 #if defined(OS_ANDROID)
 void PrintingMessageFilter::UpdateFileDescriptor(int render_view_id, int fd) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
-  if (!wc)
-    return;
   PrintViewManagerBasic* print_view_manager =
-      PrintViewManagerBasic::FromWebContents(wc);
-  print_view_manager->set_file_descriptor(base::FileDescriptor(fd, false));
+      GetPrintManager(render_process_id_, render_view_id);
+  if (print_view_manager)
+    print_view_manager->set_file_descriptor(base::FileDescriptor(fd, false));
 }
 #endif
 
