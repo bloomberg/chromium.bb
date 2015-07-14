@@ -213,7 +213,6 @@ config("skia_library_config") {
     defines += [
       "SK_GAMMA_EXPONENT=1.2",
       "SK_GAMMA_CONTRAST=0.2",
-      "SK_HIGH_QUALITY_IS_LANCZOS",
     ]
   } else if (is_android) {
     defines += [
@@ -225,13 +224,11 @@ config("skia_library_config") {
     defines += [
       "SK_GAMMA_SRGB",
       "SK_GAMMA_CONTRAST=0.5",
-      "SK_HIGH_QUALITY_IS_LANCZOS",
     ]
   } else if (is_mac) {
     defines += [
       "SK_GAMMA_SRGB",
       "SK_GAMMA_CONTRAST=0.0",
-      "SK_HIGH_QUALITY_IS_LANCZOS",
     ]
   }
 
