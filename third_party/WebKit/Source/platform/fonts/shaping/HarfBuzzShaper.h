@@ -60,7 +60,10 @@ public:
     FloatRect bounds() { return m_glyphBoundingBox; }
     int offsetForPosition(float targetX);
     unsigned numCharacters() const { return m_numCharacters; }
-    void fallbackFonts(HashSet<const SimpleFontData*>*) const;
+    const HashSet<const SimpleFontData*>* fallbackFonts() const
+    {
+        return &m_fallbackFonts;
+    }
 
     static float fillGlyphBuffer(Vector<RefPtr<ShapeResult>>&,
         GlyphBuffer*, const TextRun&, unsigned from, unsigned to);
@@ -91,7 +94,7 @@ private:
     float m_width;
     FloatRect m_glyphBoundingBox;
     Vector<RunInfo*> m_runs;
-    const SimpleFontData* m_primaryFont;
+    HashSet<const SimpleFontData*> m_fallbackFonts;
 
     unsigned m_numCharacters;
     unsigned m_numGlyphs : 31;
@@ -106,7 +109,8 @@ private:
 
 class PLATFORM_EXPORT HarfBuzzShaper final : public Shaper {
 public:
-    HarfBuzzShaper(const Font*, const TextRun&);
+    HarfBuzzShaper(const Font*, const TextRun&,
+        HashSet<const SimpleFontData*>* fallbackFonts);
     PassRefPtr<ShapeResult> shapeResult();
     ~HarfBuzzShaper() { }
 
