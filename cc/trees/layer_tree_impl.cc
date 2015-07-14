@@ -751,6 +751,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 }
 
 void LayerTreeImpl::BuildPropertyTreesForTesting() {
+  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer_.get());
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer_.get(), page_scale_layer_, inner_viewport_scroll_layer_,
       outer_viewport_scroll_layer_, current_page_scale_factor(),

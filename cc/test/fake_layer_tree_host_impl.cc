@@ -91,6 +91,7 @@ void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawProperties(
     LayerTreeImpl* layerTree) {
   RecursiveUpdateNumChildren(layerTree->root_layer());
   bool update_lcd_text = false;
+  layerTree->BuildPropertyTreesForTesting();
   layerTree->UpdateDrawProperties(update_lcd_text);
 }
 

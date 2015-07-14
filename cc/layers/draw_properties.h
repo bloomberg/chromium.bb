@@ -25,7 +25,6 @@ struct CC_EXPORT DrawProperties {
         target_space_transform_is_animating(false),
         screen_space_transform_is_animating(false),
         can_use_lcd_text(false),
-        is_clipped(false),
         render_target(nullptr),
         num_unclipped_descendants(0),
         layer_or_descendant_has_copy_request(false),
@@ -69,9 +68,6 @@ struct CC_EXPORT DrawProperties {
 
   // True if the layer can use LCD text.
   bool can_use_lcd_text;
-
-  // True if the layer needs to be clipped by clip_rect.
-  bool is_clipped;
 
   // The layer whose coordinate space this layer draws into. This can be
   // either the same layer (draw_properties_.render_target == this) or an
