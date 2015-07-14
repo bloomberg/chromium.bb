@@ -1762,27 +1762,6 @@
             }],
           ],
         },
-        {
-          'target_name': 'jpeg_decode_accelerator_unittest',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../media/media.gyp:media',
-            '../media/media.gyp:media_test_support',
-            '../testing/gtest.gyp:gtest',
-            '../third_party/libyuv/libyuv.gyp:libyuv',
-            '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../ui/gl/gl.gyp:gl',
-            'content.gyp:content',
-          ],
-          'sources': [
-            'common/gpu/media/jpeg_decode_accelerator_unittest.cc',
-          ],
-          'include_dirs': [
-            '<(DEPTH)/third_party/libva',
-            '<(DEPTH)/third_party/libyuv',
-          ],
-        }
       ]
     }],
     ['OS == "android"', {
