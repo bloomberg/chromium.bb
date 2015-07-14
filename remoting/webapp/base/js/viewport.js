@@ -63,12 +63,9 @@ remoting.Viewport.choosePluginSize = function(
   //
   // To determine the ideal size we follow a four-stage process:
   //  1. Determine the "natural" size at which to display the desktop.
-  //    a. Initially assume 1:1 mapping of desktop to client device pixels.
+  //    a. Initially assume 1:1 mapping of desktop to client device pixels,
+  //       adjusting for the specified desktopScale.
   //    b. If host DPI is less than the client's then up-scale accordingly.
-  //    c. If desktopScale is configured for the host then allow that to
-  //       reduce the amount of up-scaling from (b). e.g. if the client:host
-  //       DPIs are 2:1 then a desktopScale of 1.5 would reduce the up-scale
-  //       to 4:3, while a desktopScale of 3.0 would result in no up-scaling.
   //  2. If the natural size of the desktop is smaller than the client device
   //     then apply up-scaling by an integer scale factor to avoid excessive
   //     letterboxing.
@@ -82,9 +79,10 @@ remoting.Viewport.choosePluginSize = function(
   //  4. If the overall scale factor is fractionally over an integer factor
   //     then reduce it to that integer factor, to avoid blurring.
 
-  // All calculations are performed in device pixels.
-  var clientWidth = clientSizeDips.width * clientPixelRatio;
-  var clientHeight = clientSizeDips.height * clientPixelRatio;
+  // All calculations are performed in client device pixels, but taking into
+  // account |desktopScale|.
+  var clientWidth = clientSizeDips.width * clientPixelRatio / desktopScale;
+  var clientHeight = clientSizeDips.height * clientPixelRatio / desktopScale;
 
   // 1. Determine a "natural" size at which to display the desktop.
   var scale = 1.0;
@@ -97,11 +95,6 @@ remoting.Viewport.choosePluginSize = function(
 
   // Allow up-scaling to account for DPI.
   scale = Math.max(scale, clientPixelRatio / hostPixelRatio);
-
-  // Allow some or all of the up-scaling to be cancelled by the desktopScale.
-  if (desktopScale > 1.0) {
-    scale = Math.max(1.0, scale / desktopScale);
-  }
 
   // 2. If the host is still much smaller than the client, then up-scale to
   //    avoid wasting space, but only by an integer factor, to avoid blurring.
@@ -149,6 +142,7 @@ remoting.Viewport.choosePluginSize = function(
 
   // Return the necessary plugin dimensions in DIPs.
   scale = scale / clientPixelRatio;
+  scale = scale * desktopScale;
   var pluginWidth = Math.round(desktopSize.width * scale);
   var pluginHeight = Math.round(desktopSize.height * scale);
   return { width: pluginWidth, height: pluginHeight };
