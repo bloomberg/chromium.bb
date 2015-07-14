@@ -98,7 +98,7 @@ bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet) {
   // Do the actual decoding.
   vpx_codec_err_t ret = vpx_codec_decode(
       codec_.get(), reinterpret_cast<const uint8*>(packet.data().data()),
-      packet.data().size(), NULL, 0);
+      packet.data().size(), nullptr, 0);
   if (ret != VPX_CODEC_OK) {
     const char* error = vpx_codec_error(codec_.get());
     const char* error_detail = vpx_codec_error_detail(codec_.get());
@@ -108,7 +108,7 @@ bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet) {
   }
 
   // Gets the decoded data.
-  vpx_codec_iter_t iter = NULL;
+  vpx_codec_iter_t iter = nullptr;
   vpx_image_t* image = vpx_codec_get_frame(codec_.get(), &iter);
   if (!image) {
     LOG(ERROR) << "No video frame decoded";
@@ -329,7 +329,7 @@ const webrtc::DesktopRegion* VideoDecoderVpx::GetImageShape() {
 
 VideoDecoderVpx::VideoDecoderVpx(ScopedVpxCodec codec)
     : codec_(codec.Pass()),
-      last_image_(NULL) {
+      last_image_(nullptr) {
   DCHECK(codec_);
 }
 

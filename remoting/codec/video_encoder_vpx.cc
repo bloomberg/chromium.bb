@@ -316,7 +316,7 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   }
 
   // Read the encoded data.
-  vpx_codec_iter_t iter = NULL;
+  vpx_codec_iter_t iter = nullptr;
   bool got_data = false;
 
   // TODO(hclam): Make sure we get exactly one frame from the packet.

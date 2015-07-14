@@ -42,9 +42,9 @@ bool IsSupportedSampleRate(int rate) {
 AudioEncoderOpus::AudioEncoderOpus()
     : sampling_rate_(0),
       channels_(AudioPacket::CHANNELS_STEREO),
-      encoder_(NULL),
+      encoder_(nullptr),
       frame_size_(0),
-      resampling_data_(NULL),
+      resampling_data_(nullptr),
       resampling_data_size_(0),
       resampling_data_pos_(0) {
 }
@@ -93,7 +93,7 @@ void AudioEncoderOpus::InitEncoder() {
 void AudioEncoderOpus::DestroyEncoder() {
   if (encoder_) {
     opus_encoder_destroy(encoder_);
-    encoder_ = NULL;
+    encoder_ = nullptr;
   }
 
   resampler_.reset();
@@ -118,7 +118,7 @@ bool AudioEncoderOpus::ResetForPacket(AudioPacket* packet) {
     InitEncoder();
   }
 
-  return encoder_ != NULL;
+  return encoder_ != nullptr;
 }
 
 void AudioEncoderOpus::FetchBytesToResample(int resampler_frame_delay,
@@ -164,7 +164,7 @@ scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
   int samples_wanted = frame_size_ + prefetch_samples;
 
   while (leftover_samples_ + samples_in_packet >= samples_wanted) {
-    const int16* pcm_buffer = NULL;
+    const int16* pcm_buffer = nullptr;
 
     // Combine the packet with the leftover samples, if any.
     if (leftover_samples_ > 0) {
@@ -183,7 +183,7 @@ scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
       resampling_data_pos_ = 0;
       resampling_data_size_ = samples_wanted * channels_ * kBytesPerSample;
       resampler_->Resample(kFrameSamples, resampler_bus_.get());
-      resampling_data_ = NULL;
+      resampling_data_ = nullptr;
       samples_consumed = resampling_data_pos_ / channels_ / kBytesPerSample;
 
       resampler_bus_->ToInterleaved(kFrameSamples, kBytesPerSample,
@@ -232,7 +232,7 @@ scoped_ptr<AudioPacket> AudioEncoderOpus::Encode(
     leftover_samples_ += samples_in_packet;
   }
 
-  // Return NULL if there's nothing in the packet.
+  // Return nullptr if there's nothing in the packet.
   if (encoded_packet->data_size() == 0)
     return nullptr;
 

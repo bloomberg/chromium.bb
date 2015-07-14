@@ -61,7 +61,7 @@ class VideoDecoderTester {
         view_size_(view_size),
         strict_(false),
         decoder_(decoder),
-        frame_(NULL) {
+        frame_(nullptr) {
     image_data_.reset(new uint8[
         view_size_.width() * view_size_.height() * kBytesPerPixel]);
     EXPECT_TRUE(image_data_.get());
@@ -206,7 +206,7 @@ class VideoDecoderTester {
 class VideoEncoderTester {
  public:
   VideoEncoderTester()
-      : decoder_tester_(NULL),
+      : decoder_tester_(nullptr),
         data_available_(0) {
   }
 

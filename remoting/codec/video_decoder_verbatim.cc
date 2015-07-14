@@ -108,7 +108,7 @@ void VideoDecoderVerbatim::RenderFrame(const webrtc::DesktopSize& view_size,
 }
 
 const webrtc::DesktopRegion* VideoDecoderVerbatim::GetImageShape() {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace remoting
