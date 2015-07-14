@@ -106,15 +106,7 @@ class FlakyTests(AbstractDeclarativeCommand):
 
     def execute(self, options, args, tool):
         factory = self.expectations_factory()
-
-        # FIXME: WebKit Linux 32 and WebKit Linux have the same specifiers;
-        # if we include both of them, we'll get duplicate lines. Ideally
-        # Linux 32 would have unique speicifiers.
-        most_builders = builders.all_builder_names()
-        if 'WebKit Linux 32' in most_builders:
-            most_builders.remove('WebKit Linux 32')
-
-        lines = self._collect_expectation_lines(most_builders, factory)
+        lines = self._collect_expectation_lines(builders.all_builder_names(), factory)
         lines.sort(key=lambda line: line.path)
 
         port = tool.port_factory.get()
