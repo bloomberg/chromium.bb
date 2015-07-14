@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/bluetooth/bluetooth_error.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"

@@ -13,6 +13,7 @@
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothErrorMessage.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTService.h"
@@ -21,6 +22,7 @@
 using blink::WebBluetoothConnectGATTCallbacks;
 using blink::WebBluetoothDevice;
 using blink::WebBluetoothError;
+using blink::WebBluetoothErrorMessage;
 using blink::WebBluetoothGATTCharacteristic;
 using blink::WebBluetoothGATTRemoteServer;
 using blink::WebBluetoothGATTService;
@@ -73,30 +75,6 @@ BluetoothDispatcher* const kHasBeenDeleted =
 
 int CurrentWorkerId() {
   return WorkerTaskRunner::Instance()->CurrentWorkerId();
-}
-
-WebBluetoothError::ErrorType WebBluetoothErrorFromBluetoothError(
-    BluetoothError error_type) {
-  switch (error_type) {
-    case BluetoothError::ABORT:
-      return WebBluetoothError::AbortError;
-    case BluetoothError::INVALID_MODIFICATION:
-      return WebBluetoothError::InvalidModificationError;
-    case BluetoothError::INVALID_STATE:
-      return WebBluetoothError::InvalidStateError;
-    case BluetoothError::NETWORK:
-      return WebBluetoothError::NetworkError;
-    case BluetoothError::NOT_FOUND:
-      return WebBluetoothError::NotFoundError;
-    case BluetoothError::NOT_SUPPORTED:
-      return WebBluetoothError::NotSupportedError;
-    case BluetoothError::SECURITY:
-      return WebBluetoothError::SecurityError;
-    case BluetoothError::SYNTAX:
-      return WebBluetoothError::SyntaxError;
-  }
-  NOTIMPLEMENTED();
-  return WebBluetoothError::NotFoundError;
 }
 
 WebBluetoothDevice::VendorIDSource GetWebVendorIdSource(
@@ -270,18 +248,11 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
   pending_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnRequestDeviceError(
-    int thread_id,
-    int request_id,
-    BluetoothError error_type,
-    const std::string& error_message) {
+void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
+                                               int request_id,
+                                               WebBluetoothErrorMessage error) {
   DCHECK(pending_requests_.Lookup(request_id)) << request_id;
-  pending_requests_.Lookup(request_id)
-      ->onError(new WebBluetoothError(
-          // TODO(ortuno): Return more descriptive error messages.
-          // http://crbug.com/490419
-          WebBluetoothErrorFromBluetoothError(error_type),
-          WebString::fromUTF8(error_message)));
+  pending_requests_.Lookup(request_id)->onError(new WebBluetoothError(error));
   pending_requests_.Remove(request_id);
 }
 
@@ -298,15 +269,10 @@ void BluetoothDispatcher::OnConnectGATTSuccess(
 
 void BluetoothDispatcher::OnConnectGATTError(int thread_id,
                                              int request_id,
-                                             BluetoothError error_type,
-                                             const std::string& error_message) {
+                                             WebBluetoothErrorMessage error) {
   DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
   pending_connect_requests_.Lookup(request_id)
-      ->onError(new WebBluetoothError(
-          // TODO(ortuno): Return more descriptive error messages.
-          // http://crbug.com/490419
-          WebBluetoothErrorFromBluetoothError(error_type),
-          WebString::fromUTF8(error_message)));
+      ->onError(new WebBluetoothError(error));
   pending_connect_requests_.Remove(request_id);
 }
 
@@ -326,14 +292,13 @@ void BluetoothDispatcher::OnGetPrimaryServiceSuccess(
 void BluetoothDispatcher::OnGetPrimaryServiceError(
     int thread_id,
     int request_id,
-    BluetoothError error_type,
-    const std::string& error_message) {
+    WebBluetoothErrorMessage error) {
   DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
 
   // Since we couldn't find the service return null. See Step 3 of
   // getPrimaryService algorithm:
   // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattremoteserver-getprimaryservice
-  if (error_type == BluetoothError::NOT_FOUND) {
+  if (error == WebBluetoothErrorMessage::ServiceNotFound) {
     pending_primary_service_requests_.Lookup(request_id)
         ->callbacks->onSuccess(nullptr);
     pending_primary_service_requests_.Remove(request_id);
@@ -341,11 +306,7 @@ void BluetoothDispatcher::OnGetPrimaryServiceError(
   }
 
   pending_primary_service_requests_.Lookup(request_id)
-      ->callbacks->onError(new WebBluetoothError(
-          // TODO(ortuno): Return more descriptive error messages.
-          // http://crbug.com/490419
-          WebBluetoothErrorFromBluetoothError(error_type),
-          WebString::fromUTF8(error_message)));
+      ->callbacks->onError(new WebBluetoothError(error));
   pending_primary_service_requests_.Remove(request_id);
 }
 
@@ -367,23 +328,18 @@ void BluetoothDispatcher::OnGetCharacteristicSuccess(
 void BluetoothDispatcher::OnGetCharacteristicError(
     int thread_id,
     int request_id,
-    BluetoothError error_type,
-    const std::string& error_message) {
+    WebBluetoothErrorMessage error) {
   DCHECK(pending_characteristic_requests_.Lookup(request_id)) << request_id;
 
   // Since we couldn't find the characteristic return null. See Step 3 of
   // getCharacteristic algorithm:
   // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattservice-getcharacteristic
-  if (error_type == BluetoothError::NOT_FOUND) {
+  if (error == WebBluetoothErrorMessage::CharacteristicNotFound) {
     pending_characteristic_requests_.Lookup(request_id)
         ->callbacks->onSuccess(nullptr);
   } else {
     pending_characteristic_requests_.Lookup(request_id)
-        ->callbacks->onError(new WebBluetoothError(
-            // TODO(ortuno): Return more descriptive error messages.
-            // http://crbug.com/490419
-            WebBluetoothErrorFromBluetoothError(error_type),
-            WebString::fromUTF8(error_message)));
+        ->callbacks->onError(new WebBluetoothError(error));
   }
   pending_characteristic_requests_.Remove(request_id);
 }
@@ -404,16 +360,11 @@ void BluetoothDispatcher::OnReadValueSuccess(
 
 void BluetoothDispatcher::OnReadValueError(int thread_id,
                                            int request_id,
-                                           BluetoothError error_type,
-                                           const std::string& error_message) {
+                                           WebBluetoothErrorMessage error) {
   DCHECK(pending_read_value_requests_.Lookup(request_id)) << request_id;
 
   pending_read_value_requests_.Lookup(request_id)
-      ->onError(new WebBluetoothError(
-          // TODO(ortuno): Return more descriptive error messages.
-          // http://crbug.com/490419
-          WebBluetoothErrorFromBluetoothError(error_type),
-          WebString::fromUTF8(error_message)));
+      ->onError(new WebBluetoothError(error));
 
   pending_read_value_requests_.Remove(request_id);
 }
@@ -428,14 +379,11 @@ void BluetoothDispatcher::OnWriteValueSuccess(int thread_id, int request_id) {
 
 void BluetoothDispatcher::OnWriteValueError(int thread_id,
                                             int request_id,
-                                            BluetoothError error_type,
-                                            const std::string& error_message) {
+                                            WebBluetoothErrorMessage error) {
   DCHECK(pending_write_value_requests_.Lookup(request_id)) << request_id;
 
   pending_write_value_requests_.Lookup(request_id)
-      ->onError(
-          new WebBluetoothError(WebBluetoothErrorFromBluetoothError(error_type),
-                                WebString::fromUTF8(error_message)));
+      ->onError(new WebBluetoothError(error));
 
   pending_write_value_requests_.Remove(request_id);
 }
