@@ -214,6 +214,9 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // is fixed.
 #if defined(OS_WIN)
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_MENU);
+    // The menu style assumes a top most window. We don't want that in this
+    // case.
+    params.keep_on_top = false;
 #else
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
 #endif
