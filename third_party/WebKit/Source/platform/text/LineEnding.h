@@ -41,9 +41,6 @@ namespace blink {
 // Normalize all line-endings in the given string to CRLF.
 PLATFORM_EXPORT CString normalizeLineEndingsToCRLF(const CString& from);
 
-// Normalize all line-endings in the given string to CR and append the result to the given buffer.
-PLATFORM_EXPORT void normalizeLineEndingsToCR(const CString& from, Vector<char>& result);
-
 // Normalize all line-endings in the given string to LF and append the result to the given buffer.
 PLATFORM_EXPORT void normalizeLineEndingsToLF(const CString& from, Vector<char>& result);
 
