@@ -443,11 +443,12 @@ TEST_F(ChromeContentRendererClientTest, AllowPepperMediaStreamAPI) {
 
 TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
   ChromeContentRendererClient client;
-  client.search_bouncer_.reset(new SearchBouncer);
-  client.search_bouncer_->OnSetSearchURLs(
+  SearchBouncer::GetInstance()->OnSetSearchURLs(
       std::vector<GURL>(), GURL("http://example.com/n"));
   EXPECT_FALSE(client.ShouldSuppressErrorPage(nullptr,
                                               GURL("http://example.com")));
   EXPECT_TRUE(client.ShouldSuppressErrorPage(nullptr,
                                              GURL("http://example.com/n")));
+  SearchBouncer::GetInstance()->OnSetSearchURLs(
+      std::vector<GURL>(), GURL::EmptyGURL());
 }

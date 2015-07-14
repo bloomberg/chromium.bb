@@ -405,7 +405,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   webrtc_logging_message_filter_ = new WebRtcLoggingMessageFilter(
       RenderThread::Get()->GetIOMessageLoopProxy());
 #endif
-  search_bouncer_.reset(new SearchBouncer());
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(web_cache_observer_.get());
@@ -418,7 +417,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
   thread->AddObserver(visited_link_slave_.get());
   thread->AddObserver(prerender_dispatcher_.get());
-  thread->AddObserver(search_bouncer_.get());
+  thread->AddObserver(SearchBouncer::GetInstance());
 
 #if defined(ENABLE_WEBRTC)
   thread->AddFilter(webrtc_logging_message_filter_.get());
@@ -1125,7 +1124,7 @@ bool ChromeContentRendererClient::ShouldSuppressErrorPage(
       return true;
   }
   // Do not flash an error page if the Instant new tab page fails to load.
-  return search_bouncer_.get() && search_bouncer_->IsNewTabPage(url);
+  return SearchBouncer::GetInstance()->IsNewTabPage(url);
 }
 
 void ChromeContentRendererClient::GetNavigationErrorStrings(
@@ -1201,7 +1200,7 @@ bool ChromeContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
   // such navigations can also be bucketed into an Instant renderer.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInstantProcess) ||
-      (search_bouncer_.get() && search_bouncer_->ShouldFork(url))) {
+      SearchBouncer::GetInstance()->ShouldFork(url)) {
     *send_referrer = true;
     return true;
   }

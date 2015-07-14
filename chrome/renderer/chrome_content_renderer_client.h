@@ -22,7 +22,6 @@ class ChromeRenderProcessObserver;
 class ChromePDFPrintClient;
 #endif
 class PrescientNetworkingDispatcher;
-class SearchBouncer;
 #if defined(ENABLE_SPELLCHECK)
 class SpellCheck;
 class SpellCheckProvider;
@@ -243,7 +242,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 #if defined(ENABLE_WEBRTC)
   scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
 #endif
-  scoped_ptr<SearchBouncer> search_bouncer_;
 #if defined(ENABLE_PRINT_PREVIEW)
   scoped_ptr<ChromePDFPrintClient> pdf_print_client_;
 #endif

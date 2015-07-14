@@ -23,6 +23,8 @@ class SearchBouncer : public content::RenderProcessObserver {
   SearchBouncer();
   ~SearchBouncer() override;
 
+  static SearchBouncer* GetInstance();
+
   // Returns whether a navigation to |url| should bounce back to the browser as
   // a potential Instant url. See chrome::ShouldAssignURLToInstantRenderer().
   bool ShouldFork(const GURL& url) const;

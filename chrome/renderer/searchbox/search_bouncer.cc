@@ -4,15 +4,26 @@
 
 #include "chrome/renderer/searchbox/search_bouncer.h"
 
+#include "base/lazy_instance.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search_urls.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_message_macros.h"
 
+namespace {
+base::LazyInstance<SearchBouncer>::Leaky g_search_bouncer =
+    LAZY_INSTANCE_INITIALIZER;
+}  // namespace
+
 SearchBouncer::SearchBouncer() {
 }
 
 SearchBouncer::~SearchBouncer() {
+}
+
+// static
+SearchBouncer* SearchBouncer::GetInstance() {
+  return g_search_bouncer.Pointer();
 }
 
 bool SearchBouncer::ShouldFork(const GURL& url) const {

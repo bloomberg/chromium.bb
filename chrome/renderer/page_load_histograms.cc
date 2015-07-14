@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/document_state.h"
@@ -852,6 +853,12 @@ bool PageLoadHistograms::ShouldDump(WebFrame* frame) {
       GetSupportedSchemeType(frame->document().url());
   if (scheme_type == 0)
     return false;
+
+  // Don't dump stats for the NTP, as PageLoadHistograms should only be recorded
+  // for pages visited due to an explicit user navigation.
+  if (SearchBouncer::GetInstance()->IsNewTabPage(frame->document().url())) {
+    return false;
+  }
 
   // Ignore multipart requests.
   if (frame->dataSource()->response().isMultipartPayload())
