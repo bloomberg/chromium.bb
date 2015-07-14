@@ -45,7 +45,7 @@ static PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(WebMediaPlayerClient* cli
 
     if (!webFrame || !webFrame->client())
         return nullptr;
-    return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, url, client, initialCdm));
+    return adoptPtr(webFrame->client()->createMediaPlayer(webFrame, url, client, client, initialCdm));
 }
 
 WebMediaPlayer* WebMediaPlayerClientImpl::webMediaPlayer() const
