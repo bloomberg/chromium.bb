@@ -571,10 +571,10 @@ chrome.fileManagerPrivate.openInspector = function(type) {};
 
 /**
  * Computes an MD5 checksum for the given file.
- * @param {string} fileUrl
+ * @param {!Entry} entry
  * @param {function(string)} callback
  */
-chrome.fileManagerPrivate.computeChecksum = function(fileUrl, callback) {};
+chrome.fileManagerPrivate.computeChecksum = function(entry, callback) {};
 
 /**
  * Gets the MIME type of a file.

@@ -776,22 +776,22 @@ void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
   SendResponse(true);
 }
 
-FileManagerPrivateComputeChecksumFunction::
-    FileManagerPrivateComputeChecksumFunction()
+FileManagerPrivateInternalComputeChecksumFunction::
+    FileManagerPrivateInternalComputeChecksumFunction()
     : digester_(new drive::util::FileStreamMd5Digester()) {
 }
 
-FileManagerPrivateComputeChecksumFunction::
-    ~FileManagerPrivateComputeChecksumFunction() {
+FileManagerPrivateInternalComputeChecksumFunction::
+    ~FileManagerPrivateInternalComputeChecksumFunction() {
 }
 
-bool FileManagerPrivateComputeChecksumFunction::RunAsync() {
-  using extensions::api::file_manager_private::ComputeChecksum::Params;
+bool FileManagerPrivateInternalComputeChecksumFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::ComputeChecksum::Params;
   using drive::util::FileStreamMd5Digester;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (params->file_url.empty()) {
+  if (params->url.empty()) {
     SetError("File URL must be provided");
     return false;
   }
@@ -800,19 +800,21 @@ bool FileManagerPrivateComputeChecksumFunction::RunAsync() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           GetProfile(), render_frame_host());
 
-  FileSystemURL file_url(file_system_context->CrackURL(GURL(params->file_url)));
-  if (!file_url.is_valid()) {
+  FileSystemURL file_system_url(
+      file_system_context->CrackURL(GURL(params->url)));
+  if (!file_system_url.is_valid()) {
     SetError("File URL was invalid");
     return false;
   }
 
   scoped_ptr<storage::FileStreamReader> reader =
       file_system_context->CreateFileStreamReader(
-          file_url, 0, storage::kMaximumLength, base::Time());
+          file_system_url, 0, storage::kMaximumLength, base::Time());
 
   FileStreamMd5Digester::ResultCallback result_callback = base::Bind(
       &ComputeChecksumRespondOnUIThread,
-      base::Bind(&FileManagerPrivateComputeChecksumFunction::Respond, this));
+      base::Bind(&FileManagerPrivateInternalComputeChecksumFunction::Respond,
+                 this));
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&FileStreamMd5Digester::GetMd5Digest,
                                      base::Unretained(digester_.get()),
@@ -821,7 +823,7 @@ bool FileManagerPrivateComputeChecksumFunction::RunAsync() {
   return true;
 }
 
-void FileManagerPrivateComputeChecksumFunction::Respond(
+void FileManagerPrivateInternalComputeChecksumFunction::Respond(
     const std::string& hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SetResult(new base::StringValue(hash));

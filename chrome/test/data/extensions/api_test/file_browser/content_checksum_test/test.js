@@ -48,24 +48,10 @@ getTestFilesystem().then(
                         fulfill(entry);
                       });
                   })
-                // TODO(mtomasz): Remove this step once computeChecksum works
-                // on isolated entries.
                 .then(
                     function(entry) {
-                      return new Promise(function(fulfill, reject) {
-                        chrome.fileManagerPrivate.resolveIsolatedEntries(
-                            [entry],
-                            function(externalEntries) {
-                              chrome.test.assertTrue(!!externalEntries);
-                              chrome.test.assertTrue(!!externalEntries[0]);
-                              fulfill(externalEntries[0]);
-                            });
-                      });
-                    })
-                .then(
-                    function(externalEntry) {
                       chrome.fileManagerPrivate.computeChecksum(
-                          externalEntry.toURL(),
+                          entry,
                           chrome.test.callbackPass(function(result) {
                             chrome.test.assertEq(kExpectedHash, result);
                           }));

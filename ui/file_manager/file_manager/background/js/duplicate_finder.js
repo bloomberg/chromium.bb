@@ -74,7 +74,7 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
         function(resolve, reject) {
           var startTime = new Date().getTime();
           chrome.fileManagerPrivate.computeChecksum(
-              entry.toURL(),
+              entry,
               /**
                * @param {string} result The content hash.
                * @this {importer.DriveDuplicateFinder}

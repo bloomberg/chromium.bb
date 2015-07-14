@@ -255,16 +255,16 @@ class FileManagerPrivateInternalResolveIsolatedEntriesFunction
       file_manager::util::EntryDefinitionList> entry_definition_list);
 };
 
-class FileManagerPrivateComputeChecksumFunction
+class FileManagerPrivateInternalComputeChecksumFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  FileManagerPrivateComputeChecksumFunction();
+  FileManagerPrivateInternalComputeChecksumFunction();
 
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.computeChecksum",
-                             FILEMANAGERPRIVATE_COMPUTECHECKSUM)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.computeChecksum",
+                             FILEMANAGERPRIVATEINTERNAL_COMPUTECHECKSUM)
 
  protected:
-  ~FileManagerPrivateComputeChecksumFunction() override;
+  ~FileManagerPrivateInternalComputeChecksumFunction() override;
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;

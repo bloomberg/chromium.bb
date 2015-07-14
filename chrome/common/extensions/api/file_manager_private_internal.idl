@@ -21,6 +21,7 @@ namespace fileManagerPrivateInternal {
   callback AddFileWatchCallback = void(optional boolean success);
   callback RemoveFileWatchCallback = void(optional boolean success);
   callback GetEntryActionsCallback = void(fileSystemProvider.Action[] actions);
+  callback ComputeChecksumCallback = void(DOMString checksum);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -40,5 +41,7 @@ namespace fileManagerPrivateInternal {
     static void executeEntryAction(DOMString url,
                                    DOMString actionId,
                                    SimpleCallback callback);
+    static void computeChecksum(DOMString url,
+                                ComputeChecksumCallback callback);
   };
 };

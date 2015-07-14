@@ -97,6 +97,11 @@ binding.registerCustomHook(function(bindingsAPI) {
     var url = fileBrowserHandlerNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.executeEntryAction(url, actionId, callback);
   });
+
+  apiFunctions.setHandleRequest('computeChecksum', function(entry, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.computeChecksum(url, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(

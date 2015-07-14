@@ -899,9 +899,10 @@ interface Functions {
   static void openInspector(InspectionType type);
 
   // Computes an MD5 checksum for the given file.
-  // |fileURL| The URL of the file to checksum.
+  // |entry| The entry of the file to checksum.
   // |callback|
-  static void computeChecksum(DOMString fileURL,
+  [nocompile]
+  static void computeChecksum([instanceof=Entry] object entry,
                               ComputeChecksumCallback callback);
 
   // Is UMA enabled?

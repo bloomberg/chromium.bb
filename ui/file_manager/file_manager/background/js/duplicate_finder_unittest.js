@@ -49,11 +49,11 @@ function setUp() {
   chrome = {
     fileManagerPrivate: {
       /**
-       * @param {string} url
+       * @param {!Entry} entry
        * @param {function(?string)} callback
        */
-      computeChecksum: function(url, callback) {
-        callback(hashes[url] || null);
+      computeChecksum: function(entry, callback) {
+        callback(hashes[entry.toURL()] || null);
       },
       /**
        * @param {string} volumeId

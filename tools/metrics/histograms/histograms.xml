@@ -55942,7 +55942,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="944" label="FILEMANAGERPRIVATE_GETMIMETYPE"/>
   <int value="945" label="USB_SETCONFIGURATION"/>
   <int value="946" label="EASYUNLOCKPRIVATE_GETCONNECTIONINFO"/>
-  <int value="947" label="FILEMANAGERPRIVATE_COMPUTECHECKSUM"/>
+  <int value="947" label="FILEMANAGERPRIVATEINTERNAL_COMPUTECHECKSUM"/>
   <int value="948" label="PRINTERPROVIDERINTERNAL_REPORTPRINTRESULT"/>
   <int value="949" label="PRINTERPROVIDERINTERNAL_REPORTPRINTERCAPABILITY"/>
   <int value="950" label="PRINTERPROVIDERINTERNAL_REPORTPRINTERS"/>
