@@ -97,9 +97,7 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
         [[GTMFadeTruncatingTextFieldCell alloc] initTextCell:@"Label"]);
     [labelCell setControlSize:NSSmallControlSize];
     CGFloat fontSize = [NSFont systemFontSizeForControlSize:NSSmallControlSize];
-    NSFont* font = [NSFont fontWithName:[[labelCell font] fontName]
-                                   size:fontSize];
-    [labelCell setFont:font];
+    [labelCell setFont:[NSFont systemFontOfSize:fontSize]];
     [titleView_ setCell:labelCell];
     titleViewCell_ = labelCell;
 
