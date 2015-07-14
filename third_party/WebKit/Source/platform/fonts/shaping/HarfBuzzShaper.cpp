@@ -66,7 +66,7 @@ struct ShapeResult::RunInfo {
         unsigned startIndex, unsigned numGlyphs, unsigned numCharacters)
         : m_fontData(font), m_direction(dir), m_script(script)
         , m_startIndex(startIndex), m_numCharacters(numCharacters)
-        , m_numGlyphs(numGlyphs)
+        , m_numGlyphs(numGlyphs), m_width(0.0f)
     {
         m_glyphData.resize(m_numGlyphs);
     }
@@ -398,7 +398,6 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
     int from = absoluteFrom;
     int to = absoluteTo;
 
-    unsigned wordOffset = 0;
     for (unsigned j = 0; j < results.size(); j++) {
         RefPtr<ShapeResult> result = results[j];
         for (unsigned i = 0; i < result->m_runs.size(); i++) {
@@ -426,7 +425,6 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
             if (direction != RTL)
                 currentX += result->m_runs[i]->m_width;
         }
-        wordOffset += result->numCharacters();
     }
 
     // The position in question might be just after the text.
@@ -846,10 +844,9 @@ static inline bool resolveCandidateRuns(Vector<CandidateRun>& runs)
     UScriptCode scriptExtensions[USCRIPT_CODE_LIMIT];
     UErrorCode errorCode = U_ZERO_ERROR;
     size_t length = runs.size();
-    size_t nextResolvedRun = 0;
     for (size_t i = 0; i < length; i++) {
         CandidateRun& run = runs[i];
-        nextResolvedRun = 0;
+        size_t nextResolvedRun = 0;
 
         if (run.script == USCRIPT_INHERITED)
             run.script = i > 0 ? runs[i - 1].script : USCRIPT_COMMON;
