@@ -134,7 +134,7 @@ def _SetupTempDir(tmp_root):
     'root': tmp_root,
     'imported_clients': os.path.join(tmp_root, 'imported_clients'),
     'extracted_jars': os.path.join(tmp_root, 'jar'),
-    'combined_jar': os.path.join(tmp_root, 'jar', 'google-play-services.jar'),
+    'combined_jar': os.path.join(tmp_root, 'google-play-services.jar'),
   }
   os.mkdir(tmp_paths['imported_clients'])
   os.mkdir(tmp_paths['extracted_jars'])
