@@ -39,7 +39,6 @@ namespace blink {
 class WebCompositorAnimationCurve;
 class WebCompositorAnimationPlayer;
 class WebCompositorAnimationTimeline;
-class WebCompositorOutputSurface;
 class WebContentLayer;
 class WebContentLayerClient;
 class WebDisplayItemList;
@@ -60,11 +59,6 @@ class WebTransformOperations;
 
 class WebCompositorSupport {
 public:
-    // Creates an output surface for the compositor backed by a 3d context.
-    virtual WebCompositorOutputSurface* createOutputSurfaceFor3D(WebGraphicsContext3D*) { return nullptr; }
-
-    // Creates an output surface for the compositor backed by a software device.
-    virtual WebCompositorOutputSurface* createOutputSurfaceForSoftware() { return nullptr; }
 
     // Layers -------------------------------------------------------
 
