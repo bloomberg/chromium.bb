@@ -35,20 +35,20 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
     PaintPhase originalPhase = localPaintInfo.phase;
 
     // Check if we need to do anything at all.
-    // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the LayoutView
-    // paints the root's background.
+    // TODO(schenney): Could eliminate the isDocumentElement() check if we fix background painting so
+    // that the LayoutView paints the root's background.
+    // TODO(schenney): Test this code path, as breaking changes have failed to show up in testing.
+    // crbug.com/509737
     Node* blockNode = m_layoutBlock.node();
-    RELEASE_ASSERT(blockNode || m_layoutBlock.isAnonymous());
+    ASSERT(blockNode || m_layoutBlock.isAnonymous());
     if (blockNode) {
-        if (m_layoutBlock.isDocumentElement()) {
+        if (!m_layoutBlock.isDocumentElement()) {
             LayoutRect overflowBox = overflowRectForPaintRejection();
             m_layoutBlock.flipForWritingMode(overflowBox);
             overflowBox.moveBy(adjustedPaintOffset);
             if (!overflowBox.intersects(LayoutRect(localPaintInfo.rect)))
                 return;
         }
-    } else {
-        RELEASE_ASSERT(!m_layoutBlock.isDocumentElement());
     }
 
     // There are some cases where not all clipped visual overflow is accounted for.
