@@ -21,6 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
@@ -429,6 +430,15 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
 // static
 void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
   profile_launch_observer.Get().Clear();
+}
+
+// static
+void StartupBrowserCreator::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+#if defined(OS_WIN)
+  registry->RegisterStringPref(prefs::kLastWelcomedOSVersion, std::string());
+  registry->RegisterBooleanPref(prefs::kWelcomePageOnOSUpgradeEnabled, true);
+#endif
 }
 
 // static

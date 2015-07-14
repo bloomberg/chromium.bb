@@ -389,6 +389,10 @@ memory::OomPriorityManager* TestingBrowserProcess::GetOomPriorityManager() {
   return nullptr;
 }
 
+ShellIntegration::DefaultWebClientState
+TestingBrowserProcess::CachedDefaultWebClientState() {
+  return ShellIntegration::UNKNOWN_DEFAULT;
+}
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {
   system_request_context_ = context_getter;

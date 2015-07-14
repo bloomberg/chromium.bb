@@ -123,6 +123,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   gcm::GCMDriver* gcm_driver() override;
   memory::OomPriorityManager* GetOomPriorityManager() override;
+  ShellIntegration::DefaultWebClientState CachedDefaultWebClientState()
+      override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

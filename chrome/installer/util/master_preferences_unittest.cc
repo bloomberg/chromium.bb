@@ -57,6 +57,7 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "     \"import_bookmarks\": true,\n"
     "     \"import_bookmarks_from_file\": \"c:\\\\foo\",\n"
     "     \"import_home_page\": true,\n"
+    "     \"welcome_page_on_os_upgrade_enabled\": true,\n"
     "     \"do_not_create_any_shortcuts\": true,\n"
     "     \"do_not_create_desktop_shortcut\": true,\n"
     "     \"do_not_create_quick_launch_shortcut\": true,\n"
@@ -86,6 +87,7 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     installer::master_preferences::kDistroImportHistoryPref,
     installer::master_preferences::kDistroImportBookmarksPref,
     installer::master_preferences::kDistroImportHomePagePref,
+    installer::master_preferences::kDistroWelcomePageOnOSUpgradeEnabled,
     installer::master_preferences::kDoNotCreateAnyShortcuts,
     installer::master_preferences::kDoNotCreateDesktopShortcut,
     installer::master_preferences::kDoNotCreateQuickLaunchShortcut,
@@ -157,6 +159,7 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
 
   const char* const missing_bools[] = {
     installer::master_preferences::kDistroImportHomePagePref,
+    installer::master_preferences::kDistroWelcomePageOnOSUpgradeEnabled,
     installer::master_preferences::kDoNotRegisterForUpdateLaunch,
     installer::master_preferences::kMakeChromeDefault,
     installer::master_preferences::kMakeChromeDefaultForUser,

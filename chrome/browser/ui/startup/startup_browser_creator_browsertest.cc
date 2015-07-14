@@ -42,6 +42,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -68,6 +69,10 @@ using testing::Return;
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using extensions::Extension;
 
 namespace {
@@ -85,6 +90,14 @@ Browser* FindOneOtherBrowser(Browser* browser) {
       other_browser = *it;
   }
   return other_browser;
+}
+
+bool IsWindows10OrNewer() {
+#if defined(OS_WIN)
+  return base::win::GetVersion() >= base::win::VERSION_WIN10;
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -211,10 +224,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   urls.push_back(test_server()->GetURL("files/title1.html"));
   urls.push_back(test_server()->GetURL("files/title2.html"));
 
+  Profile* profile = browser()->profile();
+  chrome::HostDesktopType host_desktop_type = browser()->host_desktop_type();
+
   // Set the startup preference to open these URLs.
   SessionStartupPref pref(SessionStartupPref::URLS);
   pref.urls = urls;
-  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+  SessionStartupPref::SetStartupPref(profile, pref);
+
+  // Keep the browser process running while browsers are closed.
+  g_browser_process->AddRefModule();
 
   // Close the browser.
   CloseBrowserAsynchronously(browser());
@@ -223,26 +242,61 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
-  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false,
-                            browser()->host_desktop_type()));
+  {
+    StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
+    ASSERT_TRUE(
+        launch.Launch(profile, std::vector<GURL>(), false, host_desktop_type));
+  }
 
   // This should have created a new browser window.  |browser()| is still
   // around at this point, even though we've closed its window.
   Browser* new_browser = FindOneOtherBrowser(browser());
   ASSERT_TRUE(new_browser);
 
-  // The new browser should have one tab for each URL.
+  std::vector<GURL> expected_urls(urls);
+  if (IsWindows10OrNewer())
+    expected_urls.insert(expected_urls.begin(), internals::GetWelcomePageURL());
+
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  ASSERT_EQ(static_cast<int>(urls.size()), tab_strip->count());
-  for (size_t i=0; i < urls.size(); i++) {
-    EXPECT_EQ(urls[i], tab_strip->GetWebContentsAt(i)->GetURL());
+  ASSERT_EQ(static_cast<int>(expected_urls.size()), tab_strip->count());
+  for (size_t i = 0; i < expected_urls.size(); i++)
+    EXPECT_EQ(expected_urls[i], tab_strip->GetWebContentsAt(i)->GetURL());
+
+  // The two test_server tabs, despite having the same site, should be in
+  // different SiteInstances.
+  EXPECT_NE(
+      tab_strip->GetWebContentsAt(tab_strip->count() - 2)->GetSiteInstance(),
+      tab_strip->GetWebContentsAt(tab_strip->count() - 1)->GetSiteInstance());
+
+  // Test that the welcome page is not shown the second time through if it was
+  // above.
+  if (IsWindows10OrNewer()) {
+    // Close the browser opened above.
+    {
+      content::WindowedNotificationObserver observer(
+          chrome::NOTIFICATION_BROWSER_CLOSED,
+          content::Source<Browser>(new_browser));
+      new_browser->window()->Close();
+      observer.Wait();
+    }
+
+    {
+      StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
+      ASSERT_TRUE(launch.Launch(profile, std::vector<GURL>(), false,
+                                host_desktop_type));
+    }
+
+    // Find the new browser and ensure that it has only the specified URLs this
+    // time. Both the original browser created by the fixture and the one
+    // created above have been closed, so the new browser is the only one
+    // remaining.
+    new_browser = FindTabbedBrowser(profile, true, host_desktop_type);
+    ASSERT_TRUE(new_browser);
+    ASSERT_EQ(static_cast<int>(urls.size()),
+              new_browser->tab_strip_model()->count());
   }
 
-  // The two tabs, despite having the same site, should be in different
-  // SiteInstances.
-  EXPECT_NE(tab_strip->GetWebContentsAt(0)->GetSiteInstance(),
-            tab_strip->GetWebContentsAt(1)->GetSiteInstance());
+  g_browser_process->ReleaseModule();
 }
 
 // Verify that startup URLs aren't used when the process already exists
@@ -268,16 +322,47 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
-  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false,
-                            browser()->host_desktop_type()));
+  {
+    StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
+    ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false,
+                              browser()->host_desktop_type()));
+  }
 
   // This should have created a new browser window.
   Browser* new_browser = FindOneOtherBrowser(browser());
   ASSERT_TRUE(new_browser);
 
-  // The new browser should have exactly one tab (not the startup URLs).
-  ASSERT_EQ(1, new_browser->tab_strip_model()->count());
+  if (IsWindows10OrNewer()) {
+    // The new browser should have two tabs (not the startup URLs).
+    ASSERT_EQ(2, new_browser->tab_strip_model()->count());
+  } else {
+    // The new browser should have exactly one tab (not the startup URLs).
+    ASSERT_EQ(1, new_browser->tab_strip_model()->count());
+  }
+
+  // Test that the welcome page is not shown the second time through if it was
+  // above.
+  if (!IsWindows10OrNewer()) {
+    // Close the browser opened above.
+    {
+      content::WindowedNotificationObserver observer(
+          chrome::NOTIFICATION_BROWSER_CLOSED,
+          content::Source<Browser>(new_browser));
+      new_browser->window()->Close();
+      observer.Wait();
+    }
+
+    {
+      StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
+      ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(),
+                                false, browser()->host_desktop_type()));
+    }
+
+    // Find the new browser and ensure that it has only the one tab this time.
+    new_browser = FindOneOtherBrowser(browser());
+    ASSERT_TRUE(new_browser);
+    ASSERT_EQ(1, new_browser->tab_strip_model()->count());
+  }
 }
 
 // App shortcuts are not implemented on mac os.
@@ -484,12 +569,22 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
   ASSERT_TRUE(new_browser);
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  EXPECT_EQ(1, tab_strip->count());
 
   if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
+    // The browser should show only the promo.
+    ASSERT_EQ(1, tab_strip->count());
     EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
               tab_strip->GetWebContentsAt(0)->GetURL());
+  } else if (IsWindows10OrNewer()) {
+    // The browser should show the welcome page and the NTP.
+    ASSERT_EQ(2, tab_strip->count());
+    EXPECT_EQ(GURL(internals::GetWelcomePageURL()),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+              tab_strip->GetWebContentsAt(1)->GetURL());
   } else {
+    // The browser should show only the NTP.
+    ASSERT_EQ(1, tab_strip->count());
     EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
               tab_strip->GetWebContentsAt(0)->GetURL());
   }
@@ -512,15 +607,22 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   EXPECT_EQ(2, tab_strip->count());
 
-  if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
-    EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
+  if (IsWindows10OrNewer()) {
+    EXPECT_EQ(internals::GetWelcomePageURL(),
               tab_strip->GetWebContentsAt(0)->GetURL());
-  } else {
     EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-              tab_strip->GetWebContentsAt(0)->GetURL());
+              tab_strip->GetWebContentsAt(1)->GetURL());
+  } else {
+    if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
+      EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
+                tab_strip->GetWebContentsAt(0)->GetURL());
+    } else {
+      EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+                tab_strip->GetWebContentsAt(0)->GetURL());
+    }
+    EXPECT_EQ(internals::GetWelcomePageURL(),
+              tab_strip->GetWebContentsAt(1)->GetURL());
   }
-  EXPECT_EQ(internals::GetWelcomePageURL(),
-            tab_strip->GetWebContentsAt(1)->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
@@ -654,8 +756,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   new_browser = FindOneOtherBrowserForProfile(default_profile, browser());
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ(urls1[0], tab_strip->GetWebContentsAt(0)->GetURL());
+  if (IsWindows10OrNewer()) {
+    // The new browser should have the welcome tab and the URL for the profile.
+    ASSERT_EQ(2, tab_strip->count());
+    EXPECT_EQ(GURL(internals::GetWelcomePageURL()),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(urls1[0], tab_strip->GetWebContentsAt(1)->GetURL());
+  } else {
+    // The new browser should have only the desired URL for the profile.
+    ASSERT_EQ(1, tab_strip->count());
+    EXPECT_EQ(urls1[0], tab_strip->GetWebContentsAt(0)->GetURL());
+  }
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(other_profile,
                                         browser()->host_desktop_type()));
@@ -874,14 +985,25 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   Browser* new_browser = NULL;
   // The last open profile (the profile_home1 in this case) will always be
-  // launched, even if it will open just the home page.
+  // launched, even if it will open just the NTP (and the welcome page on
+  // relevant platforms).
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_home1, original_desktop_type));
   new_browser = FindOneOtherBrowserForProfile(profile_home1, NULL);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+  if (IsWindows10OrNewer()) {
+    // The new browser should have the welcome tab and the NTP.
+    ASSERT_EQ(2, tab_strip->count());
+    EXPECT_EQ(GURL(internals::GetWelcomePageURL()),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+              tab_strip->GetWebContentsAt(1)->GetURL());
+  } else {
+    // The new browser should have only the NTP.
+    ASSERT_EQ(1, tab_strip->count());
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+  }
 
   // profile_urls opened the urls.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls, original_desktop_type));
@@ -987,16 +1109,27 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   EXPECT_FALSE(SessionRestore::IsRestoring(profile_urls));
 
   // The profile which normally opens the home page displays the new tab page.
+  // The welcome page is also shown for relevant platforms.
   Browser* new_browser = NULL;
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_home,
                                         browser()->host_desktop_type()));
   new_browser = FindOneOtherBrowserForProfile(profile_home, NULL);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  ASSERT_EQ(1, tab_strip->count());
-  content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  EnsureRestoreUIWasShown(web_contents);
+  if (IsWindows10OrNewer()) {
+    // The new browser should have the welcome tab and the NTP.
+    ASSERT_EQ(2, tab_strip->count());
+    EXPECT_EQ(GURL(internals::GetWelcomePageURL()),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+              tab_strip->GetWebContentsAt(1)->GetURL());
+  } else {
+    // The new browser should have only the NTP.
+    ASSERT_EQ(1, tab_strip->count());
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+  }
+  EnsureRestoreUIWasShown(tab_strip->GetWebContentsAt(0));
 
   // The profile which normally opens last open pages displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last,
@@ -1005,9 +1138,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  web_contents = tab_strip->GetWebContentsAt(0);
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  EnsureRestoreUIWasShown(web_contents);
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetWebContentsAt(0)->GetURL());
+  EnsureRestoreUIWasShown(tab_strip->GetWebContentsAt(0));
 
   // The profile which normally opens URLs displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls,
@@ -1016,9 +1149,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  web_contents = tab_strip->GetWebContentsAt(0);
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  EnsureRestoreUIWasShown(web_contents);
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetWebContentsAt(0)->GetURL());
+  EnsureRestoreUIWasShown(tab_strip->GetWebContentsAt(0));
 
 #if !defined(OS_MACOSX) && !defined(GOOGLE_CHROME_BUILD)
   // Each profile should have one session restore bubble shown, so we should
@@ -1073,6 +1206,11 @@ class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
+
+  // Returns true if the platform supports showing the sync promo on first run.
+  static bool PlatformSupportsSyncPromo() {
+    return !IsWindows10OrNewer();
+  }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::MockConfigurationPolicyProvider provider_;
@@ -1138,10 +1276,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Verify that the NTP and the welcome page are shown.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
-  EXPECT_EQ(internals::GetWelcomePageURL(),
-            tab_strip->GetWebContentsAt(1)->GetURL());
+  if (IsWindows10OrNewer()) {
+    EXPECT_EQ(internals::GetWelcomePageURL(),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+              tab_strip->GetWebContentsAt(1)->GetURL());
+  } else {
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+    EXPECT_EQ(internals::GetWelcomePageURL(),
+              tab_strip->GetWebContentsAt(1)->GetURL());
+  }
 }
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
@@ -1152,6 +1297,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_SyncPromoAllowed) {
+  if (!PlatformSupportsSyncPromo())
+    return;
   // Consistently enable the welcome page on all platforms.
   first_run::SetShouldShowWelcomePage();
 
@@ -1193,6 +1340,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_FirstRunTabsPromoAllowed) {
+  if (!PlatformSupportsSyncPromo())
+    return;
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1236,6 +1385,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_FirstRunTabsContainSyncPromo) {
+  if (!PlatformSupportsSyncPromo())
+    return;
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1285,6 +1436,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_FirstRunTabsContainNTPSyncPromoAllowed) {
+  if (!PlatformSupportsSyncPromo())
+    return;
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1332,6 +1485,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_FirstRunTabsContainNTPSyncPromoForbidden) {
+  if (!PlatformSupportsSyncPromo())
+    return;
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1378,6 +1533,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_FirstRunTabsSyncPromoForbidden) {
+  if (!PlatformSupportsSyncPromo())
+    return;
   // Simulate the following master_preferences:
   // {
   //  "first_run_tabs" : [
@@ -1421,6 +1578,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_RestoreOnStartupURLsPolicySpecified) {
+  if (!PlatformSupportsSyncPromo())
+    return;
   // Simulate the following master_preferences:
   // {
   //  "sync_promo": {

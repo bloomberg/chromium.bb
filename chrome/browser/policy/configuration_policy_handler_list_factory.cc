@@ -498,6 +498,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kBrowserAddPersonEnabled,
     base::Value::TYPE_BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+
+#if defined(OS_WIN)
+  { key::kWelcomePageOnOSUpgradeEnabled,
+    prefs::kWelcomePageOnOSUpgradeEnabled,
+    base::Value::TYPE_BOOLEAN },
+#endif  // OS_WIN
 };
 
 class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {

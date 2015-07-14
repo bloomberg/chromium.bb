@@ -149,6 +149,7 @@
 #else
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -302,6 +303,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   AutomaticProfileResetterFactory::RegisterPrefs(registry);
   BackgroundModeManager::RegisterPrefs(registry);
   RegisterBrowserPrefs(registry);
+  StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
 #if !defined(OS_CHROMEOS)

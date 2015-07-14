@@ -75,6 +75,7 @@ struct MasterPrefs {
   int dont_import_items;
   bool make_chrome_default_for_user;
   bool suppress_first_run_default_browser_prompt;
+  bool welcome_page_on_os_upgrade_enabled;
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;
   std::string import_bookmarks_path;

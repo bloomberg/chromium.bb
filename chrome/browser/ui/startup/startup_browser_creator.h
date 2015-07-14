@@ -19,6 +19,7 @@
 
 class Browser;
 class GURL;
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -99,6 +100,8 @@ class StartupBrowserCreator {
 
   // For faking that no profiles have been launched yet.
   static void ClearLaunchedProfilesForTesting();
+
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
  private:
   friend class CloudPrintProxyPolicyTest;

@@ -140,6 +140,8 @@ class BrowserProcessImpl : public BrowserProcess,
   network_time::NetworkTimeTracker* network_time_tracker() override;
   gcm::GCMDriver* gcm_driver() override;
   memory::OomPriorityManager* GetOomPriorityManager() override;
+  ShellIntegration::DefaultWebClientState CachedDefaultWebClientState()
+      override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -163,6 +165,8 @@ class BrowserProcessImpl : public BrowserProcess,
   void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
   void ApplyMetricsReportingPolicy();
+
+  void CacheDefaultWebClientState();
 
   scoped_ptr<MetricsServicesManager> metrics_services_manager_;
 
@@ -314,6 +318,8 @@ class BrowserProcessImpl : public BrowserProcess,
   // chrome/browser/memory/oom_priority_manager_browsertest.cc
   scoped_ptr<memory::OomPriorityManager> oom_priority_manager_;
 #endif
+
+  ShellIntegration::DefaultWebClientState cached_default_web_client_state_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);
 };

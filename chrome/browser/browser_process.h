@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/host_desktop.h"
 
 class BackgroundModeManager;
@@ -245,6 +246,12 @@ class BrowserProcess {
 
   // Returns the out-of-memory priority manager if it exists, null otherwise.
   virtual memory::OomPriorityManager* GetOomPriorityManager() = 0;
+
+  // Returns the default web client state of Chrome (i.e., was it the user's
+  // default browser) at the time a previous check was made sometime between
+  // process startup and now.
+  virtual ShellIntegration::DefaultWebClientState
+  CachedDefaultWebClientState() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

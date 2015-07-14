@@ -52,7 +52,8 @@ const char kDefaultMasterPrefs[] = "master_preferences";
 //      "make_chrome_default_for_user": true,
 //      "require_eula": true,
 //      "system_level": false,
-//      "verbose_logging": true
+//      "verbose_logging": true,
+//      "welcome_page_on_os_upgrade_enabled": false
 //   },
 //   "browser": {
 //      "show_home_button": true

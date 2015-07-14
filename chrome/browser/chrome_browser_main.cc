@@ -995,6 +995,11 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
           prefs::kBrowserSuppressDefaultBrowserPrompt,
           master_prefs_->suppress_default_browser_prompt_for_version);
     }
+
+#if defined(OS_WIN)
+    if (!master_prefs_->welcome_page_on_os_upgrade_enabled)
+      local_state_->SetBoolean(prefs::kWelcomePageOnOSUpgradeEnabled, false);
+#endif
   }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 

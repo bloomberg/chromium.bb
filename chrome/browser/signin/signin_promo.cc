@@ -38,6 +38,10 @@
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -114,6 +118,12 @@ bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile) {
     if (!HasShownPromoAtStartup(profile))
       return false;
   }
+
+#if defined(OS_WIN)
+  // Do not show the promo on first run on Win10 and newer.
+  if (is_new_profile && base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return false;
+#endif
 
   if (HasUserSkippedPromo(profile))
     return false;

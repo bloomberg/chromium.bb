@@ -551,6 +551,13 @@ void SetupMasterPrefsFromInstallPrefs(
   install_prefs.GetString(
       installer::master_preferences::kDistroSuppressDefaultBrowserPromptPref,
       &out_prefs->suppress_default_browser_prompt_for_version);
+
+  if (install_prefs.GetBool(
+          installer::master_preferences::kDistroWelcomePageOnOSUpgradeEnabled,
+          &value) &&
+      !value) {
+    out_prefs->welcome_page_on_os_upgrade_enabled = false;
+  }
 }
 
 bool GetFirstRunSentinelFilePath(base::FilePath* path) {
@@ -585,7 +592,8 @@ MasterPrefs::MasterPrefs()
       do_import_items(0),
       dont_import_items(0),
       make_chrome_default_for_user(false),
-      suppress_first_run_default_browser_prompt(false) {
+      suppress_first_run_default_browser_prompt(false),
+      welcome_page_on_os_upgrade_enabled(true) {
 }
 
 MasterPrefs::~MasterPrefs() {}

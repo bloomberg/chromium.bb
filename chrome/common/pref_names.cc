@@ -1658,9 +1658,18 @@ const char kPrintPreviewStickySettings[] =
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
 #if defined(OS_WIN)
+// The "major.minor" OS version for which the welcome page was last shown.
+const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
+
 // An int that stores how often we've shown the "Chrome is configured to
 // auto-launch" infobar.
 const char kShownAutoLaunchInfobar[] = "browser.shown_autolaunch_infobar";
+
+// Boolean that specifies whether or not showing the welcome page following an
+// OS upgrade is enabled. True by default. May be set by master_preferences or
+// overridden by the WelcomePageOnOSUpgradeEnabled policy setting.
+const char kWelcomePageOnOSUpgradeEnabled[] =
+    "browser.welcome_page_on_os_upgrade_enabled";
 #endif
 
 // String that lists supported HTTP authentication schemes.

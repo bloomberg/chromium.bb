@@ -30,7 +30,7 @@ class WebContents;
 
 namespace internals {
 GURL GetWelcomePageURL();
-}
+}  // namespace internals
 
 // Assists launching the application and appending the initial tabs for a
 // browser window.
@@ -78,6 +78,12 @@ class StartupBrowserCreatorImpl {
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, RestorePinnedTabs);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
+
+  enum class WelcomeRunType {
+    NONE,                // Do not inject the welcome page for this run.
+    FIRST_TAB,           // Inject the welcome page as the first tab.
+    FIRST_RUN_LAST_TAB,  // Inject the welcome page as the last first-run tab.
+  };
 
   // If the process was launched with the web application command line flags,
   // e.g. --app=http://www.google.com/ or --app_id=... return true.
@@ -141,15 +147,16 @@ class StartupBrowserCreatorImpl {
   // Adds additional startup URLs to the specified vector.
   void AddStartupURLs(std::vector<GURL>* startup_urls) const;
 
-  // Checks whether the Preferences backup is invalid and notifies user in
-  // that case.
-  void CheckPreferencesBackup(Profile* profile);
+  // Initializes |welcome_run_type_| for this launch. Also persists state to
+  // suppress injecting the welcome page for future launches.
+  void InitializeWelcomeRunType(const std::vector<GURL>& urls_to_open);
 
   const base::FilePath cur_dir_;
   const base::CommandLine& command_line_;
   Profile* profile_;
   StartupBrowserCreator* browser_creator_;
   bool is_first_run_;
+  WelcomeRunType welcome_run_type_;
   DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorImpl);
 };
 

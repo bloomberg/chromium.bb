@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 302
+#   For your editing convenience: highest ID currently used: 303
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -7397,6 +7397,24 @@
 
       Only if allowCorporateKeyUsage is set to true for an extension, it can use any platform key marked for corporate usage to sign arbitrary data. This permission should only be granted if the extension is trusted to secure access to the key against attackers.''',
     },
+    {
+      'name': 'WelcomePageOnOSUpgradeEnabled',
+      'supported_on': ['chrome.win:45-'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'id': 303,
+      'caption': 'Enable showing the welcome page on the first browser launch following OS upgrade.',
+      'desc': '''Enable showing the welcome page on the first browser launch following OS upgrade.
+
+      If this policy is set to true or not configured, the browser will re-show the welcome page on the first launch following an OS upgrade.
+
+      If this policy is set to false, the browser will not re-show the welcome page on the first launch following an OS upgrade.''',
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False
+      },
+      'example_value': False
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.

@@ -54305,6 +54305,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="300" label="Allow proceeding from the SSL warning page"/>
   <int value="301" label="Allows QUIC protocol"/>
   <int value="302" label="Key Permissions"/>
+  <int value="303" label="Welcome page on OS upgrade enabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

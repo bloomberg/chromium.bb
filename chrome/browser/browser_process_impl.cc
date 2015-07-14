@@ -183,7 +183,8 @@ BrowserProcessImpl::BrowserProcessImpl(
       module_ref_count_(0),
       did_start_(false),
       download_status_updater_(new DownloadStatusUpdater),
-      local_state_task_runner_(local_state_task_runner) {
+      local_state_task_runner_(local_state_task_runner),
+      cached_default_web_client_state_(ShellIntegration::UNKNOWN_DEFAULT) {
   g_browser_process = this;
   platform_part_.reset(new BrowserProcessPlatformPart());
 
@@ -782,6 +783,11 @@ memory::OomPriorityManager* BrowserProcessImpl::GetOomPriorityManager() {
 #endif
 }
 
+ShellIntegration::DefaultWebClientState
+BrowserProcessImpl::CachedDefaultWebClientState() {
+  return cached_default_web_client_state_;
+}
+
 // static
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
@@ -1081,6 +1087,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 
   child_process_watcher_.reset(new ChromeChildProcessWatcher());
 
+  CacheDefaultWebClientState();
+
   platform_part_->PreMainMessageLoopRun();
 }
 
@@ -1189,6 +1197,14 @@ void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
       base::Bind(
           base::IgnoreResult(&GoogleUpdateSettings::SetCollectStatsConsent),
           local_state()->GetBoolean(prefs::kMetricsReportingEnabled))));
+#endif
+}
+
+void BrowserProcessImpl::CacheDefaultWebClientState() {
+#if defined(OS_CHROMEOS)
+  cached_default_web_client_state_ = ShellIntegration::IS_DEFAULT;
+#elif !defined(OS_ANDROID) && !defined(OS_IOS)
+  cached_default_web_client_state_ = ShellIntegration::GetDefaultBrowser();
 #endif
 }
 
