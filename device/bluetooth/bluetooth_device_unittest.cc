@@ -5,7 +5,14 @@
 #include "device/bluetooth/bluetooth_device.h"
 
 #include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "device/bluetooth/test/bluetooth_test_android.h"
+#endif
 
 namespace device {
 
@@ -55,5 +62,57 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_RejectsInvalidFormats) {
               BluetoothDevice::CanonicalizeAddress(kValidFormats[i]));
   }
 }
+
+#if defined(OS_ANDROID)
+// Verifies basic device properties, e.g. GetAddress, GetName, ...
+TEST_F(BluetoothTest, DeviceProperties) {
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
+                                  GetErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  DiscoverLowEnergyDevice(1);
+  base::RunLoop().RunUntilIdle();
+  BluetoothDevice* device = observer.last_device();
+  ASSERT_TRUE(device);
+  EXPECT_EQ(0x1F00u, device->GetBluetoothClass());
+  EXPECT_EQ("AA:00:00:00:00:01", device->GetAddress());
+  EXPECT_EQ(BluetoothDevice::VENDOR_ID_UNKNOWN, device->GetVendorIDSource());
+  EXPECT_EQ(0, device->GetVendorID());
+  EXPECT_EQ(0, device->GetProductID());
+  EXPECT_EQ(0, device->GetDeviceID());
+  EXPECT_EQ(base::UTF8ToUTF16("FakeBluetoothDevice"), device->GetName());
+  EXPECT_EQ(true, device->IsPaired());
+  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
+  EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID("1800")));
+  EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID("1801")));
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Device with no advertised Service UUIDs.
+TEST_F(BluetoothTest, DeviceNoUUIDs) {
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
+                                  GetErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  DiscoverLowEnergyDevice(3);
+  base::RunLoop().RunUntilIdle();
+  BluetoothDevice* device = observer.last_device();
+  ASSERT_TRUE(device);
+  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
+  EXPECT_EQ(0u, uuids.size());
+}
+#endif  // defined(OS_ANDROID)
+
+// TODO(scheib): Test with a device with no name. http://crbug.com/506415
+// BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() will run, which
+// requires string resources to be loaded. For that, something like
+// InitSharedInstance must be run. See unittest files that call that. It will
+// also require build configuration to generate string resources into a .pak
+// file.
 
 }  // namespace device

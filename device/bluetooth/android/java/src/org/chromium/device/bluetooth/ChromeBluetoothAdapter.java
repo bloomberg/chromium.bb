@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.ScanSettings;
 import android.os.Build;
+import android.os.ParcelUuid;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -19,6 +20,8 @@ import java.util.List;
  * Exposes android.bluetooth.BluetoothAdapter as necessary for C++
  * device::BluetoothAdapterAndroid, which implements the cross platform
  * device::BluetoothAdapter.
+ *
+ * Lifetime is controlled by device::BluetoothAdapterAndroid.
  */
 @JNINamespace("device")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -65,8 +68,9 @@ final class ChromeBluetoothAdapter {
     // BluetoothAdapterAndroid methods implemented in java:
 
     // Implements BluetoothAdapterAndroid::Create.
-    // 'Object' type must be used because inner class Wrappers.BluetoothAdapterWrapper reference is
-    // not handled by jni_generator.py JavaToJni. http://crbug.com/505554
+    // 'Object' type must be used for |adapterWrapper| because inner class
+    // Wrappers.BluetoothAdapterWrapper reference is not handled by jni_generator.py JavaToJni.
+    // http://crbug.com/505554
     @CalledByNative
     private static ChromeBluetoothAdapter create(
             long nativeBluetoothAdapterAndroid, Object adapterWrapper) {
@@ -217,6 +221,11 @@ final class ChromeBluetoothAdapter {
         public void onScanResult(int callbackType, Wrappers.ScanResultWrapper result) {
             Log.v(TAG, "onScanResult %d %s %s", callbackType, result.getDevice().getAddress(),
                     result.getDevice().getName());
+
+            List<ParcelUuid> uuids = result.getScanRecord_getServiceUuids();
+
+            nativeCreateOrUpdateDeviceOnScan(mNativeBluetoothAdapterAndroid,
+                    result.getDevice().getAddress(), result.getDevice(), uuids);
         }
 
         @Override
@@ -232,4 +241,11 @@ final class ChromeBluetoothAdapter {
 
     // Binds to BluetoothAdapterAndroid::OnScanFailed.
     private native void nativeOnScanFailed(long nativeBluetoothAdapterAndroid);
+
+    // Binds to BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan.
+    // 'Object' type must be used for |bluetoothDeviceWrapper| because inner class
+    // Wrappers.BluetoothDeviceWrapper reference is not handled by jni_generator.py JavaToJni.
+    // http://crbug.com/505554
+    private native void nativeCreateOrUpdateDeviceOnScan(long nativeBluetoothAdapterAndroid,
+            String address, Object bluetoothDeviceWrapper, List<ParcelUuid> advertisedUuids);
 }

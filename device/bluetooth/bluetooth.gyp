@@ -55,6 +55,8 @@
         'bluetooth_classic_device_mac.h',
         'bluetooth_device.cc',
         'bluetooth_device.h',
+        'bluetooth_device_android.h',
+        'bluetooth_device_android.cc',
         'bluetooth_device_chromeos.cc',
         'bluetooth_device_chromeos.h',
         'bluetooth_device_mac.mm',
@@ -247,6 +249,7 @@
           'type': 'none',
           'sources': [
             'android/java/src/org/chromium/device/bluetooth/ChromeBluetoothAdapter.java',
+            'android/java/src/org/chromium/device/bluetooth/ChromeBluetoothDevice.java',
             'android/java/src/org/chromium/device/bluetooth/Wrappers.java',
           ],
           'variables': {

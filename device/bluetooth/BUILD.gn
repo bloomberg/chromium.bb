@@ -53,6 +53,8 @@ component("bluetooth") {
     "bluetooth_classic_device_mac.mm",
     "bluetooth_device.cc",
     "bluetooth_device.h",
+    "bluetooth_device_android.cc",
+    "bluetooth_device_android.h",
     "bluetooth_device_chromeos.cc",
     "bluetooth_device_chromeos.h",
     "bluetooth_device_mac.h",
@@ -191,6 +193,7 @@ static_library("mocks") {
 if (is_android) {
   java_sources_needing_jni = [
     "android/java/src/org/chromium/device/bluetooth/ChromeBluetoothAdapter.java",
+    "android/java/src/org/chromium/device/bluetooth/ChromeBluetoothDevice.java",
     "android/java/src/org/chromium/device/bluetooth/Wrappers.java",
   ]
 

@@ -36,9 +36,16 @@ void BluetoothTestAndroid::InitWithoutDefaultAdapter() {
 }
 
 void BluetoothTestAndroid::InitWithFakeAdapter() {
+  j_fake_bluetooth_adapter_.Reset(
+      Java_FakeBluetoothAdapter_create(AttachCurrentThread()));
+
   adapter_ =
-      BluetoothAdapterAndroid::Create(
-          Java_FakeBluetoothAdapter_create(AttachCurrentThread()).obj()).get();
+      BluetoothAdapterAndroid::Create(j_fake_bluetooth_adapter_.obj()).get();
+}
+
+void BluetoothTestAndroid::DiscoverLowEnergyDevice(int device_ordinal) {
+  Java_FakeBluetoothAdapter_discoverLowEnergyDevice(
+      AttachCurrentThread(), j_fake_bluetooth_adapter_.obj(), device_ordinal);
 }
 
 }  // namespace device

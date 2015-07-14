@@ -9,6 +9,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/test/bluetooth_test.h"
+#include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -446,6 +447,7 @@ TEST_F(BluetoothTest, ConstructFakeAdapter) {
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
 #if defined(OS_ANDROID)
+// Starts and Stops a discovery session.
 TEST_F(BluetoothTest, DiscoverySession) {
   InitWithFakeAdapter();
   EXPECT_FALSE(adapter_->IsDiscovering());
@@ -465,6 +467,113 @@ TEST_F(BluetoothTest, DiscoverySession) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_FALSE(adapter_->IsDiscovering());
   EXPECT_FALSE(discovery_sessions_[0]->IsActive());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Discovers a device.
+TEST_F(BluetoothTest, DiscoverDevice) {
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Start discovery and find a device.
+  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
+                                  GetErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  DiscoverLowEnergyDevice(1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, observer.device_added_count());
+  BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
+  EXPECT_TRUE(device);
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Discovers the same device multiple times.
+TEST_F(BluetoothTest, DiscoverDeviceTwice) {
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Start discovery and find a device.
+  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
+                                  GetErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  DiscoverLowEnergyDevice(1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, observer.device_added_count());
+  BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
+  EXPECT_TRUE(device);
+
+  // Find the same device again. This should not create a new device object.
+  observer.Reset();
+  DiscoverLowEnergyDevice(1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, observer.device_added_count());
+  EXPECT_EQ(0, observer.device_changed_count());
+  EXPECT_EQ(1u, adapter_->GetDevices().size());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Discovers a device, and then again with new Service UUIDs.
+TEST_F(BluetoothTest, DiscoverDeviceWithUpdatedUUIDs) {
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Start discovery and find a device.
+  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
+                                  GetErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  DiscoverLowEnergyDevice(1);
+  base::RunLoop().RunUntilIdle();
+  BluetoothDevice* device = observer.last_device();
+
+  // Check the initial UUIDs:
+  EXPECT_TRUE(ContainsValue(device->GetUUIDs(), BluetoothUUID("1800")));
+  EXPECT_FALSE(ContainsValue(device->GetUUIDs(), BluetoothUUID("1802")));
+
+  // Discover same device again with updated UUIDs:
+  observer.Reset();
+  DiscoverLowEnergyDevice(2);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, observer.device_added_count());
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(1u, adapter_->GetDevices().size());
+  EXPECT_EQ(device, observer.last_device());
+
+  // Expect new UUIDs:
+  EXPECT_FALSE(ContainsValue(device->GetUUIDs(), BluetoothUUID("1800")));
+  EXPECT_TRUE(ContainsValue(device->GetUUIDs(), BluetoothUUID("1802")));
+
+  // Discover same device again with empty UUIDs:
+  observer.Reset();
+  DiscoverLowEnergyDevice(3);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, observer.device_added_count());
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(1u, adapter_->GetDevices().size());
+  EXPECT_EQ(device, observer.last_device());
+
+  // Expect empty UUIDs:
+  EXPECT_EQ(0u, device->GetUUIDs().size());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Discovers multiple devices when addresses vary.
+TEST_F(BluetoothTest, DiscoverMultipleDevices) {
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Start discovery and find a device.
+  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
+                                  GetErrorCallback());
+  base::RunLoop().RunUntilIdle();
+  DiscoverLowEnergyDevice(1);
+  DiscoverLowEnergyDevice(4);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, observer.device_added_count());
+  EXPECT_EQ(2u, adapter_->GetDevices().size());
 }
 #endif  // defined(OS_ANDROID)
 

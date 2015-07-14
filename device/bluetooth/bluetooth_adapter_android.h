@@ -27,7 +27,9 @@ namespace device {
 // technical reason they can not be supported should a need arrise.
 //
 // BluetoothAdapterAndroid is reference counted, and owns the lifetime of the
-// Java class BluetoothAdapter via j_adapter_.
+// Java class BluetoothAdapter via j_adapter_. The adapter also owns a tree of
+// additional C++ objects (Devices, Services, Characteristics, Descriptors),
+// with each C++ object owning its associated Java class.
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
     : public BluetoothAdapter {
  public:
@@ -37,9 +39,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   // will return false for |IsPresent()| and not be functional.
   //
   // The BluetoothAdapterAndroid instance will indirectly hold a Java reference
-  // to |java_bluetooth_adapter_wrapper|.
+  // to |bluetooth_adapter_wrapper|.
   static base::WeakPtr<BluetoothAdapterAndroid> Create(
-      jobject java_bluetooth_adapter_wrapper);
+      jobject bluetooth_adapter_wrapper);  // Java Type: bluetoothAdapterWrapper
 
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
@@ -81,7 +83,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
       const CreateAdvertisementErrorCallback& error_callback) override;
 
   // Handles a scan error event by invalidating all discovery sessions.
-  void OnScanFailed(JNIEnv* env, jobject obj);
+  void OnScanFailed(JNIEnv* env, jobject caller);
+
+  // Creates or updates device with advertised UUID information when a device is
+  // discovered during a scan.
+  void CreateOrUpdateDeviceOnScan(
+      JNIEnv* env,
+      jobject caller,
+      const jstring& address,
+      jobject bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
+      jobject advertised_uuids);         // Java Type: List<ParcelUuid>
 
  protected:
   BluetoothAdapterAndroid();

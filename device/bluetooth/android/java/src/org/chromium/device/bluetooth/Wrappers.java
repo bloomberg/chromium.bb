@@ -16,6 +16,7 @@ import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.ParcelUuid;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -208,6 +209,10 @@ class Wrappers {
         public BluetoothDeviceWrapper getDevice() {
             return new BluetoothDeviceWrapper(mScanResult.getDevice());
         }
+
+        public List<ParcelUuid> getScanRecord_getServiceUuids() {
+            return mScanResult.getScanRecord().getServiceUuids();
+        }
     }
 
     /**
@@ -222,6 +227,14 @@ class Wrappers {
 
         public String getAddress() {
             return mDevice.getAddress();
+        }
+
+        public int getBluetoothClass_getDeviceClass() {
+            return mDevice.getBluetoothClass().getDeviceClass();
+        }
+
+        public int getBondState() {
+            return mDevice.getBondState();
         }
 
         public String getName() {
