@@ -1193,6 +1193,33 @@ static inline LayoutUnit adjustFloatForSubPixelLayout(float value)
     return LayoutUnit::fromFloatCeil(value);
 }
 
+static inline void adjustMinMaxForInlineFlow(LayoutObject* child,
+    bool endOfInline, LayoutUnit& childMin, LayoutUnit& childMax)
+{
+    // Add in padding/border/margin from the appropriate side of
+    // the element.
+    LayoutUnit bpm = getBorderPaddingMargin(toLayoutInline(*child),
+        endOfInline);
+    childMin += bpm;
+    childMax += bpm;
+}
+
+static inline void adjustMarginForInlineReplaced(LayoutObject* child,
+    LayoutUnit& childMin, LayoutUnit& childMax)
+{
+    // Inline replaced elts add in their margins to their min/max values.
+    const ComputedStyle& childStyle = child->styleRef();
+    Length startMargin = childStyle.marginStart();
+    Length endMargin = childStyle.marginEnd();
+    LayoutUnit margins;
+    if (startMargin.isFixed())
+        margins += adjustFloatForSubPixelLayout(startMargin.value());
+    if (endMargin.isFixed())
+        margins += adjustFloatForSubPixelLayout(endMargin.value());
+    childMin += margins;
+    childMax += margins;
+}
+
 // FIXME: This function should be broken into something less monolithic.
 // FIXME: The main loop here is very similar to LineBreaker::nextSegmentBreak. They can probably reuse code.
 void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth)
@@ -1275,27 +1302,13 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
             if (!child->isText()) {
                 // Case (1) and (2). Inline replaced and inline flow elements.
                 if (child->isLayoutInline()) {
-                    // Add in padding/border/margin from the appropriate side of
-                    // the element.
-                    LayoutUnit bpm = getBorderPaddingMargin(toLayoutInline(*child), childIterator.endOfInline);
-                    childMin += bpm;
-                    childMax += bpm;
-
+                    adjustMinMaxForInlineFlow(child, childIterator.endOfInline,
+                        childMin, childMax);
                     inlineMin += childMin;
                     inlineMax += childMax;
-
                     child->clearPreferredLogicalWidthsDirty();
                 } else {
-                    // Inline replaced elts add in their margins to their min/max values.
-                    LayoutUnit margins;
-                    Length startMargin = childStyle.marginStart();
-                    Length endMargin = childStyle.marginEnd();
-                    if (startMargin.isFixed())
-                        margins += adjustFloatForSubPixelLayout(startMargin.value());
-                    if (endMargin.isFixed())
-                        margins += adjustFloatForSubPixelLayout(endMargin.value());
-                    childMin += margins;
-                    childMax += margins;
+                    adjustMarginForInlineReplaced(child, childMin, childMax);
                 }
             }
 
