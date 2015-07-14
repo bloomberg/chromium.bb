@@ -61,11 +61,6 @@ void DeferredTaskHandler::unlock()
     m_contextGraphMutex.unlock();
 }
 
-bool DeferredTaskHandler::isAudioThread() const
-{
-    return currentThread() == m_audioThread;
-}
-
 #if ENABLE(ASSERT)
 bool DeferredTaskHandler::isGraphOwner()
 {

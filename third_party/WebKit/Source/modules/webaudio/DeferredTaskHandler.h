@@ -97,9 +97,15 @@ public:
     //
     // Thread Safety and Graph Locking:
     //
-    void setAudioThread(ThreadIdentifier thread) { m_audioThread = thread; } // FIXME: check either not initialized or the same
-    ThreadIdentifier audioThread() const { return m_audioThread; }
-    bool isAudioThread() const;
+    void setAudioThread(ThreadIdentifier thread) { releaseStore(&m_audioThread, thread); } // FIXME: check either not initialized or the same
+    ThreadIdentifier audioThread() const { return acquireLoad(&m_audioThread); }
+
+    // TODO(hongchan): Use no-barrier load here. (crbug.com/247328)
+    //
+    // It is okay to use a relaxed (no-barrier) load here. Because the data
+    // referenced by m_audioThread is not actually being used, thus we do not
+    // need a barrier between the load of m_audioThread and of that data.
+    bool isAudioThread() const { return currentThread() == acquireLoad(&m_audioThread); }
 
     void lock();
     bool tryLock();
