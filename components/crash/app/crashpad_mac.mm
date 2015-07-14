@@ -182,9 +182,13 @@ void InitializeCrashpad(const std::string& process_type) {
 
     bool enable_uploads = false;
     if (!crash_reporter_client->ReportingIsEnforcedByPolicy(&enable_uploads)) {
-      enable_uploads = crash_reporter_client->GetCollectStatsConsent() ||
-                       crash_reporter_client->IsRunningUnattended();
-      // Breakpad provided a --disable-breakpad switch here. Should this?
+      enable_uploads = crash_reporter_client->GetCollectStatsConsent() &&
+                       !crash_reporter_client->IsRunningUnattended();
+      // Breakpad provided a --disable-breakpad switch to disable crash dumping
+      // (not just uploading) here. Crashpad doesn't need it: dumping is enabled
+      // unconditionally and uploading is gated on consent, which tests/bots
+      // shouldn't have. As a precaution, we also force disable uploading on
+      // bots even if consent is present.
     }
 
     SetUploadsEnabled(enable_uploads);
