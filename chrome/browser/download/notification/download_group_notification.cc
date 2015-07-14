@@ -19,11 +19,21 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/text_elider.h"
+#include "ui/views/controls/label.h"
 
 namespace {
 
 const char kDownloadNotificationNotifierId[] =
     "chrome://downloads/notification/id-notifier";
+
+const size_t kMaxFilenameWidth = 160;  // in px
+
+base::string16 TruncateFilename(const base::FilePath& filename) {
+  return gfx::ElideFilename(filename,
+      views::Label().font_list(),
+      kMaxFilenameWidth);
+}
 
 }  // anonymous namespace
 
@@ -168,10 +178,9 @@ void DownloadGroupNotification::UpdateNotificationData() {
   std::vector<message_center::NotificationItem> subitems;
   for (auto download : items_) {
     DownloadItemModel model(download);
-    // TODO(yoshiki): Truncate long filename.
     // TODO(yoshiki): Use emplace_back when C++11 becomes allowed.
     subitems.push_back(message_center::NotificationItem(
-        download->GetFileNameToReportUser().LossyDisplayName(),
+        TruncateFilename(download->GetFileNameToReportUser()),
         model.GetStatusText()));
 
     if (!download->IsDone())
