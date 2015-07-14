@@ -8,7 +8,7 @@ from telemetry.page import shared_page_state
 
 class DiagonalScrollingSupportedSharedState(
     shared_page_state.SharedDesktopPageState):
-  def CanRunOnBrowser(self, browser_info):
+  def CanRunOnBrowser(self, browser_info, _):
     if not browser_info.HasDiagonalScrollingSupport():
       logging.warning('Browser does not support synthetic diagonal scrolling,'
                       ' skipping test')

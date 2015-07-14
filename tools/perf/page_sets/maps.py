@@ -19,6 +19,11 @@ class MapsPage(page_module.Page):
           webgl_supported_shared_state.WebGLSupportedSharedState))
     self.archive_data_file = 'data/maps.json'
 
+  @property
+  def skipped_gpus(self):
+    # Skip this intensive test on low-end devices. crbug.com/464731
+    return ['arm']
+
   def RunNavigateSteps(self, action_runner):
     super(MapsPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(3)

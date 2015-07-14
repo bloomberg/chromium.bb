@@ -19,6 +19,12 @@ class ToughWebglCasesPage(page_module.Page):
     self.archive_data_file = 'data/tough_webgl_cases.json'
 
 
+  @property
+  def skipped_gpus(self):
+    # crbug.com/462729
+    return ['arm', 'broadcom', 'hisilicon', 'imagination', 'qualcomm',
+            'vivante']
+
   def RunNavigateSteps(self, action_runner):
     super(ToughWebglCasesPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(

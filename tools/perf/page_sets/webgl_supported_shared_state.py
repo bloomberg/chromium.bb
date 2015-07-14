@@ -5,10 +5,38 @@ import logging
 
 from telemetry.page import shared_page_state
 
-
 class WebGLSupportedSharedState(shared_page_state.SharedPageState):
-  def CanRunOnBrowser(self, browser_info):
+  def CanRunOnBrowser(self, browser_info, page):
+    assert hasattr(page, 'skipped_gpus')
+
     if not browser_info.HasWebGLSupport():
       logging.warning('Browser does not support webgl, skipping test')
       return False
+
+    # Check the skipped GPUs list.
+    # Requires the page provide a "skipped_gpus" property.
+    browser = browser_info.browser
+    if browser.supports_system_info:
+      gpu_info = browser.GetSystemInfo().gpu
+      gpu_vendor = self._GetGpuVendorString(gpu_info)
+      if gpu_vendor in page.skipped_gpus:
+        return False
+
     return True
+
+  def _GetGpuVendorString(self, gpu_info):
+    if gpu_info:
+      primary_gpu = gpu_info.devices[0]
+      if primary_gpu:
+        vendor_string = primary_gpu.vendor_string.lower()
+        vendor_id = primary_gpu.vendor_id
+        if vendor_string:
+          return vendor_string.split(' ')[0]
+        elif vendor_id == 0x10DE:
+          return 'nvidia'
+        elif vendor_id == 0x1002:
+          return 'amd'
+        elif vendor_id == 0x8086:
+          return 'intel'
+
+    return 'unknown_gpu'

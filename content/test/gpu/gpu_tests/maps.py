@@ -11,11 +11,10 @@ import optparse
 import os
 
 import cloud_storage_test_base
+import gpu_test_base
 import maps_expectations
 
-from telemetry import benchmark
 from telemetry.core import util
-from telemetry.page import page
 from telemetry.page import page_test
 from telemetry import story as story_module
 from telemetry.story import story_set as story_set_module
@@ -71,18 +70,18 @@ class _MapsValidator(cloud_storage_test_base.ValidatorBase):
     return json_contents
 
 
-class MapsPage(page.Page):
-  def __init__(self, story_set, base_dir):
+class MapsPage(gpu_test_base.PageBase):
+  def __init__(self, story_set, base_dir, expectations):
     super(MapsPage, self).__init__(
         url='http://localhost:10020/tracker.html',
         page_set=story_set,
         base_dir=base_dir,
         name='Maps.maps_002',
-        make_javascript_deterministic=False)
+        make_javascript_deterministic=False,
+        expectations=expectations)
     self.pixel_expectations = 'data/maps_002_expectations.json'
 
-  def RunNavigateSteps(self, action_runner):
-    super(MapsPage, self).RunNavigateSteps(action_runner)
+  def RunNavigateStepsInner(self, action_runner):
     action_runner.WaitForJavaScriptCondition(
         'window.testDone', timeout_in_seconds=180)
 
@@ -95,7 +94,7 @@ class Maps(cloud_storage_test_base.TestBase):
   def Name(cls):
     return 'maps'
 
-  def CreateExpectations(self):
+  def _CreateExpectations(self):
     return maps_expectations.MapsExpectations()
 
   def CreateStorySet(self, options):
@@ -105,5 +104,5 @@ class Maps(cloud_storage_test_base.TestBase):
         archive_data_file='data/maps.json',
         base_dir=story_set_path,
         cloud_storage_bucket=story_module.PUBLIC_BUCKET)
-    ps.AddStory(MapsPage(ps, ps.base_dir))
+    ps.AddStory(MapsPage(ps, ps.base_dir, self.GetExpectations()))
     return ps
