@@ -343,7 +343,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
   def test013ApprovalTime(self):
     """Approval timestamp should be reset when a new patchset is created."""
     # Create a change.
-    project = self.createProject('test012')
+    project = self.createProject('test013')
     helper = self._GetHelper()
     clone_path = self.cloneProject(project, 'p1')
     gpatch = self.createPatch(clone_path, project, msg='Init')
