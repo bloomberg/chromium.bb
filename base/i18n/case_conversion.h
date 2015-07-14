@@ -26,6 +26,10 @@ namespace i18n {
 // locale. Use this when comparing general Unicode strings that don't
 // necessarily belong in the user's current locale (like commands, protocol
 // names, other strings from the web) for case-insensitive equality.
+//
+// Note that case conversions will change the length of the string in some
+// not-uncommon cases. Never assume that the output is the same length as
+// the input.
 
 // Returns the lower case equivalent of string. Uses ICU's current locale.
 BASE_I18N_EXPORT string16 ToLower(StringPiece16 string);

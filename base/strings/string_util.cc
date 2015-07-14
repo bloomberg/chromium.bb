@@ -101,6 +101,18 @@ template<> struct NonASCIIMask<8, wchar_t> {
 };
 #endif  // WCHAR_T_IS_UTF32
 
+// DO NOT USE. http://crbug.com/24917
+//
+// tolower() will given incorrect results for non-ASCII characters. Use the
+// ASCII version, base::i18n::ToLower, or base::i18n::FoldCase. This is here
+// for backwards-compat for StartsWith until such calls can be updated.
+struct CaseInsensitiveCompareDeprecated {
+ public:
+  bool operator()(char16 x, char16 y) const {
+    return tolower(x) == tolower(y);
+  }
+};
+
 }  // namespace
 
 namespace base {
@@ -611,7 +623,7 @@ bool StartsWith(const string16& str,
     if (search.size() > str.size())
       return false;
     return std::equal(search.begin(), search.end(), str.begin(),
-                      CaseInsensitiveCompare<char16>());
+                      CaseInsensitiveCompareDeprecated());
   }
   return StartsWith(StringPiece16(str), StringPiece16(search),
                     CompareCase::SENSITIVE);
@@ -667,10 +679,10 @@ bool EndsWith(const string16& str,
       return false;
     return std::equal(search.begin(), search.end(),
                       str.begin() + (str.size() - search.size()),
-                      CaseInsensitiveCompare<char16>());
+                      CaseInsensitiveCompareDeprecated());
   }
   return EndsWith(StringPiece16(str), StringPiece16(search),
-                    CompareCase::SENSITIVE);
+                  CompareCase::SENSITIVE);
 }
 
 char HexDigitToInt(wchar_t c) {

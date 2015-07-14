@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/url_fixer/url_fixer.h"
@@ -158,7 +159,7 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
   // Do a case-insensitive search for |lookup_text|.
   base::string16::const_iterator lookup_position = std::search(
       match_contents_.begin(), match_contents_.end(), lookup_text.begin(),
-      lookup_text.end(), base::CaseInsensitiveCompare<base::char16>());
+      lookup_text.end(), SimpleCaseInsensitiveCompareUCS2());
   if (!allow_bolding_all && (lookup_position == match_contents_.end())) {
     // Bail if the code below to update the bolding would bold the whole
     // string.  Note that the string may already be entirely bolded; if

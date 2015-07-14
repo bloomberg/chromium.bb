@@ -746,8 +746,12 @@ class RegistryEntry {
       found = key.ReadValue(name_.c_str(), &read_value) == ERROR_SUCCESS;
       if (found) {
         correct_value = read_value.size() == value_.size() &&
-            std::equal(value_.begin(), value_.end(), read_value.begin(),
-                       base::CaseInsensitiveCompare<wchar_t>());
+            ::CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
+                            read_value.data(),
+                            base::saturated_cast<int>(read_value.size()),
+                            value_.data(),
+                            base::saturated_cast<int>(value_.size()))
+                == CSTR_EQUAL;
       }
     } else {
       DWORD read_value;

@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -218,9 +219,11 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   // input of "foo.c" to autocomplete to "foo.com" for a fill_into_edit of
   // "http://foo.com".
   if (AutocompleteMatch::IsSearchType(match.type)) {
-    if (base::StartsWith(base::i18n::ToLower(match.fill_into_edit),
-                         base::i18n::ToLower(input.text()),
-                         base::CompareCase::SENSITIVE)) {
+    if (match.fill_into_edit.size() >= input.text().size() &&
+        std::equal(match.fill_into_edit.begin(),
+                   match.fill_into_edit.begin() + input.text().size(),
+                   input.text().begin(),
+                   SimpleCaseInsensitiveCompareUCS2())) {
       match.inline_autocompletion =
           match.fill_into_edit.substr(input.text().length());
       match.allowed_to_be_default_match =

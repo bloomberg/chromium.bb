@@ -323,10 +323,11 @@ void UIAutomationClient::Context::HandleWindowOpen(
 
   base::string16 class_name(V_BSTR(var.ptr()));
 
-  // Window class names are atoms, which are case-insensitive.
+  // Window class names are atoms, which are case-insensitive. Assume that
+  // the window in question only needs ASCII case-insensitivity.
   if (class_name.size() == class_name_.size() &&
       std::equal(class_name.begin(), class_name.end(), class_name_.begin(),
-                 base::CaseInsensitiveCompare<wchar_t>())) {
+                 base::CaseInsensitiveCompareASCII<wchar_t>())) {
     RemoveWindowObserver();
     ProcessWindow(window);
   }

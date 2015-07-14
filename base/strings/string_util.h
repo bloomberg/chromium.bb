@@ -103,20 +103,14 @@ template <class Char> inline Char ToUpperASCII(Char c) {
   return (c >= 'a' && c <= 'z') ? (c + ('A' - 'a')) : c;
 }
 
-// Function objects to aid in comparing/searching strings.
-
-// DO NOT USE. tolower() will given incorrect results for non-ASCII characters.
-// Use the ASCII version, base::i18n::ToLower, or base::i18n::FoldCase.
-template<typename Char> struct CaseInsensitiveCompare {
- public:
-  bool operator()(Char x, Char y) const {
-    // TODO(darin): Do we really want to do locale sensitive comparisons here?
-    // ANSWER(brettw): No.
-    // See http://crbug.com/24917
-    return tolower(x) == tolower(y);
-  }
-};
-
+// Functor for case-insensitive ASCII comparisons for STL algorithms like
+// std::search.
+//
+// Note that a full Unicode version of this functor is not possible to write
+// because case mappings might change the number of characters, depend on
+// context (combining accents), and require handling UTF-16. If you need
+// proper Unicode support, use base::i18n::ToLower/FoldCase and then just
+// use a normal operator== on the result.
 template<typename Char> struct CaseInsensitiveCompareASCII {
  public:
   bool operator()(Char x, Char y) const {

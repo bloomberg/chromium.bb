@@ -970,13 +970,8 @@ WebRequestRemoveResponseHeaderAction::CreateDelta(
   void* iter = NULL;
   std::string current_value;
   while (headers->EnumerateHeader(&iter, name_, &current_value)) {
-    if (has_value_ &&
-           (current_value.size() != value_.size() ||
-            !std::equal(current_value.begin(), current_value.end(),
-                        value_.begin(),
-                        base::CaseInsensitiveCompare<char>()))) {
+    if (has_value_ && !base::EqualsCaseInsensitiveASCII(current_value, value_))
       continue;
-    }
     result->deleted_response_headers.push_back(make_pair(name_, current_value));
   }
   return result;

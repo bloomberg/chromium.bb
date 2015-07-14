@@ -258,12 +258,9 @@ void TestLoadTimingNoHttpResponse(
 
 // Do a case-insensitive search through |haystack| for |needle|.
 bool ContainsString(const std::string& haystack, const char* needle) {
-  std::string::const_iterator it =
-      std::search(haystack.begin(),
-                  haystack.end(),
-                  needle,
-                  needle + strlen(needle),
-                  base::CaseInsensitiveCompare<char>());
+  std::string::const_iterator it = std::search(
+      haystack.begin(), haystack.end(), needle, needle + strlen(needle),
+      base::CaseInsensitiveCompareASCII<char>());
   return it != haystack.end();
 }
 
