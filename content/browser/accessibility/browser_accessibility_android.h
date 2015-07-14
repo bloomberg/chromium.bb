@@ -124,6 +124,13 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   int CountChildrenWithRole(ui::AXRole role) const;
 
+  static size_t CommonPrefixLength(const base::string16 a,
+                                   const base::string16 b);
+  static size_t CommonSuffixLength(const base::string16 a,
+                                   const base::string16 b);
+  static size_t CommonEndLengths(const base::string16 a,
+                                 const base::string16 b);
+
   base::string16 cached_text_;
   bool first_time_;
   base::string16 old_value_;
