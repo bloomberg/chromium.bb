@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.ui.widget;
 
 import android.animation.AnimatorInflater;
 import android.annotation.TargetApi;
@@ -17,7 +17,7 @@ import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.widget.Button;
 
-import org.chromium.chrome.R;
+import org.chromium.ui.R;
 
 /**
  * A Material-styled button with a customizable background color. On L devices, this is a true
@@ -29,7 +29,7 @@ import org.chromium.chrome.R;
  *
  * Create a button in XML:
  *
- *   <org.chromium.chrome.browser.widget.ButtonCompat
+ *   <org.chromium.ui.widget.ButtonCompat
  *       android:layout_width="wrap_content"
  *       android:layout_height="wrap_content"
  *       android:text="Click me"

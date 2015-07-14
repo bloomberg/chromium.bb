@@ -15,7 +15,7 @@
     android:gravity="center_vertical"
     android:orientation="vertical">
 
-    <org.chromium.chrome.browser.widget.ButtonCompat
+    <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/button_preference"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"

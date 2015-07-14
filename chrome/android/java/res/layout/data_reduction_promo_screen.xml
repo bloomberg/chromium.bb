@@ -94,7 +94,7 @@
             android:paddingStart="40dp"
             android:paddingEnd="40dp"
             android:paddingBottom="24dp" >
-            <org.chromium.chrome.browser.widget.ButtonCompat
+            <org.chromium.ui.widget.ButtonCompat
                 android:id="@+id/enable_button_front"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -102,7 +102,7 @@
                 android:text="@string/data_reduction_enable_button"
                 android:textColor="#fff"
                 chrome:buttonColor="#27b4e7" />
-            <org.chromium.chrome.browser.widget.ButtonCompat
+            <org.chromium.ui.widget.ButtonCompat
                 android:id="@+id/no_thanks_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

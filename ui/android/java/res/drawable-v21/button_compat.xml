@@ -4,7 +4,6 @@
      found in the LICENSE file. -->
 
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="?attr/colorControlHighlight">
-    <item android:id="@android:id/mask"
-          android:drawable="@drawable/button_compat_shape" />
+    android:color="?android:attr/colorControlHighlight">
+    <item android:drawable="@drawable/button_compat_shape" />
 </ripple>

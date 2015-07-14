@@ -25,8 +25,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.ImageCarousel.ImageCarouselPositionChangeListener;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.widget.ButtonCompat;
 import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.List;
 

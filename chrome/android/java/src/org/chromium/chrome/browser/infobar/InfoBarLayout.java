@@ -23,7 +23,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.ButtonCompat;
+import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.ArrayList;
 

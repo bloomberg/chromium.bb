@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:textSize="14sp" />
 
-    <org.chromium.chrome.browser.widget.ButtonCompat
+    <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/enable_sync_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

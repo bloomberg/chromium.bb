@@ -48,7 +48,7 @@
             android:textColor="@color/light_active_color"
             android:textSize="15sp" />
 
-        <org.chromium.chrome.browser.widget.ButtonCompat
+        <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/sign_in"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

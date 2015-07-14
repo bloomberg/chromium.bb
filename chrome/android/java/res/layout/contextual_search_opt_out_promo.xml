@@ -27,7 +27,7 @@
         android:bufferType="spannable"
         android:textSize="16sp" />
 
-    <org.chromium.chrome.browser.widget.ButtonCompat
+    <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/contextual_search_got_it_button"
         android:layout_below="@id/contextual_search_opt_out_text"
         android:layout_alignParentEnd="true"

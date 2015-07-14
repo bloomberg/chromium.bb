@@ -4,7 +4,7 @@
      found in the LICENSE file. -->
 
 <!-- Layout for button that permits user to clear the local copy of a card. -->
-<org.chromium.chrome.browser.widget.ButtonCompat
+<org.chromium.ui.widget.ButtonCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:id="@+id/preference_click_target"
