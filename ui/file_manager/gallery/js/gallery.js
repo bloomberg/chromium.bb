@@ -17,33 +17,15 @@ ContentMetadataProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
  */
 function Gallery(volumeManager) {
   /**
-   * @type {{appWindow: chrome.app.window.AppWindow, onClose: function(),
-   *     onMaximize: function(), onMinimize: function(),
-   *     onAppRegionChanged: function(), readonlyDirName: string,
-   *     displayStringFunction: function(), loadTimeData: Object,
-   *     curDirEntry: Entry, searchResults: *}}
+   * @type {{appWindow: chrome.app.window.AppWindow, readonlyDirName: string,
+   *     displayStringFunction: function(), loadTimeData: Object}}
    * @private
-   *
-   * TODO(yawano): curDirEntry and searchResults seem not to be used.
-   *     Investigate them and remove them if possible.
    */
   this.context_ = {
     appWindow: chrome.app.window.current(),
-    onClose: function() { window.close(); },
-    onMaximize: function() {
-      var appWindow = chrome.app.window.current();
-      if (appWindow.isMaximized())
-        appWindow.restore();
-      else
-        appWindow.maximize();
-    },
-    onMinimize: function() { chrome.app.window.current().minimize(); },
-    onAppRegionChanged: function() {},
     readonlyDirName: '',
     displayStringFunction: function() { return ''; },
     loadTimeData: {},
-    curDirEntry: null,
-    searchResults: null
   };
   this.container_ = queryRequiredElement(document, '.gallery');
   this.document_ = document;
@@ -95,33 +77,10 @@ function Gallery(volumeManager) {
   var content = queryRequiredElement(document, '#content');
   content.addEventListener('click', this.onContentClick_.bind(this));
 
-  this.header_ = queryRequiredElement(document, '#header');
-  this.toolbar_ = queryRequiredElement(document, '#toolbar');
+  this.topToolbar_ = queryRequiredElement(document, '#top-toolbar');
+  this.bottomToolbar_ = queryRequiredElement(document, '#bottom-toolbar');
 
-  var preventDefault = function(event) { event.preventDefault(); };
-
-  var minimizeButton = util.createChild(this.header_,
-                                        'minimize-button tool dimmable',
-                                        'button');
-  minimizeButton.tabIndex = -1;
-  minimizeButton.addEventListener('click', this.onMinimize_.bind(this));
-  minimizeButton.addEventListener('mousedown', preventDefault);
-
-  var maximizeButton = util.createChild(this.header_,
-                                        'maximize-button tool dimmable',
-                                        'button');
-  maximizeButton.tabIndex = -1;
-  maximizeButton.addEventListener('click', this.onMaximize_.bind(this));
-  maximizeButton.addEventListener('mousedown', preventDefault);
-
-  var closeButton = util.createChild(this.header_,
-                                     'close-button tool dimmable',
-                                     'button');
-  closeButton.tabIndex = -1;
-  closeButton.addEventListener('click', this.onClose_.bind(this));
-  closeButton.addEventListener('mousedown', preventDefault);
-
-  this.filenameSpacer_ = queryRequiredElement(this.toolbar_,
+  this.filenameSpacer_ = queryRequiredElement(this.topToolbar_,
       '.filename-spacer');
   this.filenameEdit_ = util.createChild(this.filenameSpacer_,
                                         'namebox', 'input');
@@ -136,16 +95,21 @@ function Gallery(volumeManager) {
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
 
-  var middleSpacer = queryRequiredElement(this.toolbar_, '.middle-spacer');
-  var buttonSpacer = queryRequiredElement(this.toolbar_, '.button-spacer');
+  var buttonSpacer = queryRequiredElement(this.topToolbar_, '.button-spacer');
 
   this.prompt_ = new ImageEditor.Prompt(this.container_, strf);
 
   this.errorBanner_ = new ErrorBanner(this.container_);
 
-  this.modeButton_ = queryRequiredElement(this.toolbar_, 'button.mode');
-  this.modeButton_.addEventListener('click',
-      this.toggleMode_.bind(this, undefined));
+  var slideModeButton = queryRequiredElement(
+      this.topToolbar_, '.button.slide-mode');
+  slideModeButton.addEventListener(
+      'click', this.onSlideModeButtonClicked_.bind(this));
+
+  var mosaicModeButton = queryRequiredElement(
+      this.topToolbar_, '.button.mosaic-mode');
+  mosaicModeButton.addEventListener(
+      'click', this.onMosaicModeButtonClicked_.bind(this));
 
   this.mosaicMode_ = new MosaicMode(content,
                                     this.errorBanner_,
@@ -156,7 +120,8 @@ function Gallery(volumeManager) {
 
   this.slideMode_ = new SlideMode(this.container_,
                                   content,
-                                  this.toolbar_,
+                                  this.topToolbar_,
+                                  this.bottomToolbar_,
                                   this.prompt_,
                                   this.errorBanner_,
                                   this.dataModel_,
@@ -172,10 +137,10 @@ function Gallery(volumeManager) {
     cr.dispatchSimpleEvent(this, 'image-displayed');
   }.bind(this));
 
-  this.deleteButton_ = this.initToolbarButton_('delete', 'GALLERY_DELETE');
+  this.deleteButton_ = queryRequiredElement(this.topToolbar_, '.button.delete');
   this.deleteButton_.addEventListener('click', this.delete_.bind(this));
 
-  this.shareButton_ = this.initToolbarButton_('share', 'GALLERY_SHARE');
+  this.shareButton_ = queryRequiredElement(this.topToolbar_, '.button.share');
   this.shareButton_.addEventListener(
       'click', this.onShareButtonClick_.bind(this));
 
@@ -261,20 +226,6 @@ Gallery.prototype.onPageHide_ = function() {
   this.volumeManager_.removeEventListener(
       'externally-unmounted', this.onExternallyUnmountedBound_);
   this.volumeManager_.dispose();
-};
-
-/**
- * Initializes a toolbar button.
- *
- * @param {string} className Class to add.
- * @param {string} title Button title.
- * @return {!HTMLElement} Newly created button.
- * @private
- */
-Gallery.prototype.initToolbarButton_ = function(className, title) {
-  var button = queryRequiredElement(this.toolbar_, 'button.' + className);
-  button.title = str(title);
-  return button;
 };
 
 /**
@@ -419,45 +370,6 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
 };
 
 /**
- * Handles user's 'Close' action.
- * @private
- */
-Gallery.prototype.onClose_ = function() {
-  this.executeWhenReady(this.context_.onClose);
-};
-
-/**
- * Handles user's 'Maximize' action (Escape or a click on the X icon).
- * @private
- */
-Gallery.prototype.onMaximize_ = function() {
-  this.executeWhenReady(this.context_.onMaximize);
-};
-
-/**
- * Handles user's 'Maximize' action (Escape or a click on the X icon).
- * @private
- */
-Gallery.prototype.onMinimize_ = function() {
-  this.executeWhenReady(this.context_.onMinimize);
-};
-
-/**
- * Executes a function when the editor is done with the modifications.
- * @param {function()} callback Function to execute.
- */
-Gallery.prototype.executeWhenReady = function(callback) {
-  this.currentMode_.executeWhenReady(callback);
-};
-
-/**
- * @return {!Object} File manager private API.
- */
-Gallery.getFileManagerPrivate = function() {
-  return chrome.fileManagerPrivate || window.top.chrome.fileManagerPrivate;
-};
-
-/**
  * @return {boolean} True if some tool is currently active.
  */
 Gallery.prototype.hasActiveTool = function() {
@@ -478,6 +390,9 @@ Gallery.prototype.onUserAction_ = function() {
  * Sets the current mode, update the UI.
  * @param {!(SlideMode|MosaicMode)} mode Current mode.
  * @private
+ *
+ * TODO(yawano): Since this method is confusing with changeCurrentMode_. Rename
+ *     or remove this method.
  */
 Gallery.prototype.setCurrentMode_ = function(mode) {
   if (mode !== this.slideMode_ && mode !== this.mosaicMode_)
@@ -486,7 +401,85 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
   this.currentMode_ = mode;
   this.container_.setAttribute('mode', this.currentMode_.getName());
   this.updateSelectionAndState_();
-  this.updateButtons_();
+};
+
+/**
+ * Handles click event of SlideModeButton.
+ * @param {!Event} event An event.
+ * @private
+ */
+Gallery.prototype.onSlideModeButtonClicked_ = function(event) {
+  // If it's in editing, leave edit mode.
+  if (this.slideMode_.isEditing())
+    this.slideMode_.toggleEditor();
+
+  this.changeCurrentMode_(this.slideMode_, event);
+};
+
+/**
+ * Handles click event of MosaicModeButton.
+ * @param {!Event} event An event.
+ * @private
+ */
+Gallery.prototype.onMosaicModeButtonClicked_ = function(event) {
+  this.changeCurrentMode_(this.mosaicMode_, event);
+};
+
+/**
+ * Change current mode.
+ * @param {!(SlideMode|MosaicMode)} mode Target mode.
+ * @param {Event=} opt_event Event that caused this call.
+ * @private
+ */
+Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
+  return new Promise(function(fulfill, reject) {
+    // Do not re-enter while changing the mode.
+    if (this.currentMode_ === mode || this.changingMode_) {
+      fulfill();
+      return;
+    }
+
+    if (opt_event)
+      this.onUserAction_();
+
+    this.changingMode_ = true;
+
+    var onModeChanged = function() {
+      this.changingMode_ = false;
+      fulfill();
+    }.bind(this);
+
+    var tileIndex = Math.max(0, this.selectionModel_.selectedIndex);
+
+    var mosaic = this.mosaicMode_.getMosaic();
+    var tileRect = mosaic.getTileRect(tileIndex);
+
+    if (mode === this.mosaicMode_) {
+      this.setCurrentMode_(this.mosaicMode_);
+      mosaic.transform(
+          tileRect, this.slideMode_.getSelectedImageRect(), true /* instant */);
+      this.slideMode_.leave(
+          tileRect,
+          function() {
+            // Animate back to normal position.
+            mosaic.transform(null, null);
+            mosaic.show();
+            onModeChanged();
+          }.bind(this));
+      this.bottomToolbar_.hidden = true;
+    } else {
+      this.setCurrentMode_(this.slideMode_);
+      this.slideMode_.enter(
+          tileRect,
+          function() {
+            // Animate to zoomed position.
+            mosaic.transform(tileRect, this.slideMode_.getSelectedImageRect());
+            mosaic.hide();
+          }.bind(this),
+          onModeChanged);
+      this.bottomToolbar_.hidden = false;
+    }
+  }.bind(this));
 };
 
 /**
@@ -496,50 +489,13 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
  * @private
  */
 Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
-  if (!this.modeButton_)
-    return;
+  var targetMode = this.currentMode_ === this.slideMode_ ?
+      this.mosaicMode_ : this.slideMode_;
 
-  if (this.changingMode_) // Do not re-enter while changing the mode.
-    return;
-
-  if (opt_event)
-    this.onUserAction_();
-
-  this.changingMode_ = true;
-
-  var onModeChanged = function() {
-    this.changingMode_ = false;
-    if (opt_callback) opt_callback();
-  }.bind(this);
-
-  var tileIndex = Math.max(0, this.selectionModel_.selectedIndex);
-
-  var mosaic = this.mosaicMode_.getMosaic();
-  var tileRect = mosaic.getTileRect(tileIndex);
-
-  if (this.currentMode_ === this.slideMode_) {
-    this.setCurrentMode_(this.mosaicMode_);
-    mosaic.transform(
-        tileRect, this.slideMode_.getSelectedImageRect(), true /* instant */);
-    this.slideMode_.leave(
-        tileRect,
-        function() {
-          // Animate back to normal position.
-          mosaic.transform(null, null);
-          mosaic.show();
-          onModeChanged();
-        }.bind(this));
-  } else {
-    this.setCurrentMode_(this.slideMode_);
-    this.slideMode_.enter(
-        tileRect,
-        function() {
-          // Animate to zoomed position.
-          mosaic.transform(tileRect, this.slideMode_.getSelectedImageRect());
-          mosaic.hide();
-        }.bind(this),
-        onModeChanged);
-  }
+  this.changeCurrentMode_(targetMode, opt_event).then(function() {
+    if (opt_callback)
+      opt_callback();
+  });
 };
 
 /**
@@ -888,19 +844,6 @@ Gallery.prototype.updateThumbnails_ = function() {
     var mosaic = this.mosaicMode_.getMosaic();
     if (mosaic.isInitialized())
       mosaic.reload();
-  }
-};
-
-/**
- * Updates buttons.
- * @private
- */
-Gallery.prototype.updateButtons_ = function() {
-  if (this.modeButton_) {
-    var oppositeMode =
-        this.currentMode_ === this.slideMode_ ? this.mosaicMode_ :
-                                                this.slideMode_;
-    this.modeButton_.title = str(oppositeMode.getTitle());
   }
 };
 

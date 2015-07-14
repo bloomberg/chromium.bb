@@ -17,23 +17,26 @@ function formatString(str, var_args) {
 
 /**
  * Viewport class controls the way the image is displayed (scale, offset etc).
+ * Screen size is same with window size by default. Change screen size and
+ * position by changing screenTop and screenBottom.
+ *
+ * @param {!Window} targetWindow A window which this viewport is attached to.
  * @constructor
  * @struct
  */
-function Viewport() {
+function Viewport(targetWindow) {
+  /**
+   * Window
+   * @private {!Window}
+   */
+  this.window_ = targetWindow;
+
   /**
    * Size of the full resolution image.
    * @type {!ImageRect}
    * @private
    */
   this.imageBounds_ = new ImageRect(0, 0, 0, 0);
-
-  /**
-   * Size of the application window.
-   * @type {!ImageRect}
-   * @private
-   */
-  this.screenBounds_ = new ImageRect(0, 0, 0, 0);
 
   /**
    * Bounds of the image element on screen without zoom and offset.
@@ -101,6 +104,32 @@ function Viewport() {
    */
   this.generation_ = 0;
 
+  /**
+   * Top margin of the screen.
+   * @private {number}
+   */
+  this.screenTop_ = 0;
+
+  /**
+   * Bottom margin of the screen.
+   * @private {number}
+   */
+  this.screenBottom_ = 0;
+
+  /**
+   * Window width.
+   * @private {number}
+   */
+  this.windowWidth_ = this.window_.innerWidth;
+
+  /**
+   * Window height.
+   * @private {number}
+   */
+  this.windowHeight_ = this.window_.innerHeight;
+
+  this.window_.addEventListener('resize', this.onWindowResize_.bind(this));
+
   this.update_();
 }
 
@@ -123,12 +152,29 @@ Viewport.prototype.setImageSize = function(width, height) {
 };
 
 /**
- * Sets screen size.
- * @param {number} width Screen width.
- * @param {number} height Screen height.
+ * Handles window resize event.
  */
-Viewport.prototype.setScreenSize = function(width, height) {
-  this.screenBounds_ = ImageRect.createFromWidthAndHeight(width, height);
+Viewport.prototype.onWindowResize_ = function(event) {
+  this.windowWidth_ = event.target.innerWidth;
+  this.windowHeight_ = event.target.innerHeight;
+  this.update_();
+};
+
+/**
+ * Sets screen top.
+ * @param {number} top Top.
+ */
+Viewport.prototype.setScreenTop = function(top) {
+  this.screenTop_ = top;
+  this.update_();
+};
+
+/**
+ * Sets screen bottom.
+ * @param {number} bottom Bottom.
+ */
+Viewport.prototype.setScreenBottom = function(bottom) {
+  this.screenBottom_ = bottom;
   this.update_();
 };
 
@@ -221,8 +267,8 @@ Viewport.prototype.getFittingScaleForImageSize_ = function(
   return Math.min(
       maxWidth / width,
       maxHeight / height,
-      this.screenBounds_.width / width,
-      this.screenBounds_.height / height);
+      this.getScreenBounds().width / width,
+      this.getScreenBounds().height / height);
 };
 
 /**
@@ -260,7 +306,13 @@ Viewport.prototype.getImageBounds = function() { return this.imageBounds_; };
  * Returns screen bounds.
  * @return {!ImageRect} The screen bounds in screen coordinates.
  */
-Viewport.prototype.getScreenBounds = function() { return this.screenBounds_; };
+Viewport.prototype.getScreenBounds = function() {
+  return new ImageRect(
+      0,
+      this.screenTop_,
+      this.windowWidth_,
+      this.windowHeight_ - this.screenTop_ - this.screenBottom_);
+};
 
 /**
  * Returns device bounds.
@@ -390,8 +442,8 @@ Viewport.prototype.imageToScreenRect = function(rect) {
 Viewport.prototype.getCenteredRect_ = function(
     width, height, offsetX, offsetY) {
   return new ImageRect(
-      ~~((this.screenBounds_.width - width) / 2) + offsetX,
-      ~~((this.screenBounds_.height - height) / 2) + offsetY,
+      ~~((this.getScreenBounds().width - width) / 2) + offsetX,
+      ~~((this.getScreenBounds().height - height) / 2) + offsetY,
       width,
       height);
 };
@@ -430,14 +482,15 @@ Viewport.prototype.update_ = function() {
     zoomedWidht = ~~(this.imageBounds_.height * scale * this.zoom_);
     zoomedHeight = ~~(this.imageBounds_.width * scale * this.zoom_);
   }
-  var dx = Math.max(zoomedWidht - this.screenBounds_.width, 0) / 2;
-  var dy = Math.max(zoomedHeight - this.screenBounds_.height, 0) / 2;
+  var dx = Math.max(zoomedWidht - this.getScreenBounds().width, 0) / 2;
+  var dy = Math.max(zoomedHeight - this.getScreenBounds().height, 0) / 2;
   this.offsetX_ = ImageUtil.clamp(-dx, this.offsetX_, dx);
   this.offsetY_ = ImageUtil.clamp(-dy, this.offsetY_, dy);
 
   // Image bounds on screen.
   this.imageBoundsOnScreen_ = this.getCenteredRect_(
       zoomedWidht, zoomedHeight, this.offsetX_, this.offsetY_);
+  this.imageBoundsOnScreen_.top += this.screenTop_;
 
   // Image bounds of element (that is not applied zoom and offset) on screen.
   var oldBounds = this.imageElementBoundsOnScreen_;
@@ -454,11 +507,11 @@ Viewport.prototype.update_ = function() {
 
   // Image bounds on screen clipped with the screen bounds.
   var left = Math.max(this.imageBoundsOnScreen_.left, 0);
-  var top = Math.max(this.imageBoundsOnScreen_.top, 0);
+  var top = Math.max(this.imageBoundsOnScreen_.top, this.screenTop_);
   var right = Math.min(
-      this.imageBoundsOnScreen_.right, this.screenBounds_.width);
-  var bottom = Math.min(
-      this.imageBoundsOnScreen_.bottom, this.screenBounds_.height);
+      this.imageBoundsOnScreen_.right, this.getScreenBounds().width);
+  var bottom = Math.min(this.imageBoundsOnScreen_.bottom,
+      this.getScreenBounds().height + this.screenTop_);
   this.imageBoundsOnScreenClipped_ = new ImageRect(
       left, top, right - left, bottom - top);
 };
@@ -468,13 +521,16 @@ Viewport.prototype.update_ = function() {
  * @return {!Viewport} New instance.
  */
 Viewport.prototype.clone = function() {
-  var viewport = new Viewport();
+  var viewport = new Viewport(this.window_);
   viewport.imageBounds_ = ImageRect.createFromBounds(this.imageBounds_);
-  viewport.screenBounds_ = ImageRect.createFromBounds(this.screenBounds_);
   viewport.scale_ = this.scale_;
   viewport.zoom_ = this.zoom_;
   viewport.offsetX_ = this.offsetX_;
   viewport.offsetY_ = this.offsetY_;
+  viewport.screenTop_ = this.screenTop_;
+  viewport.screenBottom_ = this.screenBottom_;
+  viewport.windowWidth_ = this.windowWidth_;
+  viewport.windowHeight_ = this.windowHeight_;
   viewport.rotation_ = this.rotation_;
   viewport.generation_ = this.generation_;
   viewport.update_();
@@ -547,7 +603,7 @@ Viewport.prototype.getTransformation = function(width, height, opt_dx) {
       this.rotation_,
       this.zoom_,
       this.offsetX_ + (opt_dx || 0),
-      this.offsetY_);
+      this.offsetY_ + this.screenTop_);
 };
 
 /**

@@ -9,11 +9,13 @@
  */
 var windowCreateOptions = {
   id: 'gallery',
-  innerBounds: {
+  outerBounds: {
     minWidth: 820,
     minHeight: 554
   },
-  frame: 'none'
+  frame: {
+    color: '#1E2023'
+  }
 };
 
 /**

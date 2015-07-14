@@ -14,19 +14,15 @@
  * @param {!Array<!ImageEditor.Mode>} modes Available editor modes.
  * @param {function(string, ...string)} displayStringFunction String
  *     formatting function.
- * @param {function()} onToolsVisibilityChanged Callback to be called, when
- *     some of the UI elements have been dimmed or revealed.
  * @constructor
  * @struct
  */
 function ImageEditor(
-    viewport, imageView, prompt, DOMContainers, modes, displayStringFunction,
-    onToolsVisibilityChanged) {
+    viewport, imageView, prompt, DOMContainers, modes, displayStringFunction) {
   this.rootContainer_ = DOMContainers.root;
   this.container_ = DOMContainers.image;
   this.modes_ = modes;
   this.displayStringFunction_ = displayStringFunction;
-  this.onToolsVisibilityChanged_ = onToolsVisibilityChanged;
 
   /**
    * @type {ImageEditor.Mode}
@@ -43,8 +39,6 @@ function ImageEditor(
   ImageUtil.removeChildren(this.container_);
 
   this.viewport_ = viewport;
-  this.viewport_.setScreenSize(
-      this.container_.clientWidth, this.container_.clientHeight);
 
   this.imageView_ = imageView;
   this.imageView_.addContentCallback(this.onContentUpdate_.bind(this));
@@ -61,7 +55,9 @@ function ImageEditor(
 
   this.modeToolbar_ = new ImageEditor.Toolbar(
       DOMContainers.mode, displayStringFunction,
-      this.onOptionsChange.bind(this));
+      this.onOptionsChange.bind(this), true /* done button */);
+  this.modeToolbar_.addEventListener(
+      'done-clicked', this.onDoneClicked_.bind(this));
 
   this.prompt_ = prompt;
 
@@ -110,8 +106,9 @@ function ImageEditor(
  * @return {!HTMLElement} A created button.
  */
 ImageEditor.prototype.createToolButton_ = function(name, title, handler) {
-  return this.mainToolbar_.addButton(name, title, handler,
-      name /* opt_className */);
+  var button = this.mainToolbar_.addButton(
+      name, title, handler, name /* opt_className */);
+  return button;
 };
 
 /**
@@ -546,7 +543,13 @@ ImageEditor.prototype.enterMode = function(mode) {
 ImageEditor.prototype.setUpMode_ = function(mode) {
   this.currentTool_ = mode.button_;
 
-  ImageUtil.setAttribute(assert(this.currentTool_), 'pressed', true);
+  if (mode.instant) {
+    var paperRipple = this.currentTool_.querySelector('paper-ripple');
+    paperRipple.simulatedRipple();
+  } else {
+    var toggleRipple = this.currentTool_.querySelector('files-toggle-ripple');
+    toggleRipple.activated = true;
+  }
 
   this.currentMode_ = mode;
   this.currentMode_.setUp();
@@ -556,11 +559,20 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
     return;
   }
 
-  this.getPrompt().show(this.currentMode_.getMessage());
-
   this.modeToolbar_.clear();
   this.currentMode_.createTools(this.modeToolbar_);
   this.modeToolbar_.show(true);
+};
+
+/**
+ * Handles click event of Done button.
+ * @param {!Event} event An event.
+ * @private
+ */
+ImageEditor.prototype.onDoneClicked_ = function(event) {
+  var button = event.target.getDoneButton();
+  button.querySelector('paper-ripple').simulatedRipple();
+  this.leaveMode(true);
 };
 
 /**
@@ -569,10 +581,6 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
  */
 ImageEditor.prototype.leaveMode = function(commit) {
   if (!this.currentMode_) return;
-
-  if (!this.currentMode_.instant) {
-    this.getPrompt().hide();
-  }
 
   this.modeToolbar_.show(false);
 
@@ -585,10 +593,14 @@ ImageEditor.prototype.leaveMode = function(commit) {
       this.updateUndoRedo();
     }
   }
+
+  if (!this.currentMode_.instant) {
+    var toggleRipple = this.currentTool_.querySelector('files-toggle-ripple');
+    toggleRipple.activated = false;
+  }
+
   this.currentMode_.cleanUpCaches();
   this.currentMode_ = null;
-
-  ImageUtil.setAttribute(assert(this.currentTool_), 'pressed', false);
   this.currentTool_ = null;
 };
 
@@ -713,8 +725,6 @@ ImageEditor.prototype.hideOverlappingTools = function(
       changed = true;
     }
   }
-  if (changed)
-    this.onToolsVisibilityChanged_();
 };
 
 /**
@@ -1005,11 +1015,13 @@ ImageEditor.MouseControl.prototype.updateCursor_ = function(position) {
  * @param {function(string)} displayStringFunction A string formatting function.
  * @param {function(Object)=} opt_updateCallback The callback called when
  *     controls change.
+ * @param {boolean=} opt_showDoneButton True to show done button.
  * @constructor
+ * @extends {cr.EventTarget}
  * @struct
  */
 ImageEditor.Toolbar = function(
-    parent, displayStringFunction, opt_updateCallback) {
+    parent, displayStringFunction, opt_updateCallback, opt_showDoneButton) {
   this.wrapper_ = parent;
   this.displayStringFunction_ = displayStringFunction;
 
@@ -1018,6 +1030,40 @@ ImageEditor.Toolbar = function(
    * @private
    */
   this.updateCallback_ = opt_updateCallback || null;
+
+  // Create done button.
+  if (opt_showDoneButton) {
+    var doneButtonLayer = document.createElement('div');
+    doneButtonLayer.classList.add('done-button');
+    this.doneButton_ = ImageEditor.Toolbar.createButton_(
+        'done', 'GALLERY_DONE', this.onDoneClicked_.bind(this), 'done');
+    doneButtonLayer.appendChild(this.doneButton_);
+    this.wrapper_.appendChild(doneButtonLayer);
+  }
+
+  /**
+   * @private {!HTMLElement}
+   */
+  this.container_ = /** @type {!HTMLElement} */ (document.createElement('div'));
+  this.container_.classList.add('container');
+  this.wrapper_.appendChild(this.container_);
+};
+
+ImageEditor.Toolbar.prototype.__proto__ = cr.EventTarget.prototype;
+
+/**
+ * Height of the toolbar.
+ * @const {number}
+ */
+ImageEditor.Toolbar.HEIGHT = 48; // px
+
+/**
+ * Handles click event of done button.
+ * @private
+ */
+ImageEditor.Toolbar.prototype.onDoneClicked_ = function() {
+  var event = new Event('done-clicked');
+  this.dispatchEvent(event);
 };
 
 /**
@@ -1025,25 +1071,22 @@ ImageEditor.Toolbar = function(
  * @return {!HTMLElement}
  */
 ImageEditor.Toolbar.prototype.getElement = function() {
-  return this.wrapper_;
+  return this.container_;
+};
+
+/**
+ * Returns the element of done button.
+ * @return {!HTMLElement}
+ */
+ImageEditor.Toolbar.prototype.getDoneButton = function() {
+  return this.doneButton_;
 };
 
 /**
  * Clear the toolbar.
  */
 ImageEditor.Toolbar.prototype.clear = function() {
-  ImageUtil.removeChildren(this.wrapper_);
-};
-
-/**
- * Create a control.
- * @param {string} tagName The element tag name.
- * @return {!HTMLElement} The created control element.
- * @private
- */
-ImageEditor.Toolbar.prototype.create_ = function(tagName) {
-  return assertInstanceof(this.wrapper_.ownerDocument.createElement(tagName),
-      HTMLElement);
+  ImageUtil.removeChildren(this.container_);
 };
 
 /**
@@ -1052,19 +1095,59 @@ ImageEditor.Toolbar.prototype.create_ = function(tagName) {
  * @return {!HTMLElement} The added element.
  */
 ImageEditor.Toolbar.prototype.add = function(element) {
-  this.wrapper_.appendChild(element);
+  this.container_.appendChild(element);
   return element;
 };
 
 /**
- * Add a text label.
- * @param {string} name Label name.
- * @return {!HTMLElement} The added label.
+ * Create a button.
+ *
+ * @param {string} name Button name.
+ * @param {string} title Button title.
+ * @param {function(Event)} handler onClick handler.
+ * @param {string=} opt_class Extra class name.
+ * @return {!HTMLElement} The created button.
+ * @private
  */
-ImageEditor.Toolbar.prototype.addLabel = function(name) {
-  var label = this.create_('span');
-  label.textContent = this.displayStringFunction_(name);
-  return this.add(label);
+ImageEditor.Toolbar.createButton_ = function(
+    name, title, handler, opt_class) {
+  var button = /** @type {!HTMLElement} */ (document.createElement('button'));
+  if (opt_class)
+    button.classList.add(opt_class);
+  button.classList.add('edit-toolbar');
+
+  // Create button content.
+  var content = document.createElement('div');
+  content.classList.add('button-content');
+
+  var icon = document.createElement('span');
+  icon.classList.add('icon');
+  content.appendChild(icon);
+
+  var label = document.createElement('span');
+  label.classList.add('label');
+  label.textContent = strf(title);
+  content.appendChild(label);
+
+  button.appendChild(content);
+
+  // Create ripples.
+  var ripples = document.createElement('div');
+  ripples.classList.add('ripples');
+
+  var paperRipple = document.createElement('paper-ripple');
+  ripples.appendChild(paperRipple);
+
+  var toggleRipple = document.createElement('files-toggle-ripple');
+  ripples.appendChild(toggleRipple);
+
+  button.appendChild(ripples);
+
+  button.label = strf(title);
+  button.title = strf(title);
+  button.addEventListener('click', handler, false);
+
+  return button;
 };
 
 /**
@@ -1078,16 +1161,10 @@ ImageEditor.Toolbar.prototype.addLabel = function(name) {
  */
 ImageEditor.Toolbar.prototype.addButton = function(
     name, title, handler, opt_class) {
-  var button = this.create_('button');
-  if (opt_class)
-    button.classList.add(opt_class);
-  var label = this.create_('span');
-  label.textContent = this.displayStringFunction_(title);
-  button.appendChild(label);
-  button.label = this.displayStringFunction_(title);
-  button.title = this.displayStringFunction_(title);
-  button.addEventListener('click', handler, false);
-  return this.add(button);
+  var button = ImageEditor.Toolbar.createButton_(
+      name, title, handler, opt_class);
+  this.add(button);
+  return button;
 };
 
 /**
@@ -1105,55 +1182,33 @@ ImageEditor.Toolbar.prototype.addButton = function(
  */
 ImageEditor.Toolbar.prototype.addRange = function(
     name, title, min, value, max, opt_scale, opt_showNumeric) {
-  var self = this;
+  var range = /** @type {!HTMLElement} */ (document.createElement('div'));
+  range.classList.add('range', name);
+
+  var icon = document.createElement('icon');
+  icon.classList.add('icon');
+  range.appendChild(icon);
+
+  var label = document.createElement('span');
+  label.textContent = strf(title);
+  label.classList.add('label');
+  range.appendChild(label);
 
   var scale = opt_scale || 1;
+  var slider = document.createElement('paper-slider');
+  slider.min = Math.ceil(min * scale);
+  slider.max = Math.floor(max * scale);
+  slider.value = value * scale;
+  slider.addEventListener('change', function(event) {
+    if (this.updateCallback_)
+      this.updateCallback_(this.getOptions());
+  }.bind(this));
+  range.appendChild(slider);
 
-  var range = this.create_('input');
-
-  range.className = 'range';
-  range.type = 'range';
   range.name = name;
-  range.min = Math.ceil(min * scale);
-  range.max = Math.floor(max * scale);
-
-  var numeric = this.create_('div');
-  numeric.className = 'numeric';
-  function mirror() {
-    numeric.textContent = Math.round(range.getValue() * scale) / scale;
-  }
-
-  range.setValue = function(newValue) {
-    range.value = Math.round(newValue * scale);
-    mirror();
-  };
-
-  range.getValue = function() {
-    return Number(range.value) / scale;
-  };
-
-  range.reset = function() {
-    range.setValue(value);
-  };
-
-  range.addEventListener('change',
-      function() {
-        mirror();
-        if (self.updateCallback_)
-          self.updateCallback_(self.getOptions());
-      },
-      false);
-
-  range.setValue(value);
-
-  var label = this.create_('div');
-  label.textContent = this.displayStringFunction_(title);
-  label.className = 'label ' + name;
-  this.add(label);
-  this.add(range);
-
-  if (opt_showNumeric)
-    this.add(numeric);
+  range.getValue = function(slider, scale) {
+    return slider.value / scale;
+  }.bind(this, slider, scale);
 
   // Swallow the left and right keys, so they are not handled by other
   // listeners.
@@ -1161,6 +1216,8 @@ ImageEditor.Toolbar.prototype.addRange = function(
     if (e.keyIdentifier === 'Left' || e.keyIdentifier === 'Right')
       e.stopPropagation();
   });
+
+  this.add(range);
 
   return range;
 };
@@ -1170,10 +1227,14 @@ ImageEditor.Toolbar.prototype.addRange = function(
  */
 ImageEditor.Toolbar.prototype.getOptions = function() {
   var values = {};
-  for (var child = this.wrapper_.firstChild; child; child = child.nextSibling) {
+
+  for (var child = this.container_.firstChild;
+       child;
+       child = child.nextSibling) {
     if (child.name)
       values[child.name] = child.getValue();
   }
+
   return values;
 };
 

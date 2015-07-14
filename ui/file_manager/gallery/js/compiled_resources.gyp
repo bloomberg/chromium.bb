@@ -114,6 +114,7 @@
           '../../externs/chrome_test.js',
           '../../externs/exif_entry.js',
           '../../externs/gallery_foreground.js',
+          '../../externs/paper_elements.js',
           '../../externs/platform.js',
           '../../externs/webview_tag.js',
         ],

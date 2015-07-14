@@ -158,6 +158,8 @@
     "common/js/path_util.js",
     "common/js/util.js",
     "common/js/volume_manager_common.js",
+    "foreground/elements/files_toggle_ripple.html",
+    "foreground/elements/files_toggle_ripple.js",
     "foreground/js/metadata/byte_reader.js",
     "foreground/js/metadata/exif_parser.js",
     "foreground/js/metadata/exif_constants.js",

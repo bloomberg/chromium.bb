@@ -5,10 +5,10 @@
   'src/tools/polymer/txt_to_polymer_grdp.py' to modify it, if possible.
 
   'polymer_grdp_to_txt.py' converts 'polymer_resources.grdp' to a plane list of
-  used Polymer components. v1.0 elements are marked with 'v1.0 ' prefix:
+  used Polymer components:
     ...
-    v1.0 iron-iron-iconset/iron-iconset-extracted.js
-    v1.0 iron-iron-iconset/iron-iconset.html
+    iron-iron-iconset/iron-iconset-extracted.js
+    iron-iron-iconset/iron-iconset.html
     ...
 
   'txt_to_polymer_grdp.py' converts list back to GRDP file.
@@ -547,6 +547,15 @@
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_RIPPLE_PAPER_RIPPLE_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-ripple/paper-ripple.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_SLIDER_PAPER_SLIDER_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-slider/paper-slider-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_SLIDER_PAPER_SLIDER_CSS"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-slider/paper-slider.css"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_SLIDER_PAPER_SLIDER_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-slider/paper-slider.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_SPINNER_PAPER_SPINNER_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-spinner/paper-spinner-extracted.js"

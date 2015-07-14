@@ -55,12 +55,6 @@ ImageEditor.Mode.Crop = function() {
   this.shadowBottom_ = null;
 
   /**
-   * @type {ImageEditor.Toolbar}
-   * @private
-   */
-  this.toolbar_ = null;
-
-  /**
    * @type {?function()}
    * @private
    */
@@ -129,6 +123,13 @@ ImageEditor.Mode.Crop.prototype.setUp = function() {
   addCropFrame('bottom horizontal');
   addCropFrame('right bottom corner');
 
+  // Scale the screen so that it doesn't overlap the toolbars.
+  this.getViewport().setScreenTop(
+      ImageEditor.Toolbar.HEIGHT + ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS);
+  this.getViewport().setScreenBottom(
+      ImageEditor.Toolbar.HEIGHT * 2 + ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS);
+  this.getImageView().applyViewportChange();
+
   this.onResizedBound_ = this.onResized_.bind(this);
   window.addEventListener('resize', this.onResizedBound_);
 
@@ -145,32 +146,14 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
     GALLERY_ASPECT_RATIO_7_5: 7 / 5,
     GALLERY_ASPECT_RATIO_16_9: 16 / 9
   };
+
   for (var name in aspects) {
     var button = toolbar.addButton(
         name,
         name,
-        function(aspect, event) {
-          var button = event.target;
-          if (button.classList.contains('selected')) {
-            button.classList.remove('selected');
-            this.cropRect_.fixedAspectRatio = null;
-          } else {
-            var selectedButtons =
-                toolbar.getElement().querySelectorAll('button.selected');
-            for (var i = 0; i < selectedButtons.length; i++) {
-              selectedButtons[i].classList.remove('selected');
-            }
-            button.classList.add('selected');
-            var clipRect = this.viewport_.screenToImageRect(
-                this.viewport_.getImageBoundsOnScreenClipped());
-            this.cropRect_.fixedAspectRatio = aspect;
-            this.cropRect_.forceAspectRatio(aspect, clipRect);
-            this.markUpdated();
-            this.positionDOM();
-            this.toolbar_.getElement().classList.remove('dimmable');
-            this.toolbar_.getElement().removeAttribute('dimmed');
-          }
-        }.bind(this, aspects[name]));
+        this.onCropAspectRatioClicked_.bind(this, toolbar, aspects[name]),
+        'crop-aspect-ratio');
+
     // Prevent from cropping by Enter key if the button is focused.
     button.addEventListener('keydown', function(event) {
       var key = util.getKeyModifiers(event) + event.keyIdentifier;
@@ -178,8 +161,42 @@ ImageEditor.Mode.Crop.prototype.createTools = function(toolbar) {
         event.stopPropagation();
     });
   }
-  this.toolbar_ = toolbar;
 };
+
+/**
+ * Handles click events of crop aspect ratio buttons.
+ * @param {!ImageEditor.Toolbar} toolbar Toolbar.
+ * @param {number} aspect Aspect ratio.
+ * @param {Event} event An event.
+ * @private
+ */
+ImageEditor.Mode.Crop.prototype.onCropAspectRatioClicked_ = function(
+    toolbar, aspect, event) {
+  var button = event.target;
+  var toggleRipple = button.querySelector('files-toggle-ripple');
+
+  if (button.classList.contains('selected')) {
+    button.classList.remove('selected');
+    toggleRipple.activated = false;
+    this.cropRect_.fixedAspectRatio = null;
+  } else {
+    var selectedButtons =
+        toolbar.getElement().querySelectorAll('button.selected');
+    for (var i = 0; i < selectedButtons.length; i++) {
+      selectedButtons[i].classList.remove('selected');
+      selectedButtons[i].querySelector('files-toggle-ripple')
+          .activated = false;
+    }
+    button.classList.add('selected');
+    toggleRipple.activated = true;
+    var clipRect = this.viewport_.screenToImageRect(
+        this.viewport_.getImageBoundsOnScreenClipped());
+    this.cropRect_.fixedAspectRatio = aspect;
+    this.cropRect_.forceAspectRatio(aspect, clipRect);
+    this.markUpdated();
+    this.positionDOM();
+  }
+}
 
 /**
  * Handles resizing of the window and updates the crop rectangle.
@@ -195,10 +212,6 @@ ImageEditor.Mode.Crop.prototype.onResized_ = function() {
 ImageEditor.Mode.Crop.prototype.reset = function() {
   ImageEditor.Mode.prototype.reset.call(this);
   this.createDefaultCrop();
-  if (this.toolbar_) {
-    this.toolbar_.getElement().classList.add('dimmable');
-    this.toolbar_ = null;
-  }
 };
 
 /**
@@ -239,6 +252,11 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   this.editor_.hideOverlappingTools();
   window.removeEventListener('resize', this.onResizedBound_);
   this.onResizedBound_ = null;
+
+  // Restore the screen to the full size of window.
+  this.getViewport().setScreenTop(0);
+  this.getViewport().setScreenBottom(0);
+  this.getImageView().applyViewportChange();
 };
 
 /**
@@ -308,8 +326,6 @@ ImageEditor.Mode.Crop.prototype.getDragHandler = function(x, y, touch) {
     return null;
 
   return function(x, y, shiftKey) {
-    if (this.toolbar_)
-      this.toolbar_.getElement().classList.add('dimmable');
     cropDragHandler(x, y, shiftKey);
     this.markUpdated();
     this.positionDOM();
