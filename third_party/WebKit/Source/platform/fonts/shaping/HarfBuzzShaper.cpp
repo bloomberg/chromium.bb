@@ -723,17 +723,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
 {
     if (!createHarfBuzzRuns())
         return nullptr;
-
-    ShapeResult* result = new ShapeResult();
-    result->m_numCharacters = m_normalizedBufferLength;
-    result->m_direction = m_textRun.direction();
-
-    if (!shapeHarfBuzzRuns(result)) {
-        delete result;
-        return nullptr;
-    }
-
-    return adoptRef(result);
+    return shapeHarfBuzzRuns();
 }
 
 struct CandidateRun {
@@ -989,8 +979,10 @@ static inline void addToHarfBuzzBufferInternal(hb_buffer_t* buffer,
     }
 }
 
-bool HarfBuzzShaper::shapeHarfBuzzRuns(ShapeResult* result)
+PassRefPtr<ShapeResult> HarfBuzzShaper::shapeHarfBuzzRuns()
 {
+    RefPtr<ShapeResult> result = ShapeResult::create(
+        m_normalizedBufferLength, m_textRun.direction());
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
 
     const FontDescription& fontDescription = m_font->fontDescription();
@@ -1007,7 +999,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(ShapeResult* result)
         FontPlatformData* platformData = const_cast<FontPlatformData*>(&currentFontData->platformData());
         HarfBuzzFace* face = platformData->harfBuzzFace();
         if (!face)
-            return false;
+            return nullptr;
 
         hb_buffer_set_language(harfBuzzBuffer.get(), language);
         hb_buffer_set_script(harfBuzzBuffer.get(), currentRun->m_script);
@@ -1027,7 +1019,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(ShapeResult* result)
 
         HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(), hb_font_destroy);
         hb_shape(harfBuzzFont.get(), harfBuzzBuffer.get(), m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
-        shapeResult(result, i, currentRun, harfBuzzBuffer.get());
+        shapeResult(result.get(), i, currentRun, harfBuzzBuffer.get());
 
         hb_buffer_reset(harfBuzzBuffer.get());
     }
@@ -1039,7 +1031,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(ShapeResult* result)
     // does not support justification very well yet such as U+3099, and it'll cause the ASSERT to fail.
     // It's to be fixed because they're very rarely used, and a broken justification is still somewhat readable.
 
-    return true;
+    return result.release();
 }
 
 void HarfBuzzShaper::shapeResult(ShapeResult* result, unsigned index,

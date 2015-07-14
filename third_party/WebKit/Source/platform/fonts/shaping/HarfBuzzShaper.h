@@ -53,7 +53,10 @@ class HarfBuzzShaper;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 public:
-    ShapeResult(): m_width(0), m_numGlyphs(0) { }
+    static PassRefPtr<ShapeResult> create(unsigned numCharacters, TextDirection direction)
+    {
+        return adoptRef(new ShapeResult(numCharacters, direction));
+    }
     ~ShapeResult();
 
     float width() { return m_width; }
@@ -82,6 +85,12 @@ public:
 
 private:
     struct RunInfo;
+
+    ShapeResult(unsigned numCharacters, TextDirection direction)
+        : m_width(0)
+        , m_numCharacters(numCharacters)
+        , m_numGlyphs(0)
+        , m_direction(direction) { }
 
     template<TextDirection>
     float fillGlyphBufferForRun(GlyphBuffer*, const RunInfo*,
@@ -129,7 +138,7 @@ private:
 
     bool createHarfBuzzRuns();
     bool createHarfBuzzRunsForSingleCharacter();
-    bool shapeHarfBuzzRuns(ShapeResult*);
+    PassRefPtr<ShapeResult> shapeHarfBuzzRuns();
     void shapeResult(ShapeResult*, unsigned, const HarfBuzzRun*, hb_buffer_t*);
     float adjustSpacing(ShapeResult::RunInfo*, size_t glyphIndex, unsigned currentCharacterIndex, float& offsetX, float& totalAdvance);
     void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
