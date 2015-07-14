@@ -385,6 +385,15 @@ static jboolean IsContentSettingsPatternValid(JNIEnv* env, jclass clazz,
       ConvertJavaStringToUTF8(env, pattern)).IsValid();
 }
 
+static jboolean UrlMatchesContentSettingsPattern(JNIEnv* env,
+                                                 jclass clazz,
+                                                 jstring jurl,
+                                                 jstring jpattern) {
+  ContentSettingsPattern pattern = ContentSettingsPattern::FromString(
+      ConvertJavaStringToUTF8(env, jpattern));
+  return pattern.Matches(GURL(ConvertJavaStringToUTF8(env, jurl)));
+}
+
 namespace {
 
 class SiteDataDeleteHelper :

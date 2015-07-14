@@ -566,6 +566,9 @@ particular permission.">
       <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_BLOCK" desc="Summary text explaining that the user will block a website from accessing some permission, e.g. JavaScript: block.">
         Block
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW_DSE" desc="Summary text explaining that location permission is allowed for the default search engine when searching from the address bar.">
+        Allow (for address bar searches)
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_SEARCH" desc="The label for the search button on the Website Settings page.">
         Search
       </message>

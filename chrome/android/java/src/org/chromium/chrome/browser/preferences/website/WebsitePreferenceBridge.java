@@ -266,6 +266,7 @@ public abstract class WebsitePreferenceBridge {
     private static native void nativeFetchLocalStorageInfo(Object callback);
     private static native void nativeFetchStorageInfo(Object callback);
     static native boolean nativeIsContentSettingsPatternValid(String pattern);
+    static native boolean nativeUrlMatchesContentSettingsPattern(String url, String pattern);
     private static native void nativeGetFullscreenOrigins(Object list, boolean managedOnly);
     static native int nativeGetFullscreenSettingForOrigin(String origin, String embedder);
     static native void nativeSetFullscreenSettingForOrigin(String origin, String embedder,

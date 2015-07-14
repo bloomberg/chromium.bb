@@ -11,12 +11,6 @@
     <item>@string/monospace</item>
   </string-array>
 
-  <!-- Site settings -->
-  <string-array name="website_settings_permission_options">
-    <item>@string/website_settings_permissions_allow</item>
-    <item>@string/website_settings_permissions_block</item>
-  </string-array>
-
   <!-- Privacy preferences -->
   <string-array name="bandwidth_entries">
     <item>@string/always_prefetch_bandwidth_entry</item>

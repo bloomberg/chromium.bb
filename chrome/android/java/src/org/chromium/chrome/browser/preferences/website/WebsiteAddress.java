@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
  * fully specified origin, or just a host, or a website name pattern.
  */
 public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable {
+    private final String mOriginOrHostPattern;
     private final String mOrigin;
     private final String mScheme;
     private final String mHost;
@@ -46,7 +47,8 @@ public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable 
             String scheme = null;
             String host = originOrHostOrPattern.substring(ANY_SUBDOMAIN_PATTERN.length());
             boolean omitProtocolAndPort = true;
-            return new WebsiteAddress(origin, scheme, host, omitProtocolAndPort);
+            return new WebsiteAddress(originOrHostOrPattern, origin, scheme, host,
+                    omitProtocolAndPort);
         }
 
         // Origin
@@ -55,17 +57,21 @@ public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable 
             String origin = trimTrailingBackslash(originOrHostOrPattern);
             boolean omitProtocolAndPort = HTTP_SCHEME.equals(uri.getScheme())
                     && (uri.getPort() == -1 || uri.getPort() == 80);
-            return new WebsiteAddress(origin, uri.getScheme(), uri.getHost(), omitProtocolAndPort);
+            return new WebsiteAddress(originOrHostOrPattern, origin, uri.getScheme(), uri.getHost(),
+                    omitProtocolAndPort);
         }
 
         // Host
         String origin = null;
         String scheme = null;
         boolean omitProtocolAndPort = true;
-        return new WebsiteAddress(origin, scheme, originOrHostOrPattern, omitProtocolAndPort);
+        return new WebsiteAddress(originOrHostOrPattern, origin, scheme, originOrHostOrPattern,
+                omitProtocolAndPort);
     }
 
-    private WebsiteAddress(String origin, String scheme, String host, boolean omitProtocolAndPort) {
+    private WebsiteAddress(String originOrHostPattern, String origin, String scheme, String host,
+            boolean omitProtocolAndPort) {
+        mOriginOrHostPattern = originOrHostPattern;
         mOrigin = origin;
         mScheme = scheme;
         mHost = host;
@@ -88,6 +94,14 @@ public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable 
     public String getTitle() {
         if (mOrigin == null || mOmitProtocolAndPort) return mHost;
         return mOrigin;
+    }
+
+    /**
+     * Returns true if {@code url} matches this WebsiteAddress's origin or host pattern.
+     */
+    public boolean matches(String url) {
+        return WebsitePreferenceBridge.nativeUrlMatchesContentSettingsPattern(url,
+                mOriginOrHostPattern);
     }
 
     private String getDomainAndRegistry() {
