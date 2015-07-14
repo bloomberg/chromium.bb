@@ -5,6 +5,7 @@
 package org.chromium.sync.signin;
 
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -133,7 +134,22 @@ public class AccountManagerHelper {
         return accountNames;
     }
 
+    /**
+     * Returns all accounts on the device, including non-Google accounts. Unless it is really
+     * necessary to get absolutely all accounts on the device, use {@link #getGoogleAccounts}.
+     * @return an array of accounts.
+     */
+    public Account[] getAccounts() {
+        if (!hasGetAccountsPermission()) return new Account[]{};
+        return mAccountManager.getAccounts();
+    }
+
+    /**
+     * Returns all Google accounts on the device.
+     * @return an array of accounts.
+     */
     public Account[] getGoogleAccounts() {
+        if (!hasGetAccountsPermission()) return new Account[]{};
         return mAccountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
     }
 
@@ -261,7 +277,12 @@ public class AccountManagerHelper {
     private boolean hasUseCredentialsPermission() {
         return BuildInfo.isMncOrLater()
                 || mApplicationContext.checkPermission("android.permission.USE_CREDENTIALS",
-                        Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+                Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public boolean hasGetAccountsPermission() {
+        return mApplicationContext.checkPermission(Manifest.permission.GET_ACCOUNTS,
+                Process.myPid(), Process.myUid()) == PackageManager.PERMISSION_GRANTED;
     }
 
     // Gets the auth token synchronously

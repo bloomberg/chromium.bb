@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -14,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Patterns;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.io.File;
 
@@ -40,7 +40,7 @@ public abstract class IntentHelper {
     static void sendEmail(Context context, String email, String subject, String body,
             String chooserTitle, String fileToAttach) {
         if (TextUtils.isEmpty(email)) {
-            Account[] accounts = AccountManager.get(context).getAccounts();
+            Account[] accounts = AccountManagerHelper.get(context).getAccounts();
             if (accounts != null && accounts.length == 1
                     && Patterns.EMAIL_ADDRESS.matcher(accounts[0].name).matches()) {
                 email = accounts[0].name;

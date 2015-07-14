@@ -13,6 +13,9 @@ import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.test.util.AccountHolder;
 import org.chromium.sync.test.util.MockAccountManager;
 
+/**
+ * Test class for {@link AccountManagerHelper}.
+ */
 public class AccountManagerHelperTest extends InstrumentationTestCase {
 
     private MockAccountManager mAccountManager;
@@ -22,7 +25,7 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        Context context = getInstrumentation().getContext();
+        Context context = getInstrumentation().getTargetContext();
         mAccountManager = new MockAccountManager(context, context);
         AccountManagerHelper.overrideAccountManagerHelperForTests(context, mAccountManager);
         mHelper = AccountManagerHelper.get(context);

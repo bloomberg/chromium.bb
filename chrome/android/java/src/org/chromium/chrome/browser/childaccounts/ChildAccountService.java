@@ -5,13 +5,12 @@
 package org.chromium.chrome.browser.childaccounts;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
-import android.accounts.OnAccountsUpdateListener;
 import android.accounts.OperationCanceledException;
 import android.content.Context;
+import android.content.Intent;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
@@ -20,6 +19,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.sync.signin.AccountManagerHelper;
 
@@ -67,18 +67,18 @@ public class ChildAccountService {
 
     protected ChildAccountService(Context context) {
         mContext = context;
-        AccountManager accountManager = AccountManager.get(mContext);
-        accountManager.addOnAccountsUpdatedListener(new OnAccountsUpdateListener() {
-            @Override
-            public void onAccountsUpdated(Account[] accounts) {
-                ThreadUtils.runOnUiThread(new Runnable() {
+        AccountsChangedReceiver.addObserver(
+                new AccountsChangedReceiver.AccountsChangedObserver() {
                     @Override
-                    public void run() {
-                        recheckChildAccountStatus();
+                    public void onAccountsChanged(Context context, Intent intent) {
+                        ThreadUtils.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                recheckChildAccountStatus();
+                            }
+                        });
                     }
                 });
-            }
-        }, null, false);
     }
 
     /**
@@ -184,6 +184,12 @@ public class ChildAccountService {
         final int traceId = System.identityHashCode(this);
         TraceEvent.startAsync("ChildAccountService.checkFeatures", traceId);
         AccountManagerHelper accountManagerHelper = AccountManagerHelper.get(mContext);
+        if (!accountManagerHelper.hasGetAccountsPermission()) {
+            // This will call {@link AccountManagerHelper#getGoogleAccounts()}, which will return an
+            // empty array of accounts, which results in storing the child account state as false.
+            maybeUpdatePredeterminedChildAccountStatus();
+            return;
+        }
         final AccountManagerFuture<Boolean> future = accountManagerHelper.checkChildAccount(
                 accountManagerHelper.getSingleGoogleAccount(),
                 new AccountManagerCallback<Boolean>() {

@@ -12,9 +12,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import com.google.android.collect.Sets;
 
@@ -51,7 +53,7 @@ public class ChildAccountServiceTest {
 
     private MockAccountManager mAccountManager;
 
-    private Context mContext = Robolectric.application;
+    private Context mContext = spy(Robolectric.application);
 
     private class TestingChildAccountService extends ChildAccountService {
         private Boolean mLastStatus;
@@ -79,7 +81,10 @@ public class ChildAccountServiceTest {
         MockitoAnnotations.initMocks(this);
 
         mService = spy(new TestingChildAccountService(mContext));
-
+        when(mContext.getApplicationContext()).thenReturn(mContext);
+        when(mContext.checkPermission(
+                Matchers.anyString(), Matchers.anyInt(), Matchers.anyInt()))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
         doReturn(true).when(mService).nativeIsChildAccountDetectionEnabled();
         doThrow(new AssertionError()).when(mService).nativeGetIsChildAccount();
         mAccountManager = new MockAccountManager(mContext, mContext);
