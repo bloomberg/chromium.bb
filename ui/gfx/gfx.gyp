@@ -406,41 +406,6 @@
             'text_utils_skia.cc',
           ],
         }, {  # desktop platforms
-          'variables': {
-            'vector_icons_cc_file': '<(INTERMEDIATE_DIR)/ui/gfx/vector_icons.cc',
-            'vector_icons_public_h_file': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/vector_icons_public.h',
-          },
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)',
-          ],
-          'sources': [
-            '<(vector_icons_cc_file)',
-            '<(vector_icons_public_h_file)',
-
-            'paint_vector_icon.cc',
-            'paint_vector_icon.h',
-            'vector_icons.h',
-          ],
-          'actions': [
-            {
-              # GN version: //ui/gfx:aggregate_vector_icons
-              'action_name': 'aggregate_vector_icons',
-              'inputs': [
-                'vector_icons/',
-              ],
-              'outputs': [
-                '<(vector_icons_cc_file)',
-                '<(vector_icons_public_h_file)',
-              ],
-              'action': [ 'python',
-                          'vector_icons/aggregate_vector_icons.py',
-                          '--working_directory=vector_icons/',
-                          '--output_cc=<(vector_icons_cc_file)',
-                          '--output_h=<(vector_icons_public_h_file)',
-              ],
-              'message': 'Aggregating vector resources.',
-            },
-          ],
         }],
         ['use_x11==1', {
           'dependencies': [
@@ -469,6 +434,55 @@
           ],
         }],
       ],
+    },
+    # Separate from gfx to limit the impact of the hard_dependency.
+    {
+      'target_name': 'gfx_vector_icons',
+      'type': '<(component)',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        'gfx',
+        'gfx_geometry',
+      ],
+      'defines': [
+        'GFX_IMPLEMENTATION',
+      ],
+      'sources': [
+        'paint_vector_icon.cc',
+        'paint_vector_icon.h',
+        'vector_icons.h',
+      ],
+      'variables': {
+        'vector_icons_cc_file': '<(INTERMEDIATE_DIR)/ui/gfx/vector_icons.cc',
+        'vector_icons_public_h_file': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/vector_icons_public.h',
+      },
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'actions': [
+        {
+          # GN version: //ui/gfx:aggregate_vector_icons
+          'action_name': 'aggregate_vector_icons',
+          'inputs': [
+            'vector_icons/',
+          ],
+          'outputs': [
+            '<(vector_icons_cc_file)',
+            '<(vector_icons_public_h_file)',
+          ],
+          'action': [ 'python',
+                      'vector_icons/aggregate_vector_icons.py',
+                      '--working_directory=vector_icons/',
+                      '--output_cc=<(vector_icons_cc_file)',
+                      '--output_h=<(vector_icons_public_h_file)',
+          ],
+          'message': 'Aggregating vector resources.',
+          'process_outputs_as_sources': 1,
+        },
+      ],
+      # Export a hard dependency because of generated header files.
+      'hard_dependency': 1,
     },
     {
       'target_name': 'gfx_test_support',

@@ -2920,6 +2920,9 @@
             }],
             ['OS!="mac"', {
               'sources': [ '<@(chrome_browser_ui_views_non_mac_sources)' ],
+              'dependencies': [
+                '../ui/gfx/gfx.gyp:gfx_vector_icons',
+              ],
               'conditions': [
                 ['enable_extensions==1', {
                   'sources': [ '<@(chrome_browser_ui_views_extensions_non_mac_sources)' ],
