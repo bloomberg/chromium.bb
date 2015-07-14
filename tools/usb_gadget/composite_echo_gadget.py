@@ -44,6 +44,10 @@ class CompositeEchoGadget(composite_gadget.CompositeGadget):
     self.AddStringDescriptor(5, 'Interrupt Echo')
     self.AddStringDescriptor(6, 'Bulk Echo')
     self.AddStringDescriptor(7, 'Isochronous Echo')
+    self.EnableMicrosoftOSDescriptorsV1(vendor_code=0x01)
+    self.SetMicrosoftCompatId(0, 'WINUSB')
+    self.SetMicrosoftCompatId(1, 'WINUSB')
+    self.SetMicrosoftCompatId(2, 'WINUSB')
 
 def RegisterHandlers():
   """Registers web request handlers with the application server."""

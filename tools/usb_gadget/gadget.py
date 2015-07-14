@@ -36,6 +36,8 @@ class Gadget(object):
     self._active_endpoints = {}
     # dict mapping endpoint addresses to interfaces
     self._endpoint_interface_map = {}
+    self._ms_vendor_code = None
+    self._ms_compat_ids = {}
 
   def GetDeviceDescriptor(self):
     return self._device_desc
@@ -75,6 +77,15 @@ class Gadget(object):
 
     lang_strings = self._strings.setdefault(lang, {})
     lang_strings[index] = value
+
+  def EnableMicrosoftOSDescriptorsV1(self, vendor_code=0x01):
+    if vendor_code < 0 or vendor_code > 255:
+      raise ValueError('Vendor code out of range.')
+
+    self._ms_vendor_code = vendor_code
+
+  def SetMicrosoftCompatId(self, interface_number, compat_id, sub_compat_id=''):
+    self._ms_compat_ids[interface_number] = (compat_id, sub_compat_id)
 
   def Connected(self, chip, speed):
     """The device has been connected to a USB host.
@@ -267,7 +278,12 @@ class Gadget(object):
       A buffer to return to the USB host with len <= length on success or
       None to stall the pipe.
     """
-    _ = recipient, request, value, index, length
+    if (self._ms_vendor_code is not None and
+        request == self._ms_vendor_code and
+        (recipient == usb_constants.Recipient.DEVICE or
+         recipient == usb_constants.Recipient.INTERFACE)):
+      return self.GetMicrosoftOSDescriptorV1(recipient, value, index, length)
+
     return None
 
   def StandardControlWrite(self, recipient, request, value, index, data):
@@ -356,6 +372,14 @@ class Gadget(object):
       buf = header + ''.join(lang_codes)
       assert len(buf) == length
       return buf[:length]
+    if index == 0xEE and lang == 0 and self._ms_vendor_code is not None:
+      # See https://msdn.microsoft.com/en-us/windows/hardware/gg463179 for the
+      # definition of this special string descriptor.
+      buf = (struct.pack('<BB', 18, usb_constants.DescriptorType.STRING) +
+             'MSFT100'.encode('UTF-16LE') +
+             struct.pack('<BB', self._ms_vendor_code, 0))
+      assert len(buf) == 18
+      return buf[:length]
     elif lang not in self._strings:
       return None
     elif index not in self._strings[lang]:
@@ -366,6 +390,45 @@ class Gadget(object):
           '<BB', 2 + len(string), usb_constants.DescriptorType.STRING)
       buf = header + string
       return buf[:length]
+
+  def GetMicrosoftOSDescriptorV1(self, recipient, value, index, length):
+    """Handle a the Microsoft OS 1.0 Descriptor request from the host.
+
+    See https://msdn.microsoft.com/en-us/windows/hardware/gg463179 for the
+    format of these descriptors.
+
+    Args:
+      recipient: Request recipient (device or interface)
+      value: wValue field of the setup packet.
+      index: wIndex field of the setup packet.
+      length: Maximum amount of data the host expects the device to return.
+
+    Returns:
+      The descriptor or None to stall the pipe if the descriptor is not
+      supported.
+    """
+    _ = recipient, value
+    if index == 0x0004:
+      return self.GetMicrosoftCompatIds(length)
+
+  def GetMicrosoftCompatIds(self, length):
+    interfaces = self.GetConfigurationDescriptor().GetInterfaces()
+    max_interface = max([iface.bInterfaceNumber for iface in interfaces])
+
+    header = struct.pack('<IHHBxxxxxxx',
+                         16 + 24 * (max_interface + 1),
+                         0x0100,
+                         0x0004,
+                         max_interface + 1)
+    if length <= len(header):
+      return header[:length]
+
+    buf = header
+    for interface in xrange(max_interface + 1):
+      compat_id, sub_compat_id = self._ms_compat_ids.get(interface, ('', ''))
+      buf += struct.pack('<BB8s8sxxxxxx',
+                         interface, 0x01, compat_id, sub_compat_id)
+    return buf[:length]
 
   def SetConfiguration(self, index):
     """Handle a SET_CONFIGURATION request from the host.
