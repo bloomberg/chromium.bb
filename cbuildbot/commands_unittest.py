@@ -40,7 +40,7 @@ class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
     # Write specified error message to status file.
     def WriteError(_cmd, extra_env=None, **_kwargs):
       if extra_env is not None and error is not None:
-        status_file = extra_env['PARALLEL_EMERGE_STATUS_FILE']
+        status_file = extra_env[constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR]
         osutils.WriteFile(status_file, error)
 
     buildroot = self.tempdir

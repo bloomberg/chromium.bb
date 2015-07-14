@@ -282,6 +282,7 @@ OFFICIAL_MANIFEST = 'official.xml'
 LKGM_MANIFEST = 'LKGM/lkgm.xml'
 
 SHARED_CACHE_ENVVAR = 'CROS_CACHEDIR'
+PARALLEL_EMERGE_STATUS_FILE_ENVVAR = 'PARALLEL_EMERGE_STATUS_FILE'
 
 # These projects can be responsible for infra failures.
 INFRA_PROJECTS = (CHROMITE_PROJECT,)
@@ -757,7 +758,8 @@ PRE_CQ = 'pre-cq'
 
 # Environment variables that should be exposed to all children processes
 # invoked via cros_build_lib.RunCommand.
-ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR)
+ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR,
+                PARALLEL_EMERGE_STATUS_FILE_ENVVAR)
 
 # List of variables to proxy into the chroot from the host, and to
 # have sudo export if existent. Anytime this list is modified, a new
