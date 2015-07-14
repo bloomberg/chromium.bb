@@ -69,6 +69,8 @@ _deps_builders = {
     "win-xp": "WebKit XP (deps)",
     "win-win7": "WebKit XP (deps)",
     "mac-snowleopard": "WebKit Mac10.6 (deps)",
+    # The following port names are mapped to 10.6 bot since we don't have bots
+    # for these ports.
     "mac-lion": "WebKit Mac10.6 (deps)",
     "mac-mountainlion": "WebKit Mac10.6 (deps)",
     "mac-mavericks": "WebKit Mac10.6 (deps)",
@@ -78,13 +80,6 @@ _deps_builders = {
 
 
 _ports_without_builders = [
-]
-
-
-# These builders are ignored during rebaselining. This is useful for new
-# builders whose corresponding bots are not online yet.
-_offline_builders = [
-    "WebKit Linux Trusty",
 ]
 
 
@@ -98,11 +93,6 @@ def all_builder_names():
 
 def all_port_names():
     return sorted(set(map(lambda x: x["port_name"], _exact_matches.values()) + _ports_without_builders))
-
-
-def online_builder_names():
-    builders = all_builder_names()
-    return [builder for builder in builders if builder not in _offline_builders]
 
 
 def rebaseline_override_dir(builder_name):

@@ -324,14 +324,16 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             for builder_name in self._release_builders():
                 builder = self._tool.buildbot.builder_with_name(builder_name)
                 builder_results = builder.latest_layout_test_results()
-                assert builder_results, _log.error("No result for builder '%s'" % builder_name)
-                self._builder_data[builder_name] = builder_results
+                if builder_results:
+                    self._builder_data[builder_name] = builder_results
+                else:
+                    _log.warning("No result for builder '%s'" % builder_name)
         return self._builder_data
 
     # The release builders cycle much faster than the debug ones and cover all the platforms.
     def _release_builders(self):
         release_builders = []
-        for builder_name in builders.online_builder_names():
+        for builder_name in builders.all_builder_names():
             if builder_name.find('ASAN') != -1:
                 continue
             port = self._tool.port_factory.get_from_builder_name(builder_name)
