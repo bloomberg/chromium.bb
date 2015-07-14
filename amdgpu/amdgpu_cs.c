@@ -367,12 +367,8 @@ static int amdgpu_ioctl_wait_cs(amdgpu_context_handle context,
 	else
 		args.in.timeout = amdgpu_cs_calculate_timeout(timeout_ns);
 
-	/* Handle errors manually here because of timeout */
-	r = ioctl(dev->fd, DRM_IOCTL_AMDGPU_WAIT_CS, &args);
-	if (r == -1 && (errno == EINTR || errno == EAGAIN)) {
-		*busy = true;
-		return 0;
-	} else if (r)
+	r = drmIoctl(dev->fd, DRM_IOCTL_AMDGPU_WAIT_CS, &args);
+	if (r)
 		return -errno;
 
 	*busy = args.out.status;
