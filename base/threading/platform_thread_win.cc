@@ -55,10 +55,8 @@ DWORD __stdcall ThreadFunc(void* params) {
   if (!thread_params->joinable)
     base::ThreadRestrictions::SetSingletonAllowed(false);
 
-  if (thread_params->priority != ThreadPriority::NORMAL) {
-    PlatformThread::SetThreadPriority(
-        PlatformThread::CurrentHandle(), thread_params->priority);
-  }
+  if (thread_params->priority != ThreadPriority::NORMAL)
+    PlatformThread::SetCurrentThreadPriority(thread_params->priority);
 
   // Retrieve a copy of the thread handle to use as the key in the
   // thread name mapping.
@@ -238,10 +236,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
 }
 
 // static
-void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
-                                       ThreadPriority priority) {
-  DCHECK(!handle.is_null());
-
+void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
   int desired_priority = THREAD_PRIORITY_ERROR_RETURN;
   switch (priority) {
     case ThreadPriority::BACKGROUND:
@@ -265,16 +260,16 @@ void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
 #ifndef NDEBUG
   const BOOL success =
 #endif
-      ::SetThreadPriority(handle.platform_handle(), desired_priority);
+      ::SetThreadPriority(PlatformThread::CurrentHandle().platform_handle(),
+                          desired_priority);
   DPLOG_IF(ERROR, !success) << "Failed to set thread priority to "
                             << desired_priority;
 }
 
 // static
-ThreadPriority PlatformThread::GetThreadPriority(PlatformThreadHandle handle) {
-  DCHECK(!handle.is_null());
-
-  int priority = ::GetThreadPriority(handle.platform_handle());
+ThreadPriority PlatformThread::GetCurrentThreadPriority() {
+  int priority =
+      ::GetThreadPriority(PlatformThread::CurrentHandle().platform_handle());
   switch (priority) {
     case THREAD_PRIORITY_LOWEST:
       return ThreadPriority::BACKGROUND;

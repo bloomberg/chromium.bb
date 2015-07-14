@@ -207,12 +207,11 @@ bool CompositorOutputSurface::Send(IPC::Message* message) {
 #if defined(OS_ANDROID)
 namespace {
 void SetThreadPriorityToIdle() {
-  base::PlatformThread::SetThreadPriority(base::PlatformThread::CurrentHandle(),
-                                          base::ThreadPriority::BACKGROUND);
+  base::PlatformThread::SetCurrentThreadPriority(
+      base::ThreadPriority::BACKGROUND);
 }
 void SetThreadPriorityToDefault() {
-  base::PlatformThread::SetThreadPriority(base::PlatformThread::CurrentHandle(),
-                                          base::ThreadPriority::NORMAL);
+  base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::NORMAL);
 }
 }  // namespace
 #endif

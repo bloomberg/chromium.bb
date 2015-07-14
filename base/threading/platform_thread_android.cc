@@ -37,8 +37,7 @@ const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
     {ThreadPriority::REALTIME_AUDIO, -16},
 };
 
-bool SetThreadPriorityForPlatform(PlatformThreadHandle handle,
-                                  ThreadPriority priority) {
+bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority) {
   // On Android, we set the Audio priority through JNI as Audio priority
   // will also allow the process to run while it is backgrounded.
   if (priority == ThreadPriority::REALTIME_AUDIO) {
@@ -49,8 +48,8 @@ bool SetThreadPriorityForPlatform(PlatformThreadHandle handle,
   return false;
 }
 
-bool GetThreadPriorityForPlatform(PlatformThreadHandle handle,
-                                  ThreadPriority* priority) {
+bool GetCurrentThreadPriorityForPlatform(ThreadPriority* priority) {
+  // See http://crbug.com/505474.
   NOTIMPLEMENTED();
   return false;
 }
@@ -81,8 +80,7 @@ void InitThreading() {
 void InitOnThread() {
   // Threads on linux/android may inherit their priority from the thread
   // where they were created. This sets all new threads to the default.
-  PlatformThread::SetThreadPriority(PlatformThread::CurrentHandle(),
-                                    ThreadPriority::NORMAL);
+  PlatformThread::SetCurrentThreadPriority(ThreadPriority::NORMAL);
 }
 
 void TerminateOnThread() {
