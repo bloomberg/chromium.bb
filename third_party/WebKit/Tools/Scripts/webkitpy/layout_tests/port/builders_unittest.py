@@ -45,3 +45,18 @@ class BuildersTest(unittest.TestCase):
         for port_name in builders.all_port_names():
             if port_name != 'android':
                 self.assertIsNotNone(builders.deps_builder_name_for_port_name(port_name))
+
+    def test_builder_names_are_unique(self):
+        self.assertEquals(len(set(builders.all_builder_names())), len(builders._exact_matches))
+
+    def test_offline_builders_are_valid(self):
+        all_builder_names = builders.all_builder_names()
+        for offline_builder in builders._offline_builders:
+            self.assertTrue(offline_builder in all_builder_names)
+
+    def test_online_builder_names(self):
+        self.assertEqual(len(builders.online_builder_names()),
+                         len(builders.all_builder_names()) - len(builders._offline_builders))
+        online_builder_names = builders.online_builder_names()
+        for offline_builder in builders._offline_builders:
+            self.assertFalse(offline_builder in online_builder_names)
