@@ -536,8 +536,8 @@ class DebugStubTest(unittest.TestCase):
         self.assertEquals(old_value, 0)
       regs[reg_name] += 1
 
-      # Write registers.
-      self.assertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
+      # Check cannot write registers.
+      self.assertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'E03')
 
       # Read registers. Check for an old value.
       regs = DecodeRegs(connection.RspRequest('g'))
@@ -870,16 +870,17 @@ class DebugStubTest(unittest.TestCase):
       for reg in valid_regs:
         self.assertEquals(ChangeReg(connection, reg, lambda x: x + 1), 'OK')
 
-      # Cannot change read only registers, however error is suppressed.
+      # Cannot change read only registers.
       for reg in read_only_regs:
-        self.assertEquals(ChangeReg(connection, reg, lambda x: x + 1), 'OK')
+        self.assertEquals(ChangeReg(connection, reg, lambda x: x + 1), 'E03')
 
-      # Cannot change the upper 32 bits of restricted registers.
-      # However error is suppressed.
+      # Cannot change the upper 32 bits of restricted registers
+      # to non-zero value.
       for reg in restricted_regs:
         self.assertEquals(ChangeReg(connection, reg, lambda x: 0), 'OK')
+        self.assertEquals(ChangeReg(connection, reg, lambda x: x), 'OK')
         self.assertEquals(ChangeReg(connection, reg,
-          lambda x: x + 0xf00000000), 'OK')
+          lambda x: x + 0xf00000000), 'E03')
 
       # Next instruction is a super instruction.
       # Therefore cannot jump anywhere in the middle.

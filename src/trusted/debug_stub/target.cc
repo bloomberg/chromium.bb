@@ -671,11 +671,10 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
       uint32_t new_pc = static_cast<uint32_t>(
           reinterpret_cast<NaClSignalContext *>(ctx_)->prog_ctr);
 
-      if (!IsOnValidInstBoundary(new_pc)) {
+      if (!IsOnValidInstBoundary(new_pc) || !thread->SetRegisters(ctx_)) {
         NaClLog(LOG_ERROR, "Invalid register change\n");
         err = FAILED;
       } else {
-        thread->SetRegisters(ctx_);
         pktOut->AddString("OK");
       }
 
