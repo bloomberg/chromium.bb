@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "Source/platform/PartitionAllocMemoryDumpProvider.h"
+#include "platform/PartitionAllocMemoryDumpProvider.h"
 
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"

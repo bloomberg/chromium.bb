@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "Source/platform/heap/BlinkGCMemoryDumpProvider.h"
+#include "platform/heap/BlinkGCMemoryDumpProvider.h"
 
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
