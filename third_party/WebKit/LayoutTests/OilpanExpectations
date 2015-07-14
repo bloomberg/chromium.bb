@@ -52,3 +52,5 @@ crbug.com/344239 [ Release ] inspector-protocol/heap-profiler/heap-objects-track
 crbug.com/356742 [ Win ] svg/as-image/animated-svg-animation-control.html
 
 crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
+
+crbug.com/506186 accessibility/axobjectcache-leaks-node.html [ Failure ]
