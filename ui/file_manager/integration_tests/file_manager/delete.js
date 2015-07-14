@@ -5,7 +5,8 @@
 // Delete menu item should be disabled when no item is selected.
 testcase.deleteMenuItemIsDisabledWhenNoItemIsSelected = function() {
   testPromise(setupAndWaitUntilReady(null, RootPath.DOWNALOD).then(
-      function(windowId) {
+      function(results) {
+        var windowId = results.windowId;
         // Right click the list without selecting an item.
         return remoteCall.callRemoteTestUtil(
             'fakeMouseRightClick', windowId, ['list.list']
@@ -43,7 +44,8 @@ testcase.deleteOneItemFromToolbar = function() {
   ]);
 
   testPromise(setupAndWaitUntilReady(null, RootPath.DOWNALOD).then(
-      function(windowId) {
+      function(results) {
+        var windowId = results.windowId;
         // Confirm entries in the directory before the deletion.
         //
         // Ignore last modified time since file manager sometimes fails to get
