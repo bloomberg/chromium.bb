@@ -126,6 +126,8 @@ class RdpClientWindow
   STDMETHOD(OnFatalError)(long error_code);
   STDMETHOD(OnConfirmClose)(VARIANT_BOOL* allow_close);
 
+  int LogOnCreateError(HRESULT error);
+
   // Wrappers for the event handler's methods that make sure that
   // OnDisconnected() is the last notification delivered and is delevered
   // only once.

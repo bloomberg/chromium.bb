@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/win/scoped_handle.h"
+#include "base/win/scoped_hdc.h"
 #include "printing/backend/printing_info_win.h"
 #include "printing/backend/win_helper.h"
 #include "printing/print_settings.h"
@@ -34,6 +36,18 @@ class PrintingContextTest : public PrintingTest<testing::Test>,
   PrintingContext::Result result_;
 };
 
+namespace {
+struct FreeHandleTraits {
+  typedef HANDLE Handle;
+  static void CloseHandle(HANDLE handle) { GlobalFree(handle); }
+  static bool IsHandleValid(HANDLE handle) { return handle != NULL; }
+  static HANDLE NullHandle() { return NULL; }
+};
+typedef base::win::GenericScopedHandle<FreeHandleTraits,
+                                       base::win::DummyVerifierTraits>
+    ScopedGlobalAlloc;
+}
+
 class MockPrintingContextWin : public PrintingContextSytemDialogWin {
  public:
   MockPrintingContextWin(Delegate* delegate)
@@ -58,41 +72,31 @@ class MockPrintingContextWin : public PrintingContextSytemDialogWin {
     if (!printer.OpenPrinter(printer_name.c_str()))
       return E_FAIL;
 
-    scoped_ptr<uint8[]> buffer;
     const DEVMODE* dev_mode = NULL;
-    HRESULT result = S_OK;
     lppd->hDC = NULL;
     lppd->hDevMode = NULL;
     lppd->hDevNames = NULL;
 
     PrinterInfo2 info_2;
-    if (info_2.Init(printer.Get())) {
+    if (info_2.Init(printer.Get()))
       dev_mode = info_2.get()->pDevMode;
-    }
-    if (!dev_mode) {
-      result = E_FAIL;
-      goto Cleanup;
-    }
+    if (!dev_mode)
+      return E_FAIL;
 
-    lppd->hDC = CreateDC(L"WINSPOOL", printer_name.c_str(), NULL, dev_mode);
-    if (!lppd->hDC) {
-      result = E_FAIL;
-      goto Cleanup;
-    }
+    base::win::ScopedCreateDC hdc(
+        CreateDC(L"WINSPOOL", printer_name.c_str(), NULL, dev_mode));
+    if (!hdc.Get())
+      return E_FAIL;
 
     size_t dev_mode_size = dev_mode->dmSize + dev_mode->dmDriverExtra;
-    lppd->hDevMode = GlobalAlloc(GMEM_MOVEABLE, dev_mode_size);
-    if (!lppd->hDevMode) {
-      result = E_FAIL;
-      goto Cleanup;
-    }
-    void* dev_mode_ptr = GlobalLock(lppd->hDevMode);
-    if (!dev_mode_ptr) {
-      result = E_FAIL;
-      goto Cleanup;
-    }
+    ScopedGlobalAlloc dev_mode_mem(GlobalAlloc(GMEM_MOVEABLE, dev_mode_size));
+    if (!dev_mode_mem.Get())
+      return E_FAIL;
+    void* dev_mode_ptr = GlobalLock(dev_mode_mem.Get());
+    if (!dev_mode_ptr)
+      return E_FAIL;
     memcpy(dev_mode_ptr, dev_mode, dev_mode_size);
-    GlobalUnlock(lppd->hDevMode);
+    GlobalUnlock(dev_mode_mem.Get());
     dev_mode_ptr = NULL;
 
     size_t driver_size =
@@ -102,16 +106,12 @@ class MockPrintingContextWin : public PrintingContextSytemDialogWin {
     size_t port_size = 2 + sizeof(wchar_t) * lstrlen(info_2.get()->pPortName);
     size_t dev_names_size =
         sizeof(DEVNAMES) + driver_size + printer_size + port_size;
-    lppd->hDevNames = GlobalAlloc(GHND, dev_names_size);
-    if (!lppd->hDevNames) {
-      result = E_FAIL;
-      goto Cleanup;
-    }
-    void* dev_names_ptr = GlobalLock(lppd->hDevNames);
-    if (!dev_names_ptr) {
-      result = E_FAIL;
-      goto Cleanup;
-    }
+    ScopedGlobalAlloc dev_names_mem(GlobalAlloc(GHND, dev_names_size));
+    if (!dev_names_mem.Get())
+      return E_FAIL;
+    void* dev_names_ptr = GlobalLock(dev_names_mem.Get());
+    if (!dev_names_ptr)
+      return E_FAIL;
     DEVNAMES* dev_names = reinterpret_cast<DEVNAMES*>(dev_names_ptr);
     dev_names->wDefault = 1;
     dev_names->wDriverOffset = sizeof(DEVNAMES) / sizeof(wchar_t);
@@ -128,27 +128,13 @@ class MockPrintingContextWin : public PrintingContextSytemDialogWin {
     memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wOutputOffset,
            info_2.get()->pPortName,
            port_size);
-    GlobalUnlock(lppd->hDevNames);
+    GlobalUnlock(dev_names_mem.Get());
     dev_names_ptr = NULL;
 
-  Cleanup:
-    // Note: This section does proper deallocation/free of DC/global handles. We
-    //       did not use ScopedHGlobal or ScopedHandle because they did not
-    //       perform what we need.  Goto's are used based on Windows programming
-    //       idiom, to avoid deeply nested if's, and try-catch-finally is not
-    //       allowed in Chromium.
-    if (FAILED(result)) {
-      if (lppd->hDC) {
-        DeleteDC(lppd->hDC);
-      }
-      if (lppd->hDevMode) {
-        GlobalFree(lppd->hDevMode);
-      }
-      if (lppd->hDevNames) {
-        GlobalFree(lppd->hDevNames);
-      }
-    }
-    return result;
+    lppd->hDC = hdc.Take();
+    lppd->hDevMode = dev_mode_mem.Take();
+    lppd->hDevNames = dev_names_mem.Take();
+    return S_OK;
   }
 };
 

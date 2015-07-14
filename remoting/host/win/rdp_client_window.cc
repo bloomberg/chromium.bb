@@ -247,10 +247,8 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   RECT rect = { 0, 0, screen_size_.width(), screen_size_.height() };
   activex_window.Create(m_hWnd, rect, nullptr,
                         WS_CHILD | WS_VISIBLE | WS_BORDER);
-  if (activex_window.m_hWnd == nullptr) {
-    result = HRESULT_FROM_WIN32(GetLastError());
-    goto done;
-  }
+  if (activex_window.m_hWnd == nullptr)
+    return LogOnCreateError(HRESULT_FROM_WIN32(GetLastError()));
 
   // Instantiate the RDP ActiveX control.
   result = activex_window.CreateControlEx(
@@ -261,71 +259,71 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
       __uuidof(mstsc::IMsTscAxEvents),
       reinterpret_cast<IUnknown*>(static_cast<RdpEventsSink*>(this)));
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   result = control.QueryInterface(client_.Receive());
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Use 32-bit color.
   result = client_->put_ColorDepth(32);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Set dimensions of the remote desktop.
   result = client_->put_DesktopWidth(screen_size_.width());
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
   result = client_->put_DesktopHeight(screen_size_.height());
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Set the server name to connect to.
   result = client_->put_Server(server_name);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Fetch IMsRdpClientAdvancedSettings interface for the client.
   result = client_->get_AdvancedSettings2(client_settings_.Receive());
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Disable background input mode.
   result = client_settings_->put_allowBackgroundInput(0);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Do not use bitmap cache.
   result = client_settings_->put_BitmapPersistence(0);
   if (SUCCEEDED(result))
     result = client_settings_->put_CachePersistenceActive(0);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Do not use compression.
   result = client_settings_->put_Compress(0);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Enable the Ctrl+Alt+Del screen.
   result = client_settings_->put_DisableCtrlAltDel(0);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Disable printer and clipboard redirection.
   result = client_settings_->put_DisableRdpdr(FALSE);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Do not display the connection bar.
   result = client_settings_->put_DisplayConnectionBar(VARIANT_FALSE);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Do not grab focus on connect.
   result = client_settings_->put_GrabFocusOnConnect(VARIANT_FALSE);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Enable enhanced graphics, font smoothing and desktop composition.
   const LONG kDesiredFlags = WTS_PERF_ENABLE_ENHANCED_GRAPHICS |
@@ -333,12 +331,12 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
                              WTS_PERF_ENABLE_DESKTOP_COMPOSITION;
   result = client_settings_->put_PerformanceFlags(kDesiredFlags);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Set the port to connect to.
   result = client_settings_->put_RDPPort(server_endpoint_.port());
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Disable audio in the session.
   // TODO(alexeypa): re-enable audio redirection when http://crbug.com/242312 is
@@ -347,12 +345,12 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   if (SUCCEEDED(result)) {
     result = secured_settings2->put_AudioRedirectionMode(kRdpAudioModeNone);
     if (FAILED(result))
-      goto done;
+      return LogOnCreateError(result);
   }
 
   result = client_->get_SecuredSettings(secured_settings.Receive());
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   // Set the terminal ID as the working directory for the initial program. It is
   // observed that |WorkDir| is used only if an initial program is also
@@ -363,21 +361,11 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   // This code should be in sync with WtsTerminalMonitor::LookupTerminalId().
   result = secured_settings->put_WorkDir(terminal_id);
   if (FAILED(result))
-    goto done;
+    return LogOnCreateError(result);
 
   result = client_->Connect();
   if (FAILED(result))
-    goto done;
-
-done:
-  if (FAILED(result)) {
-    LOG(ERROR) << "RDP: failed to initiate a connection to "
-               << server_endpoint_.ToString() << ": error="
-               << std::hex << result << std::dec;
-    client_.Release();
-    client_settings_.Release();
-    return -1;
-  }
+    return LogOnCreateError(result);
 
   return 0;
 }
@@ -460,6 +448,15 @@ HRESULT RdpClientWindow::OnConfirmClose(VARIANT_BOOL* allow_close) {
 
   NotifyDisconnected();
   return S_OK;
+}
+
+int RdpClientWindow::LogOnCreateError(HRESULT error) {
+  LOG(ERROR) << "RDP: failed to initiate a connection to "
+             << server_endpoint_.ToString() << ": error="
+             << std::hex << error << std::dec;
+  client_.Release();
+  client_settings_.Release();
+  return -1;
 }
 
 void RdpClientWindow::NotifyConnected() {
