@@ -53,6 +53,7 @@
       'image_writer_private.idl',
       'inline_install_private.idl',
       'instance_id.json',
+      'language_settings_private.idl',
       'launcher_page.idl',
       'location.idl',
       'manifest_types.json',

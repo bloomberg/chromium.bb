@@ -517,6 +517,18 @@
     "dependencies": ["permission:gcm"],
     "contexts": ["blessed_extension"]
   },
+  "languageSettingsPrivate": [{
+    "dependencies": ["permission:languageSettingsPrivate"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "launcherPage": {
     "dependencies": ["manifest:launcher_page"],
     "contexts": ["blessed_extension"]

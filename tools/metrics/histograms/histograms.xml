@@ -56062,6 +56062,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1060" label="FILEMANAGERPRIVATEINTERNAL_GETENTRYACTIONS"/>
   <int value="1061" label="FILEMANAGERPRIVATEINTERNAL_EXECUTEENTRYACTION"/>
   <int value="1062" label="MDNS_FORCEDISCOVERY"/>
+  <int value="1063" label="LANGUAGESETTINGSPRIVATE_GETLANGUAGELIST"/>
+  <int value="1064" label="LANGUAGESETTINGSPRIVATE_SETLANGUAGELIST"/>
+  <int value="1065"
+      label="LANGUAGESETTINGSPRIVATE_GETSPELLCHECKDICTIONARYSTATUS"/>
+  <int value="1066" label="LANGUAGESETTINGSPRIVATE_GETSPELLCHECKWORDS"/>
+  <int value="1067" label="LANGUAGESETTINGSPRIVATE_GETTRANSLATETARGETLANGUAGE"/>
+  <int value="1068" label="LANGUAGESETTINGSPRIVATE_GETINPUTMETHODLISTS"/>
+  <int value="1069" label="LANGUAGESETTINGSPRIVATE_ADDINPUTMETHOD"/>
+  <int value="1070" label="LANGUAGESETTINGSPRIVATE_REMOVEINPUTMETHOD"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
@@ -56465,6 +56474,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="192" label="kUsbDeviceUnknownVendor"/>
   <int value="193" label="kUsersPrivate"/>
   <int value="194" label="kPasswordsPrivate"/>
+  <int value="195" label="kLanguageSettingsPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
