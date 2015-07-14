@@ -6,7 +6,9 @@
 
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
@@ -16,7 +18,14 @@
 namespace extensions {
 namespace {
 
-class ExtensionBindingsApiTest : public ExtensionApiTest {};
+class ExtensionBindingsApiTest : public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        UnavailableBindingsNeverRegistered) {
@@ -95,6 +104,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, Nocompile) {
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, ApiEnums) {
   ASSERT_TRUE(RunExtensionTest("bindings/api_enums")) << message_;
 };
+
+// Regression test for http://crbug.com/504011 - proper access checks on
+// getModuleSystem().
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, ModuleSystem) {
+  ASSERT_TRUE(RunExtensionTest("bindings/module_system")) << message_;
+}
 
 }  // namespace
 }  // namespace extensions

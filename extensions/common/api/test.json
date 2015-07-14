@@ -147,16 +147,33 @@
         ]
       },
       {
-        "name": "runWithModuleSystem",
+        "name": "runWithNativesEnabled",
         "type": "function",
         "nocompile": true,
-        "description": "Gets a module system suitable for use in the context of a test.",
+        "description": "Runs the given function with access to native methods enabled.",
         "parameters": [
           {
             "type": "function",
             "name": "callback"
           }
         ]
+      },
+      {
+        "name": "getModuleSystem",
+        "type": "function",
+        "nocompile": true,
+        "description": "Returns an instance of the module system for the given context.",
+        "parameters": [
+          {
+            "type": "any",
+            "name": "context"
+          }
+        ],
+        "returns": {
+          "type": "any",
+          "description": "The module system",
+          "optional": true
+        }
       },
       {
         "name": "assertTrue",

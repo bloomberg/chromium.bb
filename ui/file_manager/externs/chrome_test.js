@@ -62,10 +62,16 @@ chrome.test.fail = function(message) {};
 chrome.test.succeed = function(message) {};
 
 /**
- * Gets a module system suitable for use in the context of a test.
+ * Runs the given function with access to native methods enabled.
  * @param {Function} callback
  */
-chrome.test.runWithModuleSystem = function(callback) {};
+chrome.test.runWithNativesEnabled = function(callback) {};
+
+/**
+ * Returns an instance of the ModuleSystem for the given context.
+ * @param {Object} context
+ */
+chrome.test.getModuleSystem = function(context) {};
 
 /**
  * @param {?} test

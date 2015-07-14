@@ -19,8 +19,7 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
   void GetAvailability(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetModuleSystem(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  void RunWithNativesEnabledModuleSystem(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
+  void RunWithNativesEnabled(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   ScriptContext* context_;
   Dispatcher* dispatcher_;

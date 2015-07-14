@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.test.runWithModuleSystem(function(moduleSystem) {
+chrome.test.runWithNativesEnabled(function() {
+  var moduleSystem = chrome.test.getModuleSystem(window);
   window.AutomationRootNode =
       moduleSystem.require('automationNode').AutomationRootNode;
   window.privates = moduleSystem.privates;
