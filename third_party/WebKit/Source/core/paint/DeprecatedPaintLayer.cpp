@@ -454,59 +454,18 @@ void DeprecatedPaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
     if (layoutObject()->isLayoutFlowThread())
         needsPaginationUpdate = true;
 
-    if (needsPaginationUpdate)
-        updatePagination();
+    if (needsPaginationUpdate) {
+        // Each paginated layer has to paint on its own. There is no recurring into child layers. Each
+        // layer has to be checked individually and genuinely know if it is going to have to split
+        // itself up when painting only its contents (and not any other descendant layers). We track an
+        // enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
+        // to that layer easily.
+        if (LayoutFlowThread* containingFlowThread = layoutObject()->flowThreadContainingBlock())
+            m_enclosingPaginationLayer = containingFlowThread->layer();
+    }
 
     for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->updatePaginationRecursive(needsPaginationUpdate);
-}
-
-void DeprecatedPaintLayer::updatePagination()
-{
-    if (!parent())
-        return; // FIXME: For now the LayoutView can't be paginated.  Eventually printing will move to a model where it is though.
-
-    // Each paginated layer has to paint on its own. There is no recurring into child layers. Each
-    // layer has to be checked individually and genuinely know if it is going to have to split
-    // itself up when painting only its contents (and not any other descendant layers). We track an
-    // enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
-    // to that layer easily.
-    if (layoutObject()->isLayoutFlowThread()) {
-        m_enclosingPaginationLayer = this;
-        return;
-    }
-
-    if (!m_stackingNode->isTreatedAsStackingContextForPainting()) {
-        // We cannot take the fast path for spanners, as they do not have their nearest ancestor
-        // pagination layer (flow thread) in their containing block chain.
-        if (!layoutObject()->isColumnSpanAll()) {
-            // Content inside a transform is not considered to be paginated, since we simply
-            // paint the transform multiple times in each column, so we don't have to use
-            // fragments for the transformed content.
-            m_enclosingPaginationLayer = parent()->enclosingPaginationLayer();
-            if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
-                m_enclosingPaginationLayer = 0;
-            return;
-        }
-    }
-
-    // Walk up our containing block chain looking for an enclosing layer. Once we find one, then we
-    // just check its pagination status.
-    LayoutView* view = layoutObject()->view();
-    LayoutBlock* containingBlock;
-    for (containingBlock = layoutObject()->containingBlock();
-        containingBlock && containingBlock != view;
-        containingBlock = containingBlock->containingBlock()) {
-        if (containingBlock->hasLayer()) {
-            // Content inside a transform is not considered to be paginated, since we simply
-            // paint the transform multiple times in each column, so we don't have to use
-            // fragments for the transformed content.
-            m_enclosingPaginationLayer = containingBlock->layer()->enclosingPaginationLayer();
-            if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
-                m_enclosingPaginationLayer = 0;
-            return;
-        }
-    }
 }
 
 void DeprecatedPaintLayer::clearPaginationRecursive()

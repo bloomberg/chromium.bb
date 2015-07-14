@@ -604,7 +604,6 @@ private:
     void updateOrRemoveFilterClients();
 
     void updatePaginationRecursive(bool needsPaginationUpdate = false);
-    void updatePagination();
     void clearPaginationRecursive();
 
     DeprecatedPaintLayerType m_layerType;
