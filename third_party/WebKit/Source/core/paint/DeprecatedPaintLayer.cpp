@@ -405,12 +405,12 @@ TransformationMatrix DeprecatedPaintLayer::currentTransform() const
     return *m_transform;
 }
 
-TransformationMatrix DeprecatedPaintLayer::renderableTransform(PaintBehavior paintBehavior) const
+TransformationMatrix DeprecatedPaintLayer::renderableTransform(GlobalPaintFlags globalPaintFlags) const
 {
     if (!m_transform)
         return TransformationMatrix();
 
-    if (paintBehavior & PaintBehaviorFlattenCompositingLayers) {
+    if (globalPaintFlags & GlobalPaintFlattenCompositingLayers) {
         TransformationMatrix matrix = *m_transform;
         makeMatrixRenderable(matrix, false /* flatten 3d */);
         return matrix;
@@ -997,7 +997,7 @@ bool DeprecatedPaintLayer::hasAncestorWithFilterOutsets() const
 }
 
 static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* rootLayer,
-    DeprecatedPaintLayer::TransparencyClipBoxBehavior transparencyBehavior, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
+    DeprecatedPaintLayer::TransparencyClipBoxBehavior transparencyBehavior, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
 {
     // If we have a mask, then the clip is limited to the border box area (and there is
     // no need to examine child layers).
@@ -1006,7 +1006,7 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
         // a stacking container. This means we can just walk the layer tree directly.
         for (DeprecatedPaintLayer* curr = layer->firstChild(); curr; curr = curr->nextSibling()) {
             if (!layer->reflectionInfo() || layer->reflectionInfo()->reflectionLayer() != curr)
-                clipRect.unite(DeprecatedPaintLayer::transparencyClipBox(curr, rootLayer, transparencyBehavior, DeprecatedPaintLayer::DescendantsOfTransparencyClipBox, subPixelAccumulation, paintBehavior));
+                clipRect.unite(DeprecatedPaintLayer::transparencyClipBox(curr, rootLayer, transparencyBehavior, DeprecatedPaintLayer::DescendantsOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags));
         }
     }
 
@@ -1024,13 +1024,13 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
 }
 
 LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
-    TransparencyClipBoxMode transparencyMode, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
+    TransparencyClipBoxMode transparencyMode, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
 {
     // FIXME: Although this function completely ignores CSS-imposed clipping, we did already intersect with the
     // paintDirtyRect, and that should cut down on the amount we have to paint.  Still it
     // would be better to respect clips.
 
-    if (rootLayer != layer && ((transparencyBehavior == PaintingTransparencyClipBox && layer->paintsWithTransform(paintBehavior))
+    if (rootLayer != layer && ((transparencyBehavior == PaintingTransparencyClipBox && layer->paintsWithTransform(globalPaintFlags))
         || (transparencyBehavior == HitTestingTransparencyClipBox && layer->hasTransformRelatedProperty()))) {
         // The best we can do here is to use enclosed bounding boxes to establish a "fuzzy" enough clip to encompass
         // the transformed layer and all of its children.
@@ -1049,7 +1049,7 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
         // We don't use fragment boxes when collecting a transformed layer's bounding box, since it always
         // paints unfragmented.
         LayoutRect clipRect = layer->physicalBoundingBox(layer);
-        expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, subPixelAccumulation, paintBehavior);
+        expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, subPixelAccumulation, globalPaintFlags);
         clipRect.expand(layer->layoutObject()->style()->filterOutsets());
         LayoutRect result = transform.mapRect(clipRect);
         if (!paginationLayer)
@@ -1068,15 +1068,15 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
     }
 
     LayoutRect clipRect = layer->fragmentsBoundingBox(rootLayer);
-    expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, subPixelAccumulation, paintBehavior);
+    expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, subPixelAccumulation, globalPaintFlags);
     clipRect.expand(layer->layoutObject()->style()->filterOutsets());
     clipRect.move(subPixelAccumulation);
     return clipRect;
 }
 
-LayoutRect DeprecatedPaintLayer::paintingExtent(const DeprecatedPaintLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
+LayoutRect DeprecatedPaintLayer::paintingExtent(const DeprecatedPaintLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
 {
-    return intersection(transparencyClipBox(this, rootLayer, PaintingTransparencyClipBox, RootOfTransparencyClipBox, subPixelAccumulation, paintBehavior), paintDirtyRect);
+    return intersection(transparencyClipBox(this, rootLayer, PaintingTransparencyClipBox, RootOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags), paintDirtyRect);
 }
 
 void* DeprecatedPaintLayer::operator new(size_t sz)
@@ -2215,7 +2215,7 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
         result.expand(m_layoutObject->style()->filterOutsets());
     }
 
-    if (transform() && (paintsWithTransform(PaintBehaviorNormal) || options == ApplyBoundsChickenEggHacks))
+    if (transform() && (paintsWithTransform(GlobalPaintNormalPhase) || options == ApplyBoundsChickenEggHacks))
         result = transform()->mapRect(result);
 
     if (enclosingPaginationLayer()) {
@@ -2335,9 +2335,9 @@ bool DeprecatedPaintLayer::hasCompositedClippingMask() const
     return m_compositedDeprecatedPaintLayerMapping && m_compositedDeprecatedPaintLayerMapping->hasChildClippingMaskLayer();
 }
 
-bool DeprecatedPaintLayer::paintsWithTransform(PaintBehavior paintBehavior) const
+bool DeprecatedPaintLayer::paintsWithTransform(GlobalPaintFlags globalPaintFlags) const
 {
-    return (transform() || layoutObject()->style()->position() == FixedPosition) && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
+    return (transform() || layoutObject()->style()->position() == FixedPosition) && ((globalPaintFlags & GlobalPaintFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
 }
 
 bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
@@ -2345,7 +2345,7 @@ bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& l
     if (!isSelfPaintingLayer() && !hasSelfPaintingLayerDescendant())
         return false;
 
-    if (paintsWithTransparency(PaintBehaviorNormal))
+    if (paintsWithTransparency(GlobalPaintNormalPhase))
         return false;
 
     // We can't use hasVisibleContent(), because that will be true if our layoutObject is hidden, but some child
@@ -2357,7 +2357,7 @@ bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& l
         return false;
 
     // FIXME: Handle simple transforms.
-    if (paintsWithTransform(PaintBehaviorNormal))
+    if (paintsWithTransform(GlobalPaintNormalPhase))
         return false;
 
     // FIXME: Remove this check.

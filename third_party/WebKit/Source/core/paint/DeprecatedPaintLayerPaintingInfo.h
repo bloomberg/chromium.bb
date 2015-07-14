@@ -74,17 +74,17 @@ typedef unsigned PaintLayerFlags;
 
 struct DeprecatedPaintLayerPaintingInfo {
     DeprecatedPaintLayerPaintingInfo(DeprecatedPaintLayer* inRootLayer, const LayoutRect& inDirtyRect,
-        PaintBehavior inPaintBehavior, const LayoutSize& inSubPixelAccumulation,
+        GlobalPaintFlags globalPaintFlags, const LayoutSize& inSubPixelAccumulation,
         LayoutObject* inPaintingRoot = 0)
         : rootLayer(inRootLayer)
         , paintingRoot(inPaintingRoot)
         , paintDirtyRect(inDirtyRect)
         , subPixelAccumulation(inSubPixelAccumulation)
         , clipToDirtyRect(true)
-        , m_paintBehavior(inPaintBehavior)
+        , m_globalPaintFlags(globalPaintFlags)
     { }
 
-    PaintBehavior paintBehavior() const { return m_paintBehavior; }
+    GlobalPaintFlags globalPaintFlags() const { return m_globalPaintFlags; }
 
     // TODO(jchaffraix): We should encapsulate all these fields.
     DeprecatedPaintLayer* rootLayer;
@@ -95,7 +95,7 @@ struct DeprecatedPaintLayerPaintingInfo {
     bool clipToDirtyRect;
 
 private:
-    const PaintBehavior m_paintBehavior;
+    const GlobalPaintFlags m_globalPaintFlags;
 };
 
 } // namespace blink

@@ -89,7 +89,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
         LayoutPoint offset;
         rootLayer.convertToLayerCoords(nullptr, offset);
         transform.translate(offset.x(), offset.y());
-        transform.multiply(rootLayer.renderableTransform(paintInfo.paintBehavior));
+        transform.multiply(rootLayer.renderableTransform(paintInfo.globalPaintFlags()));
 
         if (!transform.isInvertible()) {
             backgroundRenderable = false;

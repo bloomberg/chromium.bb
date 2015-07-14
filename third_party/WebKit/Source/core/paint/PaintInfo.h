@@ -86,6 +86,9 @@ struct PaintInfo {
     ListHashSet<LayoutInline*>* outlineObjects() const { return m_outlineObjects; }
     void setOutlineObjects(ListHashSet<LayoutInline*>* objects) { m_outlineObjects = objects; }
 
+    // TODO(jchaffraix): Split the GlobalPaintFlags out of paintBehavior into its own field.
+    GlobalPaintFlags globalPaintFlags() const { return toGlobalPaintFlags(paintBehavior); }
+
     bool intersectsCullRect(const AffineTransform& transform, const FloatRect& boundingBox) const
     {
         return transform.mapRect(boundingBox).intersects(rect);
