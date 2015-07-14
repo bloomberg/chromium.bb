@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+description('Calling textSurroundingNode() on a detached node without crashing');
+
+if (window.internals) {
+    var node = document.createElement("p");
+    shouldBeEmptyString('window.internals.textSurroundingNode(node, 0, 0, 0)');
+}
+</script>
