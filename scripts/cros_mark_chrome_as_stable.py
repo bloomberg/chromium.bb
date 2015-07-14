@@ -527,7 +527,8 @@ def main(_argv):
       version_to_uprev, commit_to_use, chrome_package_dir)
   if chrome_version_atom:
     if options.boards:
-      cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
+      cros_mark_as_stable.CleanStalePackages(options.srcroot,
+                                             options.boards.split(':'),
                                              [chrome_version_atom])
 
     # If we did rev Chrome, now is a good time to uprev other packages.
@@ -545,7 +546,8 @@ def main(_argv):
                                              chrome_rev, version_to_uprev,
                                              commit_to_use, other_package_dir)
       if revved_atom and options.boards:
-        cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
+        cros_mark_as_stable.CleanStalePackages(options.srcroot,
+                                               options.boards.split(':'),
                                                [revved_atom])
 
   # Explicit print to communicate to caller.
