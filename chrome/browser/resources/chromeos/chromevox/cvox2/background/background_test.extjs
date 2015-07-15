@@ -218,3 +218,21 @@ TEST_F('BackgroundTest', 'ShowContextMenu', function() {
       go.focus();
     }.bind(this));
 });
+
+TEST_F('BackgroundTest', 'InitialFocus', function() {
+  this.runWithLoadedTree('<a href="a">a</a>',
+    function(rootNode) {
+      cvox.ChromeVox.tts.expectSpeech('a link', testDone);
+
+      rootNode.focus();
+    }.bind(this));
+});
+
+TEST_F('BackgroundTest', 'AriaLabel', function() {
+  this.runWithLoadedTree('<a aria-label="foo" href="a">a</a>',
+    function(rootNode) {
+      cvox.ChromeVox.tts.expectSpeech('foo link', testDone);
+
+      rootNode.focus();
+    }.bind(this));
+});

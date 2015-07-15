@@ -791,7 +791,12 @@ Output.prototype = {
             }
             earconFinder = earconFinder.parent;
           }
-          this.append_(buff, node.name, options);
+
+          // Pending finalization of name calculation; we must use the
+          // attributes property to access aria-label. See crbug.com/473220.
+          node.attributes = node.attributes || {};
+          var resolvedName = node.name || node.attributes['aria-label'];
+          this.append_(buff, resolvedName, options);
         } else if (token == 'nameOrDescendants') {
           options.annotation.push(token);
           if (node.name)

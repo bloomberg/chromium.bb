@@ -123,14 +123,18 @@ cvox.ChromeHost.prototype.init = function() {
 
   cvox.ExtensionBridge.addMessageListener(function(msg, port) {
     var message = msg['message'];
+    var cmd = msg['command'];
     if (message == 'USER_COMMAND') {
-      var cmd = msg['command'];
       if (cmd != 'toggleChromeVox' && !cvox.ChromeVox.documentHasFocus()) {
         return;
       }
       cvox.ChromeVoxUserCommands.commands[cmd](msg);
+    } else if (message == 'SYSTEM_COMMAND') {
+      if (cmd == 'killChromeVox') {
+        this.killChromeVox();
+      }
     }
-  });
+  }.bind(this));
 
   cvox.ExtensionBridge.send({
       'target': 'Prefs',

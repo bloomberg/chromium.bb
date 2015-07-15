@@ -30,7 +30,14 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
   if (!current_tree_.get())
     current_tree_.reset(new AXTreeSourceAura());
   ResetSerializer();
+
   SendEvent(context, current_tree_->GetRoot(), ui::AX_EVENT_LOAD_COMPLETE);
+  if (focused_window_) {
+    views::AXAuraObjWrapper* focus =
+        views::AXAuraObjCache::GetInstance()->GetOrCreate(focused_window_);
+    SendEvent(context, focus, ui::AX_EVENT_CHILDREN_CHANGED);
+  }
+
   if (!pending_alert_text_.empty()) {
     HandleAlert(context, pending_alert_text_);
     pending_alert_text_.clear();
@@ -47,6 +54,8 @@ void AutomationManagerAura::Disable() {
 void AutomationManagerAura::HandleEvent(BrowserContext* context,
                                         views::View* view,
                                         ui::AXEvent event_type) {
+  if (view->GetWidget())
+    focused_window_ = view->GetWidget()->GetNativeView();
   if (!enabled_)
     return;
 
@@ -115,7 +124,8 @@ void AutomationManagerAura::ShowContextMenu(int32 id) {
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : enabled_(false), processing_events_(false) {
+    : enabled_(false), processing_events_(false), focused_window_(nullptr) {
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
 }
 
 AutomationManagerAura::~AutomationManagerAura() {
@@ -143,4 +153,8 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   details.push_back(detail);
   extensions::automation_util::DispatchAccessibilityEventsToAutomation(
       details, context, gfx::Vector2d());
+}
+
+void AutomationManagerAura::OnNativeFocusChanged(aura::Window* focused_now) {
+  focused_window_ = focused_now;
 }

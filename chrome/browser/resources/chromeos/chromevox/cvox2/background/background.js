@@ -17,6 +17,7 @@ goog.require('Output');
 goog.require('Output.EventType');
 goog.require('cursors.Cursor');
 goog.require('cvox.ChromeVoxEditableTextBase');
+goog.require('cvox.ExtensionBridge');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
@@ -75,7 +76,7 @@ Background = function() {
    */
   this.listeners_ = {
     alert: this.onEventDefault,
-    focus: this.onEventDefault,
+    focus: this.onFocus,
     hover: this.onEventDefault,
     loadComplete: this.onLoadComplete,
     menuStart: this.onEventDefault,
@@ -378,6 +379,28 @@ Background.prototype = {
   },
 
   /**
+   * Provides all feedback once a focus event fires.
+   * @param {Object} evt
+   */
+  onFocus: function(evt) {
+    // Don't process nodes inside of web content if ChromeVox Next is inactive.
+    if (evt.target.root.role != chrome.automation.RoleType.desktop &&
+        this.mode_ === ChromeVoxMode.CLASSIC)
+      return;
+
+    var node = evt.target;
+
+    // It doesn't make sense to focus the containing web area if a descendant
+    // has focused state.
+    if (node.role == 'rootWebArea') {
+      node = AutomationUtil.findNodePost(node,
+                                         Dir.FORWARD,
+                                         AutomationPredicate.focused) || node;
+    }
+    this.onEventDefault({target: node, type: 'focus'});
+  },
+
+  /**
    * Provides all feedback once a load complete event fires.
    * @param {Object} evt
    */
@@ -519,7 +542,9 @@ Background.prototype = {
    * @private
    */
   isWhitelistedForCompat_: function(url) {
-    return url.indexOf('chrome://md-settings') != -1 || url === '';
+    return url.indexOf('chrome://md-settings') != -1 ||
+          url.indexOf('chrome://oobe/login') != -1 ||
+          url === '';
   },
 
   /**
@@ -553,14 +578,13 @@ Background.prototype = {
   },
 
   /**
-   * Disables classic ChromeVox.
-   * @param {number} tabId The tab where ChromeVox classic is running in.
+   * Disables classic ChromeVox in current web content.
    */
-  disableClassicChromeVox_: function(tabId) {
-    chrome.tabs.executeScript(
-          tabId,
-          {'code': 'try { window.disableChromeVox(); } catch(e) { }\n',
-           'allFrames': true});
+  disableClassicChromeVox_: function() {
+    cvox.ExtensionBridge.send({
+        message: 'SYSTEM_COMMAND',
+        command: 'killChromeVox'
+    });
   },
 
   /**
@@ -590,9 +614,7 @@ Background.prototype = {
         if (this.currentRange_.getStart().getNode().root.role == 'desktop')
           return;
 
-        tabs.forEach(function(tab) {
-          this.disableClassicChromeVox_(tab.id);
-        }.bind(this));
+        this.disableClassicChromeVox_();
       }
     }.bind(this));
 
