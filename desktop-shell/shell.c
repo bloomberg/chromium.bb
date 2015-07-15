@@ -1634,7 +1634,7 @@ static const struct weston_touch_grab_interface touch_move_grab_interface = {
 };
 
 static int
-surface_touch_move(struct shell_surface *shsurf, struct weston_seat *seat)
+surface_touch_move(struct shell_surface *shsurf, struct weston_touch *touch)
 {
 	struct weston_touch_move_grab *move;
 
@@ -1650,12 +1650,12 @@ surface_touch_move(struct shell_surface *shsurf, struct weston_seat *seat)
 
 	move->active = 1;
 	move->dx = wl_fixed_from_double(shsurf->view->geometry.x) -
-			seat->touch->grab_x;
+			touch->grab_x;
 	move->dy = wl_fixed_from_double(shsurf->view->geometry.y) -
-			seat->touch->grab_y;
+			touch->grab_y;
 
 	shell_touch_grab_start(&move->base, &touch_move_grab_interface, shsurf,
-			       seat->touch);
+			       touch);
 
 	return 0;
 }
@@ -1797,7 +1797,7 @@ common_surface_move(struct wl_resource *resource,
 		   seat->touch->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->touch->focus->surface);
 		if ((surface == shsurf->surface) &&
-		    (surface_touch_move(shsurf, seat) < 0))
+		    (surface_touch_move(shsurf, seat->touch) < 0))
 			wl_resource_post_no_memory(resource);
 	}
 }
@@ -4681,7 +4681,7 @@ touch_move_binding(struct weston_touch *touch, uint32_t time, void *data)
 	    shsurf->state.maximized)
 		return;
 
-	surface_touch_move(shsurf, touch->seat);
+	surface_touch_move(shsurf, touch);
 }
 
 static void
