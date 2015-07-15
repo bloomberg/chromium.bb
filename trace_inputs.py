@@ -39,6 +39,7 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import file_path
+from utils import logging_utils
 from utils import tools
 
 ## OS-specific imports
@@ -3353,7 +3354,7 @@ def CMDread(parser, args):
   return 0
 
 
-class OptionParserTraceInputs(tools.OptionParserWithLogging):
+class OptionParserTraceInputs(logging_utils.OptionParserWithLogging):
   """Adds automatic --log handling."""
 
   # Disable --log-file options since both --log and --log-file options are
@@ -3362,7 +3363,7 @@ class OptionParserTraceInputs(tools.OptionParserWithLogging):
   enable_log_file = False
 
   def __init__(self, **kwargs):
-    tools.OptionParserWithLogging.__init__(self, **kwargs)
+    logging_utils.OptionParserWithLogging.__init__(self, **kwargs)
     self.add_option(
         '-l', '--log', help='Log file to generate or read, required')
 
@@ -3371,7 +3372,7 @@ class OptionParserTraceInputs(tools.OptionParserWithLogging):
 
     On Windows, / and \ are often mixed together in a path.
     """
-    options, args = tools.OptionParserWithLogging.parse_args(
+    options, args = logging_utils.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     if not options.log:
       self.error('Must supply a log file with -l')

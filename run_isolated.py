@@ -25,6 +25,7 @@ import tempfile
 from third_party.depot_tools import fix_encoding
 
 from utils import file_path
+from utils import logging_utils
 from utils import on_error
 from utils import subprocess42
 from utils import tools
@@ -272,7 +273,7 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
 
 def main(args):
   tools.disable_buffering()
-  parser = tools.OptionParserWithLogging(
+  parser = logging_utils.OptionParserWithLogging(
       usage='%prog <options>',
       version=__version__,
       log_file=RUN_ISOLATED_LOG_FILE)

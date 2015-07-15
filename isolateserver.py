@@ -28,6 +28,7 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import file_path
+from utils import logging_utils
 from utils import lru
 from utils import net
 from utils import on_error
@@ -2180,9 +2181,9 @@ def process_cache_options(options):
     return MemoryCache()
 
 
-class OptionParserIsolateServer(tools.OptionParserWithLogging):
+class OptionParserIsolateServer(logging_utils.OptionParserWithLogging):
   def __init__(self, **kwargs):
-    tools.OptionParserWithLogging.__init__(
+    logging_utils.OptionParserWithLogging.__init__(
         self,
         version=__version__,
         prog=os.path.basename(sys.modules[__name__].__file__),
@@ -2190,7 +2191,7 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
     auth.add_auth_options(self)
 
   def parse_args(self, *args, **kwargs):
-    options, args = tools.OptionParserWithLogging.parse_args(
+    options, args = logging_utils.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     auth.process_auth_options(self, options)
     return options, args

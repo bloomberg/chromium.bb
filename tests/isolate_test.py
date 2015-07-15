@@ -25,6 +25,7 @@ import isolate_format
 import isolated_format
 import isolateserver
 from utils import file_path
+from utils import logging_utils
 from utils import tools
 import test_utils
 
@@ -103,6 +104,9 @@ class IsolateBase(auto_stub.TestCase):
         unicode(tempfile.mkdtemp(prefix=u'isolate_')))
     # Everything should work even from another directory.
     os.chdir(self.cwd)
+    self.mock(
+        logging_utils.OptionParserWithLogging, 'logger_root',
+        logging.Logger('unittest'))
 
   def tearDown(self):
     try:
@@ -1376,7 +1380,8 @@ class IsolateCommand(IsolateBase):
       join('y.isolated.gen.json'),
     ]
     self.assertEqual(
-        0, isolate.CMDbatcharchive(tools.OptionParserWithLogging(), cmd))
+        0,
+        isolate.CMDbatcharchive(logging_utils.OptionParserWithLogging(), cmd))
     expected = [
         {
           'base_url': 'http://localhost:1',

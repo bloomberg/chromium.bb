@@ -15,6 +15,7 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
+from utils import logging_utils
 from utils import on_error
 from utils import net
 from utils import oauth
@@ -136,9 +137,10 @@ def CMDcheck(parser, args):
   return 0
 
 
-class OptionParserAuth(tools.OptionParserWithLogging):
+class OptionParserAuth(logging_utils.OptionParserWithLogging):
   def __init__(self, **kwargs):
-    tools.OptionParserWithLogging.__init__(self, prog='auth.py', **kwargs)
+    logging_utils.OptionParserWithLogging.__init__(
+        self, prog='auth.py', **kwargs)
     self.server_group = tools.optparse.OptionGroup(self, 'Server')
     self.server_group.add_option(
         '-S', '--service',
@@ -148,7 +150,7 @@ class OptionParserAuth(tools.OptionParserWithLogging):
     add_auth_options(self)
 
   def parse_args(self, *args, **kwargs):
-    options, args = tools.OptionParserWithLogging.parse_args(
+    options, args = logging_utils.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     options.service = options.service.rstrip('/')
     if not options.service:

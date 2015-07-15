@@ -11,6 +11,7 @@ import collections
 import datetime
 import json
 import logging
+import optparse
 import os
 import re
 import shutil
@@ -28,6 +29,7 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import file_path
+from utils import logging_utils
 from third_party.chromium import natsort
 from utils import net
 from utils import on_error
@@ -820,7 +822,7 @@ def abort_task(_swarming, _manifest):
 
 
 def add_filter_options(parser):
-  parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
+  parser.filter_group = optparse.OptionGroup(parser, 'Filtering slaves')
   parser.filter_group.add_option(
       '-d', '--dimension', default=[], action='append', nargs=2,
       dest='dimensions', metavar='FOO bar',
@@ -829,7 +831,7 @@ def add_filter_options(parser):
 
 
 def add_sharding_options(parser):
-  parser.sharding_group = tools.optparse.OptionGroup(parser, 'Sharding options')
+  parser.sharding_group = optparse.OptionGroup(parser, 'Sharding options')
   parser.sharding_group.add_option(
       '--shards', type='int', default=1,
       help='Number of shards to trigger and collect.')
@@ -841,7 +843,7 @@ def add_trigger_options(parser):
   isolateserver.add_isolate_server_options(parser)
   add_filter_options(parser)
 
-  parser.task_group = tools.optparse.OptionGroup(parser, 'Task properties')
+  parser.task_group = optparse.OptionGroup(parser, 'Task properties')
   parser.task_group.add_option(
       '-s', '--isolated',
       help='Hash of the .isolated to grab from the isolate server')
@@ -874,7 +876,7 @@ def add_trigger_options(parser):
            'this task request expires.')
   parser.task_group.add_option(
       '--deadline', type='int', dest='expiration',
-      help=tools.optparse.SUPPRESS_HELP)
+      help=optparse.SUPPRESS_HELP)
   parser.task_group.add_option(
       '--hard-timeout', type='int', default=60*60,
       help='Seconds to allow the task to complete.')
@@ -947,7 +949,7 @@ def add_collect_options(parser):
   parser.group_logging.add_option(
       '--print-status-updates', action='store_true',
       help='Print periodic status updates')
-  parser.task_output_group = tools.optparse.OptionGroup(parser, 'Task output')
+  parser.task_output_group = optparse.OptionGroup(parser, 'Task output')
   parser.task_output_group.add_option(
       '--task-summary-json',
       metavar='FILE',
@@ -1317,11 +1319,11 @@ def CMDtrigger(parser, args):
     return 1
 
 
-class OptionParserSwarming(tools.OptionParserWithLogging):
+class OptionParserSwarming(logging_utils.OptionParserWithLogging):
   def __init__(self, **kwargs):
-    tools.OptionParserWithLogging.__init__(
+    logging_utils.OptionParserWithLogging.__init__(
         self, prog='swarming.py', **kwargs)
-    self.server_group = tools.optparse.OptionGroup(self, 'Server')
+    self.server_group = optparse.OptionGroup(self, 'Server')
     self.server_group.add_option(
         '-S', '--swarming',
         metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
@@ -1330,7 +1332,7 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
     auth.add_auth_options(self)
 
   def parse_args(self, *args, **kwargs):
-    options, args = tools.OptionParserWithLogging.parse_args(
+    options, args = logging_utils.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     auth.process_auth_options(self, options)
     user = self._process_swarming(options)

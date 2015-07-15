@@ -19,6 +19,7 @@ sys.path.insert(0, ROOT_DIR)
 
 import auth
 import isolateserver
+from utils import logging_utils
 from utils import threading_utils
 from utils import tools
 
@@ -151,9 +152,9 @@ def run_swarming_tasks_parallel(
       print('  %s' % task)
 
 
-class OptionParser(tools.OptionParserWithLogging):
+class OptionParser(logging_utils.OptionParserWithLogging):
   def __init__(self, **kwargs):
-    tools.OptionParserWithLogging.__init__(self, **kwargs)
+    logging_utils.OptionParserWithLogging.__init__(self, **kwargs)
     self.server_group = tools.optparse.OptionGroup(self, 'Server')
     self.server_group.add_option(
         '-S', '--swarming',
@@ -177,7 +178,7 @@ class OptionParser(tools.OptionParserWithLogging):
             'this task request expires.')
 
   def parse_args(self, *args, **kwargs):
-    options, args = tools.OptionParserWithLogging.parse_args(
+    options, args = logging_utils.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     options.swarming = options.swarming.rstrip('/')
     if not options.swarming:

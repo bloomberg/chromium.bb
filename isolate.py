@@ -34,6 +34,7 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
+from utils import logging_utils
 from utils import file_path
 from utils import tools
 
@@ -1200,7 +1201,7 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
 
 def main(argv):
   dispatcher = subcommand.CommandDispatcher(__name__)
-  parser = tools.OptionParserWithLogging(
+  parser = logging_utils.OptionParserWithLogging(
         version=__version__, verbose=int(os.environ.get('ISOLATE_DEBUG', 0)))
   try:
     return dispatcher.execute(parser, argv)

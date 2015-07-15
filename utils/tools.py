@@ -4,14 +4,11 @@
 
 """Various utility functions and classes not specific to any single area."""
 
-import argparse
 import atexit
 import cStringIO
 import functools
 import json
 import logging
-import logging.handlers
-import optparse
 import os
 import re
 import sys
@@ -31,127 +28,6 @@ _ca_certs_lock = threading.Lock()
 # @cached decorators registered by report_cache_stats_at_exit.
 _caches = []
 _caches_lock = threading.Lock()
-
-
-class OptionParserWithLogging(optparse.OptionParser):
-  """Adds --verbose option."""
-
-  # Set to True to enable --log-file options.
-  enable_log_file = True
-
-  def __init__(self, verbose=0, log_file=None, **kwargs):
-    kwargs.setdefault('description', sys.modules['__main__'].__doc__)
-    optparse.OptionParser.__init__(self, **kwargs)
-    self.group_logging = optparse.OptionGroup(self, 'Logging')
-    self.group_logging.add_option(
-        '-v', '--verbose',
-        action='count',
-        default=verbose,
-        help='Use multiple times to increase verbosity')
-    if self.enable_log_file:
-      self.group_logging.add_option(
-          '-l', '--log-file',
-          default=log_file,
-          help='The name of the file to store rotating log details')
-      self.group_logging.add_option(
-          '--no-log', action='store_const', const='', dest='log_file',
-          help='Disable log file')
-
-  def parse_args(self, *args, **kwargs):
-    # Make sure this group is always the last one.
-    self.add_option_group(self.group_logging)
-
-    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
-    levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-    level = levels[min(len(levels) - 1, options.verbose)]
-
-    logging_console = logging.StreamHandler()
-    logging_console.setFormatter(logging.Formatter(
-        '%(levelname)5s %(relativeCreated)6d %(module)15s(%(lineno)3d): '
-        '%(message)s'))
-    logging_console.setLevel(level)
-    logging.getLogger().setLevel(level)
-    logging.getLogger().addHandler(logging_console)
-
-    if self.enable_log_file and options.log_file:
-      # This is necessary otherwise attached handler will miss the messages.
-      logging.getLogger().setLevel(logging.DEBUG)
-
-      logging_rotating_file = logging.handlers.RotatingFileHandler(
-          options.log_file,
-          maxBytes=10 * 1024 * 1024,
-          backupCount=5,
-          encoding='utf-8')
-      # log files are always at DEBUG level.
-      logging_rotating_file.setLevel(logging.DEBUG)
-      logging_rotating_file.setFormatter(logging.Formatter(
-          '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
-      logging.getLogger().addHandler(logging_rotating_file)
-
-    return options, args
-
-
-class ArgumentParserWithLogging(argparse.ArgumentParser):
-  """Adds --verbose option."""
-
-  # Set to True to enable --log-file options.
-  enable_log_file = True
-
-  def __init__(self, verbose=0, log_file=None, **kwargs):
-    kwargs.setdefault('description', sys.modules['__main__'].__doc__)
-    kwargs.setdefault('conflict_handler', 'resolve')
-    self.__verbose = verbose
-    self.__log_file = log_file
-    super(ArgumentParserWithLogging, self).__init__(**kwargs)
-
-  def _add_logging_group(self):
-    group = self.add_argument_group('Logging')
-    group.add_argument(
-        '-v', '--verbose',
-        action='count',
-        default=self.__verbose,
-        help='Use multiple times to increase verbosity')
-    if self.enable_log_file:
-      group.add_argument(
-          '-l', '--log-file',
-          default=self.__log_file,
-          help='The name of the file to store rotating log details')
-      group.add_argument(
-          '--no-log', action='store_const', const='', dest='log_file',
-          help='Disable log file')
-
-  def parse_args(self, *args, **kwargs):
-    # Make sure this group is always the last one.
-    self._add_logging_group()
-
-    args = super(ArgumentParserWithLogging, self).parse_args(*args, **kwargs)
-    levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-    level = levels[min(len(levels) - 1, args.verbose)]
-
-    logging_console = logging.StreamHandler()
-    logging_console.setFormatter(logging.Formatter(
-        '%(levelname)5s %(relativeCreated)6d %(module)15s(%(lineno)3d): '
-        '%(message)s'))
-    logging_console.setLevel(level)
-    logging.getLogger().setLevel(level)
-    logging.getLogger().addHandler(logging_console)
-
-    if self.enable_log_file and args.log_file:
-      # This is necessary otherwise attached handler will miss the messages.
-      logging.getLogger().setLevel(logging.DEBUG)
-
-      logging_rotating_file = logging.handlers.RotatingFileHandler(
-          args.log_file,
-          maxBytes=10 * 1024 * 1024,
-          backupCount=5,
-          encoding='utf-8')
-      # log files are always at DEBUG level.
-      logging_rotating_file.setLevel(logging.DEBUG)
-      logging_rotating_file.setFormatter(logging.Formatter(
-          '%(asctime)s %(levelname)-8s %(module)15s(%(lineno)3d): %(message)s'))
-      logging.getLogger().addHandler(logging_rotating_file)
-
-    return args
 
 
 class Profiler(object):

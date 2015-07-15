@@ -24,6 +24,7 @@ import isolateserver
 import run_isolated
 from depot_tools import auto_stub
 from utils import file_path
+from utils import logging_utils
 from utils import on_error
 from utils import subprocess42
 from utils import tools
@@ -66,6 +67,9 @@ class RunIsolatedTestBase(auto_stub.TestCase):
     logging.debug(self.tempdir)
     self.mock(run_isolated, 'make_temp_dir', self.fake_make_temp_dir)
     self.mock(run_isolated.auth, 'ensure_logged_in', lambda _: None)
+    self.mock(
+        logging_utils.OptionParserWithLogging, 'logger_root',
+        logging.Logger('unittest'))
 
   def tearDown(self):
     for dirpath, dirnames, filenames in os.walk(self.tempdir, topdown=True):
