@@ -101,9 +101,9 @@ public:
     void stepOutOfFunction();
     void clearStepping();
 
-    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, RefPtr<JSONObject>* result);
-    ScriptValue currentCallFrames();
-    ScriptValue currentCallFramesForAsyncStack();
+    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, RefPtr<JSONObject>* result);
+    v8::Local<v8::Object> currentCallFrames();
+    v8::Local<v8::Object> currentCallFramesForAsyncStack();
     PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
     int frameCount();
 
@@ -140,7 +140,7 @@ private:
         FastAsyncScopes,
         NoScopes // Should be the last option.
     };
-    ScriptValue currentCallFramesInner(ScopeInfoDetails);
+    v8::Local<v8::Object> currentCallFramesInner(ScopeInfoDetails);
     PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
     void handleV8AsyncTaskEvent(ScriptDebugListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
     void handleV8PromiseEvent(ScriptDebugListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);

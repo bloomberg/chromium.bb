@@ -36,6 +36,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InjectedScriptNative.h"
 #include "wtf/Forward.h"
+#include <v8.h>
 
 namespace blink {
 
@@ -80,7 +81,7 @@ public:
         TypeBuilder::OptOutput<bool>* wasThrown);
     void evaluateOnCallFrame(
         ErrorString*,
-        const ScriptValue& callFrames,
+        v8::Local<v8::Object> callFrames,
         bool isAsyncCallStack,
         const String& callFrameId,
         const String& expression,
@@ -91,9 +92,9 @@ public:
         RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
         TypeBuilder::OptOutput<bool>* wasThrown,
         RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
-    void restartFrame(ErrorString*, const ScriptValue& callFrames, const String& callFrameId, RefPtr<JSONObject>* result);
-    void getStepInPositions(ErrorString*, const ScriptValue& callFrames, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& positions);
-    void setVariableValue(ErrorString*, const ScriptValue& callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr);
+    void restartFrame(ErrorString*, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<JSONObject>* result);
+    void getStepInPositions(ErrorString*, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location>>& positions);
+    void setVariableValue(ErrorString*, v8::Local<v8::Object> callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr);
     void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>* result);
     void getGeneratorObjectDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::GeneratorObjectDetails>* result);
     void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CollectionEntry> >* result);
@@ -103,7 +104,7 @@ public:
     EventTarget* eventTargetForObjectId(const String& objectId);
     void releaseObject(const String& objectId);
 
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > wrapCallFrames(const ScriptValue&, int asyncOrdinal);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>> wrapCallFrames(v8::Local<v8::Object>, int asyncOrdinal);
 
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(const ScriptValue&, const String& groupName, bool generatePreview = false) const;
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(const ScriptValue& table, const ScriptValue& columns) const;

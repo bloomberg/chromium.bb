@@ -42,6 +42,7 @@ class ScriptCallArgumentHandler {
 public:
     ScriptCallArgumentHandler(ScriptState* scriptState) : m_scriptState(scriptState) { }
 
+    void appendArgument(v8::Local<v8::Value>);
     void appendArgument(const ScriptValue&);
     void appendArgument(const String&);
     void appendArgument(int);

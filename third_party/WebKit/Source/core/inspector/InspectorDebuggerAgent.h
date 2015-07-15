@@ -209,7 +209,7 @@ protected:
 private:
     bool checkEnabled(ErrorString*);
 
-    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
+    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
 
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
@@ -219,7 +219,7 @@ private:
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
-    bool callStackForId(ErrorString*, const String& callFrameId, ScriptValue* callStack, bool* isAsync);
+    bool callStackForId(ErrorString*, const String& callFrameId, v8::Local<v8::Object>* callStack, bool* isAsync);
 
     void clearCurrentAsyncOperation();
     void resetAsyncCallTracker();
@@ -265,8 +265,9 @@ private:
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<V8Debugger> m_debugger;
+    v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_pausedScriptState;
-    ScriptValue m_currentCallStack;
+    v8::Global<v8::Object> m_currentCallStack;
     ScriptsMap m_scripts;
     BreakpointIdToDebuggerBreakpointIdsMap m_breakpointIdToDebuggerBreakpointIds;
     DebugServerBreakpointToBreakpointIdAndSourceMap m_serverBreakpoints;

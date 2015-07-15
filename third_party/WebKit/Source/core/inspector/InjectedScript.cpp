@@ -154,7 +154,7 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String& obje
     makeEvalCall(errorString, function, result, wasThrown);
 }
 
-void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, const ScriptValue& callFrames, bool isAsyncCallStack, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
+void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, bool isAsyncCallStack, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     ScriptFunctionCall function(injectedScriptObject(), "evaluateOnCallFrame");
     function.appendArgument(callFrames);
@@ -168,7 +168,7 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, const ScriptV
     makeEvalCall(errorString, function, result, wasThrown, exceptionDetails);
 }
 
-void InjectedScript::restartFrame(ErrorString* errorString, const ScriptValue& callFrames, const String& callFrameId, RefPtr<JSONObject>* result)
+void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<JSONObject>* result)
 {
     ScriptFunctionCall function(injectedScriptObject(), "restartFrame");
     function.appendArgument(callFrames);
@@ -188,7 +188,7 @@ void InjectedScript::restartFrame(ErrorString* errorString, const ScriptValue& c
     *errorString = "Internal error";
 }
 
-void InjectedScript::getStepInPositions(ErrorString* errorString, const ScriptValue& callFrames, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location> >& positions)
+void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location>>& positions)
 {
     ScriptFunctionCall function(injectedScriptObject(), "getStepInPositions");
     function.appendArgument(callFrames);
@@ -208,7 +208,7 @@ void InjectedScript::getStepInPositions(ErrorString* errorString, const ScriptVa
     *errorString = "Internal error";
 }
 
-void InjectedScript::setVariableValue(ErrorString* errorString, const ScriptValue& callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr)
+void InjectedScript::setVariableValue(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr)
 {
     ScriptFunctionCall function(injectedScriptObject(), "setVariableValue");
     if (callFrameIdOpt) {
@@ -356,7 +356,7 @@ void InjectedScript::releaseObject(const String& objectId)
     m_native->unbind(boundId);
 }
 
-PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& callFrames, int asyncOrdinal)
+PassRefPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object> callFrames, int asyncOrdinal)
 {
     ASSERT(!isEmpty());
     ScriptFunctionCall function(injectedScriptObject(), "wrapCallFrames");

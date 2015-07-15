@@ -298,7 +298,7 @@ void V8Debugger::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8Debugger::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, ScriptValue* newCallFrames, RefPtr<JSONObject>* result)
+bool V8Debugger::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, v8::Global<v8::Object>* newCallFrames, RefPtr<JSONObject>* result)
 {
     class EnableLiveEditScope {
     public:
@@ -346,7 +346,7 @@ bool V8Debugger::setScriptSource(const String& sourceID, const String& newConten
                 *result = jsonResult->asObject();
             // Call stack may have changed after if the edited function was on the stack.
             if (!preview && isPaused())
-                *newCallFrames = currentCallFrames();
+                newCallFrames->Reset(m_isolate, currentCallFrames());
             return true;
         }
     // Compile error.
@@ -400,35 +400,33 @@ PassRefPtr<JavaScriptCallFrame> V8Debugger::wrapCallFrames(int maximumLimit, Sco
     return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
-ScriptValue V8Debugger::currentCallFramesInner(ScopeInfoDetails scopeDetails)
+v8::Local<v8::Object> V8Debugger::currentCallFramesInner(ScopeInfoDetails scopeDetails)
 {
     if (!m_isolate->InContext())
-        return ScriptValue();
-    v8::HandleScope handleScope(m_isolate);
+        return v8::Local<v8::Object>();
 
     // Filter out stack traces entirely consisting of V8's internal scripts.
     v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(m_isolate, 1);
     if (!stackTrace->GetFrameCount())
-        return ScriptValue();
+        return v8::Local<v8::Object>();
 
     RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, scopeDetails);
     if (!currentCallFrame)
-        return ScriptValue();
+        return v8::Local<v8::Object>();
 
     v8::Local<v8::FunctionTemplate> wrapperTemplate = v8::Local<v8::FunctionTemplate>::New(m_isolate, m_callFrameWrapperTemplate);
     v8::Local<v8::Context> context = m_pausedContext.IsEmpty() ? m_isolate->GetCurrentContext() : m_pausedContext;
-    ScriptState* scriptState = ScriptState::from(context);
-    ScriptState::Scope scope(scriptState);
+    v8::Context::Scope scope(context);
     v8::Local<v8::Object> wrapper = V8JavaScriptCallFrame::wrap(wrapperTemplate, context, currentCallFrame.release());
-    return ScriptValue(scriptState, wrapper);
+    return wrapper;
 }
 
-ScriptValue V8Debugger::currentCallFrames()
+v8::Local<v8::Object> V8Debugger::currentCallFrames()
 {
     return currentCallFramesInner(AllScopes);
 }
 
-ScriptValue V8Debugger::currentCallFramesForAsyncStack()
+v8::Local<v8::Object> V8Debugger::currentCallFramesForAsyncStack()
 {
     return currentCallFramesInner(FastAsyncScopes);
 }
@@ -491,7 +489,7 @@ void V8Debugger::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8::Lo
 
     m_pausedContext = pausedContext;
     m_executionState = executionState;
-    ScriptDebugListener::SkipPauseRequest result = listener->didPause(pausedContext, currentCallFrames().v8ValueUnsafe(), exception, breakpointIds, isPromiseRejection);
+    ScriptDebugListener::SkipPauseRequest result = listener->didPause(pausedContext, currentCallFrames(), exception, breakpointIds, isPromiseRejection);
     if (result == ScriptDebugListener::NoSkip) {
         m_runningNestedMessageLoop = true;
         m_client->runMessageLoopOnPause(pausedContext);

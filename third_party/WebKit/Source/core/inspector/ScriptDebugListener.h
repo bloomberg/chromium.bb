@@ -107,7 +107,7 @@ public:
     virtual ~ScriptDebugListener() { }
 
     virtual void didParseSource(const ParsedScript&) = 0;
-    virtual SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) = 0;
+    virtual SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) = 0;
     virtual void didContinue() = 0;
     virtual bool v8AsyncTaskEventsEnabled() const = 0;
     virtual void didReceiveV8AsyncTaskEvent(v8::Local<v8::Context>, const String& eventType, const String& eventName, int id) = 0;

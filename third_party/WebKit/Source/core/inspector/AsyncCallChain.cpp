@@ -14,9 +14,9 @@ DEFINE_TRACE(AsyncCallChain)
     visitor->trace(m_callStacks);
 }
 
-AsyncCallStack::AsyncCallStack(const String& description, const ScriptValue& callFrames)
+AsyncCallStack::AsyncCallStack(const String& description, v8::Local<v8::Object> callFrames)
     : m_description(description)
-    , m_callFrames(callFrames)
+    , m_callFrames(callFrames->GetIsolate(), callFrames)
 {
 }
 

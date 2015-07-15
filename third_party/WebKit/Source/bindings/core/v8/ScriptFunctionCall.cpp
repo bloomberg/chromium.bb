@@ -42,6 +42,11 @@
 
 namespace blink {
 
+void ScriptCallArgumentHandler::appendArgument(v8::Local<v8::Value> value)
+{
+    m_arguments.append(ScriptValue(m_scriptState.get(), value));
+}
+
 void ScriptCallArgumentHandler::appendArgument(const ScriptValue& argument)
 {
     if (argument.scriptState() != m_scriptState) {
