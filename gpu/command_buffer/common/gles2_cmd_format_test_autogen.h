@@ -4843,6 +4843,16 @@ TEST_F(GLES2FormatTest, SwapInterval) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, FlushDriverCachesCHROMIUM) {
+  cmds::FlushDriverCachesCHROMIUM& cmd =
+      *GetBufferAs<cmds::FlushDriverCachesCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::FlushDriverCachesCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, MatrixLoadfCHROMIUMImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLfloat data[] = {

@@ -13708,6 +13708,33 @@ static_assert(offsetof(SwapInterval, header) == 0,
 static_assert(offsetof(SwapInterval, interval) == 4,
               "offset of SwapInterval interval should be 4");
 
+struct FlushDriverCachesCHROMIUM {
+  typedef FlushDriverCachesCHROMIUM ValueType;
+  static const CommandId kCmdId = kFlushDriverCachesCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+static_assert(sizeof(FlushDriverCachesCHROMIUM) == 4,
+              "size of FlushDriverCachesCHROMIUM should be 4");
+static_assert(offsetof(FlushDriverCachesCHROMIUM, header) == 0,
+              "offset of FlushDriverCachesCHROMIUM header should be 0");
+
 struct MatrixLoadfCHROMIUMImmediate {
   typedef MatrixLoadfCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kMatrixLoadfCHROMIUMImmediate;

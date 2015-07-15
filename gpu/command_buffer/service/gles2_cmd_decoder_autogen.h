@@ -4890,6 +4890,16 @@ error::Error GLES2DecoderImpl::HandleSwapInterval(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleFlushDriverCachesCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::FlushDriverCachesCHROMIUM& c =
+      *static_cast<const gles2::cmds::FlushDriverCachesCHROMIUM*>(cmd_data);
+  (void)c;
+  DoFlushDriverCachesCHROMIUM();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleMatrixLoadfCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const void* cmd_data) {

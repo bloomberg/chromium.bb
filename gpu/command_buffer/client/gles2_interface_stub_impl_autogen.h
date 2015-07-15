@@ -1285,6 +1285,8 @@ void GLES2InterfaceStub::ScheduleOverlayPlaneCHROMIUM(
 }
 void GLES2InterfaceStub::SwapInterval(GLint /* interval */) {
 }
+void GLES2InterfaceStub::FlushDriverCachesCHROMIUM() {
+}
 void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,
                                              const GLfloat* /* m */) {
 }

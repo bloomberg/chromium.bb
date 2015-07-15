@@ -1404,6 +1404,9 @@ void GLES2ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 void GLES2SwapInterval(GLint interval) {
   gles2::GetGLContext()->SwapInterval(interval);
 }
+void GLES2FlushDriverCachesCHROMIUM() {
+  gles2::GetGLContext()->FlushDriverCachesCHROMIUM();
+}
 void GLES2MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
   gles2::GetGLContext()->MatrixLoadfCHROMIUM(matrixMode, m);
 }
@@ -2691,6 +2694,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glSwapInterval",
      reinterpret_cast<GLES2FunctionPointer>(glSwapInterval),
+    },
+    {
+     "glFlushDriverCachesCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glFlushDriverCachesCHROMIUM),
     },
     {
      "glMatrixLoadfCHROMIUM",

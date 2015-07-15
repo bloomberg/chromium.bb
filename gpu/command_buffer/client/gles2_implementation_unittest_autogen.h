@@ -3093,6 +3093,17 @@ TEST_F(GLES2ImplementationTest, DiscardBackbufferCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, FlushDriverCachesCHROMIUM) {
+  struct Cmds {
+    cmds::FlushDriverCachesCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init();
+
+  gl_->FlushDriverCachesCHROMIUM();
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, MatrixLoadfCHROMIUM) {
   GLfloat data[16] = {0};
   struct Cmds {

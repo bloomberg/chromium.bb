@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.19",
+  "version": "8.20",
   "entries": [
     {
       "id": 1,
@@ -1483,6 +1483,18 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno \\(TM\\) 4.*",
       "features": [
         "disable_program_cache"
+      ]
+    },
+    {
+      "id": 125,
+      "description": "glFinish doesn't clear caches on Android",
+      "cr_bugs": [509727],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno.*",
+      "features": [
+        "unbind_egl_context_to_flush_driver_caches"
       ]
     }
   ]

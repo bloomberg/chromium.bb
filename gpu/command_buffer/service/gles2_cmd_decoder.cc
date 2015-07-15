@@ -1103,6 +1103,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   void DoLoseContextCHROMIUM(GLenum current, GLenum other);
 
+  void DoFlushDriverCachesCHROMIUM(void);
+
   void DoMatrixLoadfCHROMIUM(GLenum matrix_mode, const GLfloat* matrix);
   void DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode);
 
@@ -13273,6 +13275,15 @@ void GLES2DecoderImpl::DoLoseContextCHROMIUM(GLenum current, GLenum other) {
   MarkContextLost(GetContextLostReasonFromResetStatus(current));
   group_->LoseContexts(GetContextLostReasonFromResetStatus(other));
   reset_by_robustness_extension_ = true;
+}
+
+void GLES2DecoderImpl::DoFlushDriverCachesCHROMIUM(void) {
+  // On Adreno Android devices we need to use a workaround to force caches to
+  // clear.
+  if (feature_info_->workarounds().unbind_egl_context_to_flush_driver_caches) {
+    context_->ReleaseCurrent(nullptr);
+    context_->MakeCurrent(surface_.get());
+  }
 }
 
 void GLES2DecoderImpl::DoMatrixLoadfCHROMIUM(GLenum matrix_mode,

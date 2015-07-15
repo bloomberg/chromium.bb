@@ -3806,6 +3806,13 @@ _FUNCTION_INFO = {
   'EndTransformFeedback': {
     'unsafe': True,
   },
+  'FlushDriverCachesCHROMIUM': {
+    'decoder_func': 'DoFlushDriverCachesCHROMIUM',
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
+    'trace_level': 1,
+  },
   'GetQueryivEXT': {
     'gen_cmd': False,
     'client_test': False,

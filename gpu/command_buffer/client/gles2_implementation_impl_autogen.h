@@ -3441,6 +3441,14 @@ void GLES2Implementation::ScheduleOverlayPlaneCHROMIUM(
   CheckGLError();
 }
 
+void GLES2Implementation::FlushDriverCachesCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFlushDriverCachesCHROMIUM("
+                     << ")");
+  helper_->FlushDriverCachesCHROMIUM();
+  CheckGLError();
+}
+
 void GLES2Implementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
                                               const GLfloat* m) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

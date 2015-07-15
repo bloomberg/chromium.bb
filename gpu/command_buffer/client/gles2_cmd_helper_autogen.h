@@ -2814,6 +2814,14 @@ void SwapInterval(GLint interval) {
   }
 }
 
+void FlushDriverCachesCHROMIUM() {
+  gles2::cmds::FlushDriverCachesCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::FlushDriverCachesCHROMIUM>();
+  if (c) {
+    c->Init();
+  }
+}
+
 void MatrixLoadfCHROMIUMImmediate(GLenum matrixMode, const GLfloat* m) {
   const uint32_t size =
       gles2::cmds::MatrixLoadfCHROMIUMImmediate::ComputeSize();

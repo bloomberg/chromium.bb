@@ -2194,6 +2194,11 @@ void GLES2TraceImplementation::SwapInterval(GLint interval) {
   gl_->SwapInterval(interval);
 }
 
+void GLES2TraceImplementation::FlushDriverCachesCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::FlushDriverCachesCHROMIUM");
+  gl_->FlushDriverCachesCHROMIUM();
+}
+
 void GLES2TraceImplementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
                                                    const GLfloat* m) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MatrixLoadfCHROMIUM");

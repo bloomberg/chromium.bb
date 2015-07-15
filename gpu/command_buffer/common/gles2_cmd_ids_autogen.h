@@ -300,22 +300,23 @@
   OP(DiscardBackbufferCHROMIUM)                /* 541 */ \
   OP(ScheduleOverlayPlaneCHROMIUM)             /* 542 */ \
   OP(SwapInterval)                             /* 543 */ \
-  OP(MatrixLoadfCHROMIUMImmediate)             /* 544 */ \
-  OP(MatrixLoadIdentityCHROMIUM)               /* 545 */ \
-  OP(GenPathsCHROMIUM)                         /* 546 */ \
-  OP(DeletePathsCHROMIUM)                      /* 547 */ \
-  OP(IsPathCHROMIUM)                           /* 548 */ \
-  OP(PathCommandsCHROMIUM)                     /* 549 */ \
-  OP(PathParameterfCHROMIUM)                   /* 550 */ \
-  OP(PathParameteriCHROMIUM)                   /* 551 */ \
-  OP(PathStencilFuncCHROMIUM)                  /* 552 */ \
-  OP(StencilFillPathCHROMIUM)                  /* 553 */ \
-  OP(StencilStrokePathCHROMIUM)                /* 554 */ \
-  OP(CoverFillPathCHROMIUM)                    /* 555 */ \
-  OP(CoverStrokePathCHROMIUM)                  /* 556 */ \
-  OP(StencilThenCoverFillPathCHROMIUM)         /* 557 */ \
-  OP(StencilThenCoverStrokePathCHROMIUM)       /* 558 */ \
-  OP(BlendBarrierKHR)                          /* 559 */
+  OP(FlushDriverCachesCHROMIUM)                /* 544 */ \
+  OP(MatrixLoadfCHROMIUMImmediate)             /* 545 */ \
+  OP(MatrixLoadIdentityCHROMIUM)               /* 546 */ \
+  OP(GenPathsCHROMIUM)                         /* 547 */ \
+  OP(DeletePathsCHROMIUM)                      /* 548 */ \
+  OP(IsPathCHROMIUM)                           /* 549 */ \
+  OP(PathCommandsCHROMIUM)                     /* 550 */ \
+  OP(PathParameterfCHROMIUM)                   /* 551 */ \
+  OP(PathParameteriCHROMIUM)                   /* 552 */ \
+  OP(PathStencilFuncCHROMIUM)                  /* 553 */ \
+  OP(StencilFillPathCHROMIUM)                  /* 554 */ \
+  OP(StencilStrokePathCHROMIUM)                /* 555 */ \
+  OP(CoverFillPathCHROMIUM)                    /* 556 */ \
+  OP(CoverStrokePathCHROMIUM)                  /* 557 */ \
+  OP(StencilThenCoverFillPathCHROMIUM)         /* 558 */ \
+  OP(StencilThenCoverStrokePathCHROMIUM)       /* 559 */ \
+  OP(BlendBarrierKHR)                          /* 560 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

@@ -331,6 +331,7 @@
 #define glScheduleOverlayPlaneCHROMIUM \
   GLES2_GET_FUN(ScheduleOverlayPlaneCHROMIUM)
 #define glSwapInterval GLES2_GET_FUN(SwapInterval)
+#define glFlushDriverCachesCHROMIUM GLES2_GET_FUN(FlushDriverCachesCHROMIUM)
 #define glMatrixLoadfCHROMIUM GLES2_GET_FUN(MatrixLoadfCHROMIUM)
 #define glMatrixLoadIdentityCHROMIUM GLES2_GET_FUN(MatrixLoadIdentityCHROMIUM)
 #define glGenPathsCHROMIUM GLES2_GET_FUN(GenPathsCHROMIUM)

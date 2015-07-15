@@ -331,9 +331,16 @@ void GLES2Implementation::SetAggressivelyFreeResources(
                "aggressively_free_resources", aggressively_free_resources);
   aggressively_free_resources_ = aggressively_free_resources;
 
-  // ShallowFlushCHROMIUM will free resources if |aggressively_free_resources_|
-  // is false.
-  ShallowFlushCHROMIUM();
+  if (aggressively_free_resources_ && helper_->HaveRingBuffer()) {
+    // Ensure that we clean up as much cache memory as possible and fully flush.
+    FlushDriverCachesCHROMIUM();
+
+    // Flush will delete transfer buffer resources if
+    // |aggressively_free_resources_| is true.
+    Flush();
+  } else {
+    ShallowFlushCHROMIUM();
+  }
 }
 
 void GLES2Implementation::WaitForCmd() {

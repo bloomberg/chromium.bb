@@ -1638,6 +1638,9 @@ void MojoGLES2Impl::ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 void MojoGLES2Impl::SwapInterval(GLint interval) {
   NOTREACHED() << "Unimplemented SwapInterval.";
 }
+void MojoGLES2Impl::FlushDriverCachesCHROMIUM() {
+  NOTREACHED() << "Unimplemented FlushDriverCachesCHROMIUM.";
+}
 void MojoGLES2Impl::MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
   NOTREACHED() << "Unimplemented MatrixLoadfCHROMIUM.";
 }
