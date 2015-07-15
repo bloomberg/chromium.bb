@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
@@ -38,8 +39,13 @@ void PpapiDecryptor::Create(
     const media::CdmCreatedCB& cdm_created_cb) {
   std::string plugin_type = media::GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
-  scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper =
-      create_pepper_cdm_cb.Run(plugin_type, security_origin);
+
+  scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper;
+  {
+    TRACE_EVENT0("media", "PpapiDecryptor::CreatePepperCDM");
+    pepper_cdm_wrapper = create_pepper_cdm_cb.Run(plugin_type, security_origin);
+  }
+
   if (!pepper_cdm_wrapper) {
     std::string message =
         "Unable to create the CDM for the key system " + key_system + ".";

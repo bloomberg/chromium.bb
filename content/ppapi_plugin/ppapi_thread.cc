@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "content/child/browser_font_resource_trusted.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_process.h"
@@ -307,7 +308,11 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   if (plugin_entry_points_.initialize_module == NULL) {
     // Load the plugin from the specified library.
     base::NativeLibraryLoadError error;
-    library.Reset(base::LoadNativeLibrary(path, &error));
+    {
+      TRACE_EVENT1("ppapi", "PpapiThread::LoadPlugin", "path",
+                   path.MaybeAsASCII());
+      library.Reset(base::LoadNativeLibrary(path, &error));
+    }
     if (!library.is_valid()) {
       LOG(ERROR) << "Failed to load Pepper module from " << path.value()
                  << " (error: " << error.ToString() << ")";
