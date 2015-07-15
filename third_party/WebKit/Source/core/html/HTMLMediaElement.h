@@ -266,7 +266,7 @@ public:
     bool isMediaDataCORSSameOrigin(SecurityOrigin*) const;
 
     MediaController* controller() const;
-    void setController(PassRefPtrWillBeRawPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
+    void setController(MediaController*); // Resets the MediaGroup and sets the MediaController.
 
     void scheduleEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduleTimeupdateEvent(bool periodicEvent);
@@ -296,7 +296,7 @@ protected:
     DisplayMode displayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
-    void setControllerInternal(PassRefPtrWillBeRawPtr<MediaController>);
+    void setControllerInternal(MediaController*);
 
 private:
     void createMediaPlayer();
@@ -568,7 +568,7 @@ private:
 #endif
 
     friend class MediaController;
-    RefPtrWillBeMember<MediaController> m_mediaController;
+    PersistentWillBeMember<MediaController> m_mediaController;
 
     friend class Internals;
     friend class TrackDisplayUpdateScope;

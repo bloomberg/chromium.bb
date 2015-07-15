@@ -3530,7 +3530,7 @@ MediaController* HTMLMediaElement::controller() const
     return m_mediaController.get();
 }
 
-void HTMLMediaElement::setController(PassRefPtrWillBeRawPtr<MediaController> controller)
+void HTMLMediaElement::setController(MediaController* controller)
 {
     // 4.8.10.11.2 Media controllers: controller attribute.
     // On setting, it must first remove the element's mediagroup attribute, if any,
@@ -3539,7 +3539,7 @@ void HTMLMediaElement::setController(PassRefPtrWillBeRawPtr<MediaController> con
     setControllerInternal(controller);
 }
 
-void HTMLMediaElement::setControllerInternal(PassRefPtrWillBeRawPtr<MediaController> controller)
+void HTMLMediaElement::setControllerInternal(MediaController* controller)
 {
     if (m_mediaController)
         m_mediaController->removeMediaElement(this);

@@ -31,6 +31,7 @@ enum MediaControllerPlaybackState { "waiting", "playing", "ended" };
     Constructor,
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=MediaController,
+    GarbageCollected,
 ] interface MediaController : EventTarget {
     // TODO(philipj): Expose readyState.
     // readonly attribute unsigned short readyState; // uses HTMLMediaElement.readyState's values

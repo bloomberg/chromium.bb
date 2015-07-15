@@ -42,9 +42,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<MediaController> MediaController::create(ExecutionContext* context)
+MediaController* MediaController::create(ExecutionContext* context)
 {
-    return adoptRefWillBeNoop(new MediaController(context));
+    return new MediaController(context);
 }
 
 MediaController::MediaController(ExecutionContext* context)
