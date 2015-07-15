@@ -10,6 +10,8 @@
     RuntimeEnabled=PushMessaging,
 ] interface PushSubscription {
     readonly attribute USVString endpoint;
+    [RuntimeEnabled=PushMessagingData] readonly attribute ArrayBuffer curve25519dh;
+
     [CallWith=ScriptState] Promise<boolean> unsubscribe();
 
     serializer = { attribute };

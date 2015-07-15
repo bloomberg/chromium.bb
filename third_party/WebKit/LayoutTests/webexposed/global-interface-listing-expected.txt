@@ -3644,6 +3644,7 @@ interface PushManager
     method permissionState
     method subscribe
 interface PushSubscription
+    getter curve25519dh
     getter endpoint
     method constructor
     method toJSON

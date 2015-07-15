@@ -779,6 +779,7 @@ interface PushMessageData
     method json
     method text
 interface PushSubscription
+    getter curve25519dh
     getter endpoint
     method constructor
     method toJSON
