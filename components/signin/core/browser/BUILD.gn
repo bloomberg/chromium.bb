@@ -8,6 +8,8 @@ static_library("browser") {
     "about_signin_internals.h",
     "account_fetcher_service.cc",
     "account_fetcher_service.h",
+    "account_info_fetcher.cc",
+    "account_info_fetcher.h",
     "account_reconcilor.cc",
     "account_reconcilor.h",
     "account_tracker_service.cc",

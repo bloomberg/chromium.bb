@@ -8,17 +8,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/strings/string_split.h"
 #include "base/trace_event/trace_event.h"
+#include "components/signin/core/browser/account_info_fetcher.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/refresh_token_annotation_request.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_switches.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -41,182 +36,6 @@ bool IsRefreshTokenDeviceIdExperimentEnabled() {
 // This pref used to be in the AccountTrackerService, hence its string value.
 const char AccountFetcherService::kLastUpdatePref[] =
     "account_tracker_service_last_update";
-
-class AccountFetcherService::AccountInfoFetcher :
-    public OAuth2TokenService::Consumer,
-    public gaia::GaiaOAuthClient::Delegate,
-    public GaiaAuthConsumer {
- public:
-  AccountInfoFetcher(OAuth2TokenService* token_service,
-                     net::URLRequestContextGetter* request_context_getter,
-                     AccountFetcherService* service,
-                     const std::string& account_id);
-  ~AccountInfoFetcher() override;
-
-  const std::string& account_id() { return account_id_; }
-
-  void Start();
-  void SendSuccessIfDoneFetching();
-
-  // OAuth2TokenService::Consumer implementation.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
-
-  // gaia::GaiaOAuthClient::Delegate implementation.
-  void OnGetUserInfoResponse(
-      scoped_ptr<base::DictionaryValue> user_info) override;
-  void OnOAuthError() override;
-  void OnNetworkError(int response_code) override;
-
-  // Overridden from GaiaAuthConsumer:
-  void OnClientLoginSuccess(const ClientLoginResult& result) override;
-  void OnClientLoginFailure(const GoogleServiceAuthError& error) override;
-  void OnGetUserInfoSuccess(const UserInfoMap& data) override;
-  void OnGetUserInfoFailure(const GoogleServiceAuthError& error) override;
-
- private:
-  OAuth2TokenService* token_service_;
-  net::URLRequestContextGetter* request_context_getter_;
-  AccountFetcherService* service_;
-  const std::string account_id_;
-
-  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
-  scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
-  scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
-
-  scoped_ptr<base::DictionaryValue> fetched_user_info_;
-  scoped_ptr<std::vector<std::string> > fetched_service_flags_;
-};
-
-AccountFetcherService::AccountInfoFetcher::AccountInfoFetcher(
-    OAuth2TokenService* token_service,
-    net::URLRequestContextGetter* request_context_getter,
-    AccountFetcherService* service,
-    const std::string& account_id)
-    : OAuth2TokenService::Consumer("gaia_account_tracker"),
-      token_service_(token_service),
-      request_context_getter_(request_context_getter),
-      service_(service),
-      account_id_(account_id) {
-  TRACE_EVENT_ASYNC_BEGIN1(
-      "AccountFetcherService", "AccountIdFetcher", this,
-      "account_id", account_id);
-}
-
-AccountFetcherService::AccountInfoFetcher::~AccountInfoFetcher() {
-  TRACE_EVENT_ASYNC_END0("AccountFetcherService", "AccountIdFetcher", this);
-}
-
-void AccountFetcherService::AccountInfoFetcher::Start() {
-  OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
-  scopes.insert(GaiaConstants::kGoogleUserInfoProfile);
-  scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  login_token_request_ = token_service_->StartRequest(
-      account_id_, scopes, this);
-}
-
-void AccountFetcherService::AccountInfoFetcher::SendSuccessIfDoneFetching() {
-  if (fetched_user_info_ && fetched_service_flags_) {
-    service_->OnUserInfoFetchSuccess(
-        this, fetched_user_info_.get(), fetched_service_flags_.get());
-  }
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  TRACE_EVENT_ASYNC_STEP_PAST0(
-      "AccountFetcherService", "AccountIdFetcher", this, "OnGetTokenSuccess");
-  DCHECK_EQ(request, login_token_request_.get());
-
-  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(request_context_getter_));
-  const int kMaxRetries = 3;
-  gaia_oauth_client_->GetUserInfo(access_token, kMaxRetries, this);
-
-  gaia_auth_fetcher_.reset(service_->signin_client_->CreateGaiaAuthFetcher(
-      this, GaiaConstants::kChromeSource, request_context_getter_));
-  gaia_auth_fetcher_->StartOAuthLogin(
-      access_token, GaiaConstants::kGaiaService);
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService",
-                               "AccountIdFetcher",
-                               this,
-                               "OnGetTokenFailure",
-                               "google_service_auth_error",
-                               error.ToString());
-  LOG(ERROR) << "OnGetTokenFailure: " << error.ToString();
-  DCHECK_EQ(request, login_token_request_.get());
-  service_->OnUserInfoFetchFailure(this);
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnGetUserInfoResponse(
-    scoped_ptr<base::DictionaryValue> user_info) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService",
-                               "AccountIdFetcher",
-                               this,
-                               "OnGetUserInfoResponse",
-                               "account_id",
-                               account_id_);
-  fetched_user_info_ = user_info.Pass();
-  SendSuccessIfDoneFetching();
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnClientLoginSuccess(
-    const ClientLoginResult& result) {
-  gaia_auth_fetcher_->StartGetUserInfo(result.lsid);
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnClientLoginFailure(
-    const GoogleServiceAuthError& error) {
-  service_->OnUserInfoFetchFailure(this);
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnGetUserInfoSuccess(
-    const UserInfoMap& data) {
-  fetched_service_flags_.reset(new std::vector<std::string>);
-  UserInfoMap::const_iterator services_iter = data.find("allServices");
-  if (services_iter != data.end()) {
-    base::SplitString(services_iter->second, ',', fetched_service_flags_.get());
-    SendSuccessIfDoneFetching();
-  } else {
-    DLOG(WARNING) << "AccountInfoFetcher::OnGetUserInfoSuccess: "
-                  << "GetUserInfo response didn't include allServices field.";
-    service_->OnUserInfoFetchFailure(this);
-  }
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnGetUserInfoFailure(
-    const GoogleServiceAuthError& error) {
-  service_->OnUserInfoFetchFailure(this);
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnOAuthError() {
-  TRACE_EVENT_ASYNC_STEP_PAST0(
-      "AccountFetcherService", "AccountIdFetcher", this, "OnOAuthError");
-  LOG(ERROR) << "OnOAuthError";
-  service_->OnUserInfoFetchFailure(this);
-}
-
-void AccountFetcherService::AccountInfoFetcher::OnNetworkError(
-    int response_code) {
-  TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService",
-                               "AccountIdFetcher",
-                               this,
-                               "OnNetworkError",
-                               "response_code",
-                               response_code);
-  LOG(ERROR) << "OnNetworkError " << response_code;
-  service_->OnUserInfoFetchFailure(this);
-}
 
 // AccountFetcherService implementation
 AccountFetcherService::AccountFetcherService()
@@ -248,11 +67,10 @@ void AccountFetcherService::Initialize(
   last_updated_ = base::Time::FromInternalValue(
       signin_client_->GetPrefs()->GetInt64(kLastUpdatePref));
 
-  StartFetchingInvalidAccounts();
+  RefreshAllAccountInfo(true);
 }
 
 void AccountFetcherService::Shutdown() {
-  STLDeleteValues(&user_info_requests_);
   token_service_->RemoveObserver(this);
   shutdown_called_ = true;
 }
@@ -269,51 +87,41 @@ void AccountFetcherService::EnableNetworkFetches() {
   pending_user_info_fetches_.clear();
 
   // Now that network fetches are enabled, schedule the next refresh.
-  ScheduleNextRefreshFromTokenService();
-}
-
-void AccountFetcherService::StartFetchingInvalidAccounts() {
-  std::vector<std::string> accounts = token_service_->GetAccounts();
-  for (std::vector<std::string>::const_iterator it = accounts.begin();
-       it != accounts.end(); ++it) {
-      RefreshAccountInfo(*it, false);
-  }
+  ScheduleNextRefresh();
 }
 
 bool AccountFetcherService::IsAllUserInfoFetched() const {
   return user_info_requests_.empty();
 }
 
-void AccountFetcherService::LoadFromTokenService() {
+void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
   std::vector<std::string> accounts = token_service_->GetAccounts();
   for (std::vector<std::string>::const_iterator it = accounts.begin();
        it != accounts.end(); ++it) {
-    RefreshAccountInfo(*it, true);
+    RefreshAccountInfo(*it, only_fetch_if_invalid);
   }
 }
 
-void AccountFetcherService::RefreshFromTokenService() {
+void AccountFetcherService::RefreshAllAccountsAndScheduleNext() {
   DCHECK(network_fetches_enabled_);
-  LoadFromTokenService();
-
+  RefreshAllAccountInfo(false);
   last_updated_ = base::Time::Now();
   signin_client_->GetPrefs()->SetInt64(kLastUpdatePref,
                                        last_updated_.ToInternalValue());
-  ScheduleNextRefreshFromTokenService();
+  ScheduleNextRefresh();
 }
 
-void AccountFetcherService::ScheduleNextRefreshFromTokenService() {
+void AccountFetcherService::ScheduleNextRefresh() {
   DCHECK(!timer_.IsRunning());
   DCHECK(network_fetches_enabled_);
 
   const base::TimeDelta time_since_update = base::Time::Now() - last_updated_;
   if(time_since_update > kRefreshFromTokenServiceDelay) {
-    RefreshFromTokenService();
+    RefreshAllAccountsAndScheduleNext();
   } else {
-    timer_.Start(FROM_HERE,
-                 kRefreshFromTokenServiceDelay - time_since_update,
+    timer_.Start(FROM_HERE, kRefreshFromTokenServiceDelay - time_since_update,
                  this,
-                 &AccountFetcherService::RefreshFromTokenService);
+                 &AccountFetcherService::RefreshAllAccountsAndScheduleNext);
   }
 }
 
@@ -327,18 +135,16 @@ void AccountFetcherService::StartFetchingUserInfo(
 
   if (!ContainsKey(user_info_requests_, account_id)) {
     DVLOG(1) << "StartFetching " << account_id;
-    AccountInfoFetcher* fetcher =
-        new AccountInfoFetcher(token_service_,
-                               signin_client_->GetURLRequestContext(),
-                               this,
-                               account_id);
-    user_info_requests_[account_id] = fetcher;
-    fetcher->Start();
+    scoped_ptr<AccountInfoFetcher> fetcher(new AccountInfoFetcher(
+        token_service_, signin_client_->GetURLRequestContext(), this,
+        account_id));
+    user_info_requests_.set(account_id, fetcher.Pass());
+    user_info_requests_.get(account_id)->Start();
   }
 }
 
 void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
-                                               bool force_remote_fetch) {
+                                               bool only_fetch_if_invalid) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -362,28 +168,17 @@ void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
   if (account_id == "managed_user@localhost")
     return;
 
-  // Only fetch the user info if it's currently invalid or if
-  // |force_remote_fetch| is true (meaning the service is due for a timed
-  // update).
+// |only_fetch_if_invalid| is false when the service is due for a timed update.
 #if defined(OS_ANDROID)
   // TODO(mlerman): Change this condition back to info.IsValid() and ensure the
   // Fetch doesn't occur until after ProfileImpl::OnPrefsLoaded().
-  if (force_remote_fetch || info.gaia.empty())
+  if (!only_fetch_if_invalid || info.gaia.empty())
 #else
-  if (force_remote_fetch || !info.IsValid())
+  if (!only_fetch_if_invalid || !info.IsValid())
 #endif
     StartFetchingUserInfo(account_id);
 
   SendRefreshTokenAnnotationRequest(account_id);
-}
-
-void AccountFetcherService::DeleteFetcher(AccountInfoFetcher* fetcher) {
-  DVLOG(1) << "DeleteFetcher " << fetcher->account_id();
-  const std::string& account_id = fetcher->account_id();
-  DCHECK(ContainsKey(user_info_requests_, account_id));
-  DCHECK_EQ(fetcher, user_info_requests_[account_id]);
-  user_info_requests_.erase(account_id);
-  delete fetcher;
 }
 
 void AccountFetcherService::SendRefreshTokenAnnotationRequest(
@@ -414,21 +209,19 @@ void AccountFetcherService::RefreshTokenAnnotationRequestDone(
 }
 
 void AccountFetcherService::OnUserInfoFetchSuccess(
-    AccountInfoFetcher* fetcher,
+    const std::string& account_id,
     const base::DictionaryValue* user_info,
     const std::vector<std::string>* service_flags) {
-  const std::string& account_id = fetcher->account_id();
-
   account_tracker_service_->SetAccountStateFromUserInfo(
       account_id, user_info, service_flags);
-  DeleteFetcher(fetcher);
+  user_info_requests_.erase(account_id);
 }
 
 void AccountFetcherService::OnUserInfoFetchFailure(
-    AccountInfoFetcher* fetcher) {
-  LOG(WARNING) << "Failed to get UserInfo for " << fetcher->account_id();
-  account_tracker_service_->NotifyAccountUpdateFailed(fetcher->account_id());
-  DeleteFetcher(fetcher);
+    const std::string& account_id) {
+  LOG(WARNING) << "Failed to get UserInfo for " << account_id;
+  account_tracker_service_->NotifyAccountUpdateFailed(account_id);
+  user_info_requests_.erase(account_id);
 }
 
 void AccountFetcherService::OnRefreshTokenAvailable(
@@ -438,7 +231,7 @@ void AccountFetcherService::OnRefreshTokenAvailable(
   // changes) once everything is initialized and the refresh token is present.
   signin_client_->DoFinalInit();
 
-  RefreshAccountInfo(account_id, false);
+  RefreshAccountInfo(account_id, true);
 }
 
 void AccountFetcherService::OnRefreshTokenRevoked(
@@ -449,13 +242,12 @@ void AccountFetcherService::OnRefreshTokenRevoked(
                account_id);
 
   DVLOG(1) << "REVOKED " << account_id;
-
-  if (ContainsKey(user_info_requests_, account_id))
-    DeleteFetcher(user_info_requests_[account_id]);
-
+  user_info_requests_.erase(account_id);
   account_tracker_service_->StopTrackingAccount(account_id);
 }
 
 void AccountFetcherService::OnRefreshTokensLoaded() {
-  StartFetchingInvalidAccounts();
+  // OnRefreshTokenAvailable has been called for all accounts by this point.
+  // Maybe remove this after further investigation.
+  RefreshAllAccountInfo(true);
 }

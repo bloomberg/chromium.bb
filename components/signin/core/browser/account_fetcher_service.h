@@ -42,8 +42,6 @@ class AccountFetcherService : public KeyedService,
   // calls to be executed.
   void EnableNetworkFetches();
 
-  void StartFetchingInvalidAccounts();
-
   // Indicates if all user information has been fetched. If the result is false,
   // there are still unfininshed fetchers.
   virtual bool IsAllUserInfoFetched() const;
@@ -54,31 +52,28 @@ class AccountFetcherService : public KeyedService,
   }
 
  private:
-  class AccountInfoFetcher;
+  friend class AccountInfoFetcher;
 
-  void LoadFromTokenService();
-  void RefreshFromTokenService();
-  void ScheduleNextRefreshFromTokenService();
+  void RefreshAllAccountInfo(bool only_fetch_if_invalid);
+  void RefreshAllAccountsAndScheduleNext();
+  void ScheduleNextRefresh();
 
   // Virtual so that tests can override the network fetching behaviour.
   virtual void StartFetchingUserInfo(const std::string& account_id);
 
-  // Refreshes the AccountInfo associated with |account_id| if it's invalid or
-  // if |force_remote_fetch| is true.
-  void RefreshAccountInfo(
-     const std::string& account_id, bool force_remote_fetch);
-
-  void DeleteFetcher(AccountInfoFetcher* fetcher);
+  // Refreshes the AccountInfo associated with |account_id|.
+  void RefreshAccountInfo(const std::string& account_id,
+                          bool only_fetch_if_invalid);
 
   // Virtual so that tests can override the network fetching behaviour.
   virtual void SendRefreshTokenAnnotationRequest(const std::string& account_id);
   void RefreshTokenAnnotationRequestDone(const std::string& account_id);
 
   // These methods are called by fetchers.
-  void OnUserInfoFetchSuccess(AccountInfoFetcher* fetcher,
-                             const base::DictionaryValue* user_info,
-                             const std::vector<std::string>* service_flags);
-  void OnUserInfoFetchFailure(AccountInfoFetcher* fetcher);
+  void OnUserInfoFetchSuccess(const std::string& account_id,
+                              const base::DictionaryValue* user_info,
+                              const std::vector<std::string>* service_flags);
+  void OnUserInfoFetchFailure(const std::string& account_id);
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
@@ -88,13 +83,15 @@ class AccountFetcherService : public KeyedService,
   AccountTrackerService* account_tracker_service_;  // Not owned.
   OAuth2TokenService* token_service_;  // Not owned.
   SigninClient* signin_client_;  // Not owned.
-  std::map<std::string, AccountInfoFetcher*> user_info_requests_;
   bool network_fetches_enabled_;
   std::list<std::string> pending_user_info_fetches_;
   base::Time last_updated_;
   base::OneShotTimer<AccountFetcherService> timer_;
   bool shutdown_called_;
 
+  // Holds references to account info fetchers keyed by account_id.
+  base::ScopedPtrHashMap<std::string, scoped_ptr<AccountInfoFetcher>>
+      user_info_requests_;
   // Holds references to refresh token annotation requests keyed by account_id.
   base::ScopedPtrHashMap<std::string, scoped_ptr<RefreshTokenAnnotationRequest>>
       refresh_token_annotation_requests_;
