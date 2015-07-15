@@ -203,7 +203,7 @@ source_set("ui") {
       deps += [ "//extensions/components/native_app_window" ]
     }
 
-    if (!is_chromeos) {
+    if (!is_chromeos && (!is_mac || mac_views_browser)) {
       sources +=
           rebase_path(gypi_values.chrome_browser_ui_views_non_chromeos_sources,
                       ".",
