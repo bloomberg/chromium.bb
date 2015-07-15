@@ -909,7 +909,7 @@ public class CompositorViewHolder extends FrameLayout
         sCachedCVCList.clear();
 
         sCachedViewList.clear();
-        tab.getAllViews(sCachedViewList);
+        tab.getAllContentViews(sCachedViewList);
 
         for (int i = 0; i < sCachedViewList.size(); i++) {
             View view = sCachedViewList.get(i);
