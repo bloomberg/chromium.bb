@@ -3110,6 +3110,7 @@ shell_seat_caps_changed(struct wl_listener *listener, void *data)
 		wl_signal_add(&seat->seat->keyboard->focus_signal,
 			      &seat->keyboard_focus_listener);
 	} else if (!seat->seat->keyboard) {
+		wl_list_remove(&seat->keyboard_focus_listener.link);
 		wl_list_init(&seat->keyboard_focus_listener.link);
 	}
 
@@ -3118,6 +3119,7 @@ shell_seat_caps_changed(struct wl_listener *listener, void *data)
 		wl_signal_add(&seat->seat->pointer->focus_signal,
 			      &seat->pointer_focus_listener);
 	} else if (!seat->seat->pointer) {
+		wl_list_remove(&seat->pointer_focus_listener.link);
 		wl_list_init(&seat->pointer_focus_listener.link);
 	}
 }
