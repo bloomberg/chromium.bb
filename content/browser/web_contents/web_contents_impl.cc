@@ -172,6 +172,16 @@ bool CollectSites(BrowserContext* context,
   return true;
 }
 
+bool FindMatchingProcess(int render_process_id,
+                         bool* did_match_process,
+                         FrameTreeNode* node) {
+  if (node->current_frame_host()->GetProcess()->GetID() == render_process_id) {
+    *did_match_process = true;
+    return false;
+  }
+  return true;
+}
+
 bool ForEachFrameInternal(
     const base::Callback<void(RenderFrameHost*)>& on_frame,
     FrameTreeNode* node) {
@@ -1607,7 +1617,7 @@ void WebContentsImpl::LostMouseLock() {
 }
 
 void WebContentsImpl::CreateNewWindow(
-    int render_process_id,
+    SiteInstance* source_site_instance,
     int route_id,
     int main_frame_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
@@ -1632,15 +1642,19 @@ void WebContentsImpl::CreateNewWindow(
   DCHECK(!params.opener_suppressed || route_id == MSG_ROUTING_NONE);
 
   scoped_refptr<SiteInstance> site_instance =
-      params.opener_suppressed && !is_guest ?
-      SiteInstance::CreateForURL(GetBrowserContext(), params.target_url) :
-      GetSiteInstance();
+      params.opener_suppressed && !is_guest
+          ? SiteInstance::CreateForURL(GetBrowserContext(), params.target_url)
+          : source_site_instance;
 
-  // A message to create a new window can only come from the active process for
-  // this WebContentsImpl instance. If any other process sends the request,
-  // it is invalid and the process must be terminated.
-  if (GetRenderProcessHost()->GetID() != render_process_id) {
-    RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
+  // A message to create a new window can only come from a process for a frame
+  // in this WebContents' FrameTree. If any other process sends the request, it
+  // is invalid and the process must be terminated.
+  int render_process_id = source_site_instance->GetProcess()->GetID();
+  bool did_match_process = false;
+  frame_tree_.ForEach(
+      base::Bind(&FindMatchingProcess, render_process_id, &did_match_process));
+  if (!did_match_process) {
+    RenderProcessHost* rph = source_site_instance->GetProcess();
     base::ProcessHandle process_handle = rph->GetHandle();
     if (process_handle != base::kNullProcessHandle) {
       RecordAction(
@@ -1692,7 +1706,7 @@ void WebContentsImpl::CreateNewWindow(
   create_params.routing_id = route_id;
   create_params.main_frame_routing_id = main_frame_route_id;
   create_params.main_frame_name = params.frame_name;
-  create_params.opener_render_process_id = GetRenderProcessHost()->GetID();
+  create_params.opener_render_process_id = render_process_id;
   create_params.opener_render_frame_id = params.opener_render_frame_id;
   create_params.opener_suppressed = params.opener_suppressed;
   if (params.disposition == NEW_BACKGROUND_TAB)

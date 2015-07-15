@@ -110,8 +110,6 @@
       'test/browser_side_navigation_test_utils.h',
       'test/content_browser_sanity_checker.cc',
       'test/content_browser_sanity_checker.h',
-      'test/content_browser_test_utils_internal.cc',
-      'test/content_browser_test_utils_internal.h',
       'test/content_test_suite.cc',
       'test/content_test_suite.h',
       'test/fake_compositor_dependencies.cc',
@@ -1331,6 +1329,8 @@
             'public/test/content_browser_test_utils.cc',
             'public/test/content_browser_test_utils.h',
             'public/test/content_browser_test_utils_mac.mm',
+            'test/content_browser_test_utils_internal.cc',
+            'test/content_browser_test_utils_internal.h',
             'test/content_test_launcher.cc',
           ],
           'include_dirs': [

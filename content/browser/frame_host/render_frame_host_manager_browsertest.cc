@@ -37,6 +37,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/base/net_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -58,23 +59,9 @@ const char kOpenUrlViaClickTargetFunc[] =
     "})";
 
 // Adds a link with given url and target=_blank, and clicks on it.
-void OpenUrlViaClickTarget(const internal::ToRenderFrameHost& adapter,
-                           const GURL& url) {
+void OpenUrlViaClickTarget(const ToRenderFrameHost& adapter, const GURL& url) {
   EXPECT_TRUE(ExecuteScript(adapter,
       std::string(kOpenUrlViaClickTargetFunc) + "(\"" + url.spec() + "\");"));
-}
-
-Shell* OpenPopup(const internal::ToRenderFrameHost& opener,
-                 const std::string& name) {
-  ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      opener,
-      "window.domAutomationController.send(!!window.open('', '" + name + "'));",
-      &success));
-  EXPECT_TRUE(success);
-  Shell* new_shell = new_shell_observer.GetShell();
-  return new_shell;
 }
 
 }  // anonymous namespace
@@ -578,7 +565,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_site_instance.get() != NULL);
 
   // Open a popup using window.open with a 'foo' window.name.
-  Shell* new_shell = OpenPopup(shell()->web_contents(), "foo");
+  Shell* new_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  EXPECT_TRUE(new_shell);
 
   // The window.name for the new popup should be "foo".
   std::string name;
@@ -602,7 +591,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ("foo", name);
 
   // Open another popup from the 'foo' popup and navigate it cross-site.
-  Shell* new_shell2 = OpenPopup(new_shell->web_contents(), "bar");
+  Shell* new_shell2 =
+      OpenPopup(new_shell->web_contents(), GURL(url::kAboutBlankURL), "bar");
+  EXPECT_TRUE(new_shell2);
   GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title3.html"));
   EXPECT_TRUE(NavigateToURL(new_shell2, bar_url));
 
@@ -1900,7 +1891,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_site_instance);
 
   // Open a popup and navigate it cross-site.
-  Shell* new_shell = OpenPopup(shell()->web_contents(), "foo");
+  Shell* new_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  EXPECT_TRUE(new_shell);
   FrameTreeNode* popup_root =
       static_cast<WebContentsImpl*>(new_shell->web_contents())
           ->GetFrameTree()

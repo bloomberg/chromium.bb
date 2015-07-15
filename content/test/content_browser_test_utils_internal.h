@@ -20,7 +20,9 @@ class GURL;
 namespace content {
 
 class FrameTreeNode;
+class Shell;
 class SiteInstance;
+class ToRenderFrameHost;
 
 // Navigates the frame represented by |node| to |url|, blocking until the
 // navigation finishes.
@@ -64,6 +66,15 @@ class FrameTreeVisualizer {
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeVisualizer);
 };
+
+// Uses window.open to open a popup from the frame |opener| with the specified
+// |url| and |name|.   Waits for the navigation to |url| to finish and then
+// returns the new popup's Shell.  Note that since this navigation to |url| is
+// renderer-initiated, it won't cause a process swap unless used in
+// --site-per-process mode.
+Shell* OpenPopup(const ToRenderFrameHost& opener,
+                 const GURL& url,
+                 const std::string& name);
 
 }  // namespace content
 

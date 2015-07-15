@@ -540,8 +540,6 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
   ASSERT_EQ(modifiers, 0);
 }
 
-namespace internal {
-
 ToRenderFrameHost::ToRenderFrameHost(WebContents* web_contents)
     : render_frame_host_(web_contents->GetMainFrame()) {
 }
@@ -554,16 +552,14 @@ ToRenderFrameHost::ToRenderFrameHost(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host) {
 }
 
-}  // namespace internal
-
-bool ExecuteScript(const internal::ToRenderFrameHost& adapter,
+bool ExecuteScript(const ToRenderFrameHost& adapter,
                    const std::string& script) {
   std::string new_script =
       script + ";window.domAutomationController.send(0);";
   return ExecuteScriptHelper(adapter.render_frame_host(), new_script, NULL);
 }
 
-bool ExecuteScriptAndExtractInt(const internal::ToRenderFrameHost& adapter,
+bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
                                 const std::string& script, int* result) {
   DCHECK(result);
   scoped_ptr<base::Value> value;
@@ -575,7 +571,7 @@ bool ExecuteScriptAndExtractInt(const internal::ToRenderFrameHost& adapter,
   return value->GetAsInteger(result);
 }
 
-bool ExecuteScriptAndExtractBool(const internal::ToRenderFrameHost& adapter,
+bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
                                  const std::string& script, bool* result) {
   DCHECK(result);
   scoped_ptr<base::Value> value;
@@ -587,7 +583,7 @@ bool ExecuteScriptAndExtractBool(const internal::ToRenderFrameHost& adapter,
   return value->GetAsBoolean(result);
 }
 
-bool ExecuteScriptAndExtractString(const internal::ToRenderFrameHost& adapter,
+bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) {
   DCHECK(result);

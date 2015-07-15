@@ -480,7 +480,7 @@ class CONTENT_EXPORT WebContentsImpl
                           bool last_unlocked_by_target) override;
   void LostMouseLock() override;
   void CreateNewWindow(
-      int render_process_id,
+      SiteInstance* source_site_instance,
       int route_id,
       int main_frame_route_id,
       const ViewHostMsg_CreateWindow_Params& params,

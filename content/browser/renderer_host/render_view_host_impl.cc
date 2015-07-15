@@ -984,9 +984,8 @@ void RenderViewHostImpl::CreateNewWindow(
   GetProcess()->FilterURL(false, &validated_params.opener_url);
   GetProcess()->FilterURL(true, &validated_params.opener_security_origin);
 
-  delegate_->CreateNewWindow(
-      GetProcess()->GetID(), route_id, main_frame_route_id, validated_params,
-      session_storage_namespace);
+  delegate_->CreateNewWindow(GetSiteInstance(), route_id, main_frame_route_id,
+                             validated_params, session_storage_namespace);
 }
 
 void RenderViewHostImpl::CreateNewWidget(int route_id,
@@ -1002,10 +1001,8 @@ void RenderViewHostImpl::OnShowView(int route_id,
                                     WindowOpenDisposition disposition,
                                     const gfx::Rect& initial_rect,
                                     bool user_gesture) {
-  if (is_active_) {
-    delegate_->ShowCreatedWindow(
-        route_id, disposition, initial_rect, user_gesture);
-  }
+  delegate_->ShowCreatedWindow(route_id, disposition, initial_rect,
+                               user_gesture);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 

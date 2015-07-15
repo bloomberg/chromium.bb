@@ -2715,4 +2715,69 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
       DepictFrameTree(root));
 }
 
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenPopupWithRemoteParent) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Navigate first child cross-site.
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+
+  // Open a popup from the first child.
+  Shell* new_shell = OpenPopup(root->child_at(0)->current_frame_host(),
+                               GURL(url::kAboutBlankURL), "");
+  EXPECT_TRUE(new_shell);
+
+  // Check that the popup's opener is correct on both the browser and renderer
+  // sides.
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(root->child_at(0), popup_root->opener());
+
+  std::string opener_url;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      popup_root->current_frame_host(),
+      "window.domAutomationController.send(window.opener.location.href);",
+      &opener_url));
+  EXPECT_EQ(frame_url.spec(), opener_url);
+
+  // Now try the same with a cross-site popup and make sure it ends up in a new
+  // process and with a correct opener.
+  GURL popup_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+  Shell* cross_site_popup =
+      OpenPopup(root->child_at(0)->current_frame_host(), popup_url, "");
+  EXPECT_TRUE(cross_site_popup);
+
+  FrameTreeNode* cross_site_popup_root =
+      static_cast<WebContentsImpl*>(cross_site_popup->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(cross_site_popup_root->current_url(), popup_url);
+
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            cross_site_popup->web_contents()->GetSiteInstance());
+  EXPECT_NE(root->child_at(0)->current_frame_host()->GetSiteInstance(),
+            cross_site_popup->web_contents()->GetSiteInstance());
+
+  EXPECT_EQ(root->child_at(0), cross_site_popup_root->opener());
+
+  // Ensure the popup's window.opener points to the right subframe.  Note that
+  // we can't check the opener's location as above since it's cross-origin.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      cross_site_popup_root->current_frame_host(),
+      "window.domAutomationController.send("
+      "    window.opener === window.opener.top.frames[0]);",
+      &success));
+  EXPECT_TRUE(success);
+}
+
 }  // namespace content

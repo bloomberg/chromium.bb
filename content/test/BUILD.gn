@@ -189,6 +189,8 @@ source_set("browsertest_support") {
     "../public/test/content_browser_test_utils.cc",
     "../public/test/content_browser_test_utils.h",
     "../public/test/content_browser_test_utils_mac.mm",
+    "content_browser_test_utils_internal.cc",
+    "content_browser_test_utils_internal.h",
     "content_test_launcher.cc",
   ]
 
