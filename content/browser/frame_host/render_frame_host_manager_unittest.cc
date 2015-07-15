@@ -423,7 +423,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
         switches::kEnableBrowserSideNavigation)) {
       scoped_ptr<NavigationRequest> navigation_request =
           NavigationRequest::CreateBrowserInitiated(
-              manager->frame_tree_node_, *frame_entry, entry,
+              manager->frame_tree_node_, frame_entry->url(),
+              frame_entry->referrer(), *frame_entry, entry,
               FrameMsg_Navigate_Type::NORMAL, false, base::TimeTicks::Now(),
               static_cast<NavigationControllerImpl*>(&controller()));
       TestRenderFrameHost* frame_host = static_cast<TestRenderFrameHost*>(
@@ -433,7 +434,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
       return frame_host;
     }
 
-    return manager->Navigate(*frame_entry, entry);
+    return manager->Navigate(frame_entry->url(), *frame_entry, entry);
   }
 
   // Returns the pending RenderFrameHost.

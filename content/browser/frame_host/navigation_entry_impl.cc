@@ -435,6 +435,8 @@ scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 }
 
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
+    const GURL& dest_url,
+    const Referrer& dest_referrer,
     const FrameNavigationEntry& frame_entry,
     FrameMsg_Navigate_Type::Value navigation_type) const {
   FrameMsg_UILoadMetricsReportType::Value report_type =
@@ -447,9 +449,9 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
 #endif
 
   return CommonNavigationParams(
-      frame_entry.url(), frame_entry.referrer(), GetTransitionType(),
-      navigation_type, !IsViewSourceMode(), ui_timestamp, report_type,
-      GetBaseURLForDataURL(), GetHistoryURLForDataURL());
+      dest_url, dest_referrer, GetTransitionType(), navigation_type,
+      !IsViewSourceMode(), ui_timestamp, report_type, GetBaseURLForDataURL(),
+      GetHistoryURLForDataURL());
 }
 
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()

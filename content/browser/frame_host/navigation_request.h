@@ -57,6 +57,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Creates a request for a browser-intiated navigation.
   static scoped_ptr<NavigationRequest> CreateBrowserInitiated(
       FrameTreeNode* frame_tree_node,
+      const GURL& dest_url,
+      const Referrer& dest_referrer,
       const FrameNavigationEntry& frame_entry,
       const NavigationEntryImpl& entry,
       FrameMsg_Navigate_Type::Value navigation_type,

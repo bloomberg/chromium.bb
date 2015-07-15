@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -2128,6 +2129,81 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
+}
+
+namespace {
+class RenderProcessKilledObserver : public WebContentsObserver {
+ public:
+  RenderProcessKilledObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  ~RenderProcessKilledObserver() override {}
+
+  void RenderProcessGone(base::TerminationStatus status) override {
+    CHECK_NE(status,
+             base::TerminationStatus::TERMINATION_STATUS_PROCESS_WAS_KILLED);
+  }
+};
+}
+
+// This tests a race in ReloadOriginalRequest, where a cross-origin reload was
+// causing an in-flight replaceState to look like a cross-origin navigation,
+// even though it's in-page.  (The reload should not modify the underlying last
+// committed entry.)  Not crashing means that the test is successful.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
+  GURL original_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  NavigateToURL(shell(), original_url);
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderProcessKilledObserver kill_observer(shell()->web_contents());
+
+  // Redirect so that we can use ReloadOriginalRequest.
+  GURL redirect_url(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/simple_page_1.html"));
+  {
+    std::string script = "location.replace('" + redirect_url.spec() + "');";
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  // Modify an entry in the session history and reload the original request.
+  {
+    // We first send a replaceState() to the renderer, which will cause the
+    // renderer to send back a DidCommitProvisionalLoad. Immediately after,
+    // we send a ReloadOriginalRequest (which in this case is a different
+    // origin) and will also cause the renderer to commit the frame. In the
+    // end we verify that both navigations committed and that the URLs are
+    // correct.
+    std::string script = "history.replaceState({}, '', 'foo');";
+    root->render_manager()
+        ->current_frame_host()
+        ->ExecuteJavaScriptWithUserGestureForTests(base::UTF8ToUTF16(script));
+    EXPECT_FALSE(shell()->web_contents()->IsLoading());
+    shell()->web_contents()->GetController().ReloadOriginalRequestURL(false);
+    EXPECT_TRUE(shell()->web_contents()->IsLoading());
+    EXPECT_EQ(redirect_url, shell()->web_contents()->GetLastCommittedURL());
+
+    // Wait until there's no more navigations.
+    GURL modified_url(embedded_test_server()->GetURL(
+        "foo.com", "/navigation_controller/foo"));
+    FrameNavigateParamsCapturer capturer(root);
+    capturer.set_wait_for_load(false);
+    capturer.set_navigations_remaining(2);
+    capturer.Wait();
+    EXPECT_EQ(2U, capturer.all_details().size());
+    EXPECT_EQ(modified_url, capturer.all_params()[0].url);
+    EXPECT_EQ(original_url, capturer.all_params()[1].url);
+    EXPECT_EQ(original_url, shell()->web_contents()->GetLastCommittedURL());
+  }
+
+  // Make sure the renderer is still alive.
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(), "console.log('Success');"));
 }
 
 }  // namespace content

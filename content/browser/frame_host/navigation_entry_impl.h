@@ -144,6 +144,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Helper functions to construct NavigationParameters for a navigation to this
   // NavigationEntry.
   CommonNavigationParams ConstructCommonNavigationParams(
+      const GURL& dest_url,
+      const Referrer& dest_referrer,
       const FrameNavigationEntry& frame_entry,
       FrameMsg_Navigate_Type::Value navigation_type) const;
   StartNavigationParams ConstructStartNavigationParams() const;

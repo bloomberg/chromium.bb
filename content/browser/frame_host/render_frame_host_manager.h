@@ -292,8 +292,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Called when we want to instruct the renderer to navigate to the given
   // navigation entry. It may create a new RenderFrameHost or re-use an existing
   // one. The RenderFrameHost to navigate will be returned. Returns NULL if one
-  // could not be created.
-  RenderFrameHostImpl* Navigate(const FrameNavigationEntry& frame_entry,
+  // could not be created. |dest_url| takes precedence over the |frame_entry|'s
+  // url (this is necessary because ReloadOriginalRequest navigates to a
+  // different URL than the last committed entry, without modifying it).
+  RenderFrameHostImpl* Navigate(const GURL& dest_url,
+                                const FrameNavigationEntry& frame_entry,
                                 const NavigationEntryImpl& entry);
 
   // Instructs the various live views to stop. Called when the user directed the

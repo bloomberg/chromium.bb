@@ -114,6 +114,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // to execute the beforeUnload event. Otherwise, the navigation request will
   // be started.
   void RequestNavigation(FrameTreeNode* frame_tree_node,
+                         const GURL& dest_url,
+                         const Referrer& dest_referrer,
                          const FrameNavigationEntry& frame_entry,
                          const NavigationEntryImpl& entry,
                          NavigationController::ReloadType reload_type,

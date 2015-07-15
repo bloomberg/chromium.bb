@@ -53,6 +53,8 @@ int LoadFlagFromNavigationType(FrameMsg_Navigate_Type::Value navigation_type) {
 // static
 scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
+    const GURL& dest_url,
+    const Referrer& dest_referrer,
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
     FrameMsg_Navigate_Type::Value navigation_type,
@@ -82,7 +84,8 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node,
-      entry.ConstructCommonNavigationParams(frame_entry, navigation_type),
+      entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
+                                            frame_entry, navigation_type),
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type), false),
       entry.ConstructRequestNavigationParams(

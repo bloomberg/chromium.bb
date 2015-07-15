@@ -235,13 +235,14 @@ scoped_ptr<WebUIImpl> RenderFrameHostManager::CreateWebUI(const GURL& url,
 }
 
 RenderFrameHostImpl* RenderFrameHostManager::Navigate(
+    const GURL& dest_url,
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager:Navigate",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   // Create a pending RenderFrameHost to use for the navigation.
   RenderFrameHostImpl* dest_render_frame_host = UpdateStateForNavigate(
-      frame_entry.url(),
+      dest_url,
       // TODO(creis): Move source_site_instance to FNE.
       entry.source_site_instance(), frame_entry.site_instance(),
       entry.GetTransitionType(),
