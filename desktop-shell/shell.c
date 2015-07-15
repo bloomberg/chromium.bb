@@ -3105,20 +3105,20 @@ shell_seat_caps_changed(struct wl_listener *listener, void *data)
 
 	seat = container_of(listener, struct shell_seat, caps_changed_listener);
 
-	if (seat->seat->keyboard &&
+	if (seat->seat->keyboard_device_count &&
 	    wl_list_empty(&seat->keyboard_focus_listener.link)) {
 		wl_signal_add(&seat->seat->keyboard->focus_signal,
 			      &seat->keyboard_focus_listener);
-	} else if (!seat->seat->keyboard) {
+	} else if (!seat->seat->keyboard_device_count) {
 		wl_list_remove(&seat->keyboard_focus_listener.link);
 		wl_list_init(&seat->keyboard_focus_listener.link);
 	}
 
-	if (seat->seat->pointer &&
+	if (seat->seat->pointer_device_count &&
 	    wl_list_empty(&seat->pointer_focus_listener.link)) {
 		wl_signal_add(&seat->seat->pointer->focus_signal,
 			      &seat->pointer_focus_listener);
-	} else if (!seat->seat->pointer) {
+	} else if (!seat->seat->pointer_device_count) {
 		wl_list_remove(&seat->pointer_focus_listener.link);
 		wl_list_init(&seat->pointer_focus_listener.link);
 	}
