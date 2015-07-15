@@ -148,6 +148,16 @@ int GetMinimumBoundsHeightForAppList(const app_list::AppListView* app_list) {
   return app_list->bounds().height() + 2 * kMinimalCenteredAppListMargin;
 }
 
+bool IsFullscreenAppListEnabled() {
+#if defined(OS_CHROMEOS)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kAshEnableFullscreenAppList) &&
+         app_list::switches::IsExperimentalAppListEnabled();
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -198,15 +208,10 @@ void AppListController::Show(aura::Window* window) {
     views::View* applist_button =
         Shelf::ForWindow(container)->GetAppListButtonView();
     is_centered_ = view->ShouldCenterWindow();
-    bool is_fullscreen = false;
-#if defined(OS_CHROMEOS)
-    is_fullscreen = base::CommandLine::ForCurrentProcess()->HasSwitch(
-                        switches::kAshEnableFullscreenAppList) &&
-                    app_list::switches::IsExperimentalAppListEnabled() &&
-                    Shell::GetInstance()
-                        ->maximize_mode_controller()
-                        ->IsMaximizeModeWindowManagerEnabled();
-#endif
+    bool is_fullscreen = IsFullscreenAppListEnabled() &&
+                         Shell::GetInstance()
+                             ->maximize_mode_controller()
+                             ->IsMaximizeModeWindowManagerEnabled();
     if (is_fullscreen) {
       view->InitAsFramelessWindow(
           container, current_apps_page_,
@@ -476,6 +481,22 @@ void AppListController::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
 void AppListController::OnShelfAlignmentChanged(aura::Window* root_window) {
   if (view_)
     view_->SetBubbleArrow(GetBubbleArrow(view_->GetWidget()->GetNativeView()));
+}
+
+void AppListController::OnMaximizeModeStarted() {
+  // The "fullscreen" app-list is initialized as in a different type of window,
+  // therefore we can't switch between the fullscreen status and the normal
+  // app-list bubble. App-list should be dismissed for the transition between
+  // maximize mode (touch-view mode) and non-maximize mode, otherwise the app
+  // list tries to behave as a bubble which leads to a crash. crbug.com/510062
+  if (IsFullscreenAppListEnabled() && is_visible_)
+    Dismiss();
+}
+
+void AppListController::OnMaximizeModeEnded() {
+  // See the comments of OnMaximizeModeStarted().
+  if (IsFullscreenAppListEnabled() && is_visible_)
+    Dismiss();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

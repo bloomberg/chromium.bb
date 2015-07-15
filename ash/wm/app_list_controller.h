@@ -114,6 +114,8 @@ class AppListController : public ui::EventHandler,
 
   // ShellObserver overrides:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
 
   // ShelfIconObserver overrides:
   void OnShelfIconPositionsChanged() override;
