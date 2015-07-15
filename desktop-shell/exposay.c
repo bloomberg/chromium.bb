@@ -520,11 +520,14 @@ exposay_set_inactive(struct desktop_shell *shell)
 {
 	struct weston_seat *seat = shell->exposay.seat;
 
-	weston_keyboard_end_grab(seat->keyboard);
 	if (seat->pointer_device_count)
 		weston_pointer_end_grab(seat->pointer);
-	if (seat->keyboard->input_method_resource)
-		seat->keyboard->grab = &seat->keyboard->input_method_grab;
+
+	if (!seat->keyboard_device_count) {
+		weston_keyboard_end_grab(seat->keyboard);
+		if (seat->keyboard->input_method_resource)
+			seat->keyboard->grab = &seat->keyboard->input_method_grab;
+	}
 
 	return EXPOSAY_LAYOUT_INACTIVE;
 }
