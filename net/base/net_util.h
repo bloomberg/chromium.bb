@@ -147,12 +147,6 @@ NET_EXPORT_PRIVATE void GetIdentityFromURL(const GURL& url,
 // Returns either the host from |url|, or, if the host is empty, the full spec.
 NET_EXPORT std::string GetHostOrSpecFromURL(const GURL& url);
 
-// Return the value of the HTTP response header with name 'name'.  'headers'
-// should be in the format that URLRequest::GetResponseHeaders() returns.
-// Returns the empty string if the header is not found.
-NET_EXPORT std::string GetSpecificHeader(const std::string& headers,
-                                         const std::string& name);
-
 // Converts the given host name to unicode characters. This can be called for
 // any host name, if the input is not IDN or is invalid in some way, we'll just
 // return the ASCII source so it is still usable.

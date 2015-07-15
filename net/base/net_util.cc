@@ -174,37 +174,6 @@ bool IsLocal6Hostname(const std::string& host) {
 static base::LazyInstance<std::multiset<int> >::Leaky
     g_explicitly_allowed_ports = LAZY_INSTANCE_INITIALIZER;
 
-std::string GetSpecificHeader(const std::string& headers,
-                              const std::string& name) {
-  // We want to grab the Value from the "Key: Value" pairs in the headers,
-  // which should look like this (no leading spaces, \n-separated) (we format
-  // them this way in url_request_inet.cc):
-  //    HTTP/1.1 200 OK\n
-  //    ETag: "6d0b8-947-24f35ec0"\n
-  //    Content-Length: 2375\n
-  //    Content-Type: text/html; charset=UTF-8\n
-  //    Last-Modified: Sun, 03 Sep 2006 04:34:43 GMT\n
-  if (headers.empty())
-    return std::string();
-
-  std::string match('\n' + name + ':');
-
-  std::string::const_iterator begin =
-      std::search(headers.begin(), headers.end(), match.begin(), match.end(),
-             base::CaseInsensitiveCompareASCII<char>());
-
-  if (begin == headers.end())
-    return std::string();
-
-  begin += match.length();
-
-  std::string ret;
-  base::TrimWhitespace(std::string(begin,
-                                   std::find(begin, headers.end(), '\n')),
-                       base::TRIM_ALL, &ret);
-  return ret;
-}
-
 std::string CanonicalizeHost(const std::string& host,
                              url::CanonHostInfo* host_info) {
   // Try to canonicalize the host.
