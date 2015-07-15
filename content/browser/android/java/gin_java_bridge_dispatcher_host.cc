@@ -108,15 +108,8 @@ void GinJavaBridgeDispatcherHost::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AddBrowserFilterIfNeeded();
-  base::AutoLock locker(objects_lock_);
-  auto iter = objects_.begin();
-  while (iter != objects_.end()) {
-    JavaObjectWeakGlobalRef ref =
-        RemoveHolderAndAdvanceLocked(render_frame_host->GetRoutingID(), &iter);
-    if (!ref.is_empty()) {
-      RemoveFromRetainedObjectSetLocked(ref);
-    }
-  }
+  // Do not release any objects, as RenderFrames do not actually hold
+  // objects, it is object wrappers' job. See http://crbug.com/486245.
 }
 
 GinJavaBoundObject::ObjectID GinJavaBridgeDispatcherHost::AddObject(

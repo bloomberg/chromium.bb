@@ -7,12 +7,14 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -155,15 +157,89 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
                         "typeof window.frames[0].inner_ref"));
         // Remove the iframe, this will trigger a removal of RenderFrame, which was causing
         // the bug condition, as the transient object still has a holder -- the main window.
-        assertEquals("{}",
+        assertEquals("\"object\"",
                 executeJavaScriptAndGetResult(getWebContents(),
                         "(function(){ "
                         + "var f = document.getElementById('frame');"
-                        + "f.parentNode.removeChild(f); return f; })()"));
+                        + "f.parentNode.removeChild(f); return typeof f; })()"));
         // Just in case, check that the remaining wrapper is still accessible.
         assertEquals("\"object\"",
                 executeJavaScriptAndGetResult(getWebContents(),
                         "typeof inner_ref"));
+    }
+
+    // Regression test for crbug.com/486245 -- assign ownership of a transient object
+    // to one frame with a code running in the second frame. Deletion of the second
+    // frame should not affect the injected object.
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    @CommandLineFlags.Add("js-flags=--expose-gc")
+    public void testHolderFrame() throws Throwable {
+        class Test {
+            WeakReference<Object> mWeakRefForInner;
+            private CountDownLatch mLatch = new CountDownLatch(1);
+            @JavascriptInterface
+            public Object getInner() {
+                mLatch.countDown();
+                Object inner = new Object();
+                mWeakRefForInner = new WeakReference<Object>(inner);
+                return inner;
+            }
+            public void waitForInjection() throws Throwable {
+                if (!mLatch.await(5, TimeUnit.SECONDS)) {
+                    throw new TimeoutException();
+                }
+            }
+        }
+        final Test testObject = new Test();
+
+        assertEquals("\"function\"", executeJavaScriptAndGetResult(getWebContents(), "typeof gc"));
+        // The page executes in the second frame code which creates a wrapper for a transient
+        // injected object, but makes the first frame the owner of the object.
+        loadDataSync(getWebContents().getNavigationController(),
+                "<html>"
+                + "<head></head>"
+                + "<body>"
+                + "   <iframe id='frame1' "
+                + "       srcdoc='<body>I am the Inner object owner!</body>'>"
+                + "   </iframe>"
+                + "   <iframe id='frame2' "
+                + "       srcdoc='<script>"
+                + "           window.parent.frames[0].inner_ref = test.getInner()"
+                + "       </script>'>"
+                + "   </iframe>"
+                + "</body></html>", "text/html", false);
+        injectObjectAndReload(testObject, "test");
+        testObject.waitForInjection();
+        // Check that the object wrappers are in place.
+        assertTrue(testObject.mWeakRefForInner.get() != null);
+        assertEquals("\"object\"",
+                executeJavaScriptAndGetResult(getWebContents(),
+                        "typeof window.frames[0].inner_ref"));
+        // Remove the second frame. This must not toggle the deletion of the inner
+        // object.
+        assertEquals("\"object\"",
+                executeJavaScriptAndGetResult(getWebContents(),
+                        "(function(){ "
+                        + "var f = document.getElementById('frame2');"
+                        + "f.parentNode.removeChild(f); return typeof f; })()"));
+        executeJavaScriptAndGetResult(getWebContents(), "gc();");
+        // Check that returned Java object is being held by the Java bridge, thus it's not
+        // collected.  Note that despite that what JavaDoc says about invoking "gc()", both Dalvik
+        // and ART actually run the collector.
+        Runtime.getRuntime().gc();
+        assertNotNull(testObject.mWeakRefForInner.get());
+        // Now, remove the first frame and GC. As it was the only holder of the
+        // inner object's wrapper, the wrapper must be collected. Then, the death
+        // of the wrapper must cause removal of the inner object.
+        assertEquals("\"object\"",
+                executeJavaScriptAndGetResult(getWebContents(),
+                        "(function(){ "
+                        + "var f = document.getElementById('frame1');"
+                        + "f.parentNode.removeChild(f); return typeof f; })()"));
+        executeJavaScriptAndGetResult(getWebContents(), "gc();");
+        Runtime.getRuntime().gc();
+        assertNull(testObject.mWeakRefForInner.get());
     }
 
     private String executeJavaScriptAndGetResult(final WebContents webContents,

@@ -4,6 +4,8 @@
 
 #include "content/renderer/java/gin_java_bridge_object.h"
 
+#include "content/common/gin_java_bridge_messages.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/java/gin_java_function_invocation_helper.h"
 #include "gin/function_template.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -54,12 +56,20 @@ GinJavaBridgeObject::GinJavaBridgeObject(
     : gin::NamedPropertyInterceptor(isolate, this),
       dispatcher_(dispatcher),
       object_id_(object_id),
+      frame_routing_id_(dispatcher_->routing_id()),
       template_cache_(isolate) {
 }
 
 GinJavaBridgeObject::~GinJavaBridgeObject() {
-  if (dispatcher_)
+  if (dispatcher_) {
     dispatcher_->OnGinJavaBridgeObjectDeleted(this);
+  } else {
+    // A wrapper can outlive a render frame, and thus the dispatcher.
+    // Note that we intercept GinJavaBridgeHostMsg messages in a browser filter
+    // thus it's OK to send the message with a routing id of a ceased frame.
+    RenderThread::Get()->Send(new GinJavaBridgeHostMsg_ObjectWrapperDeleted(
+        frame_routing_id_, object_id_));
+  }
 }
 
 gin::ObjectTemplateBuilder GinJavaBridgeObject::GetObjectTemplateBuilder(

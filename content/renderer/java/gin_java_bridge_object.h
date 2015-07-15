@@ -58,6 +58,7 @@ class GinJavaBridgeObject : public gin::Wrappable<GinJavaBridgeObject>,
 
   base::WeakPtr<GinJavaBridgeDispatcher> dispatcher_;
   GinJavaBridgeDispatcher::ObjectID object_id_;
+  int frame_routing_id_;
   std::map<std::string, bool> known_methods_;
   v8::StdGlobalValueMap<std::string, v8::FunctionTemplate> template_cache_;
 
