@@ -39,6 +39,7 @@ struct ivi_layout_surface {
 	struct ivi_layout *layout;
 	struct weston_surface *surface;
 
+	struct weston_transform transform;
 
 	struct ivi_layout_surface_properties prop;
 	uint32_t event_mask;

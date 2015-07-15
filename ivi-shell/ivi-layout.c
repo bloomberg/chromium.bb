@@ -111,6 +111,14 @@ struct ivi_layout_notification_callback {
 	void *data;
 };
 
+struct ivi_rectangle
+{
+	int32_t x;
+	int32_t y;
+	int32_t width;
+	int32_t height;
+};
+
 static void
 remove_notification(struct wl_list *listener_list, void *callback, void *userdata);
 
@@ -348,6 +356,7 @@ ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf)
 		return;
 	}
 
+	wl_list_remove(&ivisurf->transform.link);
 	wl_list_remove(&ivisurf->pending.link);
 	wl_list_remove(&ivisurf->order.link);
 	wl_list_remove(&ivisurf->link);
@@ -486,10 +495,141 @@ update_opacity(struct ivi_layout_layer *ivilayer,
 }
 
 static void
+get_rotate_values(enum wl_output_transform orientation,
+		  float *v_sin,
+		  float *v_cos)
+{
+	switch (orientation) {
+	case WL_OUTPUT_TRANSFORM_90:
+		*v_sin = 1.0f;
+		*v_cos = 0.0f;
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		*v_sin = 0.0f;
+		*v_cos = -1.0f;
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		*v_sin = -1.0f;
+		*v_cos = 0.0f;
+		break;
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		*v_sin = 0.0f;
+		*v_cos = 1.0f;
+		break;
+	}
+}
+
+static void
+get_scale(enum wl_output_transform orientation,
+	  float dest_width,
+	  float dest_height,
+	  float source_width,
+	  float source_height,
+	  float *scale_x,
+	  float *scale_y)
+{
+	switch (orientation) {
+	case WL_OUTPUT_TRANSFORM_90:
+		*scale_x = dest_width / source_height;
+		*scale_y = dest_height / source_width;
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		*scale_x = dest_width / source_width;
+		*scale_y = dest_height / source_height;
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		*scale_x = dest_width / source_height;
+		*scale_y = dest_height / source_width;
+		break;
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		*scale_x = dest_width / source_width;
+		*scale_y = dest_height / source_height;
+		break;
+	}
+}
+
+static void
+calc_transformation_matrix(struct ivi_rectangle *source_rect,
+			   struct ivi_rectangle *dest_rect,
+			   enum wl_output_transform orientation,
+			   struct weston_matrix *m)
+{
+	float source_center_x;
+	float source_center_y;
+	float vsin;
+	float vcos;
+	float scale_x;
+	float scale_y;
+	float translate_x;
+	float translate_y;
+
+	source_center_x = source_rect->x + source_rect->width * 0.5f;
+	source_center_y = source_rect->y + source_rect->height * 0.5f;
+	weston_matrix_translate(m, -source_center_x, -source_center_y, 0.0f);
+
+	get_rotate_values(orientation, &vsin, &vcos);
+	weston_matrix_rotate_xy(m, vcos, vsin);
+
+	get_scale(orientation,
+		  dest_rect->width,
+		  dest_rect->height,
+		  source_rect->width,
+		  source_rect->height,
+		  &scale_x,
+		  &scale_y);
+	weston_matrix_scale(m, scale_x, scale_y, 1.0f);
+
+	translate_x = dest_rect->width * 0.5f + dest_rect->x;
+	translate_y = dest_rect->height * 0.5f + dest_rect->y;
+	weston_matrix_translate(m, translate_x, translate_y, 0.0f);
+}
+
+/**
+ * This computes the whole transformation matrix from surface-local
+ * coordinates to global coordinates. It is assumed that
+ * weston_view::geometry.{x,y} are zero.
+ */
+static void
+calc_surface_to_global_matrix(struct ivi_layout_layer *ivilayer,
+			      struct ivi_layout_surface *ivisurf,
+			      struct weston_matrix *m)
+{
+	const struct ivi_layout_surface_properties *sp = &ivisurf->prop;
+	const struct ivi_layout_layer_properties *lp = &ivilayer->prop;
+	struct ivi_rectangle surface_source_rect = { sp->source_x,
+						     sp->source_y,
+						     sp->source_width,
+						     sp->source_height };
+	struct ivi_rectangle surface_dest_rect =   { sp->dest_x,
+						     sp->dest_y,
+						     sp->dest_width,
+						     sp->dest_height };
+	struct ivi_rectangle layer_source_rect =   { lp->source_x,
+						     lp->source_y,
+						     lp->source_width,
+						     lp->source_height };
+	struct ivi_rectangle layer_dest_rect =     { lp->dest_x,
+						     lp->dest_y,
+						     lp->dest_width,
+						     lp->dest_height };
+
+	calc_transformation_matrix(&surface_source_rect,
+				   &surface_dest_rect,
+				   sp->orientation, m);
+
+	calc_transformation_matrix(&layer_source_rect,
+				   &layer_dest_rect,
+				   lp->orientation, m);
+}
+
+static void
 update_prop(struct ivi_layout_layer *ivilayer,
 	    struct ivi_layout_surface *ivisurf)
 {
 	struct weston_view *tmpview;
+	bool can_calc = true;
 
 	if (!ivilayer->event_mask && !ivisurf->event_mask) {
 		return;
@@ -497,13 +637,36 @@ update_prop(struct ivi_layout_layer *ivilayer,
 
 	update_opacity(ivilayer, ivisurf);
 
-	ivisurf->update_count++;
-
 	wl_list_for_each(tmpview, &ivisurf->surface->views, surface_link) {
 		if (tmpview != NULL) {
 			break;
 		}
 	}
+
+	if (ivisurf->prop.source_width == 0 || ivisurf->prop.source_height == 0) {
+		weston_log("ivi-shell: source rectangle is not yet set by ivi_layout_surface_set_source_rectangle\n");
+		can_calc = false;
+	}
+
+	if (ivisurf->prop.dest_width == 0 || ivisurf->prop.dest_height == 0) {
+		weston_log("ivi-shell: destination rectangle is not yet set by ivi_layout_surface_set_destination_rectangle\n");
+		can_calc = false;
+	}
+
+	if (can_calc) {
+		wl_list_remove(&ivisurf->transform.link);
+		weston_matrix_init(&ivisurf->transform.matrix);
+
+		calc_surface_to_global_matrix(ivilayer, ivisurf, &ivisurf->transform.matrix);
+
+		if (tmpview != NULL) {
+			wl_list_insert(&tmpview->geometry.transformation_list, &ivisurf->transform.link);
+
+			weston_view_set_transform_parent(tmpview, NULL);
+		}
+	}
+
+	ivisurf->update_count++;
 
 	if (tmpview != NULL) {
 		weston_view_geometry_dirty(tmpview);
@@ -2626,6 +2789,8 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 	ivisurf->surface->width_from_buffer  = 0;
 	ivisurf->surface->height_from_buffer = 0;
 
+	weston_matrix_init(&ivisurf->transform.matrix);
+	wl_list_init(&ivisurf->transform.link);
 
 	init_surface_properties(&ivisurf->prop);
 	ivisurf->event_mask = 0;
