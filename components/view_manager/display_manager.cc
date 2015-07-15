@@ -234,15 +234,14 @@ void DefaultDisplayManager::UpdateMetrics(const gfx::Size& size,
   if (metrics_.size_in_pixels.To<gfx::Size>() == size &&
       metrics_.device_pixel_ratio == device_pixel_ratio)
     return;
-  mojo::ViewportMetrics metrics;
-  metrics.size_in_pixels = mojo::Size::From(size);
-  metrics.device_pixel_ratio = device_pixel_ratio;
+  mojo::ViewportMetrics old_metrics;
+  old_metrics.size_in_pixels = metrics_.size_in_pixels.Clone();
+  old_metrics.device_pixel_ratio = metrics_.device_pixel_ratio;
 
-  delegate_->GetRootView()->SetBounds(gfx::Rect(size));
-  delegate_->OnViewportMetricsChanged(metrics_, metrics);
+  metrics_.size_in_pixels = mojo::Size::From(size);
+  metrics_.device_pixel_ratio = device_pixel_ratio;
 
-  metrics_.size_in_pixels = metrics.size_in_pixels.Clone();
-  metrics_.device_pixel_ratio = metrics.device_pixel_ratio;
+  delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
 }
 
 void DefaultDisplayManager::OnBoundsChanged(const gfx::Rect& new_bounds) {

@@ -58,7 +58,25 @@ void Browser::ReplaceContentWithRequest(mojo::URLRequestPtr request) {
   Embed(request.Pass());
 }
 
-void Browser::OnDevicePixelRatioAvailable() {
+mojo::ApplicationConnection* Browser::GetViewManagerConnectionForTesting() {
+  return view_manager_init_.connection();
+}
+
+void Browser::OnEmbed(mojo::View* root) {
+  // Browser does not support being embedded more than once.
+  CHECK(!root_);
+
+  // Make it so we get OnWillEmbed() for any Embed()s done by other apps we
+  // Embed().
+  root->view_manager()->SetEmbedRoot();
+
+  // TODO(beng): still unhappy with the fact that both this class & the UI class
+  //             know so much about these views. Figure out how to shift more to
+  //             the UI class.
+  root_ = root;
+
+  delegate_->InitUIIfNecessary(this, root_);
+
   content_ = root_->view_manager()->CreateView();
   ui_->Init(root_);
 
@@ -79,28 +97,6 @@ void Browser::OnDevicePixelRatioAvailable() {
     request->url = mojo::String::From(default_url_.spec());
     Embed(request.Pass());
   }
-}
-
-mojo::ApplicationConnection* Browser::GetViewManagerConnectionForTesting() {
-  return view_manager_init_.connection();
-}
-
-void Browser::OnEmbed(mojo::View* root) {
-  // Browser does not support being embedded more than once.
-  CHECK(!root_);
-
-  // Make it so we get OnWillEmbed() for any Embed()s done by other apps we
-  // Embed().
-  root->view_manager()->SetEmbedRoot();
-
-  // TODO(beng): still unhappy with the fact that both this class & the UI class
-  //             know so much about these views. Figure out how to shift more to
-  //             the UI class.
-  root_ = root;
-
-  if (!delegate_->InitUIIfNecessary(this, root_))
-    return;  // We'll be called back from OnDevicePixelRatioAvailable().
-  OnDevicePixelRatioAvailable();
 }
 
 void Browser::OnEmbedForDescendant(mojo::View* view,

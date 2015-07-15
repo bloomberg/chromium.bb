@@ -106,9 +106,7 @@ class BrowserTest : public mojo::test::ApplicationTestBase,
     }
   }
 
-  bool InitUIIfNecessary(Browser* browser, mojo::View* root_view) override {
-    return true;
-  }
+  void InitUIIfNecessary(Browser* browser, mojo::View* root_view) override {}
 
  private:
   mojo::ApplicationImpl* app_;

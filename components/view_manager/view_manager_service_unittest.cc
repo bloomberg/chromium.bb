@@ -117,11 +117,12 @@ class TestClientConnection : public ClientConnection {
  public:
   explicit TestClientConnection(scoped_ptr<ViewManagerServiceImpl> service_impl)
       : ClientConnection(service_impl.Pass(), &client_) {}
-  ~TestClientConnection() override {}
 
   TestViewManagerClient* client() { return &client_; }
 
  private:
+  ~TestClientConnection() override {}
+
   TestViewManagerClient client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientConnection);
@@ -178,19 +179,20 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
 
 class TestViewManagerRootConnection : public ViewManagerRootConnection {
  public:
-  TestViewManagerRootConnection(
-      scoped_ptr<ViewManagerRootImpl> root,
-      ConnectionManager* manager)
-      : ViewManagerRootConnection(root.Pass(), manager) {
+  TestViewManagerRootConnection(scoped_ptr<ViewManagerRootImpl> root,
+                                ConnectionManager* manager)
+      : ViewManagerRootConnection(root.Pass(), manager) {}
+  ~TestViewManagerRootConnection() override {}
+
+ private:
+  // ViewManagerRootDelegate:
+  void OnDisplayInitialized() override {
     connection_manager()->AddRoot(this);
     set_view_manager_service(connection_manager()->EmbedAtView(
         kInvalidConnectionId,
         view_manager_root()->root_view()->id(),
         mojo::ViewManagerClientPtr()));
   }
-  ~TestViewManagerRootConnection() override {}
-
- private:
   DISALLOW_COPY_AND_ASSIGN(TestViewManagerRootConnection);
 };
 
@@ -202,7 +204,15 @@ class TestDisplayManager : public DisplayManager {
   ~TestDisplayManager() override {}
 
   // DisplayManager:
-  void Init(DisplayManagerDelegate* delegate) override {}
+  void Init(DisplayManagerDelegate* delegate) override {
+    // It is necessary to tell the delegate about the ViewportMetrics to make
+    // sure that the ViewManagerRootConnection is correctly initialized (and a
+    // root-view is created).
+    mojo::ViewportMetrics metrics;
+    metrics.size_in_pixels = mojo::Size::From(gfx::Size(400, 300));
+    metrics.device_pixel_ratio = 1.f;
+    delegate->OnViewportMetricsChanged(mojo::ViewportMetrics(), metrics);
+  }
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override {
   }
   void SetViewportSize(const gfx::Size& size) override {}
@@ -286,16 +296,14 @@ class ViewManagerServiceTest : public testing::Test {
     DisplayManager::set_factory_for_testing(&display_manager_factory_);
     // TODO(fsamuel): This is probably broken. We need a root.
     connection_manager_.reset(new ConnectionManager(&delegate_));
-    scoped_ptr<ViewManagerRootImpl> root(
-        new ViewManagerRootImpl(connection_manager_.get(),
-                                true /* is_headless */,
-                                nullptr,
-                                scoped_refptr<gles2::GpuState>()));
+    ViewManagerRootImpl* root = new ViewManagerRootImpl(
+        connection_manager_.get(), true /* is_headless */, nullptr,
+        scoped_refptr<gles2::GpuState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
-    root_connection_ =
-        new TestViewManagerRootConnection(root.Pass(),
-                                          connection_manager_.get());
+    root_connection_ = new TestViewManagerRootConnection(
+        make_scoped_ptr(root), connection_manager_.get());
+    root->Init(root_connection_);
     wm_client_ = delegate_.last_client();
   }
 

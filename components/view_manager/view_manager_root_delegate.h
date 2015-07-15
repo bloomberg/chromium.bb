@@ -17,6 +17,10 @@ class ViewManagerServiceImpl;
 // when the Display of the root is closed.
 class ViewManagerRootDelegate {
  public:
+  // Called when the window associated with the root is completely initialized
+  // (i.e. the ViewportMetrics for the display is known).
+  virtual void OnDisplayInitialized() = 0;
+
   // Called when the window associated with the root is closed.
   virtual void OnDisplayClosed() = 0;
 

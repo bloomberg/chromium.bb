@@ -100,21 +100,16 @@ void ViewManagerApp::Create(ApplicationConnection* connection,
   DCHECK(connection_manager_.get());
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.
-  scoped_ptr<ViewManagerRootImpl> view_manager_root(
-      new ViewManagerRootImpl(
-          connection_manager_.get(),
-          is_headless_,
-          app_impl_,
-          gpu_state_));
+  ViewManagerRootImpl* view_manager_root = new ViewManagerRootImpl(
+      connection_manager_.get(), is_headless_, app_impl_, gpu_state_);
 
   mojo::ViewManagerClientPtr client;
   connection->ConnectToService(&client);
 
   // ViewManagerRootConnection manages its own lifetime.
-  new ViewManagerRootConnectionImpl(request.Pass(),
-                                    view_manager_root.Pass(),
-                                    client.Pass(),
-                                    connection_manager_.get());
+  view_manager_root->Init(new ViewManagerRootConnectionImpl(
+      request.Pass(), make_scoped_ptr(view_manager_root), client.Pass(),
+      connection_manager_.get()));
 }
 
 void ViewManagerApp::Create(

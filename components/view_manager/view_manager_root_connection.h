@@ -46,11 +46,12 @@ class ViewManagerRootConnection : public ViewManagerRootDelegate {
  protected:
   ~ViewManagerRootConnection() override;
 
- private:
   // ViewManagerRootDelegate:
-  ViewManagerServiceImpl* GetViewManagerService() override;
+  void OnDisplayInitialized() override;
   void OnDisplayClosed() override;
+  ViewManagerServiceImpl* GetViewManagerService() override;
 
+ private:
   scoped_ptr<ViewManagerRootImpl> root_;
   ViewManagerServiceImpl* service_;
   ConnectionManager* connection_manager_;
@@ -71,7 +72,11 @@ class ViewManagerRootConnectionImpl : public ViewManagerRootConnection {
  private:
   ~ViewManagerRootConnectionImpl() override;
 
+  // ViewManagerRootDelegate:
+  void OnDisplayInitialized() override;
+
   mojo::Binding<mojo::ViewManagerRoot> binding_;
+  mojo::ViewManagerClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerRootConnectionImpl);
 };

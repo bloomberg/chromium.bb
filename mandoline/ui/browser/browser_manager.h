@@ -41,10 +41,6 @@ class BrowserManager : public mojo::ApplicationDelegate,
   Browser* CreateBrowser(const GURL& default_url);
 
  private:
-  class DevicePixelRatioWaiter;
-
-  void OnDevicePixelRatioAvailable(Browser* browser, mojo::View* view);
-
   // Overridden from LaunchHandler:
   void LaunchURL(const mojo::String& url) override;
 
@@ -54,7 +50,7 @@ class BrowserManager : public mojo::ApplicationDelegate,
       mojo::ApplicationConnection* connection) override;
 
   // Overridden from BrowserDelegate:
-  bool InitUIIfNecessary(Browser* browser, mojo::View* view) override;
+  void InitUIIfNecessary(Browser* browser, mojo::View* view) override;
   void BrowserClosed(Browser* browser) override;
 
   // Overridden from mojo::InterfaceFactory<LaunchHandler>:
@@ -68,8 +64,6 @@ class BrowserManager : public mojo::ApplicationDelegate,
 #endif
   mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
   std::set<Browser*> browsers_;
-
-  scoped_ptr<DevicePixelRatioWaiter> device_pixel_ratio_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserManager);
 };

@@ -16,7 +16,6 @@ ViewManagerRootConnection::ViewManagerRootConnection(
       service_(nullptr),
       connection_manager_(manager),
       connection_closed_(false) {
-  root_->Init(this);
 }
 
 ViewManagerRootConnection::~ViewManagerRootConnection() {
@@ -40,6 +39,9 @@ ViewManagerServiceImpl* ViewManagerRootConnection::GetViewManagerService() {
   return service_;
 }
 
+void ViewManagerRootConnection::OnDisplayInitialized() {
+}
+
 void ViewManagerRootConnection::OnDisplayClosed() {
   CloseConnection();
 }
@@ -50,17 +52,18 @@ ViewManagerRootConnectionImpl::ViewManagerRootConnectionImpl(
     mojo::ViewManagerClientPtr client,
     ConnectionManager* manager)
     : ViewManagerRootConnection(root.Pass(), manager),
-      binding_(view_manager_root(), request.Pass()) {
-  binding_.set_connection_error_handler([this]() { CloseConnection(); });
-
-  connection_manager()->AddRoot(this);
-  set_view_manager_service(connection_manager()->EmbedAtView(
-      kInvalidConnectionId,
-      view_manager_root()->root_view()->id(),
-      client.Pass()));
+      binding_(view_manager_root(), request.Pass()),
+      client_(client.Pass()) {
 }
 
 ViewManagerRootConnectionImpl::~ViewManagerRootConnectionImpl() {
+}
+
+void ViewManagerRootConnectionImpl::OnDisplayInitialized() {
+  connection_manager()->AddRoot(this);
+  set_view_manager_service(connection_manager()->EmbedAtView(
+      kInvalidConnectionId, view_manager_root()->root_view()->id(),
+      client_.Pass()));
 }
 
 }  // namespace view_manager

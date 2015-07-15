@@ -21,9 +21,8 @@ class BrowserDelegate {
   // opportunity to perform some cleanup.
   virtual void BrowserClosed(Browser* browser) = 0;
 
-  // Requests initialization of state to display the browser on screen. Returns
-  // whether UI was initialized at this point.
-  virtual bool InitUIIfNecessary(Browser* browser, mojo::View* root_view) = 0;
+  // Requests initialization of state to display the browser on screen.
+  virtual void InitUIIfNecessary(Browser* browser, mojo::View* root_view) = 0;
 
  protected:
   virtual ~BrowserDelegate() {}
