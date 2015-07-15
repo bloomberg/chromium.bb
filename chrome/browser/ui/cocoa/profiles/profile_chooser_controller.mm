@@ -1128,7 +1128,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       SyncConfirmationUIClosed(true);
   ProfileMetrics::LogProfileNewAvatarMenuSignin(
       ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);
-  [self close];
 }
 
 - (IBAction)syncSettingsConfirmed:(id)sender {
