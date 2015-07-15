@@ -319,11 +319,12 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void updateReloadButtonVisibility(boolean isReloading) { }
 
     /**
-     * Gives inheriting classes the chance to update the visibility of the
+     * Gives inheriting classes the chance to update the visual status of the
      * bookmark button.
      * @param isBookmarked Whether or not the current tab is already bookmarked.
+     * @param editingAllowed Whether or not bookmarks can be modified (added, edited, or removed).
      */
-    protected void updateBookmarkButtonVisibility(boolean isBookmarked) { }
+    protected void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) { }
 
     /**
      * Gives inheriting classes the chance to respond to accessibility state changes.

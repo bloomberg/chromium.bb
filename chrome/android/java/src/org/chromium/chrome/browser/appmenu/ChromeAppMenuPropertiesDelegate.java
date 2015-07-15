@@ -92,8 +92,8 @@ public class ChromeAppMenuPropertiesDelegate implements AppMenuPropertiesDelegat
                 loadingStateChanged(currentTab.isLoading());
 
                 MenuItem bookmarkMenuItem = menu.findItem(R.id.bookmark_this_page_id);
-                bookmarkMenuItem.setEnabled(BookmarksBridge.isEditBookmarksEnabled(
-                        mActivity.getActivityTab().getProfile().getOriginalProfile()));
+                bookmarkMenuItem.setEnabled(BookmarksBridge.isEditBookmarksEnabled(currentTab
+                        .getProfile()));
                 if (currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
                     bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
                     bookmarkMenuItem.setChecked(true);

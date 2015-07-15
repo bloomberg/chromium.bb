@@ -551,11 +551,6 @@ public class BookmarksBridge {
         return nativeIsEditBookmarksEnabled(profile);
     }
 
-    // TODO(ianwen): Remove this method after rolling.
-    public static boolean isEditBookmarksEnabled() {
-        return true;
-    }
-
     public static boolean isEnhancedBookmarksEnabled(Profile profile) {
         return nativeIsEnhancedBookmarksFeatureEnabled(profile);
     }

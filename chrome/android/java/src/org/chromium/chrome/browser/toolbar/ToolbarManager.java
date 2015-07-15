@@ -892,7 +892,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         Tab currentTab = mToolbarModel.getTab();
         boolean isBookmarked = currentTab != null
                 && currentTab.getBookmarkId() != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-        mToolbar.updateBookmarkButtonVisibility(isBookmarked);
+        boolean editingAllowed = currentTab == null
+                || BookmarksBridge.isEditBookmarksEnabled(currentTab.getProfile());
+        mToolbar.updateBookmarkButton(isBookmarked, editingAllowed);
     }
 
     private void updateReloadState(boolean tabCrashed) {

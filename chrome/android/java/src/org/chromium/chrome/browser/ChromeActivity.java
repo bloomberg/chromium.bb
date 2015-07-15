@@ -868,6 +868,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (tabToBookmark == null || tabToBookmark.isFrozen()) {
             return;
         }
+        assert BookmarksBridge.isEditBookmarksEnabled(tabToBookmark.getProfile());
 
         // Managed bookmarks can't be edited. If the current URL is only bookmarked by managed
         // bookmarks then fall back on adding a new bookmark instead.
