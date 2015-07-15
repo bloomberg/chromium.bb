@@ -877,18 +877,16 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     #   3 - INFRA_FAILURE: Tests did not complete due to lab issues.
     #   4 - SUITE_TIMEOUT: Suite timed out. This could be caused by
     #         infrastructure failures or by test failures.
-    # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
+    # 11+ for cases when rpc is down, see autotest_rpc_errors.py.
     lab_warning_codes = (2,)
-    infra_error_codes = (3,
-                         autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,
-                         autotest_rpc_errors.PROXY_CONNECTION_LOST,
-                         autotest_rpc_errors.PROXY_TIMED_OUT,)
+    infra_error_codes = (3,)
     timeout_codes = (4,)
     board_not_available_codes = (5,)
 
     if result.returncode in lab_warning_codes:
       raise failures_lib.TestWarning('** Suite passed with a warning code **')
-    elif result.returncode in infra_error_codes:
+    elif (result.returncode in infra_error_codes or
+          result.returncode >= autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST):
       raise failures_lib.TestLabFailure(
           '** HWTest did not complete due to infrastructure issues '
           '(code %d) **' % result.returncode)
@@ -994,7 +992,8 @@ def _HWTestStart(cmd, debug=True):
     logging.info('RunHWTestSuite would run: %s', cros_build_lib.CmdToStr(cmd))
   else:
     max_retry = 10
-    retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,)
+    retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,
+                autotest_rpc_errors.CLIENT_CANNOT_CONNECT,)
     try:
       result = retry_util.RunCommandWithRetries(max_retry, cmd,
                                                 retry_on=retry_on,
@@ -1023,7 +1022,8 @@ def _HWTestWait(cmd, job_id):
   cmd += ['-m', str(job_id)]
 
   retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,
-              autotest_rpc_errors.PROXY_CONNECTION_LOST,)
+              autotest_rpc_errors.PROXY_CONNECTION_LOST,
+              autotest_rpc_errors.CLIENT_CANNOT_CONNECT,)
   max_retry = 10
   retry_util.RunCommandWithRetries(max_retry, cmd, retry_on=retry_on)
 
