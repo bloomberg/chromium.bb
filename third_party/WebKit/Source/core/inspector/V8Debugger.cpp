@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/V8Debugger.h"
 
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/inspector/V8JavaScriptCallFrame.h"
@@ -340,8 +339,7 @@ bool V8Debugger::setScriptSource(const String& sourceID, const String& newConten
     case 0:
         {
             v8::Local<v8::Value> normalResult = resultTuple->Get(1);
-            NonThrowableExceptionState exceptionState;
-            RefPtr<JSONValue> jsonResult = ScriptValue::to<JSONValuePtr>(m_isolate, normalResult, exceptionState);
+            RefPtr<JSONValue> jsonResult = toJSONValue(m_isolate, normalResult);
             if (jsonResult)
                 *result = jsonResult->asObject();
             // Call stack may have changed after if the edited function was on the stack.

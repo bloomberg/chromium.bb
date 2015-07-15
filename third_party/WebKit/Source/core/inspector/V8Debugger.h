@@ -44,7 +44,6 @@
 namespace blink {
 
 class ScriptDebugListener;
-class ScriptValue;
 class JavaScriptCallFrame;
 
 class CORE_EXPORT V8Debugger : public NoBaseWillBeGarbageCollectedFinalized<V8Debugger> {
