@@ -1339,7 +1339,7 @@ static bool canBind(TypeBuilder::CSS::StyleSheetOrigin::Enum origin)
     return origin != TypeBuilder::CSS::StyleSheetOrigin::User_agent && origin != TypeBuilder::CSS::StyleSheetOrigin::Injected;
 }
 
-PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRule(CSSStyleRule* rule, PassRefPtr<Array<TypeBuilder::CSS::CSSMedia> > mediaStack)
+PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWithoutMedia(CSSStyleRule* rule)
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
@@ -1354,9 +1354,6 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRule(CS
         if (!id().isEmpty())
             result->setStyleSheetId(id());
     }
-
-    if (mediaStack)
-        result->setMedia(mediaStack);
 
     return result.release();
 }

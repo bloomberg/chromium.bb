@@ -135,7 +135,7 @@ public:
     CSSStyleSheet* pageStyleSheet() { return m_pageStyleSheet.get(); }
 
     PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> buildObjectForStyleSheetInfo();
-    PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*, PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> >);
+    PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRuleWithoutMedia(CSSStyleRule*);
 
     PassRefPtr<TypeBuilder::CSS::SourceRange> ruleHeaderSourceRange(CSSRule*);
     PassRefPtr<TypeBuilder::CSS::SourceRange> mediaQueryExpValueSourceRange(CSSRule*, size_t mediaQueryIndex, size_t mediaQueryExpIndex);

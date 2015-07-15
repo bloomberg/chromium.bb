@@ -901,7 +901,7 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& 
     bool success = m_domAgent->history()->perform(action, exceptionState);
     if (success) {
         RefPtrWillBeRawPtr<CSSStyleRule> rule = InspectorCSSAgent::asCSSStyleRule(action->takeRule().get());
-        result = inspectorStyleSheet->buildObjectForRule(rule.get(), buildMediaListChain(rule.get()));
+        result = buildObjectForRule(rule.get());
     }
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
@@ -1010,7 +1010,7 @@ void InspectorCSSAgent::addRule(ErrorString* errorString, const String& styleShe
     }
 
     RefPtrWillBeRawPtr<CSSStyleRule> rule = action->takeRule();
-    result = inspectorStyleSheet->buildObjectForRule(rule.get(), buildMediaListChain(rule.get()));
+    result = buildObjectForRule(rule.get());
 }
 
 void InspectorCSSAgent::forcePseudoState(ErrorString* errorString, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses)
@@ -1126,9 +1126,8 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
     return mediaObject.release();
 }
 
-bool InspectorCSSAgent::collectMediaQueriesFromStyleSheet(CSSStyleSheet* styleSheet, TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>* mediaArray)
+void InspectorCSSAgent::collectMediaQueriesFromStyleSheet(CSSStyleSheet* styleSheet, TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>* mediaArray)
 {
-    bool addedItems = false;
     MediaList* mediaList = styleSheet->media();
     String sourceURL;
     if (mediaList && mediaList->length()) {
@@ -1140,18 +1139,15 @@ bool InspectorCSSAgent::collectMediaQueriesFromStyleSheet(CSSStyleSheet* styleSh
         else
             sourceURL = "";
         mediaArray->addItem(buildMediaObject(mediaList, styleSheet->ownerNode() ? MediaListSourceLinkedSheet : MediaListSourceInlineSheet, sourceURL, styleSheet));
-        addedItems = true;
     }
-    return addedItems;
 }
 
-bool InspectorCSSAgent::collectMediaQueriesFromRule(CSSRule* rule, TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>* mediaArray)
+void InspectorCSSAgent::collectMediaQueriesFromRule(CSSRule* rule, TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>* mediaArray)
 {
     MediaList* mediaList;
     String sourceURL;
     CSSStyleSheet* parentStyleSheet = nullptr;
     bool isMediaRule = true;
-    bool addedItems = false;
     if (rule->type() == CSSRule::MEDIA_RULE) {
         CSSMediaRule* mediaRule = toCSSMediaRule(rule);
         mediaList = mediaRule->media();
@@ -1173,11 +1169,8 @@ bool InspectorCSSAgent::collectMediaQueriesFromRule(CSSRule* rule, TypeBuilder::
         sourceURL = "";
     }
 
-    if (mediaList && mediaList->length()) {
+    if (mediaList && mediaList->length())
         mediaArray->addItem(buildMediaObject(mediaList, isMediaRule ? MediaListSourceMediaRule : MediaListSourceImportRule, sourceURL, parentStyleSheet));
-        addedItems = true;
-    }
-    return addedItems;
 }
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::buildMediaListChain(CSSRule* rule)
@@ -1185,16 +1178,15 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::b
     if (!rule)
         return nullptr;
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > mediaArray = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
-    bool hasItems = false;
     CSSRule* parentRule = rule;
     while (parentRule) {
-        hasItems = collectMediaQueriesFromRule(parentRule, mediaArray.get()) || hasItems;
+        collectMediaQueriesFromRule(parentRule, mediaArray.get());
         if (parentRule->parentRule()) {
             parentRule = parentRule->parentRule();
         } else {
             CSSStyleSheet* styleSheet = parentRule->parentStyleSheet();
             while (styleSheet) {
-                hasItems = collectMediaQueriesFromStyleSheet(styleSheet, mediaArray.get()) || hasItems;
+                collectMediaQueriesFromStyleSheet(styleSheet, mediaArray.get());
                 parentRule = styleSheet->ownerRule();
                 if (parentRule)
                     break;
@@ -1202,7 +1194,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::b
             }
         }
     }
-    return hasItems ? mediaArray : nullptr;
+    return mediaArray;
 }
 
 InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Element* element)
@@ -1378,7 +1370,9 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSS
             m_inspectorUserAgentStyleSheet = CSSStyleSheet::create(CSSDefaultStyleSheets::instance().defaultStyleSheet());
         rule->setParentStyleSheet(m_inspectorUserAgentStyleSheet.get());
     }
-    return bindStyleSheet(rule->parentStyleSheet())->buildObjectForRule(rule, buildMediaListChain(rule));
+    RefPtr<TypeBuilder::CSS::CSSRule> result = bindStyleSheet(rule->parentStyleSheet())->buildObjectForRuleWithoutMedia(rule);
+    result->setMedia(buildMediaListChain(rule));
+    return result.release();
 }
 
 static inline bool matchesPseudoElement(const CSSSelector* selector, PseudoId elementPseudoId)
