@@ -62,4 +62,12 @@ void MockWebMIDIAccessor::startSession() {
       this, client_, interfaces_->GetTestRunner()->midiAccessorResult()));
 }
 
+void MockWebMIDIAccessor::sendMIDIData(unsigned port_index,
+                                       const unsigned char* data,
+                                       size_t length,
+                                       double timestamp) {
+  // Emulate a loopback device for testing.
+  client_->didReceiveMIDIData(port_index, data, length, timestamp);
+}
+
 }  // namespace test_runner

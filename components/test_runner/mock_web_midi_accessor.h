@@ -28,7 +28,7 @@ class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
   virtual void sendMIDIData(unsigned port_index,
                             const unsigned char* data,
                             size_t length,
-                            double timestamp) override {}
+                            double timestamp) override;
 
   // WebTask related methods
   WebTaskList* mutable_task_list() { return &task_list_; }
