@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "remoting/base/logging.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/host/setup/host_starter.h"
@@ -103,6 +104,9 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+
+  logging::LoggingSettings settings;
+  logging::InitLogging(settings);
 
   std::string host_name = command_line->GetSwitchValueASCII("name");
   std::string host_pin = command_line->GetSwitchValueASCII("pin");
