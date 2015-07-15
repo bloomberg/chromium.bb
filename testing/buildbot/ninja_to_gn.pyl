@@ -84,6 +84,7 @@
   "sbox_integration_tests":            "//sandbox/win:sbox_integration_tests",
   "sbox_unittests":                    "//sandbox/win:sbox_unittests",
   "sbox_validation_tests":             "//sandbox/win:sbox_validation_tests",
+  "setup_unittests":                   "//chrome/installer/setup:setup_unittests",
   "skia_unittests":                    "//skia:skia_unittests",
   "sql_unittests":                     "//sql:sql_unittests",
   "sync_integration_tests":            "//sync:sync_integration_tests",
