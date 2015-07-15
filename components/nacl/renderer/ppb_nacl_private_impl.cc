@@ -1221,14 +1221,8 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
     *ld_tool_name = ppapi::StringVar::StringToPPVar(pnacl_ld_name);
 
   std::string pnacl_sz_name;
-  if (json_dict->GetString("pnacl-sz-name", &pnacl_sz_name)) {
+  if (json_dict->GetString("pnacl-sz-name", &pnacl_sz_name))
     *subzero_tool_name = ppapi::StringVar::StringToPPVar(pnacl_sz_name);
-  } else {
-    // TODO(jvoung): remove fallback after one chrome release
-    // or when we bump the kMinPnaclVersion.
-    // TODO(jvoung): Just use strings instead of PP_Var!
-    *subzero_tool_name = ppapi::StringVar::StringToPPVar("pnacl-sz.nexe");
-  }
 
   return PP_TRUE;
 }
