@@ -363,7 +363,7 @@ static void check_result(struct amdgpu_vce_encode *enc)
 
 static void amdgpu_cs_vce_encode(void)
 {
-	uint32_t vbuf_size, bs_size = 0x2000, cpb_size;
+	uint32_t vbuf_size, bs_size = 0x154000, cpb_size;
 	int i, r;
 
 	vbuf_size = enc.width * enc.height * 1.5;
