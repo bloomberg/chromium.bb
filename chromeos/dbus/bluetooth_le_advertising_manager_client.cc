@@ -69,11 +69,9 @@ class BluetoothAdvertisementManagerClientImpl
     writer.AppendObjectPath(advertisement_object_path);
 
     // Empty dictionary for options.
-    dbus::MessageWriter dict_entry_writer(NULL);
-    writer.OpenDictEntry(&dict_entry_writer);
-    writer.CloseContainer(&dict_entry_writer);
-
-    writer.AppendObjectPath(advertisement_object_path);
+    dbus::MessageWriter array_writer(NULL);
+    writer.OpenArray("{sv}", &array_writer);
+    writer.CloseContainer(&array_writer);
 
     DCHECK(object_manager_);
     dbus::ObjectProxy* object_proxy =

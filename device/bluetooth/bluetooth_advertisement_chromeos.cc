@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_util.h"
 #include "chromeos/dbus/bluetooth_le_advertising_manager_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
@@ -26,28 +27,43 @@ void UnregisterFailure(device::BluetoothAdvertisement::ErrorCode error) {
       << error;
 }
 
-void ErrorCallbackConnector(
+device::BluetoothAdvertisement::ErrorCode GetErrorCodeFromErrorStrings(
+    const std::string& error_name,
+    const std::string& error_message) {
+  if (error_name == bluetooth_advertising_manager::kErrorFailed ||
+      error_name == bluetooth_advertising_manager::kErrorAlreadyExists) {
+    return device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_ALREADY_EXISTS;
+  } else if (error_name ==
+             bluetooth_advertising_manager::kErrorInvalidArguments) {
+    return device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_INVALID_LENGTH;
+  } else if (error_name == bluetooth_advertising_manager::kErrorDoesNotExist) {
+    return device::BluetoothAdvertisement::ErrorCode::
+        ERROR_ADVERTISEMENT_DOES_NOT_EXIST;
+  }
+  return device::BluetoothAdvertisement::ErrorCode::
+      INVALID_ADVERTISEMENT_ERROR_CODE;
+}
+
+void RegisterErrorCallbackConnector(
     const device::BluetoothAdapter::CreateAdvertisementErrorCallback&
         error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  LOG(WARNING) << "Error while registering advertisement. error_name = "
-               << error_name << ", error_message = " << error_message;
-  device::BluetoothAdvertisement::ErrorCode error_code;
-  if (error_name == bluetooth_advertising_manager::kErrorFailed ||
-      error_name == bluetooth_advertising_manager::kErrorAlreadyExists) {
-    error_code = device::BluetoothAdvertisement::ErrorCode::
-        ERROR_ADVERTISEMENT_ALREADY_EXISTS;
-  } else if (error_name ==
-             bluetooth_advertising_manager::kErrorInvalidArguments) {
-    error_code = device::BluetoothAdvertisement::ErrorCode::
-        ERROR_ADVERTISEMENT_INVALID_LENGTH;
-  } else if (error_name == bluetooth_advertising_manager::kErrorDoesNotExist) {
-    error_code = device::BluetoothAdvertisement::ErrorCode::
-        ERROR_ADVERTISEMENT_DOES_NOT_EXIST;
-  }
+  LOG(ERROR) << "Error while registering advertisement. error_name = "
+             << error_name << ", error_message = " << error_message;
+  error_callback.Run(GetErrorCodeFromErrorStrings(error_name, error_message));
+}
 
-  error_callback.Run(error_code);
+void UnregisterErrorCallbackConnector(
+    const device::BluetoothAdapter::CreateAdvertisementErrorCallback&
+        error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  LOG(WARNING) << "Error while unregistering advertisement. error_name = "
+               << error_name << ", error_message = " << error_message;
+  error_callback.Run(GetErrorCodeFromErrorStrings(error_name, error_message));
 }
 
 }  // namespace
@@ -58,8 +74,14 @@ BluetoothAdvertisementChromeOS::BluetoothAdvertisementChromeOS(
     scoped_ptr<device::BluetoothAdvertisement::Data> data,
     scoped_refptr<BluetoothAdapterChromeOS> adapter)
     : adapter_(adapter) {
-  dbus::ObjectPath advertisement_object_path = dbus::ObjectPath(
-      "/org/chromium/bluetooth_advertisement/" + base::GenerateGUID());
+  // Generate a new object path - make sure that we strip any -'s from the
+  // generated GUID string since object paths can only contain alphanumeric
+  // characters and _ characters.
+  std::string GuidString = base::GenerateGUID();
+  base::RemoveChars(GuidString, "-", &GuidString);
+  dbus::ObjectPath advertisement_object_path =
+      dbus::ObjectPath("/org/chromium/bluetooth_advertisement/" + GuidString);
+
   DCHECK(DBusThreadManager::Get());
   provider_ = BluetoothLEAdvertisementServiceProvider::Create(
       DBusThreadManager::Get()->GetSystemBus(), advertisement_object_path, this,
@@ -78,7 +100,7 @@ void BluetoothAdvertisementChromeOS::Register(
       ->GetBluetoothLEAdvertisingManagerClient()
       ->RegisterAdvertisement(
           adapter_->object_path(), provider_->object_path(), success_callback,
-          base::Bind(&ErrorCallbackConnector, error_callback));
+          base::Bind(&RegisterErrorCallbackConnector, error_callback));
 }
 
 BluetoothAdvertisementChromeOS::~BluetoothAdvertisementChromeOS() {
@@ -101,7 +123,7 @@ void BluetoothAdvertisementChromeOS::Unregister(
       ->GetBluetoothLEAdvertisingManagerClient()
       ->UnregisterAdvertisement(
           adapter_->object_path(), provider_->object_path(), success_callback,
-          base::Bind(&ErrorCallbackConnector, error_callback));
+          base::Bind(&UnregisterErrorCallbackConnector, error_callback));
   provider_.reset();
 }
 

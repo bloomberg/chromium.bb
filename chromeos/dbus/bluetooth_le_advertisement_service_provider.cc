@@ -258,28 +258,40 @@ class BluetoothAdvertisementServiceProviderImpl
     response_sender.Run(response.Pass());
   }
 
+  void AppendArrayVariantOfStrings(dbus::MessageWriter* dict_writer,
+                                   const UUIDList& strings) {
+    dbus::MessageWriter strings_array_variant(nullptr);
+    dict_writer->OpenVariant("as", &strings_array_variant);
+    strings_array_variant.AppendArrayOfStrings(strings);
+    dict_writer->CloseContainer(&strings_array_variant);
+  }
+
   void AppendType(dbus::MessageWriter* array_writer) {
     dbus::MessageWriter dict_entry_writer(NULL);
     array_writer->OpenDictEntry(&dict_entry_writer);
     dict_entry_writer.AppendString(bluetooth_advertisement::kTypeProperty);
     if (type_ == ADVERTISEMENT_TYPE_BROADCAST) {
-      dict_entry_writer.AppendString("broadcast");
+      dict_entry_writer.AppendVariantOfString("broadcast");
     } else {
-      dict_entry_writer.AppendString("peripheral");
+      dict_entry_writer.AppendVariantOfString("peripheral");
     }
     array_writer->CloseContainer(&dict_entry_writer);
   }
 
   void AppendServiceUUIDs(dbus::MessageWriter* array_writer) {
+    if (!service_uuids_)
+      return;
     dbus::MessageWriter dict_entry_writer(NULL);
     array_writer->OpenDictEntry(&dict_entry_writer);
     dict_entry_writer.AppendString(
         bluetooth_advertisement::kServiceUUIDsProperty);
-    dict_entry_writer.AppendArrayOfStrings(*service_uuids_);
+    AppendArrayVariantOfStrings(&dict_entry_writer, *service_uuids_);
     array_writer->CloseContainer(&dict_entry_writer);
   }
 
   void AppendManufacturerData(dbus::MessageWriter* array_writer) {
+    if (!manufacturer_data_)
+      return;
     dbus::MessageWriter dict_entry_writer(NULL);
     array_writer->OpenDictEntry(&dict_entry_writer);
     dict_entry_writer.AppendString(
@@ -292,15 +304,19 @@ class BluetoothAdvertisementServiceProviderImpl
   }
 
   void AppendSolicitUUIDs(dbus::MessageWriter* array_writer) {
+    if (!solicit_uuids_)
+      return;
     dbus::MessageWriter dict_entry_writer(NULL);
     array_writer->OpenDictEntry(&dict_entry_writer);
     dict_entry_writer.AppendString(
         bluetooth_advertisement::kSolicitUUIDsProperty);
-    dict_entry_writer.AppendArrayOfStrings(*solicit_uuids_);
+    AppendArrayVariantOfStrings(&dict_entry_writer, *solicit_uuids_);
     array_writer->CloseContainer(&dict_entry_writer);
   }
 
   void AppendServiceData(dbus::MessageWriter* array_writer) {
+    if (!service_data_)
+      return;
     dbus::MessageWriter dict_entry_writer(NULL);
     array_writer->OpenDictEntry(&dict_entry_writer);
     dict_entry_writer.AppendString(
@@ -313,6 +329,7 @@ class BluetoothAdvertisementServiceProviderImpl
   }
 
   void AppendManufacturerDataVariant(dbus::MessageWriter* writer) {
+    DCHECK(manufacturer_data_);
     dbus::MessageWriter array_writer(NULL);
     writer->OpenArray("{qay}", &array_writer);
     for (const auto& m : *manufacturer_data_) {
@@ -330,6 +347,7 @@ class BluetoothAdvertisementServiceProviderImpl
   }
 
   void AppendServiceDataVariant(dbus::MessageWriter* writer) {
+    DCHECK(service_data_);
     dbus::MessageWriter array_writer(NULL);
     writer->OpenArray("{say}", &array_writer);
     for (const auto& m : *service_data_) {
@@ -337,7 +355,7 @@ class BluetoothAdvertisementServiceProviderImpl
 
       array_writer.OpenDictEntry(&entry_writer);
 
-      entry_writer.AppendString(m.first);
+      entry_writer.AppendVariantOfString(m.first);
       entry_writer.AppendArrayOfBytes(vector_as_array(&m.second),
                                       m.second.size());
 
