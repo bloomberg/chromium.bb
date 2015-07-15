@@ -228,6 +228,23 @@ namespace serial {
     // The device was most likely disconnected from the host.
     device_lost,
 
+    // The device detected a break condition.
+    break,
+
+    // The device detected a framing error.
+    frame_error,
+
+    // A character-buffer overrun has occurred. The next character is lost.
+    overrun,
+
+    // An input buffer overflow has occurred. There is either no room in the
+    // input buffer, or a character was received after the end-of-file (EOF)
+    // character.
+    buffer_overflow,
+
+    // The device detected a parity error.
+    parity_error,
+
     // A system error occurred and the connection may be unrecoverable.
     system_error
   };

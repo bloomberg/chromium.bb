@@ -48,6 +48,16 @@ core_api::serial::ReceiveError ConvertReceiveErrorFromMojo(
       return core_api::serial::RECEIVE_ERROR_TIMEOUT;
     case device::serial::RECEIVE_ERROR_DEVICE_LOST:
       return core_api::serial::RECEIVE_ERROR_DEVICE_LOST;
+    case device::serial::RECEIVE_ERROR_BREAK:
+      return core_api::serial::RECEIVE_ERROR_BREAK;
+    case device::serial::RECEIVE_ERROR_FRAME_ERROR:
+      return core_api::serial::RECEIVE_ERROR_FRAME_ERROR;
+    case device::serial::RECEIVE_ERROR_OVERRUN:
+      return core_api::serial::RECEIVE_ERROR_OVERRUN;
+    case device::serial::RECEIVE_ERROR_BUFFER_OVERFLOW:
+      return core_api::serial::RECEIVE_ERROR_BUFFER_OVERFLOW;
+    case device::serial::RECEIVE_ERROR_PARITY_ERROR:
+      return core_api::serial::RECEIVE_ERROR_PARITY_ERROR;
     case device::serial::RECEIVE_ERROR_SYSTEM_ERROR:
       return core_api::serial::RECEIVE_ERROR_SYSTEM_ERROR;
   }
