@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 /**
  * Asynchronously creates Tabs by creating/starting up Activities.
  */
-public class TabDelegate implements TabCreator {
+public class TabDelegate extends TabCreator {
     private boolean mIsIncognito;
 
     /**
@@ -62,18 +62,10 @@ public class TabDelegate implements TabCreator {
     }
 
     @Override
-    public Tab createTabWithWebContents(
-            WebContents webContents, int parentId, TabLaunchType type) {
-        createTabWithWebContents(webContents, parentId, type, webContents.getUrl());
-        return null;
-    }
-
-    @Override
-    public Tab createTabWithWebContents(
+    public boolean createTabWithWebContents(
             WebContents webContents, int parentId, TabLaunchType type, String url) {
-        createTabWithWebContents(
+        return createTabWithWebContents(
                 webContents, parentId, type, url, DocumentMetricIds.STARTED_BY_WINDOW_OPEN);
-        return null;
     }
 
     /**
@@ -84,7 +76,7 @@ public class TabDelegate implements TabCreator {
      * @param url           URL that the WebContents was opened for.
      * @param startedBy     See {@link DocumentMetricIds}.
      */
-    public void createTabWithWebContents(
+    public boolean createTabWithWebContents(
             WebContents webContents, int parentId, TabLaunchType type, String url, int startedBy) {
         // Tabs can't be launched in affiliated mode when a webcontents exists.
         assert type != TabLaunchType.FROM_LONGPRESS_BACKGROUND;
@@ -121,17 +113,13 @@ public class TabDelegate implements TabCreator {
             tabbedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             IntentHandler.startActivityForTrustedIntent(tabbedIntent, context);
         }
+
+        return true;
     }
 
     @Override
     public Tab launchUrl(String url, TabLaunchType type) {
         return createNewTab(new LoadUrlParams(url), type, null);
-    }
-
-    @Override
-    public Tab launchNTP() {
-        return createNewTab(new LoadUrlParams(UrlConstants.NTP_URL, PageTransition.AUTO_TOPLEVEL),
-                TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
     }
 
     @Override

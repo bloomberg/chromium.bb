@@ -31,28 +31,13 @@ public class MockTabDelegate extends TabDelegate {
     }
 
     @Override
-    public Tab createTabWithWebContents(WebContents webContents, int parentId, TabLaunchType type) {
-        return null;
-    }
-
-    @Override
-    public Tab createTabWithWebContents(
-            WebContents webContents, int parentId, TabLaunchType type, String url) {
-        return null;
-    }
-
-    @Override
-    public void createTabWithWebContents(
+    public boolean createTabWithWebContents(
             WebContents webContents, int parentId, TabLaunchType type, String url, int startedBy) {
+        return false;
     }
 
     @Override
     public Tab launchUrl(String url, TabLaunchType type) {
-        return null;
-    }
-
-    @Override
-    public Tab launchNTP() {
         return null;
     }
 

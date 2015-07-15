@@ -21,9 +21,9 @@ public class ChromeShellTabModel extends TabModelBase {
     }
 
     @Override
-    protected Tab createTabWithWebContents(boolean incognito, WebContents webContents,
+    protected boolean createTabWithWebContents(boolean incognito, WebContents webContents,
             int parentId) {
-        return null;
+        return false;
     }
 
     @Override

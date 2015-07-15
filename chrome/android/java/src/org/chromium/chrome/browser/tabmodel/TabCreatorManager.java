@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -15,13 +17,16 @@ import org.chromium.content_public.browser.WebContents;
  */
 public interface TabCreatorManager {
     /**
-     * Creates Tabs.
+     * Creates Tabs.  If the TabCreator creates Tabs asynchronously, null pointers will be returned
+     * everywhere instead of a Tab.
+     *
+     * TODO(dfalcantara): Hunt down more places where we don't actually need to return a Tab.
      */
-    public interface TabCreator {
+    public abstract class TabCreator {
         /**
          * @return Whether the TabCreator creates Tabs asynchronously.
          */
-        boolean createsTabsAsynchronously();
+        public abstract boolean createsTabsAsynchronously();
 
         /**
          * Creates a new tab and posts to UI.
@@ -30,7 +35,8 @@ public interface TabCreatorManager {
          * @param parent the parent tab, if present.
          * @return The new tab.
          */
-        Tab createNewTab(LoadUrlParams loadUrlParams, TabModel.TabLaunchType type, Tab parent);
+        public abstract Tab createNewTab(
+                LoadUrlParams loadUrlParams, TabModel.TabLaunchType type, Tab parent);
 
         /**
          * On restore, allows us to create a frozen version of a tab using saved tab state we read
@@ -39,33 +45,7 @@ public interface TabCreatorManager {
          * @param id       The id to give the new tab.
          * @param index    The index for where to place the tab.
          */
-        Tab createFrozenTab(TabState state, int id, int index);
-
-        /**
-         * Creates a tab around the native web contents pointer.
-         * @param webContents The web contents to create a tab around.
-         * @param parentId    The id of the parent tab.
-         * @param type        The TabLaunchType describing how this tab was created.
-         * @return            The created tab.  May be null if created asynchronously.
-         */
-        Tab createTabWithWebContents(WebContents webContents, int parentId, TabLaunchType type);
-
-        /**
-         * Creates a Tab to host the given WebContents asynchronously.
-         * @param webContents The web contents to create a tab around.
-         * @param parentId    The id of the parent tab.
-         * @param type        The TabLaunchType describing how this tab was created.
-         * @param url         URL to display in the WebContents.
-         * @return            The created tab.  May be null if created asynchronously.
-         */
-        Tab createTabWithWebContents(
-                WebContents webContents, int parentId, TabLaunchType type, String url);
-
-        /**
-         * Creates a new tab and loads the NTP.
-         * @return The created tab.
-         */
-        Tab launchNTP();
+        public abstract Tab createFrozenTab(TabState state, int id, int index);
 
         /**
          * Creates a new tab and loads the specified URL in it. This is a convenience method for
@@ -76,7 +56,42 @@ public interface TabCreatorManager {
          *             opened (for example, in the foreground or background).
          * @return the created tab.
          */
-        Tab launchUrl(String url, TabModel.TabLaunchType type);
+        public abstract Tab launchUrl(String url, TabModel.TabLaunchType type);
+
+        /**
+         * Creates a Tab to host the given WebContents asynchronously.
+         * @param webContents The web contents to create a tab around.
+         * @param parentId    The id of the parent tab.
+         * @param type        The TabLaunchType describing how this tab was created.
+         * @param url         URL to display in the WebContents.
+         * @return            Whether a Tab was created successfully.
+         */
+        public abstract boolean createTabWithWebContents(
+                WebContents webContents, int parentId, TabLaunchType type, String url);
+
+        /**
+         * Creates a tab around the native web contents pointer.
+         * @param webContents The web contents to create a tab around.
+         * @param parentId    The id of the parent tab.
+         * @param type        The TabLaunchType describing how this tab was created.
+         * @return            Whether a Tab was created successfully.
+         */
+        public final boolean createTabWithWebContents(
+                WebContents webContents, int parentId, TabLaunchType type) {
+            return createTabWithWebContents(webContents, parentId, type, webContents.getUrl());
+        }
+
+        /**
+         * Creates a new tab and loads the NTP.
+         */
+        public final void launchNTP() {
+            try {
+                TraceEvent.begin("TabCreator.launchNTP");
+                launchUrl(UrlConstants.NTP_URL, TabModel.TabLaunchType.FROM_MENU_OR_OVERVIEW);
+            } finally {
+                TraceEvent.end("TabCreator.launchNTP");
+            }
+        }
     }
 
     /**

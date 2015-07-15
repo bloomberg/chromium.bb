@@ -535,8 +535,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
     private void createInitialTab() {
         String url = HomepageManager.getHomepageUri(getApplicationContext());
         if (TextUtils.isEmpty(url)) url = UrlConstants.NTP_URL;
-        getTabCreator(false).createNewTab(
-                new LoadUrlParams(url), TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
+        getTabCreator(false).launchUrl(url, TabLaunchType.FROM_MENU_OR_OVERVIEW);
     }
 
     @Override

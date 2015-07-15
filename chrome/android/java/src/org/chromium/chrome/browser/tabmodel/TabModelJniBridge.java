@@ -101,9 +101,10 @@ public abstract class TabModelJniBridge implements TabModel {
      * @param incognito Whether or not the tab is incognito.
      * @param webContents A {@link WebContents} object.
      * @param parentId ID of the parent.
+     * @return Whether or not the Tab was successfully created.
      */
     @CalledByNative
-    protected abstract Tab createTabWithWebContents(
+    protected abstract boolean createTabWithWebContents(
             boolean incognito, WebContents webContents, int parentId);
 
     /**

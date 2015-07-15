@@ -96,7 +96,7 @@ public class TabModelImpl extends TabModelBase {
     }
 
     @Override
-    protected Tab createTabWithWebContents(boolean incognito, WebContents webContents,
+    protected boolean createTabWithWebContents(boolean incognito, WebContents webContents,
             int parentId) {
         return mActivity.getTabCreator(incognito).createTabWithWebContents(webContents,
                 parentId, TabLaunchType.FROM_LONGPRESS_BACKGROUND);

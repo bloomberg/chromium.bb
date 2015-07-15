@@ -44,8 +44,9 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         }
     }
 
-    private static class MockTabCreator extends CallbackHelper implements TabCreator {
+    private static class MockTabCreator extends TabCreator {
         public final SparseArray<TabState> created = new SparseArray<TabState>();
+        public final CallbackHelper callback = new CallbackHelper();
         public int idOfFirstCreatedTab = Tab.INVALID_TAB_ID;
 
         @Override
@@ -63,25 +64,14 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         public Tab createFrozenTab(TabState state, int id, int index) {
             if (created.size() == 0) idOfFirstCreatedTab = id;
             created.put(id, state);
-            notifyCalled();
+            callback.notifyCalled();
             return null;
         }
 
         @Override
-        public Tab createTabWithWebContents(
-                WebContents webContents, int parentId, TabLaunchType type) {
-            return null;
-        }
-
-        @Override
-        public Tab createTabWithWebContents(
+        public boolean createTabWithWebContents(
                 WebContents webContents, int parentId, TabLaunchType type, String url) {
-            return null;
-        }
-
-        @Override
-        public Tab launchNTP() {
-            return null;
+            return false;
         }
 
         @Override
@@ -178,7 +168,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
 
         // Restore the TabStates.  The first Tab added should be the most recently selected tab.
         store.restoreTabs(true);
-        regularCreator.waitForCallback(0, 1);
+        regularCreator.callback.waitForCallback(0, 1);
         assertEquals(TestTabModelDirectory.TAB_MODEL_METADATA_V4_SELECTED_ID,
                 regularCreator.idOfFirstCreatedTab);
 

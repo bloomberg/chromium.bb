@@ -96,9 +96,9 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
         };
         mNormalTabModel = new TabModelBase(false, orderController, delegate) {
             @Override
-            protected Tab createTabWithWebContents(boolean incognito, WebContents webContents,
+            protected boolean createTabWithWebContents(boolean incognito, WebContents webContents,
                     int parentId) {
-                return null;
+                return false;
             }
 
             @Override
@@ -109,9 +109,9 @@ public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
 
         mIncognitoTabModel = new TabModelBase(true, orderController, delegate) {
             @Override
-            protected Tab createTabWithWebContents(boolean incognito, WebContents webContents,
+            protected boolean createTabWithWebContents(boolean incognito, WebContents webContents,
                     int parentId) {
-                return null;
+                return false;
             }
 
             @Override
