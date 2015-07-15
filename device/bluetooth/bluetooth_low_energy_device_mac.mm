@@ -6,57 +6,22 @@
 
 #import <CoreFoundation/CoreFoundation.h>
 
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "device/bluetooth/bluetooth_adapter_mac.h"
 
 using device::BluetoothDevice;
 using device::BluetoothLowEnergyDeviceMac;
 
 namespace {
 
-// Converts a CBUUID to a Cocoa string.
-//
-// The string representation can have the following formats:
-// - 16 bit:  xxxx
-// - 128 bit: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-// CBUUID supports only 16 bits and 128 bits formats.
-//
-// In OSX < 10.10, -[uuid UUIDString] method is not implemented. It's why we
-// need to provide this function.
-NSString* stringWithCBUUID(CBUUID* uuid) {
-  NSData* data = [uuid data];
-
-  NSUInteger bytesToConvert = [data length];
-  const unsigned char* uuidBytes = (const unsigned char*)[data bytes];
-  NSMutableString* outputString = [NSMutableString stringWithCapacity:16];
-
-  for (NSUInteger currentByteIndex = 0; currentByteIndex < bytesToConvert;
-       currentByteIndex++) {
-    switch (currentByteIndex) {
-      case 3:
-      case 5:
-      case 7:
-      case 9:
-        [outputString appendFormat:@"%02x-", uuidBytes[currentByteIndex]];
-        break;
-      default:
-        [outputString appendFormat:@"%02x", uuidBytes[currentByteIndex]];
-    }
-  }
-  return outputString;
-}
-
 // Converts a CBUUID to a BluetoothUUID.
 device::BluetoothUUID BluetoothUUIDWithCBUUID(CBUUID* uuid) {
-  NSString* uuidString = nil;
-  // TODO(dvh): Remove this once we moved to OSX SDK >= 10.10.
-  if ([uuid respondsToSelector:@selector(UUIDString)]) {
-    uuidString = [uuid UUIDString];
-  } else {
-    uuidString = stringWithCBUUID(uuid);
-  }
-  std::string uuid_c_string = base::SysNSStringToUTF8(uuidString);
+  // UUIDString only available OS X >= 10.8.
+  DCHECK(base::mac::IsOSMountainLionOrLater());
+  std::string uuid_c_string = base::SysNSStringToUTF8([uuid UUIDString]);
   return device::BluetoothUUID(uuid_c_string);
 }
 
@@ -66,6 +31,7 @@ BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
     CBPeripheral* peripheral,
     NSDictionary* advertisementData,
     int rssi) {
+  DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
   Update(peripheral, advertisementData, rssi);
 }
 
@@ -235,17 +201,11 @@ std::string BluetoothLowEnergyDeviceMac::GetDeviceName() const {
   return base::SysNSStringToUTF8([peripheral_ name]);
 }
 
+// static
 std::string BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(
     CBPeripheral* peripheral) {
-  // TODO(dvh): Remove this once we moved to OSX SDK >= 10.9.
-  if ([peripheral respondsToSelector:@selector(identifier)]) {
-    // When -[CBPeripheral identifier] is available.
-    NSUUID* uuid = [peripheral identifier];
-    NSString* uuidString = [uuid UUIDString];
-    return base::SysNSStringToUTF8(uuidString);
-  }
-
-  base::ScopedCFTypeRef<CFStringRef> str(
-      CFUUIDCreateString(NULL, [peripheral UUID]));
-  return SysCFStringRefToUTF8(str);
+  DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
+  NSUUID* uuid = [peripheral identifier];
+  NSString* uuidString = [uuid UUIDString];
+  return base::SysNSStringToUTF8(uuidString);
 }

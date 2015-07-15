@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/location.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_tracker.h"
@@ -58,9 +59,10 @@ BluetoothAdapterMac::BluetoothAdapterMac()
       num_discovery_sessions_(0),
       classic_discovery_manager_(
           BluetoothDiscoveryManagerMac::CreateClassic(this)),
-      low_energy_discovery_manager_(
-          BluetoothLowEnergyDiscoveryManagerMac::Create(this)),
       weak_ptr_factory_(this) {
+  if (IsLowEnergyAvailable())
+    low_energy_discovery_manager_.reset(
+        BluetoothLowEnergyDiscoveryManagerMac::Create(this));
   DCHECK(classic_discovery_manager_.get());
 }
 
@@ -112,8 +114,11 @@ void BluetoothAdapterMac::SetDiscoverable(
 }
 
 bool BluetoothAdapterMac::IsDiscovering() const {
-  return (classic_discovery_manager_->IsDiscovering() ||
-          low_energy_discovery_manager_->IsDiscovering());
+  bool is_discovering = classic_discovery_manager_->IsDiscovering();
+  if (IsLowEnergyAvailable())
+    is_discovering =
+        is_discovering || low_energy_discovery_manager_->IsDiscovering();
+  return is_discovering;
 }
 
 void BluetoothAdapterMac::CreateRfcommService(
@@ -173,6 +178,11 @@ void BluetoothAdapterMac::DeviceConnected(IOBluetoothDevice* device) {
   DVLOG(1) << "Adapter registered a new connection from device with address: "
            << BluetoothClassicDeviceMac::GetDeviceAddress(device);
   ClassicDeviceAdded(device);
+}
+
+// static
+bool BluetoothAdapterMac::IsLowEnergyAvailable() {
+  return base::mac::IsOSYosemiteOrLater();
 }
 
 void BluetoothAdapterMac::RemovePairingDelegateInternal(
@@ -246,7 +256,8 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
     }
   }
   if (transport & BluetoothDiscoveryFilter::Transport::TRANSPORT_LE) {
-    low_energy_discovery_manager_->StopDiscovery();
+    if (IsLowEnergyAvailable())
+      low_energy_discovery_manager_->StopDiscovery();
   }
 
   DVLOG(1) << "Discovery stopped";
@@ -283,7 +294,9 @@ bool BluetoothAdapterMac::StartDiscovery(
   if (transport & BluetoothDiscoveryFilter::Transport::TRANSPORT_LE) {
     // Begin a low energy discovery session or update it if one is already
     // running.
-    low_energy_discovery_manager_->StartDiscovery(BluetoothDevice::UUIDList());
+    if (IsLowEnergyAvailable())
+      low_energy_discovery_manager_->StartDiscovery(
+          BluetoothDevice::UUIDList());
   }
   return true;
 }

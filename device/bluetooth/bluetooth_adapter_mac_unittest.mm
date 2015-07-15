@@ -25,9 +25,8 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   // Helper methods for setup and access to BluetoothAdapterMacTest's members.
   bool SetMockCentralManager() {
-    Class aClass = NSClassFromString(@"CBCentralManager");
-    if (aClass == nil) {
-      LOG(WARNING) << "CoreBluetooth not available, skipping unit test.";
+    if (!BluetoothAdapterMac::IsLowEnergyAvailable()) {
+      LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
       return false;
     }
     mock_central_manager_ = [[MockCentralManager alloc] init];

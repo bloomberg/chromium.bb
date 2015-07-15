@@ -91,6 +91,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // Registers that a new |device| has connected to the local host.
   void DeviceConnected(IOBluetoothDevice* device);
 
+  // We only use CoreBluetooth when OS X >= 10.10. This because the
+  // CBCentralManager destructor was found to crash on the mac_chromium_rel_ng
+  // builder running 10.9.5. May also cause blued to crash on OS X 10.9.5
+  // (crbug.com/506287).
+  static bool IsLowEnergyAvailable();
+
  protected:
   // BluetoothAdapter override:
   void RemovePairingDelegateInternal(

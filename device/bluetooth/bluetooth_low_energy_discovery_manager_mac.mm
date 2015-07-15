@@ -5,8 +5,10 @@
 #include "device/bluetooth/bluetooth_low_energy_discovery_manager_mac.h"
 
 #include "base/mac/mac_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
+#include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_low_energy_device_mac.h"
 
 using device::BluetoothLowEnergyDeviceMac;
@@ -79,13 +81,6 @@ class BluetoothLowEnergyDiscoveryManagerMacDelegate {
 
 BluetoothLowEnergyDiscoveryManagerMac::
     ~BluetoothLowEnergyDiscoveryManagerMac() {
-  // Set the manager's delegate to nil since the object it points to
-  // (|bridge_|) will be deallocated while |manager_| is leaked.
-  if (base::mac::IsOSLionOrLater()) {
-    // CoreBluetooth only available in OSX 10.7 and later.
-    SEL selector = NSSelectorFromString(@"setDelegate:");
-    [manager_ performSelector:selector withObject:nil];
-  }
 }
 
 bool BluetoothLowEnergyDiscoveryManagerMac::IsDiscovering() const {
@@ -145,15 +140,6 @@ void BluetoothLowEnergyDiscoveryManagerMac::DiscoveredPeripheral(
   observer_->LowEnergyDeviceUpdated(peripheral, advertisementData, rssi);
 }
 
-void BluetoothLowEnergyDiscoveryManagerMac::SetManagerForTesting(
-    CBCentralManager* manager) {
-  // setDelegate is only available in OSX 10.7 and later.
-  CHECK(base::mac::IsOSLionOrLater());
-  SEL selector = NSSelectorFromString(@"setDelegate:");
-  [manager performSelector:selector withObject:bridge_];
-  manager_.reset(manager);
-}
-
 BluetoothLowEnergyDiscoveryManagerMac*
 BluetoothLowEnergyDiscoveryManagerMac::Create(Observer* observer) {
   return new BluetoothLowEnergyDiscoveryManagerMac(observer);
@@ -162,17 +148,18 @@ BluetoothLowEnergyDiscoveryManagerMac::Create(Observer* observer) {
 BluetoothLowEnergyDiscoveryManagerMac::BluetoothLowEnergyDiscoveryManagerMac(
     Observer* observer)
     : observer_(observer) {
+  DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
   bridge_.reset([[BluetoothLowEnergyDiscoveryManagerMacBridge alloc]
       initWithManager:this]);
-  // Since CoreBluetooth is only available on OS X 10.7 or later, we
-  // instantiate CBCentralManager only for OS X >= 10.7.
-  if (base::mac::IsOSLionOrLater()) {
-    Class aClass = NSClassFromString(@"CBCentralManager");
-    manager_.reset(
-        [[aClass alloc] initWithDelegate:bridge_
-                                   queue:dispatch_get_main_queue()]);
-    // Increment reference count, see comment at declaration.
-    [manager_ retain];
-  }
+  Class aClass = NSClassFromString(@"CBCentralManager");
+  manager_.reset([[aClass alloc] initWithDelegate:bridge_
+                                            queue:dispatch_get_main_queue()]);
   discovering_ = false;
+}
+
+void BluetoothLowEnergyDiscoveryManagerMac::SetManagerForTesting(
+    CBCentralManager* manager) {
+  DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
+  [manager performSelector:@selector(setDelegate:) withObject:bridge_];
+  manager_.reset(manager);
 }

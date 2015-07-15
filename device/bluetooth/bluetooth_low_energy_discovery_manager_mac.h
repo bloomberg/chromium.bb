@@ -81,13 +81,6 @@ class BluetoothLowEnergyDiscoveryManagerMac {
   Observer* observer_;
 
   // Underlying CoreBluetooth central manager.
-  //
-  // Note: Intentionally leaked. Deallocating CBCentralManager
-  // results in a crash, at least when running OSX 10.9.5 on a
-  // mac_chromuim_rel_ng trybot. On the other hand, restricting |manager_| use
-  // to 10.10 and later would mean the code is unrun and untested by the current
-  // trybots. To work around this we call retain on |manager_| after allocation,
-  // so that the object is leaked.
   base::scoped_nsobject<CBCentralManager> manager_;
 
   // Discovery has been initiated by calling the API StartDiscovery().
