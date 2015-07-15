@@ -1507,8 +1507,6 @@ crbug.com/498021 [ Linux ] fast/text/international/danda-space.html [ ImageOnlyF
 crbug.com/498021 [ Linux ] fast/text/international/hindi-whitespace.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/international/thai-line-breaks.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/selection-multiple-runs.html [ ImageOnlyFailure ]
-crbug.com/498021 svg/W3C-SVG-1.1/filters-light-01-f.svg [ NeedsRebaseline ]
-crbug.com/498021 svg/W3C-SVG-1.1/filters-light-04-f.svg [ NeedsRebaseline ]
 crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ ImageOnlyFailure ]
