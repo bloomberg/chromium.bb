@@ -108,7 +108,7 @@ def run_gsutil(force_version, fallback, target, args):
 
 def parse_args():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--force-version')
+  parser.add_argument('--force-version', default='4.13')
   parser.add_argument('--fallback', default=DEFAULT_FALLBACK_GSUTIL)
   parser.add_argument('--target', default=DEFAULT_BIN_DIR)
   parser.add_argument('args', nargs=argparse.REMAINDER)
