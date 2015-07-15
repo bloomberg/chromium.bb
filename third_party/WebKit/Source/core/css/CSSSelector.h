@@ -187,7 +187,6 @@ namespace blink {
             PseudoRightPage,
             PseudoFirstPage,
             PseudoFullScreen,
-            PseudoFullScreenDocument,
             PseudoFullScreenAncestor,
             PseudoInRange,
             PseudoOutOfRange,

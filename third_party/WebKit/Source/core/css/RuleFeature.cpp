@@ -135,7 +135,6 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoSingleButton:
     case CSSSelector::PseudoNoButton:
     case CSSSelector::PseudoFullScreen:
-    case CSSSelector::PseudoFullScreenDocument:
     case CSSSelector::PseudoFullScreenAncestor:
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:

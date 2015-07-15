@@ -261,7 +261,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoHostContext:
     case PseudoShadow:
     case PseudoFullScreen:
-    case PseudoFullScreenDocument:
     case PseudoFullScreenAncestor:
     case PseudoSpatialNavigationFocus:
     case PseudoListBox:
@@ -292,7 +291,6 @@ const static NameToPseudoStruct pseudoTypeWithoutArgumentsMap[] = {
 {"-webkit-full-page-media",       CSSSelector::PseudoFullPageMedia},
 {"-webkit-full-screen",           CSSSelector::PseudoFullScreen},
 {"-webkit-full-screen-ancestor",  CSSSelector::PseudoFullScreenAncestor},
-{"-webkit-full-screen-document",  CSSSelector::PseudoFullScreenDocument},
 {"-webkit-resizer",               CSSSelector::PseudoResizer},
 {"-webkit-scrollbar",             CSSSelector::PseudoScrollbar},
 {"-webkit-scrollbar-button",      CSSSelector::PseudoScrollbarButton},
@@ -511,7 +509,6 @@ void CSSSelector::updatePseudoType(const AtomicString& value, bool hasArguments)
     case PseudoFullPageMedia:
     case PseudoFullScreen:
     case PseudoFullScreenAncestor:
-    case PseudoFullScreenDocument:
     case PseudoFutureCue:
     case PseudoHorizontal:
     case PseudoHost:

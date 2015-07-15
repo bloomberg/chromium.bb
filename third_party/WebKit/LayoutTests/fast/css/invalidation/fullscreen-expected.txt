@@ -9,9 +9,6 @@ PASS getComputedStyle(full).backgroundColor is green
 PASS getComputedStyle(ancestor).backgroundColor is red
 PASS internals.updateStyleAndReturnAffectedElementCount() is 2
 PASS getComputedStyle(ancestor).backgroundColor is green
-PASS getComputedStyle(doc).backgroundColor is red
-PASS internals.updateStyleAndReturnAffectedElementCount() is 2
-PASS getComputedStyle(doc).backgroundColor is green
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -934,10 +934,6 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         return Fullscreen::isActiveFullScreenElement(element);
     case CSSSelector::PseudoFullScreenAncestor:
         return element.containsFullScreenElement();
-    case CSSSelector::PseudoFullScreenDocument:
-        // While a Document is in the fullscreen state, the 'full-screen-document' pseudoclass applies
-        // to all elements of that Document.
-        return Fullscreen::isFullScreen(element.document());
     case CSSSelector::PseudoInRange:
         if (m_mode == ResolvingStyle)
             element.document().setContainsValidityStyleRules();

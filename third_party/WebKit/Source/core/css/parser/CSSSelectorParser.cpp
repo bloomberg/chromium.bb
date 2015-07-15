@@ -33,9 +33,6 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
             case CSSSelector::PseudoHostContext:
                 feature = UseCounter::CSSSelectorPseudoHostContext;
                 break;
-            case CSSSelector::PseudoFullScreenDocument:
-                feature = UseCounter::CSSSelectorPseudoFullScreenDocument;
-                break;
             case CSSSelector::PseudoFullScreenAncestor:
                 feature = UseCounter::CSSSelectorPseudoFullScreenAncestor;
                 break;

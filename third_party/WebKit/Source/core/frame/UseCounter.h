@@ -529,7 +529,6 @@ public:
         AudioListenerDopplerFactor = 620,
         AudioListenerSpeedOfSound = 621,
         AudioListenerSetVelocity = 622,
-        CSSSelectorPseudoFullScreenDocument = 627,
         CSSSelectorPseudoFullScreenAncestor = 628,
         CSSSelectorPseudoFullScreen = 629,
         WebKitCSSMatrix = 630,
