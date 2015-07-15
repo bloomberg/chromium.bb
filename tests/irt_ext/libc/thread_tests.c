@@ -280,10 +280,9 @@ static int do_semaphore_test(struct threading_environment *env) {
   }
 
   sem_t semaphore;
-  int ret = sem_init(&semaphore, 0, 0);
-  if (0 != ret) {
+  if (sem_init(&semaphore, 0, 0) != 0) {
     irt_ext_test_print("do_semaphore_test: sem_init failed: %s\n",
-                       strerror(ret));
+                       strerror(errno));
     return 1;
   }
 
@@ -293,7 +292,7 @@ static int do_semaphore_test(struct threading_environment *env) {
   };
 
   pthread_t thread_id;
-  ret = pthread_create(&thread_id, NULL, semaphore_thread, &thread_args);
+  int ret = pthread_create(&thread_id, NULL, semaphore_thread, &thread_args);
   if (0 != ret) {
     irt_ext_test_print("do_semaphore_test: pthread_create failed: %s\n",
                        strerror(ret));
@@ -316,10 +315,9 @@ static int do_semaphore_test(struct threading_environment *env) {
     sched_yield();
   }
 
-  ret = sem_post(&semaphore);
-  if (0 != ret) {
+  if (sem_post(&semaphore) != 0) {
     irt_ext_test_print("do_semaphore_test: sem_post failed: %s\n",
-                       strerror(ret));
+                       strerror(errno));
     return 1;
   }
 
@@ -350,10 +348,9 @@ static int do_semaphore_test(struct threading_environment *env) {
     return 1;
   }
 
-  ret = sem_destroy(&semaphore);
-  if (0 != ret) {
+  if (sem_destroy(&semaphore) != 0) {
     irt_ext_test_print("do_semaphore_test: sem_destroy failed: %s\n",
-                       strerror(ret));
+                       strerror(errno));
     return 1;
   }
 
