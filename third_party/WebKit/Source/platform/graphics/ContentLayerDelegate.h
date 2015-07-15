@@ -57,7 +57,8 @@ public:
 
     // WebContentLayerClient implementation.
     void paintContents(SkCanvas*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;
-    void paintContents(WebDisplayItemList*, const WebRect& clip, size_t& reportedInternalMemoryUsage, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;
+    void paintContents(WebDisplayItemList*, const WebRect& clip, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;
+    size_t approximateUnsharedMemoryUsage() const override;
 
 private:
     GraphicsContextPainter* m_painter;

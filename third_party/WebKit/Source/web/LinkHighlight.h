@@ -56,7 +56,7 @@ public:
 
     // WebContentLayerClient implementation.
     void paintContents(WebCanvas*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
-    void paintContents(WebDisplayItemList*, const WebRect& clipRect, size_t& reportedInternalMemoryUsage, WebContentLayerClient::PaintingControlSetting) override;
+    void paintContents(WebDisplayItemList*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
 
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;

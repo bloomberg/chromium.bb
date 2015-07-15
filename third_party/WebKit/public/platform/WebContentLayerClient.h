@@ -58,24 +58,16 @@ public:
     // will be clipped on playback.
     // The |PaintingControlSetting| enum controls painting to isolate different components in performance tests.
     // Currently the DisplayListConstructionDisabled does nothing.
-    // |reportedInternalMemoryUsage| is populated with the current memory usage
-    // within this content layer client, which should be combined with the
-    // display list's memory usage to have an accurate total.
     virtual void paintContents(
         WebDisplayItemList*,
         const WebRect& clip,
-        size_t& reportedInternalMemoryUsage,
         PaintingControlSetting = PaintDefaultBehavior) = 0;
 
-    // TODO(jbroman): Remove this once Chromium no longer calls it.
-    void paintContents(
-        WebDisplayItemList* list,
-        const WebRect& clip,
-        PaintingControlSetting setting = PaintDefaultBehavior)
-    {
-        size_t reportedInternalMemoryUsage;
-        paintContents(list, clip, reportedInternalMemoryUsage, setting);
-    }
+    // Returns an estimate of the current memory usage within this object,
+    // excluding memory shared with painting artifacts (i.e.,
+    // WebDisplayItemList). Should be invoked after paintContents, so that the
+    // result includes data cached internally during painting.
+    virtual size_t approximateUnsharedMemoryUsage() const { return 0; }
 
 protected:
     virtual ~WebContentLayerClient() { }

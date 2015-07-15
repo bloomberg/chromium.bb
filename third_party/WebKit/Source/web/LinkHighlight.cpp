@@ -251,10 +251,8 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect&, WebContentL
     canvas->drawPath(m_path.skPath(), paint);
 }
 
-void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, size_t& reportedInternalMemoryUsage, WebContentLayerClient::PaintingControlSetting paintingControl)
+void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
 {
-    reportedInternalMemoryUsage = 0;
-
     if (!m_node || !m_node->layoutObject())
         return;
 

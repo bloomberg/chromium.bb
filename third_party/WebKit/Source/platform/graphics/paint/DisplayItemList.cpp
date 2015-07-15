@@ -328,7 +328,7 @@ void DisplayItemList::commitNewDisplayItems()
     m_numCachedItems = 0;
 }
 
-size_t DisplayItemList::approximateMemoryUsage() const
+size_t DisplayItemList::approximateUnsharedMemoryUsage() const
 {
     size_t memoryUsage = sizeof(*this);
 

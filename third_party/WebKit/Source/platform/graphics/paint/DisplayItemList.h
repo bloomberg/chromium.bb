@@ -66,7 +66,7 @@ public:
     // Returns the approximate memory usage, excluding memory likely to be
     // shared with the embedder after copying to WebDisplayItemList.
     // Should only be called right after commitNewDisplayItems.
-    size_t approximateMemoryUsage() const;
+    size_t approximateUnsharedMemoryUsage() const;
 
     // Get the paint list generated after the last painting.
     const DisplayItems& displayItems() const;

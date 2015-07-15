@@ -84,7 +84,6 @@ void ContentLayerDelegate::paintContents(
 
 void ContentLayerDelegate::paintContents(
     WebDisplayItemList* webDisplayItemList, const WebRect& clip,
-    size_t& reportedInternalMemoryUsage,
     WebContentLayerClient::PaintingControlSetting paintingControl)
 {
     TRACE_EVENT1("blink,benchmark", "ContentLayerDelegate::paintContents", "clip_rect", toTracedValue(clip));
@@ -110,7 +109,11 @@ void ContentLayerDelegate::paintContents(
     m_painter->paint(context, clip);
 
     displayItemList->commitNewDisplayItemsAndAppendToWebDisplayItemList(webDisplayItemList);
-    reportedInternalMemoryUsage = displayItemList->approximateMemoryUsage();
+}
+
+size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const
+{
+    return m_painter->displayItemList()->approximateUnsharedMemoryUsage();
 }
 
 } // namespace blink
