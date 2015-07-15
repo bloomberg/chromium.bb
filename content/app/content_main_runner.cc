@@ -632,7 +632,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       base::trace_event::TraceLog::GetInstance()->SetEnabled(
           trace_config,
           base::trace_event::TraceLog::RECORDING_MODE);
-    } else if (process_type != switches::kZygoteProcess) {
+    } else if (process_type != switches::kZygoteProcess &&
+               process_type != switches::kRendererProcess) {
       // There is no need to schedule stopping tracing in this case. Telemetry
       // will stop tracing on demand later.
       tracing::EnableStartupTracingIfConfigFileExists();
