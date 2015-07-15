@@ -93,8 +93,18 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
       context_factory_->DoesCreateTestContexts() ? kTestRefreshRate
                                                  : kDefaultRefreshRate;
   settings.main_frame_before_activation_enabled = false;
-  settings.renderer_settings.disable_gpu_vsync =
-      command_line->HasSwitch(switches::kDisableGpuVsync);
+  if (command_line->HasSwitch(switches::kDisableGpuVsync)) {
+    std::string display_vsync_string =
+        command_line->GetSwitchValueASCII(switches::kDisableGpuVsync);
+    if (display_vsync_string == "gpu") {
+      settings.renderer_settings.disable_display_vsync = true;
+    } else if (display_vsync_string == "beginframe") {
+      settings.wait_for_beginframe_interval = false;
+    } else {
+      settings.renderer_settings.disable_display_vsync = true;
+      settings.wait_for_beginframe_interval = false;
+    }
+  }
   settings.renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
 #if defined(OS_WIN)

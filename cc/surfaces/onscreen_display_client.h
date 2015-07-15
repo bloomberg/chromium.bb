@@ -60,7 +60,7 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   SurfaceDisplayOutputSurface* surface_display_output_surface_;
   bool output_surface_lost_;
-  bool disable_gpu_vsync_;
+  bool disable_display_vsync_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OnscreenDisplayClient);

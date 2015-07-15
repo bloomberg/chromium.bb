@@ -227,8 +227,18 @@ void RenderWidgetCompositor::Initialize() {
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
-  settings.renderer_settings.disable_gpu_vsync =
-      cmd->HasSwitch(switches::kDisableGpuVsync);
+  if (cmd->HasSwitch(switches::kDisableGpuVsync)) {
+    std::string display_vsync_string =
+        cmd->GetSwitchValueASCII(switches::kDisableGpuVsync);
+    if (display_vsync_string == "gpu") {
+      settings.renderer_settings.disable_display_vsync = true;
+    } else if (display_vsync_string == "beginframe") {
+      settings.wait_for_beginframe_interval = false;
+    } else {
+      settings.renderer_settings.disable_display_vsync = true;
+      settings.wait_for_beginframe_interval = false;
+    }
+  }
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);

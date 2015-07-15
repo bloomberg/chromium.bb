@@ -87,6 +87,7 @@ class CC_EXPORT LayerTreeSettings {
   bool gather_pixel_refs;
   bool use_compositor_animation_timelines;
   bool invert_viewport_scroll_order;
+  bool wait_for_beginframe_interval;
 
   LayerTreeDebugState initial_debug_state;
 

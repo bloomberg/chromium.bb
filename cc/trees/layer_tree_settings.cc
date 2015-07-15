@@ -72,7 +72,8 @@ LayerTreeSettings::LayerTreeSettings()
       verify_property_trees(false),
       gather_pixel_refs(false),
       use_compositor_animation_timelines(false),
-      invert_viewport_scroll_order(false) {
+      invert_viewport_scroll_order(false),
+      wait_for_beginframe_interval(true) {
 }
 
 LayerTreeSettings::~LayerTreeSettings() {}
@@ -87,8 +88,7 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
       timeout_and_draw_when_animation_checkerboards;
   scheduler_settings.using_synchronous_renderer_compositor =
       using_synchronous_renderer_compositor;
-  scheduler_settings.throttle_frame_production =
-      !renderer_settings.disable_gpu_vsync;
+  scheduler_settings.throttle_frame_production = wait_for_beginframe_interval;
   scheduler_settings.background_frame_interval =
       base::TimeDelta::FromSecondsD(1.0 / background_animation_rate);
   return scheduler_settings;

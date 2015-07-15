@@ -29,6 +29,10 @@ namespace switches {
 const char kDisableD3D11[]                  = "disable-d3d11";
 
 // Stop the GPU from synchronizing on the vsync before presenting.
+// We can select from the options below:
+//  beginframe : Next frame can start without any delay on cc::scheduler.
+//  gpu : Disable gpu vsync.
+//  default: Set both flags.
 const char kDisableGpuVsync[]               = "disable-gpu-vsync";
 
 // Turns on GPU logging (debug build only).
