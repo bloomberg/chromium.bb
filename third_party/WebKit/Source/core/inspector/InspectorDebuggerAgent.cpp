@@ -476,7 +476,7 @@ void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const 
     }
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> callStack = v8::Local<v8::Object>::New(m_isolate, m_currentCallStack);
+    v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
     injectedScript.getStepInPositions(errorString, callStack, callFrameId, positions);
 }
 
@@ -640,7 +640,7 @@ void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String
     }
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> callStack = v8::Local<v8::Object>::New(m_isolate, m_currentCallStack);
+    v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
     injectedScript.restartFrame(errorString, callStack, callFrameId, &result);
     m_currentCallStack.Reset(m_isolate, debugger().currentCallFrames());
     newCallFrames = currentCallFrames();
@@ -894,7 +894,7 @@ bool InspectorDebuggerAgent::callStackForId(ErrorString* errorString, const Stri
     unsigned asyncOrdinal = 0; // 0 is current call stack
     bool success = parsedObjectId->asObject()->getNumber("asyncOrdinal", &asyncOrdinal);
     if (!success || !asyncOrdinal) {
-        *callStack = v8::Local<v8::Object>::New(m_isolate, m_currentCallStack);
+        *callStack = m_currentCallStack.Get(m_isolate);
         *isAsync = false;
         return true;
     }
@@ -1057,7 +1057,7 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scop
     String newValueString = newValue->toJSONString();
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> currentCallStack = v8::Local<v8::Object>::New(m_isolate, m_currentCallStack);
+    v8::Local<v8::Object> currentCallStack = m_currentCallStack.Get(m_isolate);
     injectedScript.setVariableValue(errorString, currentCallStack, callFrameId, functionObjectId, scopeNumber, variableName, newValueString);
 }
 
@@ -1447,7 +1447,7 @@ PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
     }
 
     v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> currentCallStack = v8::Local<v8::Object>::New(m_isolate, m_currentCallStack);
+    v8::Local<v8::Object> currentCallStack = m_currentCallStack.Get(m_isolate);
     return injectedScript.wrapCallFrames(currentCallStack, 0);
 }
 
