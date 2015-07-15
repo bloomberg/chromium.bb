@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
 #include "url/gurl.h"
@@ -48,11 +47,8 @@ SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
 
 }  // namespace
 
-OfflinePageModel::OfflinePageModel(
-    scoped_ptr<OfflinePageMetadataStore> store,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+OfflinePageModel::OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store)
     : store_(store.Pass()),
-      task_runner_(task_runner),
       weak_ptr_factory_(this) {
 }
 
@@ -142,7 +138,7 @@ void OfflinePageModel::OnLoadDone(
 
 void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
                                           SavePageResult result) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+  callback.Run(result);
 }
 
 void OfflinePageModel::DeletePendingArchiver(OfflinePageArchiver* archiver) {

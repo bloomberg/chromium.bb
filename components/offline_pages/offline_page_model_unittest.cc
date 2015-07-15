@@ -239,7 +239,7 @@ scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
 
 scoped_ptr<OfflinePageModel> OfflinePageModelTest::BuildModel() {
   return scoped_ptr<OfflinePageModel>(
-      new OfflinePageModel(BuildStore().Pass(), message_loop_.task_runner()));
+      new OfflinePageModel(BuildStore().Pass()));
 }
 
 void OfflinePageModelTest::PumpLoop() {

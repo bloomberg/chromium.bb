@@ -18,10 +18,6 @@
 
 class GURL;
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace offline_pages {
 
 struct OfflinePageItem;
@@ -81,9 +77,7 @@ class OfflinePageModel : public KeyedService {
   typedef base::Callback<void(LoadResult, const std::vector<OfflinePageItem>&)>
       LoadAllPagesCallback;
 
-  OfflinePageModel(
-      scoped_ptr<OfflinePageMetadataStore> store,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  explicit OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store);
   ~OfflinePageModel() override;
 
   // KeyedService implementation.
@@ -134,8 +128,6 @@ class OfflinePageModel : public KeyedService {
 
   // Pending archivers owned by this model.
   PendingArchivers pending_archivers_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<OfflinePageModel> weak_ptr_factory_;
 
