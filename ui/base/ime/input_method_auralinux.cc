@@ -66,10 +66,17 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
   }
 
   if (event.type() == ui::ET_KEY_PRESSED && filtered) {
+    bool handled = false;
     if (NeedInsertChar())
-      DispatchKeyEventPostIME(event);
+      handled = DispatchKeyEventPostIME(event);
     else if (HasInputMethodResult())
-      SendFakeProcessKeyEvent(event.flags());
+      handled = SendFakeProcessKeyEvent(event.flags());
+    // If the KEYDOWN is stopped propagation (e.g. triggered an accelerator),
+    // don't InsertChar/InsertText to the input field.
+    if (handled) {
+      ResetContext();
+      return true;
+    }
 
     // Don't send VKEY_PROCESSKEY event if there is no result text or
     // composition. This is to workaround the weird behavior of IBus with US
@@ -110,7 +117,10 @@ bool InputMethodAuraLinux::DispatchKeyEvent(const ui::KeyEvent& event) {
     composition_.Clear();
 
   if (!filtered) {
-    DispatchKeyEventPostIME(event);
+    if (DispatchKeyEventPostIME(event)) {
+      ResetContext();
+      return true;
+    }
     if (event.type() == ui::ET_KEY_PRESSED) {
       // If a key event was not filtered by |context_| or |context_simple_|,
       // then it means the key event didn't generate any result text. For some
@@ -312,8 +322,8 @@ bool InputMethodAuraLinux::NeedInsertChar() const {
           result_text_.length() == 1);
 }
 
-void InputMethodAuraLinux::SendFakeProcessKeyEvent(int flags) const {
-  DispatchKeyEventPostIME(
+bool InputMethodAuraLinux::SendFakeProcessKeyEvent(int flags) const {
+  return DispatchKeyEventPostIME(
       KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, flags));
 }
 

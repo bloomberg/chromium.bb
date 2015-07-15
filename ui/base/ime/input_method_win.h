@@ -138,7 +138,12 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
 
   // Set to false initially. Tracks whether the IME has been initialized with
   // the current input language.
+  // crbug.com/508668
   bool default_input_language_initialized_;
+
+  // Set to true to suppress the next WM_CHAR, when the WM_KEYDOWN gets stopped
+  // propagation (e.g. triggered an accelerator).
+  bool suppress_next_char_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodWin);
 };

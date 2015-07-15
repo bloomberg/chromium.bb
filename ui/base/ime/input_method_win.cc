@@ -33,7 +33,8 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       enabled_(false),
       is_candidate_popup_open_(false),
       composing_window_handle_(NULL),
-      default_input_language_initialized_(false) {
+      default_input_language_initialized_(false),
+      suppress_next_char_(false) {
   SetDelegate(delegate);
 }
 
@@ -137,7 +138,8 @@ bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
-  return DispatchKeyEventPostIME(event);
+  suppress_next_char_ = DispatchKeyEventPostIME(event);
+  return suppress_next_char_;
 }
 
 void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
@@ -228,6 +230,11 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
       FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 InputMethodWin::OnChar"));
 
   *handled = TRUE;
+
+  if (suppress_next_char_) {
+    suppress_next_char_ = false;
+    return 0;
+  }
 
   // We need to send character events to the focused text input client event if
   // its text input type is ui::TEXT_INPUT_TYPE_NONE.
@@ -577,6 +584,10 @@ bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
 
 bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
   if (event.is_char()) {
+    if (suppress_next_char_) {
+      suppress_next_char_ = false;
+      return true;
+    }
     if (GetTextInputClient()) {
       GetTextInputClient()->InsertChar(
           static_cast<base::char16>(event.key_code()),

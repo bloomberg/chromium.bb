@@ -54,7 +54,7 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
  private:
   bool HasInputMethodResult();
   bool NeedInsertChar() const;
-  void SendFakeProcessKeyEvent(int flags) const;
+  bool SendFakeProcessKeyEvent(int flags) const;
   void ConfirmCompositionText();
   void UpdateContextFocusState();
   void ResetContext();
