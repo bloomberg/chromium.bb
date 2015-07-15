@@ -229,8 +229,9 @@
           'type': 'none',
           'variables': {
             'filters': [
+              # LayerTreeHost has dozens of separate crashing test cases on Fugu. (b/22512618)
+              'cc_unittests_apk --gtest_filter=*:-LayerTreeHost*',
               # The following tests all crash on fugu.
-              'cc_unittests_apk --gtest_filter=*:-LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles.RunMultiThread_DelegatingRenderer_ImplSidePaint',
               'gfx_unittests_apk --gtest_filter=*:-FontListTest.Fonts_DeriveWithHeightUpperBound',
               'media_unittests_apk --gtest_filter=*-AudioInputTest.*:AudioAndroidInputTest*',
             ],
