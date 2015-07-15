@@ -590,10 +590,9 @@ void OmniboxViewViews::ShowImeIfNeeded() {
   GetInputMethod()->ShowImeIfNeeded();
 }
 
-void OmniboxViewViews::OnMatchOpened(const AutocompleteMatch& match,
-                                     content::WebContents* web_contents) {
+void OmniboxViewViews::OnMatchOpened(const AutocompleteMatch& match) {
   extensions::MaybeShowExtensionControlledSearchNotification(
-      profile(), web_contents, match);
+      profile(), location_bar_view_->GetWebContents(), match);
 }
 
 int OmniboxViewViews::GetOmniboxTextLength() const {

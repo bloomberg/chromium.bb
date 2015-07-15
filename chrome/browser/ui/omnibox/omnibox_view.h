@@ -29,10 +29,6 @@ class OmniboxViewMacTest;
 class Profile;
 class ToolbarModel;
 
-namespace content {
-class WebContents;
-}
-
 class OmniboxView {
  public:
   virtual ~OmniboxView();
@@ -46,16 +42,6 @@ class OmniboxView {
 
   // Shared cross-platform focus handling.
   void OnDidKillFocus();
-
-  // For use when switching tabs, this saves the current state onto the tab so
-  // that it can be restored during a later call to Update().
-  virtual void SaveStateToTab(content::WebContents* tab) = 0;
-
-  // Called when the window's active tab changes.
-  virtual void OnTabChanged(const content::WebContents* web_contents) = 0;
-
-  // Called to clear the saved state for |web_contents|.
-  virtual void ResetTabState(content::WebContents* web_contents) = 0;
 
   // Called when any relevant state changes other than changing tabs.
   virtual void Update() = 0;
@@ -231,9 +217,8 @@ class OmniboxView {
   // only ever return true on mobile ports.
   virtual bool IsIndicatingQueryRefinement() const;
 
-  // Called after a |match| has been opened for the given |web_contents|.
-  virtual void OnMatchOpened(const AutocompleteMatch& match,
-                             content::WebContents* web_contents);
+  // Called after a |match| has been opened.
+  virtual void OnMatchOpened(const AutocompleteMatch& match);
 
   // Returns |text| with any leading javascript schemas stripped.
   static base::string16 StripJavascriptSchemas(const base::string16& text);

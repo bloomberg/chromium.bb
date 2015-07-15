@@ -26,9 +26,6 @@ class TestingOmniboxView : public OmniboxView {
       : OmniboxView(nullptr, controller, nullptr, nullptr) {}
 
   // OmniboxView:
-  void SaveStateToTab(WebContents* tab) override {}
-  void OnTabChanged(const WebContents* web_contents) override {}
-  void ResetTabState(WebContents* web_contents) override {}
   void Update() override {}
   void OpenMatch(const AutocompleteMatch& match,
                  WindowOpenDisposition disposition,

@@ -65,10 +65,17 @@ class OmniboxViewViews
   }
 #endif
 
+  // For use when switching tabs, this saves the current state onto the tab so
+  // that it can be restored during a later call to Update().
+  void SaveStateToTab(content::WebContents* tab);
+
+  // Called when the window's active tab changes.
+  void OnTabChanged(const content::WebContents* web_contents);
+
+  // Called to clear the saved state for |web_contents|.
+  void ResetTabState(content::WebContents* web_contents);
+
   // OmniboxView:
-  void SaveStateToTab(content::WebContents* tab) override;
-  void OnTabChanged(const content::WebContents* web_contents) override;
-  void ResetTabState(content::WebContents* web_contents) override;
   void Update() override;
   base::string16 GetText() const override;
   void SetUserText(const base::string16& text,
@@ -139,8 +146,7 @@ class OmniboxViewViews
   int GetWidth() const override;
   bool IsImeShowingPopup() const override;
   void ShowImeIfNeeded() override;
-  void OnMatchOpened(const AutocompleteMatch& match,
-                     content::WebContents* web_contents) override;
+  void OnMatchOpened(const AutocompleteMatch& match) override;
   int GetOmniboxTextLength() const override;
   void EmphasizeURLComponents() override;
 

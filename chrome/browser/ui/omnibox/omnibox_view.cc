@@ -98,7 +98,7 @@ void OmniboxView::OpenMatch(const AutocompleteMatch& match,
     return;
   model_->OpenMatch(
       match, disposition, alternate_nav_url, pasted_text, selected_line);
-  OnMatchOpened(match, controller_->GetWebContents());
+  OnMatchOpened(match);
 }
 
 bool OmniboxView::IsEditingOrEmpty() const {
@@ -174,8 +174,7 @@ bool OmniboxView::IsIndicatingQueryRefinement() const {
   return false;
 }
 
-void OmniboxView::OnMatchOpened(const AutocompleteMatch& match,
-                                content::WebContents* web_contents) {
+void OmniboxView::OnMatchOpened(const AutocompleteMatch& match) {
 }
 
 OmniboxView::OmniboxView(Profile* profile,
