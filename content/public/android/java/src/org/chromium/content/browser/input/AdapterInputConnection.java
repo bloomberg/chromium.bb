@@ -9,6 +9,7 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
 import android.text.TextUtils;
+import android.util.StringBuilderPrinter;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
@@ -142,10 +143,17 @@ public class AdapterInputConnection extends BaseInputConnection {
         outAttrs.initialSelEnd = Selection.getSelectionEnd(mEditable);
         mLastUpdateSelectionStart = outAttrs.initialSelStart;
         mLastUpdateSelectionEnd = outAttrs.initialSelEnd;
-        if (DEBUG) Log.w(TAG, "Constructor called with outAttrs: " + outAttrs);
+        if (DEBUG) Log.w(TAG, "Constructor called with outAttrs: " + dumpEditorInfo(outAttrs));
 
         Selection.setSelection(mEditable, outAttrs.initialSelStart, outAttrs.initialSelEnd);
         updateSelectionIfRequired();
+    }
+
+    private String dumpEditorInfo(EditorInfo editorInfo) {
+        StringBuilder builder = new StringBuilder();
+        StringBuilderPrinter printer = new StringBuilderPrinter(builder);
+        editorInfo.dump(printer, "");
+        return builder.toString();
     }
 
     /**
