@@ -783,6 +783,8 @@ public:
         V8Performance_Memory_AttributeGetter = 884,
         V8SharedWorker_WorkerStart_AttributeGetter = 885,
         HTMLKeygenElement = 886,
+        // The above items are available in M45 branch.
+
         V8SVGElement_OffsetParent_AttributeGetter = 887,
         V8SVGElement_OffsetTop_AttributeGetter = 888,
         V8SVGElement_OffsetLeft_AttributeGetter = 889,
