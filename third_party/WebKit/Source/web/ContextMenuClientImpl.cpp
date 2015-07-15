@@ -163,7 +163,7 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame, String& descript
 
     // Caret and range selections always return valid normalized ranges.
     RefPtrWillBeRawPtr<Range> selectionRange = selection.toNormalizedRange();
-    DocumentMarkerVector markers = selectedFrame->document()->markers().markersInRange(selectionRange.get(), DocumentMarker::MisspellingMarkers());
+    DocumentMarkerVector markers = selectedFrame->document()->markers().markersInRange(EphemeralRange(selectionRange.get()), DocumentMarker::MisspellingMarkers());
     if (markers.size() != 1)
         return String();
     description = markers[0]->description();

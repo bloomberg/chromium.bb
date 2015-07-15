@@ -5140,10 +5140,10 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange)
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
     frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
-    RefPtrWillBeRawPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
+    EphemeralRange selectionRange = frame->frame()->selection().selection().toNormalizedEphemeralRange();
 
     EXPECT_EQ(1, spellcheck.numberOfTimesChecked());
-    EXPECT_EQ(1U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
+    EXPECT_EQ(1U, document->markers().markersInRange(selectionRange, DocumentMarker::Spelling).size());
 
     frame->replaceMisspelledRange("welcome");
     EXPECT_EQ("_welcome_.", frame->contentAsText(std::numeric_limits<size_t>::max()).utf8());
@@ -5175,9 +5175,9 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers)
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
     frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
-    RefPtrWillBeRawPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
+    EphemeralRange selectionRange = frame->frame()->selection().selection().toNormalizedEphemeralRange();
 
-    EXPECT_EQ(0U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
+    EXPECT_EQ(0U, document->markers().markersInRange(selectionRange, DocumentMarker::Spelling).size());
 }
 
 TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords)

@@ -85,7 +85,7 @@ public:
 
     DocumentMarker* markerContainingPoint(const LayoutPoint&, DocumentMarker::MarkerType);
     DocumentMarkerVector markersFor(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-    DocumentMarkerVector markersInRange(Range*, DocumentMarker::MarkerTypes);
+    DocumentMarkerVector markersInRange(const EphemeralRange&, DocumentMarker::MarkerTypes);
     DocumentMarkerVector markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
     void updateRenderedRectsForMarkers();

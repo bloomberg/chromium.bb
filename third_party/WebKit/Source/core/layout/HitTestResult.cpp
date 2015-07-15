@@ -403,7 +403,7 @@ bool HitTestResult::isMisspelled() const
     if (pos.isNull())
         return false;
     return m_innerNode->document().markers().markersInRange(
-        makeRange(pos, pos).get(), DocumentMarker::MisspellingMarkers()).size() > 0;
+        EphemeralRange(pos.deepEquivalent().parentAnchoredEquivalent()), DocumentMarker::MisspellingMarkers()).size() > 0;
 }
 
 bool HitTestResult::isOverLink() const

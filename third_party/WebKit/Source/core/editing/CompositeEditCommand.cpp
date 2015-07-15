@@ -524,7 +524,7 @@ void CompositeEditCommand::replaceTextInNodePreservingMarkers(PassRefPtrWillBeRa
     DocumentMarkerController& markerController = document().markers();
     Vector<DocumentMarker::MarkerType> types;
     Vector<String> descriptions;
-    copyMarkerTypesAndDescriptions(markerController.markersInRange(Range::create(document(), node.get(), offset, node.get(), offset + count).get(), DocumentMarker::AllMarkers()), types, descriptions);
+    copyMarkerTypesAndDescriptions(markerController.markersInRange(EphemeralRange(Position(node.get(), offset), Position(node.get(), offset + count)), DocumentMarker::AllMarkers()), types, descriptions);
     replaceTextInNode(node, offset, count, replacementText);
     Position startPosition(node.get(), offset);
     Position endPosition(node.get(), offset + replacementText.length());

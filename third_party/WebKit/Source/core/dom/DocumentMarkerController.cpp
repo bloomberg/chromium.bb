@@ -420,26 +420,28 @@ DocumentMarkerVector DocumentMarkerController::markers()
     return result;
 }
 
-DocumentMarkerVector DocumentMarkerController::markersInRange(Range* range, DocumentMarker::MarkerTypes markerTypes)
+DocumentMarkerVector DocumentMarkerController::markersInRange(const EphemeralRange& range, DocumentMarker::MarkerTypes markerTypes)
 {
     if (!possiblyHasMarkers(markerTypes))
         return DocumentMarkerVector();
 
     DocumentMarkerVector foundMarkers;
 
-    Node* startContainer = range->startContainer();
+    Node* startContainer = range.startPosition().containerNode();
     ASSERT(startContainer);
-    Node* endContainer = range->endContainer();
+    unsigned startOffset = static_cast<unsigned>(range.startPosition().computeOffsetInContainerNode());
+    Node* endContainer = range.endPosition().containerNode();
     ASSERT(endContainer);
+    unsigned endOffset = static_cast<unsigned>(range.endPosition().computeOffsetInContainerNode());
 
-    Node* pastLastNode = range->pastLastNode();
-    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
+    Node* pastLastNode = range.endPosition().nodeAsRangePastLastNode();
+    for (Node* node = range.startPosition().nodeAsRangeFirstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
         for (DocumentMarker* marker : markersFor(node)) {
             if (!markerTypes.contains(marker->type()))
                 continue;
-            if (node == startContainer && marker->endOffset() <= static_cast<unsigned>(range->startOffset()))
+            if (node == startContainer && marker->endOffset() <= startOffset)
                 continue;
-            if (node == endContainer && marker->startOffset() >= static_cast<unsigned>(range->endOffset()))
+            if (node == endContainer && marker->startOffset() >= endOffset)
                 continue;
             foundMarkers.append(marker);
         }

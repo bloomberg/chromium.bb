@@ -329,7 +329,7 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(const HitTes
     Position start = pos.deepEquivalent();
     Position end = pos.deepEquivalent();
     if (pos.isNotNull()) {
-        DocumentMarkerVector markers = innerNode->document().markers().markersInRange(makeRange(pos, pos).get(), DocumentMarker::MisspellingMarkers());
+        DocumentMarkerVector markers = innerNode->document().markers().markersInRange(EphemeralRange(pos.deepEquivalent().parentAnchoredEquivalent()), DocumentMarker::MisspellingMarkers());
         if (markers.size() == 1) {
             start.moveToOffset(markers[0]->startOffset());
             end.moveToOffset(markers[0]->endOffset());

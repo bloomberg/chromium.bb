@@ -754,13 +754,14 @@ void SpellChecker::didEndEditingOnTextField(Element* e)
 
 void SpellChecker::replaceMisspelledRange(const String& text)
 {
-    RefPtrWillBeRawPtr<Range> caretRange = frame().selection().toNormalizedRange();
-    if (!caretRange)
+    EphemeralRange caretRange = frame().selection().selection().toNormalizedEphemeralRange();
+    if (caretRange.isNull())
         return;
-    DocumentMarkerVector markers = frame().document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
+    DocumentMarkerVector markers = frame().document()->markers().markersInRange(caretRange, DocumentMarker::MisspellingMarkers());
     if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
         return;
-    RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
+    // TODO(yosin) |markerRange| should be |EphemeralRange|.
+    RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange.document(), caretRange.startPosition().containerNode(), markers[0]->startOffset(), caretRange.endPosition().containerNode(), markers[0]->endOffset());
     if (!markerRange)
         return;
     frame().selection().setSelection(VisibleSelection(markerRange.get()), CharacterGranularity);
