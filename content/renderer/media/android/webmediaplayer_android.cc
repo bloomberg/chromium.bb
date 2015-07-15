@@ -1722,7 +1722,8 @@ void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
   encrypted_client_->keyError(
       WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
-      static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
+      static_cast<blink::WebMediaPlayerEncryptedMediaClient::MediaKeyErrorCode>(
+          error_code),
       short_system_code);
 }
 
