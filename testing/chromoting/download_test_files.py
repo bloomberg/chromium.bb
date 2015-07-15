@@ -46,10 +46,9 @@ def main():
       # Copy the file to the output folder, with same name as source file.
       output_file = os.path.join(args.output_folder, ntpath.basename(line))
       # Download specified file from GCS.
-      cp_cmd = ['gsutil cp %s %s' % (line, output_file)]
+      cp_cmd = ['gsutil.py', 'cp', line, output_file]
       try:
-        subprocess.check_output(cp_cmd, stderr=subprocess.STDOUT,
-                                shell=True)
+        subprocess.check_call(cp_cmd)
       except subprocess.CalledProcessError, e:
         print e.output
         sys.exit(1)
