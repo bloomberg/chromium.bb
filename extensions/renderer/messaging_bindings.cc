@@ -451,8 +451,11 @@ void DeliverMessageToScriptContext(const Message& message,
   v8::Local<v8::Value> has_port =
       script_context->module_system()->CallModuleMethod("messaging", "hasPort",
                                                         1, &port_id_handle);
-
-  CHECK(!has_port.IsEmpty() && has_port->IsBoolean());
+  // Could be empty/undefined if an exception was thrown.
+  // TODO(kalman): Should this be built into CallModuleMethod?
+  if (IsEmptyOrUndefied(has_port))
+    return;
+  CHECK(has_port->IsBoolean());
   if (!has_port.As<v8::Boolean>()->Value())
     return;
 
