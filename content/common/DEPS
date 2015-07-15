@@ -38,7 +38,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebString.h",
   "+third_party/WebKit/public/platform/linux/WebFallbackFont.h",
   "+third_party/WebKit/public/platform/linux/WebFontRenderStyle.h",
-  "+third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothErrorMessage.h",
+  "+third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h",
   "+third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h",

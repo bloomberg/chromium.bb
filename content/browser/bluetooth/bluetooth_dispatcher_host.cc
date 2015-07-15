@@ -21,7 +21,7 @@
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 
-using blink::WebBluetoothErrorMessage;
+using blink::WebBluetoothError;
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
 using device::BluetoothGattCharacteristic;
@@ -79,56 +79,56 @@ void AddToHistogram(BluetoothGATTError error) {
                             static_cast<int>(BluetoothGATTError::MAX_ERROR));
 }
 
-WebBluetoothErrorMessage TranslateConnectError(
+WebBluetoothError TranslateConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   switch (error_code) {
     case device::BluetoothDevice::ERROR_UNKNOWN:
-      return WebBluetoothErrorMessage::ConnectUnknownError;
+      return WebBluetoothError::ConnectUnknownError;
     case device::BluetoothDevice::ERROR_INPROGRESS:
-      return WebBluetoothErrorMessage::ConnectAlreadyInProgress;
+      return WebBluetoothError::ConnectAlreadyInProgress;
     case device::BluetoothDevice::ERROR_FAILED:
-      return WebBluetoothErrorMessage::ConnectUnknownFailure;
+      return WebBluetoothError::ConnectUnknownFailure;
     case device::BluetoothDevice::ERROR_AUTH_FAILED:
-      return WebBluetoothErrorMessage::ConnectAuthFailed;
+      return WebBluetoothError::ConnectAuthFailed;
     case device::BluetoothDevice::ERROR_AUTH_CANCELED:
-      return WebBluetoothErrorMessage::ConnectAuthCanceled;
+      return WebBluetoothError::ConnectAuthCanceled;
     case device::BluetoothDevice::ERROR_AUTH_REJECTED:
-      return WebBluetoothErrorMessage::ConnectAuthRejected;
+      return WebBluetoothError::ConnectAuthRejected;
     case device::BluetoothDevice::ERROR_AUTH_TIMEOUT:
-      return WebBluetoothErrorMessage::ConnectAuthTimeout;
+      return WebBluetoothError::ConnectAuthTimeout;
     case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
-      return WebBluetoothErrorMessage::ConnectUnsupportedDevice;
+      return WebBluetoothError::ConnectUnsupportedDevice;
   }
   NOTREACHED();
-  return WebBluetoothErrorMessage::UntranslatedConnectErrorCode;
+  return WebBluetoothError::UntranslatedConnectErrorCode;
 }
 
-blink::WebBluetoothErrorMessage TranslateGATTError(
+blink::WebBluetoothError TranslateGATTError(
     BluetoothGattService::GattErrorCode error_code) {
   switch (error_code) {
     case BluetoothGattService::GATT_ERROR_UNKNOWN:
       AddToHistogram(BluetoothGATTError::UNKNOWN);
-      return blink::WebBluetoothErrorMessage::GATTUnknownError;
+      return blink::WebBluetoothError::GATTUnknownError;
     case BluetoothGattService::GATT_ERROR_FAILED:
       AddToHistogram(BluetoothGATTError::FAILED);
-      return blink::WebBluetoothErrorMessage::GATTUnknownFailure;
+      return blink::WebBluetoothError::GATTUnknownFailure;
     case BluetoothGattService::GATT_ERROR_IN_PROGRESS:
       AddToHistogram(BluetoothGATTError::IN_PROGRESS);
-      return blink::WebBluetoothErrorMessage::GATTOperationInProgress;
+      return blink::WebBluetoothError::GATTOperationInProgress;
     case BluetoothGattService::GATT_ERROR_INVALID_LENGTH:
-      return blink::WebBluetoothErrorMessage::GATTInvalidAttributeLength;
+      return blink::WebBluetoothError::GATTInvalidAttributeLength;
     case BluetoothGattService::GATT_ERROR_NOT_PERMITTED:
-      return blink::WebBluetoothErrorMessage::GATTNotPermitted;
+      return blink::WebBluetoothError::GATTNotPermitted;
     case BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED:
-      return blink::WebBluetoothErrorMessage::GATTNotAuthorized;
+      return blink::WebBluetoothError::GATTNotAuthorized;
     case BluetoothGattService::GATT_ERROR_NOT_PAIRED:
       AddToHistogram(BluetoothGATTError::NOT_PAIRED);
-      return blink::WebBluetoothErrorMessage::GATTNotPaired;
+      return blink::WebBluetoothError::GATTNotPaired;
     case BluetoothGattService::GATT_ERROR_NOT_SUPPORTED:
-      return blink::WebBluetoothErrorMessage::GATTNotSupported;
+      return blink::WebBluetoothError::GATTNotSupported;
   }
   NOTREACHED();
-  return blink::WebBluetoothErrorMessage::GATTUntranslatedErrorCode;
+  return blink::WebBluetoothError::GATTUntranslatedErrorCode;
 }
 
 }  //  namespace
@@ -240,7 +240,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
   } else {
     DLOG(WARNING) << "No BluetoothAdapter. Can't serve requestDevice.";
     Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, WebBluetoothErrorMessage::NoBluetoothAdapter));
+        thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
   }
   return;
 }
@@ -257,8 +257,7 @@ void BluetoothDispatcherHost::OnConnectGATT(
   device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
     Send(new BluetoothMsg_ConnectGATTError(
-        thread_id, request_id,
-        WebBluetoothErrorMessage::DeviceNoLongerInRange));
+        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
   }
   device->CreateGattConnection(
@@ -314,8 +313,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
 
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
     Send(new BluetoothMsg_GetCharacteristicError(
-        thread_id, request_id,
-        WebBluetoothErrorMessage::DeviceNoLongerInRange));
+        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
   }
 
@@ -325,8 +323,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
       device->GetGattService(service_instance_id);
   if (!service) {
     Send(new BluetoothMsg_GetCharacteristicError(
-        thread_id, request_id,
-        WebBluetoothErrorMessage::ServiceNoLongerExists));
+        thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
     return;
   }
 
@@ -351,7 +348,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
     }
   }
   Send(new BluetoothMsg_GetCharacteristicError(
-      thread_id, request_id, WebBluetoothErrorMessage::CharacteristicNotFound));
+      thread_id, request_id, WebBluetoothError::CharacteristicNotFound));
 }
 
 void BluetoothDispatcherHost::OnReadValue(
@@ -381,16 +378,14 @@ void BluetoothDispatcherHost::OnReadValue(
       adapter_->GetDevice(device_iter->second /* device_instance_id */);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
     Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id,
-        WebBluetoothErrorMessage::DeviceNoLongerInRange));
+        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
   }
 
   BluetoothGattService* service = device->GetGattService(service_instance_id);
   if (service == nullptr) {
     Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id,
-        WebBluetoothErrorMessage::ServiceNoLongerExists));
+        thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
     return;
   }
 
@@ -399,7 +394,7 @@ void BluetoothDispatcherHost::OnReadValue(
   if (characteristic == nullptr) {
     Send(new BluetoothMsg_ReadCharacteristicValueError(
         thread_id, request_id,
-        WebBluetoothErrorMessage::CharacteristicNoLongerExists));
+        WebBluetoothError::CharacteristicNoLongerExists));
     return;
   }
 
@@ -448,16 +443,14 @@ void BluetoothDispatcherHost::OnWriteValue(
       adapter_->GetDevice(device_iter->second /* device_instance_id */);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
     Send(new BluetoothMsg_WriteCharacteristicValueError(
-        thread_id, request_id,
-        WebBluetoothErrorMessage::DeviceNoLongerInRange));
+        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
   }
 
   BluetoothGattService* service = device->GetGattService(service_instance_id);
   if (service == nullptr) {
     Send(new BluetoothMsg_WriteCharacteristicValueError(
-        thread_id, request_id,
-        WebBluetoothErrorMessage::ServiceNoLongerExists));
+        thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
     return;
   }
 
@@ -466,7 +459,7 @@ void BluetoothDispatcherHost::OnWriteValue(
   if (characteristic == nullptr) {
     Send(new BluetoothMsg_WriteCharacteristicValueError(
         thread_id, request_id,
-        WebBluetoothErrorMessage::CharacteristicNoLongerExists));
+        WebBluetoothError::CharacteristicNoLongerExists));
     return;
   }
   characteristic->WriteRemoteCharacteristic(
@@ -495,8 +488,7 @@ void BluetoothDispatcherHost::OnDiscoverySessionStartedError(int thread_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DLOG(WARNING) << "BluetoothDispatcherHost::OnDiscoverySessionStartedError";
   Send(new BluetoothMsg_RequestDeviceError(
-      thread_id, request_id,
-      WebBluetoothErrorMessage::DiscoverySessionStartFailed));
+      thread_id, request_id, WebBluetoothError::DiscoverySessionStartFailed));
 }
 
 void BluetoothDispatcherHost::StopDiscoverySession(
@@ -537,8 +529,8 @@ void BluetoothDispatcherHost::OnDiscoverySessionStopped(
       return;
     }
   }
-  Send(new BluetoothMsg_RequestDeviceError(
-      thread_id, request_id, WebBluetoothErrorMessage::NoDevicesFound));
+  Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
+                                           WebBluetoothError::NoDevicesFound));
 }
 
 void BluetoothDispatcherHost::OnDiscoverySessionStoppedError(int thread_id,
@@ -546,8 +538,7 @@ void BluetoothDispatcherHost::OnDiscoverySessionStoppedError(int thread_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DLOG(WARNING) << "BluetoothDispatcherHost::OnDiscoverySessionStoppedError";
   Send(new BluetoothMsg_RequestDeviceError(
-      thread_id, request_id,
-      WebBluetoothErrorMessage::DiscoverySessionStopFailed));
+      thread_id, request_id, WebBluetoothError::DiscoverySessionStopFailed));
 }
 
 void BluetoothDispatcherHost::OnGATTConnectionCreated(
@@ -583,8 +574,7 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
   device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
     Send(new BluetoothMsg_GetPrimaryServiceError(
-        thread_id, request_id,
-        WebBluetoothErrorMessage::DeviceNoLongerInRange));
+        thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
   }
   for (BluetoothGattService* service : device->GetGattServices()) {
@@ -605,7 +595,7 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
     }
   }
   Send(new BluetoothMsg_GetPrimaryServiceError(
-      thread_id, request_id, WebBluetoothErrorMessage::ServiceNotFound));
+      thread_id, request_id, WebBluetoothError::ServiceNotFound));
 }
 
 void BluetoothDispatcherHost::OnCharacteristicValueRead(

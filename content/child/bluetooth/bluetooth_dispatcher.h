@@ -10,7 +10,7 @@
 #include "content/child/worker_task_runner.h"
 #include "content/common/bluetooth/bluetooth_device.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothErrorMessage.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 
 namespace base {
 class MessageLoop;
@@ -79,7 +79,7 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
                               const BluetoothDevice& device);
   void OnRequestDeviceError(int thread_id,
                             int request_id,
-                            blink::WebBluetoothErrorMessage error);
+                            blink::WebBluetoothError error);
 
   void OnConnectGATTSuccess(int thread_id,
                             int request_id,
@@ -87,30 +87,30 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
 
   void OnConnectGATTError(int thread_id,
                           int request_id,
-                          blink::WebBluetoothErrorMessage error);
+                          blink::WebBluetoothError error);
   void OnGetPrimaryServiceSuccess(int thread_id,
                                   int request_id,
                                   const std::string& service_instance_id);
   void OnGetPrimaryServiceError(int thread_id,
                                 int request_id,
-                                blink::WebBluetoothErrorMessage error);
+                                blink::WebBluetoothError error);
   void OnGetCharacteristicSuccess(
       int thread_id,
       int request_id,
       const std::string& characteristic_instance_id);
   void OnGetCharacteristicError(int thread_id,
                                 int request_id,
-                                blink::WebBluetoothErrorMessage error);
+                                blink::WebBluetoothError error);
   void OnReadValueSuccess(int thread_id,
                           int request_id,
                           const std::vector<uint8_t>& value);
   void OnReadValueError(int thread_id,
                         int request_id,
-                        blink::WebBluetoothErrorMessage error);
+                        blink::WebBluetoothError error);
   void OnWriteValueSuccess(int thread_id, int request_id);
   void OnWriteValueError(int thread_id,
                          int request_id,
-                         blink::WebBluetoothErrorMessage error);
+                         blink::WebBluetoothError error);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 

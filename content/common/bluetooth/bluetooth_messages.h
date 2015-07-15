@@ -81,7 +81,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "content/common/bluetooth/bluetooth_device.h"
 #include "content/common/bluetooth/bluetooth_scan_filter.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothErrorMessage.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 
 #define IPC_MESSAGE_START BluetoothMsgStart
 
@@ -101,8 +101,8 @@ IPC_STRUCT_TRAITS_MEMBER(paired)
 IPC_STRUCT_TRAITS_MEMBER(uuids)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebBluetoothErrorMessage,
-                          blink::WebBluetoothErrorMessage::ENUM_MAX_VALUE)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebBluetoothError,
+                          blink::WebBluetoothError::ENUM_MAX_VALUE)
 
 IPC_STRUCT_TRAITS_BEGIN(content::BluetoothScanFilter)
 IPC_STRUCT_TRAITS_MEMBER(services)
@@ -120,7 +120,7 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceSuccess,
 IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebBluetoothErrorMessage /* result */)
+                     blink::WebBluetoothError /* result */)
 
 // Informs the renderer that the connection request |request_id| succeeded.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTSuccess,
@@ -132,7 +132,7 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTSuccess,
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebBluetoothErrorMessage /* result */)
+                     blink::WebBluetoothError /* result */)
 
 // Informs the renderer that primary service request |request_id| succeeded.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceSuccess,
@@ -144,7 +144,7 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceSuccess,
 IPC_MESSAGE_CONTROL3(BluetoothMsg_GetPrimaryServiceError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebBluetoothErrorMessage /* result */)
+                     blink::WebBluetoothError /* result */)
 
 // Informs the renderer that characteristic request |request_id| succeeded.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicSuccess,
@@ -156,7 +156,7 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicSuccess,
 IPC_MESSAGE_CONTROL3(BluetoothMsg_GetCharacteristicError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebBluetoothErrorMessage /* result */)
+                     blink::WebBluetoothError /* result */)
 
 // Informs the renderer that the value has been read.
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueSuccess,
@@ -168,7 +168,7 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueSuccess,
 IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebBluetoothErrorMessage /* result */)
+                     blink::WebBluetoothError /* result */)
 
 // Informs the renderer that the value has been successfully written to
 // the characteristic.
@@ -181,7 +181,7 @@ IPC_MESSAGE_CONTROL2(BluetoothMsg_WriteCharacteristicValueSuccess,
 IPC_MESSAGE_CONTROL3(BluetoothMsg_WriteCharacteristicValueError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebBluetoothErrorMessage /* result */)
+                     blink::WebBluetoothError /* result */)
 
 // Messages sent from the renderer to the browser.
 

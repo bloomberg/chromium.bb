@@ -13,7 +13,6 @@
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothErrorMessage.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTService.h"
@@ -22,7 +21,6 @@
 using blink::WebBluetoothConnectGATTCallbacks;
 using blink::WebBluetoothDevice;
 using blink::WebBluetoothError;
-using blink::WebBluetoothErrorMessage;
 using blink::WebBluetoothGATTCharacteristic;
 using blink::WebBluetoothGATTRemoteServer;
 using blink::WebBluetoothGATTService;
@@ -250,7 +248,7 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
 
 void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
                                                int request_id,
-                                               WebBluetoothErrorMessage error) {
+                                               WebBluetoothError error) {
   DCHECK(pending_requests_.Lookup(request_id)) << request_id;
   pending_requests_.Lookup(request_id)->onError(new WebBluetoothError(error));
   pending_requests_.Remove(request_id);
@@ -269,7 +267,7 @@ void BluetoothDispatcher::OnConnectGATTSuccess(
 
 void BluetoothDispatcher::OnConnectGATTError(int thread_id,
                                              int request_id,
-                                             WebBluetoothErrorMessage error) {
+                                             WebBluetoothError error) {
   DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
   pending_connect_requests_.Lookup(request_id)
       ->onError(new WebBluetoothError(error));
@@ -289,16 +287,15 @@ void BluetoothDispatcher::OnGetPrimaryServiceSuccess(
   pending_primary_service_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnGetPrimaryServiceError(
-    int thread_id,
-    int request_id,
-    WebBluetoothErrorMessage error) {
+void BluetoothDispatcher::OnGetPrimaryServiceError(int thread_id,
+                                                   int request_id,
+                                                   WebBluetoothError error) {
   DCHECK(pending_primary_service_requests_.Lookup(request_id)) << request_id;
 
   // Since we couldn't find the service return null. See Step 3 of
   // getPrimaryService algorithm:
   // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattremoteserver-getprimaryservice
-  if (error == WebBluetoothErrorMessage::ServiceNotFound) {
+  if (error == WebBluetoothError::ServiceNotFound) {
     pending_primary_service_requests_.Lookup(request_id)
         ->callbacks->onSuccess(nullptr);
     pending_primary_service_requests_.Remove(request_id);
@@ -325,16 +322,15 @@ void BluetoothDispatcher::OnGetCharacteristicSuccess(
   pending_characteristic_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnGetCharacteristicError(
-    int thread_id,
-    int request_id,
-    WebBluetoothErrorMessage error) {
+void BluetoothDispatcher::OnGetCharacteristicError(int thread_id,
+                                                   int request_id,
+                                                   WebBluetoothError error) {
   DCHECK(pending_characteristic_requests_.Lookup(request_id)) << request_id;
 
   // Since we couldn't find the characteristic return null. See Step 3 of
   // getCharacteristic algorithm:
   // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattservice-getcharacteristic
-  if (error == WebBluetoothErrorMessage::CharacteristicNotFound) {
+  if (error == WebBluetoothError::CharacteristicNotFound) {
     pending_characteristic_requests_.Lookup(request_id)
         ->callbacks->onSuccess(nullptr);
   } else {
@@ -360,7 +356,7 @@ void BluetoothDispatcher::OnReadValueSuccess(
 
 void BluetoothDispatcher::OnReadValueError(int thread_id,
                                            int request_id,
-                                           WebBluetoothErrorMessage error) {
+                                           WebBluetoothError error) {
   DCHECK(pending_read_value_requests_.Lookup(request_id)) << request_id;
 
   pending_read_value_requests_.Lookup(request_id)
@@ -379,7 +375,7 @@ void BluetoothDispatcher::OnWriteValueSuccess(int thread_id, int request_id) {
 
 void BluetoothDispatcher::OnWriteValueError(int thread_id,
                                             int request_id,
-                                            WebBluetoothErrorMessage error) {
+                                            WebBluetoothError error) {
   DCHECK(pending_write_value_requests_.Lookup(request_id)) << request_id;
 
   pending_write_value_requests_.Lookup(request_id)
