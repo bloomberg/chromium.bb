@@ -9,8 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 
@@ -19,12 +22,13 @@ namespace chromeos {
 // A fake implementation of PowerManagerClient. This remembers the policy passed
 // to SetPolicy() and the user of this class can inspect the last set policy by
 // get_policy().
-class FakePowerManagerClient : public PowerManagerClient {
+class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
  public:
   FakePowerManagerClient();
   ~FakePowerManagerClient() override;
 
   power_manager::PowerManagementPolicy& policy() { return policy_; }
+  const power_manager::PowerSupplyProperties& props() const { return props_; }
   int num_request_restart_calls() const { return num_request_restart_calls_; }
   int num_request_shutdown_calls() const { return num_request_shutdown_calls_; }
   int num_set_policy_calls() const { return num_set_policy_calls_; }
@@ -67,15 +71,25 @@ class FakePowerManagerClient : public PowerManagerClient {
   // Notifies observers that the power button has been pressed or released.
   void SendPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 
+  // Updates |props_| and notifies observers of its changes.
+  void UpdatePowerProperties(
+      const power_manager::PowerSupplyProperties& power_props);
+
  private:
   // Callback that will be run by asynchronous suspend delays to report
   // readiness.
   void HandleSuspendReadiness();
 
+  // Notifies |observers_| that |props_| has been updated.
+  void NotifyObservers();
+
   base::ObserverList<Observer> observers_;
 
   // Last policy passed to SetPolicy().
   power_manager::PowerManagementPolicy policy_;
+
+  // Power status received from the power manager.
+  power_manager::PowerSupplyProperties props_;
 
   // Number of times that various methods have been called.
   int num_request_restart_calls_;
@@ -91,6 +105,10 @@ class FakePowerManagerClient : public PowerManagerClient {
 
   // Delegate for managing power consumption of Chrome's renderer processes.
   base::WeakPtr<RenderProcessManagerDelegate> render_process_manager_delegate_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FakePowerManagerClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePowerManagerClient);
 };

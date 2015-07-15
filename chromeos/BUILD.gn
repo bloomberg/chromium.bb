@@ -111,8 +111,6 @@ static_library("test_support_without_gmock") {
   sources = [
     "dbus/fake_cros_disks_client.cc",
     "dbus/fake_cros_disks_client.h",
-    "dbus/fake_power_manager_client.cc",
-    "dbus/fake_power_manager_client.h",
     "dbus/fake_session_manager_client.cc",
     "dbus/fake_session_manager_client.h",
     "dbus/fake_shill_manager_client.cc",
