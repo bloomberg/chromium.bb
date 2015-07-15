@@ -756,30 +756,33 @@ static void
 update_prop(struct ivi_layout_layer *ivilayer,
 	    struct ivi_layout_surface *ivisurf)
 {
-	if (ivilayer->event_mask | ivisurf->event_mask) {
-		struct weston_view *tmpview;
-		update_opacity(ivilayer, ivisurf);
-		update_layer_orientation(ivilayer, ivisurf);
-		update_layer_position(ivilayer, ivisurf);
-		update_surface_position(ivisurf);
-		update_surface_orientation(ivilayer, ivisurf);
-		update_scale(ivilayer, ivisurf);
+	struct weston_view *tmpview;
 
-		ivisurf->update_count++;
+	if (!ivilayer->event_mask && !ivisurf->event_mask) {
+		return;
+	}
 
-		wl_list_for_each(tmpview, &ivisurf->surface->views, surface_link) {
-			if (tmpview != NULL) {
-				break;
-			}
-		}
+	update_opacity(ivilayer, ivisurf);
+	update_layer_orientation(ivilayer, ivisurf);
+	update_layer_position(ivilayer, ivisurf);
+	update_surface_position(ivisurf);
+	update_surface_orientation(ivilayer, ivisurf);
+	update_scale(ivilayer, ivisurf);
 
+	ivisurf->update_count++;
+
+	wl_list_for_each(tmpview, &ivisurf->surface->views, surface_link) {
 		if (tmpview != NULL) {
-			weston_view_geometry_dirty(tmpview);
+			break;
 		}
+	}
 
-		if (ivisurf->surface != NULL) {
-			weston_surface_damage(ivisurf->surface);
-		}
+	if (tmpview != NULL) {
+		weston_view_geometry_dirty(tmpview);
+	}
+
+	if (ivisurf->surface != NULL) {
+		weston_surface_damage(ivisurf->surface);
 	}
 }
 
