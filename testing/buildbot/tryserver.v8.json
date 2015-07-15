@@ -3,7 +3,13 @@
     "additional_compile_targets": [
       "chrome_shell_apk"
     ],
-    "gtest_tests": []
+    "gtest_tests": [],
+    "scripts": [
+      {
+        "name": "gn_check",
+        "script": "gn_check.py"
+      }
+    ]
   },
   "v8_linux_chromium_gn_rel": {
     "additional_compile_targets": [
@@ -60,6 +66,12 @@
       "views_unittests",
       "wm_unittests"
     ],
-    "gtest_tests": []
+    "gtest_tests": [],
+    "scripts": [
+      {
+        "name": "gn_check",
+        "script": "gn_check.py"
+      }
+    ]
   }
 }
