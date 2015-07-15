@@ -497,8 +497,9 @@ public class ChromeDownloadDelegate
         String scheme = uri.normalizeScheme().getScheme();
         if (!"http".equals(scheme) && !"https".equals(scheme)) return false;
         String path = uri.getPath();
-        // OMA downloads have extension "dm" or "dd".
-        if (path != null && (path.endsWith(".dm") || path.endsWith(".dd"))) {
+        // OMA downloads have extension "dm" or "dd". For the latter, it
+        // can be handled when native download completes.
+        if (path != null && (path.endsWith(".dm"))) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder().setUrl(url).build();
             onDownloadStartNoStream(downloadInfo);
             return true;

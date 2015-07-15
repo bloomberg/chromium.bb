@@ -68,8 +68,13 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         try {
             String description = downloadInfo.getDescription();
             if (TextUtils.isEmpty(description)) description = downloadInfo.getFileName();
-            mDownloadManager.addCompletedDownload(downloadInfo.getFileName(), description, true,
-                    mimeType, downloadInfo.getFilePath(), downloadInfo.getContentLength(), true);
+            long downloadId = mDownloadManager.addCompletedDownload(
+                    downloadInfo.getFileName(), description, true, mimeType,
+                    downloadInfo.getFilePath(), downloadInfo.getContentLength(), true);
+            if (OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(mimeType)) {
+                DownloadManagerService.getDownloadManagerService(mApplicationContext)
+                        .getOMADownloadHandler().handleOMADownload(downloadInfo, downloadId);
+            }
         } catch (IllegalArgumentException e) {
             // TODO(qinmin): Properly handle the case that we fail to add a completed
             // download item to DownloadManager

@@ -90,7 +90,7 @@ public class ChromeDownloadDelegateTest extends InstrumentationTestCase {
         assertFalse(delegate.shouldInterceptContextMenuDownload("ftp://test/test.dm"));
         assertFalse(delegate.shouldInterceptContextMenuDownload("data://test.dd"));
         assertFalse(delegate.shouldInterceptContextMenuDownload("http://test.dd"));
-        assertTrue(delegate.shouldInterceptContextMenuDownload("http://test/test.dd"));
+        assertFalse(delegate.shouldInterceptContextMenuDownload("http://test/test.dd"));
         assertTrue(delegate.shouldInterceptContextMenuDownload("https://test/test.dm"));
     }
 }

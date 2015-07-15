@@ -529,6 +529,10 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mOMADownloadHandler = omaDownloadHandler;
     }
 
+    protected OMADownloadHandler getOMADownloadHandler() {
+        return mOMADownloadHandler;
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
