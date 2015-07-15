@@ -13,7 +13,6 @@ goog.require('cvox.BrailleDisplayManager');
 goog.require('cvox.BrailleInputHandler');
 goog.require('cvox.BrailleKeyEvent');
 goog.require('cvox.BrailleTranslatorManager');
-goog.require('global');
 
 
 /**
@@ -139,9 +138,6 @@ cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
  */
 cvox.BrailleBackground.prototype.sendCommand_ =
     function(brailleEvt, content) {
-  if (global.backgroundObj &&
-      global.backgroundObj.onGotBrailleCommand(brailleEvt))
-    return;
   var msg = {
     'message': 'BRAILLE',
     'args': brailleEvt
