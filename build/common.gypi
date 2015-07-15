@@ -6096,6 +6096,7 @@
               '-fsanitize=cfi-vcall',
               '-fsanitize=cfi-derived-cast',
               '-fsanitize=cfi-unrelated-cast',
+              '-fsanitize-blacklist=<(cfi_blacklist)',
             ],
             'ldflags': [
               '-fsanitize=cfi-vcall',
@@ -6107,7 +6108,18 @@
                 '-fsanitize=cfi-vcall',
                 '-fsanitize=cfi-derived-cast',
                 '-fsanitize=cfi-unrelated-cast',
+                '-fsanitize-blacklist=<(cfi_blacklist)',
               ],
+            },
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  '-fsanitize=cfi-vcall',
+                  '-fsanitize=cfi-derived-cast',
+                  '-fsanitize=cfi-unrelated-cast',
+                  '-fsanitize-blacklist=<(cfi_blacklist)',
+                ],
+              },
             },
           }],
           ['_toolset=="target" and _type!="static_library"', {
@@ -6116,22 +6128,6 @@
                 '-fsanitize=cfi-vcall',
                 '-fsanitize=cfi-derived-cast',
                 '-fsanitize=cfi-unrelated-cast',
-              ],
-            },
-          }],
-        ],
-      },
-    }],
-    ['cfi_vptr==1', {
-      'target_defaults': {
-        'target_conditions': [
-          ['_toolset=="target"', {
-            'cflags': [
-              '-fsanitize-blacklist=<(cfi_blacklist)',
-            ],
-            'xcode_settings': {
-              'OTHER_CFLAGS': [
-                '-fsanitize-blacklist=<(cfi_blacklist)',
               ],
             },
           }],
