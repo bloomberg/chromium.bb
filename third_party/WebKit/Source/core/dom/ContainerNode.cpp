@@ -145,27 +145,19 @@ bool ContainerNode::checkAcceptChild(const Node* newChild, const Node* oldChild,
         return false;
     }
 
-    if (containsConsideringHostElements(*newChild)) {
-        exceptionState.throwDOMException(HierarchyRequestError, "The new child element contains the parent.");
-        return false;
-    }
-
-    if (isDocumentNode())
-        return toDocument(this)->canAcceptChild(*newChild, oldChild, exceptionState);
-
-    if (!isChildTypeAllowed(*newChild)) {
-        exceptionState.throwDOMException(HierarchyRequestError, "Nodes of type '" + newChild->nodeName() + "' may not be inserted inside nodes of type '" + nodeName() + "'.");
-        return false;
-    }
-
-    return true;
+    return checkAcceptChildGuaranteedNodeTypes(*newChild, oldChild, exceptionState);
 }
 
-bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, ExceptionState& exceptionState) const
+bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, const Node* oldChild, ExceptionState& exceptionState) const
 {
-    ASSERT(isChildTypeAllowed(newChild));
+    if (isDocumentNode())
+        return toDocument(this)->canAcceptChild(newChild, oldChild, exceptionState);
     if (newChild.containsIncludingHostElements(*this)) {
         exceptionState.throwDOMException(HierarchyRequestError, "The new child element contains the parent.");
+        return false;
+    }
+    if (!isChildTypeAllowed(newChild)) {
+        exceptionState.throwDOMException(HierarchyRequestError, "Nodes of type '" + newChild.nodeName() + "' may not be inserted inside nodes of type '" + nodeName() + "'.");
         return false;
     }
     return true;
@@ -214,7 +206,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<
         return newChild;
 
     // We need this extra check because collectChildrenAndRemoveFromOldParent() can fire mutation events.
-    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, exceptionState)) {
+    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, nullptr, exceptionState)) {
         if (exceptionState.hadException())
             return nullptr;
         return newChild;
@@ -737,7 +729,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::appendChild(PassRefPtrWillBeRawPtr<N
         return newChild;
 
     // We need this extra check because collectChildrenAndRemoveFromOldParent() can fire mutation events.
-    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, exceptionState)) {
+    if (!checkAcceptChildGuaranteedNodeTypes(*newChild, nullptr, exceptionState)) {
         if (exceptionState.hadException())
             return nullptr;
         return newChild;
