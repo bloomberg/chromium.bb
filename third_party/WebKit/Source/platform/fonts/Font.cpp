@@ -707,7 +707,8 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
 int Font::offsetForPositionForComplexText(const TextRun& run, float xFloat,
     bool includePartialGlyphs) const
 {
-    HarfBuzzShaper shaper(this, run);
+    HashSet<const SimpleFontData*> fallbackFonts;
+    HarfBuzzShaper shaper(this, run, &fallbackFonts);
     RefPtr<ShapeResult> shapeResult = shaper.shapeResult();
     if (!shapeResult)
         return 0;
