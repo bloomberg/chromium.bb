@@ -36,8 +36,9 @@ void BeginFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list
 
 bool BeginFilterDisplayItem::drawsContent() const
 {
-    // A filter with no inputs must produce its own content.
-    return m_imageFilter->countInputs() == 0;
+    // Skia cannot currently tell us if a filter will draw content,
+    // even when no input primitives are drawn.
+    return true;
 }
 
 #ifndef NDEBUG
