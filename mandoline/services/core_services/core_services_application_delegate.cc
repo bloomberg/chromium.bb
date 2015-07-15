@@ -128,7 +128,7 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new mandoline::BrowserManager);
   else if (url == "mojo://clipboard/")
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
-  else if (url == "mojo://filesystem_service/")
+  else if (url == "mojo://filesystem/")
     delegate.reset(new filesystem::FileSystemApp);
   else if (url == "mojo://surfaces_service/")
     delegate.reset(new surfaces::SurfacesServiceApplication);
@@ -140,7 +140,7 @@ void CoreServicesApplicationDelegate::StartApplication(
 #endif
 #if !defined(OS_ANDROID)
   else if (url == "mojo://network_service/")
-    delegate.reset(new NetworkServiceDelegate);
+    delegate.reset(new mojo::NetworkServiceDelegate);
   else if (url == "mojo://resource_provider/")
     delegate.reset(new resource_provider::ResourceProviderApp);
   else if (url == "mojo://view_manager/")

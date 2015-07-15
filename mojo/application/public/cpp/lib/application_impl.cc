@@ -166,7 +166,14 @@ void ApplicationImpl::OnQuitRequested(const Callback<void(bool)>& callback) {
 
 void ApplicationImpl::OnConnectionError() {
   base::WeakPtr<ApplicationImpl> ptr(weak_factory_.GetWeakPtr());
-  QuitNow();
+
+  // We give the delegate notice first, since it might want to do something on
+  // shell connection errors other than immediate termination of the run
+  // loop. The application might want to continue servicing connections other
+  // than the one to the shell.
+  bool quit_now = delegate_->OnShellConnectionError();
+  if (quit_now)
+    QuitNow();
   if (!ptr)
     return;
   shell_ = nullptr;

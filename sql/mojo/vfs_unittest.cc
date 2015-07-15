@@ -30,9 +30,10 @@ namespace sql {
 
 const char kFileName[] = "TestingDatabase.db";
 
-class VFSTest : public mojo::test::ApplicationTestBase {
+class VFSTest : public mojo::test::ApplicationTestBase,
+                public filesystem::FileSystemClient {
  public:
-  VFSTest() {}
+  VFSTest() : binding_(this) {}
   ~VFSTest() override {}
 
   sqlite3_vfs* vfs() {
@@ -51,9 +52,13 @@ class VFSTest : public mojo::test::ApplicationTestBase {
     request->url = mojo::String::From("mojo:filesystem");
     application_impl()->ConnectToService(request.Pass(), &files_);
 
+    filesystem::FileSystemClientPtr client;
+    binding_.Bind(GetProxy(&client));
+
     filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
     filesystem::DirectoryPtr directory;
-    files_->OpenFileSystem("temp", GetProxy(&directory), mojo::Capture(&error));
+    files_->OpenFileSystem("temp", GetProxy(&directory), client.Pass(),
+                           mojo::Capture(&error));
     ASSERT_TRUE(files_.WaitForIncomingResponse());
     ASSERT_EQ(filesystem::FILE_ERROR_OK, error);
 
@@ -65,9 +70,13 @@ class VFSTest : public mojo::test::ApplicationTestBase {
     mojo::test::ApplicationTestBase::TearDown();
   }
 
+  void OnFileSystemShutdown() override {
+  }
+
  private:
   filesystem::FileSystemPtr files_;
   scoped_ptr<ScopedMojoFilesystemVFS> vfs_;
+  mojo::Binding<filesystem::FileSystemClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(VFSTest);
 };
@@ -113,6 +122,19 @@ TEST_F(VFSTest, NonexclusiveOpen) {
 
   file->pMethods->xClose(file.get());
   file->pMethods->xClose(file2.get());
+}
+
+TEST_F(VFSTest, NullFilenameOpen) {
+  // Opening a file with a null filename should return a valid file object.
+  scoped_ptr<sqlite3_file> file(MakeFile());
+  int out_flags;
+  int rc = vfs()->xOpen(
+      vfs(), nullptr, file.get(),
+      SQLITE_OPEN_DELETEONCLOSE | SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE,
+      &out_flags);
+  EXPECT_EQ(SQLITE_OK, rc);
+
+  file->pMethods->xClose(file.get());
 }
 
 TEST_F(VFSTest, DeleteOnClose) {

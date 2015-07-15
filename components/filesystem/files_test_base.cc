@@ -11,7 +11,7 @@
 
 namespace filesystem {
 
-FilesTestBase::FilesTestBase() {
+FilesTestBase::FilesTestBase() : binding_(this) {
 }
 
 FilesTestBase::~FilesTestBase() {
@@ -25,9 +25,16 @@ void FilesTestBase::SetUp() {
   application_impl()->ConnectToService(request.Pass(), &files_);
 }
 
+void FilesTestBase::OnFileSystemShutdown() {
+}
+
 void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {
+  filesystem::FileSystemClientPtr client;
+  binding_.Bind(GetProxy(&client));
+
   FileError error = FILE_ERROR_FAILED;
-  files()->OpenFileSystem("temp", GetProxy(directory), mojo::Capture(&error));
+  files()->OpenFileSystem("temp", GetProxy(directory), client.Pass(),
+                          mojo::Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(FILE_ERROR_OK, error);
 }

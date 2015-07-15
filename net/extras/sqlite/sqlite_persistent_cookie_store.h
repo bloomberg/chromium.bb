@@ -48,6 +48,13 @@ class SQLitePersistentCookieStore
   // Deletes the cookies whose origins match those given in |cookies|.
   void DeleteAllInList(const std::list<CookieOrigin>& cookies);
 
+  // Closes the database backend and fires |callback| on the worker
+  // thread. After Close() is called, further calls to the
+  // PersistentCookieStore methods will do nothing, with Load() and
+  // LoadCookiesForKey() additionally calling their callback methods
+  // with an empty vector of CanonicalCookies.
+  void Close(const base::Closure& callback);
+
   // CookieMonster::PersistentCookieStore:
   void Load(const LoadedCallback& loaded_callback) override;
   void LoadCookiesForKey(const std::string& key,

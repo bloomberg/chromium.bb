@@ -28,6 +28,10 @@ class DirectoryImpl : public Directory {
                 scoped_ptr<base::ScopedTempDir> temp_dir);
   ~DirectoryImpl() override;
 
+  void set_connection_error_handler(const mojo::Closure& error_handler) {
+    binding_.set_connection_error_handler(error_handler);
+  }
+
   // |Directory| implementation:
   void Read(const ReadCallback& callback) override;
   void OpenFile(const mojo::String& path,

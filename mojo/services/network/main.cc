@@ -8,7 +8,7 @@
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new NetworkServiceDelegate);
+  mojo::ApplicationRunner runner(new mojo::NetworkServiceDelegate);
   runner.set_message_loop_type(base::MessageLoop::TYPE_IO);
   return runner.Run(shell_handle);
 }

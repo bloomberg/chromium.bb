@@ -133,10 +133,11 @@ def _build_command_line(config, args, apptest):
   """Build the apptest command line. This value isn't executed on Android."""
   paths = Paths(config)
   # On Linux, always run tests with xvfb, but not for --gtest_list_tests.
-  use_xvfb = (config.target_os == Config.OS_LINUX and
-              not "--gtest_list_tests" in args)
-  prefix = [paths.xvfb, paths.build_dir] if use_xvfb else []
-  return prefix + [paths.mojo_runner] + args + [apptest]
+  not_list_tests = not "--gtest_list_tests" in args
+  use_xvfb = config.target_os == Config.OS_LINUX and not_list_tests
+  xvfb_prefix = [paths.xvfb, paths.build_dir] if use_xvfb else []
+  data_dir = ["--use-temporary-user-data-dir"] if not_list_tests else []
+  return xvfb_prefix + [paths.mojo_runner] + data_dir + args + [apptest]
 
 
 # TODO(msw): Determine proper test timeout durations (starting small).

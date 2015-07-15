@@ -26,7 +26,8 @@ class ScopedMojoFilesystemVFS;
 // #define. We need to have two different implementations because the mojo
 // version derives from mojo::test::ApplicationTestBase instead of
 // testing::Test.
-class SQLTestBase : public mojo::test::ApplicationTestBase {
+class SQLTestBase : public mojo::test::ApplicationTestBase,
+                    public filesystem::FileSystemClient {
  public:
   SQLTestBase();
   ~SQLTestBase() override;
@@ -68,6 +69,9 @@ class SQLTestBase : public mojo::test::ApplicationTestBase {
   void SetUp() override;
   void TearDown() override;
 
+  // Overridden from FileSystemClient:
+  void OnFileSystemShutdown() override;
+
  protected:
   filesystem::FileSystemPtr& files() { return files_; }
 
@@ -75,6 +79,7 @@ class SQLTestBase : public mojo::test::ApplicationTestBase {
   filesystem::FileSystemPtr files_;
 
   scoped_ptr<ScopedMojoFilesystemVFS> vfs_;
+  mojo::Binding<filesystem::FileSystemClient> binding_;
   sql::Connection db_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLTestBase);

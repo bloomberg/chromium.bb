@@ -13,7 +13,8 @@ using mojo::Capture;
 
 namespace sql {
 
-SQLTestBase::SQLTestBase() {
+SQLTestBase::SQLTestBase()
+    : binding_(this) {
 }
 
 SQLTestBase::~SQLTestBase() {
@@ -136,9 +137,13 @@ void SQLTestBase::SetUp() {
   request->url = mojo::String::From("mojo:filesystem");
   application_impl()->ConnectToService(request.Pass(), &files_);
 
+  filesystem::FileSystemClientPtr client;
+  binding_.Bind(GetProxy(&client));
+
   filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
   filesystem::DirectoryPtr directory;
-  files()->OpenFileSystem("temp", GetProxy(&directory), Capture(&error));
+  files()->OpenFileSystem("temp", GetProxy(&directory), client.Pass(),
+                          Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
   ASSERT_EQ(filesystem::FILE_ERROR_OK, error);
 
@@ -151,6 +156,9 @@ void SQLTestBase::TearDown() {
   vfs_.reset();
 
   ApplicationTestBase::TearDown();
+}
+
+void SQLTestBase::OnFileSystemShutdown() {
 }
 
 }  // namespace sql

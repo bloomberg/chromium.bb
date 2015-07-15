@@ -127,9 +127,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
     pool_owner_.reset(new base::SequencedWorkerPoolOwner(3, "Background Pool"));
   }
 
-  void CreateAndLoad(bool crypt_cookies,
-                     bool restore_old_session_cookies,
-                     CanonicalCookieVector* cookies) {
+  void Create(bool crypt_cookies, bool restore_old_session_cookies) {
     if (crypt_cookies)
       cookie_crypto_delegate_.reset(new CookieCryptor());
 
@@ -137,6 +135,12 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
         temp_dir_.path().Append(kCookieFilename), client_task_runner(),
         background_task_runner(), restore_old_session_cookies,
         cookie_crypto_delegate_.get());
+  }
+
+  void CreateAndLoad(bool crypt_cookies,
+                     bool restore_old_session_cookies,
+                     CanonicalCookieVector* cookies) {
+    Create(crypt_cookies, restore_old_session_cookies);
     Load(cookies);
   }
 
@@ -658,6 +662,36 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   EXPECT_NE(0U, contents.length());
   EXPECT_EQ(contents.find("encrypted_value123XYZ"), std::string::npos);
   EXPECT_EQ(contents.find("something456ABC"), std::string::npos);
+}
+
+namespace {
+void WasCalledWithNoCookies(bool* was_called_with_no_cookies,
+                            const std::vector<CanonicalCookie*>& cookies) {
+  *was_called_with_no_cookies = cookies.empty();
+}
+}
+
+TEST_F(SQLitePersistentCookieStoreTest, EmptyLoadAfterClose) {
+  // Create unencrypted cookie store and write something to it.
+  InitializeStore(false, false);
+  AddCookie("name", "value123XYZ", "foo.bar", "/", base::Time::Now());
+  DestroyStore();
+
+  // Create the cookie store, but immediately close it.
+  Create(false, false);
+  store_->Close(base::Closure());
+
+  // Expect any attempt to call Load() to synchronously respond with an empty
+  // vector of cookies after we've Close()d the database.
+  bool was_called_with_no_cookies = false;
+  store_->Load(base::Bind(WasCalledWithNoCookies, &was_called_with_no_cookies));
+  EXPECT_TRUE(was_called_with_no_cookies);
+
+  // Same with trying to load a specific cookie.
+  was_called_with_no_cookies = false;
+  store_->LoadCookiesForKey("foo.bar", base::Bind(WasCalledWithNoCookies,
+                                                  &was_called_with_no_cookies));
+  EXPECT_TRUE(was_called_with_no_cookies);
 }
 
 }  // namespace net

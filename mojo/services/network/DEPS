@@ -1,7 +1,10 @@
 include_rules = [
   "+base",
+  "+components/filesystem/public/interfaces",
   "+mojo/application",
   "+mojo/common",
   "+mojo/services",
+  "+mojo/util",
   "+net",
+  "+sql",
 ]

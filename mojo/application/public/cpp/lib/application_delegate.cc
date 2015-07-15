@@ -24,6 +24,10 @@ bool ApplicationDelegate::ConfigureOutgoingConnection(
   return true;
 }
 
+bool ApplicationDelegate::OnShellConnectionError() {
+  return true;
+}
+
 void ApplicationDelegate::Quit() {
 }
 
