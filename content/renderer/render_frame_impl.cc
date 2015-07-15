@@ -116,7 +116,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -1993,14 +1992,6 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 #else
   return NULL;
 #endif  // defined(ENABLE_PLUGINS)
-}
-
-blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
-    blink::WebLocalFrame* frame,
-    const blink::WebURL& url,
-    WebMediaPlayerClient* client,
-    WebContentDecryptionModule* initial_cdm) {
-  return createMediaPlayer(frame, url, client, client, initial_cdm);
 }
 
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(

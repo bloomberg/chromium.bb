@@ -33,7 +33,6 @@
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -319,14 +318,6 @@ void HTMLDocument::initializeLayerTreeView() {
 
 blink::WebLayerTreeView* HTMLDocument::layerTreeView() {
   return web_layer_tree_view_impl_.get();
-}
-
-blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
-    blink::WebLocalFrame* frame,
-    const blink::WebURL& url,
-    blink::WebMediaPlayerClient* client,
-    blink::WebContentDecryptionModule* initial_cdm) {
-  return createMediaPlayer(frame, url, client, client, initial_cdm);
 }
 
 blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(

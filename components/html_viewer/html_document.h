@@ -94,12 +94,6 @@ class HTMLDocument : public blink::WebViewClient,
   blink::WebLayerTreeView* layerTreeView() override;
 
   // WebFrameClient methods:
-  // TODO(srirama): Remove this method once blink updated.
-  virtual blink::WebMediaPlayer* createMediaPlayer(
-      blink::WebLocalFrame* frame,
-      const blink::WebURL& url,
-      blink::WebMediaPlayerClient* client,
-      blink::WebContentDecryptionModule* initial_cdm);
   virtual blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
