@@ -245,7 +245,5 @@ class RemoteTryJob(object):
     """Get link to the waterfall for the user."""
     # Note that this will only show the jobs submitted by the user in the last
     # 24 hours.
-    return '%s/waterfall?committer=%s&builder=%s' % (
-        constants.TRYBOT_DASHBOARD,
-        self.user_email,
-        '&builder='.join(self.bots))
+    return '%s/waterfall?committer=%s' % (
+        constants.TRYBOT_DASHBOARD, self.user_email)
