@@ -74,6 +74,12 @@ class BASE_EXPORT HistogramBase {
     // the source histogram!).
     kIPCSerializationSourceFlag = 0x10,
 
+    // Indicates that a callback exists for when a new sample is recorded on
+    // this histogram. We store this as a flag with the histogram since
+    // histograms can be in performance critical code, and this allows us
+    // to shortcut looking up the callback if it doesn't exist.
+    kCallbackExists = 0x20,
+
     // Only for Histogram and its sub classes: fancy bucket-naming support.
     kHexRangePrintingFlag = 0x8000,
   };
@@ -171,6 +177,10 @@ class BASE_EXPORT HistogramBase {
   void WriteAsciiBucketValue(Count current,
                              double scaled_sum,
                              std::string* output) const;
+
+  // Retrieves the callback for this histogram, if one exists, and runs it
+  // passing |sample| as the parameter.
+  void FindAndRunCallback(Sample sample) const;
 
  private:
   const std::string histogram_name_;

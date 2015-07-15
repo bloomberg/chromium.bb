@@ -280,6 +280,8 @@ void Histogram::Add(int value) {
   if (value < 0)
     value = 0;
   samples_->Accumulate(value, 1);
+
+  FindAndRunCallback(value);
 }
 
 scoped_ptr<HistogramSamples> Histogram::SnapshotSamples() const {
