@@ -287,23 +287,15 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     AddTestData(CreateBigMenu());
 
-    // Calculate the preferred size so that one button doesn't fit, which
-    // triggers the overflow button to appear. We have to do this incrementally
-    // as there isn't a good way to determine the point at which the overflow
-    // button is shown.
-    //
-    // This code looks a bit hacky, but I've written it so that it shouldn't
-    // be dependant upon any of the layout code in BookmarkBarView. Instead
-    // we brute force search for a size that triggers the overflow button.
-    bb_view_pref_ = bb_view_->GetPreferredSize();
-    bb_view_pref_.set_width(1000);
-    do {
-      bb_view_pref_.set_width(bb_view_pref_.width() - 25);
-      bb_view_->SetBounds(0, 0, bb_view_pref_.width(), bb_view_pref_.height());
-      bb_view_->Layout();
-    } while (GetBookmarkButton(6)->visible());
-
+    // Create the Widget. Note the initial size is given by GetPreferredSize()
+    // during initialization. This occurs after the WidgetDelegate provides
+    // |bb_view_| as the contents view and adds it to the hierarchy.
     ViewEventTestBase::SetUp();
+
+    // Verify the layout triggered by the initial size preserves the overflow
+    // state calculated in GetPreferredSize().
+    EXPECT_TRUE(GetBookmarkButton(5)->visible());
+    EXPECT_FALSE(GetBookmarkButton(6)->visible());
   }
 
   void TearDown() override {
@@ -333,7 +325,25 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
  protected:
   views::View* CreateContentsView() override { return bb_view_.get(); }
 
-  gfx::Size GetPreferredSize() const override { return bb_view_pref_; }
+  gfx::Size GetPreferredSize() const override {
+    // Calculate the preferred size so that one button doesn't fit, which
+    // triggers the overflow button to appear. We have to do this incrementally
+    // as there isn't a good way to determine the point at which the overflow
+    // button is shown.
+    //
+    // This code looks a bit hacky, but it is written so that it shouldn't
+    // depend on any of the layout code in BookmarkBarView, or extra buttons
+    // added to the right of the bookmarks. Instead, brute force search for a
+    // size that triggers the overflow button.
+    gfx::Size size = bb_view_->GetPreferredSize();
+    size.set_width(1000);
+    do {
+      size.set_width(size.width() - 25);
+      bb_view_->SetBounds(0, 0, size.width(), size.height());
+      bb_view_->Layout();
+    } while (bb_view_->GetBookmarkButton(6)->visible());
+    return size;
+  }
 
   views::LabelButton* GetBookmarkButton(int view_index) {
     return bb_view_->GetBookmarkButton(view_index);
@@ -379,7 +389,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_->AddURL(of2, 1, ASCIIToUTF16("of2b"), GURL(test_base + "of2b"));
   }
 
-  gfx::Size bb_view_pref_;
   scoped_ptr<ChromeContentClient> content_client_;
   scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
   scoped_ptr<TestingProfile> profile_;

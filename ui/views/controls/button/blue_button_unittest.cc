@@ -9,51 +9,48 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 
 namespace views {
 
-namespace {
-
-class TestBlueButton : public BlueButton {
- public:
-  TestBlueButton() : BlueButton(NULL, base::ASCIIToUTF16("foo")) {}
-  ~TestBlueButton() override {}
-
-  using BlueButton::OnNativeThemeChanged;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestBlueButton);
-};
-
-}  // namespace
-
-typedef ViewsTestBase BlueButtonTest;
+using BlueButtonTest = test::WidgetTest;
 
 TEST_F(BlueButtonTest, Border) {
+  // The buttons must be added to a Widget so that borders are correctly
+  // applied once the NativeTheme is determined.
+  Widget* widget = CreateTopLevelPlatformWidget();
+
   // Compared to a normal LabelButton...
-  LabelButton button(NULL, base::ASCIIToUTF16("foo"));
-  button.SetBoundsRect(gfx::Rect(gfx::Point(0, 0), button.GetPreferredSize()));
-  gfx::Canvas button_canvas(button.bounds().size(), 1.0, true);
-  button.border()->Paint(button, &button_canvas);
+  LabelButton* button = new LabelButton(nullptr, base::ASCIIToUTF16("foo"));
+  EXPECT_EQ(Button::STYLE_TEXTBUTTON, button->style());
+  EXPECT_TRUE(button->focus_painter());
+
+  // Switch to the same style as BlueButton for a more compelling comparison.
+  button->SetStyle(Button::STYLE_BUTTON);
+  EXPECT_EQ(Button::STYLE_BUTTON, button->style());
+  EXPECT_FALSE(button->focus_painter());
+
+  widget->GetContentsView()->AddChildView(button);
+  button->SizeToPreferredSize();
+  gfx::Canvas button_canvas(button->size(), 1.0, true);
+  button->border()->Paint(*button, &button_canvas);
 
   // ... a special blue border should be used.
-  TestBlueButton blue_button;
-  blue_button.SetBoundsRect(gfx::Rect(gfx::Point(0, 0),
-                            blue_button.GetPreferredSize()));
-  gfx::Canvas canvas(blue_button.bounds().size(), 1.0, true);
-  blue_button.border()->Paint(blue_button, &canvas);
-  EXPECT_EQ(button.GetText(), blue_button.GetText());
+  BlueButton* blue_button = new BlueButton(nullptr, base::ASCIIToUTF16("foo"));
+  EXPECT_EQ(Button::STYLE_BUTTON, blue_button->style());
+  EXPECT_FALSE(blue_button->focus_painter());
+
+  widget->GetContentsView()->AddChildView(blue_button);
+  blue_button->SizeToPreferredSize();
+
+  gfx::Canvas canvas(blue_button->size(), 1.0, true);
+  blue_button->border()->Paint(*blue_button, &canvas);
+  EXPECT_EQ(button->GetText(), blue_button->GetText());
+  EXPECT_EQ(button->size(), blue_button->size());
   EXPECT_FALSE(gfx::BitmapsAreEqual(button_canvas.ExtractImageRep().sk_bitmap(),
                                     canvas.ExtractImageRep().sk_bitmap()));
 
-  // Make sure it's still used after the native theme "changes".
-  blue_button.OnNativeThemeChanged(NULL);
-  gfx::Canvas canvas2(blue_button.bounds().size(), 1.0, true);
-  blue_button.border()->Paint(blue_button, &canvas2);
-
-  EXPECT_TRUE(gfx::BitmapsAreEqual(canvas.ExtractImageRep().sk_bitmap(),
-                                   canvas2.ExtractImageRep().sk_bitmap()));
+  widget->CloseNow();
 }
 
 }  // namespace views

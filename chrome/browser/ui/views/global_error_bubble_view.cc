@@ -92,7 +92,6 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   base::string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::BlueButton> accept_button(
       new views::BlueButton(this, accept_string));
-  accept_button->SetStyle(views::Button::STYLE_BUTTON);
   accept_button->SetIsDefault(true);
   accept_button->set_tag(TAG_ACCEPT_BUTTON);
 

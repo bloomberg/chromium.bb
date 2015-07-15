@@ -45,9 +45,6 @@ class PermissionMenuButton : public views::MenuButton,
                        bool show_menu_marker);
   ~PermissionMenuButton() override;
 
-  // Overridden from views::LabelButton.
-  void SetText(const base::string16& text) override;
-
   // Overridden from views::View.
   void GetAccessibleState(ui::AXViewState* state) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
@@ -76,22 +73,17 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
 PermissionMenuButton::~PermissionMenuButton() {
 }
 
-void PermissionMenuButton::SetText(const base::string16& text) {
-  MenuButton::SetText(text);
-  SizeToPreferredSize();
-}
-
 void PermissionMenuButton::GetAccessibleState(ui::AXViewState* state) {
   MenuButton::GetAccessibleState(state);
   state->value = GetText();
 }
 
 void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  SetTextColor(views::Button::STATE_NORMAL, GetNativeTheme()->GetSystemColor(
+  SetTextColor(views::Button::STATE_NORMAL, theme->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetTextColor(views::Button::STATE_HOVERED, GetNativeTheme()->GetSystemColor(
+  SetTextColor(views::Button::STATE_HOVERED, theme->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetTextColor(views::Button::STATE_DISABLED, GetNativeTheme()->GetSystemColor(
+  SetTextColor(views::Button::STATE_DISABLED, theme->GetSystemColor(
       ui::NativeTheme::kColorId_LabelDisabledColor));
 }
 
@@ -213,6 +205,7 @@ void PermissionSelectorView::PermissionChanged(
   menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
       permission.type, permission.setting, permission.default_setting,
       content_settings::SETTING_SOURCE_USER));
+  menu_button_->SizeToPreferredSize();
 
   FOR_EACH_OBSERVER(PermissionSelectorViewObserver,
                     observer_list_,

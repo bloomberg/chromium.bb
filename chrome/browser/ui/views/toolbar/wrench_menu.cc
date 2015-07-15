@@ -268,8 +268,8 @@ class InMenuButton : public LabelButton {
 
     in_menu_background_ = new InMenuButtonBackground(type);
     set_background(in_menu_background_);
-
-    OnNativeThemeChanged(NULL);
+    SetBorder(views::Border::CreateEmptyBorder(0, kHorizontalPadding, 0,
+                                               kHorizontalPadding));
   }
 
   void SetOtherButtons(const InMenuButton* left, const InMenuButton* right) {
@@ -279,8 +279,6 @@ class InMenuButton : public LabelButton {
   // views::LabelButton
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     const MenuConfig& menu_config = MenuConfig::instance(theme);
-    SetBorder(views::Border::CreateEmptyBorder(
-        0, kHorizontalPadding, 0, kHorizontalPadding));
     SetFontList(menu_config.font_list);
 
     if (theme) {

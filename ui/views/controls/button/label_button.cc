@@ -83,10 +83,9 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  // Initialize the colors, border, and layout.
-  SetStyle(style_);
-
-  SetAccessibleName(text);
+  // Inset the button focus rect from the actual border; roughly match Windows.
+  SetFocusPainter(
+      Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(3, 3, 3, 3)));
 }
 
 LabelButton::~LabelButton() {}
@@ -189,22 +188,21 @@ void LabelButton::SetIsDefault(bool is_default) {
 }
 
 void LabelButton::SetStyle(ButtonStyle style) {
+  // All callers currently pass STYLE_BUTTON, and should only call this once, to
+  // change from the default style.
+  DCHECK_EQ(style, STYLE_BUTTON);
+  DCHECK_EQ(style_, STYLE_TEXTBUTTON);
+  DCHECK(!GetWidget()) << "Can't change button style after adding to a Widget.";
+
   style_ = style;
-  // Inset the button focus rect from the actual border; roughly match Windows.
-  if (style == STYLE_BUTTON) {
-    SetFocusPainter(nullptr);
-  } else {
-    SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(
-                        gfx::Insets(3, 3, 3, 3)));
-  }
-  if (style == STYLE_BUTTON) {
-    label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    SetFocusable(true);
-  }
-  if (style == STYLE_BUTTON)
-    SetMinSize(gfx::Size(70, 33));
-  OnNativeThemeChanged(GetNativeTheme());
-  ResetCachedPreferredSize();
+
+  SetFocusPainter(nullptr);
+  label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  SetFocusable(true);
+  SetMinSize(gfx::Size(70, 33));
+
+  // Themed borders will be set once the button is added to a Widget, since that
+  // provides the value of GetNativeTheme().
 }
 
 void LabelButton::SetImageLabelSpacing(int spacing) {

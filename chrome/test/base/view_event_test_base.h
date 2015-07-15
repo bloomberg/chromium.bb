@@ -85,6 +85,11 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // Destroys the window.
   void TearDown() override;
 
+  // Returns an empty Size. Subclasses that want a preferred size other than
+  // that of the View returned by CreateContentsView should override this
+  // appropriately.
+  virtual gfx::Size GetPreferredSize() const;
+
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override;
   views::View* GetContentsView() override;
@@ -107,11 +112,6 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // Invoke from test main. Shows the window, starts the message loop and
   // schedules a task that invokes DoTestOnMessageLoop.
   void StartMessageLoopAndRunTest();
-
-  // Returns an empty Size. Subclasses that want a preferred size other than
-  // that of the View returned by CreateContentsView should override this
-  // appropriately.
-  virtual gfx::Size GetPreferredSize() const;
 
   // Creates a task that calls the specified method back. The specified
   // method is called in such a way that if there are any test failures
