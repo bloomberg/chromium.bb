@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_management.h"
-#include "chrome/browser/extensions/external_component_loader.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "grit/extensions_strings.h"
@@ -125,17 +124,13 @@ bool StandardManagementPolicyProvider::UserMayLoad(
 bool StandardManagementPolicyProvider::UserMayModifySettings(
     const Extension* extension,
     base::string16* error) const {
-  return AdminPolicyIsModifiable(extension, error) ||
-         (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT &&
-          ExternalComponentLoader::IsModifiable(extension));
+  return AdminPolicyIsModifiable(extension, error);
 }
 
 bool StandardManagementPolicyProvider::MustRemainEnabled(
     const Extension* extension,
     base::string16* error) const {
-  return !AdminPolicyIsModifiable(extension, error) ||
-         (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT &&
-          ExternalComponentLoader::IsModifiable(extension));
+  return !AdminPolicyIsModifiable(extension, error);
 }
 
 bool StandardManagementPolicyProvider::MustRemainDisabled(

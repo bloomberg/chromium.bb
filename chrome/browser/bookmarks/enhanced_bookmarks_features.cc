@@ -4,71 +4,47 @@
 
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/variations/variations_associated_data.h"
-
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "extensions/common/features/feature.h"
-#include "extensions/common/features/feature_provider.h"
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 namespace {
 
 const char kFieldTrialName[] = "EnhancedBookmarks";
 
-#if !defined(OS_ANDROID)
-
-bool GetBookmarksExperimentExtensionID(std::string* extension_id) {
-  *extension_id = variations::GetVariationParamValue(
-      kFieldTrialName, "id");
-  if (extension_id->empty())
-    return false;
-
-#if defined(OS_IOS)
-  return true;
-#else
-  const extensions::FeatureProvider* feature_provider =
-      extensions::FeatureProvider::GetPermissionFeatures();
-  extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
-  return feature && feature->IsIdInWhitelist(*extension_id);
-#endif  // defined(OS_IOS)
-}
-
-#endif  // !defined(OS_ANDROID)
-
 }  // namespace
 
 bool IsEnhancedBookmarksEnabled() {
-  std::string extension_id;
-  return IsEnhancedBookmarksEnabled(&extension_id);
-}
+  // Enhanced bookmarks is not used on desktop, so it shouldn't be calling this
+  // function.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  NOTREACHED();
+#endif  // !defined(OS_IOS) || !defined(OS_ANDROID)
 
-bool IsEnhancedBookmarksEnabled(std::string* extension_id) {
-  // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
-  // "0" - user opted out. "1" is only possible on mobile as desktop needs a
-  // extension id that would not be available by just using the flag.
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // Tests use command line flag to force enhanced bookmark to be on.
-  bool opt_in = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                    switches::kEnhancedBookmarksExperiment) == "1";
-  if (opt_in)
+  // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".  "" -
+  // default, "0" - user opted out, "1" - user opted in.  Tests also use the
+  // command line flag to force enhanced bookmark to be on.
+  std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnhancedBookmarksExperiment);
+  if (switch_value == "1")
     return true;
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-  bool opt_out = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                     switches::kEnhancedBookmarksExperiment) == "0";
-
-  if (opt_out)
+  if (switch_value == "0")
     return false;
 
-#if defined(OS_ANDROID)
+#if defined(OS_IOS)
+  // Check that the "id" param is present. This is a legacy of the desktop
+  // implementation providing the extension id via param. This probably should
+  // be replaced with code that checks the experiment name instead.
+  if (variations::GetVariationParamValue(kFieldTrialName, "id").empty())
+    return false;
+#endif  // defined(OS_IOS)
+
   return true;
-#else
-  return GetBookmarksExperimentExtensionID(extension_id);
-#endif  // defined(OS_ANDROID)
 }
 
 bool IsEnableDomDistillerSet() {

@@ -2141,8 +2141,7 @@ void GetSanitizedEnabledFlags(
   *result = flags_storage->GetFlags();
 }
 
-bool SkipConditionalExperiment(const Experiment& experiment,
-                               FlagsStorage* flags_storage) {
+bool SkipConditionalExperiment(const Experiment& experiment) {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
 
 #if defined(OS_ANDROID)
@@ -2335,7 +2334,7 @@ void GetFlagsExperimentsData(FlagsStorage* flags_storage,
 
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& experiment = experiments[i];
-    if (SkipConditionalExperiment(experiment, flags_storage))
+    if (SkipConditionalExperiment(experiment))
       continue;
 
     base::DictionaryValue* data = new base::DictionaryValue();

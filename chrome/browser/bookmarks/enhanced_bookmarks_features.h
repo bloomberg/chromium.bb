@@ -5,20 +5,8 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_ENHANCED_BOOKMARKS_FEATURES_H_
 #define CHROME_BROWSER_BOOKMARKS_ENHANCED_BOOKMARKS_FEATURES_H_
 
-#include <string>
-
-#include "build/build_config.h"
-
-class PrefService;
-
 // Returns true if enhanced bookmarks is enabled.
 bool IsEnhancedBookmarksEnabled();
-
-// Returns true and sets |extension_id| if enhanced bookmarks experiment is
-// enabled. Returns false if no bookmark experiment or extension id is empty.
-// Besides, this method takes commandline flags into account before trying
-// to get an extension_id.
-bool IsEnhancedBookmarksEnabled(std::string* extension_id);
 
 // Returns true when flag enable-dom-distiller is set or enabled from Finch.
 bool IsEnableDomDistillerSet();
