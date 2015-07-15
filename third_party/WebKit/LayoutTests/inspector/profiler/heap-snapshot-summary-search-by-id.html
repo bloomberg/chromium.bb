@@ -59,7 +59,7 @@ function test()
                 view.performSearch({query: "@999", caseSensitive: false}, step5);
             }
 
-            function step5(callback, node)
+            function step5(node)
             {
                 if (node) {
                     InspectorTest.addResult("FAIL: found node @999");
@@ -82,7 +82,7 @@ function test()
                 view.performSearch({query: "@401", caseSensitive: false});
             }
 
-            function checkNodeIsSelected(constructorName, nodeId, onSuccess, callback, node)
+            function checkNodeIsSelected(constructorName, nodeId, onSuccess, node)
             {
                 if (!node) {
                     InspectorTest.addResult("FAIL: node @" + nodeId + " not found");
