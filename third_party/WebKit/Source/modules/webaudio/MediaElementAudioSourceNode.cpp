@@ -80,16 +80,19 @@ void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float so
         if (!numberOfChannels || numberOfChannels > AbstractAudioContext::maxNumberOfChannels() || !AudioUtilities::isValidAudioBufferSampleRate(sourceSampleRate)) {
             // process() will generate silence for these uninitialized values.
             WTF_LOG(Media, "MediaElementAudioSourceNode::setFormat(%u, %f) - unhandled format change", static_cast<unsigned>(numberOfChannels), sourceSampleRate);
+            // Synchronize with process().
+            Locker<MediaElementAudioSourceHandler> locker(*this);
             m_sourceNumberOfChannels = 0;
             m_sourceSampleRate = 0;
             return;
         }
 
+        // Synchronize with process() to protect m_sourceNumberOfChannels,
+        // m_sourceSampleRate, and m_multiChannelResampler.
+        Locker<MediaElementAudioSourceHandler> locker(*this);
+
         m_sourceNumberOfChannels = numberOfChannels;
         m_sourceSampleRate = sourceSampleRate;
-
-        // Synchronize with process().
-        Locker<MediaElementAudioSourceHandler> locker(*this);
 
         if (sourceSampleRate != sampleRate()) {
             double scaleFactor = sourceSampleRate / sampleRate();
@@ -152,16 +155,15 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
 {
     AudioBus* outputBus = output(0).bus();
 
-    if (!mediaElement() || !m_sourceNumberOfChannels || !m_sourceSampleRate) {
-        outputBus->zero();
-        return;
-    }
-
     // Use a tryLock() to avoid contention in the real-time audio thread.
     // If we fail to acquire the lock then the HTMLMediaElement must be in the middle of
     // reconfiguring its playback engine, so we output silence in this case.
     MutexTryLocker tryLocker(m_processLock);
     if (tryLocker.locked()) {
+        if (!mediaElement() || !m_sourceNumberOfChannels || !m_sourceSampleRate) {
+            outputBus->zero();
+            return;
+        }
         if (AudioSourceProvider* provider = mediaElement()->audioSourceProvider()) {
             // Grab data from the provider so that the element continues to make progress, even if
             // we're going to output silence anyway.
