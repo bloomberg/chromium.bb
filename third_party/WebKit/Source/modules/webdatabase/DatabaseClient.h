@@ -50,6 +50,8 @@ public:
     DatabaseClient();
     virtual ~DatabaseClient() { }
 
+    DECLARE_VIRTUAL_TRACE();
+
     virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) = 0;
 
     void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
@@ -61,7 +63,7 @@ public:
     void setInspectorAgent(InspectorDatabaseAgent*);
 
 private:
-    InspectorDatabaseAgent* m_inspectorAgent;
+    RawPtrWillBeMember<InspectorDatabaseAgent> m_inspectorAgent;
 };
 
 MODULES_EXPORT void provideDatabaseClientTo(Page&, PassOwnPtrWillBeRawPtr<DatabaseClient>);
