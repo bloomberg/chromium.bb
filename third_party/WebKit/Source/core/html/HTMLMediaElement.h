@@ -113,8 +113,9 @@ public:
     NetworkState networkState() const;
 
     String preload() const;
-    MediaPlayer::Preload effectivePreloadType() const;
     void setPreload(const AtomicString&);
+    MediaPlayer::Preload preloadType() const;
+    MediaPlayer::Preload effectivePreloadType() const;
 
     PassRefPtrWillBeRawPtr<TimeRanges> buffered() const;
     void load();
@@ -506,8 +507,6 @@ private:
 
     OwnPtr<MediaPlayer> m_player;
     WebLayer* m_webLayer;
-
-    MediaPlayer::Preload m_preload;
 
     DisplayMode m_displayMode;
 

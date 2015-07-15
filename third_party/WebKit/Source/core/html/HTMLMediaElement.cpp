@@ -334,7 +334,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_deferredLoadState(NotDeferred)
     , m_deferredLoadTimer(this, &HTMLMediaElement::deferredLoadTimerFired)
     , m_webLayer(nullptr)
-    , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
     , m_cachedTime(std::numeric_limits<double>::quiet_NaN())
     , m_fragmentEndTime(std::numeric_limits<double>::quiet_NaN())
@@ -534,20 +533,8 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == controlsAttr) {
         configureMediaControls();
     } else if (name == preloadAttr) {
-        if (equalIgnoringCase(value, "none")) {
-            m_preload = MediaPlayer::None;
-        } else if (equalIgnoringCase(value, "metadata")) {
-            m_preload = MediaPlayer::MetaData;
-        } else {
-            // The spec does not define an "invalid value default" but "auto" is suggested as the
-            // "missing value default", so use it for everything except "none" and "metadata"
-            m_preload = MediaPlayer::Auto;
-        }
-
-        // The attribute must be ignored if the autoplay attribute is present
         if (m_player)
             setPlayerPreload();
-
     } else if (name == mediagroupAttr && RuntimeEnabledFeatures::mediaControllerEnabled()) {
         setMediaGroup(value);
     } else {
@@ -992,7 +979,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
         ASSERT(!webMediaPlayer());
 
-        if (!m_havePreparedToPlay && !autoplay() && m_preload == MediaPlayer::None) {
+        if (!m_havePreparedToPlay && !autoplay() && preloadType() == MediaPlayer::None) {
             WTF_LOG(Media, "HTMLMediaElement::loadResource(%p) : Delaying load because preload == 'none'", this);
             deferLoad();
         } else {
@@ -1038,7 +1025,7 @@ void HTMLMediaElement::setPlayerPreload()
 {
     m_player->setPreload(effectivePreloadType());
 
-    if (loadIsDeferred() && m_preload != MediaPlayer::None)
+    if (loadIsDeferred() && preloadType() != MediaPlayer::None)
         startDeferredLoad();
 }
 
@@ -1615,7 +1602,7 @@ void HTMLMediaElement::seek(double time)
         return;
 
     // If the media engine has been told to postpone loading data, let it go ahead now.
-    if (m_preload < MediaPlayer::Auto && m_readyState < HAVE_FUTURE_DATA)
+    if (preloadType() < MediaPlayer::Auto && m_readyState < HAVE_FUTURE_DATA)
         prepareToPlay();
 
     // Get the current time before setting m_seeking, m_lastSeekTime is returned once it is set.
@@ -1880,16 +1867,13 @@ bool HTMLMediaElement::autoplay() const
 
 String HTMLMediaElement::preload() const
 {
-    switch (m_preload) {
+    switch (preloadType()) {
     case MediaPlayer::None:
         return "none";
-        break;
     case MediaPlayer::MetaData:
         return "metadata";
-        break;
     case MediaPlayer::Auto:
         return "auto";
-        break;
     }
 
     ASSERT_NOT_REACHED();
@@ -1902,9 +1886,40 @@ void HTMLMediaElement::setPreload(const AtomicString& preload)
     setAttribute(preloadAttr, preload);
 }
 
+MediaPlayer::Preload HTMLMediaElement::preloadType() const
+{
+    // TODO(philipj): The spec requires case-sensitive string matching:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28951
+    const AtomicString& preload = fastGetAttribute(preloadAttr);
+    if (equalIgnoringCase(preload, "none")) {
+        UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadNone);
+        return MediaPlayer::None;
+    }
+    if (equalIgnoringCase(preload, "metadata")) {
+        UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadMetadata);
+        return MediaPlayer::MetaData;
+    }
+    if (equalIgnoringCase(preload, "auto")) {
+        UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadAuto);
+        return MediaPlayer::Auto;
+    }
+
+    // "The attribute's missing value default is user-agent defined, though the
+    // Metadata state is suggested as a compromise between reducing server load
+    // and providing an optimal user experience."
+
+    // The spec does not define an invalid value default:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28950
+
+    // TODO(philipj): Try to make "metadata" the default preload state:
+    // https://crbug.com/310450
+    UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadDefault);
+    return MediaPlayer::Auto;
+}
+
 MediaPlayer::Preload HTMLMediaElement::effectivePreloadType() const
 {
-    return autoplay() ? MediaPlayer::Auto : m_preload;
+    return autoplay() ? MediaPlayer::Auto : preloadType();
 }
 
 void HTMLMediaElement::play()

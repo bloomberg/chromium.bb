@@ -790,6 +790,10 @@ public:
         V8SVGElement_OffsetLeft_AttributeGetter = 889,
         V8SVGElement_OffsetWidth_AttributeGetter = 890,
         V8SVGElement_OffsetHeight_AttributeGetter = 891,
+        HTMLMediaElementPreloadNone = 892,
+        HTMLMediaElementPreloadMetadata = 893,
+        HTMLMediaElementPreloadAuto = 894,
+        HTMLMediaElementPreloadDefault = 895,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
