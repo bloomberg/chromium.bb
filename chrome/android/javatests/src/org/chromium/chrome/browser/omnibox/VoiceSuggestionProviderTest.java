@@ -12,7 +12,7 @@ import android.text.TextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,13 +22,12 @@ import java.util.List;
  * Test the {@link VoiceSuggestionProvider} class through simulating omnibox results and voice
  * recognition result bundles.
  */
-public class VoiceSuggestionProviderTest extends ChromeShellTestBase {
+public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        loadNativeLibraryAndInitBrowserProcess();
     }
 
     private static OmniboxSuggestion createDummySuggestion(String text) {
