@@ -8,24 +8,25 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
-#include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
-namespace {
+#if defined(OS_ANDROID)
+#include "net/android/network_library.h"
+#endif  // OS_ANDROID
 
-// Maximum number of observations that can be held in the ObservationBuffer.
-const size_t kMaximumObservationsBufferSize = 300;
+namespace {
 
 // Default value of the half life (in seconds) for computing time weighted
 // percentiles. Every half life, the weight of all observations reduces by
@@ -127,20 +128,26 @@ NetworkQualityEstimator::NetworkQualityEstimator(
     : allow_localhost_requests_(allow_local_host_requests_for_tests),
       allow_small_responses_(allow_smaller_responses_for_tests),
       last_connection_change_(base::TimeTicks::Now()),
-      current_connection_type_(NetworkChangeNotifier::GetConnectionType()),
-      fastest_rtt_since_last_connection_change_(NetworkQuality::InvalidRTT()),
-      peak_kbps_since_last_connection_change_(
-          NetworkQuality::kInvalidThroughput),
+      current_network_id_(
+          NetworkID(NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
+                    std::string())),
       kbps_observations_(GetWeightMultiplierPerSecond(variation_params)),
       rtt_msec_observations_(GetWeightMultiplierPerSecond(variation_params)) {
   static_assert(kMinRequestDurationMicroseconds > 0,
                 "Minimum request duration must be > 0");
   static_assert(kDefaultHalfLifeSeconds > 0,
                 "Default half life duration must be > 0");
+  static_assert(kMaximumNetworkQualityCacheSize > 0,
+                "Size of the network quality cache must be > 0");
+  // This limit should not be increased unless the logic for removing the
+  // oldest cache entry is rewritten to use a doubly-linked-list LRU queue.
+  static_assert(kMaximumNetworkQualityCacheSize <= 10,
+                "Size of the network quality cache must <= 10");
 
   ObtainOperatingParams(variation_params);
-  AddDefaultEstimates();
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  current_network_id_ = GetCurrentNetworkID();
+  AddDefaultEstimates();
 }
 
 void NetworkQualityEstimator::ObtainOperatingParams(
@@ -182,18 +189,16 @@ void NetworkQualityEstimator::ObtainOperatingParams(
 
 void NetworkQualityEstimator::AddDefaultEstimates() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (default_observations_[current_connection_type_].rtt() !=
+  if (default_observations_[current_network_id_.type].rtt() !=
       NetworkQuality::InvalidRTT()) {
     rtt_msec_observations_.AddObservation(Observation(
-        default_observations_[current_connection_type_].rtt().InMilliseconds(),
+        default_observations_[current_network_id_.type].rtt().InMilliseconds(),
         base::TimeTicks::Now()));
   }
-
-  if (default_observations_[current_connection_type_]
+  if (default_observations_[current_network_id_.type]
           .downstream_throughput_kbps() != NetworkQuality::kInvalidThroughput) {
     kbps_observations_.AddObservation(
-        Observation(default_observations_[current_connection_type_]
+        Observation(default_observations_[current_network_id_.type]
                         .downstream_throughput_kbps(),
                     base::TimeTicks::Now()));
   }
@@ -250,8 +255,10 @@ void NetworkQualityEstimator::NotifyDataReceived(
     // headers were received.
     base::TimeDelta observed_rtt = headers_received_time - request_start_time;
     DCHECK_GE(observed_rtt, base::TimeDelta());
-    if (observed_rtt < fastest_rtt_since_last_connection_change_)
-      fastest_rtt_since_last_connection_change_ = observed_rtt;
+    if (observed_rtt < peak_network_quality_.rtt()) {
+      peak_network_quality_ = NetworkQuality(
+          observed_rtt, peak_network_quality_.downstream_throughput_kbps());
+    }
 
     rtt_msec_observations_.AddObservation(
         Observation(observed_rtt.InMilliseconds(), now));
@@ -292,8 +299,10 @@ void NetworkQualityEstimator::NotifyDataReceived(
       kbps = 1;
 
     if (kbps > 0) {
-      if (kbps > peak_kbps_since_last_connection_change_)
-        peak_kbps_since_last_connection_change_ = kbps;
+      if (kbps > peak_network_quality_.downstream_throughput_kbps()) {
+        peak_network_quality_ =
+            NetworkQuality(peak_network_quality_.rtt(), kbps);
+      }
 
       kbps_observations_.AddObservation(Observation(kbps, now));
     }
@@ -308,18 +317,18 @@ void NetworkQualityEstimator::RecordRTTUMA(int32_t estimated_value_msec,
   if (estimated_value_msec >= actual_value_msec) {
     base::HistogramBase* difference_rtt =
         GetHistogram("DifferenceRTTEstimatedAndActual.",
-                     current_connection_type_, 10 * 1000);  // 10 seconds
+                     current_network_id_.type, 10 * 1000);  // 10 seconds
     difference_rtt->Add(estimated_value_msec - actual_value_msec);
   } else {
     base::HistogramBase* difference_rtt =
         GetHistogram("DifferenceRTTActualAndEstimated.",
-                     current_connection_type_, 10 * 1000);  // 10 seconds
+                     current_network_id_.type, 10 * 1000);  // 10 seconds
     difference_rtt->Add(actual_value_msec - estimated_value_msec);
   }
 
   // Record all the RTT observations.
   base::HistogramBase* rtt_observations =
-      GetHistogram("RTTObservations.", current_connection_type_,
+      GetHistogram("RTTObservations.", current_network_id_.type,
                    10 * 1000);  // 10 seconds upper bound
   rtt_observations->Add(actual_value_msec);
 
@@ -331,91 +340,95 @@ void NetworkQualityEstimator::RecordRTTUMA(int32_t estimated_value_msec,
   // Record the accuracy of estimation by recording the ratio of estimated
   // value to the actual value.
   base::HistogramBase* ratio_median_rtt = GetHistogram(
-      "RatioEstimatedToActualRTT.", current_connection_type_, 1000);
+      "RatioEstimatedToActualRTT.", current_network_id_.type, 1000);
   ratio_median_rtt->Add(ratio);
 }
 
 void NetworkQualityEstimator::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (fastest_rtt_since_last_connection_change_ !=
-      NetworkQuality::InvalidRTT()) {
-    switch (current_connection_type_) {
+  if (peak_network_quality_.rtt() != NetworkQuality::InvalidRTT()) {
+    switch (current_network_id_.type) {
       case NetworkChangeNotifier::CONNECTION_UNKNOWN:
         UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Unknown",
-                            fastest_rtt_since_last_connection_change_);
+                            peak_network_quality_.rtt());
         break;
       case NetworkChangeNotifier::CONNECTION_ETHERNET:
         UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Ethernet",
-                            fastest_rtt_since_last_connection_change_);
+                            peak_network_quality_.rtt());
         break;
       case NetworkChangeNotifier::CONNECTION_WIFI:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Wifi",
-                            fastest_rtt_since_last_connection_change_);
+        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Wifi", peak_network_quality_.rtt());
         break;
       case NetworkChangeNotifier::CONNECTION_2G:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.2G",
-                            fastest_rtt_since_last_connection_change_);
+        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.2G", peak_network_quality_.rtt());
         break;
       case NetworkChangeNotifier::CONNECTION_3G:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.3G",
-                            fastest_rtt_since_last_connection_change_);
+        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.3G", peak_network_quality_.rtt());
         break;
       case NetworkChangeNotifier::CONNECTION_4G:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.4G",
-                            fastest_rtt_since_last_connection_change_);
+        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.4G", peak_network_quality_.rtt());
         break;
       case NetworkChangeNotifier::CONNECTION_NONE:
-        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.None",
-                            fastest_rtt_since_last_connection_change_);
+        UMA_HISTOGRAM_TIMES("NQE.FastestRTT.None", peak_network_quality_.rtt());
         break;
       case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
         UMA_HISTOGRAM_TIMES("NQE.FastestRTT.Bluetooth",
-                            fastest_rtt_since_last_connection_change_);
+                            peak_network_quality_.rtt());
         break;
       default:
-        NOTREACHED();
+        NOTREACHED() << "Unexpected connection type = "
+                     << current_network_id_.type;
         break;
     }
   }
 
-  if (peak_kbps_since_last_connection_change_ !=
+  if (peak_network_quality_.downstream_throughput_kbps() !=
       NetworkQuality::kInvalidThroughput) {
-    switch (current_connection_type_) {
+    switch (current_network_id_.type) {
       case NetworkChangeNotifier::CONNECTION_UNKNOWN:
-        UMA_HISTOGRAM_COUNTS("NQE.PeakKbps.Unknown",
-                             peak_kbps_since_last_connection_change_);
+        UMA_HISTOGRAM_COUNTS(
+            "NQE.PeakKbps.Unknown",
+            peak_network_quality_.downstream_throughput_kbps());
         break;
       case NetworkChangeNotifier::CONNECTION_ETHERNET:
-        UMA_HISTOGRAM_COUNTS("NQE.PeakKbps.Ethernet",
-                             peak_kbps_since_last_connection_change_);
+        UMA_HISTOGRAM_COUNTS(
+            "NQE.PeakKbps.Ethernet",
+            peak_network_quality_.downstream_throughput_kbps());
         break;
       case NetworkChangeNotifier::CONNECTION_WIFI:
-        UMA_HISTOGRAM_COUNTS("NQE.PeakKbps.Wifi",
-                             peak_kbps_since_last_connection_change_);
+        UMA_HISTOGRAM_COUNTS(
+            "NQE.PeakKbps.Wifi",
+            peak_network_quality_.downstream_throughput_kbps());
         break;
       case NetworkChangeNotifier::CONNECTION_2G:
-        UMA_HISTOGRAM_COUNTS("NQE.PeakKbps.2G",
-                             peak_kbps_since_last_connection_change_);
+        UMA_HISTOGRAM_COUNTS(
+            "NQE.PeakKbps.2G",
+            peak_network_quality_.downstream_throughput_kbps());
         break;
       case NetworkChangeNotifier::CONNECTION_3G:
-        UMA_HISTOGRAM_COUNTS("NQE.PeakKbps.3G",
-                             peak_kbps_since_last_connection_change_);
+        UMA_HISTOGRAM_COUNTS(
+            "NQE.PeakKbps.3G",
+            peak_network_quality_.downstream_throughput_kbps());
         break;
       case NetworkChangeNotifier::CONNECTION_4G:
-        UMA_HISTOGRAM_COUNTS("NQE.PeakKbps.4G",
-                             peak_kbps_since_last_connection_change_);
+        UMA_HISTOGRAM_COUNTS(
+            "NQE.PeakKbps.4G",
+            peak_network_quality_.downstream_throughput_kbps());
         break;
       case NetworkChangeNotifier::CONNECTION_NONE:
-        UMA_HISTOGRAM_COUNTS("NQE.PeakKbps.None",
-                             peak_kbps_since_last_connection_change_);
+        UMA_HISTOGRAM_COUNTS(
+            "NQE.PeakKbps.None",
+            peak_network_quality_.downstream_throughput_kbps());
         break;
       case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-        UMA_HISTOGRAM_COUNTS("NQE.PeakKbps.Bluetooth",
-                             peak_kbps_since_last_connection_change_);
+        UMA_HISTOGRAM_COUNTS(
+            "NQE.PeakKbps.Bluetooth",
+            peak_network_quality_.downstream_throughput_kbps());
         break;
       default:
-        NOTREACHED();
+        NOTREACHED() << "Unexpected connection type = "
+                     << current_network_id_.type;
         break;
     }
   }
@@ -424,7 +437,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   if (GetEstimate(&network_quality)) {
     // Add the 50th percentile value.
     base::HistogramBase* rtt_percentile =
-        GetHistogram("RTT.Percentile50.", current_connection_type_,
+        GetHistogram("RTT.Percentile50.", current_network_id_.type,
                      10 * 1000);  // 10 seconds
     rtt_percentile->Add(network_quality.rtt().InMilliseconds());
 
@@ -433,32 +446,34 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
     for (size_t i = 0; i < arraysize(kPercentiles); ++i) {
       network_quality = GetEstimate(kPercentiles[i]);
 
-      char percentile_stringified[20];
-      base::strings::SafeSPrintf(percentile_stringified, "%d", kPercentiles[i]);
-
       rtt_percentile = GetHistogram(
-          "RTT.Percentile" + std::string(percentile_stringified) + ".",
-          current_connection_type_, 10 * 1000);  // 10 seconds
+          "RTT.Percentile" + base::IntToString(kPercentiles[i]) + ".",
+          current_network_id_.type, 10 * 1000);  // 10 seconds
       rtt_percentile->Add(network_quality.rtt().InMilliseconds());
     }
   }
 
+  // Write the estimates of the previous network to the cache.
+  CacheNetworkQualityEstimate();
+
+  // Clear the local state.
   last_connection_change_ = base::TimeTicks::Now();
-  peak_kbps_since_last_connection_change_ = NetworkQuality::kInvalidThroughput;
-  fastest_rtt_since_last_connection_change_ = NetworkQuality::InvalidRTT();
+  peak_network_quality_ = NetworkQuality();
   kbps_observations_.Clear();
   rtt_msec_observations_.Clear();
-  current_connection_type_ = type;
+  current_network_id_ = GetCurrentNetworkID();
 
-  AddDefaultEstimates();
+  // Read any cached estimates for the new network. If cached estimates are
+  // unavailable, add the default estimates.
+  if (!ReadCachedNetworkQualityEstimate())
+    AddDefaultEstimates();
   estimated_median_network_quality_ = NetworkQuality();
 }
 
 NetworkQuality NetworkQualityEstimator::GetPeakEstimate() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return NetworkQuality(fastest_rtt_since_last_connection_change_,
-                        peak_kbps_since_last_connection_change_);
+  return peak_network_quality_;
 }
 
 bool NetworkQualityEstimator::GetEstimate(NetworkQuality* median) const {
@@ -468,17 +483,6 @@ bool NetworkQualityEstimator::GetEstimate(NetworkQuality* median) const {
   }
   *median = GetEstimate(50);
   return true;
-}
-
-size_t NetworkQualityEstimator::GetMaximumObservationBufferSizeForTests()
-    const {
-  return kMaximumObservationsBufferSize;
-}
-
-bool NetworkQualityEstimator::VerifyBufferSizeForTests(
-    size_t expected_size) const {
-  return kbps_observations_.Size() == expected_size &&
-         rtt_msec_observations_.Size() == expected_size;
 }
 
 NetworkQualityEstimator::Observation::Observation(int32_t value,
@@ -505,13 +509,15 @@ NetworkQualityEstimator::ObservationBuffer::~ObservationBuffer() {
 
 void NetworkQualityEstimator::ObservationBuffer::AddObservation(
     const Observation& observation) {
-  DCHECK_LE(observations_.size(), kMaximumObservationsBufferSize);
+  DCHECK_LE(observations_.size(),
+            static_cast<size_t>(kMaximumObservationsBufferSize));
   // Evict the oldest element if the buffer is already full.
   if (observations_.size() == kMaximumObservationsBufferSize)
     observations_.pop_front();
 
   observations_.push_back(observation);
-  DCHECK_LE(observations_.size(), kMaximumObservationsBufferSize);
+  DCHECK_LE(observations_.size(),
+            static_cast<size_t>(kMaximumObservationsBufferSize));
 }
 
 size_t NetworkQualityEstimator::ObservationBuffer::Size() const {
@@ -594,6 +600,137 @@ int32_t NetworkQualityEstimator::ObservationBuffer::GetPercentile(
   // In this case, we return the highest |value| among all observations.
   // This is same as value of the last observation in the sorted vector.
   return weighted_observations.at(weighted_observations.size() - 1).value;
+}
+
+NetworkQualityEstimator::NetworkID
+NetworkQualityEstimator::GetCurrentNetworkID() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(tbansal): crbug.com/498068 Add NetworkQualityEstimatorAndroid class
+  // that overrides this method on the Android platform.
+
+  // It is possible that the connection type changed between when
+  // GetConnectionType() was called and when the API to determine the
+  // network name was called. Check if that happened and retry until the
+  // connection type stabilizes. This is an imperfect solution but should
+  // capture majority of cases, and should not significantly affect estimates
+  // (that are approximate to begin with).
+  while (true) {
+    NetworkQualityEstimator::NetworkID network_id(
+        NetworkChangeNotifier::GetConnectionType(), std::string());
+
+    switch (network_id.type) {
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_NONE:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_BLUETOOTH:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET:
+        break;
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI:
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+        network_id.id = GetWifiSSID();
+#endif
+        break;
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_2G:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_3G:
+      case NetworkChangeNotifier::ConnectionType::CONNECTION_4G:
+#if defined(OS_ANDROID)
+        network_id.id = android::GetTelephonyNetworkOperator();
+#endif
+        break;
+      default:
+        NOTREACHED() << "Unexpected connection type = " << network_id.type;
+        break;
+    }
+
+    if (network_id.type == NetworkChangeNotifier::GetConnectionType())
+      return network_id;
+  }
+  NOTREACHED();
+}
+
+bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // If the network name is unavailable, caching should not be performed.
+  if (current_network_id_.id.empty())
+    return false;
+
+  CachedNetworkQualities::const_iterator it =
+      cached_network_qualities_.find(current_network_id_);
+
+  if (it == cached_network_qualities_.end())
+    return false;
+
+  NetworkQuality network_quality(it->second.network_quality());
+
+  DCHECK_NE(NetworkQuality::InvalidRTT(), network_quality.rtt());
+  DCHECK_NE(NetworkQuality::kInvalidThroughput,
+            network_quality.downstream_throughput_kbps());
+
+  kbps_observations_.AddObservation(Observation(
+      network_quality.downstream_throughput_kbps(), base::TimeTicks::Now()));
+  rtt_msec_observations_.AddObservation(Observation(
+      network_quality.rtt().InMilliseconds(), base::TimeTicks::Now()));
+  return true;
+}
+
+void NetworkQualityEstimator::CacheNetworkQualityEstimate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_LE(cached_network_qualities_.size(),
+            static_cast<size_t>(kMaximumNetworkQualityCacheSize));
+
+  // If the network name is unavailable, caching should not be performed.
+  if (current_network_id_.id.empty())
+    return;
+
+  NetworkQuality network_quality;
+  if (!GetEstimate(&network_quality))
+    return;
+
+  DCHECK_NE(NetworkQuality::InvalidRTT(), network_quality.rtt());
+  DCHECK_NE(NetworkQuality::kInvalidThroughput,
+            network_quality.downstream_throughput_kbps());
+
+  if (cached_network_qualities_.size() == kMaximumNetworkQualityCacheSize) {
+    // Remove the oldest entry.
+    CachedNetworkQualities::iterator oldest_entry_iterator =
+        cached_network_qualities_.begin();
+
+    for (CachedNetworkQualities::iterator it =
+             cached_network_qualities_.begin();
+         it != cached_network_qualities_.end(); ++it) {
+      if ((it->second).OlderThan(oldest_entry_iterator->second))
+        oldest_entry_iterator = it;
+    }
+    cached_network_qualities_.erase(oldest_entry_iterator);
+  }
+  DCHECK_LT(cached_network_qualities_.size(),
+            static_cast<size_t>(kMaximumNetworkQualityCacheSize));
+
+  cached_network_qualities_.insert(std::make_pair(
+      current_network_id_, CachedNetworkQuality(network_quality)));
+  DCHECK_LE(cached_network_qualities_.size(),
+            static_cast<size_t>(kMaximumNetworkQualityCacheSize));
+}
+
+NetworkQualityEstimator::CachedNetworkQuality::CachedNetworkQuality(
+    const NetworkQuality& network_quality)
+    : last_update_time_(base::TimeTicks::Now()),
+      network_quality_(network_quality) {
+}
+
+NetworkQualityEstimator::CachedNetworkQuality::CachedNetworkQuality(
+    const CachedNetworkQuality& other)
+    : last_update_time_(other.last_update_time_),
+      network_quality_(other.network_quality_) {
+}
+
+NetworkQualityEstimator::CachedNetworkQuality::~CachedNetworkQuality() {
+}
+
+bool NetworkQualityEstimator::CachedNetworkQuality::OlderThan(
+    const CachedNetworkQuality& cached_network_quality) const {
+  return last_update_time_ < cached_network_quality.last_update_time_;
 }
 
 }  // namespace net
