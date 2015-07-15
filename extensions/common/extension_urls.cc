@@ -5,6 +5,7 @@
 #include "extensions/common/extension_urls.h"
 
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extensions_client.h"
@@ -71,8 +72,11 @@ GURL GetWebstoreUpdateUrl() {
   return GURL(kChromeWebstoreUpdateURL);
 }
 
-GURL GetWebstoreReportAbuseUrl(const std::string& extension_id) {
-  return GURL(GetWebstoreLaunchURL() + "/report/" + extension_id);
+GURL GetWebstoreReportAbuseUrl(const std::string& extension_id,
+                               const std::string& referrer_id) {
+  return GURL(base::StringPrintf("%s/report/%s?utm_source=%s",
+                                 GetWebstoreLaunchURL().c_str(),
+                                 extension_id.c_str(), referrer_id.c_str()));
 }
 
 bool IsWebstoreUpdateUrl(const GURL& update_url) {

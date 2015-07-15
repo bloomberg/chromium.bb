@@ -70,8 +70,10 @@ GURL GetWebstoreSearchPageUrl(const std::string& query);
 // have been overridden by a command line flag for testing purposes.
 GURL GetWebstoreUpdateUrl();
 
-// Returns the url to visit to report abuse for the given |extension_id|.
-GURL GetWebstoreReportAbuseUrl(const std::string& extension_id);
+// Returns the url to visit to report abuse for the given |extension_id|
+// and |referrer_id|.
+GURL GetWebstoreReportAbuseUrl(const std::string& extension_id,
+                               const std::string& referrer_id);
 
 // Returns whether the URL is the webstore update URL (just considering host
 // and path, not scheme, query, etc.)

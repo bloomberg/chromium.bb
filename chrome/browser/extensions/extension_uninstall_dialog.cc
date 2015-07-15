@@ -38,6 +38,8 @@ namespace {
 const char kExtensionRemovedError[] =
     "Extension was removed before dialog closed.";
 
+const char kReferrerId[] = "chrome-remove-extension-dialog";
+
 // Returns bitmap for the default icon with size equal to the default icon's
 // pixel size under maximal supported scale factor.
 SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
@@ -194,7 +196,7 @@ void ExtensionUninstallDialog::OnDialogClosed(CloseAction action) {
 void ExtensionUninstallDialog::HandleReportAbuse() {
   chrome::NavigateParams params(
       profile_,
-      extension_urls::GetWebstoreReportAbuseUrl(extension_->id()),
+      extension_urls::GetWebstoreReportAbuseUrl(extension_->id(), kReferrerId),
       ui::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
