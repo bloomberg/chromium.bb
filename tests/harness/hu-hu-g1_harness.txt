@@ -3590,7 +3590,7 @@
           "output": "sárgásszínű"
         }, 
         {
-          "input": "⠎⠁⠎⠱⠈⠅⠇⠈⠇⠈⠎", 
+          "input": "⠎⠁⠎⠱⠈⠍⠇⠈⠇⠈⠎", 
           "output": "sasszámlálás"
         }, 
         {
@@ -8302,7 +8302,7 @@
         }, 
         {
           "input": "sasszámlálás", 
-          "output": "⠎⠁⠎⠱⠈⠅⠇⠈⠇⠈⠎"
+          "output": "⠎⠁⠎⠱⠈⠍⠇⠈⠇⠈⠎"
         }, 
         {
           "input": "sasszárnyú", 
