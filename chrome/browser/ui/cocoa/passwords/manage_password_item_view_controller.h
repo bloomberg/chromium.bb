@@ -69,6 +69,7 @@ enum ManagePasswordItemState {
  @private
   base::scoped_nsobject<NSTextField> usernameField_;
   base::scoped_nsobject<NSSecureTextField> passwordField_;
+  base::scoped_nsobject<NSTextField> federationField_;
 }
 - (id)initWithForm:(const autofill::PasswordForm&)form;
 @end
@@ -76,6 +77,7 @@ enum ManagePasswordItemState {
 @interface ManagePasswordItemPendingView (Testing)
 @property(readonly) NSTextField* usernameField;
 @property(readonly) NSSecureTextField* passwordField;
+@property(readonly) NSTextField* federationField;
 @end
 
 // Shows a single item in a password management list. Transitions between

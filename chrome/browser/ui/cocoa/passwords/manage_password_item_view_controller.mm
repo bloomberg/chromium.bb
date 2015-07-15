@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
@@ -101,6 +102,13 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
   [textField
       setFrameSize:NSMakeSize(SecondFieldWidth(), NSHeight([textField frame]))];
   return textField.autorelease();
+}
+
+NSTextField* FederationLabel(const base::string16& text) {
+  NSTextField* textField = Label(text);
+  [textField
+      setFrameSize:NSMakeSize(SecondFieldWidth(), NSHeight([textField frame]))];
+  return textField;
 }
 
 base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
@@ -239,12 +247,22 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 
     // Move to the right of the username and add the password.
     curX = NSMaxX([usernameField_ frame]) + kItemLabelSpacing;
-    passwordField_.reset([PasswordLabel(form.password_value) retain]);
-    [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
-    [self addSubview:passwordField_];
+    if (form.federation_url.is_empty()) {
+      passwordField_.reset([PasswordLabel(form.password_value) retain]);
+    } else {
+      base::string16 text = l10n_util::GetStringFUTF16(
+          IDS_MANAGE_PASSWORDS_IDENTITY_PROVIDER,
+          base::UTF8ToUTF16(form.federation_url.host()));
+      federationField_.reset([FederationLabel(text) retain]);
+    }
+
+    NSTextField* secondField =
+        passwordField_ ? passwordField_.get() : federationField_.get();
+    [secondField setFrameOrigin:NSMakePoint(curX, curY)];
+    [self addSubview:secondField];
 
     // Move to the top-right of the password.
-    curY = NSMaxY([passwordField_ frame]) + kRelatedControlVerticalSpacing;
+    curY = NSMaxY([secondField frame]) + kRelatedControlVerticalSpacing;
 
     // Update the frame.
     [self setFrameSize:NSMakeSize(ItemWidth(), curY)];
@@ -262,6 +280,10 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 
 - (NSSecureTextField*)passwordField {
   return passwordField_.get();
+}
+
+- (NSTextField*)federationField {
+  return federationField_.get();
 }
 
 @end

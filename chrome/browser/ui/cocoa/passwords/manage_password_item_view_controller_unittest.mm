@@ -98,7 +98,7 @@ TEST_F(ManagePasswordItemViewControllerTest,
 
 TEST_F(ManagePasswordItemViewControllerTest,
        ClickingUndoShouldShowManageViewAndAddPassword) {
-  EXPECT_CALL(*mockStore(), AddLogin(PasswordFormEq(credentials())));
+  EXPECT_CALL(*mockStore(), RemoveLogin(PasswordFormEq(credentials())));
   model()->set_state(password_manager::ui::MANAGE_STATE);
 
   ManagePasswordItemManageView* manageView =
@@ -106,6 +106,7 @@ TEST_F(ManagePasswordItemViewControllerTest,
           controller().contentView);
   [manageView.deleteButton performClick:nil];
 
+  EXPECT_CALL(*mockStore(), AddLogin(PasswordFormEq(credentials())));
   ManagePasswordItemUndoView* undoView =
       base::mac::ObjCCast<ManagePasswordItemUndoView>(controller().contentView);
   [undoView.undoButton performClick:nil];
@@ -145,4 +146,22 @@ TEST_F(ManagePasswordItemViewControllerTest,
   EXPECT_NSEQ(kItemTestUsername, pendingView.usernameField.stringValue);
   EXPECT_NSEQ(kItemTestPassword, pendingView.passwordField.stringValue);
   EXPECT_TRUE([[pendingView.passwordField cell] echosBullets]);
+}
+
+TEST_F(ManagePasswordItemViewControllerTest,
+       PendingViewShouldHaveCorrectUsernameAndFederation) {
+  model()->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
+  autofill::PasswordForm form = credentials();
+  GURL federation("https://google.com/idp");
+  form.federation_url = federation;
+  ui_controller()->SetPendingPassword(form);
+  ManagePasswordItemPendingView* pendingView =
+      base::mac::ObjCCast<ManagePasswordItemPendingView>(
+          [controller() contentView]);
+
+  // Ensure the fields are populated properly and the password is obscured.
+  EXPECT_NSEQ(kItemTestUsername, pendingView.usernameField.stringValue);
+  EXPECT_FALSE(pendingView.passwordField);
+  EXPECT_THAT(base::SysNSStringToUTF8(pendingView.federationField.stringValue),
+              HasSubstr(federation.host()));
 }
