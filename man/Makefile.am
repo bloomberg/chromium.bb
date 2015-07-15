@@ -37,7 +37,7 @@ MAN_FILES = \
 	$(miscman_aliases_DATA)
 
 EXTRA_DIST = $(XML_FILES)
-CLEANFILES = $(MAN_FILES) .man_fixup
+CLEANFILES = $(MAN_FILES)
 
 XSLTPROC_FLAGS = \
 	--stringparam man.authors.section.enabled 0 \
@@ -48,14 +48,9 @@ XSLTPROC_FLAGS = \
 	$(MANPAGES_STYLESHEET)
 
 XSLTPROC_PROCESS_MAN = \
-	$(AM_V_GEN)$(XSLTPROC) -o "$@" $(XSLTPROC_FLAGS) "$<" && \
-	touch .man_fixup
+	$(AM_V_GEN)$(XSLTPROC) -o "$@" $(XSLTPROC_FLAGS) "$<"
 
-# Force .man_fixup if $(miscman_DATA) are not built
-.man_fixup: | $(miscman_DATA)
-	$(AM_V_GEN)touch .man_fixup
-
-$(miscman_aliases_DATA): $(miscman_DATA) .man_fixup
+$(miscman_aliases_DATA): $(miscman_DATA)
 	$(AM_V_GEN)if test -n "$@" ; then $(SED) -i -e 's/^\.so \([a-z_]\+\)\.\([0-9]\)$$/\.so man\2\/\1\.\2/' "$@" ; fi
 
 SUFFIXES = .$(LIB_MAN_SUFFIX) .$(MISC_MAN_SUFFIX) .xml
