@@ -50,6 +50,11 @@
   return self;
 }
 
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
 - (void)dealloc {
   [_browsingDataStore removeObserver:self forKeyPath:@"mode"];
   [super dealloc];
