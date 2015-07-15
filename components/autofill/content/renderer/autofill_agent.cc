@@ -503,7 +503,7 @@ void AutofillAgent::AcceptDataListSuggestion(
     last_part.append(suggested_value);
     parts[parts.size() - 1] = last_part;
 
-    new_value = JoinString(parts, ',');
+    new_value = base::JoinString(parts, base::ASCIIToUTF16(","));
   }
   FillFieldWithValue(new_value, input_element);
 }

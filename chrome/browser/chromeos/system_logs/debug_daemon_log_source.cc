@@ -80,7 +80,7 @@ void DebugDaemonLogSource::OnGetRoutes(bool succeeded,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (succeeded)
-    (*response_)[kRoutesKeyName] = JoinString(routes, '\n');
+    (*response_)[kRoutesKeyName] = base::JoinString(routes, "\n");
   else
     (*response_)[kRoutesKeyName] = kNotAvailable;
   RequestCompleted();

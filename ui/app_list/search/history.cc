@@ -17,7 +17,8 @@ namespace {
 // Normalize the given string by joining all its tokens with a space.
 std::string NormalizeString(const std::string& utf8) {
   TokenizedString tokenized(base::UTF8ToUTF16(utf8));
-  return base::UTF16ToUTF8(JoinString(tokenized.tokens(), ' '));
+  return base::UTF16ToUTF8(
+      base::JoinString(tokenized.tokens(), base::ASCIIToUTF16(" ")));
 }
 
 }  // namespace

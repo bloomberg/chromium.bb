@@ -78,12 +78,14 @@ std::string CastMetricsHelper::EncodeAppInfoIntoMetricsName(
     const std::string& app_id,
     const std::string& session_id,
     const std::string& sdk_version) {
-  std::vector<std::string> parts;
-  parts.push_back(action_name);
-  parts.push_back(app_id);
-  parts.push_back(session_id);
-  parts.push_back(sdk_version);
-  return JoinString(parts, kMetricsNameAppInfoDelimiter);
+  std::string result(action_name);
+  result.push_back(kMetricsNameAppInfoDelimiter);
+  result.append(app_id);
+  result.push_back(kMetricsNameAppInfoDelimiter);
+  result.append(session_id);
+  result.push_back(kMetricsNameAppInfoDelimiter);
+  result.append(sdk_version);
+  return result;
 }
 
 // static

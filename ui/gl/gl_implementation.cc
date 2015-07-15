@@ -173,7 +173,7 @@ std::string FilterGLExtensionList(
       std::remove_if(extension_vec.begin(), extension_vec.end(), is_disabled),
       extension_vec.end());
 
-  return JoinString(extension_vec, " ");
+  return base::JoinString(extension_vec, " ");
 }
 
 DisableNullDrawGLBindings::DisableNullDrawGLBindings() {

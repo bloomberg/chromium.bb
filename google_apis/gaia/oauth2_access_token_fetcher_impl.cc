@@ -283,7 +283,7 @@ std::string OAuth2AccessTokenFetcherImpl::MakeGetAccessTokenBody(
                               enc_client_secret.c_str(),
                               enc_refresh_token.c_str());
   } else {
-    std::string scopes_string = JoinString(scopes, ' ');
+    std::string scopes_string = base::JoinString(scopes, " ");
     return base::StringPrintf(
         kGetAccessTokenBodyWithScopeFormat,
         enc_client_id.c_str(),

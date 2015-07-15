@@ -190,8 +190,8 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       codecs.push_back(kCdmSupportedCodecAac);
       codecs.push_back(kCdmSupportedCodecAvc1);
 #endif  // defined(USE_PROPRIETARY_CODECS)
-      std::string codec_string =
-          JoinString(codecs, kCdmSupportedCodecsValueDelimiter);
+      std::string codec_string = base::JoinString(
+          codecs, base::string(1, kCdmSupportedCodecsValueDelimiter));
       widevine_cdm_mime_type.additional_param_names.push_back(
           base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
       widevine_cdm_mime_type.additional_param_values.push_back(
@@ -255,7 +255,7 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
   // E.g., "Shockwave Flash 10.2 r154":
   plugin.description = plugin.name + " " + flash_version_numbers[0] + "." +
       flash_version_numbers[1] + " r" + flash_version_numbers[2];
-  plugin.version = JoinString(flash_version_numbers, '.');
+  plugin.version = base::JoinString(flash_version_numbers, ".");
   content::WebPluginMimeType swf_mime_type(content::kFlashPluginSwfMimeType,
                                            content::kFlashPluginSwfExtension,
                                            content::kFlashPluginSwfDescription);

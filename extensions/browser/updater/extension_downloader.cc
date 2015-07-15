@@ -136,7 +136,7 @@ bool IncrementAuthUserIndex(GURL* url) {
     return false;
   new_query_parts.push_back(
       base::StringPrintf("%s=%d", kAuthUserQueryKey, user_index + 1));
-  std::string new_query_string = JoinString(new_query_parts, '&');
+  std::string new_query_string = base::JoinString(new_query_parts, "&");
   url::Component new_query(0, new_query_string.size());
   url::Replacements<char> replacements;
   replacements.SetQuery(new_query_string.c_str(), new_query);
@@ -469,7 +469,7 @@ void ExtensionDownloader::CreateManifestFetcher() {
     std::vector<std::string> id_vector(
         manifests_queue_.active_request()->extension_ids().begin(),
         manifests_queue_.active_request()->extension_ids().end());
-    std::string id_list = JoinString(id_vector, ',');
+    std::string id_list = base::JoinString(id_vector, ",");
     VLOG(2) << "Fetching " << manifests_queue_.active_request()->full_url()
             << " for " << id_list;
   }

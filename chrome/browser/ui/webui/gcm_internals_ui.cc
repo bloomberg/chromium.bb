@@ -162,7 +162,7 @@ void GcmInternalsUIMessageHandler::ReturnResults(
     device_info->SetBoolean("connectionClientCreated",
                             stats->connection_client_created);
     device_info->SetString("registeredAppIds",
-                           JoinString(stats->registered_app_ids, ","));
+                           base::JoinString(stats->registered_app_ids, ","));
     if (stats->connection_client_created)
       device_info->SetString("connectionState", stats->connection_state);
     if (stats->android_id > 0) {

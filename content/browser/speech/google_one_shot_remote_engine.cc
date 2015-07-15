@@ -205,7 +205,8 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
   std::string api_key = google_apis::GetAPIKey();
   parts.push_back("key=" + net::EscapeQueryParamValue(api_key, true));
 
-  GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
+  GURL url(std::string(kDefaultSpeechRecognitionUrl) +
+           base::JoinString(parts, "&"));
 
   encoder_.reset(AudioEncoder::Create(kDefaultAudioCodec,
                                       config_.audio_sample_rate,

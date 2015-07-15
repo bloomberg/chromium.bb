@@ -236,7 +236,7 @@ bool FirefoxProxySettings::ToProxyConfig(net::ProxyConfig* config) {
   }
 
   config->proxy_rules().bypass_rules.ParseFromStringUsingSuffixMatching(
-      JoinString(proxy_bypass_list_, ';'));
+      base::JoinString(proxy_bypass_list_, ";"));
 
   return true;
 }

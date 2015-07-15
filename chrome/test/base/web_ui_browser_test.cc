@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -418,7 +419,7 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
   if (!libraries_preloaded_) {
     BuildJavascriptLibraries(&libraries);
     if (!preload_host) {
-      content = JoinString(libraries, '\n');
+      content = base::JoinString(libraries, base::ASCIIToUTF16("\n"));
       libraries.clear();
     }
   }

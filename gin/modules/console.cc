@@ -25,7 +25,7 @@ void Log(Arguments* args) {
     args->ThrowError();
     return;
   }
-  std::cout << JoinString(messages, ' ') << std::endl;
+  std::cout << base::JoinString(messages, " ") << std::endl;
 }
 
 WrapperInfo g_wrapper_info = { kEmbedderNativeGin };

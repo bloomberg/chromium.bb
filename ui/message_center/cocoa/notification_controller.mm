@@ -883,7 +883,8 @@
   }
 
   *actualLines = wrapped.size();
-  return lines == 1 ? wrapped[0] : JoinString(wrapped, '\n');
+  return lines == 1 ? wrapped[0]
+                    : base::JoinString(wrapped, base::ASCIIToUTF16("\n"));
 }
 
 - (base::string16)wrapText:(const base::string16&)text

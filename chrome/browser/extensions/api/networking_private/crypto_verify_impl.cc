@@ -168,7 +168,7 @@ CryptoVerifyImpl::Credentials::Credentials(
   data_parts.push_back(properties.device_bssid);
   data_parts.push_back(properties.public_key);
   data_parts.push_back(properties.nonce);
-  unsigned_data = JoinString(data_parts, ",");
+  unsigned_data = base::JoinString(data_parts, ",");
 
   device_bssid = properties.device_bssid;
   public_key = properties.public_key;

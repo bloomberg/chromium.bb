@@ -137,7 +137,7 @@ void GaiaOAuthClient::Core::RefreshToken(
       "&grant_type=refresh_token";
 
   if (!scopes.empty()) {
-    std::string scopes_string = JoinString(scopes, ' ');
+    std::string scopes_string = base::JoinString(scopes, " ");
     post_body += "&scope=" + net::EscapeUrlEncodedData(scopes_string, true);
   }
 

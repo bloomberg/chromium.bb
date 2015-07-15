@@ -82,7 +82,7 @@ AutofillProfile ProfileFromSpecifics(
   std::vector<std::string> street_address(address.street_address().begin(),
                                           address.street_address().end());
   profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
-                     base::UTF8ToUTF16(JoinString(street_address, '\n')));
+                     base::UTF8ToUTF16(base::JoinString(street_address, "\n")));
 
   profile.SetRawInfo(COMPANY_NAME, base::UTF8ToUTF16(address.company_name()));
   profile.SetRawInfo(ADDRESS_HOME_STATE,

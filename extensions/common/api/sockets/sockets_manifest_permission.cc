@@ -131,9 +131,9 @@ void AddSubdomainHostMessage(const SocketPermissionEntrySet& sockets,
       messages->push_back(PermissionMessage(
           PermissionMessage::kSocketDomainHosts,
           l10n_util::GetStringFUTF16(
-              id, JoinString(std::vector<base::string16>(domains.begin(),
-                                                         domains.end()),
-                             ' '))));
+              id, base::JoinString(std::vector<base::string16>(domains.begin(),
+                                                               domains.end()),
+                                   base::ASCIIToUTF16(" ")))));
     }
     if (ids) {
       for (const auto& domain : domains)
@@ -163,9 +163,9 @@ void AddSpecificHostMessage(const SocketPermissionEntrySet& sockets,
       messages->push_back(PermissionMessage(
           PermissionMessage::kSocketSpecificHosts,
           l10n_util::GetStringFUTF16(
-              id, JoinString(std::vector<base::string16>(hostnames.begin(),
-                                                         hostnames.end()),
-                             ' '))));
+              id, base::JoinString(std::vector<base::string16>(
+                                       hostnames.begin(), hostnames.end()),
+                                   base::ASCIIToUTF16(" ")))));
     }
     if (ids) {
       for (const auto& hostname : hostnames)

@@ -66,7 +66,7 @@ std::string ExtractBluetoothAddress(const std::string& path) {
   std::vector<std::string> result;
   base::SplitString(reverse_address, ':', &result);
   std::reverse(result.begin(), result.end());
-  std::string address = JoinString(result, ':');
+  std::string address = base::JoinString(result, ":");
   return address;
 }
 

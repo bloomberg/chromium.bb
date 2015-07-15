@@ -42,7 +42,8 @@ bool ExtensionJSBrowserTest::RunJavascriptTestF(bool is_async,
   }
   scripts.push_back(BuildRunTestJSCall(is_async, "RUN_TEST_F", args));
 
-  base::string16 script_16 = JoinString(scripts, '\n');
+  base::string16 script_16 =
+      base::JoinString(scripts, base::ASCIIToUTF16("\n"));
   std::string script = base::UTF16ToUTF8(script_16);
 
   std::string result =

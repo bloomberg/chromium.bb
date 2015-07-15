@@ -75,7 +75,7 @@ std::string GetCpuFeatures() {
   else if (cpu.has_sse2()) features.push_back("+sse2");
 
   // TODO: AES, POPCNT, LZCNT, ...
-  return JoinString(features, ',');
+  return base::JoinString(features, ",");
 }
 
 }  // namespace nacl

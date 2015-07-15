@@ -504,7 +504,7 @@ struct RightToLeftStringSorter {
     std::vector<std::string> parts;
     base::SplitString(url.host(), '.', &parts);
     std::reverse(parts.begin(), parts.end());
-    std::string reversed_host = JoinString(parts, '.');
+    std::string reversed_host = base::JoinString(parts, ".");
 
     // Return the new URL.
     GURL::Replacements url_components;

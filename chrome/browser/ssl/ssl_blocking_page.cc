@@ -455,7 +455,7 @@ void SSLBlockingPage::PopulateInterstitialStrings(
   ssl_info_.cert->GetPEMEncodedChain(
       &encoded_chain);
   load_time_data->SetString(
-      "pem", JoinString(encoded_chain, std::string()));
+      "pem", base::JoinString(encoded_chain, base::StringPiece()));
 
   cert_report_helper_->PopulateExtendedReportingOption(load_time_data);
 }

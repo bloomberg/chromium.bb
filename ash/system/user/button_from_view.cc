@@ -89,7 +89,7 @@ void ButtonFromView::GetAccessibleState(ui::AXViewState* state) {
   std::vector<base::string16> labels;
   for (int i = 0; i < child_count(); ++i)
     GetAccessibleLabelFromDescendantViews(child_at(i), labels);
-  state->name = JoinString(labels, base::ASCIIToUTF16(" "));
+  state->name = base::JoinString(labels, base::ASCIIToUTF16(" "));
 }
 
 void ButtonFromView::ShowActive() {

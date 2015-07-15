@@ -56,7 +56,7 @@ int wmain(int argc, wchar_t* argv[]) {
     printf("success\n");
   } else if (!choices.empty()) {
     printf("failed to set program. possible choices: %ls\n",
-           JoinString(choices, L", ").c_str());
+           base::JoinString(choices, L", ").c_str());
   } else {
     printf("failed with HRESULT: %0x08X\n", result);
   }

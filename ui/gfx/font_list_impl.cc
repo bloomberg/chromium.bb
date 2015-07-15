@@ -18,7 +18,7 @@ namespace {
 std::string BuildDescription(const std::vector<std::string>& families,
                              int style,
                              int size_pixels) {
-  std::string description = JoinString(families, ',');
+  std::string description = base::JoinString(families, ",");
   description += ",";
 
   if (style & gfx::Font::BOLD)

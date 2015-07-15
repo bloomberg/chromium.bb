@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -114,7 +115,7 @@ void AwWebContentsDelegate::RunFileChooser(WebContents* web_contents,
       web_contents->GetRenderViewHost()->GetRoutingID(),
       mode_flags,
       ConvertUTF16ToJavaString(env,
-        JoinString(params.accept_types, ',')).obj(),
+          base::JoinString(params.accept_types, base::ASCIIToUTF16(","))).obj(),
       params.title.empty() ? NULL :
           ConvertUTF16ToJavaString(env, params.title).obj(),
       params.default_file_name.empty() ? NULL :
@@ -293,7 +294,7 @@ static void FilesSelectedInChooser(
     mode = FileChooserParams::Open;
   }
   DVLOG(0) << "File Chooser result: mode = " << mode
-           << ", file paths = " << JoinString(file_path_str, ":");
+           << ", file paths = " << base::JoinString(file_path_str, ":");
   rvh->FilesSelectedInChooser(files, mode);
 }
 

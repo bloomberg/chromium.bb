@@ -320,7 +320,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   downstream_args.push_back("output=pb");
   GURL downstream_url(std::string(kWebServiceBaseUrl) +
                       std::string(kDownstreamUrl) +
-                      JoinString(downstream_args, '&'));
+                      base::JoinString(downstream_args, "&"));
 
   downstream_fetcher_ = URLFetcher::Create(
       kDownstreamUrlFetcherIdForTesting, downstream_url, URLFetcher::GET, this);
@@ -372,7 +372,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   }
   GURL upstream_url(std::string(kWebServiceBaseUrl) +
                     std::string(kUpstreamUrl) +
-                    JoinString(upstream_args, '&'));
+                    base::JoinString(upstream_args, "&"));
 
   upstream_fetcher_ = URLFetcher::Create(kUpstreamUrlFetcherIdForTesting,
                                          upstream_url, URLFetcher::POST, this);

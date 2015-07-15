@@ -102,7 +102,7 @@ base::string16 MessagesVectorToString(
   if (messages.empty())
     return base::ASCIIToUTF16("\n");
   return base::ASCIIToUTF16("\"") +
-         JoinString(messages, base::ASCIIToUTF16("\"\n\"")) +
+         base::JoinString(messages, base::ASCIIToUTF16("\"\n\"")) +
          base::ASCIIToUTF16("\"\n");
 }
 

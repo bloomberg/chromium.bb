@@ -69,5 +69,5 @@ base::string16 UpdateActiveSetupVersionWorkItem::GetUpdatedActiveSetupVersion(
     version_components[OS_UPGRADES] = base::UintToString16(previous_value + 1);
   }
 
-  return JoinString(version_components, L',');
+  return base::JoinString(version_components, L",");
 }

@@ -627,7 +627,7 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
 
   // Transfers the xkb id to extension-xkb id.
   if (input_method_manager_->MigrateInputMethods(&split_values))
-    preload_engines_.SetValue(JoinString(split_values, ','));
+    preload_engines_.SetValue(base::JoinString(split_values, ","));
 
   if (section == std::string(language_prefs::kGeneralSectionName) &&
       name == std::string(language_prefs::kPreloadEnginesConfigName)) {

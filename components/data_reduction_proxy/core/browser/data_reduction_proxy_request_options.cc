@@ -398,7 +398,7 @@ void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
   for (const auto& experiment : experiments_)
     headers.push_back(FormatOption(kExperimentsOption, experiment));
 
-  header_value_ = JoinString(headers, ", ");
+  header_value_ = base::JoinString(headers, ", ");
 }
 
 }  // namespace data_reduction_proxy

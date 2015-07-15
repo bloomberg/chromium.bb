@@ -81,7 +81,7 @@ bool DoAddChannelMarkToUserDataDir(const base::FilePath& user_data_dir) {
   user_data_dir_channels.push_back(product_channel_name);
   return base::ImportantFileWriter::WriteFileAtomically(
       channels_path,
-      JoinString(user_data_dir_channels, "\n"));
+      base::JoinString(user_data_dir_channels, "\n"));
 }
 
 }  // namespace

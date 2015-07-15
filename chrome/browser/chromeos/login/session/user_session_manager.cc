@@ -156,7 +156,7 @@ void InitLocaleAndInputMethodsForNewUser(
   // Save the input methods in the user's preferences.
   StringPrefMember language_preload_engines;
   language_preload_engines.Init(prefs::kLanguagePreloadEngines, prefs);
-  language_preload_engines.SetValue(JoinString(input_method_ids, ','));
+  language_preload_engines.SetValue(base::JoinString(input_method_ids, ","));
   BootTimesRecorder::Get()->AddLoginTimeMarker("IMEStarted", false);
 
   // Second, we'll set kLanguagePreferredLanguages.
@@ -184,7 +184,7 @@ void InitLocaleAndInputMethodsForNewUser(
 
   // Save the preferred languages in the user's preferences.
   prefs->SetString(prefs::kLanguagePreferredLanguages,
-                   JoinString(language_codes, ','));
+                   base::JoinString(language_codes, ","));
 
   // Indicate that we need to merge the syncable input methods when we sync,
   // since we have not applied the synced prefs before.

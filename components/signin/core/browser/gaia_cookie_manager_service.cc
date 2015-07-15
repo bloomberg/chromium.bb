@@ -114,7 +114,7 @@ GaiaCookieManagerService::ExternalCcResultFetcher::GetExternalCcResult() {
        ++it) {
     results.push_back(it->first + ":" + it->second);
   }
-  return JoinString(results, ",");
+  return base::JoinString(results, ",");
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {

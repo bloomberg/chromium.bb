@@ -448,7 +448,7 @@ void TableView::GetAccessibleState(ui::AXViewState* state) {
         name_parts.push_back(value);
       }
     }
-    state->name = JoinString(name_parts, base::ASCIIToUTF16(", "));
+    state->name = base::JoinString(name_parts, base::ASCIIToUTF16(", "));
   }
 }
 

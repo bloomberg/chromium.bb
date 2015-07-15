@@ -340,7 +340,7 @@ base::string16 Address::GetInfo(const AutofillType& type,
       return recipient_name();
 
     case ADDRESS_HOME_STREET_ADDRESS:
-      return JoinString(street_address_, base::ASCIIToUTF16("\n"));
+      return base::JoinString(street_address_, base::ASCIIToUTF16("\n"));
 
     case ADDRESS_HOME_LINE1:
       return GetStreetAddressLine(0);

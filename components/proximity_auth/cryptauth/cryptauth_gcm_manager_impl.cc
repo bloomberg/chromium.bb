@@ -93,7 +93,7 @@ void CryptAuthGCMManagerImpl::OnMessage(const std::string& app_id,
   PA_LOG(INFO) << "GCM message received:\n"
                << "  sender_id: " << message.sender_id << "\n"
                << "  collapse_key: " << message.collapse_key << "\n"
-               << "  data:\n    " << JoinString(fields, "\n    ");
+               << "  data:\n    " << base::JoinString(fields, "\n    ");
 
   if (message.data.find(kRegistrationTickleTypeKey) == message.data.end()) {
     PA_LOG(WARNING) << "GCM message does not contain 'registrationTickleType'.";
