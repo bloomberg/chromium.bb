@@ -27,6 +27,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
+#include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/paint/PaintPhase.h"
@@ -42,6 +43,7 @@
 #include "public/platform/WebRect.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
@@ -326,7 +328,7 @@ public:
     // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
     // passed around the FrameView layout methods can be true while this returns
     // false.
-    bool isSubtreeLayout() const { return !m_layoutSubtreeRoots.isEmpty(); }
+    bool isSubtreeLayout() const { return !m_layoutSubtreeRootList.isEmpty(); }
 
     // Sets the tickmarks for the FrameView, overriding the default behavior
     // which is to display the tickmarks corresponding to find results.
@@ -737,7 +739,7 @@ private:
     unsigned m_slowRepaintObjectCount;
 
     bool m_hasPendingLayout;
-    HashSet<LayoutObject*> m_layoutSubtreeRoots;
+    LayoutSubtreeRootList m_layoutSubtreeRootList;
 
     bool m_layoutSchedulingEnabled;
     bool m_inPerformLayout;

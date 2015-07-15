@@ -215,7 +215,7 @@ void FrameView::reset()
     m_firstVisuallyNonEmptyLayoutCallbackPending = true;
     m_maintainScrollPositionAnchor = nullptr;
     m_viewportConstrainedObjects.clear();
-    m_layoutSubtreeRoots.clear();
+    m_layoutSubtreeRootList.clear();
 }
 
 void FrameView::removeFromAXObjectCache()
@@ -717,26 +717,15 @@ bool FrameView::isEnclosedInCompositingLayer() const
     return frameOwnerLayoutObject && frameOwnerLayoutObject->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
 }
 
-static inline void countObjectsNeedingLayoutInRoot(const LayoutObject* root, unsigned& needsLayoutObjects, unsigned& totalObjects)
-{
-    for (const LayoutObject* o = root; o; o = o->nextInPreOrder(root)) {
-        ++totalObjects;
-        if (o->needsLayout())
-            ++needsLayoutObjects;
-    }
-}
-
 void FrameView::countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects, bool& isSubtree)
 {
     needsLayoutObjects = 0;
     totalObjects = 0;
     isSubtree = isSubtreeLayout();
-    if (isSubtree) {
-        for (auto& subtreeRoot : m_layoutSubtreeRoots)
-            countObjectsNeedingLayoutInRoot(subtreeRoot, needsLayoutObjects, totalObjects);
-    } else {
-        countObjectsNeedingLayoutInRoot(layoutView(), needsLayoutObjects, totalObjects);
-    }
+    if (isSubtree)
+        m_layoutSubtreeRootList.countObjectsNeedingLayout(needsLayoutObjects, totalObjects);
+    else
+        LayoutSubtreeRootList::countObjectsNeedingLayoutInRoot(layoutView(), needsLayoutObjects, totalObjects);
 }
 
 inline void FrameView::forceLayoutParentViewIfNeeded()
@@ -839,7 +828,7 @@ PassRefPtr<TracedValue> FrameView::analyzerCounters()
 
 void FrameView::performLayout(bool inSubtreeLayout)
 {
-    ASSERT(inSubtreeLayout || m_layoutSubtreeRoots.isEmpty());
+    ASSERT(inSubtreeLayout || m_layoutSubtreeRootList.isEmpty());
 
     TRACE_EVENT_BEGIN0(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout");
     prepareLayoutAnalyzer();
@@ -859,17 +848,18 @@ void FrameView::performLayout(bool inSubtreeLayout)
 
     if (inSubtreeLayout) {
         if (m_analyzer)
-            m_analyzer->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRoots.size());
-        while (m_layoutSubtreeRoots.size()) {
-            LayoutObject& root = *m_layoutSubtreeRoots.takeAny();
-            if (!root.needsLayout())
+            m_analyzer->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRootList.size());
+        Vector<LayoutSubtreeRootList::LayoutSubtree> roots;
+        m_layoutSubtreeRootList.takeRoots(roots);
+        for (auto& root : roots) {
+            if (!root.object->needsLayout())
                 continue;
-            layoutFromRootObject(root);
+            layoutFromRootObject(*root.object);
 
             // We need to ensure that we mark up all layoutObjects up to the LayoutView
             // for paint invalidation. This simplifies our code as we just always
             // do a full tree walk.
-            if (LayoutObject* container = root.container())
+            if (LayoutObject* container = root.object->container())
                 container->setMayNeedPaintInvalidation();
         }
     } else {
@@ -955,7 +945,7 @@ void FrameView::layout()
     bool inSubtreeLayout = isSubtreeLayout();
 
     // FIXME: The notion of a single root for layout is no longer applicable. Remove or update this code. crbug.com/460596
-    LayoutObject* rootForThisLayout = inSubtreeLayout ? *(m_layoutSubtreeRoots.begin()) : layoutView();
+    LayoutObject* rootForThisLayout = inSubtreeLayout ? m_layoutSubtreeRootList.randomRoot() : layoutView();
     if (!rootForThisLayout) {
         // FIXME: Do we need to set m_size here?
         ASSERT_NOT_REACHED();
@@ -1041,7 +1031,7 @@ void FrameView::layout()
         TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), "LayoutTree",
             this, TracedLayoutObject::create(*layoutView()));
 
-        ASSERT(m_layoutSubtreeRoots.isEmpty());
+        ASSERT(m_layoutSubtreeRootList.isEmpty());
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
     if (!inSubtreeLayout && !document->printing())
@@ -1712,14 +1702,12 @@ void FrameView::handleLoadCompleted()
 
 void FrameView::clearLayoutSubtreeRoot(const LayoutObject& root)
 {
-    m_layoutSubtreeRoots.remove(const_cast<LayoutObject*>(&root));
+    m_layoutSubtreeRootList.removeRoot(const_cast<LayoutObject&>(root));
 }
 
 void FrameView::clearLayoutSubtreeRootsAndMarkContainingBlocks()
 {
-    for (auto& iter : m_layoutSubtreeRoots)
-        iter->markContainerChainForLayout(false);
-    m_layoutSubtreeRoots.clear();
+    m_layoutSubtreeRootList.clearAndMarkContainingBlocksForLayout();
 }
 
 void FrameView::scheduleRelayout()
@@ -1760,9 +1748,10 @@ void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
     }
 
     if (relayoutRoot == layoutView)
-        clearLayoutSubtreeRootsAndMarkContainingBlocks();
+        m_layoutSubtreeRootList.clearAndMarkContainingBlocksForLayout();
     else
-        m_layoutSubtreeRoots.add(relayoutRoot);
+        m_layoutSubtreeRootList.addRoot(*relayoutRoot);
+
     if (m_layoutSchedulingEnabled) {
         m_hasPendingLayout = true;
 
