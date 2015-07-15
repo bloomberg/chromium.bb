@@ -909,13 +909,13 @@ SkFilterQuality GraphicsContext::computeFilterQuality(Image* image, const FloatR
             SkScalarToFloat(src.width()), SkScalarToFloat(src.height()),
             SkScalarToFloat(destRectTarget.width()), SkScalarToFloat(destRectTarget.height()),
             image->isImmutableBitmap());
-    }
 
-    if (resampling == InterpolationNone) {
-        // FIXME: This is to not break tests (it results in the filter bitmap flag
-        // being set to true). We need to decide if we respect InterpolationNone
-        // being returned from computeInterpolationQuality.
-        resampling = InterpolationLow;
+        if (resampling == InterpolationNone) {
+            // FIXME: This is to not break tests (it results in the filter bitmap flag
+            // being set to true). We need to decide if we respect InterpolationNone
+            // being returned from computeInterpolationQuality.
+            resampling = InterpolationLow;
+        }
     }
     return static_cast<SkFilterQuality>(limitInterpolationQuality(this, resampling));
 }
