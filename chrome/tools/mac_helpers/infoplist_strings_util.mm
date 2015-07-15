@@ -263,9 +263,8 @@ int main(int argc, char* const argv[]) {
     std::vector<base::string16> replacements;
     replacements.push_back(base::IntToString16(exploded_time.year));
     NSString* copyright = base::SysUTF16ToNSString(
-        ReplaceStringPlaceholders(base::SysNSStringToUTF16(copyright_format),
-                                  replacements,
-                                  NULL));
+        base::ReplaceStringPlaceholders(
+            base::SysNSStringToUTF16(copyright_format), replacements, NULL));
 
     // For now, assume this is ok for all languages. If we need to, this could
     // be moved into generated_resources.grd and fetched.

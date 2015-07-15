@@ -62,7 +62,7 @@ void LauncherSearchIconImageLoader::LoadResources() {
     params.push_back(GetTruncatedIconUrl(kTruncatedIconUrlMaxSize));
     params.push_back(extensions::kExtensionScheme);
     params.push_back(extension_->id());
-    error_reporter_->Warn(ReplaceStringPlaceholders(
+    error_reporter_->Warn(base::ReplaceStringPlaceholders(
         "$1 Invalid icon URL: $2. Must have a valid URL within $3://$4.",
         params, nullptr));
     return;
@@ -119,7 +119,7 @@ void LauncherSearchIconImageLoader::OnCustomIconLoaded(
     std::vector<std::string> params;
     params.push_back(kWarningMessagePrefix);
     params.push_back(GetTruncatedIconUrl(kTruncatedIconUrlMaxSize));
-    error_reporter_->Warn(ReplaceStringPlaceholders(
+    error_reporter_->Warn(base::ReplaceStringPlaceholders(
         "$1 Failed to load icon URL: $2", params, nullptr));
 
     return;

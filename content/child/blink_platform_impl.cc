@@ -1110,8 +1110,8 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   int message_id = ToMessageID(name);
   if (message_id < 0)
     return WebString();
-  return ReplaceStringPlaceholders(GetContentClient()->GetLocalizedString(
-      message_id), value, NULL);
+  return base::ReplaceStringPlaceholders(
+      GetContentClient()->GetLocalizedString(message_id), value, NULL);
 }
 
 WebString BlinkPlatformImpl::queryLocalizedString(
@@ -1125,7 +1125,7 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   values.reserve(2);
   values.push_back(value1);
   values.push_back(value2);
-  return ReplaceStringPlaceholders(
+  return base::ReplaceStringPlaceholders(
       GetContentClient()->GetLocalizedString(message_id), values, NULL);
 }
 

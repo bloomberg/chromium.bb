@@ -93,7 +93,7 @@ class NotificationPromoTest {
     replacements.push_back(year_from_now_string);
 
     std::string json_with_end_date(
-        ReplaceStringPlaceholders(json, replacements, NULL));
+        base::ReplaceStringPlaceholders(json, replacements, NULL));
     base::Value* value(base::JSONReader::DeprecatedRead(json_with_end_date));
     ASSERT_TRUE(value);
 

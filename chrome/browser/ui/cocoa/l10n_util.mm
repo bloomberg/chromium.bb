@@ -69,10 +69,8 @@ CGFloat VerticallyReflowGroup(NSArray* views) {
 NSString* ReplaceNSStringPlaceholders(NSString* formatString,
                                       const base::string16& a,
                                       size_t* offset) {
-  return base::SysUTF16ToNSString(
-      ReplaceStringPlaceholders(base::SysNSStringToUTF16(formatString),
-                                a,
-                                offset));
+  return base::SysUTF16ToNSString(base::ReplaceStringPlaceholders(
+      base::SysNSStringToUTF16(formatString), a, offset));
 }
 
 NSString* TooltipForURLAndTitle(NSString* url, NSString* title) {

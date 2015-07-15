@@ -563,7 +563,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
           IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  std::string full_css = ReplaceStringPlaceholders(
+  std::string full_css = base::ReplaceStringPlaceholders(
       new_tab_theme_css, subst, NULL);
 
   new_tab_incognito_css_ = base::RefCountedString::TakeString(&full_css);
@@ -596,7 +596,7 @@ void NTPResourceCache::CreateNewTabGuestCSS() {
           IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  std::string full_css = ReplaceStringPlaceholders(
+  std::string full_css = base::ReplaceStringPlaceholders(
       new_tab_theme_css, subst, NULL);
 
   new_tab_guest_css_ = base::RefCountedString::TakeString(&full_css);
@@ -692,6 +692,6 @@ void NTPResourceCache::CreateNewTabCSS() {
 
   // Create the string from our template and the replacements.
   std::string css_string;
-  css_string = ReplaceStringPlaceholders(new_tab_theme_css, subst, NULL);
+  css_string = base::ReplaceStringPlaceholders(new_tab_theme_css, subst, NULL);
   new_tab_css_ = base::RefCountedString::TakeString(&css_string);
 }

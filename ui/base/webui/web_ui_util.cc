@@ -130,7 +130,7 @@ std::string GetWebUiCssTextDefaults() {
       resource_bundle.GetRawDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS)
           .as_string();
 
-  return ReplaceStringPlaceholders(css_template, placeholders, nullptr);
+  return base::ReplaceStringPlaceholders(css_template, placeholders, nullptr);
 }
 
 void AppendWebUiCssTextDefaults(std::string* html) {

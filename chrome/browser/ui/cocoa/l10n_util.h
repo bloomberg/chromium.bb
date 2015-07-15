@@ -23,7 +23,7 @@ NSSize WrapOrSizeToFit(NSView* view);
 // coordinates.
 CGFloat VerticallyReflowGroup(NSArray* views);
 
-// Like |ReplaceStringPlaceholders(const base::string16&,
+// Like |base::ReplaceStringPlaceholders(const base::string16&,
 // const base::string16&, size_t*)|, but for a NSString formatString.
 NSString* ReplaceNSStringPlaceholders(NSString* formatString,
                                       const base::string16& a,

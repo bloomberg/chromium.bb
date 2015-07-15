@@ -38,7 +38,8 @@ bool StringHasPlaceholders(const base::string16& input) {
   std::vector<base::string16> subst;
   subst.push_back(base::string16());
 
-  base::string16 replaced = ReplaceStringPlaceholders(input, subst, &offsets);
+  base::string16 replaced =
+      base::ReplaceStringPlaceholders(input, subst, &offsets);
   return !offsets.empty();
 }
 

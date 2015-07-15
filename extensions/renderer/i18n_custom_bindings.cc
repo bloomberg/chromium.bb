@@ -81,7 +81,7 @@ void I18NCustomBindings::GetL10nMessage(
 
   args.GetReturnValue().Set(v8::String::NewFromUtf8(
       isolate,
-      ReplaceStringPlaceholders(message, substitutions, NULL).c_str()));
+      base::ReplaceStringPlaceholders(message, substitutions, NULL).c_str()));
 }
 
 void I18NCustomBindings::GetL10nUILanguage(

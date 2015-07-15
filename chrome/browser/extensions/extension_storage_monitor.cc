@@ -380,7 +380,8 @@ std::string ExtensionStorageMonitor::GetNotificationId(
   placeholders.push_back(context_->GetPath().BaseName().MaybeAsASCII());
   placeholders.push_back(extension_id);
 
-  return ReplaceStringPlaceholders(kNotificationIdFormat, placeholders, NULL);
+  return base::ReplaceStringPlaceholders(
+      kNotificationIdFormat, placeholders, NULL);
 }
 
 void ExtensionStorageMonitor::OnStorageThresholdExceeded(

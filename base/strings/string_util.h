@@ -165,10 +165,10 @@ BASE_EXPORT extern const char kUtf8ByteOrderMark[];
 // if any characters were removed.  |remove_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
 BASE_EXPORT bool RemoveChars(const string16& input,
-                             const base::StringPiece16& remove_chars,
+                             const StringPiece16& remove_chars,
                              string16* output);
 BASE_EXPORT bool RemoveChars(const std::string& input,
-                             const base::StringPiece& remove_chars,
+                             const StringPiece& remove_chars,
                              std::string* output);
 
 // Replaces characters in |replace_chars| from anywhere in |input| with
@@ -177,11 +177,11 @@ BASE_EXPORT bool RemoveChars(const std::string& input,
 // |replace_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
 BASE_EXPORT bool ReplaceChars(const string16& input,
-                              const base::StringPiece16& replace_chars,
+                              const StringPiece16& replace_chars,
                               const string16& replace_with,
                               string16* output);
 BASE_EXPORT bool ReplaceChars(const std::string& input,
-                              const base::StringPiece& replace_chars,
+                              const StringPiece& replace_chars,
                               const std::string& replace_with,
                               std::string* output);
 
@@ -198,19 +198,19 @@ enum TrimPositions {
 // It is safe to use the same variable for both |input| and |output| (this is
 // the normal usage to trim in-place).
 BASE_EXPORT bool TrimString(const string16& input,
-                            base::StringPiece16 trim_chars,
+                            StringPiece16 trim_chars,
                             string16* output);
 BASE_EXPORT bool TrimString(const std::string& input,
-                            base::StringPiece trim_chars,
+                            StringPiece trim_chars,
                             std::string* output);
 
 // StringPiece versions of the above. The returned pieces refer to the original
 // buffer.
 BASE_EXPORT StringPiece16 TrimString(StringPiece16 input,
-                                     const base::StringPiece16& trim_chars,
+                                     const StringPiece16& trim_chars,
                                      TrimPositions positions);
 BASE_EXPORT StringPiece TrimString(StringPiece input,
-                                   const base::StringPiece& trim_chars,
+                                   const StringPiece& trim_chars,
                                    TrimPositions positions);
 
 // Truncates a string to the nearest UTF-8 character that will leave
@@ -228,7 +228,7 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
 // NOTE: Safe to use the same variable for both input and output.
 BASE_EXPORT TrimPositions TrimWhitespace(const string16& input,
                                          TrimPositions positions,
-                                         base::string16* output);
+                                         string16* output);
 BASE_EXPORT StringPiece16 TrimWhitespace(StringPiece16 input,
                                          TrimPositions positions);
 BASE_EXPORT TrimPositions TrimWhitespaceASCII(const std::string& input,
@@ -455,7 +455,7 @@ BASE_EXPORT void ReplaceFirstSubstringAfterOffset(
 // characters, for example:
 //   std::replace(str.begin(), str.end(), 'a', 'b');
 BASE_EXPORT void ReplaceSubstringsAfterOffset(
-    base::string16* str,
+    string16* str,
     size_t start_offset,
     StringPiece16 find_this,
     StringPiece16 replace_with);
@@ -486,7 +486,7 @@ BASE_EXPORT void ReplaceSubstringsAfterOffset(
 // than str.c_str() will get back a string of whatever size |str| had on entry
 // to this function (probably 0).
 BASE_EXPORT char* WriteInto(std::string* str, size_t length_with_null);
-BASE_EXPORT char16* WriteInto(base::string16* str, size_t length_with_null);
+BASE_EXPORT char16* WriteInto(string16* str, size_t length_with_null);
 #ifndef OS_WIN
 BASE_EXPORT wchar_t* WriteInto(std::wstring* str, size_t length_with_null);
 #endif
@@ -497,6 +497,25 @@ BASE_EXPORT std::string JoinString(const std::vector<std::string>& parts,
 BASE_EXPORT string16 JoinString(const std::vector<string16>& parts,
                                 StringPiece16 separator);
 
+// Replace $1-$2-$3..$9 in the format string with |a|-|b|-|c|..|i| respectively.
+// Additionally, any number of consecutive '$' characters is replaced by that
+// number less one. Eg $$->$, $$$->$$, etc. The offsets parameter here can be
+// NULL. This only allows you to use up to nine replacements.
+BASE_EXPORT string16 ReplaceStringPlaceholders(
+    const string16& format_string,
+    const std::vector<string16>& subst,
+    std::vector<size_t>* offsets);
+
+BASE_EXPORT std::string ReplaceStringPlaceholders(
+    const StringPiece& format_string,
+    const std::vector<std::string>& subst,
+    std::vector<size_t>* offsets);
+
+// Single-string shortcut for ReplaceStringHolders. |offset| may be NULL.
+BASE_EXPORT string16 ReplaceStringPlaceholders(const string16& format_string,
+                                               const string16& a,
+                                               size_t* offset);
+
 }  // namespace base
 
 #if defined(OS_WIN)
@@ -506,25 +525,5 @@ BASE_EXPORT string16 JoinString(const std::vector<string16>& parts,
 #else
 #error Define string operations appropriately for your platform
 #endif
-
-// Replace $1-$2-$3..$9 in the format string with |a|-|b|-|c|..|i| respectively.
-// Additionally, any number of consecutive '$' characters is replaced by that
-// number less one. Eg $$->$, $$$->$$, etc. The offsets parameter here can be
-// NULL. This only allows you to use up to nine replacements.
-BASE_EXPORT base::string16 ReplaceStringPlaceholders(
-    const base::string16& format_string,
-    const std::vector<base::string16>& subst,
-    std::vector<size_t>* offsets);
-
-BASE_EXPORT std::string ReplaceStringPlaceholders(
-    const base::StringPiece& format_string,
-    const std::vector<std::string>& subst,
-    std::vector<size_t>* offsets);
-
-// Single-string shortcut for ReplaceStringHolders. |offset| may be NULL.
-BASE_EXPORT base::string16 ReplaceStringPlaceholders(
-    const base::string16& format_string,
-    const base::string16& a,
-    size_t* offset);
 
 #endif  // BASE_STRINGS_STRING_UTIL_H_

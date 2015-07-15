@@ -707,7 +707,7 @@ base::string16 GetStringFUTF16(int message_id,
   }
 #endif
 
-  base::string16 formatted = ReplaceStringPlaceholders(
+  base::string16 formatted = base::ReplaceStringPlaceholders(
       format_string, replacements, offsets);
   AdjustParagraphDirectionality(&formatted);
 

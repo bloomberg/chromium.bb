@@ -27,9 +27,7 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "build/build_config.h"
 
-// Remove when this entire file is in the base namespace.
-using base::char16;
-using base::string16;
+namespace base {
 
 namespace {
 
@@ -80,13 +78,13 @@ template<typename T> inline T* AlignToMachineWord(T* pointer) {
 }
 
 template<size_t size, typename CharacterType> struct NonASCIIMask;
-template<> struct NonASCIIMask<4, base::char16> {
+template<> struct NonASCIIMask<4, char16> {
     static inline uint32_t value() { return 0xFF80FF80U; }
 };
 template<> struct NonASCIIMask<4, char> {
     static inline uint32_t value() { return 0x80808080U; }
 };
-template<> struct NonASCIIMask<8, base::char16> {
+template<> struct NonASCIIMask<8, char16> {
     static inline uint64_t value() { return 0xFF80FF80FF80FF80ULL; }
 };
 template<> struct NonASCIIMask<8, char> {
@@ -114,8 +112,6 @@ struct CaseInsensitiveCompareDeprecated {
 };
 
 }  // namespace
-
-namespace base {
 
 bool IsWprintfFormatPortable(const wchar_t* format) {
   for (const wchar_t* position = format; *position != '\0'; ++position) {
@@ -179,24 +175,24 @@ int CompareCaseInsensitiveASCIIT(BasicStringPiece<StringType> a,
   return 1;
 }
 
-int CompareCaseInsensitiveASCII(base::StringPiece a, base::StringPiece b) {
+int CompareCaseInsensitiveASCII(StringPiece a, StringPiece b) {
   return CompareCaseInsensitiveASCIIT<std::string>(a, b);
 }
 
-int CompareCaseInsensitiveASCII(base::StringPiece16 a, base::StringPiece16 b) {
-  return CompareCaseInsensitiveASCIIT<base::string16>(a, b);
+int CompareCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b) {
+  return CompareCaseInsensitiveASCIIT<string16>(a, b);
 }
 
-bool EqualsCaseInsensitiveASCII(base::StringPiece a, base::StringPiece b) {
+bool EqualsCaseInsensitiveASCII(StringPiece a, StringPiece b) {
   if (a.length() != b.length())
     return false;
   return CompareCaseInsensitiveASCIIT<std::string>(a, b) == 0;
 }
 
-bool EqualsCaseInsensitiveASCII(base::StringPiece16 a, base::StringPiece16 b) {
+bool EqualsCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b) {
   if (a.length() != b.length())
     return false;
-  return CompareCaseInsensitiveASCIIT<base::string16>(a, b) == 0;
+  return CompareCaseInsensitiveASCIIT<string16>(a, b) == 0;
 }
 
 const std::string& EmptyString() {
@@ -228,27 +224,27 @@ bool ReplaceCharsT(const STR& input,
 }
 
 bool ReplaceChars(const string16& input,
-                  const base::StringPiece16& replace_chars,
+                  const StringPiece16& replace_chars,
                   const string16& replace_with,
                   string16* output) {
   return ReplaceCharsT(input, replace_chars.as_string(), replace_with, output);
 }
 
 bool ReplaceChars(const std::string& input,
-                  const base::StringPiece& replace_chars,
+                  const StringPiece& replace_chars,
                   const std::string& replace_with,
                   std::string* output) {
   return ReplaceCharsT(input, replace_chars.as_string(), replace_with, output);
 }
 
 bool RemoveChars(const string16& input,
-                 const base::StringPiece16& remove_chars,
+                 const StringPiece16& remove_chars,
                  string16* output) {
   return ReplaceChars(input, remove_chars.as_string(), string16(), output);
 }
 
 bool RemoveChars(const std::string& input,
-                 const base::StringPiece& remove_chars,
+                 const StringPiece& remove_chars,
                  std::string* output) {
   return ReplaceChars(input, remove_chars.as_string(), std::string(), output);
 }
@@ -290,13 +286,13 @@ TrimPositions TrimStringT(const Str& input,
 }
 
 bool TrimString(const string16& input,
-                base::StringPiece16 trim_chars,
+                StringPiece16 trim_chars,
                 string16* output) {
   return TrimStringT(input, trim_chars, TRIM_ALL, output) != TRIM_NONE;
 }
 
 bool TrimString(const std::string& input,
-                base::StringPiece trim_chars,
+                StringPiece trim_chars,
                 std::string* output) {
   return TrimStringT(input, trim_chars, TRIM_ALL, output) != TRIM_NONE;
 }
@@ -313,13 +309,13 @@ BasicStringPiece<Str> TrimStringPieceT(BasicStringPiece<Str> input,
 }
 
 StringPiece16 TrimString(StringPiece16 input,
-                         const base::StringPiece16& trim_chars,
+                         const StringPiece16& trim_chars,
                          TrimPositions positions) {
   return TrimStringPieceT(input, trim_chars, positions);
 }
 
 StringPiece TrimString(StringPiece input,
-                       const base::StringPiece& trim_chars,
+                       const StringPiece& trim_chars,
                        TrimPositions positions) {
   return TrimStringPieceT(input, trim_chars, positions);
 }
@@ -592,7 +588,7 @@ bool StartsWithT(BasicStringPiece<Str> str,
       return std::equal(
           search_for.begin(), search_for.end(),
           source.begin(),
-          base::CaseInsensitiveCompareASCII<typename Str::value_type>());
+          CaseInsensitiveCompareASCII<typename Str::value_type>());
 
     default:
       NOTREACHED();
@@ -647,7 +643,7 @@ bool EndsWithT(BasicStringPiece<Str> str,
       return std::equal(
           source.begin(), source.end(),
           search_for.begin(),
-          base::CaseInsensitiveCompareASCII<typename Str::value_type>());
+          CaseInsensitiveCompareASCII<typename Str::value_type>());
 
     default:
       NOTREACHED();
@@ -880,7 +876,7 @@ char* WriteInto(std::string* str, size_t length_with_null) {
   return WriteIntoT(str, length_with_null);
 }
 
-char16* WriteInto(base::string16* str, size_t length_with_null) {
+char16* WriteInto(string16* str, size_t length_with_null) {
   return WriteIntoT(str, length_with_null);
 }
 
@@ -912,25 +908,22 @@ string16 JoinString(const std::vector<string16>& parts,
   return JoinStringT(parts, separator);
 }
 
-}  // namespace base
-
 template<class FormatStringType, class OutStringType>
-OutStringType DoReplaceStringPlaceholders(const FormatStringType& format_string,
-    const std::vector<OutStringType>& subst, std::vector<size_t>* offsets) {
+OutStringType DoReplaceStringPlaceholders(
+    const FormatStringType& format_string,
+    const std::vector<OutStringType>& subst,
+    std::vector<size_t>* offsets) {
   size_t substitutions = subst.size();
 
   size_t sub_length = 0;
-  for (typename std::vector<OutStringType>::const_iterator iter = subst.begin();
-       iter != subst.end(); ++iter) {
-    sub_length += iter->length();
-  }
+  for (const auto& cur : subst)
+    sub_length += cur.length();
 
   OutStringType formatted;
   formatted.reserve(format_string.length() + sub_length);
 
   std::vector<ReplacementOffset> r_offsets;
-  for (typename FormatStringType::const_iterator i = format_string.begin();
-       i != format_string.end(); ++i) {
+  for (auto i = format_string.begin(); i != format_string.end(); ++i) {
     if ('$' == *i) {
       if (i + 1 != format_string.end()) {
         ++i;
@@ -968,10 +961,8 @@ OutStringType DoReplaceStringPlaceholders(const FormatStringType& format_string,
     }
   }
   if (offsets) {
-    for (std::vector<ReplacementOffset>::const_iterator i = r_offsets.begin();
-         i != r_offsets.end(); ++i) {
-      offsets->push_back(i->offset);
-    }
+    for (const auto& cur : r_offsets)
+      offsets->push_back(cur.offset);
   }
   return formatted;
 }
@@ -982,7 +973,7 @@ string16 ReplaceStringPlaceholders(const string16& format_string,
   return DoReplaceStringPlaceholders(format_string, subst, offsets);
 }
 
-std::string ReplaceStringPlaceholders(const base::StringPiece& format_string,
+std::string ReplaceStringPlaceholders(const StringPiece& format_string,
                                       const std::vector<std::string>& subst,
                                       std::vector<size_t>* offsets) {
   return DoReplaceStringPlaceholders(format_string, subst, offsets);
@@ -1026,9 +1017,11 @@ size_t lcpyT(CHAR* dst, const CHAR* src, size_t dst_size) {
 
 }  // namespace
 
-size_t base::strlcpy(char* dst, const char* src, size_t dst_size) {
+size_t strlcpy(char* dst, const char* src, size_t dst_size) {
   return lcpyT<char>(dst, src, dst_size);
 }
-size_t base::wcslcpy(wchar_t* dst, const wchar_t* src, size_t dst_size) {
+size_t wcslcpy(wchar_t* dst, const wchar_t* src, size_t dst_size) {
   return lcpyT<wchar_t>(dst, src, dst_size);
 }
+
+}  // namespace base

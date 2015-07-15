@@ -144,7 +144,7 @@ std::string ReplaceHtmlTemplateValues(
 
   substitutions.push_back(script.str());                                  // $8
 
-  return ReplaceStringPlaceholders(html_template, substitutions, NULL);
+  return base::ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
 
 }  // namespace

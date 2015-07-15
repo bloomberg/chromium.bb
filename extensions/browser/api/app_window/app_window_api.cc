@@ -86,7 +86,7 @@ bool CheckBoundsConflict(const scoped_ptr<int>& inner_property,
   if (inner_property.get() && outer_property.get()) {
     std::vector<std::string> subst;
     subst.push_back(property_name);
-    *error = ReplaceStringPlaceholders(
+    *error = base::ReplaceStringPlaceholders(
         app_window_constants::kConflictingBoundsOptions, subst, NULL);
     return false;
   }

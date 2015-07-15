@@ -63,7 +63,7 @@ void SharedResourcesDataSourceIOS::StartDataRequest(
     const std::string& chrome_shared =
         web_client->GetDataResource(idr, ui::SCALE_FACTOR_NONE).as_string();
     std::string replaced =
-        ReplaceStringPlaceholders(chrome_shared, placeholders, nullptr);
+        base::ReplaceStringPlaceholders(chrome_shared, placeholders, nullptr);
     bytes = base::RefCountedString::TakeString(&replaced);
   } else {
     bytes = web_client->GetDataResourceBytes(idr);
