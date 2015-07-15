@@ -16,6 +16,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "base/command_line.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_map.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/value_builder.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 namespace {
 
 const int kNotificationVibrationPattern[] = { 100, 200, 300 };
@@ -270,3 +288,61 @@ TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
           origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_GT(after_persistent_notification, after_page_notification);
 }
+
+#if defined(ENABLE_EXTENSIONS)
+
+TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
+#if defined(OS_CHROMEOS)
+  // The ExtensionService on Chrome OS requires these objects to be initialized.
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service;
+  chromeos::ScopedTestCrosSettings test_cros_settings;
+  chromeos::ScopedTestUserManager test_user_manager;
+#endif
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  extensions::TestExtensionSystem* test_extension_system =
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(profile()));
+
+  ExtensionService* extension_service =
+      test_extension_system->CreateExtensionService(
+          &command_line, base::FilePath() /* install_directory */,
+          false /* autoupdate_enabled*/);
+
+  // Create a mocked extension that has the notifications API permission.
+  scoped_refptr<extensions::Extension> extension =
+      extensions::ExtensionBuilder().SetManifest(
+          extensions::DictionaryBuilder()
+              .Set("name", "NotificationTest")
+              .Set("version", "1.0")
+              .Set("manifest_version", 2)
+              .Set("description", "Test Extension")
+              .Set("permissions",
+                   extensions::ListBuilder().Append("notifications"))).Build();
+
+  // Install the extension on the faked extension service, and verify that it
+  // has been added to the extension registry successfully.
+  extension_service->AddExtension(extension.get());
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile());
+
+  ASSERT_TRUE(registry->GetExtensionById(
+      extension->id(), extensions::ExtensionRegistry::ENABLED));
+
+  const int kFakeRenderProcessId = 42;
+
+  // Mock that the extension is running in a fake render process id.
+  extensions::ProcessMap::Get(profile())->Insert(extension->id(),
+                                                 kFakeRenderProcessId,
+                                                 -1 /* site_instance_id */);
+
+  // Verify that the service indicates that permission has been granted. We only
+  // check the UI thread-method for now, as that's the one guarding the behavior
+  // in the browser process.
+  EXPECT_EQ(blink::WebNotificationPermissionAllowed,
+            service()->CheckPermissionOnUIThread(profile(),
+                                                 extension->url(),
+                                                 kFakeRenderProcessId));
+}
+
+#endif  // defined(ENABLE_EXTENSIONS)
