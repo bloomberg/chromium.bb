@@ -1748,7 +1748,7 @@ static const struct weston_pointer_grab_interface move_grab_interface = {
 };
 
 static int
-surface_move(struct shell_surface *shsurf, struct weston_seat *seat,
+surface_move(struct shell_surface *shsurf, struct weston_pointer *pointer,
 	     bool client_initiated)
 {
 	struct weston_move_grab *move;
@@ -1765,13 +1765,13 @@ surface_move(struct shell_surface *shsurf, struct weston_seat *seat,
 		return -1;
 
 	move->dx = wl_fixed_from_double(shsurf->view->geometry.x) -
-			seat->pointer->grab_x;
+			pointer->grab_x;
 	move->dy = wl_fixed_from_double(shsurf->view->geometry.y) -
-			seat->pointer->grab_y;
+			pointer->grab_y;
 	move->client_initiated = client_initiated;
 
 	shell_grab_start(&move->base, &move_grab_interface, shsurf,
-			 seat->pointer, DESKTOP_SHELL_CURSOR_MOVE);
+			 pointer, DESKTOP_SHELL_CURSOR_MOVE);
 
 	return 0;
 }
@@ -1790,7 +1790,7 @@ common_surface_move(struct wl_resource *resource,
 	    seat->pointer->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->pointer->focus->surface);
 		if ((surface == shsurf->surface) &&
-		    (surface_move(shsurf, seat, true) < 0))
+		    (surface_move(shsurf, seat->pointer, true) < 0))
 			wl_resource_post_no_memory(resource);
 	} else if (seat->touch &&
 		   seat->touch->focus &&
@@ -2041,11 +2041,12 @@ busy_cursor_grab_button(struct weston_pointer_grab *base,
 {
 	struct shell_grab *grab = (struct shell_grab *) base;
 	struct shell_surface *shsurf = grab->shsurf;
-	struct weston_seat *seat = grab->grab.pointer->seat;
+	struct weston_pointer *pointer = grab->grab.pointer;
+	struct weston_seat *seat = pointer->seat;
 
 	if (shsurf && button == BTN_LEFT && state) {
 		activate(shsurf->shell, shsurf->surface, seat, true);
-		surface_move(shsurf, seat, false);
+		surface_move(shsurf, pointer, false);
 	} else if (shsurf && button == BTN_RIGHT && state) {
 		activate(shsurf->shell, shsurf->surface, seat, true);
 		surface_rotate(shsurf, seat);
@@ -3059,7 +3060,7 @@ shell_interface_set_maximized(struct shell_surface *shsurf)
 static int
 shell_interface_move(struct shell_surface *shsurf, struct weston_seat *ws)
 {
-	return surface_move(shsurf, ws, true);
+	return surface_move(shsurf, ws->pointer, true);
 }
 
 static const struct weston_pointer_grab_interface popup_grab_interface;
@@ -4609,7 +4610,7 @@ move_binding(struct weston_pointer *pointer, uint32_t time,
 	    shsurf->state.maximized)
 		return;
 
-	surface_move(shsurf, pointer->seat, false);
+	surface_move(shsurf, pointer, false);
 }
 
 static void
