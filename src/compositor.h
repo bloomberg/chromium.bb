@@ -1213,31 +1213,32 @@ weston_binding_list_destroy_all(struct wl_list *list);
 
 void
 weston_compositor_run_key_binding(struct weston_compositor *compositor,
-				  struct weston_seat *seat, uint32_t time,
+				  struct weston_keyboard *keyboard,
+				  uint32_t time,
 				  uint32_t key,
 				  enum wl_keyboard_key_state state);
 
 void
 weston_compositor_run_modifier_binding(struct weston_compositor *compositor,
-				       struct weston_seat *seat,
+				       struct weston_keyboard *keyboard,
 				       enum weston_keyboard_modifier modifier,
 				       enum wl_keyboard_key_state state);
 void
 weston_compositor_run_button_binding(struct weston_compositor *compositor,
-				     struct weston_seat *seat, uint32_t time,
+				     struct weston_pointer *pointer, uint32_t time,
 				     uint32_t button,
 				     enum wl_pointer_button_state value);
 void
 weston_compositor_run_touch_binding(struct weston_compositor *compositor,
-				    struct weston_seat *seat, uint32_t time,
+				    struct weston_touch *touch, uint32_t time,
 				    int touch_type);
 int
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
-				   struct weston_seat *seat, uint32_t time,
+				   struct weston_pointer *pointer, uint32_t time,
 				   uint32_t axis, int32_t value);
 int
 weston_compositor_run_debug_binding(struct weston_compositor *compositor,
-				    struct weston_seat *seat, uint32_t time,
+				    struct weston_keyboard *keyboard, uint32_t time,
 				    uint32_t key,
 				    enum wl_keyboard_key_state state);
 

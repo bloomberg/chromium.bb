@@ -973,7 +973,7 @@ run_modifier_bindings(struct weston_seat *seat, uint32_t old, uint32_t new)
 	for (i = 0; i < ARRAY_LENGTH(mods); i++) {
 		if (diff & (1 << mods[i].xkb))
 			weston_compositor_run_modifier_binding(compositor,
-			                                       seat,
+			                                       keyboard,
 			                                       mods[i].weston,
 			                                       WL_KEYBOARD_KEY_STATE_PRESSED);
 	}
@@ -982,7 +982,7 @@ run_modifier_bindings(struct weston_seat *seat, uint32_t old, uint32_t new)
 	for (i = 0; i < ARRAY_LENGTH(mods); i++) {
 		if (diff & (1 << mods[i].xkb))
 			weston_compositor_run_modifier_binding(compositor,
-			                                       seat,
+			                                       keyboard,
 			                                       mods[i].weston,
 			                                       WL_KEYBOARD_KEY_STATE_RELEASED);
 	}
@@ -1034,7 +1034,7 @@ notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 		pointer->button_count--;
 	}
 
-	weston_compositor_run_button_binding(compositor, seat, time, button,
+	weston_compositor_run_button_binding(compositor, pointer, time, button,
 					     state);
 
 	pointer->grab->interface->button(pointer->grab, time, button, state);
@@ -1058,8 +1058,8 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 	if (!value)
 		return;
 
-	if (weston_compositor_run_axis_binding(compositor, seat,
-						   time, axis, value))
+	if (weston_compositor_run_axis_binding(compositor, pointer,
+					       time, axis, value))
 		return;
 
 	resource_list = &pointer->focus_resource_list;
@@ -1346,8 +1346,8 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 
 	if (grab == &keyboard->default_grab ||
 	    grab == &keyboard->input_method_grab) {
-		weston_compositor_run_key_binding(compositor, seat, time, key,
-						  state);
+		weston_compositor_run_key_binding(compositor, keyboard, time,
+						  key, state);
 		grab = keyboard->grab;
 	}
 
@@ -1542,7 +1542,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			return;
 		}
 
-		weston_compositor_run_touch_binding(ec, seat,
+		weston_compositor_run_touch_binding(ec, touch,
 						    time, touch_type);
 
 		grab->interface->down(grab, time, touch_id, sx, sy);
