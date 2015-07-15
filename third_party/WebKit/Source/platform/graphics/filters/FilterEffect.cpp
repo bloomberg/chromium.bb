@@ -192,19 +192,17 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaI
 
 SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) const
 {
-    FloatRect rect = filter()->filterRegion();
+    FloatRect rect;
     uint32_t flags = 0;
     FloatRect boundaries = effectBoundaries();
     boundaries.move(cropOffset);
     if (hasX()) {
         rect.setX(boundaries.x());
         flags |= SkImageFilter::CropRect::kHasLeft_CropEdge;
-        flags |= SkImageFilter::CropRect::kHasRight_CropEdge;
     }
     if (hasY()) {
         rect.setY(boundaries.y());
         flags |= SkImageFilter::CropRect::kHasTop_CropEdge;
-        flags |= SkImageFilter::CropRect::kHasBottom_CropEdge;
     }
     if (hasWidth()) {
         rect.setWidth(boundaries.width());
