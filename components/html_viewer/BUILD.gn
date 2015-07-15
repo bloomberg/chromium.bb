@@ -198,12 +198,10 @@ mojo_native_application("html_viewer") {
   deps = [
     ":html_viewer_resources_grit",
     ":lib",
-    "//third_party/icu:icudata",
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     "//ui/resources:ui_test_pak",
   ]
   resources = [
-    "$root_out_dir/icudtl.dat",
     "$root_out_dir/ui_test.pak",
     "$target_gen_dir/html_viewer_resources.pak",
   ]
@@ -234,13 +232,11 @@ mojo_native_application("layout_test_html_viewer") {
     "//components/test_runner",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:test_support",
-    "//third_party/icu:icudata",
     "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
     "//ui/resources:ui_test_pak",
     "//url",
   ]
   resources = [
-    "$root_out_dir/icudtl.dat",
     "$root_out_dir/ui_test.pak",
     "$target_gen_dir/html_viewer_resources.pak",
   ]

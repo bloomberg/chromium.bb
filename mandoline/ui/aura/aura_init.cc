@@ -20,12 +20,10 @@ namespace mandoline {
 namespace {
 
 // Paths resources are loaded from.
-const char kResourceIcudtl[] = "icudtl.dat";
 const char kResourceUIPak[] = "mandoline_ui.pak";
 
 std::set<std::string> GetResourcePaths() {
   std::set<std::string> paths;
-  paths.insert(kResourceIcudtl);
   paths.insert(kResourceUIPak);
   return paths;
 }
@@ -55,7 +53,7 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
     return;
   CHECK(resource_loader.loaded());
   base::i18n::InitializeICUWithFileDescriptor(
-      resource_loader.ReleaseFile(kResourceIcudtl).TakePlatformFile(),
+      resource_loader.GetICUFile().TakePlatformFile(),
       base::MemoryMappedFile::Region::kWholeFile);
   ui::RegisterPathProvider();
   ui::ResourceBundle::InitSharedInstanceWithPakPath(base::FilePath());

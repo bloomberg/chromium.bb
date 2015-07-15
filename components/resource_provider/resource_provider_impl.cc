@@ -10,11 +10,14 @@
 #include "base/logging.h"
 #include "components/resource_provider/file_utils.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
+#include "url/gurl.h"
 
 using mojo::ScopedHandle;
 
 namespace resource_provider {
 namespace {
+
+const char kResourceIcudtl[] = "icudtl.dat";
 
 ScopedHandle GetHandleForPath(const base::FilePath& path) {
   if (path.empty())
@@ -61,6 +64,14 @@ void ResourceProviderImpl::GetResources(mojo::Array<mojo::String> paths,
     }
   }
   callback.Run(handles.Pass());
+}
+
+void ResourceProviderImpl::GetICUHandle(const GetICUHandleCallback& callback) {
+  const base::FilePath resource_app_path(
+      GetPathForApplicationUrl(GURL("mojo:resource_provider")));
+  mojo::ScopedHandle handle = GetHandleForPath(
+    GetPathForResourceNamed(resource_app_path, kResourceIcudtl));
+  callback.Run(handle.Pass());
 }
 
 }  // namespace resource_provider

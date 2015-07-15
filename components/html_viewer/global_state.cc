@@ -38,7 +38,6 @@ const char kJavaScriptFlags[] = "js-flags";
 size_t kDesiredMaxMemory = 20 * 1024 * 1024;
 
 // Paths resources are loaded from.
-const char kResourceIcudtl[] = "icudtl.dat";
 const char kResourceResourcesPak[] = "html_viewer_resources.pak";
 const char kResourceUIPak[] = "ui_test.pak";
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
@@ -49,7 +48,6 @@ const char kResourceSnapshotBlob[] = "snapshot_blob.bin";
 std::set<std::string> GetResourcePaths() {
   std::set<std::string> paths;
   paths.insert(kResourceResourcesPak);
-  paths.insert(kResourceIcudtl);
   paths.insert(kResourceUIPak);
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   paths.insert(kResourceNativesBlob);
@@ -113,7 +111,7 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
 #endif
   blink::initialize(blink_platform_.get());
   base::i18n::InitializeICUWithFileDescriptor(
-      resource_loader_.ReleaseFile(kResourceIcudtl).TakePlatformFile(),
+      resource_loader_.GetICUFile().TakePlatformFile(),
       base::MemoryMappedFile::Region::kWholeFile);
 
   ui::RegisterPathProvider();

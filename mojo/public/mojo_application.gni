@@ -322,6 +322,29 @@ if (is_android) {
     assert(defined(invoker.input_so))
     assert(defined(invoker.input_dex_jar))
 
+    mojo_deps = []
+    if (defined(invoker.resources)) {
+      base_target_name = target_name
+      if (defined(invoker.output_name)) {
+        base_target_name = invoker.output_name
+      }
+
+      copy_step_name = "${base_target_name}__copy_resources"
+      copy(copy_step_name) {
+        sources = invoker.resources
+        outputs = [
+          "${root_out_dir}/${base_target_name}/resources/{{source_file_part}}",
+        ]
+        if (defined(invoker.testonly)) {
+          testonly = invoker.testonly
+        }
+        if (defined(invoker.deps)) {
+          deps = invoker.deps
+        }
+      }
+      mojo_deps += [ ":$copy_step_name" ]
+    }
+
     zip_action_name = "${target_name}_zip"
     zip_action_output = "$target_gen_dir/${target_name}.zip"
     prepend_action_name = target_name
@@ -382,6 +405,8 @@ if (is_android) {
         "--output=$rebase_output",
         "--line=#!mojo mojo:android_handler",
       ]
+
+      deps = mojo_deps
 
       public_deps = [
         ":$zip_action_name",

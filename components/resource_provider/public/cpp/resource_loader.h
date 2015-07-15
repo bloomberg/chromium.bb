@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/platform_handle/platform_handle.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/handle.h"
@@ -46,6 +45,8 @@ class ResourceLoader {
   // Releases and returns the file wrapping the handle.
   base::File ReleaseFile(const std::string& path);
 
+  base::File GetICUFile();
+
   bool loaded() const { return loaded_; }
 
  private:
@@ -54,8 +55,7 @@ class ResourceLoader {
   // Callback when resources have loaded.
   void OnGotResources(const std::vector<std::string>& paths,
                       mojo::Array<mojo::ScopedHandle> resources);
-
-  mojo::ServiceProviderPtr resource_provider_service_provider_;
+  void OnGotICU(base::File* file, mojo::ScopedHandle handle);
 
   ResourceProviderPtr resource_provider_;
 

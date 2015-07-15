@@ -14,13 +14,9 @@ mojo_native_application("omnibox") {
     "//mandoline/services/navigation/public/interfaces",
     "//mandoline/ui/common/resources",
     "//mojo/application/public/cpp",
-    "//third_party/icu:icudata",
   ]
 
-  resources = [
-    "$root_out_dir/icudtl.dat",
-    "$root_out_dir/mandoline_ui.pak",
-  ]
+  resources = [ "$root_out_dir/mandoline_ui.pak" ]
 }
 
 source_set("lib") {
