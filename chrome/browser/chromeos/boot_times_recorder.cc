@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -80,6 +81,11 @@ const std::string GetTabUrl(RenderWidgetHost* rwh) {
 // written, or -1 on error.
 // TODO(satorux): Move this to file_util.
 int AppendFile(const base::FilePath& file_path, const char* data, int size) {
+  // Appending boot times to symlink in /tmp is a security risk for
+  // developers with chromeos=1 builds.
+  if (!base::SysInfo::IsRunningOnChromeOS() && base::IsLink(file_path))
+    return -1;
+
   FILE* file = base::OpenFile(file_path, "a");
   if (!file)
     return -1;
