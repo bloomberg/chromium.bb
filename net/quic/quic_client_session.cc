@@ -307,6 +307,17 @@ QuicClientSession::~QuicClientSession() {
     }
   }
 
+  // The MTU used by QUIC is limited to a fairly small set of predefined values
+  // (initial values and MTU discovery values), but does not fare well when
+  // bucketed.  Because of that, a sparse histogram is used here.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ClientSideMtu",
+                              connection()->max_packet_length());
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ServerSideMtu",
+                              stats.max_received_packet_size);
+
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.MtuProbesSent",
+                       connection()->mtu_probe_count());
+
   if (stats.max_sequence_reordering == 0)
     return;
   const base::HistogramBase::Sample kMaxReordering = 100;

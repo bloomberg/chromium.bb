@@ -22142,6 +22142,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ClientSideMtu" units="bytes">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The final maximum packet size of the connection used by the client before
+    the session is closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ClosedDuringInitializeSession" enum="Boolean">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -22394,6 +22402,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.MtuProbesSent">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of MTU probes sent by the client during the session.  Logged when
+    the connection is destroyed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.NumOpenStreams">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -22545,6 +22561,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of request for secure resources over QUIC sessions. True if the
     session is secure, false if it is not.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.ServerSideMtu" units="bytes">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The largest packet which the client received from the server during the
+    session.
   </summary>
 </histogram>
 
