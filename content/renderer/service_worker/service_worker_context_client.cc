@@ -432,11 +432,6 @@ void ServiceWorkerContextClient::sendDevToolsMessage(
 void ServiceWorkerContextClient::didHandleActivateEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "ServiceWorker.ActivateEvent.Time",
-      base::TimeTicks::Now() - activate_start_timings_[request_id]);
-  activate_start_timings_.erase(request_id);
-
   Send(new ServiceWorkerHostMsg_ActivateEventFinished(
       GetRoutingID(), request_id, result));
 }
@@ -444,20 +439,11 @@ void ServiceWorkerContextClient::didHandleActivateEvent(
 void ServiceWorkerContextClient::didHandleInstallEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "ServiceWorker.InstallEvent.Time",
-      base::TimeTicks::Now() - install_start_timings_[request_id]);
-  install_start_timings_.erase(request_id);
-
   Send(new ServiceWorkerHostMsg_InstallEventFinished(
       GetRoutingID(), request_id, result));
 }
 
 void ServiceWorkerContextClient::didHandleFetchEvent(int request_id) {
-  UMA_HISTOGRAM_TIMES(
-      "ServiceWorker.FetchEventExecutionTime",
-      base::TimeTicks::Now() - fetch_start_timings_[request_id]);
-  fetch_start_timings_.erase(request_id);
   Send(new ServiceWorkerHostMsg_FetchEventFinished(
       GetRoutingID(), request_id,
       SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
@@ -467,11 +453,6 @@ void ServiceWorkerContextClient::didHandleFetchEvent(int request_id) {
 void ServiceWorkerContextClient::didHandleFetchEvent(
     int request_id,
     const blink::WebServiceWorkerResponse& web_response) {
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "ServiceWorker.FetchEvent.Time",
-      base::TimeTicks::Now() - fetch_start_timings_[request_id]);
-  fetch_start_timings_.erase(request_id);
-
   ServiceWorkerHeaderMap headers;
   GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
   ServiceWorkerResponse response(
@@ -488,11 +469,6 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
 void ServiceWorkerContextClient::didHandleNotificationClickEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  UMA_HISTOGRAM_MEDIUM_TIMES(
-      "ServiceWorker.NotificationClickEvent.Time",
-      base::TimeTicks::Now() - notification_click_start_timings_[request_id]);
-  notification_click_start_timings_.erase(request_id);
-
   Send(new ServiceWorkerHostMsg_NotificationClickEventFinished(
       GetRoutingID(), request_id));
 }
@@ -500,13 +476,6 @@ void ServiceWorkerContextClient::didHandleNotificationClickEvent(
 void ServiceWorkerContextClient::didHandlePushEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  if (result == blink::WebServiceWorkerEventResultCompleted) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.PushEvent.Time",
-        base::TimeTicks::Now() - push_start_timings_[request_id]);
-  }
-  push_start_timings_.erase(request_id);
-
   Send(new ServiceWorkerHostMsg_PushEventFinished(
       GetRoutingID(), request_id, result));
 }
@@ -679,14 +648,12 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
 void ServiceWorkerContextClient::OnActivateEvent(int request_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnActivateEvent");
-  activate_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchActivateEvent(request_id);
 }
 
 void ServiceWorkerContextClient::OnInstallEvent(int request_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnInstallEvent");
-  install_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchInstallEvent(request_id);
 }
 
@@ -718,7 +685,6 @@ void ServiceWorkerContextClient::OnFetchEvent(
       GetBlinkRequestContext(request.request_context_type));
   webRequest.setFrameType(GetBlinkFrameType(request.frame_type));
   webRequest.setIsReload(request.is_reload);
-  fetch_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchFetchEvent(request_id, webRequest);
 }
 
@@ -734,7 +700,6 @@ void ServiceWorkerContextClient::OnNotificationClickEvent(
     const PlatformNotificationData& notification_data) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnNotificationClickEvent");
-  notification_click_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchNotificationClickEvent(
       request_id,
       persistent_notification_id,
@@ -745,7 +710,6 @@ void ServiceWorkerContextClient::OnPushEvent(int request_id,
                                              const std::string& data) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnPushEvent");
-  push_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchPushEvent(request_id, blink::WebString::fromUTF8(data));
 }
 

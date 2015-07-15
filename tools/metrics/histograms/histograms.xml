@@ -37864,6 +37864,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.FetchEvent.Fallback.Time" units="milliseconds">
+  <owner>jeremyarcher@chromium.org</owner>
+  <summary>
+    The time taken between dispatching a FetchEvent to a Service Worker and
+    receiving a fallback-to-network response. Includes the time for the
+    waitUntil() promise to settle, if any.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.FetchEvent.HasResponse.Time"
+    units="milliseconds">
+  <owner>jeremyarcher@chromium.org</owner>
+  <summary>
+    The time taken between dispatching a FetchEvent to a Service Worker and
+    receiving a response. Includes the time for the respondWith() promise to
+    settle.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
     enum="ServiceWorkerStatusCode">
   <owner>falken@chromium.org</owner>
@@ -37884,6 +37903,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServiceWorker.FetchEvent.Time" units="milliseconds">
   <owner>shimazu@chromium.org</owner>
+  <obsolete>
+    Deprecated on 2015-07-13; please use
+    ServiceWorker.FetchEvent.HasResponse.Time or
+    ServiceWorker.FetchEvent.Fallback.Time.
+  </obsolete>
   <summary>
     Execution time of ServiceWorkerGlobalScope.onfetch. Includes the time for
     the respondWith() promise to settle.
@@ -37904,8 +37928,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ServiceWorker.InstallEvent.Time" units="milliseconds">
   <owner>shimazu@chromium.org</owner>
   <summary>
-    Execution time of ServiceWorkerGlobalScope.oninstall. Includes the time for
-    the waitUntil() promise to settle.
+    The time taken between dispatching an InstallEvent to a Service Worker and
+    receiving a message that it finished handling the event. Includes the time
+    for the waitUntil() promise to settle.
   </summary>
 </histogram>
 
@@ -37943,8 +37968,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="milliseconds">
   <owner>peter@chromium.org</owner>
   <summary>
-    Execution time of ServiceWorkerGlobalScope.onnotificationclick. Includes the
-    time for the waitUntil() promise to settle.
+    The time taken between dispatching a NotificationClickEvent to a Service
+    Worker and receiving a message that it finished handling the event. Includes
+    the time for the waitUntil() promise to settle.
   </summary>
 </histogram>
 
@@ -37962,8 +37988,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ServiceWorker.PushEvent.Time" units="milliseconds">
   <owner>johnme@chromium.org</owner>
   <summary>
-    Execution time of ServiceWorkerGlobalScope.onpush. Includes the time for the
-    waitUntil() promise to settle.
+    The time taken between dispatching a PushEvent to a Service Worker and
+    receiving a message that it finished handling the event. Includes the time
+    for the waitUntil() promise to settle.
   </summary>
 </histogram>
 

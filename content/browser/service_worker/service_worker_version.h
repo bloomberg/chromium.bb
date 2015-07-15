@@ -328,6 +328,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
+  friend class ServiceWorkerMetrics;
   friend class ServiceWorkerURLRequestJobTest;
   friend class ServiceWorkerVersionBrowserTest;
 
@@ -367,11 +368,20 @@ class CONTENT_EXPORT ServiceWorkerVersion
   };
 
   struct RequestInfo {
-    RequestInfo(int id, RequestType type);
+    RequestInfo(int id, RequestType type, const base::TimeTicks& time);
     ~RequestInfo();
     int id;
     RequestType type;
     base::TimeTicks time;
+  };
+
+  template <typename CallbackType>
+  struct PendingRequest {
+    PendingRequest(const CallbackType& callback, const base::TimeTicks& time);
+    ~PendingRequest();
+
+    CallbackType callback;
+    base::TimeTicks start_time;
   };
 
   // Timeout for the worker to start.
@@ -499,9 +509,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void RemoveCallbackAndStopIfRedundant(IDMAP* callbacks, int request_id);
 
   template <typename CallbackType>
-  int AddRequest(const CallbackType& callback,
-                 IDMap<CallbackType, IDMapOwnPointer>* callback_map,
-                 RequestType request_type);
+  int AddRequest(
+      const CallbackType& callback,
+      IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
+      RequestType request_type);
 
   bool OnRequestTimeout(const RequestInfo& info);
   void SetAllRequestTimes(const base::TimeTicks& ticks);
@@ -535,15 +546,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Message callbacks. (Update HasInflightRequests() too when you update this
   // list.)
-  IDMap<StatusCallback, IDMapOwnPointer> activate_callbacks_;
-  IDMap<StatusCallback, IDMapOwnPointer> install_callbacks_;
-  IDMap<FetchCallback, IDMapOwnPointer> fetch_callbacks_;
-  IDMap<StatusCallback, IDMapOwnPointer> sync_callbacks_;
-  IDMap<StatusCallback, IDMapOwnPointer> notification_click_callbacks_;
-  IDMap<StatusCallback, IDMapOwnPointer> push_callbacks_;
-  IDMap<StatusCallback, IDMapOwnPointer> geofencing_callbacks_;
-  IDMap<CrossOriginConnectCallback, IDMapOwnPointer>
-      cross_origin_connect_callbacks_;
+  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> activate_requests_;
+  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> install_requests_;
+  IDMap<PendingRequest<FetchCallback>, IDMapOwnPointer> fetch_requests_;
+  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> sync_requests_;
+  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>
+      notification_click_requests_;
+  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> push_requests_;
+  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> geofencing_requests_;
+  IDMap<PendingRequest<CrossOriginConnectCallback>, IDMapOwnPointer>
+      cross_origin_connect_requests_;
 
   std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
 

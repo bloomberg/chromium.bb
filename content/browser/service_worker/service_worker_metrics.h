@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_database.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponseError.h"
 
 class GURL;
@@ -129,6 +130,11 @@ class ServiceWorkerMetrics {
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,
                                      ServiceWorkerStatusCode status);
+
+  // Records the amount of time spent handling a fetch event with the given
+  // result.
+  static void RecordFetchEventTime(ServiceWorkerFetchEventResult result,
+                                   const base::TimeDelta& time);
 
   // Records result of a ServiceWorkerURLRequestJob that was forwarded to
   // the service worker.

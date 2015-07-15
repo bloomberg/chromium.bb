@@ -219,13 +219,6 @@ class ServiceWorkerContextClient
   // destructed on the worker thread in willDestroyWorkerContext.
   scoped_ptr<WorkerContextData> context_;
 
-  // Capture timestamps for UMA
-  std::map<int, base::TimeTicks> activate_start_timings_;
-  std::map<int, base::TimeTicks> fetch_start_timings_;
-  std::map<int, base::TimeTicks> install_start_timings_;
-  std::map<int, base::TimeTicks> notification_click_start_timings_;
-  std::map<int, base::TimeTicks> push_start_timings_;
-
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };
 

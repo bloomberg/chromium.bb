@@ -171,6 +171,23 @@ void ServiceWorkerMetrics::RecordFetchEventStatus(
   }
 }
 
+void ServiceWorkerMetrics::RecordFetchEventTime(
+    ServiceWorkerFetchEventResult result,
+    const base::TimeDelta& time) {
+  switch (result) {
+    case ServiceWorkerFetchEventResult::
+        SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.FetchEvent.Fallback.Time",
+                                 time);
+      break;
+    case ServiceWorkerFetchEventResult::
+        SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.FetchEvent.HasResponse.Time",
+                                 time);
+      break;
+  }
+}
+
 void ServiceWorkerMetrics::RecordURLRequestJobResult(
     bool is_main_resource,
     URLRequestJobResult result) {
