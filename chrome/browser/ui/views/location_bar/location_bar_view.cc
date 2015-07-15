@@ -1335,10 +1335,6 @@ void LocationBarView::OnSetFocus() {
   GetFocusManager()->SetFocusedView(this);
 }
 
-InstantController* LocationBarView::GetInstant() {
-  return delegate_->GetInstant();
-}
-
 const ToolbarModel* LocationBarView::GetToolbarModel() const {
   return delegate_->GetToolbarModel();
 }

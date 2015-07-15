@@ -93,9 +93,6 @@ class LocationBarView : public LocationBar,
     // Should return the current web contents.
     virtual content::WebContents* GetWebContents() = 0;
 
-    // Returns the InstantController, or NULL if there isn't one.
-    virtual InstantController* GetInstant() = 0;
-
     virtual ToolbarModel* GetToolbarModel() = 0;
     virtual const ToolbarModel* GetToolbarModel() const = 0;
 
@@ -392,7 +389,6 @@ class LocationBarView : public LocationBar,
   // OmniboxEditController:
   void OnChanged() override;
   void OnSetFocus() override;
-  InstantController* GetInstant() override;
   const ToolbarModel* GetToolbarModel() const override;
 
   // DropdownBarHostDelegate:

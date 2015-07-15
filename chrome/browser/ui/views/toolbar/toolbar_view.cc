@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -390,11 +389,6 @@ ToolbarModel* ToolbarView::GetToolbarModel() {
 
 const ToolbarModel* ToolbarView::GetToolbarModel() const {
   return browser_->toolbar_model();
-}
-
-InstantController* ToolbarView::GetInstant() {
-  return browser_->instant_controller() ?
-      browser_->instant_controller()->instant() : NULL;
 }
 
 ContentSettingBubbleModelDelegate*

@@ -287,10 +287,6 @@ const ToolbarModel* SimpleWebViewDialog::GetToolbarModel() const {
   return toolbar_model_.get();
 }
 
-InstantController* SimpleWebViewDialog::GetInstant() {
-  return NULL;
-}
-
 views::Widget* SimpleWebViewDialog::CreateViewsBubble(
     views::BubbleDelegateView* bubble_delegate) {
   return views::BubbleDelegateView::CreateBubble(bubble_delegate);

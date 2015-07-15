@@ -161,7 +161,6 @@ class LocationBarViewMac : public LocationBar,
   void OnChanged() override;
   void OnSetFocus() override;
   void ShowURL() override;
-  InstantController* GetInstant() override;
   content::WebContents* GetWebContents() override;
   ToolbarModel* GetToolbarModel() override;
   const ToolbarModel* GetToolbarModel() const override;

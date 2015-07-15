@@ -62,7 +62,6 @@ class TestingOmniboxEditController : public OmniboxEditController {
   void OnChanged() override {}
   void OnSetFocus() override {}
   void ShowURL() override {}
-  InstantController* GetInstant() override { return NULL; }
   content::WebContents* GetWebContents() override { return NULL; }
   ToolbarModel* GetToolbarModel() override { return NULL; }
   const ToolbarModel* GetToolbarModel() const override { return NULL; }

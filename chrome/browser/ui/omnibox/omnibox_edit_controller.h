@@ -11,7 +11,6 @@
 #include "url/gurl.h"
 
 class CommandUpdater;
-class InstantController;
 class ToolbarModel;
 
 namespace content {
@@ -46,9 +45,6 @@ class OmniboxEditController {
 
   // Shows the URL.
   virtual void ShowURL() = 0;
-
-  // Returns the InstantController, or NULL if instant is not enabled.
-  virtual InstantController* GetInstant() = 0;
 
   // Returns the WebContents of the currently active tab.
   virtual content::WebContents* GetWebContents() = 0;

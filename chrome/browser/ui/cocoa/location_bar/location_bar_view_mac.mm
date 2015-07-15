@@ -28,7 +28,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
@@ -553,11 +552,6 @@ void LocationBarViewMac::OnSetFocus() {
 
 void LocationBarViewMac::ShowURL() {
   omnibox_view_->ShowURL();
-}
-
-InstantController* LocationBarViewMac::GetInstant() {
-  return browser_->instant_controller() ?
-      browser_->instant_controller()->instant() : NULL;
 }
 
 WebContents* LocationBarViewMac::GetWebContents() {

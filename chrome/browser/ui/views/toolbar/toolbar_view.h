@@ -120,7 +120,6 @@ class ToolbarView : public views::AccessiblePaneView,
   content::WebContents* GetWebContents() override;
   ToolbarModel* GetToolbarModel() override;
   const ToolbarModel* GetToolbarModel() const override;
-  InstantController* GetInstant() override;
   views::Widget* CreateViewsBubble(
       views::BubbleDelegateView* bubble_delegate) override;
   PageActionImageView* CreatePageActionImageView(
