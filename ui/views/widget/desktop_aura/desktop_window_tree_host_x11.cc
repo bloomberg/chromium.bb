@@ -28,6 +28,7 @@
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/display.h"
@@ -171,6 +172,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       window_parent_(NULL),
       custom_window_shape_(false),
       urgency_hint_set_(false),
+      modal_dialog_xid_(0),
       close_widget_factory_(this) {
 }
 
@@ -2031,6 +2033,25 @@ gfx::Rect DesktopWindowTreeHostX11::ToPixelRect(
   gfx::RectF rect_in_pixels = rect_in_dip;
   GetRootTransform().TransformRect(&rect_in_pixels);
   return gfx::ToEnclosingRect(rect_in_pixels);
+}
+
+const XID DesktopWindowTreeHostX11::GetModalDialog() {
+  return modal_dialog_xid_;
+}
+
+void DesktopWindowTreeHostX11::DisableEventListening(XID dialog) {
+  DCHECK(modal_dialog_xid_);
+  modal_dialog_xid_ = dialog;
+  // ScopedWindowTargeter is used to temporarily replace the event-targeter
+  // with NullEventTargeter to make |dialog| modal.
+  targeter_for_modal_.reset(new aura::ScopedWindowTargeter(window(),
+      scoped_ptr<ui::EventTargeter>(new ui::NullEventTargeter)));
+}
+
+void DesktopWindowTreeHostX11::EnableEventListening() {
+  DCHECK(!modal_dialog_xid_);
+  modal_dialog_xid_ = 0;
+  targeter_for_modal_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

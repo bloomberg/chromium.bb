@@ -228,8 +228,15 @@ void X11DesktopHandler::OnActiveWindowChanged(::Window xid,
   if (active_state == ACTIVE) {
     DesktopWindowTreeHostX11* new_host =
         views::DesktopWindowTreeHostX11::GetHostForXID(xid);
-    if (new_host)
-      new_host->HandleNativeWidgetActivationChanged(true);
+    if (new_host) {
+      // Set focus to the modal dialog instead of the host window.
+      if (new_host->GetModalDialog()) {
+        XSetInputFocus(xdisplay_, new_host->GetModalDialog(),
+            RevertToParent, CurrentTime);
+      } else {
+        new_host->HandleNativeWidgetActivationChanged(true);
+      }
+    }
   }
 }
 
