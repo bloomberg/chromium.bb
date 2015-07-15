@@ -62,7 +62,7 @@ public:
     void advance();
     bool isInsideReplacedElement() const;
 
-    EphemeralRange range() const;
+    EphemeralRangeTemplate<Strategy> range() const;
     Node* node() const;
 
     Document* ownerDocument() const;

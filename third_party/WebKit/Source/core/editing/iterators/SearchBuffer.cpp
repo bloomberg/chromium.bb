@@ -368,7 +368,8 @@ static bool isValidUTF16(const String& s)
     return true;
 }
 
-static size_t findPlainTextInternal(CharacterIterator& it, const String& target, FindOptions options, size_t& matchStart)
+template <typename Strategy>
+static size_t findPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it, const String& target, FindOptions options, size_t& matchStart)
 {
     matchStart = 0;
     size_t matchLength = 0;
@@ -379,7 +380,7 @@ static size_t findPlainTextInternal(CharacterIterator& it, const String& target,
     SearchBuffer buffer(target, options);
 
     if (buffer.needsMoreContext()) {
-        for (SimplifiedBackwardsTextIterator backwardsIterator(Position::firstPositionInNode(it.ownerDocument()), Position(it.currentContainer(), it.startOffset())); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
+        for (SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(PositionAlgorithm<Strategy>::firstPositionInNode(it.ownerDocument()), PositionAlgorithm<Strategy>(it.currentContainer(), it.startOffset())); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
             Vector<UChar, 1024> characters;
             backwardsIterator.prependTextTo(characters);
             buffer.prependContext(characters.data(), characters.size());
@@ -416,11 +417,12 @@ tryAgain:
 
 static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersOpenShadowRoots | TextIteratorDoesNotBreakAtReplacedElement;
 
-EphemeralRange findPlainText(const EphemeralRange& inputRange, const String& target, FindOptions options)
+template <typename Strategy>
+static EphemeralRangeTemplate<Strategy> findPlainTextAlgorithm(const EphemeralRangeTemplate<Strategy>& inputRange, const String& target, FindOptions options)
 {
     // CharacterIterator requires layoutObjects to be up-to-date.
     if (!inputRange.startPosition().inDocument())
-        return EphemeralRange();
+        return EphemeralRangeTemplate<Strategy>();
     ASSERT(inputRange.startPosition().document() == inputRange.endPosition().document());
 
     // FIXME: Reduce the code duplication with above (but how?).
@@ -430,14 +432,24 @@ EphemeralRange findPlainText(const EphemeralRange& inputRange, const String& tar
         TextIteratorBehaviorFlags behavior = iteratorFlagsForFindPlainText;
         if (options & FindAPICall)
             behavior |= TextIteratorForWindowFind;
-        CharacterIterator findIterator(inputRange, behavior);
+        CharacterIteratorAlgorithm<Strategy> findIterator(inputRange, behavior);
         matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
         if (!matchLength)
-            return EphemeralRange(options & Backwards ? inputRange.startPosition() : inputRange.endPosition());
+            return EphemeralRangeTemplate<Strategy>(options & Backwards ? inputRange.startPosition() : inputRange.endPosition());
     }
 
-    CharacterIterator computeRangeIterator(inputRange, iteratorFlagsForFindPlainText);
+    CharacterIteratorAlgorithm<Strategy> computeRangeIterator(inputRange, iteratorFlagsForFindPlainText);
     return computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength);
+}
+
+EphemeralRange findPlainText(const EphemeralRange& inputRange, const String& target, FindOptions options)
+{
+    return findPlainTextAlgorithm<EditingStrategy>(inputRange, target, options);
+}
+
+EphemeralRangeInComposedTree findPlainText(const EphemeralRangeInComposedTree& inputRange, const String& target, FindOptions options)
+{
+    return findPlainTextAlgorithm<EditingInComposedTreeStrategy>(inputRange, target, options);
 }
 
 } // namespace blink

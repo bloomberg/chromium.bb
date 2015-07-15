@@ -465,7 +465,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::lastPositionInOrAfterNo
 }
 
 CORE_EXPORT PositionInComposedTree toPositionInComposedTree(const Position&);
-Position toPositionInDOMTree(const Position&);
+CORE_EXPORT Position toPositionInDOMTree(const Position&);
 CORE_EXPORT Position toPositionInDOMTree(const PositionInComposedTree&);
 
 template <typename Strategy>

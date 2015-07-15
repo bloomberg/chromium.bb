@@ -52,6 +52,8 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingInComposedTreeStrategy>;
+
 using BackwardsCharacterIterator = BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink

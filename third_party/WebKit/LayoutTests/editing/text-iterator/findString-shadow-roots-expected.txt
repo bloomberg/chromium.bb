@@ -38,7 +38,7 @@ Starting testDistribution()...
 PASS testRunner.findString("BEFORE", []) is true
 PASS testRunner.findString("DOCUMENT", []) is true
 PASS testRunner.findString("AFTER", []) is true
-PASS testRunner.findString("BEFOREAFTER", []) is true
+PASS testRunner.findString("BEFOREDOCUMENTAFTER", []) is true
 PASS testRunner.findString("DOCUMENTBEFORE", []) is false
 PASS testRunner.findString("AFTERDOCUMENT", []) is false
 Finished testDistribution().

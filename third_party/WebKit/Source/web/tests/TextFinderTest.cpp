@@ -163,17 +163,26 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     bool wrapWithinFrame = true;
     WebRect* selectionRect = nullptr;
 
-    // TextIterator currently returns the matches in the document order, instead of the visual order. It visits
-    // the shadow roots first, so in this case the matches will be returned in the order of <u> -> <b> -> <i>.
+    // TextIterator currently returns the matches in the composed treeorder, so
+    // in this case the matches will be returned in the order of
+    // <i> -> <u> -> <b>.
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     Range* activeMatch = textFinder().activeMatch();
+    ASSERT_TRUE(activeMatch);
+    EXPECT_EQ(textInIElement, activeMatch->startContainer());
+    EXPECT_EQ(0, activeMatch->startOffset());
+    EXPECT_EQ(textInIElement, activeMatch->endContainer());
+    EXPECT_EQ(3, activeMatch->endOffset());
+
+    findOptions.findNext = true;
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInUElement, activeMatch->startContainer());
     EXPECT_EQ(0, activeMatch->startOffset());
     EXPECT_EQ(textInUElement, activeMatch->endContainer());
     EXPECT_EQ(3, activeMatch->endOffset());
 
-    findOptions.findNext = true;
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
@@ -182,21 +191,13 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     EXPECT_EQ(textInBElement, activeMatch->endContainer());
     EXPECT_EQ(3, activeMatch->endOffset());
 
+    // Should wrap to the first match.
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInIElement, activeMatch->startContainer());
     EXPECT_EQ(0, activeMatch->startOffset());
     EXPECT_EQ(textInIElement, activeMatch->endContainer());
-    EXPECT_EQ(3, activeMatch->endOffset());
-
-    // Should wrap to the first match.
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
-    activeMatch = textFinder().activeMatch();
-    ASSERT_TRUE(activeMatch);
-    EXPECT_EQ(textInUElement, activeMatch->startContainer());
-    EXPECT_EQ(0, activeMatch->startOffset());
-    EXPECT_EQ(textInUElement, activeMatch->endContainer());
     EXPECT_EQ(3, activeMatch->endOffset());
 
     // Fresh search in the reverse order.
@@ -207,20 +208,12 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
-    EXPECT_EQ(textInIElement, activeMatch->startContainer());
-    EXPECT_EQ(0, activeMatch->startOffset());
-    EXPECT_EQ(textInIElement, activeMatch->endContainer());
-    EXPECT_EQ(3, activeMatch->endOffset());
-
-    findOptions.findNext = true;
-    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
-    activeMatch = textFinder().activeMatch();
-    ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInBElement, activeMatch->startContainer());
     EXPECT_EQ(0, activeMatch->startOffset());
     EXPECT_EQ(textInBElement, activeMatch->endContainer());
     EXPECT_EQ(3, activeMatch->endOffset());
 
+    findOptions.findNext = true;
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
@@ -229,13 +222,21 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     EXPECT_EQ(textInUElement, activeMatch->endContainer());
     EXPECT_EQ(3, activeMatch->endOffset());
 
-    // And wrap.
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
     activeMatch = textFinder().activeMatch();
     ASSERT_TRUE(activeMatch);
     EXPECT_EQ(textInIElement, activeMatch->startContainer());
     EXPECT_EQ(0, activeMatch->startOffset());
     EXPECT_EQ(textInIElement, activeMatch->endContainer());
+    EXPECT_EQ(3, activeMatch->endOffset());
+
+    // And wrap.
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    activeMatch = textFinder().activeMatch();
+    ASSERT_TRUE(activeMatch);
+    EXPECT_EQ(textInBElement, activeMatch->startContainer());
+    EXPECT_EQ(0, activeMatch->startOffset());
+    EXPECT_EQ(textInBElement, activeMatch->endContainer());
     EXPECT_EQ(3, activeMatch->endOffset());
 }
 
@@ -279,15 +280,16 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM)
     while (textFinder().scopingInProgress())
         runPendingTasks();
 
-    // TextIterator currently returns the matches in the document order, instead of the visual order. It visits
-    // the shadow roots first, so in this case the matches will be returned in the order of <u> -> <b> -> <i>.
+    // TextIterator currently returns the matches in the composed tree order,
+    // so in this case the matches will be returned in the order of
+    // <i> -> <u> -> <b>.
     EXPECT_EQ(3, textFinder().totalMatchCount());
     WebVector<WebFloatRect> matchRects;
     textFinder().findMatchRects(matchRects);
     ASSERT_EQ(3u, matchRects.size());
-    EXPECT_EQ(findInPageRect(textInUElement, 0, textInUElement, 3), matchRects[0]);
-    EXPECT_EQ(findInPageRect(textInBElement, 0, textInBElement, 3), matchRects[1]);
-    EXPECT_EQ(findInPageRect(textInIElement, 0, textInIElement, 3), matchRects[2]);
+    EXPECT_EQ(findInPageRect(textInIElement, 0, textInIElement, 3), matchRects[0]);
+    EXPECT_EQ(findInPageRect(textInUElement, 0, textInUElement, 3), matchRects[1]);
+    EXPECT_EQ(findInPageRect(textInBElement, 0, textInBElement, 3), matchRects[2]);
 }
 
 TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches)

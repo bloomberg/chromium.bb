@@ -122,6 +122,8 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy>;
+
 using SimplifiedBackwardsTextIterator = SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink

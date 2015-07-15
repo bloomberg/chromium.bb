@@ -153,10 +153,4 @@ void TextIteratorTextState::emitText(Node* textNode, LayoutText* layoutObject, i
     m_hasEmitted = true;
 }
 
-EphemeralRange TextIteratorTextState::range() const
-{
-    flushPositionOffsets();
-    return EphemeralRange(Position(positionNode(), positionStartOffset()), Position(positionNode(), positionEndOffset()));
-}
-
 } // namespace blink

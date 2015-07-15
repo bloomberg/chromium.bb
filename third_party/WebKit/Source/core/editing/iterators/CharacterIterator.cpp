@@ -41,7 +41,7 @@ CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(const PositionA
 
 template <typename Strategy>
 CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(const EphemeralRangeTemplate<Strategy>& range, TextIteratorBehaviorFlags behavior)
-    : CharacterIterator(range.startPosition(), range.endPosition(), behavior)
+    : CharacterIteratorAlgorithm(range.startPosition(), range.endPosition(), behavior)
 {
 }
 
@@ -192,5 +192,6 @@ EphemeralRange calculateCharacterSubrange(const EphemeralRange& range, int chara
 }
 
 template class CORE_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingInComposedTreeStrategy>;
 
 } // namespace blink

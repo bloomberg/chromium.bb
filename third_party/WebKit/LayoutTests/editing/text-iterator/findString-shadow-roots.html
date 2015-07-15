@@ -113,11 +113,11 @@ function testDistribution()
     selection.empty();
     shouldBeTrue('testRunner.findString("AFTER", [])');
     selection.empty();
-    shouldBeTrue('testRunner.findString("BEFOREAFTER", [])'); // Vistied in the DOM order.
+    shouldBeTrue('testRunner.findString("BEFOREDOCUMENTAFTER", [])'); // Visited in composed tree order
     selection.empty();
     shouldBeFalse('testRunner.findString("DOCUMENTBEFORE", [])');
     selection.empty();
-    shouldBeFalse('testRunner.findString("AFTERDOCUMENT", [])'); // FIXME: Should be found, but the result spans multiple trees.
+    shouldBeFalse('testRunner.findString("AFTERDOCUMENT", [])');
 
     document.body.removeChild(container);
     debug('Finished testDistribution().\n');

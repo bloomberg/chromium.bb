@@ -381,6 +381,7 @@ PositionAlgorithm<Strategy>SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::e
 }
 
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy>;
 
 
 } // namespace blink

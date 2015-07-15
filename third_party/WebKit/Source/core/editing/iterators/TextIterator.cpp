@@ -141,6 +141,9 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const PositionAlgorithm<S
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
+    // Updates layout here since, |Position.compareTo()| and |initialize()|
+    // assume layout tree is up-to-date.
+    start.document()->updateLayoutIgnorePendingStylesheets();
     if (start.compareTo(end) > 0) {
         initialize(end.containerNode(), end.computeOffsetInContainerNode(), start.containerNode(), start.computeOffsetInContainerNode());
         return;
@@ -174,8 +177,6 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer, int start
 
     if (!m_node)
         return;
-
-    m_node->document().updateLayoutIgnorePendingStylesheets();
 
     m_fullyClippedStack.setUpFullyClippedStack(m_node);
     m_offset = m_node == m_startContainer ? m_startOffset : 0;
@@ -971,17 +972,19 @@ void TextIteratorAlgorithm<Strategy>::emitText(Node* textNode, LayoutText* layou
 }
 
 template<typename Strategy>
-EphemeralRange TextIteratorAlgorithm<Strategy>::range() const
+EphemeralRangeTemplate<Strategy> TextIteratorAlgorithm<Strategy>::range() const
 {
     // use the current run information, if we have it
-    if (m_textState.positionNode())
-        return m_textState.range();
+    if (m_textState.positionNode()) {
+        m_textState.flushPositionOffsets();
+        return EphemeralRangeTemplate<Strategy>(PositionAlgorithm<Strategy>(m_textState.positionNode(), m_textState.positionStartOffset()), PositionAlgorithm<Strategy>(m_textState.positionNode(), m_textState.positionEndOffset()));
+    }
 
     // otherwise, return the end of the overall range we were given
     if (m_endContainer)
-        return EphemeralRange(Position(m_endContainer, m_endOffset));
+        return EphemeralRangeTemplate<Strategy>(PositionAlgorithm<Strategy>(m_endContainer, m_endOffset));
 
-    return EphemeralRange();
+    return EphemeralRangeTemplate<Strategy>();
 }
 
 template<typename Strategy>

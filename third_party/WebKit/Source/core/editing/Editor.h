@@ -202,6 +202,8 @@ public:
     bool findString(const String&, FindOptions);
 
     PassRefPtrWillBeRawPtr<Range> findStringAndScrollToVisible(const String&, Range*, FindOptions);
+    PassRefPtrWillBeRawPtr<Range> findRangeOfString(const String& target, const EphemeralRange& referenceRange, FindOptions);
+    PassRefPtrWillBeRawPtr<Range> findRangeOfString(const String& target, const EphemeralRangeInComposedTree& referenceRange, FindOptions);
 
     const VisibleSelection& mark() const; // Mark, to be used as emacs uses it.
     void setMark(const VisibleSelection&);
@@ -274,8 +276,6 @@ private:
     void notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
 
     Element* findEventTargetFromSelection() const;
-
-    PassRefPtrWillBeRawPtr<Range> findRangeOfString(const String&, const EphemeralRange&, FindOptions);
 
     SpellChecker& spellChecker() const;
 

@@ -82,6 +82,7 @@ private:
 };
 
 CORE_EXPORT EphemeralRange findPlainText(const EphemeralRange& inputRange, const String&, FindOptions);
+CORE_EXPORT EphemeralRangeInComposedTree findPlainText(const EphemeralRangeInComposedTree& inputRange, const String&, FindOptions);
 
 } // namespace blink
 

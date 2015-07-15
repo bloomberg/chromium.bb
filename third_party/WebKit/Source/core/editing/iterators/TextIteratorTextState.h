@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
 #include "core/layout/LayoutText.h"
 #include "wtf/text/WTFString.h"
 
@@ -62,8 +61,6 @@ public:
         m_positionNode = nullptr;
         m_textLength = 0;
     }
-
-    EphemeralRange range() const;
 
     template<typename BufferType>
     void appendTextTo(BufferType& output, unsigned position = 0) const

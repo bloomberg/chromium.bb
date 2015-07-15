@@ -57,7 +57,7 @@
 #include "core/editing/UndoStack.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
-#include "core/editing/iterators/CharacterIterator.h"
+#include "core/editing/iterators/SearchBuffer.h"
 #include "core/editing/markup.h"
 #include "core/events/ClipboardEvent.h"
 #include "core/events/KeyboardEvent.h"
@@ -1156,9 +1156,10 @@ bool Editor::findString(const String& target, FindOptions options)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* previousMatch, FindOptions options)
+template <typename Strategy>
+static PassRefPtrWillBeRawPtr<Range> findStringAndScrollToVisibleAlgorithm(Editor& editor, const String& target, const EphemeralRangeTemplate<Strategy>& previousMatch, FindOptions options)
 {
-    RefPtrWillBeRawPtr<Range> nextMatch = findRangeOfString(target, EphemeralRange(previousMatch), options);
+    RefPtrWillBeRawPtr<Range> nextMatch = editor.findRangeOfString(target, previousMatch, options);
     if (!nextMatch)
         return nullptr;
 
@@ -1168,19 +1169,29 @@ PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String&
     return nextMatch.release();
 }
 
-// TODO(yosin) We should return |EphemeralRange| rather than |Range|.
-static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& target, const EphemeralRange& referenceRange, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* range, FindOptions options)
 {
-    EphemeralRange searchRange(referenceRange);
+    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+        return findStringAndScrollToVisibleAlgorithm<EditingInComposedTreeStrategy>(*this, target, EphemeralRangeInComposedTree(range), options);
+    return findStringAndScrollToVisibleAlgorithm<EditingStrategy>(*this, target, EphemeralRange(range), options);
+}
+
+// TODO(yosin) We should return |EphemeralRange| rather than |Range|. We use
+// |Range| object for checking whether start and end position crossing shadow
+// boundaries, however we can do it without |Range| object.
+template <typename Strategy>
+static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& target, const EphemeralRangeTemplate<Strategy>& referenceRange, FindOptions options)
+{
+    EphemeralRangeTemplate<Strategy> searchRange(referenceRange);
 
     bool forward = !(options & Backwards);
 
     while (true) {
-        EphemeralRange resultRange = findPlainText(searchRange, target, options);
+        EphemeralRangeTemplate<Strategy> resultRange = findPlainText(searchRange, target, options);
         if (resultRange.isCollapsed())
             return nullptr;
 
-        RefPtrWillBeRawPtr<Range> rangeObject = Range::create(resultRange.document(), resultRange.startPosition(), resultRange.endPosition());
+        RefPtrWillBeRawPtr<Range> rangeObject = Range::create(resultRange.document(), toPositionInDOMTree(resultRange.startPosition()), toPositionInDOMTree(resultRange.endPosition()));
         if (!rangeObject->collapsed())
             return rangeObject.release();
 
@@ -1189,16 +1200,17 @@ static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& ta
         // next occurrence.
         // TODO(yosin) Handle this case.
         if (forward)
-            searchRange = EphemeralRange(resultRange.startPosition().next(), searchRange.endPosition());
+            searchRange = EphemeralRangeTemplate<Strategy>(resultRange.startPosition().next(), searchRange.endPosition());
         else
-            searchRange = EphemeralRange(searchRange.startPosition(), resultRange.endPosition().previous());
+            searchRange = EphemeralRangeTemplate<Strategy>(searchRange.startPosition(), resultRange.endPosition().previous());
     }
 
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, const EphemeralRange& referenceRange, FindOptions options)
+template <typename Strategy>
+static PassRefPtrWillBeRawPtr<Range> findRangeOfStringAlgorithm(Document& document, const String& target, const EphemeralRangeTemplate<Strategy>& referenceRange, FindOptions options)
 {
     if (target.isEmpty())
         return nullptr;
@@ -1206,21 +1218,21 @@ PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, co
     // Start from an edge of the reference range. Which edge is used depends on
     // whether we're searching forward or backward, and whether startInSelection
     // is set.
-    EphemeralRange documentRange = EphemeralRange::rangeOfContents(*frame().document());
-    EphemeralRange searchRange(documentRange);
+    EphemeralRangeTemplate<Strategy> documentRange = EphemeralRangeTemplate<Strategy>::rangeOfContents(document);
+    EphemeralRangeTemplate<Strategy> searchRange(documentRange);
 
     bool forward = !(options & Backwards);
     bool startInReferenceRange = false;
     if (referenceRange.isNotNull()) {
         startInReferenceRange = options & StartInSelection;
         if (forward && startInReferenceRange)
-            searchRange = EphemeralRange(referenceRange.startPosition(), documentRange.endPosition());
+            searchRange = EphemeralRangeTemplate<Strategy>(referenceRange.startPosition(), documentRange.endPosition());
         else if (forward)
-            searchRange = EphemeralRange(referenceRange.endPosition(), documentRange.endPosition());
+            searchRange = EphemeralRangeTemplate<Strategy>(referenceRange.endPosition(), documentRange.endPosition());
         else if (startInReferenceRange)
-            searchRange = EphemeralRange(documentRange.startPosition(), referenceRange.endPosition());
+            searchRange = EphemeralRangeTemplate<Strategy>(documentRange.startPosition(), referenceRange.endPosition());
         else
-            searchRange = EphemeralRange(documentRange.startPosition(), referenceRange.startPosition());
+            searchRange = EphemeralRangeTemplate<Strategy>(documentRange.startPosition(), referenceRange.startPosition());
     }
 
     RefPtrWillBeRawPtr<Range> resultRange = findStringBetweenPositions(target, searchRange, options);
@@ -1229,11 +1241,11 @@ PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, co
     // the reference range, find again. Build a selection with the found range
     // to remove collapsed whitespace. Compare ranges instead of selection
     // objects to ignore the way that the current selection was made.
-    if (resultRange && startInReferenceRange && VisibleSelection(resultRange.get()).toNormalizedEphemeralRange() == referenceRange) {
+    if (resultRange && startInReferenceRange && VisibleSelection::normalizeRange(EphemeralRangeTemplate<Strategy>(resultRange.get())) == referenceRange) {
         if (forward)
-            searchRange = EphemeralRange(resultRange->endPosition(), searchRange.endPosition());
+            searchRange = EphemeralRangeTemplate<Strategy>(fromPositionInDOMTree<Strategy>(resultRange->endPosition()), searchRange.endPosition());
         else
-            searchRange = EphemeralRange(searchRange.startPosition(), resultRange->startPosition());
+            searchRange = EphemeralRangeTemplate<Strategy>(searchRange.startPosition(), fromPositionInDOMTree<Strategy>(resultRange->startPosition()));
         resultRange = findStringBetweenPositions(target, searchRange, options);
     }
 
@@ -1241,6 +1253,16 @@ PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, co
         return findStringBetweenPositions(target, documentRange, options);
 
     return resultRange.release();
+}
+
+PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, const EphemeralRange& reference, FindOptions options)
+{
+    return findRangeOfStringAlgorithm<EditingStrategy>(*frame().document(), target, reference, options);
+}
+
+PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, const EphemeralRangeInComposedTree& reference, FindOptions options)
+{
+    return findRangeOfStringAlgorithm<EditingInComposedTreeStrategy>(*frame().document(), target, reference, options);
 }
 
 void Editor::setMarkedTextMatchesAreHighlighted(bool flag)
