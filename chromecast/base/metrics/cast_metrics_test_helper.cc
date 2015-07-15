@@ -25,10 +25,6 @@ class CastMetricsHelperStub : public CastMetricsHelper {
   void LogMediaPause() override;
   void LogTimeToBufferAv(BufferingType buffering_type,
                          base::TimeDelta time) override;
-  void ResetVideoFrameSampling() override;
-  void LogFramesPer5Seconds(
-      int displayed_frames, int dropped_frames,
-      int delayed_frames, int error_frames) override;
   std::string GetMetricsNameWithAppName(
       const std::string& prefix, const std::string& suffix) const override;
   void SetMetricsSink(MetricsSink* delegate) override;
@@ -66,15 +62,6 @@ void CastMetricsHelperStub::LogMediaPause() {
 
 void CastMetricsHelperStub::LogTimeToBufferAv(BufferingType buffering_type,
                                               base::TimeDelta time) {
-}
-
-void CastMetricsHelperStub::ResetVideoFrameSampling() {
-}
-
-void CastMetricsHelperStub::LogFramesPer5Seconds(int displayed_frames,
-                                                 int dropped_frames,
-                                                 int delayed_frames,
-                                                 int error_frames) {
 }
 
 std::string CastMetricsHelperStub::GetMetricsNameWithAppName(

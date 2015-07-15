@@ -31,13 +31,6 @@ namespace {
 
 CastMetricsHelper* g_instance = NULL;
 
-// Displayed frames are logged in frames per second (but sampling can be over
-// a longer period of time, e.g. 5 seconds).
-const int kDisplayedFramesPerSecondPeriod = 1000000;
-
-// Sample every 5 seconds, represented in microseconds.
-const int kNominalVideoSamplePeriod = 5000000;
-
 const char kMetricsNameAppInfoDelimiter = '#';
 
 }  // namespace
@@ -183,57 +176,6 @@ void CastMetricsHelper::LogTimeToBufferAv(BufferingType buffering_type,
       base::TimeDelta::FromMilliseconds(250),
       base::TimeDelta::FromMilliseconds(30000),
       50);
-}
-
-void CastMetricsHelper::ResetVideoFrameSampling() {
-  MAKE_SURE_THREAD(ResetVideoFrameSampling);
-  previous_video_stat_sample_time_ = base::TimeTicks();
-}
-
-void CastMetricsHelper::LogFramesPer5Seconds(int displayed_frames,
-                                             int dropped_frames,
-                                             int delayed_frames,
-                                             int error_frames) {
-  MAKE_SURE_THREAD(LogFramesPer5Seconds, displayed_frames, dropped_frames,
-                   delayed_frames, error_frames);
-  base::TimeTicks sample_time = base::TimeTicks::Now();
-
-  if (!previous_video_stat_sample_time_.is_null()) {
-    base::TimeDelta time_diff = sample_time - previous_video_stat_sample_time_;
-    int value = 0;
-    const int64 rounding = time_diff.InMicroseconds() / 2;
-
-    if (displayed_frames >= 0) {
-      value = (displayed_frames * kDisplayedFramesPerSecondPeriod + rounding) /
-          time_diff.InMicroseconds();
-      LogEnumerationHistogramEvent(
-          GetMetricsNameWithAppName("Media", "DisplayedFramesPerSecond"),
-          value, 50);
-    }
-    if (delayed_frames >= 0) {
-      value = (delayed_frames * kNominalVideoSamplePeriod + rounding) /
-          time_diff.InMicroseconds();
-      LogEnumerationHistogramEvent(
-          GetMetricsNameWithAppName("Media", "DelayedVideoFramesPer5Sec"),
-          value, 50);
-    }
-    if (dropped_frames >= 0) {
-      value = (dropped_frames * kNominalVideoSamplePeriod + rounding) /
-          time_diff.InMicroseconds();
-      LogEnumerationHistogramEvent(
-          GetMetricsNameWithAppName("Media", "DroppedVideoFramesPer5Sec"),
-          value, 50);
-    }
-    if (error_frames >= 0) {
-      value = (error_frames * kNominalVideoSamplePeriod + rounding) /
-          time_diff.InMicroseconds();
-      LogEnumerationHistogramEvent(
-          GetMetricsNameWithAppName("Media", "ErrorVideoFramesPer5Sec"),
-          value, 50);
-    }
-  }
-
-  previous_video_stat_sample_time_ = sample_time;
 }
 
 std::string CastMetricsHelper::GetMetricsNameWithAppName(
