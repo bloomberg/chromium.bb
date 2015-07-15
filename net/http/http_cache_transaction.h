@@ -196,10 +196,11 @@ class HttpCache::Transaction : public HttpTransaction {
     STATE_SEND_REQUEST_COMPLETE,
     STATE_SUCCESSFUL_SEND_REQUEST,
     STATE_UPDATE_CACHED_RESPONSE,
+    STATE_CACHE_WRITE_UPDATED_RESPONSE,
+    STATE_CACHE_WRITE_UPDATED_RESPONSE_COMPLETE,
     STATE_UPDATE_CACHED_RESPONSE_COMPLETE,
     STATE_OVERWRITE_CACHED_RESPONSE,
     STATE_CACHE_WRITE_RESPONSE,
-    STATE_CACHE_WRITE_TRUNCATED_RESPONSE,
     STATE_CACHE_WRITE_RESPONSE_COMPLETE,
     STATE_TRUNCATE_CACHED_DATA,
     STATE_TRUNCATE_CACHED_DATA_COMPLETE,
@@ -209,13 +210,15 @@ class HttpCache::Transaction : public HttpTransaction {
     STATE_CACHE_READ_METADATA,
     STATE_CACHE_READ_METADATA_COMPLETE,
 
-    // These states are entered from Read/Write
+    // These states are entered from Read/AddTruncatedFlag.
     STATE_NETWORK_READ,
     STATE_NETWORK_READ_COMPLETE,
     STATE_CACHE_READ_DATA,
     STATE_CACHE_READ_DATA_COMPLETE,
     STATE_CACHE_WRITE_DATA,
-    STATE_CACHE_WRITE_DATA_COMPLETE
+    STATE_CACHE_WRITE_DATA_COMPLETE,
+    STATE_CACHE_WRITE_TRUNCATED_RESPONSE,
+    STATE_CACHE_WRITE_TRUNCATED_RESPONSE_COMPLETE
   };
 
   // Used for categorizing transactions for reporting in histograms. Patterns
@@ -272,10 +275,11 @@ class HttpCache::Transaction : public HttpTransaction {
   int DoSendRequestComplete(int result);
   int DoSuccessfulSendRequest();
   int DoUpdateCachedResponse();
+  int DoCacheWriteUpdatedResponse();
+  int DoCacheWriteUpdatedResponseComplete(int result);
   int DoUpdateCachedResponseComplete(int result);
   int DoOverwriteCachedResponse();
   int DoCacheWriteResponse();
-  int DoCacheWriteTruncatedResponse();
   int DoCacheWriteResponseComplete(int result);
   int DoTruncateCachedData();
   int DoTruncateCachedDataComplete(int result);
@@ -290,6 +294,8 @@ class HttpCache::Transaction : public HttpTransaction {
   int DoCacheReadDataComplete(int result);
   int DoCacheWriteData(int num_bytes);
   int DoCacheWriteDataComplete(int result);
+  int DoCacheWriteTruncatedResponse();
+  int DoCacheWriteTruncatedResponseComplete(int result);
 
   // These functions are involved in a field trial testing storing certificates
   // in seperate entries from the HttpResponseInfo.
@@ -373,6 +379,14 @@ class HttpCache::Transaction : public HttpTransaction {
   // entry should be marked as incomplete.
   int WriteResponseInfoToEntry(bool truncated);
 
+  // Helper function, should be called with result of WriteResponseInfoToEntry
+  // (or the result of the callback, when WriteResponseInfoToEntry returns
+  // ERR_IO_PENDING). Calls DoneWritingToEntry if |result| is not the right
+  // number of bytes. It is expected that the state that calls this will
+  // return whatever net error code this function returns, which currently
+  // is always "OK".
+  int OnWriteResponseInfoToEntryComplete(int result);
+
   // Called when we are done writing to the cache entry.
   void DoneWritingToEntry(bool success);
 
@@ -439,7 +453,6 @@ class HttpCache::Transaction : public HttpTransaction {
   const HttpResponseInfo* new_response_;
   std::string cache_key_;
   Mode mode_;
-  State target_state_;
   bool reading_;  // We are already reading. Never reverts to false once set.
   bool invalid_range_;  // We may bypass the cache for this request.
   bool truncated_;  // We don't have all the response data.

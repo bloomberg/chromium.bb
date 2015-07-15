@@ -255,7 +255,6 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       new_entry_(NULL),
       new_response_(NULL),
       mode_(NONE),
-      target_state_(STATE_NONE),
       reading_(false),
       invalid_range_(false),
       truncated_(false),
@@ -338,7 +337,6 @@ bool HttpCache::Transaction::AddTruncatedFlag() {
     return true;
 
   truncated_ = true;
-  target_state_ = STATE_NONE;
   next_state_ = STATE_CACHE_WRITE_TRUNCATED_RESPONSE;
   DoLoop(OK);
   return true;
@@ -690,8 +688,9 @@ int HttpCache::Transaction::HandleResult(int rv) {
 //   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
 //   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
 //   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
-//   UpdateCachedResponse -> CacheWriteResponse* -> UpdateCachedResponseComplete
-//   -> OverwriteCachedResponse -> PartialHeadersReceived
+//   UpdateCachedResponse -> CacheWriteUpdatedResponse* ->
+//   UpdateCachedResponseComplete -> OverwriteCachedResponse ->
+//   PartialHeadersReceived
 //
 //   Read():
 //   CacheReadData*
@@ -714,8 +713,9 @@ int HttpCache::Transaction::HandleResult(int rv) {
 //   CacheQueryData* -> ValidateEntryHeadersAndContinue() ->
 //   StartPartialCacheValidation -> CompletePartialCacheValidation ->
 //   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
-//   UpdateCachedResponse -> CacheWriteResponse* -> UpdateCachedResponseComplete
-//   -> OverwriteCachedResponse -> PartialHeadersReceived
+//   UpdateCachedResponse -> CacheWriteUpdatedResponse* ->
+//   UpdateCachedResponseComplete -> OverwriteCachedResponse ->
+//   PartialHeadersReceived
 //
 //   Read() 1:
 //   NetworkRead* -> CacheWriteData*
@@ -883,6 +883,13 @@ int HttpCache::Transaction::DoLoop(int result) {
         DCHECK_EQ(OK, rv);
         rv = DoUpdateCachedResponse();
         break;
+      case STATE_CACHE_WRITE_UPDATED_RESPONSE:
+        DCHECK_EQ(OK, rv);
+        rv = DoCacheWriteUpdatedResponse();
+        break;
+      case STATE_CACHE_WRITE_UPDATED_RESPONSE_COMPLETE:
+        rv = DoCacheWriteUpdatedResponseComplete(rv);
+        break;
       case STATE_UPDATE_CACHED_RESPONSE_COMPLETE:
         rv = DoUpdateCachedResponseComplete(rv);
         break;
@@ -893,10 +900,6 @@ int HttpCache::Transaction::DoLoop(int result) {
       case STATE_CACHE_WRITE_RESPONSE:
         DCHECK_EQ(OK, rv);
         rv = DoCacheWriteResponse();
-        break;
-      case STATE_CACHE_WRITE_TRUNCATED_RESPONSE:
-        DCHECK_EQ(OK, rv);
-        rv = DoCacheWriteTruncatedResponse();
         break;
       case STATE_CACHE_WRITE_RESPONSE_COMPLETE:
         rv = DoCacheWriteResponseComplete(rv);
@@ -945,6 +948,13 @@ int HttpCache::Transaction::DoLoop(int result) {
         break;
       case STATE_CACHE_WRITE_DATA_COMPLETE:
         rv = DoCacheWriteDataComplete(rv);
+        break;
+      case STATE_CACHE_WRITE_TRUNCATED_RESPONSE:
+        DCHECK_EQ(OK, rv);
+        rv = DoCacheWriteTruncatedResponse();
+        break;
+      case STATE_CACHE_WRITE_TRUNCATED_RESPONSE_COMPLETE:
+        rv = DoCacheWriteTruncatedResponseComplete(rv);
         break;
       default:
         NOTREACHED() << "bad state";
@@ -1292,9 +1302,14 @@ int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch() {
   // TODO(jkarlin): If DoUpdateCachedResponse is also called for this
   // transaction then metadata will be written to cache twice. If prefetching
   // becomes more common, consider combining the writes.
-  target_state_ = STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE;
-  next_state_ = STATE_CACHE_WRITE_RESPONSE;
-  return OK;
+
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch"));
+
+  next_state_ = STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE;
+  return WriteResponseInfoToEntry(false);
 }
 
 int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetchComplete(
@@ -1302,7 +1317,7 @@ int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetchComplete(
   // Restore the original value for this transaction.
   response_.unused_since_prefetch = !response_.unused_since_prefetch;
   next_state_ = STATE_CACHE_DISPATCH_VALIDATION;
-  return OK;
+  return OnWriteResponseInfoToEntryComplete(result);
 }
 
 int HttpCache::Transaction::DoCacheDispatchValidation() {
@@ -1583,12 +1598,26 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
     // If we are already reading, we already updated the headers for this
     // request; doing it again will change Content-Length.
     if (!reading_) {
-      target_state_ = STATE_UPDATE_CACHED_RESPONSE_COMPLETE;
-      next_state_ = STATE_CACHE_WRITE_RESPONSE;
+      next_state_ = STATE_CACHE_WRITE_UPDATED_RESPONSE;
       rv = OK;
     }
   }
   return rv;
+}
+
+int HttpCache::Transaction::DoCacheWriteUpdatedResponse() {
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 HttpCache::Transaction::DoCacheWriteUpdatedResponse"));
+
+  next_state_ = STATE_CACHE_WRITE_UPDATED_RESPONSE_COMPLETE;
+  return WriteResponseInfoToEntry(false);
+}
+
+int HttpCache::Transaction::DoCacheWriteUpdatedResponseComplete(int result) {
+  next_state_ = STATE_UPDATE_CACHED_RESPONSE_COMPLETE;
+  return OnWriteResponseInfoToEntryComplete(result);
 }
 
 int HttpCache::Transaction::DoUpdateCachedResponseComplete(int result) {
@@ -1654,9 +1683,7 @@ int HttpCache::Transaction::DoOverwriteCachedResponse() {
     return OK;
   }
 
-  target_state_ = STATE_TRUNCATE_CACHED_DATA;
-  next_state_ = truncated_ ? STATE_CACHE_WRITE_TRUNCATED_RESPONSE :
-                             STATE_CACHE_WRITE_RESPONSE;
+  next_state_ = STATE_CACHE_WRITE_RESPONSE;
   return OK;
 }
 
@@ -1666,38 +1693,15 @@ int HttpCache::Transaction::DoCacheWriteResponse() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 HttpCache::Transaction::DoCacheWriteResponse"));
 
-  if (entry_) {
-    if (net_log_.IsCapturing())
-      net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
-  }
-  return WriteResponseInfoToEntry(false);
-}
-
-int HttpCache::Transaction::DoCacheWriteTruncatedResponse() {
-  if (entry_) {
-    if (net_log_.IsCapturing())
-      net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
-  }
-  return WriteResponseInfoToEntry(true);
+  next_state_ = STATE_CACHE_WRITE_RESPONSE_COMPLETE;
+  return WriteResponseInfoToEntry(truncated_);
 }
 
 int HttpCache::Transaction::DoCacheWriteResponseComplete(int result) {
-  next_state_ = target_state_;
-  target_state_ = STATE_NONE;
-  if (!entry_)
-    return OK;
-  if (net_log_.IsCapturing()) {
-    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_WRITE_INFO,
-                                      result);
-  }
-
-  // Balance the AddRef from WriteResponseInfoToEntry.
-  if (result != io_buf_len_) {
-    DLOG(ERROR) << "failed to write response info to cache";
-    DoneWritingToEntry(false);
-  }
-  return OK;
+  next_state_ = STATE_TRUNCATE_CACHED_DATA;
+  return OnWriteResponseInfoToEntryComplete(result);
 }
+
 int HttpCache::Transaction::DoTruncateCachedData() {
   next_state_ = STATE_TRUNCATE_CACHED_DATA_COMPLETE;
   if (!entry_)
@@ -1873,7 +1877,6 @@ int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
                                         result);
     }
   }
-  // Balance the AddRef from DoCacheWriteData.
   if (!cache_.get())
     return ERR_UNEXPECTED;
 
@@ -1909,6 +1912,15 @@ int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
   }
 
   return result;
+}
+
+int HttpCache::Transaction::DoCacheWriteTruncatedResponse() {
+  next_state_ = STATE_CACHE_WRITE_TRUNCATED_RESPONSE_COMPLETE;
+  return WriteResponseInfoToEntry(true);
+}
+
+int HttpCache::Transaction::DoCacheWriteTruncatedResponseComplete(int result) {
+  return OnWriteResponseInfoToEntryComplete(result);
 }
 
 //-----------------------------------------------------------------------------
@@ -2644,9 +2656,11 @@ int HttpCache::Transaction::WriteToEntry(int index, int offset,
 }
 
 int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
-  next_state_ = STATE_CACHE_WRITE_RESPONSE_COMPLETE;
   if (!entry_)
     return OK;
+
+  if (net_log_.IsCapturing())
+    net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
 
   // Do not cache no-store content.  Do not cache content with cert errors
   // either.  This is to prevent not reporting net errors when loading a
@@ -2681,6 +2695,21 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   io_buf_len_ = data->pickle()->size();
   return entry_->disk_entry->WriteData(kResponseInfoIndex, 0, data.get(),
                                        io_buf_len_, io_callback_, true);
+}
+
+int HttpCache::Transaction::OnWriteResponseInfoToEntryComplete(int result) {
+  if (!entry_)
+    return OK;
+  if (net_log_.IsCapturing()) {
+    net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_WRITE_INFO,
+                                      result);
+  }
+
+  if (result != io_buf_len_) {
+    DLOG(ERROR) << "failed to write response info to cache";
+    DoneWritingToEntry(false);
+  }
+  return OK;
 }
 
 void HttpCache::Transaction::DoneWritingToEntry(bool success) {
