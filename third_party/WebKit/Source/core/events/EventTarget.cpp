@@ -130,7 +130,11 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<
             continue;
 
         --firingIterator.end;
-        if (indexOfRemovedListener <= firingIterator.iterator)
+        // Note that when firing an event listener,
+        // firingIterator.iterator indicates the next event listener
+        // that would fire, not the currently firing event
+        // listener. See EventTarget::fireEventListeners.
+        if (indexOfRemovedListener < firingIterator.iterator)
             --firingIterator.iterator;
     }
 
@@ -321,8 +325,14 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     if (!d->firingEventIterators)
         d->firingEventIterators = adoptPtr(new FiringEventIteratorVector);
     d->firingEventIterators->append(FiringEventIterator(event->type(), i, size));
-    for ( ; i < size; ++i) {
+    while (i < size) {
         RegisteredEventListener& registeredListener = entry[i];
+
+        // Move the iterator past this event listener. This must match
+        // the handling of the FiringEventIterator::iterator in
+        // EventTarget::removeEventListener.
+        ++i;
+
         if (event->eventPhase() == Event::CAPTURING_PHASE && !registeredListener.useCapture)
             continue;
         if (event->eventPhase() == Event::BUBBLING_PHASE && registeredListener.useCapture)
@@ -338,9 +348,12 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
             break;
 
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::willHandleEvent(this, event, registeredListener.listener.get(), registeredListener.useCapture);
+
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
         registeredListener.listener->handleEvent(context, event);
+        RELEASE_ASSERT(i <= size);
+
         InspectorInstrumentation::didHandleEvent(cookie);
     }
     d->firingEventIterators->removeLast();
