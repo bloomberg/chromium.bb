@@ -1901,11 +1901,11 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	wl_resource_set_implementation(resource, &seat_interface, data,
 				       unbind_resource);
 
-	if (seat->pointer)
+	if (seat->pointer_device_count)
 		caps |= WL_SEAT_CAPABILITY_POINTER;
-	if (seat->keyboard)
+	if (seat->keyboard_device_count)
 		caps |= WL_SEAT_CAPABILITY_KEYBOARD;
-	if (seat->touch)
+	if (seat->touch_device_count)
 		caps |= WL_SEAT_CAPABILITY_TOUCH;
 
 	wl_seat_send_capabilities(resource, caps);
