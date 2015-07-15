@@ -817,10 +817,6 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
                          withServiceType:manage_accounts_params.service_type];
 }
 
-void BrowserWindowCocoa::CloseAvatarBubbleFromAvatarButton() {
-  [[controller_ avatarButtonController] closeAvatarBubble];
-}
-
 int
 BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED)

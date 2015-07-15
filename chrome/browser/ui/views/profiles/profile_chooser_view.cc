@@ -519,18 +519,6 @@ bool ProfileChooserView::IsShowing() {
 }
 
 // static
-ProfileChooserView::ShowingType ProfileChooserView::IsShowingInBrowser(
-    const Browser* browser) {
-  if (profile_bubble_ == nullptr)
-    return IS_NOT_SHOWING;
-
-  if (profile_bubble_->browser_ == browser || browser == nullptr)
-    return IS_SHOWING;
-
-  return IS_SHOWING_IN_ANOTHER_BROWSER;
-}
-
-// static
 void ProfileChooserView::Hide() {
   if (IsShowing())
     profile_bubble_->GetWidget()->Close();
@@ -699,15 +687,6 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
   // Clears tutorial mode for all non-profile-chooser views.
   if (view_mode_ != profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
     tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
-
-  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH ||
-      tutorial_mode_ == profiles::TUTORIAL_MODE_CONFIRM_SIGNIN) {
-    profile_bubble_->set_close_on_deactivate(false);
-  } else {
-    profile_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
-  }
 
   layout->StartRow(1, 0);
   layout->AddView(sub_view);

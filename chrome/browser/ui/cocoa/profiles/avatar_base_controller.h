@@ -45,7 +45,6 @@ class ProfileInfoUpdateObserver;
                           withMode:(BrowserWindow::AvatarBubbleMode)mode
                    withServiceType:(signin::GAIAServiceType)serviceType;
 
-- (void)closeAvatarBubble;
 @end
 
 @interface AvatarBaseController (ExposedForTesting)

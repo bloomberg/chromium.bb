@@ -62,15 +62,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
       views::BubbleBorder::BubbleAlignment border_alignment,
       Browser* browser);
   static bool IsShowing();
-
-  // A ShowingType to indicate whether the avatar bubble view is showing in a
-  // designated browser.
-  enum ShowingType {
-    IS_NOT_SHOWING = 0,
-    IS_SHOWING = 1,
-    IS_SHOWING_IN_ANOTHER_BROWSER = 2,
-  };
-  static ShowingType IsShowingInBrowser(const Browser* browser);
   static void Hide();
 
  private:

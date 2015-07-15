@@ -1281,15 +1281,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if (viewMode_ != profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
     tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
 
-  if (viewMode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      viewMode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-      viewMode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH ||
-      tutorialMode_ == profiles::TUTORIAL_MODE_CONFIRM_SIGNIN) {
-    [self setShouldCloseOnResignKey:NO];
-  } else {
-    [self setShouldCloseOnResignKey:YES];
-  }
-
   // Add a dummy, empty element so that we don't initially display any
   // focus rings.
   NSButton* dummyFocusButton =

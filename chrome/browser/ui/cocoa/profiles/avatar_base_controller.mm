@@ -223,10 +223,6 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
-- (void)closeAvatarBubble {
-  [menuController_ close];
-}
-
 - (IBAction)buttonClicked:(id)sender {
   BrowserWindow::AvatarBubbleMode mode =
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
