@@ -33,7 +33,7 @@ IOSSerializedNavigationBuilder::FromNavigationItem(
 // static
 scoped_ptr<web::NavigationItem>
 IOSSerializedNavigationBuilder::ToNavigationItem(
-    const SerializedNavigationEntry* navigation, int page_id) {
+    const SerializedNavigationEntry* navigation) {
   scoped_ptr<web::NavigationItem> item(web::NavigationItem::Create());
 
   item->SetURL(navigation->virtual_url_);
@@ -41,7 +41,6 @@ IOSSerializedNavigationBuilder::ToNavigationItem(
       navigation->referrer_url_,
       static_cast<web::ReferrerPolicy>(navigation->referrer_policy_)));
   item->SetTitle(navigation->title_);
-  item->SetPageID(page_id);
   item->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
   item->SetTimestamp(navigation->timestamp_);
 

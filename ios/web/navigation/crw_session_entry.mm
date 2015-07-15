@@ -122,7 +122,6 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
     NSString* title = [aDecoder decodeObjectForKey:web::kSessionEntryTitleKey];
     // Use a transition type of reload so that we don't incorrectly increase
     // the typed count.  This is what desktop chrome does.
-    _navigationItem->SetPageID(-1);
     _navigationItem->SetTitle(base::SysNSStringToUTF16(title));
     _navigationItem->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
     _navigationItem->SetPageDisplayState([[self class]

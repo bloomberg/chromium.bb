@@ -83,8 +83,7 @@ TEST(IOSSerializedNavigationBuilderTest, ToNavigationItem) {
           test_data::kIndex, *old_navigation_item);
 
   const scoped_ptr<web::NavigationItem> new_navigation_item(
-      IOSSerializedNavigationBuilder::ToNavigationItem(
-          &navigation, test_data::kPageID));
+      IOSSerializedNavigationBuilder::ToNavigationItem(&navigation));
 
   EXPECT_EQ(old_navigation_item->GetURL(),
             new_navigation_item->GetURL());
@@ -96,7 +95,6 @@ TEST(IOSSerializedNavigationBuilderTest, ToNavigationItem) {
             new_navigation_item->GetVirtualURL());
   EXPECT_EQ(old_navigation_item->GetTitle(),
             new_navigation_item->GetTitle());
-  EXPECT_EQ(test_data::kPageID, new_navigation_item->GetPageID());
   EXPECT_EQ(ui::PAGE_TRANSITION_RELOAD,
             new_navigation_item->GetTransitionType());
   EXPECT_EQ(old_navigation_item->GetTimestamp(),

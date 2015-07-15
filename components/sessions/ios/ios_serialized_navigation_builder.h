@@ -29,7 +29,7 @@ class IOSSerializedNavigationBuilder {
   // given page ID.  The NavigationItem will have a transition type of
   // PAGE_TRANSITION_RELOAD and a new unique ID.
   static scoped_ptr<web::NavigationItem> ToNavigationItem(
-      const SerializedNavigationEntry* navigation, int page_id);
+      const SerializedNavigationEntry* navigation);
 };
 
 }  // namespace sessions

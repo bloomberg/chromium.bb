@@ -69,12 +69,6 @@ class NavigationItem {
   virtual void SetTitle(const base::string16& title) = 0;
   virtual const base::string16& GetTitle() const = 0;
 
-  // Describes the current page that the tab represents. This is the ID that the
-  // renderer generated for the page and is how we can tell new versus
-  // renavigations.
-  virtual void SetPageID(int page_id) = 0;
-  virtual int32 GetPageID() const = 0;
-
   // Stores the NavigationItem's last recorded scroll offset and zoom scale.
   virtual void SetPageDisplayState(const PageDisplayState& page_state) = 0;
   virtual const PageDisplayState& GetPageDisplayState() const = 0;

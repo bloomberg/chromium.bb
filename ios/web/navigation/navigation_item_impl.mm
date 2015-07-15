@@ -30,7 +30,6 @@ scoped_ptr<NavigationItem> NavigationItem::Create() {
 
 NavigationItemImpl::NavigationItemImpl()
     : unique_id_(GetUniqueIDInConstructor()),
-      page_id_(-1),
       transition_type_(ui::PAGE_TRANSITION_LINK),
       is_overriding_user_agent_(false),
       is_created_from_push_state_(false),
@@ -49,7 +48,6 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       referrer_(item.referrer_),
       virtual_url_(item.virtual_url_),
       title_(item.title_),
-      page_id_(item.page_id_),
       page_display_state_(item.page_display_state_),
       transition_type_(item.transition_type_),
       favicon_(item.favicon_),
@@ -114,14 +112,6 @@ void NavigationItemImpl::SetTitle(const base::string16& title) {
 
 const base::string16& NavigationItemImpl::GetTitle() const {
   return title_;
-}
-
-void NavigationItemImpl::SetPageID(int page_id) {
-  page_id_ = page_id;
-}
-
-int32 NavigationItemImpl::GetPageID() const {
-  return page_id_;
 }
 
 void NavigationItemImpl::SetPageDisplayState(
