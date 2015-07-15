@@ -8,7 +8,6 @@
 #include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -17,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
-#include "base/time/time.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/child_process.h"
@@ -66,31 +64,6 @@ static void HandleRendererErrorTestParameters(
     ChildProcess::WaitForDebugger("Renderer");
 }
 
-// This is a simplified version of the browser Jankometer, which measures
-// the processing time of tasks on the render thread.
-class RendererMessageLoopObserver : public base::MessageLoop::TaskObserver {
- public:
-  RendererMessageLoopObserver()
-      : process_times_(base::Histogram::FactoryGet(
-            "Chrome.ProcMsgL RenderThread",
-            1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag)) {}
-  ~RendererMessageLoopObserver() override {}
-
-  void WillProcessTask(const base::PendingTask& pending_task) override {
-    begin_process_message_ = base::TimeTicks::Now();
-  }
-
-  void DidProcessTask(const base::PendingTask& pending_task) override {
-    if (!begin_process_message_.is_null())
-      process_times_->AddTime(base::TimeTicks::Now() - begin_process_message_);
-  }
-
- private:
-  base::TimeTicks begin_process_message_;
-  base::HistogramBase* const process_times_;
-  DISALLOW_COPY_AND_ASSIGN(RendererMessageLoopObserver);
-};
-
 }  // namespace
 
 // mainline routine for running as the Renderer process
@@ -132,7 +105,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   HandleRendererErrorTestParameters(parsed_command_line);
 
   RendererMainPlatformDelegate platform(parameters);
-  RendererMessageLoopObserver task_observer;
 #if defined(OS_MACOSX)
   // As long as scrollbars on Mac are painted with Cocoa, the message pump
   // needs to be backed by a Foundation-level loop to process NSTimers. See
@@ -144,7 +116,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   // The main message loop of the renderer services doesn't have IO or UI tasks.
   scoped_ptr<base::MessageLoop> main_message_loop(new base::MessageLoop());
 #endif
-  main_message_loop->AddTaskObserver(&task_observer);
 
   base::PlatformThread::SetName("CrRendererMain");
 
