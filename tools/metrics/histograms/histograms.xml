@@ -26763,7 +26763,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NQE.DifferenceActualAndEstimatedRTT" units="milliseconds">
+<histogram name="NQE.DifferenceRTTActualAndEstimated" units="milliseconds">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -26773,7 +26773,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NQE.DifferenceEstimatedAndActualRTT" units="milliseconds">
+<histogram name="NQE.DifferenceRTTEstimatedAndActual" units="milliseconds">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -73515,8 +73515,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="4G" label="On 4G network"/>
   <suffix name="None" label="With no detected network"/>
   <suffix name="Bluetooth" label="On Bluetooth network"/>
-  <affected-histogram name="NQE.DifferenceActualAndEstimatedRTT"/>
-  <affected-histogram name="NQE.DifferenceEstimatedAndActualRTT"/>
+  <affected-histogram name="NQE.DifferenceRTTActualAndEstimated"/>
+  <affected-histogram name="NQE.DifferenceRTTEstimatedAndActual"/>
   <affected-histogram name="NQE.FastestRTT"/>
   <affected-histogram name="NQE.PeakKbps"/>
   <affected-histogram name="NQE.RatioEstimatedToActualRTT"/>
