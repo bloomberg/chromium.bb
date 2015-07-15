@@ -191,7 +191,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       codecs.push_back(kCdmSupportedCodecAvc1);
 #endif  // defined(USE_PROPRIETARY_CODECS)
       std::string codec_string = base::JoinString(
-          codecs, base::string(1, kCdmSupportedCodecsValueDelimiter));
+          codecs, std::string(1, kCdmSupportedCodecsValueDelimiter));
       widevine_cdm_mime_type.additional_param_names.push_back(
           base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
       widevine_cdm_mime_type.additional_param_values.push_back(
