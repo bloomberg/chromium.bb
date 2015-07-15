@@ -25,6 +25,10 @@ t.step(function() {
 
     function onMessage(e) {
       var message = e.data;
+      assert_equals(e.origin, location.origin,
+        'origin of message should be origin of Service Worker');
+      assert_equals(e.lastEventId, '',
+        'lastEventId should be an empty string');
       if (message === 'quit') {
         assert_array_equals(result, expected,
                             'Worker should post back expected messages.');
