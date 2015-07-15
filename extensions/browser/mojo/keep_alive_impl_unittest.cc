@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_builder.h"
@@ -96,6 +97,60 @@ TEST_F(KeepAliveTest, TwoKeepAlives) {
   other_keep_alive.reset();
   WaitUntilLazyKeepAliveChanges();
   EXPECT_EQ(0, GetKeepAliveCount());
+}
+
+TEST_F(KeepAliveTest, UnloadExtension) {
+  mojo::InterfacePtr<KeepAlive> keep_alive;
+  CreateKeepAlive(mojo::GetProxy(&keep_alive));
+  EXPECT_EQ(1, GetKeepAliveCount());
+
+  scoped_refptr<const Extension> other_extension =
+      ExtensionBuilder()
+          .SetManifest(
+               DictionaryBuilder()
+                   .Set("name", "app")
+                   .Set("version", "1")
+                   .Set("manifest_version", 2)
+                   .Set("app", DictionaryBuilder().Set(
+                                   "background",
+                                   DictionaryBuilder().Set(
+                                       "scripts",
+                                       ListBuilder().Append("background.js")))))
+          .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+          .Build();
+
+  ExtensionRegistry::Get(browser_context())
+      ->TriggerOnUnloaded(other_extension.get(),
+                          UnloadedExtensionInfo::REASON_DISABLE);
+  EXPECT_EQ(1, GetKeepAliveCount());
+
+  ExtensionRegistry::Get(browser_context())
+      ->TriggerOnUnloaded(extension(), UnloadedExtensionInfo::REASON_DISABLE);
+  // When its extension is unloaded, the KeepAliveImpl should not modify the
+  // keep-alive count for its extension. However, ProcessManager resets its
+  // keep-alive count for an unloaded extension.
+  EXPECT_EQ(0, GetKeepAliveCount());
+
+  // Wait for |keep_alive| to disconnect.
+  base::RunLoop run_loop;
+  keep_alive.set_connection_error_handler(run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+TEST_F(KeepAliveTest, Shutdown) {
+  mojo::InterfacePtr<KeepAlive> keep_alive;
+  CreateKeepAlive(mojo::GetProxy(&keep_alive));
+  EXPECT_EQ(1, GetKeepAliveCount());
+
+  ExtensionRegistry::Get(browser_context())->Shutdown();
+  // After a shutdown event, the KeepAliveImpl should not access its
+  // ProcessManager and so the keep-alive count should remain unchanged.
+  EXPECT_EQ(1, GetKeepAliveCount());
+
+  // Wait for |keep_alive| to disconnect.
+  base::RunLoop run_loop;
+  keep_alive.set_connection_error_handler(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 }  // namespace extensions
