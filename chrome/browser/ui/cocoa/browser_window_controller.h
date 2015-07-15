@@ -499,6 +499,9 @@ class Command;
 // or exit Lion fullscreen mode.  Must not be called on Snow Leopard or earlier.
 - (void)handleLionToggleFullscreen;
 
+// The title of the fullscreen menu item in the menu bar.
+- (NSString*)titleForFullscreenMenuItem;
+
 // Enters Browser/Appkit Fullscreen.
 // If |withToolbar| is NO, the tab strip and toolbar are hidden
 // (aka Presentation Mode).

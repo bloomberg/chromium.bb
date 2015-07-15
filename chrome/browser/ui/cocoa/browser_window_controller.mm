@@ -1132,23 +1132,20 @@ using content::WebContents;
           break;
         case IDC_FULLSCREEN: {
           if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
-            NSString* menuTitle = l10n_util::GetNSString(
-                [self isInAppKitFullscreen] && ![self inPresentationMode]
-                    ? IDS_EXIT_FULLSCREEN_MAC
-                    : IDS_ENTER_FULLSCREEN_MAC);
-            [menuItem setTitle:menuTitle];
-
-            if (!chrome::mac::SupportsSystemFullscreen())
+            if (chrome::mac::SupportsSystemFullscreen()) {
+              [menuItem setTitle:[self titleForFullscreenMenuItem]];
+            } else {
               [menuItem setHidden:YES];
+            }
           }
           break;
         }
         case IDC_PRESENTATION_MODE: {
           if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
-            NSString* menuTitle = l10n_util::GetNSString(
-                [self inPresentationMode] ? IDS_EXIT_PRESENTATION_MAC :
-                                            IDS_ENTER_PRESENTATION_MAC);
-            [menuItem setTitle:menuTitle];
+            [menuItem setTitle:[self titleForFullscreenMenuItem]];
+
+            if (chrome::mac::SupportsSystemFullscreen())
+              [menuItem setAlternate:YES];
           }
           break;
         }
@@ -1219,7 +1216,13 @@ using content::WebContents;
     targetController = [[sender window] windowController];
   DCHECK([targetController isKindOfClass:[BrowserWindowController class]]);
   DCHECK(targetController->browser_.get());
-  chrome::ExecuteCommand(targetController->browser_.get(), [sender tag]);
+
+  // When system fullscreen is available, it supercedes presentation mode.
+  int tag = [sender tag];
+  if (tag == IDC_PRESENTATION_MODE && chrome::mac::SupportsSystemFullscreen())
+    tag = IDC_FULLSCREEN;
+
+  chrome::ExecuteCommand(targetController->browser_.get(), tag);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
@@ -2100,6 +2103,18 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)handleLionToggleFullscreen {
   DCHECK(base::mac::IsOSLionOrLater());
   chrome::ExecuteCommand(browser_.get(), IDC_FULLSCREEN);
+}
+
+- (NSString*)titleForFullscreenMenuItem {
+  if (!chrome::mac::SupportsSystemFullscreen()) {
+    return l10n_util::GetNSString([self inPresentationMode]
+                                      ? IDS_EXIT_PRESENTATION_MAC
+                                      : IDS_ENTER_PRESENTATION_MAC);
+  }
+
+  return l10n_util::GetNSString([self isInAppKitFullscreen]
+                                    ? IDS_EXIT_FULLSCREEN_MAC
+                                    : IDS_ENTER_FULLSCREEN_MAC);
 }
 
 - (void)enterBrowserFullscreenWithToolbar:(BOOL)withToolbar {
