@@ -21,6 +21,13 @@
         'base/process_utils_unittest.cc',
         'base/serializers_unittest.cc',
       ],
+      'conditions': [
+        ['OS == "android"', {
+          'dependencies': [
+            '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+      ],
     },  # end of cast_base_unittests
     {
       'target_name': 'cast_crash_unittests',
@@ -40,6 +47,13 @@
         'crash/linux/dump_info_unittest.cc',
         'crash/linux/synchronized_minidump_manager_unittest.cc',
         'crash/linux/minidump_writer_unittest.cc',
+      ],
+      'conditions': [
+        ['OS == "android"', {
+          'dependencies': [
+            '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
       ],
     },  # end of cast_crash_unittests
     {
@@ -161,49 +175,6 @@
       ],
       'includes': ['build/tests/test_list.gypi'],
     },
-    # Builds all tests and the output lists of build/run targets for those tests.
-    # Note: producing a predetermined list of dependent inputs on which to
-    # regenerate this output is difficult with GYP. This file is not
-    # guaranteed to be regenerated outside of a clean build.
-    {
-      'target_name': 'cast_test_lists',
-      'type': 'none',
-      'dependencies': [
-        'cast_tests',
-      ],
-      'variables': {
-        'test_generator_py': '<(DEPTH)/chromecast/tools/build/generate_test_lists.py',
-        'test_inputs_dir': '<(SHARED_INTERMEDIATE_DIR)/chromecast/tests',
-        'test_additional_options': '--ozone-platform=test'
-      },
-      'actions': [
-        {
-          'action_name': 'generate_combined_test_build_list',
-          'message': 'Generating combined test build list',
-          'inputs': ['<(test_generator_py)'],
-          'outputs': ['<(PRODUCT_DIR)/tests/build_test_list.txt'],
-          'action': [
-            'python', '<(test_generator_py)',
-            '-t', '<(test_inputs_dir)',
-            '-o', '<@(_outputs)',
-            'pack_build',
-          ],
-        },
-        {
-          'action_name': 'generate_combined_test_run_list',
-          'message': 'Generating combined test run list',
-          'inputs': ['<(test_generator_py)'],
-          'outputs': ['<(PRODUCT_DIR)/tests/run_test_list.txt'],
-          'action': [
-            'python', '<(test_generator_py)',
-            '-t', '<(test_inputs_dir)',
-            '-o', '<@(_outputs)',
-            '-a', '<(test_additional_options)',
-            'pack_run',
-          ],
-        }
-      ],
-    },
     {
       'target_name': 'cast_metrics_test_support',
       'type': '<(component)',
@@ -220,22 +191,62 @@
     ['OS=="android"', {
       'targets': [
         {
-          'target_name': 'cast_android_tests',
+          'target_name': 'cast_base_unittests_apk',
           'type': 'none',
           'dependencies': [
+            'cast_base_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'cast_base_unittests',
+          },
+          'includes': ['../build/apk_test.gypi'],
+        },  # end of target 'cast_base_unittests_apk'
+        {
+          'target_name': 'cast_crash_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'cast_crash_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'cast_crash_unittests',
+          },
+          'includes': ['../build/apk_test.gypi'],
+        },  # end of target 'cast_crash_unittests_apk'
+        {
+          'target_name': 'cast_android_tests',
+          'type': 'none',
+          'variables': {
+            'filters': [
+              # The following tests all crash on fugu.
+              'cc_unittests_apk --gtest_filter=*:-LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles.RunMultiThread_DelegatingRenderer_ImplSidePaint',
+              'gfx_unittests_apk --gtest_filter=*:-FontListTest.Fonts_DeriveWithHeightUpperBound',
+              'media_unittests_apk --gtest_filter=*-AudioInputTest.*:AudioAndroidInputTest*',
+            ],
+          },
+          'dependencies': [
+            'cast_base_unittests_apk',
+            'cast_crash_unittests_apk',
             '../base/base.gyp:base_unittests_apk',
             '../cc/cc_tests.gyp:cc_unittests_apk',
             '../ipc/ipc.gyp:ipc_tests_apk',
             '../media/media.gyp:media_unittests_apk',
             '../media/midi/midi.gyp:midi_unittests_apk',
             '../net/net.gyp:net_unittests_apk',
-            '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests_apk',
+            # Note(gunsch): crashes 100% on Fugu. b/22489355
+            # '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests_apk',
             '../sql/sql.gyp:sql_unittests_apk',
             '../sync/sync.gyp:sync_unit_tests_apk',
             '../ui/events/events.gyp:events_unittests_apk',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
           ],
           'includes': ['build/tests/test_list.gypi'],
+          'conditions': [
+            ['chromecast_branding=="Chrome"', {
+              'dependencies': [
+                'internal/chromecast_internal.gyp:cast_android_tests_internal',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'cast_android_test_lists',
@@ -260,6 +271,18 @@
                 'pack_build',
               ],
             },
+            {
+              'action_name': 'generate_combined_test_run_list',
+              'message': 'Generating combined test run list',
+              'inputs': ['<(test_generator_py)'],
+              'outputs': ['<(PRODUCT_DIR)/tests/run_test_list.txt'],
+              'action': [
+                'python', '<(test_generator_py)',
+                '-t', '<(test_inputs_dir)',
+                '-o', '<@(_outputs)',
+                'pack_run',
+              ],
+            }
           ],
         },
       ],  # end of targets
@@ -309,6 +332,49 @@
             'app/linux/cast_crash_reporter_client_unittest.cc',
           ],
         },  # end of cast_shell_unittests
+        # Builds all tests and the output lists of build/run targets for those tests.
+        # Note: producing a predetermined list of dependent inputs on which to
+        # regenerate this output is difficult with GYP. This file is not
+        # guaranteed to be regenerated outside of a clean build.
+        {
+          'target_name': 'cast_test_lists',
+          'type': 'none',
+          'dependencies': [
+            'cast_tests',
+          ],
+          'variables': {
+            'test_generator_py': '<(DEPTH)/chromecast/tools/build/generate_test_lists.py',
+            'test_inputs_dir': '<(SHARED_INTERMEDIATE_DIR)/chromecast/tests',
+            'test_additional_options': '--ozone-platform=test'
+          },
+          'actions': [
+            {
+              'action_name': 'generate_combined_test_build_list',
+              'message': 'Generating combined test build list',
+              'inputs': ['<(test_generator_py)'],
+              'outputs': ['<(PRODUCT_DIR)/tests/build_test_list.txt'],
+              'action': [
+                'python', '<(test_generator_py)',
+                '-t', '<(test_inputs_dir)',
+                '-o', '<@(_outputs)',
+                'pack_build',
+              ],
+            },
+            {
+              'action_name': 'generate_combined_test_run_list',
+              'message': 'Generating combined test run list',
+              'inputs': ['<(test_generator_py)'],
+              'outputs': ['<(PRODUCT_DIR)/tests/run_test_list.txt'],
+              'action': [
+                'python', '<(test_generator_py)',
+                '-t', '<(test_inputs_dir)',
+                '-o', '<@(_outputs)',
+                '-a', '<(test_additional_options)',
+                'pack_run',
+              ],
+            }
+          ],
+        },
       ],  # end of targets
     }],
   ],  # end of conditions
