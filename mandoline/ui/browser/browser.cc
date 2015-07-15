@@ -207,14 +207,15 @@ void Browser::ShowOmnibox(mojo::URLRequestPtr request) {
   if (!omnibox_) {
     omnibox_ = root_->view_manager()->CreateView();
     root_->AddChild(omnibox_);
-    omnibox_->SetVisible(true);
     omnibox_->SetBounds(root_->bounds());
   }
   mojo::ViewManagerClientPtr view_manager_client;
   mojo::ApplicationConnection* connection =
       app_->ConnectToApplication(request.Pass());
+  connection->AddService<ViewEmbedder>(this);
   connection->ConnectToService(&view_manager_client);
   omnibox_->Embed(view_manager_client.Pass());
+  omnibox_->SetVisible(true);
 }
 
 }  // namespace mandoline
