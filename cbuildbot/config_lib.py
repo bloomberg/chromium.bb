@@ -1083,8 +1083,10 @@ def LoadConfigFromString(json_string):
   """Load a cbuildbot config from it's Json encoded string."""
   config_dict = json.loads(json_string, object_hook=_DecodeDict)
 
-  # default is a dictionary of default build configuration values.
-  defaults = config_dict.pop(DEFAULT_BUILD_CONFIG)
+  # Use standard defaults, but allow the config to override.
+  defaults = DefaultSettings()
+  defaults.update(config_dict.pop(DEFAULT_BUILD_CONFIG))
+
   templates = config_dict.pop('_templates', None)
   site_params = config_dict.pop('_site_params', None)
 

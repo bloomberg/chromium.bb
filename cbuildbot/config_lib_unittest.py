@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import copy
 import cPickle
-import json
 import mock
 
 from chromite.cbuildbot import chromeos_config
@@ -346,22 +345,20 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
 
   def testSaveLoadEmpty(self):
     config = config_lib.SiteConfig(defaults={})
-
     config_str = config.SaveConfigToString()
-    self.assertEqual(config_str, """{
-    "_default": {},
-    "_site_params": {},
-    "_templates": {}
-}""")
-
     loaded = config_lib.LoadConfigFromString(config_str)
-    loaded_str = loaded.SaveConfigToString()
 
     self.assertEqual(config, loaded)
-    self.assertEqual(config_str, loaded_str)
+
+    self.assertEqual(loaded.keys(), [])
+    self.assertEqual(loaded._site_params.keys(), [])
+    self.assertEqual(loaded._templates.keys(), [])
+    self.assertEqual(loaded.GetDefault(), config_lib.DefaultSettings())
+
+    self.assertNotEqual(loaded.SaveConfigToString(), '')
 
     # Make sure we can dump debug content without crashing.
-    self.assertNotEqual(config.DumpExpandedConfigToString(), '')
+    self.assertNotEqual(loaded.DumpExpandedConfigToString(), '')
 
   def testSaveLoadComplex(self):
 
@@ -372,7 +369,8 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
         "baz": false,
         "child_configs": [],
         "foo": false,
-        "hw_tests": []
+        "hw_tests": [],
+        "nested": { "sub1": 1, "sub2": 2 }
     },
     "_site_params": {
         "site_foo": true,
@@ -410,10 +408,18 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
 }"""
 
     config = config_lib.LoadConfigFromString(src_str)
-    config_str = config.SaveConfigToString()
 
-    # Verify that the dumped object matches the source object.
-    self.assertEqual(json.loads(src_str), json.loads(config_str))
+    expected_defaults = config_lib.DefaultSettings()
+    expected_defaults.update({
+        "bar": True,
+        "baz": False,
+        "child_configs": [],
+        "foo": False,
+        "hw_tests": [],
+        "nested": {"sub1": 1, "sub2": 2},
+    })
+
+    self.assertEqual(config.GetDefault(), expected_defaults)
 
     # Verify assorted stuff in the loaded config to make sure it matches
     # expectations.
@@ -437,11 +443,9 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
     self.assertFalse(config.params.site_bar)
 
     # Load an save again, just to make sure there are no changes.
-    loaded = config_lib.LoadConfigFromString(config_str)
-    loaded_str = loaded.SaveConfigToString()
+    loaded = config_lib.LoadConfigFromString(config.SaveConfigToString())
 
     self.assertEqual(config, loaded)
-    self.assertEqual(config_str, loaded_str)
 
     # Make sure we can dump debug content without crashing.
     self.assertNotEqual(config.DumpExpandedConfigToString(), '')
