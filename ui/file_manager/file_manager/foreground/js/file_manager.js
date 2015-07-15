@@ -422,10 +422,9 @@ FileManager.prototype = /** @struct */ {
 
   /**
    * One time initialization for the file system and related things.
-   * @return {!Promise} A promise to be fillfilled when initialization is done.
    * @private
    */
-  FileManager.prototype.startInitFileSystemUI_ = function() {
+  FileManager.prototype.initFileSystemUI_ = function() {
     this.ui_.listContainer.startBatchUpdates();
 
     this.initFileList_();
@@ -523,21 +522,13 @@ FileManager.prototype = /** @struct */ {
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();
 
-    return new Promise(function(resolve) {
-      // Get the 'allowRedeemOffers' preference for banners.
-      chrome.fileManagerPrivate.getPreferences(function(pref) {
-        this.ui_.initBanners(
-            new Banners(
-                this.directoryModel_,
-                this.volumeManager_,
-                this.document_,
-                // Whether to show offers on the welcome banner.
-                pref.allowRedeemOffers,
-                // Whether to show any welcome banner.
-                this.dialogType === DialogType.FULL_PAGE));
-        resolve();
-      }.bind(this));
-    }.bind(this));
+    this.ui_.initBanners(
+        new Banners(
+            this.directoryModel_,
+            this.volumeManager_,
+            this.document_,
+            // Whether to show any welcome banner.
+            this.dialogType === DialogType.FULL_PAGE));
   };
 
   /**
@@ -641,8 +632,7 @@ FileManager.prototype = /** @struct */ {
       this.initAdditionalUI_();
       return this.initSettingsPromise_;
     }.bind(this)).then(function() {
-      return this.startInitFileSystemUI_();
-    }.bind(this)).then(function() {
+      this.initFileSystemUI_();
       this.initUIFocus_();
     }.bind(this));
   };

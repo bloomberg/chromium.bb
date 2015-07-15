@@ -9,17 +9,16 @@
  * @param {DirectoryModel} directoryModel The model.
  * @param {VolumeManagerWrapper} volumeManager The manager.
  * @param {Document} document HTML document.
- * @param {boolean} showOffers True if we should show offer banners.
  * @param {boolean} showWelcome True if the welcome banner can be shown.
  * @constructor
  * @extends {cr.EventTarget}
  */
 function Banners(
-    directoryModel, volumeManager, document, showOffers, showWelcome) {
+    directoryModel, volumeManager, document, showWelcome) {
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
   this.document_ = assert(document);
-  this.showOffers_ = showOffers;
+  this.showOffers_ = false;
   this.showWelcome_ = showWelcome;
   this.driveEnabled_ = false;
 
@@ -43,23 +42,33 @@ function Banners(
   this.welcomeHeaderCounter_ = WELCOME_HEADER_COUNTER_LIMIT;
   this.warningDismissedCounter_ = 0;
 
-  this.ready_ = new Promise(function(resolve, reject) {
-    chrome.storage.local.get(
-        [WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
-        function(values) {
-          this.welcomeHeaderCounter_ =
-              parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
-          this.warningDismissedCounter_ =
-              parseInt(values[WARNING_DISMISSED_KEY], 10) || 0;
+  this.ready_ = Promise.all([
+    new Promise(function(resolve, reject) {
+      chrome.storage.local.get(
+          [WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
+          function(values) {
+            this.welcomeHeaderCounter_ =
+                parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
+            this.warningDismissedCounter_ =
+                parseInt(values[WARNING_DISMISSED_KEY], 10) || 0;
 
-          // If it's in test, override the counter to show the header by force.
-          if (chrome.test) {
-            this.welcomeHeaderCounter_ = 0;
-            this.warningDismissedCounter_ = 0;
-          }
-          resolve();
-        }.bind(this));
-  }.bind(this));
+            // If it's in test, override the counter to show the header by
+            // force.
+            if (chrome.test) {
+              this.welcomeHeaderCounter_ = 0;
+              this.warningDismissedCounter_ = 0;
+            }
+            resolve();
+          }.bind(this));
+    }.bind(this)),
+    new Promise(function(resolve) {
+      // Get the 'allowRedeemOffers' preference for banners.
+      chrome.fileManagerPrivate.getPreferences(function(pref) {
+        this.showOffers_ = pref.allowRedeemOffers;
+        resolve();
+      }.bind(this));
+    }.bind(this))
+  ]);
 
   // Authentication failed banner.
   this.authFailedBanner_ =
