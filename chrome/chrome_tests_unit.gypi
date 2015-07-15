@@ -19,7 +19,6 @@
       # TODO(newt): move this to test_support_unit?
       'browser/android/mock_location_settings.cc',
       'browser/android/mock_location_settings.h',
-      'browser/android/policy/policy_manager_unittest.cc',
       'browser/android/preferences/pref_service_bridge_unittest.cc',
       'browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc',
       'browser/app_controller_mac_unittest.mm',

@@ -395,6 +395,18 @@
           },
           'includes': [ '../build/java.gypi' ],
         },
+        {
+          # GN: //components/policy/android:jni_headers
+          'target_name': 'policy_jni_headers',
+          'type': 'none',
+          'sources': [
+            'policy/android/java/src/org/chromium/policy/PolicyConverter.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'policy',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
       ],
     }],
     ['OS=="win" and target_arch=="ia32" and configuration_policy==1', {

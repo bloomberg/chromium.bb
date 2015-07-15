@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/android/policy/policy_manager.h"
+#include "components/policy/core/browser/android/policy_converter.h"
 #include "components/policy/core/common/schema.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,7 +17,10 @@ using base::ListValue;
 using base::StringValue;
 using base::Value;
 
-class PolicyManagerTest : public testing::Test {
+namespace policy {
+namespace android {
+
+class PolicyConverterTest : public testing::Test {
  public:
   void SetUp() override {
     const char kSchemaTemplate[] =
@@ -35,16 +41,16 @@ class PolicyManagerTest : public testing::Test {
         "}";
 
     std::string error;
-    schema_ = policy::Schema::Parse(kSchemaTemplate, &error);
+    schema_ = Schema::Parse(kSchemaTemplate, &error);
     ASSERT_TRUE(schema_.valid()) << error;
   }
 
  protected:
   // Converts the passed in value to the passed in schema, and serializes the
   // result to JSON, to make it easier to compare with EXPECT_EQ.
-  std::string Convert(Value* value, const policy::Schema& value_schema) {
-    scoped_ptr<Value> converted_value(
-        PolicyManager::ConvertValueToSchema(value, value_schema));
+  std::string Convert(Value* value, const Schema& value_schema) {
+    scoped_ptr<Value> converted_value(PolicyConverter::ConvertValueToSchema(
+        scoped_ptr<Value>(value), value_schema));
 
     std::string json_string;
     EXPECT_TRUE(
@@ -52,18 +58,46 @@ class PolicyManagerTest : public testing::Test {
     return json_string;
   }
 
-  policy::Schema schema_;
+  // Uses|PolicyConverter::ConvertJavaStringArrayToListValue| to convert the
+  // passed in java array and serializes the result to JSON, to make it easier
+  // to compare with EXPECT_EQ.
+  std::string ConvertJavaStringArrayToListValue(JNIEnv* env,
+                                                jobjectArray java_array) {
+    scoped_ptr<ListValue> list =
+        PolicyConverter::ConvertJavaStringArrayToListValue(env, java_array);
+
+    std::string json_string;
+    EXPECT_TRUE(base::JSONWriter::Write(*list, &json_string));
+
+    return json_string;
+  }
+
+  // Converts the passed in values to a java string array
+  jobjectArray MakeJavaStringArray(JNIEnv* env,
+                                   std::vector<std::string> values) {
+    jobjectArray java_array = (jobjectArray)env->NewObjectArray(
+        values.size(), env->FindClass("java/lang/String"), nullptr);
+    for (size_t i = 0; i < values.size(); i++) {
+      env->SetObjectArrayElement(
+          java_array, i,
+          base::android::ConvertUTF8ToJavaString(env, values[i]).obj());
+    }
+
+    return java_array;
+  }
+
+  Schema schema_;
 };
 
-TEST_F(PolicyManagerTest, ConvertToNullValue) {
-  policy::Schema null_schema = schema_.GetKnownProperty("null");
+TEST_F(PolicyConverterTest, ConvertToNullValue) {
+  Schema null_schema = schema_.GetKnownProperty("null");
   ASSERT_TRUE(null_schema.valid());
 
   EXPECT_EQ("null", Convert(new StringValue("foo"), null_schema));
 }
 
-TEST_F(PolicyManagerTest, ConvertToBoolValue) {
-  policy::Schema bool_schema = schema_.GetKnownProperty("bool");
+TEST_F(PolicyConverterTest, ConvertToBoolValue) {
+  Schema bool_schema = schema_.GetKnownProperty("bool");
   ASSERT_TRUE(bool_schema.valid());
 
   EXPECT_EQ("true", Convert(new FundamentalValue(true), bool_schema));
@@ -79,8 +113,8 @@ TEST_F(PolicyManagerTest, ConvertToBoolValue) {
   EXPECT_EQ("{}", Convert(new DictionaryValue(), bool_schema));
 }
 
-TEST_F(PolicyManagerTest, ConvertToIntValue) {
-  policy::Schema int_schema = schema_.GetKnownProperty("int");
+TEST_F(PolicyConverterTest, ConvertToIntValue) {
+  Schema int_schema = schema_.GetKnownProperty("int");
   ASSERT_TRUE(int_schema.valid());
 
   EXPECT_EQ("23", Convert(new FundamentalValue(23), int_schema));
@@ -90,8 +124,8 @@ TEST_F(PolicyManagerTest, ConvertToIntValue) {
   EXPECT_EQ("false", Convert(new FundamentalValue(false), int_schema));
 }
 
-TEST_F(PolicyManagerTest, ConvertToDoubleValue) {
-  policy::Schema double_schema = schema_.GetKnownProperty("double");
+TEST_F(PolicyConverterTest, ConvertToDoubleValue) {
+  Schema double_schema = schema_.GetKnownProperty("double");
   ASSERT_TRUE(double_schema.valid());
 
   EXPECT_EQ("3", Convert(new FundamentalValue(3), double_schema));
@@ -101,16 +135,16 @@ TEST_F(PolicyManagerTest, ConvertToDoubleValue) {
   EXPECT_EQ("true", Convert(new FundamentalValue(true), double_schema));
 }
 
-TEST_F(PolicyManagerTest, ConvertToStringValue) {
-  policy::Schema string_schema = schema_.GetKnownProperty("string");
+TEST_F(PolicyConverterTest, ConvertToStringValue) {
+  Schema string_schema = schema_.GetKnownProperty("string");
   ASSERT_TRUE(string_schema.valid());
 
   EXPECT_EQ("\"troz\"", Convert(new StringValue("troz"), string_schema));
   EXPECT_EQ("4711", Convert(new FundamentalValue(4711), string_schema));
 }
 
-TEST_F(PolicyManagerTest, ConvertToListValue) {
-  policy::Schema list_schema = schema_.GetKnownProperty("list");
+TEST_F(PolicyConverterTest, ConvertToListValue) {
+  Schema list_schema = schema_.GetKnownProperty("list");
   ASSERT_TRUE(list_schema.valid());
 
   ListValue* list = new ListValue;
@@ -123,8 +157,17 @@ TEST_F(PolicyManagerTest, ConvertToListValue) {
   EXPECT_EQ("19", Convert(new FundamentalValue(19), list_schema));
 }
 
-TEST_F(PolicyManagerTest, ConvertToDictionaryValue) {
-  policy::Schema dict_schema = schema_.GetKnownProperty("dict");
+TEST_F(PolicyConverterTest, ConvertFromJavaListToListValue) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  EXPECT_EQ("[\"foo\",\"bar\",\"baz\"]",
+            ConvertJavaStringArrayToListValue(
+                env, MakeJavaStringArray(env, {"foo", "bar", "baz"})));
+  EXPECT_EQ("[]", ConvertJavaStringArrayToListValue(
+                      env, MakeJavaStringArray(env, {})));
+}
+
+TEST_F(PolicyConverterTest, ConvertToDictionaryValue) {
+  Schema dict_schema = schema_.GetKnownProperty("dict");
   ASSERT_TRUE(dict_schema.valid());
 
   DictionaryValue* dict = new DictionaryValue;
@@ -135,3 +178,6 @@ TEST_F(PolicyManagerTest, ConvertToDictionaryValue) {
   EXPECT_EQ("\"fnord\"", Convert(new StringValue("fnord"), dict_schema));
   EXPECT_EQ("1729", Convert(new FundamentalValue(1729), dict_schema));
 }
+
+}  // namespace android
+}  // namespace policy

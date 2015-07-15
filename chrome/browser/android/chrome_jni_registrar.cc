@@ -132,6 +132,7 @@
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
+#include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
 #include "components/service_tab_launcher/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
@@ -154,6 +155,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"Invalidation", invalidation::android::RegisterInvalidationJni},
     {"NavigationInterception",
      navigation_interception::RegisterNavigationInterceptionJni},
+    {"Policy", policy::android::RegisterPolicy},
     {"SafeJson", safe_json::android::RegisterSafeJsonJni},
     {"WebContentsDelegateAndroid",
      web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni},

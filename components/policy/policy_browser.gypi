@@ -61,6 +61,17 @@
         'core/browser/url_blacklist_policy_handler.cc',
         'core/browser/url_blacklist_policy_handler.h',
       ],
+      'conditions': [
+        ['OS=="android"', {
+          'sources': [
+            'core/browser/android/component_jni_registrar.cc',
+            'core/browser/android/component_jni_registrar.h',
+            'core/browser/android/policy_converter.cc',
+            'core/browser/android/policy_converter.h',
+          ],
+          'dependencies': [ 'policy_jni_headers' ]
+        }]
+      ]
     }],
   ],
 }

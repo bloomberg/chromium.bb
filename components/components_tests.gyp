@@ -391,6 +391,7 @@
       'password_manager/core/common/credential_manager_types_unittest.cc',
     ],
     'policy_unittest_sources': [
+      'policy/core/browser/android/policy_converter_unittest.cc',
       'policy/core/browser/autofill_policy_handler_unittest.cc',
       'policy/core/browser/browser_policy_connector_unittest.cc',
       'policy/core/browser/configuration_policy_handler_unittest.cc',

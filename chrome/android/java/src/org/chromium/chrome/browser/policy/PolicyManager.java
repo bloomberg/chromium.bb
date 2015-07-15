@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.policy.PolicyConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 public class PolicyManager {
     private long mNativePolicyManager;
 
+    private PolicyConverter mPolicyConverter;
     private final List<PolicyProvider> mPolicyProviders = new ArrayList<>();
     private final List<Bundle> mCachedPolicies = new ArrayList<>();
     private final List<PolicyChangeListener> mPolicyChangeListeners = new ArrayList<>();
@@ -26,6 +28,7 @@ public class PolicyManager {
     public void initializeNative() {
         ThreadUtils.assertOnUiThread();
         mNativePolicyManager = nativeInit();
+        mPolicyConverter = nativeCreatePolicyConverter(mNativePolicyManager);
     }
 
     /**
@@ -51,6 +54,7 @@ public class PolicyManager {
 
         nativeDestroy(mNativePolicyManager);
         mNativePolicyManager = 0;
+        mPolicyConverter = null;
     }
 
     void onSettingsAvailable(int source, Bundle newSettings) {
@@ -61,24 +65,7 @@ public class PolicyManager {
         }
         for (Bundle settings : mCachedPolicies) {
             for (String key : settings.keySet()) {
-                Object value = settings.get(key);
-                if (value instanceof Boolean) {
-                    nativeSetPolicyBoolean(mNativePolicyManager, key, (Boolean) value);
-                    continue;
-                }
-                if (value instanceof String) {
-                    nativeSetPolicyString(mNativePolicyManager, key, (String) value);
-                    continue;
-                }
-                if (value instanceof Integer) {
-                    nativeSetPolicyInteger(mNativePolicyManager, key, (Integer) value);
-                    continue;
-                }
-                if (value instanceof String[]) {
-                    nativeSetPolicyStringArray(mNativePolicyManager, key, (String[]) value);
-                    continue;
-                }
-                assert false : "Invalid setting " + value + " for key " + key;
+                mPolicyConverter.setPolicy(key, settings.get(key));
             }
         }
         nativeFlushPolicies(mNativePolicyManager);
@@ -121,15 +108,7 @@ public class PolicyManager {
     }
 
     private native long nativeInit();
+    private native PolicyConverter nativeCreatePolicyConverter(long nativePolicyManager);
     private native void nativeDestroy(long nativePolicyManager);
-
-    private native void nativeSetPolicyBoolean(
-            long nativePolicyManager, String policyKey, boolean value);
-    private native void nativeSetPolicyInteger(
-            long nativePolicyManager, String policyKey, int value);
-    private native void nativeSetPolicyString(
-            long nativePolicyManager, String policyKey, String value);
-    private native void nativeSetPolicyStringArray(
-            long nativePolicyManager, String policyKey, String[] value);
     private native void nativeFlushPolicies(long nativePolicyManager);
 }

@@ -8,52 +8,33 @@
 #include <jni.h>
 
 #include "base/android/jni_weak_ref.h"
-#include "components/policy/core/common/policy_bundle.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/policy_provider_android_delegate.h"
 
 namespace policy {
 
 class PolicyProviderAndroid;
-class Schema;
 
+namespace android {
+
+class PolicyConverter;
+
+}  // namespace android
 }  // namespace policy
 
 class PolicyManager : public policy::PolicyProviderAndroidDelegate {
  public:
   PolicyManager(JNIEnv* env, jobject obj);
 
-  // Called from Java:
-  void SetPolicyBoolean(JNIEnv* env,
-                        jobject obj,
-                        jstring policyKey,
-                        jboolean value);
-  void SetPolicyInteger(JNIEnv* env,
-                        jobject obj,
-                        jstring policyKey,
-                        jint value);
-  void SetPolicyString(JNIEnv* env,
-                       jobject obj,
-                       jstring policyKey,
-                       jstring value);
-  void SetPolicyStringArray(JNIEnv* env,
-                            jobject obj,
-                            jstring policyKey,
-                            jobjectArray value);
   void FlushPolicies(JNIEnv* env, jobject obj);
 
   void Destroy(JNIEnv* env, jobject obj);
 
-  // Converts the passed in value to the type desired by the schema. If the
-  // value is not convertible, it is returned unchanged, so the policy system
-  // can report the error.
-  // Note that this method will only look at the type of the schema, not at any
-  // additional restrictions, or the schema for value's items or properties in
-  // the case of a list or dictionary value.
-  // This method takes ownership of the passed in value, and the caller takes
-  // ownership of the return value.
-  // Public for testing.
-  static base::Value* ConvertValueToSchema(base::Value* raw_value,
-                                           const policy::Schema& schema);
+  // Creates the native and java |PolicyConverter|, returns the reference to
+  // the java one.
+  base::android::ScopedJavaLocalRef<jobject> CreatePolicyConverter(JNIEnv* env,
+                                                                   jobject obj);
 
   // PolicyProviderAndroidDelegate:
   void RefreshPolicies() override;
@@ -64,10 +45,8 @@ class PolicyManager : public policy::PolicyProviderAndroidDelegate {
 
   JavaObjectWeakGlobalRef weak_java_policy_manager_;
 
-  scoped_ptr<policy::PolicyBundle> policy_bundle_;
+  scoped_ptr<policy::android::PolicyConverter> policy_converter_;
   policy::PolicyProviderAndroid* policy_provider_;
-
-  void SetPolicyValue(const std::string& key, base::Value* value);
 
   DISALLOW_COPY_AND_ASSIGN(PolicyManager);
 };
