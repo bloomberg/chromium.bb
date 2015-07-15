@@ -593,8 +593,12 @@ void LayoutMultiColumnFlowThread::skipColumnSpanner(LayoutBox* layoutObject, Lay
     ASSERT(layoutObject->isColumnSpanAll());
     LayoutMultiColumnSpannerPlaceholder* placeholder = layoutObject->spannerPlaceholder();
     LayoutBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
-    if (previousColumnBox && previousColumnBox->isLayoutMultiColumnSet())
-        toLayoutMultiColumnSet(previousColumnBox)->endFlow(logicalTopInFlowThread);
+    if (previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
+        LayoutMultiColumnSet* columnSet = toLayoutMultiColumnSet(previousColumnBox);
+        if (logicalTopInFlowThread < columnSet->logicalTopInFlowThread())
+            logicalTopInFlowThread = columnSet->logicalTopInFlowThread(); // Negative margins may cause this.
+        columnSet->endFlow(logicalTopInFlowThread);
+    }
     LayoutBox* nextColumnBox = placeholder->nextSiblingMultiColumnBox();
     if (nextColumnBox && nextColumnBox->isLayoutMultiColumnSet()) {
         LayoutMultiColumnSet* nextSet = toLayoutMultiColumnSet(nextColumnBox);

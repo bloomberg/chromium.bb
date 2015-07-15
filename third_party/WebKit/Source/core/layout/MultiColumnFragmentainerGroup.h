@@ -44,7 +44,7 @@ public:
 
     // The bottom of our flow thread portion
     LayoutUnit logicalBottomInFlowThread() const { return m_logicalBottomInFlowThread; }
-    void setLogicalBottomInFlowThread(LayoutUnit logicalBottomInFlowThread) { m_logicalBottomInFlowThread = logicalBottomInFlowThread; }
+    void setLogicalBottomInFlowThread(LayoutUnit logicalBottomInFlowThread) { ASSERT(logicalBottomInFlowThread >= m_logicalTopInFlowThread); m_logicalBottomInFlowThread = logicalBottomInFlowThread; }
 
     // The height of our flow thread portion
     LayoutUnit logicalHeightInFlowThread() const { return m_logicalBottomInFlowThread - m_logicalTopInFlowThread; }
