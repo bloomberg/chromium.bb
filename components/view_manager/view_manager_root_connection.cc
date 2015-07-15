@@ -51,7 +51,7 @@ ViewManagerRootConnectionImpl::ViewManagerRootConnectionImpl(
     ConnectionManager* manager)
     : ViewManagerRootConnection(root.Pass(), manager),
       binding_(view_manager_root(), request.Pass()) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler([this]() { CloseConnection(); });
 
   connection_manager()->AddRoot(this);
   set_view_manager_service(connection_manager()->EmbedAtView(
@@ -61,10 +61,6 @@ ViewManagerRootConnectionImpl::ViewManagerRootConnectionImpl(
 }
 
 ViewManagerRootConnectionImpl::~ViewManagerRootConnectionImpl() {
-}
-
-void ViewManagerRootConnectionImpl::OnConnectionError() {
-  CloseConnection();
 }
 
 }  // namespace view_manager

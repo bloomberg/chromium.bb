@@ -21,8 +21,7 @@ class Shell;
 namespace html_viewer {
 
 class DevToolsAgentImpl : public devtools_service::DevToolsAgent,
-                          public blink::WebDevToolsAgentClient,
-                          public mojo::ErrorHandler {
+                          public blink::WebDevToolsAgentClient {
  public:
   // |frame| must outlive this object.
   DevToolsAgentImpl(blink::WebLocalFrame* frame, mojo::Shell* shell);
@@ -46,8 +45,7 @@ class DevToolsAgentImpl : public devtools_service::DevToolsAgent,
                            const blink::WebString& response,
                            const blink::WebString& state);
 
-  // mojo::ErrorHandler implementation.
-  void OnConnectionError() override;
+  void OnConnectionError();
 
   blink::WebLocalFrame* const frame_;
   mojo::Binding<DevToolsAgent> binding_;

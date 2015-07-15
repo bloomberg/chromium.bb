@@ -26,14 +26,11 @@ DefaultClientConnection::DefaultClientConnection(
       connection_manager_(connection_manager),
       binding_(service(), service_request.Pass()),
       client_(client.Pass()) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(
+      [this]() { connection_manager_->OnConnectionError(this); });
 }
 
 DefaultClientConnection::~DefaultClientConnection() {
-}
-
-void DefaultClientConnection::OnConnectionError() {
-  connection_manager_->OnConnectionError(this);
 }
 
 }  // namespace view_manager

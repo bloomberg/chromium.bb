@@ -52,7 +52,7 @@ void DevToolsAgentImpl::SetClient(
     frame_->devToolsAgent()->detach();
 
   client_ = client.Pass();
-  client_.set_error_handler(this);
+  client_.set_connection_error_handler([this]() { OnConnectionError(); });
 
   frame_->devToolsAgent()->attach(blink::WebString::fromUTF8(client_id));
 }

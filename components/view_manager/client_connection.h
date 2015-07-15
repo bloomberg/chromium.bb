@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace view_manager {
 
@@ -36,8 +35,7 @@ class ClientConnection {
 };
 
 // Bindings implementation of ClientConnection.
-class DefaultClientConnection : public ClientConnection,
-                                public mojo::ErrorHandler {
+class DefaultClientConnection : public ClientConnection {
  public:
   DefaultClientConnection(
       scoped_ptr<ViewManagerServiceImpl> service_impl,
@@ -47,9 +45,6 @@ class DefaultClientConnection : public ClientConnection,
   ~DefaultClientConnection() override;
 
  private:
-  // ErrorHandler:
-  void OnConnectionError() override;
-
   ConnectionManager* connection_manager_;
   mojo::Binding<mojo::ViewManagerService> binding_;
   mojo::ViewManagerClientPtr client_;

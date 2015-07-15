@@ -115,8 +115,7 @@ mojo::HttpResponsePtr MakeJsonResponse(uint32_t status_code,
 }
 
 class WebSocketRelayer : public DevToolsAgentHost::Delegate,
-                         public mojo::WebSocketClient,
-                         public mojo::ErrorHandler {
+                         public mojo::WebSocketClient {
  public:
   // Creates a WebSocketRelayer instance and sets it as the delegate of
   // |agent_host|.
@@ -152,7 +151,7 @@ class WebSocketRelayer : public DevToolsAgentHost::Delegate,
         write_send_stream_(new mojo::WebSocketWriteQueue(send_stream_.get())),
         pending_send_count_(0),
         pending_receive_count_(0) {
-    web_socket_.set_error_handler(this);
+    web_socket_.set_connection_error_handler([this]() { OnConnectionError(); });
     agent_host->SetDelegate(this);
   }
 
@@ -227,8 +226,7 @@ class WebSocketRelayer : public DevToolsAgentHost::Delegate,
                 uint16_t code,
                 const mojo::String& reason) override {}
 
-  // mojo::ErrorHandler implementation.
-  void OnConnectionError() override {
+  void OnConnectionError() {
     web_socket_ = nullptr;
     binding_.Close();
 
@@ -281,8 +279,7 @@ class WebSocketRelayer : public DevToolsAgentHost::Delegate,
 }  // namespace
 
 class DevToolsHttpServer::HttpConnectionDelegateImpl
-    : public mojo::HttpConnectionDelegate,
-      public mojo::ErrorHandler {
+    : public mojo::HttpConnectionDelegate {
  public:
   HttpConnectionDelegateImpl(
       DevToolsHttpServer* owner,
@@ -295,8 +292,9 @@ class DevToolsHttpServer::HttpConnectionDelegateImpl
     DCHECK(connection_);
     DCHECK(binding_.is_bound());
 
-    connection_.set_error_handler(this);
-    binding_.set_error_handler(this);
+    auto error_handler = [this]() { owner_->OnConnectionClosed(this); };
+    connection_.set_connection_error_handler(error_handler);
+    binding_.set_connection_error_handler(error_handler);
   }
 
   mojo::HttpConnection* connection() { return connection_.get(); }
@@ -313,9 +311,6 @@ class DevToolsHttpServer::HttpConnectionDelegateImpl
       const OnReceivedWebSocketRequestCallback& callback) override {
     owner_->OnReceivedWebSocketRequest(this, request.Pass(), callback);
   }
-
-  // mojo::ErrorHandler implementation.
-  void OnConnectionError() override { owner_->OnConnectionClosed(this); }
 
   DevToolsHttpServer* const owner_;
   mojo::HttpConnectionPtr connection_;

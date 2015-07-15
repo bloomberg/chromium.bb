@@ -125,8 +125,4 @@ void ViewManagerApp::Create(
   new gles2::GpuImpl(request.Pass(), gpu_state_);
 }
 
-void ViewManagerApp::OnConnectionError() {
-  app_impl_->Terminate();
-}
-
 }  // namespace view_manager

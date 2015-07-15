@@ -11,13 +11,11 @@
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace devtools_service {
 
 // DevToolsAgentHost represents a DevTools agent at the service side.
-class DevToolsAgentHost : public DevToolsAgentClient,
-                          public mojo::ErrorHandler {
+class DevToolsAgentHost : public DevToolsAgentClient {
  public:
   class Delegate {
    public:
@@ -35,7 +33,7 @@ class DevToolsAgentHost : public DevToolsAgentClient,
   ~DevToolsAgentHost() override;
 
   void set_agent_connection_error_handler(const mojo::Closure& handler) {
-    agent_connection_error_handler_ = handler;
+    agent_.set_connection_error_handler(handler);
   }
 
   std::string id() const { return id_; }
@@ -53,13 +51,9 @@ class DevToolsAgentHost : public DevToolsAgentClient,
   // DevToolsAgentClient implementation.
   void DispatchProtocolMessage(const mojo::String& message) override;
 
-  // mojo::ErrorHandler implementation.
-  void OnConnectionError() override;
-
   const std::string id_;
 
   DevToolsAgentPtr agent_;
-  mojo::Closure agent_connection_error_handler_;
 
   mojo::Binding<DevToolsAgentClient> binding_;
 

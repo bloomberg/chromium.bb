@@ -151,7 +151,7 @@ CommandBufferImpl::~CommandBufferImpl() {
 void CommandBufferImpl::BindToRequest(
     mojo::InterfaceRequest<mojo::CommandBuffer> request) {
   binding_.Bind(request.Pass());
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
 void CommandBufferImpl::OnConnectionError() {

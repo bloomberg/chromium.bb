@@ -14,7 +14,6 @@ DevToolsAgentHost::DevToolsAgentHost(DevToolsAgentPtr agent)
       agent_(agent.Pass()),
       binding_(this),
       delegate_(nullptr) {
-  agent_.set_error_handler(this);
 }
 
 DevToolsAgentHost::~DevToolsAgentHost() {
@@ -45,10 +44,6 @@ void DevToolsAgentHost::SendProtocolMessageToAgent(const std::string& message) {
 
 void DevToolsAgentHost::DispatchProtocolMessage(const mojo::String& message) {
   delegate_->DispatchProtocolMessage(this, message);
-}
-
-void DevToolsAgentHost::OnConnectionError() {
-  agent_connection_error_handler_.Run();
 }
 
 }  // namespace devtools_service

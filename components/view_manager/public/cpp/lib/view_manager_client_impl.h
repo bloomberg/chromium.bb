@@ -19,8 +19,7 @@ class ViewManagerTransaction;
 
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
-                              public ViewManagerClient,
-                              public ErrorHandler {
+                              public ViewManagerClient {
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate,
                         Shell* shell,
@@ -122,9 +121,6 @@ class ViewManagerClientImpl : public ViewManager,
                         EventPtr event,
                         const Callback<void()>& callback) override;
   void OnViewFocused(Id focused_view_id) override;
-
-  // ErrorHandler implementation.
-  void OnConnectionError() override;
 
   void RootDestroyed(View* root);
 

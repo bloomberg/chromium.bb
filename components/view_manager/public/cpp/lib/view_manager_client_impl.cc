@@ -254,7 +254,7 @@ void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   if (view_manager_service) {
     DCHECK(!service_);
     service_ = view_manager_service.Pass();
-    service_.set_error_handler(this);
+    service_.set_connection_error_handler([this]() { delete this; });
   }
   connection_id_ = connection_id;
 
@@ -403,12 +403,6 @@ void ViewManagerClientImpl::OnViewFocused(Id focused_view_id) {
     FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(focused).observers(),
                       OnViewFocusChanged(focused, blurred));
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OnConnectionError, private:
-void ViewManagerClientImpl::OnConnectionError() {
-  delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

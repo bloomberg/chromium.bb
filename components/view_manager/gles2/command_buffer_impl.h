@@ -23,8 +23,7 @@ class CommandBufferImplObserver;
 // so that we can insert sync points without blocking on the GL driver. It
 // forwards most method calls to the CommandBufferDriver, which runs on the
 // same thread as the native viewport.
-class CommandBufferImpl : public mojo::CommandBuffer,
-                          public mojo::ErrorHandler {
+class CommandBufferImpl : public mojo::CommandBuffer {
  public:
   CommandBufferImpl(
       mojo::InterfaceRequest<CommandBuffer> request,
@@ -74,8 +73,7 @@ class CommandBufferImpl : public mojo::CommandBuffer,
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval);
 
-  // mojo::ErrorHandler:
-  void OnConnectionError() override;
+  void OnConnectionError();
 
   scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> driver_task_runner_;
