@@ -1100,6 +1100,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
                 ['git', 'cl', 'set_close'],
             ])
 
@@ -1233,6 +1234,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
                 ['git', 'cl', 'set_close'],
             ])
 
@@ -1296,6 +1298,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'dcommit', '-f'],
+                ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
                 ['git', 'cl', 'set_close'],
             ])
 

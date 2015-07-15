@@ -874,7 +874,12 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             traceback.print_exc(file=sys.stderr)
         finally:
             if did_finish:
-                self._run_git_cl_command(options, ['set_close'])
+                # Close the issue if dcommit failed.
+                issue = tool.executive.run_command(
+                    ['git', 'config', 'branch.%s.rietveldissue' % self.AUTO_REBASELINE_BRANCH_NAME])
+                if issue.strip():
+                    self._run_git_cl_command(options, ['set_close'])
+
             tool.scm().ensure_cleanly_tracking_remote_master()
             tool.scm().checkout_branch(old_branch_name)
             tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
