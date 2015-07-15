@@ -48,7 +48,6 @@ protected:
 
         m_startData.scriptURL = invalidScriptURL;
         m_startData.userAgent = WebString("dummy user agent");
-        m_startData.pauseAfterDownloadMode = WebEmbeddedWorkerStartData::DontPauseAfterDownload;
         m_startData.waitForDebuggerMode = WebEmbeddedWorkerStartData::DontWaitForDebugger;
         m_startData.v8CacheOptions = WebSettings::V8CacheOptionsDefault;
     }

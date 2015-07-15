@@ -88,7 +88,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextC
     , m_mainFrame(0)
     , m_loadingShadowPage(false)
     , m_askedToTerminate(false)
-    , m_pauseAfterDownloadState(DontPauseAfterDownload)
     , m_waitingForDebuggerState(NotWaitingForDebugger)
 {
     runningWorkerInstances().add(this);
@@ -120,10 +119,7 @@ void WebEmbeddedWorkerImpl::startWorkerContext(
 {
     ASSERT(!m_askedToTerminate);
     ASSERT(!m_mainScriptLoader);
-    ASSERT(m_pauseAfterDownloadState == DontPauseAfterDownload);
     m_workerStartData = data;
-    if (data.pauseAfterDownloadMode == WebEmbeddedWorkerStartData::PauseAfterDownload)
-        m_pauseAfterDownloadState = DoPauseAfterDownload;
     prepareShadowPageForLoader();
 }
 
@@ -144,28 +140,9 @@ void WebEmbeddedWorkerImpl::terminateWorkerContext()
         m_workerContextClient->workerContextFailedToStart();
         return;
     }
-    if (m_pauseAfterDownloadState == IsPausedAfterDownload) {
-        // This deletes 'this'.
-        m_workerContextClient->workerContextFailedToStart();
-        return;
-    }
     if (m_workerThread)
         m_workerThread->terminate();
     m_workerInspectorProxy->workerThreadTerminated();
-}
-
-void WebEmbeddedWorkerImpl::resumeAfterDownload()
-{
-    ASSERT(!m_askedToTerminate);
-    bool wasPaused = (m_pauseAfterDownloadState == IsPausedAfterDownload);
-    m_pauseAfterDownloadState = DontPauseAfterDownload;
-
-    // If we were asked to wait for debugger while updating service worker version then it is good time now.
-    m_workerContextClient->workerReadyForInspection();
-    if (m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger)
-        m_waitingForDebuggerState = WaitingForDebuggerAfterScriptLoaded;
-    else if (wasPaused)
-        startWorkerThread();
 }
 
 void WebEmbeddedWorkerImpl::attachDevTools(const WebString& hostId)
@@ -246,15 +223,10 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     m_mainFrame->setDevToolsAgentClient(this);
 
     // If we were asked to wait for debugger then it is the good time to do that.
-    // However if we are updating service worker version (m_pauseAfterDownloadState is set)
-    // Then we need to load the worker script to check the version, so in this case we wait for debugger
-    // later in ::resumeAfterDownload().
-    if (m_pauseAfterDownloadState != DoPauseAfterDownload) {
-        m_workerContextClient->workerReadyForInspection();
-        if (m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger) {
-            m_waitingForDebuggerState = WaitingForDebuggerBeforeLoadingScript;
-            return;
-        }
+    m_workerContextClient->workerReadyForInspection();
+    if (m_workerStartData.waitForDebuggerMode == WebEmbeddedWorkerStartData::WaitForDebugger) {
+        m_waitingForDebuggerState = WaitingForDebuggerBeforeLoadingScript;
+        return;
     }
 
     loadShadowPage();
@@ -334,17 +306,11 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
     if (m_mainScriptLoader->cachedMetadata())
         Platform::current()->histogramCustomCounts("ServiceWorker.ScriptCachedMetadataSize", m_mainScriptLoader->cachedMetadata()->size(), 1000, 50000000, 50);
 
-    if (m_pauseAfterDownloadState == DoPauseAfterDownload) {
-        m_pauseAfterDownloadState = IsPausedAfterDownload;
-        m_workerContextClient->didPauseAfterDownload();
-        return;
-    }
     startWorkerThread();
 }
 
 void WebEmbeddedWorkerImpl::startWorkerThread()
 {
-    ASSERT(m_pauseAfterDownloadState == DontPauseAfterDownload);
     ASSERT(!m_askedToTerminate);
 
     Document* document = m_mainFrame->frame()->document();

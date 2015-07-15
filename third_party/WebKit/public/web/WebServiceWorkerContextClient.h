@@ -65,12 +65,6 @@ public:
     // the |scope| attribute of the ServiceWorkerGlobalScope. Immutable per spec.
     virtual WebURL scope() const { return WebURL(); }
 
-    // If the worker was started with WebEmbeddedWorkerStartData indicating to pause
-    // after download, this method is called after the main script resource has been
-    // downloaded. The scope will not be created and the script will not be loaded until
-    // WebEmbeddedWorker.resumeAfterDownload() is invoked.
-    virtual void didPauseAfterDownload() { }
-
     // ServiceWorker has prepared everything for script loading and is now ready for inspection.
     virtual void workerReadyForInspection() { }
 

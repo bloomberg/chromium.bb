@@ -61,7 +61,6 @@ public:
 
     // WebEmbeddedWorker overrides.
     void startWorkerContext(const WebEmbeddedWorkerStartData&) override;
-    void resumeAfterDownload() override;
     void terminateWorkerContext() override;
     void attachDevTools(const WebString& hostId) override;
     void reattachDevTools(const WebString& hostId, const WebString& savedState) override;
@@ -126,12 +125,6 @@ private:
         WaitingForDebuggerAfterScriptLoaded,
         NotWaitingForDebugger
     };
-
-    enum {
-        DontPauseAfterDownload,
-        DoPauseAfterDownload,
-        IsPausedAfterDownload
-    } m_pauseAfterDownloadState;
 
     WaitingForDebuggerState m_waitingForDebuggerState;
 };
