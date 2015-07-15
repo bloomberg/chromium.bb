@@ -16,14 +16,32 @@ import sys
 from yes_no import YesNo
 
 
-def IncludeCompareKey(line):
+def IsInclude(line):
+  """Returns True if the line is an #include/#import/import line."""
+  return any([line.startswith('#include '), line.startswith('#import '),
+              line.startswith('import ')])
+
+
+def IncludeCompareKey(line, for_blink):
   """Sorting comparator key used for comparing two #include lines.
-  Returns the filename without the #include/#import/import prefix.
+
+  Returns an integer, optionally followed by a string. The integer is used
+  for coarse sorting of different categories of headers, and the string is
+  used for fine sorting of headers within categeries.
   """
   for prefix in ('#include ', '#import ', 'import '):
     if line.startswith(prefix):
       line = line[len(prefix):]
       break
+
+  if for_blink:
+    # Blink likes to have its "config.h" include first.
+    if line.startswith('"config.h"'):
+      return '0'
+
+    # Blink sorts system headers after others. This is handled by sorting
+    # alphabetically so no need to do anything tricky.
+    return '1' + line
 
   # The win32 api has all sorts of implicit include order dependencies :-/
   # Give a few headers special sort keys that make sure they appear before all
@@ -47,14 +65,11 @@ def IncludeCompareKey(line):
   return '4' + line
 
 
-def IsInclude(line):
-  """Returns True if the line is an #include/#import/import line."""
-  return any([line.startswith('#include '), line.startswith('#import '),
-              line.startswith('import ')])
-
-
-def SortHeader(infile, outfile):
+def SortHeader(infile, outfile, for_blink):
   """Sorts the headers in infile, writing the sorted file to outfile."""
+  def CompareKey(line):
+    return IncludeCompareKey(line, for_blink)
+
   for line in infile:
     if IsInclude(line):
       headerblock = []
@@ -67,7 +82,7 @@ def SortHeader(infile, outfile):
         except StopIteration:
           infile_ended_on_include_line = True
           break
-      for header in sorted(headerblock, key=IncludeCompareKey):
+      for header in sorted(headerblock, key=CompareKey):
         outfile.write(header)
       if infile_ended_on_include_line:
         # We already wrote the last line above; exit to ensure it isn't written
@@ -79,7 +94,7 @@ def SortHeader(infile, outfile):
 
 
 def FixFileWithConfirmFunction(filename, confirm_function,
-                               perform_safety_checks):
+                               perform_safety_checks, for_blink=False):
   """Creates a fixed version of the file, invokes |confirm_function|
   to decide whether to use the new file, and cleans up.
 
@@ -99,7 +114,7 @@ def FixFileWithConfirmFunction(filename, confirm_function,
   fixfilename = filename + '.new'
   infile = open(filename, 'rb')
   outfile = open(fixfilename, 'wb')
-  SortHeader(infile, outfile)
+  SortHeader(infile, outfile, for_blink)
   infile.close()
   outfile.close()  # Important so the below diff gets the updated contents.
 
@@ -116,7 +131,7 @@ def FixFileWithConfirmFunction(filename, confirm_function,
       pass
 
 
-def DiffAndConfirm(filename, should_confirm, perform_safety_checks):
+def DiffAndConfirm(filename, should_confirm, perform_safety_checks, for_blink):
   """Shows a diff of what the tool would change the file named
   filename to.  Shows a confirmation prompt if should_confirm is true.
   Saves the resulting file if should_confirm is false or the user
@@ -132,7 +147,8 @@ def DiffAndConfirm(filename, should_confirm, perform_safety_checks):
 
     return (not should_confirm or YesNo('Use new file (y/N)?'))
 
-  FixFileWithConfirmFunction(filename, ConfirmFunction, perform_safety_checks)
+  FixFileWithConfirmFunction(filename, ConfirmFunction, perform_safety_checks,
+                             for_blink)
 
 def IsUnsafeToReorderHeaders(filename):
   # *_message_generator.cc is almost certainly a file that generates IPC
@@ -153,6 +169,9 @@ def main():
                     help='Do not perform the safety checks via which this '
                     'script refuses to operate on files for which it thinks '
                     'the include ordering is semantically significant.')
+  parser.add_option('--for_blink', action='store_true', default=False,
+                    dest='for_blink', help='Whether the blink header sorting '
+                    'rules should be applied.')
   opts, filenames = parser.parse_args()
 
   if len(filenames) < 1:
@@ -160,7 +179,8 @@ def main():
     return 1
 
   for filename in filenames:
-    DiffAndConfirm(filename, opts.should_confirm, opts.perform_safety_checks)
+    DiffAndConfirm(filename, opts.should_confirm, opts.perform_safety_checks,
+                   opts.for_blink)
 
 
 if __name__ == '__main__':

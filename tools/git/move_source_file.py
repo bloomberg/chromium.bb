@@ -65,6 +65,21 @@ def MakeDestinationPath(from_path, to_path):
   return to_path
 
 
+def UpdateIncludePathForBlink(path):
+  """Updates |path| as it would be when used in an include statement in Blink.
+
+  As Blink has its 'public' and 'Source' folders in the include search path,
+  these prefixes of file paths are not included in include statements. For
+  example, if |path| is 'public/foo/bar.h', the matching include statement
+  is '#include "foo/bar.h"'.
+  """
+  for prefix in ('public/', 'Source/'):
+    if path.startswith(prefix):
+      return path[len(prefix):]
+
+  return path
+
+
 def MoveFile(from_path, to_path):
   """Performs a git mv command to move a file from |from_path| to |to_path|.
   """
@@ -72,7 +87,7 @@ def MoveFile(from_path, to_path):
     raise Exception('Fatal: Failed to run git mv command.')
 
 
-def UpdatePostMove(from_path, to_path):
+def UpdatePostMove(from_path, to_path, in_blink):
   """Given a file that has moved from |from_path| to |to_path|,
   updates the moved file's include guard to match the new path and
   updates all references to the file in other source files. Also tries
@@ -85,16 +100,23 @@ def UpdatePostMove(from_path, to_path):
   if os.path.splitext(from_path)[1] in ['.h', '.hh']:
     UpdateIncludeGuard(from_path, to_path)
 
+    from_include_path = from_path
+    to_include_path = to_path
+    if in_blink:
+      from_include_path = UpdateIncludePathForBlink(from_include_path)
+      to_include_path = UpdateIncludePathForBlink(to_include_path)
+
     # Update include/import references.
     files_with_changed_includes = mffr.MultiFileFindReplace(
-        r'(#(include|import)\s*["<])%s([>"])' % re.escape(from_path),
-        r'\1%s\3' % to_path,
+        r'(#(include|import)\s*["<])%s([>"])' % re.escape(from_include_path),
+        r'\1%s\3' % to_include_path,
         ['*.cc', '*.h', '*.m', '*.mm', '*.cpp'])
 
     # Reorder headers in files that changed.
     for changed_file in files_with_changed_includes:
       def AlwaysConfirm(a, b): return True
-      sort_headers.FixFileWithConfirmFunction(changed_file, AlwaysConfirm, True)
+      sort_headers.FixFileWithConfirmFunction(changed_file, AlwaysConfirm, True,
+                                              in_blink)
 
   # Update comments; only supports // comments, which are primarily
   # used in our code.
@@ -195,6 +217,8 @@ def main():
     print 'Fatal: You must run from the root of a git checkout.'
     return 1
 
+  in_blink = os.getcwd().endswith("third_party/WebKit")
+
   parser = optparse.OptionParser(usage='%prog FROM_PATH... TO_PATH')
   parser.add_option('--already_moved', action='store_true',
                     dest='already_moved',
@@ -227,7 +251,7 @@ def main():
     to_path = MakeDestinationPath(from_path, orig_to_path)
     if not opts.already_moved:
       MoveFile(from_path, to_path)
-    UpdatePostMove(from_path, to_path)
+    UpdatePostMove(from_path, to_path, in_blink)
   return 0
 
 
