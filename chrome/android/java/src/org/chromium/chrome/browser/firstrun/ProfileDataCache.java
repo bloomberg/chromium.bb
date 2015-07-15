@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.accounts.Account;
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -53,21 +53,21 @@ public class ProfileDataCache implements Observer {
     private final int mImageStrokeColor;
     private Observer mObserver;
 
-    private final Activity mActivity;
+    private final Context mContext;
     private Profile mProfile;
 
-    public ProfileDataCache(Activity activity, Profile profile) {
+    public ProfileDataCache(Context context, Profile profile) {
         ProfileDownloader.addObserver(this);
 
-        mActivity = activity;
+        mContext = context;
         mProfile = profile;
 
-        final DeviceDisplayInfo info = DeviceDisplayInfo.create(activity);
+        final DeviceDisplayInfo info = DeviceDisplayInfo.create(context);
         mImageSizePx = (int) Math.ceil(PROFILE_IMAGE_SIZE_DP * info.getDIPScale());
         mImageStrokePx = (int) Math.ceil(PROFILE_IMAGE_STROKE_DP * info.getDIPScale());
         mImageStrokeColor = Color.WHITE;
 
-        Bitmap placeHolder = BitmapFactory.decodeResource(mActivity.getResources(),
+        Bitmap placeHolder = BitmapFactory.decodeResource(mContext.getResources(),
                 R.drawable.fre_placeholder);
         mPlaceholderImage = getCroppedBitmap(placeHolder);
 
@@ -90,7 +90,7 @@ public class ProfileDataCache implements Observer {
     public void update() {
         if (mProfile == null) return;
 
-        Account[] accounts = AccountManagerHelper.get(mActivity).getGoogleAccounts();
+        Account[] accounts = AccountManagerHelper.get(mContext).getGoogleAccounts();
         for (int i = 0; i < accounts.length; i++) {
             if (mCacheEntries.get(accounts[i].name) == null) {
                 ProfileDownloader.startFetchingAccountInfoFor(
@@ -132,7 +132,7 @@ public class ProfileDataCache implements Observer {
         return cacheEntry.givenName;
     }
 
-    public void onDestroy() {
+    public void destroy() {
         ProfileDownloader.removeObserver(this);
         mObserver = null;
     }

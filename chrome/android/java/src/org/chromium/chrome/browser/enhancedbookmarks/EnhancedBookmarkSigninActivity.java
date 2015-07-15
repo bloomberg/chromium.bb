@@ -8,9 +8,11 @@ import android.os.Bundle;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.ntp.RecentTabsPromoView;
 import org.chromium.chrome.browser.ntp.RecentTabsPromoView.SyncPromoModel;
 import org.chromium.chrome.browser.ntp.RecentTabsPromoView.UserActionListener;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.SyncController;
@@ -24,6 +26,7 @@ import org.chromium.sync.signin.ChromeSigninController;
 public class EnhancedBookmarkSigninActivity extends EnhancedBookmarkActivityBase implements
         AndroidSyncSettingsObserver, SignInStateObserver, SyncPromoModel, UserActionListener {
     private SigninManager mSignInManager;
+    private ProfileDataCache mProfileDataCache;
     private final ObserverList<AndroidSyncSettingsObserver> mObservers =
             new ObserverList<AndroidSyncSettingsObserver>();
 
@@ -53,6 +56,11 @@ public class EnhancedBookmarkSigninActivity extends EnhancedBookmarkActivityBase
 
         mSignInManager.removeSignInStateObserver(this);
         mSignInManager = null;
+
+        if (mProfileDataCache != null) {
+            mProfileDataCache.destroy();
+            mProfileDataCache = null;
+        }
     }
 
     // AndroidSyncSettingsObserver
@@ -114,5 +122,13 @@ public class EnhancedBookmarkSigninActivity extends EnhancedBookmarkActivityBase
     @Override
     public void onNewAccount() {
         RecordUserAction.record("Stars_SignInPromoActivity_NewAccount");
+    }
+
+    @Override
+    public ProfileDataCache getProfileDataCache() {
+        if (mProfileDataCache == null) {
+            mProfileDataCache = new ProfileDataCache(this, Profile.getLastUsedProfile());
+        }
+        return mProfileDataCache;
     }
 }

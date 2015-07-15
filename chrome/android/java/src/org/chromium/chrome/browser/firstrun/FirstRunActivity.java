@@ -180,7 +180,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mProfileDataCache.onDestroy();
+        mProfileDataCache.destroy();
     }
 
     @Override

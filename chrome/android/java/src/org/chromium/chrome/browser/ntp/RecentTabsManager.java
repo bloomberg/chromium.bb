@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.ntp.RecentTabsPromoView.SyncPromoModel;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -66,6 +67,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     private RecentlyClosedBridge mRecentlyClosedBridge;
     private SigninManager mSignInManager;
     private UpdatedCallback mUpdatedCallback;
+    private ProfileDataCache mProfileDataCache;
 
     /**
      * Create an RecentTabsManager to be used with RecentTabsPage and RecentTabsRowAdapter.
@@ -113,6 +115,11 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
         mNewTabPagePrefs.destroy();
         mNewTabPagePrefs = null;
+
+        if (mProfileDataCache != null) {
+            mProfileDataCache.destroy();
+            mProfileDataCache = null;
+        }
     }
 
     private static ForeignSessionHelper buildForeignSessionHelper(Profile profile) {
@@ -445,5 +452,13 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     @Override
     public void unregisterForSyncUpdates(AndroidSyncSettingsObserver changeListener) {
         mObservers.removeObserver(changeListener);
+    }
+
+    @Override
+    public ProfileDataCache getProfileDataCache() {
+        if (mProfileDataCache == null) {
+            mProfileDataCache = new ProfileDataCache(mContext, Profile.getLastUsedProfile());
+        }
+        return mProfileDataCache;
     }
 }
