@@ -254,15 +254,15 @@ static const struct weston_keyboard_grab_interface binding_grab = {
 };
 
 static void
-install_binding_grab(struct weston_seat *seat, uint32_t time, uint32_t key,
-                     struct weston_surface *focus)
+install_binding_grab(struct weston_keyboard *keyboard, uint32_t time,
+		     uint32_t key, struct weston_surface *focus)
 {
 	struct binding_keyboard_grab *grab;
 
 	grab = malloc(sizeof *grab);
 	grab->key = key;
 	grab->grab.interface = &binding_grab;
-	weston_keyboard_start_grab(seat->keyboard, &grab->grab);
+	weston_keyboard_start_grab(keyboard, &grab->grab);
 
 	/* Notify the surface which had the focus before this binding
 	 * triggered that we stole a keypress from under it, by forcing
@@ -272,9 +272,9 @@ install_binding_grab(struct weston_seat *seat, uint32_t time, uint32_t key,
 	 * If the old focus surface is different than the new one it
 	 * means it was changed in the binding handler, so it received
 	 * the enter event already. */
-	if (focus && seat->keyboard->focus == focus) {
-		weston_keyboard_set_focus(seat->keyboard, NULL);
-		weston_keyboard_set_focus(seat->keyboard, focus);
+	if (focus && keyboard->focus == focus) {
+		weston_keyboard_set_focus(keyboard, NULL);
+		weston_keyboard_set_focus(keyboard, focus);
 	}
 }
 
@@ -305,7 +305,10 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 			 * swallow the key press. */
 			if (seat->keyboard->grab ==
 			    &seat->keyboard->default_grab)
-				install_binding_grab(seat, time, key, focus);
+				install_binding_grab(seat->keyboard,
+						     time,
+						     key,
+						     focus);
 		}
 	}
 }
