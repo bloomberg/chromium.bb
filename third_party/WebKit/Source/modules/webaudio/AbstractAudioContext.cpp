@@ -81,7 +81,6 @@ AbstractAudioContext* AbstractAudioContext::create(Document& document, Exception
 // Constructor for rendering to the audio hardware.
 AbstractAudioContext::AbstractAudioContext(Document* document)
     : ActiveDOMObject(document)
-    , m_isStopScheduled(false)
     , m_isCleared(false)
     , m_isInitialized(false)
     , m_destinationNode(nullptr)
@@ -100,7 +99,6 @@ AbstractAudioContext::AbstractAudioContext(Document* document)
 // Constructor for offline (non-realtime) rendering.
 AbstractAudioContext::AbstractAudioContext(Document* document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
     : ActiveDOMObject(document)
-    , m_isStopScheduled(false)
     , m_isCleared(false)
     , m_isInitialized(false)
     , m_destinationNode(nullptr)
@@ -181,16 +179,7 @@ void AbstractAudioContext::uninitialize()
 
 void AbstractAudioContext::stop()
 {
-    // Usually ExecutionContext calls stop twice.
-    if (m_isStopScheduled)
-        return;
-    m_isStopScheduled = true;
-
-    // Don't call uninitialize() immediately here because the ExecutionContext is in the middle
-    // of dealing with all of its ActiveDOMObjects at this point. uninitialize() can de-reference other
-    // ActiveDOMObjects so let's schedule uninitialize() to be called later.
-    // FIXME: see if there's a more direct way to handle this issue.
-    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&AbstractAudioContext::uninitialize, this));
+    uninitialize();
 }
 
 bool AbstractAudioContext::hasPendingActivity() const
@@ -822,7 +811,7 @@ const AtomicString& AbstractAudioContext::interfaceName() const
 
 ExecutionContext* AbstractAudioContext::executionContext() const
 {
-    return m_isStopScheduled ? 0 : ActiveDOMObject::executionContext();
+    return ActiveDOMObject::executionContext();
 }
 
 void AbstractAudioContext::startRendering()

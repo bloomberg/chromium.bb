@@ -228,10 +228,9 @@ public:
     void notifyStateChange();
 
     // A context is considered closed if:
-    //  - closeContext() has been called, even if the audio HW has not yet been
-    //    stopped.  It will be stopped eventually.
-    //  - it has been stopped (or is stopping) by its execution context.
-    virtual bool isContextClosed() const { return m_isStopScheduled || m_isCleared; }
+    //  - closeContext() has been called.
+    //  - it has been stopped by its execution context.
+    virtual bool isContextClosed() const { return m_isCleared; }
 
     // Get the security origin for this audio context.
     SecurityOrigin* securityOrigin() const;
@@ -254,9 +253,6 @@ protected:
 private:
     void initialize();
 
-    // ExecutionContext calls stop twice.
-    // We'd like to schedule only one stop action for them.
-    bool m_isStopScheduled;
     bool m_isCleared;
     void clear();
 

@@ -146,9 +146,9 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
 
     // Stop the audio context. This will stop the destination node from pulling audio anymore. And
     // since we have disconnected the destination from the audio graph, and thus has no references,
-    // the destination node can GCed if JS has no references. stop() will also resolve the Promise
+    // the destination node can GCed if JS has no references. uninitialize() will also resolve the Promise
     // created here.
-    stop();
+    uninitialize();
 
     return promise;
 }
