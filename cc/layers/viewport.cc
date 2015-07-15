@@ -34,37 +34,35 @@ void Viewport::Pan(const gfx::Vector2dF& delta) {
 
 Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
                                           const gfx::Point& viewport_point,
-                                          bool is_wheel_scroll,
+                                          bool is_direct_manipulation,
                                           bool affect_top_controls) {
   gfx::Vector2dF content_delta = delta;
-  ScrollResult result;
 
-  if (affect_top_controls && ShouldTopControlsConsumeScroll(delta)) {
-    result.top_controls_applied_delta = ScrollTopControls(delta);
-    content_delta -= result.top_controls_applied_delta;
-  }
+  if (affect_top_controls && ShouldTopControlsConsumeScroll(delta))
+    content_delta -= ScrollTopControls(delta);
 
   gfx::Vector2dF pending_content_delta = content_delta;
 
   if (OuterScrollLayer()) {
-    pending_content_delta -= host_impl_->ScrollLayer(OuterScrollLayer(),
-                                                     pending_content_delta,
-                                                     viewport_point,
-                                                     is_wheel_scroll);
+    pending_content_delta -=
+        host_impl_->ScrollLayer(OuterScrollLayer(), pending_content_delta,
+                                viewport_point, is_direct_manipulation);
   }
+
+  ScrollResult result;
 
   // TODO(bokan): This shouldn't be needed but removing it causes subtle
   // viewport movement during top controls manipulation.
-  if (!gfx::ToRoundedVector2d(pending_content_delta).IsZero()) {
-    pending_content_delta -= host_impl_->ScrollLayer(InnerScrollLayer(),
-                                                     pending_content_delta,
-                                                     viewport_point,
-                                                     is_wheel_scroll);
-    result.unused_scroll_delta = AdjustOverscroll(pending_content_delta);
+  if (gfx::ToRoundedVector2d(pending_content_delta).IsZero()) {
+    result.consumed_delta = delta;
+  } else {
+    pending_content_delta -=
+        host_impl_->ScrollLayer(InnerScrollLayer(), pending_content_delta,
+                                viewport_point, is_direct_manipulation);
+    result.consumed_delta = delta - AdjustOverscroll(pending_content_delta);
   }
 
-
-  result.applied_delta = content_delta - pending_content_delta;
+  result.content_scrolled_delta = content_delta - pending_content_delta;
   return result;
 }
 

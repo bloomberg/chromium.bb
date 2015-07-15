@@ -25,10 +25,11 @@ class CC_EXPORT Viewport {
   // determined.
   static const int kPinchZoomSnapMarginDips = 100;
 
+  // TODO(tdresser): eventually |consumed_delta| should equal
+  // |content_scrolled_delta|. See crbug.com/510045 for details.
   struct ScrollResult {
-    gfx::Vector2dF applied_delta;
-    gfx::Vector2dF unused_scroll_delta;
-    gfx::Vector2dF top_controls_applied_delta;
+    gfx::Vector2dF consumed_delta;
+    gfx::Vector2dF content_scrolled_delta;
   };
 
   static scoped_ptr<Viewport> Create(LayerTreeHostImpl* host_impl);

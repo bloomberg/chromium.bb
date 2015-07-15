@@ -2555,7 +2555,7 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
       gfx::Transform::kSkipInitialization);
   bool did_invert = layer_impl->screen_space_transform().GetInverse(
       &inverse_screen_space_transform);
-  // TODO(shawnsingh): With the advent of impl-side crolling for non-root
+  // TODO(shawnsingh): With the advent of impl-side scrolling for non-root
   // layers, we may need to explicitly handle uninvertible transforms here.
   DCHECK(did_invert);
 
@@ -2628,22 +2628,18 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,
                                               const gfx::Vector2dF& delta,
                                               const gfx::Point& viewport_point,
-                                              bool is_wheel_scroll) {
-  // Gesture events need to be transformed from viewport coordinates to
-  // local layer coordinates so that the scrolling contents exactly follow
-  // the user's finger. In contrast, wheel events represent a fixed amount
-  // of scrolling so we can just apply them directly, but the page scale
-  // factor is applied to the scroll delta.
-  if (is_wheel_scroll) {
-    float scale_factor = active_tree()->current_page_scale_factor();
-    return ScrollLayerWithLocalDelta(layer_impl,
-                                     delta,
-                                     scale_factor);
-  }
-
-  return ScrollLayerWithViewportSpaceDelta(layer_impl,
-                                           viewport_point,
-                                           delta);
+                                              bool is_direct_manipulation) {
+  // Events representing direct manipulation of the screen (such as gesture
+  // events) need to be transformed from viewport coordinates to local layer
+  // coordinates so that the scrolling contents exactly follow the user's
+  // finger. In contrast, events not representing direct manipulation of the
+  // screen (such as wheel events) represent a fixed amount of scrolling so we
+  // can just apply them directly, but the page scale factor is applied to the
+  // scroll delta.
+  if (is_direct_manipulation)
+    return ScrollLayerWithViewportSpaceDelta(layer_impl, viewport_point, delta);
+  float scale_factor = active_tree()->current_page_scale_factor();
+  return ScrollLayerWithLocalDelta(layer_impl, delta, scale_factor);
 }
 
 static LayerImpl* nextLayerInScrollOrder(LayerImpl* layer) {
@@ -2664,7 +2660,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   gfx::Vector2dF unused_root_delta;
   bool did_scroll_x = false;
   bool did_scroll_y = false;
-  bool did_scroll_top_controls = false;
+  float initial_top_controls_offset =
+      top_controls_manager_->ControlsTopOffset();
 
   if (pinch_gesture_active_ && settings().invert_viewport_scroll_order) {
     // Scrolls during a pinch gesture should pan the visual viewport, rather
@@ -2685,18 +2682,14 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     gfx::Vector2dF applied_delta;
     if (layer_impl == InnerViewportScrollLayer()) {
       bool affect_top_controls = true;
-      Viewport::ScrollResult result = viewport()->ScrollBy(pending_delta,
-                                                           viewport_point,
-                                                           wheel_scrolling_,
-                                                           affect_top_controls);
-      applied_delta = result.applied_delta;
-      unused_root_delta = result.unused_scroll_delta;
-      did_scroll_top_controls = result.top_controls_applied_delta.y() != 0;
+      Viewport::ScrollResult result =
+          viewport()->ScrollBy(pending_delta, viewport_point, !wheel_scrolling_,
+                               affect_top_controls);
+      applied_delta = result.content_scrolled_delta;
+      unused_root_delta = pending_delta - result.consumed_delta;
     } else {
-      applied_delta = ScrollLayer(layer_impl,
-                                  pending_delta,
-                                  viewport_point,
-                                  wheel_scrolling_);
+      applied_delta = ScrollLayer(layer_impl, pending_delta, viewport_point,
+                                  !wheel_scrolling_);
     }
 
     // If the layer wasn't able to move, try the next one in the hierarchy.
@@ -2758,6 +2751,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   if (did_scroll_y)
     accumulated_root_overscroll_.set_y(0);
   accumulated_root_overscroll_ += unused_root_delta;
+
+  bool did_scroll_top_controls =
+      initial_top_controls_offset != top_controls_manager_->ControlsTopOffset();
 
   InputHandlerScrollResult scroll_result;
   scroll_result.did_scroll = did_scroll_content || did_scroll_top_controls;
