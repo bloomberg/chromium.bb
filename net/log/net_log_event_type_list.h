@@ -1579,6 +1579,9 @@ EVENT_TYPE(QUIC_SESSION_PING_FRAME_RECEIVED)
 // Session sent a PING frame.
 EVENT_TYPE(QUIC_SESSION_PING_FRAME_SENT)
 
+// Session sent an MTU discovery frame (PING on wire).
+EVENT_TYPE(QUIC_SESSION_MTU_DISCOVERY_FRAME_SENT)
+
 // Session received a STOP_WAITING frame.
 //   {
 //     "sent_info": <Details of packet sent by the peer>

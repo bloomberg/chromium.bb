@@ -428,6 +428,10 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       // PingFrame has no contents to log, so just record that it was sent.
       net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PING_FRAME_SENT);
       break;
+    case MTU_DISCOVERY_FRAME:
+      // MtuDiscoveryFrame is PingFrame on wire, it does not have any payload.
+      net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_MTU_DISCOVERY_FRAME_SENT);
+      break;
     default:
       DCHECK(false) << "Illegal frame type: " << frame.type;
   }
