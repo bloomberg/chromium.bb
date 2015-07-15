@@ -53,8 +53,6 @@ enum class WebBluetoothError {
     ENUM_MAX_VALUE = GATTNotAuthorized,
 };
 
-typedef WebBluetoothError WebBluetoothErrorMessage;
-
 } // namespace blink
 
 #endif // WebBluetoothError_h
