@@ -123,9 +123,14 @@ int pthread_condattr_getpshared(const pthread_condattr_t *attr, int *pshared) {
 }
 
 int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared) {
-  if (pshared != PTHREAD_PROCESS_PRIVATE)
-    return EINVAL;
-  return 0;
+  switch (pshared) {
+    case PTHREAD_PROCESS_PRIVATE:
+      return 0;
+    case PTHREAD_PROCESS_SHARED:
+      return ENOTSUP;
+    default:
+      return EINVAL;
+  }
 }
 
 int pthread_condattr_getclock(const pthread_condattr_t *attr,
@@ -135,7 +140,17 @@ int pthread_condattr_getclock(const pthread_condattr_t *attr,
 }
 
 int pthread_condattr_setclock(pthread_condattr_t *attr, clockid_t clock_id) {
-  if (clock_id != CLOCK_REALTIME)
-    return EINVAL;
-  return 0;
+  switch (clock_id) {
+    case CLOCK_REALTIME:  /* Only one really supported.  */
+      return 0;
+
+    case CLOCK_MONOTONIC: /* A "known clock", but not supported for this.  */
+      return ENOTSUP;
+
+    default:
+      /*
+       * Anything else is either not a "known clock", or is a CPU-time clock.
+       */
+      return EINVAL;
+  }
 }

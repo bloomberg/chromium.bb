@@ -809,16 +809,8 @@ static void TestMutexAttrs(void) {
    * Verify that setting attributes to unsupported values fails.
    */
   CHECK_OK(pthread_mutexattr_init(&attr));
-#ifndef __GLIBC__
-  /*
-   * glibc's pthread_mutexattr_setpshared doesn't currently fail
-   * with PTHREAD_PROCESS_SHARED. TODO(sbc): remove this once
-   * we fix the glibc bug:
-   * https://code.google.com/p/nativeclient/issues/detail?id=4142
-   */
-  EXPECT_EQ(EINVAL,
+  EXPECT_EQ(ENOTSUP,
             pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED));
-#endif
   CHECK_OK(pthread_mutexattr_destroy(&attr));
 
   TEST_FUNCTION_END;
@@ -852,14 +844,9 @@ static void TestCondvarAttrs(void) {
    * Verify that setting attributes to unsupported values fails.
    */
   CHECK_OK(pthread_condattr_init(&attr));
-  EXPECT_EQ(EINVAL, pthread_condattr_setclock(&attr, CLOCK_MONOTONIC));
-#ifndef __GLIBC__
-  /*
-   * Under glibc pthread_condattr_setpshared with PTHREAD_PROCESS_SHARED
-   * doesn't fail.  This is arguably a bug in NaCl's glibc.
-   */
-  EXPECT_EQ(EINVAL, pthread_condattr_setpshared(&attr, PTHREAD_PROCESS_SHARED));
-#endif
+  EXPECT_EQ(ENOTSUP, pthread_condattr_setclock(&attr, CLOCK_MONOTONIC));
+  EXPECT_EQ(ENOTSUP, pthread_condattr_setpshared(&attr,
+                                                 PTHREAD_PROCESS_SHARED));
   CHECK_OK(pthread_condattr_destroy(&attr));
 
   TEST_FUNCTION_END;

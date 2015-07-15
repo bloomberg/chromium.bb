@@ -304,9 +304,14 @@ int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr,
 
 int pthread_mutexattr_setpshared(pthread_mutexattr_t *attr,
                                  int pshared) {
-  if (pshared != PTHREAD_PROCESS_PRIVATE)
-    return EINVAL;
-  return 0;
+  switch (pshared) {
+    case PTHREAD_PROCESS_PRIVATE:
+      return 0;
+    case PTHREAD_PROCESS_SHARED:
+      return ENOTSUP;
+    default:
+      return EINVAL;
+  }
 }
 
 int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr,
