@@ -251,7 +251,7 @@ static struct desktop_shell *
 shell_surface_get_shell(struct shell_surface *shsurf);
 
 static void
-surface_rotate(struct shell_surface *surface, struct weston_seat *seat);
+surface_rotate(struct shell_surface *surface, struct weston_pointer *pointer);
 
 static void
 shell_fade_startup(struct desktop_shell *shell);
@@ -2049,7 +2049,7 @@ busy_cursor_grab_button(struct weston_pointer_grab *base,
 		surface_move(shsurf, pointer, false);
 	} else if (shsurf && button == BTN_RIGHT && state) {
 		activate(shsurf->shell, shsurf->surface, seat, true);
-		surface_rotate(shsurf, seat);
+		surface_rotate(shsurf, pointer);
 	}
 }
 
@@ -4932,7 +4932,7 @@ static const struct weston_pointer_grab_interface rotate_grab_interface = {
 };
 
 static void
-surface_rotate(struct shell_surface *surface, struct weston_seat *seat)
+surface_rotate(struct shell_surface *surface, struct weston_pointer *pointer)
 {
 	struct rotate_grab *rotate;
 	float dx, dy;
@@ -4947,8 +4947,8 @@ surface_rotate(struct shell_surface *surface, struct weston_seat *seat)
 				    surface->surface->height * 0.5f,
 				    &rotate->center.x, &rotate->center.y);
 
-	dx = wl_fixed_to_double(seat->pointer->x) - rotate->center.x;
-	dy = wl_fixed_to_double(seat->pointer->y) - rotate->center.y;
+	dx = wl_fixed_to_double(pointer->x) - rotate->center.x;
+	dy = wl_fixed_to_double(pointer->y) - rotate->center.y;
 	r = sqrtf(dx * dx + dy * dy);
 	if (r > 20.0f) {
 		struct weston_matrix inverse;
@@ -4965,7 +4965,7 @@ surface_rotate(struct shell_surface *surface, struct weston_seat *seat)
 	}
 
 	shell_grab_start(&rotate->base, &rotate_grab_interface, surface,
-			 seat->pointer, DESKTOP_SHELL_CURSOR_ARROW);
+			 pointer, DESKTOP_SHELL_CURSOR_ARROW);
 }
 
 static void
@@ -4990,7 +4990,7 @@ rotate_binding(struct weston_pointer *pointer, uint32_t time, uint32_t button,
 	    surface->state.maximized)
 		return;
 
-	surface_rotate(surface, pointer->seat);
+	surface_rotate(surface, pointer);
 }
 
 /* Move all fullscreen layers down to the current workspace and hide their
