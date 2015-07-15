@@ -245,33 +245,6 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
 
     if (LayoutMultiColumnSpannerPlaceholder* placeholder = this->spannerPlaceholder())
         placeholder->layoutObjectInFlowThreadStyleDidChange(oldStyle);
-
-    updateSlowRepaintStatusAfterStyleChange();
-}
-
-void LayoutBox::updateSlowRepaintStatusAfterStyleChange()
-{
-    if (!frameView())
-        return;
-
-    // On low-powered/mobile devices, preventing blitting on a scroll can cause noticeable delays
-    // when scrolling a page with a fixed background image. As an optimization, assuming there are
-    // no fixed positoned elements on the page, we can acclerate scrolling (via blitting) if we
-    // ignore the CSS property "background-attachment: fixed".
-    bool ignoreFixedBackgroundAttachment = RuntimeEnabledFeatures::fastMobileScrollingEnabled();
-    if (ignoreFixedBackgroundAttachment)
-        return;
-
-    // An object needs to be repainted on frame scroll when it has background-attachment:fixed.
-    // LayoutObject is responsible for painting root background, thus the root element (and the
-    // body element if html element has no background) skips painting backgrounds.
-    bool isSlowRepaintObject = !isDocumentElement() && !backgroundStolenForBeingBody() && styleRef().hasFixedBackgroundImage();
-    if (isLayoutView() && view()->compositor()->supportsFixedRootBackgroundCompositing()) {
-        if (styleRef().hasEntirelyFixedBackground())
-            isSlowRepaintObject = false;
-    }
-
-    setIsSlowRepaintObject(isSlowRepaintObject);
 }
 
 void LayoutBox::updateShapeOutsideInfoAfterStyleChange(const ComputedStyle& style, const ComputedStyle* oldStyle)
