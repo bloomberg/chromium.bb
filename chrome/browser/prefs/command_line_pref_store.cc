@@ -26,9 +26,14 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
       { switches::kLang, prefs::kApplicationLocale },
       { data_reduction_proxy::switches::kDataReductionProxy,
           data_reduction_proxy::prefs::kDataReductionProxy },
+      { switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist },
       { switches::kSSLVersionMin, prefs::kSSLVersionMin },
       { switches::kSSLVersionMax, prefs::kSSLVersionMax },
       { switches::kSSLVersionFallbackMin, prefs::kSSLVersionFallbackMin },
+#if defined(OS_ANDROID)
+      { switches::kAuthAndroidNegotiateAccountType,
+          prefs::kAuthAndroidNegotiateAccountType },
+#endif
 };
 
 const CommandLinePrefStore::PathSwitchToPreferenceMapEntry

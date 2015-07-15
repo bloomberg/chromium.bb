@@ -44,6 +44,7 @@ extern const char kAppsGalleryUpdateURL[];
 extern const char kAppModeAuthCode[];
 extern const char kAppModeOAuth2Token[];
 extern const char kAuthExtensionPath[];
+extern const char kAuthServerWhitelist[];
 extern const char kAutoLaunchAtStartup[];
 extern const char kAutoSelectDesktopCaptureSource[];
 extern const char kBypassAppBannerEngagementChecks[];
@@ -320,6 +321,7 @@ extern const char kWinHttpProxyResolver[];
 extern const char kWinJumplistAction[];
 
 #if defined(OS_ANDROID)
+extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kDisableCast[];
 extern const char kDisableContextualSearch[];
 extern const char kDisableZeroSuggest[];

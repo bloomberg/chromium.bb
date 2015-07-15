@@ -105,6 +105,9 @@ const char kAppModeOAuth2Token[]            = "app-mode-oauth-token";
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
+// Whitelist for Negotiate Auth servers
+const char kAuthServerWhitelist[]           = "auth-server-whitelist";
+
 // A flag that is used to tell Chrome that it was launched automatically at
 // computer startup and not by some user action.
 const char kAutoLaunchAtStartup[]           = "auto-launch-at-startup";
@@ -1158,6 +1161,9 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 const char kWinJumplistAction[]             = "win-jumplist-action";
 
 #if defined(OS_ANDROID)
+// Android authentication account type for SPNEGO authentication
+const char kAuthAndroidNegotiateAccountType[] = "auth-spnego-account-type";
+
 // Disables support for playing videos on Chromecast devices.
 const char kDisableCast[]                    = "disable-cast";
 
