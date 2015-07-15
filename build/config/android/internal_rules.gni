@@ -838,6 +838,10 @@ template("java_prebuilt_impl") {
   if (defined(invoker.deps)) {
     _deps = invoker.deps
   }
+  _jar_deps = []
+  if (defined(invoker.jar_dep)) {
+    _jar_deps = [ invoker.jar_dep ]
+  }
 
   _template_name = target_name
 
@@ -876,7 +880,7 @@ template("java_prebuilt_impl") {
     input_jar_path = invoker.jar_path
     output_jar_path = _jar_path
 
-    deps = [ ":$build_config_target_name" ] + _deps
+    deps = [ ":$build_config_target_name" ] + _deps + _jar_deps
   }
 
   if (_supports_android) {
@@ -885,9 +889,7 @@ template("java_prebuilt_impl") {
         _jar_path,
       ]
       output = _dex_path
-      deps = [
-        ":$process_jar_target_name",
-      ]
+      deps = [ ":$process_jar_target_name" ] + _deps + _jar_deps
     }
   }
 
@@ -943,6 +945,11 @@ template("compile_java") {
   _chromium_code = false
   if (defined(invoker.chromium_code)) {
     _chromium_code = invoker.chromium_code
+  }
+
+  _supports_android = true
+  if (defined(invoker.supports_android)) {
+    _supports_android = invoker.supports_android
   }
 
   _enable_errorprone = use_errorprone_java_compiler
@@ -1001,13 +1008,11 @@ template("compile_java") {
     sources = _java_files + _java_srcjars
     inputs = _system_jars + [ _build_config ]
 
-    _rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
     _rebased_system_jars = rebase_path(_system_jars, root_build_dir)
     _rebased_java_srcjars = rebase_path(_java_srcjars, root_build_dir)
     _rebased_depfile = rebase_path(depfile, root_build_dir)
     args = [
       "--depfile=$_rebased_depfile",
-      "--bootclasspath=$_rebased_android_sdk_jar",
       "--classpath=$_rebased_system_jars",
       "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
       "--jar-path=$_rebased_jar_path",
@@ -1015,6 +1020,10 @@ template("compile_java") {
       "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
       "--jar-excluded-classes=$_jar_excluded_patterns",
     ]
+    if (_supports_android) {
+      _rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
+      args += [ "--bootclasspath=$_rebased_android_sdk_jar" ]
+    }
     foreach(e, _manifest_entries) {
       args += [ "--manifest-entry=" + e ]
     }
@@ -1178,7 +1187,7 @@ template("java_library_impl") {
     android = _requires_android
 
     if (defined(invoker.enable_errorprone)) {
-      _enable_errorprone = invoker.enable_errorprone
+      enable_errorprone = invoker.enable_errorprone
     }
     if (defined(invoker.jar_excluded_patterns)) {
       jar_excluded_patterns = invoker.jar_excluded_patterns
@@ -1196,6 +1205,7 @@ template("java_library_impl") {
       manifest_entries = invoker.manifest_entries
     }
 
+    supports_android = _supports_android
     deps = build_config_deps
   }
 

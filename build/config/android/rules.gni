@@ -908,6 +908,7 @@ template("java_binary") {
       testonly = invoker.testonly
     }
 
+    supports_android = false
     main_class = invoker.main_class
   }
 }
@@ -1079,6 +1080,7 @@ template("java_library") {
 #   deps: Specifies the dependencies of this target. Java targets in this list
 #     will be added to the javac classpath.
 #   jar_path: Path to the prebuilt jar.
+#   jar_dep: Target that builds jar_path (optional).
 #   proguard_preprocess: If true, proguard preprocessing will be run. This can
 #     be used to remove unwanted parts of the library.
 #   proguard_config: Path to the proguard config for preprocessing.
@@ -1095,6 +1097,9 @@ template("java_prebuilt") {
   set_sources_assignment_filter([])
   java_prebuilt_impl(target_name) {
     jar_path = invoker.jar_path
+    if (defined(invoker.jar_dep)) {
+      jar_dep = invoker.jar_dep
+    }
     if (defined(invoker.testonly)) {
       testonly = invoker.testonly
     }

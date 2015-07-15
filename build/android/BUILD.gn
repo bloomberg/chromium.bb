@@ -23,9 +23,7 @@ action("find_sun_tools_jar") {
 
 java_prebuilt("sun_tools_java") {
   jar_path = sun_tools_jar_path
-  deps = [
-    ":find_sun_tools_jar",
-  ]
+  jar_dep = ":find_sun_tools_jar"
 }
 
 action("cpplib_stripped") {

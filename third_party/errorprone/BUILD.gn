@@ -13,7 +13,7 @@ java_prebuilt("errorprone_java") {
 java_binary("chromium_errorprone") {
   chromium_code = false
   main_class = "org.chromium.errorprone.ChromiumErrorProneCompiler"
-  disable_errorprone = true
+  enable_errorprone = false
   java_files = [ "src/org/chromium/errorprone/ChromiumErrorProneCompiler.java" ]
   deps = [
     "//build/android:sun_tools_java",

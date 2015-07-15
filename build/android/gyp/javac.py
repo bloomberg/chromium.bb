@@ -87,13 +87,15 @@ def DoJavac(
       # Chromium only allows UTF8 source files.  Being explicit avoids
       # javac pulling a default encoding from the user's environment.
       '-encoding', 'UTF-8',
-      '-source', '1.7',
-      '-target', '1.7',
       '-classpath', ':'.join(classpath),
       '-d', classes_dir]
 
   if bootclasspath:
-    javac_args.extend(['-bootclasspath', ':'.join(bootclasspath)])
+    javac_args.extend([
+        '-bootclasspath', ':'.join(bootclasspath),
+        '-source', '1.7',
+        '-target', '1.7',
+        ])
 
   if chromium_code:
     # TODO(aurimas): re-enable '-Xlint:deprecation' checks once they are fixed.
