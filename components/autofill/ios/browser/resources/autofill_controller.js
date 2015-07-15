@@ -516,6 +516,12 @@ __gCrWeb.autofill['fillForm'] = function(data, styleElements) {
     __gCrWeb.autofill.styleInjected = true;
   }
 
+  // Remove Autofill styling when control element is edited.
+  var controlElementInputListener = function(evt) {
+    evt.target.removeAttribute('chrome-autofilled');
+    evt.target.removeEventListener('input', controlElementInputListener);
+  };
+
   var form = __gCrWeb.common.getFormElementFromIdentifier(data.formName);
   var controlElements = __gCrWeb.common.getFormControlElements(form);
   for (var i = 0; i < controlElements.length; ++i) {
@@ -526,9 +532,26 @@ __gCrWeb.autofill['fillForm'] = function(data, styleElements) {
     var value = data.fields[__gCrWeb['common'].nameForAutofill(element)];
     if (value) {
       element.value = value;
-      if (styleElements)
+      if (styleElements) {
         element.setAttribute('chrome-autofilled');
+        element.addEventListener('input', controlElementInputListener);
+      }
     }
+  }
+
+  // Remove Autofill styling when form receives 'reset' event.
+  // Individual control elements may be left with 'input' event listeners but
+  // they are harmless.
+  if (styleElements) {
+    var formResetListener = function(evt) {
+      var controlElements = __gCrWeb.common.getFormControlElements(evt.target);
+      for (var i = 0; i < controlElements.length; ++i) {
+        controlElements[i].removeAttribute('chrome-autofilled');
+      }
+      evt.target.removeEventListener('reset', formResetListener);
+    };
+
+    form.addEventListener('reset', formResetListener);
   }
 };
 
