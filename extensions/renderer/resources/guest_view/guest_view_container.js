@@ -111,6 +111,11 @@ GuestViewContainer.prototype.setupFocusPropagation = function() {
   }));
 };
 
+GuestViewContainer.prototype.focus = function() {
+  // Focus the internal element when focus() is called on the GuestView element.
+  privates(this).internalElement.focus();
+}
+
 GuestViewContainer.prototype.attachWindow$ = function() {
   if (!this.internalInstanceId) {
     return true;
@@ -234,7 +239,7 @@ function registerInternalElement(viewType) {
 
 // Registers the guestview container as a custom element.
 // |guestViewContainerType| is the type of guestview container
-// (e.g.WebViewImpl).
+// (e.g. WebViewImpl).
 function registerGuestViewElement(guestViewContainerType) {
   var proto = $Object.create(HTMLElement.prototype);
 
@@ -270,6 +275,15 @@ function registerGuestViewElement(guestViewContainerType) {
     internal.internalInstanceId = 0;
     internal.guest.destroy();
     internal.onElementDetached();
+  };
+
+  // Override |focus| to let |internal| handle it.
+  proto.focus = function() {
+    var internal = privates(this).internal;
+    if (!internal) {
+      return;
+    }
+    internal.focus();
   };
 
   // Let the specific view type add extra functionality to its custom element

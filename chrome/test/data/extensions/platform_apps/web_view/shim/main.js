@@ -2706,6 +2706,22 @@ function testCloseNewWindowCleanup() {
   });
 }
 
+function testFocusWhileFocused() {
+  var webview = new WebView();
+  webview.src = 'about:blank';
+
+  webview.addEventListener('loadstop', function(e) {
+    // Focus twice, then make sure that the internal element is still focused.
+    webview.focus();
+    webview.focus();
+    embedder.test.assertTrue(document.activeElement = webview);
+    embedder.test.assertTrue(webview.shadowRoot.activeElement);
+    embedder.test.succeed();
+  });
+
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -2805,7 +2821,8 @@ embedder.test.testList = {
   'testZoomBeforeNavigation': testZoomBeforeNavigation,
   'testPlugin': testPlugin,
   'testGarbageCollect': testGarbageCollect,
-  'testCloseNewWindowCleanup': testCloseNewWindowCleanup
+  'testCloseNewWindowCleanup': testCloseNewWindowCleanup,
+  'testFocusWhileFocused': testFocusWhileFocused
 };
 
 onload = function() {

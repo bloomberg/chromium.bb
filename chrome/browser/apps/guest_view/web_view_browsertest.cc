@@ -2401,7 +2401,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_WebViewInBackgroundPage) {
       << message_;
 }
 
-// This test verifies that the allowtransparency attribute properly propagates
+// This test verifies that the allowtransparency attribute properly propagates.
 IN_PROC_BROWSER_TEST_F(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
   LoadAppWithGuest("web_view/simple");
 
@@ -2429,6 +2429,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCloseNewWindowCleanup) {
   auto gvm = GetGuestViewManager();
   gvm->WaitForLastGuestDeleted();
   ASSERT_EQ(gvm->num_embedder_processes_destroyed(), 0);
+}
+
+// Ensure that focusing a WebView while it is already focused does not blur the
+// guest content.
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFocusWhileFocused) {
+  TestHelper("testFocusWhileFocused", "web_view/shim", NO_TEST_SERVER);
 }
 
 #if defined(USE_AURA)
