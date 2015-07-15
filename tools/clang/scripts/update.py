@@ -697,6 +697,8 @@ def main():
                       help="don't try to download prebuild binaries")
   parser.add_argument('--print-revision', action='store_true',
                       help='print current clang revision and exit.')
+  parser.add_argument('--print-clang-version', action='store_true',
+                      help='print current clang version (e.g. x.y.z) and exit.')
   parser.add_argument('--run-tests', action='store_true',
                       help='run tests after building; only for local builds')
   parser.add_argument('--tools', nargs='*',
@@ -728,12 +730,21 @@ def main():
     if not is_clang_required:
       return 0
 
+  if use_head_revision:
+    # TODO(hans): Remove after the next roll.
+    global VERSION
+    VERSION = '3.8.0'
+
   global LLVM_WIN_REVISION, PACKAGE_VERSION
   if args.print_revision:
     if use_head_revision:
       print GetSvnRevision(LLVM_DIR)
     else:
       print PACKAGE_VERSION
+    return 0
+
+  if args.print_clang_version:
+    sys.stdout.write(VERSION)
     return 0
 
   if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
