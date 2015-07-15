@@ -1900,6 +1900,7 @@ class LayerTreeHostTestAbortedCommitDoesntStallDisabledVsync
     : public LayerTreeHostTestAbortedCommitDoesntStall {
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostTestAbortedCommitDoesntStall::InitializeSettings(settings);
+    settings->wait_for_beginframe_interval = false;
     settings->renderer_settings.disable_display_vsync = true;
   }
 };
