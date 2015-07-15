@@ -63,6 +63,11 @@ class _PaygenPayload(object):
   _DEFAULT_NEW_KERN_PART = 'new_kern.dat'
   _DEFAULT_NEW_ROOT_PART = 'new_root.dat'
 
+  # TODO(garnold)(chromium:243559) stop using these constants once we start
+  # embedding partition sizes in payloads.
+  _DEFAULT_ROOTFS_PART_SIZE = 2 * 1024 * 1024 * 1024
+  _DEFAULT_KERNEL_PART_SIZE = 16 * 1024 * 1024
+
   def __init__(self, payload, cache, work_dir, sign, verify,
                au_generator_uri_override, dry_run=False):
     """Init for _PaygenPayload.
@@ -593,6 +598,8 @@ class _PaygenPayload(object):
         # generator can optimize away such cases.
         payload.Check(metadata_sig_file=metadata_sig_file,
                       assert_type=('delta' if is_delta else 'full'),
+                      rootfs_part_size=self._DEFAULT_ROOTFS_PART_SIZE,
+                      kernel_part_size=self._DEFAULT_KERNEL_PART_SIZE,
                       disabled_tests=['move-same-src-dst-block'])
       except self._update_payload.PayloadError as e:
         raise PayloadVerificationError(
