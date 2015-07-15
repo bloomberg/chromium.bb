@@ -14,9 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
+#include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 
 class GURL;
@@ -53,11 +54,14 @@ class DataReductionProxyService
   // TODO(jeremyim): DataReductionProxyService should own
   // DataReductionProxySettings and not vice versa.
   DataReductionProxyService(
-      scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
       DataReductionProxySettings* settings,
       PrefService* prefs,
       net::URLRequestContextGetter* request_context_getter,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+      scoped_ptr<DataStore> store,
+      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
+      const base::TimeDelta& commit_delay);
 
   virtual ~DataReductionProxyService();
 
@@ -70,11 +74,12 @@ class DataReductionProxyService
   // final step in initialization.
   bool Initialized() const;
 
-  // Constructs compression stats. This should not be called if a valid
-  // compression stats is passed into the constructor.
+  // Constructs compression stats with a noop |DataReductionProxyStore|; load
+  // and store calls do nothing. This should not be called
+  // if a valid compression stats is passed into the constructor.
   void EnableCompressionStatisticsLogging(
       PrefService* prefs,
-      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const base::TimeDelta& commit_delay);
 
   // Records daily data savings statistics in |compression_stats_|.
@@ -115,6 +120,10 @@ class DataReductionProxyService
   // Virtual for testing.
   virtual void SetProxyPrefs(bool enabled, bool at_startup);
   void RetrieveConfig();
+
+  void LoadCurrentDataUsageBucket(
+      const OnLoadDataUsageBucketCallback& onLoadDataUsageBucket);
+  void StoreCurrentDataUsageBucket(scoped_ptr<DataUsageBucket> current);
 
   // Methods for adding/removing observers on |this|.
   void AddObserver(DataReductionProxyServiceObserver* observer);
@@ -164,8 +173,13 @@ class DataReductionProxyService
   // A prefs service for storing data.
   PrefService* prefs_;
 
+  scoped_ptr<DBDataOwner> db_data_owner_;
+
   // Used to post tasks to |io_data_|.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // Used to post tasks to |db_data_owner_|.
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 
   // A weak pointer to DataReductionProxyIOData so that UI based objects can
   // make calls to IO based objects.

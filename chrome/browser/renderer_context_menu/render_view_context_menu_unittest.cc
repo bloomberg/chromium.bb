@@ -23,6 +23,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -390,7 +391,19 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
         drp_test_context_->request_context_getter(),
+        make_scoped_ptr(new data_reduction_proxy::DataStore()),
+        base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get());
+  }
+
+  // Force destruction of |DataReductionProxySettings| so that objects on DB
+  // task runner can be destroyed before test threads are destroyed. This method
+  // must be called by tests that call |SetupDataReductionProxy|. We cannot
+  // destroy |drp_test_context_| until browser context keyed services are
+  // destroyed since |DataReductionProxyChromeSettings| holds a pointer to the
+  // |PrefService|, which is owned by |drp_test_context_|.
+  void DestroyDataReductionProxySettings() {
+    drp_test_context_->DestroySettings();
   }
 
  protected:
@@ -449,6 +462,8 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverEnabledSaveImageAs) {
       content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
   EXPECT_TRUE(headers.find("Chrome-Proxy: pass-through") != std::string::npos);
   EXPECT_TRUE(headers.find("Cache-Control: no-cache") != std::string::npos);
+
+  DestroyDataReductionProxySettings();
 }
 
 // Verify that request headers do not specify pass through when "Save Image
@@ -468,6 +483,8 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
       content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
   EXPECT_TRUE(headers.find("Chrome-Proxy: pass-through") == std::string::npos);
   EXPECT_TRUE(headers.find("Cache-Control: no-cache") == std::string::npos);
+
+  DestroyDataReductionProxySettings();
 }
 
 // Verify that the Chrome-Proxy Lo-Fi directive causes the context menu to
@@ -484,4 +501,6 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverLoadImage) {
   AppendImageItems(menu.get());
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE));
+
+  DestroyDataReductionProxySettings();
 }

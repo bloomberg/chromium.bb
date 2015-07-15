@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
@@ -163,23 +164,25 @@ void TestDataReductionProxyConfigServiceClient::TestTickClock::SetTime(
 }
 
 MockDataReductionProxyService::MockDataReductionProxyService(
-    scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
     DataReductionProxySettings* settings,
     PrefService* prefs,
     net::URLRequestContextGetter* request_context,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : DataReductionProxyService(compression_stats.Pass(),
-                                settings,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : DataReductionProxyService(settings,
                                 prefs,
                                 request_context,
-                                io_task_runner) {
+                                make_scoped_ptr(new DataStore()),
+                                task_runner,
+                                task_runner,
+                                task_runner,
+                                base::TimeDelta()) {
 }
 
 MockDataReductionProxyService::~MockDataReductionProxyService() {
 }
 
 TestDataReductionProxyIOData::TestDataReductionProxyIOData(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     scoped_ptr<DataReductionProxyConfig> config,
     scoped_ptr<DataReductionProxyEventCreator> event_creator,
     scoped_ptr<DataReductionProxyRequestOptions> request_options,
@@ -201,8 +204,6 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
   bypass_stats_.reset(new DataReductionProxyBypassStats(
       config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
                                 base::Unretained(this))));
-  io_task_runner_ = task_runner;
-  ui_task_runner_ = task_runner;
   enabled_ = enabled;
 }
 
@@ -438,7 +439,7 @@ DataReductionProxyTestContext::Builder::Build() {
 }
 
 DataReductionProxyTestContext::DataReductionProxyTestContext(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
     scoped_ptr<net::TestNetLog> net_log,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -463,6 +464,7 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
 }
 
 DataReductionProxyTestContext::~DataReductionProxyTestContext() {
+  DestroySettings();
 }
 
 void DataReductionProxyTestContext::RunUntilIdle() {
@@ -473,6 +475,15 @@ void DataReductionProxyTestContext::InitSettings() {
   DCHECK(test_context_flags_ &
          DataReductionProxyTestContext::SKIP_SETTINGS_INITIALIZATION);
   InitSettingsWithoutCheck();
+}
+
+void DataReductionProxyTestContext::DestroySettings() {
+  // Force destruction of |DBDataOwner|, which lives on DB task runner and is
+  // indirectly owned by |settings_|.
+  if (settings_.get()) {
+    settings_.reset();
+    RunUntilIdle();
+  }
 }
 
 void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
@@ -498,18 +509,15 @@ DataReductionProxyTestContext::CreateDataReductionProxyService() {
 
 scoped_ptr<DataReductionProxyService>
 DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal() {
-  scoped_ptr<DataReductionProxyCompressionStats> compression_stats =
-      make_scoped_ptr(new DataReductionProxyCompressionStats(
-          simple_pref_service_.get(), task_runner_, base::TimeDelta()));
-
   if (test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE) {
     return make_scoped_ptr(new MockDataReductionProxyService(
-        compression_stats.Pass(), settings_.get(), simple_pref_service_.get(),
+        settings_.get(), simple_pref_service_.get(),
         request_context_getter_.get(), task_runner_));
   } else {
     return make_scoped_ptr(new DataReductionProxyService(
-        compression_stats.Pass(), settings_.get(), simple_pref_service_.get(),
-        request_context_getter_.get(), task_runner_));
+        settings_.get(), simple_pref_service_.get(),
+        request_context_getter_.get(), make_scoped_ptr(new DataStore()),
+        task_runner_, task_runner_, task_runner_, base::TimeDelta()));
   }
 }
 

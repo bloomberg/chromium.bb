@@ -5,38 +5,55 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/proto/data_store.pb.h"
 
 namespace data_reduction_proxy {
 
 DataReductionProxyService::DataReductionProxyService(
-    scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
     DataReductionProxySettings* settings,
     PrefService* prefs,
     net::URLRequestContextGetter* request_context_getter,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    scoped_ptr<DataStore> store,
+    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
+    const base::TimeDelta& commit_delay)
     : url_request_context_getter_(request_context_getter),
       settings_(settings),
       prefs_(prefs),
+      db_data_owner_(new DBDataOwner(store.Pass())),
       io_task_runner_(io_task_runner),
+      db_task_runner_(db_task_runner),
       initialized_(false),
       weak_factory_(this) {
   DCHECK(settings);
-  compression_stats_ = compression_stats.Pass();
+  if (prefs_) {
+    compression_stats_.reset(new DataReductionProxyCompressionStats(
+        this, prefs_, ui_task_runner, commit_delay));
+  }
   event_store_.reset(new DataReductionProxyEventStore());
+  db_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&DBDataOwner::InitializeOnDBThread,
+                                       db_data_owner_->GetWeakPtr()));
 }
 
 DataReductionProxyService::~DataReductionProxyService() {
+  DCHECK(CalledOnValidThread());
+  db_task_runner_->DeleteSoon(FROM_HERE, db_data_owner_.release());
 }
 
 void DataReductionProxyService::SetIOData(
@@ -70,14 +87,14 @@ void DataReductionProxyService::Shutdown() {
 
 void DataReductionProxyService::EnableCompressionStatisticsLogging(
     PrefService* prefs,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const base::TimeDelta& commit_delay) {
   DCHECK(CalledOnValidThread());
   DCHECK(!compression_stats_);
   DCHECK(!prefs_);
   prefs_ = prefs;
   compression_stats_.reset(new DataReductionProxyCompressionStats(
-      prefs_, ui_task_runner, commit_delay));
+      this, prefs_, ui_task_runner, commit_delay));
 }
 
 void DataReductionProxyService::UpdateContentLengths(
@@ -240,6 +257,25 @@ void DataReductionProxyService::RetrieveConfig() {
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyIOData::RetrieveConfig, io_data_));
+}
+
+void DataReductionProxyService::LoadCurrentDataUsageBucket(
+    const OnLoadDataUsageBucketCallback& onLoadDataUsageBucket) {
+  scoped_ptr<DataUsageBucket> bucket(new DataUsageBucket());
+  DataUsageBucket* bucket_ptr = bucket.get();
+  db_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&DBDataOwner::LoadCurrentDataUsageBucket,
+                 db_data_owner_->GetWeakPtr(), base::Unretained(bucket_ptr)),
+      base::Bind(onLoadDataUsageBucket, base::Passed(&bucket)));
+}
+
+void DataReductionProxyService::StoreCurrentDataUsageBucket(
+    scoped_ptr<DataUsageBucket> current) {
+  db_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DBDataOwner::StoreCurrentDataUsageBucket,
+                 db_data_owner_->GetWeakPtr(), base::Passed(&current)));
 }
 
 void DataReductionProxyService::AddObserver(

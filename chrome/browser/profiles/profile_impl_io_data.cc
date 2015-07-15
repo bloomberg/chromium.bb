@@ -44,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -198,11 +199,19 @@ void ProfileImplIOData::Handle::Init(
           enable_quic_for_data_reduction_proxy)
           .Pass());
 
-  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)->
-      InitDataReductionProxySettings(
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
+      pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  scoped_ptr<data_reduction_proxy::DataStore> store(
+      new data_reduction_proxy::DataStoreImpl(profile_path));
+  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)
+      ->InitDataReductionProxySettings(
           io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
-          profile_->GetRequestContext(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
+          profile_->GetRequestContext(), store.Pass(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          db_task_runner);
 }
 
 content::ResourceContext*

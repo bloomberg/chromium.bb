@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,14 +54,18 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
   }
 
   void SetUp() override {
+    drp_test_context_ = DataReductionProxyTestContext::Builder()
+                            .WithMockDataReductionProxyService()
+                            .Build();
+
     compression_stats_.reset(new DataReductionProxyCompressionStats(
-        pref_service(), task_runner_, base::TimeDelta()));
-    RegisterSimpleProfilePrefs(pref_service()->registry());
+        data_reduction_proxy_service(), pref_service(), task_runner(),
+        base::TimeDelta()));
   }
 
   void ResetCompressionStatsWithDelay(const base::TimeDelta& delay) {
     compression_stats_.reset(new DataReductionProxyCompressionStats(
-        pref_service(), task_runner_, delay));
+        data_reduction_proxy_service(), pref_service(), task_runner(), delay));
   }
 
   base::Time FakeNow() const {
@@ -290,12 +295,21 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
   }
 
   TestingPrefServiceSimple* pref_service() {
-    return &simple_pref_service_;
+    return drp_test_context_->pref_service();
+  }
+
+  DataReductionProxyService* data_reduction_proxy_service() {
+    return drp_test_context_->data_reduction_proxy_service();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_runner_;
   }
 
  private:
+  base::MessageLoopForUI loop_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  TestingPrefServiceSimple simple_pref_service_;
+  scoped_ptr<DataReductionProxyTestContext> drp_test_context_;
   scoped_ptr<DataReductionProxyCompressionStats> compression_stats_;
   base::Time now_;
   base::TimeDelta now_delta_;

@@ -25,6 +25,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -167,13 +168,20 @@ void AwBrowserContext::PreMainMessageLoopRun() {
           GetUserAgent()));
   data_reduction_proxy_settings_.reset(
       new data_reduction_proxy::DataReductionProxySettings());
+  scoped_ptr<data_reduction_proxy::DataStore> store(
+      new data_reduction_proxy::DataStore());
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
+      pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   data_reduction_proxy_service_.reset(
       new data_reduction_proxy::DataReductionProxyService(
-          scoped_ptr<
-              data_reduction_proxy::DataReductionProxyCompressionStats>(),
           data_reduction_proxy_settings_.get(), nullptr,
-          GetAwURLRequestContext(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          GetAwURLRequestContext(), store.Pass(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          db_task_runner, base::TimeDelta()));
   data_reduction_proxy_io_data_->SetDataReductionProxyService(
       data_reduction_proxy_service_->GetWeakPtr());
 

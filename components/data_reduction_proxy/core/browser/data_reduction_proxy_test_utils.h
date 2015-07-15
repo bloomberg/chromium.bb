@@ -147,11 +147,10 @@ class TestDataReductionProxyConfigServiceClient
 class MockDataReductionProxyService : public DataReductionProxyService {
  public:
   MockDataReductionProxyService(
-      scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
       DataReductionProxySettings* settings,
       PrefService* prefs,
       net::URLRequestContextGetter* request_context,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~MockDataReductionProxyService() override;
 
   MOCK_METHOD2(SetProxyPrefs, void(bool enabled, bool at_startup));
@@ -163,7 +162,7 @@ class MockDataReductionProxyService : public DataReductionProxyService {
 class TestDataReductionProxyIOData : public DataReductionProxyIOData {
  public:
   TestDataReductionProxyIOData(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       scoped_ptr<DataReductionProxyConfig> config,
       scoped_ptr<DataReductionProxyEventCreator> event_creator,
       scoped_ptr<DataReductionProxyRequestOptions> request_options,
@@ -285,6 +284,10 @@ class DataReductionProxyTestContext {
   // Initializes the |DataReductionProxySettings| object. Can only be called if
   // built with SkipSettingsInitialization.
   void InitSettings();
+
+  // Destroys the |DataReductionProxySettings| object and waits until objects on
+  // the DB task runner are destroyed.
+  void DestroySettings();
 
   // Creates a |DataReductionProxyService| object, or a
   // |MockDataReductionProxyService| if built with
@@ -410,7 +413,7 @@ class DataReductionProxyTestContext {
   };
 
   DataReductionProxyTestContext(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
       scoped_ptr<net::TestNetLog> net_log,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,

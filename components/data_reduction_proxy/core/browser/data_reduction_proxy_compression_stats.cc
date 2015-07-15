@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -367,15 +368,18 @@ class DailyDataSavingUpdate {
 }  // namespace
 
 DataReductionProxyCompressionStats::DataReductionProxyCompressionStats(
+    DataReductionProxyService* service,
     PrefService* prefs,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::TimeDelta& delay)
-    : pref_service_(prefs),
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    base::TimeDelta delay)
+    : service_(service),
+      pref_service_(prefs),
       task_runner_(task_runner),
       delay_(delay),
       delayed_task_posted_(false),
       pref_change_registrar_(new PrefChangeRegistrar()),
       weak_factory_(this) {
+  DCHECK(service);
   DCHECK(prefs);
   DCHECK_GE(delay.InMilliseconds(), 0);
   Init();
@@ -385,7 +389,6 @@ DataReductionProxyCompressionStats::~DataReductionProxyCompressionStats() {
   DCHECK(thread_checker_.CalledOnValidThread());
   WritePrefs();
   pref_change_registrar_->RemoveAll();
-  weak_factory_.InvalidateWeakPtrs();
 }
 
 void DataReductionProxyCompressionStats::Init() {
@@ -450,6 +453,8 @@ void DataReductionProxyCompressionStats::UpdateContentLengths(
   SetInt64(data_reduction_proxy::prefs::kHttpOriginalContentLength,
            total_original);
 
+  // TODO(kundaji): Collect data usage metrics broken down by site and store
+  // in |data_usage_store_|.
   RecordContentLengthPrefs(received_content_length, original_content_length,
                            data_reduction_proxy_enabled, request_type,
                            mime_type, base::Time::Now());

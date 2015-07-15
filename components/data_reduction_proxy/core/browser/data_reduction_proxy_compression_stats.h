@@ -27,6 +27,7 @@ class Value;
 }
 
 namespace data_reduction_proxy {
+class DataReductionProxyService;
 
 // Data reduction proxy delayed pref service reduces the number calls to pref
 // service by storing prefs in memory and writing to the given PrefService after
@@ -35,15 +36,20 @@ namespace data_reduction_proxy {
 // prefs must be stored and read on the UI thread.
 class DataReductionProxyCompressionStats {
  public:
-  // Constructs a data reduction proxy delayed pref service object using
-  // |pref_service|. Writes prefs to |pref_service| after |delay|
-  // and stores them in |pref_map_| and |list_pref_map| between writes.
+  // Collects and store data usage and compression statistics. Basic data usage
+  // stats are stored in browser preferences. More detailed stats broken down
+  // by site and internet type are stored in |DataReductionProxyStore|.
+  //
+  // To store basic stats, it constructs a data reduction proxy delayed pref
+  // service object using |pref_service|. Writes prefs to |pref_service| after
+  // |delay| and stores them in |pref_map_| and |list_pref_map| between writes.
   // If |delay| is zero, writes directly to the PrefService and does not store
   // in the maps.
   DataReductionProxyCompressionStats(
+      DataReductionProxyService* service,
       PrefService* pref_service,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const base::TimeDelta& delay);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      base::TimeDelta delay);
   ~DataReductionProxyCompressionStats();
 
   // Records daily data savings statistics to prefs and reports data savings
@@ -140,6 +146,7 @@ class DataReductionProxyCompressionStats {
   // are displayed to users as their data savings.
   void RecordUserVisibleDataSavings();
 
+  DataReductionProxyService* service_;
   PrefService* pref_service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const base::TimeDelta delay_;

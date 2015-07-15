@@ -12,11 +12,13 @@
 class PrefService;
 
 namespace base {
+class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 
 namespace data_reduction_proxy {
 class DataReductionProxyIOData;
+class DataStore;
 }
 
 namespace net {
@@ -56,12 +58,14 @@ class DataReductionProxyChromeSettings
   void Shutdown() override;
 
   // Initialize the settings object with the given io_data, prefs services,
-  // request context getter, and task runner.
+  // request context getter, data store, ui task runner, and db task runner.
   void InitDataReductionProxySettings(
       data_reduction_proxy::DataReductionProxyIOData* io_data,
       PrefService* profile_prefs,
       net::URLRequestContextGetter* request_context_getter,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
+      scoped_ptr<data_reduction_proxy::DataStore> store,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner);
 
   // Gets the client type for the data reduction proxy.
   static data_reduction_proxy::Client GetClient();
