@@ -150,7 +150,8 @@ base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
 
   if (pending_swaps_ >= max_pending_swaps_) {
     TRACE_EVENT_INSTANT0("cc", "Swap throttled", TRACE_EVENT_SCOPE_THREAD);
-    return current_begin_frame_args_.deadline;
+    return current_begin_frame_args_.frame_time +
+           current_begin_frame_args_.interval;
   }
 
   if (!needs_draw_) {

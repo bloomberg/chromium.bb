@@ -252,7 +252,6 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
 TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   SurfaceId sid1(1);
   SurfaceId sid2(2);
-  base::TimeTicks expected_deadline;
 
   // Get scheduler to detect surface 1 and 2 as active.
   BeginFrameForTest();
@@ -275,16 +274,14 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   EXPECT_EQ(3, client_->draw_and_swap_count());
   scheduler_->DidSwapBuffers();
 
-  // Deadline triggers normally when swap throttled.
-  expected_deadline =
-      fake_begin_frame_source_.TestLastUsedBeginFrameArgs().deadline -
-      BeginFrameArgs::DefaultEstimatedParentDrawTime();
+  // Deadline triggers late when swap throttled.
+  base::TimeTicks late_deadline =
+      now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
   BeginFrameForTest();
   // Damage surface 1, but not surface 2 so we avoid triggering deadline
   // early because all surfaces are ready.
   scheduler_->SurfaceDamaged(sid1);
-  EXPECT_EQ(expected_deadline,
-            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  EXPECT_EQ(late_deadline, scheduler_->DesiredBeginFrameDeadlineTimeForTest());
 
   // Don't draw and swap in deadline while swap throttled.
   EXPECT_EQ(3, client_->draw_and_swap_count());
@@ -293,7 +290,7 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
 
   // Deadline triggers normally once not swap throttled.
   // Damage from previous BeginFrame should cary over, so don't damage again.
-  expected_deadline =
+  base::TimeTicks expected_deadline =
       fake_begin_frame_source_.TestLastUsedBeginFrameArgs().deadline -
       BeginFrameArgs::DefaultEstimatedParentDrawTime();
   scheduler_->DidSwapBuffersComplete();
