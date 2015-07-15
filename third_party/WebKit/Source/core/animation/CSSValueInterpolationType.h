@@ -17,7 +17,18 @@ public:
         : InterpolationType(property)
     { }
 
+    PassOwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const CSSPropertySpecificKeyframe& startKeyframe, const CSSPropertySpecificKeyframe& endKeyframe, const StyleResolverState* state, ConversionCheckers&) const final
+    {
+        return nullptr;
+    }
+
     PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const final;
+
+    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const final
+    {
+        return nullptr;
+    }
+
     void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 };
 

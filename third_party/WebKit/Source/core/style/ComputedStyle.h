@@ -133,6 +133,7 @@ class CORE_EXPORT ComputedStyle: public RefCounted<ComputedStyle> {
     friend class ComputedStyleCSSValueMapping; // Needs to be able to see visited and unvisited colors for devtools.
     friend class StyleBuilderFunctions; // Sets color styles
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
+    friend class LengthPropertyFunctions; // Reads initial style values.
 
     // FIXME: When we stop resolving currentColor at style time, these can be removed.
     friend class CSSToStyleMap;

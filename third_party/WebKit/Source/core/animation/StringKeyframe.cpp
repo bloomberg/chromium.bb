@@ -22,6 +22,7 @@
 #include "core/animation/InvalidatableStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
+#include "core/animation/LengthInterpolationType.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
 #include "core/animation/LengthSVGInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
@@ -161,11 +162,20 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     if (entry != applicableTypesMap.end())
         return entry->value;
 
-    // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
-    if (CSSPropertyMetadata::isInterpolableProperty(property))
-        return nullptr;
-
     auto applicableTypes = new Vector<const InterpolationType*>();
+    switch (property) {
+    case CSSPropertyLeft:
+        applicableTypes->append(new LengthInterpolationType(property));
+        break;
+    default:
+        // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
+        if (CSSPropertyMetadata::isInterpolableProperty(property)) {
+            delete applicableTypes;
+            applicableTypesMap.add(property, nullptr);
+            return nullptr;
+        }
+        break;
+    }
     applicableTypes->append(new CSSValueInterpolationType(property));
     applicableTypesMap.add(property, applicableTypes);
     return applicableTypes;

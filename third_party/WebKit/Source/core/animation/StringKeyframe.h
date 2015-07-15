@@ -49,6 +49,7 @@ public:
         const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const final { return m_animatableValueCache.get(); }
         void setAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value) { m_animatableValueCache = value; }
 
+        bool isNeutral() const final { return !m_value; }
         PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
         PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const final;
 

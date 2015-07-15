@@ -58,6 +58,8 @@ public:
         double offset() const { return m_offset; }
         TimingFunction& easing() const { return *m_easing; }
         EffectModel::CompositeOperation composite() const { return m_composite; }
+        double underlyingFraction() const { return m_composite == EffectModel::CompositeReplace ? 0 : 1; }
+        virtual bool isNeutral() const { ASSERT_NOT_REACHED(); return false; }
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const = 0;
 
         // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues

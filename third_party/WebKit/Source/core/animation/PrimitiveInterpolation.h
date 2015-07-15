@@ -6,6 +6,7 @@
 #define PrimitiveInterpolation_h
 
 #include "core/animation/InterpolationValue.h"
+#include "platform/animation/AnimationUtilities.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include <cmath>
@@ -20,7 +21,9 @@ class PrimitiveInterpolation : public NoBaseWillBeGarbageCollectedFinalized<Prim
 public:
     virtual ~PrimitiveInterpolation() { }
 
-    virtual void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const = 0;
+    virtual void interpolateValue(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const = 0;
+    virtual double interpolateUnderlyingFraction(double start, double end, double fraction) const = 0;
+    virtual bool isFlip() const { return false; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
@@ -56,13 +59,15 @@ private:
         , m_nonInterpolableValue(nonInterpolableValue)
     { }
 
-    void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const final
+    void interpolateValue(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const final
     {
         ASSERT(result);
         ASSERT(&result->type() == &m_type);
         ASSERT(result->nonInterpolableValue() == m_nonInterpolableValue.get());
         m_start->interpolate(*m_end, fraction, result->interpolableValue());
     }
+
+    double interpolateUnderlyingFraction(double start, double end, double fraction) const final { return blend(start, end, fraction); }
 
     const InterpolationType& m_type;
     OwnPtrWillBeMember<InterpolableValue> m_start;
@@ -92,19 +97,21 @@ private:
         : m_start(start)
         , m_end(end)
         , m_lastFraction(std::numeric_limits<double>::quiet_NaN())
-    {
-        ASSERT(m_start);
-        ASSERT(m_end);
-    }
+    { }
 
-    void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const final
+    void interpolateValue(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const final
     {
         // TODO(alancutter): Remove this optimisation once Oilpan is default.
         if (!std::isnan(m_lastFraction) && (fraction < 0.5) == (m_lastFraction < 0.5))
             return;
-        result = ((fraction < 0.5) ? m_start : m_end)->clone();
+        const InterpolationValue* side = ((fraction < 0.5) ? m_start : m_end).get();
+        result = side ? side->clone() : nullptr;
         m_lastFraction = fraction;
     }
+
+    double interpolateUnderlyingFraction(double start, double end, double fraction) const final { return fraction < 0.5 ? start : end; }
+
+    bool isFlip() const final { return true; }
 
     OwnPtrWillBeMember<InterpolationValue> m_start;
     OwnPtrWillBeMember<InterpolationValue> m_end;

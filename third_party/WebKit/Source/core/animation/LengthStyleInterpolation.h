@@ -32,6 +32,7 @@ public:
 
     static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(const CSSValue&, CSSPropertyID = CSSPropertyInvalid);
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> fromInterpolableValue(const InterpolableValue&, InterpolationRange);
+    static void applyInterpolableValue(CSSPropertyID, const InterpolableValue&, InterpolationRange, StyleResolverState&, LengthSetter);
 
 private:
     LengthStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id, InterpolationRange range)

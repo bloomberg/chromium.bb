@@ -312,19 +312,24 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> LengthStyleInterpolation::fromInterpol
     }
 }
 
-void LengthStyleInterpolation::apply(StyleResolverState& state) const
+void LengthStyleInterpolation::applyInterpolableValue(CSSPropertyID property, const InterpolableValue& value, InterpolationRange range, StyleResolverState& state, LengthSetter lengthSetter)
 {
-    if (m_lengthSetter) {
-        (state.style()->*m_lengthSetter)(lengthFromInterpolableValue(*m_cachedValue, m_range, state.style()->effectiveZoom()));
+    if (lengthSetter && isPixelsOrPercentOnly(value)) {
+        (state.style()->*lengthSetter)(lengthFromInterpolableValue(value, range, state.style()->effectiveZoom()));
 #if ENABLE(ASSERT)
-        RefPtrWillBeRawPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(m_id, *state.style());
-        StyleBuilder::applyProperty(m_id, state, fromInterpolableValue(*m_cachedValue, m_range).get());
-        RefPtrWillBeRawPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(m_id, *state.style());
+        RefPtrWillBeRawPtr<AnimatableValue> before = CSSAnimatableValueFactory::create(property, *state.style());
+        StyleBuilder::applyProperty(property, state, fromInterpolableValue(value, range).get());
+        RefPtrWillBeRawPtr<AnimatableValue> after = CSSAnimatableValueFactory::create(property, *state.style());
         ASSERT(before->equals(*after));
 #endif
     } else {
-        StyleBuilder::applyProperty(m_id, state, fromInterpolableValue(*m_cachedValue, m_range).get());
+        StyleBuilder::applyProperty(property, state, fromInterpolableValue(value, range).get());
     }
+}
+
+void LengthStyleInterpolation::apply(StyleResolverState& state) const
+{
+    applyInterpolableValue(m_id, *m_cachedValue, m_range, state, m_lengthSetter);
 }
 
 DEFINE_TRACE(LengthStyleInterpolation)

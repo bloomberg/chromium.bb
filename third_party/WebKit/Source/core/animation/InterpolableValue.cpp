@@ -48,54 +48,17 @@ void InterpolableList::interpolate(const InterpolableValue& to, const double pro
     }
 }
 
-void InterpolableNumber::add(const InterpolableValue& rhs, InterpolableValue& result) const
+void InterpolableNumber::scaleAndAdd(double scale, const InterpolableValue& other)
 {
-    const InterpolableNumber& rhsNumber = toInterpolableNumber(rhs);
-    InterpolableNumber& resultNumber = toInterpolableNumber(result);
-
-    resultNumber.m_value = m_value + rhsNumber.m_value;
+    m_value = m_value * scale + toInterpolableNumber(other).m_value;
 }
 
-void InterpolableNumber::multiply(double scalar, InterpolableValue& result) const
+void InterpolableList::scaleAndAdd(double scale, const InterpolableValue& other)
 {
-    InterpolableNumber& resultNumber = toInterpolableNumber(result);
-
-    resultNumber.m_value = scalar * m_value;
-}
-
-void InterpolableBool::add(const InterpolableValue& rhs, InterpolableValue& result) const
-{
-    const InterpolableBool& rhsBool = toInterpolableBool(rhs);
-    InterpolableBool& resultBool = toInterpolableBool(result);
-
-    resultBool.m_value = m_value || rhsBool.m_value;
-}
-
-void InterpolableList::add(const InterpolableValue& rhs, InterpolableValue& result) const
-{
-    const InterpolableList& rhsList = toInterpolableList(rhs);
-    InterpolableList& resultList = toInterpolableList(result);
-
-    ASSERT(rhsList.m_size == m_size);
-    ASSERT(resultList.m_size == m_size);
-
-    for (size_t i = 0; i < m_size; i++) {
-        ASSERT(m_values[i]);
-        ASSERT(rhsList.m_values[i]);
-        m_values[i]->add(*(rhsList.m_values[i]), *(resultList.m_values[i]));
-    }
-}
-
-void InterpolableList::multiply(double scalar, InterpolableValue& result) const
-{
-    InterpolableList& resultList = toInterpolableList(result);
-
-    ASSERT(resultList.m_size == m_size);
-
-    for (size_t i = 0; i < m_size; i++) {
-        ASSERT(m_values[i]);
-        m_values[i]->multiply(scalar, *(resultList.m_values[i]));
-    }
+    const InterpolableList& otherList = toInterpolableList(other);
+    ASSERT(otherList.m_size == m_size);
+    for (size_t i = 0; i < m_size; i++)
+        m_values[i]->scaleAndAdd(scale, *otherList.m_values[i]);
 }
 
 DEFINE_TRACE(InterpolableList)

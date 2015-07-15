@@ -28,11 +28,11 @@ public:
 
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const = 0;
-    virtual void add(const InterpolableValue& rhs, InterpolableValue& result) const = 0;
-    virtual void multiply(double scalar, InterpolableValue& result) const = 0;
+    virtual void scaleAndAdd(double scale, const InterpolableValue& other) = 0;
 
     friend class Interpolation;
     friend class PairwisePrimitiveInterpolation;
+    friend class InvalidatableStyleInterpolation;
 
     // Keep interpolate private, but allow calls within the hierarchy without
     // knowledge of type.
@@ -57,8 +57,7 @@ public:
 
 private:
     void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const final;
-    void add(const InterpolableValue& rhs, InterpolableValue& result) const final;
-    void multiply(double scalar, InterpolableValue& result) const final;
+    void scaleAndAdd(double scale, const InterpolableValue& other) final;
     double m_value;
 
     explicit InterpolableNumber(double value)
@@ -81,8 +80,7 @@ public:
 
 private:
     void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const final;
-    void add(const InterpolableValue& rhs, InterpolableValue& result) const final;
-    void multiply(double scalar, InterpolableValue& result) const final { ASSERT_NOT_REACHED(); }
+    void scaleAndAdd(double scale, const InterpolableValue& other) final { ASSERT_NOT_REACHED(); }
     bool m_value;
 
     explicit InterpolableBool(bool value)
@@ -123,6 +121,11 @@ public:
         ASSERT(position < m_size);
         return m_values[position].get();
     }
+    InterpolableValue* get(size_t position)
+    {
+        ASSERT(position < m_size);
+        return m_values[position].get();
+    }
     size_t length() const { return m_size; }
     PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const final { return create(*this); }
 
@@ -130,8 +133,7 @@ public:
 
 private:
     void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const final;
-    void add(const InterpolableValue& rhs, InterpolableValue& result) const final;
-    void multiply(double scalar, InterpolableValue& result) const final;
+    void scaleAndAdd(double scale, const InterpolableValue& other) final;
     explicit InterpolableList(size_t size)
         : m_size(size)
         , m_values(m_size)
@@ -166,8 +168,7 @@ public:
 
 private:
     void interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const final;
-    void add(const InterpolableValue& rhs, InterpolableValue& result) const final { ASSERT_NOT_REACHED(); }
-    void multiply(double scalar, InterpolableValue& result) const final { ASSERT_NOT_REACHED(); }
+    void scaleAndAdd(double scale, const InterpolableValue& other) final { ASSERT_NOT_REACHED(); }
     RefPtrWillBeMember<AnimatableValue> m_value;
 
     InterpolableAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value)

@@ -44,10 +44,14 @@ private:
         const CSSPropertySpecificKeyframe& startKeyframe,
         const CSSPropertySpecificKeyframe& endKeyframe);
 
-    void ensureValidInterpolation(const StyleResolverState&) const;
-    bool isCacheValid(const StyleResolverState&) const;
-    bool maybeCachePairwiseConversion(const StyleResolverState*) const;
-    PassOwnPtrWillBeRawPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&) const;
+    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertUnderlyingValue(const StyleResolverState&) const;
+    void ensureValidInterpolation(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
+    bool dependsOnUnderlyingValue() const;
+    bool isCacheValid(const StyleResolverState&, const InterpolationValue* underlyingValue) const;
+    bool isNeutralKeyframeActive() const;
+    bool maybeCachePairwiseConversion(const StyleResolverState*, const InterpolationValue* underlyingValue) const;
+    PassOwnPtrWillBeRawPtr<InterpolationValue> convertSingleKeyframe(const CSSPropertySpecificKeyframe&, const StyleResolverState&, const InterpolationValue* underlyingValue) const;
+    void setFlagIfInheritUsed(StyleResolverState&) const;
 
     const Vector<const InterpolationType*>& m_interpolationTypes;
     const CSSPropertySpecificKeyframe& m_startKeyframe;
