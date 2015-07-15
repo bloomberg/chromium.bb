@@ -1167,6 +1167,11 @@ String LayoutThemeMac::extraDefaultStyleSheet()
         loadResourceAsASCIIString("themeMac.css");
 }
 
+bool LayoutThemeMac::supportsFocusRing(const ComputedStyle& style) const
+{
+    return (style.hasAppearance() && style.appearance() != TextFieldPart && style.appearance() != TextAreaPart && style.appearance() != MenulistButtonPart && style.appearance() != ListboxPart && !shouldUseFallbackTheme(style));
+}
+
 bool LayoutThemeMac::shouldUseFallbackTheme(const ComputedStyle& style) const
 {
     ControlPart part = style.appearance();

@@ -420,11 +420,6 @@ bool LayoutTheme::shouldDrawDefaultFocusRing(LayoutObject* layoutObject) const
     return true;
 }
 
-bool LayoutTheme::supportsFocusRing(const ComputedStyle& style) const
-{
-    return (style.hasAppearance() && style.appearance() != TextFieldPart && style.appearance() != TextAreaPart && style.appearance() != MenulistButtonPart && style.appearance() != ListboxPart);
-}
-
 bool LayoutTheme::controlStateChanged(LayoutObject& o, ControlState state) const
 {
     if (!o.styleRef().hasAppearance())

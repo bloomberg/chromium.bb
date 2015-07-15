@@ -199,7 +199,7 @@ protected:
     virtual Color platformInactiveListBoxSelectionForegroundColor() const;
 
     // A method asking if the theme is able to draw the focus ring.
-    virtual bool supportsFocusRing(const ComputedStyle&) const;
+    virtual bool supportsFocusRing(const ComputedStyle&) const = 0;
 
 #if !USE(NEW_THEME)
     // Methods for each appearance value.

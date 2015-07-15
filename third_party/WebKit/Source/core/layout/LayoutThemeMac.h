@@ -176,6 +176,7 @@ private:
     String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
     String extraDefaultStyleSheet() override;
     bool shouldShowPlaceholderWhenFocused() const override;
+    bool supportsFocusRing(const ComputedStyle&) const override;
 
     ThemePainter& painter() override { return m_painter; }
 
