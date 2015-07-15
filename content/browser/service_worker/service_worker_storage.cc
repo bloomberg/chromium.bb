@@ -1099,8 +1099,10 @@ void ServiceWorkerStorage::DidStoreRegistration(
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(new_version.registration_id);
-  registration->set_resources_total_size_bytes(
-      new_version.resources_total_size_bytes);
+  if (registration) {
+    registration->set_resources_total_size_bytes(
+        new_version.resources_total_size_bytes);
+  }
   if (quota_manager_proxy_.get()) {
     // Can be nullptr in tests.
     quota_manager_proxy_->NotifyStorageModified(
