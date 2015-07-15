@@ -424,20 +424,6 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * Enable or disable x-auto-login
-     */
-    public void setAutologinEnabled(boolean autologinEnabled) {
-        nativeSetAutologinEnabled(autologinEnabled);
-    }
-
-    /**
-     * @return true if x-auto-login is enabled, false otherwise.
-     */
-    public boolean isAutologinEnabled() {
-        return nativeGetAutologinEnabled();
-    }
-
-    /**
      * @return whether usage and crash report is managed.
      */
     public boolean isCrashReportManaged() {
@@ -979,8 +965,6 @@ public final class PrefServiceBridge {
     private native void nativeSetPushNotificationsEnabled(boolean allow);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
     private native void nativeSetPopupException(String pattern, int setting);
-    private native boolean nativeGetAutologinEnabled();
-    private native void nativeSetAutologinEnabled(boolean autologinEnabled);
     private native void nativeSetCrashReporting(boolean reporting);
     private native boolean nativeCanPredictNetworkActions();
     private native AboutVersionStrings nativeGetAboutVersionStrings();

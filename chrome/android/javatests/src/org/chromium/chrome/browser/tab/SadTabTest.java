@@ -8,13 +8,23 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
 /**
  * Tests related to the sad tab logic.
  */
-public class SadTabTest extends ChromeShellTestBase {
+public class SadTabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
+    public SadTabTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
 
     /**
      * Verify that the sad tab is shown when the renderer crashes.
@@ -22,8 +32,7 @@ public class SadTabTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"SadTab"})
     public void testSadTabShownWhenRendererProcessKilled() {
-        launchChromeShellWithBlankPage();
-        final Tab tab = getActivity().getActiveTab();
+        final Tab tab = getActivity().getActivityTab();
 
         assertFalse(tab.isShowingSadTab());
 
@@ -44,8 +53,7 @@ public class SadTabTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"SadTab"})
     public void testSadTabNotShownWhenRendererProcessKilledInBackround() {
-        launchChromeShellWithBlankPage();
-        final Tab tab = getActivity().getActiveTab();
+        final Tab tab = getActivity().getActivityTab();
 
         assertFalse(tab.isShowingSadTab());
 

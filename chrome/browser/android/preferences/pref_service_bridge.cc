@@ -631,15 +631,6 @@ static jboolean GetMicManagedByCustodian(JNIEnv* env, jobject obj) {
              CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
 }
 
-static jboolean GetAutologinEnabled(JNIEnv* env, jobject obj) {
-  return GetPrefService()->GetBoolean(prefs::kAutologinEnabled);
-}
-
-static void SetAutologinEnabled(JNIEnv* env, jobject obj,
-                                jboolean autologinEnabled) {
-  GetPrefService()->SetBoolean(prefs::kAutologinEnabled, autologinEnabled);
-}
-
 static void SetJavaScriptAllowed(JNIEnv* env, jobject obj, jstring pattern,
                                  int setting) {
   HostContentSettingsMap* host_content_settings_map =
