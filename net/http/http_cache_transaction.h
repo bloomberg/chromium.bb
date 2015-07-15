@@ -357,12 +357,6 @@ class HttpCache::Transaction : public HttpTransaction {
   // Setups the transaction for reading from the cache entry.
   int SetupEntryForRead();
 
-  // Reads data from the network.
-  int ReadFromNetwork(IOBuffer* data, int data_len);
-
-  // Reads data from the cache entry.
-  int ReadFromEntry(IOBuffer* data, int data_len);
-
   // Called to write data to the cache entry.  If the write fails, then the
   // cache entry is destroyed.  Future calls to this function will just do
   // nothing without side-effect.  Returns a network error code.

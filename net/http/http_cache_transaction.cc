@@ -327,7 +327,7 @@ bool HttpCache::Transaction::AddTruncatedFlag() {
   DCHECK(mode_ & WRITE || mode_ == NONE);
 
   // Don't set the flag for sparse entries.
-  if (partial_ && !truncated_)
+  if (is_sparse_)
     return true;
 
   if (!CanResume(true))
@@ -366,6 +366,7 @@ int HttpCache::Transaction::Start(const HttpRequestInfo* request,
   DCHECK(!reading_);
   DCHECK(!network_trans_.get());
   DCHECK(!entry_);
+  DCHECK_EQ(next_state_, STATE_NONE);
 
   if (!cache_.get())
     return ERR_UNEXPECTED;
@@ -452,6 +453,7 @@ bool HttpCache::Transaction::IsReadyToRestartForAuth() {
 
 int HttpCache::Transaction::Read(IOBuffer* buf, int buf_len,
                                  const CompletionCallback& callback) {
+  DCHECK_EQ(next_state_, STATE_NONE);
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
   DCHECK(!callback.is_null());
@@ -472,28 +474,18 @@ int HttpCache::Transaction::Read(IOBuffer* buf, int buf_len,
   }
 
   reading_ = true;
-  int rv;
-
-  switch (mode_) {
-    case READ_WRITE:
-      DCHECK(partial_);
-      if (!network_trans_.get()) {
-        // We are just reading from the cache, but we may be writing later.
-        rv = ReadFromEntry(buf, buf_len);
-        break;
-      }
-    case NONE:
-    case WRITE:
-      DCHECK(network_trans_.get());
-      rv = ReadFromNetwork(buf, buf_len);
-      break;
-    case READ:
-      rv = ReadFromEntry(buf, buf_len);
-      break;
-    default:
-      NOTREACHED();
-      rv = ERR_FAILED;
+  read_buf_ = buf;
+  io_buf_len_ = buf_len;
+  if (network_trans_) {
+    DCHECK(mode_ == WRITE || mode_ == NONE ||
+           (mode_ == READ_WRITE && partial_));
+    next_state_ = STATE_NETWORK_READ;
+  } else {
+    DCHECK(mode_ == READ || (mode_ == READ_WRITE && partial_));
+    next_state_ = STATE_CACHE_READ_DATA;
   }
+
+  int rv = DoLoop(OK);
 
   if (rv == ERR_IO_PENDING) {
     DCHECK(callback_.is_null());
@@ -1794,6 +1786,9 @@ int HttpCache::Transaction::DoNetworkReadComplete(int result) {
 }
 
 int HttpCache::Transaction::DoCacheReadData() {
+  if (request_->method == "HEAD")
+    return 0;
+
   DCHECK(entry_);
   next_state_ = STATE_CACHE_READ_DATA_COMPLETE;
 
@@ -2112,7 +2107,7 @@ int HttpCache::Transaction::BeginCacheRead() {
 }
 
 int HttpCache::Transaction::BeginCacheValidation() {
-  DCHECK(mode_ == READ_WRITE);
+  DCHECK_EQ(mode_, READ_WRITE);
 
   ValidationType required_validation = RequiresValidation();
 
@@ -2198,7 +2193,7 @@ int HttpCache::Transaction::BeginPartialCacheValidation() {
 
 // This should only be called once per request.
 int HttpCache::Transaction::ValidateEntryHeadersAndContinue() {
-  DCHECK(mode_ == READ_WRITE);
+  DCHECK_EQ(mode_, READ_WRITE);
 
   if (!partial_->UpdateFromStoredHeaders(
           response_.headers.get(), entry_->disk_entry, truncated_)) {
@@ -2603,23 +2598,6 @@ int HttpCache::Transaction::SetupEntryForRead() {
   if (entry_->disk_entry->GetDataSize(kMetadataIndex))
     next_state_ = STATE_CACHE_READ_METADATA;
   return OK;
-}
-
-int HttpCache::Transaction::ReadFromNetwork(IOBuffer* data, int data_len) {
-  read_buf_ = data;
-  io_buf_len_ = data_len;
-  next_state_ = STATE_NETWORK_READ;
-  return DoLoop(OK);
-}
-
-int HttpCache::Transaction::ReadFromEntry(IOBuffer* data, int data_len) {
-  if (request_->method == "HEAD")
-    return 0;
-
-  read_buf_ = data;
-  io_buf_len_ = data_len;
-  next_state_ = STATE_CACHE_READ_DATA;
-  return DoLoop(OK);
 }
 
 int HttpCache::Transaction::WriteToEntry(int index, int offset,
