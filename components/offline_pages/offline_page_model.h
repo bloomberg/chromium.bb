@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_MODEL_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_MODEL_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -118,6 +120,9 @@ class OfflinePageModel : public KeyedService {
   void OnAddOfflinePageDone(OfflinePageArchiver* archiver,
                             const SavePageCallback& callback,
                             bool success);
+  void OnLoadDone(const LoadAllPagesCallback& callback,
+                  bool success,
+                  const std::vector<OfflinePageItem>& offline_pages);
 
   void InformSavePageDone(const SavePageCallback& callback,
                           SavePageResult result);

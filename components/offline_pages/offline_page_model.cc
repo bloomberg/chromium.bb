@@ -79,7 +79,8 @@ void OfflinePageModel::DeletePage(const GURL& url,
 }
 
 void OfflinePageModel::LoadAllPages(const LoadAllPagesCallback& callback) {
-  NOTIMPLEMENTED();
+  store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
+                          weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
@@ -126,6 +127,17 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
       success ? SavePageResult::SUCCESS : SavePageResult::STORE_FAILURE;
   InformSavePageDone(callback, result);
   DeletePendingArchiver(archiver);
+}
+
+void OfflinePageModel::OnLoadDone(
+    const LoadAllPagesCallback& callback,
+    bool success,
+    const std::vector<OfflinePageItem>& offline_pages) {
+  // TODO(fgorski): Cache the values here, if we are comfortable with that
+  // model. This will require extra handling of parallel loads.
+  LoadResult result =
+      success ? LoadResult::SUCCESS : LoadResult::STORE_FAILURE;
+  callback.Run(result, offline_pages);
 }
 
 void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,

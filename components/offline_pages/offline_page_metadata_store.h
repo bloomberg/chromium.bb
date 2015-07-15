@@ -18,7 +18,7 @@ struct OfflinePageItem;
 // OfflinePageMetadataStore keeps metadata for the offline pages.
 // Ability to create multiple instances of the store as well as behavior of
 // asynchronous operations when the object is being destroyed, before such
-// operation finishes will depend on implementation. It should be possbile to
+// operation finishes will depend on implementation. It should be possible to
 // issue multiple asynchronous operations in parallel.
 class OfflinePageMetadataStore {
  public:
