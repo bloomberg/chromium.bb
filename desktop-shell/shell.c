@@ -1943,7 +1943,7 @@ surface_subsurfaces_boundingbox(struct weston_surface *surface, int32_t *x,
 
 static int
 surface_resize(struct shell_surface *shsurf,
-	       struct weston_seat *seat, uint32_t edges)
+	       struct weston_pointer *pointer, uint32_t edges)
 {
 	struct weston_resize_grab *resize;
 	const unsigned resize_topbottom =
@@ -1974,7 +1974,7 @@ surface_resize(struct shell_surface *shsurf,
 	shsurf->resize_edges = edges;
 	shell_surface_state_changed(shsurf);
 	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
-			 seat->pointer, edges);
+			 pointer, edges);
 
 	return 0;
 }
@@ -1998,7 +1998,7 @@ common_surface_resize(struct wl_resource *resource,
 	if (surface != shsurf->surface)
 		return;
 
-	if (surface_resize(shsurf, seat, edges) < 0)
+	if (surface_resize(shsurf, seat->pointer, edges) < 0)
 		wl_resource_post_no_memory(resource);
 }
 
@@ -3061,6 +3061,14 @@ static int
 shell_interface_move(struct shell_surface *shsurf, struct weston_seat *ws)
 {
 	return surface_move(shsurf, ws->pointer, true);
+}
+
+static int
+shell_interface_resize(struct shell_surface *shsurf,
+		       struct weston_seat *ws,
+		       uint32_t edges)
+{
+	return surface_resize(shsurf, ws->pointer, edges);
 }
 
 static const struct weston_pointer_grab_interface popup_grab_interface;
@@ -4728,7 +4736,7 @@ resize_binding(struct weston_pointer *pointer, uint32_t time,
 	else
 		edges |= WL_SHELL_SURFACE_RESIZE_BOTTOM;
 
-	surface_resize(shsurf, pointer->seat, edges);
+	surface_resize(shsurf, pointer, edges);
 }
 
 static void
@@ -6526,7 +6534,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.set_fullscreen = shell_interface_set_fullscreen;
 	ec->shell_interface.set_xwayland = set_xwayland;
 	ec->shell_interface.move = shell_interface_move;
-	ec->shell_interface.resize = surface_resize;
+	ec->shell_interface.resize = shell_interface_resize;
 	ec->shell_interface.set_title = set_title;
 	ec->shell_interface.set_window_geometry = set_window_geometry;
 	ec->shell_interface.set_maximized = shell_interface_set_maximized;
