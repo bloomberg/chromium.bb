@@ -277,11 +277,20 @@ function FileManager() {
   // Miscellaneous FileManager's states.
 
   /**
-   * Queue for ordering FileManager's initialization process.
-   * @type {!AsyncUtil.Group}
+   * Promise object which is fullfilled when initialization for app state
+   * controller is done.
+   * @type {Promise}
    * @private
    */
-  this.initializeQueue_ = new AsyncUtil.Group();
+  this.initSettingsPromise_ = null;
+
+  /**
+   * Promise object which is fullfilled when initialization related to the
+   * background page is done.
+   * @type {Promise}
+   * @private
+   */
+  this.initBackgroundPagePromise_ = null;
 }
 
 FileManager.prototype = /** @struct */ {
@@ -398,18 +407,25 @@ FileManager.prototype = /** @struct */ {
 
 // Anonymous "namespace".
 (function() {
-  FileManager.prototype.initSettings_ = function(callback) {
+  /**
+   * One time initialization for app state controller to load view option from
+   * local storage.
+   * @return {!Promise} A promise to be fillfilled when initialization is done.
+   * @private
+   */
+  FileManager.prototype.startInitSettings_ = function() {
     this.appStateController_ = new AppStateController(this.dialogType);
-    this.appStateController_.loadInitialViewOptions().then(callback);
+    return new Promise(function(resolve) {
+      this.appStateController_.loadInitialViewOptions().then(resolve);
+    }.bind(this));
   };
 
   /**
    * One time initialization for the file system and related things.
-   *
-   * @param {function()} callback Completion callback.
+   * @return {!Promise} A promise to be fillfilled when initialization is done.
    * @private
    */
-  FileManager.prototype.initFileSystemUI_ = function(callback) {
+  FileManager.prototype.startInitFileSystemUI_ = function() {
     this.ui_.listContainer.startBatchUpdates();
 
     this.initFileList_();
@@ -507,18 +523,20 @@ FileManager.prototype = /** @struct */ {
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();
 
-    // Get the 'allowRedeemOffers' preference for banners.
-    chrome.fileManagerPrivate.getPreferences(function(pref) {
-      this.ui_.initBanners(
-          new Banners(
-              this.directoryModel_,
-              this.volumeManager_,
-              this.document_,
-              // Whether to show offers on the welcome banner.
-              pref.allowRedeemOffers,
-              // Whether to show any welcome banner.
-              this.dialogType === DialogType.FULL_PAGE));
-      callback();
+    return new Promise(function(resolve) {
+      // Get the 'allowRedeemOffers' preference for banners.
+      chrome.fileManagerPrivate.getPreferences(function(pref) {
+        this.ui_.initBanners(
+            new Banners(
+                this.directoryModel_,
+                this.volumeManager_,
+                this.document_,
+                // Whether to show offers on the welcome banner.
+                pref.allowRedeemOffers,
+                // Whether to show any welcome banner.
+                this.dialogType === DialogType.FULL_PAGE));
+        resolve();
+      }.bind(this));
     }.bind(this));
   };
 
@@ -601,49 +619,41 @@ FileManager.prototype = /** @struct */ {
    * This method is called from main.js.
    */
   FileManager.prototype.initializeCore = function() {
-    this.initializeQueue_.add(this.initGeneral_.bind(this), [], 'initGeneral');
-    this.initializeQueue_.add(this.initBackgroundPage_.bind(this),
-                              [], 'initBackgroundPage');
-    this.initializeQueue_.add(this.initSettings_.bind(this),
-                              ['initGeneral'], 'initSettings');
-    this.initializeQueue_.add(this.initVolumeManager_.bind(this),
-                              ['initGeneral', 'initBackgroundPage'],
-                              'initVolumeManager');
+    this.initGeneral_();
+    this.initSettingsPromise_ = this.startInitSettings_();
+    this.initBackgroundPagePromise_ = this.startInitBackgroundPage_();
+    this.initBackgroundPagePromise_.then(function() {
+      this.initVolumeManager_();
+    }.bind(this));
 
-    this.initializeQueue_.run();
     window.addEventListener('pagehide', this.onUnload_.bind(this));
   };
 
-  FileManager.prototype.initializeUI = function(dialogDom, callback) {
+  /**
+   * @return {!Promise} A promise to be fillfilled when initialization is done.
+   */
+  FileManager.prototype.initializeUI = function(dialogDom) {
     this.dialogDom_ = dialogDom;
     this.document_ = this.dialogDom_.ownerDocument;
 
-    this.initializeQueue_.add(
-        this.initEssentialUI_.bind(this),
-        ['initGeneral', 'initBackgroundPage'],
-        'initEssentialUI');
-    this.initializeQueue_.add(this.initAdditionalUI_.bind(this),
-        ['initEssentialUI'], 'initAdditionalUI');
-    this.initializeQueue_.add(
-        this.initFileSystemUI_.bind(this),
-        ['initAdditionalUI', 'initSettings'], 'initFileSystemUI');
-    this.initializeQueue_.add(
-        this.initUIFocus_.bind(this),
-        ['initAdditionalUI', 'initFileSystemUI'], 'initUIFocus');
-
-    // Run again just in case if all pending closures have completed and the
-    // queue has stopped and monitor the completion.
-    this.initializeQueue_.run(callback);
+    return this.initBackgroundPagePromise_.then(function() {
+      this.initEssentialUI_();
+      this.initAdditionalUI_();
+      return this.initSettingsPromise_;
+    }.bind(this)).then(function() {
+      return this.startInitFileSystemUI_();
+    }.bind(this)).then(function() {
+      this.initUIFocus_();
+    }.bind(this));
   };
 
   /**
    * Initializes general purpose basic things, which are used by other
    * initializing methods.
    *
-   * @param {function()} callback Completion callback.
    * @private
    */
-  FileManager.prototype.initGeneral_ = function(callback) {
+  FileManager.prototype.initGeneral_ = function() {
     // Initialize the application state.
     // TODO(mtomasz): Unify window.appState with location.search format.
     if (window.appState) {
@@ -670,43 +680,43 @@ FileManager.prototype = /** @struct */ {
     // we really can't do this (as instanceof checks fail across
     // different script contexts).
     this.tracker_ = metrics.getTracker();
-
-    callback();
   };
 
   /**
    * Initializes the background page.
-   * @param {function()} callback Completion callback.
+   * @return {!Promise} A promise to be fillfilled when initialization is done.
    * @private
    */
-  FileManager.prototype.initBackgroundPage_ = function(callback) {
-    chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */ (
-        function(opt_backgroundPage) {
-          assert(opt_backgroundPage);
-          this.backgroundPage_ =
-              /** @type {!BackgroundWindow} */ (opt_backgroundPage);
-          this.backgroundPage_.background.ready(function() {
-            loadTimeData.data = this.backgroundPage_.background.stringData;
-            if (util.runningInBrowser())
-              this.backgroundPage_.registerDialog(window);
-            this.fileOperationManager_ =
-                this.backgroundPage_.background.fileOperationManager;
-            this.mediaImportHandler_ =
-                this.backgroundPage_.background.mediaImportHandler;
-            this.mediaScanner_ =
-                this.backgroundPage_.background.mediaScanner;
-            this.historyLoader_ = this.backgroundPage_.background.historyLoader;
-            callback();
-          }.bind(this));
-        }.bind(this)));
+  FileManager.prototype.startInitBackgroundPage_ = function() {
+    return new Promise(function(resolve) {
+      chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */ (
+          function(opt_backgroundPage) {
+            assert(opt_backgroundPage);
+            this.backgroundPage_ =
+                /** @type {!BackgroundWindow} */ (opt_backgroundPage);
+            this.backgroundPage_.background.ready(function() {
+              loadTimeData.data = this.backgroundPage_.background.stringData;
+              if (util.runningInBrowser())
+                this.backgroundPage_.registerDialog(window);
+              this.fileOperationManager_ =
+                  this.backgroundPage_.background.fileOperationManager;
+              this.mediaImportHandler_ =
+                  this.backgroundPage_.background.mediaImportHandler;
+              this.mediaScanner_ =
+                  this.backgroundPage_.background.mediaScanner;
+              this.historyLoader_ =
+                  this.backgroundPage_.background.historyLoader;
+              resolve();
+            }.bind(this));
+          }.bind(this)));
+    }.bind(this));
   };
 
   /**
    * Initializes the VolumeManager instance.
-   * @param {function()} callback Completion callback.
    * @private
    */
-  FileManager.prototype.initVolumeManager_ = function(callback) {
+  FileManager.prototype.initVolumeManager_ = function() {
     // Auto resolving to local path does not work for folders (e.g., dialog for
     // loading unpacked extensions).
     var noLocalPathResolution =
@@ -725,7 +735,6 @@ FileManager.prototype = /** @struct */ {
         /** @type {VolumeManagerWrapper.NonNativeVolumeStatus} */
         (nonNativeEnabled),
         this.backgroundPage_);
-    callback();
   };
 
   /**
@@ -733,11 +742,9 @@ FileManager.prototype = /** @struct */ {
    * elements will be shown to the user. Only visible elements should be
    * initialized here. Any heavy operation should be avoided. Files.app's
    * window is shown at the end of this routine.
-   *
-   * @param {function()} callback Completion callback.
    * @private
    */
-  FileManager.prototype.initEssentialUI_ = function(callback) {
+  FileManager.prototype.initEssentialUI_ = function() {
     // Record stats of dialog types. New values must NOT be inserted into the
     // array enumerating the types. It must be in sync with
     // FileDialogType enum in tools/metrics/histograms/histogram.xml.
@@ -767,18 +774,15 @@ FileManager.prototype = /** @struct */ {
     if (this.dialogType == DialogType.FULL_PAGE && !util.runningInBrowser()) {
       chrome.app.window.current().show();
     }
-    callback();
   };
 
   /**
    * One-time initialization of various DOM nodes. Loads the additional DOM
    * elements visible to the user. Initialize here elements, which are expensive
    * or hidden in the beginning.
-   *
-   * @param {function()} callback Completion callback.
    * @private
    */
-  FileManager.prototype.initAdditionalUI_ = function(callback) {
+  FileManager.prototype.initAdditionalUI_ = function() {
     assert(this.metadataModel_);
     assert(this.volumeManager_);
     assert(this.historyLoader_);
@@ -833,19 +837,15 @@ FileManager.prototype = /** @struct */ {
     // Arrange the file list.
     this.ui_.listContainer.table.normalizeColumns();
     this.ui_.listContainer.table.redraw();
-
-    callback();
   };
 
   /**
    * One-time initialization of focus. This should run at the last of UI
    *  initialization.
-   *
    * @private
    */
-  FileManager.prototype.initUIFocus_ = function(callback) {
+  FileManager.prototype.initUIFocus_ = function() {
     this.ui_.initUIFocus();
-    callback();
   };
 
   /**
@@ -1370,15 +1370,9 @@ FileManager.prototype = /** @struct */ {
    * Outputs the current state for debugging.
    */
   FileManager.prototype.debugMe = function() {
-    var out = 'Debug information.\n' +
-        '1. fileManager.initializeQueue_.pendingTasks_\n';
-    var keys = Object.keys(this.initializeQueue_.pendingTasks);
-    out += 'Length: ' + keys.length + '\n';
-    keys.forEach(function(key) {
-      out += this.initializeQueue_.pendingTasks[key].toString() + '\n';
-    }.bind(this));
+    var out = 'Debug information.\n';
 
-    out += '2. VolumeManagerWrapper\n' +
+    out += '1. VolumeManagerWrapper\n' +
         this.volumeManager_.toString() + '\n';
 
     out += 'End of debug information.';

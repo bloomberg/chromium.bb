@@ -19,7 +19,7 @@ var pageLoaded = false;
  */
 function init() {
   // Initializes UI and starts the File Manager dialog.
-  fileManager.initializeUI(document.body, function() {
+  fileManager.initializeUI(document.body).then(function() {
     util.testSendMessage('ready');
     metrics.recordInterval('Load.Total');
     fileManager.tracker.send(metrics.Management.WINDOW_CREATED);
