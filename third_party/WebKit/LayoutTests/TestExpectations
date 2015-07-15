@@ -4,8 +4,6 @@ crbug.com/502531 fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
 crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
-crbug.com/370785 fast/forms/checkbox/checkbox-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/370785 fast/forms/radio/radio-appearance-basic.html [ NeedsRebaseline ]
 
 crbug.com/499688 virtual/rootlayerscrolls/fast/scrolling/background-paint-scrolled.html [ Pass Crash ]
 
