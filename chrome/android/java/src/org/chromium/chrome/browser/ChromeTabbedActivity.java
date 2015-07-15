@@ -411,6 +411,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             OnClickListener tabSwitcherClickHandler = new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (getFullscreenManager() != null
+                            && getFullscreenManager().getPersistentFullscreenMode()) {
+                        return;
+                    }
                     toggleOverview();
                 }
             };
