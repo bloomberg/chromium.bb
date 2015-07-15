@@ -236,7 +236,7 @@
                     'VCLinkerTool': {
                       'LinkTimeCodeGeneration': '2',
                       'AdditionalOptions': [
-                        '-PogoSafeMode',
+                        '/PogoSafeMode',
                       ],
                     },
                   },
@@ -361,7 +361,7 @@
                     'VCLinkerTool': {
                       'LinkTimeCodeGeneration': '2',
                       'AdditionalOptions': [
-                        '-PogoSafeMode',
+                        '/PogoSafeMode',
                       ],
                     },
                   },
