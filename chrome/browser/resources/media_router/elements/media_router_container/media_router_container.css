@@ -6,13 +6,12 @@
   color: rgb(33, 150, 243);
 }
 
-#container-header.cast-mode {
-  /* TODO(kdresner): Update this when we get a real color. */
-  background-color: rgb(244, 67, 54);
+#container-header.cast-mode-list {
+  background-color: rgb(0, 150, 136);
 }
 
 #container-header.filter {
-  background-color: rgb(57, 73, 171);
+  background-color: rgb(103, 58, 183);
 }
 
 #container-header.route-details {
@@ -38,16 +37,12 @@
   margin: 0;
 }
 
-.route {
-  color: rgb(150, 150, 150);
-}
-
 paper-item {
   cursor: pointer;
   font-size: 1.0em;
   line-height: 0;
   min-height: 0;
-  padding: 14px 0;
+  padding: 12px 0;
 }
 
 paper-item:hover {
@@ -68,9 +63,14 @@ paper-menu {
   padding: 0;
 }
 
+.route {
+  color: rgb(150, 150, 150);
+}
+
 .sink-content {
   display: flex;
   flex-direction: row;
+  font-weight: normal;
 }
 
 #sink-list {
