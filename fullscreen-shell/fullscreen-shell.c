@@ -102,7 +102,7 @@ seat_caps_changed(struct wl_listener *l, void *data)
 	listener = container_of(l, struct pointer_focus_listener, seat_caps);
 
 	/* no pointer */
-	if (seat->pointer) {
+	if (seat->pointer_device_count) {
 		if (!listener->pointer_focus.link.prev) {
 			wl_signal_add(&seat->pointer->focus_signal,
 				      &listener->pointer_focus);
@@ -113,7 +113,7 @@ seat_caps_changed(struct wl_listener *l, void *data)
 		}
 	}
 
-	if (seat->keyboard && seat->keyboard->focus != NULL) {
+	if (seat->keyboard_device_count && seat->keyboard->focus != NULL) {
 		wl_list_for_each(fsout, &listener->shell->output_list, link) {
 			if (fsout->surface) {
 				weston_surface_activate(fsout->surface, seat);
