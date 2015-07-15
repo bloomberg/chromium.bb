@@ -238,14 +238,8 @@ class HttpCache::Transaction : public HttpTransaction {
     PATTERN_MAX,
   };
 
-  // This is a helper function used to trigger a completion callback.  It may
-  // only be called if callback_ is non-null.
-  void DoCallback(int rv);
-
-  // This will trigger the completion callback if appropriate.
-  int HandleResult(int rv);
-
-  // Runs the state transition loop.
+  // Runs the state transition loop. Resets and calls |callback_| on exit,
+  // unless the return value is ERR_IO_PENDING.
   int DoLoop(int result);
 
   // Each of these methods corresponds to a State value.  If there is an

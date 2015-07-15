@@ -14,6 +14,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/location.h"
@@ -642,26 +643,6 @@ void HttpCache::Transaction::GetConnectionAttempts(
 
 //-----------------------------------------------------------------------------
 
-void HttpCache::Transaction::DoCallback(int rv) {
-  DCHECK(rv != ERR_IO_PENDING);
-  DCHECK(!callback_.is_null());
-
-  read_buf_ = NULL;  // Release the buffer before invoking the callback.
-
-  // Since Run may result in Read being called, clear callback_ up front.
-  CompletionCallback c = callback_;
-  callback_.Reset();
-  c.Run(rv);
-}
-
-int HttpCache::Transaction::HandleResult(int rv) {
-  DCHECK(rv != ERR_IO_PENDING);
-  if (!callback_.is_null())
-    DoCallback(rv);
-
-  return rv;
-}
-
 // A few common patterns: (Foo* means Foo -> FooComplete)
 //
 // 1. Not-cached entry:
@@ -963,8 +944,10 @@ int HttpCache::Transaction::DoLoop(int result) {
     }
   } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
 
-  if (rv != ERR_IO_PENDING)
-    HandleResult(rv);
+  if (rv != ERR_IO_PENDING && !callback_.is_null()) {
+    read_buf_ = NULL;  // Release the buffer before invoking the callback.
+    base::ResetAndReturn(&callback_).Run(rv);
+  }
 
   return rv;
 }
