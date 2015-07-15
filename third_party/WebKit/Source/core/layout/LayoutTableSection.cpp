@@ -1602,19 +1602,14 @@ void LayoutTableSection::removeCachedCollapsedBorders(const LayoutTableCell* cel
         m_cellsCollapsedBorders.remove(std::make_pair(cell, side));
 }
 
-bool LayoutTableSection::setCachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side, const CollapsedBorderValue& border)
+void LayoutTableSection::setCachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side, const CollapsedBorderValue& border)
 {
     ASSERT(table()->collapseBorders());
     CellsCollapsedBordersMap::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
-    if (it == m_cellsCollapsedBorders.end()) {
+    if (it == m_cellsCollapsedBorders.end())
         m_cellsCollapsedBorders.add(std::make_pair(cell, side), border);
-        return true;
-    }
-    if (!it->value.equals(border)) {
+    else
         it->value = border;
-        return true;
-    }
-    return false;
 }
 
 const CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side) const
