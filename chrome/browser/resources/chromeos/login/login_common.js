@@ -350,12 +350,11 @@ cr.define('cr.ui', function() {
    * attribute screen if it's present.
    */
   Oobe.isEnrollmentSuccessfulForTest = function() {
-    if (document.querySelector(
-        '.oauth-enroll-state-attribute-prompt') != undefined) {
+    if (document.querySelector('.oauth-enroll-state-attribute-prompt'))
       chrome.send('oauthEnrollAttributes', ['', '']);
-    }
 
-    return document.querySelector('.oauth-enroll-state-success') != undefined;
+    return $('oauth-enrollment').classList.contains(
+      'oauth-enroll-state-success');
   };
 
   /**
