@@ -182,6 +182,11 @@ crbug.com/509013  svg/dynamic-updates/SVGFilterPrimitiveStandardAttributes-svgdo
 crbug.com/509013  svg/dynamic-updates/SVGFilterPrimitiveStandardAttributes-svgdom-y-prop.html [ NeedsManualRebaseline ]
 
 
+crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
+crbug.com/510337 inspector/console/console-format.html [ Slow ]
+crbug.com/510337 inspector/elements/edit/edit-dom-actions-shadow.html [ Slow ]
+crbug.com/510337 inspector/elements/edit/edit-dom-actions.html [ Slow ]
+
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
 
 # Crashing after V8 roll to 3.28.43.1.
