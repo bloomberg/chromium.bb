@@ -7,6 +7,20 @@
 {
   'targets': [
     {
+      'target_name': 'boringssl_aes_test',
+      'type': 'executable',
+      'dependencies': [
+        'boringssl.gyp:boringssl',
+      ],
+      'sources': [
+        'src/crypto/aes/aes_test.cc',
+        '<@(boringssl_test_support_sources)',
+      ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
       'target_name': 'boringssl_base64_test',
       'type': 'executable',
       'dependencies': [
@@ -329,6 +343,20 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'boringssl_poly1305_test',
+      'type': 'executable',
+      'dependencies': [
+        'boringssl.gyp:boringssl',
+      ],
+      'sources': [
+        'src/crypto/poly1305/poly1305_test.cc',
+        '<@(boringssl_test_support_sources)',
+      ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
       'target_name': 'boringssl_refcount_test',
       'type': 'executable',
       'dependencies': [
@@ -448,6 +476,7 @@
     ],
     'boringssl_test_targets': [
       'boringssl_aead_test',
+      'boringssl_aes_test',
       'boringssl_base64_test',
       'boringssl_bio_test',
       'boringssl_bn_test',
@@ -471,6 +500,7 @@
       'boringssl_pbkdf_test',
       'boringssl_pkcs12_test',
       'boringssl_pkcs7_test',
+      'boringssl_poly1305_test',
       'boringssl_pqueue_test',
       'boringssl_refcount_test',
       'boringssl_rsa_test',

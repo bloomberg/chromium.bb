@@ -141,6 +141,10 @@ TEST(BoringSSL, AEADs) {
   }
 }
 
+TEST(BoringSSL, AES) {
+  TestSimple("aes_test");
+}
+
 TEST(BoringSSL, Base64) {
   TestSimple("base64_test");
 }
@@ -213,20 +217,6 @@ TEST(BoringSSL, EVP) {
   TestProcess("evp_test", args);
 }
 
-// evp_test is also run on hmac_test's input.
-TEST(BoringSSL, EVPHMAC) {
-  base::FilePath data_file;
-  ASSERT_TRUE(BoringSSLPath(&data_file));
-  data_file = data_file.Append(FILE_PATH_LITERAL("crypto"));
-  data_file = data_file.Append(FILE_PATH_LITERAL("hmac"));
-  data_file = data_file.Append(FILE_PATH_LITERAL("hmac_tests.txt"));
-
-  std::vector<base::CommandLine::StringType> args;
-  args.push_back(data_file.value());
-
-  TestProcess("evp_test", args);
-}
-
 TEST(BoringSSL, EVPExtra) {
   TestSimple("evp_extra_test");
 }
@@ -262,6 +252,19 @@ TEST(BoringSSL, LH) {
 
 TEST(BoringSSL, PBKDF) {
   TestSimple("pbkdf_test");
+}
+
+TEST(BoringSSL, Poly1305) {
+  base::FilePath data_file;
+  ASSERT_TRUE(BoringSSLPath(&data_file));
+  data_file = data_file.Append(FILE_PATH_LITERAL("crypto"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("poly1305"));
+  data_file = data_file.Append(FILE_PATH_LITERAL("poly1305_test.txt"));
+
+  std::vector<base::CommandLine::StringType> args;
+  args.push_back(data_file.value());
+
+  TestProcess("poly1305_test", args);
 }
 
 TEST(BoringSSL, PKCS7) {
