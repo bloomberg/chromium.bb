@@ -26,6 +26,8 @@ def Main(argv):
   sources = args[:-1]
   for s in sources:
     t = os.path.join(target, os.path.basename(s))
+    if len(sources) == 1 and not os.path.isdir(target):
+      t = target
     try:
       os.symlink(s, t)
     except OSError, e:
