@@ -653,10 +653,10 @@ exposay_set_state(struct desktop_shell *shell, enum exposay_target_state state,
 }
 
 void
-exposay_binding(struct weston_seat *seat, enum weston_keyboard_modifier modifier,
+exposay_binding(struct weston_keyboard *keyboard, enum weston_keyboard_modifier modifier,
 		void *data)
 {
 	struct desktop_shell *shell = data;
 
-	exposay_set_state(shell, EXPOSAY_TARGET_OVERVIEW, seat);
+	exposay_set_state(shell, EXPOSAY_TARGET_OVERVIEW, keyboard->seat);
 }

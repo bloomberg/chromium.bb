@@ -2764,7 +2764,8 @@ session_notify(struct wl_listener *listener, void *data)
 }
 
 static void
-switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
+switch_vt_binding(struct weston_keyboard *keyboard, uint32_t time,
+		  uint32_t key, void *data)
 {
 	struct weston_compositor *compositor = data;
 
@@ -2828,7 +2829,8 @@ find_primary_gpu(struct drm_backend *b, const char *seat)
 }
 
 static void
-planes_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
+planes_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
+	       void *data)
 {
 	struct drm_backend *b = data;
 
@@ -2908,7 +2910,7 @@ create_recorder(struct drm_backend *b, int width, int height,
 }
 
 static void
-recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+recorder_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 		 void *data)
 {
 	struct drm_backend *b = data;
@@ -2993,10 +2995,11 @@ switch_to_gl_renderer(struct drm_backend *b)
 }
 
 static void
-renderer_switch_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
-			void *data)
+renderer_switch_binding(struct weston_keyboard *keyboard, uint32_t time,
+			uint32_t key, void *data)
 {
-	struct drm_backend *b = (struct drm_backend *)seat->compositor->backend;
+	struct drm_backend *b =
+		(struct drm_backend *) keyboard->seat->compositor;
 
 	switch_to_gl_renderer(b);
 }

@@ -1925,14 +1925,14 @@ create_cursor(struct wayland_backend *b, struct weston_config *config)
 }
 
 static void
-fullscreen_binding(struct weston_seat *seat_base, uint32_t time, uint32_t key,
-		   void *data)
+fullscreen_binding(struct weston_keyboard *keyboard, uint32_t time,
+		   uint32_t key, void *data)
 {
 	struct wayland_backend *b = data;
 	struct wayland_input *input = NULL;
 
 	wl_list_for_each(input, &b->input_list, link)
-		if (&input->base == seat_base)
+		if (&input->base == keyboard->seat)
 			break;
 
 	if (!input || !input->output)

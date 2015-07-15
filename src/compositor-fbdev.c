@@ -803,7 +803,8 @@ fbdev_restore(struct weston_compositor *compositor)
 }
 
 static void
-switch_vt_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
+switch_vt_binding(struct weston_keyboard *keyboard, uint32_t time,
+		  uint32_t key, void *data)
 {
 	struct weston_compositor *compositor = data;
 

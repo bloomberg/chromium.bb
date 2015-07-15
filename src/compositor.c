@@ -4433,7 +4433,7 @@ weston_environment_get_fd(const char *env)
 }
 
 static void
-timeline_key_binding_handler(struct weston_seat *seat, uint32_t time,
+timeline_key_binding_handler(struct weston_keyboard *keyboard, uint32_t time,
 			     uint32_t key, void *data)
 {
 	struct weston_compositor *compositor = data;

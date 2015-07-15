@@ -230,7 +230,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	 struct weston_seat *seat, bool configure);
 
 void
-exposay_binding(struct weston_seat *seat,
+exposay_binding(struct weston_keyboard *keyboard,
 		enum weston_keyboard_modifier modifier,
 		void *data);
 int

@@ -2429,8 +2429,8 @@ compile_shaders(struct weston_compositor *ec)
 }
 
 static void
-fragment_debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
-		       void *data)
+fragment_debug_binding(struct weston_keyboard *keyboard, uint32_t time,
+		       uint32_t key, void *data)
 {
 	struct weston_compositor *ec = data;
 	struct gl_renderer *gr = get_renderer(ec);
@@ -2455,8 +2455,8 @@ fragment_debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 }
 
 static void
-fan_debug_repaint_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
-		      void *data)
+fan_debug_repaint_binding(struct weston_keyboard *keyboard, uint32_t time,
+			  uint32_t key, void *data)
 {
 	struct weston_compositor *compositor = data;
 	struct gl_renderer *gr = get_renderer(compositor);

@@ -131,13 +131,14 @@ unpremultiply_and_swap_a8b8g8r8_to_PAMrgba(void *pixels, size_t size)
 }
 
 static void
-trigger_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+trigger_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 		void *data)
 {
 	const char *prefix = "surfaceshot-";
 	const char *suffix = ".pam";
 	char fname[1024];
 	struct weston_surface *surface;
+	struct weston_seat *seat = keyboard->seat;
 	int width, height;
 	char desc[512];
 	void *pixels;

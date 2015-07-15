@@ -1149,7 +1149,7 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 
 
 struct weston_binding;
-typedef void (*weston_key_binding_handler_t)(struct weston_seat *seat,
+typedef void (*weston_key_binding_handler_t)(struct weston_keyboard *keyboard,
 					     uint32_t time, uint32_t key,
 					     void *data);
 struct weston_binding *
@@ -1159,7 +1159,7 @@ weston_compositor_add_key_binding(struct weston_compositor *compositor,
 				  weston_key_binding_handler_t binding,
 				  void *data);
 
-typedef void (*weston_modifier_binding_handler_t)(struct weston_seat *seat,
+typedef void (*weston_modifier_binding_handler_t)(struct weston_keyboard *keyboard,
 					          enum weston_keyboard_modifier modifier,
 					          void *data);
 struct weston_binding *
@@ -1168,7 +1168,7 @@ weston_compositor_add_modifier_binding(struct weston_compositor *compositor,
 				       weston_modifier_binding_handler_t binding,
 				       void *data);
 
-typedef void (*weston_button_binding_handler_t)(struct weston_seat *seat,
+typedef void (*weston_button_binding_handler_t)(struct weston_pointer *pointer,
 						uint32_t time, uint32_t button,
 						void *data);
 struct weston_binding *
@@ -1178,7 +1178,7 @@ weston_compositor_add_button_binding(struct weston_compositor *compositor,
 				     weston_button_binding_handler_t binding,
 				     void *data);
 
-typedef void (*weston_touch_binding_handler_t)(struct weston_seat *seat,
+typedef void (*weston_touch_binding_handler_t)(struct weston_touch *touch,
 					       uint32_t time,
 					       void *data);
 struct weston_binding *
@@ -1187,7 +1187,7 @@ weston_compositor_add_touch_binding(struct weston_compositor *compositor,
 				    weston_touch_binding_handler_t binding,
 				    void *data);
 
-typedef void (*weston_axis_binding_handler_t)(struct weston_seat *seat,
+typedef void (*weston_axis_binding_handler_t)(struct weston_pointer *pointer,
 					      uint32_t time, uint32_t axis,
 					      wl_fixed_t value, void *data);
 struct weston_binding *

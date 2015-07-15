@@ -298,7 +298,7 @@ weston_compositor_run_key_binding(struct weston_compositor *compositor,
 		if (b->key == key && b->modifier == seat->modifier_state) {
 			weston_key_binding_handler_t handler = b->handler;
 			focus = seat->keyboard->focus;
-			handler(seat, time, key, b->data);
+			handler(seat->keyboard, time, key, b->data);
 
 			/* If this was a key binding and it didn't
 			 * install a keyboard grab, install one now to
@@ -337,7 +337,7 @@ weston_compositor_run_modifier_binding(struct weston_compositor *compositor,
 			return;
 		}
 
-		handler(seat, modifier, b->data);
+		handler(seat->keyboard, modifier, b->data);
 	}
 }
 
@@ -359,7 +359,7 @@ weston_compositor_run_button_binding(struct weston_compositor *compositor,
 	wl_list_for_each_safe(b, tmp, &compositor->button_binding_list, link) {
 		if (b->button == button && b->modifier == seat->modifier_state) {
 			weston_button_binding_handler_t handler = b->handler;
-			handler(seat, time, button, b->data);
+			handler(seat->pointer, time, button, b->data);
 		}
 	}
 }
@@ -377,7 +377,7 @@ weston_compositor_run_touch_binding(struct weston_compositor *compositor,
 	wl_list_for_each_safe(b, tmp, &compositor->touch_binding_list, link) {
 		if (b->modifier == seat->modifier_state) {
 			weston_touch_binding_handler_t handler = b->handler;
-			handler(seat, time, b->data);
+			handler(seat->touch, time, b->data);
 		}
 	}
 }
@@ -397,7 +397,7 @@ weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 	wl_list_for_each_safe(b, tmp, &compositor->axis_binding_list, link) {
 		if (b->axis == axis && b->modifier == seat->modifier_state) {
 			weston_axis_binding_handler_t handler = b->handler;
-			handler(seat, time, axis, value, b->data);
+			handler(seat->pointer, time, axis, value, b->data);
 			return 1;
 		}
 	}
@@ -421,7 +421,7 @@ weston_compositor_run_debug_binding(struct weston_compositor *compositor,
 
 		count++;
 		handler = binding->handler;
-		handler(seat, time, key, binding->data);
+		handler(seat->keyboard, time, key, binding->data);
 	}
 
 	return count;
@@ -540,7 +540,8 @@ struct weston_keyboard_grab_interface debug_binding_keyboard_grab = {
 };
 
 static void
-debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
+debug_binding(struct weston_keyboard *keyboard, uint32_t time,
+	      uint32_t key, void *data)
 {
 	struct debug_binding_grab *grab;
 
@@ -548,10 +549,10 @@ debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
 	if (!grab)
 		return;
 
-	grab->seat = seat;
+	grab->seat = keyboard->seat;
 	grab->key[0] = key;
 	grab->grab.interface = &debug_binding_keyboard_grab;
-	weston_keyboard_start_grab(seat->keyboard, &grab->grab);
+	weston_keyboard_start_grab(keyboard, &grab->grab);
 }
 
 /** Install the trigger binding for debug bindings.
