@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function listenOnce(node, eventType, callback, capture) {
+  var innerCallback = function() {
+    node.removeEventListener(eventType, innerCallback, capture);
+    callback();
+  };
+  node.addEventListener(eventType, innerCallback, capture);
+};
+
 var allTests = [
   function testDoDefault() {
     var firstTextField = findAutomationNode(rootNode,
@@ -9,7 +17,7 @@ var allTests = [
           return node.role == 'textField';
         });
     assertTrue(!!firstTextField);
-    firstTextField.addEventListener(EventType.focus, function(e) {
+    listenOnce(firstTextField, EventType.focus, function(e) {
       chrome.test.succeed();
     }, true);
     firstTextField.doDefault();
@@ -21,15 +29,24 @@ var allTests = [
           return node.role == 'button' && node.state.focusable;
         });
     assertTrue(!!firstFocusableNode);
-    firstFocusableNode.addEventListener(EventType.focus, function(e) {
+    listenOnce(firstFocusableNode, EventType.focus, function(e) {
       chrome.test.succeed();
     }, true);
     firstFocusableNode.focus();
   },
 
+  function testDoDefaultViews() {
+    listenOnce(rootNode, 'focus', function(node) {
+      chrome.test.succeed();
+    }, true);
+    var button = rootNode.find(
+        {role: 'button', attributes: {name: 'Bookmark this page'}});
+    button.doDefault();
+  },
+
   function testContextMenu() {
     var addressBar = rootNode.find({role: 'textField'});
-    rootNode.addEventListener(EventType.menuStart, function(e) {
+    listenOnce(rootNode, EventType.menuStart, function(e) {
       addressBar.showContextMenu();
       chrome.test.succeed();
     }, true);

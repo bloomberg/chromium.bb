@@ -277,7 +277,9 @@ Background.prototype = {
             actionNode = actionNode.parent;
           actionNode.doDefault();
         }
-        break;
+        // Skip all other processing; if focus changes, we should get an event
+        // for that.
+        return;
       case 'continuousRead':
         global.isReadingContinuously = true;
         var continueReading = function(prevRange) {
