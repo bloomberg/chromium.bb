@@ -11,8 +11,6 @@
         [63, 8, 60, 54]
       ],
       "paintInvalidationClients": [
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
         "LayoutTable TABLE",
         "LayoutTableCell TD"
       ]

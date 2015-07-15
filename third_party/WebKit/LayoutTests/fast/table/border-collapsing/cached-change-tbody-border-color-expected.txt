@@ -13,12 +13,6 @@
         "LayoutTableCell TD",
         "LayoutTableCell TD",
         "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
         "LayoutTableSection TBODY id='tbody'"
       ]
     }

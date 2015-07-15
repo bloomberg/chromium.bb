@@ -11,10 +11,6 @@
       "paintInvalidationClients": [
         "LayoutTableCell TD",
         "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
         "LayoutTableCol COL id='col'"
       ]
     }

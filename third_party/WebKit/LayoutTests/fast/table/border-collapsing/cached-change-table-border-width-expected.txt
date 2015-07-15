@@ -16,7 +16,6 @@
         [8, 8, 56, 52]
       ],
       "paintInvalidationClients": [
-        "LayoutTableCell TD",
         "LayoutTable TABLE id='tbl'",
         "LayoutTableSection TBODY",
         "LayoutTableRow TR",
