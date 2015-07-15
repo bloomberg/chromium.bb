@@ -349,12 +349,6 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
   for (auto observer : availability_observers_)
     observer->availabilityChanged(available);
 
-  for (auto observer : availability_observers_)
-    observer->availabilityChanged(available);
-
-  for (auto observer : availability_observers_)
-    observer->availabilityChanged(available);
-
   for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
        !iter.IsAtEnd(); iter.Advance()) {
     iter.GetCurrentValue()->onSuccess(new bool(available));
