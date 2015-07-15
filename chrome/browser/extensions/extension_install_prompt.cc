@@ -154,20 +154,17 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 bool AutoConfirmPrompt(ExtensionInstallPrompt::Delegate* delegate) {
   switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
     case extensions::ScopedTestDialogAutoConfirm::NONE:
-      LOG(WARNING) << "None!";
       return false;
     // We use PostTask instead of calling the delegate directly here, because in
     // the real implementations it's highly likely the message loop will be
     // pumping a few times before the user clicks accept or cancel.
     case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
-      LOG(WARNING) << "Proceeding!";
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&ExtensionInstallPrompt::Delegate::InstallUIProceed,
                      base::Unretained(delegate)));
       return true;
     case extensions::ScopedTestDialogAutoConfirm::CANCEL:
-      LOG(WARNING) << "Canceling!";
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&ExtensionInstallPrompt::Delegate::InstallUIAbort,
