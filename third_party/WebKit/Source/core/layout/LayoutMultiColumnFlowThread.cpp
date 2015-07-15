@@ -754,9 +754,32 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
     columnSetToRemove->destroy();
 }
 
+static inline bool needsToReinsertIntoFlowThread(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
+{
+    // If we've become (or are about to become) a container for absolutely positioned descendants,
+    // or if we're no longer going to be one, we need to re-evaluate the need for column
+    // sets. There may be out-of-flow descendants further down that become part of the flow thread,
+    // or cease to be part of the flow thread, because of this change.
+    if (oldStyle.hasTransformRelatedProperty() != newStyle.hasTransformRelatedProperty())
+        return true;
+    return (oldStyle.hasInFlowPosition() && newStyle.position() == StaticPosition)
+        || (newStyle.hasInFlowPosition() && oldStyle.position() == StaticPosition);
+}
+
+static inline bool needsToRemoveFromFlowThread(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
+{
+    // If an in-flow descendant goes out-of-flow, we may have to remove column sets and spanner placeholders.
+    return (newStyle.hasOutOfFlowPosition() && !oldStyle.hasOutOfFlowPosition()) || needsToReinsertIntoFlowThread(oldStyle, newStyle);
+}
+
+static inline bool needsToInsertIntoFlowThread(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
+{
+    // If an out-of-flow descendant goes in-flow, we may have to insert column sets and spanner placeholders.
+    return (!newStyle.hasOutOfFlowPosition() && oldStyle.hasOutOfFlowPosition()) || needsToReinsertIntoFlowThread(oldStyle, newStyle);
+}
+
 void LayoutMultiColumnFlowThread::flowThreadDescendantStyleWillChange(LayoutObject* descendant, StyleDifference diff, const ComputedStyle& newStyle)
 {
-    // If an in-flow descendant goes out-of-flow, we may have to remove a column set.
     if (descendant->isText()) {
         // Text nodes inherit all properties from the parent node (including non-inheritable
         // ones). We don't care what its 'position' is. In fact, we _must_ ignore it, since the
@@ -764,13 +787,12 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantStyleWillChange(LayoutObje
         // of the multicol is bad.
         return;
     }
-    if (newStyle.hasOutOfFlowPosition() && !styleRef().hasOutOfFlowPosition())
+    if (needsToRemoveFromFlowThread(descendant->styleRef(), newStyle))
         flowThreadDescendantWillBeRemoved(descendant);
 }
 
 void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(LayoutObject* descendant, StyleDifference diff, const ComputedStyle& oldStyle)
 {
-    // If an out-of-flow descendant goes in-flow, we may have to insert a column set.
     if (descendant->isText()) {
         // Text nodes inherit all properties from the parent node (including non-inheritable
         // ones). We don't care what its 'position' is. In fact, we _must_ ignore it, since the
@@ -778,13 +800,7 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(LayoutObjec
         // of the multicol is bad.
         return;
     }
-    if (styleRef().hasOutOfFlowPosition())
-        return;
-
-    // We're not out of flow.
-    if (oldStyle.hasOutOfFlowPosition()) {
-        // ... but we used to be out of flow. So we might need to insert a column set (or
-        // spanner placeholder, in case this descendant is now a valid column spanner).
+    if (needsToInsertIntoFlowThread(oldStyle, descendant->styleRef())) {
         flowThreadDescendantWasInserted(descendant);
         return;
     }
