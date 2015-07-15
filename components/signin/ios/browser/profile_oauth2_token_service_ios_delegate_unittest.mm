@@ -10,10 +10,10 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
-#include "ios/public/test/fake_profile_oauth2_token_service_ios_provider.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,9 +40,8 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
 
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(), "",
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
-    fake_provider_ = client_.GetIOSProviderAsFake();
     oauth2_service_delegate_.reset(new ProfileOAuth2TokenServiceIOSDelegate(
-        &client_, &signin_error_controller_));
+        &client_, &fake_provider_, &signin_error_controller_));
     oauth2_service_delegate_->AddObserver(this);
   }
 
@@ -85,7 +84,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   TestingPrefServiceSimple prefs_;
   TestSigninClient client_;
   SigninErrorController signin_error_controller_;
-  ios::FakeProfileOAuth2TokenServiceIOSProvider* fake_provider_;
+  FakeProfileOAuth2TokenServiceIOSProvider fake_provider_;
   scoped_ptr<ProfileOAuth2TokenServiceIOSDelegate> oauth2_service_delegate_;
   TestingOAuth2TokenServiceConsumer consumer_;
   int token_available_count_;
@@ -98,7 +97,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
        LoadRevokeCredentialsOneAccount) {
-  fake_provider_->AddAccount("account_id");
+  fake_provider_.AddAccount("account_id");
   oauth2_service_delegate_->LoadCredentials("account_id");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, token_available_count_);
@@ -119,9 +118,9 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
        LoadRevokeCredentialsMultipleAccounts) {
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_2");
-  fake_provider_->AddAccount("account_id_3");
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_2");
+  fake_provider_.AddAccount("account_id_3");
   oauth2_service_delegate_->LoadCredentials("account_id_1");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, token_available_count_);
@@ -150,17 +149,17 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
 }
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, ReloadCredentials) {
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_2");
-  fake_provider_->AddAccount("account_id_3");
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_2");
+  fake_provider_.AddAccount("account_id_3");
   oauth2_service_delegate_->LoadCredentials("account_id_1");
   base::RunLoop().RunUntilIdle();
 
   // Change the accounts.
   ResetObserverCounts();
-  fake_provider_->ClearAccounts();
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_4");
+  fake_provider_.ClearAccounts();
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_4");
   oauth2_service_delegate_->ReloadCredentials();
 
   EXPECT_EQ(1, token_available_count_);
@@ -181,8 +180,8 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
        ReloadCredentialsIgnoredIfNoPrimaryAccountId) {
   // Change the accounts.
   ResetObserverCounts();
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_2");
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_2");
   base::RunLoop().RunUntilIdle();
 
   oauth2_service_delegate_->ReloadCredentials();
@@ -201,8 +200,8 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
        ReloadCredentialsWithPrimaryAccountId) {
   // Change the accounts.
   ResetObserverCounts();
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_2");
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_2");
   base::RunLoop().RunUntilIdle();
 
   oauth2_service_delegate_->ReloadCredentials("account_id_1");
@@ -219,8 +218,8 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, ExcludeAllSecondaryAccounts) {
   // Change the accounts.
   ResetObserverCounts();
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_2");
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_2");
   base::RunLoop().RunUntilIdle();
 
   oauth2_service_delegate_->ExcludeAllSecondaryAccounts();
@@ -236,7 +235,7 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, ExcludeAllSecondaryAccounts) {
 }
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, StartRequestSuccess) {
-  fake_provider_->AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_1");
   oauth2_service_delegate_->LoadCredentials("account_id_1");
   base::RunLoop().RunUntilIdle();
 
@@ -252,14 +251,14 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, StartRequestSuccess) {
   EXPECT_EQ(0, access_token_failure_);
 
   ResetObserverCounts();
-  fake_provider_->IssueAccessTokenForAllRequests();
+  fake_provider_.IssueAccessTokenForAllRequests();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, access_token_success_);
   EXPECT_EQ(0, access_token_failure_);
 }
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, StartRequestFailure) {
-  fake_provider_->AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_1");
   oauth2_service_delegate_->LoadCredentials("account_id_1");
   base::RunLoop().RunUntilIdle();
 
@@ -275,16 +274,16 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, StartRequestFailure) {
   EXPECT_EQ(0, access_token_failure_);
 
   ResetObserverCounts();
-  fake_provider_->IssueAccessTokenErrorForAllRequests();
+  fake_provider_.IssueAccessTokenErrorForAllRequests();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, access_token_success_);
   EXPECT_EQ(1, access_token_failure_);
 }
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, ExcludeSecondaryAccounts) {
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_2");
-  fake_provider_->AddAccount("account_id_3");
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_2");
+  fake_provider_.AddAccount("account_id_3");
   oauth2_service_delegate_->LoadCredentials("account_id_1");
   base::RunLoop().RunUntilIdle();
 
@@ -323,8 +322,8 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, ExcludeSecondaryAccounts) {
 
 // Unit test for for http://crbug.com/453470 .
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, ExcludeSecondaryAccountTwice) {
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_2");
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_2");
   oauth2_service_delegate_->LoadCredentials("account_id_1");
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
@@ -354,9 +353,9 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest, ExcludeSecondaryAccountTwice) {
 
 TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
        LoadRevokeCredentialsClearsExcludedAccounts) {
-  fake_provider_->AddAccount("account_id_1");
-  fake_provider_->AddAccount("account_id_2");
-  fake_provider_->AddAccount("account_id_3");
+  fake_provider_.AddAccount("account_id_1");
+  fake_provider_.AddAccount("account_id_2");
+  fake_provider_.AddAccount("account_id_3");
 
   std::vector<std::string> excluded_accounts;
   excluded_accounts.push_back("account_id_2");

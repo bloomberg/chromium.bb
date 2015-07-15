@@ -11,6 +11,7 @@
 
 class InfoBarViewDelegate;
 class PrefService;
+class ProfileOAuth2TokenServiceIOSProvider;
 
 namespace autofill {
 class CardUnmaskPromptController;
@@ -42,7 +43,6 @@ namespace ios {
 class ChromeBrowserProvider;
 class ChromeBrowserStateManager;
 class GeolocationUpdaterProvider;
-class ProfileOAuth2TokenServiceIOSProvider;
 class StringProvider;
 class UpdatableResourceProvider;
 

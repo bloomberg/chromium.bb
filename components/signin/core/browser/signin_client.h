@@ -27,14 +27,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-#if defined(OS_IOS)
-namespace ios {
-// TODO(msarda): http://crbug.com/358544 Remove this iOS specific code from the
-// core SigninClient.
-class ProfileOAuth2TokenServiceIOSProvider;
-}
-#endif
-
 // An interface that needs to be supplied to the Signin component by its
 // embedder.
 class SigninClient : public KeyedService {
@@ -124,12 +116,6 @@ class SigninClient : public KeyedService {
   // Returns true if |out_account_info| was updated.
   virtual bool UpdateAccountInfo(
       AccountTrackerService::AccountInfo* out_account_info) = 0;
-
-#if defined(OS_IOS)
-  // TODO(msarda): http://crbug.com/358544 Remove this iOS specific code from
-  // the core SigninClient.
-  virtual ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() = 0;
-#endif
 
   // Execute |callback| if and when there is a network connection.
   virtual void DelayNetworkCall(const base::Closure& callback) = 0;

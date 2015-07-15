@@ -19,8 +19,8 @@
 #include "base/values.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-#include "ios/public/provider/components/signin/browser/profile_oauth2_token_service_ios_provider.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -28,35 +28,35 @@ namespace {
 // Match the way Chromium handles authentication errors in
 // google_apis/gaia/oauth2_access_token_fetcher.cc:
 GoogleServiceAuthError GetGoogleServiceAuthErrorFromNSError(
-    ios::ProfileOAuth2TokenServiceIOSProvider* provider,
+    ProfileOAuth2TokenServiceIOSProvider* provider,
     NSError* error) {
   if (!error)
     return GoogleServiceAuthError::AuthErrorNone();
 
-  ios::AuthenticationErrorCategory errorCategory =
+  AuthenticationErrorCategory errorCategory =
       provider->GetAuthenticationErrorCategory(error);
   switch (errorCategory) {
-    case ios::kAuthenticationErrorCategoryUnknownErrors:
+    case kAuthenticationErrorCategoryUnknownErrors:
       // Treat all unknown error as unexpected service response errors.
       // This may be too general and may require a finer grain filtering.
       return GoogleServiceAuthError(
           GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);
-    case ios::kAuthenticationErrorCategoryAuthorizationErrors:
+    case kAuthenticationErrorCategoryAuthorizationErrors:
       return GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-    case ios::kAuthenticationErrorCategoryAuthorizationForbiddenErrors:
+    case kAuthenticationErrorCategoryAuthorizationForbiddenErrors:
       // HTTP_FORBIDDEN (403) is treated as temporary error, because it may be
       // '403 Rate Limit Exceeded.' (for more details, see
       // google_apis/gaia/oauth2_access_token_fetcher.cc).
       return GoogleServiceAuthError(
           GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-    case ios::kAuthenticationErrorCategoryNetworkServerErrors:
+    case kAuthenticationErrorCategoryNetworkServerErrors:
       // Just set the connection error state to FAILED.
       return GoogleServiceAuthError::FromConnectionError(
           net::URLRequestStatus::FAILED);
-    case ios::kAuthenticationErrorCategoryUserCancellationErrors:
+    case kAuthenticationErrorCategoryUserCancellationErrors:
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
-    case ios::kAuthenticationErrorCategoryUnknownIdentityErrors:
+    case kAuthenticationErrorCategoryUnknownIdentityErrors:
       return GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
   }
 }
@@ -64,7 +64,7 @@ GoogleServiceAuthError GetGoogleServiceAuthErrorFromNSError(
 class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  public:
   SSOAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
-                        ios::ProfileOAuth2TokenServiceIOSProvider* provider,
+                        ProfileOAuth2TokenServiceIOSProvider* provider,
                         const std::string account_id);
   ~SSOAccessTokenFetcher() override;
 
@@ -80,7 +80,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
                              NSError* error);
 
  private:
-  ios::ProfileOAuth2TokenServiceIOSProvider* provider_;  // weak
+  ProfileOAuth2TokenServiceIOSProvider* provider_;  // weak
   std::string account_id_;
   bool request_was_cancelled_;
   base::WeakPtrFactory<SSOAccessTokenFetcher> weak_factory_;
@@ -90,7 +90,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
 
 SSOAccessTokenFetcher::SSOAccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer,
-    ios::ProfileOAuth2TokenServiceIOSProvider* provider,
+    ProfileOAuth2TokenServiceIOSProvider* provider,
     const std::string account_id)
     : OAuth2AccessTokenFetcher(consumer),
       provider_(provider),
@@ -173,11 +173,14 @@ ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::GetAuthStatus() const {
 
 ProfileOAuth2TokenServiceIOSDelegate::ProfileOAuth2TokenServiceIOSDelegate(
     SigninClient* client,
+    ProfileOAuth2TokenServiceIOSProvider* provider,
     SigninErrorController* signin_error_controller)
-    : client_(client), signin_error_controller_(signin_error_controller) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(client);
-  DCHECK(signin_error_controller);
+    : client_(client),
+      provider_(provider),
+      signin_error_controller_(signin_error_controller) {
+  DCHECK(client_);
+  DCHECK(provider_);
+  DCHECK(signin_error_controller_);
 }
 
 ProfileOAuth2TokenServiceIOSDelegate::~ProfileOAuth2TokenServiceIOSDelegate() {
@@ -189,14 +192,6 @@ void ProfileOAuth2TokenServiceIOSDelegate::Shutdown() {
   accounts_.clear();
 }
 
-ios::ProfileOAuth2TokenServiceIOSProvider*
-ProfileOAuth2TokenServiceIOSDelegate::GetProvider() {
-  ios::ProfileOAuth2TokenServiceIOSProvider* provider =
-      client_->GetIOSProvider();
-  DCHECK(provider);
-  return provider;
-}
-
 void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -205,7 +200,6 @@ void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
   // primary account id must not be empty.
   DCHECK(!primary_account_id.empty());
 
-  GetProvider()->InitializeSharedAuthentication();
   ReloadCredentials(primary_account_id);
   FireRefreshTokensLoaded();
 }
@@ -226,7 +220,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
     return;
   }
 
-  std::vector<std::string> new_accounts(GetProvider()->GetAllAccountIds());
+  std::vector<std::string> new_accounts(provider_->GetAllAccountIds());
   if (GetExcludeAllSecondaryAccounts()) {
     // Only keep the |primary_account_id| in the list of new accounts.
     if (std::find(new_accounts.begin(), new_accounts.end(),
@@ -299,7 +293,7 @@ ProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
-  return new SSOAccessTokenFetcher(consumer, GetProvider(), account_id);
+  return new SSOAccessTokenFetcher(consumer, provider_, account_id);
 }
 
 std::vector<std::string> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts() {

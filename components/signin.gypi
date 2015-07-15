@@ -116,14 +116,13 @@
   ],
   'conditions': [
     ['OS == "ios"', {
+      # GN version: //components/signin/core/browser:ios
       'targets': [
         {
-          # GN version: //components/signin/core/browser:ios
           'target_name': 'signin_ios_browser',
           'type': 'static_library',
           'dependencies': [
             'signin_core_browser',
-            '../ios/provider/ios_components.gyp:ios_components',
           ],
           'include_dirs': [
             '..',
@@ -136,8 +135,26 @@
             'signin/ios/browser/oauth2_token_service_observer_bridge.mm',
             'signin/ios/browser/profile_oauth2_token_service_ios_delegate.h',
             'signin/ios/browser/profile_oauth2_token_service_ios_delegate.mm',
+            'signin/ios/browser/profile_oauth2_token_service_ios_provider.h',
           ],
         },
+        {
+          'target_name': 'signin_ios_browser_test_support',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'signin_ios_browser',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            # Note: file list duplicated in GN build.
+            'signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h',
+            'signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.mm',
+          ],
+        },
+
       ],
     }],
   ],

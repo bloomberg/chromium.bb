@@ -13,10 +13,6 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "net/url_request/url_request_test_util.h"
 
-#if defined(OS_IOS)
-#include "ios/public/test/fake_profile_oauth2_token_service_ios_provider.h"
-#endif
-
 class PrefService;
 
 // An implementation of SigninClient for use in unittests. Instantiates test
@@ -67,10 +63,6 @@ class TestSigninClient : public SigninClient {
   // in the default constructor.
   void SetURLRequestContext(net::URLRequestContextGetter* request_context);
 
-#if defined(OS_IOS)
-  ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() override;
-#endif
-
   // Returns true.
   bool ShouldMergeSigninCredentialsIntoCookieJar() override;
 
@@ -83,10 +75,6 @@ class TestSigninClient : public SigninClient {
 
   bool UpdateAccountInfo(
       AccountTrackerService::AccountInfo* out_account_info) override;
-
-#if defined(OS_IOS)
-  ios::FakeProfileOAuth2TokenServiceIOSProvider* GetIOSProviderAsFake();
-#endif
 
   void set_are_signin_cookies_allowed(bool value) {
     are_signin_cookies_allowed_ = value;
@@ -118,10 +106,6 @@ class TestSigninClient : public SigninClient {
 
   // Pointer to be filled by PostSignedIn.
   std::string signed_in_password_;
-
-#if defined(OS_IOS)
-  scoped_ptr<ios::FakeProfileOAuth2TokenServiceIOSProvider> iosProvider_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestSigninClient);
 };

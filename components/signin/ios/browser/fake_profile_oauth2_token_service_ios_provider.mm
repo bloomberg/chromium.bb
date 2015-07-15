@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/public/test/fake_profile_oauth2_token_service_ios_provider.h"
+#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 
 #include <Foundation/Foundation.h>
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 
-namespace ios {
+FakeProfileOAuth2TokenServiceIOSProvider::
+    FakeProfileOAuth2TokenServiceIOSProvider() {
+}
 
 FakeProfileOAuth2TokenServiceIOSProvider::
-    FakeProfileOAuth2TokenServiceIOSProvider() {}
-
-FakeProfileOAuth2TokenServiceIOSProvider::
-    ~FakeProfileOAuth2TokenServiceIOSProvider() {}
+    ~FakeProfileOAuth2TokenServiceIOSProvider() {
+}
 
 void FakeProfileOAuth2TokenServiceIOSProvider::GetAccessToken(
     const std::string& account_id,
@@ -45,8 +45,8 @@ void FakeProfileOAuth2TokenServiceIOSProvider::ClearAccounts() {
   accounts_.clear();
 }
 
-void
-FakeProfileOAuth2TokenServiceIOSProvider::IssueAccessTokenForAllRequests() {
+void FakeProfileOAuth2TokenServiceIOSProvider::
+    IssueAccessTokenForAllRequests() {
   for (auto i = requests_.begin(); i != requests_.end(); ++i) {
     std::string account_id = i->first;
     AccessTokenCallback callback = i->second;
@@ -71,19 +71,14 @@ void FakeProfileOAuth2TokenServiceIOSProvider::
   requests_.clear();
 }
 
-void
-FakeProfileOAuth2TokenServiceIOSProvider::InitializeSharedAuthentication() {}
-
 AuthenticationErrorCategory
 FakeProfileOAuth2TokenServiceIOSProvider::GetAuthenticationErrorCategory(
     NSError* error) const {
   DCHECK(error);
-  return ios::kAuthenticationErrorCategoryAuthorizationErrors;
+  return kAuthenticationErrorCategoryAuthorizationErrors;
 }
 
-ios::AccountInfo FakeProfileOAuth2TokenServiceIOSProvider::GetAccountInfo(
+AccountInfo FakeProfileOAuth2TokenServiceIOSProvider::GetAccountInfo(
     const std::string& account_id) const {
-  return ios::AccountInfo();
+  return AccountInfo();
 }
-
-}  // namespace ios

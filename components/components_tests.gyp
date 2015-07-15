@@ -999,6 +999,7 @@
             'components.gyp:open_from_clipboard',
             'components.gyp:sessions_ios',
             'components.gyp:signin_ios_browser',
+            'components.gyp:signin_ios_browser_test_support',
             'components.gyp:translate_ios_browser',
             'components.gyp:webp_transcode',
           ],

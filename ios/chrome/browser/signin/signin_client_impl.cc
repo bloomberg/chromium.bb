@@ -17,6 +17,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/core/common/signin_switches.h"
+#include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/application_context.h"
@@ -27,7 +28,6 @@
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/components/signin/browser/profile_oauth2_token_service_ios_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -192,8 +192,9 @@ void SigninClientImpl::OnSignedIn(const std::string& account_id,
 bool SigninClientImpl::UpdateAccountInfo(
     AccountTrackerService::AccountInfo* out_account_info) {
   DCHECK(!out_account_info->account_id.empty());
-  ios::AccountInfo account_info =
-      GetIOSProvider()->GetAccountInfo(out_account_info->account_id);
+  AccountInfo account_info = ios::GetChromeBrowserProvider()
+                                 ->GetProfileOAuth2TokenServiceIOSProvider()
+                                 ->GetAccountInfo(out_account_info->account_id);
   if (account_info.gaia.empty()) {
     // There is no account information for this account, so there is nothing
     // to be updated here.
@@ -216,11 +217,6 @@ bool SigninClientImpl::UpdateAccountInfo(
     updated = true;
   }
   return updated;
-}
-
-ios::ProfileOAuth2TokenServiceIOSProvider* SigninClientImpl::GetIOSProvider() {
-  return ios::GetChromeBrowserProvider()
-      ->GetProfileOAuth2TokenServiceIOSProvider();
 }
 
 void SigninClientImpl::OnErrorChanged() {

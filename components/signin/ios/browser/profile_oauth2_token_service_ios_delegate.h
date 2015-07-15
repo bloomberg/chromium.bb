@@ -11,14 +11,13 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 
-namespace ios {
 class ProfileOAuth2TokenServiceIOSProvider;
-}
 
 class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
  public:
   ProfileOAuth2TokenServiceIOSDelegate(
       SigninClient* client,
+      ProfileOAuth2TokenServiceIOSProvider* provider,
       SigninErrorController* signin_error_controller);
   ~ProfileOAuth2TokenServiceIOSDelegate() override;
 
@@ -111,9 +110,6 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // to information about the account.
   typedef std::map<std::string, linked_ptr<AccountInfo>> AccountInfoMap;
 
-  // Returns the iOS provider;
-  ios::ProfileOAuth2TokenServiceIOSProvider* GetProvider();
-
   // Returns the account ids that should be ignored by this token service.
   std::set<std::string> GetExcludedSecondaryAccounts();
 
@@ -136,6 +132,7 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
 
   // The client with which this instance was initialied, or NULL.
   SigninClient* client_;
+  ProfileOAuth2TokenServiceIOSProvider* provider_;
 
   // The error controller with which this instance was initialized, or NULL.
   SigninErrorController* signin_error_controller_;

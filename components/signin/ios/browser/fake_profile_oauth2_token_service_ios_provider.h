@@ -10,9 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "ios/public/provider/components/signin/browser/profile_oauth2_token_service_ios_provider.h"
-
-namespace ios {
+#include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 
 // Mock class of ProfileOAuth2TokenServiceIOSProvider for testing.
 class FakeProfileOAuth2TokenServiceIOSProvider
@@ -22,20 +20,15 @@ class FakeProfileOAuth2TokenServiceIOSProvider
   ~FakeProfileOAuth2TokenServiceIOSProvider() override;
 
   // ProfileOAuth2TokenServiceIOSProvider
-  void InitializeSharedAuthentication() override;
-
   void GetAccessToken(const std::string& account_id,
                       const std::string& client_id,
                       const std::string& client_secret,
                       const std::set<std::string>& scopes,
                       const AccessTokenCallback& callback) override;
-
   std::vector<std::string> GetAllAccountIds() override;
-
   AuthenticationErrorCategory GetAuthenticationErrorCategory(
       NSError* error) const override;
-
-  ios::AccountInfo GetAccountInfo(const std::string& account_id) const override;
+  AccountInfo GetAccountInfo(const std::string& account_id) const override;
 
   // Methods to configure this fake provider.
   void AddAccount(const std::string& account_id);
@@ -54,7 +47,5 @@ class FakeProfileOAuth2TokenServiceIOSProvider
 
   DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenServiceIOSProvider);
 };
-
-}  // namespace ios
 
 #endif  // IOS_TEST_PROVIDER_CHROME_BROWSER_SIGNIN_MOCK_PROFILE_OAUTH2_TOKEN_SERVICE_PROVIDER_IOS_H_

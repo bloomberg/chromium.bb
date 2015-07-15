@@ -1,4 +1,0 @@
-include_rules = [
-  "+ios/public/provider/components/signin",
-  "+ios/public/test",
-]

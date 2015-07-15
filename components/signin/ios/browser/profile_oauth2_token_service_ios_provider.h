@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_PUBLIC_PROVIDER_COMPONENTS_SIGNIN_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
-#define IOS_PUBLIC_PROVIDER_COMPONENTS_SIGNIN_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
+#ifndef COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
+#define COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
 
 #if defined(__OBJC__)
 @class NSDate;
@@ -20,8 +20,6 @@ class NSString;
 #include <vector>
 
 #include "base/callback.h"
-
-namespace ios {
 
 // Account information.
 struct AccountInfo {
@@ -57,11 +55,6 @@ class ProfileOAuth2TokenServiceIOSProvider {
   ProfileOAuth2TokenServiceIOSProvider() {}
   virtual ~ProfileOAuth2TokenServiceIOSProvider() {}
 
-  // Initializes the shared authentication library. This method should be called
-  // when loading credentials if the user is signed in to Chrome via the shared
-  // authentication library.
-  virtual void InitializeSharedAuthentication() = 0;
-
   // Returns the ids of all accounts.
   virtual std::vector<std::string> GetAllAccountIds() = 0;
 
@@ -82,6 +75,4 @@ class ProfileOAuth2TokenServiceIOSProvider {
   virtual AccountInfo GetAccountInfo(const std::string& account_id) const = 0;
 };
 
-}  // namespace ios
-
-#endif  // IOS_PUBLIC_PROVIDER_COMPONENTS_SIGNIN_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
+#endif  // COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_

@@ -80,11 +80,8 @@ class SigninClientImpl
                   const std::string& gaia_id,
                   const std::string& username,
                   const std::string& password) override;
-
   bool UpdateAccountInfo(
       AccountTrackerService::AccountInfo* out_account_info) override;
-
-  ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() override;
 
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;
