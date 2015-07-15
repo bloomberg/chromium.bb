@@ -14491,7 +14491,7 @@ After you create a new supervised user, you can manage their settings at any tim
           Gesture typing for the virtual keyboard.
         </message>
         <message name="IDS_FLAGS_GESTURE_TYPING_DESCRIPTION" desc="Description of about::flags option to toggle gesture typing for the virtual keyboard">
-          Enable/Disable gesture typing for the virtual keyboard.
+          Enable/Disable gesture typing option in the settings page for the virtual keyboard.
         </message>
         <message name="IDS_FLAGS_GESTURE_EDITING_NAME" desc="Name of about::flags option to toggle gesture editing for the virtual keyboard">
           Gesture editing for the virtual keyboard.
