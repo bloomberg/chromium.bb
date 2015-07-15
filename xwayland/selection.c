@@ -117,13 +117,14 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 	dump_property(wm, wm->atom.wl_selection, reply);
 
 	if (xcb_get_property_value_length(reply) > 0) {
+		/* reply's ownership is transfered to wm, which is responsible
+		 * for freeing it */
 		weston_wm_write_property(wm, reply);
 	} else {
 		weston_log("transfer complete\n");
 		close(wm->data_source_fd);
+		free(reply);
 	}
-
-	free(reply);
 }
 
 struct x11_data_source {
@@ -247,12 +248,13 @@ weston_wm_get_selection_data(struct weston_wm *wm)
 		return;
 	} else if (reply->type == wm->atom.incr) {
 		wm->incr = 1;
+		free(reply);
 	} else {
 		wm->incr = 0;
+		/* reply's ownership is transfered to wm, which is responsible
+		 * for freeing it */
 		weston_wm_write_property(wm, reply);
 	}
-
-	free(reply);
 }
 
 static void
