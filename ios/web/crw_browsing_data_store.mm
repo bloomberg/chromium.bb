@@ -169,6 +169,11 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
   return self;
 }
 
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
 - (NSString*)description {
   NSString* format = @"<%@: %p; hasPendingOperations = { %@ }; mode = { %@ }>";
   NSString* hasPendingOperationsString =
