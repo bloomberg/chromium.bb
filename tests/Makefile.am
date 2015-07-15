@@ -203,34 +203,8 @@ XFAIL_TESTS =					\
 # The hash_collision currently fails. The first translation works but subsequent ones fail. 
 XFAIL_TESTS += hash_collision
 
-dist_yaml_TESTS =				\
-	ar-ar-g1_harness.yaml			\
-	ar-fa_harness.yaml			\
-	chr-us-g1_harness.yaml			\
-	en-GB-g2_backward.yaml			\
-	en-GB-g2_harness.yaml			\
-	en-gb-g1_harness.yaml			\
-	en-ueb-g1_harness.yaml			\
-	en-ueb-g2-dictionary_harness.yaml	\
-	en-us-g2-dictionary_harness.yaml	\
-	en-us-g2-end-emphasis_harness.yaml	\
-	eo-g1_harness.yaml			\
-	ethio-g1_harness.yaml			\
-	fi_harness.yaml				\
-	fr-bfu-g2_harness.yaml			\
-	ga-g1_harness.yaml			\
-	ga-g2_harness.yaml			\
-	hu-hu-comp8_backward.yaml		\
-	hu-hu-comp8_harness.yaml		\
-	hu-hu-g1_backward.yaml			\
-	hu-hu-g1_harness.yaml			\
-	iu-ca-g1_harness.yaml			\
-	ko-2006-g2_harness.yaml			\
-	ko-g2_harness.yaml			\
-	letterDefTest_harness.yaml		\
-	nl-BE-g1_harness.yaml			\
-	nocross_harness.yaml			\
-	pl-pl-comp8_harness.yaml
+dist_yaml_TESTS = foo.yaml
+
 
 TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER = ./check_yaml
