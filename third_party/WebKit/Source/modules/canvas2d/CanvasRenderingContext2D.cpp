@@ -2069,7 +2069,7 @@ void CanvasRenderingContext2D::drawFocusIfNeededInternal(const Path& path, Eleme
     }
 
     // Update its accessible bounds whether it's focused or not.
-    updateFocusRingElementAccessibility(path, element);
+    updateElementAccessibility(path, element);
 }
 
 bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* element)
@@ -2106,7 +2106,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     didDraw(dirtyRect);
 }
 
-void CanvasRenderingContext2D::updateFocusRingElementAccessibility(const Path& path, Element* element)
+void CanvasRenderingContext2D::updateElementAccessibility(const Path& path, Element* element)
 {
     AXObjectCache* axObjectCache = element->document().existingAXObjectCache();
     LayoutBoxModelObject* lbmo = canvas()->layoutBoxModelObject();
@@ -2161,7 +2161,9 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
     m_hitRegionManager->removeHitRegionByControl(options.control().get());
 
     RefPtrWillBeRawPtr<HitRegion> hitRegion = HitRegion::create(hitRegionPath, options);
-    hitRegion->updateAccessibility(canvas());
+    Element* element = hitRegion->control();
+    if (element && element->isDescendantOf(canvas()))
+        updateElementAccessibility(hitRegion->path(), hitRegion->control());
     m_hitRegionManager->addHitRegion(hitRegion.release());
 }
 

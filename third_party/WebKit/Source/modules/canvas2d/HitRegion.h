@@ -27,7 +27,6 @@ public:
     virtual ~HitRegion() { }
 
     void removePixels(const Path&);
-    void updateAccessibility(Element* canvas);
 
     bool contains(const LayoutPoint&) const;
     bool contains(const FloatPoint&) const;

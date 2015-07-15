@@ -21,28 +21,6 @@ HitRegion::HitRegion(const Path& path, const HitRegionOptions& options)
         m_fillRule = RULE_EVENODD;
 }
 
-void HitRegion::updateAccessibility(Element* canvas)
-{
-    if (!m_control || !canvas || !canvas->layoutObject() || !m_control->isDescendantOf(canvas))
-        return;
-
-    AXObjectCache* axObjectCache = m_control->document().existingAXObjectCache();
-    if (!axObjectCache)
-        return;
-
-    FloatRect boundingRect = m_path.boundingRect();
-
-    // Offset by the canvas rect, taking border and padding into account.
-    LayoutBoxModelObject* rbmo = canvas->layoutBoxModelObject();
-    IntRect canvasRect = canvas->layoutObject()->absoluteBoundingBoxRect();
-    canvasRect.move(rbmo->borderLeft() + rbmo->paddingLeft(),
-        rbmo->borderTop() + rbmo->paddingTop());
-    LayoutRect elementRect = enclosingLayoutRect(boundingRect);
-    elementRect.moveBy(canvasRect.location());
-
-    axObjectCache->setCanvasObjectBounds(m_control.get(), elementRect);
-}
-
 bool HitRegion::contains(const LayoutPoint& point) const
 {
     return m_path.contains(FloatPoint(point), m_fillRule);

@@ -269,7 +269,7 @@ private:
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);
     void drawFocusRing(const Path&);
-    void updateFocusRingElementAccessibility(const Path&, Element*);
+    void updateElementAccessibility(const Path&, Element*);
 
     void validateStateStack();
 
