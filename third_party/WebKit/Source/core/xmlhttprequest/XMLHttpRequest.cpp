@@ -1452,7 +1452,6 @@ void XMLHttpRequest::endLoading()
 
     if (status() >= 200 && status() < 300) {
         document()->frame()->page()->chromeClient().ajaxSucceeded(document()->frame());
-        document()->frame()->page()->chromeClient().xhrSucceeded(document()->frame());
     }
 }
 
