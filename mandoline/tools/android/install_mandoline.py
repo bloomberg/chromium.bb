@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)),
 from mopy.android import AndroidShell
 from mopy.config import Config
 
-USAGE = ("install_mandoline.py [<shell-and-app-args>]")
+USAGE = ('install_mandoline.py [<shell-and-app-args>]')
 
 def main():
   logging.basicConfig()
@@ -35,11 +35,11 @@ def main():
   config = Config(target_os=Config.OS_ANDROID,
                   target_cpu=runner_args.target_cpu,
                   is_debug=runner_args.debug,
-                  apk_name="Mandoline.apk")
+                  apk_name='Mandoline.apk')
   shell = AndroidShell(config)
   shell.InitShell(None, runner_args.device)
   return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   sys.exit(main())

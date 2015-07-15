@@ -22,10 +22,10 @@ sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)),
 from mopy.android import AndroidShell
 from mopy.config import Config
 
-USAGE = ("run_mandoline.py [<shell-and-app-args>] [<start-page-url>]")
+USAGE = ('run_mandoline.py [<shell-and-app-args>] [<start-page-url>]')
 
 def _CreateSOLinks(dest_dir):
-  """Creates links from files (eg. *.mojo) to the real .so for gdb to find."""
+  '''Creates links from files (eg. *.mojo) to the real .so for gdb to find.'''
   # The files to create links for. The key is the name as seen on the device,
   # and the target an array of path elements as to where the .so lives (relative
   # to the output directory).
@@ -65,7 +65,7 @@ def main():
   config = Config(target_os=Config.OS_ANDROID,
                   target_cpu=runner_args.target_cpu,
                   is_debug=runner_args.debug,
-                  apk_name="Mandoline.apk")
+                  apk_name='Mandoline.apk')
   shell = AndroidShell(config)
   shell.InitShell(None, runner_args.device)
   p = shell.ShowLogs()
@@ -84,5 +84,5 @@ def main():
   return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   sys.exit(main())

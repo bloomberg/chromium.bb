@@ -4,14 +4,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generates the assets_list file from a directory."""
+'''Generates the assets_list file from a directory.'''
 
 import argparse
 import os
 import sys
 
 def main():
-  parser = argparse.ArgumentParser(usage="--dir <directory>")
+  parser = argparse.ArgumentParser(usage='--dir <directory>')
 
   parser.add_argument('--dir', help='Directory read files from.', required=True)
 

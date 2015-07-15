@@ -10,7 +10,7 @@ import sys
 from mopy.android import AndroidShell
 from mopy.config import Config
 
-USAGE = ("android_mojo_shell.py [<shell-and-app-args>] [<mojo-app>]")
+USAGE = ('android_mojo_shell.py [<shell-and-app-args>] [<mojo-app>]')
 
 def main():
   logging.basicConfig()
@@ -27,18 +27,18 @@ def main():
   parser.add_argument('--origin', help='Origin for mojo: URLs.',
                       default='localhost')
   parser.add_argument('--device', help='Serial number of the target device.')
-  parser.add_argument("--verbose", default=False, action='store_true')
+  parser.add_argument('--verbose', default=False, action='store_true')
   runner_args, args = parser.parse_known_args()
 
   logger = logging.getLogger()
-  logging.basicConfig(stream=sys.stdout, format="%(levelname)s:%(message)s")
+  logging.basicConfig(stream=sys.stdout, format='%(levelname)s:%(message)s')
   logger.setLevel(logging.DEBUG if runner_args.verbose else logging.WARNING)
-  logger.debug("Initialized logging: level=%s" % logger.level)
+  logger.debug('Initialized logging: level=%s' % logger.level)
 
   config = Config(target_os=Config.OS_ANDROID,
                   target_cpu=runner_args.target_cpu,
                   is_debug=runner_args.debug,
-                  apk_name="MojoRunner.apk")
+                  apk_name='MojoRunner.apk')
   shell = AndroidShell(config)
   shell.InitShell(runner_args.origin, runner_args.device)
   p = shell.ShowLogs()
@@ -46,5 +46,5 @@ def main():
   return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   sys.exit(main())
