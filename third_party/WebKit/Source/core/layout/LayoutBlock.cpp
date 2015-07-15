@@ -931,7 +931,7 @@ void LayoutBlock::addOverflowFromChildren()
         addOverflowFromBlockChildren();
 }
 
-void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
+void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge)
 {
     m_overflow.clear();
 
@@ -1096,7 +1096,7 @@ bool LayoutBlock::simplifiedLayout()
         // computeOverflow expects the bottom edge before we clamp our height. Since this information isn't available during
         // simplifiedLayout, we cache the value in m_overflow.
         LayoutUnit oldClientAfterEdge = hasOverflowModel() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
-        computeOverflow(oldClientAfterEdge, true);
+        computeOverflow(oldClientAfterEdge);
     }
 
     updateLayerTransformAfterLayout();
@@ -2818,7 +2818,7 @@ bool LayoutBlock::recalcOverflowAfterStyleChange()
         return false;
 
     LayoutUnit oldClientAfterEdge = hasOverflowModel() ? m_overflow->layoutClientAfterEdge() : clientLogicalBottom();
-    computeOverflow(oldClientAfterEdge, true);
+    computeOverflow(oldClientAfterEdge);
 
     if (hasOverflowClip())
         layer()->scrollableArea()->updateAfterOverflowRecalc();

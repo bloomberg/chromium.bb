@@ -1065,7 +1065,7 @@ void LayoutTableSection::layoutRows()
                 if (oldLogicalHeight > rHeight)
                     rowHeightIncreaseForPagination = std::max<int>(rowHeightIncreaseForPagination, oldLogicalHeight - rHeight);
                 cell->setLogicalHeight(rHeight);
-                cell->computeOverflow(oldLogicalHeight, false);
+                cell->computeOverflow(oldLogicalHeight);
             }
 
             if (rowLayoutObject)
@@ -1088,7 +1088,7 @@ void LayoutTableSection::layoutRows()
                 for (size_t i = 0; i < cells.size(); ++i) {
                     LayoutUnit oldLogicalHeight = cells[i]->logicalHeight();
                     cells[i]->setLogicalHeight(oldLogicalHeight + rowHeightIncreaseForPagination);
-                    cells[i]->computeOverflow(oldLogicalHeight, false);
+                    cells[i]->computeOverflow(oldLogicalHeight);
                 }
             }
         }

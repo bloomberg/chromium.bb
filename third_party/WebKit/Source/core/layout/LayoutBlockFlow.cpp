@@ -1699,11 +1699,10 @@ void LayoutBlockFlow::addOverflowFromFloats()
     }
 }
 
-void LayoutBlockFlow::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats)
+void LayoutBlockFlow::computeOverflow(LayoutUnit oldClientAfterEdge)
 {
-    LayoutBlock::computeOverflow(oldClientAfterEdge, recomputeFloats);
-    if (recomputeFloats || createsNewFormattingContext() || hasSelfPaintingLayer())
-        addOverflowFromFloats();
+    LayoutBlock::computeOverflow(oldClientAfterEdge);
+    addOverflowFromFloats();
 }
 
 RootInlineBox* LayoutBlockFlow::createAndAppendRootInlineBox()
