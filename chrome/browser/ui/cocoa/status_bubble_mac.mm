@@ -25,6 +25,7 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/platform_font.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 
@@ -232,7 +233,7 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
   text_width = static_cast<int>(scaled_width.width);
   NSFont* font = [[window_ contentView] font];
   gfx::FontList font_list_chr(
-      gfx::Font(base::SysNSStringToUTF8([font fontName]), [font pointSize]));
+      gfx::Font(gfx::PlatformFont::CreateFromNativeFont(font)));
 
   base::string16 original_url_text = net::FormatUrl(url, languages);
   base::string16 status =
@@ -704,7 +705,7 @@ void StatusBubbleMac::ExpandBubble() {
   // Generate the URL string that fits in the expanded bubble.
   NSFont* font = [[window_ contentView] font];
   gfx::FontList font_list_chr(
-      gfx::Font(base::SysNSStringToUTF8([font fontName]), [font pointSize]));
+      gfx::Font(gfx::PlatformFont::CreateFromNativeFont(font)));
   base::string16 expanded_url = ElideUrl(
       url_, font_list_chr, max_bubble_width, languages_);
 

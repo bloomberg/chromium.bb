@@ -82,8 +82,7 @@ const int kMIDISysExHostPadding = 4;
 void SetControlSize(NSControl* control, NSControlSize controlSize) {
   CGFloat fontSize = [NSFont systemFontSizeForControlSize:controlSize];
   NSCell* cell = [control cell];
-  NSFont* font = [NSFont fontWithName:[[cell font] fontName] size:fontSize];
-  [cell setFont:font];
+  [cell setFont:[NSFont systemFontOfSize:fontSize]];
   [cell setControlSize:controlSize];
 }
 
