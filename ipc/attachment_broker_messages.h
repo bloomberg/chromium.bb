@@ -6,6 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "ipc/brokerable_attachment.h"
+#include "ipc/ipc_export.h"
 #include "ipc/ipc_message_macros.h"
 
 #if defined(OS_WIN)
@@ -24,6 +25,8 @@ IPC_STRUCT_TRAITS_MEMBER(attachment_id)
 IPC_STRUCT_TRAITS_END()
 #endif  // defined(OS_WIN)
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT IPC_EXPORT
 #define IPC_MESSAGE_START AttachmentBrokerMsgStart
 
 // ----------------------------------------------------------------------------

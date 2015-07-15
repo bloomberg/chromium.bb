@@ -4,6 +4,7 @@
 
 #include "ipc/attachment_broker_win.h"
 
+#include "base/process/process.h"
 #include "ipc/attachment_broker_messages.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/handle_attachment_win.h"
@@ -43,6 +44,27 @@ bool AttachmentBrokerWin::GetAttachmentWithId(
     BrokerableAttachment* attachment) {
   // TODO(erikchen): Implement me. http://crbug.com/493414
   return false;
+}
+
+bool AttachmentBrokerWin::OnMessageReceived(const Message& msg) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(AttachmentBrokerWin, msg)
+    IPC_MESSAGE_HANDLER(AttachmentBrokerMsg_WinHandleHasBeenDuplicated,
+                        OnWinHandleHasBeenDuplicated)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void AttachmentBrokerWin::OnWinHandleHasBeenDuplicated(
+    const IPC::internal::HandleAttachmentWin::WireFormat& wire_format) {
+  // The IPC message was intended for a different process. Ignore it.
+  if (wire_format.destination_process != base::Process::Current().Pid())
+    return;
+
+  scoped_refptr<BrokerableAttachment> attachment(
+      new IPC::internal::HandleAttachmentWin(wire_format));
+  attachments_.push_back(attachment);
 }
 
 }  // namespace IPC

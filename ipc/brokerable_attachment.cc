@@ -24,6 +24,9 @@ BrokerableAttachment::AttachmentId GetRandomId() {
 BrokerableAttachment::BrokerableAttachment() : id_(GetRandomId()) {
 }
 
+BrokerableAttachment::BrokerableAttachment(const AttachmentId& id) : id_(id) {
+}
+
 BrokerableAttachment::~BrokerableAttachment() {
 }
 

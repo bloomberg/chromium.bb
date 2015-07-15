@@ -37,6 +37,7 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
 
  protected:
   BrokerableAttachment();
+  explicit BrokerableAttachment(const AttachmentId& id);
   ~BrokerableAttachment() override;
 
  private:

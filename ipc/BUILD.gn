@@ -111,6 +111,7 @@ component("ipc") {
 if (!is_android) {
   test("ipc_tests") {
     sources = [
+      "attachment_broker_win_unittest.cc",
       "ipc_channel_posix_unittest.cc",
       "ipc_channel_unittest.cc",
       "ipc_fuzzing_tests.cc",

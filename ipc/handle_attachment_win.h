@@ -31,12 +31,15 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
     AttachmentId attachment_id;
   };
 
-  HandleAttachmentWin(const HANDLE& handle);
+  explicit HandleAttachmentWin(const HANDLE& handle);
+  explicit HandleAttachmentWin(const WireFormat& wire_format);
 
   BrokerableType GetBrokerableType() const override;
 
   // Returns the wire format of this attachment.
   WireFormat GetWireFormat(const base::ProcessId& destination) const;
+
+  HANDLE get_handle() const { return handle_; }
 
  private:
   ~HandleAttachmentWin() override;

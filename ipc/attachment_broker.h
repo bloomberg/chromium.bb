@@ -9,6 +9,7 @@
 #include "base/process/process_handle.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
+#include "ipc/ipc_listener.h"
 
 namespace IPC {
 
@@ -26,10 +27,10 @@ class IPC_EXPORT SupportsAttachmentBrokering {
 // Responsible for brokering attachments to Chrome IPC messages. On platforms
 // that support attachment brokering, every IPC channel should have a reference
 // to a AttachmentBroker.
-class IPC_EXPORT AttachmentBroker {
+class IPC_EXPORT AttachmentBroker : public Listener {
  public:
   AttachmentBroker() {}
-  virtual ~AttachmentBroker() {}
+  ~AttachmentBroker() override {}
 
   // Sends |attachment| to |destination_process|. The implementation uses an
   // IPC::Channel to communicate with the broker process. This may be the same

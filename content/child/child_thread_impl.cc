@@ -611,6 +611,8 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
     return true;
   if (file_system_dispatcher_->OnMessageReceived(msg))
     return true;
+  if (attachment_broker_ && attachment_broker_->OnMessageReceived(msg))
+    return true;
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChildThreadImpl, msg)
