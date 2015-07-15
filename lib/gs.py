@@ -960,7 +960,7 @@ class GSContext(object):
       # Because the 'gsutil stat' command logs errors itself (instead of
       # raising errors internally like other commands), we have to look
       # for errors ourselves.  See the bug report here:
-      # https://github.com/GoogleCloudPlatform/gsutil/issues/
+      # https://github.com/GoogleCloudPlatform/gsutil/issues/288
       # Example line:
       # INFO 0713 05:58:12.451810 stat.py] No URLs matched gs://bucket/file
       if re.match(r'INFO [ 0-9:.]* stat.py\] No URLs matched', e.result.error):
