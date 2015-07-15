@@ -229,7 +229,7 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls, Excepti
     WorkerGlobalScope::importScripts(urls, exceptionState);
 }
 
-PassOwnPtr<CachedMetadataHandler> ServiceWorkerGlobalScope::createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData)
+PassOwnPtrWillBeRawPtr<CachedMetadataHandler> ServiceWorkerGlobalScope::createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData)
 {
     return ServiceWorkerScriptCachedMetadataHandler::create(this, scriptURL, metaData);
 }

@@ -256,7 +256,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
 
         RefPtrWillBeRawPtr<ErrorEvent> errorEvent = nullptr;
         OwnPtr<Vector<char>> cachedMetaData(scriptLoader.releaseCachedMetadata());
-        OwnPtr<CachedMetadataHandler> handler(createWorkerScriptCachedMetadataHandler(completeURL, cachedMetaData.get()));
+        OwnPtrWillBeRawPtr<CachedMetadataHandler> handler(createWorkerScriptCachedMetadataHandler(completeURL, cachedMetaData.get()));
         m_script->evaluate(ScriptSourceCode(scriptLoader.script(), scriptLoader.responseURL()), &errorEvent, handler.get(), m_v8CacheOptions);
         if (errorEvent) {
             m_script->rethrowExceptionFromImportedScript(errorEvent.release(), exceptionState);

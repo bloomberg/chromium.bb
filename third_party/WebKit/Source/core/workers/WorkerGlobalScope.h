@@ -103,7 +103,7 @@ public:
     // WorkerUtils
     virtual void importScripts(const Vector<String>& urls, ExceptionState&);
     // Returns null if caching is not supported.
-    virtual PassOwnPtr<CachedMetadataHandler> createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) { return nullptr; }
+    virtual PassOwnPtrWillBeRawPtr<CachedMetadataHandler> createWorkerScriptCachedMetadataHandler(const KURL& scriptURL, const Vector<char>* metaData) { return nullptr; }
 
     WorkerNavigator* navigator() const;
 

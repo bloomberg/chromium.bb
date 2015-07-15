@@ -96,11 +96,12 @@ DEFINE_DEBUG_ONLY_GLOBAL(RefCountedLeakCounter, cachedResourceLeakCounter, ("Res
 
 class Resource::CacheHandler : public CachedMetadataHandler {
 public:
-    static PassOwnPtr<CacheHandler> create(Resource* resource)
+    static PassOwnPtrWillBeRawPtr<CacheHandler> create(Resource* resource)
     {
-        return adoptPtr(new CacheHandler(resource));
+        return adoptPtrWillBeNoop(new CacheHandler(resource));
     }
     ~CacheHandler() override { }
+    DECLARE_VIRTUAL_TRACE();
     void setCachedMetadata(unsigned, const char*, size_t, CacheType) override;
     void clearCachedMetadata(CacheType) override;
     CachedMetadata* cachedMetadata(unsigned) const override;
@@ -108,12 +109,20 @@ public:
 
 private:
     explicit CacheHandler(Resource*);
-    Resource* m_resource;
+    RawPtrWillBeMember<Resource> m_resource;
 };
 
 Resource::CacheHandler::CacheHandler(Resource* resource)
     : m_resource(resource)
 {
+}
+
+DEFINE_TRACE(Resource::CacheHandler)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_resource);
+#endif
+    CachedMetadataHandler::trace(visitor);
 }
 
 void Resource::CacheHandler::setCachedMetadata(unsigned dataTypeID, const char* data, size_t size, CacheType type)
@@ -208,6 +217,9 @@ DEFINE_TRACE(Resource)
     visitor->trace(m_loader);
     visitor->trace(m_resourceToRevalidate);
     visitor->trace(m_proxyResource);
+#if ENABLE(OILPAN)
+    visitor->trace(m_cacheHandler);
+#endif
 }
 
 void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)

@@ -23,6 +23,14 @@ ServiceWorkerScriptCachedMetadataHandler::~ServiceWorkerScriptCachedMetadataHand
 {
 }
 
+DEFINE_TRACE(ServiceWorkerScriptCachedMetadataHandler)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_workerGlobalScope);
+#endif
+    CachedMetadataHandler::trace(visitor);
+}
+
 void ServiceWorkerScriptCachedMetadataHandler::setCachedMetadata(unsigned dataTypeID, const char* data, size_t size, CacheType type)
 {
     if (type != SendToPlatform)

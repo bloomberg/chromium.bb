@@ -368,7 +368,7 @@ private:
     String m_fragmentIdentifierForRequest;
 
     RefPtr<CachedMetadata> m_cachedMetadata;
-    OwnPtr<CacheHandler> m_cacheHandler;
+    OwnPtrWillBeMember<CacheHandler> m_cacheHandler;
 
     ResourceError m_error;
 
