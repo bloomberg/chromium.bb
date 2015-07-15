@@ -11,7 +11,7 @@
 
 label Chrome {
   [channel=dev] M42 = 0.1,
-  [channel=dev] M44 = 0.2
+  M44 = 0.2
 };
 
 /**
