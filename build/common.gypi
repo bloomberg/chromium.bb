@@ -2601,6 +2601,9 @@
 
         # TODO(hans): Get this cleaned up, http://crbug.com/428099
         '-Wno-inconsistent-missing-override',
+
+        # TODO(thakis): Enable this, crbug.com/507717
+        '-Wno-shift-negative-value',
       ],
     },
     'includes': [ 'set_clang_warning_flags.gypi', ],
@@ -3095,12 +3098,6 @@
       ['enable_wexit_time_destructors==1 and OS!="win"', {
         # TODO: Enable on Windows too, http://crbug.com/404525
         'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
-      }],
-      ['"<!(python <(DEPTH)/tools/clang/scripts/update.py --print-revision)"!="239674-1"', {
-        # TODO(thakis): Move this to the global clang_warning_flags block once
-        # clang is rolled far enough that the pinned clang understands this flag
-        # TODO(thakis): Enable this, crbug.com/507717
-        'variables': { 'clang_warning_flags': ['-Wno-shift-negative-value']},
       }],
       ['chromium_code==0', {
         'variables': {
