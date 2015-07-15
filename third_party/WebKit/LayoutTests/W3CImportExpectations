@@ -372,11 +372,6 @@ imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-cont
 
 # crbug.com/505364
 # uses link="reference" rather than link="match"
-imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-002.html [ Skip ]
-imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-003.html [ Skip ]
-imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-004.html [ Skip ]
-imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-005.html [ Skip ]
-imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-006.html [ Skip ]
 imported/web-platform-tests/shadow-dom/shadow-trees/text-decoration-001.html [ Skip ]
 imported/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html [ Skip ]
 
