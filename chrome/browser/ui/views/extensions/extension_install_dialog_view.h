@@ -14,7 +14,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 typedef std::vector<base::string16> PermissionDetails;
-class ExtensionInstallPromptShowParams;
 class Profile;
 
 namespace content {
@@ -32,21 +31,8 @@ class ResourceBundle;
 namespace views {
 class GridLayout;
 class ImageButton;
-class Label;
 class Link;
 }
-
-// A custom scrollable view implementation for the dialog.
-class CustomScrollableView : public views::View {
- public:
-  CustomScrollableView();
-  ~CustomScrollableView() override;
-
- private:
-  void Layout() override;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomScrollableView);
-};
 
 // Implements the extension installation dialog for TOOLKIT_VIEWS.
 class ExtensionInstallDialogView : public views::DialogDelegateView,
@@ -62,9 +48,6 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // Returns the interior ScrollView of the dialog. This allows us to inspect
   // the contents of the DialogView.
   const views::ScrollView* scroll_view() const { return scroll_view_; }
-
-  // Called when one of the child elements has expanded/collapsed.
-  void ContentsChanged();
 
  private:
   // views::DialogDelegateView:
@@ -91,9 +74,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
                       ExtensionInstallPrompt::PermissionsType perm_type);
 
   // Creates a layout consisting of dialog header, extension name and icon.
-  views::GridLayout* CreateLayout(views::View* parent,
-                                  int left_column_width,
-                                  int column_set_id) const;
+  views::GridLayout* CreateLayout(int left_column_width, int column_set_id);
 
   bool is_bundle_install() const {
     return prompt_->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT ||
@@ -113,12 +94,14 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   ExtensionInstallPrompt::Delegate* delegate_;
   scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
 
+  // The container view that contains all children (heading, icon, webstore
+  // data, and the scroll view with permissions etc.), excluding the buttons,
+  // which are added automatically by the dialog system.
+  View* container_;
+
   // The scroll view containing all the details for the dialog (including all
   // collapsible/expandable sections).
   views::ScrollView* scroll_view_;
-
-  // The container view for the scroll view.
-  CustomScrollableView* scrollable_;
 
   // The preferred size of the dialog.
   gfx::Size dialog_size_;
@@ -223,10 +206,5 @@ class ExpandableContainerView : public views::View,
 
   DISALLOW_COPY_AND_ASSIGN(ExpandableContainerView);
 };
-
-void ShowExtensionInstallDialogImpl(
-    ExtensionInstallPromptShowParams* show_params,
-    ExtensionInstallPrompt::Delegate* delegate,
-    scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALL_DIALOG_VIEW_H_
