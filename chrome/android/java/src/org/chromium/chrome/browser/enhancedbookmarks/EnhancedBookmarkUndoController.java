@@ -47,6 +47,7 @@ public class EnhancedBookmarkUndoController extends BookmarkModelObserver implem
      */
     public void destroy() {
         mBookmarksModel.removeDeleteObserver(this);
+        mSnackbarManager.dismissSnackbar(false);
     }
 
     @Override
