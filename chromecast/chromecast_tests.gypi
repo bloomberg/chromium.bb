@@ -215,6 +215,18 @@
         {
           'target_name': 'cast_android_tests',
           'type': 'none',
+          'dependencies': ['cast_android_tests_generator'],
+          'conditions': [
+            ['chromecast_branding=="Chrome"', {
+              'dependencies': [
+                'internal/chromecast_internal.gyp:cast_android_tests_internal',
+              ],
+            }],
+          ],
+        },  # end of target 'cast_android_tests',
+        {
+          'target_name': 'cast_android_tests_generator',
+          'type': 'none',
           'variables': {
             'filters': [
               # The following tests all crash on fugu.
@@ -240,14 +252,7 @@
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
           ],
           'includes': ['build/tests/test_list.gypi'],
-          'conditions': [
-            ['chromecast_branding=="Chrome"', {
-              'dependencies': [
-                'internal/chromecast_internal.gyp:cast_android_tests_internal',
-              ],
-            }],
-          ],
-        },
+        },  # end of target 'cast_android_tests_generator'
         {
           'target_name': 'cast_android_test_lists',
           'type': 'none',
