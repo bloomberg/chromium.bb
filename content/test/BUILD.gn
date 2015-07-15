@@ -151,6 +151,7 @@ source_set("test_support") {
 
     if (is_android) {
       deps += [
+        "//content/shell/android:copy_content_shell_assets",
         "//ui/android",
         "//ui/shell_dialogs",
       ]
