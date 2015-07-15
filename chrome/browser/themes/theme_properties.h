@@ -118,6 +118,7 @@ class ThemeProperties {
     // which of these properties can be moved out of ThemeProperties.
 
     // Layout Properties for the Toolbar
+    PROPERTY_LOCATION_BAR_HEIGHT,
     PROPERTY_TOOLBAR_BUTTON_BORDER_INSET,
     PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT,
     PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH,
@@ -126,6 +127,7 @@ class ThemeProperties {
     PROPERTY_TOOLBAR_VIEW_LOCATION_BAR_RIGHT_PADDING,
     PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING,
     PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING,
+    PROPERTY_TOOLBAR_VIEW_VERTICAL_PADDING,
   };
 
   // Used by the browser theme pack to parse alignments from something like

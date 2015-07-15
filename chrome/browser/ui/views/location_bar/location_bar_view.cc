@@ -25,6 +25,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -72,6 +73,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
@@ -534,6 +536,14 @@ void LocationBarView::GetAccessibleState(ui::AXViewState* state) {
 gfx::Size LocationBarView::GetPreferredSize() const {
   // Compute minimum height.
   gfx::Size min_size(border_painter_->GetMinimumSize());
+  // For non-material the size of the asset determines the size of the
+  // LocationBarView. For Material Design the height is encoded as a constant in
+  // ThemeProperties.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    min_size.set_height(GetThemeProvider()->GetDisplayProperty(
+        ThemeProperties::PROPERTY_LOCATION_BAR_HEIGHT));
+  }
+
   if (!IsInitialized())
     return min_size;
 

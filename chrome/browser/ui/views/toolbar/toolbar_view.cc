@@ -57,6 +57,7 @@
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/layer.h"
@@ -762,10 +763,21 @@ int ToolbarView::PopupTopSpacing() const {
 
 gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
   if (is_display_mode_normal()) {
-    gfx::ImageSkia* normal_background =
-        GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
-    size.SetToMax(
-        gfx::Size(0, normal_background->height() - content_shadow_height()));
+    // For Material Design the size of ToolbarView is encoded as a constant in
+    // ThemeProperties. For non-material the size is based on the provided
+    // assets.
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      int content_height = std::max(back_->GetPreferredSize().height(),
+                                    location_bar_->GetPreferredSize().height());
+      int padding = GetThemeProvider()->GetDisplayProperty(
+          ThemeProperties::PROPERTY_TOOLBAR_VIEW_VERTICAL_PADDING);
+      size.SetToMax(gfx::Size(0, content_height + (padding * 2)));
+    } else {
+      gfx::ImageSkia* normal_background =
+          GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
+      size.SetToMax(
+          gfx::Size(0, normal_background->height() - content_shadow_height()));
+    }
   } else if (size.height() == 0) {
     // Location mode with a 0 height location bar. If on ash, expand by one
     // pixel to show a border in the title bar, otherwise leave the size as zero

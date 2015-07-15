@@ -102,6 +102,11 @@ const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(163, 163, 163);
 // ui::MaterialDesignController::Mode, see
 // ui/base/resource/material_design/material_design_controller.h
 
+// The height to be occupied by the LocationBar. For
+// MaterialDesignController::NON_MATERIAL the height is determined from image
+// assets.
+const int kLocationBarHeight[] = {0, 28, 32};
+
 // The spacing between a ToolbarButton's image and its border.
 const int kToolbarButtonBorderInset[] = {2, 6, 6};
 
@@ -124,6 +129,9 @@ const int kToolbarViewRightEdgeSpacing[] = {2, 4, 8};
 
 // The horizontal space between most items.
 const int kToolbarViewStandardSpacing[] = {3, 4, 8};
+
+// The minimal vertical padding of the toolbar.
+const int kToolbarViewVerticalPadding[] = {5, 4, 4};
 
 // ----------------------------------------------------------------------------
 
@@ -337,6 +345,8 @@ int ThemeProperties::GetDefaultDisplayProperty(int id) {
       return kDefaultDisplayPropertyNTPTiling;
     case ThemeProperties::NTP_LOGO_ALTERNATE:
       return kDefaultDisplayPropertyNTPAlternateLogo;
+    case ThemeProperties::PROPERTY_LOCATION_BAR_HEIGHT:
+      return kLocationBarHeight[mode];
     case ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET:
       return kToolbarButtonBorderInset[mode];
     case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
@@ -353,6 +363,8 @@ int ThemeProperties::GetDefaultDisplayProperty(int id) {
       return kToolbarViewRightEdgeSpacing[mode];
     case ThemeProperties::PROPERTY_TOOLBAR_VIEW_STANDARD_SPACING:
       return kToolbarViewStandardSpacing[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_VERTICAL_PADDING:
+      return kToolbarViewVerticalPadding[mode];
     default:
       return -1;
   }
