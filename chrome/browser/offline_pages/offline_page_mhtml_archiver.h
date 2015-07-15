@@ -35,7 +35,8 @@ class TestMHTMLArchiver;
 //     scoped_ptr<OfflinePageMHTMLArchiver> archiver(
 //         new OfflinePageMHTMLArchiver(
 //             web_contents, archiver_dir, task_runner));
-//     model->SavePage(url, archiver.Pass(), client);
+//     // Callback is of type OfflinePageModel::SavePageCallback.
+//     model->SavePage(url, archiver.Pass(), callback);
 //   }
 class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
  public:

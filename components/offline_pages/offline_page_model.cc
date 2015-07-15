@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 
 using ArchiverResult = offline_pages::OfflinePageArchiver::ArchiverResult;
-using SavePageResult = offline_pages::OfflinePageModel::Client::SavePageResult;
+using SavePageResult = offline_pages::OfflinePageModel::SavePageResult;
 
 namespace offline_pages {
 
@@ -65,20 +65,20 @@ void OfflinePageModel::Shutdown() {
 void OfflinePageModel::SavePage(
     const GURL& url,
     scoped_ptr<OfflinePageArchiver> archiver,
-    const base::WeakPtr<OfflinePageModel::Client>& client) {
+    const SavePageCallback& callback) {
   DCHECK(archiver.get());
   archiver->CreateArchive(base::Bind(&OfflinePageModel::OnCreateArchiveDone,
                                      weak_ptr_factory_.GetWeakPtr(), url,
-                                     client));
+                                     callback));
   pending_archivers_.push_back(archiver.Pass());
 }
 
 void OfflinePageModel::DeletePage(const GURL& url,
-                                  OfflinePageModel::Client* client) {
+                                  const DeletePageCallback& callback) {
   NOTIMPLEMENTED();
 }
 
-void OfflinePageModel::LoadAllPages(OfflinePageModel::Client* client) {
+void OfflinePageModel::LoadAllPages(const LoadAllPagesCallback& callback) {
   NOTIMPLEMENTED();
 }
 
@@ -88,7 +88,7 @@ OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
 
 void OfflinePageModel::OnCreateArchiveDone(
     const GURL& requested_url,
-    const base::WeakPtr<OfflinePageModel::Client>& client,
+    const SavePageCallback& callback,
     OfflinePageArchiver* archiver,
     ArchiverResult archiver_result,
     const GURL& url,
@@ -99,14 +99,14 @@ void OfflinePageModel::OnCreateArchiveDone(
     DVLOG(1) << "Saved URL does not match requested URL.";
     // TODO(fgorski): We have created an archive for a wrong URL. It should be
     // deleted from here, once archiver has the right functionality.
-    InformSavePageDone(client, SavePageResult::ARCHIVE_CREATION_FAILED);
+    InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED);
     DeletePendingArchiver(archiver);
     return;
   }
 
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {
     SavePageResult result = ToSavePageResult(archiver_result);
-    InformSavePageDone(client, result);
+    InformSavePageDone(callback, result);
     DeletePendingArchiver(archiver);
     return;
   }
@@ -116,23 +116,21 @@ void OfflinePageModel::OnCreateArchiveDone(
   store_->AddOfflinePage(
       offline_page_item,
       base::Bind(&OfflinePageModel::OnAddOfflinePageDone,
-                 weak_ptr_factory_.GetWeakPtr(), archiver, client));
+                 weak_ptr_factory_.GetWeakPtr(), archiver, callback));
 }
 
 void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
-                                            const base::WeakPtr<Client>& client,
+                                            const SavePageCallback& callback,
                                             bool success) {
   SavePageResult result =
-      success ? SavePageResult::SUCCESS : SavePageResult::DB_FAILURE;
-  InformSavePageDone(client, result);
+      success ? SavePageResult::SUCCESS : SavePageResult::STORE_FAILURE;
+  InformSavePageDone(callback, result);
   DeletePendingArchiver(archiver);
 }
 
-void OfflinePageModel::InformSavePageDone(const base::WeakPtr<Client>& client,
+void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
                                           SavePageResult result) {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&OfflinePageModel::Client::OnSavePageDone, client, result));
+  task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
 void OfflinePageModel::DeletePendingArchiver(OfflinePageArchiver* archiver) {

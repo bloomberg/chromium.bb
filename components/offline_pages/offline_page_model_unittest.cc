@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using SavePageResult = offline_pages::OfflinePageModel::Client::SavePageResult;
+using SavePageResult = offline_pages::OfflinePageModel::SavePageResult;
 
 namespace offline_pages {
 
@@ -143,7 +143,6 @@ void OfflinePageTestArchiver::CompleteCreateArchive() {
 
 class OfflinePageModelTest
     : public testing::Test,
-      public OfflinePageModel::Client,
       public base::SupportsWeakPtr<OfflinePageModelTest> {
  public:
   OfflinePageModelTest();
@@ -151,11 +150,8 @@ class OfflinePageModelTest
 
   void SetUp() override;
 
-  // OfflinePageModel::Client implementation.
-  void OnSavePageDone(SavePageResult result) override;
-  void OnDeletePageDone(DeletePageResult result) override;
-  void OnLoadAllPagesDone(LoadResult result,
-                          std::vector<OfflinePageItem>* offline_pages) override;
+  // OfflinePageModel callbacks.
+  void OnSavePageDone(SavePageResult result);
 
   scoped_ptr<OfflinePageMetadataStore> BuildStore();
   scoped_ptr<OfflinePageModel> BuildModel();
@@ -163,7 +159,7 @@ class OfflinePageModelTest
   // Utility methods.
   void PumpLoop();
 
-  OfflinePageModel::Client::SavePageResult last_save_result() const {
+  OfflinePageModel::SavePageResult last_save_result() const {
     return last_save_result_;
   }
 
@@ -180,7 +176,7 @@ class OfflinePageModelTest
   scoped_ptr<base::RunLoop> run_loop_;
 
   scoped_ptr<OfflinePageModel> model_;
-  OfflinePageModel::Client::SavePageResult last_save_result_;
+  OfflinePageModel::SavePageResult last_save_result_;
 };
 
 OfflinePageModelTest::OfflinePageModelTest() {
@@ -194,18 +190,9 @@ void OfflinePageModelTest::SetUp() {
 }
 
 void OfflinePageModelTest::OnSavePageDone(
-    OfflinePageModel::Client::SavePageResult result) {
+    OfflinePageModel::SavePageResult result) {
   run_loop_->Quit();
   last_save_result_ = result;
-}
-
-void OfflinePageModelTest::OnDeletePageDone(
-    OfflinePageModel::Client::DeletePageResult result) {
-}
-
-void OfflinePageModelTest::OnLoadAllPagesDone(
-    OfflinePageModel::Client::LoadResult result,
-    std::vector<OfflinePageItem>* offline_pages) {
 }
 
 scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
@@ -233,7 +220,9 @@ TEST_F(OfflinePageModelTest, SavePageSuccessful) {
       page_url, kTestPageTitle,
       OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
       task_runner()));
-  model()->SavePage(page_url, archiver.Pass(), AsWeakPtr());
+  model()->SavePage(page_url, archiver.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   PumpLoop();
 
   OfflinePageTestStore* store = GetStore();
@@ -249,7 +238,9 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverCancelled) {
   scoped_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
       page_url, kTestPageTitle,
       OfflinePageArchiver::ArchiverResult::ERROR_CANCELED, task_runner()));
-  model()->SavePage(page_url, archiver.Pass(), AsWeakPtr());
+  model()->SavePage(page_url, archiver.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::CANCELLED, last_save_result());
 }
@@ -259,7 +250,9 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverDeviceFull) {
   scoped_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
       page_url, kTestPageTitle,
       OfflinePageArchiver::ArchiverResult::ERROR_DEVICE_FULL, task_runner()));
-  model()->SavePage(page_url, archiver.Pass(), AsWeakPtr());
+  model()->SavePage(page_url, archiver.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::DEVICE_FULL, last_save_result());
 }
@@ -270,7 +263,9 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverContentUnavailable) {
       page_url, kTestPageTitle,
       OfflinePageArchiver::ArchiverResult::ERROR_CONTENT_UNAVAILABLE,
       task_runner()));
-  model()->SavePage(page_url, archiver.Pass(), AsWeakPtr());
+  model()->SavePage(page_url, archiver.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::CONTENT_UNAVAILABLE, last_save_result());
 }
@@ -281,7 +276,9 @@ TEST_F(OfflinePageModelTest, SavePageOfflineCreationFailed) {
       page_url, kTestPageTitle,
       OfflinePageArchiver::ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED,
       task_runner()));
-  model()->SavePage(page_url, archiver.Pass(), AsWeakPtr());
+  model()->SavePage(page_url, archiver.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::ARCHIVE_CREATION_FAILED, last_save_result());
 }
@@ -292,7 +289,9 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverReturnedWrongUrl) {
       GURL("http://other.random.url.com"), kTestPageTitle,
       OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
       task_runner()));
-  model()->SavePage(page_url, archiver.Pass(), AsWeakPtr());
+  model()->SavePage(page_url, archiver.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::ARCHIVE_CREATION_FAILED, last_save_result());
 }
@@ -305,9 +304,11 @@ TEST_F(OfflinePageModelTest, SavePageOfflineCreationStoreWriteFailure) {
       page_url, kTestPageTitle,
       OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
       task_runner()));
-  model()->SavePage(page_url, archiver.Pass(), AsWeakPtr());
+  model()->SavePage(page_url, archiver.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   PumpLoop();
-  EXPECT_EQ(SavePageResult::DB_FAILURE, last_save_result());
+  EXPECT_EQ(SavePageResult::STORE_FAILURE, last_save_result());
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
@@ -320,7 +321,9 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
   // CompleteCreateArchive() is called.
   OfflinePageTestArchiver* archiver_ptr = archiver.get();
   archiver_ptr->set_delayed(true);
-  model()->SavePage(page_url, archiver.Pass(), AsWeakPtr());
+  model()->SavePage(page_url, archiver.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   EXPECT_TRUE(archiver_ptr->create_archive_called());
 
   // Request to save another page.
@@ -330,7 +333,9 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
       page_url2, title2,
       OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
       task_runner()));
-  model()->SavePage(page_url2, archiver2.Pass(), AsWeakPtr());
+  model()->SavePage(page_url2, archiver2.Pass(),
+                    base::Bind(&OfflinePageModelTest::OnSavePageDone,
+                               AsWeakPtr()));
   PumpLoop();
 
   OfflinePageTestStore* store = GetStore();

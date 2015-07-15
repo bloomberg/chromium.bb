@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_MODEL_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_MODEL_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -32,69 +33,51 @@ class OfflinePageMetadataStore;
 // respective calls.
 //
 // Example usage:
-//   class ModelClient : public OfflinePageModel::Client {
+//   class ArchiverImpl : public OfflinePageArchiver {
+//     // This is a class that knows how to create archiver
+//     void CreateArchiver(...) override;
 //     ...
-//     void OnSavePageDone(SavePageResult result) override {
-//       // handles errors or completes the save.
-//     }
-//     const GURL& url() const { return url_; }
-//    private:
-//     GURL url_;
-//   };
+//   }
 //
-//   scoped_ptr<ModelClient> client(new ModelClient());
-//   model->SavePage(client->url(), client);
+//   // In code using the OfflinePagesModel to save a page:
+//   scoped_ptr<ArchiverImpl> archiver(new ArchiverImpl());
+//   // Callback is of type SavePageCallback.
+//   model->SavePage(url, archiver.Pass(), callback);
 //
 // TODO(fgorski): Things to describe:
 // * how to cancel requests and what to expect
 class OfflinePageModel : public KeyedService {
  public:
-  // Interface for clients of OfflinePageModel. Methods on the model accepting
-  // a Client pointer as a parameter will return their results using one of the
-  // methods on the Client interface.
-  class Client {
-   public:
-    // Result of deleting an offline page.
-    enum class DeletePageResult {
-      DELETE_PAGE_SUCCESS,
-      DELETE_PAGE_CANCELLED,
-      DELETE_PAGE_DB_FAILURE,
-      DELETE_PAGE_DOES_NOT_EXIST,
-    };
-
-    // Result of loading all pages.
-    enum class LoadResult {
-      LOAD_SUCCESS,
-      LOAD_CANCELLED,
-      LOAD_DB_FAILURE,
-    };
-
-    // Result of saving a page offline.
-    enum class SavePageResult {
-      SUCCESS,
-      CANCELLED,
-      DEVICE_FULL,
-      CONTENT_UNAVAILABLE,
-      ARCHIVE_CREATION_FAILED,
-      DB_FAILURE,
-      ALREADY_EXISTS,
-    };
-
-    virtual ~Client() {}
-
-    // Callback to SavePage call.
-    // TODO(fgorski): Should we return a copy of the record or depend on the
-    // client to call |LoadAllPages| to see things refreshed?
-    virtual void OnSavePageDone(SavePageResult result) = 0;
-
-    // Callback to DeletePage call.
-    virtual void OnDeletePageDone(DeletePageResult result) = 0;
-
-    // Callback to LoadAllPages call.
-    virtual void OnLoadAllPagesDone(
-        LoadResult result,
-        std::vector<OfflinePageItem>* offline_pages) = 0;
+  // Result of saving a page offline.
+  enum class SavePageResult {
+    SUCCESS,
+    CANCELLED,
+    DEVICE_FULL,
+    CONTENT_UNAVAILABLE,
+    ARCHIVE_CREATION_FAILED,
+    STORE_FAILURE,
+    ALREADY_EXISTS,
   };
+
+  // Result of deleting an offline page.
+  enum class DeletePageResult {
+    SUCCESS,
+    CANCELLED,
+    STORE_FAILURE,
+    NOT_FOUND,
+  };
+
+  // Result of loading all pages.
+  enum class LoadResult {
+    SUCCESS,
+    CANCELLED,
+    STORE_FAILURE,
+  };
+
+  typedef base::Callback<void(SavePageResult)> SavePageCallback;
+  typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
+  typedef base::Callback<void(LoadResult, const std::vector<OfflinePageItem>&)>
+      LoadAllPagesCallback;
 
   OfflinePageModel(
       scoped_ptr<OfflinePageMetadataStore> store,
@@ -107,13 +90,13 @@ class OfflinePageModel : public KeyedService {
   // Attempts to save a page addressed by |url| offline.
   void SavePage(const GURL& url,
                 scoped_ptr<OfflinePageArchiver> archiver,
-                const base::WeakPtr<Client>& client);
+                const SavePageCallback& callback);
 
   // Deletes an offline page related to the passed |url|.
-  void DeletePage(const GURL& url, Client* client);
+  void DeletePage(const GURL& url, const DeletePageCallback& callback);
 
   // Loads all of the available offline pages.
-  void LoadAllPages(Client* client);
+  void LoadAllPages(const LoadAllPagesCallback& callback);
 
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
@@ -123,7 +106,7 @@ class OfflinePageModel : public KeyedService {
 
   // OfflinePageArchiver callback.
   void OnCreateArchiveDone(const GURL& requested_url,
-                           const base::WeakPtr<Client>& client,
+                           const SavePageCallback& callback,
                            OfflinePageArchiver* archiver,
                            OfflinePageArchiver::ArchiverResult result,
                            const GURL& url,
@@ -133,11 +116,11 @@ class OfflinePageModel : public KeyedService {
 
   // OfflinePageMetadataStore callbacks.
   void OnAddOfflinePageDone(OfflinePageArchiver* archiver,
-                            const base::WeakPtr<Client>& client,
+                            const SavePageCallback& callback,
                             bool success);
 
-  void InformSavePageDone(const base::WeakPtr<Client>& client,
-                          Client::SavePageResult result);
+  void InformSavePageDone(const SavePageCallback& callback,
+                          SavePageResult result);
 
   void DeletePendingArchiver(OfflinePageArchiver* archiver);
 
