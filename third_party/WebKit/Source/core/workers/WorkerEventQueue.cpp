@@ -101,7 +101,7 @@ private:
     }
 
     RefPtrWillBePersistent<Event> m_event;
-    WorkerEventQueue* m_eventQueue;
+    RawPtrWillBePersistent<WorkerEventQueue> m_eventQueue;
     bool m_isCancelled;
 };
 
