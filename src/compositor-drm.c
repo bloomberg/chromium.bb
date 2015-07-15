@@ -2078,10 +2078,12 @@ setup_output_seat_constraint(struct drm_backend *b,
 		struct udev_seat *seat;
 
 		seat = udev_seat_get_named(&b->input, s);
-		if (seat)
-			seat->base.output = output;
+		if (!seat)
+			return;
 
-		if (seat && seat->base.pointer)
+		seat->base.output = output;
+
+		if (seat->base.pointer)
 			weston_pointer_clamp(seat->base.pointer,
 					     &seat->base.pointer->x,
 					     &seat->base.pointer->y);
