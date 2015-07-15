@@ -82,7 +82,7 @@ std::string GetSampleSTHAsJson();
 // Assembles, and returns, a sample STH in JSON format using
 // the provided parameters.
 std::string CreateSignedTreeHeadJsonString(size_t tree_size,
-                                           int64 timestamp,
+                                           int64_t timestamp,
                                            std::string sha256_root_hash,
                                            std::string tree_head_signature);
 
