@@ -45,6 +45,13 @@ AppBannerManager::~AppBannerManager() {
   CancelActiveFetcher();
 }
 
+void AppBannerManager::DidCommitProvisionalLoadForFrame(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& url,
+    ui::PageTransition transition_type) {
+  last_transition_type_ = transition_type;
+}
+
 void AppBannerManager::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
@@ -67,7 +74,7 @@ void AppBannerManager::DidFinishLoad(
   // Kick off the data retrieval pipeline.
   data_fetcher_ = CreateAppBannerDataFetcher(weak_factory_.GetWeakPtr(),
                                              ideal_icon_size_);
-  data_fetcher_->Start(validated_url);
+  data_fetcher_->Start(validated_url, last_transition_type_);
 }
 
 bool AppBannerManager::HandleNonWebApp(const std::string& platform,

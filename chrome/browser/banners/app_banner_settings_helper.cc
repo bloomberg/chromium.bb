@@ -29,9 +29,9 @@ const size_t kMaxAppsPerSite = 3;
 // Oldest could show banner event we care about, in days.
 const unsigned int kOldestCouldShowBannerEventInDays = 14;
 
-// Number of times that the banner could have been shown before the banner will
-// actually be triggered.
-const unsigned int kCouldShowEventsToTrigger = 2;
+// Total site engagements where a banner could have been shown before
+// a banner will actually be triggered.
+const double kTotalEngagementToTrigger = 2;
 
 // Number of days that showing the banner will prevent it being seen again for.
 const unsigned int kMinimumDaysBetweenBannerShows = 60;
@@ -47,6 +47,15 @@ const char* kBannerEventKeys[] = {
     "didBlockBannerEvent",
     "didAddToHomescreenEvent",
 };
+
+// Keys to use when storing BannerEvent structs.
+const char kBannerTimeKey[] = "time";
+const char kBannerEngagementKey[] = "engagement";
+
+// Engagement weight assigned to direct and indirect navigations.
+// TODO(dominickn) make direct enagagements worth more than indirect by default.
+double kDirectNavigationEngagement = 1;
+double kIndirectNavigationEnagagement = 1;
 
 scoped_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
@@ -78,6 +87,17 @@ base::DictionaryValue* GetAppDict(base::DictionaryValue* origin_dict,
   }
 
   return app_dict;
+}
+
+double GetEventEngagement(ui::PageTransition transition_type) {
+  if (ui::PageTransitionCoreTypeIs(transition_type,
+                                   ui::PAGE_TRANSITION_TYPED) ||
+      ui::PageTransitionCoreTypeIs(transition_type,
+                                   ui::PAGE_TRANSITION_GENERATED)) {
+    return kDirectNavigationEngagement;
+  } else {
+    return kIndirectNavigationEnagagement;
+  }
 }
 
 }  // namespace
@@ -142,6 +162,8 @@ void AppBannerSettingsHelper::RecordBannerEvent(
     const std::string& package_name_or_start_url,
     AppBannerEvent event,
     base::Time time) {
+  DCHECK(event != APP_BANNER_EVENT_COULD_SHOW);
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (profile->IsOffTheRecord() || package_name_or_start_url.empty())
@@ -162,51 +184,11 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   if (!app_dict)
     return;
 
+  // Dates are stored in their raw form (i.e. not local dates) to be resilient
+  // to time zone changes.
   std::string event_key(kBannerEventKeys[event]);
+  app_dict->SetDouble(event_key, time.ToInternalValue());
 
-  if (event == APP_BANNER_EVENT_COULD_SHOW) {
-    base::ListValue* could_show_list = nullptr;
-    if (!app_dict->GetList(event_key, &could_show_list)) {
-      could_show_list = new base::ListValue();
-      app_dict->Set(event_key, make_scoped_ptr(could_show_list));
-    }
-
-    // Trim any items that are older than we should care about. For comparisons
-    // the times are converted to local dates.
-    base::Time date = time.LocalMidnight();
-    base::ValueVector::iterator it = could_show_list->begin();
-    while (it != could_show_list->end()) {
-      if ((*it)->IsType(base::Value::TYPE_DOUBLE)) {
-        double internal_date;
-        (*it)->GetAsDouble(&internal_date);
-        base::Time other_date =
-            base::Time::FromInternalValue(internal_date).LocalMidnight();
-        // This date has already been added. Don't add the date again, and don't
-        // bother trimming values as it will have been done the first time the
-        // date was added (unless the local date has changed, which we can live
-        // with).
-        if (other_date == date)
-          return;
-
-        base::TimeDelta delta = date - other_date;
-        if (delta <
-            base::TimeDelta::FromDays(kOldestCouldShowBannerEventInDays)) {
-          ++it;
-          continue;
-        }
-      }
-
-      // Either this date is older than we care about, or it isn't a date, so
-      // remove it;
-      it = could_show_list->Erase(it, nullptr);
-    }
-
-    // Dates are stored in their raw form (i.e. not local dates) to be resilient
-    // to time zone changes.
-    could_show_list->AppendDouble(time.ToInternalValue());
-  } else {
-    app_dict->SetDouble(event_key, time.ToInternalValue());
-  }
   settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
                               CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
                               origin_dict.release());
@@ -218,6 +200,93 @@ void AppBannerSettingsHelper::RecordBannerEvent(
   // spamminess.
   if (event == APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
     settings->FlushLossyWebsiteSettings();
+}
+
+void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
+    content::WebContents* web_contents,
+    const GURL& origin_url,
+    const std::string& package_name_or_start_url,
+    base::Time time,
+    ui::PageTransition transition_type) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord() || package_name_or_start_url.empty())
+    return;
+
+  ContentSettingsPattern pattern(ContentSettingsPattern::FromURL(origin_url));
+  if (!pattern.IsValid())
+    return;
+
+  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
+  scoped_ptr<base::DictionaryValue> origin_dict =
+      GetOriginDict(settings, origin_url);
+  if (!origin_dict)
+    return;
+
+  base::DictionaryValue* app_dict =
+      GetAppDict(origin_dict.get(), package_name_or_start_url);
+  if (!app_dict)
+    return;
+
+  std::string event_key(kBannerEventKeys[APP_BANNER_EVENT_COULD_SHOW]);
+  double engagement = GetEventEngagement(transition_type);
+
+  base::ListValue* could_show_list = nullptr;
+  if (!app_dict->GetList(event_key, &could_show_list)) {
+    could_show_list = new base::ListValue();
+    app_dict->Set(event_key, make_scoped_ptr(could_show_list));
+  }
+
+  // Trim any items that are older than we should care about. For comparisons
+  // the times are converted to local dates.
+  base::Time date = time.LocalMidnight();
+  base::ValueVector::iterator it = could_show_list->begin();
+  while (it != could_show_list->end()) {
+    if ((*it)->IsType(base::Value::TYPE_DICTIONARY)) {
+      base::DictionaryValue* internal_value;
+      double internal_date;
+      (*it)->GetAsDictionary(&internal_value);
+
+      if (internal_value->GetDouble(kBannerTimeKey, &internal_date)) {
+        base::Time other_date =
+            base::Time::FromInternalValue(internal_date).LocalMidnight();
+        if (other_date == date) {
+          double other_engagement = 0;
+          if (internal_value->GetDouble(kBannerEngagementKey,
+                                        &other_engagement) &&
+              other_engagement >= engagement) {
+            // This date has already been added, but with an equal or higher
+            // engagement. Don't add the date again. If the conditional fails,
+            // fall to the end of the loop where the existing entry is deleted.
+            return;
+          }
+        } else {
+          base::TimeDelta delta = date - other_date;
+          if (delta <
+              base::TimeDelta::FromDays(kOldestCouldShowBannerEventInDays)) {
+            ++it;
+            continue;
+          }
+        }
+      }
+    }
+
+    // Either this date is older than we care about, or it isn't in the correct
+    // format, or it is the same as the current date but with a lower
+    // engagement, so remove it.
+    it = could_show_list->Erase(it, nullptr);
+  }
+
+  // Dates are stored in their raw form (i.e. not local dates) to be resilient
+  // to time zone changes.
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  value->SetDouble(kBannerTimeKey, time.ToInternalValue());
+  value->SetDouble(kBannerEngagementKey, engagement);
+  could_show_list->Append(value.Pass());
+
+  settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
+                              CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
+                              origin_dict.release());
 }
 
 bool AppBannerSettingsHelper::ShouldShowBanner(
@@ -261,9 +330,16 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
     return false;
   }
 
-  std::vector<base::Time> could_show_events = GetCouldShowBannerEvents(
+  std::vector<BannerEvent> could_show_events = GetCouldShowBannerEvents(
       web_contents, origin_url, package_name_or_start_url);
-  if (could_show_events.size() < kCouldShowEventsToTrigger) {
+
+  // Return true if the total engagement of each applicable could show event
+  // meets the trigger threshold.
+  double total_engagement = 0;
+  for (const auto& event : could_show_events)
+    total_engagement += event.engagement;
+
+  if (total_engagement < kTotalEngagementToTrigger) {
     banners::TrackDisplayEvent(banners::DISPLAY_EVENT_NOT_VISITED_ENOUGH);
     return false;
   }
@@ -271,11 +347,12 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
   return true;
 }
 
-std::vector<base::Time> AppBannerSettingsHelper::GetCouldShowBannerEvents(
+std::vector<AppBannerSettingsHelper::BannerEvent>
+AppBannerSettingsHelper::GetCouldShowBannerEvents(
     content::WebContents* web_contents,
     const GURL& origin_url,
     const std::string& package_name_or_start_url) {
-  std::vector<base::Time> result;
+  std::vector<BannerEvent> result;
   if (package_name_or_start_url.empty())
     return result;
 
@@ -299,11 +376,17 @@ std::vector<base::Time> AppBannerSettingsHelper::GetCouldShowBannerEvents(
     return result;
 
   for (auto value : *could_show_list) {
-    if (value->IsType(base::Value::TYPE_DOUBLE)) {
-      double internal_date;
-      value->GetAsDouble(&internal_date);
-      base::Time date = base::Time::FromInternalValue(internal_date);
-      result.push_back(date);
+    if (value->IsType(base::Value::TYPE_DICTIONARY)) {
+      base::DictionaryValue* internal_value;
+      double internal_date = 0;
+      value->GetAsDictionary(&internal_value);
+      double engagement = 0;
+
+      if (internal_value->GetDouble(kBannerTimeKey, &internal_date) &&
+          internal_value->GetDouble(kBannerEngagementKey, &engagement)) {
+        base::Time date = base::Time::FromInternalValue(internal_date);
+        result.push_back({date, engagement});
+      }
     }
   }
 
@@ -341,4 +424,10 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
     return base::Time();
 
   return base::Time::FromInternalValue(internal_time);
+}
+
+void AppBannerSettingsHelper::SetEngagementWeights(double direct_engagement,
+                                                   double indirect_engagement) {
+  kDirectNavigationEngagement = direct_engagement;
+  kIndirectNavigationEnagagement = indirect_engagement;
 }

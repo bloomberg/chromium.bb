@@ -63,7 +63,7 @@ class AppBannerDataFetcher
 
   // Begins creating a banner for the URL being displayed by the Delegate's
   // WebContents.
-  void Start(const GURL& validated_url);
+  void Start(const GURL& validated_url, ui::PageTransition transition_type);
 
   // Stops the pipeline when any asynchronous calls return.
   void Cancel();
@@ -86,6 +86,9 @@ class AppBannerDataFetcher
   // Returns whether the page has validly requested that the banner be shown
   // by calling prompt() on the beforeinstallprompt Javascript event.
   bool page_requested_prompt() { return page_requested_prompt_; }
+
+  // Returns the type of transition which triggered this fetch.
+  ui::PageTransition transition_type() { return transition_type_; }
 
   // Returns the URL that kicked off the banner data retrieval.
   const GURL& validated_url() { return validated_url_; }
@@ -171,6 +174,7 @@ class AppBannerDataFetcher
   bool is_active_;
   bool was_canceled_by_page_;
   bool page_requested_prompt_;
+  ui::PageTransition transition_type_;
   int event_request_id_;
   scoped_ptr<chrome::BitmapFetcher> bitmap_fetcher_;
   scoped_ptr<SkBitmap> app_icon_;

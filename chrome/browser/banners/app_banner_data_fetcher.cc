@@ -81,7 +81,8 @@ AppBannerDataFetcher::AppBannerDataFetcher(
       event_request_id_(-1) {
 }
 
-void AppBannerDataFetcher::Start(const GURL& validated_url) {
+void AppBannerDataFetcher::Start(const GURL& validated_url,
+                                 ui::PageTransition transition_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents = GetWebContents();
@@ -90,6 +91,7 @@ void AppBannerDataFetcher::Start(const GURL& validated_url) {
   is_active_ = true;
   was_canceled_by_page_ = false;
   page_requested_prompt_ = false;
+  transition_type_ = transition_type;
   validated_url_ = validated_url;
   web_contents->GetManifest(
       base::Bind(&AppBannerDataFetcher::OnDidGetManifest, this));
@@ -381,10 +383,9 @@ void AppBannerDataFetcher::RecordCouldShowBanner() {
   content::WebContents* web_contents = GetWebContents();
   DCHECK(web_contents);
 
-  AppBannerSettingsHelper::RecordBannerEvent(
+  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
       web_contents, validated_url_, GetAppIdentifier(),
-      AppBannerSettingsHelper::APP_BANNER_EVENT_COULD_SHOW,
-      GetCurrentTime());
+      GetCurrentTime(), transition_type_);
 }
 
 bool AppBannerDataFetcher::CheckIfShouldShowBanner() {

@@ -11,6 +11,7 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -74,6 +75,10 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     return false;
   }
 
+  void SetUp() override {
+    AppBannerSettingsHelper::SetEngagementWeights(1, 1);
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
@@ -85,6 +90,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
  protected:
   void RunFetcher(const GURL& url,
                   const std::string& expected_non_web_platform,
+                  ui::PageTransition transition,
                   bool expected_to_show) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -96,7 +102,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     quit_closure_ = run_loop.QuitClosure();
     scoped_ptr<TestObserver> observer(new TestObserver(fetcher.get(),
                                                        run_loop.QuitClosure()));
-    fetcher->Start(url);
+    fetcher->Start(url, transition);
     run_loop.Run();
 
     EXPECT_EQ(expected_non_web_platform, non_web_platform_);
@@ -113,19 +119,24 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     EXPECT_EQ("sw_activated", observer.last_navigation_url().ref());
   }
 
-  void RunBannerTest(const std::string& manifest_page, bool expectation) {
+  void RunBannerTest(const std::string& manifest_page,
+                     ui::PageTransition transition,
+                     unsigned int unshown_repetitions,
+                     bool expectation) {
     std::string valid_page(manifest_page);
     GURL test_url = embedded_test_server()->GetURL(valid_page);
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    LoadURLAndWaitForServiceWorker(test_url);
-    RunFetcher(web_contents->GetURL(), std::string(), false);
+    for (unsigned int i = 0; i < unshown_repetitions; ++i) {
+      LoadURLAndWaitForServiceWorker(test_url);
+      RunFetcher(web_contents->GetURL(), std::string(), transition, false);
+      AppBannerDataFetcher::SetTimeDeltaForTesting(i+1);
+    }
 
-    // Advance by a day, then visit the page again to trigger the banner.
-    AppBannerDataFetcher::SetTimeDeltaForTesting(1);
+    // On the final loop, check whether the banner triggered or not as expected.
     LoadURLAndWaitForServiceWorker(test_url);
-    RunFetcher(web_contents->GetURL(), std::string(), expectation);
+    RunFetcher(web_contents->GetURL(), std::string(), transition, expectation);
   }
 
  private:
@@ -134,18 +145,104 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
   base::WeakPtrFactory<AppBannerDataFetcherBrowserTest> weak_factory_;
 };
 
-IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, WebAppBannerCreated) {
-  RunBannerTest("/banners/manifest_test_page.html", true);
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedDirect) {
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_TYPED,
+                1, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedDirectSingle) {
+  AppBannerSettingsHelper::SetEngagementWeights(2, 1);
+  RunBannerTest("/banners/manifest_test_page.html",
+                ui::PAGE_TRANSITION_GENERATED, 0, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedDirectMultiple) {
+  AppBannerSettingsHelper::SetEngagementWeights(0.5, 1);
+  RunBannerTest("/banners/manifest_test_page.html",
+                ui::PAGE_TRANSITION_GENERATED, 3, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedIndirect) {
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
+                1, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedIndirectSingle) {
+  AppBannerSettingsHelper::SetEngagementWeights(1, 3);
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_RELOAD,
+                0, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedIndirectMultiple) {
+  AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
+                3, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedVarious) {
+  AppBannerSettingsHelper::SetEngagementWeights(0.5, 0.25);
+
+  std::string valid_page("/banners/manifest_test_page.html");
+  GURL test_url = embedded_test_server()->GetURL(valid_page);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Add a direct nav on day 1.
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), std::string(), ui::PAGE_TRANSITION_TYPED,
+             false);
+
+  // Add an indirect nav on day 1 which is ignored.
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), std::string(), ui::PAGE_TRANSITION_LINK,
+             false);
+  AppBannerDataFetcher::SetTimeDeltaForTesting(1);
+
+  // Add an indirect nav on day 2.
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), std::string(),
+             ui::PAGE_TRANSITION_MANUAL_SUBFRAME, false);
+
+  // Add a direct nav on day 2 which overrides.
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), std::string(),
+             ui::PAGE_TRANSITION_GENERATED, false);
+  AppBannerDataFetcher::SetTimeDeltaForTesting(2);
+
+  // Add a direct nav on day 3.
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), std::string(),
+             ui::PAGE_TRANSITION_GENERATED, false);
+  AppBannerDataFetcher::SetTimeDeltaForTesting(3);
+
+  // Add an indirect nav on day 4.
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), std::string(),
+             ui::PAGE_TRANSITION_FORM_SUBMIT, false);
+
+  // Add a direct nav on day 4 which should trigger the banner.
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), std::string(),
+             ui::PAGE_TRANSITION_TYPED, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                        WebAppBannerNoTypeInManifest) {
-  RunBannerTest("/banners/manifest_no_type_test_page.html", true);
+  RunBannerTest("/banners/manifest_no_type_test_page.html",
+                ui::PAGE_TRANSITION_TYPED, 1, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                        WebAppBannerNoTypeInManifestCapsExtension) {
-  RunBannerTest("/banners/manifest_no_type_caps_test_page.html", true);
+  RunBannerTest("/banners/manifest_no_type_caps_test_page.html",
+                ui::PAGE_TRANSITION_TYPED, 1, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PlayAppManifest) {
@@ -157,30 +254,42 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PlayAppManifest) {
   // Native banners do not require the SW, so we can just load the URL.
   ui_test_utils::NavigateToURL(browser(), test_url);
   std::string play_platform("play");
-  RunFetcher(web_contents->GetURL(), play_platform, false);
+  RunFetcher(web_contents->GetURL(), play_platform, ui::PAGE_TRANSITION_TYPED,
+             false);
 
   // The logic to get the details for a play app banner are only on android
   // builds, so this test does not check that the banner is shown.
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, NoManifest) {
-  RunBannerTest("/banners/no_manifest_test_page.html", false);
+  RunBannerTest("/banners/no_manifest_test_page.html",
+                ui::PAGE_TRANSITION_TYPED, 1, false);
 }
 
-IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBanner) {
-  RunBannerTest("/banners/cancel_test_page.html", false);
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBannerDirect) {
+  RunBannerTest("/banners/cancel_test_page.html", ui::PAGE_TRANSITION_TYPED, 1,
+                false);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBannerIndirect) {
+  AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
+  RunBannerTest("/banners/cancel_test_page.html", ui::PAGE_TRANSITION_TYPED, 3,
+                false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PromptBanner) {
-  RunBannerTest("/banners/prompt_test_page.html", true);
+  RunBannerTest("/banners/prompt_test_page.html", ui::PAGE_TRANSITION_TYPED, 1,
+                true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PromptBannerInHandler) {
-  RunBannerTest("/banners/prompt_in_handler_test_page.html", true);
+  RunBannerTest("/banners/prompt_in_handler_test_page.html",
+                ui::PAGE_TRANSITION_TYPED, 1, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, WebAppBannerInIFrame) {
-  RunBannerTest("/banners/iframe_test_page.html", false);
+  RunBannerTest("/banners/iframe_test_page.html", ui::PAGE_TRANSITION_TYPED, 1,
+                false);
 }
 
 }  // namespace banners
