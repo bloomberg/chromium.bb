@@ -62,6 +62,15 @@ function WallpaperManager(dialogDom) {
   }
 
   /**
+   * Returns the base name for |file_path|.
+   * @param {string} file_path The path of the file.
+   * @return {string} The base name of the file.
+   */
+  function getBaseName(file_path) {
+    return file_path.substring(file_path.lastIndexOf('/') + 1);
+  }
+
+  /**
    * Retruns the current selected layout.
    * @return {string} The selected layout.
    */
@@ -341,8 +350,7 @@ function WallpaperManager(dialogDom) {
           for (var i = 0; i < thumbnails.length; i++) {
             var thumbnail = thumbnails[i];
             var url = self.wallpaperGrid_.dataModel.item(i).baseURL;
-            var fileName = url.substring(url.lastIndexOf('/') + 1) +
-                Constants.HighResolutionSuffix;
+            var fileName = getBaseName(url) + Constants.HighResolutionSuffix;
             if (self.downloadedListMap_ &&
                 self.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
               thumbnail.offline = true;
@@ -1034,8 +1042,12 @@ function WallpaperManager(dialogDom) {
           wallpapersDataModel.push(oemDefaultWallpaperElement);
         }
         for (var i = 0; i < wallpapersDataModel.length; i++) {
-          if (self.currentWallpaper_ == wallpapersDataModel.item(i).baseURL)
+          // For custom wallpapers, the file name of |currentWallpaper_|
+          // includes the first directory level (corresponding to user id hash).
+          if (getBaseName(self.currentWallpaper_) ==
+              wallpapersDataModel.item(i).baseURL) {
             selectedItem = wallpapersDataModel.item(i);
+          }
         }
         var lastElement = {
             baseURL: '',
@@ -1089,8 +1101,7 @@ function WallpaperManager(dialogDom) {
             authorWebsite: this.manifest_.wallpaper_list[i].author_website,
             dynamicURL: this.manifest_.wallpaper_list[i].dynamic_url
           };
-          var startIndex = wallpaperInfo.baseURL.lastIndexOf('/') + 1;
-          var fileName = wallpaperInfo.baseURL.substring(startIndex) +
+          var fileName = getBaseName(wallpaperInfo.baseURL) +
               Constants.HighResolutionSuffix;
           if (this.downloadedListMap_ &&
               this.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
