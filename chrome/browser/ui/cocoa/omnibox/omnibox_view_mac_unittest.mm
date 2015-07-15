@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
@@ -23,9 +24,12 @@ class MockOmniboxEditModel : public OmniboxEditModel {
   MockOmniboxEditModel(OmniboxView* view,
                        OmniboxEditController* controller,
                        Profile* profile)
-      : OmniboxEditModel(view, controller, profile),
-        up_or_down_count_(0) {
-  }
+      : OmniboxEditModel(
+            view,
+            controller,
+            make_scoped_ptr(new ChromeOmniboxClient(controller, profile)),
+            profile),
+        up_or_down_count_(0) {}
 
   void OnUpOrDownKeyPressed(int count) override { up_or_down_count_ = count; }
 

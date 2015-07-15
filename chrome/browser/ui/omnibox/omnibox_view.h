@@ -23,6 +23,7 @@
 
 class CommandUpdater;
 class GURL;
+class OmniboxClient;
 class OmniboxEditController;
 class OmniboxViewMacTest;
 class Profile;
@@ -254,6 +255,7 @@ class OmniboxView {
  protected:
   OmniboxView(Profile* profile,
               OmniboxEditController* controller,
+              scoped_ptr<OmniboxClient> client,
               CommandUpdater* command_updater);
 
   // Internally invoked whenever the text changes in some way.

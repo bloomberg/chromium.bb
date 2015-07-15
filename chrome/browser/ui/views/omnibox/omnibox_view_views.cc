@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -134,7 +135,10 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar,
                                    const gfx::FontList& font_list)
-    : OmniboxView(profile, controller, command_updater),
+    : OmniboxView(profile,
+                  controller,
+                  make_scoped_ptr(new ChromeOmniboxClient(controller, profile)),
+                  command_updater),
       popup_window_mode_(popup_window_mode),
       security_level_(connection_security::NONE),
       saved_selection_for_focus_change_(gfx::Range::InvalidRange()),

@@ -78,6 +78,7 @@ class OmniboxEditModel {
 
   OmniboxEditModel(OmniboxView* view,
                    OmniboxEditController* controller,
+                   scoped_ptr<OmniboxClient> client,
                    Profile* profile);
   virtual ~OmniboxEditModel();
 

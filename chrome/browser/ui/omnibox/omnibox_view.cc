@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/omnibox/omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/grit/generated_resources.h"
@@ -179,12 +180,13 @@ void OmniboxView::OnMatchOpened(const AutocompleteMatch& match,
 
 OmniboxView::OmniboxView(Profile* profile,
                          OmniboxEditController* controller,
+                         scoped_ptr<OmniboxClient> client,
                          CommandUpdater* command_updater)
-    : controller_(controller),
-      command_updater_(command_updater) {
+    : controller_(controller), command_updater_(command_updater) {
   // |profile| can be NULL in tests.
   if (profile)
-    model_.reset(new OmniboxEditModel(this, controller, profile));
+    model_.reset(
+        new OmniboxEditModel(this, controller, client.Pass(), profile));
 }
 
 void OmniboxView::TextChanged() {

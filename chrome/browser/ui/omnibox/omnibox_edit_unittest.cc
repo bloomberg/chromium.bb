@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -22,7 +23,7 @@ namespace {
 class TestingOmniboxView : public OmniboxView {
  public:
   explicit TestingOmniboxView(OmniboxEditController* controller)
-      : OmniboxView(NULL, controller, NULL) {}
+      : OmniboxView(nullptr, controller, nullptr, nullptr) {}
 
   // OmniboxView:
   void SaveStateToTab(WebContents* tab) override {}
@@ -197,7 +198,10 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
       &profile, &TemplateURLServiceFactory::BuildInstanceFor);
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactory(
       &profile, &AutocompleteClassifierFactory::BuildInstanceFor);
-  OmniboxEditModel model(&view, &controller, &profile);
+  OmniboxEditModel model(
+      &view, &controller,
+      make_scoped_ptr(new ChromeOmniboxClient(&controller, &profile)),
+      &profile);
 
   for (size_t i = 0; i < arraysize(input); ++i) {
     toolbar_model()->set_text(ASCIIToUTF16(input[i].perm_text));
@@ -229,7 +233,10 @@ TEST_F(AutocompleteEditTest, InlineAutocompleteText) {
       &profile, &TemplateURLServiceFactory::BuildInstanceFor);
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactory(
       &profile, &AutocompleteClassifierFactory::BuildInstanceFor);
-  OmniboxEditModel model(&view, &controller, &profile);
+  OmniboxEditModel model(
+      &view, &controller,
+      make_scoped_ptr(new ChromeOmniboxClient(&controller, &profile)),
+      &profile);
 
   // Test if the model updates the inline autocomplete text in the view.
   EXPECT_EQ(base::string16(), view.inline_autocomplete_text());

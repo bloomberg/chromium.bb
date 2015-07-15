@@ -32,7 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
+#include "chrome/browser/ui/omnibox/omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -195,9 +195,11 @@ OmniboxEditModel::State::~State() {
 
 OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
+                                   scoped_ptr<OmniboxClient> client,
                                    Profile* profile)
     : view_(view),
       controller_(controller),
+      client_(client.Pass()),
       focus_state_(OMNIBOX_FOCUS_NONE),
       focus_source_(INVALID),
       user_input_in_progress_(false),
@@ -211,7 +213,6 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       in_revert_(false),
       allow_exact_keyword_match_(false) {
   omnibox_controller_.reset(new OmniboxController(this, profile));
-  client_.reset(new ChromeOmniboxClient(controller, profile));
 }
 
 OmniboxEditModel::~OmniboxEditModel() {
