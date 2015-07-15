@@ -79,7 +79,7 @@ struct input_method {
 
 	struct wl_listener keyboard_focus_listener;
 
-	int focus_listener_initialized;
+	bool focus_listener_initialized;
 
 	struct input_method_context *context;
 
@@ -919,7 +919,7 @@ input_method_init_seat(struct weston_seat *seat)
 			&input_method_context_grab;
 	}
 
-	seat->input_method->focus_listener_initialized = 1;
+	seat->input_method->focus_listener_initialized = true;
 }
 
 static void launch_input_method(struct text_backend *text_backend);
@@ -990,7 +990,7 @@ text_backend_seat_created(struct text_backend *text_backend,
 
 	input_method->seat = seat;
 	input_method->input = NULL;
-	input_method->focus_listener_initialized = 0;
+	input_method->focus_listener_initialized = false;
 	input_method->context = NULL;
 	input_method->text_backend = text_backend;
 
