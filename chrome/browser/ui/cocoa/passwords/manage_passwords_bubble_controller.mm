@@ -15,7 +15,6 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_confirmation_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_credentials_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_save_view_controller.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 @interface ManagePasswordsBubbleController ()
@@ -60,17 +59,10 @@
   // Find the next view controller.
   currentController_.reset();
   if (model_->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
-    if (model_->IsNewUIActive()) {
-      currentController_.reset(
-          [[ManagePasswordsBubbleSaveViewController alloc]
-              initWithModel:model_
-                   delegate:self]);
-    } else {
-      currentController_.reset(
-          [[ManagePasswordsBubblePendingViewController alloc]
-              initWithModel:model_
-                   delegate:self]);
-    }
+    currentController_.reset(
+        [[ManagePasswordsBubblePendingViewController alloc]
+            initWithModel:model_
+                 delegate:self]);
   } else if (model_->state() == password_manager::ui::CONFIRMATION_STATE) {
     currentController_.reset(
         [[ManagePasswordsBubbleConfirmationViewController alloc]
