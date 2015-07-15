@@ -1196,6 +1196,8 @@ protected:
     // parts which are invalidated separately (e.g. scrollbars).
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
+    void setIsSlowRepaintObject(bool);
+
 private:
     void clearLayoutRootIfNeeded() const;
 
@@ -1321,6 +1323,7 @@ private:
             , m_childrenInline(false)
             , m_alwaysCreateLineBoxesForLayoutInline(false)
             , m_lastBoxDecorationBackgroundObscured(false)
+            , m_isSlowRepaintObject(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_boxDecorationBackgroundState(NoBoxDecorationBackground)
@@ -1378,6 +1381,8 @@ private:
 
         // For slimming-paint.
         ADD_BOOLEAN_BITFIELD(lastBoxDecorationBackgroundObscured, LastBoxDecorationBackgroundObscured);
+
+        ADD_BOOLEAN_BITFIELD(isSlowRepaintObject, IsSlowRepaintObject);
 
     private:
         unsigned m_positionedState : 2; // PositionedState

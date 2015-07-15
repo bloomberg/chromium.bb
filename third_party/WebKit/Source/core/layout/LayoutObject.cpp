@@ -1836,11 +1836,6 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
         setShouldDoFullPaintInvalidation();
 }
 
-static inline bool layoutObjectHasBackground(const LayoutObject* layoutObject)
-{
-    return layoutObject && layoutObject->hasBackground();
-}
-
 void LayoutObject::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     if (m_style) {
@@ -1884,37 +1879,6 @@ void LayoutObject::styleWillChange(StyleDifference diff, const ComputedStyle& ne
         }
     } else {
         s_affectsParentBlock = false;
-    }
-
-    if (view()->frameView()) {
-        bool shouldBlitOnFixedBackgroundImage = false;
-        if (RuntimeEnabledFeatures::fastMobileScrollingEnabled()) {
-            // On low-powered/mobile devices, preventing blitting on a scroll can cause noticeable delays
-            // when scrolling a page with a fixed background image. As an optimization, assuming there are
-            // no fixed positoned elements on the page, we can acclerate scrolling (via blitting) if we
-            // ignore the CSS property "background-attachment: fixed".
-            shouldBlitOnFixedBackgroundImage = true;
-        }
-        bool newStyleSlowScroll = !shouldBlitOnFixedBackgroundImage && newStyle.hasFixedBackgroundImage();
-        bool oldStyleSlowScroll = m_style && !shouldBlitOnFixedBackgroundImage && m_style->hasFixedBackgroundImage();
-
-        bool drawsRootBackground = isDocumentElement() || (isBody() && !layoutObjectHasBackground(document().documentElement()->layoutObject()));
-        if (drawsRootBackground && !shouldBlitOnFixedBackgroundImage) {
-            if (view()->compositor()->supportsFixedRootBackgroundCompositing()) {
-                if (newStyleSlowScroll && newStyle.hasEntirelyFixedBackground())
-                    newStyleSlowScroll = false;
-
-                if (oldStyleSlowScroll && m_style->hasEntirelyFixedBackground())
-                    oldStyleSlowScroll = false;
-            }
-        }
-
-        if (oldStyleSlowScroll != newStyleSlowScroll) {
-            if (oldStyleSlowScroll)
-                view()->frameView()->removeSlowRepaintObject();
-            if (newStyleSlowScroll)
-                view()->frameView()->addSlowRepaintObject();
-        }
     }
 
     // Elements with non-auto touch-action will send a SetTouchAction message
@@ -2473,6 +2437,9 @@ void LayoutObject::willBeDestroyed()
         removeShapeImageClient(m_style->shapeOutside());
     }
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeLayoutObject(this);
+
+    if (frameView())
+        setIsSlowRepaintObject(false);
 }
 
 void LayoutObject::insertedIntoTree()
@@ -3268,6 +3235,18 @@ void LayoutObject::setShouldDoFullPaintInvalidationIncludingNonCompositingDescen
     // Need to access the current compositing status.
     DisableCompositingQueryAsserts disabler;
     setShouldDoFullPaintInvalidationIncludingNonCompositingDescendantsInternal(this);
+}
+
+void LayoutObject::setIsSlowRepaintObject(bool isSlowRepaintObject)
+{
+    ASSERT(frameView());
+    if (m_bitfields.isSlowRepaintObject() == isSlowRepaintObject)
+        return;
+    m_bitfields.setIsSlowRepaintObject(isSlowRepaintObject);
+    if (isSlowRepaintObject)
+        frameView()->addSlowRepaintObject();
+    else
+        frameView()->removeSlowRepaintObject();
 }
 
 } // namespace blink
