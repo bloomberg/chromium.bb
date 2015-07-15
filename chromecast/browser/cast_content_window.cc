@@ -4,9 +4,7 @@
 
 #include "chromecast/browser/cast_content_window.h"
 
-#include "base/command_line.h"
 #include "base/threading/thread_restrictions.h"
-#include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "content/public/browser/render_view_host.h"
@@ -55,7 +53,8 @@ class CastFillLayout : public aura::LayoutManager {
 };
 #endif
 
-CastContentWindow::CastContentWindow() {}
+CastContentWindow::CastContentWindow() : transparent_(false) {
+}
 
 CastContentWindow::~CastContentWindow() {
 #if defined(USE_AURA)
@@ -84,8 +83,7 @@ void CastContentWindow::CreateWindowTree(
   window_tree_host_->window()->SetLayoutManager(
       new CastFillLayout(window_tree_host_->window()));
 
-  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
-  if (command_line->HasSwitch(switches::kEnableTransparentBackground)) {
+  if (transparent_) {
     window_tree_host_->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
     window_tree_host_->compositor()->SetHostHasTransparentBackground(true);
   } else {
@@ -129,12 +127,10 @@ void CastContentWindow::MediaStartedPlaying() {
 
 void CastContentWindow::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
-  if (command_line->HasSwitch(switches::kEnableTransparentBackground)) {
-    content::RenderWidgetHostView* view = render_view_host->GetView();
-    if (view)
-      view->SetBackgroundColor(SK_ColorTRANSPARENT);
-  }
+  content::RenderWidgetHostView* view = render_view_host->GetView();
+  if (view)
+    view->SetBackgroundColor(transparent_ ? SK_ColorTRANSPARENT
+                                          : SK_ColorBLACK);
 }
 
 }  // namespace chromecast

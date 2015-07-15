@@ -31,6 +31,10 @@ class CastContentWindow : public content::WebContentsObserver {
   // Removes the window from the screen.
   ~CastContentWindow() override;
 
+  // Sets the window's background to be transparent (call before
+  // CreateWindowTree).
+  void SetTransparent() { transparent_ = true; }
+
   // Create a window with the given size for |web_contents|.
   void CreateWindowTree(const gfx::Size& initial_size,
                         content::WebContents* web_contents);
@@ -49,6 +53,7 @@ class CastContentWindow : public content::WebContentsObserver {
 #if defined(USE_AURA)
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;
 #endif
+  bool transparent_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindow);
 };

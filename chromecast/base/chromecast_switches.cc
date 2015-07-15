@@ -34,9 +34,4 @@ const char kLastLaunchedApp[] = "last-launched-app";
 // started.
 const char kPreviousApp[] = "previous-app";
 
-// Enables applications to output transparent pixels to final framebuffer
-// (e.g. using transparent body background), to be composited with other
-// externally-populated hardware planes.
-const char kEnableTransparentBackground[] = "enable-transparent-background";
-
 }  // namespace switches
