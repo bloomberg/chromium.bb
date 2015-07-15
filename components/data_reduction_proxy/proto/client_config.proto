@@ -13,11 +13,12 @@ message ClientConfig {
   // An opaque per-session key assigned by the server which permits use of the
   // Data Saver HTTP proxy servers.
   optional string session_key = 1;
-  // The time at which the secure_session_key is no longer valid. This is
-  // enforced by the Data Saver service, and is provided to permit the client
-  // to request a new session key prior to expiration.
-  optional Timestamp expire_time = 2;
-  // The DataSaver proxy configuration that is valid for the session.
+  // The time at which the client should request a new configuration. The
+  // session_key is guaranteed to be valid through this time and may be valid
+  // for some time thereafter.
+  optional Timestamp refresh_time = 2;
+  // The proxy configuration the client should use to connect to the Data Saver
+  // service.
   optional ProxyConfig proxy_config = 3;
 }
 

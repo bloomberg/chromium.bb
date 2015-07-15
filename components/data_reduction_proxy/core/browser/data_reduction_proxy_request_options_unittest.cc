@@ -443,8 +443,8 @@ TEST_F(DataReductionProxyRequestOptionsTest, PopulateConfigResponse) {
   EXPECT_EQ(
       "0-1633771873-1633771873-1633771873|96bd72ec4a050ba60981743d41787768",
       config.session_key());
-  EXPECT_EQ(86400, config.expire_time().seconds());
-  EXPECT_EQ(0, config.expire_time().nanos());
+  EXPECT_EQ(86400, config.refresh_time().seconds());
+  EXPECT_EQ(0, config.refresh_time().nanos());
 }
 
 }  // namespace data_reduction_proxy

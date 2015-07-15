@@ -347,7 +347,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
 
   base::Time expiration_time;
   if (succeeded) {
-    expiration_time = config_parser::TimestampToTime(config.expire_time());
+    expiration_time = config_parser::TimestampToTime(config.refresh_time());
   }
 
   if (!use_local_config_ && succeeded) {

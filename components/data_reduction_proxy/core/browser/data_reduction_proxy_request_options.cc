@@ -306,7 +306,7 @@ void DataReductionProxyRequestOptions::PopulateConfigResponse(
   ComputeCredentials(now, &session, &credentials);
   config->set_session_key(CreateLocalSessionKey(session, credentials));
   config_parser::TimetoTimestamp(expiration_time,
-                                 config->mutable_expire_time());
+                                 config->mutable_refresh_time());
 }
 
 void DataReductionProxyRequestOptions::SetCredentials(

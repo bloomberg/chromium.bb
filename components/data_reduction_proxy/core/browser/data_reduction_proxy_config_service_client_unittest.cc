@@ -64,7 +64,7 @@ class RequestOptionsPopulator {
   void PopulateResponse(ClientConfig* config) {
     config->set_session_key("abcdef|1234-5678-12345678");
     config_parser::TimetoTimestamp(expiration_time_,
-                                   config->mutable_expire_time());
+                                   config->mutable_refresh_time());
     expiration_time_ += increment_;
   }
 
@@ -92,8 +92,8 @@ ClientConfig CreateConfig(const std::string& session_key,
   ClientConfig config;
 
   config.set_session_key(session_key);
-  config.mutable_expire_time()->set_seconds(expire_seconds);
-  config.mutable_expire_time()->set_nanos(expire_nanoseconds);
+  config.mutable_refresh_time()->set_seconds(expire_seconds);
+  config.mutable_refresh_time()->set_nanos(expire_nanoseconds);
   ProxyServer* primary_proxy =
       config.mutable_proxy_config()->add_http_proxy_servers();
   primary_proxy->set_scheme(primary_scheme);
