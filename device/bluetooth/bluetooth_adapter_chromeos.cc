@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_manager_client.h"
@@ -20,6 +19,7 @@
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/system/devicetype.h"
 #include "device/bluetooth/bluetooth_adapter_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_advertisement_chromeos.h"
 #include "device/bluetooth/bluetooth_audio_sink_chromeos.h"
@@ -755,14 +755,24 @@ void BluetoothAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
 
 void BluetoothAdapterChromeOS::SetDefaultAdapterName() {
   DCHECK(IsPresent());
-  std::string board = base::SysInfo::GetLsbReleaseBoard();
+
   std::string alias;
-  if (board.substr(0, 6) == "stumpy") {
-    alias = "Chromebox";
-  } else if (board.substr(0, 4) == "link") {
-    alias = "Chromebook Pixel";
-  } else {
-    alias = "Chromebook";
+  switch (chromeos::GetDeviceType()) {
+    case DeviceType::kChromebase:
+      alias = "Chromebase";
+      break;
+    case DeviceType::kChromebit:
+      alias = "Chromebit";
+      break;
+    case DeviceType::kChromebook:
+      alias = "Chromebook";
+      break;
+    case DeviceType::kChromebox:
+      alias = "Chromebox";
+      break;
+    case DeviceType::kUnknown:
+      alias = "Chromebook";
+      break;
   }
 
   SetName(alias, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
