@@ -77,10 +77,10 @@ protected:
     void onDrawRRect(const SkRRect&, const SkPaint&) override = 0;
     void onDrawPath(const SkPath&, const SkPaint&) override = 0;
     void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override = 0;
-    void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override = 0;
+    void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, SK_VIRTUAL_CONSTRAINT_TYPE) override = 0;
     void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override = 0;
     void onDrawImage(const SkImage*, SkScalar, SkScalar, const SkPaint*) override = 0;
-    void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst, const SkPaint*) override = 0;
+    void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst, const SkPaint* SRC_RECT_CONSTRAINT_PARAM(constraint)) override = 0;
     void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override = 0;
     void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
         const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override = 0;
@@ -160,10 +160,10 @@ protected:
         this->SkCanvas::onDrawBitmap(bitmap, left, top, paint);
     }
 
-    void onDrawBitmapRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst, const SkPaint* paint, DrawBitmapRectFlags flags) override
+    void onDrawBitmapRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst, const SkPaint* paint, SK_VIRTUAL_CONSTRAINT_TYPE constraint) override
     {
         Interceptor interceptor(this);
-        this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, flags);
+        this->SkCanvas::onDrawBitmapRect(bitmap, src, dst, paint, constraint);
     }
 
     void onDrawBitmapNine(const SkBitmap& bitmap, const SkIRect& center, const SkRect& dst, const SkPaint* paint) override
@@ -178,10 +178,10 @@ protected:
         this->SkCanvas::onDrawImage(image, x, y, paint);
     }
 
-    void onDrawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst, const SkPaint* paint) override
+    void onDrawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst, const SkPaint* paint SRC_RECT_CONSTRAINT_PARAM(constraint)) override
     {
         Interceptor interceptor(this);
-        this->SkCanvas::onDrawImageRect(image, src, dst, paint);
+        this->SkCanvas::onDrawImageRect(image, src, dst, paint SRC_RECT_CONSTRAINT_ARG(constraint));
     }
 
     void onDrawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint) override

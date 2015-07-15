@@ -48,10 +48,10 @@ public:
     void onDrawRRect(const SkRRect&, const SkPaint&) override;
     void onDrawPath(const SkPath&, const SkPaint&) override;
     void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override;
-    void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override;
+    void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, SK_VIRTUAL_CONSTRAINT_TYPE) override;
     void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override;
     void onDrawImage(const SkImage*, SkScalar, SkScalar, const SkPaint*) override;
-    void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst, const SkPaint*) override;
+    void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst, const SkPaint* SRC_RECT_CONSTRAINT_PARAM(constraint)) override;
     void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override;
     virtual void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
         const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override;
