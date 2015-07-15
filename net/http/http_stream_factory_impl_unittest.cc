@@ -300,8 +300,8 @@ void PreconnectHelperForURL(int num_streams,
   request.url = url;
   request.load_flags = 0;
 
-  session->http_stream_factory()->PreconnectStreams(
-      num_streams, request, DEFAULT_PRIORITY, ssl_config, ssl_config);
+  session->http_stream_factory()->PreconnectStreams(num_streams, request,
+                                                    ssl_config, ssl_config);
   mock_factory->WaitForPreconnects();
 };
 

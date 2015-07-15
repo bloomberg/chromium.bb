@@ -124,7 +124,6 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
 void HttpStreamFactoryImpl::PreconnectStreams(
     int num_streams,
     const HttpRequestInfo& request_info,
-    RequestPriority priority,
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config) {
   DCHECK(!for_websockets_);
@@ -135,8 +134,13 @@ void HttpStreamFactoryImpl::PreconnectStreams(
     // TODO(bnc): Pass on multiple alternative services to Job.
     alternative_service = alternative_service_vector[0];
   }
+
+  // Due to how the socket pools handle priorities and idle sockets, only IDLE
+  // priority currently makes sense for preconnects. The priority for
+  // preconnects is currently ignored (see RequestSocketsForPool()), but could
+  // be used at some point for proxy resolution or something.
   Job* job =
-      new Job(this, session_, request_info, priority, server_ssl_config,
+      new Job(this, session_, request_info, IDLE, server_ssl_config,
               proxy_ssl_config, alternative_service, session_->net_log());
   preconnect_job_set_.insert(job);
   job->Preconnect(num_streams);

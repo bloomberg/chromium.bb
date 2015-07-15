@@ -219,7 +219,6 @@ class NET_EXPORT HttpStreamFactory {
   // Requests that enough connections for |num_streams| be opened.
   virtual void PreconnectStreams(int num_streams,
                                  const HttpRequestInfo& info,
-                                 RequestPriority priority,
                                  const SSLConfig& server_ssl_config,
                                  const SSLConfig& proxy_ssl_config) = 0;
 

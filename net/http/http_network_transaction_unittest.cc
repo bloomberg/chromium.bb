@@ -1441,8 +1441,8 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
   SSLConfig ssl_config;
   session->ssl_config_service()->GetSSLConfig(&ssl_config);
   session->GetNextProtos(&ssl_config.next_protos);
-  session->http_stream_factory()->PreconnectStreams(
-      1, request, DEFAULT_PRIORITY, ssl_config, ssl_config);
+  session->http_stream_factory()->PreconnectStreams(1, request, ssl_config,
+                                                    ssl_config);
   // Wait for the preconnect to complete.
   // TODO(davidben): Some way to wait for an idle socket count might be handy.
   base::RunLoop().RunUntilIdle();
@@ -13094,7 +13094,6 @@ class FakeStreamFactory : public HttpStreamFactory {
 
   void PreconnectStreams(int num_streams,
                          const HttpRequestInfo& info,
-                         RequestPriority priority,
                          const SSLConfig& server_ssl_config,
                          const SSLConfig& proxy_ssl_config) override {
     ADD_FAILURE();
@@ -13504,8 +13503,8 @@ TEST_P(HttpNetworkTransactionTest, CloseSSLSocketOnIdleForHttpRequest2) {
   HttpStreamFactory* http_stream_factory = session->http_stream_factory();
   SSLConfig ssl_config;
   session->ssl_config_service()->GetSSLConfig(&ssl_config);
-  http_stream_factory->PreconnectStreams(1, ssl_request, DEFAULT_PRIORITY,
-                                         ssl_config, ssl_config);
+  http_stream_factory->PreconnectStreams(1, ssl_request, ssl_config,
+                                         ssl_config);
   EXPECT_EQ(0, GetIdleSocketCountInSSLSocketPool(session.get()));
 
   // Start the HTTP request.  Pool should stall.

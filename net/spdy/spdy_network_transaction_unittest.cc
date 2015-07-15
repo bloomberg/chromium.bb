@@ -1081,9 +1081,8 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
       helper.session()->http_stream_factory();
   helper.session()->GetNextProtos(&preconnect_ssl_config.next_protos);
 
-  http_stream_factory->PreconnectStreams(
-      1, httpreq, DEFAULT_PRIORITY,
-      preconnect_ssl_config, preconnect_ssl_config);
+  http_stream_factory->PreconnectStreams(1, httpreq, preconnect_ssl_config,
+                                         preconnect_ssl_config);
 
   out.rv = trans1->Start(&httpreq, callback1.callback(), log);
   ASSERT_EQ(ERR_IO_PENDING, out.rv);
