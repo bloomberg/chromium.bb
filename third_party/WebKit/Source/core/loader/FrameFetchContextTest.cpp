@@ -104,7 +104,7 @@ protected:
         fetchContext->upgradeInsecureRequest(fetchRequest);
 
         EXPECT_STREQ(shouldPrefer ? "1" : "",
-            fetchRequest.resourceRequest().httpHeaderField("HTTPS").utf8().data());
+            fetchRequest.resourceRequest().httpHeaderField("Upgrade-Insecure-Requests").utf8().data());
     }
 
     KURL secureURL;

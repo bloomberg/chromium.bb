@@ -11,7 +11,7 @@
     fetch("resources/echo-https-header.pl").then(t.step_func(function(res) {
       return res.json();
     })).then(t.step_func(function(json) {
-      assert_equals(json.https, "");
+      assert_equals(json.header, "");
       t.done();
     }));
   </script>

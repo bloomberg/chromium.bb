@@ -8,6 +8,6 @@ print "Cache-Control: no-store\n\n";
 print <<DONE
 <script>
     var target = window.opener || window.top;
-    target.postMessage({ "https": "$ENV{"HTTP_HTTPS"}" }, "*");
+    target.postMessage({ "header": "$ENV{"HTTP_UPGRADE_INSECURE_REQUESTS"}" }, "*");
 </script>
 DONE

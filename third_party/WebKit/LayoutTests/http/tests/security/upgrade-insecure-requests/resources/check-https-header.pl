@@ -13,9 +13,9 @@ print <<DONE
   <script src="/resources/testharnessreport.js"></script>
   <script>
     test(function () {
-      var httpsHeader = "$ENV{"HTTP_HTTPS"}";
+      var httpsHeader = "$ENV{"HTTP_UPGRADE_INSECURE_REQUESTS"}";
       assert_equals(httpsHeader, "1");
-    }, "Verify that this request was delivered with an 'HTTPS' header.");
+    }, "Verify that this request was delivered with an 'Upgrade-Insecure-Requests' header.");
   </script>
 </head>
 </html>

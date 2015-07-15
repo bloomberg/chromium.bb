@@ -6,7 +6,7 @@
   <script>
     var t = async_test("Verify that nested documents receive an 'HTTPS' header.");
     window.addEventListener("message", t.step_func(function (message) {
-      assert_equals(message.data.https, "1");
+      assert_equals(message.data.header, "1");
       t.done();
     }));
   </script>

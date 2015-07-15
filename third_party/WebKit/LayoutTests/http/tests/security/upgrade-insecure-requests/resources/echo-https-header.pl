@@ -6,5 +6,5 @@ print "Access-Control-Allow-Origin: *\n";
 print "Cache-Control: no-store\n\n";
 
 print <<DONE
-{ "https": "$ENV{"HTTP_HTTPS"}" }
+{ "header": "$ENV{"HTTP_UPGRADE_INSECURE_REQUESTS"}" }
 DONE

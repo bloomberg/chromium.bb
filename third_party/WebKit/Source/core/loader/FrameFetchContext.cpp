@@ -584,7 +584,7 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
     // Tack an 'HTTPS' header to outgoing navigational requests, as described in
     // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
     if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone)
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("HTTPS", "1");
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Upgrade-Insecure-Requests", "1");
 
     if (m_document && m_document->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
         ASSERT(m_document->insecureNavigationsToUpgrade());
