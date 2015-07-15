@@ -606,7 +606,7 @@
    fun:_ZN3IPC11SyncChannel*Channel4Mode*Listener*
 }
 {
-   bug_17540
+   bug_17540_16661
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptor*FileDescriptorWatcherEPNS0_7WatcherE
@@ -614,6 +614,13 @@
    ...
    fun:_ZN3IPC*Channel*ConnectEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelOpenedEv
+}
+{
+   bug_16661
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN4base11MessageLoop10RunHandlerEv
 }
 {
    # slight variant of the above
