@@ -159,56 +159,6 @@ bool PositionIteratorAlgorithm<Strategy>::atEndOfNode() const
     return Strategy::hasChildren(*m_anchorNode) || m_offsetInAnchor >= Strategy::lastOffsetForEditing(m_anchorNode);
 }
 
-template <typename Strategy>
-bool PositionIteratorAlgorithm<Strategy>::isCandidate() const
-{
-    if (!m_anchorNode)
-        return false;
-
-    LayoutObject* layoutObject = m_anchorNode->layoutObject();
-    if (!layoutObject)
-        return false;
-
-    if (layoutObject->style()->visibility() != VISIBLE)
-        return false;
-
-    if (layoutObject->isBR()) {
-        // For br element, the condition
-        // |(!Strategy::hasChildren(*m_anchorNode) ||
-        //   m_nodeAfterPositionInAnchor)| corresponds to the condition
-        // |m_anchorType != PositionAnchorType::AfterAnchor| in
-        // |Position.isCandaite|. Both conditions say this position is not in
-        // tail of the element. If conditions lose consistency,
-        // VisiblePosition::canonicalPosition will fail on
-        // |canonicalizeCandidate(previousCandidate(position))|,
-        // because previousCandidate returns a Position converted from
-        // a "Candidate" PositionIterator and cannonicalizeCandidate(Position)
-        // assumes the Position is "Candidate".
-        return !m_offsetInAnchor && (!Strategy::hasChildren(*m_anchorNode) || m_nodeAfterPositionInAnchor) && !PositionAlgorithm<Strategy>::nodeIsUserSelectNone(Strategy::parent(*m_anchorNode));
-    }
-    if (layoutObject->isText())
-        return !PositionAlgorithm<Strategy>::nodeIsUserSelectNone(m_anchorNode) && PositionAlgorithm<Strategy>(*this).inRenderedText();
-
-    if (layoutObject->isSVG()) {
-        // We don't consider SVG elements are contenteditable except for
-        // associated layoutObject returns isText() true, e.g. LayoutSVGInlineText.
-        return false;
-    }
-
-    if (isRenderedHTMLTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
-        return (atStartOfNode() || atEndOfNode()) && !PositionAlgorithm<Strategy>::nodeIsUserSelectNone(Strategy::parent(*m_anchorNode));
-
-    if (!isHTMLHtmlElement(*m_anchorNode) && layoutObject->isLayoutBlockFlow()) {
-        if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
-            if (!PositionAlgorithm<Strategy>::hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
-                return atStartOfNode() && !PositionAlgorithm<Strategy>::nodeIsUserSelectNone(m_anchorNode);
-            return m_anchorNode->hasEditableStyle() && !PositionAlgorithm<Strategy>::nodeIsUserSelectNone(m_anchorNode) && PositionAlgorithm<Strategy>(*this).atEditingBoundary();
-        }
-    }
-
-    return false;
-}
-
 template class PositionIteratorAlgorithm<EditingStrategy>;
 template class PositionIteratorAlgorithm<EditingInComposedTreeStrategy>;
 

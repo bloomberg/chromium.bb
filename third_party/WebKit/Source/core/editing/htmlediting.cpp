@@ -336,8 +336,9 @@ PositionAlgorithm<Strategy> nextCandidateAlgorithm(const PositionAlgorithm<Strat
     PositionIteratorAlgorithm<Strategy> p(position);
     while (!p.atEnd()) {
         p.increment();
-        if (p.isCandidate())
-            return p;
+        PositionAlgorithm<Strategy> candidate = p;
+        if (candidate.isCandidate())
+            return candidate;
     }
     return PositionAlgorithm<Strategy>();
 }
@@ -370,8 +371,9 @@ PositionAlgorithm<Strategy> previousCandidateAlgorithm(const PositionAlgorithm<S
     PositionIteratorAlgorithm<Strategy> p(position);
     while (!p.atStart()) {
         p.decrement();
-        if (p.isCandidate())
-            return p;
+        PositionAlgorithm<Strategy> candidate = p;
+        if (candidate.isCandidate())
+            return candidate;
     }
     return PositionAlgorithm<Strategy>();
 }

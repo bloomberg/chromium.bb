@@ -56,7 +56,6 @@ public:
     bool atEnd() const;
     bool atStartOfNode() const;
     bool atEndOfNode() const;
-    bool isCandidate() const;
 
 private:
     PositionIteratorAlgorithm(Node* anchorNode, int offsetInAnchorNode);
