@@ -7,6 +7,8 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -23,21 +25,20 @@ class TestNetLogTempFile : public NetLogTempFile {
  public:
   explicit TestNetLogTempFile(ChromeNetLog* chrome_net_log)
       : NetLogTempFile(chrome_net_log),
-        lie_about_net_export_log_directory_(false),
-        lie_about_file_existence_(false) {
+        lie_about_net_export_log_directory_(false) {
+    EXPECT_TRUE(net_log_temp_dir_.CreateUniqueTempDir());
+  }
+
+  ~TestNetLogTempFile() override {
+    EXPECT_TRUE(net_log_temp_dir_.Delete());
   }
 
   // NetLogTempFile implementation:
-  bool GetNetExportLogDirectory(base::FilePath* path) override {
+  bool GetNetExportLogBaseDirectory(base::FilePath* path) const override {
     if (lie_about_net_export_log_directory_)
       return false;
-    return NetLogTempFile::GetNetExportLogDirectory(path);
-  }
-
-  bool NetExportLogExists() override {
-    if (lie_about_file_existence_)
-      return false;
-    return NetLogTempFile::NetExportLogExists();
+    *path = net_log_temp_dir_.path();
+    return true;
   }
 
   void set_lie_about_net_export_log_directory(
@@ -45,13 +46,10 @@ class TestNetLogTempFile : public NetLogTempFile {
     lie_about_net_export_log_directory_ = lie_about_net_export_log_directory;
   }
 
-  void set_lie_about_file_existence(bool lie_about_file_existence) {
-    lie_about_file_existence_ = lie_about_file_existence;
-  }
-
  private:
   bool lie_about_net_export_log_directory_;
-  bool lie_about_file_existence_;
+
+  base::ScopedTempDir net_log_temp_dir_;
 };
 
 class NetLogTempFileTest : public ::testing::Test {
@@ -61,27 +59,8 @@ class NetLogTempFileTest : public ::testing::Test {
         net_log_temp_file_(new TestNetLogTempFile(net_log_.get())),
         file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING,
                                    &message_loop_) {
-  }
-
-  // ::testing::Test implementation:
-  void SetUp() override {
-    // Get a temporary file name for unit tests.
-    base::FilePath net_log_dir;
-    ASSERT_TRUE(net_log_temp_file_->GetNetExportLogDirectory(&net_log_dir));
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(net_log_dir, &net_export_log_));
-
-    net_log_temp_file_->log_filename_ = net_export_log_.BaseName().value();
-
-    // CreateTemporaryFileInDir may return a legacy 8.3 file name on windows.
-    // Need to use the original directory name for string comparisons.
-    ASSERT_TRUE(net_log_temp_file_->GetNetExportLog());
+    EXPECT_TRUE(net_log_temp_file_->SetUpNetExportLogPath());
     net_export_log_ = net_log_temp_file_->log_path_;
-    ASSERT_FALSE(net_export_log_.empty());
-  }
-
-  void TearDown() override {
-    // Delete the temporary file we have created.
-    ASSERT_TRUE(base::DeleteFile(net_export_log_, false));
   }
 
   std::string GetStateString() const {
@@ -239,17 +218,25 @@ TEST_F(NetLogTempFileTest, EnsureInitFailure) {
 }
 
 TEST_F(NetLogTempFileTest, EnsureInitAllowStart) {
-  net_log_temp_file_->set_lie_about_file_existence(true);
-
   EXPECT_TRUE(net_log_temp_file_->EnsureInit());
   VerifyFilePathAndStateAfterEnsureInit();
 
   // Calling EnsureInit() second time should be a no-op.
   EXPECT_TRUE(net_log_temp_file_->EnsureInit());
   VerifyFilePathAndStateAfterEnsureInit();
+
+  // GetFilePath() should failed when there's no temp file.
+  base::FilePath net_export_file_path;
+  EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
 }
 
 TEST_F(NetLogTempFileTest, EnsureInitAllowStartOrSend) {
+  // Create and close an empty log file, to simulate an old log file already
+  // existing.
+  base::ScopedFILE created_file(base::OpenFile(net_export_log_, "w"));
+  ASSERT_TRUE(created_file.get());
+  created_file.reset();
+
   EXPECT_TRUE(net_log_temp_file_->EnsureInit());
 
   EXPECT_EQ("NOT_LOGGING", GetStateString());
@@ -263,10 +250,6 @@ TEST_F(NetLogTempFileTest, EnsureInitAllowStartOrSend) {
   EXPECT_TRUE(net_log_temp_file_->GetFilePath(&net_export_file_path));
   EXPECT_TRUE(base::PathExists(net_export_file_path));
   EXPECT_EQ(net_export_log_, net_export_file_path);
-
-  // GetFilePath should return false if NetExportLogExists() fails.
-  net_log_temp_file_->set_lie_about_file_existence(true);
-  EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
 }
 
 TEST_F(NetLogTempFileTest, ProcessCommandDoStartAndStop) {
@@ -330,7 +313,7 @@ TEST_F(NetLogTempFileTest,
 }
 
 TEST_F(NetLogTempFileTest, DoStartClearsFile) {
-  // Verify file sizes after two consecutives start/stop are the same (even if
+  // Verify file sizes after two consecutive starts/stops are the same (even if
   // we add some junk data in between).
   net_log_temp_file_->ProcessCommand(NetLogTempFile::DO_START);
   VerifyFileAndStateAfterDoStart();

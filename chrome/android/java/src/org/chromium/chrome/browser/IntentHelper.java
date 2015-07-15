@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Patterns;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.io.File;
@@ -54,7 +55,16 @@ public abstract class IntentHelper {
         send.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(body));
         if (!TextUtils.isEmpty(fileToAttach)) {
             File fileIn = new File(fileToAttach);
-            send.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(fileIn));
+            Uri fileUri;
+            // Attempt to use a content Uri, for greater compatibility.  If the path isn't set
+            // up to be shared that way with a <paths> meta-data element, just use a file Uri
+            // instead.
+            try {
+                fileUri = ContentUriUtils.getContentUriFromFile(context, fileIn);
+            } catch (IllegalArgumentException ex) {
+                fileUri = Uri.fromFile(fileIn);
+            }
+            send.putExtra(Intent.EXTRA_STREAM, fileUri);
         }
 
         try {

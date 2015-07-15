@@ -14,12 +14,15 @@
 
 using content::BrowserThread;
 
-NetLogTempFile::NetLogTempFile(ChromeNetLog* chrome_net_log)
-    : state_(STATE_UNINITIALIZED),
-      log_type_(LOG_TYPE_NONE),
-      log_filename_(FILE_PATH_LITERAL("chrome-net-export-log.json")),
-      chrome_net_log_(chrome_net_log) {
-}
+// Path of logs relative to base::GetTempDir(). Must be kept in sync
+// with chrome/android/java/res/xml/file_paths.xml
+base::FilePath::CharType kLogRelativePath[] =
+    FILE_PATH_LITERAL("net-export/chrome-net-export-log.json");
+
+// Old path used by net-export. Used to delete old files.
+// TODO(mmenke): Should remove at some point. Added in M46.
+base::FilePath::CharType kOldLogRelativePath[] =
+    FILE_PATH_LITERAL("chrome-net-export-log.json");
 
 NetLogTempFile::~NetLogTempFile() {
   if (write_to_file_observer_)
@@ -48,6 +51,25 @@ void NetLogTempFile::ProcessCommand(Command command) {
       NOTREACHED();
       break;
   }
+}
+
+bool NetLogTempFile::GetFilePath(base::FilePath* path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
+  if (log_type_ == LOG_TYPE_NONE || state_ == STATE_LOGGING)
+    return false;
+
+  if (!NetExportLogExists())
+    return false;
+
+  DCHECK(!log_path_.empty());
+#if defined(OS_POSIX)
+  // Users, group and others can read, write and traverse.
+  int mode = base::FILE_PERMISSION_MASK;
+  base::SetPosixFilePermissions(log_path_, mode);
+#endif  // defined(OS_POSIX)
+
+  *path = log_path_;
+  return true;
 }
 
 base::DictionaryValue* NetLogTempFile::GetState() {
@@ -93,6 +115,18 @@ base::DictionaryValue* NetLogTempFile::GetState() {
   return dict;
 }
 
+NetLogTempFile::NetLogTempFile(ChromeNetLog* chrome_net_log)
+    : state_(STATE_UNINITIALIZED),
+      log_type_(LOG_TYPE_NONE),
+      chrome_net_log_(chrome_net_log) {
+}
+
+bool NetLogTempFile::GetNetExportLogBaseDirectory(
+    base::FilePath* path) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
+  return base::GetTempDir(path);
+}
+
 net::NetLogCaptureMode NetLogTempFile::GetCaptureModeForLogType(
     LogType log_type) {
   switch (log_type) {
@@ -114,7 +148,7 @@ bool NetLogTempFile::EnsureInit() {
   if (state_ != STATE_UNINITIALIZED)
     return true;
 
-  if (!GetNetExportLog())
+  if (!SetUpNetExportLogPath())
     return false;
 
   state_ = STATE_NOT_LOGGING;
@@ -161,41 +195,27 @@ void NetLogTempFile::StopNetLog() {
   state_ = STATE_NOT_LOGGING;
 }
 
-bool NetLogTempFile::GetFilePath(base::FilePath* path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
-  if (log_type_ == LOG_TYPE_NONE || state_ == STATE_LOGGING)
-    return false;
-
-  if (!NetExportLogExists())
-    return false;
-
-  DCHECK(!log_path_.empty());
-#if defined(OS_POSIX)
-  // Users, group and others can read, write and traverse.
-  int mode = base::FILE_PERMISSION_MASK;
-  base::SetPosixFilePermissions(log_path_, mode);
-#endif  // defined(OS_POSIX)
-
-  *path = log_path_;
-  return true;
-}
-
-bool NetLogTempFile::GetNetExportLog() {
+bool NetLogTempFile::SetUpNetExportLogPath() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   base::FilePath temp_dir;
-  if (!GetNetExportLogDirectory(&temp_dir))
+  if (!GetNetExportLogBaseDirectory(&temp_dir))
     return false;
 
-  log_path_ = temp_dir.Append(log_filename_);
+  // Delete log file at old location, if present.
+  DeleteFile(temp_dir.Append(kOldLogRelativePath), false);
+
+  base::FilePath log_path = temp_dir.Append(kLogRelativePath);
+
+  if (!base::CreateDirectoryAndGetError(log_path.DirName(),
+                                        nullptr)) {
+    return false;
+  }
+
+  log_path_ = log_path;
   return true;
 }
 
-bool NetLogTempFile::GetNetExportLogDirectory(base::FilePath* path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
-  return base::GetTempDir(path);
-}
-
-bool NetLogTempFile::NetExportLogExists() {
+bool NetLogTempFile::NetExportLogExists() const {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   DCHECK(!log_path_.empty());
   return base::PathExists(log_path_);

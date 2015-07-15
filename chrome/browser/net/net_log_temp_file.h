@@ -50,7 +50,7 @@ class NetLogTempFile {
     DO_STOP,   // Call StopNetLog.
   };
 
-  virtual ~NetLogTempFile();  // Destructs a NetLogTempFile.
+  virtual ~NetLogTempFile();
 
   // Accepts the button command and executes it.
   void ProcessCommand(Command command);
@@ -71,10 +71,8 @@ class NetLogTempFile {
 
   // Returns path name to base::GetTempDir() directory. Returns false if
   // base::GetTempDir() fails.
-  virtual bool GetNetExportLogDirectory(base::FilePath* path);
-
-  // Returns true if |log_path_| exists.
-  virtual bool NetExportLogExists();
+  virtual bool GetNetExportLogBaseDirectory(
+      base::FilePath* path) const;
 
  private:
   friend class ChromeNetLog;
@@ -133,10 +131,14 @@ class NetLogTempFile {
   // are not collecting data into a file.
   void StopNetLog();
 
-  // Updates |log_path_| with base::FilePath to |log_filename_| in the
-  // base::GetTempDir() directory. Returns false if base::GetTempDir()
-  // fails.
-  bool GetNetExportLog();
+  // Updates |log_path_| to be the base::FilePath to use for log files, which
+  // will be inside the base::GetTempDir() directory. Returns false if
+  // base::GetTempDir() fails, or unable to create a subdirectory for logging
+  // withinh that directory.
+  bool SetUpNetExportLogPath();
+
+  // Returns true if a file exists at |log_path_|.
+  bool NetExportLogExists() const;
 
   // Helper function for unit tests.
   State state() const { return state_; }
@@ -144,10 +146,6 @@ class NetLogTempFile {
 
   State state_;  // Current state of NetLogTempFile.
   LogType log_type_;  // Type of current log file on disk.
-
-  // Name of the file. It defaults to chrome-net-export-log.json, but can be
-  // overwritten by unit tests.
-  base::FilePath::StringType log_filename_;
 
   base::FilePath log_path_;  // base::FilePath to the temporary file.
 
