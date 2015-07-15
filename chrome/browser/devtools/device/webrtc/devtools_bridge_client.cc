@@ -4,10 +4,11 @@
 
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_client.h"
 
+#include "base/callback.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
-#include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/profile_identity_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -64,7 +65,7 @@ DevToolsBridgeClient::DevToolsBridgeClient(
     ProfileOAuth2TokenService* token_service)
     : WebContentsObserver(),
       profile_(profile),
-      identity_provider_(signin_manager, token_service, nullptr),
+      identity_provider_(signin_manager, token_service, base::Closure()),
       worker_is_loaded_(false),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

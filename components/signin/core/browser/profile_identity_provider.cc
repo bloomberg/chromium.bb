@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/profile_identity_provider.h"
+#include "components/signin/core/browser/profile_identity_provider.h"
 
+#include "base/callback.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#endif
 
 ProfileIdentityProvider::ProfileIdentityProvider(
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service,
-    LoginUIService* login_ui_service)
+    const base::Closure& request_login_callback)
     : signin_manager_(signin_manager),
       token_service_(token_service),
-      login_ui_service_(login_ui_service) {
+      request_login_callback_(request_login_callback) {
   signin_manager_->AddObserver(this);
 }
 
@@ -37,12 +34,10 @@ OAuth2TokenService* ProfileIdentityProvider::GetTokenService() {
 }
 
 bool ProfileIdentityProvider::RequestLogin() {
-#if defined(OS_ANDROID)
-  return false;
-#else
-  login_ui_service_->ShowLoginPopup();
+  if (request_login_callback_.is_null())
+    return false;
+  request_login_callback_.Run();
   return true;
-#endif
 }
 
 void ProfileIdentityProvider::GoogleSigninSucceeded(

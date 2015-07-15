@@ -9,10 +9,10 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/update_client/update_query_params.h"
 #include "extensions/browser/updater/extension_downloader.h"
@@ -49,7 +49,7 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
   scoped_ptr<IdentityProvider> identity_provider(new ProfileIdentityProvider(
       SigninManagerFactory::GetForProfile(profile),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      LoginUIServiceFactory::GetForProfile(profile)));
+      LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
   scoped_ptr<ExtensionDownloader> downloader =
       CreateForRequestContext(profile->GetRequestContext(), delegate);
   downloader->SetWebstoreIdentityProvider(identity_provider.Pass());

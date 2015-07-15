@@ -20,7 +20,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/services/gcm/gcm_account_tracker.h"
 #include "chrome/browser/services/gcm/gcm_desktop_utils.h"
-#include "chrome/browser/signin/profile_identity_provider.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -28,6 +27,7 @@
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
+#include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/identity_provider.h"
@@ -71,7 +71,7 @@ GCMProfileService::IdentityObserver::IdentityObserver(Profile* profile,
   identity_provider_.reset(new ProfileIdentityProvider(
       SigninManagerFactory::GetForProfile(profile),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      LoginUIServiceFactory::GetForProfile(profile)));
+      LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile)));
   identity_provider_->AddObserver(this);
 
   OnActiveAccountLogin();

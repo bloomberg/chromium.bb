@@ -9,7 +9,7 @@
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_instances_request.h"
 #include "chrome/browser/devtools/device/webrtc/send_command_request.h"
 #include "chrome/browser/local_discovery/cloud_device_list_delegate.h"
-#include "chrome/browser/signin/profile_identity_provider.h"
+#include "components/signin/core/browser/profile_identity_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"

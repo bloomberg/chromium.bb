@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -27,6 +29,14 @@ LoginUIService* LoginUIServiceFactory::GetForProfile(Profile* profile) {
 // static
 LoginUIServiceFactory* LoginUIServiceFactory::GetInstance() {
   return Singleton<LoginUIServiceFactory>::get();
+}
+
+// static
+base::Closure LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
+    Profile* profile) {
+  return base::Bind(
+      &LoginUIService::ShowLoginPopup,
+      base::Unretained(LoginUIServiceFactory::GetForProfile(profile)));
 }
 
 KeyedService* LoginUIServiceFactory::BuildServiceInstanceFor(

@@ -139,7 +139,7 @@ IdentityAPI::IdentityAPI(content::BrowserContext* context)
               Profile::FromBrowserContext(context)),
           ProfileOAuth2TokenServiceFactory::GetForProfile(
               Profile::FromBrowserContext(context)),
-          LoginUIServiceFactory::GetForProfile(
+          LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
               Profile::FromBrowserContext(context))),
       account_tracker_(&profile_identity_provider_,
                        g_browser_process->system_request_context()) {

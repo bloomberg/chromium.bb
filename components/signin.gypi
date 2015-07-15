@@ -60,6 +60,8 @@
         'signin/core/browser/device_activity_fetcher.h',
         'signin/core/browser/gaia_cookie_manager_service.cc',
         'signin/core/browser/gaia_cookie_manager_service.h',
+        'signin/core/browser/profile_identity_provider.cc',
+        'signin/core/browser/profile_identity_provider.h',
         'signin/core/browser/profile_oauth2_token_service.cc',
         'signin/core/browser/profile_oauth2_token_service.h',
         'signin/core/browser/refresh_token_annotation_request.cc',

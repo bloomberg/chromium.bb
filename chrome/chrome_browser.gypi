@@ -2723,8 +2723,6 @@
       'browser/signin/local_auth.h',
       'browser/signin/mutable_profile_oauth2_token_service_delegate.cc',
       'browser/signin/mutable_profile_oauth2_token_service_delegate.h',
-      'browser/signin/profile_identity_provider.cc',
-      'browser/signin/profile_identity_provider.h',
       'browser/signin/profile_oauth2_token_service_factory.cc',
       'browser/signin/profile_oauth2_token_service_factory.h',
       'browser/signin/signin_error_controller_factory.cc',
