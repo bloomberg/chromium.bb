@@ -491,8 +491,9 @@ bool DictionaryValue::Get(StringPiece path,
        delimiter_position != std::string::npos;
        delimiter_position = current_path.find('.')) {
     const DictionaryValue* child_dictionary = NULL;
-    if (!current_dictionary->GetDictionary(
-            current_path.substr(0, delimiter_position), &child_dictionary)) {
+    if (!current_dictionary->GetDictionaryWithoutPathExpansion(
+            current_path.substr(0, delimiter_position).as_string(),
+            &child_dictionary)) {
       return false;
     }
 
