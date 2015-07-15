@@ -3233,7 +3233,7 @@ popup_grab_button(struct weston_pointer_grab *grab,
 		}
 	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
 		   (shseat->popup_grab.initial_up ||
-		    time - shseat->seat->pointer->grab_time > 500)) {
+		    time - grab->pointer->grab_time > 500)) {
 		popup_grab_end(grab->pointer);
 	}
 
