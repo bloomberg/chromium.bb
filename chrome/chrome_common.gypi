@@ -351,7 +351,6 @@
         '<(DEPTH)/skia/skia.gyp:skia_library',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-        '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
         '<(DEPTH)/third_party/zlib/google/zip.gyp:zip',
         '<(DEPTH)/ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',

@@ -135,6 +135,7 @@
       'common/url_pattern_set_unittest.cc',
       'common/url_pattern_unittest.cc',
       'common/user_script_unittest.cc',
+      'common/update_manifest_unittest.cc',
       'renderer/activity_log_converter_strategy_unittest.cc',
       'renderer/api/mojo_private/mojo_private_unittest.cc',
       'renderer/api/serial/data_receiver_unittest.cc',

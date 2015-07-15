@@ -906,7 +906,6 @@
       'common/extensions/permissions/permissions_data_unittest.cc',
       'common/extensions/permissions/settings_override_permission_unittest.cc',
       'common/extensions/sync_type_unittest.cc',
-      'common/extensions/update_manifest_unittest.cc',
       'common/extensions/value_counter_unittest.cc',
       'renderer/extensions/extension_localization_peer_unittest.cc',
       'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',

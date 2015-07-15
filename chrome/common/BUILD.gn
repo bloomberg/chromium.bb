@@ -75,7 +75,6 @@ static_library("common") {
     "//net",
     "//skia",
     "//third_party/icu",
-    "//third_party/libxml",
     "//third_party/zlib:zip",
     "//ui/resources:resources",
     "//url",

@@ -3,7 +3,6 @@ include_rules = [
   "+device/usb",  # For UsbDevicePermission
   "+extensions/grit",
   "+extensions/strings/grit",
-  "+libxml",
   "+ppapi/c",  # For various types.
   "+skia",
 ]
