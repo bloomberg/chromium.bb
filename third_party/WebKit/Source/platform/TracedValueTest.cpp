@@ -45,4 +45,16 @@ TEST(TracedValueTest, Hierarchy)
     EXPECT_EQ("{\"i0\":2014,\"dict1\":{\"i1\":2014,\"dict2\":{\"b2\":false},\"s1\":\"foo\"},\"d0\":0,\"b0\":true,\"a1\":[1,true,{\"i2\":3}],\"s0\":\"foo\"}", json);
 }
 
+TEST(TracedValueTest, Escape)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("s0", "value0\\");
+    value->setString("s1", "value\n1");
+    value->setString("s2", "\"value2\"");
+    value->setString("s3\\", "value3");
+    value->setString("\"s4\"", "value4");
+    String json = value->asTraceFormat();
+    EXPECT_EQ("{\"s0\":\"value0\\\\\",\"s1\":\"value\\n1\",\"s2\":\"\\\"value2\\\"\",\"s3\\\\\":\"value3\",\"\\\"s4\\\"\":\"value4\"}", json);
+}
+
 } // namespace blink

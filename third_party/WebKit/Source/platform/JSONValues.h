@@ -48,6 +48,8 @@ class JSONValue;
 
 namespace WTF {
 
+class StringBuilder;
+
 // FIXME: Avoid the need for this global upcasting to JSONValue (for PassRefPtr<T>.)
 // The current CodeGeneratorInspector.py generates code which order sorts its input
 // types and generates forward declarations where needed. But with inline uses
@@ -344,6 +346,8 @@ public:
     using JSONArrayBase::begin;
     using JSONArrayBase::end;
 };
+
+void doubleQuoteStringForJSON(const String&, StringBuilder*);
 
 } // namespace blink
 
