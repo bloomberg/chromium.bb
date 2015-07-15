@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS test FileReader InvalidStateError exception for readAsText 
+PASS test FileReader InvalidStateError exception for readAsDataURL 
+PASS test FileReader InvalidStateError exception for readAsArrayBuffer 
+PASS test FileReader InvalidStateError exception in onloadstart event for readAsArrayBuffer 
+FAIL test FileReader no InvalidStateError exception in onloadstart event for readAsArrayBuffer assert_equals: readyState must be LOADING expected 1 but got 2
+Harness: the test ran to completion.
+
