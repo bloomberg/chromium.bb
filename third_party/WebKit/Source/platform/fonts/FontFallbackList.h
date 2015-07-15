@@ -79,8 +79,10 @@ public:
     const SimpleFontData* primarySimpleFontData(const FontDescription& fontDescription)
     {
         ASSERT(isMainThread());
-        if (!m_cachedPrimarySimpleFontData)
+        if (!m_cachedPrimarySimpleFontData) {
             m_cachedPrimarySimpleFontData = determinePrimarySimpleFontData(fontDescription);
+            ASSERT(m_cachedPrimarySimpleFontData);
+        }
         return m_cachedPrimarySimpleFontData;
     }
     const FontData* fontDataAt(const FontDescription&, unsigned index) const;
