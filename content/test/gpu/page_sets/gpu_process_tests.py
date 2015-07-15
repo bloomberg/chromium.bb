@@ -1,40 +1,37 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from telemetry.page import page as page_module
 from telemetry.story import story_set as story_set_module
 
-from gpu_tests import gpu_test_base
+class GpuProcessTestsPage(page_module.Page):
 
-class GpuProcessTestsPage(gpu_test_base.PageBase):
-
-  def __init__(self, url, name, story_set, expectations):
+  def __init__(self, url, name, story_set):
     super(GpuProcessTestsPage, self).__init__(url=url, page_set=story_set,
-                                              name=name,
-                                              expectations=expectations)
+                                              name=name)
 
 
 class FunctionalVideoPage(GpuProcessTestsPage):
 
-  def __init__(self, story_set, expectations):
+  def __init__(self, story_set):
     super(FunctionalVideoPage, self).__init__(
       url='file://../../data/gpu/functional_video.html',
       name='GpuProcess.video',
-      story_set=story_set,
-      expectations=expectations)
+      story_set=story_set)
 
-  def RunNavigateStepsInner(self, action_runner):
+  def RunNavigateSteps(self, action_runner):
+    super(FunctionalVideoPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 
 
 class GpuInfoCompletePage(GpuProcessTestsPage):
 
-  def __init__(self, story_set, expectations):
+  def __init__(self, story_set):
     super(GpuInfoCompletePage, self).__init__(
       url='file://../../data/gpu/functional_3d_css.html',
       name='GpuProcess.gpu_info_complete',
-      story_set=story_set,
-      expectations=expectations)
+      story_set=story_set)
 
   def Validate(self, tab, results):
     # Regression test for crbug.com/454906
@@ -55,7 +52,7 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
 
-  def __init__(self, expectations):
+  def __init__(self):
     super(GpuProcessTestsStorySet, self).__init__(
       serving_dirs=set(['../../../../content/test/data']))
 
@@ -69,7 +66,7 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
     ]
 
     for url, name in urls_and_names_list:
-      self.AddStory(GpuProcessTestsPage(url, name, self, expectations))
+      self.AddStory(GpuProcessTestsPage(url, name, self))
 
-    self.AddStory(FunctionalVideoPage(self, expectations))
-    self.AddStory(GpuInfoCompletePage(self, expectations))
+    self.AddStory(FunctionalVideoPage(self))
+    self.AddStory(GpuInfoCompletePage(self))

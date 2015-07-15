@@ -175,15 +175,10 @@ class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
 
   def CreateStorySet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Canvas')
-    story_set = CreateStorySetFromPath(
+    return CreateStorySetFromPath(
       path, SKIPPED_FILE,
       shared_page_state_class=(
         webgl_supported_shared_state.WebGLSupportedSharedState))
-    # WebGLSupportedSharedState requires the skipped_gpus property to
-    # be set on each page.
-    for page in story_set:
-      page.skipped_gpus = []
-    return story_set
 
 
 class BlinkPerfDOM(perf_benchmark.PerfBenchmark):

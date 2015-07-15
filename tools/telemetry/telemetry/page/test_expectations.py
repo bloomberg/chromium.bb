@@ -78,18 +78,20 @@ class TestExpectations(object):
                         bug=None):
     return _Expectation(expectation, self, url_pattern, conditions, bug)
 
-  def GetExpectationForPage(self, browser, page):
+  # TODO(kbr): generalize TestExpectations to work with SharedState
+  # and Story. crbug.com/495870
+  def GetExpectationForPage(self, shared_page_state, page):
     for e in self.expectations:
-      if self.ExpectationAppliesToPage(e, browser, page):
+      if self.ExpectationAppliesToPage(e, shared_page_state, page):
         return e.expectation
     return 'pass'
 
-  def ExpectationAppliesToPage(self, expectation, browser, page):
+  def ExpectationAppliesToPage(self, expectation, shared_page_state, page):
     matches_url = fnmatch.fnmatch(page.url, expectation.url_pattern)
     matches_name = page.name and fnmatch.fnmatch(page.name,
                                                  expectation.name_pattern)
     if matches_url or matches_name:
-      if self.ModifiersApply(browser, expectation):
+      if self.ModifiersApply(shared_page_state, expectation):
         return True
     return False
 
@@ -118,18 +120,21 @@ class TestExpectations(object):
 
     return 0
 
-  def ModifiersApply(self, browser, expectation):
+  def ModifiersApply(self, shared_page_state, expectation):
     """Determines if the conditions for an expectation apply to this system.
     Can be overridden by subclasses to support new user-defined conditions.
 
     Args:
-      browser: the currently running browser.
+      shared_page_state: an instance of telemetry.page.SharedPageState
+          which can be queried for values like the currently running
+          browser.
       expectation: a object which is guaranteed to have the property
           "user_defined_conditions" defined, which is an array of
           strings or tuples specified in the test expectations for
           which IsValidUserDefinedCondition returned true.
 
     """
+    browser = shared_page_state.browser
     platform = browser.platform
     os_matches = (not expectation.os_conditions or
         platform.GetOSName() in expectation.os_conditions or

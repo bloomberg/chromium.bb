@@ -10,10 +10,11 @@ import re
 import tempfile
 
 from catapult_base import cloud_storage
+from telemetry import benchmark
+from telemetry.page import page_test
 from telemetry.util import image_util
 from telemetry.util import rgba_color
 
-import gpu_test_base
 
 test_data_dir = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', 'data', 'gpu'))
@@ -47,7 +48,7 @@ def _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio):
           str(actual_color.g) + ", " +
           str(actual_color.b) + "]")
 
-class ValidatorBase(gpu_test_base.ValidatorBase):
+class ValidatorBase(page_test.PageTest):
   def __init__(self):
     super(ValidatorBase, self).__init__()
     # Parameters for cloud storage reference images.
@@ -223,7 +224,7 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
       raise
 
 
-class TestBase(gpu_test_base.TestBase):
+class TestBase(benchmark.Benchmark):
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, group):
     group.add_option('--build-revision',
