@@ -4,7 +4,6 @@
 
 #include "base/memory/scoped_vector.h"
 #include "components/update_client/update_response.h"
-#include "libxml/globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace update_client {
@@ -270,7 +269,6 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   EXPECT_TRUE(parser.errors().empty());
   EXPECT_TRUE(parser.Parse(kSimilarTagnames));
   EXPECT_TRUE(parser.errors().empty());
-  xmlCleanupGlobals();
 
   // Parse xml with hash value
   EXPECT_TRUE(parser.Parse(valid_xml_with_hash));
