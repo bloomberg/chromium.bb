@@ -76,7 +76,7 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // Streams should consult ShouldDeferStreamStart() and if true check the value
   // again after |kStartDelayInSecsForPowerEvents| has elapsed. If false, the
   // stream may be started immediately.
-  enum { kStartDelayInSecsForPowerEvents = 1 };
+  enum { kStartDelayInSecsForPowerEvents = 2 };
   bool ShouldDeferStreamStart();
 
   // Changes the buffer size for |device_id| if there are no active input or
