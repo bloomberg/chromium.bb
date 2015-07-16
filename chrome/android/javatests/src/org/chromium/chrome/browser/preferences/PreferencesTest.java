@@ -26,6 +26,7 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.UiUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.List;
@@ -59,7 +60,13 @@ public class PreferencesTest extends NativeLibraryTestBase {
             Method performClick = Preference.class.getDeclaredMethod("performClick",
                     PreferenceScreen.class);
             performClick.invoke(preference, fragment.getPreferenceScreen());
-        } catch (ReflectiveOperationException e) {
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
