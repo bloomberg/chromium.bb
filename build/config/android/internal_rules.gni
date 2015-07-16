@@ -1563,12 +1563,6 @@ template("test_runner_script") {
         "--test-apk",
         invoker.test_apk,
       ]
-      if (defined(invoker.support_apk_path)) {
-        test_runner_args += [
-          "--support-apk",
-          rebase_path(invoker.support_apk_path, root_build_dir),
-        ]
-      }
     } else {
       assert(false, "Invalid test type: $_test_type.")
     }
