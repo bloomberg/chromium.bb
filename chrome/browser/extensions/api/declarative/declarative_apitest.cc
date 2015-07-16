@@ -23,12 +23,8 @@
 #include "extensions/test/extension_test_message_listener.h"
 
 using content::BrowserThread;
-using extensions::Extension;
-using extensions::ExtensionPrefs;
-using extensions::RulesRegistry;
-using extensions::RulesRegistryService;
-using extensions::TestExtensionDir;
-using extensions::WebRequestRulesRegistry;
+
+namespace extensions {
 
 namespace {
 
@@ -116,7 +112,8 @@ class DeclarativeApiTest : public ExtensionApiTest {
         rules_registry_service->GetRulesRegistry(
             RulesRegistryService::kDefaultRulesRegistryID,
             extensions::declarative_webrequest_constants::kOnRequest);
-    std::vector<linked_ptr<RulesRegistry::Rule> > rules;
+
+    std::vector<linked_ptr<core_api::events::Rule>> rules;
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -254,3 +251,5 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, NoTracesAfterUninstalling) {
   EXPECT_EQ(0u, NumberOfRegisteredRules(extension_id));
   EXPECT_FALSE(extension_prefs->HasPrefForExtension(extension_id));
 }
+
+}  // namespace extensions

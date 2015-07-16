@@ -50,8 +50,8 @@ namespace extensions {
 //
 // Here is the high level overview of this functionality:
 //
-// RulesRegistry::Rule consists of conditions and actions, these are represented
-// as a ContentRule with ContentConditions and ContentRuleActions.
+// core_api::events::Rule consists of conditions and actions, these are
+// represented as a ContentRule with ContentConditions and ContentRuleActions.
 //
 // The evaluation of URL related condition attributes (host_suffix, path_prefix)
 // is delegated to a URLMatcher, because this is capable of evaluating many
@@ -84,7 +84,7 @@ class ChromeContentRulesRegistry
   // RulesRegistry:
   std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<RulesRegistry::Rule>>& rules) override;
+      const std::vector<linked_ptr<core_api::events::Rule>>& rules) override;
   std::string RemoveRulesImpl(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) override;
