@@ -20,6 +20,48 @@ class TestTaskManager : public TaskManagerInterface {
   }
   ~TestTaskManager() override {}
 
+  // task_management::TaskManagerInterface:
+  void ActivateTask(TaskId task_id) override {}
+  double GetCpuUsage(TaskId task_id) const override { return 0.0; }
+  int64 GetPhysicalMemoryUsage(TaskId task_id) const override { return -1; }
+  int64 GetPrivateMemoryUsage(TaskId task_id) const override { return -1; }
+  int64 GetSharedMemoryUsage(TaskId task_id) const override { return -1; }
+  int64 GetGpuMemoryUsage(TaskId task_id, bool* has_duplicates) const override {
+    return -1;
+  }
+  int GetIdleWakeupsPerSecond(TaskId task_id) const override { return -1; }
+  int GetNaClDebugStubPort(TaskId task_id) const override { return -1; }
+  void GetGDIHandles(TaskId task_id,
+                     int64* current,
+                     int64* peak) const override {}
+  void GetUSERHandles(TaskId task_id,
+                      int64* current,
+                      int64* peak) const override {}
+  const base::string16& GetTitle(TaskId task_id) const override {
+    return title_;
+  }
+  base::string16 GetProfileName(TaskId task_id) const override {
+    return base::string16();
+  }
+  const gfx::ImageSkia& GetIcon(TaskId task_id) const override { return icon_; }
+  const base::ProcessHandle& GetProcessHandle(TaskId task_id) const override {
+    return handle_;
+  }
+  const base::ProcessId& GetProcessId(TaskId task_id) const override {
+    return id_;
+  }
+  Task::Type GetType(TaskId task_id) const override { return Task::UNKNOWN; }
+  int64 GetNetworkUsage(TaskId task_id) const override { return -1; }
+  int64 GetSqliteMemoryUsed(TaskId task_id) const override { return -1; }
+  bool GetV8Memory(TaskId task_id,
+                   int64* allocated,
+                   int64* used) const override { return false; }
+  bool GetWebCacheStats(
+      TaskId task_id,
+      blink::WebCache::ResourceTypeStats* stats) const override {
+    return false;
+  }
+
   base::TimeDelta GetRefreshTime() {
     return GetCurrentRefreshTime();
   }
@@ -33,6 +75,11 @@ class TestTaskManager : public TaskManagerInterface {
   void Refresh() override {}
 
  private:
+  base::ProcessHandle handle_;
+  base::ProcessId id_;
+  base::string16 title_;
+  gfx::ImageSkia icon_;
+
   DISALLOW_COPY_AND_ASSIGN(TestTaskManager);
 };
 

@@ -7,9 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/task_management/providers/task.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
+#include "third_party/WebKit/public/web/WebCache.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace task_management {
 
@@ -20,6 +24,87 @@ class TaskManagerInterface {
  public:
   void AddObserver(TaskManagerObserver* observer);
   void RemoveObserver(TaskManagerObserver* observer);
+
+  // Activates the task with |task_id| by bringing its container to the front if
+  // possible.
+  virtual void ActivateTask(TaskId task_id) = 0;
+
+  // returns the CPU usage in percent for the process on which the task with
+  // |task_id| is running during the current refresh cycle.
+  virtual double GetCpuUsage(TaskId task_id) const = 0;
+
+  // Returns the current physical/private/shared memory usage of the task with
+  // |task_id| in bytes. A value of -1 means no valid value is currently
+  // available.
+  virtual int64 GetPhysicalMemoryUsage(TaskId task_id) const = 0;
+  virtual int64 GetPrivateMemoryUsage(TaskId task_id) const = 0;
+  virtual int64 GetSharedMemoryUsage(TaskId task_id) const = 0;
+
+  // Returns the GPU memory usage of the task with |task_id| in bytes. A value
+  // of -1 means no valid value is currently available.
+  // |has_duplicates| will be set to true if this process' GPU resource count is
+  // inflated because it is counting other processes' resources.
+  virtual int64 GetGpuMemoryUsage(TaskId task_id,
+                                  bool* has_duplicates) const = 0;
+
+  // Returns the number of average idle CPU wakeups per second since the last
+  // refresh cycle. A value of -1 means no valid value is currently available.
+  virtual int GetIdleWakeupsPerSecond(TaskId task_id) const = 0;
+
+  // Returns the NaCl GDB debug stub port. A value of -1 means no valid value is
+  // currently available.
+  virtual int GetNaClDebugStubPort(TaskId task_id) const = 0;
+
+  // On Windows, gets the current and peak number of GDI and USER handles in
+  // use. A value of -1 means no valid value is currently available.
+  virtual void GetGDIHandles(TaskId task_id,
+                             int64* current,
+                             int64* peak) const = 0;
+  virtual void GetUSERHandles(TaskId task_id,
+                              int64* current,
+                              int64* peak) const = 0;
+
+  // Returns the title of the task with |task_id|.
+  virtual const base::string16& GetTitle(TaskId task_id) const = 0;
+
+  // Returns the name of the profile associated with the browser context of the
+  // render view host that the task with |task_id| represents (if that task
+  // represents a renderer).
+  virtual base::string16 GetProfileName(TaskId task_id) const = 0;
+
+  // Returns the favicon of the task with |task_id|.
+  virtual const gfx::ImageSkia& GetIcon(TaskId task_id) const = 0;
+
+  // Returns the ID and handle of the process on which the task with |task_id|
+  // is running.
+  virtual const base::ProcessHandle& GetProcessHandle(TaskId task_id) const = 0;
+  virtual const base::ProcessId& GetProcessId(TaskId task_id) const = 0;
+
+  // Returns the type of the task with |task_id|.
+  virtual Task::Type GetType(TaskId task_id) const = 0;
+
+  // Returns the network usage (in bytes per second) during the current refresh
+  // cycle for the task with |task_id|. A value of -1 means no valid value is
+  // currently available or that task has never been notified of any network
+  // usage.
+  virtual int64 GetNetworkUsage(TaskId task_id) const = 0;
+
+  // Returns the Sqlite used memory (in bytes) for the task with |task_id|.
+  // A value of -1 means no valid value is currently available.
+  virtual int64 GetSqliteMemoryUsed(TaskId task_id) const = 0;
+
+  // Returns the allocated and used V8 memory (in bytes) for the task with
+  // |task_id|. A return value of false means no valid value is currently
+  // available.
+  virtual bool GetV8Memory(TaskId task_id,
+                           int64* allocated,
+                           int64* used) const = 0;
+
+  // Gets the Webkit resource cache stats for the task with |task_id|.
+  // A return value of false means that task does NOT report WebCache stats.
+  virtual bool GetWebCacheStats(
+      TaskId task_id,
+      blink::WebCache::ResourceTypeStats* stats) const = 0;
 
   // Returns true if the resource |type| usage calculation is enabled and
   // the implementation should refresh its value (this means that at least one

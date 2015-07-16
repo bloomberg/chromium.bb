@@ -5,6 +5,7 @@
 #include "chrome/browser/task_management/providers/browser_process_task.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/task_management/task_manager_observer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -52,19 +53,19 @@ BrowserProcessTask::BrowserProcessTask()
 BrowserProcessTask::~BrowserProcessTask() {
 }
 
-void BrowserProcessTask::Refresh(const base::TimeDelta& update_interval) {
-  Task::Refresh(update_interval);
+void BrowserProcessTask::Refresh(const base::TimeDelta& update_interval,
+                                 int64 refresh_flags) {
+  Task::Refresh(update_interval, refresh_flags);
 
-  // TODO(afakhry): Add code to skip v8 and sqlite stats update if they have
-  // never been requested.
-  if (reports_v8_stats_) {
+  if (reports_v8_stats_ && (refresh_flags & REFRESH_TYPE_V8_MEMORY) != 0) {
     allocated_v8_memory_ =
         static_cast<int64>(net::ProxyResolverV8::GetTotalHeapSize());
     used_v8_memory_ =
         static_cast<int64>(net::ProxyResolverV8::GetUsedHeapSize());
   }
 
-  used_sqlite_memory_ = static_cast<int64>(sqlite3_memory_used());
+  if ((refresh_flags & REFRESH_TYPE_SQLITE_MEMORY) != 0)
+    used_sqlite_memory_ = static_cast<int64>(sqlite3_memory_used());
 }
 
 Task::Type BrowserProcessTask::GetType() const {

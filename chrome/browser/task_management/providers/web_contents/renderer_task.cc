@@ -63,8 +63,9 @@ void RendererTask::Activate() {
   web_contents_->GetDelegate()->ActivateContents(web_contents_);
 }
 
-void RendererTask::Refresh(const base::TimeDelta& update_interval) {
-  Task::Refresh(update_interval);
+void RendererTask::Refresh(const base::TimeDelta& update_interval,
+                           int64 refresh_flags) {
+  Task::Refresh(update_interval, refresh_flags);
 
   // TODO(afakhry):
   // 1- Add code to disable this refresh if it was never requested by clients of

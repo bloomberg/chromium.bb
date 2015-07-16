@@ -6,6 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/task_management/providers/child_process_task.h"
 #include "chrome/browser/task_management/providers/child_process_task_provider.h"
+#include "chrome/browser/task_management/task_manager_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/browser/child_process_data.h"
@@ -140,7 +141,8 @@ TEST_F(ChildProcessTaskTest, TestAll) {
   ASSERT_EQ(task, found_task);
   const int64 bytes_read = 1024;
   found_task->OnNetworkBytesRead(bytes_read);
-  found_task->Refresh(base::TimeDelta::FromSeconds(1));
+  found_task->Refresh(base::TimeDelta::FromSeconds(1),
+                      REFRESH_TYPE_NETWORK_USAGE);
 
   EXPECT_TRUE(task->ReportsNetworkUsage());
   EXPECT_EQ(bytes_read, task->network_usage());

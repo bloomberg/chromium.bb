@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/task_management/providers/browser_process_task_provider.h"
+#include "chrome/browser/task_management/task_manager_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -77,7 +78,8 @@ TEST_F(BrowserProcessTaskProviderTest, TestProvidedTask) {
   EXPECT_EQ(-1, provided_task_->network_usage());
   provided_task_->OnNetworkBytesRead(received_bytes);
   // Do a refresh with a 1-second update time.
-  provided_task_->Refresh(base::TimeDelta::FromSeconds(1));
+  provided_task_->Refresh(base::TimeDelta::FromSeconds(1),
+                          REFRESH_TYPE_NETWORK_USAGE);
   EXPECT_TRUE(provided_task_->ReportsNetworkUsage());
   EXPECT_EQ(received_bytes, provided_task_->network_usage());
 }

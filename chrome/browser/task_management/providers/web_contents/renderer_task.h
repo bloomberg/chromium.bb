@@ -36,7 +36,8 @@ class RendererTask : public Task {
 
   // task_management::Task:
   void Activate() override;
-  void Refresh(const base::TimeDelta& update_interval) override;
+  void Refresh(const base::TimeDelta& update_interval,
+               int64 refresh_flags) override;
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
   base::string16 GetProfileName() const override;

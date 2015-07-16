@@ -16,7 +16,8 @@ class BrowserProcessTask : public Task {
   ~BrowserProcessTask() override;
 
   // task_management::Task:
-  void Refresh(const base::TimeDelta& update_interval) override;
+  void Refresh(const base::TimeDelta& update_interval,
+               int64 refresh_flags) override;
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
   int64 GetSqliteMemoryUsed() const override;

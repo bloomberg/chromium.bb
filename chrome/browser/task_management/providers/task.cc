@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_management/providers/task.h"
 
+#include "chrome/browser/task_management/task_manager_observer.h"
+
 namespace task_management {
 
 namespace {
@@ -32,9 +34,10 @@ Task::~Task() {
 void Task::Activate() {
 }
 
-void Task::Refresh(const base::TimeDelta& update_interval) {
-  // TODO(afakhry): Add code here to skip this when network usage refresh has
-  // never been requested.
+void Task::Refresh(const base::TimeDelta& update_interval,
+                   int64 refresh_flags) {
+  if ((refresh_flags & REFRESH_TYPE_NETWORK_USAGE) == 0)
+    return;
 
   if (current_byte_count_ == -1)
     return;
