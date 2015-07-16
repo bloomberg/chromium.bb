@@ -82,7 +82,7 @@
 }
 
 #update-status-icon.failed {
-  background-image: url(chrome://theme/IDR_ERROR);
+  background-image: url(chrome://resources/images/error.svg);
   background-size: 18px;
 }
 

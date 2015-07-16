@@ -183,6 +183,8 @@ without changes to the corresponding grd file. -->
                file="images/checkbox_white.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_DISABLED_SELECT"
                file="images/disabled_select.png" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_ERROR"
+               file="images/error.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_GEAR"
                file="images/gear.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_GOOGLE_TRANSPARENT"
