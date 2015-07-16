@@ -1771,6 +1771,7 @@
             '../media/media.gyp:media_test_support',
             '../testing/gtest.gyp:gtest',
             '../third_party/libyuv/libyuv.gyp:libyuv',
+            '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
             'content.gyp:content',
