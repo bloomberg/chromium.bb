@@ -54,7 +54,7 @@ function push(array, var_args)
 }
 
 /**
- * @param {!Arguments.<T>} array
+ * @param {(!Arguments.<T>|!NodeList)} array
  * @param {number=} index
  * @return {!Array.<T>}
  * @template T
