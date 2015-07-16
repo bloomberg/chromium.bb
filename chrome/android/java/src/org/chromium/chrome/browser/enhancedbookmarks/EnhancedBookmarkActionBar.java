@@ -250,8 +250,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
                 }
             }
 
-            setBackgroundColor(getResources().getColor(
-                    R.color.enhanced_bookmark_selection_action_bar_background));
+            setBackgroundColor(getResources().getColor(R.color.light_active_color));
 
             numberRollView.setVisibility(View.VISIBLE);
             if (!wasSelectionEnabled) numberRollView.setNumber(0, false);
