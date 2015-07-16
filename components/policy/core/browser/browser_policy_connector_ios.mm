@@ -84,8 +84,7 @@ void BrowserPolicyConnectorIOS::Init(
   device_management_service->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 
-  BrowserPolicyConnector::Init(
-      local_state, request_context, device_management_service.Pass());
+  InitInternal(local_state, device_management_service.Pass());
 }
 
 }  // namespace policy

@@ -36,6 +36,8 @@ source_set("browser") {
       "autofill_policy_handler.h",
       "browser_policy_connector.cc",
       "browser_policy_connector.h",
+      "browser_policy_connector_base.cc",
+      "browser_policy_connector_base.h",
       "browser_policy_connector_ios.h",
       "browser_policy_connector_ios.mm",
       "cloud/message_util.cc",
