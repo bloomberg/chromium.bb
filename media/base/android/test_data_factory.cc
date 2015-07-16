@@ -11,9 +11,8 @@
 
 namespace media {
 
-DemuxerConfigs TestDataFactory::CreateAudioConfigs(
-    AudioCodec audio_codec,
-    const base::TimeDelta& duration) {
+DemuxerConfigs TestDataFactory::CreateAudioConfigs(AudioCodec audio_codec,
+                                                   base::TimeDelta duration) {
   DemuxerConfigs configs;
   configs.audio_codec = audio_codec;
   configs.audio_channels = 2;
@@ -45,7 +44,7 @@ DemuxerConfigs TestDataFactory::CreateAudioConfigs(
 
 DemuxerConfigs TestDataFactory::CreateVideoConfigs(
     VideoCodec video_codec,
-    const base::TimeDelta& duration,
+    base::TimeDelta duration,
     const gfx::Size& video_size) {
   DemuxerConfigs configs;
   configs.video_codec = video_codec;
@@ -57,8 +56,8 @@ DemuxerConfigs TestDataFactory::CreateVideoConfigs(
 }
 
 TestDataFactory::TestDataFactory(const char* file_name_template,
-                                 const base::TimeDelta& duration,
-                                 const base::TimeDelta& frame_period)
+                                 base::TimeDelta duration,
+                                 base::TimeDelta frame_period)
     : duration_(duration),
       frame_period_(frame_period),
       starvation_mode_(false) {

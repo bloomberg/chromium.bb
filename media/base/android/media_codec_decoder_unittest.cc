@@ -35,7 +35,7 @@ const base::TimeDelta kVideoFramePeriod = base::TimeDelta::FromMilliseconds(20);
 
 class AudioFactory : public TestDataFactory {
  public:
-  AudioFactory(const base::TimeDelta& duration);
+  AudioFactory(base::TimeDelta duration);
   DemuxerConfigs GetConfigs() const override;
 
  protected:
@@ -44,14 +44,14 @@ class AudioFactory : public TestDataFactory {
 
 class VideoFactory : public TestDataFactory {
  public:
-  VideoFactory(const base::TimeDelta& duration);
+  VideoFactory(base::TimeDelta duration);
   DemuxerConfigs GetConfigs() const override;
 
  protected:
   void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override;
 };
 
-AudioFactory::AudioFactory(const base::TimeDelta& duration)
+AudioFactory::AudioFactory(base::TimeDelta duration)
     : TestDataFactory("aac-44100-packet-%d", duration, kAudioFramePeriod) {
 }
 
@@ -63,7 +63,7 @@ void AudioFactory::ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) {
   unit->is_key_frame = true;
 }
 
-VideoFactory::VideoFactory(const base::TimeDelta& duration)
+VideoFactory::VideoFactory(base::TimeDelta duration)
     : TestDataFactory("h264-320x180-frame-%d", duration, kVideoFramePeriod) {
 }
 
@@ -82,14 +82,23 @@ void VideoFactory::ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) {
   //
   // I keep the last PTS to be 3 for simplicity.
 
-  // Swap pts for second and third frames.
-  if (index_in_chunk == 1)  // second frame
-    unit->timestamp += frame_period_;
-  if (index_in_chunk == 2)  // third frame
-    unit->timestamp -= frame_period_;
-
-  if (index_in_chunk == 0)
-    unit->is_key_frame = true;
+  // Swap pts for second and third frames. Make first frame a key frame.
+  switch (index_in_chunk) {
+    case 0:  // first frame
+      unit->is_key_frame = true;
+      break;
+    case 1:  // second frame
+      unit->timestamp += frame_period_;
+      break;
+    case 2:  // third frame
+      unit->timestamp -= frame_period_;
+      break;
+    case 3:  // fourth frame, do not modify
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace (anonymous)

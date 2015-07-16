@@ -19,9 +19,9 @@ class TestDataFactory {
  public:
   // These methods return corresponding demuxer configs.
   static DemuxerConfigs CreateAudioConfigs(AudioCodec audio_codec,
-                                           const base::TimeDelta& duration);
+                                           base::TimeDelta duration);
   static DemuxerConfigs CreateVideoConfigs(VideoCodec video_codec,
-                                           const base::TimeDelta& duration,
+                                           base::TimeDelta duration,
                                            const gfx::Size& video_size);
 
   // Constructor calls |LoadPackets| to load packets from files.
@@ -33,8 +33,8 @@ class TestDataFactory {
   //             unit and stops.
   //   frame_period: PTS increment between units.
   TestDataFactory(const char* file_name_template,
-                  const base::TimeDelta& duration,
-                  const base::TimeDelta& frame_period);
+                  const base::TimeDelta duration,
+                  const base::TimeDelta frame_period);
   virtual ~TestDataFactory();
 
   // Returns demuxer configuration for this factory.

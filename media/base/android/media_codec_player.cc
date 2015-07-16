@@ -448,6 +448,19 @@ void MediaCodecPlayer::OnTimeIntervalUpdate(DemuxerStream::Type type,
                                             base::TimeDelta last_buffered) {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
 
+  DVLOG(2) << __FUNCTION__ << ": stream type:" << type << " [" << now_playing
+           << "," << last_buffered << "]";
+
+  // I assume that audio stream cannot be added after we get configs by
+  // OnDemuxerConfigsAvailable(), but that audio can finish early.
+
+  if (type == DemuxerStream::VIDEO) {
+    // Ignore video PTS if there is audio stream or if it's behind current
+    // time as set by audio stream.
+    if (!AudioFinished() || now_playing < interpolator_.GetInterpolatedTime())
+      return;
+  }
+
   interpolator_.SetBounds(now_playing, last_buffered);
 
   // Post to UI thread
@@ -687,7 +700,8 @@ void MediaCodecPlayer::CreateDecoders() {
       base::Bind(&MediaCodecPlayer::OnStarvation, media_weak_this_,
                  DemuxerStream::VIDEO),
       base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_), error_cb_,
-      MediaCodecDecoder::SetTimeCallback(),  // null callback
+      base::Bind(&MediaCodecPlayer::OnTimeIntervalUpdate, media_weak_this_,
+                 DemuxerStream::VIDEO),
       base::Bind(&MediaCodecPlayer::OnVideoResolutionChanged, media_weak_this_),
       base::Bind(&MediaCodecPlayer::OnVideoCodecCreated, media_weak_this_)));
 }

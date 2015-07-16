@@ -12,6 +12,7 @@
 #include "media/base/android/test_data_factory.h"
 #include "media/base/android/test_statistics.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/android/surface_texture.h"
 
 namespace media {
 
@@ -39,6 +40,7 @@ namespace {
 const base::TimeDelta kDefaultTimeout = base::TimeDelta::FromMilliseconds(200);
 const base::TimeDelta kAudioFramePeriod =
     base::TimeDelta::FromSecondsD(1024.0 / 44100);  // 1024 samples @ 44100 Hz
+const base::TimeDelta kVideoFramePeriod = base::TimeDelta::FromMilliseconds(20);
 
 // Mock of MediaPlayerManager for testing purpose.
 
@@ -140,7 +142,7 @@ DemuxerConfigs CreateAudioVideoConfigs(const TestDataFactory* audio,
 
 class AudioFactory : public TestDataFactory {
  public:
-  AudioFactory(const base::TimeDelta& duration)
+  AudioFactory(base::TimeDelta duration)
       : TestDataFactory("aac-44100-packet-%d", duration, kAudioFramePeriod) {}
 
   DemuxerConfigs GetConfigs() const override {
@@ -150,6 +152,49 @@ class AudioFactory : public TestDataFactory {
  protected:
   void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override {
     unit->is_key_frame = true;
+  }
+};
+
+// VideoFactory creates a video stream from demuxer.
+
+class VideoFactory : public TestDataFactory {
+ public:
+  VideoFactory(base::TimeDelta duration)
+      : TestDataFactory("h264-320x180-frame-%d", duration, kVideoFramePeriod) {}
+
+  DemuxerConfigs GetConfigs() const override {
+    return TestDataFactory::CreateVideoConfigs(kCodecH264, duration_,
+                                               gfx::Size(320, 180));
+  }
+
+ protected:
+  void ModifyAccessUnit(int index_in_chunk, AccessUnit* unit) override {
+    // The frames are taken from High profile and some are B-frames.
+    // The first 4 frames appear in the file in the following order:
+    //
+    // Frames:             I P B P
+    // Decoding order:     0 1 2 3
+    // Presentation order: 0 2 1 4(3)
+    //
+    // I keep the last PTS to be 3 for simplicity.
+
+    // Swap pts for second and third frames. Make first frame a key frame.
+    switch (index_in_chunk) {
+      case 0:  // first frame
+        unit->is_key_frame = true;
+        break;
+      case 1:  // second frame
+        unit->timestamp += frame_period_;
+        break;
+      case 2:  // third frame
+        unit->timestamp -= frame_period_;
+        break;
+      case 3:  // fourth frame, do not modify
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
 };
 
@@ -211,7 +256,7 @@ void MockDemuxerAndroid::RequestDemuxerData(DemuxerStream::Type type) {
   bool created = false;
   if (type == DemuxerStream::AUDIO && audio_factory_)
     created = audio_factory_->CreateChunk(&chunk, &delay);
-  else if (type == DemuxerStream::VIDEO && audio_factory_)
+  else if (type == DemuxerStream::VIDEO && video_factory_)
     created = video_factory_->CreateChunk(&chunk, &delay);
 
   if (!created)
@@ -228,8 +273,9 @@ void MockDemuxerAndroid::RequestDemuxerData(DemuxerStream::Type type) {
 }
 
 void MockDemuxerAndroid::PostConfigs(const DemuxerConfigs& configs) {
-  DVLOG(1) << "MockDemuxerAndroid::" << __FUNCTION__;
   RUN_ON_MEDIA_THREAD(MockDemuxerAndroid, PostConfigs, configs);
+
+  DVLOG(1) << "MockDemuxerAndroid::" << __FUNCTION__;
 
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
 
@@ -265,6 +311,7 @@ class MediaCodecPlayerTest : public testing::Test {
   typedef base::Callback<bool()> Predicate;
 
   void CreatePlayer();
+  void SetVideoSurface();
 
   // Waits for condition to become true or for timeout to expire.
   // Returns true if the condition becomes true.
@@ -274,6 +321,7 @@ class MediaCodecPlayerTest : public testing::Test {
   base::MessageLoop message_loop_;
   MockMediaPlayerManager manager_;
   MockDemuxerAndroid* demuxer_;  // owned by player_
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
   MediaCodecPlayer* player_;     // raw pointer due to DeleteOnCorrectThread()
 
  private:
@@ -289,6 +337,11 @@ MediaCodecPlayerTest::MediaCodecPlayerTest()
     : demuxer_(new MockDemuxerAndroid()), player_(nullptr) {
 }
 
+MediaCodecPlayerTest::~MediaCodecPlayerTest() {
+  if (player_)
+    player_->DeleteOnCorrectThread();
+}
+
 void MediaCodecPlayerTest::CreatePlayer() {
   DCHECK(demuxer_);
   player_ = new MediaCodecPlayer(
@@ -301,9 +354,12 @@ void MediaCodecPlayerTest::CreatePlayer() {
   DCHECK(player_);
 }
 
-MediaCodecPlayerTest::~MediaCodecPlayerTest() {
-  if (player_)
-    player_->DeleteOnCorrectThread();
+void MediaCodecPlayerTest::SetVideoSurface() {
+  surface_texture_ = gfx::SurfaceTexture::Create(0);
+  gfx::ScopedJavaSurface surface(surface_texture_.get());
+
+  ASSERT_NE(nullptr, player_);
+  player_->SetVideoSurface(surface.Pass());
 }
 
 bool MediaCodecPlayerTest::WaitForCondition(const Predicate& condition,
@@ -399,7 +455,7 @@ TEST_F(MediaCodecPlayerTest, SetAudioVideoConfigsAfterPlayerCreation) {
   EXPECT_EQ(240, manager_.media_metadata_.height);
 }
 
-TEST_F(MediaCodecPlayerTest, PlayAudioTillCompletion) {
+TEST_F(MediaCodecPlayerTest, AudioPlayTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
@@ -430,6 +486,37 @@ TEST_F(MediaCodecPlayerTest, PlayAudioTillCompletion) {
   // relative to the frame's PTS. Allow for 100 ms delay here.
   base::TimeDelta audio_pts_delay = base::TimeDelta::FromMilliseconds(100);
   EXPECT_LT(duration - audio_pts_delay, manager_.pts_stat_.max());
+}
+
+TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1500);
+
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  CreatePlayer();
+  SetVideoSurface();
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  EXPECT_FALSE(manager_.IsPlaybackCompleted());
+
+  player_->Start();
+
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
+                                  base::Unretained(&manager_)),
+                       timeout));
+
+  EXPECT_LE(duration, manager_.pts_stat_.max());
 }
 
 }  // namespace media
