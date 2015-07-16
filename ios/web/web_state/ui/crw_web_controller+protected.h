@@ -160,9 +160,8 @@ struct NewWindowInfo {
 - (void)applyWebViewScrollZoomScaleFromZoomState:
     (const web::PageZoomState&)zoomState;
 
-// Used to decide whether a load that generates errors with the
-// NSURLErrorCancelled code should be cancelled.
-- (BOOL)shouldAbortLoadForCancelledError:(NSError*)cancelledError;
+// Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
+- (void)handleCancelledError:(NSError*)error;
 
 #pragma mark - Optional methods for subclasses
 // Subclasses may overwrite methods in this section.
@@ -251,6 +250,9 @@ struct NewWindowInfo {
 // Updates the internal state and informs the delegate that any outstanding load
 // operations are cancelled.
 - (void)loadCancelled;
+
+// Aborts any load for both the web view and web controller.
+- (void)abortLoad;
 
 // Returns the URL that the navigation system believes should be currently
 // active.

@@ -2926,34 +2926,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   if ([error code] == NSURLErrorCancelled) {
-    if ([self shouldAbortLoadForCancelledError:error]) {
-      NSError* underlyingError =
-          base::ios::GetFinalUnderlyingErrorFromError(error);
-      DCHECK([underlyingError.domain
-          isEqualToString:base::SysUTF8ToNSString(net::kErrorDomain)]);
-
-      // NSURLCancelled errors with underlying errors are generated from the
-      // Chrome network stack.  Abort the load in this case.
-      [self abortLoad];
-
-      switch ([underlyingError code]) {
-        case net::ERR_ABORTED:
-          // |NSURLErrorCancelled| errors with underlying net error code
-          // |net::ERR_ABORTED| are used by the Chrome network stack to
-          // indicate that the current load should be aborted and the pending
-          // entry should be discarded.
-          [[self sessionController] discardNonCommittedEntries];
-          break;
-        case net::ERR_BLOCKED_BY_CLIENT:
-          // |NSURLErrorCancelled| errors with underlying net error code
-          // |net::ERR_BLOCKED_BY_CLIENT| are used by the Chrome network stack
-          // to indicate that the current load should be aborted and the pending
-          // entry should be kept.
-          break;
-        default:
-          NOTREACHED();
-      }
-    }
+    [self handleCancelledError:error];
     // NSURLErrorCancelled errors that aren't handled by aborting the load will
     // automatically be retried by the web view, so early return in this case.
     return;
@@ -2963,10 +2936,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self loadErrorInNativeView:error];
 }
 
-- (BOOL)shouldAbortLoadForCancelledError:(NSError*)cancelledError {
+- (void)handleCancelledError:(NSError*)cancelledError {
   // Subclasses must implement this method.
   NOTREACHED();
-  return YES;
 }
 
 #pragma mark -

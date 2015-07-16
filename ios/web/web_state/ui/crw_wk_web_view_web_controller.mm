@@ -227,6 +227,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 
+// Used to decide whether a load that generates errors with the
+// NSURLErrorCancelled code should be cancelled.
+- (BOOL)shouldAbortLoadForCancelledError:(NSError*)error;
+
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
 // Called when WKWebView estimatedProgress has been changed.
 - (void)webViewEstimatedProgressDidChange;
@@ -440,18 +444,13 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   self.webScrollView.zoomScale = zoomScale;
 }
 
-- (BOOL)shouldAbortLoadForCancelledError:(NSError*)cancelledError {
-  DCHECK_EQ(cancelledError.code, NSURLErrorCancelled);
-  // Do not abort the load if it is for an app specific URL, as such errors
-  // are produced during the app specific URL load process.
-  const GURL errorURL =
-      net::GURLWithNSURL(cancelledError.userInfo[NSURLErrorFailingURLErrorKey]);
-  if (web::GetWebClient()->IsAppSpecificURL(errorURL))
-    return NO;
-  // Don't abort NSURLErrorCancelled errors originating from navigation, as the
-  // WKWebView will automatically retry these loads.
-  WKWebViewErrorSource source = WKWebViewErrorSourceFromError(cancelledError);
-  return source != NAVIGATION;
+- (void)handleCancelledError:(NSError*)error {
+  if ([self shouldAbortLoadForCancelledError:error]) {
+    // Do not abort the load for WKWebView, because calling stopLoading may
+    // stop the subsequent provisional load as well.
+    [self loadCancelled];
+    [[self sessionController] discardNonCommittedEntries];
+  }
 }
 
 #pragma mark Private methods
@@ -832,6 +831,20 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return iter != handlers->end()
              ? iter->second
              : [super selectorToHandleJavaScriptCommand:command];
+}
+
+- (BOOL)shouldAbortLoadForCancelledError:(NSError*)error {
+  DCHECK_EQ(error.code, NSURLErrorCancelled);
+  // Do not abort the load if it is for an app specific URL, as such errors
+  // are produced during the app specific URL load process.
+  const GURL errorURL =
+      net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
+  if (web::GetWebClient()->IsAppSpecificURL(errorURL))
+    return NO;
+  // Don't abort NSURLErrorCancelled errors originating from navigation, as the
+  // WKWebView will automatically retry these loads.
+  WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
+  return source != NAVIGATION;
 }
 
 #pragma mark -
