@@ -7,7 +7,9 @@
 
 import struct
 
+import msos20_descriptors
 import usb_constants
+import usb_descriptors
 
 
 class Gadget(object):
@@ -32,12 +34,15 @@ class Gadget(object):
     self._hs_config_desc = hs_config_desc
     # dict mapping language codes to a dict mapping indexes to strings
     self._strings = {}
+    self._bos_descriptor = None
     # dict mapping interface numbers to a set of endpoint addresses
     self._active_endpoints = {}
     # dict mapping endpoint addresses to interfaces
     self._endpoint_interface_map = {}
-    self._ms_vendor_code = None
+    self._ms_vendor_code_v1 = None
+    self._ms_vendor_code_v2 = None
     self._ms_compat_ids = {}
+    self._ms_os20_config_subset = None
 
   def GetDeviceDescriptor(self):
     return self._device_desc
@@ -81,11 +86,55 @@ class Gadget(object):
   def EnableMicrosoftOSDescriptorsV1(self, vendor_code=0x01):
     if vendor_code < 0 or vendor_code > 255:
       raise ValueError('Vendor code out of range.')
+    if vendor_code == self._ms_vendor_code_v1:
+      raise ValueError('OS Descriptor v1 vendor code conflicts with v2.')
 
-    self._ms_vendor_code = vendor_code
+    self._ms_vendor_code_v1 = vendor_code
+
+  def EnableMicrosoftOSDescriptorsV2(self, vendor_code=0x02):
+    if vendor_code < 0 or vendor_code > 255:
+      raise ValueError('Vendor code out of range.')
+    if vendor_code == self._ms_vendor_code_v1:
+      raise ValueError('OS Descriptor v2 vendor code conflicts with v1.')
+
+    self._ms_vendor_code_v2 = vendor_code
+    self._ms_os20_descriptor_set = \
+        msos20_descriptors.DescriptorSetHeader(dwWindowsVersion=0x06030000)
+    # Gadget devices currently only support one configuration. Contrary to
+    # Microsoft's documentation the bConfigurationValue field should be set to
+    # the index passed to GET_DESCRIPTOR that returned the configuration instead
+    # of the configuration's bConfigurationValue field. (i.e. 0 instead of 1).
+    #
+    # https://social.msdn.microsoft.com/Forums/windowsdesktop/en-US/ae64282c-3bc3-49af-8391-4d174479d9e7/microsoft-os-20-descriptors-not-working-on-an-interface-of-a-composite-usb-device
+    self._ms_os20_config_subset = msos20_descriptors.ConfigurationSubsetHeader(
+        bConfigurationValue=0)
+    self._ms_os20_descriptor_set.Add(self._ms_os20_config_subset)
+    self._ms_os20_platform_descriptor = \
+        msos20_descriptors.PlatformCapabilityDescriptor(
+            dwWindowsVersion=0x06030000,
+            bMS_VendorCode=self._ms_vendor_code_v2)
+    self._ms_os20_platform_descriptor.SetDescriptorSet(
+        self._ms_os20_descriptor_set)
+    self.AddDeviceCapabilityDescriptor(self._ms_os20_platform_descriptor)
 
   def SetMicrosoftCompatId(self, interface_number, compat_id, sub_compat_id=''):
     self._ms_compat_ids[interface_number] = (compat_id, sub_compat_id)
+    if self._ms_os20_config_subset is not None:
+      function_header = msos20_descriptors.FunctionSubsetHeader(
+          bFirstInterface=interface_number)
+      function_header.Add(msos20_descriptors.CompatibleId(
+          CompatibleID=compat_id, SubCompatibleID=sub_compat_id))
+      self._ms_os20_config_subset.Add(function_header)
+
+  def AddDeviceCapabilityDescriptor(self, device_capability):
+    """Add a device capability descriptor to this device.
+
+    Args:
+      device_capability: The Descriptor object.
+    """
+    if self._bos_descriptor is None:
+      self._bos_descriptor = usb_descriptors.BosDescriptor()
+    self._bos_descriptor.AddDeviceCapability(device_capability)
 
   def Connected(self, chip, speed):
     """The device has been connected to a USB host.
@@ -240,6 +289,8 @@ class Gadget(object):
     """
     if typ == usb_constants.DescriptorType.STRING:
       return self.GetStringDescriptor(index, lang, length)
+    elif typ == usb_constants.DescriptorType.BOS:
+      return self.GetBosDescriptor(length)
 
   def ClassControlRead(self, recipient, request, value, index, length):
     """Handle class-specific control transfers.
@@ -278,11 +329,17 @@ class Gadget(object):
       A buffer to return to the USB host with len <= length on success or
       None to stall the pipe.
     """
-    if (self._ms_vendor_code is not None and
-        request == self._ms_vendor_code and
+    if (self._ms_vendor_code_v1 is not None and
+        request == self._ms_vendor_code_v1 and
         (recipient == usb_constants.Recipient.DEVICE or
          recipient == usb_constants.Recipient.INTERFACE)):
       return self.GetMicrosoftOSDescriptorV1(recipient, value, index, length)
+    if (self._ms_vendor_code_v2 is not None and
+        request == self._ms_vendor_code_v2 and
+        recipient == usb_constants.Recipient.DEVICE and
+        value == 0x0000 and
+        index == 0x0007):
+      return self.GetMicrosoftOSDescriptorV2(length)
 
     return None
 
@@ -372,12 +429,12 @@ class Gadget(object):
       buf = header + ''.join(lang_codes)
       assert len(buf) == length
       return buf[:length]
-    if index == 0xEE and lang == 0 and self._ms_vendor_code is not None:
+    if index == 0xEE and lang == 0 and self._ms_vendor_code_v1 is not None:
       # See https://msdn.microsoft.com/en-us/windows/hardware/gg463179 for the
       # definition of this special string descriptor.
       buf = (struct.pack('<BB', 18, usb_constants.DescriptorType.STRING) +
              'MSFT100'.encode('UTF-16LE') +
-             struct.pack('<BB', self._ms_vendor_code, 0))
+             struct.pack('<BB', self._ms_vendor_code_v1, 0))
       assert len(buf) == 18
       return buf[:length]
     elif lang not in self._strings:
@@ -429,6 +486,29 @@ class Gadget(object):
       buf += struct.pack('<BB8s8sxxxxxx',
                          interface, 0x01, compat_id, sub_compat_id)
     return buf[:length]
+
+  def GetMicrosoftOSDescriptorV2(self, length):
+    return self._ms_os20_descriptor_set.Encode()[:length]
+
+  def GetBosDescriptor(self, length):
+    """Handle a GET_DESCRIPTOR(BOS) request from the host.
+
+    Device capability descriptors can be added to the Binary Device Object Store
+    returned by this method by calling AddDeviceCapabilityDescriptor.
+
+    See Universal Serial Bus 3.1 Specification, Revision 1.0 section 9.6.2.
+
+    Args:
+      length: Maximum amount of data the host expects the device to return.
+
+    Returns:
+      The device's binary object store descriptor or None to stall the pipe if
+      no device capability descriptors have been configured.
+    """
+    if self._bos_descriptor is None:
+      return None
+
+    return self._bos_descriptor.Encode()[:length]
 
   def SetConfiguration(self, index):
     """Handle a SET_CONFIGURATION request from the host.

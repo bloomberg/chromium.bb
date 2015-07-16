@@ -380,3 +380,47 @@ HidDescriptor.AddFixedField('bDescriptorType', 'B',
 HidDescriptor.AddField('bcdHID', 'H', default=0x0111, str_fmt='0x{:04X}')
 HidDescriptor.AddField('bCountryCode', 'B', default=0)
 HidDescriptor.AddComputedField('bNumDescriptors', 'B', 'num_descriptors')
+
+
+class BosDescriptor(DescriptorContainer):
+  """Binary Device Object Store descriptor.
+
+  See Universal Serial Bus 3.1 Specification, Revision 1.0 Table 9-12.
+  """
+
+  def __init__(self, **kwargs):
+    super(BosDescriptor, self).__init__(**kwargs)
+    self._device_caps = []
+
+  @property
+  def num_device_caps(self):
+    return len(self._device_caps)
+
+  def AddDeviceCapability(self, device_capability):
+    self._device_caps.append(device_capability)
+    self.Add(device_capability)
+
+  def GetDeviceCapabilities(self):
+    return self._device_caps
+
+BosDescriptor.AddComputedField('bLength', 'B', 'struct_size')
+BosDescriptor.AddFixedField('bDescriptorType', 'B',
+                            usb_constants.DescriptorType.BOS)
+BosDescriptor.AddComputedField('wTotalLength', 'H', 'total_size')
+BosDescriptor.AddComputedField('bNumDeviceCaps', 'B', 'num_device_caps')
+
+
+class ContainerIdDescriptor(Descriptor):
+  """Container ID descriptor.
+
+  See Universal Serial Bus 3.1 Specification, Revision 1.0 Table 9-17.
+  """
+  pass
+
+ContainerIdDescriptor.AddComputedField('bLength', 'B', 'struct_size')
+ContainerIdDescriptor.AddFixedField(
+    'bDescriptorType', 'B', usb_constants.DescriptorType.DEVICE_CAPABILITY)
+ContainerIdDescriptor.AddFixedField(
+    'bDevCapabilityType', 'B', usb_constants.CapabilityType.CONTAINER_ID)
+ContainerIdDescriptor.AddFixedField('bReserved', 'B', 0)
+ContainerIdDescriptor.AddField('ContainerID', '16s')

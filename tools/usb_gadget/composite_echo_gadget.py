@@ -18,7 +18,7 @@ class CompositeEchoGadget(composite_gadget.CompositeGadget):
     device_desc = usb_descriptors.DeviceDescriptor(
         idVendor=usb_constants.VendorID.GOOGLE,
         idProduct=usb_constants.ProductID.GOOGLE_COMPOSITE_ECHO_GADGET,
-        bcdUSB=0x0200,
+        bcdUSB=0x0210,  # USB 2.1 to indicate support for BOS descriptors.
         iManufacturer=1,
         iProduct=2,
         iSerialNumber=3,
@@ -44,7 +44,10 @@ class CompositeEchoGadget(composite_gadget.CompositeGadget):
     self.AddStringDescriptor(5, 'Interrupt Echo')
     self.AddStringDescriptor(6, 'Bulk Echo')
     self.AddStringDescriptor(7, 'Isochronous Echo')
-    self.EnableMicrosoftOSDescriptorsV1(vendor_code=0x01)
+
+    # Enable Microsoft OS 2.0 Descriptors for Windows 8.1 and above.
+    self.EnableMicrosoftOSDescriptorsV2(vendor_code=0x02)
+    # These are used to force Windows to load WINUSB.SYS for the echo functions.
     self.SetMicrosoftCompatId(0, 'WINUSB')
     self.SetMicrosoftCompatId(1, 'WINUSB')
     self.SetMicrosoftCompatId(2, 'WINUSB')

@@ -23,6 +23,7 @@
           'keyboard_gadget.py',
           'linux_gadgetfs.py',
           'mouse_gadget.py',
+          'msos20_descriptors.py',
           'server.py',
           'usb_constants.py',
           'usb_descriptors.py',

@@ -212,10 +212,16 @@ class EchoGadget(composite_gadget.CompositeGadget):
     self.AddStringDescriptor(4, 'Interrupt Echo')
     self.AddStringDescriptor(5, 'Bulk Echo')
     self.AddStringDescriptor(6, 'Isochronous Echo')
+
+    # Enable Microsoft OS Descriptors for Windows 8 and above.
     self.EnableMicrosoftOSDescriptorsV1(vendor_code=0x01)
+    # These are used to force Windows to load WINUSB.SYS for the echo functions.
     self.SetMicrosoftCompatId(0, 'WINUSB')
     self.SetMicrosoftCompatId(1, 'WINUSB')
     self.SetMicrosoftCompatId(2, 'WINUSB')
+
+    self.AddDeviceCapabilityDescriptor(usb_descriptors.ContainerIdDescriptor(
+        ContainerID=uuid.uuid4().bytes_le))
 
 def RegisterHandlers():
   """Registers web request handlers with the application server."""

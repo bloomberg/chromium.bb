@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import unittest
+import uuid
 
 import mock
 
@@ -279,6 +280,72 @@ class GadgetTest(unittest.TestCase):
     g.Connected(chip, usb_constants.Speed.HIGH)
     g.HaltEndpoint(0x01)
     chip.HaltEndpoint.assert_called_once_with(0x01)
+
+  def test_get_microsoft_os_string_descriptor(self):
+    g = gadget.Gadget(device_desc, fs_config_desc, hs_config_desc)
+    g.EnableMicrosoftOSDescriptorsV1(vendor_code=0x42)
+    os_string_descriptor = g.ControlRead(0x80,
+                                         usb_constants.Request.GET_DESCRIPTOR,
+                                         0x03EE,
+                                         0x0000,
+                                         0x12)
+    self.assertEqual(os_string_descriptor,
+                     "\x12\x03M\x00S\x00F\x00T\x001\x000\x000\x00\x42\x00")
+
+  def test_get_microsoft_os_compat_id_descriptor(self):
+    g = gadget.Gadget(device_desc, fs_config_desc, hs_config_desc)
+    g.EnableMicrosoftOSDescriptorsV1(vendor_code=0x42)
+    g.SetMicrosoftCompatId(0, 'WINUSB')
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
+
+    expected_compatid_header = \
+        "\x28\x00\x00\x00\x00\x01\x04\x00\x01\0\0\0\0\0\0\0"
+    compatid_header = g.ControlRead(0xC0, 0x42, 0x0000, 0x0004, 0x0010)
+    self.assertEqual(compatid_header, expected_compatid_header)
+
+    compatid_descriptor = g.ControlRead(0xC0, 0x42, 0x0000, 0x0004, 0x0028)
+    self.assertEqual(compatid_descriptor,
+                     expected_compatid_header +
+                     "\x00\x01WINUSB\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+
+  def test_get_bos_descriptor(self):
+    g = gadget.Gadget(device_desc, fs_config_desc, hs_config_desc)
+    self.assertIsNone(g.ControlRead(0x80, 0x06, 0x0F00, 0x0000, 5))
+
+    container_id = uuid.uuid4()
+    g.AddDeviceCapabilityDescriptor(usb_descriptors.ContainerIdDescriptor(
+        ContainerID=container_id.bytes_le))
+    bos_descriptor_header = g.ControlRead(0x80, 0x06, 0x0F00, 0x0000, 5)
+    self.assertEquals('\x05\x0F\x19\x00\x01', bos_descriptor_header)
+
+    bos_descriptor = g.ControlRead(0x80, 0x06, 0x0F00, 0x0000, 25)
+    self.assertEquals(
+        '\x05\x0F\x19\x00\x01\x14\x10\x04\x00' + container_id.bytes_le,
+        bos_descriptor)
+
+  def test_get_microsoft_os_20_descriptor_set(self):
+    g = gadget.Gadget(device_desc, fs_config_desc, hs_config_desc)
+    g.EnableMicrosoftOSDescriptorsV2(vendor_code=0x42)
+    g.SetMicrosoftCompatId(0, 'WINUSB')
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
+
+    bos_descriptor = g.ControlRead(0x80, 0x06, 0x0F00, 0x0000, 33)
+    self.assertEquals(
+        '\x05\x0F\x21\x00\x01' +
+        '\x1C\x10\x05\x00' +
+        uuid.UUID('{D8DD60DF-4589-4CC7-9CD2-659D9E648A9F}').bytes_le +
+        '\x00\x00\x03\x06\x2E\x00\x42\x00',
+        bos_descriptor)
+
+    descriptor_set = g.ControlRead(0xC0, 0x42, 0x0000, 0x0007, 48)
+    self.assertEquals(
+        '\x0A\x00\x00\x00\x00\x00\x03\x06\x2E\x00' +
+        '\x08\x00\x01\x00\x00\x00\x24\x00' +
+        '\x08\x00\x02\x00\x00\x00\x1C\x00' +
+        '\x14\x00\x03\x00WINUSB\0\0\0\0\0\0\0\0\0\0',
+        descriptor_set)
 
 
 if __name__ == '__main__':

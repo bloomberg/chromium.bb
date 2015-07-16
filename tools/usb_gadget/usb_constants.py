@@ -18,6 +18,27 @@ class DescriptorType(object):
   ENDPOINT = 5
   QUALIFIER = 6
   OTHER_SPEED_CONFIGURATION = 7
+  BOS = 15
+  DEVICE_CAPABILITY = 16
+
+
+class CapabilityType(object):
+  """Device capability types.
+
+  See Universal Serial Bus 3.1 Specification, Revision 1.0 Table 9-14.
+  """
+  WIRELESS_USB = 0x01
+  USB_20_EXTENSION = 0x02
+  SUPERSPEED_USB = 0x03
+  CONTAINER_ID = 0x04
+  PLATFORM = 0x05
+  POWER_DELIVERY_CAPABILITY = 0x06
+  BATTERY_INFO_CAPABILITY = 0x07
+  PD_CONSUMER_PORT_CAPABILITY = 0x08
+  PD_PROVIDER_PORT_CAPABILITY = 0x09
+  SUPERSPEED_PLUS = 0x0A
+  PRECISION_TIME_MEASUREMENT = 0x0B
+  WIRELESS_USB_EXT = 0x0C
 
 
 class DeviceClass(object):
