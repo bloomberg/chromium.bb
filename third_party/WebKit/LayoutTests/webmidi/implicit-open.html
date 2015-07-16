@@ -23,6 +23,8 @@ function successAccessCallback(a) {
         initialconnection: "closed",
         finalconnection: "open",
     })).then(finishJSTest, finishJSTest);
+
+    // TODO(toyoshim): Add a case for addEventListener('midimessage').
 }
 
 function errorAccessCallback(error) {
