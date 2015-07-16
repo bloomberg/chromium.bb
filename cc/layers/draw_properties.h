@@ -20,8 +20,6 @@ struct CC_EXPORT DrawProperties {
   DrawProperties()
       : opacity(0.f),
         blend_mode(SkXfermode::kSrcOver_Mode),
-        opacity_is_animating(false),
-        screen_space_opacity_is_animating(false),
         target_space_transform_is_animating(false),
         screen_space_transform_is_animating(false),
         can_use_lcd_text(false),
@@ -61,8 +59,6 @@ struct CC_EXPORT DrawProperties {
   // are actually meaningful on the main thread. When the properties are
   // animating, the main thread may not have the same values that are used
   // to draw.
-  bool opacity_is_animating;
-  bool screen_space_opacity_is_animating;
   bool target_space_transform_is_animating;
   bool screen_space_transform_is_animating;
 

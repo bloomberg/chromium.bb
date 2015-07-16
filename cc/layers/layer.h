@@ -240,17 +240,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return draw_properties_.screen_space_transform;
   }
   float draw_opacity() const { return draw_properties_.opacity; }
-  bool draw_opacity_is_animating() const {
-    return draw_properties_.opacity_is_animating;
-  }
   bool draw_transform_is_animating() const {
     return draw_properties_.target_space_transform_is_animating;
   }
   bool screen_space_transform_is_animating() const {
     return draw_properties_.screen_space_transform_is_animating;
-  }
-  bool screen_space_opacity_is_animating() const {
-    return draw_properties_.screen_space_opacity_is_animating;
   }
   gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }
   gfx::Rect drawable_content_rect() const {

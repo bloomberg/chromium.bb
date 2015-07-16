@@ -37,11 +37,6 @@ class CC_EXPORT RenderSurface {
   void SetDrawOpacity(float opacity) { draw_opacity_ = opacity; }
   float draw_opacity() const { return draw_opacity_; }
 
-  void SetDrawOpacityIsAnimating(bool draw_opacity_is_animating) {
-    draw_opacity_is_animating_ = draw_opacity_is_animating;
-  }
-  bool draw_opacity_is_animating() const { return draw_opacity_is_animating_; }
-
   void SetDrawTransform(const gfx::Transform& draw_transform) {
     draw_transform_ = draw_transform;
   }
@@ -120,7 +115,6 @@ class CC_EXPORT RenderSurface {
   gfx::Rect content_rect_;
 
   float draw_opacity_;
-  bool draw_opacity_is_animating_;
   gfx::Transform draw_transform_;
   gfx::Transform screen_space_transform_;
   gfx::Transform replica_draw_transform_;

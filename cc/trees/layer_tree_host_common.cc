@@ -1643,14 +1643,8 @@ static void CalculateDrawPropertiesInternal(
   gfx::Rect clip_rect_of_target_surface_in_target_space;
 
   float accumulated_draw_opacity = layer->opacity();
-  bool animating_opacity_to_target = layer->OpacityIsAnimating();
-  bool animating_opacity_to_screen = animating_opacity_to_target;
-  if (layer->parent()) {
+  if (layer->parent())
     accumulated_draw_opacity *= layer->parent()->draw_opacity();
-    animating_opacity_to_target |= layer->parent()->draw_opacity_is_animating();
-    animating_opacity_to_screen |=
-        layer->parent()->screen_space_opacity_is_animating();
-  }
 
   bool animating_transform_to_target = layer->TransformIsAnimating();
   bool animating_transform_to_screen = animating_transform_to_target;
@@ -1858,13 +1852,8 @@ static void CalculateDrawPropertiesInternal(
     // The opacity value is moved from the layer to its surface, so that the
     // entire subtree properly inherits opacity.
     render_surface->SetDrawOpacity(accumulated_draw_opacity);
-    render_surface->SetDrawOpacityIsAnimating(animating_opacity_to_target);
-    animating_opacity_to_target = false;
     layer_draw_properties.opacity = 1.f;
     layer_draw_properties.blend_mode = SkXfermode::kSrcOver_Mode;
-    layer_draw_properties.opacity_is_animating = animating_opacity_to_target;
-    layer_draw_properties.screen_space_opacity_is_animating =
-        animating_opacity_to_screen;
 
     render_surface->SetTargetSurfaceTransformsAreAnimating(
         animating_transform_to_target);
@@ -2000,9 +1989,6 @@ static void CalculateDrawPropertiesInternal(
         animating_transform_to_screen;
     layer_draw_properties.opacity = accumulated_draw_opacity;
     layer_draw_properties.blend_mode = layer->blend_mode();
-    layer_draw_properties.opacity_is_animating = animating_opacity_to_target;
-    layer_draw_properties.screen_space_opacity_is_animating =
-        animating_opacity_to_screen;
     data_for_children.parent_matrix = combined_transform;
 
     // Layers without render_surfaces directly inherit the ancestor's clip

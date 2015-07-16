@@ -386,17 +386,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   SkXfermode::Mode draw_blend_mode() const {
     return draw_properties_.blend_mode;
   }
-  bool draw_opacity_is_animating() const {
-    return draw_properties_.opacity_is_animating;
-  }
   bool draw_transform_is_animating() const {
     return draw_properties_.target_space_transform_is_animating;
   }
   bool screen_space_transform_is_animating() const {
     return draw_properties_.screen_space_transform_is_animating;
-  }
-  bool screen_space_opacity_is_animating() const {
-    return draw_properties_.screen_space_opacity_is_animating;
   }
   bool can_use_lcd_text() const { return draw_properties_.can_use_lcd_text; }
   gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }

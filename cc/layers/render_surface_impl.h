@@ -54,11 +54,6 @@ class CC_EXPORT RenderSurfaceImpl {
     return nearest_occlusion_immune_ancestor_;
   }
 
-  void SetDrawOpacityIsAnimating(bool draw_opacity_is_animating) {
-    draw_opacity_is_animating_ = draw_opacity_is_animating;
-  }
-  bool draw_opacity_is_animating() const { return draw_opacity_is_animating_; }
-
   SkColor GetDebugBorderColor() const;
   SkColor GetReplicaDebugBorderColor() const;
 
@@ -162,7 +157,6 @@ class CC_EXPORT RenderSurfaceImpl {
   // Uses this surface's space.
   gfx::Rect content_rect_;
   bool surface_property_changed_ : 1;
-  bool draw_opacity_is_animating_ : 1;
   bool target_surface_transforms_are_animating_ : 1;
   bool screen_space_transforms_are_animating_ : 1;
 

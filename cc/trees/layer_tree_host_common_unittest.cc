@@ -2235,19 +2235,6 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   EXPECT_EQ(render_surface2, child_of_rs2->render_target());
   EXPECT_EQ(render_surface2, grand_child_of_rs2->render_target());
 
-  // Verify draw_opacity_is_animating values
-  EXPECT_FALSE(parent->draw_opacity_is_animating());
-  EXPECT_FALSE(child_of_root->draw_opacity_is_animating());
-  EXPECT_TRUE(grand_child_of_root->draw_opacity_is_animating());
-  EXPECT_FALSE(render_surface1->draw_opacity_is_animating());
-  EXPECT_TRUE(render_surface1->render_surface()->draw_opacity_is_animating());
-  EXPECT_FALSE(child_of_rs1->draw_opacity_is_animating());
-  EXPECT_FALSE(grand_child_of_rs1->draw_opacity_is_animating());
-  EXPECT_FALSE(render_surface2->draw_opacity_is_animating());
-  EXPECT_FALSE(render_surface2->render_surface()->draw_opacity_is_animating());
-  EXPECT_FALSE(child_of_rs2->draw_opacity_is_animating());
-  EXPECT_FALSE(grand_child_of_rs2->draw_opacity_is_animating());
-
   // Verify draw_transform_is_animating values
   EXPECT_FALSE(parent->draw_transform_is_animating());
   EXPECT_FALSE(child_of_root->draw_transform_is_animating());
