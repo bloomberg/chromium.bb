@@ -13,6 +13,11 @@
  */
 var QUnit = {};
 
+/** @interface */
+QUnit.Test = function() {};
+
+/** @type {QUnit.Clock} */
+QUnit.Test.prototype.clock;
 
 /**
  */
@@ -26,7 +31,7 @@ QUnit.stop = function() {};
 
 /**
  * @param {string} name
- * @param {function(!QUnit.Assert)} testFunction
+ * @param {function(this:QUnit.Test, !QUnit.Assert)} testFunction
  */
 QUnit.test = function(name, testFunction) {};
 
