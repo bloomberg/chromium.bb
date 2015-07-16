@@ -13,8 +13,6 @@ namespace cc {
 RenderSurface::RenderSurface(Layer* owning_layer)
     : owning_layer_(owning_layer),
       draw_opacity_(1),
-      target_surface_transforms_are_animating_(false),
-      screen_space_transforms_are_animating_(false),
       is_clipped_(false),
       contributes_to_drawn_surface_(false),
       nearest_occlusion_immune_ancestor_(nullptr) {

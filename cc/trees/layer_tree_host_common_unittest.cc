@@ -2277,13 +2277,9 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   EXPECT_FALSE(child_of_root->draw_transform_is_animating());
   EXPECT_TRUE(grand_child_of_root->draw_transform_is_animating());
   EXPECT_FALSE(render_surface1->draw_transform_is_animating());
-  EXPECT_FALSE(render_surface1->render_surface()
-                   ->target_surface_transforms_are_animating());
   EXPECT_FALSE(child_of_rs1->draw_transform_is_animating());
   EXPECT_FALSE(grand_child_of_rs1->draw_transform_is_animating());
   EXPECT_FALSE(render_surface2->draw_transform_is_animating());
-  EXPECT_TRUE(render_surface2->render_surface()
-                  ->target_surface_transforms_are_animating());
   EXPECT_FALSE(child_of_rs2->draw_transform_is_animating());
   EXPECT_TRUE(grand_child_of_rs2->draw_transform_is_animating());
 
@@ -2292,13 +2288,9 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   EXPECT_FALSE(child_of_root->screen_space_transform_is_animating());
   EXPECT_TRUE(grand_child_of_root->screen_space_transform_is_animating());
   EXPECT_FALSE(render_surface1->screen_space_transform_is_animating());
-  EXPECT_FALSE(render_surface1->render_surface()
-                   ->screen_space_transforms_are_animating());
   EXPECT_FALSE(child_of_rs1->screen_space_transform_is_animating());
   EXPECT_FALSE(grand_child_of_rs1->screen_space_transform_is_animating());
   EXPECT_TRUE(render_surface2->screen_space_transform_is_animating());
-  EXPECT_TRUE(render_surface2->render_surface()
-                  ->screen_space_transforms_are_animating());
   EXPECT_TRUE(child_of_rs2->screen_space_transform_is_animating());
   EXPECT_TRUE(grand_child_of_rs2->screen_space_transform_is_animating());
 

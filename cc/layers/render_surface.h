@@ -64,19 +64,6 @@ class CC_EXPORT RenderSurface {
     return replica_screen_space_transform_;
   }
 
-  void SetTargetSurfaceTransformsAreAnimating(bool animating) {
-    target_surface_transforms_are_animating_ = animating;
-  }
-  bool target_surface_transforms_are_animating() const {
-    return target_surface_transforms_are_animating_;
-  }
-  void SetScreenSpaceTransformsAreAnimating(bool animating) {
-    screen_space_transforms_are_animating_ = animating;
-  }
-  bool screen_space_transforms_are_animating() const {
-    return screen_space_transforms_are_animating_;
-  }
-
   bool is_clipped() const { return is_clipped_; }
   void SetIsClipped(bool is_clipped) { is_clipped_ = is_clipped; }
 
@@ -119,8 +106,6 @@ class CC_EXPORT RenderSurface {
   gfx::Transform screen_space_transform_;
   gfx::Transform replica_draw_transform_;
   gfx::Transform replica_screen_space_transform_;
-  bool target_surface_transforms_are_animating_;
-  bool screen_space_transforms_are_animating_;
 
   bool is_clipped_;
   bool contributes_to_drawn_surface_;

@@ -87,19 +87,6 @@ class CC_EXPORT RenderSurfaceImpl {
     return replica_screen_space_transform_;
   }
 
-  void SetTargetSurfaceTransformsAreAnimating(bool animating) {
-    target_surface_transforms_are_animating_ = animating;
-  }
-  bool target_surface_transforms_are_animating() const {
-    return target_surface_transforms_are_animating_;
-  }
-  void SetScreenSpaceTransformsAreAnimating(bool animating) {
-    screen_space_transforms_are_animating_ = animating;
-  }
-  bool screen_space_transforms_are_animating() const {
-    return screen_space_transforms_are_animating_;
-  }
-
   void SetIsClipped(bool is_clipped) { is_clipped_ = is_clipped; }
   bool is_clipped() const { return is_clipped_; }
 

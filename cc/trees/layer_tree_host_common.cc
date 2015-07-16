@@ -1855,10 +1855,6 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.opacity = 1.f;
     layer_draw_properties.blend_mode = SkXfermode::kSrcOver_Mode;
 
-    render_surface->SetTargetSurfaceTransformsAreAnimating(
-        animating_transform_to_target);
-    render_surface->SetScreenSpaceTransformsAreAnimating(
-        animating_transform_to_screen);
     animating_transform_to_target = false;
     layer_draw_properties.target_space_transform_is_animating =
         animating_transform_to_target;
