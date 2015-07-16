@@ -61,9 +61,6 @@ enum PaintBehaviorFlags {
     PaintBehaviorSelectionOnly = 1 << 0,
     PaintBehaviorPrinting = 1 << 1,
     PaintBehaviorFlattenCompositingLayers = 1 << 2,
-    PaintBehaviorRenderingClipPathAsMask = 1 << 3,
-    PaintBehaviorSkipRootBackground = 1 << 4,
-    PaintBehaviorRootBackgroundOnly = 1 << 5
 };
 
 typedef unsigned PaintBehavior;

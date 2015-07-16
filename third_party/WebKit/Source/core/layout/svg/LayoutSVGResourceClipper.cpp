@@ -208,7 +208,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
         // - masker/filter not applied when laying out the children
         // - fill is set to the initial fill paint server (solid, black)
         // - stroke is set to the initial stroke paint server (none)
-        PaintInfo info(&pictureBuilder.context(), LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorRenderingClipPathAsMask);
+        PaintInfo info(&pictureBuilder.context(), LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorNormal, PaintLayerPaintingRenderingClipPathAsMask);
         layoutObject->paint(info, IntPoint());
     }
 

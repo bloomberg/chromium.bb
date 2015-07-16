@@ -189,7 +189,7 @@ void SVGPaintContext::paintSubtree(GraphicsContext* context, LayoutObject* item)
     ASSERT(item);
     ASSERT(!item->needsLayout());
 
-    PaintInfo info(context, LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorNormal);
+    PaintInfo info(context, LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorNormal, PaintLayerNoFlag);
     item->paint(info, IntPoint());
 }
 

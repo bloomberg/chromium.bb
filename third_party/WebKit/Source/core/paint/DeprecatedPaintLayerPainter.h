@@ -41,14 +41,14 @@ private:
 
     void paintChildren(unsigned childrenToVisit, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
     bool atLeastOneFragmentIntersectsDamageRect(DeprecatedPaintLayerFragments&, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& offsetFromRoot);
-    void paintFragmentWithPhase(PaintPhase, const DeprecatedPaintLayerFragment&, GraphicsContext*, const ClipRect&, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags, ClipState);
+    void paintFragmentWithPhase(PaintPhase, const DeprecatedPaintLayerFragment&, GraphicsContext*, const ClipRect&, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags, ClipState);
     void paintBackgroundForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*,
-        const LayoutRect& transparencyPaintDirtyRect, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
+        const LayoutRect& transparencyPaintDirtyRect, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
     void paintForegroundForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*,
-        const LayoutRect& transparencyPaintDirtyRect, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject,
+        const LayoutRect& transparencyPaintDirtyRect, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject,
         bool selectionOnly, PaintLayerFlags);
-    void paintForegroundForFragmentsWithPhase(PaintPhase, const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags, ClipState);
-    void paintOutlineForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
+    void paintForegroundForFragmentsWithPhase(PaintPhase, const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags, ClipState);
+    void paintOutlineForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
     void paintOverflowControlsForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
     void paintMaskForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);
     void paintChildClippingMaskForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags);

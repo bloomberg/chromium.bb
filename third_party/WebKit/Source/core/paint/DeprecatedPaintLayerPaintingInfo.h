@@ -54,6 +54,7 @@ class DeprecatedPaintLayer;
 class LayoutObject;
 
 enum PaintLayerFlag {
+    PaintLayerNoFlag = 0,
     PaintLayerHaveTransparency = 1,
     PaintLayerAppliedTransform = 1 << 1,
     PaintLayerUncachedClipRects = 1 << 2,
@@ -67,6 +68,7 @@ enum PaintLayerFlag {
     PaintLayerPaintingRootBackgroundOnly = 1 << 10,
     PaintLayerPaintingSkipRootBackground = 1 << 11,
     PaintLayerPaintingChildClippingMaskPhase = 1 << 12,
+    PaintLayerPaintingRenderingClipPathAsMask = 1 << 13,
     PaintLayerPaintingCompositingAllPhases = (PaintLayerPaintingCompositingBackgroundPhase | PaintLayerPaintingCompositingForegroundPhase | PaintLayerPaintingCompositingMaskPhase)
 };
 
