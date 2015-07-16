@@ -19,6 +19,7 @@ crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/510683 [ Mac ] media/video-played-reset.html [ Pass Failure ]
 
+
 # In root-layer-scrolls, the scrollbars make the scroll offsets difficult to compute.
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/keyboard-scroll-page-scale.html [ Failure ]
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
@@ -40,6 +41,8 @@ crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
+
+crbug.com/463358 [ Linux ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFailure ]
 
 # It is not possible to capture a marquee at exactly the same state 100% of the runs.
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
