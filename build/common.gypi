@@ -5608,6 +5608,12 @@
           # trying to prevent it.
           4503,
 
+          # Warning C4589 says: "Constructor of abstract class ignores
+          # initializer for virtual base class." Disable this warning because it
+          # is flaky in VS 2015 RTM. It triggers on compiler generated
+          # copy-constructors in some cases.
+          4589,
+
           # C4611: interaction between 'function' and C++ object destruction is
           #        non-portable
           # This warning is unavoidable when using e.g. setjmp/longjmp.  MSDN
