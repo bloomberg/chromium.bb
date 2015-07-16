@@ -24,7 +24,6 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_frame_host.h"
@@ -39,7 +38,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
-using content::BrowserThread;
 using content::ResourceType;
 
 namespace android_webview {
@@ -53,15 +51,8 @@ public:
   explicit AwContentsMessageFilter(int process_id);
 
   // BrowserMessageFilter methods.
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnShouldOverrideUrlLoading(int routing_id,
-                                  const base::string16& url,
-                                  bool has_user_gesture,
-                                  bool is_redirect,
-                                  bool* ignore_navigation);
   void OnSubFrameCreated(int parent_render_frame_id, int child_render_frame_id);
 
 private:
@@ -80,41 +71,13 @@ AwContentsMessageFilter::AwContentsMessageFilter(int process_id)
 AwContentsMessageFilter::~AwContentsMessageFilter() {
 }
 
-void AwContentsMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message, BrowserThread::ID* thread) {
-  if (message.type() == AwViewHostMsg_ShouldOverrideUrlLoading::ID) {
-    *thread = BrowserThread::UI;
-  }
-}
-
 bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AwContentsMessageFilter, message)
-    IPC_MESSAGE_HANDLER(AwViewHostMsg_ShouldOverrideUrlLoading,
-                        OnShouldOverrideUrlLoading)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_SubFrameCreated, OnSubFrameCreated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
-    int render_frame_id,
-    const base::string16& url,
-    bool has_user_gesture,
-    bool is_redirect,
-    bool* ignore_navigation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  *ignore_navigation = false;
-  AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromID(process_id_, render_frame_id);
-  if (client) {
-    *ignore_navigation =
-        client->ShouldOverrideUrlLoading(url, has_user_gesture, is_redirect);
-  } else {
-    LOG(WARNING) << "Failed to find the associated render view host for url: "
-                 << url;
-  }
 }
 
 void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,

@@ -53,9 +53,13 @@ public class AwWebContentsObserver extends WebContentsObserver {
         String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
         boolean isErrorUrl =
                 unreachableWebDataUrl != null && unreachableWebDataUrl.equals(failingUrl);
-        if (isMainFrame && !isErrorUrl && errorCode == NetError.ERR_ABORTED) {
+        if (isMainFrame && !isErrorUrl && errorCode == NetError.ERR_ABORTED
+                && !wasIgnoredByHandler) {
             // Need to call onPageFinished for backwards compatibility with the classic webview.
             // See also AwContents.IoThreadClientImpl.onReceivedError.
+            // If the navigation was ignored because of shouldOverrideUrlLoading we have already
+            // called onPageFinished in
+            // AwContents.InterceptNavigationDelegateImpl.shouldIgnoreNavigation instead.
             client.getCallbackHelper().postOnPageFinished(failingUrl);
         }
     }
