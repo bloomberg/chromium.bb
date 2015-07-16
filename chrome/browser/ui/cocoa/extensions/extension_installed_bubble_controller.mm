@@ -167,6 +167,7 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
   [self removePageActionPreviewIfNecessary];
   browser_ = NULL;
   [closeButton_ setTrackingEnabled:NO];
+  [promo_ setDelegate:nil];
   [super windowWillClose:notification];
 }
 
