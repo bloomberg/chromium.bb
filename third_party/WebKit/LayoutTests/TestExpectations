@@ -253,7 +253,6 @@ crbug.com/490511 imported/web-platform-tests/html/semantics/tabular-data/the-cap
 
 crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-retargeting/test-004.html [ Failure ]
@@ -262,8 +261,6 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/content-pseudo-element/test-001.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/content-pseudo-element/test-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/custom-pseudo-elements/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/test-004.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-007.html [ Failure ]
@@ -278,9 +275,6 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/active-
 crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Crash Pass ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
 
-crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-002.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-005.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]

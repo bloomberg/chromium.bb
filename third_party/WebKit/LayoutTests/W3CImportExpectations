@@ -370,11 +370,6 @@ imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-r
 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html
 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html
 
-# crbug.com/505364
-# uses link="reference" rather than link="match"
-imported/web-platform-tests/shadow-dom/shadow-trees/text-decoration-001.html [ Skip ]
-imported/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html [ Skip ]
-
 # Uses custom request handler
 imported/web-platform-tests/encoding/single-byte-decoder.html [ Skip ]
 imported/web-platform-tests/encoding/resources/single-byte-raw.py [ Skip ]
