@@ -3,7 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:paddingMode="stack">
     <item android:id="@android:id/secondaryProgress">
         <scale
             android:scaleWidth="100%"
