@@ -874,7 +874,7 @@ crbug.com/399099 [ Linux ] crypto/subtle/pbkdf2/deriveKey-failures.html [ Failur
 # tests run immediately afterwards (the two AES-CBC decrypt tests).
 # See http://crbug.com/440450.
 crbug.com/440277 crypto/subtle/abandon-crypto-operation.html [ Pass Crash ]
-crbug.com/440277 crypto/subtle/abandon-crypto-operation2.html [ Crash Pass ]
+crbug.com/440277 crypto/subtle/abandon-crypto-operation2.html [ Crash Pass Timeout ]
 crbug.com/409767 crypto/subtle/worker-subtle-crypto-concurrent.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc/decrypt-failures.html [ Crash Pass ]
 crbug.com/438403 crypto/subtle/aes-cbc/encrypt-decrypt.html [ Crash Pass ]
