@@ -2438,6 +2438,86 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BackgroundSync.Event.OneShotResult" enum="BooleanSuccess">
+  <owner>iclelland@chromium.org</owner>
+  <summary>Records whether a one-shot sync event succeeded or failed.</summary>
+</histogram>
+
+<histogram name="BackgroundSync.Event.PeriodicResult" enum="BooleanSuccess">
+  <owner>iclelland@chromium.org</owner>
+  <summary>Records whether a periodic sync event succeeded or failed.</summary>
+</histogram>
+
+<histogram name="BackgroundSync.Event.Time" units="milliseconds">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Time taken to execute a batch of sync events. A batch is defined as the set
+    of sync events dispatched at the same time by the BackgroundSyncManager.
+    Periodic syncs often run in a batch. One-shots usually run individually (a
+    batch of one), unless the device was offline and multiple are waiting for
+    the device to go back online.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.Registration.OneShot"
+    enum="BackgroundSyncResult">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records the result of attempting to register a one-shot sync.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.Registration.OneShot.CouldFire"
+    enum="BooleanCouldFireImmediately">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records the result of attempting to register a one-shot sync in a situation
+    where the sync could fire immediately.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.Registration.OneShot.IsDuplicate"
+    enum="BooleanRegistrationIsDuplicate">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records whether a one-shot sync registration exactly duplicates an existing
+    registered sync.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.Registration.Periodic"
+    enum="BackgroundSyncResult">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records the result of attempting to register a periodic sync.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.Registration.Periodic.IsDuplicate"
+    enum="BooleanRegistrationIsDuplicate">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records whether a periodic sync registration exactly duplicates an existing
+    registered sync.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.Unregistration.OneShot"
+    enum="BackgroundSyncResult">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records the result of attempting to unregister a one-shot sync.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundSync.Unregistration.Periodic"
+    enum="BackgroundSyncResult">
+  <owner>iclelland@chromium.org</owner>
+  <summary>
+    Records the result of attempting to unregister a periodic sync.
+  </summary>
+</histogram>
+
 <histogram name="BatteryStatus.NumberBatteriesLinux"
     enum="BatteryStatusNumberBatteries">
   <owner>timvolodine@chromium.org</owner>
@@ -50877,6 +50957,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="AUTO_LAUNCH_FOREGROUND_USELESS"/>
 </enum>
 
+<enum name="BackgroundSyncResult" type="int">
+  <int value="0" label="Action completed successfully"/>
+  <int value="1" label="Back-end error"/>
+  <int value="2" label="Registration was not found"/>
+  <int value="3" label="No active service worker"/>
+</enum>
+
 <enum name="BackgroundTracingState" type="int">
   <int value="0" label="Scenario activation requested"/>
   <int value="1" label="Scenario successfully activated"/>
@@ -51174,6 +51261,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Corrupt"/>
 </enum>
 
+<enum name="BooleanCouldFireImmediately" type="int">
+  <int value="0" label="Could not fire immediately"/>
+  <int value="1" label="Could fire immediately"/>
+</enum>
+
 <enum name="BooleanCovered" type="int">
   <int value="0" label="Not Covered"/>
   <int value="1" label="Covered"/>
@@ -51397,6 +51489,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanRegistered" type="int">
   <int value="0" label="Not Registered"/>
   <int value="1" label="Registered"/>
+</enum>
+
+<enum name="BooleanRegistrationIsDuplicate" type="int">
+  <int value="0" label="Registration is not a duplicate"/>
+  <int value="1" label="Registration is a duplicate"/>
 </enum>
 
 <enum name="BooleanReported" type="int">
