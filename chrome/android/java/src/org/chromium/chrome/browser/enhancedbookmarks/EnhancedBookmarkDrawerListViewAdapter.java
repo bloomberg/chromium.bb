@@ -94,13 +94,13 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
         mTopSection.clear();
         mTopSection.add(new Item(TYPE_ALL_ITEMS));
 
-        if (mDelegate.getModel().getBookmarkCountForFolder(mMobileNodeId) > 0) {
+        if (mDelegate.getModel().isFolderVisible(mMobileNodeId)) {
             mTopSection.add(new Item(mMobileNodeId));
         }
-        if (mDelegate.getModel().getBookmarkCountForFolder(mDesktopNodeId) > 0) {
+        if (mDelegate.getModel().isFolderVisible(mDesktopNodeId)) {
             mTopSection.add(new Item(mDesktopNodeId));
         }
-        if (mDelegate.getModel().getBookmarkCountForFolder(mOthersNodeId) > 0) {
+        if (mDelegate.getModel().isFolderVisible(mOthersNodeId)) {
             mTopSection.add(new Item(mOthersNodeId));
         }
 

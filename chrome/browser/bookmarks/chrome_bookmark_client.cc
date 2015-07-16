@@ -167,10 +167,10 @@ bool ChromeBookmarkClient::IsPermanentNodeVisible(
          node == supervised_node_);
   if (node == managed_node_ || node == supervised_node_)
     return false;
-#if !defined(OS_IOS)
-  return node->type() != BookmarkNode::MOBILE;
-#else
+#if defined(OS_IOS) || defined(OS_ANDROID)
   return node->type() == BookmarkNode::MOBILE;
+#else
+  return node->type() != BookmarkNode::MOBILE;
 #endif
 }
 

@@ -157,11 +157,9 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
 
         for (int i = 0; i < folderList.size(); i++) {
             BookmarkId folder = folderList.get(i);
-            if (mEnhancedBookmarksModel.getBookmarkCountForFolder(folder) == 0
-                    && (folder.equals(mEnhancedBookmarksModel.getDesktopFolderId())
-                    || folder.equals(mEnhancedBookmarksModel.getOtherFolderId()))) {
-                continue;
-            }
+
+            if (!mEnhancedBookmarksModel.isFolderVisible(folder)) continue;
+
             String title = mEnhancedBookmarksModel.getBookmarkById(folder).getTitle();
             entryList.add(new FolderListEntry(folder, depthList.get(i), title,
                     folder.equals(mParentId), FolderListEntry.TYPE_NORMAL));

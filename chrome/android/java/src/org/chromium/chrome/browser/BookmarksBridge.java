@@ -433,18 +433,13 @@ public class BookmarksBridge {
     }
 
     /**
-     * Fetches the number of bookmarks in the given folder.
-     *
-     * @param folderId The parent folder id.
-     * @return The number of bookmarks in the given folder or 0 if the bookmark model has not been
-     *         loaded.
+     * Check whether the given folder should be visible. This is for top permanent folders that we
+     * want to hide when there is no child.
+     * @return Whether the given folder should be visible.
      */
-    public int getBookmarkCountForFolder(BookmarkId folderId) {
-        if (!mIsNativeBookmarkModelLoaded) {
-            return 0;
-        }
-
-        return nativeGetBookmarkCountForFolder(mNativeBookmarksBridge, folderId);
+    public boolean isFolderVisible(BookmarkId id) {
+        assert mIsNativeBookmarkModelLoaded;
+        return nativeIsFolderVisible(mNativeBookmarksBridge, id.getId(), id.getType());
     }
 
     /**
@@ -701,8 +696,7 @@ public class BookmarksBridge {
     private native void nativeGetBookmarksForFolder(long nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
-    private native int nativeGetBookmarkCountForFolder(long nativeBookmarksBridge,
-            BookmarkId folderId);
+    private native boolean nativeIsFolderVisible(long nativeBookmarksBridge, long id, int type);
     private native void nativeGetCurrentFolderHierarchy(long nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);

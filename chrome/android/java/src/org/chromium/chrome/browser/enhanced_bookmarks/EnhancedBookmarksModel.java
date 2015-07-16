@@ -296,9 +296,9 @@ public class EnhancedBookmarksModel {
     }
 
     /**
-     * @see BookmarksBridge#getBookmarkCountForFolder(BookmarkId)
+     * @see BookmarksBridge#isFolderVisible(BookmarkId)
      */
-    public int getBookmarkCountForFolder(BookmarkId bookmarkId) {
-        return mBookmarksBridge.getBookmarkCountForFolder(bookmarkId);
+    public boolean isFolderVisible(BookmarkId bookmarkId) {
+        return mBookmarksBridge.isFolderVisible(bookmarkId);
     }
 }
