@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -57,6 +58,26 @@ class ExtensionWindowCreateTest : public InProcessBrowserTest {
 };
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, WindowTypes) {
+  Browser* normal_browser = new Browser(Browser::CreateParams(
+      browser()->profile(), browser()->host_desktop_type()));
+  EXPECT_EQ(keys::kWindowTypeValueNormal,
+            normal_browser->extension_window_controller()->GetWindowTypeText());
+
+  Browser* popup_browser = new Browser(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
+                            browser()->host_desktop_type()));
+  EXPECT_EQ(keys::kWindowTypeValuePopup,
+            popup_browser->extension_window_controller()->GetWindowTypeText());
+
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      browser()->tab_strip_model()->GetWebContentsAt(0), false /* is_docked */);
+  EXPECT_EQ(keys::kWindowTypeValueDevTools, DevToolsWindowTesting::Get(devtools)
+                                                ->browser()
+                                                ->extension_window_controller()
+                                                ->GetWindowTypeText());
+}
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
   int window_id = ExtensionTabUtil::GetWindowId(browser());

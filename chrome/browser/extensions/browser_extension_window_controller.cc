@@ -32,6 +32,8 @@ int BrowserExtensionWindowController::GetWindowId() const {
 namespace keys = extensions::tabs_constants;
 
 std::string BrowserExtensionWindowController::GetWindowTypeText() const {
+  if (browser_->is_devtools())
+    return keys::kWindowTypeValueDevTools;
   if (browser_->is_type_popup())
     return keys::kWindowTypeValuePopup;
   if (browser_->is_app())

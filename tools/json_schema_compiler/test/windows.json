@@ -18,7 +18,7 @@
           "type": {
             "type": "string",
             "description": "The type of browser window this is.",
-            "enum": ["normal", "popup", "panel", "app"]
+            "enum": ["normal", "popup", "panel", "app", "devtools"]
           },
           "state": {
             "type": "string",

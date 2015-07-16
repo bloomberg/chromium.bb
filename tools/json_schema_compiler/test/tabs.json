@@ -265,7 +265,7 @@
               "windowType": {
                 "type": "string",
                 "optional": true,
-                "enum": ["normal", "popup", "panel", "app"],
+                "enum": ["normal", "popup", "panel", "app", "devtools"],
                 "description": "The type of window the tabs are in."
               }
             }

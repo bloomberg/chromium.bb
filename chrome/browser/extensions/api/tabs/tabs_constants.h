@@ -72,6 +72,7 @@ extern const char kWindowTypeValuePopup[];
 extern const char kWindowTypeValuePanel[];
 extern const char kWindowTypeValueDetachedPanel[];
 extern const char kWindowTypeValueApp[];
+extern const char kWindowTypeValueDevTools[];
 
 // Error messages.
 extern const char kCannotZoomDisabledTabError[];

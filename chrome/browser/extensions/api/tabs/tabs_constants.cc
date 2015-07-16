@@ -61,13 +61,12 @@ const char kShowStateValueFullscreen[] = "fullscreen";
 const char kStatusValueComplete[] = "complete";
 const char kStatusValueLoading[] = "loading";
 
-// TODO(mpcomplete): should we expose more specific detail, like devtools, app
-// panel, etc?
 const char kWindowTypeValueNormal[] = "normal";
 const char kWindowTypeValuePopup[] = "popup";
 const char kWindowTypeValuePanel[] = "panel";
 const char kWindowTypeValueDetachedPanel[] = "detached_panel";
 const char kWindowTypeValueApp[] = "app";
+const char kWindowTypeValueDevTools[] = "devtools";
 
 const char kCannotZoomDisabledTabError[] = "Cannot zoom a tab in disabled "
     "mode.";

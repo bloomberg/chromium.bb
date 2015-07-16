@@ -14,7 +14,7 @@
         "id": "WindowType",
         "type": "string",
         "description": "The type of browser window this is. Under some circumstances a Window may not be assigned type property, for example when querying closed windows from the $(ref:sessions) API.",
-        "enum": ["normal", "popup", "panel", "app"]
+        "enum": ["normal", "popup", "panel", "app", "devtools"]
       },
       {
         "id": "WindowState",
