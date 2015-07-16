@@ -15,10 +15,10 @@ namespace mojo {
 OutputSurfaceMojo::OutputSurfaceMojo(
     OutputSurfaceMojoClient* client,
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    SurfacePtr surface)
+    ScopedMessagePipeHandle surface_handle)
     : cc::OutputSurface(context_provider),
       output_surface_mojo_client_(client),
-      surface_(surface.Pass()),
+      surface_handle_(surface_handle.Pass()),
       id_namespace_(0u),
       local_id_(0u) {
   capabilities_.delegated_rendering = true;
@@ -38,6 +38,7 @@ void OutputSurfaceMojo::SetIdNamespace(uint32_t id_namespace) {
 }
 
 bool OutputSurfaceMojo::BindToClient(cc::OutputSurfaceClient* client) {
+  surface_.Bind(InterfacePtrInfo<Surface>(surface_handle_.Pass(), 0u));
   surface_->GetIdNamespace(
       base::Bind(&OutputSurfaceMojo::SetIdNamespace, base::Unretained(this)));
   return cc::OutputSurface::BindToClient(client);

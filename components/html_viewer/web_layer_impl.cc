@@ -5,6 +5,8 @@
 #include "components/html_viewer/web_layer_impl.h"
 
 #include "cc/layers/layer.h"
+#include "components/html_viewer/frame.h"
+#include "ui/mojo/geometry/geometry.mojom.h"
 
 using blink::WebFloatPoint;
 using blink::WebSize;

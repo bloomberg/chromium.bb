@@ -8,15 +8,10 @@
 #include <utility>
 
 #include "cc/blink/web_layer_impl.h"
-#include "components/html_viewer/frame.h"
-#include "third_party/WebKit/public/platform/WebFloatPoint.h"
-#include "third_party/WebKit/public/platform/WebLayer.h"
-
-namespace blink {
-struct WebSize;
-}  // namespace blink
 
 namespace html_viewer {
+
+class Frame;
 
 class WebLayerImpl : public cc_blink::WebLayerImpl {
  public:

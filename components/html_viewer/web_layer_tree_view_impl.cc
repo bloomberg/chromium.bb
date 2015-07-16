@@ -65,7 +65,8 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
     scoped_refptr<cc::ContextProvider> context_provider(
         new mojo::ContextProviderMojo(cb.PassInterface().PassHandle()));
     output_surface_.reset(
-        new mojo::OutputSurfaceMojo(this, context_provider, surface.Pass()));
+        new mojo::OutputSurfaceMojo(this, context_provider,
+                                    surface.PassInterface().PassHandle()));
   }
   layer_tree_host_->SetLayerTreeHostClientReady();
 }
