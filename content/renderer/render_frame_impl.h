@@ -378,10 +378,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
       blink::WebSandboxFlags sandboxFlags);
-  virtual blink::WebFrame* createChildFrame(
-      blink::WebLocalFrame* parent,
-      const blink::WebString& name,
-      blink::WebSandboxFlags sandboxFlags);
   virtual void didDisownOpener(blink::WebLocalFrame* frame);
   virtual void frameDetached(blink::WebFrame* frame, DetachType type);
   virtual void frameFocused();

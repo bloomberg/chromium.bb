@@ -2168,14 +2168,6 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   return web_frame;
 }
 
-blink::WebFrame* RenderFrameImpl::createChildFrame(
-    blink::WebLocalFrame* parent,
-    const blink::WebString& name,
-    blink::WebSandboxFlags sandbox_flags) {
-  return createChildFrame(parent, blink::WebTreeScopeType::Document, name,
-                          sandbox_flags);
-}
-
 void RenderFrameImpl::didDisownOpener(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
   // We only need to notify the browser if the active, top-level frame clears
