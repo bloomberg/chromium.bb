@@ -46,6 +46,8 @@ class DelegateThreadSafeReceivedData final
 
 using Result = blink::WebDataConsumerHandle::Result;
 
+// All methods (except for ctor/dtor) must be called with |lock_| aquired
+// unless otherwise stated.
 class SharedMemoryDataConsumerHandle::Context final
     : public base::RefCountedThreadSafe<Context> {
  public:
@@ -59,8 +61,12 @@ class SharedMemoryDataConsumerHandle::Context final
         is_handle_active_(true),
         is_two_phase_read_in_progress_(false) {}
 
-  bool IsEmpty() const { return queue_.empty(); }
+  bool IsEmpty() const {
+    lock_.AssertAcquired();
+    return queue_.empty();
+  }
   void ClearIfNecessary() {
+    lock_.AssertAcquired();
     if (!is_handle_locked() && !is_handle_active()) {
       // No one is interested in the contents.
       if (is_on_reader_detached_valid_) {
@@ -73,20 +79,35 @@ class SharedMemoryDataConsumerHandle::Context final
     }
   }
   void ClearQueue() {
+    lock_.AssertAcquired();
     for (auto& data : queue_) {
       delete data;
     }
     queue_.clear();
     first_offset_ = 0;
   }
-  RequestPeer::ThreadSafeReceivedData* Top() { return queue_.front(); }
+  RequestPeer::ThreadSafeReceivedData* Top() {
+    lock_.AssertAcquired();
+    return queue_.front();
+  }
   void Push(scoped_ptr<RequestPeer::ThreadSafeReceivedData> data) {
+    lock_.AssertAcquired();
     queue_.push_back(data.release());
   }
-  size_t first_offset() const { return first_offset_; }
-  Result result() const { return result_; }
-  void set_result(Result r) { result_ = r; }
+  size_t first_offset() const {
+    lock_.AssertAcquired();
+    return first_offset_;
+  }
+  Result result() const {
+    lock_.AssertAcquired();
+    return result_;
+  }
+  void set_result(Result r) {
+    lock_.AssertAcquired();
+    result_ = r;
+  }
   void AcquireReaderLock(Client* client) {
+    lock_.AssertAcquired();
     DCHECK(!notification_task_runner_);
     DCHECK(!client_);
     notification_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -99,11 +120,13 @@ class SharedMemoryDataConsumerHandle::Context final
     }
   }
   void ReleaseReaderLock() {
+    lock_.AssertAcquired();
     DCHECK(notification_task_runner_);
     notification_task_runner_ = nullptr;
     client_ = nullptr;
   }
   void PostNotify() {
+    lock_.AssertAcquired();
     auto runner = notification_task_runner_;
     if (!runner)
       return;
@@ -113,10 +136,12 @@ class SharedMemoryDataConsumerHandle::Context final
     runner->PostTask(FROM_HERE,
                      base::Bind(&Context::NotifyInternal, this, false));
   }
+  // Must be called with |lock_| not aquired.
   void Notify() { NotifyInternal(true); }
   // This function doesn't work in the destructor if |on_reader_detached_| is
   // not null.
   void ResetOnReaderDetached() {
+    lock_.AssertAcquired();
     if (on_reader_detached_.is_null()) {
       DCHECK(!is_on_reader_detached_valid_);
       return;
@@ -132,14 +157,25 @@ class SharedMemoryDataConsumerHandle::Context final
           FROM_HERE, base::Bind(&Context::ResetOnReaderDetachedWithLock, this));
     }
   }
-  bool is_handle_locked() const { return notification_task_runner_; }
+  bool is_handle_locked() const {
+    lock_.AssertAcquired();
+    return notification_task_runner_;
+  }
   bool IsReaderBoundToCurrentThread() const {
+    lock_.AssertAcquired();
     return notification_task_runner_ &&
            notification_task_runner_->BelongsToCurrentThread();
   }
-  bool is_handle_active() const { return is_handle_active_; }
-  void set_is_handle_active(bool b) { is_handle_active_ = b; }
+  bool is_handle_active() const {
+    lock_.AssertAcquired();
+    return is_handle_active_;
+  }
+  void set_is_handle_active(bool b) {
+    lock_.AssertAcquired();
+    is_handle_active_ = b;
+  }
   void Consume(size_t s) {
+    lock_.AssertAcquired();
     first_offset_ += s;
     auto top = Top();
     if (static_cast<size_t>(top->length()) <= first_offset_) {
@@ -149,18 +185,24 @@ class SharedMemoryDataConsumerHandle::Context final
     }
   }
   bool is_two_phase_read_in_progress() const {
+    lock_.AssertAcquired();
     return is_two_phase_read_in_progress_;
   }
   void set_is_two_phase_read_in_progress(bool b) {
+    lock_.AssertAcquired();
     is_two_phase_read_in_progress_ = b;
   }
+  // Can be called with |lock_| not aquired.
   base::Lock& lock() { return lock_; }
 
  private:
+  // Must be called with |lock_| not aquired.
   void NotifyInternal(bool repost) {
-    // Note that this function is not protected by |lock_|.
-
-    auto runner = notification_task_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> runner;
+    {
+      base::AutoLock lock(lock_);
+      runner = notification_task_runner_;
+    }
     if (!runner)
       return;
 
@@ -180,6 +222,7 @@ class SharedMemoryDataConsumerHandle::Context final
     }
   }
   void Clear() {
+    lock_.AssertAcquired();
     for (auto& data : queue_) {
       delete data;
     }
@@ -190,6 +233,7 @@ class SharedMemoryDataConsumerHandle::Context final
     // null. We have an assert in the destructor.
     ResetOnReaderDetached();
   }
+  // Must be called with |lock_| not aquired.
   void ResetOnReaderDetachedWithLock() {
     base::AutoLock lock(lock_);
     ResetOnReaderDetached();
@@ -197,6 +241,7 @@ class SharedMemoryDataConsumerHandle::Context final
 
   friend class base::RefCountedThreadSafe<Context>;
   ~Context() {
+    base::AutoLock lock(lock_);
     DCHECK(on_reader_detached_.is_null());
 
     // This is necessary because the queue stores raw pointers.
@@ -273,44 +318,33 @@ void SharedMemoryDataConsumerHandle::Writer::AddData(
 }
 
 void SharedMemoryDataConsumerHandle::Writer::Close() {
-  bool needs_notification = false;
-
-  {
-    base::AutoLock lock(context_->lock());
-    if (context_->result() == Ok) {
-      context_->set_result(Done);
-      context_->ResetOnReaderDetached();
-      needs_notification = context_->IsEmpty();
+  base::AutoLock lock(context_->lock());
+  if (context_->result() == Ok) {
+    context_->set_result(Done);
+    context_->ResetOnReaderDetached();
+    if (context_->IsEmpty()) {
+      // We cannot issue the notification synchronously because this function
+      // can be called in the client's callback.
+      context_->PostNotify();
     }
-  }
-  if (needs_notification) {
-    // We cannot issue the notification synchronously because this function can
-    // be called in the client's callback.
-    context_->PostNotify();
   }
 }
 
 void SharedMemoryDataConsumerHandle::Writer::Fail() {
-  bool needs_notification = false;
-  {
-    base::AutoLock lock(context_->lock());
-    if (context_->result() == Ok) {
-      // TODO(yhirano): Use an appropriate error code other than
-      // UnexpectedError.
-      context_->set_result(UnexpectedError);
+  base::AutoLock lock(context_->lock());
+  if (context_->result() == Ok) {
+    // TODO(yhirano): Use an appropriate error code other than
+    // UnexpectedError.
+    context_->set_result(UnexpectedError);
 
-      if (context_->is_two_phase_read_in_progress()) {
-        // If we are in two-phase read session, we cannot discard the data. We
-        // will clear the queue at the end of the session.
-      } else {
-        context_->ClearQueue();
-      }
-
-      context_->ResetOnReaderDetached();
-      needs_notification = true;
+    if (context_->is_two_phase_read_in_progress()) {
+      // If we are in two-phase read session, we cannot discard the data. We
+      // will clear the queue at the end of the session.
+    } else {
+      context_->ClearQueue();
     }
-  }
-  if (needs_notification) {
+
+    context_->ResetOnReaderDetached();
     // We cannot issue the notification synchronously because this function can
     // be called in the client's callback.
     context_->PostNotify();
