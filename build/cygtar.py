@@ -63,7 +63,7 @@ def PathToSymDat(filepath):
   return symtag + unipath + strterm
 
 
-def CreateWin32Hardlink(filepath, targpath, try_mklink):
+def CreateWin32Hardlink(filepath, targpath, try_mklink, verbose):
   """Create a hardlink on Win32 if possible
 
   Uses mklink to create a hardlink if possible.  On failure, it will
@@ -76,7 +76,8 @@ def CreateWin32Hardlink(filepath, targpath, try_mklink):
     dst_src = ToNativePath(filepath) + ' ' + ToNativePath(targpath)
     try:
       err = subprocess.call(['cmd', '/C', 'mklink /H ' + dst_src],
-                            stdout = open(os.devnull, 'wb'))
+                            stdout = open(os.devnull, 'wb'),
+                            stderr = open(os.devnull, 'wb'))
     except EnvironmentError:
       try_mklink = False
 
@@ -88,8 +89,10 @@ def CreateWin32Hardlink(filepath, targpath, try_mklink):
         shutil.copyfile(targpath, filepath)
         return False
       except EnvironmentError:
-        print 'Try %d: Failed hardlink %s -> %s\n' % (cnt, filepath, targpath)
-    print 'Giving up.'
+        if verbose:
+          print 'Try %d: Failed hardlink %s -> %s\n' % (cnt, filepath, targpath)
+    if verbose:
+      print 'Giving up.'
   return try_mklink
 
 
@@ -275,7 +278,8 @@ class CygTar(object):
       # For hardlinks in Windows, we try to use mklink, and instead copy on
       # failure.
       if m.islnk() and sys.platform == 'win32':
-        try_mklink = CreateWin32Hardlink(m.name, m.linkname, try_mklink)
+        try_mklink = CreateWin32Hardlink(
+            m.name, m.linkname, try_mklink, self.verbose)
       # On Windows we treat symlinks as if they were hard links.
       # Proper Windows symlinks supported by everything can be made with
       # mklink, but only by an Administrator.  The older toolchains are
@@ -308,7 +312,8 @@ class CygTar(object):
         win32_symlinks_left.append(this_symlink)
       else:
         del win32_symlinks[name]
-        try_mklink = CreateWin32Hardlink(name, linkname, try_mklink)
+        try_mklink = CreateWin32Hardlink(
+            name, linkname, try_mklink, self.verbose)
 
     if self.verbose:
       sys.stdout.write('\n')
