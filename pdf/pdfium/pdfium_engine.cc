@@ -677,8 +677,16 @@ PDFiumEngine::~PDFiumEngine() {
 
   if (doc_) {
     FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_WC);
+
+#ifdef PDF_USE_XFA
+    // XFA may require |form_| to outlive |doc_|, so shut down in that order.
     FPDF_CloseDocument(doc_);
     FPDFDOC_ExitFormFillEnvironment(form_);
+#else
+    // Normally |doc_| should outlive |form_|.
+    FPDFDOC_ExitFormFillEnvironment(form_);
+    FPDF_CloseDocument(doc_);
+#endif
   }
   FPDFAvail_Destroy(fpdf_availability_);
 
