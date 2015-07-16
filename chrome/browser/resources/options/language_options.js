@@ -138,7 +138,7 @@ cr.define('options', function() {
     /**
      * The dictionary of currently selected spellcheck dictionary languages,
      * like {"en-US": true, "sl-SI": true}.
-     * @type {Object}
+     * @type {!Object}
      * @private
      */
     spellCheckLanguages_: {},
