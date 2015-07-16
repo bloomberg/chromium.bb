@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "base/win/scoped_handle.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/security_level.h"
 #include "sandbox/win/src/sid.h"
@@ -35,13 +36,12 @@ namespace sandbox {
 //    }
 //
 //    restricted_token.AddRestrictingSid(ATL::Sids::Users().GetPSID());
-//    HANDLE token_handle;
-//    err_code = restricted_token.GetRestrictedTokenHandle(&token_handle);
+//    base::win::ScopedHandle token_handle;
+//    err_code = restricted_token.GetRestrictedToken(&token_handle);
 //    if (ERROR_SUCCESS != err_code) {
 //      // handle error.
 //    }
 //    [...]
-//    CloseHandle(token_handle);
 class RestrictedToken {
  public:
   // Init() has to be called before calling any other method in the class.
@@ -53,24 +53,22 @@ class RestrictedToken {
   // the effective token of the current process.
   unsigned Init(HANDLE effective_token);
 
-  // Creates a restricted token and returns its handle using the token_handle
-  // output parameter. This handle has to be closed by the caller.
+  // Creates a restricted token.
   // If the function succeeds, the return value is ERROR_SUCCESS. If the
   // function fails, the return value is the win32 error code corresponding to
   // the error.
-  unsigned GetRestrictedTokenHandle(HANDLE *token_handle) const;
+  unsigned GetRestrictedToken(base::win::ScopedHandle* token) const;
 
   // Creates a restricted token and uses this new token to create a new token
-  // for impersonation. Returns the handle of this impersonation token using
-  // the token_handle output parameter. This handle has to be closed by
-  // the caller.
+  // for impersonation. Returns this impersonation token.
   //
   // If the function succeeds, the return value is ERROR_SUCCESS. If the
   // function fails, the return value is the win32 error code corresponding to
   // the error.
   //
-  // The sample usage is the same as the GetRestrictedTokenHandle function.
-  unsigned GetRestrictedTokenHandleForImpersonation(HANDLE *token_handle) const;
+  // The sample usage is the same as the GetRestrictedToken function.
+  unsigned GetRestrictedTokenForImpersonation(
+      base::win::ScopedHandle* token) const;
 
   // Lists all sids in the token and mark them as Deny Only except for those
   // present in the exceptions parameter. If there is no exception needed,
