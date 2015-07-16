@@ -29,6 +29,8 @@ cscope.out
 /config.sub
 /configure
 /depcomp
+/docs/developer
+/docs/tools
 /install-sh
 /libtool
 /ltmain.sh

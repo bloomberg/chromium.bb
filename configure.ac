@@ -61,6 +61,25 @@ AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
 
 COMPOSITOR_MODULES="wayland-server >= 1.8.0 pixman-1 >= 0.25.2"
 
+AC_CONFIG_FILES([doc/doxygen/tools.doxygen doc/doxygen/tooldev.doxygen])
+
+AC_ARG_ENABLE(devdocs,
+	      AS_HELP_STRING([--disable-devdocs],
+			     [do not enable building of developer documentation]),,
+	      enable_devdocs=auto)
+if test "x$enable_devdocs" != "xno"; then
+	AC_CHECK_PROGS([DOXYGEN], [doxygen])
+	if test "x$DOXYGEN" = "x" -a "x$enable_devdocs" = "xyes"; then
+		AC_MSG_ERROR([Developer documentation explicitly requested, but Doxygen couldn't be found])
+	fi
+	if test "x$DOXYGEN" != "x"; then
+		enable_devdocs=yes
+	else
+		enable_devdocs=no
+	fi
+fi
+AM_CONDITIONAL(ENABLE_DEVDOCS, test "x$enable_devdocs" = "xyes")
+
 AC_ARG_ENABLE(egl, [  --disable-egl],,
               enable_egl=yes)
 AM_CONDITIONAL(ENABLE_EGL, test x$enable_egl = xyes)
@@ -549,6 +568,7 @@ AC_MSG_RESULT([
 
 	Build wcap utility		${enable_wcap_tools}
 	Build Fullscreen Shell		${enable_fullscreen_shell}
+	Enable developer documentation	${enable_devdocs}
 
 	weston-launch utility		${enable_weston_launch}
 	systemd-login support		${have_systemd_login}

@@ -1058,6 +1058,7 @@ WESTON_LOG_COMPILER = $(srcdir)/tests/weston-tests-env
 
 clean-local:
 	-rm -rf logs
+	-rm -rf $(DOCDIRS)
 
 # To remove when automake 1.11 support is dropped
 export abs_builddir
@@ -1351,6 +1352,27 @@ EXTRA_DIST +=					\
 	man/weston.ini.man
 
 CLEANFILES += $(man_MANS)
+
+if ENABLE_DEVDOCS
+DOXYGEN_INDICES = docs/developer/html/index.html docs/tools/html/index.html
+
+docs/developer/html/index.html: doc/doxygen/tooldev.doxygen | docs/developer
+	cd doc/doxygen && $(DOXYGEN) tooldev.doxygen
+
+docs/tools/html/index.html: doc/doxygen/tools.doxygen | docs/tools
+	cd doc/doxygen && $(DOXYGEN) tools.doxygen
+endif
+
+DOCDIRS =		\
+	docs/developer	\
+	docs/tools
+
+$(DOCDIRS):
+	$(MKDIR_P) $@
+
+.PHONY: doc $(DOXYGEN_INDICES)
+
+doc: $(DOXYGEN_INDICES)
 
 protocol/%-protocol.c : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code < $< > $@

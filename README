@@ -18,6 +18,12 @@ weston and its dependencies.
 The test suite can be invoked via `make check`; see
 http://wayland.freedesktop.org/testing.html for additional details.
 
+Developer documentation can be built via `make doc`. Output will be in
+the build root under
+
+docs/developer/html/index.html
+docs/tools/html/index.html
+
 
 
 			Libweston
