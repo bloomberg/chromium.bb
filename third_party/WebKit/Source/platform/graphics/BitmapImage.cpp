@@ -69,8 +69,6 @@ BitmapImage::BitmapImage(ImageObserver* observer)
     , m_desiredFrameStartTime(0)
     , m_frameCount(0)
     , m_animationPolicy(ImageAnimationPolicyAllowed)
-    , m_isSolidColor(false)
-    , m_checkedForSolidColor(false)
     , m_animationFinished(false)
     , m_allDataReceived(false)
     , m_haveSize(false)
@@ -91,8 +89,6 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
     , m_repetitionsComplete(0)
     , m_frameCount(1)
     , m_animationPolicy(ImageAnimationPolicyAllowed)
-    , m_isSolidColor(false)
-    , m_checkedForSolidColor(false)
     , m_animationFinished(true)
     , m_allDataReceived(true)
     , m_haveSize(true)
@@ -107,8 +103,6 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
     m_frames[0].m_hasAlpha = !bitmap.isOpaque();
     m_frames[0].m_frame = bitmap;
     m_frames[0].m_haveMetadata = true;
-
-    checkForSolidColor();
 }
 
 BitmapImage::~BitmapImage()
@@ -163,9 +157,6 @@ void BitmapImage::destroyDecodedDataIfNecessary()
 
 void BitmapImage::destroyMetadataAndNotify(size_t frameBytesCleared)
 {
-    m_isSolidColor = false;
-    m_checkedForSolidColor = false;
-
     if (frameBytesCleared && imageObserver())
         imageObserver()->decodedSizeChanged(this, -safeCast<int>(frameBytesCleared));
 }
@@ -177,9 +168,7 @@ void BitmapImage::cacheFrame(size_t index)
         m_frames.grow(numFrames);
 
     int deltaBytes = totalFrameBytes();
-    if (m_source.createFrameAtIndex(index, &m_frames[index].m_frame) && numFrames == 1)
-        checkForSolidColor();
-
+    m_source.createFrameAtIndex(index, &m_frames[index].m_frame);
     m_frames[index].m_orientation = m_source.orientationAtIndex(index);
     m_frames[index].m_haveMetadata = true;
     m_frames[index].m_isComplete = m_source.frameIsCompleteAtIndex(index);
@@ -450,13 +439,6 @@ ImageOrientation BitmapImage::frameOrientationAtIndex(size_t index)
     return m_source.orientationAtIndex(index);
 }
 
-#if ENABLE(ASSERT)
-bool BitmapImage::notSolidColor()
-{
-    return size().width() != 1 || size().height() != 1 || frameCount() > 1;
-}
-#endif
-
 int BitmapImage::repetitionCount(bool imageKnownToBeComplete)
 {
     if ((m_repetitionCountStatus == Unknown) || ((m_repetitionCountStatus == Uncertain) && imageKnownToBeComplete)) {
@@ -658,40 +640,6 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
     if (skippingFrames != advancedAnimation)
         imageObserver()->animationAdvanced(this);
     return advancedAnimation;
-}
-
-void BitmapImage::checkForSolidColor()
-{
-    m_isSolidColor = false;
-    m_checkedForSolidColor = true;
-
-    if (frameCount() > 1)
-        return;
-
-    SkBitmap bitmap;
-    if (frameAtIndex(0, &bitmap) && size().width() == 1 && size().height() == 1) {
-        SkAutoLockPixels lock(bitmap);
-        if (!bitmap.getPixels())
-            return;
-
-        m_isSolidColor = true;
-        m_solidColor = Color(bitmap.getColor(0, 0));
-    }
-}
-
-bool BitmapImage::mayFillWithSolidColor()
-{
-    if (!m_checkedForSolidColor && frameCount() > 0) {
-        checkForSolidColor();
-        ASSERT(m_checkedForSolidColor);
-    }
-
-    return m_isSolidColor && !m_currentFrame;
-}
-
-Color BitmapImage::solidColor() const
-{
-    return m_solidColor;
 }
 
 } // namespace blink

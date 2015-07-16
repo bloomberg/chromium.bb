@@ -92,10 +92,6 @@ public:
     bool currentFrameKnownToBeOpaque() override;
     ImageOrientation currentFrameOrientation();
 
-#if ENABLE(ASSERT)
-    bool notSolidColor() override;
-#endif
-
 private:
     friend class BitmapImageTest;
 
@@ -168,14 +164,6 @@ private:
     // Returns whether the animation was advanced.
     bool internalAdvanceAnimation(bool skippingFrames);
 
-    // Checks to see if the image is a 1x1 solid color.  We optimize these images and just do a fill rect instead.
-    // This check should happen regardless whether m_checkedForSolidColor is already set, as the frame may have
-    // changed.
-    void checkForSolidColor();
-
-    bool mayFillWithSolidColor() override;
-    Color solidColor() const override;
-
     ImageSource m_source;
     mutable IntSize m_size; // The size to use for the overall image (will just be the size of the first image).
     mutable IntSize m_sizeRespectingOrientation;
@@ -189,14 +177,9 @@ private:
     int m_repetitionsComplete;  // How many repetitions we've finished.
     double m_desiredFrameStartTime;  // The system time at which we hope to see the next call to startAnimation().
 
-    Color m_solidColor;  // If we're a 1x1 solid color, this is the color to use to fill.
-
     size_t m_frameCount;
 
     ImageAnimationPolicy m_animationPolicy; // Whether or not we can play animation.
-
-    bool m_isSolidColor : 1; // Whether or not we are a 1x1 solid image.
-    bool m_checkedForSolidColor : 1; // Whether we've checked the frame for solid color.
 
     bool m_animationFinished : 1; // Whether or not we've completed the entire animation.
 

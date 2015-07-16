@@ -138,10 +138,6 @@ public:
         const FloatSize&, const FloatPoint& phase, SkXfermode::Mode,
         const FloatRect&, const IntSize& repeatSpacing = IntSize());
 
-#if ENABLE(ASSERT)
-    virtual bool notSolidColor() { return true; }
-#endif
-
     enum ImageClampingMode {
         ClampImageToSourceRect,
         DoNotClampImageToSourceRect
@@ -152,15 +148,9 @@ public:
 protected:
     Image(ImageObserver* = 0);
 
-    static void fillWithSolidColor(GraphicsContext*, const FloatRect& dstRect, const Color&, SkXfermode::Mode);
-
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatPoint& srcPoint, const FloatSize& tileSize,
         SkXfermode::Mode, const IntSize& repeatSpacing);
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, SkXfermode::Mode);
-
-    // Supporting tiled drawing
-    virtual bool mayFillWithSolidColor() { return false; }
-    virtual Color solidColor() const { return Color(); }
 
 private:
     RefPtr<SharedBuffer> m_encodedImageData;

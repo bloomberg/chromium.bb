@@ -96,26 +96,8 @@ bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
     return dataChanged(allDataReceived);
 }
 
-void Image::fillWithSolidColor(GraphicsContext* ctxt, const FloatRect& dstRect, const Color& color, SkXfermode::Mode op)
-{
-    if (!color.alpha())
-        return;
-
-    SkXfermode::Mode xferMode = !color.hasAlpha() && op == SkXfermode::kSrcOver_Mode ?
-        SkXfermode::kSrc_Mode : op;
-    ctxt->fillRect(dstRect, color, xferMode);
-}
-
 void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, SkXfermode::Mode op, const IntSize& repeatSpacing)
 {
-    if (mayFillWithSolidColor()) {
-        fillWithSolidColor(ctxt, destRect, solidColor(), op);
-        return;
-    }
-
-    // See <https://webkit.org/b/59043>.
-    ASSERT(!isBitmapImage() || notSolidColor());
-
     FloatSize intrinsicTileSize = size();
     if (hasRelativeWidth())
         intrinsicTileSize.setWidth(scaledTileSize.width());
@@ -152,11 +134,6 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
 void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect,
     const FloatSize& providedTileScaleFactor, TileRule hRule, TileRule vRule, SkXfermode::Mode op)
 {
-    if (mayFillWithSolidColor()) {
-        fillWithSolidColor(ctxt, dstRect, solidColor(), op);
-        return;
-    }
-
     // FIXME: We do not support 'space' yet. For now just map it to 'repeat'.
     if (hRule == SpaceTile)
         hRule = RepeatTile;
