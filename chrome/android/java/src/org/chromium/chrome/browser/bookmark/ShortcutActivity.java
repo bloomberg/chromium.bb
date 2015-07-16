@@ -9,8 +9,11 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.ViewGroup;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarkUtils;
+import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
@@ -73,7 +76,9 @@ public class ShortcutActivity extends AsyncInitializationActivity implements
         Bitmap launcherIcon = BookmarkUtils.createLauncherIcon(this, favicon, url,
                 Color.red(dominantColor), Color.green(dominantColor), Color.blue(dominantColor));
         Intent intent = BookmarkUtils.createAddToHomeIntent(url, title, launcherIcon);
+        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.BOOKMARK_SHORTCUT_WIDGET);
         setResult(RESULT_OK, intent);
+        RecordUserAction.record("BookmarkShortcutWidgetAdded");
         finish();
     }
 

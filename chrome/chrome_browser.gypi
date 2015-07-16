@@ -4040,6 +4040,15 @@
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
+          'target_name': 'shortcut_source_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/android/shortcut_info.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
           #GN: //chrome/browser:client_discourse_context_proto
           'target_name': 'client_discourse_context_proto',
           'type': 'static_library',

@@ -24,6 +24,7 @@ import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidge
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
@@ -113,6 +114,9 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
                 // can work, so kill the whole application not just the activity
                 System.exit(-1);
             }
+            if (isWidgetNewlyCreated()) {
+                RecordUserAction.record("BookmarkNavigatorWidgetAdded");
+            }
             mUpdateListener = new BookmarkWidgetUpdateListener(mContext, this);
         }
 
@@ -161,6 +165,16 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
                         .setClass(mContext, BookmarkWidgetProxy.class)
                         .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mWidgetId)
                         .putExtra(BookmarkColumns.ID, folderId));
+        }
+
+        /**
+         * This method relies on the fact that STATE_CURRENT_FOLDER pref is not yet
+         * set when onCreate is called for a newly created widget.
+         */
+        private boolean isWidgetNewlyCreated() {
+            long currentFolder = mPreferences.getLong(STATE_CURRENT_FOLDER,
+                    ChromeBrowserProviderClient.INVALID_BOOKMARK_ID);
+            return currentFolder == ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
         }
 
         // Performs the required checks to trigger an update of the widget after changing the sync

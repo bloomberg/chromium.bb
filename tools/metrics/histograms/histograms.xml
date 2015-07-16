@@ -60214,6 +60214,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Unknown"/>
   <int value="1" label="Menu item"/>
   <int value="2" label="App banner"/>
+  <int value="3" label="Bookmark navigator widget"/>
+  <int value="4" label="Bookmark shortcut widget"/>
 </enum>
 
 <enum name="LevelDBCorruptionTypes" type="int">

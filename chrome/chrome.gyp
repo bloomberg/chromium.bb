@@ -589,6 +589,7 @@
             'profile_sync_service_model_type_selection_java',
             'resource_id_java',
             'tab_load_status_java',
+            'shortcut_source_java',
             '../base/base.gyp:base',
             '../chrome/android/chrome_apk.gyp:custom_tabs_service_aidl',
             '../components/components.gyp:app_restrictions_resources',

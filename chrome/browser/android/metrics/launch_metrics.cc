@@ -48,6 +48,10 @@ static void RecordLaunch(JNIEnv* env, jclass caller, jboolean standalone,
     rappor_metric_source = "Launch.HomeScreenSource.AddToHomeScreen";
   else if (source == ShortcutInfo::SOURCE_APP_BANNER)
     rappor_metric_source = "Launch.HomeScreenSource.AppBanner";
+  else if (source == ShortcutInfo::SOURCE_BOOKMARK_NAVIGATOR_WIDGET)
+    rappor_metric_source = "Launch.HomeScreenSource.BookmarkNavigatorWidget";
+  else if (source == ShortcutInfo::SOURCE_BOOKMARK_SHORTCUT_WIDGET)
+    rappor_metric_source = "Launch.HomeScreenSource.BookmarkShortcutWidget";
   else
     rappor_metric_source = "Launch.HomeScreenSource.Unknown";
 

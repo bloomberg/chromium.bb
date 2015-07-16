@@ -15,11 +15,16 @@ struct ShortcutInfo {
 
   // This enum is used to back a UMA histogram, and must be treated as
   // append-only.
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ShortcutSource
   enum Source {
     SOURCE_UNKNOWN = 0,
     SOURCE_ADD_TO_HOMESCREEN = 1,
     SOURCE_APP_BANNER = 2,
-    SOURCE_COUNT = 3
+    SOURCE_BOOKMARK_NAVIGATOR_WIDGET = 3,
+    SOURCE_BOOKMARK_SHORTCUT_WIDGET = 4,
+    SOURCE_COUNT = 5
   };
 
   ShortcutInfo();
