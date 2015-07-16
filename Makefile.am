@@ -1108,7 +1108,14 @@ libtest_runner_la_SOURCES =			\
 libtest_runner_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 config_parser_test_SOURCES = tests/config-parser-test.c
-config_parser_test_LDADD = libshared.la libtest-runner.la $(COMPOSITOR_LIBS)
+config_parser_test_LDADD =	\
+	libshared.la		\
+	$(COMPOSITOR_LIBS)	\
+	libzunitc.la		\
+	libzunitcmain.la
+config_parser_test_CFLAGS =			\
+	$(AM_CFLAGS)				\
+	-I$(top_srcdir)/tools/zunitc/inc
 
 vertex_clip_test_SOURCES =			\
 	tests/vertex-clip-test.c		\
