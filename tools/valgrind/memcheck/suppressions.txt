@@ -101,11 +101,19 @@
    fun:FcConfigValues
 }
 {
-   dlopen leak on error. Chromium issues 268368,273385. See http://sourceware.org/bugzilla/show_bug.cgi?id=12878.
+   # dlopen leak on error. Chromium issues 268368,273385. See http://sourceware.org/bugzilla/show_bug.cgi?id=12878.
+   bug_268368_273385a
    Memcheck:Leak
    fun:calloc
    fun:_dlerror_run
    fun:dlopen@@GLIBC_2.2.5
+}
+{
+   bug_268368_273385b
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlsym
 }
 {
    bug_58730_libc.so_value8 (Third Party)
