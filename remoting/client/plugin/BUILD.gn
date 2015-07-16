@@ -10,13 +10,6 @@ source_set("plugin") {
                   ".",
                   "//remoting")
 
-  if (!is_chromeos) {
-    sources -= [
-      "normalizing_input_filter_cros.cc",
-      "normalizing_input_filter_cros.h",
-    ]
-  }
-
   # TODO(GYP) when a nacl version of this target is made, these files
   # won't be part of it.
   sources += [
@@ -38,27 +31,5 @@ source_set("plugin") {
     "//remoting/protocol",
     "//third_party/webrtc/modules/desktop_capture",
     "//ui/events:dom_keycode_converter",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-
-  sources = [
-    "empty_cursor_filter_unittest.cc",
-    "normalizing_input_filter_mac_unittest.cc",
-    "touch_input_scaler_unittest.cc",
-  ]
-
-  if (is_chromeos) {
-    sources += [ "normalizing_input_filter_cros_unittest.cc" ]
-  }
-
-  deps = [
-    ":plugin",
-    "//remoting/proto",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/webrtc",
   ]
 }

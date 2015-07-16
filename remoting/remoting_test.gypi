@@ -261,12 +261,12 @@
         'base/util_unittest.cc',
         'client/audio_player_unittest.cc',
         'client/client_status_logger_unittest.cc',
+        'client/empty_cursor_filter_unittest.cc',
         'client/key_event_mapper_unittest.cc',
-        'client/plugin/empty_cursor_filter_unittest.cc',
-        'client/plugin/normalizing_input_filter_cros_unittest.cc',
-        'client/plugin/normalizing_input_filter_mac_unittest.cc',
-        'client/plugin/touch_input_scaler_unittest.cc',
+        'client/normalizing_input_filter_cros_unittest.cc',
+        'client/normalizing_input_filter_mac_unittest.cc',
         'client/server_log_entry_client_unittest.cc',
+        'client/touch_input_scaler_unittest.cc',
         'codec/audio_encoder_opus_unittest.cc',
         'codec/codec_test.cc',
         'codec/codec_test.h',
@@ -407,9 +407,6 @@
           'dependencies!': [
             'remoting_client_plugin',
           ],
-          'sources/': [
-            ['exclude', '^client/plugin/'],
-          ]
         }],
         [ 'OS=="android"', {
           'dependencies': [
@@ -418,7 +415,6 @@
         }],
         [ 'chromeos==0', {
           'sources!': [
-            'client/plugin/normalizing_input_filter_cros_unittest.cc',
             'host/chromeos/aura_desktop_capturer_unittest.cc',
             'host/clipboard_aura_unittest.cc',
           ],

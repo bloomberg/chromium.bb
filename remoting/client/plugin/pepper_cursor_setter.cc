@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/mouse_cursor.h"
-#include "remoting/client/plugin/empty_cursor_filter.h"
+#include "remoting/client/empty_cursor_filter.h"
 #include "remoting/proto/control.pb.h"
 
 namespace remoting {

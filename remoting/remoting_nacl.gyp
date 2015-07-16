@@ -131,7 +131,7 @@
       'target_conditions': [
         ['1==1', {
           'sources/': [
-            [ 'include', 'client/plugin/normalizing_input_filter_mac.cc' ],
+            [ 'include', 'client/normalizing_input_filter_mac.cc' ],
           ],
         }],
       ],

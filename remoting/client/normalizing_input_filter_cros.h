@@ -1,10 +1,12 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/input_filter.h"
+#ifndef REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_CROS_H_
+#define REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_CROS_H_
 
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/input_filter.h"
 
 namespace remoting {
 
@@ -59,3 +61,5 @@ class NormalizingInputFilterCros : public protocol::InputFilter {
 };
 
 }  // namespace remoting
+
+#endif  // REMOTING_CLIENT_NORMALIZING_INPUT_FILTER_CROS_H_

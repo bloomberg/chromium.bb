@@ -5,7 +5,7 @@
 #include "remoting/client/plugin/pepper_mouse_locker.h"
 
 #include "base/logging.h"
-#include "remoting/client/plugin/empty_cursor_filter.h"
+#include "remoting/client/empty_cursor_filter.h"
 #include "remoting/proto/control.pb.h"
 
 namespace remoting {

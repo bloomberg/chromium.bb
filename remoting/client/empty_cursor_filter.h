@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_PLUGIN_EMPTY_CURSOR_FILTER_H_
-#define REMOTING_CLIENT_PLUGIN_EMPTY_CURSOR_FILTER_H_
+#ifndef REMOTING_CLIENT_EMPTY_CURSOR_FILTER_H_
+#define REMOTING_CLIENT_EMPTY_CURSOR_FILTER_H_
 
 #include "remoting/protocol/cursor_shape_stub.h"
 
@@ -40,4 +40,4 @@ class EmptyCursorFilter : public protocol::CursorShapeStub {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_PLUGIN_EMPTY_CURSOR_FILTER_H_
+#endif  // REMOTING_CLIENT_EMPTY_CURSOR_FILTER_H_

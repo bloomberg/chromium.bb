@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_PLUGIN_TOUCH_INPUT_SCALER_H_
-#define REMOTING_CLIENT_PLUGIN_TOUCH_INPUT_SCALER_H_
+#ifndef REMOTING_CLIENT_TOUCH_INPUT_SCALER_H_
+#define REMOTING_CLIENT_TOUCH_INPUT_SCALER_H_
 
 #include "remoting/protocol/input_filter.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -45,4 +45,4 @@ class TouchInputScaler : public protocol::InputFilter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_PLUGIN_TOUCH_INPUT_SCALER_H_
+#endif  // REMOTING_CLIENT_TOUCH_INPUT_SCALER_H_
