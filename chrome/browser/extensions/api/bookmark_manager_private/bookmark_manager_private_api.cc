@@ -184,11 +184,12 @@ BookmarkManagerPrivateEventRouter::~BookmarkManagerPrivateEventRouter() {
 }
 
 void BookmarkManagerPrivateEventRouter::DispatchEvent(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  extensions::EventRouter::Get(browser_context_)
-      ->BroadcastEvent(make_scoped_ptr(new extensions::Event(
-          extensions::events::UNKNOWN, event_name, event_args.Pass())));
+  EventRouter::Get(browser_context_)
+      ->BroadcastEvent(make_scoped_ptr(
+          new Event(histogram_value, event_name, event_args.Pass())));
 }
 
 void BookmarkManagerPrivateEventRouter::BookmarkModelChanged() {}
@@ -242,7 +243,8 @@ void BookmarkManagerPrivateEventRouter::BookmarkMetaInfoChanged(
   }
 
   prev_meta_info_.clear();
-  DispatchEvent(bookmark_manager_private::OnMetaInfoChanged::kEventName,
+  DispatchEvent(events::BOOKMARK_MANAGER_PRIVATE_ON_META_INFO_CHANGED,
+                bookmark_manager_private::OnMetaInfoChanged::kEventName,
                 bookmark_manager_private::OnMetaInfoChanged::Create(
                     base::Int64ToString(node->id()), changes));
 }
@@ -298,13 +300,14 @@ BookmarkManagerPrivateDragEventRouter::
 }
 
 void BookmarkManagerPrivateDragEventRouter::DispatchEvent(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     scoped_ptr<base::ListValue> args) {
   EventRouter* event_router = EventRouter::Get(profile_);
   if (!event_router)
     return;
 
-  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
   event_router->BroadcastEvent(event.Pass());
 }
 
@@ -312,7 +315,8 @@ void BookmarkManagerPrivateDragEventRouter::OnDragEnter(
     const BookmarkNodeData& data) {
   if (!data.is_valid())
     return;
-  DispatchEvent(bookmark_manager_private::OnDragEnter::kEventName,
+  DispatchEvent(events::BOOKMARK_MANAGER_PRIVATE_ON_DRAG_ENTER,
+                bookmark_manager_private::OnDragEnter::kEventName,
                 bookmark_manager_private::OnDragEnter::Create(
                     *CreateApiBookmarkNodeData(profile_, data)));
 }
@@ -327,7 +331,8 @@ void BookmarkManagerPrivateDragEventRouter::OnDragLeave(
     const BookmarkNodeData& data) {
   if (!data.is_valid())
     return;
-  DispatchEvent(bookmark_manager_private::OnDragLeave::kEventName,
+  DispatchEvent(events::BOOKMARK_MANAGER_PRIVATE_ON_DRAG_LEAVE,
+                bookmark_manager_private::OnDragLeave::kEventName,
                 bookmark_manager_private::OnDragLeave::Create(
                     *CreateApiBookmarkNodeData(profile_, data)));
 }
@@ -336,7 +341,8 @@ void BookmarkManagerPrivateDragEventRouter::OnDrop(
     const BookmarkNodeData& data) {
   if (!data.is_valid())
     return;
-  DispatchEvent(bookmark_manager_private::OnDrop::kEventName,
+  DispatchEvent(events::BOOKMARK_MANAGER_PRIVATE_ON_DROP,
+                bookmark_manager_private::OnDrop::kEventName,
                 bookmark_manager_private::OnDrop::Create(
                     *CreateApiBookmarkNodeData(profile_, data)));
 

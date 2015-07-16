@@ -147,10 +147,10 @@ void CopresenceService::HandleMessages(
   }
 
   // Send the messages to the client app.
-  scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, OnMessagesReceived::kEventName,
-                OnMessagesReceived::Create(subscription_id, api_messages),
-                browser_context_));
+  scoped_ptr<Event> event(new Event(
+      events::COPRESENCE_ON_MESSAGES_RECEIVED, OnMessagesReceived::kEventName,
+      OnMessagesReceived::Create(subscription_id, api_messages),
+      browser_context_));
   EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(app_id, event.Pass());
   DVLOG(2) << "Passed " << api_messages.size() << " messages to app \""
@@ -160,10 +160,10 @@ void CopresenceService::HandleMessages(
 void CopresenceService::HandleStatusUpdate(
     copresence::CopresenceStatus status) {
   DCHECK_EQ(copresence::AUDIO_FAIL, status);
-  scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, OnStatusUpdated::kEventName,
-                OnStatusUpdated::Create(api::copresence::STATUS_AUDIOFAILED),
-                browser_context_));
+  scoped_ptr<Event> event(new Event(
+      events::COPRESENCE_ON_STATUS_UPDATED, OnStatusUpdated::kEventName,
+      OnStatusUpdated::Create(api::copresence::STATUS_AUDIOFAILED),
+      browser_context_));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
   DVLOG(2) << "Sent Audio Failed status update.";
 }

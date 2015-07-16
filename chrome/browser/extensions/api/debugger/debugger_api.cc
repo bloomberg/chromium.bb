@@ -400,7 +400,7 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
   scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee_,
                                                     detach_reason_));
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, OnDetach::kEventName, args.Pass()));
+      new Event(events::DEBUGGER_ON_DETACH, OnDetach::kEventName, args.Pass()));
   event->restrict_to_browser_context = profile_;
   EventRouter::Get(profile_)
       ->DispatchEventToExtension(extension_id_, event.Pass());
@@ -461,7 +461,7 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
     scoped_ptr<base::ListValue> args(
         OnEvent::Create(debuggee_, method_name, params));
     scoped_ptr<Event> event(
-        new Event(events::UNKNOWN, OnEvent::kEventName, args.Pass()));
+        new Event(events::DEBUGGER_ON_EVENT, OnEvent::kEventName, args.Pass()));
     event->restrict_to_browser_context = profile_;
     EventRouter::Get(profile_)
         ->DispatchEventToExtension(extension_id_, event.Pass());

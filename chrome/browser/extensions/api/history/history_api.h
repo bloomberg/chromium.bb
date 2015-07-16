@@ -49,6 +49,7 @@ class HistoryEventRouter : public history::HistoryServiceObserver {
                      const std::set<GURL>& favicon_urls) override;
 
   void DispatchEvent(Profile* profile,
+                     events::HistogramValue histogram_value,
                      const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);
 

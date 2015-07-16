@@ -84,8 +84,8 @@ void ExperienceSamplingEvent::CreateUserDecisionEvent(
   args->Append(ui_element_.ToValue().release());
   args->Append(decision.ToValue().release());
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, api::experience_sampling_private::OnDecision::kEventName,
-      args.Pass()));
+      events::EXPERIENCE_SAMPLING_PRIVATE_ON_DECISION,
+      api::experience_sampling_private::OnDecision::kEventName, args.Pass()));
   EventRouter* router = EventRouter::Get(browser_context_);
   if (router)
     router->BroadcastEvent(event.Pass());
@@ -99,7 +99,7 @@ void ExperienceSamplingEvent::CreateOnDisplayedEvent() {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(ui_element_.ToValue().release());
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN,
+      events::EXPERIENCE_SAMPLING_PRIVATE_ON_DISPLAYED,
       api::experience_sampling_private::OnDisplayed::kEventName, args.Pass()));
   EventRouter* router = EventRouter::Get(browser_context_);
   if (router)

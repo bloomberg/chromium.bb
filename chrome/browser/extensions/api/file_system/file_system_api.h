@@ -64,23 +64,22 @@ class ConsentProvider {
   class DelegateInterface {
    public:
     // Shows a dialog for granting permissions.
-    virtual void ShowDialog(const extensions::Extension& extension,
+    virtual void ShowDialog(const Extension& extension,
                             const base::WeakPtr<file_manager::Volume>& volume,
                             bool writable,
                             const ShowDialogCallback& callback) = 0;
 
     // Shows a notification about permissions automatically granted access.
     virtual void ShowNotification(
-        const extensions::Extension& extension,
+        const Extension& extension,
         const base::WeakPtr<file_manager::Volume>& volume,
         bool writable) = 0;
 
     // Checks if the extension was launched in auto-launch kiosk mode.
-    virtual bool IsAutoLaunched(const extensions::Extension& extension) = 0;
+    virtual bool IsAutoLaunched(const Extension& extension) = 0;
 
     // Checks if the extension is a whitelisted component extension or app.
-    virtual bool IsWhitelistedComponent(
-        const extensions::Extension& extension) = 0;
+    virtual bool IsWhitelistedComponent(const Extension& extension) = 0;
   };
 
   explicit ConsentProvider(DelegateInterface* delegate);
@@ -89,13 +88,13 @@ class ConsentProvider {
   // Requests consent for granting |writable| permissions to the |volume|
   // volume by the |extension|. Must be called only if the extension is
   // grantable, which can be checked with IsGrantable().
-  void RequestConsent(const extensions::Extension& extension,
+  void RequestConsent(const Extension& extension,
                       const base::WeakPtr<file_manager::Volume>& volume,
                       bool writable,
                       const ConsentCallback& callback);
 
   // Checks whether the |extension| can be granted access.
-  bool IsGrantable(const extensions::Extension& extension);
+  bool IsGrantable(const Extension& extension);
 
  private:
   DelegateInterface* const delegate_;
@@ -123,16 +122,16 @@ class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
   static void SetAutoDialogButtonForTest(ui::DialogButton button);
 
   // ConsentProvider::DelegateInterface overrides:
-  void ShowDialog(const extensions::Extension& extension,
+  void ShowDialog(const Extension& extension,
                   const base::WeakPtr<file_manager::Volume>& volume,
                   bool writable,
                   const file_system_api::ConsentProvider::ShowDialogCallback&
                       callback) override;
-  void ShowNotification(const extensions::Extension& extension,
+  void ShowNotification(const Extension& extension,
                         const base::WeakPtr<file_manager::Volume>& volume,
                         bool writable) override;
-  bool IsAutoLaunched(const extensions::Extension& extension) override;
-  bool IsWhitelistedComponent(const extensions::Extension& extension) override;
+  bool IsAutoLaunched(const Extension& extension) override;
+  bool IsWhitelistedComponent(const Extension& extension) override;
 
   Profile* const profile_;
   content::RenderFrameHost* const host_;
@@ -238,8 +237,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
                                                     const base::FilePath& path);
   DECLARE_EXTENSION_FUNCTION("fileSystem.chooseEntry", FILESYSTEM_CHOOSEENTRY)
 
-  typedef std::vector<linked_ptr<extensions::api::file_system::AcceptOption> >
-      AcceptOptions;
+  typedef std::vector<linked_ptr<api::file_system::AcceptOption>> AcceptOptions;
 
   static void BuildFileTypeInfo(
       ui::SelectFileDialog::FileTypeInfo* file_type_info,

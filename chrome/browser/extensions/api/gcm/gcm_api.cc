@@ -215,15 +215,15 @@ void GcmJsEventRouter::OnMessage(const std::string& app_id,
     message_arg.collapse_key.reset(new std::string(message.collapse_key));
 
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, api::gcm::OnMessage::kEventName,
+      new Event(events::GCM_ON_MESSAGE, api::gcm::OnMessage::kEventName,
                 api::gcm::OnMessage::Create(message_arg).Pass(), profile_));
   EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
 }
 
 void GcmJsEventRouter::OnMessagesDeleted(const std::string& app_id) {
-  scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, api::gcm::OnMessagesDeleted::kEventName,
-                api::gcm::OnMessagesDeleted::Create().Pass(), profile_));
+  scoped_ptr<Event> event(new Event(
+      events::GCM_ON_MESSAGES_DELETED, api::gcm::OnMessagesDeleted::kEventName,
+      api::gcm::OnMessagesDeleted::Create().Pass(), profile_));
   EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
 }
 
@@ -236,7 +236,7 @@ void GcmJsEventRouter::OnSendError(
   error.details.additional_properties = send_error_details.additional_data;
 
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, api::gcm::OnSendError::kEventName,
+      new Event(events::GCM_ON_SEND_ERROR, api::gcm::OnSendError::kEventName,
                 api::gcm::OnSendError::Create(error).Pass(), profile_));
   EventRouter::Get(profile_)->DispatchEventToExtension(app_id, event.Pass());
 }

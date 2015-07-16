@@ -36,7 +36,6 @@ namespace extensions {
 
 using api::history::HistoryItem;
 using api::history::VisitItem;
-using extensions::ActivityLog;
 
 typedef std::vector<linked_ptr<api::history::HistoryItem> >
     HistoryItemList;
@@ -147,7 +146,8 @@ void HistoryEventRouter::OnURLVisited(history::HistoryService* history_service,
                                       base::Time visit_time) {
   scoped_ptr<HistoryItem> history_item = GetHistoryItem(row);
   scoped_ptr<base::ListValue> args = OnVisited::Create(*history_item);
-  DispatchEvent(profile_, api::history::OnVisited::kEventName, args.Pass());
+  DispatchEvent(profile_, events::HISTORY_ON_VISITED,
+                api::history::OnVisited::kEventName, args.Pass());
 }
 
 void HistoryEventRouter::OnURLsDeleted(history::HistoryService* history_service,
@@ -164,19 +164,19 @@ void HistoryEventRouter::OnURLsDeleted(history::HistoryService* history_service,
   removed.urls.reset(urls);
 
   scoped_ptr<base::ListValue> args = OnVisitRemoved::Create(removed);
-  DispatchEvent(profile_, api::history::OnVisitRemoved::kEventName,
-                args.Pass());
+  DispatchEvent(profile_, events::HISTORY_ON_VISIT_REMOVED,
+                api::history::OnVisitRemoved::kEventName, args.Pass());
 }
 
-void HistoryEventRouter::DispatchEvent(
-    Profile* profile,
-    const std::string& event_name,
-    scoped_ptr<base::ListValue> event_args) {
-  if (profile && extensions::EventRouter::Get(profile)) {
-    scoped_ptr<extensions::Event> event(new extensions::Event(
-        extensions::events::UNKNOWN, event_name, event_args.Pass()));
+void HistoryEventRouter::DispatchEvent(Profile* profile,
+                                       events::HistogramValue histogram_value,
+                                       const std::string& event_name,
+                                       scoped_ptr<base::ListValue> event_args) {
+  if (profile && EventRouter::Get(profile)) {
+    scoped_ptr<Event> event(
+        new Event(histogram_value, event_name, event_args.Pass()));
     event->restrict_to_browser_context = profile;
-    extensions::EventRouter::Get(profile)->BroadcastEvent(event.Pass());
+    EventRouter::Get(profile)->BroadcastEvent(event.Pass());
   }
 }
 

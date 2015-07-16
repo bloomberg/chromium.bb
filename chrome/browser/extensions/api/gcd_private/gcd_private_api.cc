@@ -57,15 +57,15 @@ scoped_ptr<Event> MakeDeviceStateChangedEvent(
   scoped_ptr<base::ListValue> params =
       gcd_private::OnDeviceStateChanged::Create(device);
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, gcd_private::OnDeviceStateChanged::kEventName,
-                params.Pass()));
+      new Event(events::GCD_PRIVATE_ON_DEVICE_STATE_CHANGED,
+                gcd_private::OnDeviceStateChanged::kEventName, params.Pass()));
   return event.Pass();
 }
 
 scoped_ptr<Event> MakeDeviceRemovedEvent(const std::string& device) {
   scoped_ptr<base::ListValue> params =
       gcd_private::OnDeviceRemoved::Create(device);
-  scoped_ptr<Event> event(new Event(events::UNKNOWN,
+  scoped_ptr<Event> event(new Event(events::GCD_PRIVATE_ON_DEVICE_REMOVED,
                                     gcd_private::OnDeviceRemoved::kEventName,
                                     params.Pass()));
   return event.Pass();

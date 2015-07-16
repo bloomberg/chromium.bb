@@ -341,8 +341,8 @@ void DeveloperPrivateEventRouter::OnExtensionManagementSettingsChanged() {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(CreateProfileInfo(profile_)->ToValue());
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, developer::OnProfileStateChanged::kEventName,
-                args.Pass()));
+      new Event(events::DEVELOPER_PRIVATE_ON_PROFILE_STATE_CHANGED,
+                developer::OnProfileStateChanged::kEventName, args.Pass()));
   event_router_->BroadcastEvent(event.Pass());
 }
 
@@ -390,8 +390,9 @@ void DeveloperPrivateEventRouter::BroadcastItemStateChangedHelper(
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(dict.release());
-  scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, developer::OnItemStateChanged::kEventName, args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::DEVELOPER_PRIVATE_ON_ITEM_STATE_CHANGED,
+                developer::OnItemStateChanged::kEventName, args.Pass()));
   event_router_->BroadcastEvent(event.Pass());
 }
 

@@ -254,12 +254,13 @@ BookmarkEventRouter::~BookmarkEventRouter() {
 }
 
 void BookmarkEventRouter::DispatchEvent(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
-    event_router->BroadcastEvent(make_scoped_ptr(new extensions::Event(
-        extensions::events::UNKNOWN, event_name, event_args.Pass())));
+    event_router->BroadcastEvent(make_scoped_ptr(
+        new extensions::Event(histogram_value, event_name, event_args.Pass())));
   }
 }
 
@@ -286,7 +287,7 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
   move_info.old_index = old_index;
 
   DispatchEvent(
-      bookmarks::OnMoved::kEventName,
+      events::BOOKMARKS_ON_MOVED, bookmarks::OnMoved::kEventName,
       bookmarks::OnMoved::Create(base::Int64ToString(node->id()), move_info));
 }
 
@@ -296,7 +297,7 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   const BookmarkNode* node = parent->GetChild(index);
   scoped_ptr<BookmarkTreeNode> tree_node(
       bookmark_api_helpers::GetBookmarkTreeNode(client_, node, false, false));
-  DispatchEvent(bookmarks::OnCreated::kEventName,
+  DispatchEvent(events::BOOKMARKS_ON_CREATED, bookmarks::OnCreated::kEventName,
                 bookmarks::OnCreated::Create(base::Int64ToString(node->id()),
                                              *tree_node));
 }
@@ -311,7 +312,7 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
   remove_info.parent_id = base::Int64ToString(parent->id());
   remove_info.index = index;
 
-  DispatchEvent(bookmarks::OnRemoved::kEventName,
+  DispatchEvent(events::BOOKMARKS_ON_REMOVED, bookmarks::OnRemoved::kEventName,
                 bookmarks::OnRemoved::Create(base::Int64ToString(node->id()),
                                              remove_info));
 }
@@ -337,7 +338,7 @@ void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
   if (node->is_url())
     change_info.url.reset(new std::string(node->url().spec()));
 
-  DispatchEvent(bookmarks::OnChanged::kEventName,
+  DispatchEvent(events::BOOKMARKS_ON_CHANGED, bookmarks::OnChanged::kEventName,
                 bookmarks::OnChanged::Create(base::Int64ToString(node->id()),
                                              change_info));
 }
@@ -357,19 +358,22 @@ void BookmarkEventRouter::BookmarkNodeChildrenReordered(
     reorder_info.child_ids.push_back(base::Int64ToString(child->id()));
   }
 
-  DispatchEvent(bookmarks::OnChildrenReordered::kEventName,
+  DispatchEvent(events::BOOKMARKS_ON_CHILDREN_REORDERED,
+                bookmarks::OnChildrenReordered::kEventName,
                 bookmarks::OnChildrenReordered::Create(
                     base::Int64ToString(node->id()), reorder_info));
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesBeginning(
     BookmarkModel* model) {
-  DispatchEvent(bookmarks::OnImportBegan::kEventName,
+  DispatchEvent(events::BOOKMARKS_ON_IMPORT_BEGAN,
+                bookmarks::OnImportBegan::kEventName,
                 bookmarks::OnImportBegan::Create());
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
-  DispatchEvent(bookmarks::OnImportEnded::kEventName,
+  DispatchEvent(events::BOOKMARKS_ON_IMPORT_ENDED,
+                bookmarks::OnImportEnded::kEventName,
                 bookmarks::OnImportEnded::Create());
 }
 

@@ -383,6 +383,7 @@ class ExtensionDownloadsEventRouter
 
  private:
   void DispatchEvent(
+      events::HistogramValue histogram_value,
       const std::string& event_name,
       bool include_incognito,
       const extensions::Event::WillDispatchCallback& will_dispatch_callback,

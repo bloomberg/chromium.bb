@@ -300,13 +300,14 @@ ExtensionPrefs* ExtensionActionAPI::GetExtensionPrefs() {
 void ExtensionActionAPI::DispatchEventToExtension(
     content::BrowserContext* context,
     const std::string& extension_id,
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
   if (!EventRouter::Get(context))
     return;
 
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, event_name, event_args.Pass()));
+      new Event(histogram_value, event_name, event_args.Pass()));
   event->restrict_to_browser_context = context;
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
@@ -316,16 +317,20 @@ void ExtensionActionAPI::DispatchEventToExtension(
 void ExtensionActionAPI::ExtensionActionExecuted(
     const ExtensionAction& extension_action,
     WebContents* web_contents) {
+  events::HistogramValue histogram_value = events::UNKNOWN;
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
     case ActionInfo::TYPE_BROWSER:
+      histogram_value = events::BROWSER_ACTION_ON_CLICKED;
       event_name = "browserAction.onClicked";
       break;
     case ActionInfo::TYPE_PAGE:
+      histogram_value = events::PAGE_ACTION_ON_CLICKED;
       event_name = "pageAction.onClicked";
       break;
     case ActionInfo::TYPE_SYSTEM_INDICATOR:
       // The System Indicator handles its own clicks.
+      NOTREACHED();
       break;
   }
 
@@ -335,11 +340,9 @@ void ExtensionActionAPI::ExtensionActionExecuted(
         ExtensionTabUtil::CreateTabValue(web_contents);
     args->Append(tab_value);
 
-    DispatchEventToExtension(
-        web_contents->GetBrowserContext(),
-        extension_action.extension_id(),
-        event_name,
-        args.Pass());
+    DispatchEventToExtension(web_contents->GetBrowserContext(),
+                             extension_action.extension_id(), histogram_value,
+                             event_name, args.Pass());
   }
 }
 

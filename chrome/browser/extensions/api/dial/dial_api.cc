@@ -105,8 +105,9 @@ void DialAPI::SendEventOnUIThread(const DialRegistry::DeviceList& devices) {
     args.push_back(api_device);
   }
   scoped_ptr<base::ListValue> results = api::dial::OnDeviceList::Create(args);
-  scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, dial::OnDeviceList::kEventName, results.Pass()));
+  scoped_ptr<Event> event(new Event(events::DIAL_ON_DEVICE_LIST,
+                                    dial::OnDeviceList::kEventName,
+                                    results.Pass()));
   EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
@@ -136,8 +137,8 @@ void DialAPI::SendErrorOnUIThread(const DialRegistry::DialErrorCode code) {
   }
 
   scoped_ptr<base::ListValue> results = api::dial::OnError::Create(dial_error);
-  scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, dial::OnError::kEventName, results.Pass()));
+  scoped_ptr<Event> event(new Event(events::DIAL_ON_ERROR,
+                                    dial::OnError::kEventName, results.Pass()));
   EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 

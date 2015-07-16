@@ -75,53 +75,67 @@ void HotwordPrivateEventService::OnEnabledChanged(
          pref_name == std::string(prefs::kHotwordAlwaysOnSearchEnabled) ||
          pref_name == std::string(
              hotword_internal::kHotwordTrainingEnabled));
-  SignalEvent(OnEnabledChanged::kEventName);
+  SignalEvent(events::HOTWORD_PRIVATE_ON_ENABLED_CHANGED,
+              OnEnabledChanged::kEventName);
 }
 
 void HotwordPrivateEventService::OnHotwordSessionRequested() {
-  SignalEvent(api::hotword_private::OnHotwordSessionRequested::kEventName);
+  SignalEvent(events::HOTWORD_PRIVATE_ON_HOTWORD_SESSION_REQUESTED,
+              api::hotword_private::OnHotwordSessionRequested::kEventName);
 }
 
 void HotwordPrivateEventService::OnHotwordSessionStopped() {
-  SignalEvent(api::hotword_private::OnHotwordSessionStopped::kEventName);
+  SignalEvent(events::HOTWORD_PRIVATE_ON_HOTWORD_SESSION_STOPPED,
+              api::hotword_private::OnHotwordSessionStopped::kEventName);
 }
 
 void HotwordPrivateEventService::OnFinalizeSpeakerModel() {
-  SignalEvent(api::hotword_private::OnFinalizeSpeakerModel::kEventName);
+  SignalEvent(events::HOTWORD_PRIVATE_ON_FINALIZE_SPEAKER_MODEL,
+              api::hotword_private::OnFinalizeSpeakerModel::kEventName);
 }
 
 void HotwordPrivateEventService::OnSpeakerModelSaved() {
-  SignalEvent(api::hotword_private::OnSpeakerModelSaved::kEventName);
+  SignalEvent(events::HOTWORD_PRIVATE_ON_SPEAKER_MODEL_SAVED,
+              api::hotword_private::OnSpeakerModelSaved::kEventName);
 }
 
 void HotwordPrivateEventService::OnHotwordTriggered() {
-  SignalEvent(api::hotword_private::OnHotwordTriggered::kEventName);
+  SignalEvent(events::HOTWORD_PRIVATE_ON_HOTWORD_TRIGGERED,
+              api::hotword_private::OnHotwordTriggered::kEventName);
 }
 
 void HotwordPrivateEventService::OnDeleteSpeakerModel() {
-  SignalEvent(api::hotword_private::OnDeleteSpeakerModel::kEventName);
+  SignalEvent(events::HOTWORD_PRIVATE_ON_DELETE_SPEAKER_MODEL,
+              api::hotword_private::OnDeleteSpeakerModel::kEventName);
 }
 
 void HotwordPrivateEventService::OnSpeakerModelExists() {
-  SignalEvent(api::hotword_private::OnSpeakerModelExists::kEventName);
+  SignalEvent(events::HOTWORD_PRIVATE_ON_SPEAKER_MODEL_EXISTS,
+              api::hotword_private::OnSpeakerModelExists::kEventName);
 }
 
 void HotwordPrivateEventService::OnMicrophoneStateChanged(bool enabled) {
-  SignalEvent(api::hotword_private::OnMicrophoneStateChanged::kEventName,
+  SignalEvent(events::HOTWORD_PRIVATE_ON_MICROPHONE_STATE_CHANGED,
+              api::hotword_private::OnMicrophoneStateChanged::kEventName,
               api::hotword_private::OnMicrophoneStateChanged::Create(enabled));
 }
 
-void HotwordPrivateEventService::SignalEvent(const std::string& event_name) {
-  SignalEvent(event_name, make_scoped_ptr(new base::ListValue()));
+void HotwordPrivateEventService::SignalEvent(
+    events::HistogramValue histogram_value,
+    const std::string& event_name) {
+  SignalEvent(histogram_value, event_name,
+              make_scoped_ptr(new base::ListValue()));
 }
 
-void HotwordPrivateEventService::SignalEvent(const std::string& event_name,
-                                             scoped_ptr<base::ListValue> args) {
+void HotwordPrivateEventService::SignalEvent(
+    events::HistogramValue histogram_value,
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> args) {
   EventRouter* router = EventRouter::Get(profile_);
   if (!router || !router->HasEventListener(event_name))
     return;
 
-  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
   router->BroadcastEvent(event.Pass());
 }
 

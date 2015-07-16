@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/hotword_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 
 class Profile;
 
@@ -49,8 +50,10 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
  private:
   friend class BrowserContextKeyedAPIFactory<HotwordPrivateEventService>;
 
-  void SignalEvent(const std::string& event_name);
-  void SignalEvent(const std::string& event_name,
+  void SignalEvent(events::HistogramValue histogram_value,
+                   const std::string& event_name);
+  void SignalEvent(events::HistogramValue histogram_value,
+                   const std::string& event_name,
                    scoped_ptr<base::ListValue> args);
 
   Profile* profile_;

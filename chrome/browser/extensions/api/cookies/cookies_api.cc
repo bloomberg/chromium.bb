@@ -35,18 +35,16 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
-using extensions::api::cookies::Cookie;
-using extensions::api::cookies::CookieStore;
-
-namespace Get = extensions::api::cookies::Get;
-namespace GetAll = extensions::api::cookies::GetAll;
-namespace GetAllCookieStores = extensions::api::cookies::GetAllCookieStores;
-namespace Remove = extensions::api::cookies::Remove;
-namespace Set = extensions::api::cookies::Set;
 
 namespace extensions {
+
 namespace cookies = api::cookies;
 namespace keys = cookies_api_constants;
+namespace Get = cookies::Get;
+namespace GetAll = cookies::GetAll;
+namespace GetAllCookieStores = cookies::GetAllCookieStores;
+namespace Remove = cookies::Remove;
+namespace Set = cookies::Set;
 
 namespace {
 
@@ -143,9 +141,8 @@ void CookiesEventRouter::CookieChanged(
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean(keys::kRemovedKey, details->removed);
 
-  scoped_ptr<Cookie> cookie(
-      cookies_helpers::CreateCookie(*details->cookie,
-          cookies_helpers::GetStoreIdFromProfile(profile)));
+  scoped_ptr<cookies::Cookie> cookie(cookies_helpers::CreateCookie(
+      *details->cookie, cookies_helpers::GetStoreIdFromProfile(profile)));
   dict->Set(keys::kCookieKey, cookie->ToValue().release());
 
   // Map the internal cause to an external string.
@@ -180,21 +177,20 @@ void CookiesEventRouter::CookieChanged(
 
   GURL cookie_domain =
       cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);
-  DispatchEvent(profile,
-                cookies::OnChanged::kEventName,
-                args.Pass(),
-                cookie_domain);
+  DispatchEvent(profile, events::COOKIES_ON_CHANGED,
+                cookies::OnChanged::kEventName, args.Pass(), cookie_domain);
 }
 
 void CookiesEventRouter::DispatchEvent(content::BrowserContext* context,
+                                       events::HistogramValue histogram_value,
                                        const std::string& event_name,
                                        scoped_ptr<base::ListValue> event_args,
                                        GURL& cookie_domain) {
-  EventRouter* router = context ? extensions::EventRouter::Get(context) : NULL;
+  EventRouter* router = context ? EventRouter::Get(context) : NULL;
   if (!router)
     return;
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, event_name, event_args.Pass()));
+      new Event(histogram_value, event_name, event_args.Pass()));
   event->restrict_to_browser_context = context;
   event->event_url = cookie_domain;
   router->BroadcastEvent(event.Pass());
@@ -251,7 +247,7 @@ void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
     // CookieMonster returns them in canonical order (longest path, then
     // earliest creation time).
     if (it->Name() == parsed_args_->details.name) {
-      scoped_ptr<Cookie> cookie(
+      scoped_ptr<cookies::Cookie> cookie(
           cookies_helpers::CreateCookie(*it, *parsed_args_->details.store_id));
       results_ = Get::Results::Create(*cookie);
       break;
@@ -319,7 +315,7 @@ void CookiesGetAllFunction::GetAllCookiesOnIOThread() {
 void CookiesGetAllFunction::GetAllCookiesCallback(
     const net::CookieList& cookie_list) {
   if (extension()) {
-    std::vector<linked_ptr<Cookie> > match_vector;
+    std::vector<linked_ptr<cookies::Cookie>> match_vector;
     cookies_helpers::AppendMatchingCookiesToVector(
         cookie_list, url_, &parsed_args_->details, extension(), &match_vector);
 
@@ -431,7 +427,7 @@ void CookiesSetFunction::PullCookieCallback(
         parsed_args_->details.name.get() ? *parsed_args_->details.name
                                          : std::string();
     if (it->Name() == name) {
-      scoped_ptr<Cookie> cookie(
+      scoped_ptr<cookies::Cookie> cookie(
           cookies_helpers::CreateCookie(*it, *parsed_args_->details.store_id));
       results_ = Set::Results::Create(*cookie);
       break;
@@ -546,7 +542,7 @@ bool CookiesGetAllCookieStoresFunction::RunSync() {
     }
   }
   // Return a list of all cookie stores with at least one open tab.
-  std::vector<linked_ptr<CookieStore> > cookie_stores;
+  std::vector<linked_ptr<cookies::CookieStore>> cookie_stores;
   if (original_tab_ids->GetSize() > 0) {
     cookie_stores.push_back(make_linked_ptr(
         cookies_helpers::CreateCookieStore(
@@ -583,8 +579,7 @@ BrowserContextKeyedAPIFactory<CookiesAPI>* CookiesAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void CookiesAPI::OnListenerAdded(
-    const extensions::EventListenerInfo& details) {
+void CookiesAPI::OnListenerAdded(const EventListenerInfo& details) {
   cookies_event_router_.reset(new CookiesEventRouter(browser_context_));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }

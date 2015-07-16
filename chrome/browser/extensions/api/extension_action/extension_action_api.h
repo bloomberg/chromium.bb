@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
@@ -125,6 +126,7 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   // The DispatchEvent methods forward events to the |context|'s event router.
   void DispatchEventToExtension(content::BrowserContext* context,
                                 const std::string& extension_id,
+                                events::HistogramValue histogram_value,
                                 const std::string& event_name,
                                 scoped_ptr<base::ListValue> event_args);
 

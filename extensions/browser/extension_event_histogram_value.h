@@ -353,6 +353,8 @@ enum HistogramValue {
   TTS_ON_EVENT,
   LAUNCHER_PAGE_ON_TRANSITION_CHANGED,
   LAUNCHER_PAGE_ON_POP_SUBPAGE,
+  DIAL_ON_DEVICE_LIST,
+  DIAL_ON_ERROR,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

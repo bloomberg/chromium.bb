@@ -89,8 +89,8 @@ void FeedbackPrivateAPI::RequestFeedback(
     args->Append(info.ToValue().release());
 
     scoped_ptr<Event> event(new Event(
-        events::UNKNOWN, feedback_private::OnFeedbackRequested::kEventName,
-        args.Pass()));
+        events::FEEDBACK_PRIVATE_ON_FEEDBACK_REQUESTED,
+        feedback_private::OnFeedbackRequested::kEventName, args.Pass()));
     event->restrict_to_browser_context = browser_context_;
 
     EventRouter::Get(browser_context_)
