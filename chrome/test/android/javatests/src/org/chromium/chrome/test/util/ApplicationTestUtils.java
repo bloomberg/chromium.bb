@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.PowerManager;
 
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -55,7 +56,12 @@ public class ApplicationTestUtils {
     public static void tearDown(Context context) throws Exception {
         Assert.assertNotNull("Uninitialized wake lock", sWakeLock);
         sWakeLock.release();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) finishAllChromeTasks(context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                finishAllChromeTasks(context);
+            } catch (AssertionFailedError exception) {
+            }
+        }
     }
 
     /**
@@ -113,9 +119,6 @@ public class ApplicationTestUtils {
     /** Finishes all tasks Chrome has listed in Android's Overview. */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void finishAllChromeTasks(final Context context) throws Exception {
-        // Go to the Home screen so that Android has no good reason to keep Chrome Activities alive.
-        fireHomeScreenIntent(context);
-
         // Close all of the tasks one by one.
         ActivityManager activityManager =
                 (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
