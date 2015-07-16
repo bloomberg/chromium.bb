@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../issue_banner/issue_banner.html">
 <link rel="import" href="../route_details/route_details.html">
@@ -48,14 +49,16 @@
         on-close-route-click="showSinkList_"
         hidden$="[[computeRouteDetailsHidden_(currentView_, issue)]]">
     </route-details>
-    <!-- TODO(kdresner): Don't show this until we've given a little
-    bit of time to actually discover devices. Maybe show a spinner
-    during this time. -->
     <div id="sink-list-view"
         hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]">
       <div id="device-missing"
            hidden$="[[!computeSinkListHidden_(sinkList)]]">
-        <span>[[deviceMissingText_]]</span>
+        <paper-spinner id="searching-devices-spinner" active
+            hidden$="[[computeSpinnerHidden_(justOpened_)]]">
+        </paper-spinner>
+        <span id="device-missing-text"
+            hidden$="[[!computeSpinnerHidden_(justOpened_)]]"
+                >[[deviceMissingText_]]</span>
       </div>
       <paper-menu id="sink-list"
           hidden$="[[computeSinkListHidden_(currentView_, issue)]]">

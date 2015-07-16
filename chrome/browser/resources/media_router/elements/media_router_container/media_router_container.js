@@ -83,6 +83,16 @@ Polymer({
     },
 
     /**
+     * Whether the MR UI was just opened.
+     * @private {boolean}
+     */
+    justOpened_: {
+      type: Boolean,
+      value: true,
+      observer: 'computeSpinnerHidden_',
+    },
+
+    /**
      * The list of current routes.
      * @type {!Array<!media_router.Route>}
      */
@@ -153,6 +163,13 @@ Polymer({
   ready: function() {
     this.addEventListener('close-route-click', this.removeRoute);
     this.currentView_ = this.CONTAINER_VIEW_.SINK_LIST;
+  },
+
+  attached: function() {
+    // Turn off the spinner after 3 seconds.
+    this.async(function() {
+      this.justOpened_ = false;
+    }, 3000 /* 3 seconds */);
   },
 
   /**
@@ -282,6 +299,15 @@ Polymer({
   computeSinkListViewHidden_: function(view, issue) {
     return view != this.CONTAINER_VIEW_.SINK_LIST ||
         (issue && issue.isBlocking);
+  },
+
+  /**
+   * @param {boolean} justOpened Whether the MR UI was just opened.
+   * @return {boolean} Whether or not to hide the spinner.
+   * @private
+   */
+  computeSpinnerHidden_: function(justOpened) {
+    return !justOpened;
   },
 
   /**

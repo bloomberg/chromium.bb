@@ -67,6 +67,11 @@ paper-menu {
   color: rgb(150, 150, 150);
 }
 
+#searching-devices-spinner {
+  height: 30px;
+  width: 30px;
+}
+
 .sink-content {
   display: flex;
   flex-direction: row;
