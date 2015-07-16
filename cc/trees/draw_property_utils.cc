@@ -90,6 +90,15 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
         continue;
       }
 
+      // If the layer is fully contained within the clip, treat it as fully
+      // visible. Since clip_rect_in_target_space has already been intersected
+      // with layer_content_bounds_in_target_space, the layer is fully contained
+      // within the clip iff these rects are equal.
+      if (clip_rect_in_target_space == layer_content_bounds_in_target_space) {
+        layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
+        continue;
+      }
+
       gfx::Transform target_to_content;
       gfx::Transform target_to_layer;
 

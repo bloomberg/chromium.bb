@@ -1096,6 +1096,43 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
       great_grand_child->screen_space_transform());
 }
 
+TEST_F(LayerTreeHostCommonTest, LayerFullyContainedWithinClipInTargetSpace) {
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<LayerWithForcedDrawsContent> grand_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+
+  gfx::Transform child_transform;
+  child_transform.Translate(50.0, 50.0);
+  child_transform.RotateAboutZAxis(30.0);
+
+  gfx::Transform grand_child_transform;
+  grand_child_transform.RotateAboutYAxis(90.0);
+
+  const gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(200, 200), true, false);
+  SetLayerPropertiesForTesting(child.get(), child_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+  SetLayerPropertiesForTesting(grand_child.get(), grand_child_transform,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+
+  root->AddChild(child);
+  child->AddChild(grand_child);
+  grand_child->SetShouldFlattenTransform(false);
+
+  host()->SetRootLayer(root);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+
+  // Mapping grand_child's bounds to target space produces a non-empty rect
+  // that is fully contained within the target's bounds, so grand_child should
+  // be considered fully visible.
+  EXPECT_EQ(gfx::Rect(grand_child->bounds()),
+            grand_child->visible_rect_from_property_trees());
+}
+
 TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
   // A layer that is empty in one axis, but not the other, was accidentally
   // skipping a necessary translation.  Without that translation, the coordinate
