@@ -154,7 +154,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * crbug.com/510659
      * @MediumTest
      */
-    @FlakyTest
+    @DisabledTest
     public void testAlertDialogDoesNotChangeActiveModel() throws InterruptedException {
         newIncognitoTabFromMenu();
         loadUrl(UrlUtils.getIsolatedTestFileUrl(TEST_FILE_PATH));
