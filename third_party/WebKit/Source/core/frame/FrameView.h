@@ -142,7 +142,6 @@ public:
 
     bool isEnclosedInCompositingLayer() const;
 
-    void resetScrollbars();
     void dispose() override;
     void detachScrollbars();
     void recalculateCustomScrollbarStyle();
