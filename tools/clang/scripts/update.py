@@ -28,7 +28,7 @@ import zipfile
 # Note: this revision is only used for Windows. Other platforms use update.sh.
 # TODO(thakis): Use the same revision on Windows and non-Windows.
 # TODO(thakis): Remove update.sh, use update.py everywhere.
-LLVM_WIN_REVISION = '239674'
+LLVM_WIN_REVISION = '242415'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
@@ -60,7 +60,7 @@ LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 STAMP_FILE = os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision')
 BINUTILS_DIR = os.path.join(THIRD_PARTY_DIR, 'binutils')
-VERSION = '3.7.0'
+VERSION = '3.8.0'
 
 # URL for pre-built binaries.
 CDS_URL = 'https://commondatastorage.googleapis.com/chromium-browser-clang'
@@ -736,11 +736,6 @@ def main():
     if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
       print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
       return 0
-
-  if use_head_revision:
-    # TODO(hans): Remove after the next roll.
-    global VERSION
-    VERSION = '3.8.0'
 
   global LLVM_WIN_REVISION, PACKAGE_VERSION
   if args.print_revision:
