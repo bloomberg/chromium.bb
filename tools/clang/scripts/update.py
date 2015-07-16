@@ -406,6 +406,10 @@ def UpdateClang(args):
         f.seek(0)
         tarfile.open(mode='r:gz', fileobj=f).extractall(path=LLVM_BUILD_DIR)
         print 'clang %s unpacked' % PACKAGE_VERSION
+        # Download the gold plugin if requested to by an environment variable.
+        # This is used by the CFI ClusterFuzz bot.
+        if 'LLVM_DOWNLOAD_GOLD_PLUGIN' in os.environ:
+          RunCommand(['python', CHROMIUM_DIR+'/build/download_gold_plugin.py'])
         WriteStampFile(PACKAGE_VERSION)
         return 0
       except urllib2.HTTPError:

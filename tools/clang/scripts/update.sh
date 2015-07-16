@@ -49,6 +49,9 @@ fi
 if [[ -z "$GYP_GENERATORS" ]]; then
   GYP_GENERATORS=
 fi
+if [[ -z "$LLVM_DOWNLOAD_GOLD_PLUGIN" ]]; then
+  LLVM_DOWNLOAD_GOLD_PLUGIN=
+fi
 
 
 # Die if any command dies, error on undefined variable expansions.
@@ -267,6 +270,11 @@ if [[ -z "$force_local_build" ]]; then
     echo clang "${PACKAGE_VERSION}" unpacked
     echo "${PACKAGE_VERSION}" > "${STAMP_FILE}"
     rm -rf "${CDS_OUT_DIR}"
+    # Download the gold plugin if requested to by an environment variable.
+    # This is used by the CFI ClusterFuzz bot.
+    if [[ -n "${LLVM_DOWNLOAD_GOLD_PLUGIN}" ]]; then
+      ${THIS_DIR}/../../../build/download_gold_plugin.py
+    fi
     exit 0
   else
     echo Did not find prebuilt clang "${PACKAGE_VERSION}", building
