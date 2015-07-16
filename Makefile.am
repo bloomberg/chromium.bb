@@ -182,8 +182,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = src/weston.pc
 
 wayland_sessiondir = $(datadir)/wayland-sessions
-wayland_session_DATA = src/weston.desktop
-dist_wayland_session_DATA = $(wayland_session_DATA)
+dist_wayland_session_DATA = src/weston.desktop
 
 westonincludedir = $(includedir)/weston
 westoninclude_HEADERS =				\
