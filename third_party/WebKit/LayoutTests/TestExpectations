@@ -1564,7 +1564,6 @@ crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-h
 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
-# TODO(fmalita): re-enable after http://crrev.com/1232563004, if needed
 crbug.com/463358 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 
@@ -1683,7 +1682,6 @@ crbug.com/321237 [ Win ] virtual/antialiasedtext/fast/text/international/complex
 
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
-# TODO(fmalita): re-enable after http://crrev.com/1232563004, if needed
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 crbug.com/501769 http/tests/serviceworker/stashed-ports.html [ Pass Failure Timeout ]
