@@ -331,11 +331,13 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels(
     // Now walk the sync nodes and detect any URLs that exist there, but not in
     // the history DB, so we can add them to our local history DB.
     std::vector<int64> obsolete_nodes;
-    int64 sync_child_id = typed_url_root.GetFirstChildId();
-    while (sync_child_id != syncer::kInvalidId) {
+    std::vector<int64> sync_ids;
+    typed_url_root.GetChildIds(&sync_ids);
+
+    for (std::vector<int64>::const_iterator it = sync_ids.begin();
+         it != sync_ids.end(); ++it) {
       syncer::ReadNode sync_child_node(&trans);
-      if (sync_child_node.InitByIdLookup(sync_child_id) !=
-              syncer::BaseNode::INIT_OK) {
+      if (sync_child_node.InitByIdLookup(*it) != syncer::BaseNode::INIT_OK) {
         return error_handler_->CreateAndUploadError(
             FROM_HERE,
             "Failed to fetch child node.",
@@ -343,8 +345,6 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels(
       }
       const sync_pb::TypedUrlSpecifics& typed_url(
           sync_child_node.GetTypedUrlSpecifics());
-
-      sync_child_id = sync_child_node.GetSuccessorId();
 
       // Ignore old sync nodes that don't have any transition data stored with
       // them, or transition data that does not match the visit data (will be
@@ -486,15 +486,17 @@ bool TypedUrlModelAssociator::DeleteAllNodes(
     LOG(ERROR) << "Could not lookup root node";
     return false;
   }
-  int64 sync_child_id = typed_url_root.GetFirstChildId();
-  while (sync_child_id != syncer::kInvalidId) {
+
+  std::vector<int64> sync_ids;
+  typed_url_root.GetChildIds(&sync_ids);
+
+  for (std::vector<int64>::const_iterator it = sync_ids.begin();
+       it != sync_ids.end(); ++it) {
     syncer::WriteNode sync_child_node(trans);
-    if (sync_child_node.InitByIdLookup(sync_child_id) !=
-            syncer::BaseNode::INIT_OK) {
+    if (sync_child_node.InitByIdLookup(*it) != syncer::BaseNode::INIT_OK) {
       LOG(ERROR) << "Typed url node lookup failed.";
       return false;
     }
-    sync_child_id = sync_child_node.GetSuccessorId();
     sync_child_node.Tombstone();
   }
   return true;
