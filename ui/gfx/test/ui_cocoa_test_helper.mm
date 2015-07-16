@@ -32,10 +32,14 @@ void NOINLINE ForceSystemLeaks() {
 @implementation CocoaTestHelperWindow
 
 - (id)initWithContentRect:(NSRect)contentRect {
-  return [self initWithContentRect:contentRect
-                         styleMask:NSBorderlessWindowMask
-                           backing:NSBackingStoreBuffered
-                             defer:NO];
+  self = [super initWithContentRect:contentRect
+                          styleMask:NSBorderlessWindowMask
+                            backing:NSBackingStoreBuffered
+                              defer:NO];
+  if (self) {
+    useDefaultConstraints_ = YES;
+  }
+  return self;
 }
 
 - (id)init {
@@ -62,8 +66,19 @@ void NOINLINE ForceSystemLeaks() {
   pretendIsKeyWindow_ = flag;
 }
 
+- (void)setUseDefaultConstraints:(BOOL)useDefaultConstraints {
+  useDefaultConstraints_ = useDefaultConstraints;
+}
+
 - (BOOL)isKeyWindow {
   return pretendIsKeyWindow_;
+}
+
+- (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen*)screen {
+  if (!useDefaultConstraints_)
+    return frameRect;
+
+  return [super constrainFrameRect:frameRect toScreen:screen];
 }
 
 @end

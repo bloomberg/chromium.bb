@@ -19,6 +19,7 @@
 @interface CocoaTestHelperWindow : NSWindow {
  @private
   BOOL pretendIsKeyWindow_;
+  BOOL useDefaultConstraints_;
 }
 
 // Init a borderless non-deferred window with a backing store.
@@ -38,6 +39,10 @@
 
 // Set value to return for -isKeyWindow.
 - (void)setPretendIsKeyWindow:(BOOL)isKeyWindow;
+
+// Whether to use or ignore the default contraints for window sizing and
+// placement.
+- (void)setUseDefaultConstraints:(BOOL)useDefaultConstraints;
 
 - (BOOL)isKeyWindow;
 

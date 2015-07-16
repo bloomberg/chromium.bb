@@ -17,6 +17,8 @@ class ColorProfileTest : public ui::CocoaTest {
   void SetUp() override {
     ui::CocoaTest::SetUp();
 
+    [test_window() setUseDefaultConstraints:NO];
+
     // Verify the primary screen origin.
     NSRect primary_screen_frame = PrimaryScreenFrame();
     EXPECT_EQ(0, primary_screen_frame.origin.x);
