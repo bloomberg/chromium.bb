@@ -29,6 +29,7 @@ function fill()
 {
   var bytes = 0;
   var request = indexedDB.open(dbname);
+  request.onerror = unexpectedErrorCallback;
   request.onupgradeneeded = function() {
     var db = request.result;
     var store = db.createObjectStore('store');
@@ -49,6 +50,7 @@ function fill()
 function purge()
 {
   var request = indexedDB.deleteDatabase(dbname);
+  request.onerror = unexpectedErrorCallback;
   request.onsuccess = function() {
     done('purged');
   };

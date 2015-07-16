@@ -32,14 +32,16 @@ function getLog()
   return "" + document.getElementById('status').innerHTML;
 }
 
-function unexpectedUpgradeNeededCallback()
+function unexpectedUpgradeNeededCallback(e)
 {
-  fail('unexpectedUpgradeNeededCallback');
+  fail('unexpectedUpgradeNeededCallback' +
+       ' (oldVersion: ' + e.oldVersion + ' newVersion: ' + e.newVersion + ')');
 }
 
-function unexpectedAbortCallback()
+function unexpectedAbortCallback(e)
 {
-  fail('unexpectedAbortCallback');
+  fail('unexpectedAbortCallback' +
+      ' (' + e.target.error.name + ': ' + e.target.error.message + ')');
 }
 
 function unexpectedSuccessCallback()
@@ -52,19 +54,16 @@ function unexpectedCompleteCallback()
   fail('unexpectedCompleteCallback');
 }
 
-function unexpectedErrorCallback()
+function unexpectedErrorCallback(e)
 {
-  fail('unexpectedErrorCallback');
+  fail('unexpectedErrorCallback' +
+      ' (' + e.target.error.name + ': ' + e.target.error.message + ')');
 }
 
-function unexpectedBlockedCallback()
+function unexpectedBlockedCallback(e)
 {
-  fail('unexpectedBlockedCallback');
-}
-
-function unexpectedUpgradeNeededCallback()
-{
-  fail('unexpectedUpgradeNeededCallback');
+  fail('unexpectedBlockedCallback' +
+       ' (oldVersion: ' + e.oldVersion + ' newVersion: ' + e.newVersion + ')');
 }
 
 function deleteAllObjectStores(db)

@@ -5,9 +5,9 @@
 function test() {
   if (window.webkitStorageInfo) {
     window.jsTestIsAsync = true;
-    webkitStorageInfo.queryUsageAndQuota(webkitStorageInfo.TEMPORARY,
-                                         initUsageCallback,
-                                         unexpectedErrorCallback);
+    navigator.webkitTemporaryStorage.queryUsageAndQuota(
+      initUsageCallback,
+      unexpectedErrorCallback);
   } else
     debug("This test requires window.webkitStorageInfo.");
 }
@@ -72,8 +72,8 @@ function getQuotaAndUsage() {
     debug("Weird: too many writes. There were " + successfulWrites +
           " but we only expected " + maxExpectedWrites);
   }
-  webkitStorageInfo.queryUsageAndQuota(webkitStorageInfo.TEMPORARY,
-                                       usageCallback, unexpectedErrorCallback);
+  navigator.webkitTemporaryStorage.queryUsageAndQuota(
+    usageCallback, unexpectedErrorCallback);
 }
 
 function usageCallback(usage, quota) {

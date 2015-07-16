@@ -81,8 +81,7 @@ function checkSizeBackToInitial() {
 }
 
 function getUsage(cb) {
-  webkitStorageInfo.queryUsageAndQuota(
-      webkitStorageInfo.TEMPORARY,
+  navigator.webkitTemporaryStorage.queryUsageAndQuota(
       function(usage, quota) {
         debug("Current database size is " + usage + "B");
         cb(usage);

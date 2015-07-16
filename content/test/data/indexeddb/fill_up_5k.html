@@ -36,8 +36,8 @@ function startNewTransaction() {
 
 function getQuotaAndUsage() {
   numTransactions++;
-  webkitStorageInfo.queryUsageAndQuota(webkitStorageInfo.TEMPORARY,
-                                       usageCallback, unexpectedErrorCallback);
+  navigator.webkitTemporaryStorage.queryUsageAndQuota(
+    usageCallback, unexpectedErrorCallback);
 }
 
 function usageCallback(usage, quota) {

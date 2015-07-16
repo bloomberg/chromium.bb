@@ -11,6 +11,7 @@ function test() {
     request.onerror = unexpectedErrorCallback;
     request.onblocked = unexpectedBlockedCallback;
     request.onupgradeneeded = function (e) {
+      var db = e.target.result;
       var store = db.createObjectStore('storeName');
       window.index1 = store.createIndex('index1Name', 'prop1');
       window.index2 = store.createIndex(
