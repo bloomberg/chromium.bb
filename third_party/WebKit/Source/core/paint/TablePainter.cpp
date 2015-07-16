@@ -13,7 +13,7 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
-#include "core/paint/ScopeRecorder.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 
 namespace blink {
 
@@ -48,21 +48,29 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 
     if (m_layoutTable.collapseBorders() && paintPhase == PaintPhaseChildBlockBackground && m_layoutTable.style()->visibility() == VISIBLE) {
-        // Using our cached sorted styles, we then do individual passes,
-        // painting each style of border from lowest precedence to highest precedence.
         info.phase = PaintPhaseCollapsedTableBorders;
-        LayoutTable::CollapsedBorderValues collapsedBorders = m_layoutTable.collapsedBorders();
-        size_t count = collapsedBorders.size();
-        for (size_t i = 0; i < count; ++i) {
-            ScopeRecorder scopeRecorder(*info.context, m_layoutTable);
-            // FIXME: pass this value into children rather than storing temporarily on the LayoutTable object.
-            m_layoutTable.setCurrentBorderValue(&collapsedBorders[i]);
-            for (LayoutTableSection* section = m_layoutTable.bottomSection(); section; section = m_layoutTable.sectionAbove(section)) {
-                LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(section, paintOffset);
-                section->paint(info, childPoint);
+
+        LayoutRect overflowRect(m_layoutTable.visualOverflowRect());
+        overflowRect.moveBy(paintOffset);
+        if (overflowRect.intersects(LayoutRect(info.rect))) {
+            // TODO(wangxianzhu): Optimize invalidation and paint of collapsed borders. crbug.com/510942.
+            DisplayItemCacheSkipper cacheSkipper(*info.context);
+            LayoutObjectDrawingRecorder recorder(*info.context, m_layoutTable, info.phase, overflowRect);
+
+            // Using our cached sorted styles, we then do individual passes,
+            // painting each style of border from lowest precedence to highest precedence.
+            LayoutTable::CollapsedBorderValues collapsedBorders = m_layoutTable.collapsedBorders();
+            size_t count = collapsedBorders.size();
+            for (size_t i = 0; i < count; ++i) {
+                // FIXME: pass this value into children rather than storing temporarily on the LayoutTable object.
+                m_layoutTable.setCurrentBorderValue(&collapsedBorders[i]);
+                for (LayoutTableSection* section = m_layoutTable.bottomSection(); section; section = m_layoutTable.sectionAbove(section)) {
+                    LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(section, paintOffset);
+                    section->paint(info, childPoint);
+                }
             }
+            m_layoutTable.setCurrentBorderValue(0);
         }
-        m_layoutTable.setCurrentBorderValue(0);
     }
 
     // Paint outline.
