@@ -11,7 +11,7 @@ Rietveld code review for the update, listing the new Git commits.
 This tool should be run from a Git checkout of native_client.
 """
 
-import optparse
+import argparse
 import os
 import re
 import subprocess
@@ -68,10 +68,8 @@ def GetLog(git_dir, new_rev, old_revs):
     if line.startswith('BUG='):
       bug = line[4:].strip()
       bug_line = 'BUG= %s\n' % bug
-      if bug_line not in bugs and bug.lower() != 'none':
+      if bug.lower() != 'none' and len(bug):
         bugs.append(bug_line)
-  if len(bugs) == 0:
-    bugs = ['BUG=none\n']
   return log, authors, bugs
 
 
@@ -86,24 +84,7 @@ def AssertNoUncommittedChanges():
     raise AssertionError('You have uncommitted changes:\n%s' % changes)
 
 
-def Main(args):
-  src_base = 'toolchain_build/src'
-  parser = optparse.OptionParser('%prog [options]\n\n' + __doc__.strip())
-  parser.add_option('--list', action='store_true', default=False,
-                    dest='list_only',
-                    help='Only list the new Git revisions to be pulled in')
-  parser.add_option('-c', '--component', default='llvm', type='string',
-                    help='Subdirectory of {src_dir} to update '
-                    'COMPONENT_REVISIONS from (defaults to "llvm")'.format(
-                        src_dir=src_base))
-  parser.add_option('-r', '--revision', default=None, type='string',
-                    help='Git revision to use')
-  parser.add_option('-u', '--no-upload', action='store_true', default=False,
-                    help='Do not run "git cl upload"')
-  options, args = parser.parse_args(args)
-  if len(args) != 0:
-    parser.error('Got unexpected arguments')
-
+def UpdateComponent(src_base, deps_data, component, revision):
   component_name_map = {'llvm': 'LLVM',
                         'clang': 'Clang',
                         'pnacl-gcc': 'GCC',
@@ -115,15 +96,15 @@ def Main(args):
                         'compiler-rt': 'compiler-rt',
                         'subzero': 'Subzero'}
 
-  git_dir = os.path.join(src_base, options.component)
-  component_name = component_name_map.get(options.component, options.component)
-  if options.component == 'pnacl-gcc':
+  git_dir = os.path.join(src_base, component)
+  component_name = component_name_map.get(component, component)
+  if component == 'pnacl-gcc':
     pnacl_branch = 'origin/pnacl'
     upstream_branches = []
-  elif options.component == 'binutils':
+  elif component == 'binutils':
     pnacl_branch = 'origin/pnacl/2.25/master'
     upstream_branches = ['origin/ng/2.25/master']
-  elif options.component == 'subzero':
+  elif component == 'subzero':
     pnacl_branch = 'origin/master'
     upstream_branches = []
   else:
@@ -131,41 +112,84 @@ def Main(args):
     # Skip changes merged (but not cherry-picked) from upstream git.
     upstream_branches = ['origin/upstream/master']
 
-  if not options.list_only:
-    AssertNoUncommittedChanges()
-
-  new_rev = options.revision
+  new_rev = revision
   if new_rev is None:
     new_rev = GetNewRev(git_dir, pnacl_branch)
 
+  old_rev = GetDepsField(deps_data, component)
+  if new_rev == old_rev:
+    raise AssertionError('No new changes!')
+  deps_data = SetDepsField(deps_data, component, new_rev)
+
+  msg_logs, authors, bugs = GetLog(git_dir, new_rev,
+                                   [old_rev] + upstream_branches)
+
+  msg = '\n\nThis pulls in the following %s %s:\n\n' % (
+      component_name,
+      {True: 'change', False: 'changes'}[len(msg_logs) == 1])
+  msg += ''.join(msg_logs)
+  msg += '\n'
+
+  return msg, bugs, authors, deps_data
+
+
+def Main(args):
+  src_base = 'toolchain_build/src'
+  parser = argparse.ArgumentParser(description=__doc__.strip())
+  parser.add_argument('--list', action='store_true', default=False,
+                      dest='list_only',
+                      help='Only list the new Git revisions to be pulled in')
+  parser.add_argument('-c', '--component', action='append',
+                      help='Subdirectory of {src_dir} to update '
+                      'COMPONENT_REVISIONS from (defaults to "llvm"). '
+                      'Can be specified multiple times.'.format(
+                        src_dir=src_base))
+  parser.add_argument('-r', '--revision', action='append',
+                      help='Git revision to use. Defaults to head of origin. '
+                      'If given, must be given exactly once per component.')
+  parser.add_argument('-u', '--no-upload', action='store_true', default=False,
+                      help='Do not run "git cl upload"')
+  options = parser.parse_args(args)
+  components = options.component if options.component is not None else ['llvm']
+  revisions = (options.revision if options.revision is not None
+               else [None] * len(components))
+  if len(components) != len(revisions):
+    parser.error('Number of revision arguments must match number of '
+                 'component arguments')
+
+  if not options.list_only:
+    AssertNoUncommittedChanges()
   subprocess.check_call(['git', 'fetch'])
 
   deps_file = 'pnacl/COMPONENT_REVISIONS'
   deps_data = subprocess.check_output(['git', 'cat-file', 'blob',
                                        'origin/master:%s' % deps_file])
-  old_rev = GetDepsField(deps_data, options.component)
-  if new_rev == old_rev:
-    raise AssertionError('No new changes!')
-  deps_data = SetDepsField(deps_data, options.component, new_rev)
 
-  msg_logs, authors, bugs = GetLog(git_dir, new_rev,
-                                   [old_rev] + upstream_branches)
-  msg = 'PNaCl: Update %s revision in %s' % (component_name, deps_file)
-  msg += '\n\nThis pulls in the following %s %s:\n\n' % (
-      component_name,
-      {True: 'change', False: 'changes'}[len(msg_logs) == 1])
-  msg += ''.join(msg_logs)
-  msg += '\n'
-  msg += ''.join(bugs)
+  component_names = ' and '.join(components)
+  msg = 'PNaCl: Update %s revision in %s' % (component_names, deps_file)
+  bugs = []
+  authors = []
+
+  for component, revision in zip(components, revisions):
+    m, b, a, d = UpdateComponent(src_base, deps_data, component, revision)
+    msg += m
+    bugs.extend(b)
+    authors.extend(a)
+    deps_data = d
+
+  if len(bugs) == 0:
+    bugs.append('BUG=none\n')
+  msg += ''.join(set(bugs))
   msg += 'TEST= PNaCl toolchain trybots\n'
   print msg
   cc_list = ', '.join(sorted(set(authors)))
   print 'CC:', cc_list
+
   if options.list_only:
     return
-
   subprocess.check_call(['git', 'checkout', 'origin/master'])
-  branch_name = '%s-deps-%s' % (options.component, new_rev[:8])
+  branch_name = '%s-deps-%s' % (components[0],
+                                GetDepsField(deps_data, components[0])[:8])
   subprocess.check_call(['git', 'checkout', '-b', branch_name, 'origin/master'])
   with open(deps_file, 'w') as fh:
     fh.write(deps_data)
