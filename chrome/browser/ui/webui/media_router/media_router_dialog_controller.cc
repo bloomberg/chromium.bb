@@ -33,6 +33,14 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 
+namespace {
+const int kMaxHeight = 260;
+#if !defined(OS_MACOSX)
+const int kMinHeight = 130;
+#endif  // !defined(OS_MACOSX)
+const int kWidth = 340;
+}
+
 namespace media_router {
 
 namespace {
@@ -91,7 +99,7 @@ void MediaRouterDialogDelegate::GetDialogSize(gfx::Size* size) const {
   DCHECK(size);
   // TODO(apacible): Remove after autoresizing is implemented for OSX.
 #if defined(OS_MACOSX)
-  *size = gfx::Size(330, 400);
+  *size = gfx::Size(kWidth, kMaxHeight);
 #else
   // size is not used because the dialog is auto-resizeable.
   *size = gfx::Size();
@@ -256,8 +264,9 @@ void MediaRouterDialogController::CreateMediaRouterDialog() {
       ShowConstrainedWebDialog(profile, web_dialog_delegate, initiator_);
 #else
   // TODO(apacible): Adjust min and max sizes based on new WebUI design.
-  gfx::Size min_size = gfx::Size(330, 1);
-  gfx::Size max_size = gfx::Size(500, 500);
+  gfx::Size min_size = gfx::Size(kWidth, kMinHeight);
+  gfx::Size max_size = gfx::Size(kWidth, kMaxHeight);
+
   // |ShowConstrainedWebDialogWithAutoResize()| will end up creating
   // ConstrainedWebDialogDelegateViewViews containing a WebContents containing
   // the MediaRouterUI, using the provided |web_dialog_delegate|. Then, the
