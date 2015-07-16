@@ -55,7 +55,16 @@
             "group_name": "OptOut",
             "params": {
                 "enabled": "true",
-                "promo_opt_out": "true"
+                "disable_for_cjk": "true",
+                "promo_opt_out": "true",
+                "promo_on_limited_taps": "true",
+                "tap_triggered_promo_limit": "50",
+                "tap_preload_limit_for_undecided": "20",
+                "tap_resolve_limit_for_undecided": "20",
+                "tap_preload_limit_for_decided": "50",
+                "tap_resolve_limit_for_decided": "50",
+                "contextual_search_side_search_provider_icon_enabled": "true",
+                "contextual_search_arrow_icon_enabled": "true"
             }
         }
     ]
