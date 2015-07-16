@@ -34,7 +34,7 @@ class MockCheckFileManager(object):
 
     return self.service_statuses[0]
 
-  def RepairService(self, _service, _action):
+  def RepairService(self, _service, _action, _args, _kwargs):
     """Mock RepairService response."""
     return self.service_statuses[0]
 
@@ -78,6 +78,10 @@ class MobMonitorRootTest(cros_test_lib.MockTestCase):
     status = cfm.service_statuses[0]
     expect = {'service': status.service, 'health': status.health,
               'healthchecks': []}
+    string_args = '[1, 2]'
+    string_kwargs = '{"a": 1}'
     self.assertEquals(expect,
                       json.loads(root.RepairService('dummy_service',
-                                                    'dummy_action')))
+                                                    'dummy_action',
+                                                    string_args,
+                                                    string_kwargs)))

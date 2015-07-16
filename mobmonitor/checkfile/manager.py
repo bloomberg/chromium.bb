@@ -372,12 +372,14 @@ class CheckFileManager(object):
 
     return self.service_states.get(service, SERVICE_STATUS(service, False, []))
 
-  def RepairService(self, service, action):
+  def RepairService(self, service, action, args, kwargs):
     """Execute the repair action on the specified service.
 
     Args:
       service: The name of the service to be repaired.
       action: The name of the action to execute.
+      args: A list of positional arguments for the given repair action.
+      kwargs: A dictionary of keyword arguments for the given repair action.
 
     Returns:
       The same return value of GetStatus(service).
@@ -390,7 +392,7 @@ class CheckFileManager(object):
       return self.GetStatus(service)
 
     # Check that at least one unhealthy/quasi-healthy check specifies this
-    # repair actions. Actions are assumed to be service-centric at this point.
+    # repair action. Actions are assumed to be service-centric at this point.
     repair_func = None
     for hc in status.healthchecks:
       for action_func in hc.actions:
@@ -400,12 +402,20 @@ class CheckFileManager(object):
 
     # TODO (msartori): Implement crbug.com/503373
     if repair_func is not None:
-      repair_func()
+      try:
+        repair_func(*args, **kwargs)
 
-      # Update the service status and return.
-      # While actions are 'service-centric' from the perspective of the monitor,
-      # actions may have system-wide effect, so we must re-check all services.
-      self.Execute(force=True)
-      self.ConsolidateServiceStates()
+        # Update the service status and return.
+        # While actions are 'service-centric' from the perspective of the
+        # monitor, actions may have system-wide effect, so we must re-check
+        # all services.
+        self.Execute(force=True)
+        self.ConsolidateServiceStates()
+      except TypeError, e:
+        logging.error('Failed to execute the repair action "%s"'
+                      ' for service "%s": %s', action, service, e)
+    else:
+      logging.error('Failed to retrieve a suitable repair function for'
+                    ' service="%s" and action="%s".', service, action)
 
     return self.GetStatus(service)

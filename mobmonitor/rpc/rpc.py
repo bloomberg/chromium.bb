@@ -105,13 +105,14 @@ class RpcExecutor(object):
 
     return self.Execute('GetStatus', service=service)
 
-  # TODO (msartori): Implement crbug.com/505066.
-  def RepairService(self, service=None, action=None):
+  def RepairService(self, service=None, action=None, args=None, kwargs=None):
     """Apply the specified action to the specified service.
 
     Args:
       service: A string. The service to repair.
       action: A string. The action to take.
+      args: The positional argument inputs to the repair action.
+      kwargs: The keyword argument inputs to the repair action.
 
     Returns:
       The same output of running get_status(service=service).
@@ -121,4 +122,8 @@ class RpcExecutor(object):
                      ' and action to be provided.'
                      ' Given: service="%s" action="%s"' % (service, action))
 
-    return self.Execute('RepairService', service=service, action=action)
+    args = [] if args is None else args
+    kwargs = {} if kwargs is None else kwargs
+
+    return self.Execute('RepairService', service=service, action=action,
+                        args=args, kwargs=kwargs)

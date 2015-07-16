@@ -58,16 +58,23 @@ class MobMonitorRoot(object):
         manager.MapServiceStatusToDict(status) for status in service_statuses]
     return json.dumps(result)
 
-  # TODO (msartori): Implement crbug.com/505066.
   @cherrypy.expose
-  def RepairService(self, service, action):
+  def RepairService(self, service, action, args, kwargs):
     """Execute the repair action on the specified service.
 
     Args:
       service: The service that the specified action will be applied to.
       action: The action to be applied.
+      args: A list of the positional arguments for the given repair action.
+      kwargs: A dictionary of keyword arguments for the given repair action.
     """
-    status = self.checkfile_manager.RepairService(service, action)
+    # The mobmonitor's RPC library encodes arguments as strings when
+    # making a remote call to the monitor. The checkfile manager expects
+    # lists and dicts for the arugments, so we convert them here.
+    args = json.loads(args.replace('\'', '"'))
+    kwargs = json.loads(kwargs.replace('\'', '"'))
+
+    status = self.checkfile_manager.RepairService(service, action, args, kwargs)
     return json.dumps(manager.MapServiceStatusToDict(status))
 
 

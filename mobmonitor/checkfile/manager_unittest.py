@@ -698,7 +698,8 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     cfm.service_states[TEST_SERVICE_NAME] = healthy_status
 
     self.assertEquals(healthy_status, cfm.RepairService(TEST_SERVICE_NAME,
-                                                        'RepairFuncName'))
+                                                        'RepairFuncName',
+                                                        [], {}))
 
   def testRepairServiceNonExistent(self):
     """Test the RepairService RPC when the service does not exist."""
@@ -707,7 +708,7 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertFalse(TEST_SERVICE_NAME in cfm.service_states)
 
     expected = manager.SERVICE_STATUS(TEST_SERVICE_NAME, False, [])
-    result = cfm.RepairService(TEST_SERVICE_NAME, 'DummyAction')
+    result = cfm.RepairService(TEST_SERVICE_NAME, 'DummyAction', [], {})
     self.assertEquals(expected, result)
 
   def testRepairServiceInvalidAction(self):
@@ -728,7 +729,29 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertFalse(status.health)
     self.assertEquals(1, len(status.healthchecks))
 
-    status = cfm.RepairService(TEST_SERVICE_NAME, 'Blah')
+    status = cfm.RepairService(TEST_SERVICE_NAME, 'Blah', [], {})
+    self.assertFalse(status.health)
+    self.assertEquals(1, len(status.healthchecks))
+
+  def testRepairServiceInvalidActionArguments(self):
+    """Test the RepairService RPC when the action arguments are invalid."""
+    cfm = manager.CheckFileManager(checkdir=CHECKDIR)
+
+    hcobj = TestHealthCheckUnhealthy()
+    cfm.service_checks[TEST_SERVICE_NAME] = {
+        hcobj.__class__.__name__: (TEST_MTIME, hcobj)}
+
+    unhealthy_status = manager.SERVICE_STATUS(
+        TEST_SERVICE_NAME, False,
+        [manager.HEALTHCHECK_STATUS(hcobj.__class__.__name__,
+                                    False, 'Always fails', [hcobj.Repair])])
+    cfm.service_states[TEST_SERVICE_NAME] = unhealthy_status
+
+    status = cfm.GetStatus(TEST_SERVICE_NAME)
+    self.assertFalse(status.health)
+    self.assertEquals(1, len(status.healthchecks))
+
+    status = cfm.RepairService(TEST_SERVICE_NAME, 'Repair', [1, 2, 3], {})
     self.assertFalse(status.health)
     self.assertEquals(1, len(status.healthchecks))
 
@@ -750,7 +773,8 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
     self.assertFalse(status.health)
     self.assertEquals(1, len(status.healthchecks))
 
-    status = cfm.RepairService(TEST_SERVICE_NAME, hcobj.Repair.__name__)
+    status = cfm.RepairService(TEST_SERVICE_NAME, hcobj.Repair.__name__,
+                               [], {})
     self.assertTrue(status.health)
     self.assertEquals(0, len(status.healthchecks))
 

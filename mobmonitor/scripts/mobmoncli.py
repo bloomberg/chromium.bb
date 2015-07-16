@@ -7,11 +7,46 @@
 
 from __future__ import print_function
 
+import re
 import sys
 
 from chromite.lib import commandline
 from chromite.lib import remote_access
 from chromite.mobmonitor.rpc import rpc
+
+
+def InputsToArgs(inputs):
+  """Convert repair action input string to an args list and kwargs dict.
+
+  Args:
+    inputs: A string. A well formed input string is a comma separated
+      list of values and/or equal-sign separated key value pairs.
+      A valid input string may be the following:
+        'arg1,arg2,...,argN,kwarg1=foo,...,kwargN=bar'
+
+  Returns:
+    A list of the positional arguments contained in the |inputs| string and
+    a dictionary of the key value pairs that made up the |inputs| string.
+    All keys and values will be strings.
+  """
+  args, kwargs = ([], {})
+  if not inputs:
+    return args, kwargs
+
+  pattern = '([^,]+,)*([^,]+)$'
+  if not re.match(pattern, inputs):
+    raise ValueError('Action arguments are not well-formed.'
+                     ' Expected: "a1,...,aN,kw1=foo,...,kwN=bar".'
+                     ' Given: %s', inputs)
+
+  for kv in inputs.split(','):
+    try:
+      k, v = kv.split('=')
+      kwargs[k] = v
+    except ValueError:
+      args.append(kv)
+
+  return args, kwargs
 
 
 class MobMonCli(object):
@@ -21,18 +56,21 @@ class MobMonCli(object):
     self.host = host
     self.port = remote_access.NormalizePort(port)
 
-  def ExecuteRequest(self, request, service, action):
+  def ExecuteRequest(self, request, service, action, inputs):
     """Execute the request if an appropriate RPC function is defined.
 
     Args:
       request: The name of the RPC.
       service: The name of the service involved in the RPC.
       action: The action to be performed.
+      inputs: A string. The inputs of the specified repair action.
     """
     rpcexec = rpc.RpcExecutor(self.host, self.port)
 
     if not hasattr(rpcexec, request):
       raise rpc.RpcError('The request "%s" is not recognized.' % request)
+
+    args, kwargs = InputsToArgs(inputs)
 
     if 'GetServiceList' == request:
       return rpcexec.GetServiceList()
@@ -41,7 +79,8 @@ class MobMonCli(object):
       return rpcexec.GetStatus(service=service)
 
     if 'RepairService' == request:
-      return rpcexec.RepairService(service=service, action=action)
+      return rpcexec.RepairService(service=service, action=action, args=args,
+                                   kwargs=kwargs)
 
 
 def ParseArguments(argv):
@@ -53,6 +92,11 @@ def ParseArguments(argv):
                       help='The hostname of the Mob* Monitor.')
   parser.add_argument('-p', '--port', type=int, default=9999,
                       help='The Mob* Monitor port.')
+  parser.add_argument('-i', '--inputs',
+                      help='Repair action inputs. Inputs are specified'
+                           ' as a comma-separated list of values or key'
+                           ' value pairs such as: "arg1,arg2,...,argN,'
+                           'kwarg1=foo,...,kwargN=bar"')
 
   return parser.parse_args(argv)
 
@@ -68,7 +112,7 @@ def main(argv):
 
   cli = MobMonCli(options.host, options.port)
   result = cli.ExecuteRequest(options.request, options.service,
-                              options.action)
+                              options.action, options.inputs)
 
   print(result)
 
