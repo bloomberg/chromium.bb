@@ -41,6 +41,7 @@
 #include "core/editing/iterators/SearchBuffer.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -156,9 +157,12 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         return false;
     }
 
-#if OS(ANDROID)
-    ownerFrame().viewImpl()->zoomToFindInPageRect(ownerFrame().frameView()->contentsToRootFrame(enclosingIntRect(LayoutObject::absoluteBoundingBoxRectForRange(m_activeMatch.get()))));
-#endif
+    // If the user is browsing a page with autosizing, adjust the zoom to the
+    // column where the next hit has been found. Doing this when autosizing is
+    // not set will result in a zoom reset on small devices.
+    if (ownerFrame().frame()->document()->textAutosizer()->pageNeedsAutosizing()) {
+        ownerFrame().viewImpl()->zoomToFindInPageRect(ownerFrame().frameView()->contentsToRootFrame(enclosingIntRect(LayoutObject::absoluteBoundingBoxRectForRange(m_activeMatch.get()))));
+    }
 
     setMarkerActive(m_activeMatch.get(), true);
     WebLocalFrameImpl* oldActiveFrame = mainFrameImpl->ensureTextFinder().m_currentActiveMatchFrame;

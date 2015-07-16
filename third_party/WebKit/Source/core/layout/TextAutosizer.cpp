@@ -481,6 +481,11 @@ bool TextAutosizer::shouldHandleLayout() const
     return m_pageInfo.m_settingEnabled && m_pageInfo.m_pageNeedsAutosizing && !m_updatePageInfoDeferred;
 }
 
+bool TextAutosizer::pageNeedsAutosizing() const
+{
+    return m_pageInfo.m_pageNeedsAutosizing;
+}
+
 void TextAutosizer::updatePageInfoInAllFrames()
 {
     ASSERT(!m_document->frame() || m_document->frame()->isMainFrame());

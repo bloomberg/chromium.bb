@@ -10,7 +10,10 @@
 #include "core/dom/NodeList.h"
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/FrameHost.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/TextAutosizer.h"
+#include "core/page/Page.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebDocument.h"
@@ -132,6 +135,40 @@ TEST_F(TextFinderTest, FindTextSimple)
     EXPECT_EQ(14, activeMatch->startOffset());
     EXPECT_EQ(textNode, activeMatch->endContainer());
     EXPECT_EQ(20, activeMatch->endOffset());
+}
+
+TEST_F(TextFinderTest, FindTextAutosizing)
+{
+    document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ", ASSERT_NO_EXCEPTION);
+
+    int identifier = 0;
+    WebString searchText(String("FindMe"));
+    WebFindOptions findOptions; // Default.
+    bool wrapWithinFrame = true;
+    WebRect* selectionRect = nullptr;
+
+    // Set viewport scale to 20 in order to simulate zoom-in
+    PinchViewport& pinchViewport = document().page()->frameHost().pinchViewport();
+    pinchViewport.setScale(20);
+
+    // Enforce autosizing
+    document().settings()->setTextAutosizingEnabled(true);
+    document().settings()->setTextAutosizingWindowSizeOverride(IntSize(20, 20));
+    document().textAutosizer()->updatePageInfo();
+
+    // In case of autosizing, scale _should_ change
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().activeMatch());
+    ASSERT_EQ(1, pinchViewport.scale()); // in this case to 1
+
+    // Disable autosizing and reset scale to 20
+    pinchViewport.setScale(20);
+    document().settings()->setTextAutosizingEnabled(false);
+    document().textAutosizer()->updatePageInfo();
+
+    ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
+    ASSERT_TRUE(textFinder().activeMatch());
+    ASSERT_EQ(20, pinchViewport.scale());
 }
 
 TEST_F(TextFinderTest, FindTextNotFound)

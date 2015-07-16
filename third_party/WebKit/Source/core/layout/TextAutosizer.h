@@ -65,6 +65,8 @@ public:
     void record(const LayoutBlock*);
     void destroy(const LayoutBlock*);
 
+    bool pageNeedsAutosizing() const;
+
     DECLARE_TRACE();
 
     class LayoutScope {
