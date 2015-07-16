@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_REQUEST_H_
 
 #include "base/strings/string16.h"
+#include "ui/gfx/vector_icons_public2.h"
 #include "url/gurl.h"
 
 // Describes the interface a feature utilizing permission bubbles should
@@ -19,6 +20,10 @@
 class PermissionBubbleRequest {
  public:
   virtual ~PermissionBubbleRequest() {}
+
+  // Returns a vector icon id if the icon should be drawn as a vector
+  // resource. Otherwise, returns VECTOR_ICON_NONE.
+  virtual gfx::VectorIconId GetVectorIconId() const;
 
   // The icon to use next to the message text fragment in the permission bubble.
   // Must be a valid icon of size 18x18.

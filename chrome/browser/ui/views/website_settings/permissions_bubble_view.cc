@@ -241,8 +241,17 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
                              kPermissionIndentSpacing,
                              0, kBubbleOuterMargin));
     views::ImageView* icon = new views::ImageView();
-    icon->SetImage(bundle.GetImageSkiaNamed(requests.at(index)->GetIconID()));
-    icon->SetImageSize(gfx::Size(kIconSize, kIconSize));
+    gfx::VectorIconId vector_id = requests[index]->GetVectorIconId();
+    if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
+      // TODO(estade): move this color to a shared location?
+      icon->SetVectorIcon(vector_id,
+                          SkColorSetRGB(0x5A, 0x5A, 0x5A),
+                          gfx::Size(kIconSize - 2, kIconSize - 2));
+      icon->SetBorder(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+    } else {
+      icon->SetImage(bundle.GetImageSkiaNamed(requests.at(index)->GetIconID()));
+      icon->SetImageSize(gfx::Size(kIconSize, kIconSize));
+    }
     icon->SetTooltipText(base::string16());  // Redundant with the text fragment
     label_container->AddChildView(icon);
     views::Label* label =

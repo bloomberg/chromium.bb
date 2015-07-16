@@ -5,8 +5,8 @@
 // This file provides defines needed by PaintVectorIcon and is implemented
 // by the generated file vector_icons.cc.
 
-#ifndef UI_GFX_VECTOR_ICONS_H_
-#define UI_GFX_VECTOR_ICONS_H_
+#ifndef UI_GFX_VECTOR_ICON_TYPES_H_
+#define UI_GFX_VECTOR_ICON_TYPES_H_
 
 #include "third_party/skia/include/core/SkScalar.h"
 
@@ -50,4 +50,4 @@ const PathElement* GetPathForVectorIcon(VectorIconId id);
 
 }  // namespace gfx
 
-#endif  // UI_GFX_VECTOR_ICONS_H_
+#endif  // UI_GFX_VECTOR_ICON_TYPES_H_

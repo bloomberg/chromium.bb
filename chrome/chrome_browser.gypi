@@ -3348,7 +3348,10 @@
           ],
           'conditions': [
             ['toolkit_views==1', {
-              'dependencies': [ '../ui/views/views.gyp:views' ],
+              'dependencies': [
+                '../ui/gfx/gfx.gyp:gfx_vector_icons',
+                '../ui/views/views.gyp:views'
+              ],
             }],
           ],
         }, {  # OS == "ios"

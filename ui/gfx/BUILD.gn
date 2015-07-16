@@ -21,7 +21,7 @@ source_set("gfx_export") {
 }
 
 vector_icons_cc_file = "$target_gen_dir/vector_icons.cc"
-vector_icons_public_h_file = "$target_gen_dir/vector_icons_public.h"
+vector_icons_h_file = "$target_gen_dir/vector_icons2.h"
 
 component("gfx") {
   sources = [
@@ -213,6 +213,7 @@ component("gfx") {
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
+    "vector_icons_public.h",
     "vsync_provider.h",
     "win/direct_write.cc",
     "win/direct_write.h",
@@ -329,9 +330,9 @@ component("gfx") {
     sources += [
       "paint_vector_icon.cc",
       "paint_vector_icon.h",
-      "vector_icons.h",
+      "vector_icons_public.h",
       vector_icons_cc_file,
-      vector_icons_public_h_file,
+      vector_icons_h_file,
     ]
     deps += [ ":aggregate_vector_icons" ]
   }
@@ -396,13 +397,13 @@ action("aggregate_vector_icons") {
   ]
   outputs = [
     vector_icons_cc_file,
-    vector_icons_public_h_file,
+    vector_icons_h_file,
   ]
 
   args = [
     "--working_directory=" + rebase_path("vector_icons/"),
     "--output_cc=" + rebase_path(vector_icons_cc_file, root_build_dir),
-    "--output_h=" + rebase_path(vector_icons_public_h_file, root_build_dir),
+    "--output_h=" + rebase_path(vector_icons_h_file, root_build_dir),
   ]
 }
 

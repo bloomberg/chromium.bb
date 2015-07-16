@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// vector_icons.h.template is used to generate vector_icons.h. Edit the former
+// vector_icons.h.template is used to generate vector_icons2.h. Edit the former
 // rather than the latter.
 
-#ifndef UI_GFX_VECTOR_ICONS_PUBLIC_H_
-#define UI_GFX_VECTOR_ICONS_PUBLIC_H_
+#ifndef UI_GFX_VECTOR_ICONS_H_
+#define UI_GFX_VECTOR_ICONS_H_
 
 namespace gfx {
 
@@ -17,4 +17,4 @@ TEMPLATE_PLACEHOLDER
 
 }  // namespace gfx
 
-#endif  // UI_GFX_VECTOR_ICONS_PUBLIC_H_
+#endif  // UI_GFX_VECTOR_ICONS_H_

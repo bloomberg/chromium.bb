@@ -286,6 +286,7 @@
       'browser/ui/web_contents_sizer.h',
       'browser/ui/website_settings/permission_bubble_manager.cc',
       'browser/ui/website_settings/permission_bubble_manager.h',
+      'browser/ui/website_settings/permission_bubble_request.cc',
       'browser/ui/website_settings/permission_bubble_request.h',
       'browser/ui/website_settings/permission_bubble_view.h',
       'browser/ui/website_settings/website_settings.cc',

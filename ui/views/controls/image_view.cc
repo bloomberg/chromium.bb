@@ -11,7 +11,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/gfx/vector_icons_public2.h"
 #include "ui/views/painter.h"
 
 namespace views {

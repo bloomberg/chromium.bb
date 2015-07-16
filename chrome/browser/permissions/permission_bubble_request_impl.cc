@@ -10,6 +10,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public2.h"
 
 PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
     const GURL& request_origin,
@@ -32,6 +33,18 @@ PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_)
     PermissionContextUmaUtil::PermissionIgnored(type_, request_origin_);
+}
+
+gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
+  switch (type_) {
+#if defined(TOOLKIT_VIEWS)
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      return gfx::VectorIconId::LOCATION_ON;
+#endif
+
+    default:
+      return gfx::VectorIconId::VECTOR_ICON_NONE;
+  }
 }
 
 int PermissionBubbleRequestImpl::GetIconID() const {

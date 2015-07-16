@@ -5,8 +5,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/vector_icons.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/gfx/vector_icon_types.h"
+#include "ui/gfx/vector_icons2.h"
 
 namespace gfx {
 

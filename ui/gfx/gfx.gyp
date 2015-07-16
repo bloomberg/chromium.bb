@@ -451,11 +451,18 @@
       'sources': [
         'paint_vector_icon.cc',
         'paint_vector_icon.h',
-        'vector_icons.h',
+        # The 2 in this file name is intended to get around issues with
+        # clean-up of generated files: crbug.com/509811
+        # TODO(estade): change this back to vector_icons_public.h in a second
+        # pass.
+        'vector_icons_public2.h',
       ],
       'variables': {
         'vector_icons_cc_file': '<(INTERMEDIATE_DIR)/ui/gfx/vector_icons.cc',
-        'vector_icons_public_h_file': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/vector_icons_public.h',
+        # The 2 in this file name is intended to get around issues with
+        # clean-up of generated files: crbug.com/509811
+        # TODO(estade): change this back to vector_icons.h in a second pass.
+        'vector_icons_h_file': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/vector_icons2.h',
       },
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)',
@@ -469,13 +476,13 @@
           ],
           'outputs': [
             '<(vector_icons_cc_file)',
-            '<(vector_icons_public_h_file)',
+            '<(vector_icons_h_file)',
           ],
           'action': [ 'python',
                       'vector_icons/aggregate_vector_icons.py',
                       '--working_directory=vector_icons/',
                       '--output_cc=<(vector_icons_cc_file)',
-                      '--output_h=<(vector_icons_public_h_file)',
+                      '--output_h=<(vector_icons_h_file)',
           ],
           'message': 'Aggregating vector resources.',
           'process_outputs_as_sources': 1,

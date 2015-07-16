@@ -22,7 +22,7 @@ def AggregateVectorIcons(working_directory, output_cc, output_h):
   icon_list = glob.glob(working_directory + "*.icon")
 
   input_header_template = open(os.path.join(working_directory,
-                                            "vector_icons_public.h.template"))
+                                            "vector_icons.h.template"))
   header_template_contents = input_header_template.readlines()
   input_header_template.close()
   output_header = open(output_h, "w")
