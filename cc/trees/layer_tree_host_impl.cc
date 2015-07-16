@@ -921,8 +921,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
     if (append_quads_data.num_missing_tiles) {
       bool layer_has_animating_transform =
-          it->screen_space_transform_is_animating() ||
-          it->draw_transform_is_animating();
+          it->screen_space_transform_is_animating();
       if (layer_has_animating_transform)
         have_missing_animated_tiles = true;
     }
