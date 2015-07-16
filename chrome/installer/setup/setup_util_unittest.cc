@@ -508,7 +508,12 @@ TEST_F(FindArchiveToPatchTest, DesiredVersionNotFound) {
   EXPECT_EQ(base::FilePath().value(), patch_source.value());
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
 namespace {
+const bool kSystemLevel = false;
+const HKEY kRootKey = kSystemLevel ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+const wchar_t kVersionString[] = L"30.0.1574.0";
+const wchar_t kMultiChannel[] = L"2.0-dev-multi-chromeframe";
 
 class MigrateMultiToSingleTest : public testing::Test {
  protected:
@@ -516,25 +521,11 @@ class MigrateMultiToSingleTest : public testing::Test {
     registry_override_manager_.OverrideRegistry(kRootKey);
   }
 
-  static const bool kSystemLevel = false;
-  static const HKEY kRootKey;
-  static const wchar_t kVersionString[];
-  static const wchar_t kMultiChannel[];
-
  private:
   registry_util::RegistryOverrideManager registry_override_manager_;
 };
-
-const bool MigrateMultiToSingleTest::kSystemLevel;
-const HKEY MigrateMultiToSingleTest::kRootKey =
-    kSystemLevel ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-const wchar_t MigrateMultiToSingleTest::kVersionString[] = L"30.0.1574.0";
-const wchar_t MigrateMultiToSingleTest::kMultiChannel[] =
-    L"2.0-dev-multi-chromeframe";
-
 }  // namespace
 
-#if defined(GOOGLE_CHROME_BUILD)
 // Test migrating Chrome Frame from multi to single.
 TEST_F(MigrateMultiToSingleTest, ChromeFrame) {
   installer::ProductState chrome_frame;
