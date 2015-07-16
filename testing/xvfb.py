@@ -10,17 +10,36 @@ import platform
 import signal
 import subprocess
 import sys
+import threading
 
 import test_env
 
 
-def kill(proc):
+def _kill(proc, send_signal):
   """Kills |proc| and ignores exceptions thrown for non-existent processes."""
   try:
-    if proc and proc.pid:
-      os.kill(proc.pid, signal.SIGTERM)
+    os.kill(proc.pid, send_signal)
   except OSError:
     pass
+
+
+def kill(proc, timeout_in_seconds=10):
+  """Tries to kill |proc| gracefully with a timeout for each signal."""
+  if not proc or not proc.pid:
+    return
+
+  _kill(proc, signal.SIGTERM)
+  thread = threading.Thread(target=proc.wait)
+  thread.start()
+
+  thread.join(timeout_in_seconds)
+  if thread.is_alive():
+    print >> sys.stderr, 'Xvfb running after SIGTERM, trying SIGKILL.'
+    _kill(proc, signal.SIGKILL)
+
+  thread.join(timeout_in_seconds)
+  if thread.is_alive():
+    print >> sys.stderr, 'Xvfb running after SIGTERM and SIGKILL; good luck!'
 
 
 def wait_for_xvfb(xdisplaycheck, env):
