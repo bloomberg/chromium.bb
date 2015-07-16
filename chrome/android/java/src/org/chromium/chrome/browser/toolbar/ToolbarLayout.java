@@ -149,7 +149,12 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         return R.dimen.toolbar_height_no_shadow;
     }
 
-    @Override
+    /**
+     * Initialize the external dependencies required for view interaction.
+     * @param toolbarDataProvider The provider for toolbar data.
+     * @param tabController       The controller that handles interactions with the tab.
+     * @param appMenuButtonHelper The helper for managing menu button interactions.
+     */
     public void initialize(ToolbarDataProvider toolbarDataProvider,
             ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
         mToolbarDataProvider = toolbarDataProvider;
@@ -254,7 +259,12 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         return mToolbarDataProvider;
     }
 
-    @Override
+    /**
+     * Sets the {@link Invalidator} that will be called when the toolbar attempts to invalidate the
+     * drawing surface.  This will give the object that registers as the host for the
+     * {@link Invalidator} a chance to defer the actual invalidate to sync drawing.
+     * @param invalidator An {@link Invalidator} instance.
+     */
     public void setPaintInvalidator(Invalidator invalidator) {
         mInvalidator = invalidator;
     }
@@ -281,15 +291,23 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mFindInPageToolbarShowing = showing;
     }
 
-    @Override
+    /**
+     * Sets the OnClickListener that will be notified when the TabSwitcher button is pressed.
+     * @param listener The callback that will be notified when the TabSwitcher button is pressed.
+     */
     public void setOnTabSwitcherClickHandler(OnClickListener listener) { }
 
-    @Override
+    /**
+     * Sets the OnClickListener that will be notified when the New Tab button is pressed.
+     * @param listener The callback that will be notified when the New Tab button is pressed.
+     */
     public void setOnNewTabClickHandler(OnClickListener listener) { }
 
-    @Override
+    /**
+     * Sets the OnClickListener that will be notified when the bookmark button is pressed.
+     * @param listener The callback that will be notified when the bookmark button is pressed.
+     */
     public void setBookmarkClickHandler(OnClickListener listener) { }
-
 
     /**
      * Sets the OnClickListener to notify when the close button is pressed in a custom tab.
@@ -370,7 +388,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     public void setCloseButtonImageResource(int iconRes) { }
 
-    @Override
+    /**
+     * Adds a custom action button to the {@link ToolbarLayout} if it is supported.
+     * @param buttonSource The {@link Bitmap} resource to use as the source for the button.
+     * @param listener The {@link OnClickListener} to use for clicks to the button.
+     */
     public void addCustomActionButton(Bitmap buttonSource, OnClickListener listener) { }
 
     /**
@@ -468,7 +490,9 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         if (mFirstDrawTimeMs == 0) mFirstDrawTimeMs = SystemClock.elapsedRealtime();
     }
 
-    @Override
+    /**
+     * Returns the elapsed realtime in ms of the time at which first draw for the toolbar occurred.
+     */
     public long getFirstDrawTime() {
         return mFirstDrawTimeMs;
     }
@@ -487,7 +511,9 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         if (mProgressBar != null) mProgressBar.setProgress(progress);
     }
 
-    @Override
+    /**
+     * Finish any toolbar animations.
+     */
     public void finishAnimations() { }
 
     /**
@@ -508,7 +534,9 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         return mToolbarDataProvider.isIncognito();
     }
 
-    @Override
+    /**
+     * @return {@link LocationBar} object this {@link ToolbarLayout} contains.
+     */
     public abstract LocationBar getLocationBar();
 
     /**
