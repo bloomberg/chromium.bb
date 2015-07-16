@@ -182,31 +182,30 @@ private:
 };
 
 // Object graph:
-// +-------------+                                          +-------------+
-// |HandleWrapper|<-----------------------------------------|ReaderContext|
-// |             |  +-------------+  +-----------+   +---+  |             |
-// |             |<-|LoaderContext|<-|CTH::Bridge|<->|CTH|<-|             |
-// +-------------+  +-------------+  +-----------+   +---+  +-------------+
-//                              |
-//          ThreadableLoader <--+
+//                                           +-------------+
+//                                           |ReaderContext|
+//   +-------------+  +-----------+   +---+  |             |
+//   |LoaderContext|<-|CTH::Bridge|<->|CTH|<-|             |
+//   +-------------+  +-----------+   +---+  +-------------+
+//               |
+//               +--> ThreadableLoader
 //
 // When the loader thread is stopped, CrossThreadHolder::Bridge and
 // LoaderContext (and thus ThreadableLoader) is destructed:
-// +-------------+                                          +-------------+
-// |HandleWrapper|<-----------------------------------------|ReaderContext|
-// |             |                                   +---+  |             |
-// |             |                                   |CTH|<-|             |
-// +-------------+                                   +---+  +-------------+
+//                                           +-------------+
+//                                           |ReaderContext|
+//                                    +---+  |             |
+//                                    |CTH|<-|             |
+//                                    +---+  +-------------+
 // and the rest will be destructed when ReaderContext is destructed.
 //
 // When ReaderContext is destructed, CrossThreadHolder is destructed:
-// +-------------+
-// |HandleWrapper|
-// |             |  +-------------+  +-----------+
-// |             |<-|LoaderContext|<-|CTH::Bridge|
-// +-------------+  +-------------+  +-----------+
-//                              |
-//          ThreadableLoader <--+
+//
+//  +-------------+  +-----------+
+//  |LoaderContext|<-|CTH::Bridge|
+//  +-------------+  +-----------+
+//               |
+//               +--> ThreadableLoader
 // and the rest will be shortly destructed when CrossThreadHolder::Bridge
 // is garbage collected.
 
@@ -219,24 +218,13 @@ public:
     virtual void start(ExecutionContext*) = 0;
 };
 
-class HandleWrapper : public ThreadSafeRefCounted<HandleWrapper> {
-public:
-    static PassRefPtr<HandleWrapper> create() { return adoptRef(new HandleWrapper()); }
-    CompositeDataConsumerHandle* handle() { return m_handle.get(); }
-private:
-    HandleWrapper()
-        : m_handle(CompositeDataConsumerHandle::create(createWaitingDataConsumerHandle())) { }
-
-    OwnPtr<CompositeDataConsumerHandle> m_handle;
-};
-
 // All methods must be called on the loader thread.
 class BlobLoaderContext final
     : public LoaderContext
     , public ThreadableLoaderClient {
 public:
-    BlobLoaderContext(PassRefPtr<HandleWrapper> handleWrapper, PassRefPtr<BlobDataHandle> blobDataHandle, FetchBlobDataConsumerHandle::LoaderFactory* loaderFactory)
-        : m_handleWrapper(handleWrapper)
+    BlobLoaderContext(CompositeDataConsumerHandle::Updater* updater, PassRefPtr<BlobDataHandle> blobDataHandle, FetchBlobDataConsumerHandle::LoaderFactory* loaderFactory)
+        : m_updater(updater)
         , m_blobDataHandle(blobDataHandle)
         , m_loaderFactory(loaderFactory)
         , m_receivedResponse(false) { }
@@ -244,7 +232,7 @@ public:
     ~BlobLoaderContext() override
     {
         if (m_loader && !m_receivedResponse)
-            m_handleWrapper->handle()->update(createUnexpectedErrorDataConsumerHandle());
+            m_updater->update(createUnexpectedErrorDataConsumerHandle());
         if (m_loader) {
             m_loader->cancel();
             m_loader.clear();
@@ -258,7 +246,7 @@ public:
 
         m_loader = createLoader(executionContext, this);
         if (!m_loader)
-            m_handleWrapper->handle()->update(createUnexpectedErrorDataConsumerHandle());
+            m_updater->update(createUnexpectedErrorDataConsumerHandle());
     }
 
 private:
@@ -295,10 +283,10 @@ private:
             // Here we assume WebURLLoader must return the response body as
             // |WebDataConsumerHandle| since we call
             // request.setUseStreamOnResponse().
-            m_handleWrapper->handle()->update(createUnexpectedErrorDataConsumerHandle());
+            m_updater->update(createUnexpectedErrorDataConsumerHandle());
             return;
         }
-        m_handleWrapper->handle()->update(handle);
+        m_updater->update(handle);
     }
 
     void didFinishLoading(unsigned long, double) override
@@ -309,7 +297,7 @@ private:
     void didFail(const ResourceError&) override
     {
         if (!m_receivedResponse)
-            m_handleWrapper->handle()->update(createUnexpectedErrorDataConsumerHandle());
+            m_updater->update(createUnexpectedErrorDataConsumerHandle());
         m_loader.clear();
     }
 
@@ -319,7 +307,7 @@ private:
         ASSERT_NOT_REACHED();
     }
 
-    RefPtr<HandleWrapper> m_handleWrapper;
+    Persistent<CompositeDataConsumerHandle::Updater> m_updater;
 
     RefPtr<BlobDataHandle> m_blobDataHandle;
     Persistent<FetchBlobDataConsumerHandle::LoaderFactory> m_loaderFactory;
@@ -409,17 +397,18 @@ public:
     };
 
     ReaderContext(ExecutionContext* executionContext, PassRefPtr<BlobDataHandle> blobDataHandle, FetchBlobDataConsumerHandle::LoaderFactory* loaderFactory)
-        : m_handleWrapper(HandleWrapper::create())
-        , m_blobDataHandleForDrain(blobDataHandle)
-        , m_loaderContextHolder(CrossThreadHolder<LoaderContext>::create(executionContext, adoptPtr(new BlobLoaderContext(m_handleWrapper, m_blobDataHandleForDrain, loaderFactory))))
+        : m_blobDataHandleForDrain(blobDataHandle)
         , m_loaderStarted(false)
         , m_drained(false)
     {
+        CompositeDataConsumerHandle::Updater* updater = nullptr;
+        m_handle = CompositeDataConsumerHandle::create(createWaitingDataConsumerHandle(), &updater);
+        m_loaderContextHolder = CrossThreadHolder<LoaderContext>::create(executionContext, adoptPtr(new BlobLoaderContext(updater, m_blobDataHandleForDrain, loaderFactory)));
     }
 
     PassOwnPtr<FetchDataConsumerHandle::Reader> obtainReader(WebDataConsumerHandle::Client* client)
     {
-        return adoptPtr(new ReaderImpl(client, this, m_handleWrapper->handle()->obtainReader(client)));
+        return adoptPtr(new ReaderImpl(client, this, m_handle->obtainReader(client)));
     }
 
 private:
@@ -439,7 +428,7 @@ private:
     bool drained() const { return m_drained; }
     void setDrained() { m_drained = true; }
 
-    RefPtr<HandleWrapper> m_handleWrapper;
+    OwnPtr<WebDataConsumerHandle> m_handle;
     RefPtr<BlobDataHandle> m_blobDataHandleForDrain;
     OwnPtr<CrossThreadHolder<LoaderContext>> m_loaderContextHolder;
 
