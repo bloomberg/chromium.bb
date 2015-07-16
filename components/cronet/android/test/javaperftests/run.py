@@ -165,12 +165,13 @@ class CronetPerfTestMeasurement(
     super(CronetPerfTestMeasurement, self).__init__(options)
     self._adb = adb
 
-  def WillRunStory(self, tracing_controller, synthetic_delay_categories=None):
+  def WillRunStoryForPageTest(self, tracing_controller,
+                              synthetic_delay_categories=None):
     # Skip parent implementation which doesn't apply to Cronet perf test app as
     # it is not a browser with a timeline interface.
     pass
 
-  def Measure(self, tracing_controller, results):
+  def MeasureForPageTest(self, tracing_controller, results):
     # Reads results from |RESULTS_FILE| on target and adds to |results|.
     jsonResults = json.loads(self._adb.GetFileContents(RESULTS_FILE)[0])
     for test in jsonResults:
