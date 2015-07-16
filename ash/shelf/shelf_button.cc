@@ -164,17 +164,20 @@ class ShelfButton::BarView : public views::ImageView,
     gfx::Rect bounds = base_bounds_;
     if (show_attention_) {
       // Scale from .35 to 1.0 of the total width (which is wider than the
-      // visible width of the image, so the animation "rests" briefly at full
-      // visible width.
+      // visible width of the image), so the animation "rests" briefly at full
+      // visible width.  Cap bounds length at kIconSize to prevent visual
+      // flutter while centering bar within further expanding bounds.
       double animation = ShelfButtonAnimation::GetInstance()->GetAnimation();
-      double scale = (.35 + .65 * animation);
+      double scale = .35 + .65 * animation;
       if (host_->shelf_layout_manager()->GetAlignment() ==
           SHELF_ALIGNMENT_BOTTOM) {
-        bounds.set_width(base_bounds_.width() * scale);
+        int width = base_bounds_.width() * scale;
+        bounds.set_width(std::min(width, kIconSize));
         int x_offset = (base_bounds_.width() - bounds.width()) / 2;
         bounds.set_x(base_bounds_.x() + x_offset);
       } else {
-        bounds.set_height(base_bounds_.height() * scale);
+        int height = base_bounds_.height() * scale;
+        bounds.set_height(std::min(height, kIconSize));
         int y_offset = (base_bounds_.height() - bounds.height()) / 2;
         bounds.set_y(base_bounds_.y() + y_offset);
       }
@@ -516,7 +519,7 @@ void ShelfButton::UpdateBar() {
   }
 
   int bar_id = 0;
-  if (state_ & STATE_ACTIVE)
+  if (state_ & (STATE_ACTIVE | STATE_ATTENTION))
     bar_id = IDR_ASH_SHELF_UNDERLINE_ACTIVE;
   else if (state_ & STATE_RUNNING)
     bar_id = IDR_ASH_SHELF_UNDERLINE_RUNNING;
