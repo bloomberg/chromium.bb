@@ -179,7 +179,12 @@ void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
       (*requests_iter)->RequestFinished();
       requests_.erase(requests_iter);
       accept_states_.erase(accepts_iter);
-      TriggerShowBubble();  // Will redraw the bubble if it is being shown.
+
+      if (IsBubbleVisible()) {
+        view_->Hide();
+        // Will redraw the bubble if it is being shown.
+        TriggerShowBubble();
+      }
       return;
     }
 

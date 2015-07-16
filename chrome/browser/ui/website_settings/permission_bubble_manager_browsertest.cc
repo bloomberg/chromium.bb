@@ -79,4 +79,47 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
   EXPECT_EQ(1, bubble_view()->requests_count());
 }
 
+// Navigating twice to the same URL should be equivalent to refresh. This means
+// showing the bubbles twice.
+IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, NavTwice) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      embedded_test_server()->GetURL("/permissions/requests-before-load.html"),
+      1);
+  WaitForPermissionBubble();
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      embedded_test_server()->GetURL("/permissions/requests-before-load.html"),
+      1);
+  WaitForPermissionBubble();
+
+  EXPECT_EQ(2, bubble_view()->show_count());
+  EXPECT_EQ(4, bubble_view()->requests_count());
+}
+
+// Navigating twice to the same URL with a hash should be navigation within the
+// page. This means the bubble is only shown once.
+IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, NavTwiceWithHash) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      embedded_test_server()->GetURL("/permissions/requests-before-load.html"),
+      1);
+  WaitForPermissionBubble();
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/permissions/requests-before-load.html#0"),
+      1);
+  WaitForPermissionBubble();
+
+  EXPECT_EQ(1, bubble_view()->show_count());
+  EXPECT_EQ(2, bubble_view()->requests_count());
+}
+
 }  // anonymous namespace
