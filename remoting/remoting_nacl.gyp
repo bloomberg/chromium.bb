@@ -119,6 +119,7 @@
         '<@(remoting_client_plugin_sources)',
         '<@(remoting_client_sources)',
         '<@(remoting_protocol_sources)',
+        '<@(remoting_signaling_sources)',
       ],
       'sources!': [
         'base/url_request_context_getter.cc',

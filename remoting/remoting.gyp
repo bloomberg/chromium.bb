@@ -234,7 +234,6 @@
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
         '../jingle/jingle.gyp:jingle_glue',
-        '../jingle/jingle.gyp:notifier',
         '../net/net.gyp:net',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
@@ -245,6 +244,7 @@
       ],
       'sources': [
         '<@(remoting_protocol_sources)',
+        '<@(remoting_signaling_sources)',
       ],
     },  # end of target 'remoting_protocol'
   ],  # end of targets

@@ -22,10 +22,10 @@ source_set("protocol") {
     "//base",
     "//crypto",
     "//jingle:jingle_glue",
-    "//jingle:notifier",
     "//net",
     "//remoting/base",
     "//remoting/codec",
+    "//remoting/signaling",
   ]
 }
 
@@ -79,6 +79,7 @@ source_set("unit_tests") {
     "mouse_input_filter_unittest.cc",
     "negotiating_authenticator_unittest.cc",
     "pairing_registry_unittest.cc",
+    "port_range_unittest.cc",
     "ppapi_module_stub.cc",
     "pseudotcp_adapter_unittest.cc",
     "ssl_hmac_channel_authenticator_unittest.cc",

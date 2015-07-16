@@ -61,6 +61,7 @@ source_set("unit_tests") {
     "capabilities_unittest.cc",
     "compound_buffer_unittest.cc",
     "rate_counter_unittest.cc",
+    "resources_unittest.cc",
     "rsa_key_pair_unittest.cc",
     "run_all_unittests.cc",
     "running_average_unittest.cc",

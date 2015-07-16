@@ -264,6 +264,8 @@
       'host/win/session_input_injector.h',
       'host/win/window_station_and_desktop.cc',
       'host/win/window_station_and_desktop.h',
+      'host/win/worker_process_launcher.cc',
+      'host/win/worker_process_launcher.h',
       'host/win/wts_terminal_monitor.cc',
       'host/win/wts_terminal_monitor.h',
       'host/win/wts_terminal_observer.h',

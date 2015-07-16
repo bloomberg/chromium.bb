@@ -71,56 +71,9 @@ group("remoting_all") {
   }
 }
 
-# GYP version: remoting/remoting_test.gypi:remoting_test_common
+# GYP version: remoting/remoting_test.gypi:remoting_test_support
 source_set("test_support") {
   testonly = true
-
-  sources = [
-    # Files from remoting_test_common not in separate test_support targets.
-    "signaling/fake_signal_strategy.cc",
-    "signaling/fake_signal_strategy.h",
-    "signaling/mock_signal_strategy.cc",
-    "signaling/mock_signal_strategy.h",
-    "test/access_token_fetcher.cc",
-    "test/access_token_fetcher.h",
-    "test/app_remoting_report_issue_request.cc",
-    "test/app_remoting_report_issue_request.h",
-    "test/app_remoting_service_urls.cc",
-    "test/app_remoting_service_urls.h",
-    "test/app_remoting_test_driver_environment.cc",
-    "test/app_remoting_test_driver_environment.h",
-    "test/app_remoting_test_driver_environment_app_details.cc",
-    "test/fake_access_token_fetcher.cc",
-    "test/fake_access_token_fetcher.h",
-    "test/fake_app_remoting_report_issue_request.cc",
-    "test/fake_app_remoting_report_issue_request.h",
-    "test/fake_network_dispatcher.cc",
-    "test/fake_network_dispatcher.h",
-    "test/fake_network_manager.cc",
-    "test/fake_network_manager.h",
-    "test/fake_port_allocator.cc",
-    "test/fake_port_allocator.h",
-    "test/fake_remote_host_info_fetcher.cc",
-    "test/fake_remote_host_info_fetcher.h",
-    "test/fake_socket_factory.cc",
-    "test/fake_socket_factory.h",
-    "test/leaky_bucket.cc",
-    "test/leaky_bucket.h",
-    "test/mock_access_token_fetcher.cc",
-    "test/mock_access_token_fetcher.h",
-    "test/refresh_token_store.cc",
-    "test/refresh_token_store.h",
-    "test/remote_application_details.h",
-    "test/remote_connection_observer.h",
-    "test/remote_host_info.cc",
-    "test/remote_host_info.h",
-    "test/remote_host_info_fetcher.cc",
-    "test/remote_host_info_fetcher.h",
-    "test/test_chromoting_client.cc",
-    "test/test_chromoting_client.h",
-    "test/test_video_renderer.cc",
-    "test/test_video_renderer.h",
-  ]
 
   deps = [
     "//base",
@@ -130,6 +83,8 @@ source_set("test_support") {
     "//remoting/codec",
     "//remoting/protocol:test_support",
     "//remoting/resources",
+    "//remoting/signaling:test_support",
+    "//remoting/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -146,20 +101,6 @@ source_set("test_support") {
 # TODO(GYP) remoting_unittests on Mac. Needs to be tested.
 if (!is_mac) {
   test("remoting_unittests") {
-    # Sources not included in one of the more specific unit_tests deps.
-    sources = [
-      "signaling/iq_sender_unittest.cc",
-      "signaling/log_to_server_unittest.cc",
-      "signaling/server_log_entry_unittest.cc",
-      "signaling/server_log_entry_unittest.h",
-      "test/access_token_fetcher_unittest.cc",
-      "test/app_remoting_report_issue_request_unittest.cc",
-      "test/app_remoting_test_driver_environment_unittest.cc",
-      "test/remote_host_info_fetcher_unittest.cc",
-      "test/test_chromoting_client_unittest.cc",
-      "test/test_video_renderer_unittest.cc",
-    ]
-
     configs += [
       ":version",
 
@@ -173,8 +114,9 @@ if (!is_mac) {
       "//google_apis",
       "//remoting/base:unit_tests",
       "//remoting/client:unit_tests",
-      "//remoting/protocol:test_support",
       "//remoting/protocol:unit_tests",
+      "//remoting/signaling:unit_tests",
+      "//remoting/test:unit_tests",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/webrtc",

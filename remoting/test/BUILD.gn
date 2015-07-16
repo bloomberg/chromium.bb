@@ -1,0 +1,154 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "access_token_fetcher.cc",
+    "access_token_fetcher.h",
+    "app_remoting_report_issue_request.cc",
+    "app_remoting_report_issue_request.h",
+    "app_remoting_service_urls.cc",
+    "app_remoting_service_urls.h",
+    "fake_access_token_fetcher.cc",
+    "fake_access_token_fetcher.h",
+    "fake_app_remoting_report_issue_request.cc",
+    "fake_app_remoting_report_issue_request.h",
+    "fake_network_dispatcher.cc",
+    "fake_network_dispatcher.h",
+    "fake_network_manager.cc",
+    "fake_network_manager.h",
+    "fake_port_allocator.cc",
+    "fake_port_allocator.h",
+    "fake_remote_host_info_fetcher.cc",
+    "fake_remote_host_info_fetcher.h",
+    "fake_socket_factory.cc",
+    "fake_socket_factory.h",
+    "host_info.cc",
+    "host_info.h",
+    "host_list_fetcher.cc",
+    "host_list_fetcher.h",
+    "leaky_bucket.cc",
+    "leaky_bucket.h",
+    "mock_access_token_fetcher.cc",
+    "mock_access_token_fetcher.h",
+    "refresh_token_store.cc",
+    "refresh_token_store.h",
+    "remote_application_details.h",
+    "remote_connection_observer.h",
+    "remote_host_info.cc",
+    "remote_host_info.h",
+    "remote_host_info_fetcher.cc",
+    "remote_host_info_fetcher.h",
+    "test_chromoting_client.cc",
+    "test_chromoting_client.h",
+    "test_video_renderer.cc",
+    "test_video_renderer.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//net",
+    "//remoting/base",
+    "//remoting/protocol",
+    "//remoting/codec",
+    "//remoting/client",
+    "//remoting/signaling",
+  ]
+
+  deps = [
+    "//google_apis",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/libjingle",
+  ]
+}
+
+executable("chromoting_test_driver") {
+  testonly = true
+
+  sources = [
+    "chromoting_test_driver.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("ar_test_driver_common") {
+  testonly = true
+
+  sources = [
+    "app_remoting_connected_client_fixture.cc",
+    "app_remoting_connected_client_fixture.h",
+    "app_remoting_connection_helper.cc",
+    "app_remoting_connection_helper.h",
+    "app_remoting_latency_test_fixture.cc",
+    "app_remoting_latency_test_fixture.h",
+    "app_remoting_test_driver_environment.cc",
+    "app_remoting_test_driver_environment.h",
+  ]
+
+  deps = [
+    ":test_support",
+    "//testing/gtest",
+    "//third_party/webrtc/modules/desktop_capture",
+  ]
+}
+
+# An external version of the test driver tool which includes minimal tests
+executable("ar_sample_test_driver") {
+  testonly = true
+
+  sources = [
+    "app_remoting_test_driver.cc",
+    "app_remoting_test_driver_environment_app_details.cc",
+  ]
+
+  deps = [
+    ":ar_test_driver_common",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "access_token_fetcher_unittest.cc",
+    "app_remoting_report_issue_request_unittest.cc",
+    "host_list_fetcher_unittest.cc",
+    "remote_host_info_fetcher_unittest.cc",
+    "test_chromoting_client_unittest.cc",
+    "test_video_renderer_unittest.cc",
+
+    # TODO(sergeyu): app_remoting_test_driver_environment_unittest.cc
+    # depends on ar_test_driver_common target and that target implicitly
+    # depends on app_remoting_test_driver_environment_app_details.cc to
+    # allow some parameters to be overridden (i.e. *app_details.cc file can
+    # be replace with a different one). This means that app_deails.cc file
+    # has to be included here explicitly. Fix
+    # app_remoting_test_driver_environment.cc to avoid this implicit
+    # dependency on *app_details.cc .
+    # http://crbug.com/510887
+    "app_remoting_test_driver_environment_app_details.cc",
+    "app_remoting_test_driver_environment_unittest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    ":ar_test_driver_common",
+    "//base",
+    "//net:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/libyuv",
+    "//third_party/webrtc/modules/desktop_capture",
+  ]
+}

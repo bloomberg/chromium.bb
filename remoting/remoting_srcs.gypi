@@ -199,6 +199,9 @@
       'protocol/v2_authenticator.cc',
       'protocol/v2_authenticator.h',
       'protocol/video_stub.h',
+    ],
+
+    'remoting_signaling_sources': [
       'signaling/iq_sender.cc',
       'signaling/iq_sender.h',
       'signaling/jid_util.cc',

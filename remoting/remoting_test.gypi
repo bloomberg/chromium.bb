@@ -6,7 +6,7 @@
   'targets': [
     {
       # GN version: //remoting:test_support
-      'target_name': 'remoting_test_common',
+      'target_name': 'remoting_test_support',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -26,9 +26,13 @@
         'host/fake_desktop_capturer.h',
         'host/fake_desktop_environment.cc',
         'host/fake_desktop_environment.h',
+        'host/fake_host_extension.cc',
+        'host/fake_host_extension.h',
         'host/fake_host_status_monitor.h',
         'host/fake_mouse_cursor_monitor.cc',
         'host/fake_mouse_cursor_monitor.h',
+        'host/fake_oauth_token_getter.cc',
+        'host/fake_oauth_token_getter.h',
         'protocol/fake_authenticator.cc',
         'protocol/fake_authenticator.h',
         'protocol/fake_connection_to_host.cc',
@@ -52,13 +56,6 @@
         'test/app_remoting_report_issue_request.h',
         'test/app_remoting_service_urls.cc',
         'test/app_remoting_service_urls.h',
-        'test/app_remoting_test_driver_environment.cc',
-        'test/app_remoting_test_driver_environment_app_details.cc',
-        'test/app_remoting_test_driver_environment.h',
-        'test/host_info.cc',
-        'test/host_info.h',
-        'test/host_list_fetcher.cc',
-        'test/host_list_fetcher.h',
         'test/fake_access_token_fetcher.cc',
         'test/fake_access_token_fetcher.h',
         'test/fake_app_remoting_report_issue_request.cc',
@@ -73,6 +70,10 @@
         'test/fake_remote_host_info_fetcher.h',
         'test/fake_socket_factory.cc',
         'test/fake_socket_factory.h',
+        'test/host_info.cc',
+        'test/host_info.h',
+        'test/host_list_fetcher.cc',
+        'test/host_list_fetcher.h',
         'test/leaky_bucket.cc',
         'test/leaky_bucket.h',
         'test/mock_access_token_fetcher.cc',
@@ -102,52 +103,14 @@
       ],
     },
     {
-      'target_name': 'remoting_test_driver_common',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../google_apis/google_apis.gyp:google_apis',
-        '../net/net.gyp:net',
-        '../remoting/remoting.gyp:remoting_base',
-        '../remoting/remoting.gyp:remoting_client',
-        '../remoting/remoting.gyp:remoting_protocol',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'defines': [
-        'VERSION=<(version_full)',
-      ],
-      'sources': [
-        'test/access_token_fetcher.cc',
-        'test/access_token_fetcher.h',
-        'test/refresh_token_store.cc',
-        'test/refresh_token_store.h',
-        'test/remote_connection_observer.h',
-        'test/test_chromoting_client.cc',
-        'test/test_chromoting_client.h',
-        'test/test_video_renderer.cc',
-        'test/test_video_renderer.h',
-      ],
-    }, # end of target 'remoting_test_driver_common'
-    {
-      # A chromoting version of remoting_test_driver_common
       'target_name': 'chromoting_test_driver',
       'type': '<(gtest_target_type)',
       'dependencies': [
-        'remoting_test_driver_common',
-      ],
-      'defines': [
-        'VERSION=<(version_full)',
+        'remoting_test_support',
+        '../testing/gtest.gyp:gtest',
       ],
       'sources': [
-        'test/host_info.cc',
-        'test/host_info.h',
-        'test/host_list_fetcher.cc',
-        'test/host_list_fetcher.h',
         'test/chromoting_test_driver.cc',
-      ],
-      'include_dirs': [
-        '../testing/gtest/include',
       ],
     }, # end of target 'chromoting_test_driver'
     {
@@ -155,11 +118,9 @@
       'type': 'static_library',
       'dependencies': [
         '../remoting/proto/chromotocol.gyp:chromotocol_proto_lib',
-        '<(DEPTH)/third_party/webrtc/modules/modules.gyp:desktop_capture',
-        'remoting_test_driver_common',
-      ],
-      'defines': [
-        'VERSION=<(version_full)',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+        'remoting_test_support',
       ],
       'sources': [
         'test/app_remoting_connected_client_fixture.cc',
@@ -168,20 +129,8 @@
         'test/app_remoting_connection_helper.h',
         'test/app_remoting_latency_test_fixture.cc',
         'test/app_remoting_latency_test_fixture.h',
-        'test/app_remoting_report_issue_request.cc',
-        'test/app_remoting_report_issue_request.h',
-        'test/app_remoting_service_urls.cc',
-        'test/app_remoting_service_urls.h',
         'test/app_remoting_test_driver_environment.cc',
         'test/app_remoting_test_driver_environment.h',
-        'test/remote_application_details.h',
-        'test/remote_host_info.cc',
-        'test/remote_host_info.h',
-        'test/remote_host_info_fetcher.cc',
-        'test/remote_host_info_fetcher.h',
-      ],
-      'include_dirs': [
-        '../testing/gtest/include',
       ],
     },  # end of target 'ar_test_driver_common'
     {
@@ -190,16 +139,11 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         'ar_test_driver_common',
-      ],
-      'defines': [
-        'VERSION=<(version_full)',
+        '../testing/gtest.gyp:gtest',
       ],
       'sources': [
         'test/app_remoting_test_driver.cc',
         'test/app_remoting_test_driver_environment_app_details.cc',
-      ],
-      'include_dirs': [
-        '../testing/gtest/include',
       ],
     },  # end of target 'ar_sample_test_driver'
 
@@ -225,6 +169,7 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        'ar_test_driver_common',
         'remoting_base',
         'remoting_breakpad',
         'remoting_client',
@@ -235,7 +180,7 @@
         'remoting_native_messaging_base',
         'remoting_protocol',
         'remoting_resources',
-        'remoting_test_common',
+        'remoting_test_support',
       ],
       'defines': [
         'VERSION=<(version_full)',
@@ -289,13 +234,6 @@
         'host/daemon_process_unittest.cc',
         'host/desktop_process_unittest.cc',
         'host/desktop_shape_tracker_unittest.cc',
-        'host/fake_desktop_capturer.cc',
-        'host/fake_desktop_capturer.h',
-        'host/fake_host_extension.cc',
-        'host/fake_host_extension.h',
-        'host/fake_host_status_monitor.h',
-        'host/fake_oauth_token_getter.cc',
-        'host/fake_oauth_token_getter.h',
         'host/gcd_rest_client_unittest.cc',
         'host/gcd_state_updater_unittest.cc',
         'host/gnubby_auth_handler_posix_unittest.cc',
@@ -382,11 +320,22 @@
         'signaling/xmpp_signal_strategy_unittest.cc',
         'test/access_token_fetcher_unittest.cc',
         'test/app_remoting_report_issue_request_unittest.cc',
-        'test/app_remoting_test_driver_environment_unittest.cc',
         'test/host_list_fetcher_unittest.cc',
         'test/remote_host_info_fetcher_unittest.cc',
         'test/test_chromoting_client_unittest.cc',
         'test/test_video_renderer_unittest.cc',
+
+        # TODO(sergeyu): app_remoting_test_driver_environment_unittest.cc
+        # depends on ar_test_driver_common target and that target implicitly
+        # depends on app_remoting_test_driver_environment_app_details.cc to
+        # allow some parameters to be overridden (i.e. *app_details.cc file can
+        # be replace with a different one). This means that app_deails.cc file
+        # has to be included here explicitly. Fix
+        # app_remoting_test_driver_environment.cc to avoid this implicit
+        # dependency on *app_details.cc .
+        # http://crbug.com/510887
+        'test/app_remoting_test_driver_environment_app_details.cc',
+        'test/app_remoting_test_driver_environment_unittest.cc',
       ],
       'conditions': [
         [ 'OS=="win"', {
@@ -575,7 +524,7 @@
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             'remoting_base',
-            'remoting_test_common',
+            'remoting_test_support',
           ],
           'defines': [
             'VERSION=<(version_full)',
