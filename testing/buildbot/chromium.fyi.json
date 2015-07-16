@@ -294,6 +294,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -1110,6 +1116,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -1239,6 +1251,12 @@
       },
       {
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
       },
       {
         "test": "skia_unittests"
@@ -1372,6 +1390,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -1503,6 +1527,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -1632,6 +1662,12 @@
       },
       {
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
       },
       {
         "test": "skia_unittests"
@@ -1775,6 +1811,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
       },
       {
         "test": "skia_unittests"
@@ -1949,6 +1991,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -2121,6 +2169,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -2264,6 +2318,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -2393,6 +2453,12 @@
       },
       {
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
       },
       {
         "test": "skia_unittests"
@@ -2526,6 +2592,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -2657,6 +2729,12 @@
         "test": "sbox_validation_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
+      },
+      {
         "test": "skia_unittests"
       },
       {
@@ -2764,6 +2842,12 @@
       },
       {
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
       },
       {
         "test": "skia_unittests"
@@ -2892,6 +2976,12 @@
       },
       {
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
       },
       {
         "test": "skia_unittests"
@@ -3023,6 +3113,12 @@
       },
       {
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "setup_unittests"
       },
       {
         "test": "skia_unittests"
