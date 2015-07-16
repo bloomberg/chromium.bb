@@ -121,4 +121,4 @@ You can set variables in that file:
 GN has robust support for doing cross compiles and building things for
 multiple architectures in a single build.
 
-See [GNCrossCompiles](GNCrossCompiles.md) for more info.
+See [GNCrossCompiles](cross_compiles.md) for more info.

@@ -50,6 +50,22 @@ on how to use these in your code. (Note that you have to specify the
 build directory for this command because the available arguments can
 change according to what's set.
 
+## Cross-compiling to a target OS or architecture
+
+Run `gn args out/Default` (substituting your build directory as needed) and
+add one or more of the following lines for common cross-compiling options.
+
+```
+target_os = "chromeos"
+target_os = "android"
+
+target_cpu = "arm"
+target_cpu = "x86"
+target_cpu = "x64"
+```
+
+See [GNCrossCompiles](cross_compiles.md) for more info.
+
 ## Configuring goma
 
 
