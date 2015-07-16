@@ -256,7 +256,7 @@ def _GsUtil(*cmd):
   timeout = 4  # Seconds.
   while True:
     _LOGGER.debug('Running %s', cmd)
-    prog = subprocess.Popen(cmd, shell=True)
+    prog = subprocess.Popen(cmd, shell=False)
     prog.communicate()
 
     # Stop retrying on success.
