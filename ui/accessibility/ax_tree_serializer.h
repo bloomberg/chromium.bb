@@ -62,6 +62,15 @@ class AXTreeSerializer {
   // entire tree over because it assumes the client knows nothing.
   void Reset();
 
+  // Sets the maximum number of nodes that will be serialized, or zero
+  // for no maximum. This is not a hard maximum - once it hits or
+  // exceeds this maximum it stops walking the children of nodes, but
+  // it may exceed this value a bit in order to create a consistent
+  // tree.
+  void set_max_node_count(size_t max_node_count) {
+    max_node_count_ = max_node_count;
+  }
+
   // Serialize all changes to |node| and append them to |out_update|.
   void SerializeChanges(AXSourceNode node,
                         AXTreeUpdate* out_update);
@@ -148,6 +157,10 @@ class AXTreeSerializer {
 
   // A map from IDs to nodes in the client tree.
   base::hash_map<int32, ClientTreeNode*> client_id_map_;
+
+  // The maximum number of nodes to serialize in a given call to
+  // SerializeChanges, or 0 if there's no maximum.
+  size_t max_node_count_;
 };
 
 // In order to keep track of what nodes the client knows about, we keep a
@@ -165,7 +178,8 @@ template<typename AXSourceNode>
 AXTreeSerializer<AXSourceNode>::AXTreeSerializer(
     AXTreeSource<AXSourceNode>* tree)
     : tree_(tree),
-      client_root_(NULL) {
+      client_root_(NULL),
+      max_node_count_(0) {
 }
 
 template<typename AXSourceNode>
@@ -390,9 +404,21 @@ void AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
   // Iterate over the ids of the children of |node|.
   // Create a set of the child ids so we can quickly look
   // up which children are new and which ones were there before.
+  // If we've hit the maximum number of serialized nodes, pretend
+  // this node has no children but keep going so that we get
+  // consistent results.
   base::hash_set<int32> new_child_ids;
   std::vector<AXSourceNode> children;
-  tree_->GetChildren(node, &children);
+  if (max_node_count_ == 0 || out_update->nodes.size() < max_node_count_) {
+    tree_->GetChildren(node, &children);
+  } else if (max_node_count_ > 0) {
+    static bool logged_once = false;
+    if (!logged_once) {
+      LOG(WARNING) << "Warning: not serializing AX nodes after a max of "
+                   << max_node_count_;
+      logged_once = true;
+    }
+  }
   for (size_t i = 0; i < children.size(); ++i) {
     AXSourceNode& child = children[i];
     int new_child_id = tree_->GetId(child);

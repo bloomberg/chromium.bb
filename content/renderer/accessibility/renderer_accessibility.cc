@@ -33,6 +33,11 @@ using blink::WebView;
 
 namespace content {
 
+// Cap the number of nodes returned in an accessibility
+// tree snapshot to avoid outrageous memory or bandwidth
+// usage.
+const size_t kMaxSnapshotNodeCount = 5000;
+
 // static
 void RendererAccessibility::SnapshotAccessibilityTree(
     RenderFrameImpl* render_frame,
@@ -47,6 +52,7 @@ void RendererAccessibility::SnapshotAccessibilityTree(
   BlinkAXTreeSource tree_source(render_frame);
   tree_source.SetRoot(context.root());
   ui::AXTreeSerializer<blink::WebAXObject> serializer(&tree_source);
+  serializer.set_max_node_count(kMaxSnapshotNodeCount);
   serializer.SerializeChanges(context.root(), response);
 }
 

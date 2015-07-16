@@ -244,4 +244,34 @@ TEST(AXTreeSerializerInvalidTest, InvalidChild) {
   EXPECT_EQ(2, update.nodes[1].id);
 }
 
+// Test that we can set a maximum number of nodes to serialize.
+TEST_F(AXTreeSerializerTest, MaximumSerializedNodeCount) {
+  // (1 (2 (3 4) 5 (6 7)))
+  treedata0_.nodes.resize(7);
+  treedata0_.nodes[0].id = 1;
+  treedata0_.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  treedata0_.nodes[0].child_ids.push_back(2);
+  treedata0_.nodes[0].child_ids.push_back(5);
+  treedata0_.nodes[1].id = 2;
+  treedata0_.nodes[1].child_ids.push_back(3);
+  treedata0_.nodes[1].child_ids.push_back(4);
+  treedata0_.nodes[2].id = 3;
+  treedata0_.nodes[3].id = 4;
+  treedata0_.nodes[4].id = 5;
+  treedata0_.nodes[4].child_ids.push_back(6);
+  treedata0_.nodes[4].child_ids.push_back(7);
+  treedata0_.nodes[5].id = 6;
+  treedata0_.nodes[6].id = 7;
+
+  tree0_.reset(new AXSerializableTree(treedata0_));
+  tree0_source_.reset(tree0_->CreateTreeSource());
+  serializer_.reset(new AXTreeSerializer<const AXNode*>(tree0_source_.get()));
+  serializer_->set_max_node_count(4);
+  AXTreeUpdate update;
+  serializer_->SerializeChanges(tree0_->root(), &update);
+  // It actually serializes 5 nodes, not 4 - to be consistent.
+  // It skips the children of node 5.
+  ASSERT_EQ(static_cast<size_t>(5), update.nodes.size());
+}
+
 }  // namespace ui
