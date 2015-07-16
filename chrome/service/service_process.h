@@ -44,27 +44,20 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
                   ServiceProcessState* state);
 
   bool Teardown();
-  // TODO(sanjeevr): Change various parts of the code such as
-  // net::ProxyService::CreateSystemProxyConfigService to take in
-  // SingleThreadTaskRunner* instead of MessageLoop*. When we have done that,
-  // we can remove the io_thread() and file_thread() accessors and replace them
-  // with io_message_loop_proxy() and file_message_loop_proxy() respectively.
 
-  // Returns the thread that we perform I/O coordination on (network requests,
-  // communication with renderers, etc.
-  // NOTE: You should ONLY use this to pass to IPC or other objects which must
-  // need a MessageLoop*. If you just want to post a task, use the thread's
-  // task_runner() as it takes care of checking that a thread is still alive,
-  // race conditions, lifetime differences etc. If you still must use this,
-  // need to check the return value for NULL.
-  base::Thread* io_thread() const {
-    return io_thread_.get();
+  // Returns the SingleThreadTaskRunner for the service process io thread (used
+  // for e.g. network requests and IPC). Returns null before Initialize is
+  // called and after Teardown is called.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
+    return io_thread_ ? io_thread_->task_runner() : nullptr;
   }
-  // Returns the thread that we perform random file operations on. For code
-  // that wants to do I/O operations (not network requests or even file: URL
-  // requests), this is the thread to use to avoid blocking the UI thread.
-  base::Thread* file_thread() const {
-    return file_thread_.get();
+
+  // Returns the SingleThreadTaskRunner for the service process file thread.
+  // Used to do I/O operations (not network requests or even file: URL requests)
+  // to avoid blocking the main thread. Returns null before Initialize is
+  // called and after Teardown is called.
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner() {
+    return file_thread_ ? file_thread_->task_runner() : nullptr;
   }
 
   // A global event object that is signalled when the main thread's message

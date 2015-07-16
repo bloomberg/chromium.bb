@@ -409,7 +409,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       int dc_width = GetDeviceCaps(printer_dc_.Get(), PHYSICALWIDTH);
       int dc_height = GetDeviceCaps(printer_dc_.Get(), PHYSICALHEIGHT);
       gfx::Rect render_area(0, 0, dc_width, dc_height);
-      g_service_process->io_thread()->task_runner()->PostTask(
+      g_service_process->io_task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&JobSpoolerWin::Core::RenderPDFPagesInSandbox, this,
                      print_data_file_path_, render_area, printer_dpi,
@@ -422,9 +422,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         const gfx::Rect& render_area,
         int render_dpi,
         const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
-      DCHECK(g_service_process->io_thread()
-                 ->task_runner()
-                 ->BelongsToCurrentThread());
+      DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
       scoped_ptr<ServiceUtilityProcessHost> utility_host(
           new ServiceUtilityProcessHost(this, client_task_runner.get()));
       // TODO(gene): For now we disabling autorotation for CloudPrinting.
@@ -552,14 +550,14 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   }
 
   void StartGetPrinterCapsAndDefaults() {
-    g_service_process->io_thread()->task_runner()->PostTask(
+    g_service_process->io_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl, this,
                    base::ThreadTaskRunnerHandle::Get()));
   }
 
   void StartGetPrinterSemanticCapsAndDefaults() {
-    g_service_process->io_thread()->task_runner()->PostTask(
+    g_service_process->io_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&PrinterCapsHandler::GetPrinterSemanticCapsAndDefaultsImpl,
                    this, base::ThreadTaskRunnerHandle::Get()));
@@ -570,9 +568,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
 
   void GetPrinterCapsAndDefaultsImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
-    DCHECK(g_service_process->io_thread()
-               ->task_runner()
-               ->BelongsToCurrentThread());
+    DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
     scoped_ptr<ServiceUtilityProcessHost> utility_host(
         new ServiceUtilityProcessHost(this, client_task_runner.get()));
     if (utility_host->StartGetPrinterCapsAndDefaults(printer_name_)) {
@@ -586,9 +582,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
 
   void GetPrinterSemanticCapsAndDefaultsImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
-    DCHECK(g_service_process->io_thread()
-               ->task_runner()
-               ->BelongsToCurrentThread());
+    DCHECK(g_service_process->io_task_runner()->BelongsToCurrentThread());
     scoped_ptr<ServiceUtilityProcessHost> utility_host(
         new ServiceUtilityProcessHost(this, client_task_runner.get()));
     if (utility_host->StartGetPrinterSemanticCapsAndDefaults(printer_name_)) {

@@ -196,7 +196,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   // After the IPC server has started we signal that the service process is
   // ready.
   if (!service_process_state_->SignalReady(
-          io_thread_->task_runner().get(),
+          io_task_runner().get(),
           base::Bind(&ServiceProcess::Terminate, base::Unretained(this)))) {
     return false;
   }
