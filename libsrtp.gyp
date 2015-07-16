@@ -200,6 +200,7 @@
                 'srtp/crypto/hash/sha1.c',
                 'srtp/crypto/rng/ctr_prng.c',
                 'srtp/crypto/rng/prng.c',
+                'srtp/crypto/rng/rand_source.c',
               ],
               'sources': [
                 'srtp/crypto/cipher/aes_gcm_ossl.c',
@@ -207,6 +208,7 @@
                 'srtp/crypto/hash/hmac_ossl.c',
                 'srtp/crypto/include/aes_gcm_ossl.h',
                 'srtp/crypto/include/aes_icm_ossl.h',
+                'srtp/crypto/rng/rand_source_ossl.c',
               ],
             }],
           ],
