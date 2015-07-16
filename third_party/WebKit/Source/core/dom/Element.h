@@ -62,6 +62,7 @@ class MutableStylePropertySet;
 class PropertySetCSSStyleDeclaration;
 class PseudoElement;
 class ScrollState;
+class ScrollStateCallback;
 class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
@@ -169,9 +170,6 @@ public:
 
     void scrollIntoView(bool alignToTop = true);
     void scrollIntoViewIfNeeded(bool centerIfNeeded = true);
-
-    void distributeScroll(ScrollState&);
-    void applyScroll(ScrollState&);
 
     int offsetLeft();
     int offsetTop();
@@ -372,6 +370,15 @@ public:
     virtual void focus(bool restorePreviousSelection = true, WebFocusType = WebFocusTypeNone);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
     virtual void blur();
+
+    void setDistributeScroll(ScrollStateCallback*, String nativeScrollBehavior);
+    void nativeDistributeScroll(ScrollState&);
+    void setApplyScroll(ScrollStateCallback*, String nativeScrollBehavior);
+    void nativeApplyScroll(ScrollState&);
+
+    void callDistributeScroll(ScrollState&);
+    void callApplyScroll(ScrollState&);
+
     // Whether this element can receive focus at all. Most elements are not
     // focusable but some elements, such as form controls and links, are. Unlike
     // layoutObjectIsFocusable(), this method may be called when layout is not up to

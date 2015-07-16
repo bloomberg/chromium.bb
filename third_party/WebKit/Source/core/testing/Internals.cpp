@@ -115,6 +115,7 @@
 #include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
+#include "core/page/scrolling/ScrollState.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/plugins/testing/DictionaryPluginPlaceholder.h"
 #include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
@@ -2404,6 +2405,15 @@ void Internals::forcePluginPlaceholder(HTMLElement* element, const PluginPlaceho
         return;
     }
     toHTMLPlugInElement(element)->setPlaceholder(DictionaryPluginPlaceholder::create(element->document(), options));
+}
+
+void Internals::setScrollChain(
+    ScrollState* scrollState, const WillBeHeapVector<RefPtrWillBeMember<Element>>& elements, ExceptionState&)
+{
+    WillBeHeapDeque<RefPtrWillBeMember<Element>> scrollChain;
+    for (size_t i = 0; i < elements.size(); ++i)
+        scrollChain.append(elements[i]);
+    scrollState->setScrollChain(scrollChain);
 }
 
 void Internals::forceBlinkGCWithoutV8GC()

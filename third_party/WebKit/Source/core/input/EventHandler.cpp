@@ -188,14 +188,21 @@ void recomputeScrollChain(const LocalFrame& frame, const Node& startNode,
     while (curBox && !curBox->isLayoutView()) {
         Node* curNode = curBox->node();
         // FIXME: this should reject more elements, as part of crbug.com/410974.
-        if (curNode && curNode->isElementNode())
-            scrollChain.prepend(toElement(curNode));
+        if (curNode && curNode->isElementNode()) {
+            Element* curElement = toElement(curNode);
+            if (curElement == frame.document()->scrollingElement())
+                break;
+            scrollChain.prepend(curElement);
+        }
         curBox = curBox->containingBlock();
     }
-
-    // FIXME: we should exclude the document in some cases, as part
-    // of crbug.com/410974.
-    scrollChain.prepend(frame.document()->documentElement());
+    // TODO(tdresser): this should sometimes be excluded, as part of crbug.com/410974.
+    // We need to ensure that the scrollingElement is always part of
+    // the scroll chain. In quirks mode, when the scrollingElement is
+    // the body, some elements may use the documentElement as their
+    // containingBlock, so we ensure the scrollingElement is added
+    // here.
+    scrollChain.prepend(frame.document()->scrollingElement());
 }
 
 EventHandler::EventHandler(LocalFrame* frame)
@@ -294,9 +301,8 @@ void EventHandler::clear()
     m_targetForTouchID.clear();
     m_touchSequenceDocument.clear();
     m_touchSequenceUserGestureToken.clear();
-    m_scrollGestureHandlingNode = nullptr;
+    clearGestureScrollState();
     m_lastGestureScrollOverWidget = false;
-    m_previousGestureScrolledNode = nullptr;
     m_scrollbarHandlingScrollGesture = nullptr;
     m_touchPressed = false;
     m_pointerIdManager.clear();

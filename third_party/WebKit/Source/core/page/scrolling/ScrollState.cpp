@@ -55,7 +55,7 @@ void ScrollState::consumeDelta(double x, double y, ExceptionState& exceptionStat
 void ScrollState::distributeToScrollChainDescendant()
 {
     if (!m_scrollChain.isEmpty())
-        m_scrollChain.takeFirst()->distributeScroll(*this);
+        m_scrollChain.takeFirst()->callDistributeScroll(*this);
 }
 
 void ScrollState::consumeDeltaNative(double x, double y)

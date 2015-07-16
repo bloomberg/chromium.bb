@@ -8,11 +8,9 @@
 <body>
 <script>
 
-if (!window.internals || !window.internals.runtimeFlags.scrollCustomizationEnabled) {
-  console.log("These tests only work with window.internals exposed, " +
-              "and require scroll customization.");
-  done();
-}
+test(function() {
+  assert_true('ScrollState' in window, "'ScrollState' in window");
+}, "These tests only work with scroll customization enabled.");
 
 function testConsumingDelta(dx, dy, consume_x, consume_y, testName, expectedError) {
   test(function() {
@@ -25,17 +23,19 @@ function testConsumingDelta(dx, dy, consume_x, consume_y, testName, expectedErro
   }, testName);
 }
 
-// Consume from an event with a delta of (5, 5).
-testConsumingDelta(5, 5, 6, 4, "Overconsumed X");
-testConsumingDelta(5, 5, 4, 6, "Overconsumed Y");
-testConsumingDelta(5, 5, -1, 4, "Can't increase X delta");
-testConsumingDelta(5, 5, 4, -1, "Can't increase Y delta");
+if ('ScrollState' in window) {
+  // Consume from an event with a delta of (5, 5).
+  testConsumingDelta(5, 5, 6, 4, "Overconsumed X");
+  testConsumingDelta(5, 5, 4, 6, "Overconsumed Y");
+  testConsumingDelta(5, 5, -1, 4, "Can't increase X delta");
+  testConsumingDelta(5, 5, 4, -1, "Can't increase Y delta");
 
-// Consume from an event with a delta of (-5, -5).
-testConsumingDelta(-5, -5, -6, -4, "Overconsumed X with negative delta");
-testConsumingDelta(-5, -5, -4, -6, "Overconsumed Y with negative delta");
-testConsumingDelta(-5, -5, 1, -4, "Can't increase X delta magnitude");
-testConsumingDelta(-5, -5, -4, 1, "Can't increase Y delta magnitude");
+  // Consume from an event with a delta of (-5, -5).
+  testConsumingDelta(-5, -5, -6, -4, "Overconsumed X with negative delta");
+  testConsumingDelta(-5, -5, -4, -6, "Overconsumed Y with negative delta");
+  testConsumingDelta(-5, -5, 1, -4, "Can't increase X delta magnitude");
+  testConsumingDelta(-5, -5, -4, 1, "Can't increase Y delta magnitude");
+}
 </script>
 </body>
 </html>

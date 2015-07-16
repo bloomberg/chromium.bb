@@ -8,12 +8,6 @@
 <body>
 <script>
 
-if (!window.internals || !window.internals.runtimeFlags.scrollCustomizationEnabled) {
-  console.log("These tests only work with window.internals exposed, " +
-              "and require scroll customization.");
-  done();
-}
-
 function deltaShouldBe(scrollState, x, y, testName) {
   test(function() {
     assert_equals(scrollState.deltaX, x);
@@ -21,12 +15,18 @@ function deltaShouldBe(scrollState, x, y, testName) {
   }, testName);
 }
 
-var scrollState = new ScrollState(10, -20);
-deltaShouldBe(scrollState, 10, -20, "Unconsumed deltas");
-scrollState.consumeDelta(2, -3);
-deltaShouldBe(scrollState, 8, -17, "Partially consumed deltas");
-scrollState.consumeDelta(8, -17);
-deltaShouldBe(scrollState, 0, 0, "Fully consumed deltas");
+test(function() {
+  assert_true('ScrollState' in window, "'ScrollState' in window");
+}, "These tests only work with scroll customization enabled.");
+
+if ('ScrollState' in window) {
+  var scrollState = new ScrollState(10, -20);
+  deltaShouldBe(scrollState, 10, -20, "Unconsumed deltas");
+  scrollState.consumeDelta(2, -3);
+  deltaShouldBe(scrollState, 8, -17, "Partially consumed deltas");
+  scrollState.consumeDelta(8, -17);
+  deltaShouldBe(scrollState, 0, 0, "Fully consumed deltas");
+}
 </script>
 </body>
 </html>
