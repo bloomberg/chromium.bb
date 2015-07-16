@@ -195,6 +195,10 @@ void WebScrollbarThemeClientImpl::styleChanged()
     ASSERT_NOT_REACHED();
 }
 
+void WebScrollbarThemeClientImpl::visibilityChanged()
+{
+}
+
 bool WebScrollbarThemeClientImpl::enabled() const
 {
     return m_scrollbar->enabled();

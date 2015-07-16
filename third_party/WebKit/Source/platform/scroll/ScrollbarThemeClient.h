@@ -78,6 +78,7 @@ public:
     virtual ScrollbarPart hoveredPart() const = 0;
 
     virtual void styleChanged() = 0;
+    virtual void visibilityChanged() = 0;
 
     virtual bool enabled() const = 0;
     virtual void setEnabled(bool) = 0;

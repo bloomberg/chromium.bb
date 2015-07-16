@@ -280,6 +280,7 @@ public:
     void setCursor(const Cursor&);
 
     bool scrollbarsCanBeActive() const override;
+    void scrollbarVisibilityChanged() override;
 
     // FIXME: Remove this method once plugin loading is decoupled from layout.
     void flushAnyPendingPostLayoutTasks();

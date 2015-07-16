@@ -71,6 +71,7 @@ public:
     ScrollbarPart pressedPart() const override;
     ScrollbarPart hoveredPart() const override;
     void styleChanged() override;
+    void visibilityChanged() override;
     bool enabled() const override;
     void setEnabled(bool) override;
     bool isOverlayScrollbar() const override;

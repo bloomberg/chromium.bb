@@ -2200,6 +2200,12 @@ bool FrameView::scrollbarsCanBeActive() const
     return !!m_frame->document();
 }
 
+void FrameView::scrollbarVisibilityChanged()
+{
+    if (LayoutView* view = layoutView())
+        view->clearHitTestCache();
+}
+
 IntRect FrameView::scrollableAreaBoundingBox() const
 {
     LayoutPart* ownerLayoutObject = frame().ownerLayoutObject();

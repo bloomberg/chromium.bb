@@ -148,6 +148,7 @@
             'WebScrollbarPainterDelegate=ChromiumWebCoreObjCWebScrollbarPainterDelegate',
             'WebScrollbarPartAnimation=ChromiumWebCoreObjCWebScrollbarPartAnimation',
             'WebCoreFlippedView=ChromiumWebCoreObjCWebCoreFlippedView',
+            'WebCoreScrollbarObserver=ChromiumWebCoreObjCWebCoreScrollbarObserver',
             'WebCoreTextFieldCell=ChromiumWebCoreObjCWebCoreTextFieldCell',
           ],
           'postbuilds': [

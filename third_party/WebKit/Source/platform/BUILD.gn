@@ -82,6 +82,7 @@ if (is_mac) {
       "WebScrollbarPainterDelegate=ChromiumWebCoreObjCWebScrollbarPainterDelegate",
       "WebScrollbarPartAnimation=ChromiumWebCoreObjCWebScrollbarPartAnimation",
       "WebCoreFlippedView=ChromiumWebCoreObjCWebCoreFlippedView",
+      "WebCoreScrollbarObserver=ChromiumWebCoreObjCWebCoreScrollbarObserver",
       "WebCoreTextFieldCell=ChromiumWebCoreObjCWebCoreTextFieldCell",
     ]
   }

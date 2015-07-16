@@ -534,6 +534,12 @@ bool DeprecatedPaintLayerScrollableArea::shouldSuspendScrollAnimations() const
     return view->frameView()->shouldSuspendScrollAnimations();
 }
 
+void DeprecatedPaintLayerScrollableArea::scrollbarVisibilityChanged()
+{
+    if (LayoutView* view = box().view())
+        return view->clearHitTestCache();
+}
+
 bool DeprecatedPaintLayerScrollableArea::scrollbarsCanBeActive() const
 {
     LayoutView* view = box().view();

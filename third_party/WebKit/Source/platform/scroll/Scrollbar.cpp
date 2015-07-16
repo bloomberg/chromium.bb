@@ -477,6 +477,12 @@ void Scrollbar::mouseDown(const PlatformMouseEvent& evt)
     autoscrollPressedPart(theme()->initialAutoscrollTimerDelay());
 }
 
+void Scrollbar::visibilityChanged()
+{
+    if (m_scrollableArea)
+        m_scrollableArea->scrollbarVisibilityChanged();
+}
+
 void Scrollbar::setEnabled(bool e)
 {
     if (m_enabled == e)

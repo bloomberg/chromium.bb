@@ -38,9 +38,57 @@
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 
+@interface WebCoreScrollbarObserver : NSObject {
+    blink::ScrollbarThemeClient* _scrollbar;
+    RetainPtr<ScrollbarPainter> _scrollbarPainter;
+    BOOL _visible;
+}
+- (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(ScrollbarPainter)painter;
+@end
+
+@implementation WebCoreScrollbarObserver
+
+- (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(ScrollbarPainter)painter
+{
+    [super init];
+    _scrollbar = scrollbar;
+    _scrollbarPainter = painter;
+
+    [_scrollbarPainter.get() addObserver:self forKeyPath:@"knobAlpha" options:0 context:nil];
+    return self;
+}
+
+- (id)painter
+{
+    return _scrollbarPainter.get();
+}
+
+- (void)dealloc
+{
+
+    [_scrollbarPainter.get() removeObserver:self forKeyPath:@"knobAlpha"];
+    [super dealloc];
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context
+{
+    if ([keyPath isEqualToString:@"knobAlpha"]) {
+        BOOL visible = [_scrollbarPainter.get() knobAlpha] > 0;
+        if (_visible != visible) {
+            _visible = visible;
+            _scrollbar->visibilityChanged();
+        }
+    }
+}
+
+@end
+
 namespace blink {
 
-typedef HashMap<ScrollbarThemeClient*, RetainPtr<ScrollbarPainter>> ScrollbarPainterMap;
+typedef HashMap<ScrollbarThemeClient*, RetainPtr<WebCoreScrollbarObserver> > ScrollbarPainterMap;
 
 static ScrollbarPainterMap* scrollbarPainterMap()
 {
@@ -61,7 +109,9 @@ void ScrollbarThemeMacOverlayAPI::registerScrollbar(ScrollbarThemeClient* scroll
 
     bool isHorizontal = scrollbar->orientation() == HorizontalScrollbar;
     ScrollbarPainter scrollbarPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:recommendedScrollerStyle() controlSize:(NSControlSize)scrollbar->controlSize() horizontal:isHorizontal replacingScrollerImp:nil];
-    scrollbarPainterMap()->add(scrollbar, scrollbarPainter);
+    RetainPtr<WebCoreScrollbarObserver> observer = [[WebCoreScrollbarObserver alloc] initWithScrollbar:scrollbar painter:scrollbarPainter];
+
+    scrollbarPainterMap()->add(scrollbar, observer);
     updateEnabledState(scrollbar);
     updateScrollbarOverlayStyle(scrollbar);
 }
@@ -75,14 +125,15 @@ void ScrollbarThemeMacOverlayAPI::unregisterScrollbar(ScrollbarThemeClient* scro
 
 void ScrollbarThemeMacOverlayAPI::setNewPainterForScrollbar(ScrollbarThemeClient* scrollbar, ScrollbarPainter newPainter)
 {
-    scrollbarPainterMap()->set(scrollbar, newPainter);
+    RetainPtr<WebCoreScrollbarObserver> observer = [[WebCoreScrollbarObserver alloc] initWithScrollbar:scrollbar painter:newPainter];
+    scrollbarPainterMap()->set(scrollbar, observer);
     updateEnabledState(scrollbar);
     updateScrollbarOverlayStyle(scrollbar);
 }
 
 ScrollbarPainter ScrollbarThemeMacOverlayAPI::painterForScrollbar(ScrollbarThemeClient* scrollbar)
 {
-    return scrollbarPainterMap()->get(scrollbar).get();
+    return [scrollbarPainterMap()->get(scrollbar).get() painter];
 }
 
 void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
@@ -208,3 +259,4 @@ void ScrollbarThemeMacOverlayAPI::updateEnabledState(ScrollbarThemeClient* scrol
 }
 
 } // namespace blink
+

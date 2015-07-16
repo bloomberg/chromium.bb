@@ -113,6 +113,7 @@ public:
     bool scrollAnimatorEnabled() const override;
     bool shouldSuspendScrollAnimations() const override;
     bool scrollbarsCanBeActive() const override;
+    void scrollbarVisibilityChanged() override;
     IntRect scrollableAreaBoundingBox() const override;
     void registerForAnimation() override;
     void deregisterForAnimation() override;

@@ -89,7 +89,7 @@ public:
     ScrollbarPart hoveredPart() const override { return m_hoveredPart; }
 
     void styleChanged() override { }
-
+    void visibilityChanged() override;
     bool enabled() const override { return m_enabled; }
     void setEnabled(bool) override;
 
