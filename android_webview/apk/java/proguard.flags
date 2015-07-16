@@ -63,10 +63,11 @@
   void onHideCustomView();
 }
 
-# Accessed via reflection
+# Accessed via reflection but not present in all builds
 -keep class com.android.webview.chromium.Drp {
   public java.lang.String KEY;
 }
+-dontnote com.android.webview.chromium.Drp
 
 # Keep framework support for SmartClip.
 -keep class com.android.webview.chromium.WebViewChromium {
@@ -74,8 +75,10 @@
   public void setSmartClipResultHandler(android.os.Handler);
 }
 
-# Ignore notes about the support library's use of reflection.
+# Ignore notes and warnings about the support library, which uses reflection and
+# may reference classes no longer in the SDK.
 -dontnote android.support.**
+-dontwarn android.support.**
 
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html
