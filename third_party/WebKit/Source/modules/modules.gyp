@@ -31,7 +31,7 @@
   'includes': [
     '../build/features.gypi',
     '../build/scripts/scripts.gypi',
-    '../core/win/precompile-core.gypi',
+    '../build/win/precompile.gypi',
     '../bindings/modules/modules.gypi',  # modules can depend on bindings/modules, but not on bindings
     'modules.gypi',
   ],
