@@ -632,6 +632,13 @@ source_set("browser") {
     ]
   }
 
+  if (!is_official_build) {
+    sources += [
+      "search/local_files_ntp_source.cc",
+      "search/local_files_ntp_source.h",
+    ]
+  }
+
   if (is_android) {
     sources +=
         rebase_path(gypi_values.chrome_browser_android_sources, ".", "//chrome")

@@ -3438,6 +3438,12 @@
             'browser/media/router/media_router.gyp:media_router',
           ],
         }],
+        ['buildtype!="Official"', {
+          'sources': [
+            'browser/search/local_files_ntp_source.cc',
+            'browser/search/local_files_ntp_source.h',
+          ],
+        }],
         ['enable_spellcheck==1', {
           'sources': [ '<@(chrome_browser_spellchecker_sources)' ],
           'dependencies': [

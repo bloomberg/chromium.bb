@@ -15,8 +15,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -179,17 +181,31 @@ void LocalNtpSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  const std::string stripped_path = StripParameters(path);
+  std::string stripped_path = StripParameters(path);
   if (stripped_path == kConfigDataFilename) {
     std::string config_data_js = GetConfigData(profile_);
     callback.Run(base::RefCountedString::TakeString(&config_data_js));
     return;
   }
+
+#if !defined(OFFICIAL_BUILD)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
+    if (stripped_path == "local-ntp.html" || stripped_path == "local-ntp.js" ||
+        stripped_path == "local-ntp.css") {
+      base::ReplaceChars(stripped_path, "-", "_", &stripped_path);
+      local_ntp::SendLocalFileResource(stripped_path, callback);
+      return;
+    }
+  }
+#endif
+
   float scale = 1.0f;
   std::string filename;
   webui::ParsePathAndScale(
       GURL(GetLocalNtpPath() + stripped_path), &filename, &scale);
   ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(scale);
+
   for (size_t i = 0; i < arraysize(kResources); ++i) {
     if (filename == kResources[i].filename) {
       scoped_refptr<base::RefCountedStaticMemory> response(

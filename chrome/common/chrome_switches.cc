@@ -704,6 +704,12 @@ const char kLoadComponentExtension[]        = "load-component-extension";
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
+#if !defined(OFFICIAL_BUILD)
+// Enables a live-reload for local NTP resources. This only works when Chrome
+// is running from a Chrome source directory.
+const char kLocalNtpReload[]                = "local-ntp-reload";
+#endif
+
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/search/most_visited_iframe_source.h"
 
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/search/local_files_ntp_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
@@ -46,6 +49,25 @@ void MostVisitedIframeSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
   std::string path(url.path());
+
+#if !defined(OFFICIAL_BUILD)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
+    std::string rel_path = "most_visited_" + path.substr(1);
+    if (path == kSingleJSPath) {
+      std::string origin;
+      if (!GetOrigin(render_process_id, render_frame_id, &origin)) {
+        callback.Run(NULL);
+        return;
+      }
+      local_ntp::SendLocalFileResourceWithOrigin(rel_path, origin, callback);
+    } else {
+      local_ntp::SendLocalFileResource(rel_path, callback);
+    }
+    return;
+  }
+#endif
+
   if (path == kTitleHTMLPath) {
     SendResource(IDR_MOST_VISITED_TITLE_HTML, callback);
   } else if (path == kTitleCSSPath) {

@@ -196,6 +196,9 @@ extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
 extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];
+#if !defined(OFFICIAL_BUILD)
+extern const char kLocalNtpReload[];
+#endif
 extern const char kMakeDefaultBrowser[];
 extern const char kManualEnhancedBookmarks[];
 extern const char kManualEnhancedBookmarksOptout[];
