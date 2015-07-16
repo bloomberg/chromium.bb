@@ -505,7 +505,9 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
         if (referrer == null) referrer = "";
         WebContents webContents = mExternalPrerenderHandler.addPrerender(
                 Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y);
-        mPrerender = new PrerenderedUrlParams(session, webContents, url, referrer, extras);
+        if (webContents != null) {
+            mPrerender = new PrerenderedUrlParams(session, webContents, url, referrer, extras);
+        }
     }
 
     /**
