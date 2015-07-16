@@ -210,4 +210,31 @@ void SecurityPolicy::resetOriginAccessWhitelists()
     originAccessMap().clear();
 }
 
+bool SecurityPolicy::referrerPolicyFromString(const String& policy, ReferrerPolicy* result)
+{
+    ASSERT(!policy.isNull());
+
+    if (equalIgnoringCase(policy, "no-referrer") || equalIgnoringCase(policy, "never")) {
+        *result = ReferrerPolicyNever;
+        return true;
+    }
+    if (equalIgnoringCase(policy, "unsafe-url") || equalIgnoringCase(policy, "always")) {
+        *result = ReferrerPolicyAlways;
+        return true;
+    }
+    if (equalIgnoringCase(policy, "origin")) {
+        *result = ReferrerPolicyOrigin;
+        return true;
+    }
+    if (equalIgnoringCase(policy, "origin-when-cross-origin") || equalIgnoringCase(policy, "origin-when-crossorigin")) {
+        *result = ReferrerPolicyOriginWhenCrossOrigin;
+        return true;
+    }
+    if (equalIgnoringCase(policy, "no-referrer-when-downgrade") || equalIgnoringCase(policy, "default")) {
+        *result = ReferrerPolicyNoReferrerWhenDowngrade;
+        return true;
+    }
+    return false;
+}
+
 } // namespace blink

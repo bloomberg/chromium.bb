@@ -173,7 +173,7 @@ public:
         }
     }
 
-    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences, const PictureData& pictureData)
+    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences, const PictureData& pictureData, const ReferrerPolicy referrerPolicy)
     {
         PreloadRequest::RequestType requestType = PreloadRequest::RequestTypePreload;
         if (shouldPreconnect())
@@ -194,7 +194,7 @@ public:
             resourceWidth.isSet = true;
         }
 
-        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), resourceWidth, clientHintsPreferences, requestType);
+        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), referrerPolicy, resourceWidth, clientHintsPreferences, requestType);
         if (isCORSEnabled())
             request->setCrossOriginEnabled(allowStoredCredentials());
         request->setCharset(charset());
@@ -473,7 +473,38 @@ static void handleMetaViewport(const String& attributeValue, CachedDocumentParam
     cachedMediaValues->setViewportWidth(constraints.layoutSize.width());
 }
 
-template<typename Token>
+static void handleMetaReferrer(const String& attributeValue, CachedDocumentParameters* documentParameters, CSSPreloadScanner* cssScanner)
+{
+    if (attributeValue.isEmpty() || attributeValue.isNull() || !SecurityPolicy::referrerPolicyFromString(attributeValue, &documentParameters->referrerPolicy)) {
+        documentParameters->referrerPolicy = ReferrerPolicyDefault;
+    }
+    cssScanner->setReferrerPolicy(documentParameters->referrerPolicy);
+}
+
+template <typename Token>
+static void handleMetaNameAttribute(const Token& token, CachedDocumentParameters* documentParameters, CSSPreloadScanner* cssScanner)
+{
+    const typename Token::Attribute* nameAttribute = token.getAttributeItem(nameAttr);
+    if (!nameAttribute)
+        return;
+
+    String nameAttributeValue(nameAttribute->value);
+    const typename Token::Attribute* contentAttribute = token.getAttributeItem(contentAttr);
+    if (!contentAttribute)
+        return;
+
+    String contentAttributeValue(contentAttribute->value);
+    if (equalIgnoringCase(nameAttributeValue, "viewport")) {
+        handleMetaViewport(contentAttributeValue, documentParameters);
+        return;
+    }
+
+    if (equalIgnoringCase(nameAttributeValue, "referrer")) {
+        handleMetaReferrer(contentAttributeValue, documentParameters, cssScanner);
+    }
+}
+
+template <typename Token>
 void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& source, PreloadRequestStream& requests)
 {
     if (!m_documentParameters->doHtmlPreloadScanning)
@@ -547,13 +578,8 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
                 }
                 return;
             }
-            const typename Token::Attribute* nameAttribute = token.getAttributeItem(nameAttr);
-            if (nameAttribute && equalIgnoringCase(String(nameAttribute->value), "viewport")) {
-                const typename Token::Attribute* contentAttribute = token.getAttributeItem(contentAttr);
-                if (contentAttribute)
-                    handleMetaViewport(String(contentAttribute->value), m_documentParameters.get());
-                return;
-            }
+
+            handleMetaNameAttribute(token, m_documentParameters.get(), &m_cssScanner);
         }
 
         if (match(tagImpl, pictureTag)) {
@@ -566,7 +592,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
         scanner.processAttributes(token.attributes());
         if (m_inPicture)
             scanner.handlePictureSourceURL(m_pictureData);
-        OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source, m_clientHintsPreferences, m_pictureData);
+        OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source, m_clientHintsPreferences, m_pictureData, m_documentParameters->referrerPolicy);
         if (request)
             requests.append(request.release());
         return;
@@ -637,6 +663,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPt
     defaultViewportMinWidth = document->viewportDefaultMinWidth();
     viewportMetaZeroValuesQuirk = document->settings() && document->settings()->viewportMetaZeroValuesQuirk();
     viewportMetaEnabled = document->settings() && document->settings()->viewportMetaEnabled();
+    referrerPolicy = ReferrerPolicyDefault;
 }
 
 }

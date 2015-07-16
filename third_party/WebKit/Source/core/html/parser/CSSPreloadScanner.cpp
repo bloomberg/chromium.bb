@@ -37,6 +37,7 @@ namespace blink {
 CSSPreloadScanner::CSSPreloadScanner()
     : m_state(Initial)
     , m_requests(0)
+    , m_referrerPolicy(ReferrerPolicyDefault)
 {
 }
 
@@ -74,6 +75,11 @@ void CSSPreloadScanner::scan(const String& tagName,  const SegmentedString& sour
     }
     const UChar* begin = tagName.characters16();
     scanCommon(begin, begin + tagName.length(), source, requests);
+}
+
+void CSSPreloadScanner::setReferrerPolicy(const ReferrerPolicy policy)
+{
+    m_referrerPolicy = policy;
 }
 
 inline void CSSPreloadScanner::tokenize(UChar c, const SegmentedString& source)
@@ -215,7 +221,7 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
         if (!url.isEmpty()) {
             KURL baseElementURL; // FIXME: This should be passed in from the HTMLPreloadScaner via scan()!
             TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
-            OwnPtr<PreloadRequest> request = PreloadRequest::create(FetchInitiatorTypeNames::css, position, url, baseElementURL, Resource::CSSStyleSheet);
+            OwnPtr<PreloadRequest> request = PreloadRequest::create(FetchInitiatorTypeNames::css, position, url, baseElementURL, Resource::CSSStyleSheet, m_referrerPolicy);
             // FIXME: Should this be including the charset in the preload request?
             m_requests->append(request.release());
         }

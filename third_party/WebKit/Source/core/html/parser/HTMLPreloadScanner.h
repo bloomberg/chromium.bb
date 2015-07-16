@@ -56,6 +56,7 @@ struct CORE_EXPORT CachedDocumentParameters {
     Length defaultViewportMinWidth;
     bool viewportMetaZeroValuesQuirk;
     bool viewportMetaEnabled;
+    ReferrerPolicy referrerPolicy;
 
 private:
     CachedDocumentParameters(Document*, PassRefPtr<MediaValues>);
@@ -86,7 +87,7 @@ public:
 private:
     class StartTagScanner;
 
-    template<typename Token>
+    template <typename Token>
     inline void scanCommon(const Token&, const SegmentedString&, PreloadRequestStream& requests);
 
     template<typename Token>

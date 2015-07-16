@@ -46,6 +46,8 @@ public:
     void scan(const HTMLToken::DataVector&, const SegmentedString&, PreloadRequestStream&);
     void scan(const String&, const SegmentedString&, PreloadRequestStream&);
 
+    void setReferrerPolicy(const ReferrerPolicy);
+
 private:
     enum State {
         Initial,
@@ -72,6 +74,8 @@ private:
 
     // Only non-zero during scan()
     PreloadRequestStream* m_requests;
+
+    ReferrerPolicy m_referrerPolicy;
 };
 
 }

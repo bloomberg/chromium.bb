@@ -64,6 +64,8 @@ public:
 
     static void addOriginTrustworthyWhiteList(PassRefPtr<SecurityOrigin>);
     static bool isOriginWhiteListedTrustworthy(const SecurityOrigin&);
+
+    static bool referrerPolicyFromString(const String& policy, ReferrerPolicy* result);
 };
 
 } // namespace blink
