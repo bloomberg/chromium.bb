@@ -523,9 +523,7 @@ void Editor::replaceSelectionWithText(const String& text, bool selectReplacement
 
 EphemeralRange Editor::selectedRange()
 {
-    // TODO(yosin) We should have |EphemeralRange| version of
-    // |VisibleSelection::toNormalizedRange()|.
-    return EphemeralRange(frame().selection().toNormalizedRange().get());
+    return frame().selection().selection().toNormalizedEphemeralRange();
 }
 
 bool Editor::shouldDeleteRange(const EphemeralRange& range) const
