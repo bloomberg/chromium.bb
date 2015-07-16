@@ -1088,19 +1088,6 @@
             'installer_util_unittests.isolate',
           ],
         },
-        {
-          'target_name': 'setup_unittests_run',
-          'type': 'none',
-          'dependencies': [
-            'setup_unittests',
-          ],
-          'includes': [
-            '../build/isolate.gypi',
-          ],
-          'sources': [
-            'setup_unittests.isolate',
-          ],
-        },
       ],
     }],
   ],
