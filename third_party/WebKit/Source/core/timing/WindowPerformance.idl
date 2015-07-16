@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://www.w3.org/TR/navigation-timing/#sec-window.performance-attribute
+// https://w3c.github.io/hr-time/#the-performance-interface
 
-// TODO(philipj): Window.performance should be in High Resolution Time:
-// https://github.com/w3c/hr-time/issues/9
-
+// TODO(philipj): This should be a GlobalPerformance interface implemented by
+// Window and WorkerGlobalScope.
 [
     ImplementedAs=DOMWindowPerformance,
 ] partial interface Window {

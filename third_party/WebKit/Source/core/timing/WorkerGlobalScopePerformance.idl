@@ -28,9 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// TODO(philipj): There is no spec for WorkerGlobalScope.performance:
-// https://github.com/w3c/hr-time/issues/10
+// https://w3c.github.io/hr-time/#the-performance-interface
 
+// TODO(philipj): This should be a GlobalPerformance interface implemented by
+// Window and WorkerGlobalScope.
 partial interface WorkerGlobalScope {
     readonly attribute WorkerPerformance performance;
 };
