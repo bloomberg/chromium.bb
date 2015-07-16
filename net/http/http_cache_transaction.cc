@@ -1114,23 +1114,25 @@ int HttpCache::Transaction::DoCreateEntryComplete(int result) {
   net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY,
                                     result);
   cache_pending_ = false;
-  next_state_ = STATE_ADD_TO_ENTRY;
+  switch (result) {
+    case OK:
+      next_state_ = STATE_ADD_TO_ENTRY;
+      break;
 
-  if (result == ERR_CACHE_RACE) {
-    next_state_ = STATE_INIT_ENTRY;
-    return OK;
-  }
+    case ERR_CACHE_RACE:
+      next_state_ = STATE_INIT_ENTRY;
+      break;
 
-  if (result != OK) {
-    // We have a race here: Maybe we failed to open the entry and decided to
-    // create one, but by the time we called create, another transaction already
-    // created the entry. If we want to eliminate this issue, we need an atomic
-    // OpenOrCreate() method exposed by the disk cache.
-    DLOG(WARNING) << "Unable to create cache entry";
-    mode_ = NONE;
-    if (partial_)
-      partial_->RestoreHeaders(&custom_request_->extra_headers);
-    next_state_ = STATE_SEND_REQUEST;
+    default:
+      // We have a race here: Maybe we failed to open the entry and decided to
+      // create one, but by the time we called create, another transaction
+      // already created the entry. If we want to eliminate this issue, we
+      // need an atomic OpenOrCreate() method exposed by the disk cache.
+      DLOG(WARNING) << "Unable to create cache entry";
+      mode_ = NONE;
+      if (partial_)
+        partial_->RestoreHeaders(&custom_request_->extra_headers);
+      next_state_ = STATE_SEND_REQUEST;
   }
   return OK;
 }
