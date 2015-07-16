@@ -16,6 +16,7 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/threading/worker_pool.h"
 #import "components/webp_transcode/webp_network_client_factory.h"
@@ -149,6 +150,9 @@ void CrNetEnvironment::Initialize() {
   // this initialization can race to cause accidental free/allocation
   // mismatches.
   crypto::EnsureNSPRInit();
+  // Without doing this, StatisticsRecorder::FactoryGet() leaks one histogram
+  // per call after the first for a given name.
+  base::StatisticsRecorder::Initialize();
 
   // Create a message loop on the UI thread.
   base::MessageLoop* main_message_loop =
