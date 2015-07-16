@@ -205,7 +205,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
     m_preserveAspectRatio->transformRect(dstRect, srcRect);
 
     SkBitmap bitmap;
-    if (!m_image->deprecatedBitmapForCurrentFrame(&bitmap))
+    if (!m_image->bitmapForCurrentFrame(&bitmap))
         return adoptRef(SkBitmapSource::Create(SkBitmap()));
 
     return adoptRef(SkBitmapSource::Create(bitmap, srcRect, dstRect));

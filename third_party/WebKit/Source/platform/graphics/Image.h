@@ -72,8 +72,10 @@ public:
     virtual bool isSVGImage() const { return false; }
     virtual bool isBitmapImage() const { return false; }
     virtual bool isLazyDecodedBitmap() { return false; }
+    virtual bool isImmutableBitmap() { return false; }
     virtual bool currentFrameKnownToBeOpaque() = 0;
-    virtual bool currentFrameIsComplete() { return false; }
+
+    virtual PassRefPtr<SkImage> skImage();
 
     // Derived classes should override this if they can assure that the current
     // image frame contains only resources from its own security origin.
@@ -128,9 +130,8 @@ public:
 
     enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
 
-    bool deprecatedBitmapForCurrentFrame(SkBitmap*) WARN_UNUSED_RETURN;
+    virtual bool bitmapForCurrentFrame(SkBitmap*) WARN_UNUSED_RETURN;
 
-    virtual PassRefPtr<SkImage> imageForCurrentFrame() = 0;
     virtual PassRefPtr<Image> imageForDefaultFrame();
 
     virtual void drawPattern(GraphicsContext*, const FloatRect&,

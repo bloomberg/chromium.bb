@@ -33,7 +33,6 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
-#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -71,11 +70,6 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     fillPaint.setXfermodeMode(compositeOp);
 
     destContext->drawRect(destRect, fillPaint);
-}
-
-PassRefPtr<SkImage> GeneratedImage::imageForCurrentFrame()
-{
-    return nullptr;
 }
 
 } // namespace blink

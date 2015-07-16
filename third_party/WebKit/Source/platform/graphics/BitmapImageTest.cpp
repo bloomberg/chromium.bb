@@ -75,7 +75,8 @@ public:
     size_t frameCount() { return m_image->frameCount(); }
     void frameAtIndex(size_t index)
     {
-        m_image->frameAtIndex(index);
+        SkBitmap dummy;
+        ASSERT_TRUE(m_image->frameAtIndex(index, &dummy));
     }
     void setCurrentFrame(size_t frame) { m_image->m_currentFrame = frame; }
     size_t frameDecodedSize(size_t frame) { return m_image->m_frames[frame].m_frameBytes; }

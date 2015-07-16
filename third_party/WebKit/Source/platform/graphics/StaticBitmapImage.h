@@ -13,7 +13,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
 public:
     ~StaticBitmapImage() override;
 
-    bool currentFrameIsComplete() override { return true; }
+    bool isImmutableBitmap() override { return true; }
 
     static PassRefPtr<Image> create(PassRefPtr<SkImage>);
     virtual void destroyDecodedData(bool destroyAll) { }
@@ -21,7 +21,8 @@ public:
     virtual IntSize size() const;
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override;
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override { return m_image; }
+
+    PassRefPtr<SkImage> skImage() override { return m_image; }
 
 protected:
     StaticBitmapImage(PassRefPtr<SkImage>);

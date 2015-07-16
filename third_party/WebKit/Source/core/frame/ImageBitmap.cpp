@@ -32,7 +32,7 @@ static inline PassRefPtr<Image> cropImage(Image* image, const IntRect& cropRect)
         return nullptr;
 
     SkBitmap bitmap;
-    if (!image->deprecatedBitmapForCurrentFrame(&bitmap))
+    if (!image->bitmapForCurrentFrame(&bitmap))
         return nullptr;
 
     SkBitmap cropped;

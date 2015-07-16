@@ -40,11 +40,10 @@ namespace blink {
 
 PassRefPtr<Pattern> Pattern::createBitmapPattern(PassRefPtr<Image> tileImage, RepeatMode repeatMode)
 {
-    // TODO(fmalita): do we still need BitmapPattern at all?
-    if (tileImage->isBitmapImage())
-        return BitmapPattern::create(tileImage, repeatMode);
+    if (tileImage->skImage())
+        return StaticBitmapPattern::create(tileImage, repeatMode);
 
-    return StaticBitmapPattern::create(tileImage, repeatMode);
+    return BitmapPattern::create(tileImage, repeatMode);
 }
 
 PassRefPtr<Pattern> Pattern::createPicturePattern(PassRefPtr<const SkPicture> picture,

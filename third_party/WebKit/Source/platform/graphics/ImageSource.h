@@ -32,7 +32,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
-class SkImage;
+class SkBitmap;
 
 namespace blink {
 
@@ -91,8 +91,10 @@ public:
 
     size_t frameCount() const;
 
-    // Attempts to create the requested frame.
-    PassRefPtr<SkImage> createFrameAtIndex(size_t);
+    // Attempts to create the requested frame if necessary, and sets the
+    // SkBitmap outparam to the associated bitmap.  Returns whether a valid
+    // bitmap was set.
+    bool createFrameAtIndex(size_t, SkBitmap*);
 
     float frameDurationAtIndex(size_t) const;
     bool frameHasAlphaAtIndex(size_t) const; // Whether or not the frame actually used any alpha.

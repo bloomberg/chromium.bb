@@ -216,7 +216,7 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
     SkBitmap bitmap;
-    if (!deprecatedBitmapForCurrentFrame(&bitmap))
+    if (!bitmapForCurrentFrame(&bitmap))
         return;
 
     FloatRect normSrcRect = floatSrcRect;
@@ -271,11 +271,14 @@ PassRefPtr<Image> Image::imageForDefaultFrame()
     return image.release();
 }
 
-bool Image::deprecatedBitmapForCurrentFrame(SkBitmap* bitmap)
+bool Image::bitmapForCurrentFrame(SkBitmap* bitmap)
 {
-    RefPtr<SkImage> image = imageForCurrentFrame();
+    return false;
+}
 
-    return image && image->asLegacyBitmap(bitmap, SkImage::kRO_LegacyBitmapMode);
+PassRefPtr<SkImage> Image::skImage()
+{
+    return nullptr;
 }
 
 } // namespace blink

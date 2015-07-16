@@ -1010,7 +1010,7 @@ void GraphicsLayer::setContentsRect(const IntRect& rect)
 void GraphicsLayer::setContentsToImage(Image* image)
 {
     SkBitmap bitmap;
-    if (image && image->deprecatedBitmapForCurrentFrame(&bitmap)) {
+    if (image && image->bitmapForCurrentFrame(&bitmap)) {
         if (!m_imageLayer) {
             m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
             registerContentsLayer(m_imageLayer->layer());
@@ -1035,7 +1035,7 @@ void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture
         m_ninePatchLayer.clear();
     }
     SkBitmap bitmap;
-    if (image && image->deprecatedBitmapForCurrentFrame(&bitmap)) {
+    if (image && image->bitmapForCurrentFrame(&bitmap)) {
         m_ninePatchLayer = adoptPtr(Platform::current()->compositorSupport()->createNinePatchLayer());
         int borderWidth = bitmap.width() - aperture.width();
         int borderHeight = bitmap.height() - aperture.height();

@@ -75,7 +75,7 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
         return nullptr;
 
     SkBitmap bitmap;
-    if (!image->deprecatedBitmapForCurrentFrame(&bitmap))
+    if (!image->bitmapForCurrentFrame(&bitmap))
         return nullptr;
 
     if (image->isBitmapImage()) {

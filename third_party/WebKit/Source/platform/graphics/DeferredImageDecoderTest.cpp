@@ -39,7 +39,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
@@ -153,14 +152,16 @@ protected:
 TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
 {
     m_lazyDecoder->setData(*m_data, true);
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
-    EXPECT_EQ(1, image->width());
-    EXPECT_EQ(1, image->height());
+    SkBitmap bitmap;
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
+    EXPECT_EQ(1, bitmap.width());
+    EXPECT_EQ(1, bitmap.height());
+    EXPECT_FALSE(bitmap.isNull());
+    EXPECT_TRUE(bitmap.isImmutable());
 
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
-    tempCanvas->drawImage(image.get(), 0, 0);
+    tempCanvas->drawBitmap(bitmap, 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_decodeRequestCount);
 
@@ -180,20 +181,19 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
 
     // Received only half the file.
     m_lazyDecoder->setData(*partialData, false);
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
+    SkBitmap bitmap;
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
-    tempCanvas->drawImage(image.get(), 0, 0);
+    tempCanvas->drawBitmap(bitmap, 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     m_surface->getCanvas()->drawPicture(picture.get());
 
     // Fully received the file and draw the SkPicture again.
     m_lazyDecoder->setData(*m_data, true);
-    image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
     tempCanvas = recorder.beginRecording(100, 100, 0, 0);
-    tempCanvas->drawImage(image.get(), 0, 0);
+    tempCanvas->drawBitmap(bitmap, 0, 0);
     picture = adoptRef(recorder.endRecording());
     m_surface->getCanvas()->drawPicture(picture.get());
 
@@ -212,14 +212,16 @@ static void rasterizeMain(SkCanvas* canvas, SkPicture* picture)
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 {
     m_lazyDecoder->setData(*m_data, true);
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
-    EXPECT_EQ(1, image->width());
-    EXPECT_EQ(1, image->height());
+    SkBitmap bitmap;
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
+    EXPECT_EQ(1, bitmap.width());
+    EXPECT_EQ(1, bitmap.height());
+    EXPECT_FALSE(bitmap.isNull());
+    EXPECT_TRUE(bitmap.isImmutable());
 
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
-    tempCanvas->drawImage(image.get(), 0, 0);
+    tempCanvas->drawBitmap(bitmap, 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_decodeRequestCount);
 
@@ -241,9 +243,9 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
     m_status = ImageFrame::FramePartial;
     m_lazyDecoder->setData(*m_data, false);
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
-    unsigned firstId = image->uniqueID();
+    SkBitmap bitmap;
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
+    unsigned firstId = bitmap.getGenerationID();
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(m_actualDecoder);
 
@@ -252,10 +254,8 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
     m_lazyDecoder->setData(*m_data, true);
     EXPECT_FALSE(m_actualDecoder);
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
-
-    image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
-    unsigned secondId = image->uniqueID();
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
+    unsigned secondId = bitmap.getGenerationID();
     EXPECT_FALSE(m_decodeRequestCount);
     EXPECT_NE(firstId, secondId);
 }
@@ -267,10 +267,9 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_frameDuration = 10;
     m_status = ImageFrame::FramePartial;
     m_lazyDecoder->setData(*m_data, false);
-
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
-    unsigned firstId = image->uniqueID();
+    SkBitmap bitmap;
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
+    unsigned firstId = bitmap.getGenerationID();
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     EXPECT_EQ(10.0f, m_lazyDecoder->frameDurationAtIndex(0));
 
@@ -279,10 +278,8 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_status = ImageFrame::FrameComplete;
     m_data->append(" ", 1);
     m_lazyDecoder->setData(*m_data, false);
-
-    image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
-    unsigned secondId = image->uniqueID();
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
+    unsigned secondId = bitmap.getGenerationID();
     EXPECT_NE(firstId, secondId);
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(1));
@@ -307,17 +304,19 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
 {
     m_decodedSize = IntSize(22, 33);
     m_lazyDecoder->setData(*m_data, true);
-    RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
-    ASSERT_TRUE(image);
-    EXPECT_EQ(m_decodedSize.width(), image->width());
-    EXPECT_EQ(m_decodedSize.height(), image->height());
+    SkBitmap bitmap;
+    EXPECT_TRUE(m_lazyDecoder->createFrameAtIndex(0, &bitmap));
+    EXPECT_EQ(m_decodedSize.width(), bitmap.width());
+    EXPECT_EQ(m_decodedSize.height(), bitmap.height());
+    EXPECT_FALSE(bitmap.isNull());
+    EXPECT_TRUE(bitmap.isImmutable());
 
     useMockImageDecoderFactory();
 
     // The following code should not fail any assert.
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
-    tempCanvas->drawImage(image.get(), 0, 0);
+    tempCanvas->drawBitmap(bitmap, 0, 0);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
     EXPECT_EQ(0, m_decodeRequestCount);
     m_surface->getCanvas()->drawPicture(picture.get());

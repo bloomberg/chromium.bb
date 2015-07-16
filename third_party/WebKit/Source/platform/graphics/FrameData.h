@@ -29,7 +29,7 @@
 #define FrameData_h
 
 #include "platform/graphics/ImageOrientation.h"
-#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/VectorTraits.h"
@@ -46,7 +46,7 @@ public:
     // Returns whether there was cached image data to clear.
     bool clear(bool clearMetadata);
 
-    RefPtr<SkImage> m_frame;
+    SkBitmap m_frame;
     ImageOrientation m_orientation;
     float m_duration;
     bool m_haveMetadata : 1;

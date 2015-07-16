@@ -152,7 +152,7 @@ WebImage::WebImage(const PassRefPtr<Image>& image)
 WebImage& WebImage::operator=(const PassRefPtr<Image>& image)
 {
     SkBitmap p;
-    if (image && image->deprecatedBitmapForCurrentFrame(&p))
+    if (image && image->bitmapForCurrentFrame(&p))
         assign(p);
     else
         reset();

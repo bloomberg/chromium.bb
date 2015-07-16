@@ -28,7 +28,6 @@
 
 #include "platform/graphics/DecodingImageGenerator.h"
 #include "platform/graphics/ImageDecodingStore.h"
-#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -89,28 +88,26 @@ String DeferredImageDecoder::filenameExtension() const
     return m_actualDecoder ? m_actualDecoder->filenameExtension() : m_filenameExtension;
 }
 
-PassRefPtr<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
+bool DeferredImageDecoder::createFrameAtIndex(size_t index, SkBitmap* bitmap)
 {
     prepareLazyDecodedFrames();
     if (index < m_frameData.size()) {
         // ImageFrameGenerator has the latest known alpha state. There will be a
         // performance boost if this frame is opaque.
-        SkBitmap bitmap = createBitmap(index);
+        *bitmap = createBitmap(index);
         FrameData* frameData = &m_frameData[index];
         frameData->m_hasAlpha = m_frameGenerator->hasAlpha(index);
-        bitmap.setAlphaType(frameData->m_hasAlpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+        bitmap->setAlphaType(frameData->m_hasAlpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
         frameData->m_frameBytes = m_size.area() *  sizeof(ImageFrame::PixelData);
-        return adoptRef(SkImage::NewFromBitmap(bitmap));
+        return true;
     }
-
     if (!m_actualDecoder)
-        return nullptr;
-
+        return false;
     ImageFrame* buffer = m_actualDecoder->frameBufferAtIndex(index);
     if (!buffer || buffer->status() == ImageFrame::FrameEmpty)
-        return nullptr;
-
-    return adoptRef(SkImage::NewFromBitmap(buffer->bitmap()));
+        return false;
+    *bitmap = buffer->bitmap();
+    return true;
 }
 
 void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)

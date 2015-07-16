@@ -61,7 +61,7 @@ public:
     // FIXME: Implement this to be less conservative.
     bool currentFrameKnownToBeOpaque() override { return false; }
 
-    PassRefPtr<SkImage> imageForCurrentFrame() override;
+    bool bitmapForCurrentFrame(SkBitmap*) override;
 
 private:
     SVGImageForContainer(SVGImage* image, const FloatSize& containerSize, float zoom)

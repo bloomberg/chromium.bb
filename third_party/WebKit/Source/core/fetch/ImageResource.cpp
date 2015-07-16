@@ -509,7 +509,7 @@ bool ImageResource::currentFrameKnownToBeOpaque(const LayoutObject* layoutObject
     if (image->isBitmapImage()) {
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(layoutObject, *this));
         SkBitmap dummy;
-        if (!image->deprecatedBitmapForCurrentFrame(&dummy)) { // force decode
+        if (!image->bitmapForCurrentFrame(&dummy)) { // force decode
             // We don't care about failures here, since we don't use "dummy"
         }
     }

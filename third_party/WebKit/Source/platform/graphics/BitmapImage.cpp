@@ -33,7 +33,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/PassRefPtr.h"
@@ -62,6 +61,7 @@ PassRefPtr<BitmapImage> BitmapImage::createWithOrientationForTesting(const SkBit
 BitmapImage::BitmapImage(ImageObserver* observer)
     : Image(observer)
     , m_currentFrame(0)
+    , m_frames()
     , m_frameTimer(0)
     , m_repetitionCount(cAnimationNone)
     , m_repetitionCountStatus(Unknown)
@@ -82,6 +82,7 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
     : Image(observer)
     , m_size(bitmap.width(), bitmap.height())
     , m_currentFrame(0)
+    , m_frames(0)
     , m_frameTimer(0)
     , m_repetitionCount(cAnimationNone)
     , m_repetitionCountStatus(Unknown)
@@ -100,7 +101,7 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
 
     m_frames.grow(1);
     m_frames[0].m_hasAlpha = !bitmap.isOpaque();
-    m_frames[0].m_frame = adoptRef(SkImage::NewFromBitmap(bitmap));
+    m_frames[0].m_frame = bitmap;
     m_frames[0].m_haveMetadata = true;
 }
 
@@ -167,12 +168,7 @@ void BitmapImage::cacheFrame(size_t index)
         m_frames.grow(numFrames);
 
     int deltaBytes = totalFrameBytes();
-
-
-    // We are caching frame snapshots.  This is OK even for partially decoded frames,
-    // as they are cleared by dataChanged() when new data arrives.
-    m_frames[index].m_frame = m_source.createFrameAtIndex(index);
-
+    m_source.createFrameAtIndex(index, &m_frames[index].m_frame);
     m_frames[index].m_orientation = m_source.orientationAtIndex(index);
     m_frames[index].m_haveMetadata = true;
     m_frames[index].m_isComplete = m_source.frameIsCompleteAtIndex(index);
@@ -275,9 +271,17 @@ String BitmapImage::filenameExtension() const
 bool BitmapImage::isLazyDecodedBitmap()
 {
     SkBitmap bitmap;
-    if (!deprecatedBitmapForCurrentFrame(&bitmap))
+    if (!bitmapForCurrentFrame(&bitmap))
         return false;
     return DeferredImageDecoder::isLazyDecoded(bitmap);
+}
+
+bool BitmapImage::isImmutableBitmap()
+{
+    SkBitmap bitmap;
+    if (!bitmapForCurrentFrame(&bitmap))
+        return false;
+    return bitmap.isImmutable();
 }
 
 void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum shouldRespectImageOrientation, ImageClampingMode clampMode)
@@ -285,7 +289,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     TRACE_EVENT0("skia", "BitmapImage::draw");
 
     SkBitmap bitmap;
-    if (!deprecatedBitmapForCurrentFrame(&bitmap))
+    if (!bitmapForCurrentFrame(&bitmap))
         return; // It's too early and we don't have an image yet.
 
     FloatRect adjustedSrcRect = srcRect;
@@ -358,18 +362,19 @@ bool BitmapImage::ensureFrameIsCached(size_t index)
     if (index >= frameCount())
         return false;
 
-    if (index >= m_frames.size() || !m_frames[index].m_frame)
+    if (index >= m_frames.size() || m_frames[index].m_frame.isNull())
         cacheFrame(index);
 
     return true;
 }
 
-PassRefPtr<SkImage> BitmapImage::frameAtIndex(size_t index)
+bool BitmapImage::frameAtIndex(size_t index, SkBitmap* bitmap)
 {
     if (!ensureFrameIsCached(index))
-        return nullptr;
+        return false;
 
-    return m_frames[index].m_frame;
+    *bitmap = m_frames[index].m_frame;
+    return true;
 }
 
 bool BitmapImage::frameIsCompleteAtIndex(size_t index)
@@ -388,18 +393,16 @@ float BitmapImage::frameDurationAtIndex(size_t index)
     return m_source.frameDurationAtIndex(index);
 }
 
-PassRefPtr<SkImage> BitmapImage::imageForCurrentFrame()
+bool BitmapImage::bitmapForCurrentFrame(SkBitmap* bitmap)
 {
-    return frameAtIndex(currentFrame());
+    return frameAtIndex(currentFrame(), bitmap);
 }
 
 PassRefPtr<Image> BitmapImage::imageForDefaultFrame()
 {
-    if (frameCount() > 1) {
-        RefPtr<SkImage> firstFrame = frameAtIndex(0);
-        if (firstFrame)
-            return StaticBitmapImage::create(firstFrame);
-    }
+    SkBitmap bitmap;
+    if (frameCount() > 1 && frameAtIndex(0, &bitmap))
+        return BitmapImage::create(bitmap);
 
     return Image::imageForDefaultFrame();
 }
@@ -418,11 +421,6 @@ bool BitmapImage::frameHasAlphaAtIndex(size_t index)
 bool BitmapImage::currentFrameKnownToBeOpaque()
 {
     return !frameHasAlphaAtIndex(currentFrame());
-}
-
-bool BitmapImage::currentFrameIsComplete()
-{
-    return frameIsCompleteAtIndex(currentFrame());
 }
 
 ImageOrientation BitmapImage::currentFrameOrientation()
