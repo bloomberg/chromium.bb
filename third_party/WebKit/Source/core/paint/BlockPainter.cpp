@@ -185,7 +185,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     // FIXME: When Skia supports annotation rect covering (https://code.google.com/p/skia/issues/detail?id=3872),
     // this rect may be covered by foreground and descendant drawings. Then we may need a dedicated paint phase.
-    if (paintPhase == PaintPhaseForeground && paintInfo.context->printing())
+    if (paintPhase == PaintPhaseForeground && paintInfo.isPrinting())
         ObjectPainter(m_layoutBlock).addPDFURLRectIfNeeded(paintInfo, paintOffset);
 
     {
@@ -209,7 +209,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         if (paintPhase != PaintPhaseSelfOutline)
             paintContents(contentsPaintInfo, paintOffset);
 
-        if (paintPhase == PaintPhaseForeground && !m_layoutBlock.document().printing())
+        if (paintPhase == PaintPhaseForeground && !paintInfo.isPrinting())
             m_layoutBlock.paintSelection(contentsPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
 
         if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip)

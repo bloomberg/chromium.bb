@@ -64,7 +64,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
         ObjectPainter(m_layoutSVGContainer).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, visualOverflowRect);
     }
 
-    if (paintInfoBeforeFiltering.context->printing())
+    if (paintInfoBeforeFiltering.isPrinting())
         ObjectPainter(m_layoutSVGContainer).addPDFURLRectIfNeeded(paintInfoBeforeFiltering, LayoutPoint());
 }
 

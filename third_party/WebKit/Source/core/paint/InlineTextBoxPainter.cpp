@@ -69,7 +69,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (logicalStart >= paintEnd || logicalStart + logicalExtent <= paintStart)
         return;
 
-    bool isPrinting = m_inlineTextBox.layoutObject().document().printing();
+    bool isPrinting = paintInfo.isPrinting();
 
     // Determine whether or not we're selected.
     bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_inlineTextBox.selectionState() != LayoutObject::SelectionNone;
@@ -238,7 +238,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         TextPainter::updateGraphicsContext(context, textStyle, m_inlineTextBox.isHorizontal(), stateSaver);
         if (combinedText)
             context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
-        paintDecoration(context, boxOrigin, textDecorations);
+        paintDecoration(paintInfo, boxOrigin, textDecorations);
         if (combinedText)
             context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Counterclockwise));
     }
@@ -705,12 +705,13 @@ static void paintAppliedDecoration(GraphicsContext* context, FloatPoint start, f
     }
 }
 
-void InlineTextBoxPainter::paintDecoration(GraphicsContext* context, const LayoutPoint& boxOrigin, TextDecoration deco)
+void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const LayoutPoint& boxOrigin, TextDecoration deco)
 {
-    GraphicsContextStateSaver stateSaver(*context);
-
     if (m_inlineTextBox.truncation() == cFullTruncation)
         return;
+
+    GraphicsContext* context = paintInfo.context;
+    GraphicsContextStateSaver stateSaver(*context);
 
     LayoutPoint localOrigin(boxOrigin);
 
@@ -728,7 +729,7 @@ void InlineTextBoxPainter::paintDecoration(GraphicsContext* context, const Layou
         m_inlineTextBox.layoutObject().getTextDecorations(deco, underline, overline, linethrough, true, true);
 
     // Use a special function for underlines to get the positioning exactly right.
-    bool isPrinting = m_inlineTextBox.layoutObject().document().printing();
+    bool isPrinting = paintInfo.isPrinting();
 
     const ComputedStyle& styleToUse = m_inlineTextBox.layoutObject().styleRef(m_inlineTextBox.isFirstLineStyle());
     float baseline = styleToUse.fontMetrics().ascent();

@@ -23,7 +23,7 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
 
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
 {
-    bool isPrinting = m_ellipsisBox.layoutObject().document().printing();
+    bool isPrinting = paintInfo.isPrinting();
     bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.selectionState() != LayoutObject::SelectionNone;
 
     LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());

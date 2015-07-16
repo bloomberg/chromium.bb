@@ -35,7 +35,7 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
 {
     Document& document = m_layoutImage.document();
 
-    if (document.printing() || !document.frame()->selection().isFocusedAndActive())
+    if (paintInfo.isPrinting() || !document.frame()->selection().isFocusedAndActive())
         return;
 
     Element* focusedElement = document.focusedElement();

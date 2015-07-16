@@ -110,7 +110,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     }
 
     if (document->printing())
-        m_frameView.setPaintBehavior(m_frameView.paintBehavior() | PaintBehaviorFlattenCompositingLayers);
+        m_frameView.setPaintBehavior(m_frameView.paintBehavior() | PaintBehaviorFlattenCompositingLayers | PaintBehaviorPrinting);
 
     ASSERT(!m_frameView.isPainting());
     m_frameView.setIsPainting(true);

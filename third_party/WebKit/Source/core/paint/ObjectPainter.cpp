@@ -70,7 +70,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
 
 void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ASSERT(paintInfo.context->printing());
+    ASSERT(paintInfo.isPrinting());
     if (m_layoutObject.isElementContinuation() || !m_layoutObject.node() || !m_layoutObject.node()->isLink() || m_layoutObject.styleRef().visibility() != VISIBLE)
         return;
 

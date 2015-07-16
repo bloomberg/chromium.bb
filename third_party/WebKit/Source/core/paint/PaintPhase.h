@@ -57,8 +57,9 @@ enum PaintPhase {
 
 enum PaintBehaviorFlags {
     PaintBehaviorNormal = 0,
-    // TODO(jchaffraix): Remove those 2 once we have migrated to GlobalPaintFlags.
+    // TODO(jchaffraix): Remove those 3 once we have migrated to GlobalPaintFlags.
     PaintBehaviorSelectionOnly = 1 << 0,
+    PaintBehaviorPrinting = 1 << 1,
     PaintBehaviorFlattenCompositingLayers = 1 << 2,
     PaintBehaviorRenderingClipPathAsMask = 1 << 3,
     PaintBehaviorSkipRootBackground = 1 << 4,
@@ -80,7 +81,11 @@ enum GlobalPaintFlag {
     // Used when painting a drag-image or printing in order to
     // ignore the hardware layers and paint the whole tree
     // into the topmost layer.
-    GlobalPaintFlattenCompositingLayers = 1 << 1
+    GlobalPaintFlattenCompositingLayers = 1 << 1,
+    // Used when printing in order to adapt the output to the medium, for
+    // instance by not painting shadows and selections on text, and add
+    // URL metadata for links.
+    GlobalPaintPrinting = 1 << 2
 };
 
 typedef unsigned GlobalPaintFlags;
@@ -94,6 +99,8 @@ inline PaintBehavior toPaintBehavior(GlobalPaintFlags flags)
         behavior |= PaintBehaviorSelectionOnly;
     if (flags & GlobalPaintFlattenCompositingLayers)
         behavior |= PaintBehaviorFlattenCompositingLayers;
+    if (flags & GlobalPaintPrinting)
+        behavior |= PaintBehaviorPrinting;
     return behavior;
 }
 inline GlobalPaintFlags toGlobalPaintFlags(PaintBehavior behavior)
@@ -103,6 +110,8 @@ inline GlobalPaintFlags toGlobalPaintFlags(PaintBehavior behavior)
         flags |= GlobalPaintSelectionOnly;
     if (behavior & PaintBehaviorFlattenCompositingLayers)
         flags |= GlobalPaintFlattenCompositingLayers;
+    if (behavior & PaintBehaviorPrinting)
+        flags |= GlobalPaintPrinting;
     return flags;
 }
 

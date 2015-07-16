@@ -37,7 +37,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintIn
 
     // FIXME: When Skia supports annotation rect covering (https://code.google.com/p/skia/issues/detail?id=3872),
     // these rects may be covered line box drawings. Then we may need a dedicated paint phase.
-    if (paintInfo.phase == PaintPhaseForeground && paintInfo.context->printing())
+    if (paintInfo.phase == PaintPhaseForeground && paintInfo.isPrinting())
         addPDFURLRectsForInlineChildrenRecursively(layoutObject, paintInfo, paintOffset);
 
     // If we have no lines then we have no work to do.

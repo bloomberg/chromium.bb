@@ -100,8 +100,7 @@ void TextPainter::updateGraphicsContext(GraphicsContext* context, const Style& t
             context->setStrokeThickness(textStyle.strokeWidth);
     }
 
-    // Text shadows are disabled when printing. http://crbug.com/258321
-    if (textStyle.shadow && !context->printing()) {
+    if (textStyle.shadow) {
         if (!stateSaver.saved())
             stateSaver.save();
         context->setDrawLooper(textStyle.shadow->createDrawLooper(DrawLooperBuilder::ShadowIgnoresAlpha, textStyle.currentColor, horizontal));

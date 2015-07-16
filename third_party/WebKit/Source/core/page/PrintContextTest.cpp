@@ -94,19 +94,15 @@ protected:
     void printSinglePage(SkCanvas& canvas)
     {
         IntRect pageRect(0, 0, kPageWidth, kPageHeight);
+        printContext().begin(pageRect.width(), pageRect.height());
         document().view()->updateAllLifecyclePhases();
-        document().setPrinting(true);
         SkPictureBuilder pictureBuilder(pageRect);
         GraphicsContext& context = pictureBuilder.context();
         context.setPrinting(true);
-        DeprecatedPaintLayer& rootLayer = *document().view()->layoutView()->layer();
-        DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(pageRect), PaintBehaviorNormal, LayoutSize());
-        DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-        printContext().begin(kPageWidth, kPageHeight);
-        printContext().end();
+        document().view()->paintContents(&context, pageRect);
         pictureBuilder.endRecording()->playback(&canvas);
         printContext().outputLinkedDestinations(&canvas, pageRect);
-        document().setPrinting(false);
+        printContext().end();
     }
 
     static String absoluteBlockHtmlForLink(int x, int y, int width, int height, const char* url, const char* children = nullptr)
