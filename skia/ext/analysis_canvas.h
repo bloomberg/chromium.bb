@@ -47,7 +47,7 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkPicture::AbortCallback {
                         const SkRect* src,
                         const SkRect& dst,
                         const SkPaint* paint,
-                        DrawBitmapRectFlags flags) override;
+                        SrcRectConstraint) override;
   void onDrawBitmapNine(const SkBitmap& bitmap,
                         const SkIRect& center,
                         const SkRect& dst,
@@ -57,9 +57,10 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkPicture::AbortCallback {
                     SkScalar top,
                     const SkPaint* paint = NULL) override;
   void onDrawImageRect(const SkImage*,
-                        const SkRect* src,
-                        const SkRect& dst,
-                        const SkPaint* paint) override;
+                       const SkRect* src,
+                       const SkRect& dst,
+                       const SkPaint* paint,
+                       SrcRectConstraint) override;
   void onDrawSprite(const SkBitmap&,
                     int left,
                     int top,
