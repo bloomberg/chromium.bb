@@ -44,29 +44,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/*  Scalars (the fractional value type in skia) can be implemented either as
-    floats or 16.16 integers (fixed). Exactly one of these two symbols must be
-    defined.
-*/
-//#define SK_SCALAR_IS_FLOAT
-//#define SK_SCALAR_IS_FIXED
-
-
-/*  Somewhat independent of how SkScalar is implemented, Skia also wants to know
-    if it can use floats at all. Naturally, if SK_SCALAR_IS_FLOAT is defined,
-    then so muse SK_CAN_USE_FLOAT, but if scalars are fixed, SK_CAN_USE_FLOAT
-    can go either way.
- */
-//#define SK_CAN_USE_FLOAT
-
-/*  For some performance-critical scalar operations, skia will optionally work
-    around the standard float operators if it knows that the CPU does not have
-    native support for floats. If your environment uses software floating point,
-    define this flag.
- */
-//#define SK_SOFTWARE_FLOAT
-
-
 /*  Skia has lots of debug-only code. Often this is just null checks or other
     parameter checking, but sometimes it can be quite intrusive (e.g. check that
     each 32bit pixel is in premultiplied form). This code can be very useful
@@ -96,18 +73,6 @@
  */
 //#define SK_CPU_BENDIAN
 //#define SK_CPU_LENDIAN
-
-
-/*  Some compilers don't support long long for 64bit integers. If yours does
-    not, define this to the appropriate type.
- */
-//#define SkLONGLONG int64_t
-
-
-/*  Some envorinments do not suport writable globals (eek!). If yours does not,
-    define this flag.
- */
-//#define SK_USE_RUNTIME_GLOBALS
 
 /*  If zlib is available and you want to support the flate compression
     algorithm (used in PDF generation), define SK_ZLIB_INCLUDE to be the
