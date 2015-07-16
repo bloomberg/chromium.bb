@@ -267,7 +267,6 @@ void WorkerThread::shutdown()
     }
 
     workerGlobalScope()->dispose();
-    willDestroyIsolate();
 
     // This should be called before we start the shutdown procedure.
     workerReportingProxy().willDestroyWorkerGlobalScope();
@@ -287,6 +286,7 @@ void WorkerThread::performShutdownTask()
     m_workerGlobalScope->notifyContextDestroyed();
     m_workerGlobalScope = nullptr;
 
+    willDestroyIsolate();
     shutdownBackingThread();
     destroyIsolate();
     m_isolate = nullptr;
