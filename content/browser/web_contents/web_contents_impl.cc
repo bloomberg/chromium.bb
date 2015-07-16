@@ -863,7 +863,6 @@ const std::string& WebContentsImpl::GetUserAgentOverride() const {
 }
 
 void WebContentsImpl::EnableTreeOnlyAccessibilityMode() {
-  RemoveAccessibilityMode(AccessibilityModeTreeOnly);
   AddAccessibilityMode(AccessibilityModeTreeOnly);
 }
 
