@@ -849,17 +849,15 @@ void FrameView::performLayout(bool inSubtreeLayout)
     if (inSubtreeLayout) {
         if (m_analyzer)
             m_analyzer->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRootList.size());
-        Vector<LayoutSubtreeRootList::LayoutSubtree> roots;
-        m_layoutSubtreeRootList.takeRoots(roots);
-        for (auto& root : roots) {
-            if (!root.object->needsLayout())
+        while (LayoutObject* root = m_layoutSubtreeRootList.takeDeepestRoot()) {
+            if (!root->needsLayout())
                 continue;
-            layoutFromRootObject(*root.object);
+            layoutFromRootObject(*root);
 
             // We need to ensure that we mark up all layoutObjects up to the LayoutView
             // for paint invalidation. This simplifies our code as we just always
             // do a full tree walk.
-            if (LayoutObject* container = root.object->container())
+            if (LayoutObject* container = root->container())
                 container->setMayNeedPaintInvalidation();
         }
     } else {

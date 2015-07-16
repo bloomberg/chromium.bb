@@ -18,9 +18,21 @@ unsigned LayoutSubtreeRootList::LayoutSubtree::determineDepth(LayoutObject* obje
     return depth;
 }
 
-static bool deepestSubtreeFirst(const LayoutSubtreeRootList::LayoutSubtree& a, const LayoutSubtreeRootList::LayoutSubtree& b)
+void LayoutSubtreeRootList::removeRoot(LayoutObject& object)
 {
-    return a.depth > b.depth;
+    if (!m_roots.isEmpty()) {
+        m_roots.remove(&object);
+        ASSERT(m_orderedRoots.isEmpty());
+    } else {
+        // When removed during layout, we have to search the vector
+        int rootCount = m_orderedRoots.size();
+        for (int i = 0; i < rootCount; ++i) {
+            if (m_orderedRoots[i].object == &object) {
+                m_orderedRoots.remove(i);
+                return;
+            }
+        }
+    }
 }
 
 void LayoutSubtreeRootList::clearAndMarkContainingBlocksForLayout()
@@ -36,11 +48,19 @@ LayoutObject* LayoutSubtreeRootList::randomRoot()
     return *m_roots.begin();
 }
 
-void LayoutSubtreeRootList::takeRoots(Vector<LayoutSubtree>& orderedRoots)
+LayoutObject* LayoutSubtreeRootList::takeDeepestRoot()
 {
-    copyToVector(m_roots, orderedRoots);
-    std::sort(orderedRoots.begin(), orderedRoots.end(), deepestSubtreeFirst);
-    m_roots.clear();
+    if (m_orderedRoots.isEmpty()) {
+        if (m_roots.isEmpty())
+            return 0;
+
+        copyToVector(m_roots, m_orderedRoots);
+        std::sort(m_orderedRoots.begin(), m_orderedRoots.end());
+        m_roots.clear();
+    }
+    LayoutObject* root = m_orderedRoots.last().object;
+    m_orderedRoots.removeLast();
+    return root;
 }
 
 void LayoutSubtreeRootList::countObjectsNeedingLayoutInRoot(const LayoutObject* object, unsigned& needsLayoutObjects, unsigned& totalObjects)
