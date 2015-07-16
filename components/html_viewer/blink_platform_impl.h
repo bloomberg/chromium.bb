@@ -9,7 +9,6 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "cc/blink/web_compositor_support_impl.h"
-#include "components/html_viewer/blink_resource_map.h"
 #include "components/html_viewer/mock_web_blob_registry_impl.h"
 #include "components/html_viewer/web_mime_registry_impl.h"
 #include "components/html_viewer/web_notification_manager_impl.h"
@@ -98,7 +97,6 @@ class BlinkPlatformImpl : public blink::Platform {
   webcrypto::WebCryptoImpl web_crypto_;
   WebNotificationManagerImpl web_notification_manager_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
-  BlinkResourceMap blink_resource_map_;
   mojo::NetworkServicePtr network_service_;
   mojo::URLLoaderFactoryPtr url_loader_factory_;
   MockWebBlobRegistryImpl blob_registry_;

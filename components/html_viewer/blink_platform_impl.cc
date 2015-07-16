@@ -32,6 +32,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 namespace html_viewer {
@@ -164,11 +165,10 @@ const unsigned char* BlinkPlatformImpl::getTraceCategoryEnabledFlag(
 blink::WebData BlinkPlatformImpl::loadResource(const char* resource) {
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
     if (!strcmp(resource, kDataResources[i].name)) {
-      int length;
-      const unsigned char* data =
-          blink_resource_map_.GetResource(kDataResources[i].id, &length);
-      CHECK(data != nullptr && length > 0);
-      return blink::WebData(reinterpret_cast<const char*>(data), length);
+      base::StringPiece data =
+          ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+              kDataResources[i].id, ui::SCALE_FACTOR_100P);
+      return blink::WebData(data.data(), data.size());
     }
   }
   NOTREACHED() << "Requested resource is unavailable: " << resource;

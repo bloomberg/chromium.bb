@@ -4,9 +4,11 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -19,6 +21,14 @@ class NoAtExitBaseTestSuite : public base::TestSuite {
  public:
   NoAtExitBaseTestSuite(int argc, char** argv)
       : base::TestSuite(argc, argv, false) {
+#if !defined(OS_ANDROID)
+    // This code is only needed on desktop because the ResourceBundle
+    // implementation there DCHECKs otherwise.
+    base::FilePath pak_path;
+    CHECK(PathService::Get(base::DIR_MODULE, &pak_path));
+    pak_path = pak_path.AppendASCII("html_viewer.pak");
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_path);
+#endif
   }
 };
 

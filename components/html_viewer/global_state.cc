@@ -38,8 +38,7 @@ const char kJavaScriptFlags[] = "js-flags";
 size_t kDesiredMaxMemory = 20 * 1024 * 1024;
 
 // Paths resources are loaded from.
-const char kResourceResourcesPak[] = "html_viewer_resources.pak";
-const char kResourceUIPak[] = "ui_test.pak";
+const char kResourceResourcesPak[] = "html_viewer.pak";
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 const char kResourceNativesBlob[] = "natives_blob.bin";
 const char kResourceSnapshotBlob[] = "snapshot_blob.bin";
@@ -48,7 +47,6 @@ const char kResourceSnapshotBlob[] = "snapshot_blob.bin";
 std::set<std::string> GetResourcePaths() {
   std::set<std::string> paths;
   paths.insert(kResourceResourcesPak);
-  paths.insert(kResourceUIPak);
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   paths.insert(kResourceNativesBlob);
   paths.insert(kResourceSnapshotBlob);
@@ -128,12 +126,13 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
     blink::WebRuntimeFeatures::enableEncryptedMedia(false);
 
   if (!is_headless_) {
+    base::File pak_file = resource_loader_.ReleaseFile(kResourceResourcesPak);
+    base::File pak_file_2 = pak_file.Duplicate();
     ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        resource_loader_.ReleaseFile(kResourceResourcesPak),
-        base::MemoryMappedFile::Region::kWholeFile);
+        pak_file.Pass(), base::MemoryMappedFile::Region::kWholeFile);
     // TODO(sky): why is this always using 100?
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-        resource_loader_.ReleaseFile(kResourceUIPak), ui::SCALE_FACTOR_100P);
+      pak_file_2.Pass(), ui::SCALE_FACTOR_100P);
   }
 
   compositor_thread_.Start();
