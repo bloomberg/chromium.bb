@@ -94,6 +94,43 @@ TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSAEncryption_NonNullParams) {
   ASSERT_FALSE(ParseDer(kData, &algorithm));
 }
 
+// Parses a sha1WithRSASignature which contains a NULL parameters field.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.3.14.3.2.29
+//       NULL
+TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSASignature_NullParams) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x09,  // SEQUENCE (9 bytes)
+      0x06, 0x05,  // OBJECT IDENTIFIER (5 bytes)
+      0x2b, 0x0e, 0x03, 0x02, 0x1d,
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  EXPECT_EQ(SignatureAlgorithmId::RsaPkcs1, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha1, algorithm->digest());
+}
+
+// Parses a sha1WithRSASignature which contains no parameters field.
+//
+//   SEQUENCE (1 elem)
+//       OBJECT IDENTIFIER  1.3.14.3.2.29
+TEST(SignatureAlgorithmTest, ParseDer_sha1WithRSASignature_NoParams) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x07,  // SEQUENCE (7 bytes)
+      0x06, 0x05,  // OBJECT IDENTIFIER (5 bytes)
+      0x2b, 0x0e, 0x03, 0x02, 0x1d,
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
 // Parses a sha1WithRSAEncryption which contains values after the sequence.
 //
 //   SEQUENCE (2 elem)

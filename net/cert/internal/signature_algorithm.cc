@@ -21,6 +21,20 @@ namespace {
 const uint8_t kOidSha1WithRsaEncryption[] =
     {0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x05};
 
+// sha1WithRSASignature is a deprecated equivalent of
+// sha1WithRSAEncryption.
+//
+// It originates from the NIST Open Systems Environment (OSE)
+// Implementor's Workshop (OIW).
+//
+// It is supported for compatibility with Microsoft's certificate APIs and
+// tools, particularly makecert.exe, which default(ed/s) to this OID for SHA-1.
+//
+// See also: https://bugzilla.mozilla.org/show_bug.cgi?id=1042479
+//
+// In dotted notation: 1.3.14.3.2.29
+const uint8_t kOidSha1WithRsaSignature[] = {0x2b, 0x0e, 0x03, 0x02, 0x1d};
+
 // From RFC 5912:
 //
 //     pkcs-1  OBJECT IDENTIFIER  ::=
@@ -295,6 +309,9 @@ scoped_ptr<SignatureAlgorithm> SignatureAlgorithm::CreateFromDer(
     return ParseEcdsa(DigestAlgorithm::Sha512, params);
 
   // TODO(eroman): Add parsing of RSASSA-PSS
+
+  if (oid.Equals(der::Input(kOidSha1WithRsaSignature)))
+    return ParseRsaPkcs1(DigestAlgorithm::Sha1, params);
 
   return nullptr;  // Unsupported OID.
 }
