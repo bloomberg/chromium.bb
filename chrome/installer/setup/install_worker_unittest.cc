@@ -583,20 +583,24 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
                                 InstallerState::MULTI_INSTALL));
 
   // Expect the multi Client State key to be created for the binaries.
+#if defined(GOOGLE_CHROME_BUILD)
   BrowserDistribution* multi_dist =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BINARIES);
   std::wstring multi_app_guid(multi_dist->GetAppGuid());
   std::wstring multi_client_state_suffix(L"ClientState\\" + multi_app_guid);
-  EXPECT_CALL(work_item_list, AddCreateRegKeyWorkItem(
-                                  _, HasSubstr(multi_client_state_suffix), _))
-      .Times(AnyNumber());
+  std::wstring multi_medium_suffix(L"ClientStateMedium\\" + multi_app_guid);
 
   // Expect ClientStateMedium to be created for system-level installs.
   EXPECT_CALL(work_item_list,
-              AddCreateRegKeyWorkItem(
-                  _, HasSubstr(L"ClientStateMedium\\" + multi_app_guid), _))
+              AddCreateRegKeyWorkItem(_, HasSubstr(multi_medium_suffix), _))
       .Times(system_level ? 1 : 0);
+#else
+  std::wstring multi_client_state_suffix(L"Chromium Binaries");
+#endif
+  EXPECT_CALL(work_item_list, AddCreateRegKeyWorkItem(
+                                  _, HasSubstr(multi_client_state_suffix), _))
+      .Times(AnyNumber());
 
   // Expect to see a set value for the "TEST" brand code in the multi Client
   // State key.
@@ -669,20 +673,29 @@ TEST_F(InstallWorkerTest, AddUsageStatsWorkItems) {
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER);
   if (system_level) {
+#if defined(GOOGLE_CHROME_BUILD)
     EXPECT_CALL(work_item_list,
                 AddDeleteRegValueWorkItem(
                     _, StrEq(chrome_dist->GetStateMediumKey()), _,
                     StrEq(google_update::kRegUsageStatsField))).Times(1);
+#endif
     EXPECT_CALL(work_item_list,
                 AddDeleteRegValueWorkItem(
                     Eq(HKEY_CURRENT_USER), StrEq(chrome_dist->GetStateKey()), _,
                     StrEq(google_update::kRegUsageStatsField))).Times(1);
   }
+#if defined(GOOGLE_CHROME_BUILD)
+  const int kDeleteTimes = 1;
+#else
+  // Expect two deletes to the same key name since ClientState and
+  // ClientStateMedium are identical for Chromium.
+  const int kDeleteTimes = 2;
+#endif
   EXPECT_CALL(
       work_item_list,
       AddDeleteRegValueWorkItem(
           Eq(installer_state->root_key()), StrEq(chrome_dist->GetStateKey()), _,
-          StrEq(google_update::kRegUsageStatsField))).Times(1);
+          StrEq(google_update::kRegUsageStatsField))).Times(kDeleteTimes);
 
   AddUsageStatsWorkItems(*installation_state.get(),
                          *installer_state.get(),

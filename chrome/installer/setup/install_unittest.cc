@@ -225,6 +225,7 @@ TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
   std::string read_manifest;
   ASSERT_TRUE(base::ReadFileToString(manifest_path_, &read_manifest));
 
+#if defined(GOOGLE_CHROME_BUILD)
   static const char kExpectedManifest[] =
       "<Application>\r\n"
       "  <VisualElements\r\n"
@@ -238,6 +239,21 @@ TEST_F(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
       "\r\n"
       "  </VisualElements>\r\n"
       "</Application>";
+#else
+  static const char kExpectedManifest[] =
+      "<Application>\r\n"
+      "  <VisualElements\r\n"
+      "      DisplayName='Chromium'\r\n"
+      "      Logo='0.0.0.0\\VisualElements\\Logo.png'\r\n"
+      "      SmallLogo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
+      "      ForegroundText='light'\r\n"
+      "      BackgroundColor='#323232'>\r\n"
+      "    <DefaultTile ShowName='allLogos'/>\r\n"
+      "    <SplashScreen Image='0.0.0.0\\VisualElements\\splash-620x300.png'/>"
+      "\r\n"
+      "  </VisualElements>\r\n"
+      "</Application>";
+#endif
 
   ASSERT_STREQ(kExpectedManifest, read_manifest.c_str());
 }
