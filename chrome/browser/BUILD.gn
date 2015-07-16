@@ -685,9 +685,7 @@ source_set("browser") {
   }
 
   if (enable_rlz) {
-    sources +=
-        rebase_path(gypi_values.chrome_browser_rlz_sources, ".", "//chrome")
-    deps += [ "//rlz:rlz_lib" ]
+    deps += [ ":rlz" ]
   }
 
   # TODO(GYP)
@@ -1194,6 +1192,20 @@ source_set("test_support") {
     sources += [
       "local_discovery/wifi/mock_wifi_manager.cc",
       "local_discovery/wifi/mock_wifi_manager.h",
+    ]
+  }
+}
+
+if (enable_rlz_support) {
+  source_set("rlz") {
+    sources =
+        rebase_path(gypi_values.chrome_browser_rlz_sources, ".", "//chrome")
+    deps = [
+      "//components/google/core/browser",
+      "//components/omnibox/browser",
+      "//components/rlz",
+      "//components/search_engines",
+      "//rlz:rlz_lib",
     ]
   }
 }

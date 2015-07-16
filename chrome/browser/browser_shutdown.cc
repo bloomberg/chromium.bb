@@ -40,7 +40,7 @@
 #endif
 
 #if defined(ENABLE_RLZ)
-#include "chrome/browser/rlz/rlz.h"
+#include "components/rlz/rlz_tracker.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -192,7 +192,7 @@ bool ShutdownPreThreadsStop() {
 #if defined(ENABLE_RLZ)
   // Cleanup any statics created by RLZ. Must be done before NotificationService
   // is destroyed.
-  RLZTracker::CleanupRlz();
+  rlz::RLZTracker::CleanupRlz();
 #endif
 
   return restart_last_session;
