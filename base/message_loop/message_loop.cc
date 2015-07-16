@@ -19,6 +19,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 
 #if defined(OS_MACOSX)
@@ -473,10 +474,11 @@ void MessageLoop::RunTask(const PendingTask& pending_task) {
 
   HistogramEvent(kTaskRunEvent);
 
+  TRACE_TASK_EXECUTION("toplevel", pending_task);
+
   FOR_EACH_OBSERVER(TaskObserver, task_observers_,
                     WillProcessTask(pending_task));
-  task_annotator_.RunTask(
-      "MessageLoop::PostTask", "MessageLoop::RunTask", pending_task);
+  task_annotator_.RunTask("MessageLoop::PostTask", pending_task);
   FOR_EACH_OBSERVER(TaskObserver, task_observers_,
                     DidProcessTask(pending_task));
 

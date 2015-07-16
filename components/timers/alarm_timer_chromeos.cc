@@ -16,6 +16,7 @@
 #include "base/pending_task.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/trace_event.h"
 
 namespace timers {
 namespace {
@@ -428,9 +429,11 @@ void AlarmTimer::OnTimerFired() {
   else
     Stop();
 
+  TRACE_TASK_EXECUTION("AlarmTimer::OnTimerFired", *pending_user_task);
+
   // Now run the user task.
-  base::MessageLoop::current()->task_annotator()->RunTask(
-      "AlarmTimer::Reset", "AlarmTimer::OnTimerFired", *pending_user_task);
+  base::MessageLoop::current()->task_annotator()->RunTask("AlarmTimer::Reset",
+                                                          *pending_user_task);
 }
 
 OneShotAlarmTimer::OneShotAlarmTimer() : AlarmTimer(false, false) {

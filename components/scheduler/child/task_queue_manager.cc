@@ -734,8 +734,10 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
       FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
                         WillProcessTask(pending_task));
     }
-    task_annotator_.RunTask("TaskQueueManager::PostTask",
-                            "TaskQueueManager::RunTask", pending_task);
+
+    TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
+                         pending_task);
+    task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
 
     // Detect if the TaskQueueManager just got deleted.  If this happens we must
     // not access any member variables after this point.
