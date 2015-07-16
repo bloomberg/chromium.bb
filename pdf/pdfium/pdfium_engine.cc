@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "gin/public/gin_embedders.h"
 #include "pdf/draw_utils.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
@@ -45,6 +46,7 @@
 #include "third_party/pdfium/public/fpdf_sysfontinfo.h"
 #include "third_party/pdfium/public/fpdf_transformpage.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "v8/include/v8.h"
 
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
@@ -655,7 +657,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   FPDF_FORMFILLINFO::FFI_GotoURL = Form_GotoURL;
   FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
 #endif  // PDF_USE_XFA
-  IPDF_JSPLATFORM::version = 1;
+  IPDF_JSPLATFORM::version = 2;
   IPDF_JSPLATFORM::app_alert = Form_Alert;
   IPDF_JSPLATFORM::app_beep = Form_Beep;
   IPDF_JSPLATFORM::app_response = Form_Response;
@@ -665,6 +667,8 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   IPDF_JSPLATFORM::Doc_submitForm = Form_SubmitForm;
   IPDF_JSPLATFORM::Doc_gotoPage = Form_GotoPage;
   IPDF_JSPLATFORM::Field_browse = Form_Browse;
+  IPDF_JSPLATFORM::m_isolate = v8::Isolate::GetCurrent();
+  IPDF_JSPLATFORM::m_v8EmbedderSlot = gin::kEmbedderPDFium;
 
   IFSDK_PAUSE::version = 1;
   IFSDK_PAUSE::user = NULL;
