@@ -89,10 +89,6 @@ public:
         OwnPtr<typename S::WebType> ownPtr = adoptPtr(result);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        if (!result) {
-            m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
-            return;
-        }
         m_resolver->resolve(S::take(m_resolver.get(), ownPtr.release()));
     }
 

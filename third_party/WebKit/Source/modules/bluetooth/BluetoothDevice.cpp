@@ -24,6 +24,7 @@ BluetoothDevice::BluetoothDevice(PassOwnPtr<WebBluetoothDevice> webDevice)
 
 BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothDevice> webDevice)
 {
+    ASSERT(webDevice);
     return new BluetoothDevice(webDevice);
 }
 

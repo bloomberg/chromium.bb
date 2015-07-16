@@ -21,7 +21,7 @@ namespace blink {
 
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::take(ScriptPromiseResolver*, PassOwnPtr<ServiceWorkerWindowClient::WebType> webClient)
 {
-    return ServiceWorkerWindowClient::create(*webClient);
+    return webClient ? ServiceWorkerWindowClient::create(*webClient) : nullptr;
 }
 
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::create(const WebServiceWorkerClientInfo& info)

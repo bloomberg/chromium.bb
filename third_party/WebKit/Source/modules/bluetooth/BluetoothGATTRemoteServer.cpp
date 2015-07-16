@@ -26,6 +26,7 @@ BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(PassOwnPtr<WebBluetoothGATT
 
 BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTRemoteServer> webGATT)
 {
+    ASSERT(webGATT);
     return new BluetoothGATTRemoteServer(webGATT);
 }
 
