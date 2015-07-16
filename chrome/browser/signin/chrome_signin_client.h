@@ -37,10 +37,8 @@ class ChromeSigninClient
   void Shutdown() override;
   void DoFinalInit() override;
 
-  // Utility methods.
+  // Utility method.
   static bool ProfileAllowsSigninCookies(Profile* profile);
-  static bool SettingsAllowSigninCookies(
-      content_settings::CookieSettings* cookie_settings);
 
   // If |for_ephemeral| is true, special kind of device ID for ephemeral users
   // is generated.

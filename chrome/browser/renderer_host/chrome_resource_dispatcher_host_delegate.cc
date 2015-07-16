@@ -27,7 +27,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/signin/signin_header_helper.h"
+#include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_switches.h"
@@ -436,9 +436,9 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     io_data->policy_header_helper()->AddPolicyHeaders(request->url(), request);
 #endif
 
-  signin::AppendMirrorRequestHeaderIfPossible(
-      request, GURL() /* redirect_url */, io_data,
-      info->GetChildID(), info->GetRouteID());
+  signin::AppendMirrorRequestHeaderHelper(request, GURL() /* redirect_url */,
+                                          io_data, info->GetChildID(),
+                                          info->GetRouteID());
 
   AppendStandardResourceThrottles(request,
                                   resource_context,
@@ -736,8 +736,8 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // response and let Chrome handle the action with native UI. The only
   // exception is requests from gaia webview, since the native profile
   // management UI is built on top of it.
-  signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data,
-      info->GetChildID(), info->GetRouteID());
+  signin::AppendMirrorRequestHeaderHelper(
+      request, redirect_url, io_data, info->GetChildID(), info->GetRouteID());
 
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(

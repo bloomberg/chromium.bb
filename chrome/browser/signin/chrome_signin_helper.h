@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_HEADER_HELPER_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_HEADER_HELPER_H_
+#ifndef CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_HELPER_H_
+#define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_HELPER_H_
 
 #include <string>
 
@@ -20,26 +20,17 @@ class ProfileIOData;
 // and let Chrome handles signin with native UI.
 namespace signin {
 
-// Profile mode flags.
-enum ProfileMode {
-  PROFILE_MODE_DEFAULT = 0,
-  // Incognito mode disabled by enterprise policy or by parental controls.
-  PROFILE_MODE_INCOGNITO_DISABLED = 1 << 0,
-  // Adding account disabled in the Android-for-EDU mode.
-  PROFILE_MODE_ADD_ACCOUNT_DISABLED = 1 << 1
-};
-
 // The ServiceType specified by GAIA in the response header accompanying the 204
 // response. This indicates the action Chrome is supposed to lead the user to
 // perform.
 enum GAIAServiceType {
-  GAIA_SERVICE_TYPE_NONE = 0,                 // No GAIA response header.
-  GAIA_SERVICE_TYPE_SIGNOUT,                  // Logout all existing sessions.
-  GAIA_SERVICE_TYPE_INCOGNITO,                // Open an incognito tab.
-  GAIA_SERVICE_TYPE_ADDSESSION,               // Add a secondary account.
-  GAIA_SERVICE_TYPE_REAUTH,                   // Re-authenticate an account.
-  GAIA_SERVICE_TYPE_SIGNUP,                   // Create a new account.
-  GAIA_SERVICE_TYPE_DEFAULT,                  // All other cases.
+  GAIA_SERVICE_TYPE_NONE = 0,    // No GAIA response header.
+  GAIA_SERVICE_TYPE_SIGNOUT,     // Logout all existing sessions.
+  GAIA_SERVICE_TYPE_INCOGNITO,   // Open an incognito tab.
+  GAIA_SERVICE_TYPE_ADDSESSION,  // Add a secondary account.
+  GAIA_SERVICE_TYPE_REAUTH,      // Re-authenticate an account.
+  GAIA_SERVICE_TYPE_SIGNUP,      // Create a new account.
+  GAIA_SERVICE_TYPE_DEFAULT,     // All other cases.
 };
 
 // Struct describing the paramters received in the manage account header.
@@ -67,12 +58,11 @@ struct ManageAccountsParams {
 // with the exception of requests from gaia webview. Must be called on IO
 // thread.
 // Returns true if the account management header was added to the request.
-bool AppendMirrorRequestHeaderIfPossible(
-    net::URLRequest* request,
-    const GURL& redirect_url,
-    ProfileIOData* io_data,
-    int child_id,
-    int route_id);
+bool AppendMirrorRequestHeaderHelper(net::URLRequest* request,
+                                     const GURL& redirect_url,
+                                     ProfileIOData* io_data,
+                                     int child_id,
+                                     int route_id);
 
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response
 // header.
@@ -85,12 +75,11 @@ ManageAccountsParams BuildManageAccountsParamsIfValid(net::URLRequest* request,
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the
 // child/route id. Must be called on IO thread.
-void ProcessMirrorResponseHeaderIfExists(
-    net::URLRequest* request,
-    ProfileIOData* io_data,
-    int child_id,
-    int route_id);
+void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
+                                         ProfileIOData* io_data,
+                                         int child_id,
+                                         int route_id);
 
 };  // namespace signin
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_HEADER_HELPER_H_
+#endif  // CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_HELPER_H_

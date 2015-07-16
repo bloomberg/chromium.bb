@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/signin/signin_header_helper.h"
+#include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"

@@ -8,7 +8,7 @@
 #include <jni.h>
 
 #include "base/basictypes.h"
-#include "chrome/browser/signin/signin_header_helper.h"
+#include "chrome/browser/signin/chrome_signin_helper.h"
 
 class Profile;
 

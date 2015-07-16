@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/signin_header_helper.h"
+#include "chrome/browser/signin/chrome_signin_helper.h"
 
 class Profile;
 class ProfileManager;

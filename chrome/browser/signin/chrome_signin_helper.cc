@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/signin_header_helper.h"
+#include "chrome/browser/signin/chrome_signin_helper.h"
 
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
@@ -15,8 +13,8 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -27,7 +25,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
-#elif !defined(OS_IOS)
+#else
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -38,12 +36,7 @@ namespace {
 // Dictionary of fields in a mirror response header.
 typedef std::map<std::string, std::string> MirrorResponseHeaderDictionary;
 
-const char kChromeConnectedHeader[] = "X-Chrome-Connected";
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
-const char kGaiaIdAttrName[] = "id";
-const char kProfileModeAttrName[] = "mode";
-const char kEnableAccountConsistencyAttrName[] = "enable_account_consistency";
-
 const char kServiceTypeAttrName[] = "action";
 const char kEmailAttrName[] = "email";
 const char kIsSamlAttrName[] = "is_saml";
@@ -82,9 +75,9 @@ MirrorResponseHeaderDictionary ParseMirrorResponseHeader(
       DLOG(WARNING) << "Unexpected GAIA header field '" << field << "'.";
       continue;
     }
-    dictionary[field.substr(0, delim).as_string()] = net::UnescapeURLComponent(
-        field.substr(delim + 1).as_string(),
-        net::UnescapeRule::URL_SPECIAL_CHARS);
+    dictionary[field.substr(0, delim).as_string()] =
+        net::UnescapeURLComponent(field.substr(delim + 1).as_string(),
+                                  net::UnescapeRule::URL_SPECIAL_CHARS);
   }
   return dictionary;
 }
@@ -117,12 +110,12 @@ signin::ManageAccountsParams BuildManageAccountsParams(
   return params;
 }
 
-#if !defined(OS_IOS)
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
 // opens an incognito window/tab.
 void ProcessMirrorHeaderUIThread(
-    int child_id, int route_id,
+    int child_id,
+    int route_id,
     signin::ManageAccountsParams manage_accounts_params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -155,99 +148,53 @@ void ProcessMirrorHeaderUIThread(
     }
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         AccountReconcilorFactory::GetForProfile(profile)->GetState());
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        bubble_mode, manage_accounts_params);
+    browser->window()->ShowAvatarBubbleFromAvatarButton(bubble_mode,
+                                                        manage_accounts_params);
   }
-#else  // defined(OS_ANDROID)
+#else   // defined(OS_ANDROID)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
-    GURL url(manage_accounts_params.continue_url.empty() ?
-        chrome::kChromeUINativeNewTabURL :
-        manage_accounts_params.continue_url);
-    web_contents->OpenURL(content::OpenURLParams(
-        url, content::Referrer(), OFF_THE_RECORD,
-        ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
+    GURL url(manage_accounts_params.continue_url.empty()
+                 ? chrome::kChromeUINativeNewTabURL
+                 : manage_accounts_params.continue_url);
+    web_contents->OpenURL(
+        content::OpenURLParams(url, content::Referrer(), OFF_THE_RECORD,
+                               ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
   } else {
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         AccountReconcilorFactory::GetForProfile(profile)->GetState());
     AccountManagementScreenHelper::OpenAccountManagementScreen(profile,
                                                                service_type);
   }
-#endif // OS_ANDROID
-}
-#endif // !defined(OS_IOS)
-
-bool IsDriveOrigin(const GURL& url) {
-  if (!url.SchemeIsCryptographic())
-    return false;
-
-  const GURL kGoogleDriveURL("https://drive.google.com");
-  const GURL kGoogleDocsURL("https://docs.google.com");
-  return url == kGoogleDriveURL || url == kGoogleDocsURL;
+#endif  // OS_ANDROID
 }
 
-} // empty namespace
+}  // empty namespace
 
 namespace signin {
 
-ManageAccountsParams::ManageAccountsParams() :
-    service_type(GAIA_SERVICE_TYPE_NONE),
-    email(""),
-    is_saml(false),
-    continue_url(""),
-    is_same_tab(false),
-    child_id(0),
-    route_id(0) {}
+ManageAccountsParams::ManageAccountsParams()
+    : service_type(GAIA_SERVICE_TYPE_NONE),
+      email(""),
+      is_saml(false),
+      continue_url(""),
+      is_same_tab(false),
+      child_id(0),
+      route_id(0) {
+}
 
-bool AppendMirrorRequestHeaderIfPossible(
-    net::URLRequest* request,
-    const GURL& redirect_url,
-    ProfileIOData* io_data,
-    int child_id,
-    int route_id) {
+bool AppendMirrorRequestHeaderHelper(net::URLRequest* request,
+                                     const GURL& redirect_url,
+                                     ProfileIOData* io_data,
+                                     int child_id,
+                                     int route_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (io_data->IsOffTheRecord())
     return false;
 
-  std::string account_id(io_data->google_services_account_id()->GetValue());
-
-  if (account_id.empty())
-    return false;
-
-  // If signin cookies are not allowed, don't add the header.
-  if (!ChromeSigninClient::SettingsAllowSigninCookies(
-          io_data->GetCookieSettings())) {
-    return false;
-  }
-
-  // Only set the header for Drive and Gaia always, and other Google properties
-  // if account consistency is enabled.
-  // Vasquette, which is integrated with most Google properties, needs the
-  // header to redirect certain user actions to Chrome native UI. Drive and Gaia
-  // need the header to tell if the current user is connected. The drive path is
-  // a temporary workaround until the more generic chrome.principals API is
-  // available.
-  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
-  GURL origin(url.GetOrigin());
-  bool is_enable_account_consistency = switches::IsEnableAccountConsistency();
-  bool is_google_url =
-      is_enable_account_consistency &&
-      (google_util::IsGoogleDomainUrl(
-           url,
-           google_util::ALLOW_SUBDOMAIN,
-           google_util::DISALLOW_NON_STANDARD_PORTS) ||
-       google_util::IsYoutubeDomainUrl(
-           url,
-           google_util::ALLOW_SUBDOMAIN,
-           google_util::DISALLOW_NON_STANDARD_PORTS));
-  if (!is_google_url && !IsDriveOrigin(origin) &&
-      !gaia::IsGaiaSignonRealm(origin)) {
-    return false;
-  }
-
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   extensions::WebViewRendererState::WebViewInfo webview_info;
-  bool is_guest =  extensions::WebViewRendererState::GetInstance()->GetInfo(
+  bool is_guest = extensions::WebViewRendererState::GetInstance()->GetInfo(
       child_id, route_id, &webview_info);
   // Do not set the x-chrome-connected header on requests from a native signin
   // webview, as identified by an empty extension id which means the webview is
@@ -256,7 +203,7 @@ bool AppendMirrorRequestHeaderIfPossible(
   // points.
   if (is_guest && webview_info.owner_host.empty())
     return false;
-#endif // !OS_ANDROID && !OS_IOS
+#endif  // !defined(OS_ANDROID)
 
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
   if (io_data->incognito_availibility()->GetValue() ==
@@ -265,14 +212,9 @@ bool AppendMirrorRequestHeaderIfPossible(
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
-  std::string header_value(base::StringPrintf("%s=%s,%s=%s,%s=%s",
-      kGaiaIdAttrName, account_id.c_str(),
-      kProfileModeAttrName, base::IntToString(profile_mode_mask).c_str(),
-      kEnableAccountConsistencyAttrName,
-      is_enable_account_consistency ? "true" : "false"));
-  request->SetExtraRequestHeaderByName(
-      kChromeConnectedHeader, header_value, false);
-  return true;
+  return AppendMirrorRequestHeaderIfPossible(
+      request, redirect_url, io_data->google_services_account_id()->GetValue(),
+      io_data->GetCookieSettings(), profile_mode_mask);
 }
 
 ManageAccountsParams BuildManageAccountsParamsIfValid(net::URLRequest* request,
@@ -284,12 +226,10 @@ ManageAccountsParams BuildManageAccountsParamsIfValid(net::URLRequest* request,
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
     return empty_params;
 
-#if !defined(OS_IOS)
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!(info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME))
     return empty_params;
-#endif
 
   std::string header_value;
   if (!request->response_headers()->GetNormalizedHeader(
@@ -305,9 +245,6 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
                                          ProfileIOData* io_data,
                                          int child_id,
                                          int route_id) {
-#if defined(OS_IOS)
-  NOTREACHED();
-#else
   ManageAccountsParams params =
       BuildManageAccountsParamsIfValid(request, io_data);
   if (params.service_type == GAIA_SERVICE_TYPE_NONE)
@@ -318,7 +255,6 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(ProcessMirrorHeaderUIThread, child_id, route_id, params));
-#endif  // defined(OS_IOS)
 }
 
-} // namespace signin
+}  // namespace signin

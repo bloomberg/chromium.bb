@@ -14,6 +14,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_cookie_changed_subscription.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/core/common/signin_switches.h"
@@ -61,17 +62,7 @@ bool SigninClientImpl::AllowsSigninCookies(
     ios::ChromeBrowserState* browser_state) {
   scoped_refptr<content_settings::CookieSettings> cookie_settings =
       ios::CookieSettingsFactory::GetForBrowserState(browser_state);
-  return SettingsAllowSigninCookies(cookie_settings.get());
-}
-
-// static
-bool SigninClientImpl::SettingsAllowSigninCookies(
-    content_settings::CookieSettings* cookie_settings) {
-  GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();
-  GURL google_url = GaiaUrls::GetInstance()->google_url();
-  return cookie_settings &&
-         cookie_settings->IsSettingCookieAllowed(gaia_url, gaia_url) &&
-         cookie_settings->IsSettingCookieAllowed(google_url, google_url);
+  return signin::SettingsAllowSigninCookies(cookie_settings.get());
 }
 
 // static

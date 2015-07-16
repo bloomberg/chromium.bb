@@ -34,10 +34,8 @@ class SigninClientImpl
                    SigninErrorController* signin_error_controller);
   ~SigninClientImpl() override;
 
-  // Utility methods.
+  // Utility method.
   static bool AllowsSigninCookies(ios::ChromeBrowserState* browser_state);
-  static bool SettingsAllowSigninCookies(
-      content_settings::CookieSettings* cookie_settings);
 
   // If |for_ephemeral| is true, special kind of device ID for ephemeral users
   // is generated.
