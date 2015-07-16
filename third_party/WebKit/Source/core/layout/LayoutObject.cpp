@@ -1194,28 +1194,6 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& d
     }
 }
 
-static void invalidateDisplayItemClientForNonCompositingDescendantsRecursive(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutObject& layoutObject)
-{
-    paintInvalidationContainer.invalidateDisplayItemClientOnBacking(layoutObject);
-    for (LayoutObject* child = layoutObject.slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isPaintInvalidationContainer())
-            invalidateDisplayItemClientForNonCompositingDescendantsRecursive(paintInvalidationContainer, *child);
-    }
-}
-
-void LayoutObject::invalidateDisplayItemClientForNonCompositingDescendantsOf(const LayoutObject& object) const
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-
-    // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
-    if (const DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer()) {
-        // This is valid because we want to invalidate the client in the display item list of the current backing.
-        DisableCompositingQueryAsserts disabler;
-        if (const DeprecatedPaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            invalidateDisplayItemClientForNonCompositingDescendantsRecursive(*paintInvalidationLayer->layoutObject(), object);
-    }
-}
-
 void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
@@ -3202,39 +3180,134 @@ DisablePaintInvalidationStateAsserts::DisablePaintInvalidationStateAsserts()
 {
 }
 
-// Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.
+namespace {
+
+// TODO(trchen): Use std::function<void, LayoutObject&> and lambda when available.
+class LayoutObjectTraversalFunctor {
+public:
+    virtual void operator()(LayoutObject&) const = 0;
+};
+
+void traverseNonCompositingDescendants(LayoutObject&, const LayoutObjectTraversalFunctor&);
+
+void findNonCompositedDescendantLayerToTraverse(LayoutObject& object, const LayoutObjectTraversalFunctor& functor)
+{
+    LayoutObject* descendant = object.nextInPreOrder(&object);
+    while (descendant) {
+        // Case 1: If the descendant has no layer, keep searching until we find a layer.
+        if (!descendant->hasLayer()) {
+            descendant = descendant->nextInPreOrder(&object);
+            continue;
+        }
+        // Case 2: The descendant has a layer and is not composited.
+        // The invalidation container of its subtree is our parent,
+        // thus recur into the subtree.
+        if (!descendant->isPaintInvalidationContainer()) {
+            traverseNonCompositingDescendants(*descendant, functor);
+            descendant = descendant->nextInPreOrderAfterChildren(&object);
+            continue;
+        }
+        // Case 3: The descendant is an invalidation container and is a stacking context.
+        // No objects in the subtree can have invalidation container outside of it,
+        // thus skip the whole subtree.
+        if (descendant->styleRef().isStackingContext()) {
+            descendant = descendant->nextInPreOrderAfterChildren(&object);
+            continue;
+        }
+        // Case 4: The descendant is an invalidation container but not a stacking context.
+        // This is the same situation as the root, thus keep searching.
+        descendant = descendant->nextInPreOrder(&object);
+    }
+}
+
+void traverseNonCompositingDescendants(LayoutObject& object, const LayoutObjectTraversalFunctor& functor)
+{
+    functor(object);
+    LayoutObject* descendant = object.nextInPreOrder(&object);
+    while (descendant) {
+        if (!descendant->isPaintInvalidationContainer()) {
+            functor(*descendant);
+            descendant = descendant->nextInPreOrder(&object);
+            continue;
+        }
+        if (descendant->styleRef().isStackingContext()) {
+            descendant = descendant->nextInPreOrderAfterChildren(&object);
+            continue;
+        }
+
+        // If a paint invalidation container is not a stacking context,
+        // some of its descendants may belong to the parent container.
+        findNonCompositedDescendantLayerToTraverse(*descendant, functor);
+        descendant = descendant->nextInPreOrderAfterChildren(&object);
+    }
+}
+
+} // unnamed namespace
+
+void LayoutObject::invalidateDisplayItemClientForNonCompositingDescendantsOf(const LayoutObject& object) const
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+
+    // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
+    const DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer();
+    if (!enclosingLayer)
+        return;
+
+    // This is valid because we want to invalidate the client in the display item list of the current backing.
+    DisableCompositingQueryAsserts disabler;
+    const DeprecatedPaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
+    if (!paintInvalidationLayer)
+        return;
+
+    class Functor : public LayoutObjectTraversalFunctor {
+    public:
+        explicit Functor(const LayoutBoxModelObject& paintInvalidationContainer) : m_paintInvalidationContainer(paintInvalidationContainer) { }
+        void operator()(LayoutObject& object) const override
+        {
+            m_paintInvalidationContainer.invalidateDisplayItemClientOnBacking(object);
+        }
+    private:
+        const LayoutBoxModelObject& m_paintInvalidationContainer;
+    };
+
+    const LayoutBoxModelObject& paintInvalidationContainer = *paintInvalidationLayer->layoutObject();
+    traverseNonCompositingDescendants(const_cast<LayoutObject&>(object), Functor(paintInvalidationContainer));
+}
+
 void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
 {
-    invalidatePaintIncludingNonCompositingDescendantsInternal(containerForPaintInvalidationOnRootedTree());
-}
+    class Functor : public LayoutObjectTraversalFunctor {
+    public:
+        explicit Functor(const LayoutBoxModelObject& paintInvalidationContainer) : m_paintInvalidationContainer(paintInvalidationContainer) { }
+        void operator()(LayoutObject& object) const override
+        {
+            object.invalidatePaintUsingContainer(m_paintInvalidationContainer, object.previousPaintInvalidationRect(), PaintInvalidationLayer);
+            if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+                object.invalidateDisplayItemClients(m_paintInvalidationContainer);
+        }
+    private:
+        const LayoutBoxModelObject& m_paintInvalidationContainer;
+    };
 
-void LayoutObject::invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer)
-{
-    invalidatePaintUsingContainer(paintInvalidationContainer, previousPaintInvalidationRect(), PaintInvalidationLayer);
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        invalidateDisplayItemClients(paintInvalidationContainer);
-
-    for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isPaintInvalidationContainer())
-            child->invalidatePaintIncludingNonCompositingDescendantsInternal(paintInvalidationContainer);
-    }
-}
-
-static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendantsInternal(LayoutObject* object)
-{
-    object->setShouldDoFullPaintInvalidation();
-    for (LayoutObject* child = object->slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isPaintInvalidationContainer())
-            setShouldDoFullPaintInvalidationIncludingNonCompositingDescendantsInternal(child);
-    }
+    // Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.
+    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
+    traverseNonCompositingDescendants(*this, Functor(paintInvalidationContainer));
 }
 
 // FIXME: If we had a flag to force invalidations in a whole subtree, we could get rid of this function (crbug.com/410097).
 void LayoutObject::setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants()
 {
+    class Functor : public LayoutObjectTraversalFunctor {
+    public:
+        void operator()(LayoutObject& object) const override
+        {
+            object.setShouldDoFullPaintInvalidation();
+        }
+    };
+
     // Need to access the current compositing status.
     DisableCompositingQueryAsserts disabler;
-    setShouldDoFullPaintInvalidationIncludingNonCompositingDescendantsInternal(this);
+    traverseNonCompositingDescendants(*this, Functor());
 }
 
 void LayoutObject::setIsSlowRepaintObject(bool isSlowRepaintObject)
