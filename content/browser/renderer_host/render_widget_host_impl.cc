@@ -2089,10 +2089,6 @@ BrowserAccessibilityManager*
       delegate_->GetOrCreateRootBrowserAccessibilityManager() : NULL;
 }
 
-base::TimeDelta RenderWidgetHostImpl::GetEstimatedBrowserCompositeTime() const {
-  return latency_tracker_.GetEstimatedBrowserCompositeTime();
-}
-
 #if defined(OS_WIN)
 gfx::NativeViewAccessible
     RenderWidgetHostImpl::GetParentNativeViewAccessible() {

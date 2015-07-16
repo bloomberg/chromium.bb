@@ -1502,10 +1502,9 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
                "frame_time_us", frame_time.ToInternalValue());
 
   if (using_browser_compositor_) {
-    base::TimeTicks display_time = frame_time + vsync_period;
-
-    base::TimeTicks deadline =
-        display_time - host_->GetEstimatedBrowserCompositeTime();
+    // TODO(brianderson): Replace this hardcoded deadline after Android
+    // switches to Surfaces and the Browser's commit isn't in the critcal path.
+    base::TimeTicks deadline = frame_time + (vsync_period * 0.6);
 
     host_->Send(new ViewMsg_BeginFrame(
         host_->GetRoutingID(),

@@ -457,8 +457,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // subsystem.
   int64 GetLatencyComponentId() const;
 
-  base::TimeDelta GetEstimatedBrowserCompositeTime() const;
-
   static void CompositorFrameDrawn(
       const std::vector<ui::LatencyInfo>& latency_info);
 
