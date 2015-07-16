@@ -23,10 +23,10 @@ sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
 try:
   # pylint: disable=F0401
   from telemetry.core.platform.profiler import android_profiling_helper
-  from telemetry.util import support_binaries
+  from catapult_base import binary_manager
 except ImportError:
   android_profiling_helper = None
-  support_binaries = None
+  binary_manager = None
 
 
 _PERF_OPTIONS = [
@@ -165,7 +165,7 @@ class PerfProfilerController(controllers.BaseController):
                                                     symfs_dir,
                                                     required_libs,
                                                     use_symlinks=False)
-    perfhost_path = support_binaries.FindPath(
+    perfhost_path = binary_manager.FetchPath(
         android_profiling_helper.GetPerfhostName(), 'x86_64', 'linux')
 
     ui.PrintMessage('\nNote: to view the profile in perf, run:')
