@@ -72,8 +72,13 @@ public:
             m_eventQueue->removeEvent(m_event.get());
     }
 
-    void dispatchEvent(ExecutionContext*, PassRefPtrWillBeRawPtr<Event> event)
+    void dispatchEvent(ExecutionContext*, PassRefPtrWillBeRawPtr<Event> prpEvent)
     {
+        // Stash the event on the stack in a RefPtrWillBeRawPtr; trying to do this
+        // in a single line causes an optimization bug with MSVC. MSVC generates code
+        // that passes the event arg (forcing PassRefPtrWillBeRawPtr to be released)
+        // before the target is queried.
+        RefPtrWillBeRawPtr<Event> event = prpEvent;
         event->target()->dispatchEvent(event);
     }
 

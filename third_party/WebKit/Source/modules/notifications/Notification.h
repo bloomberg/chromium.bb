@@ -105,7 +105,6 @@ public:
 
     // EventTarget interface.
     ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) final;
     const AtomicString& interfaceName() const override;
 
     // ActiveDOMObject interface.
@@ -113,6 +112,10 @@ public:
     bool hasPendingActivity() const override;
 
     DECLARE_VIRTUAL_TRACE();
+
+protected:
+    // EventTarget interface.
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) final;
 
 private:
     Notification(const String& title, ExecutionContext*);

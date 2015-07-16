@@ -350,7 +350,7 @@ ExecutionContext* IDBTransaction::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-bool IDBTransaction::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool IDBTransaction::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     IDB_TRACE("IDBTransaction::dispatchEvent");
     if (m_contextStopped || !executionContext()) {

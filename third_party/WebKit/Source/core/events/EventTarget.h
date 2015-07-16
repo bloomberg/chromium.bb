@@ -125,7 +125,8 @@ public:
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
     virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
     virtual void removeAllEventListeners();
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
+
+    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
 
     // dispatchEventForBindings is intended to only be called from
     // javascript originated calls. This method will validate and may adjust
@@ -151,6 +152,8 @@ public:
 
 protected:
     EventTarget();
+
+    virtual bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>);
 
     // Subclasses should likely not override these themselves; instead, they should subclass EventTargetWithInlineData.
     virtual EventTargetData* eventTargetData() = 0;

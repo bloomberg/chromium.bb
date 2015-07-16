@@ -102,9 +102,6 @@ public:
     const IDBDatabaseMetadata& metadata() const { return m_metadata; }
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
 
-    using EventTarget::dispatchEvent;
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
-
     int64_t findObjectStoreId(const String& name) const;
     bool containsObjectStore(const String& name) const
     {
@@ -132,6 +129,10 @@ public:
     static const char transactionReadOnlyErrorMessage[];
     static const char databaseClosedErrorMessage[];
     static const char notValidMaxCountErrorMessage[];
+
+protected:
+    // EventTarget
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
 private:
     IDBDatabase(ExecutionContext*, PassOwnPtr<WebIDBDatabase>, IDBDatabaseCallbacks*);

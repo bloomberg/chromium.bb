@@ -74,9 +74,6 @@ public:
     void updateCueIndex(unsigned cueIndex) { m_cueIndex = cueIndex; }
     void invalidateCueIndex();
 
-    using EventTarget::dispatchEvent;
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
-
     bool isActive() const { return m_isActive; }
     void setIsActive(bool active) { m_isActive = active; }
 
@@ -112,6 +109,7 @@ protected:
 
     void cueWillChange();
     virtual void cueDidChange();
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
 private:
     AtomicString m_id;

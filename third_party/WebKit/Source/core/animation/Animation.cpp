@@ -643,11 +643,11 @@ void Animation::stop()
     m_pendingFinishedEvent = nullptr;
 }
 
-bool Animation::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool Animation::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     if (m_pendingFinishedEvent == event)
         m_pendingFinishedEvent = nullptr;
-    return EventTargetWithInlineData::dispatchEvent(event);
+    return EventTargetWithInlineData::dispatchEventInternal(event);
 }
 
 double Animation::playbackRate() const

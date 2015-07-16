@@ -114,7 +114,6 @@ public:
     ExecutionContext* executionContext() const override;
     bool hasPendingActivity() const override;
     void stop() override;
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     double playbackRate() const;
     void setPlaybackRate(double);
@@ -180,6 +179,9 @@ public:
     bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
 
     DECLARE_VIRTUAL_TRACE();
+
+protected:
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
 private:
     Animation(ExecutionContext*, AnimationTimeline&, AnimationEffect*);

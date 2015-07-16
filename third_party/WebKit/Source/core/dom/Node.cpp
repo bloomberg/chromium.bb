@@ -2007,7 +2007,7 @@ void Node::dispatchScopedEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispa
     EventDispatcher::dispatchScopedEvent(*this, eventDispatchMediator);
 }
 
-bool Node::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool Node::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     if (event->isMouseEvent())
         return EventDispatcher::dispatchEvent(*this, MouseEventDispatchMediator::create(static_pointer_cast<MouseEvent>(event), MouseEventDispatchMediator::SyntheticMouseEvent));

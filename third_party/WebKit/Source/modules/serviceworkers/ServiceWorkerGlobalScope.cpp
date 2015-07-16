@@ -189,10 +189,10 @@ const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
     return EventTargetNames::ServiceWorkerGlobalScope;
 }
 
-bool ServiceWorkerGlobalScope::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool ServiceWorkerGlobalScope::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     m_eventNestingLevel++;
-    bool result = WorkerGlobalScope::dispatchEvent(event.get());
+    bool result = WorkerGlobalScope::dispatchEventInternal(event.get());
     if (event->interfaceName() == EventNames::ErrorEvent && m_eventNestingLevel == 2 && !event->defaultPrevented())
         m_hadErrorInTopLevelEventHandler = true;
     m_eventNestingLevel--;

@@ -50,13 +50,15 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const override;
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(blocked);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(upgradeneeded);
 
 protected:
     bool shouldEnqueueEvent() const override;
+
+    // EventTarget
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
 private:
     IDBOpenDBRequest(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);

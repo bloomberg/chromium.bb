@@ -294,10 +294,10 @@ void Notification::requestPermission(ExecutionContext* context, NotificationPerm
         permissionClient->requestPermission(context, callback);
 }
 
-bool Notification::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool Notification::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     ASSERT(executionContext()->isContextThread());
-    return EventTarget::dispatchEvent(event);
+    return EventTarget::dispatchEventInternal(event);
 }
 
 const AtomicString& Notification::interfaceName() const

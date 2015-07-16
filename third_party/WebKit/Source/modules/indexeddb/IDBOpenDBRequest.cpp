@@ -162,7 +162,7 @@ bool IDBOpenDBRequest::shouldEnqueueEvent() const
     return true;
 }
 
-bool IDBOpenDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool IDBOpenDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     // If the connection closed between onUpgradeNeeded and the delivery of the "success" event,
     // an "error" event should be fired instead.
@@ -173,7 +173,7 @@ bool IDBOpenDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
         return false;
     }
 
-    return IDBRequest::dispatchEvent(event);
+    return IDBRequest::dispatchEventInternal(event);
 }
 
 } // namespace blink

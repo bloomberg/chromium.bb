@@ -81,7 +81,6 @@ public:
     // EventTarget
     bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
     const AtomicString& interfaceName() const override;
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     void dispatchExtendableEvent(PassRefPtrWillBeRawPtr<Event>, WaitUntilObserver*);
 
@@ -92,6 +91,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(sync);
 
     DECLARE_VIRTUAL_TRACE();
+
+protected:
+    // EventTarget
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
 private:
     class SkipWaitingCallback;

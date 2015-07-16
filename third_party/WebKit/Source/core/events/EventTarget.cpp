@@ -186,10 +186,15 @@ bool EventTarget::dispatchEventForBindings(PassRefPtrWillBeRawPtr<Event> event, 
     if (!executionContext())
         return false;
 
-    return dispatchEvent(event);
+    return dispatchEventInternal(event);
 }
 
 bool EventTarget::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+{
+    return dispatchEventInternal(event);
+}
+
+bool EventTarget::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     event->setTarget(this);
     event->setCurrentTarget(this);

@@ -99,12 +99,13 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
 
-    using EventTarget::dispatchEvent;
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
-
     // ActiveDOMObject
     bool hasPendingActivity() const override;
     void stop() override;
+
+protected:
+    // EventTarget
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
 private:
     IDBTransaction(ScriptState*, int64_t, const HashSet<String>&, WebIDBTransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);

@@ -623,9 +623,6 @@ public:
     virtual void* preDispatchEventHandler(Event*) { return nullptr; }
     virtual void postDispatchEventHandler(Event*, void* /*dataFromPreDispatch*/) { }
 
-    using EventTarget::dispatchEvent;
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
-
     void dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event>);
     void dispatchScopedEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispatchMediator>);
 
@@ -752,6 +749,8 @@ protected:
     Node(TreeScope*, ConstructionType);
 
     virtual void didMoveToNewDocument(Document& oldDocument);
+
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
     static void reattachWhitespaceSiblingsIfNeeded(Text* start);
 

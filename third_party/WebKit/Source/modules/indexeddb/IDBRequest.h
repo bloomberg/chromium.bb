@@ -118,9 +118,6 @@ public:
     ExecutionContext* executionContext() const final;
     void uncaughtExceptionInEventHandler() final;
 
-    using EventTarget::dispatchEvent;
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
-
     // Called by a version change transaction that has finished to set this
     // request back from DONE (following "upgradeneeded") back to PENDING (for
     // the upcoming "success" or "error").
@@ -135,6 +132,9 @@ protected:
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(IDBAny*);
     void setResult(IDBAny*);
+
+    // EventTarget
+    bool dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
 
     bool m_contextStopped;
     Member<IDBTransaction> m_transaction;
