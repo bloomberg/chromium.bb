@@ -1717,6 +1717,7 @@
       'fetch/DataConsumerHandleTestUtil.h',
       'fetch/DataConsumerHandleUtilTest.cpp',
       'fetch/DataConsumerTeeTest.cpp',
+      'fetch/FetchBlobDataConsumerHandleTest.cpp',
       'fetch/FetchDataLoaderTest.cpp',
       'fetch/FetchResponseDataTest.cpp',
       'fetch/RequestTest.cpp',

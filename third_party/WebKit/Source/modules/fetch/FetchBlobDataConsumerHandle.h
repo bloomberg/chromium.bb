@@ -7,6 +7,7 @@
 
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
+#include "modules/ModulesExport.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
 #include "wtf/PassOwnPtr.h"
@@ -16,9 +17,10 @@
 namespace blink {
 
 class ExecutionContext;
-class FetchBlobDataConsumerHandle final : public FetchDataConsumerHandle {
+class MODULES_EXPORT FetchBlobDataConsumerHandle final : public FetchDataConsumerHandle {
+    WTF_MAKE_NONCOPYABLE(FetchBlobDataConsumerHandle);
 public:
-    class LoaderFactory : public GarbageCollectedFinalized<LoaderFactory> {
+    class MODULES_EXPORT LoaderFactory : public GarbageCollectedFinalized<LoaderFactory> {
     public:
         virtual PassRefPtr<ThreadableLoader> create(ExecutionContext&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) = 0;
         virtual ~LoaderFactory() { }

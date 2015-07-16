@@ -5,6 +5,7 @@
 #ifndef FetchDataConsumerHandle_h
 #define FetchDataConsumerHandle_h
 
+#include "modules/ModulesExport.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Forward.h"
@@ -18,7 +19,7 @@ namespace blink {
 // collected while many clients or related objects may be, it is very easy
 // to create a reference cycle. When an client is garbage collected, making
 // the client own the handle is the right way.
-class FetchDataConsumerHandle : public WebDataConsumerHandle {
+class MODULES_EXPORT FetchDataConsumerHandle : public WebDataConsumerHandle {
 public:
     class Reader : public WebDataConsumerHandle::Reader {
     public:
