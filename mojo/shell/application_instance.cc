@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/shell_impl.h"
+#include "mojo/shell/application_instance.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -14,16 +14,17 @@
 namespace mojo {
 namespace shell {
 
-ShellImpl::QueuedClientRequest::QueuedClientRequest() {
+ApplicationInstance::QueuedClientRequest::QueuedClientRequest() {
 }
 
-ShellImpl::QueuedClientRequest::~QueuedClientRequest() {
+ApplicationInstance::QueuedClientRequest::~QueuedClientRequest() {
 }
 
-ShellImpl::ShellImpl(ApplicationPtr application,
-                     ApplicationManager* manager,
-                     const Identity& identity,
-                     const base::Closure& on_application_end)
+ApplicationInstance::ApplicationInstance(
+    ApplicationPtr application,
+    ApplicationManager* manager,
+    const Identity& identity,
+    const base::Closure& on_application_end)
     : manager_(manager),
       identity_(identity),
       on_application_end_(on_application_end),
@@ -33,20 +34,21 @@ ShellImpl::ShellImpl(ApplicationPtr application,
   binding_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
-ShellImpl::~ShellImpl() {
+ApplicationInstance::~ApplicationInstance() {
   STLDeleteElements(&queued_client_requests_);
 }
 
-void ShellImpl::InitializeApplication() {
+void ApplicationInstance::InitializeApplication() {
   ShellPtr shell;
   binding_.Bind(GetProxy(&shell));
   application_->Initialize(shell.Pass(), identity_.url.spec());
 }
 
-void ShellImpl::ConnectToClient(const GURL& requested_url,
-                                const GURL& requestor_url,
-                                InterfaceRequest<ServiceProvider> services,
-                                ServiceProviderPtr exposed_services) {
+void ApplicationInstance::ConnectToClient(
+    const GURL& requested_url,
+    const GURL& requestor_url,
+    InterfaceRequest<ServiceProvider> services,
+    ServiceProviderPtr exposed_services) {
   if (queue_requests_) {
     QueuedClientRequest* queued_request = new QueuedClientRequest;
     queued_request->requested_url = requested_url;
@@ -62,9 +64,10 @@ void ShellImpl::ConnectToClient(const GURL& requested_url,
 }
 
 // Shell implementation:
-void ShellImpl::ConnectToApplication(mojo::URLRequestPtr app_request,
-                                     InterfaceRequest<ServiceProvider> services,
-                                     ServiceProviderPtr exposed_services) {
+void ApplicationInstance::ConnectToApplication(
+    mojo::URLRequestPtr app_request,
+    InterfaceRequest<ServiceProvider> services,
+    ServiceProviderPtr exposed_services) {
   GURL app_gurl(app_request->url.To<std::string>());
   if (!app_gurl.is_valid()) {
     LOG(ERROR) << "Error: invalid URL: " << app_request;
@@ -75,17 +78,18 @@ void ShellImpl::ConnectToApplication(mojo::URLRequestPtr app_request,
                                  exposed_services.Pass(), base::Closure());
 }
 
-void ShellImpl::QuitApplication() {
+void ApplicationInstance::QuitApplication() {
   queue_requests_ = true;
-  application_->OnQuitRequested(base::Bind(&ShellImpl::OnQuitRequestedResult,
-                                           base::Unretained(this)));
+  application_->OnQuitRequested(
+      base::Bind(&ApplicationInstance::OnQuitRequestedResult,
+                 base::Unretained(this)));
 }
 
-void ShellImpl::OnConnectionError() {
+void ApplicationInstance::OnConnectionError() {
   std::vector<QueuedClientRequest*> queued_client_requests;
   queued_client_requests_.swap(queued_client_requests);
   auto manager = manager_;
-  manager_->OnShellImplError(this);
+  manager_->OnApplicationInstanceError(this);
   //|this| is deleted.
 
   // If any queued requests came to shell during time it was shutting down,
@@ -102,7 +106,7 @@ void ShellImpl::OnConnectionError() {
   STLDeleteElements(&queued_client_requests);
 }
 
-void ShellImpl::OnQuitRequestedResult(bool can_quit) {
+void ApplicationInstance::OnQuitRequestedResult(bool can_quit) {
   if (can_quit)
     return;
 

@@ -31,8 +31,8 @@ class SequencedWorkerPool;
 namespace mojo {
 namespace shell {
 
+class ApplicationInstance;
 class ContentHandlerConnection;
-class ShellImpl;
 
 class ApplicationManager {
  public:
@@ -64,8 +64,8 @@ class ApplicationManager {
 
     // Returns true if the shared instance has been created.
     static bool HasCreatedInstance();
-    // Returns true if there is a ShellImpl for this URL.
-    bool HasFactoryForURL(const GURL& url) const;
+    // Returns true if there is a ApplicationInstance for this URL.
+    bool HasRunningInstanceForURL(const GURL& url) const;
 
    private:
     ApplicationManager* manager_;
@@ -144,8 +144,8 @@ class ApplicationManager {
   // and have a chance to shutdown.
   void TerminateShellConnections();
 
-  // Removes a ShellImpl when it encounters an error.
-  void OnShellImplError(ShellImpl* shell_impl);
+  // Removes a ApplicationInstance when it encounters an error.
+  void OnApplicationInstanceError(ApplicationInstance* instance);
 
   // Removes a ContentHandler when its connection is closed.
   void OnContentHandlerConnectionClosed(
@@ -153,7 +153,8 @@ class ApplicationManager {
 
  private:
   using ApplicationPackagedAlias = std::map<GURL, std::pair<GURL, std::string>>;
-  using IdentityToShellImplMap = std::map<Identity, ShellImpl*>;
+  using IdentityToApplicationInstanceMap =
+      std::map<Identity, ApplicationInstance*>;
   using MimeTypeToURLMap = std::map<std::string, GURL>;
   using SchemeToLoaderMap = std::map<std::string, ApplicationLoader*>;
   using URLToContentHandlerMap =
@@ -177,7 +178,7 @@ class ApplicationManager {
       const base::Closure& on_application_end,
       ApplicationLoader* loader);
 
-  InterfaceRequest<Application> RegisterShell(
+  InterfaceRequest<Application> RegisterInstance(
       const GURL& app_url,
       const std::string& qualifier,
       const GURL& requestor_url,
@@ -185,9 +186,10 @@ class ApplicationManager {
       ServiceProviderPtr exposed_services,
       const base::Closure& on_application_end);
 
-  ShellImpl* GetShellImpl(const GURL& url, const std::string& qualifier);
+  ApplicationInstance* GetApplicationInstance(const GURL& url,
+                                              const std::string& qualifier);
 
-  void ConnectToClient(ShellImpl* shell_impl,
+  void ConnectToClient(ApplicationInstance* instance,
                        const GURL& resolved_url,
                        const GURL& requestor_url,
                        InterfaceRequest<ServiceProvider> services,
@@ -232,7 +234,7 @@ class ApplicationManager {
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
 
   ApplicationPackagedAlias application_package_alias_;
-  IdentityToShellImplMap identity_to_shell_impl_;
+  IdentityToApplicationInstanceMap identity_to_instance_;
   URLToContentHandlerMap url_to_content_handler_;
   // Note: The keys are URLs after mapping and resolving.
   URLToNativeOptionsMap url_to_native_options_;

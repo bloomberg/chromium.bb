@@ -486,9 +486,9 @@ class ApplicationManagerTest : public testing::Test {
         make_scoped_ptr(new Tester(&tester_context_, requestor_url)), url);
   }
 
-  bool HasFactoryForURL(const GURL& url) {
+  bool HasRunningInstanceForURL(const GURL& url) {
     ApplicationManager::TestAPI manager_test_api(application_manager_.get());
-    return manager_test_api.HasFactoryForURL(url);
+    return manager_test_api.HasRunningInstanceForURL(url);
   }
 
  protected:
@@ -538,13 +538,13 @@ TEST_F(ApplicationManagerTest, URLMapping) {
 
 TEST_F(ApplicationManagerTest, ClientError) {
   test_client_->Test("test");
-  EXPECT_TRUE(HasFactoryForURL(GURL(kTestURLString)));
+  EXPECT_TRUE(HasRunningInstanceForURL(GURL(kTestURLString)));
   loop_.Run();
   EXPECT_EQ(1, context_.num_impls);
   test_client_.reset();
   loop_.Run();
   EXPECT_EQ(0, context_.num_impls);
-  EXPECT_TRUE(HasFactoryForURL(GURL(kTestURLString)));
+  EXPECT_TRUE(HasRunningInstanceForURL(GURL(kTestURLString)));
 }
 
 TEST_F(ApplicationManagerTest, Deletes) {
@@ -724,8 +724,8 @@ TEST_F(ApplicationManagerTest, MappedURLsShouldWorkWithLoaders) {
   EXPECT_EQ(1, custom_loader->num_loads());
   custom_loader->set_context(nullptr);
 
-  EXPECT_TRUE(HasFactoryForURL(GURL("mojo:foo2")));
-  EXPECT_FALSE(HasFactoryForURL(GURL("mojo:foo")));
+  EXPECT_TRUE(HasRunningInstanceForURL(GURL("mojo:foo2")));
+  EXPECT_FALSE(HasRunningInstanceForURL(GURL("mojo:foo")));
 }
 
 TEST_F(ApplicationManagerTest, TestQueryWithLoaders) {

@@ -14,12 +14,12 @@
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
+#include "mojo/shell/application_instance.h"
 #include "mojo/shell/content_handler_connection.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/local_fetcher.h"
 #include "mojo/shell/network_fetcher.h"
 #include "mojo/shell/query_util.h"
-#include "mojo/shell/shell_impl.h"
 #include "mojo/shell/switches.h"
 #include "mojo/shell/update_fetcher.h"
 
@@ -45,9 +45,10 @@ bool ApplicationManager::TestAPI::HasCreatedInstance() {
   return has_created_instance;
 }
 
-bool ApplicationManager::TestAPI::HasFactoryForURL(const GURL& url) const {
-  return manager_->identity_to_shell_impl_.find(Identity(url)) !=
-         manager_->identity_to_shell_impl_.end();
+bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
+    const GURL& url) const {
+  return manager_->identity_to_instance_.find(Identity(url)) !=
+         manager_->identity_to_instance_.end();
 }
 
 ApplicationManager::ApplicationManager(Delegate* delegate)
@@ -64,7 +65,7 @@ ApplicationManager::~ApplicationManager() {
 }
 
 void ApplicationManager::TerminateShellConnections() {
-  STLDeleteValues(&identity_to_shell_impl_);
+  STLDeleteValues(&identity_to_instance_);
 }
 
 void ApplicationManager::ConnectToApplication(
@@ -80,7 +81,7 @@ void ApplicationManager::ConnectToApplication(
       TRACE_EVENT_SCOPE_THREAD, "requested_url", requested_gurl.spec());
   DCHECK(requested_gurl.is_valid());
 
-  // We check both the mapped and resolved urls for existing shell_impls because
+  // We check both the mapped and resolved urls for existing instances because
   // external applications can be registered for the unresolved mojo:foo urls.
 
   GURL mapped_url = delegate_->ResolveMappings(requested_gurl);
@@ -173,11 +174,12 @@ bool ApplicationManager::ConnectToRunningApplication(
     InterfaceRequest<ServiceProvider>* services,
     ServiceProviderPtr* exposed_services) {
   GURL application_url = GetBaseURLAndQuery(resolved_url, nullptr);
-  ShellImpl* shell_impl = GetShellImpl(application_url, qualifier);
-  if (!shell_impl)
+  ApplicationInstance* instance =
+      GetApplicationInstance(application_url, qualifier);
+  if (!instance)
     return false;
 
-  ConnectToClient(shell_impl, resolved_url, requestor_url, services->Pass(),
+  ConnectToClient(instance, resolved_url, requestor_url, services->Pass(),
                   exposed_services->Pass());
   return true;
 }
@@ -199,12 +201,12 @@ bool ApplicationManager::ConnectToApplicationWithLoader(
 
   loader->Load(
       resolved_url,
-      RegisterShell(app_url, qualifier, requestor_url, services->Pass(),
-                    exposed_services->Pass(), on_application_end));
+      RegisterInstance(app_url, qualifier, requestor_url, services->Pass(),
+                       exposed_services->Pass(), on_application_end));
   return true;
 }
 
-InterfaceRequest<Application> ApplicationManager::RegisterShell(
+InterfaceRequest<Application> ApplicationManager::RegisterInstance(
     const GURL& app_url,
     const std::string& qualifier,
     const GURL& requestor_url,
@@ -215,31 +217,35 @@ InterfaceRequest<Application> ApplicationManager::RegisterShell(
 
   ApplicationPtr application;
   InterfaceRequest<Application> application_request = GetProxy(&application);
-  ShellImpl* shell =
-      new ShellImpl(application.Pass(), this, app_identity, on_application_end);
-  identity_to_shell_impl_[app_identity] = shell;
-  shell->InitializeApplication();
-  ConnectToClient(shell, app_url, requestor_url, services.Pass(),
+  ApplicationInstance* instance = new ApplicationInstance(application.Pass(),
+                                                          this,
+                                                          app_identity,
+                                                          on_application_end);
+  identity_to_instance_[app_identity] = instance;
+  instance->InitializeApplication();
+  ConnectToClient(instance, app_url, requestor_url, services.Pass(),
                   exposed_services.Pass());
   return application_request.Pass();
 }
 
-ShellImpl* ApplicationManager::GetShellImpl(const GURL& url,
-                                            const std::string& qualifier) {
-  const auto& shell_it = identity_to_shell_impl_.find(Identity(url, qualifier));
-  if (shell_it != identity_to_shell_impl_.end())
-    return shell_it->second;
+ApplicationInstance* ApplicationManager::GetApplicationInstance(
+    const GURL& url,
+    const std::string& qualifier) {
+  const auto& instance_it =
+      identity_to_instance_.find(Identity(url, qualifier));
+  if (instance_it != identity_to_instance_.end())
+    return instance_it->second;
   return nullptr;
 }
 
 void ApplicationManager::ConnectToClient(
-    ShellImpl* shell_impl,
+    ApplicationInstance* instance,
     const GURL& resolved_url,
     const GURL& requestor_url,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services) {
-  shell_impl->ConnectToClient(resolved_url, requestor_url, services.Pass(),
-                              exposed_services.Pass());
+  instance->ConnectToClient(resolved_url, requestor_url, services.Pass(),
+                            exposed_services.Pass());
 }
 
 void ApplicationManager::HandleFetchCallback(
@@ -287,8 +293,8 @@ void ApplicationManager::HandleFetchCallback(
       requested_url.scheme() == "mojo" ? requested_url : fetcher->GetURL();
 
   InterfaceRequest<Application> request(
-      RegisterShell(app_url, qualifier, requestor_url, services.Pass(),
-                    exposed_services.Pass(), on_application_end));
+      RegisterInstance(app_url, qualifier, requestor_url, services.Pass(),
+                       exposed_services.Pass(), on_application_end));
 
   // For resources that are loaded with content handlers, we group app instances
   // by site.
@@ -473,15 +479,16 @@ ApplicationLoader* ApplicationManager::GetLoaderForURL(const GURL& url) {
   return nullptr;
 }
 
-void ApplicationManager::OnShellImplError(ShellImpl* shell_impl) {
-  // Called from ~ShellImpl, so we do not need to call Destroy here.
-  const Identity identity = shell_impl->identity();
-  base::Closure on_application_end = shell_impl->on_application_end();
+void ApplicationManager::OnApplicationInstanceError(
+    ApplicationInstance* instance) {
+  // Called from ~ApplicationInstance, so we do not need to call Destroy here.
+  const Identity identity = instance->identity();
+  base::Closure on_application_end = instance->on_application_end();
   // Remove the shell.
-  auto it = identity_to_shell_impl_.find(identity);
-  DCHECK(it != identity_to_shell_impl_.end());
+  auto it = identity_to_instance_.find(identity);
+  DCHECK(it != identity_to_instance_.end());
   delete it->second;
-  identity_to_shell_impl_.erase(it);
+  identity_to_instance_.erase(it);
   if (!on_application_end.is_null())
     on_application_end.Run();
 }

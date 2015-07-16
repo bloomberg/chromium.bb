@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_SHELL_IMPL_H_
-#define MOJO_SHELL_SHELL_IMPL_H_
+#ifndef MOJO_SHELL_APPLICATION_INSTANCE_H_
+#define MOJO_SHELL_APPLICATION_INSTANCE_H_
 
 #include "base/callback.h"
 #include "mojo/application/public/interfaces/application.mojom.h"
@@ -17,14 +17,20 @@ namespace shell {
 
 class ApplicationManager;
 
-class ShellImpl : public Shell {
+// Encapsulates a connection to an instance of an application, tracked by the
+// shell's ApplicationManager.
+// TODO(beng): Currently this provides a default implementation of the Shell
+//             interface. This should be moved into a separate class RootShell
+//             which is instantiated when no other Shell implementation is
+//             provided via ConnectToApplication().
+class ApplicationInstance : public Shell {
  public:
-  ShellImpl(ApplicationPtr application,
-            ApplicationManager* manager,
-            const Identity& resolved_identity,
-            const base::Closure& on_application_end);
+  ApplicationInstance(ApplicationPtr application,
+                      ApplicationManager* manager,
+                      const Identity& resolved_identity,
+                      const base::Closure& on_application_end);
 
-  ~ShellImpl() override;
+  ~ApplicationInstance() override;
 
   void InitializeApplication();
 
@@ -65,10 +71,10 @@ class ShellImpl : public Shell {
   bool queue_requests_;
   std::vector<QueuedClientRequest*> queued_client_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellImpl);
+  DISALLOW_COPY_AND_ASSIGN(ApplicationInstance);
 };
 
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_SHELL_IMPL_H_
+#endif  // MOJO_SHELL_APPLICATION_INSTANCE_H_

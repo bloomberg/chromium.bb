@@ -8,6 +8,8 @@ import("//testing/test.gni")
 source_set("shell") {
   output_name = "mojo_shell"
   sources = [
+    "application_instance.cc",
+    "application_instance.h",
     "application_loader.h",
     "application_manager.cc",
     "application_manager.h",
@@ -26,8 +28,6 @@ source_set("shell") {
     "network_fetcher.h",
     "query_util.cc",
     "query_util.h",
-    "shell_impl.cc",
-    "shell_impl.h",
     "static_application_loader.cc",
     "static_application_loader.h",
     "switches.cc",

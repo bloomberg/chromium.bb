@@ -7,6 +7,8 @@
     'target_name': 'mojo_shell_lib',
     'type': 'static_library',
     'sources': [
+      'shell/application_instance.cc',
+      'shell/application_instance.h',
       'shell/application_loader.h',
       'shell/application_manager.cc',
       'shell/application_manager.h',
@@ -25,8 +27,6 @@
       'shell/network_fetcher.h',
       'shell/query_util.cc',
       'shell/query_util.h',
-      'shell/shell_impl.cc',
-      'shell/shell_impl.h',
       'shell/static_application_loader.cc',
       'shell/static_application_loader.h',
       'shell/switches.cc',
