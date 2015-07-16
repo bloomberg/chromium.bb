@@ -100,7 +100,7 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   const int kBorder = 25;
   *size = kMinDialogSize;
 
-  web_modal::WebContentsModalDialogHost* host = NULL;
+  web_modal::WebContentsModalDialogHost* host = nullptr;
   content::WebContents* outermost_web_contents =
       guest_view::GuestViewBase::GetTopLevelWebContents(initiator_);
   Browser* browser = chrome::FindBrowserWithWebContents(outermost_web_contents);
@@ -150,7 +150,7 @@ PrintPreviewDialogController::PrintPreviewDialogController()
 // static
 PrintPreviewDialogController* PrintPreviewDialogController::GetInstance() {
   if (!g_browser_process)
-    return NULL;
+    return nullptr;
   return g_browser_process->print_preview_dialog_controller();
 }
 
@@ -197,13 +197,13 @@ WebContents* PrintPreviewDialogController::GetPrintPreviewForContents(
       return it->first;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 WebContents* PrintPreviewDialogController::GetInitiator(
     WebContents* preview_dialog) {
   PrintPreviewDialogMap::iterator it = preview_dialog_map_.find(preview_dialog);
-  return (it != preview_dialog_map_.end()) ? it->second : NULL;
+  return (it != preview_dialog_map_.end()) ? it->second : nullptr;
 }
 
 void PrintPreviewDialogController::Observe(
@@ -252,7 +252,7 @@ void PrintPreviewDialogController::EraseInitiatorInfo(
     return;
 
   RemoveObservers(it->second);
-  preview_dialog_map_[preview_dialog] = NULL;
+  preview_dialog_map_[preview_dialog] = nullptr;
 }
 
 PrintPreviewDialogController::~PrintPreviewDialogController() {}
@@ -426,7 +426,7 @@ void PrintPreviewDialogController::RemoveInitiator(
   // Update the map entry first, so when the print preview dialog gets destroyed
   // and reaches RemovePreviewDialog(), it does not attempt to also remove the
   // initiator's observers.
-  preview_dialog_map_[preview_dialog] = NULL;
+  preview_dialog_map_[preview_dialog] = nullptr;
   RemoveObservers(initiator);
 
   PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();

@@ -20,7 +20,7 @@ bool PrintPreviewContextMenuObserver::IsPrintPreviewDialog() {
       printing::PrintPreviewDialogController::GetInstance();
   if (!controller)
     return false;
-  return (controller->GetPrintPreviewForContents(contents_) != NULL);
+  return (controller->GetPrintPreviewForContents(contents_) != nullptr);
 }
 
 bool PrintPreviewContextMenuObserver::IsCommandIdSupported(int command_id) {

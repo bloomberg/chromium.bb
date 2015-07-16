@@ -29,29 +29,31 @@ using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(printing::PrintPreviewMessageHandler);
 
+namespace printing {
+
 namespace {
 
 void StopWorker(int document_cookie) {
   if (document_cookie <= 0)
     return;
-  scoped_refptr<printing::PrintQueriesQueue> queue =
+  scoped_refptr<PrintQueriesQueue> queue =
       g_browser_process->print_job_manager()->queue();
-  scoped_refptr<printing::PrinterQuery> printer_query =
+  scoped_refptr<PrinterQuery> printer_query =
       queue->PopPrinterQuery(document_cookie);
   if (printer_query.get()) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&printing::PrinterQuery::StopWorker,
+                            base::Bind(&PrinterQuery::StopWorker,
                                        printer_query));
   }
 }
 
 base::RefCountedBytes* GetDataFromHandle(base::SharedMemoryHandle handle,
-                                         uint32 data_size) {
+                                         uint32_t data_size) {
   scoped_ptr<base::SharedMemory> shared_buf(
       new base::SharedMemory(handle, true));
   if (!shared_buf->Map(data_size)) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   unsigned char* data_begin = static_cast<unsigned char*>(shared_buf->memory());
@@ -60,8 +62,6 @@ base::RefCountedBytes* GetDataFromHandle(base::SharedMemoryHandle handle,
 }
 
 }  // namespace
-
-namespace printing {
 
 PrintPreviewMessageHandler::PrintPreviewMessageHandler(
     WebContents* web_contents)
@@ -76,23 +76,21 @@ WebContents* PrintPreviewMessageHandler::GetPrintPreviewDialog() {
   PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
   if (!dialog_controller)
-    return NULL;
+    return nullptr;
   return dialog_controller->GetPrintPreviewForContents(web_contents());
 }
 
 PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
   WebContents* dialog = GetPrintPreviewDialog();
   if (!dialog || !dialog->GetWebUI())
-    return NULL;
+    return nullptr;
   return static_cast<PrintPreviewUI*>(dialog->GetWebUI()->GetController());
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
     const PrintHostMsg_RequestPrintPreview_Params& params) {
-  if (params.webnode_only) {
-    printing::PrintViewManager::FromWebContents(web_contents())->
-        PrintPreviewForWebNode();
-  }
+  if (params.webnode_only)
+    PrintViewManager::FromWebContents(web_contents())->PrintPreviewForWebNode();
   PrintPreviewDialogController::PrintPreview(web_contents());
   PrintPreviewUI::SetInitialParams(GetPrintPreviewDialog(), params);
 }

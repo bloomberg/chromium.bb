@@ -16,7 +16,7 @@ using content::WebContents;
 
 namespace printing {
 
-typedef PrintPreviewTest PrintPreviewDialogControllerUnitTest;
+using PrintPreviewDialogControllerUnitTest = PrintPreviewTest;
 
 // Create/Get a preview dialog for initiator.
 TEST_F(PrintPreviewDialogControllerUnitTest, GetOrCreatePreviewDialog) {

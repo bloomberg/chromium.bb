@@ -85,8 +85,8 @@ class PrintPreviewDialogController
   // 1:1 relationship between a print preview dialog and its initiator tab.
   // Key: Print preview dialog.
   // Value: Initiator.
-  typedef std::map<content::WebContents*, content::WebContents*>
-      PrintPreviewDialogMap;
+  using PrintPreviewDialogMap =
+      std::map<content::WebContents*, content::WebContents*>;
 
   ~PrintPreviewDialogController() override;
 

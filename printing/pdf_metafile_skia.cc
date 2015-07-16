@@ -33,6 +33,7 @@
 #endif
 
 namespace {
+
 // This struct represents all the data we need to draw and redraw this
 // page into a SkDocument.
 struct Page {
@@ -46,11 +47,10 @@ struct Page {
   float scale_factor_;
   skia::RefPtr<SkPicture> content_;
 };
-}  // namespace
 
-static bool WriteAssetToBuffer(const SkStreamAsset* asset,
-                               void* buffer,
-                               size_t size) {
+bool WriteAssetToBuffer(const SkStreamAsset* asset,
+                        void* buffer,
+                        size_t size) {
   // Calling duplicate() keeps original asset state unchanged.
   scoped_ptr<SkStreamAsset> assetCopy(asset->duplicate());
   size_t length = assetCopy->getLength();
@@ -58,6 +58,8 @@ static bool WriteAssetToBuffer(const SkStreamAsset* asset,
     return false;
   return (length == assetCopy->read(buffer, length));
 }
+
+}  // namespace
 
 namespace printing {
 

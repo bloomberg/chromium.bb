@@ -146,7 +146,7 @@ void CheckPdfPluginForRenderFrame(content::RenderFrameHost* frame) {
 
 class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
  public:
-  PrintPreviewDialogControllerBrowserTest() : initiator_(NULL) {}
+  PrintPreviewDialogControllerBrowserTest() : initiator_(nullptr) {}
   ~PrintPreviewDialogControllerBrowserTest() override {}
 
   WebContents* initiator() {
@@ -190,7 +190,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     cloned_tab_observer_.reset();
-    initiator_ = NULL;
+    initiator_ = nullptr;
   }
 
   RequestPrintPreviewObserver* request_preview_dialog_observer() {
