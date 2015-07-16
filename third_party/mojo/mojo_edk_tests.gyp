@@ -272,4 +272,23 @@
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'mojo_public_bindings_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_public_bindings_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'mojo_public_bindings_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }
