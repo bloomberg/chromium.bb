@@ -44,6 +44,7 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
         asyncParams.setDocumentStartedBy(intentSource);
 
         TabDelegate tabDelegate = new TabDelegate(incognito);
-        tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, null);
+        tabDelegate.createNewTab(
+                asyncParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, Tab.INVALID_TAB_ID);
     }
 }

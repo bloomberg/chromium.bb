@@ -709,7 +709,7 @@ public class DocumentActivity extends ChromeActivity {
                 new AsyncTabCreationParams(new LoadUrlParams(url, PageTransition.LINK));
         asyncParams.setDocumentStartedBy(DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH);
         getTabCreator(false).createNewTab(
-                asyncParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab());
+                asyncParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab().getId());
         return false;
     }
 

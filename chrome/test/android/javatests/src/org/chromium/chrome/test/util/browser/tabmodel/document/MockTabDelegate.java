@@ -42,6 +42,6 @@ public class MockTabDelegate extends TabDelegate {
     }
 
     @Override
-    public void createNewTab(AsyncTabCreationParams params, TabLaunchType type, Tab parent) {
+    public void createNewTab(AsyncTabCreationParams params, TabLaunchType type, int parentId) {
     }
 }

@@ -18,6 +18,8 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
+import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParamsManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -105,10 +107,15 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             loadUrlParams.setUrl(UrlUtilities.fixupUrl(loadUrlParams.getUrl()));
             loadUrlParams.setTransitionType(getTransitionType(type));
 
-            WebContents webContents = IntentHandler.getWebContentsFromIntent(intent);
+            // Check if the tab is being created asynchronously.
+            int assignedTabId = intent == null ? Tab.INVALID_TAB_ID : IntentUtils.safeGetIntExtra(
+                    intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
+            AsyncTabCreationParams asyncParams =
+                    AsyncTabCreationParamsManager.remove(assignedTabId);
+            WebContents webContents = asyncParams == null ? null : asyncParams.getWebContents();
+
             boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito)
                     || webContents != null;
-
             ChromeTab tab;
             if (webContents != null) {
                 // A WebContents was passed through the Intent.  Create a new Tab to hold it.
@@ -117,7 +124,9 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 parentId = IntentUtils.safeGetIntExtra(
                         intent, IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
 
-                tab = ChromeTab.createLiveTab(Tab.INVALID_TAB_ID, mActivity, mIncognito,
+                assert TabModelUtils.getTabIndexById(mTabModel, assignedTabId)
+                        == TabModel.INVALID_TAB_INDEX;
+                tab = ChromeTab.createLiveTab(assignedTabId, mActivity, mIncognito,
                         mNativeWindow, type, parentId, !openInForeground);
                 tab.initialize(webContents, mTabContentManager, !openInForeground);
                 tab.setParentIntent(parentIntent);

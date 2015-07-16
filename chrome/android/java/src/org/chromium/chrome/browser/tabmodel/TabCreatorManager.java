@@ -59,11 +59,11 @@ public interface TabCreatorManager {
         public abstract Tab launchUrl(String url, TabModel.TabLaunchType type);
 
         /**
-         * Creates a Tab to host the given WebContents asynchronously.
+         * Creates a Tab to host the given WebContents.
          * @param webContents The web contents to create a tab around.
          * @param parentId    The id of the parent tab.
          * @param type        The TabLaunchType describing how this tab was created.
-         * @param url         URL to display in the WebContents.
+         * @param url         URL to show in the Tab. (Needed only for asynchronous tab creation.)
          * @return            Whether a Tab was created successfully.
          */
         public abstract boolean createTabWithWebContents(
