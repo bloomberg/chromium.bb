@@ -10249,6 +10249,9 @@ I don't think this site should be blocked!
       <message name="IDS_SAD_TAB_HELP_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article.">
         suggestions
       </message>
+      <message name="IDS_SAD_TAB_LEARN_MORE_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article.">
+        Learn more
+      </message>
       <message name="IDS_SAD_TAB_RELOAD_LABEL" desc="Button label in the sad tab page for reloading a page." formatter_data="android_java">
         Reload
       </message>

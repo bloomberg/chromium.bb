@@ -25,9 +25,9 @@ static const CGFloat kIconTitleSpacing = 40;
 // Padding between title and message.
 static const CGFloat kTitleMessageSpacing = 18;
 // Padding between message and link.
-static const CGFloat kMessageLinkSpacing = 21;
-// Padding between link and button.
-static const CGFloat kLinkButtonSpacing = 55;
+static const CGFloat kMessageLinkSpacing = 50;
+// Padding between message and button.
+static const CGFloat kMessageButtonSpacing = 44;
 // Minimum margins on all sides.
 static const CGFloat kTabMargin = 13;
 // Maximum margin on top.
@@ -155,7 +155,7 @@ static const CGFloat kMaxTopMargin = 130;
 
   [button_ setFrameOrigin:
       NSMakePoint(NSMaxX([self bounds]) - NSWidth([button_ frame]),
-                  NSMaxY([help_ frame]) + kLinkButtonSpacing)];
+                  NSMaxY([message_ frame]) + kMessageButtonSpacing)];
 }
 
 - (void)initializeHelpText {
@@ -174,9 +174,8 @@ static const CGFloat kMaxTopMargin = 130;
   // Get the help text and link.
   size_t linkOffset = 0;
   const base::string16 helpLink =
-      l10n_util::GetStringUTF16(IDS_SAD_TAB_HELP_LINK);
-  NSString* helpMessage(base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
-      IDS_SAD_TAB_HELP_MESSAGE, helpLink, &linkOffset)));
+      l10n_util::GetStringUTF16(IDS_SAD_TAB_LEARN_MORE_LINK);
+  NSString* helpMessage(base::SysUTF16ToNSString(helpLink));
   [help_ setMessage:helpMessage
            withFont:helpFont
        messageColor:[message_ textColor]];
