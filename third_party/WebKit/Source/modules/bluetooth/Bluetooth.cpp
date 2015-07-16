@@ -53,6 +53,12 @@ static void convertRequestDeviceOptions(const RequestDeviceOptions& options, Web
 // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetooth-requestdevice
 ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDeviceOptions& options, ExceptionState& exceptionState)
 {
+    // 1. If the incumbent settings object is not a secure context, reject promise with a SecurityError and abort these steps.
+    String errorMessage;
+    if (!scriptState->executionContext()->isPrivilegedContext(errorMessage)) {
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, errorMessage));
+    }
+
     // 2. If the algorithm is not allowed to show a popup, reject promise with a SecurityError and abort these steps.
     if (!UserGestureIndicator::consumeUserGesture()) {
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "Must be handling a user gesture to show a permission request."));
