@@ -277,7 +277,8 @@ public class EnhancedBookmarksModel {
      * @see BookmarkItem#getTitle()
      */
     public String getBookmarkTitle(BookmarkId bookmarkId) {
-        return mBookmarksBridge.getBookmarkById(bookmarkId).getTitle();
+        BookmarkItem item = mBookmarksBridge.getBookmarkById(bookmarkId);
+        return item.getTitle();
     }
 
     /**
