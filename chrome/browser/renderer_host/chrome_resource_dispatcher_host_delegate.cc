@@ -688,12 +688,14 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
                                               info->GetChildID(),
                                               info->GetRouteID());
 
-  // Build in additional protection for the chrome web store origin.
+  // Built-in additional protection for the chrome web store origin.
 #if defined(ENABLE_EXTENSIONS)
   GURL webstore_url(extension_urls::GetWebstoreLaunchURL());
-  if (request->url().DomainIs(webstore_url.host().c_str())) {
+  if (request->url().SchemeIsHTTPOrHTTPS() &&
+      request->url().DomainIs(webstore_url.host().c_str())) {
     net::HttpResponseHeaders* response_headers = request->response_headers();
-    if (!response_headers->HasHeaderValue("x-frame-options", "deny") &&
+    if (response_headers &&
+        !response_headers->HasHeaderValue("x-frame-options", "deny") &&
         !response_headers->HasHeaderValue("x-frame-options", "sameorigin")) {
       response_headers->RemoveHeader("x-frame-options");
       response_headers->AddHeader("x-frame-options: sameorigin");
