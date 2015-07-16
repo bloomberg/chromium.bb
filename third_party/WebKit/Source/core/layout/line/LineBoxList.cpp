@@ -32,6 +32,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
@@ -229,7 +230,7 @@ bool LineBoxList::hitTest(LayoutBoxModelObject* layoutObject, HitTestResult& res
     return false;
 }
 
-void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObject* child)
+void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container, LineLayoutItem child)
 {
     if (!container->parent() || (container->isLayoutBlock() && (container->selfNeedsLayout() || !container->isLayoutBlockFlow())))
         return;
@@ -252,7 +253,7 @@ void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObje
     // line box by examining our siblings.  If we didn't find a line box, then use our
     // parent's first line box.
     RootInlineBox* box = nullptr;
-    LayoutObject* curr = nullptr;
+    LineLayoutItem curr = nullptr;
     for (curr = child->previousSibling(); curr; curr = curr->previousSibling()) {
         if (curr->isFloatingOrOutOfFlowPositioned())
             continue;
@@ -311,7 +312,6 @@ void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObje
 }
 
 #if ENABLE(ASSERT)
-
 void LineBoxList::checkConsistency() const
 {
 #ifdef CHECK_CONSISTENCY

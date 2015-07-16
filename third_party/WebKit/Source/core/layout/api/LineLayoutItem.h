@@ -88,6 +88,16 @@ public:
         return m_layoutObject->length();
     }
 
+    void dirtyLinesFromChangedChild(LineLayoutItem item) const
+    {
+        m_layoutObject->dirtyLinesFromChangedChild(item.layoutObject());
+    }
+
+    bool ancestorLineBoxDirty() const
+    {
+        return m_layoutObject->ancestorLineBoxDirty();
+    }
+
     bool isFloatingOrOutOfFlowPositioned() const
     {
         return m_layoutObject->isFloatingOrOutOfFlowPositioned();
@@ -121,6 +131,16 @@ public:
     bool isImage() const
     {
         return m_layoutObject->isImage();
+    }
+
+    bool isInline() const
+    {
+        return m_layoutObject->isInline();
+    }
+
+    bool isLayoutBlock() const
+    {
+        return m_layoutObject->isLayoutBlock();
     }
 
     bool isLayoutBlockFlow() const
@@ -161,6 +181,16 @@ public:
     bool isText() const
     {
         return m_layoutObject->isText();
+    }
+
+    bool selfNeedsLayout() const
+    {
+        return m_layoutObject->selfNeedsLayout();
+    }
+
+    void setAncestorLineBoxDirty() const
+    {
+        m_layoutObject->setAncestorLineBoxDirty();
     }
 
 protected:

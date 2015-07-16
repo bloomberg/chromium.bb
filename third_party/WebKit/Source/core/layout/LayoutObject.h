@@ -41,6 +41,7 @@
 #include "core/layout/PaintInvalidationState.h"
 #include "core/layout/ScrollAlignment.h"
 #include "core/layout/SubtreeLayoutScope.h"
+#include "core/layout/api/HitTestAction.h"
 #include "core/layout/compositing/CompositingState.h"
 #include "core/layout/compositing/CompositingTriggers.h"
 #include "core/style/ComputedStyle.h"
@@ -82,14 +83,6 @@ enum HitTestFilter {
     HitTestAll,
     HitTestSelf,
     HitTestDescendants
-};
-
-enum HitTestAction {
-    HitTestBlockBackground,
-    HitTestChildBlockBackground,
-    HitTestChildBlockBackgrounds,
-    HitTestFloat,
-    HitTestForeground
 };
 
 enum MarkingBehavior {

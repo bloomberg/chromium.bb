@@ -27,6 +27,7 @@
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/GapRects.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/style/ShapeValue.h"
@@ -312,7 +313,7 @@ private:
 
     static void collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child);
 
-    void dirtyLinesFromChangedChild(LayoutObject* child) final { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }
+    void dirtyLinesFromChangedChild(LayoutObject* child) final { m_lineBoxes.dirtyLinesFromChangedChild(LineLayoutItem(this), LineLayoutItem(child)); }
 
     void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild) override;
 

@@ -30,11 +30,21 @@
 #ifndef LineBoxList_h
 #define LineBoxList_h
 
-#include "core/layout/LayoutObject.h"
+#include "core/layout/api/HitTestAction.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
+class HitTestLocation;
+class HitTestResult;
 class InlineFlowBox;
+class LayoutBoxModelObject;
+class LayoutPoint;
+class LayoutRect;
+class LayoutUnit;
+class LineLayoutItem;
+struct PaintInfo;
+
 class LineBoxList {
 public:
     LineBoxList()
@@ -62,7 +72,7 @@ public:
     void removeLineBox(InlineFlowBox*);
 
     void dirtyLineBoxes();
-    void dirtyLinesFromChangedChild(LayoutObject* parent, LayoutObject* child);
+    void dirtyLinesFromChangedChild(LineLayoutItem parent, LineLayoutItem child);
 
     bool hitTest(LayoutBoxModelObject*, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) const;
     bool anyLineIntersectsRect(LayoutBoxModelObject*, const LayoutRect&, const LayoutPoint&) const;

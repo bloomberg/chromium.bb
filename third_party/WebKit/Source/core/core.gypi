@@ -500,6 +500,7 @@
             'timing/PerformanceEntryList.idl',
         ],
         'webcore_rendering_files': [
+            'layout/api/HitTestAction.h',
             'layout/api/LineLayoutBlockFlow.h',
             'layout/api/LineLayoutBox.h',
             'layout/api/LineLayoutInline.h',
