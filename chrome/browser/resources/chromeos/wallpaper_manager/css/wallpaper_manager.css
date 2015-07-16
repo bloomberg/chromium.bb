@@ -273,6 +273,11 @@ body:not([custom]) [visibleif~='custom'] {
   display: none !important;
 }
 
+body[surprise-me-disabled] [visibleif]:not([visibleif~='surprise-me-disabled']),
+body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
+  display: none !important;
+}
+
 .progress-bar {
   background-color: rgba(255, 255, 255, 0.7);
   height: 6px;

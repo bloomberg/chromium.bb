@@ -211,6 +211,7 @@ function WallpaperManager(dialogDom) {
     var onSuccess = function() {
       if (chrome.runtime.lastError == null) {
         if (shouldEnable) {
+          self.document_.body.removeAttribute('surprise-me-disabled');
           checkbox.classList.add('checked');
           // Hides the wallpaper set by message if there is any.
           $('wallpaper-set-by-message').textContent = '';
@@ -223,6 +224,7 @@ function WallpaperManager(dialogDom) {
                                      self.currentWallpaper_);
           }
           checkbox.classList.remove('checked');
+          self.document_.body.setAttribute('surprise-me-disabled', '');
         }
         $('categories-list').disabled = shouldEnable;
         $('wallpaper-grid').disabled = shouldEnable;
@@ -290,6 +292,7 @@ function WallpaperManager(dialogDom) {
 
     if (this.enableOnlineWallpaper_) {
       var self = this;
+      self.document_.body.setAttribute('surprise-me-disabled', '');
       $('surprise-me').hidden = false;
       $('surprise-me').addEventListener('click',
                                         this.toggleSurpriseMe_.bind(this));
@@ -297,6 +300,7 @@ function WallpaperManager(dialogDom) {
         $('surprise-me').querySelector('#checkbox').classList.add('checked');
         $('categories-list').disabled = true;
         $('wallpaper-grid').disabled = true;
+        self.document_.body.removeAttribute('surprise-me-disabled');
       };
 
       WallpaperUtil.enabledSyncThemesCallback(function(syncEnabled) {
