@@ -18,7 +18,7 @@ def kill(proc):
   """Kills |proc| and ignores exceptions thrown for non-existent processes."""
   try:
     if proc and proc.pid:
-      os.kill(proc.pid, signal.SIGKILL)
+      os.kill(proc.pid, signal.SIGTERM)
   except OSError:
     pass
 
