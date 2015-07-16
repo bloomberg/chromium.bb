@@ -32,7 +32,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
   ~SchedulerHelper();
 
   // Returns the default task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
+  scoped_refptr<TaskQueue> DefaultTaskRunner();
 
   // Returns the control task runner.  Tasks posted to this runner are executed
   // with the highest priority. Care must be taken to avoid starvation of other
@@ -76,8 +76,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
 
   // Accessor methods.
   base::TimeTicks Now() const;
-  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForQueue(
-      size_t queue_index) const;
+  scoped_refptr<TaskQueue> TaskRunnerForQueue(size_t queue_index) const;
   base::TimeTicks NextPendingDelayedTaskRunTime() const;
   void SetQueueName(size_t queue_index, const char* name);
   bool IsQueueEmpty(size_t queue_index) const;
@@ -112,7 +111,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
 
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> control_after_wakeup_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
+  scoped_refptr<TaskQueue> default_task_runner_;
 
   scoped_ptr<base::TickClock> time_source_;
 

@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/child/scheduler_helper.h"
+#include "components/scheduler/child/task_queue.h"
 
 namespace scheduler {
 

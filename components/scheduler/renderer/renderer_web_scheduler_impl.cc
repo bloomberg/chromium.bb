@@ -4,6 +4,7 @@
 
 #include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
 
+#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 
 namespace scheduler {

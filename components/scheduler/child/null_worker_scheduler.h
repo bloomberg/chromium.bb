@@ -14,7 +14,7 @@ class NullWorkerScheduler : public WorkerScheduler {
   NullWorkerScheduler();
   ~NullWorkerScheduler() override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
 
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
@@ -26,7 +26,7 @@ class NullWorkerScheduler : public WorkerScheduler {
   void Shutdown() override;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<TaskQueue> task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NullWorkerScheduler);

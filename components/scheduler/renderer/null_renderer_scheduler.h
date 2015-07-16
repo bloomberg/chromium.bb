@@ -8,17 +8,18 @@
 #include "components/scheduler/renderer/renderer_scheduler.h"
 
 namespace scheduler {
+class NullTaskQueue;
 
 class NullRendererScheduler : public RendererScheduler {
  public:
   NullRendererScheduler();
   ~NullRendererScheduler() override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() override;
+  scoped_refptr<TaskQueue> TimerTaskRunner() override;
 
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
@@ -43,7 +44,7 @@ class NullRendererScheduler : public RendererScheduler {
   void ResumeTimerQueue() override;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<NullTaskQueue> task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NullRendererScheduler);

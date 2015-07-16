@@ -15,12 +15,11 @@ WebSchedulerImpl::WebSchedulerImpl(
     ChildScheduler* child_scheduler,
     scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner)
+    scoped_refptr<TaskQueue> timer_task_runner)
     : child_scheduler_(child_scheduler),
       idle_task_runner_(idle_task_runner),
       loading_task_runner_(loading_task_runner),
-      timer_task_runner_(timer_task_runner) {
-}
+      timer_task_runner_(timer_task_runner) {}
 
 WebSchedulerImpl::~WebSchedulerImpl() {
 }
@@ -105,6 +104,20 @@ void WebSchedulerImpl::postTimerTask(
       location,
       base::Bind(&WebSchedulerImpl::runTask, base::Passed(&scoped_task)),
       base::TimeDelta::FromMilliseconds(delayMs));
+}
+
+void WebSchedulerImpl::postTimerTaskAt(
+    const blink::WebTraceLocation& web_location,
+    blink::WebThread::Task* task,
+    double monotonicTime) {
+  DCHECK(timer_task_runner_);
+  scoped_ptr<blink::WebThread::Task> scoped_task(task);
+  tracked_objects::Location location(web_location.functionName(),
+                                     web_location.fileName(), -1, nullptr);
+  timer_task_runner_->PostDelayedTaskAt(
+      location,
+      base::Bind(&WebSchedulerImpl::runTask, base::Passed(&scoped_task)),
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(monotonicTime));
 }
 
 }  // namespace scheduler

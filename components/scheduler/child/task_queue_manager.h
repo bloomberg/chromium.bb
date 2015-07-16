@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "components/scheduler/child/task_queue_selector.h"
@@ -26,9 +25,10 @@ class TickClock;
 }
 
 namespace scheduler {
+class TaskQueue;
 namespace internal {
 class LazyNow;
-class TaskQueue;
+class TaskQueueImpl;
 }
 class NestableSingleThreadTaskRunner;
 class TaskQueueSelector;
@@ -107,8 +107,7 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   ~TaskQueueManager() override;
 
   // Returns the task runner which targets the queue selected by |queue_index|.
-  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForQueue(
-      size_t queue_index) const;
+  scoped_refptr<TaskQueue> TaskRunnerForQueue(size_t queue_index) const;
 
   // Sets the pump policy for the |queue_index| to |pump_policy|. By
   // default queues are created with AUTO_PUMP_POLICY.
@@ -169,7 +168,7 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   void OnTaskQueueEnabled() override;
 
   friend class internal::LazyNow;
-  friend class internal::TaskQueue;
+  friend class internal::TaskQueueImpl;
   friend class TaskQueueManagerTest;
 
   class DeletionSentinel : public base::RefCounted<DeletionSentinel> {
@@ -219,7 +218,7 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay);
-  internal::TaskQueue* Queue(size_t queue_index) const;
+  internal::TaskQueueImpl* Queue(size_t queue_index) const;
 
   base::TimeTicks Now() const;
 
@@ -230,7 +229,7 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   static const char* PumpPolicyToString(PumpPolicy pump_policy);
   static const char* WakeupPolicyToString(WakeupPolicy wakeup_policy);
 
-  std::vector<scoped_refptr<internal::TaskQueue>> queues_;
+  std::vector<scoped_refptr<internal::TaskQueueImpl>> queues_;
   base::AtomicSequenceNumber task_sequence_num_;
   base::debug::TaskAnnotator task_annotator_;
 

@@ -20,6 +20,7 @@ namespace scheduler {
 
 class ChildScheduler;
 class SingleThreadIdleTaskRunner;
+class TaskQueue;
 
 class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
  public:
@@ -27,7 +28,7 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
       ChildScheduler* child_scheduler,
       scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner);
+      scoped_refptr<TaskQueue> timer_task_runner);
   ~WebSchedulerImpl() override;
 
   // blink::WebScheduler implementation:
@@ -42,6 +43,11 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
                                        blink::WebThread::IdleTask* task);
   virtual void postLoadingTask(const blink::WebTraceLocation& location,
                                blink::WebThread::Task* task);
+  virtual void postTimerTaskAt(const blink::WebTraceLocation& location,
+                               blink::WebThread::Task* task,
+                               double monotonicTime);
+
+  // TODO(skyostil): Remove once the Blink side patch lands.
   virtual void postTimerTask(const blink::WebTraceLocation& location,
                              blink::WebThread::Task* task,
                              long long delayMs);
@@ -54,7 +60,7 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
   ChildScheduler* child_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
+  scoped_refptr<TaskQueue> timer_task_runner_;
 };
 
 }  // namespace scheduler

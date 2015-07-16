@@ -10,6 +10,7 @@
 #include "components/scheduler/child/nestable_task_runner_for_test.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/child/scheduler_message_loop_delegate.h"
+#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/child/task_queue_manager.h"
 #include "components/scheduler/child/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"

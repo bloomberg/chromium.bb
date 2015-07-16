@@ -30,11 +30,11 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   ~RendererSchedulerImpl() override;
 
   // RendererScheduler implementation:
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
+  scoped_refptr<TaskQueue> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() override;
+  scoped_refptr<TaskQueue> TimerTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
@@ -199,7 +199,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   const scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
-  const scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
+  const scoped_refptr<TaskQueue> timer_task_runner_;
 
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;

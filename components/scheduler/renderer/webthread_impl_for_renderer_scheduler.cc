@@ -4,6 +4,7 @@
 
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
+#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"

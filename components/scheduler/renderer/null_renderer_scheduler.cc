@@ -8,19 +8,18 @@
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/scheduler/child/null_idle_task_runner.h"
+#include "components/scheduler/child/null_task_queue.h"
 
 namespace scheduler {
 
 NullRendererScheduler::NullRendererScheduler()
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      idle_task_runner_(new NullIdleTaskRunner()) {
-}
+    : task_runner_(new NullTaskQueue(base::ThreadTaskRunnerHandle::Get())),
+      idle_task_runner_(new NullIdleTaskRunner()) {}
 
 NullRendererScheduler::~NullRendererScheduler() {
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-NullRendererScheduler::DefaultTaskRunner() {
+scoped_refptr<TaskQueue> NullRendererScheduler::DefaultTaskRunner() {
   return task_runner_;
 }
 
@@ -39,8 +38,7 @@ NullRendererScheduler::IdleTaskRunner() {
   return idle_task_runner_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-NullRendererScheduler::TimerTaskRunner() {
+scoped_refptr<TaskQueue> NullRendererScheduler::TimerTaskRunner() {
   return task_runner_;
 }
 

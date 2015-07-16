@@ -11,6 +11,7 @@
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/child/nestable_task_runner_for_test.h"
 #include "components/scheduler/child/scheduler_message_loop_delegate.h"
+#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/child/task_queue_selector.h"
 #include "components/scheduler/child/test_time_source.h"
 #include "components/scheduler/test/test_always_fail_time_source.h"
@@ -1295,6 +1296,36 @@ TEST_F(TaskQueueManagerTest, DelayedTaskDoesNotSkipAHeadOfShorterDelayedTask) {
   test_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(2, 1));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskWithAbsoluteRunTime) {
+  Initialize(1u, SelectorType::Automatic);
+
+  scoped_refptr<TaskQueue> runner = manager_->TaskRunnerForQueue(0);
+
+  std::vector<int> run_order;
+
+  // One task in the past, two with the exact same run time and one in the
+  // future.
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks runTime1 = now_src_->NowTicks() - delay;
+  base::TimeTicks runTime2 = now_src_->NowTicks();
+  base::TimeTicks runTime3 = now_src_->NowTicks();
+  base::TimeTicks runTime4 = now_src_->NowTicks() + delay;
+
+  runner->PostDelayedTaskAt(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                            runTime1);
+  runner->PostDelayedTaskAt(FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+                            runTime2);
+  runner->PostDelayedTaskAt(FROM_HERE, base::Bind(&TestTask, 3, &run_order),
+                            runTime3);
+  runner->PostDelayedTaskAt(FROM_HERE, base::Bind(&TestTask, 4, &run_order),
+                            runTime4);
+
+  now_src_->Advance(2 * delay);
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
 }
 
 }  // namespace scheduler

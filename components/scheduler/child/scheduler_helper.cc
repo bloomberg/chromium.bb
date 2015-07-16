@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/child/nestable_single_thread_task_runner.h"
+#include "components/scheduler/child/task_queue.h"
 
 namespace scheduler {
 
@@ -74,8 +75,7 @@ void SchedulerHelper::Shutdown() {
   task_queue_manager_.reset();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-SchedulerHelper::DefaultTaskRunner() {
+scoped_refptr<TaskQueue> SchedulerHelper::DefaultTaskRunner() {
   CheckOnValidThread();
   return default_task_runner_;
 }
@@ -110,7 +110,7 @@ base::TimeTicks SchedulerHelper::Now() const {
   return time_source_->NowTicks();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> SchedulerHelper::TaskRunnerForQueue(
+scoped_refptr<TaskQueue> SchedulerHelper::TaskRunnerForQueue(
     size_t queue_index) const {
   CheckOnValidThread();
   return task_queue_manager_->TaskRunnerForQueue(queue_index);

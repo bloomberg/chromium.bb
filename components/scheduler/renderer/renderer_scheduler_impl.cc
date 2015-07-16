@@ -11,6 +11,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "components/scheduler/child/nestable_single_thread_task_runner.h"
 #include "components/scheduler/child/prioritizing_task_queue_selector.h"
+#include "components/scheduler/child/task_queue.h"
 
 namespace scheduler {
 
@@ -89,8 +90,7 @@ void RendererSchedulerImpl::Shutdown() {
   MainThreadOnly().was_shutdown_ = true;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererSchedulerImpl::DefaultTaskRunner() {
+scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskRunner() {
   return helper_.DefaultTaskRunner();
 }
 
@@ -111,8 +111,7 @@ RendererSchedulerImpl::LoadingTaskRunner() {
   return loading_task_runner_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererSchedulerImpl::TimerTaskRunner() {
+scoped_refptr<TaskQueue> RendererSchedulerImpl::TimerTaskRunner() {
   helper_.CheckOnValidThread();
   return timer_task_runner_;
 }

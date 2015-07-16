@@ -12,8 +12,7 @@ FakeRendererScheduler::FakeRendererScheduler() {
 FakeRendererScheduler::~FakeRendererScheduler() {
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-FakeRendererScheduler::DefaultTaskRunner() {
+scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::DefaultTaskRunner() {
   return nullptr;
 }
 
@@ -32,8 +31,7 @@ FakeRendererScheduler::IdleTaskRunner() {
   return nullptr;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-FakeRendererScheduler::TimerTaskRunner() {
+scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::TimerTaskRunner() {
   return nullptr;
 }
 
