@@ -332,6 +332,11 @@ def AddInstrumentationTestOptions(parser):
                      help=('The name of the apk containing the tests '
                            '(without the .apk extension; '
                            'e.g. "ContentShellTest").'))
+  group.add_argument('--support-apk', dest='test_support_apk_path',
+                     help=('The path to an optional support apk to be '
+                           'installed alongside the test apk. The '
+                           'path should be relative to the output '
+                           'directory (--output-directory).'))
   group.add_argument('--coverage-dir',
                      help=('Directory in which to place all generated '
                            'EMMA coverage files.'))
@@ -379,8 +384,6 @@ def ProcessInstrumentationOptions(args):
       constants.GetOutDirectory(),
       constants.SDK_BUILD_TEST_JAVALIB_DIR,
       '%s.jar' %  args.test_apk)
-  args.test_support_apk_path = '%sSupport%s' % (
-      os.path.splitext(args.test_apk_path))
 
   args.test_runner = apk_helper.GetInstrumentationName(args.test_apk_path)
 

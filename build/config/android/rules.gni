@@ -1822,6 +1822,9 @@ template("android_apk") {
 #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
 #      will be added to java_files and be included in this apk.
 #   apk_name: Name for final apk.
+#   support_apk_path: Path to a support apk. If present, the test runner script
+#      will install it on the device before running the instrumentation tests.
+#      Should be a path relative to the src root.
 #   final_apk_path: Path to final built apk. Default is
 #     $root_out_dir/apks/$apk_name.apk. Setting this will override apk_name.
 #   native_libs: List paths of native libraries to include in this apk. If these
@@ -1860,6 +1863,9 @@ template("instrumentation_test_apk") {
       test_apk = invoker.apk_name
       if (defined(invoker.isolate_file)) {
         isolate_file = invoker.isolate_file
+      }
+      if (defined(invoker.support_apk_path)) {
+        support_apk_path = invoker.support_apk_path
       }
     }
   }
