@@ -134,9 +134,7 @@ void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect
     WebCanvas* canvas = context->canvas();
 
     IntRect windowRect = view->contentsToRootFrame(rect);
-    m_isInPaint = true;
     m_webPlugin->paint(canvas, windowRect);
-    m_isInPaint = false;
 
     context->restore();
 }
@@ -157,12 +155,7 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
 
     m_pendingInvalidationRect.unite(dirtyRect);
 
-    // Check layout before setting needs layout, as this method may be called
-    // while layout is in progress and we do not wish to layout again in that case.
-    // TODO(schenney): Investigate how to fix this. See comment #15 and #16 on
-    // https://codereview.chromium.org/1076283002/,  crbug.com/476660
-    if (!m_isInPaint && !layoutObject->needsLayout())
-        layoutObject->setNeedsLayout("Plugin Paint Invalidation");
+    layoutObject->setMayNeedPaintInvalidation();
 }
 
 void WebPluginContainerImpl::setFocus(bool focused, WebFocusType focusType)
@@ -703,7 +696,6 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPl
     , m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(nullptr)
-    , m_isInPaint(false)
     , m_touchEventRequestType(TouchEventRequestTypeNone)
     , m_wantsWheelEvents(false)
     , m_inDispose(false)

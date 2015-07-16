@@ -200,9 +200,6 @@ private:
 
     IntRect m_pendingInvalidationRect;
 
-    // TODO(schenney) Needed while layout is still called during paint in some plugins
-    bool m_isInPaint;
-
     TouchEventRequestType m_touchEventRequestType;
     bool m_wantsWheelEvents;
 
