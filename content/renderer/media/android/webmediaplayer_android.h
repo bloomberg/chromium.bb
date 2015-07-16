@@ -188,7 +188,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void PutCurrentFrame() override;
 
   // Media player callback handlers.
-  void OnMediaMetadataChanged(const base::TimeDelta& duration, int width,
+  void OnMediaMetadataChanged(base::TimeDelta duration, int width,
                               int height, bool success);
   void OnPlaybackComplete();
   void OnBufferingUpdate(int percentage);

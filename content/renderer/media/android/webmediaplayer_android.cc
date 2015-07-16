@@ -756,12 +756,17 @@ unsigned WebMediaPlayerAndroid::videoDecodedByteCount() const {
 }
 
 void WebMediaPlayerAndroid::OnMediaMetadataChanged(
-    const base::TimeDelta& duration, int width, int height, bool success) {
+    base::TimeDelta duration, int width, int height, bool success) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   bool need_to_signal_duration_changed = false;
 
   if (is_local_resource_)
     UpdateNetworkState(WebMediaPlayer::NetworkStateLoaded);
+
+  // For HLS streams, the reported duration may be zero for infinite streams.
+  // See http://crbug.com/501213.
+  if (duration.is_zero() && IsHLSStream())
+    duration = media::kInfiniteDuration();
 
   // Update duration, if necessary, prior to ready state updates that may
   // cause duration() query.
@@ -854,6 +859,12 @@ void WebMediaPlayerAndroid::OnMediaError(int error_type) {
 
 void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  // For HLS streams, a bogus empty size may be reported at first, followed by
+  // the actual size only once playback begins. See http://crbug.com/509972.
+  if (!has_size_info_ && width == 0 && height == 0 && IsHLSStream())
+    return;
+
   has_size_info_ = true;
   if (natural_size_.width == width && natural_size_.height == height)
     return;
