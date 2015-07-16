@@ -8,7 +8,6 @@
 #include <accctrl.h>
 #include <windows.h>
 
-#include "base/win/scoped_handle.h"
 #include "sandbox/win/src/restricted_token.h"
 #include "sandbox/win/src/security_level.h"
 
@@ -28,15 +27,15 @@ enum TokenType {
 // restricted. The token_type determines if the token will be used as a primary
 // token or impersonation token. The integrity level of the token is set to
 // |integrity level| on Vista only.
-// |token| is the output value containing the handle of the newly created
-// restricted token.
+// token_handle is the output value containing the handle of the
+// newly created restricted token.
 // If the function succeeds, the return value is ERROR_SUCCESS. If the
 // function fails, the return value is the win32 error code corresponding to
 // the error.
-DWORD CreateRestrictedToken(TokenLevel security_level,
+DWORD CreateRestrictedToken(HANDLE *token_handle,
+                            TokenLevel security_level,
                             IntegrityLevel integrity_level,
-                            TokenType token_type,
-                            base::win::ScopedHandle* token);
+                            TokenType token_type);
 
 // Starts the process described by the input parameter command_line in a job
 // with a restricted token. Also set the main thread of this newly created

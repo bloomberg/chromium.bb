@@ -550,10 +550,13 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
 
   // Create the 'naked' token. This will be the permanent token associated
   // with the process and therefore with any thread that is not impersonating.
-  DWORD result = CreateRestrictedToken(lockdown_level_,  integrity_level_,
-                                       PRIMARY, lockdown);
+  HANDLE temp_handle;
+  DWORD result = CreateRestrictedToken(&temp_handle, lockdown_level_,
+                                       integrity_level_, PRIMARY);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_GENERIC;
+
+  lockdown->Set(temp_handle);
 
   // If we're launching on the alternate desktop we need to make sure the
   // integrity label on the object is no higher than the sandboxed process's
@@ -619,11 +622,12 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   // Create the 'better' token. We use this token as the one that the main
   // thread uses when booting up the process. It should contain most of
   // what we need (before reaching main( ))
-  result = CreateRestrictedToken(initial_level_, integrity_level_,
-                                 IMPERSONATION, initial);
+  result = CreateRestrictedToken(&temp_handle, initial_level_,
+                                 integrity_level_, IMPERSONATION);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_GENERIC;
 
+  initial->Set(temp_handle);
   return SBOX_ALL_OK;
 }
 

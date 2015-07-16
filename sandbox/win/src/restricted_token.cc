@@ -53,8 +53,7 @@ unsigned RestrictedToken::Init(const HANDLE effective_token) {
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::GetRestrictedToken(
-    base::win::ScopedHandle* token) const {
+unsigned RestrictedToken::GetRestrictedTokenHandle(HANDLE *token_handle) const {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
@@ -96,7 +95,7 @@ unsigned RestrictedToken::GetRestrictedToken(
   }
 
   BOOL result = TRUE;
-  HANDLE new_token_handle = NULL;
+  HANDLE new_token = NULL;
   // The SANDBOX_INERT flag did nothing in XP and it was just a way to tell
   // if a token has ben restricted given the limiations of IsTokenRestricted()
   // but it appears that in Windows 7 it hints the AppLocker subsystem to
@@ -110,14 +109,14 @@ unsigned RestrictedToken::GetRestrictedToken(
                                      privileges_to_disable_array,
                                      static_cast<DWORD>(restrict_size),
                                      sids_to_restrict_array,
-                                     &new_token_handle);
+                                     &new_token);
   } else {
     // Duplicate the token even if it's not modified at this point
     // because any subsequent changes to this token would also affect the
     // current process.
     result = ::DuplicateTokenEx(effective_token_, TOKEN_ALL_ACCESS, NULL,
                                 SecurityIdentification, TokenPrimary,
-                                &new_token_handle);
+                                &new_token);
   }
 
   if (deny_only_array)
@@ -132,59 +131,68 @@ unsigned RestrictedToken::GetRestrictedToken(
   if (!result)
     return ::GetLastError();
 
-  base::win::ScopedHandle new_token(new_token_handle);
-
   // Modify the default dacl on the token to contain Restricted and the user.
-  if (!AddSidToDefaultDacl(new_token.Get(), WinRestrictedCodeSid, GENERIC_ALL))
+  if (!AddSidToDefaultDacl(new_token, WinRestrictedCodeSid, GENERIC_ALL))
     return ::GetLastError();
 
-  if (!AddUserSidToDefaultDacl(new_token.Get(), GENERIC_ALL))
+  if (!AddUserSidToDefaultDacl(new_token, GENERIC_ALL))
     return ::GetLastError();
 
-  DWORD error = SetTokenIntegrityLevel(new_token.Get(), integrity_level_);
+  DWORD error = SetTokenIntegrityLevel(new_token, integrity_level_);
   if (ERROR_SUCCESS != error)
     return error;
 
-  HANDLE token_handle;
-  if (!::DuplicateHandle(::GetCurrentProcess(), new_token.Get(),
-                         ::GetCurrentProcess(), &token_handle,
-                         TOKEN_ALL_ACCESS, FALSE,  // Don't inherit.
-                         0)) {
-    return ::GetLastError();
-  }
+  BOOL status = ::DuplicateHandle(::GetCurrentProcess(),
+                                  new_token,
+                                  ::GetCurrentProcess(),
+                                  token_handle,
+                                  TOKEN_ALL_ACCESS,
+                                  FALSE,  // Don't inherit.
+                                  0);
 
-  token->Set(token_handle);
+  if (new_token != effective_token_)
+    ::CloseHandle(new_token);
+
+  if (!status)
+    return ::GetLastError();
+
   return ERROR_SUCCESS;
 }
 
-unsigned RestrictedToken::GetRestrictedTokenForImpersonation(
-    base::win::ScopedHandle* token) const {
+unsigned RestrictedToken::GetRestrictedTokenHandleForImpersonation(
+    HANDLE *token_handle) const {
   DCHECK(init_);
   if (!init_)
     return ERROR_NO_TOKEN;
 
-  base::win::ScopedHandle restricted_token;
-  unsigned err_code = GetRestrictedToken(&restricted_token);
+  HANDLE restricted_token_handle;
+  unsigned err_code = GetRestrictedTokenHandle(&restricted_token_handle);
   if (ERROR_SUCCESS != err_code)
     return err_code;
 
-  HANDLE impersonation_token_handle;
-  if (!::DuplicateToken(restricted_token.Get(),
+  HANDLE impersonation_token;
+  if (!::DuplicateToken(restricted_token_handle,
                         SecurityImpersonation,
-                        &impersonation_token_handle)) {
-    return ::GetLastError();
-  }
-  base::win::ScopedHandle impersonation_token(impersonation_token_handle);
-
-  HANDLE token_handle;
-  if (!::DuplicateHandle(::GetCurrentProcess(), impersonation_token.Get(),
-                         ::GetCurrentProcess(), &token_handle,
-                         TOKEN_ALL_ACCESS, FALSE,  // Don't inherit.
-                         0)) {
+                        &impersonation_token)) {
+    ::CloseHandle(restricted_token_handle);
     return ::GetLastError();
   }
 
-  token->Set(token_handle);
+  ::CloseHandle(restricted_token_handle);
+
+  BOOL status = ::DuplicateHandle(::GetCurrentProcess(),
+                                  impersonation_token,
+                                  ::GetCurrentProcess(),
+                                  token_handle,
+                                  TOKEN_ALL_ACCESS,
+                                  FALSE,  // Don't inherit.
+                                  0);
+
+  ::CloseHandle(impersonation_token);
+
+  if (!status)
+    return ::GetLastError();
+
   return ERROR_SUCCESS;
 }
 

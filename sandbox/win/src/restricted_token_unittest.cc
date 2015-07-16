@@ -8,8 +8,6 @@
 #include <atlbase.h>
 #include <atlsecurity.h>
 #include <vector>
-
-#include "base/win/scoped_handle.h"
 #include "sandbox/win/src/restricted_token.h"
 #include "sandbox/win/src/sid.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,12 +38,12 @@ TEST(RestrictedTokenTest, DefaultInit) {
 
   // Get the handle to the restricted token.
 
-  base::win::ScopedHandle restricted_token_handle;
+  HANDLE restricted_token_handle = NULL;
   ASSERT_EQ(ERROR_SUCCESS,
-      token_default.GetRestrictedToken(&restricted_token_handle));
+      token_default.GetRestrictedTokenHandle(&restricted_token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(restricted_token_handle.Take());
+  restricted_token.Attach(restricted_token_handle);
 
   ATL::CSid sid_user_restricted;
   ATL::CSid sid_user_default;
@@ -82,12 +80,12 @@ TEST(RestrictedTokenTest, CustomInit) {
 
   // Get the handle to the restricted token.
 
-  base::win::ScopedHandle restricted_token_handle;
+  HANDLE restricted_token_handle = NULL;
   ASSERT_EQ(ERROR_SUCCESS,
-      token.GetRestrictedToken(&restricted_token_handle));
+      token.GetRestrictedTokenHandle(&restricted_token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(restricted_token_handle.Take());
+  restricted_token.Attach(restricted_token_handle);
 
   ATL::CSid sid_restricted;
   ATL::CSid sid_default;
@@ -106,14 +104,14 @@ TEST(RestrictedTokenTest, ResultToken) {
   ASSERT_EQ(ERROR_SUCCESS,
             token.AddRestrictingSid(ATL::Sids::World().GetPSID()));
 
-  base::win::ScopedHandle restricted_token;
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&restricted_token));
+  HANDLE restricted_token;
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&restricted_token));
 
-  ASSERT_TRUE(::IsTokenRestricted(restricted_token.Get()));
+  ASSERT_TRUE(::IsTokenRestricted(restricted_token));
 
   DWORD length = 0;
   TOKEN_TYPE type;
-  ASSERT_TRUE(::GetTokenInformation(restricted_token.Get(),
+  ASSERT_TRUE(::GetTokenInformation(restricted_token,
                                     ::TokenType,
                                     &type,
                                     sizeof(type),
@@ -121,19 +119,22 @@ TEST(RestrictedTokenTest, ResultToken) {
 
   ASSERT_EQ(type, TokenPrimary);
 
-  base::win::ScopedHandle impersonation_token;
+  HANDLE impersonation_token;
   ASSERT_EQ(ERROR_SUCCESS,
-      token.GetRestrictedTokenForImpersonation(&impersonation_token));
+      token.GetRestrictedTokenHandleForImpersonation(&impersonation_token));
 
-  ASSERT_TRUE(::IsTokenRestricted(impersonation_token.Get()));
+  ASSERT_TRUE(::IsTokenRestricted(impersonation_token));
 
-  ASSERT_TRUE(::GetTokenInformation(impersonation_token.Get(),
+  ASSERT_TRUE(::GetTokenInformation(impersonation_token,
                                     ::TokenType,
                                     &type,
                                     sizeof(type),
                                     &length));
 
   ASSERT_EQ(type, TokenImpersonation);
+
+  ::CloseHandle(impersonation_token);
+  ::CloseHandle(restricted_token);
 }
 
 // Verifies that the token created has "Restricted" in its default dacl.
@@ -144,11 +145,11 @@ TEST(RestrictedTokenTest, DefaultDacl) {
   ASSERT_EQ(ERROR_SUCCESS,
             token.AddRestrictingSid(ATL::Sids::World().GetPSID()));
 
-  base::win::ScopedHandle handle;
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&handle));
+  HANDLE handle;
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(handle.Take());
+  restricted_token.Attach(handle);
 
   ATL::CDacl dacl;
   ASSERT_TRUE(restricted_token.GetDefaultDacl(&dacl));
@@ -172,14 +173,14 @@ TEST(RestrictedTokenTest, DefaultDacl) {
 // Tests the method "AddSidForDenyOnly".
 TEST(RestrictedTokenTest, DenySid) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.AddSidForDenyOnly(Sid(WinWorldSid)));
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenGroups groups;
   ASSERT_TRUE(restricted_token.GetGroups(&groups));
@@ -199,14 +200,14 @@ TEST(RestrictedTokenTest, DenySid) {
 // Tests the method "AddAllSidsForDenyOnly".
 TEST(RestrictedTokenTest, DenySids) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.AddAllSidsForDenyOnly(NULL));
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenGroups groups;
   ASSERT_TRUE(restricted_token.GetGroups(&groups));
@@ -228,17 +229,17 @@ TEST(RestrictedTokenTest, DenySids) {
 // Tests the method "AddAllSidsForDenyOnly" using an exception list.
 TEST(RestrictedTokenTest, DenySidsException) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   std::vector<Sid> sids_exception;
   sids_exception.push_back(Sid(WinWorldSid));
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.AddAllSidsForDenyOnly(&sids_exception));
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenGroups groups;
   ASSERT_TRUE(restricted_token.GetGroups(&groups));
@@ -264,14 +265,14 @@ TEST(RestrictedTokenTest, DenySidsException) {
 // Tests test method AddOwnerSidForDenyOnly.
 TEST(RestrictedTokenTest, DenyOwnerSid) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.AddUserSidForDenyOnly());
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenGroups groups;
   ASSERT_TRUE(restricted_token.GetGroups(&groups));
@@ -294,23 +295,22 @@ TEST(RestrictedTokenTest, DenyOwnerSid) {
 // Tests test method AddOwnerSidForDenyOnly with a custom effective token.
 TEST(RestrictedTokenTest, DenyOwnerSidCustom) {
   // Get the current process token.
-  HANDLE access_handle = INVALID_HANDLE_VALUE;
+  HANDLE token_handle = INVALID_HANDLE_VALUE;
   ASSERT_TRUE(::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS,
-                                 &access_handle));
+                                 &token_handle));
 
-  ASSERT_NE(INVALID_HANDLE_VALUE, access_handle);
+  ASSERT_NE(INVALID_HANDLE_VALUE, token_handle);
 
   ATL::CAccessToken access_token;
-  access_token.Attach(access_handle);
+  access_token.Attach(token_handle);
 
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
   ASSERT_EQ(ERROR_SUCCESS, token.Init(access_token.GetHandle()));
   ASSERT_EQ(ERROR_SUCCESS, token.AddUserSidForDenyOnly());
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenGroups groups;
   ASSERT_TRUE(restricted_token.GetGroups(&groups));
@@ -333,14 +333,14 @@ TEST(RestrictedTokenTest, DenyOwnerSidCustom) {
 // Tests the method DeleteAllPrivileges.
 TEST(RestrictedTokenTest, DeleteAllPrivileges) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.DeleteAllPrivileges(NULL));
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenPrivileges privileges;
   ASSERT_TRUE(restricted_token.GetPrivileges(&privileges));
@@ -351,17 +351,17 @@ TEST(RestrictedTokenTest, DeleteAllPrivileges) {
 // Tests the method DeleteAllPrivileges with an exception list.
 TEST(RestrictedTokenTest, DeleteAllPrivilegesException) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   std::vector<base::string16> exceptions;
   exceptions.push_back(SE_CHANGE_NOTIFY_NAME);
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.DeleteAllPrivileges(&exceptions));
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenPrivileges privileges;
   ASSERT_TRUE(restricted_token.GetPrivileges(&privileges));
@@ -381,14 +381,14 @@ TEST(RestrictedTokenTest, DeleteAllPrivilegesException) {
 // Tests the method DeletePrivilege.
 TEST(RestrictedTokenTest, DeletePrivilege) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.DeletePrivilege(SE_CHANGE_NOTIFY_NAME));
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenPrivileges privileges;
   ASSERT_TRUE(restricted_token.GetPrivileges(&privileges));
@@ -441,15 +441,15 @@ void CheckRestrictingSid(const ATL::CAccessToken &restricted_token,
 // Tests the method AddRestrictingSid.
 TEST(RestrictedTokenTest, AddRestrictingSid) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS,
             token.AddRestrictingSid(ATL::Sids::World().GetPSID()));
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   CheckRestrictingSid(restricted_token, ATL::Sids::World(), 1);
 }
@@ -457,14 +457,14 @@ TEST(RestrictedTokenTest, AddRestrictingSid) {
 // Tests the method AddRestrictingSidCurrentUser.
 TEST(RestrictedTokenTest, AddRestrictingSidCurrentUser) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.AddRestrictingSidCurrentUser());
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
   ATL::CSid user;
   restricted_token.GetUser(&user);
 
@@ -474,23 +474,22 @@ TEST(RestrictedTokenTest, AddRestrictingSidCurrentUser) {
 // Tests the method AddRestrictingSidCurrentUser with a custom effective token.
 TEST(RestrictedTokenTest, AddRestrictingSidCurrentUserCustom) {
   // Get the current process token.
-  HANDLE access_handle = INVALID_HANDLE_VALUE;
+  HANDLE token_handle = INVALID_HANDLE_VALUE;
   ASSERT_TRUE(::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS,
-                                 &access_handle));
+                                 &token_handle));
 
-  ASSERT_NE(INVALID_HANDLE_VALUE, access_handle);
+  ASSERT_NE(INVALID_HANDLE_VALUE, token_handle);
 
   ATL::CAccessToken access_token;
-  access_token.Attach(access_handle);
+  access_token.Attach(token_handle);
 
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
   ASSERT_EQ(ERROR_SUCCESS, token.Init(access_token.GetHandle()));
   ASSERT_EQ(ERROR_SUCCESS, token.AddRestrictingSidCurrentUser());
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
   ATL::CSid user;
   restricted_token.GetUser(&user);
 
@@ -500,14 +499,14 @@ TEST(RestrictedTokenTest, AddRestrictingSidCurrentUserCustom) {
 // Tests the method AddRestrictingSidLogonSession.
 TEST(RestrictedTokenTest, AddRestrictingSidLogonSession) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.AddRestrictingSidLogonSession());
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
   ATL::CSid session;
   restricted_token.GetLogonSid(&session);
 
@@ -517,17 +516,17 @@ TEST(RestrictedTokenTest, AddRestrictingSidLogonSession) {
 // Tests adding a lot of restricting sids.
 TEST(RestrictedTokenTest, AddMultipleRestrictingSids) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.AddRestrictingSidCurrentUser());
   ASSERT_EQ(ERROR_SUCCESS, token.AddRestrictingSidLogonSession());
   ASSERT_EQ(ERROR_SUCCESS,
             token.AddRestrictingSid(ATL::Sids::World().GetPSID()));
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
   ATL::CSid session;
   restricted_token.GetLogonSid(&session);
 
@@ -549,14 +548,14 @@ TEST(RestrictedTokenTest, AddMultipleRestrictingSids) {
 // Tests the method "AddRestrictingSidAllSids".
 TEST(RestrictedTokenTest, AddAllSidToRestrictingSids) {
   RestrictedToken token;
-  base::win::ScopedHandle token_handle;
+  HANDLE token_handle = NULL;
 
   ASSERT_EQ(ERROR_SUCCESS, token.Init(NULL));
   ASSERT_EQ(ERROR_SUCCESS, token.AddRestrictingSidAllSids());
-  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedToken(&token_handle));
+  ASSERT_EQ(ERROR_SUCCESS, token.GetRestrictedTokenHandle(&token_handle));
 
   ATL::CAccessToken restricted_token;
-  restricted_token.Attach(token_handle.Take());
+  restricted_token.Attach(token_handle);
 
   ATL::CTokenGroups groups;
   ASSERT_TRUE(restricted_token.GetGroups(&groups));

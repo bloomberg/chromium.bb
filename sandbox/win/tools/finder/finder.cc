@@ -10,12 +10,15 @@ Finder::Finder() {
   file_output_ = NULL;
   object_type_ = 0;
   access_type_ = 0;
+  token_handle_ = NULL;
   memset(filesystem_stats_, 0, sizeof(filesystem_stats_));
   memset(registry_stats_, 0, sizeof(registry_stats_));
   memset(kernel_object_stats_, 0, sizeof(kernel_object_stats_));
 }
 
 Finder::~Finder() {
+  if (token_handle_)
+    ::CloseHandle(token_handle_);
 }
 
 DWORD Finder::Init(sandbox::TokenLevel token_type,
@@ -32,14 +35,14 @@ DWORD Finder::Init(sandbox::TokenLevel token_type,
   access_type_ = access_type;
   file_output_ = file_output;
 
-  err_code = sandbox::CreateRestrictedToken(token_type,
+  err_code = sandbox::CreateRestrictedToken(&token_handle_, token_type,
                                             sandbox::INTEGRITY_LEVEL_LAST,
-                                            sandbox::PRIMARY, &token_handle_);
+                                            sandbox::PRIMARY);
   return err_code;
 }
 
 DWORD Finder::Scan() {
-  if (!token_handle_.IsValid()) {
+  if (!token_handle_) {
     return ERROR_NO_TOKEN;
   }
 
