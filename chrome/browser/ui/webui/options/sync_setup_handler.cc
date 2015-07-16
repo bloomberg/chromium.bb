@@ -42,6 +42,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync_driver/sync_prefs.h"

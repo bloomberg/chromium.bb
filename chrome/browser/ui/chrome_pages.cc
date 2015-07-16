@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"

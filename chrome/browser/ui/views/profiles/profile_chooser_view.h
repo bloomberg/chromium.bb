@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "ui/views/bubble/bubble_delegate.h"

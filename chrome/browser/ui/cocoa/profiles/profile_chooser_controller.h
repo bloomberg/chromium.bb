@@ -11,9 +11,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/chrome_signin_helper.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 
 class AvatarMenu;
 class ActiveProfileObserverBridge;

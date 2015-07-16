@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 
 @class BaseBubbleController;
 class Browser;
