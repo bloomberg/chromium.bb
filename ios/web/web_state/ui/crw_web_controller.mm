@@ -3358,10 +3358,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark Page State
 
 - (void)recordStateInHistory {
-  // Check that the url in the web view matches the url in the history entry.
+  // Only record the state if:
+  // - the current NavigationItem's URL matches the current URL, and
+  // - the user has interacted with the page.
   CRWSessionEntry* current = [self currentSessionEntry];
-  if (current && [current navigationItem]->GetURL() == [self currentURL])
+  if (current && [current navigationItem]->GetURL() == [self currentURL] &&
+      _userInteractionRegistered) {
     [current navigationItem]->SetPageDisplayState(self.pageDisplayState);
+  }
 }
 
 - (void)restoreStateFromHistory {
