@@ -12,6 +12,11 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
  */
 public interface ContextualSearchPanelDelegate {
     /**
+     * @return Whether the Panel is in fullscreen size.
+     */
+    boolean isFullscreenSizePanel();
+
+    /**
      * @return Whether the Panel is showing.
      */
     boolean isShowing();
@@ -20,6 +25,26 @@ public interface ContextualSearchPanelDelegate {
      * @return Whether the Search Bar is peeking.
      */
     boolean isPeeking();
+
+    /**
+     * @return The width of the Contextual Search Panel in pixels.
+     */
+    int getMaximumWidthPx();
+
+    /**
+     * @return The height of the Contextual Search Panel in pixels.
+     */
+    int getMaximumHeightPx();
+
+    /**
+     * @return The width of the Search Content View in pixels.
+     */
+    int getSearchContentViewWidthPx();
+
+    /**
+     * @return The height of the Search Content View in pixels.
+     */
+    int getSearchContentViewHeightPx();
 
     /**
      * Maximizes the Contextual Search Panel, then promotes it to a regular Tab.

@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentReadbackHandler;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SPenSupport;
 import org.chromium.ui.UiUtils;
@@ -432,7 +433,7 @@ public class CompositorViewHolder extends FrameLayout
         mLayoutManager.getActiveLayout().getAllContentViewCores(sCachedCVCList);
 
         for (int i = 0; i < sCachedCVCList.size(); i++) {
-            sCachedCVCList.get(i).onPhysicalBackingSizeChanged(width, height);
+            adjustPhysicalBackingSize(sCachedCVCList.get(i), width, height);
         }
         sCachedCVCList.clear();
     }
@@ -932,9 +933,39 @@ public class CompositorViewHolder extends FrameLayout
         contentViewCore.setCurrentMotionEventOffsets(0.f, 0.f);
         contentViewCore.setTopControlsHeight(
                 getTopControlsHeightPixels(), contentViewCore.doTopControlsShrinkBlinkSize());
-        contentViewCore.onPhysicalBackingSizeChanged(
+
+        adjustPhysicalBackingSize(contentViewCore,
                 mCompositorView.getWidth(), mCompositorView.getHeight());
+
         contentViewCore.onOverdrawBottomHeightChanged(mCompositorView.getOverdrawBottomHeight());
+    }
+
+    /**
+     * Adjusts the physical backing size of a given ContentViewCore. This method will first check
+     * if the ContentViewCore's client wants to override the size and, if so, it will use the
+     * values provided by the {@link ContentViewClient#getDesiredWidthMeasureSpec()} and
+     * {@link ContentViewClient#getDesiredHeightMeasureSpec()} methods. If no value is provided
+     * in one of these methods, the values from the |width| and |height| arguments will be
+     * used instead.
+     *
+     * @param contentViewCore The {@link ContentViewCore} to resize.
+     * @param width The default width.
+     * @param height The default height.
+     */
+    private void adjustPhysicalBackingSize(ContentViewCore contentViewCore, int width, int height) {
+        ContentViewClient client = contentViewCore.getContentViewClient();
+
+        int desiredWidthMeasureSpec = client.getDesiredWidthMeasureSpec();
+        if (MeasureSpec.getMode(desiredWidthMeasureSpec) != MeasureSpec.UNSPECIFIED) {
+            width = MeasureSpec.getSize(desiredWidthMeasureSpec);
+        }
+
+        int desiredHeightMeasureSpec = client.getDesiredHeightMeasureSpec();
+        if (MeasureSpec.getMode(desiredHeightMeasureSpec) != MeasureSpec.UNSPECIFIED) {
+            height = MeasureSpec.getSize(desiredHeightMeasureSpec);
+        }
+
+        contentViewCore.onPhysicalBackingSizeChanged(width, height);
     }
 
     /**
@@ -954,7 +985,7 @@ public class CompositorViewHolder extends FrameLayout
         int height = getHeight();
         view.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
-        view.layout(0, 0, width, height);
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
         return true;
     }
 

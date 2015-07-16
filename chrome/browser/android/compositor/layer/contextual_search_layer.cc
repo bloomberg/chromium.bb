@@ -46,8 +46,10 @@ void ContextualSearchLayer::SetProperties(
     bool search_promo_visible,
     float search_promo_height,
     float search_promo_opacity,
+    float search_panel_x,
     float search_panel_y,
     float search_panel_width,
+    float search_panel_height,
     float search_bar_margin_top,
     float search_bar_margin_side,
     float search_bar_height,
@@ -352,7 +354,7 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Search Panel.
   // ---------------------------------------------------------------------------
-  layer_->SetPosition(gfx::PointF(0.f, search_panel_y));
+  layer_->SetPosition(gfx::PointF(search_panel_x, search_panel_y));
 
   // ---------------------------------------------------------------------------
   // Progress Bar

@@ -41,8 +41,11 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         float searchPromoHeightPx = mSearchPanel.getPromoHeightPx();
         float searchPromoOpacity = mSearchPanel.getPromoOpacity();
 
-        float searchPanelY = mSearchPanel.getContextualSearchPanelY();
+        float searchPanelX = mSearchPanel.getOffsetX();
+        float searchPanelY = mSearchPanel.getOffsetY();
         float searchPanelWidth = mSearchPanel.getWidth();
+        float searchPanelHeight = mSearchPanel.getHeight();
+
         float searchBarMarginTop = mSearchPanel.getSearchBarMarginTop();
         float searchBarMarginSide = mSearchPanel.getSearchBarMarginSide();
         float searchBarHeight = mSearchPanel.getSearchBarHeight();
@@ -89,8 +92,10 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchPromoVisible,
                 searchPromoHeightPx,
                 searchPromoOpacity,
+                searchPanelX * mDpToPx,
                 searchPanelY * mDpToPx,
                 searchPanelWidth * mDpToPx,
+                searchPanelHeight * mDpToPx,
                 searchBarMarginTop * mDpToPx,
                 searchBarMarginSide * mDpToPx,
                 searchBarHeight * mDpToPx,
@@ -151,8 +156,10 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             boolean searchPromoVisible,
             float searchPromoHeight,
             float searchPromoOpacity,
+            float searchPanelX,
             float searchPanelY,
             float searchPanelWidth,
+            float searchPanelHeight,
             float searchBarMarginTop,
             float searchBarMarginSide,
             float searchBarHeight,

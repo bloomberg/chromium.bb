@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextualsearch;
 import android.app.Activity;
 import android.os.Handler;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalFocusChangeListener;
@@ -44,6 +45,7 @@ import org.chromium.components.navigation_interception.InterceptNavigationDelega
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContextualSearchClient;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -849,6 +851,26 @@ public class ContextualSearchManager extends ContextualSearchObservable
         }
 
         mSearchContentViewCore = new ContentViewCore(mActivity);
+
+        // Adds a ContentViewClient to override the default fullscreen size.
+        if (!mSearchPanelDelegate.isFullscreenSizePanel()) {
+            mSearchContentViewCore.setContentViewClient(new ContentViewClient() {
+                @Override
+                public int getDesiredWidthMeasureSpec() {
+                    return MeasureSpec.makeMeasureSpec(
+                            mSearchPanelDelegate.getSearchContentViewWidthPx(),
+                            MeasureSpec.EXACTLY);
+                }
+
+                @Override
+                public int getDesiredHeightMeasureSpec() {
+                    return MeasureSpec.makeMeasureSpec(
+                            mSearchPanelDelegate.getSearchContentViewHeightPx(),
+                            MeasureSpec.EXACTLY);
+                }
+            });
+        }
+
         ContentView cv = new ContentView(mActivity, mSearchContentViewCore);
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
         mSearchContentViewCore.initialize(cv, cv,
@@ -940,6 +962,19 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * @param url The URL we are navigating to.
      */
     private void onExternalNavigation(String url) {
+        if (mSearchPanelDelegate.isFullscreenSizePanel()) {
+            // Consider the ContentView height to be fullscreen, and inform the system that
+            // the Toolbar is always visible (from the Compositor's perspective), even though
+            // the Toolbar and Base Page might be offset outside the screen. This means the
+            // renderer will consider the ContentView height to be the fullscreen height
+            // minus the Toolbar height.
+            //
+            // This is necessary to fix the bugs: crbug.com/510205 and crbug.com/510206
+            mSearchContentViewCore.getWebContents().updateTopControlsState(false, true, false);
+        } else {
+            mSearchContentViewCore.getWebContents().updateTopControlsState(true, false, false);
+        }
+
         if (!mDidPromoteSearchNavigation
                 && !BLACKLISTED_URL.equals(url)
                 && !url.startsWith(INTENT_URL_PREFIX)

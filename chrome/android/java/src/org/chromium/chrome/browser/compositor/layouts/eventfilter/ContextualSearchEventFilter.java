@@ -181,7 +181,8 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
 
         if (!mIsDeterminingEventTarget && action == MotionEvent.ACTION_DOWN) {
             mInitialEventY = e.getY();
-            if (mSearchPanel.isYCoordinateInsideSearchContentView(mInitialEventY * mPxToDp)) {
+            if (mSearchPanel.isCoordinateInsideSearchContentView(
+                    e.getX() * mPxToDp, mInitialEventY * mPxToDp)) {
                 // If the DOWN event happened inside the Search Content View, we'll need
                 // to wait until the user has moved the finger beyond a certain threshold,
                 // so we can determine the gesture's orientation and consequently be able
@@ -357,10 +358,11 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
             isSyntheticEvent = true;
         }
 
-        float searchContentViewOffsetYPx = mSearchPanel.getSearchContentViewOffsetY() / mPxToDp;
+        final float contentViewOffsetXPx = mSearchPanel.getSearchContentViewOffsetX() / mPxToDp;
+        final float contentViewOffsetYPx = mSearchPanel.getSearchContentViewOffsetY() / mPxToDp;
 
         // Adjust the offset to be relative to the Search Contents View.
-        event.offsetLocation(0.f, -searchContentViewOffsetYPx);
+        event.offsetLocation(-contentViewOffsetXPx, -contentViewOffsetYPx);
 
         boolean wasEventCanceled = false;
         if (mWasActionDownEventSynthetic && action == MotionEvent.ACTION_UP) {
@@ -404,7 +406,8 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
      * @return Whether the event has been consumed.
      */
     private boolean handleSingleTapUp(MotionEvent e) {
-        setEventTarget(mSearchPanel.isYCoordinateInsideSearchContentView(e.getY() * mPxToDp)
+        setEventTarget(mSearchPanel.isCoordinateInsideSearchContentView(
+                e.getX() * mPxToDp, e.getY() * mPxToDp)
                 ? EventTarget.SEARCH_CONTENT_VIEW : EventTarget.SEARCH_PANEL);
 
         return false;

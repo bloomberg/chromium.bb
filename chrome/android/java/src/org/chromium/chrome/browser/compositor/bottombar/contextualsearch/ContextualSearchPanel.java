@@ -230,10 +230,9 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public void handleClick(long time, float x, float y) {
         mHasDetectedTouchGesture = true;
-        if (isYCoordinateInsideBasePage(y)) {
+        if (isCoordinateInsideBasePage(x, y)) {
             closePanel(StateChangeReason.BASE_PAGE_TAP, true);
-        } else if (isYCoordinateInsideSearchBar(y)) {
-            // TODO(pedrosimonetti): handle click in the close button here.
+        } else if (isCoordinateInsideSearchBar(x, y)) {
             if (isPeeking()) {
                 if (mManagementDelegate.isRunningInCompatibilityMode()) {
                     mManagementDelegate.openResolvedSearchUrlInNewTab();
@@ -259,20 +258,49 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     // ============================================================================================
 
     /**
+     * @param x The x coordinate in dp.
      * @param y The y coordinate in dp.
-     * @return Whether the given |y| coordinate is inside the Search Bar area.
+     * @return Whether the given coordinate is inside the Search Panel area.
      */
-    public boolean isYCoordinateInsideSearchBar(float y) {
-        return y >= getOffsetY() && y <= (getOffsetY() + getSearchBarHeight());
+    private boolean isCoordinateInsideSearchPanel(float x, float y) {
+        return y >= getOffsetY() && y <= (getOffsetY() + getHeight())
+                &&  x >= getOffsetX() && x <= (getOffsetX() + getWidth());
     }
 
     /**
+     * @param x The x coordinate in dp.
      * @param y The y coordinate in dp.
-     * @return Whether the given |y| coordinate is inside the Search Content
-     *         View area.
+     * @return Whether the given coordinate is inside the Base Page area.
      */
-    public boolean isYCoordinateInsideSearchContentView(float y) {
-        return y > getSearchContentViewOffsetY();
+    private boolean isCoordinateInsideBasePage(float x, float y) {
+        return !isCoordinateInsideSearchPanel(x, y);
+    }
+
+    /**
+     * @param x The x coordinate in dp.
+     * @param y The y coordinate in dp.
+     * @return Whether the given coordinate is inside the Search Bar area.
+     */
+    public boolean isCoordinateInsideSearchBar(float x, float y) {
+        return isCoordinateInsideSearchPanel(x, y)
+                && y >= getOffsetY() && y <= (getOffsetY() + getSearchBarHeight());
+    }
+
+    /**
+     * @param x The x coordinate in dp.
+     * @param y The y coordinate in dp.
+     * @return Whether the given coordinate is inside the Search Content View area.
+     */
+    public boolean isCoordinateInsideSearchContentView(float x, float y) {
+        return isCoordinateInsideSearchPanel(x, y)
+                && y > getSearchContentViewOffsetY();
+    }
+
+    /**
+     * @return The horizontal offset of the Search Content View in dp.
+     */
+    public float getSearchContentViewOffsetX() {
+        return getOffsetX();
     }
 
     /**
@@ -280,14 +308,6 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public float getSearchContentViewOffsetY() {
         return getOffsetY() + getSearchBarHeight() + getPromoHeight();
-    }
-
-    /**
-     * @param y The y coordinate in dp.
-     * @return Whether the given |y| coordinate is inside the Base Page area.
-     */
-    private boolean isYCoordinateInsideBasePage(float y) {
-        return y < getOffsetY();
     }
 
     /**
@@ -353,6 +373,12 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     // ============================================================================================
 
     @Override
+    public boolean isFullscreenSizePanel() {
+        // NOTE(pedrosimonetti): exposing superclass method to the interface.
+        return super.isFullscreenSizePanel();
+    }
+
+    @Override
     public boolean isShowing() {
         // NOTE(pedrosimonetti): exposing superclass method to the interface.
         return super.isShowing();
@@ -361,6 +387,30 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     public boolean isPeeking() {
         return doesPanelHeightMatchState(PanelState.PEEKED);
+    }
+
+    @Override
+    public int getMaximumWidthPx() {
+        // NOTE(pedrosimonetti): exposing superclass method to the interface.
+        return super.getMaximumWidthPx();
+    }
+
+    @Override
+    public int getMaximumHeightPx() {
+        // NOTE(pedrosimonetti): exposing superclass method to the interface.
+        return super.getMaximumHeightPx();
+    }
+
+    @Override
+    public int getSearchContentViewWidthPx() {
+        // NOTE(pedrosimonetti): exposing superclass method to the interface.
+        return super.getSearchContentViewWidthPx();
+    }
+
+    @Override
+    public int getSearchContentViewHeightPx() {
+        // NOTE(pedrosimonetti): exposing superclass method to the interface.
+        return super.getSearchContentViewHeightPx();
     }
 
     @Override

@@ -221,6 +221,25 @@ public class ContentView extends FrameLayout
         return mContentViewCore.computeVerticalScrollRange();
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        ContentViewClient client = mContentViewCore.getContentViewClient();
+
+        // Allow the ContentViewClient to override the ContentView's width.
+        int desiredWidthMeasureSpec = client.getDesiredWidthMeasureSpec();
+        if (MeasureSpec.getMode(desiredWidthMeasureSpec) != MeasureSpec.UNSPECIFIED) {
+            widthMeasureSpec = desiredWidthMeasureSpec;
+        }
+
+        // Allow the ContentViewClient to override the ContentView's height.
+        int desiredHeightMeasureSpec = client.getDesiredHeightMeasureSpec();
+        if (MeasureSpec.getMode(desiredHeightMeasureSpec) != MeasureSpec.UNSPECIFIED) {
+            heightMeasureSpec = desiredHeightMeasureSpec;
+        }
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
     // End FrameLayout overrides.
 
     @Override

@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.MeasureSpec;
 
 import org.chromium.base.Log;
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
@@ -29,6 +30,10 @@ import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 public class ContentViewClient {
     // Tag used for logging.
     private static final String TAG = "cr.ContentViewClient";
+
+    // Default value to signal that the ContentView's size should not be overridden.
+    private static final int UNSPECIFIED_MEASURE_SPEC =
+            MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
     public void onUpdateTitle(String title) {
     }
@@ -201,5 +206,27 @@ public class ContentViewClient {
             return false;
         }
         return true;
+    }
+
+    /**
+     * ContentViewClient users can return a custom value to override the width of
+     * the ContentView. By default, this method returns MeasureSpec.UNSPECIFIED, which
+     * indicates that the value should not be overridden.
+     *
+     * @return The desired width of the ContentView.
+     */
+    public int getDesiredWidthMeasureSpec() {
+        return UNSPECIFIED_MEASURE_SPEC;
+    }
+
+    /**
+     * ContentViewClient users can return a custom value to override the height of
+     * the ContentView. By default, this method returns MeasureSpec.UNSPECIFIED, which
+     * indicates that the value should not be overridden.
+     *
+     * @return The desired height of the ContentView.
+     */
+    public int getDesiredHeightMeasureSpec() {
+        return UNSPECIFIED_MEASURE_SPEC;
     }
 }

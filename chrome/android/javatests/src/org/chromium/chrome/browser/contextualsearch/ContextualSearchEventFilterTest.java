@@ -28,6 +28,9 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
     private static final float SEARCH_PANEL_ALMOST_MAXIMIZED_OFFSET_Y_DP = 50.f;
     private static final float SEARCH_BAR_HEIGHT_DP = 100.f;
 
+    private static final float LAYOUT_WIDTH_DP = 600.f;
+    private static final float LAYOUT_HEIGHT_DP = 800.f;
+
     private float mTouchSlopDp;
     private float mDpToPx;
 
@@ -135,6 +138,12 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
                 mContextualSearchPanel);
 
         mContextualSearchPanel.setSearchBarHeightForTesting(SEARCH_BAR_HEIGHT_DP);
+        mContextualSearchPanel.setHeightForTesting(LAYOUT_HEIGHT_DP);
+        mContextualSearchPanel.setIsFullscreenSizePanelForTesting(true);
+
+        // NOTE(pedrosimonetti): This should be called after calling the method
+        // setIsFullscreenSizePanelForTesting(), otherwise it will crash the test.
+        mContextualSearchPanel.onSizeChanged(LAYOUT_WIDTH_DP, LAYOUT_HEIGHT_DP, false);
 
         setSearchContentViewVerticalScroll(0);
 

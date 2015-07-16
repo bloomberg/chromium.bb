@@ -16,6 +16,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -44,10 +45,19 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private static final float SEARCH_BAR_BORDER_HEIGHT_DP = 1.f;
 
     /**
-     * The height of the expanded Contextual Search Panel relative to the height
-     * of the screen.
+     * The height of the expanded Search Panel relative to the height of the screen.
      */
     private static final float EXPANDED_PANEL_HEIGHT_PERCENTAGE = .7f;
+
+    /**
+     * The width of the small version of the Search Panel in dps.
+     */
+    private static final float SMALL_PANEL_WIDTH_DP = 600.f;
+
+    /**
+     * The minimum width a screen should have in order to trigger the small version of the Panel.
+     */
+    private static final float SMALL_PANEL_WIDTH_THRESHOLD_DP = 620.f;
 
     /**
      * The height of the Contextual Search Panel's Shadow in dps.
@@ -277,6 +287,12 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private float mLayoutHeight;
     private boolean mIsToolbarShowing;
 
+    private float mMaximumWidth;
+    private float mMaximumHeight;
+
+    private boolean mIsFullscreenSizePanelForTesting;
+    private boolean mOverrideIsFullscreenSizePanelForTesting;
+
     /**
      * Called when the size of the view has changed.
      *
@@ -288,16 +304,57 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mLayoutWidth = width;
         mLayoutHeight = height;
         mIsToolbarShowing = isToolbarShowing;
+
+        mMaximumWidth = calculateSearchPanelWidth();
+        mMaximumHeight = getPanelHeightFromState(PanelState.MAXIMIZED);
     }
 
     /**
-     * Returns the Y position of the Contextual Search Panel.
-     * Layouts supporting Contextual Search should override this method.
+     * Overrides the FullscreenSizePanel state for testing.
      *
+     * @param isFullscreenSizePanel
+     */
+    @VisibleForTesting
+    public void setIsFullscreenSizePanelForTesting(boolean isFullscreenSizePanel) {
+        mOverrideIsFullscreenSizePanelForTesting = true;
+        mIsFullscreenSizePanelForTesting = isFullscreenSizePanel;
+    }
+
+    /**
+     * @return Whether the Panel is in fullscreen size.
+     */
+    protected boolean isFullscreenSizePanel() {
+        if (mOverrideIsFullscreenSizePanelForTesting) {
+            return mIsFullscreenSizePanelForTesting;
+        }
+
+        if (!ContextualSearchFieldTrial.isNarrowPanelSupported()) {
+            return true;
+        }
+
+        return getFullscreenWidth() <= SMALL_PANEL_WIDTH_THRESHOLD_DP;
+    }
+
+    /**
+     * @return The current X-position of the Contextual Search Panel.
+     */
+    protected float calculateSearchPanelX() {
+        return isFullscreenSizePanel() ? 0.f :
+            Math.round((getFullscreenWidth() - calculateSearchPanelWidth()) / 2.f);
+    }
+
+    /**
      * @return The current Y-position of the Contextual Search Panel.
      */
-    public float getContextualSearchPanelY() {
+    protected float calculateSearchPanelY() {
         return getFullscreenHeight() - mHeight;
+    }
+
+    /**
+     * @return The current width of the Contextual Search Panel.
+     */
+    protected float calculateSearchPanelWidth() {
+        return isFullscreenSizePanel() ? getFullscreenWidth() : SMALL_PANEL_WIDTH_DP;
     }
 
     /**
@@ -354,6 +411,34 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         return height;
     }
 
+    /**
+     * @return The maximum width of the Contextual Search Panel in pixels.
+     */
+    public int getMaximumWidthPx() {
+        return Math.round(mMaximumWidth / mPxToDp);
+    }
+
+    /**
+     * @return The maximum height of the Contextual Search Panel in pixels.
+     */
+    public int getMaximumHeightPx() {
+        return Math.round(mMaximumHeight / mPxToDp);
+    }
+
+    /**
+     * @return The width of the Search Content View in pixels.
+     */
+    public int getSearchContentViewWidthPx() {
+        return getMaximumWidthPx();
+    }
+
+    /**
+     * @return The height of the Search Content View in pixels.
+     */
+    public int getSearchContentViewHeightPx() {
+        return Math.round((mMaximumHeight - getToolbarHeight()) / mPxToDp);
+    }
+
     // ============================================================================================
     // UI States
     // ============================================================================================
@@ -361,6 +446,14 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     // --------------------------------------------------------------------------------------------
     // Test Infrastructure
     // --------------------------------------------------------------------------------------------
+
+    /**
+     * @param height The height of the Contextual Search Panel to be set.
+     */
+    @VisibleForTesting
+    public void setHeightForTesting(float height) {
+        mHeight = height;
+    }
 
     /**
      * @param offsetY The vertical offset of the Contextual Search Panel to be
@@ -401,10 +494,17 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     // Contextual Search Panel states
     // --------------------------------------------------------------------------------------------
 
+    private float mOffsetX;
     private float mOffsetY;
     private float mHeight;
-    private float mWidth;
     private boolean mIsMaximized;
+
+    /**
+     * @return The vertical offset of the Contextual Search Panel.
+     */
+    public float getOffsetX() {
+        return mOffsetX;
+    }
 
     /**
      * @return The vertical offset of the Contextual Search Panel.
@@ -414,17 +514,17 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     /**
-     * @return The height of the Contextual Search Panel.
+     * @return The width of the Contextual Search Panel in dps.
      */
-    public float getHeight() {
-        return mHeight;
+    public float getWidth() {
+        return mMaximumWidth;
     }
 
     /**
-     * @return The width of the Contextual Search Panel.
+     * @return The height of the Contextual Search Panel in dps.
      */
-    public float getWidth() {
-        return mWidth;
+    public float getHeight() {
+        return mHeight;
     }
 
     /**
@@ -449,7 +549,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private boolean mSearchBarShadowVisible = false;
     private float mSearchBarShadowOpacity = 0.f;
 
-    private boolean mSearchProviderIconVisible;
     private float mSearchProviderIconOpacity;
 
     private float mSearchIconOpacity;
@@ -898,9 +997,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @param percentage The completion percentage of the transition.
      */
     private void updatePanelSize(float height, PanelState endState, float percentage) {
-        mWidth = getFullscreenWidth();
+        mOffsetX = calculateSearchPanelX();
+        mOffsetY = calculateSearchPanelY();
         mHeight = height;
-        mOffsetY = getContextualSearchPanelY();
         mIsMaximized = height == getPanelHeightFromState(PanelState.MAXIMIZED);
     }
 
@@ -1216,6 +1315,10 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @return The target offset Y.
      */
     private float calculateBasePageTargetY(PanelState expandedState) {
+        // Only a fullscreen wide Panel should offset the base page. A small panel should
+        // always return zero to ensure the Base Page remains in the same position.
+        if (!isFullscreenSizePanel()) return 0.f;
+
         // Convert from px to dp.
         final float selectionY = mBasePageSelectionYPx * mPxToDp;
 
@@ -1305,6 +1408,13 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             LayoutInflater.from(mContext).inflate(R.layout.contextual_search_view, mContainerView);
             mControl = (ContextualSearchControl)
                     mContainerView.findViewById(R.id.contextual_search_view);
+
+            // Adjust size for small Panel.
+            if (!isFullscreenSizePanel()) {
+                mControl.getLayoutParams().width = getMaximumWidthPx();
+                mControl.requestLayout();
+            }
+
             if (mResourceLoader != null) {
                 mResourceLoader.registerResource(R.id.contextual_search_view,
                         mControl.getResourceAdapter());
@@ -1387,13 +1497,22 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
                     R.layout.contextual_search_opt_out_promo, mContainerView);
             mPromoView = (ContextualSearchOptOutPromo)
                     mContainerView.findViewById(R.id.contextual_search_opt_out_promo);
+
+            final int maximumWidth = getMaximumWidthPx();
+
+            // Adjust size for small Panel.
+            if (!isFullscreenSizePanel()) {
+                mPromoView.getLayoutParams().width = maximumWidth;
+                mPromoView.requestLayout();
+            }
+
             if (mResourceLoader != null) {
                 mResourceLoader.registerResource(R.id.contextual_search_opt_out_promo,
                         mPromoView.getResourceAdapter());
             }
 
             mPromoView.setPromoHost(this);
-            setPromoContentHeightPx(mPromoView.getHeightForGivenWidth(mContainerView.getWidth()));
+            setPromoContentHeightPx(mPromoView.getHeightForGivenWidth(maximumWidth));
         }
 
         assert mPromoView != null;
@@ -1422,6 +1541,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     public void showPromoViewAtYPosition(float y) {
         if (mPromoView == null || !isPromoAvailable()) return;
 
+        mPromoView.setTranslationX(getOffsetX() / mPxToDp);
         mPromoView.setTranslationY(y);
         mPromoView.setVisibility(View.VISIBLE);
 
