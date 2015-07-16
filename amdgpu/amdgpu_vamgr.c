@@ -242,7 +242,8 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 			  uint64_t va_base_alignment,
 			  uint64_t va_base_required,
 			  uint64_t *va_base_allocated,
-			  amdgpu_va_handle *va_range_handle)
+			  amdgpu_va_handle *va_range_handle,
+			  uint64_t flags)
 {
 	va_base_alignment = MAX2(va_base_alignment, dev->vamgr->va_alignment);
 	size = ALIGN(size, vamgr.va_alignment);

@@ -1114,6 +1114,7 @@ int amdgpu_read_mm_registers(amdgpu_device_handle dev, unsigned dword_offset,
  * \param va_base_allocated - \c [out] On return: Allocated VA base to be used
  * by client.
  * \param va_range_handle - \c [out] On return: Handle assigned to allocation
+ * \param flags - \c [in] flags for special VA range
  *
  * \return 0 on success\n
  * >0 - AMD specific error code\n
@@ -1135,7 +1136,8 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 			   uint64_t va_base_alignment,
 			   uint64_t va_base_required,
 			   uint64_t *va_base_allocated,
-			   amdgpu_va_handle *va_range_handle);
+			   amdgpu_va_handle *va_range_handle,
+			   uint64_t flags);
 
 /**
  * Free previously allocated virtual address range
