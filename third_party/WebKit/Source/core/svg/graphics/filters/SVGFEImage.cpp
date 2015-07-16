@@ -46,7 +46,7 @@ namespace blink {
 FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> preserveAspectRatio)
     : FilterEffect(filter)
     , m_image(image)
-    , m_treeScope(0)
+    , m_treeScope(nullptr)
     , m_preserveAspectRatio(preserveAspectRatio)
 {
     FilterEffect::setOperatingColorSpace(ColorSpaceDeviceRGB);
@@ -63,6 +63,7 @@ FEImage::FEImage(Filter* filter, TreeScope& treeScope, const String& href, PassR
 
 DEFINE_TRACE(FEImage)
 {
+    visitor->trace(m_treeScope);
     visitor->trace(m_preserveAspectRatio);
     FilterEffect::trace(visitor);
 }
