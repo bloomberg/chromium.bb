@@ -14,6 +14,7 @@
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/popup_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -80,9 +81,13 @@ void ShowSSLClientCertificateSelector(
 
   // Not all WebContentses can show modal dialogs.
   //
+  // Use the top-level embedder if |contents| is a guest.
+  // GetTopLevelWebContents() will return |contents| otherwise.
   // TODO(davidben): Move this hook to the WebContentsDelegate and only try to
   // show a dialog in Browser's implementation. https://crbug.com/456255
-  if (web_modal::PopupManager::FromWebContents(contents) == nullptr)
+  if (web_modal::PopupManager::FromWebContents(
+          guest_view::GuestViewBase::GetTopLevelWebContents(contents)) ==
+      nullptr)
     return;
 
   // The dialog manages its own lifetime.

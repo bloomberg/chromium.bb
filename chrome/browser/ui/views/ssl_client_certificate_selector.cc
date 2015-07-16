@@ -105,7 +105,7 @@ void ShowSSLClientCertificateSelector(
   //
   // TODO(davidben): Move this hook to the WebContentsDelegate and only try to
   // show a dialog in Browser's implementation. https://crbug.com/456255
-  if (web_modal::PopupManager::FromWebContents(contents) == nullptr)
+  if (!SSLClientCertificateSelector::CanShow(contents))
     return;
 
   SSLClientCertificateSelector* selector = new SSLClientCertificateSelector(

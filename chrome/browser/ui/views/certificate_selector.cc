@@ -13,6 +13,8 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/guest_view/browser/guest_view_base.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model.h"
@@ -85,6 +87,15 @@ CertificateSelector::CertificateSelector(
 
 CertificateSelector::~CertificateSelector() {
   table_->SetModel(nullptr);
+}
+
+// static
+bool CertificateSelector::CanShow(content::WebContents* web_contents) {
+  // GetTopLevelWebContents returns |web_contents| if it is not a guest.
+  content::WebContents* top_level_web_contents =
+      guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
+  return web_modal::WebContentsModalDialogManager::FromWebContents(
+             top_level_web_contents) != nullptr;
 }
 
 void CertificateSelector::Show() {
