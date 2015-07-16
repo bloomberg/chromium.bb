@@ -190,6 +190,9 @@ std::string WebUIDataSourceImpl::GetSource() const {
 }
 
 std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
+  if (base::EndsWith(path, ".css", false))
+    return "text/css";
+
   if (base::EndsWith(path, ".js", false))
     return "application/javascript";
 

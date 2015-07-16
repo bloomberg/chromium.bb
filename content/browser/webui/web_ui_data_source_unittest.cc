@@ -129,6 +129,7 @@ TEST_F(WebUIDataSourceTest, NamedResource) {
 }
 
 TEST_F(WebUIDataSourceTest, MimeType) {
+  const char* css = "text/css";
   const char* html = "text/html";
   const char* js = "application/javascript";
   EXPECT_EQ(GetMimeType(std::string()), html);
@@ -139,6 +140,9 @@ TEST_F(WebUIDataSourceTest, MimeType) {
   EXPECT_EQ(GetMimeType("js"), html);
   EXPECT_EQ(GetMimeType("foojs"), html);
   EXPECT_EQ(GetMimeType("foo.jsp"), html);
+  EXPECT_EQ(GetMimeType("foocss"), html);
+  EXPECT_EQ(GetMimeType("foo.css"), css);
+  EXPECT_EQ(GetMimeType(".css.foo"), html);
 }
 
 }  // namespace content
