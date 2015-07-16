@@ -135,8 +135,10 @@ include/win/sys/poll.h
 [win]lib/${PLATFORM}_x86_32_host/Release/ppapi_gles2.lib
 [win]lib/${PLATFORM}_x86_32_host/Release/pthread.lib
 [win]lib/${PLATFORM}_x86_32_host/Release/sdk_util.lib
+lib/clang-newlib_arm/Debug/liberror_handling.a
 lib/clang-newlib_arm/Debug/libgmock.a
 lib/clang-newlib_arm/Debug/libgtest.a
+lib/clang-newlib_arm/Debug/libjsoncpp.a
 lib/clang-newlib_arm/Debug/libnacl_io.a
 lib/clang-newlib_arm/Debug/libppapi_cpp.a
 lib/clang-newlib_arm/Debug/libppapi_cpp_private.a
@@ -144,8 +146,10 @@ lib/clang-newlib_arm/Debug/libppapi_gles2.a
 lib/clang-newlib_arm/Debug/libppapi_simple.a
 lib/clang-newlib_arm/Debug/libppapi_simple_cpp.a
 lib/clang-newlib_arm/Debug/libsdk_util.a
+lib/clang-newlib_arm/Release/liberror_handling.a
 lib/clang-newlib_arm/Release/libgmock.a
 lib/clang-newlib_arm/Release/libgtest.a
+lib/clang-newlib_arm/Release/libjsoncpp.a
 lib/clang-newlib_arm/Release/libnacl_io.a
 lib/clang-newlib_arm/Release/libppapi_cpp.a
 lib/clang-newlib_arm/Release/libppapi_cpp_private.a
@@ -153,8 +157,10 @@ lib/clang-newlib_arm/Release/libppapi_gles2.a
 lib/clang-newlib_arm/Release/libppapi_simple.a
 lib/clang-newlib_arm/Release/libppapi_simple_cpp.a
 lib/clang-newlib_arm/Release/libsdk_util.a
+lib/clang-newlib_x86_32/Debug/liberror_handling.a
 lib/clang-newlib_x86_32/Debug/libgmock.a
 lib/clang-newlib_x86_32/Debug/libgtest.a
+lib/clang-newlib_x86_32/Debug/libjsoncpp.a
 lib/clang-newlib_x86_32/Debug/libnacl_io.a
 lib/clang-newlib_x86_32/Debug/libppapi_cpp.a
 lib/clang-newlib_x86_32/Debug/libppapi_cpp_private.a
@@ -162,8 +168,10 @@ lib/clang-newlib_x86_32/Debug/libppapi_gles2.a
 lib/clang-newlib_x86_32/Debug/libppapi_simple.a
 lib/clang-newlib_x86_32/Debug/libppapi_simple_cpp.a
 lib/clang-newlib_x86_32/Debug/libsdk_util.a
+lib/clang-newlib_x86_32/Release/liberror_handling.a
 lib/clang-newlib_x86_32/Release/libgmock.a
 lib/clang-newlib_x86_32/Release/libgtest.a
+lib/clang-newlib_x86_32/Release/libjsoncpp.a
 lib/clang-newlib_x86_32/Release/libnacl_io.a
 lib/clang-newlib_x86_32/Release/libppapi_cpp.a
 lib/clang-newlib_x86_32/Release/libppapi_cpp_private.a
@@ -171,8 +179,10 @@ lib/clang-newlib_x86_32/Release/libppapi_gles2.a
 lib/clang-newlib_x86_32/Release/libppapi_simple.a
 lib/clang-newlib_x86_32/Release/libppapi_simple_cpp.a
 lib/clang-newlib_x86_32/Release/libsdk_util.a
+lib/clang-newlib_x86_64/Debug/liberror_handling.a
 lib/clang-newlib_x86_64/Debug/libgmock.a
 lib/clang-newlib_x86_64/Debug/libgtest.a
+lib/clang-newlib_x86_64/Debug/libjsoncpp.a
 lib/clang-newlib_x86_64/Debug/libnacl_io.a
 lib/clang-newlib_x86_64/Debug/libppapi_cpp.a
 lib/clang-newlib_x86_64/Debug/libppapi_cpp_private.a
@@ -180,8 +190,10 @@ lib/clang-newlib_x86_64/Debug/libppapi_gles2.a
 lib/clang-newlib_x86_64/Debug/libppapi_simple.a
 lib/clang-newlib_x86_64/Debug/libppapi_simple_cpp.a
 lib/clang-newlib_x86_64/Debug/libsdk_util.a
+lib/clang-newlib_x86_64/Release/liberror_handling.a
 lib/clang-newlib_x86_64/Release/libgmock.a
 lib/clang-newlib_x86_64/Release/libgtest.a
+lib/clang-newlib_x86_64/Release/libjsoncpp.a
 lib/clang-newlib_x86_64/Release/libnacl_io.a
 lib/clang-newlib_x86_64/Release/libppapi_cpp.a
 lib/clang-newlib_x86_64/Release/libppapi_cpp_private.a

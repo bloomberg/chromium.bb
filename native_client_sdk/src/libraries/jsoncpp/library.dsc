@@ -1,5 +1,4 @@
 {
-  'TOOLS': ['bionic', 'newlib', 'glibc', 'bionic', 'pnacl', 'linux', 'win'],
   'SEARCH': [
     '.',
     '../../../../third_party/jsoncpp/source/include/json',
