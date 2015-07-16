@@ -14,7 +14,7 @@ const std::string VideoCaptureDevice::Name::GetNameAndModel() const {
   if (model_id.empty())
     return device_name_;
   const std::string suffix = " (" + model_id + ")";
-  if (base::EndsWith(device_name_, suffix, base::CompareCase::SENSITIVE))
+  if (base::EndsWith(device_name_, suffix, true /* case sensitive */))
     return device_name_;
   return device_name_ + suffix;
 }

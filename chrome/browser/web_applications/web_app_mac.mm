@@ -184,8 +184,8 @@ bool HasExistingExtensionShim(const base::FilePath& destination_directory,
        !shim_path.empty(); shim_path = enumerator.Next()) {
     if (shim_path.BaseName() != own_basename &&
         base::EndsWith(shim_path.RemoveExtension().value(),
-                       extension_id,
-                       base::CompareCase::SENSITIVE)) {
+                 extension_id,
+                 true /* case_sensitive */)) {
       return true;
     }
   }

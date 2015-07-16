@@ -102,8 +102,7 @@ TEST_F(CldComponentInstallerTest, GetInstalledPath) {
   const base::FilePath base_dir;
   const base::FilePath result =
       CldComponentInstallerTraits::GetInstalledPath(base_dir);
-  ASSERT_TRUE(base::EndsWith(result.value(), kTestCldDataFileName,
-                             base::CompareCase::SENSITIVE));
+  ASSERT_TRUE(base::EndsWith(result.value(), kTestCldDataFileName, true));
 }
 
 TEST_F(CldComponentInstallerTest, GetBaseDirectory) {
@@ -128,10 +127,8 @@ TEST_F(CldComponentInstallerTest, ComponentReady) {
   traits_.ComponentReady(version, install_dir, manifest.Pass());
   base::FilePath result = CldComponentInstallerTraits::GetLatestCldDataFile();
   ASSERT_TRUE(base::StartsWith(result.AsUTF16Unsafe(),
-                               install_dir.AsUTF16Unsafe(),
-                               base::CompareCase::SENSITIVE));
-  ASSERT_TRUE(base::EndsWith(result.value(), kTestCldDataFileName,
-                             base::CompareCase::SENSITIVE));
+                               install_dir.AsUTF16Unsafe(), true));
+  ASSERT_TRUE(base::EndsWith(result.value(), kTestCldDataFileName, true));
 }
 
 }  // namespace component_updater

@@ -58,7 +58,7 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
   }
 
   std::string GetMimeType(const std::string& path) const override {
-    if (base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII))
+    if (base::EndsWith(path, ".js", false))
       return "application/javascript";
     return "text/html";
   }

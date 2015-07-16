@@ -330,7 +330,7 @@ class HeaderMatcher {
 
     const std::string data_;
     const MatchType type_;
-    const base::CompareCase case_sensitive_;
+    const bool case_sensitive_;
     DISALLOW_COPY_AND_ASSIGN(StringMatchTest);
   };
 
@@ -422,14 +422,14 @@ bool HeaderMatcher::StringMatchTest::Matches(
     const std::string& str) const {
   switch (type_) {
     case kPrefix:
-      return base::StartsWith(str, data_, case_sensitive_);
+      return base::StartsWithASCII(str, data_, case_sensitive_);
     case kSuffix:
       return base::EndsWith(str, data_, case_sensitive_);
     case kEquals:
       return str.size() == data_.size() &&
-             base::StartsWith(str, data_, case_sensitive_);
+             base::StartsWithASCII(str, data_, case_sensitive_);
     case kContains:
-      if (case_sensitive_ == base::CompareCase::INSENSITIVE_ASCII) {
+      if (!case_sensitive_) {
         return std::search(str.begin(), str.end(), data_.begin(), data_.end(),
                            CaseInsensitiveCompareASCII<char>()) != str.end();
       } else {
@@ -446,8 +446,7 @@ HeaderMatcher::StringMatchTest::StringMatchTest(const std::string& data,
                                                 bool case_sensitive)
     : data_(data),
       type_(type),
-      case_sensitive_(case_sensitive ? base::CompareCase::SENSITIVE
-                                     : base::CompareCase::INSENSITIVE_ASCII) {}
+      case_sensitive_(case_sensitive) {}
 
 // HeaderMatcher::HeaderMatchTest implementation.
 

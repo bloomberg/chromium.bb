@@ -155,7 +155,7 @@ std::string NormalizeHostname(const std::string& host) {
 }
 
 bool IsNormalizedLocalhostTLD(const std::string& host) {
-  return base::EndsWith(host, ".localhost", base::CompareCase::SENSITIVE);
+  return base::EndsWith(host, ".localhost", true);
 }
 
 // |host| should be normalized.
@@ -801,7 +801,7 @@ bool HasGoogleHost(const GURL& url) {
   };
   const std::string& host = url.host();
   for (const char* suffix : kGoogleHostSuffixes) {
-    if (base::EndsWith(host, suffix, base::CompareCase::INSENSITIVE_ASCII))
+    if (base::EndsWith(host, suffix, false))
       return true;
   }
   return false;

@@ -223,8 +223,7 @@ class DelayLoadStartAndExecuteJavascript
       const GURL& url,
       ui::PageTransition transition_type) override {
     if (script_was_executed_ &&
-        base::EndsWith(url.spec(), until_url_suffix_,
-                       base::CompareCase::SENSITIVE)) {
+        base::EndsWith(url.spec(), until_url_suffix_, true)) {
       content::WebContentsObserver::Observe(NULL);
       test_navigation_listener_->ResumeAll();
     }

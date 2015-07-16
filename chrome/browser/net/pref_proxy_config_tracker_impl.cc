@@ -27,8 +27,7 @@ namespace {
 // Determine if |proxy| is of the form "*.googlezip.net".
 bool IsGooglezipDataReductionProxy(const net::ProxyServer& proxy) {
   return proxy.is_valid() && !proxy.is_direct() &&
-         base::EndsWith(proxy.host_port_pair().host(), ".googlezip.net",
-                        base::CompareCase::SENSITIVE);
+         base::EndsWith(proxy.host_port_pair().host(), ".googlezip.net", true);
 }
 
 // Removes any Data Reduction Proxies like *.googlezip.net from |proxy_list|.

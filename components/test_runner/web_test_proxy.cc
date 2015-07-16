@@ -200,7 +200,7 @@ bool IsLocalHost(const std::string& host) {
 }
 
 bool IsTestHost(const std::string& host) {
-  return base::EndsWith(host, ".test", base::CompareCase::INSENSITIVE_ASCII);
+  return base::EndsWith(host, ".test", false);
 }
 
 bool HostIsUsedBySomeTestsToGenerateError(const std::string& host) {

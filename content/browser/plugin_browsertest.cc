@@ -528,7 +528,7 @@ class TestResourceDispatcherHostDelegate
     // The URL below comes from plugin_geturl_test.cc.
     if (!base::EndsWith(request->url().spec(),
                         "npapi/plugin_ref_target_page.html",
-                        base::CompareCase::SENSITIVE)) {
+                        true)) {
       return;
     }
     net::HttpRequestHeaders headers;

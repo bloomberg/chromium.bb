@@ -67,7 +67,7 @@ TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
     // Verify against expectations.
     EXPECT_TRUE(base::EndsWith(
         title, base::ASCIIToUTF16(test_cases[i].expected_title_text_ends_with),
-        base::CompareCase::INSENSITIVE_ASCII));
+        false));
     EXPECT_EQ(test_cases[i].expected_link_range_start,
               title_link_range.start());
     EXPECT_EQ(test_cases[i].expected_link_range_end, title_link_range.end());

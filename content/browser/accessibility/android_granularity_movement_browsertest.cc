@@ -91,8 +91,7 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
       int len = (granularity == GRANULARITY_CHARACTER) ?
           1 : end_index - start_index;
       base::string16 selection = text.substr(start_index, len);
-      if (base::EndsWith(selection, base::ASCIIToUTF16("\n"),
-                         base::CompareCase::INSENSITIVE_ASCII))
+      if (base::EndsWith(selection, base::ASCIIToUTF16("\n"), false))
         selection.erase(selection.size() - 1);
       if (!selection.empty()) {
         if (!concatenated.empty())
@@ -117,8 +116,7 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
       int len = (granularity == GRANULARITY_CHARACTER) ?
           1 : end_index - start_index;
       base::string16 selection = text.substr(start_index, len);
-      if (base::EndsWith(selection, base::ASCIIToUTF16("\n"),
-                         base::CompareCase::INSENSITIVE_ASCII))
+      if (base::EndsWith(selection, base::ASCIIToUTF16("\n"), false))
         selection = selection.substr(0, selection.size() - 1);
       if (!reverse.empty())
         reverse = base::ASCIIToUTF16(", ") + reverse;

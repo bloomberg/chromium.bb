@@ -361,8 +361,7 @@ BOOL CALLBACK ChromeWindowEnumProc(HWND hwnd, LPARAM lparam) {
 
   if (!params->shunted_hwnds.count(hwnd) &&
       ::GetClassName(hwnd, window_class, arraysize(window_class)) &&
-      base::StartsWith(window_class, kChromeWindowClassPrefix,
-                       base::StartsWith::INSENSITIVE_ASCII) &&
+      base::StartsWith(window_class, kChromeWindowClassPrefix, false) &&
       ::SetWindowPos(hwnd, params->window_insert_after, params->x, params->y,
                      params->width, params->height, params->flags)) {
     params->shunted_hwnds.insert(hwnd);

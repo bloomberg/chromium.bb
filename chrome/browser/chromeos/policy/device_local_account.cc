@@ -68,8 +68,7 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
   if (user_id == chromeos::login::kGuestUserName)
     return false;
   const std::string domain = gaia::ExtractDomainName(user_id);
-  if (!base::EndsWith(domain, kDeviceLocalAccountDomainSuffix,
-                      base::CompareCase::SENSITIVE))
+  if (!base::EndsWith(domain, kDeviceLocalAccountDomainSuffix, true))
     return false;
 
   const std::string domain_prefix = domain.substr(

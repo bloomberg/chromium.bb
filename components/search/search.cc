@@ -90,8 +90,7 @@ bool GetFieldTrialInfo(FieldTrialFlags* flags) {
         kInstantExtendedFieldTrialName);
   }
 
-  if (base::EndsWith(group_name, kDisablingSuffix,
-                     base::CompareCase::SENSITIVE))
+  if (base::EndsWith(group_name, kDisablingSuffix, true))
     return false;
 
   // We have a valid trial that isn't disabled. Extract the flags.

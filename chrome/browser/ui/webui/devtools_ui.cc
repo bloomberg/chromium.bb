@@ -49,25 +49,19 @@ const char kFallbackFrontendURL[] =
 
 std::string GetMimeTypeForPath(const std::string& path) {
   std::string filename = PathWithoutParams(path);
-  if (base::EndsWith(filename, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
+  if (base::EndsWith(filename, ".html", false)) {
     return "text/html";
-  } else if (base::EndsWith(filename, ".css",
-                            base::CompareCase::INSENSITIVE_ASCII)) {
+  } else if (base::EndsWith(filename, ".css", false)) {
     return "text/css";
-  } else if (base::EndsWith(filename, ".js",
-                            base::CompareCase::INSENSITIVE_ASCII)) {
+  } else if (base::EndsWith(filename, ".js", false)) {
     return "application/javascript";
-  } else if (base::EndsWith(filename, ".png",
-                            base::CompareCase::INSENSITIVE_ASCII)) {
+  } else if (base::EndsWith(filename, ".png", false)) {
     return "image/png";
-  } else if (base::EndsWith(filename, ".gif",
-                            base::CompareCase::INSENSITIVE_ASCII)) {
+  } else if (base::EndsWith(filename, ".gif", false)) {
     return "image/gif";
-  } else if (base::EndsWith(filename, ".svg",
-                            base::CompareCase::INSENSITIVE_ASCII)) {
+  } else if (base::EndsWith(filename, ".svg", false)) {
     return "image/svg+xml";
-  } else if (base::EndsWith(filename, ".manifest",
-                            base::CompareCase::INSENSITIVE_ASCII)) {
+  } else if (base::EndsWith(filename, ".manifest", false)) {
     return "text/cache-manifest";
   }
   return "text/html";

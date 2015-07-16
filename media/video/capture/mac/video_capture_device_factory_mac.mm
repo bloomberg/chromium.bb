@@ -35,10 +35,8 @@ static bool IsDeviceBlacklisted(const VideoCaptureDevice::Name& name) {
   bool is_device_blacklisted = false;
   for(size_t i = 0;
     !is_device_blacklisted && i < arraysize(kBlacklistedCameras); ++i) {
-    is_device_blacklisted =
-        base::EndsWith(name.id(),
-                       kBlacklistedCameras[i].unique_id_signature,
-                       base::CompareCase::INSENSITIVE_ASCII);
+    is_device_blacklisted = base::EndsWith(name.id(),
+      kBlacklistedCameras[i].unique_id_signature, false);
   }
   DVLOG_IF(2, is_device_blacklisted) << "Blacklisted camera: " <<
       name.name() << ", id: " << name.id();
@@ -186,7 +184,7 @@ void VideoCaptureDeviceFactoryMac::GetDeviceSupportedFormats(
       for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
         if (base::EndsWith(device.id(),
                            kBlacklistedCameras[i].unique_id_signature,
-                           base::CompareCase::INSENSITIVE_ASCII)) {
+            false)) {
           supported_formats->push_back(media::VideoCaptureFormat(
               gfx::Size(kBlacklistedCameras[i].capture_width,
                         kBlacklistedCameras[i].capture_height),

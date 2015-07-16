@@ -115,7 +115,7 @@ EnrollmentStatus GetEnrollmentStatus() {
     return NON_MANAGED;
 
   std::string domain = connector->GetEnterpriseDomain();
-  if (base::EndsWith(domain, kEduDomain, base::CompareCase::INSENSITIVE_ASCII))
+  if (base::EndsWith(domain, kEduDomain, false /* case insensitive */))
     return MANAGED_EDU;
 
   return MANAGED_NON_EDU;
