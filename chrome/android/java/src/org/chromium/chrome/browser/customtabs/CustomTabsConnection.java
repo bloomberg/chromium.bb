@@ -148,11 +148,12 @@ class CustomTabsConnection extends ICustomTabsService.Stub {
 
     @Override
     public boolean newSession(ICustomTabsCallback callback) {
-        if (callback == null || mSessionParams.containsKey(callback)) return false;
+        if (callback == null) return false;
         final int uid = Binder.getCallingUid();
         SessionParams sessionParams = new SessionParams(uid, callback);
         final IBinder session = callback.asBinder();
         synchronized (mLock) {
+            if (mSessionParams.containsKey(session)) return false;
             try {
                 callback.asBinder().linkToDeath(new IBinder.DeathRecipient() {
                     @Override
