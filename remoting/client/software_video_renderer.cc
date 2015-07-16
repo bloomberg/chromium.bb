@@ -350,6 +350,9 @@ void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                 const base::Closure& done) {
   DCHECK(CalledOnValidThread());
 
+  // Record this received packet, even if it is empty.
+  stats_.video_packet_rate()->Record(1);
+
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
   if (!packet->has_data() || packet->data().size() == 0) {
@@ -357,7 +360,7 @@ void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
     return;
   }
 
-  // Add one frame to the counter.
+  // Add one frame to the video frame rate counter.
   stats_.video_frame_rate()->Record(1);
 
   // Record other statistics received from host.

@@ -189,12 +189,16 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                const base::Closure& done) {
   base::ScopedClosureRunner done_runner(done);
 
+  // Record this received packet, even if it is empty.
+  stats_.video_packet_rate()->Record(1);
+
   // Don't need to do anything if the packet is empty. Host sends empty video
   // packets when the screen is not changing.
   if (!packet->data().size())
     return;
 
   // Update statistics.
+  // TODO(anandc): Move to ChromotingStats - see http://crbug/508602
   stats_.video_frame_rate()->Record(1);
   stats_.video_bandwidth()->Record(packet->data().size());
   if (packet->has_capture_time_ms())

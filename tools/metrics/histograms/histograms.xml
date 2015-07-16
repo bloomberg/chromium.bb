@@ -3521,6 +3521,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chromoting.Video.Bandwidth" units="Bytes/second">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The bandwidth of non-empty packets in Chromoting remote sessions, updated
+    every time a video packet is processed and logged every 1s.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Video.FrameRate" units="fps">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The frame-rate of non-empty packets in Chromoting remote sessions, updated
+    every time a video packet is processed and logged every 1s.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Video.PacketRate" units="packets/second">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The packets/sec, including empty packets, in Chromoting remote sessions,
+    updated every time a video packet is processed and logged every 1s.
+  </summary>
+</histogram>
+
 <histogram name="clickjacking.discard_download" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

@@ -32,6 +32,7 @@
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
+#include "ppapi/cpp/private/uma_private.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
@@ -67,11 +68,27 @@ namespace {
 // Default DPI to assume for old clients that use notifyClientResolution.
 const int kDefaultDPI = 96;
 
-// Interval at which to sample performance statistics.
-const int kPerfStatsIntervalMs = 1000;
-
 // URL scheme used by Chrome apps and extensions.
 const char kChromeExtensionUrlScheme[] = "chrome-extension";
+
+// The boundary value for the FPS histogram: we don't expect video frame-rate to
+// be greater than 40fps. Leaving some room for future improvements, we'll set
+// the max frame rate to 60fps.
+// Histograms expect samples to be less than the boundary value, so set to 61.
+const int kMaxFramesPerSec = 61;
+
+// For bandwidth, based on expected real-world numbers, we'll use a histogram
+// ranging from 0 to 10MB/s, spread across 100 buckets.
+// Histograms are log-scaled by default. This results in fine-grained buckets at
+// lower values and wider-ranged buckets closer to the maximum.
+// Values above the maximum defined here are not discarded; they end up in the
+// max-bucket.
+// Note: if the minimum for a UMA histogram is set to be < 1, it is implicitly
+// normalized to 1.
+// See $/src/base/metrics/histogram.h for more details.
+const int kBandwidthHistogramMinBps = 0;
+const int kBandwidthHistogramMaxBps = 10 * 1000 * 1000;
+const int kBandwidthHistogramBuckets = 100;
 
 #if defined(USE_OPENSSL)
 // Size of the random seed blob used to initialize RNG in libjingle. Libjingle
@@ -732,7 +749,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   plugin_task_runner_->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats,
                             weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
+      base::TimeDelta::FromSeconds(
+          ChromotingStats::kStatsUpdateFrequencyInSeconds));
 }
 
 void ChromotingInstance::HandleDisconnect(const base::DictionaryValue& data) {
@@ -1052,8 +1070,11 @@ void ChromotingInstance::SendPerfStats() {
   plugin_task_runner_->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats,
                             weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
+      base::TimeDelta::FromSeconds(
+          ChromotingStats::kStatsUpdateFrequencyInSeconds));
 
+  // Fetch performance stats from the VideoRenderer and send them to the client
+  // for display to users.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   ChromotingStats* stats = video_renderer_->GetStats();
   data->SetDouble("videoBandwidth", stats->video_bandwidth()->Rate());
@@ -1064,6 +1085,18 @@ void ChromotingInstance::SendPerfStats() {
   data->SetDouble("renderLatency", stats->video_paint_ms()->Average());
   data->SetDouble("roundtripLatency", stats->round_trip_ms()->Average());
   PostLegacyJsonMessage("onPerfStats", data.Pass());
+
+  // Record the video frame-rate, packet-rate and bandwidth stats to UMA.
+  pp::UMAPrivate uma(this);
+  uma.HistogramEnumeration("Chromoting.Video.FrameRate",
+                           stats->video_frame_rate()->Rate(), kMaxFramesPerSec);
+  uma.HistogramEnumeration("Chromoting.Video.PacketRate",
+                           stats->video_packet_rate()->Rate(),
+                           kMaxFramesPerSec);
+  uma.HistogramCustomCounts(
+      "Chromoting.Video.Bandwidth", stats->video_bandwidth()->Rate(),
+      kBandwidthHistogramMinBps, kBandwidthHistogramMaxBps,
+      kBandwidthHistogramBuckets);
 }
 
 // static
