@@ -473,7 +473,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               'tex-image-and-sub-image-2d-with-webgl-canvas-rgba5551.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     # Nexus 9 failures
-    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
+    self.Skip('conformance/extensions/oes-texture-float-with-video.html',
               ['android', 'nvidia'], bug=499555) # flaky
 
     # The following test is very slow and therefore times out on Android bot.
