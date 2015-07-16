@@ -70,7 +70,7 @@ DeviceType GetDeviceType(const base::string16& mount_point) {
   // Check device strings of the form "X:" and "\\.\X:"
   // For floppy drives, these will return strings like "/Device/Floppy0"
   base::string16 device = mount_point;
-  if (base::EndsWith(mount_point, L"\\", false))
+  if (base::EndsWith(mount_point, L"\\", base::CompareCase::INSENSITIVE_ASCII))
     device = mount_point.substr(0, mount_point.length() - 1);
   base::string16 device_path;
   base::string16 device_path_slash;

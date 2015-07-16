@@ -650,7 +650,8 @@ void NinjaBinaryTargetWriter::WriteLibs() {
   const std::string framework_ending(".framework");
   for (size_t i = 0; i < all_libs.size(); i++) {
     if (settings_->IsMac() &&
-        base::EndsWith(all_libs[i], framework_ending, false)) {
+        base::EndsWith(all_libs[i], framework_ending,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
       // Special-case libraries ending in ".framework" on Mac. Add the
       // -framework switch and don't add the extension to the output.
       out_ << " -framework ";

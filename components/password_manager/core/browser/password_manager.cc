@@ -477,7 +477,8 @@ void PasswordManager::CreatePendingLoginManagers(
        iter != forms.end(); ++iter) {
     // Don't involve the password manager if this form corresponds to
     // SpdyProxy authentication, as indicated by the realm.
-    if (base::EndsWith(iter->signon_realm, kSpdyProxyRealm, true))
+    if (base::EndsWith(iter->signon_realm, kSpdyProxyRealm,
+                       base::CompareCase::SENSITIVE))
       continue;
     bool old_manager_found = false;
     for (const auto& old_manager : old_login_managers) {

@@ -89,8 +89,10 @@ MobileYouTubePlugin::~MobileYouTubePlugin() {}
 bool MobileYouTubePlugin::IsYouTubeURL(const GURL& url,
                                        const std::string& mime_type) {
   std::string host = url.host();
-  bool is_youtube = base::EndsWith(host, "youtube.com", true) ||
-                    base::EndsWith(host, "youtube-nocookie.com", true);
+  bool is_youtube =
+      base::EndsWith(host, "youtube.com", base::CompareCase::SENSITIVE) ||
+      base::EndsWith(host, "youtube-nocookie.com",
+                     base::CompareCase::SENSITIVE);
 
   return is_youtube && IsValidYouTubeVideo(url.path()) &&
          base::LowerCaseEqualsASCII(mime_type,

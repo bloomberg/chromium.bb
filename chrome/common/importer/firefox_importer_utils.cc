@@ -116,7 +116,8 @@ bool ComposeMacAppPath(const std::string& path_from_file,
   // append Contents/MacOS.
   for (size_t i = 1; i < path_components.size(); ++i) {
     *output = output->Append(path_components[i]);
-    if (base::EndsWith(path_components[i], ".app", true)) {
+    if (base::EndsWith(path_components[i], ".app",
+                       base::CompareCase::SENSITIVE)) {
       *output = output->Append("Contents");
       *output = output->Append("MacOS");
       return true;

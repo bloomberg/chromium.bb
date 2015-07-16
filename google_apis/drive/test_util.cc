@@ -97,7 +97,7 @@ scoped_ptr<net::test_server::BasicHttpResponse> CreateHttpResponseFromFile(
 
   std::string content_type = "text/plain";
   if (base::EndsWith(file_path.AsUTF8Unsafe(), ".json",
-                     true /* case sensitive */))
+                     base::CompareCase::SENSITIVE))
     content_type = "application/json";
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(

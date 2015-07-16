@@ -563,8 +563,10 @@ NSAttributedString* CreateClassifiedAttributedString(
       match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
       &contentsStartIndex);
   // Ignore invalid state.
-  if (!base::StartsWith(match.fill_into_edit, inputText, true) ||
-      !base::EndsWith(match.fill_into_edit, match.contents, true) ||
+  if (!base::StartsWith(match.fill_into_edit, inputText,
+                        base::CompareCase::SENSITIVE) ||
+      !base::EndsWith(match.fill_into_edit, match.contents,
+                      base::CompareCase::SENSITIVE) ||
       ((size_t)contentsStartIndex >= inputText.length())) {
     return 0;
   }

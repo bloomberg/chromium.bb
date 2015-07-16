@@ -1792,7 +1792,8 @@ void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
 
   // Default to logging DB sizes unless |file_path| points at PrefixSet storage.
   std::string histogram_name("SB2.DatabaseSizeKilobytes");
-  if (base::EndsWith(filename, kPrefixSetFileSuffix, true)) {
+  if (base::EndsWith(filename, kPrefixSetFileSuffix,
+                     base::CompareCase::SENSITIVE)) {
     histogram_name = "SB2.PrefixSetSizeKilobytes";
     // Clear the PrefixSet suffix to have the histogram suffix selector below
     // work the same for PrefixSet-based storage as it does for simple safe
@@ -1805,21 +1806,28 @@ void SafeBrowsingDatabaseNew::RecordFileSizeHistogram(
 
   // Changes to histogram suffixes below need to be mirrored in the
   // SafeBrowsingLists suffix enum in histograms.xml.
-  if (base::EndsWith(filename, kBrowseDBFile, true))
+  if (base::EndsWith(filename, kBrowseDBFile, base::CompareCase::SENSITIVE))
     histogram_name.append(".Browse");
-  else if (base::EndsWith(filename, kDownloadDBFile, true))
+  else if (base::EndsWith(filename, kDownloadDBFile,
+                          base::CompareCase::SENSITIVE))
     histogram_name.append(".Download");
-  else if (base::EndsWith(filename, kCsdWhitelistDBFile, true))
+  else if (base::EndsWith(filename, kCsdWhitelistDBFile,
+                          base::CompareCase::SENSITIVE))
     histogram_name.append(".CsdWhitelist");
-  else if (base::EndsWith(filename, kDownloadWhitelistDBFile, true))
+  else if (base::EndsWith(filename, kDownloadWhitelistDBFile,
+                          base::CompareCase::SENSITIVE))
     histogram_name.append(".DownloadWhitelist");
-  else if (base::EndsWith(filename, kInclusionWhitelistDBFile, true))
+  else if (base::EndsWith(filename, kInclusionWhitelistDBFile,
+                          base::CompareCase::SENSITIVE))
     histogram_name.append(".InclusionWhitelist");
-  else if (base::EndsWith(filename, kExtensionBlacklistDBFile, true))
+  else if (base::EndsWith(filename, kExtensionBlacklistDBFile,
+                          base::CompareCase::SENSITIVE))
     histogram_name.append(".ExtensionBlacklist");
-  else if (base::EndsWith(filename, kIPBlacklistDBFile, true))
+  else if (base::EndsWith(filename, kIPBlacklistDBFile,
+                          base::CompareCase::SENSITIVE))
     histogram_name.append(".IPBlacklist");
-  else if (base::EndsWith(filename, kUnwantedSoftwareDBFile, true))
+  else if (base::EndsWith(filename, kUnwantedSoftwareDBFile,
+                          base::CompareCase::SENSITIVE))
     histogram_name.append(".UnwantedSoftware");
   else
     NOTREACHED();  // Add support for new lists above.

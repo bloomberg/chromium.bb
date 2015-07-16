@@ -71,7 +71,7 @@ void BluetoothControllerPairingController::DeviceFound(
   DCHECK_EQ(current_stage_, STAGE_DEVICES_DISCOVERY);
   DCHECK(thread_checker_.CalledOnValidThread());
   if (base::StartsWith(device->GetName(), base::ASCIIToUTF16(kDeviceNamePrefix),
-                       false)) {
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     discovered_devices_.insert(device->GetAddress());
     FOR_EACH_OBSERVER(ControllerPairingController::Observer, observers_,
                       DiscoveredDevicesListChanged());

@@ -280,7 +280,8 @@ bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
   // is very straight forward.
   const std::string host = url.host();
   for (size_t i = 0; i < arraysize(kSuffixesToSetHeadersFor); ++i) {
-    if (base::EndsWith(host, kSuffixesToSetHeadersFor[i], false))
+    if (base::EndsWith(host, kSuffixesToSetHeadersFor[i],
+                       base::CompareCase::INSENSITIVE_ASCII))
       return true;
   }
 

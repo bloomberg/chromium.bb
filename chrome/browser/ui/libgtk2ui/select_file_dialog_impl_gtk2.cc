@@ -34,7 +34,8 @@ namespace {
 // Makes sure that .jpg also shows .JPG.
 gboolean FileFilterCaseInsensitive(const GtkFileFilterInfo* file_info,
                                    std::string* file_extension) {
-  return base::EndsWith(file_info->filename, *file_extension, false);
+  return base::EndsWith(file_info->filename, *file_extension,
+                        base::CompareCase::INSENSITIVE_ASCII);
 }
 
 // Deletes |data| when gtk_file_filter_add_custom() is done with it.
