@@ -57,5 +57,14 @@
         {
             "group_name": "Disabled"
         }
+    ],
+    "ContextualSearch": [
+        {
+            "group_name": "OptOut",
+            "params": {
+                "enabled": "true",
+                "promo_opt_out": "true"
+            }
+        }
     ]
 }
