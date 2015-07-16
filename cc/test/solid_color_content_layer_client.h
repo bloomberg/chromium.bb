@@ -23,6 +23,7 @@ class SolidColorContentLayerClient : public ContentLayerClient {
       const gfx::Rect& clip,
       PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
+  size_t GetApproximateUnsharedMemoryUsage() const override;
 
  private:
   SkColor color_;

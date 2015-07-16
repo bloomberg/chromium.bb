@@ -29,8 +29,10 @@ FakeContentLayerClient::BitmapData::~BitmapData() {
 }
 
 FakeContentLayerClient::FakeContentLayerClient()
-    : fill_with_nonsolid_color_(false), last_canvas_(NULL) {
-}
+    : fill_with_nonsolid_color_(false),
+      last_canvas_(nullptr),
+      last_painting_control_(PAINTING_BEHAVIOR_NORMAL),
+      reported_memory_usage_(0) {}
 
 FakeContentLayerClient::~FakeContentLayerClient() {
 }
@@ -139,5 +141,9 @@ FakeContentLayerClient::PaintContentsToDisplayList(
 }
 
 bool FakeContentLayerClient::FillsBoundsCompletely() const { return false; }
+
+size_t FakeContentLayerClient::GetApproximateUnsharedMemoryUsage() const {
+  return reported_memory_usage_;
+}
 
 }  // namespace cc

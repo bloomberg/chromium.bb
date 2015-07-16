@@ -31,6 +31,7 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
       const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
+  size_t GetApproximateUnsharedMemoryUsage() const override;
 
  protected:
   bool HasDrawableContent() const override;

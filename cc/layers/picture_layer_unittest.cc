@@ -31,6 +31,7 @@ class MockContentLayerClient : public ContentLayerClient {
     return nullptr;
   }
   bool FillsBoundsCompletely() const override { return false; };
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 };
 
 TEST(PictureLayerTest, NoTilesIfEmptyBounds) {

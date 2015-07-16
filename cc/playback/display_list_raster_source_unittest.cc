@@ -552,5 +552,22 @@ TEST(DisplayListRasterSourceTest, RasterContentsTransparent) {
   }
 }
 
+TEST(DisplayListRasterSourceTest,
+     GetPictureMemoryUsageIncludesClientReportedMemory) {
+  const size_t kReportedMemoryUsageInBytes = 100 * 1024 * 1024;
+  gfx::Size layer_bounds(5, 3);
+  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->set_reported_memory_usage(kReportedMemoryUsageInBytes);
+  recording_source->Rerecord();
+
+  scoped_refptr<DisplayListRasterSource> raster =
+      DisplayListRasterSource::CreateFromDisplayListRecordingSource(
+          recording_source.get(), false);
+  size_t total_memory_usage = raster->GetPictureMemoryUsage();
+  EXPECT_GE(total_memory_usage, kReportedMemoryUsageInBytes);
+  EXPECT_LT(total_memory_usage, 2 * kReportedMemoryUsageInBytes);
+}
+
 }  // namespace
 }  // namespace cc

@@ -92,4 +92,8 @@ bool PictureImageLayer::FillsBoundsCompletely() const {
   return false;
 }
 
+size_t PictureImageLayer::GetApproximateUnsharedMemoryUsage() const {
+  return 0;
+}
+
 }  // namespace cc

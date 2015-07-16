@@ -93,6 +93,10 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
 
   void set_default_paint(const SkPaint& paint) { default_paint_ = paint; }
 
+  void set_reported_memory_usage(size_t reported_memory_usage) {
+    client_.set_reported_memory_usage(reported_memory_usage);
+  }
+
  private:
   FakeContentLayerClient client_;
   SkPaint default_paint_;

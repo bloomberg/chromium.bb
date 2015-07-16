@@ -356,6 +356,7 @@ class COMPOSITOR_EXPORT Layer
       const gfx::Rect& clip,
       ContentLayerClient::PaintingControlSetting painting_control) override;
   bool FillsBoundsCompletely() const override;
+  size_t GetApproximateUnsharedMemoryUsage() const override;
 
   cc::Layer* cc_layer_for_testing() { return cc_layer_; }
 

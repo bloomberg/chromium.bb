@@ -25,6 +25,7 @@ class MaskContentLayerClient : public ContentLayerClient {
   ~MaskContentLayerClient() override {}
 
   bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& rect,
@@ -292,6 +293,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
       : bounds_(bounds), color_(color), vertical_(vertical) {}
   ~CheckerContentLayerClient() override {}
   bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& rect,
                      PaintingControlSetting picture_control) override {
@@ -329,6 +331,7 @@ class CircleContentLayerClient : public ContentLayerClient {
       : bounds_(bounds) {}
   ~CircleContentLayerClient() override {}
   bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
   void PaintContents(SkCanvas* canvas,
                      const gfx::Rect& rect,
                      PaintingControlSetting picture_control) override {

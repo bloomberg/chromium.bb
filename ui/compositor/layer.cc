@@ -779,6 +779,12 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
 
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }
 
+size_t Layer::GetApproximateUnsharedMemoryUsage() const {
+  // Most of the "picture memory" is shared with the cc::DisplayItemList, so
+  // there's nothing significant to report here.
+  return 0;
+}
+
 bool Layer::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,

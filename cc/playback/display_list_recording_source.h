@@ -60,6 +60,7 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   gfx::Size grid_cell_size_;
 
   scoped_refptr<DisplayItemList> display_list_;
+  size_t painter_reported_memory_usage_;
 
  private:
   friend class DisplayListRasterSource;

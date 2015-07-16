@@ -89,4 +89,8 @@ bool WebContentLayerImpl::FillsBoundsCompletely() const {
   return false;
 }
 
+size_t WebContentLayerImpl::GetApproximateUnsharedMemoryUsage() const {
+  return client_->approximateUnsharedMemoryUsage();
+}
+
 }  // namespace cc_blink

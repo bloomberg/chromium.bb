@@ -55,8 +55,8 @@ DisplayListRecordingSource::DisplayListRecordingSource(
       background_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
       grid_cell_size_(grid_cell_size),
-      is_suitable_for_gpu_rasterization_(true) {
-}
+      painter_reported_memory_usage_(0),
+      is_suitable_for_gpu_rasterization_(true) {}
 
 DisplayListRecordingSource::~DisplayListRecordingSource() {
 }
@@ -190,6 +190,7 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     display_list_ = painter->PaintContentsToDisplayList(recorded_viewport_,
                                                         painting_control);
   }
+  painter_reported_memory_usage_ = painter->GetApproximateUnsharedMemoryUsage();
 
   is_suitable_for_gpu_rasterization_ =
       display_list_->IsSuitableForGpuRasterization();
@@ -262,6 +263,7 @@ void DisplayListRecordingSource::DetermineIfSolidColor() {
 void DisplayListRecordingSource::Clear() {
   recorded_viewport_ = gfx::Rect();
   display_list_ = NULL;
+  painter_reported_memory_usage_ = 0;
   is_solid_color_ = false;
 }
 

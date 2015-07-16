@@ -68,6 +68,7 @@ class MockContentLayerClient : public ContentLayerClient {
     return nullptr;
   }
   bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 };
 
 scoped_refptr<FakePictureLayer> CreateDrawablePictureLayer(

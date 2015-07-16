@@ -25,20 +25,21 @@ DisplayListRasterSource::CreateFromDisplayListRecordingSource(
 }
 
 DisplayListRasterSource::DisplayListRasterSource()
-    : background_color_(SK_ColorTRANSPARENT),
+    : painter_reported_memory_usage_(0),
+      background_color_(SK_ColorTRANSPARENT),
       requires_clear_(true),
       can_use_lcd_text_(true),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
       clear_canvas_with_debug_color_(false),
       slow_down_raster_scale_factor_for_debug_(0),
-      should_attempt_to_use_distance_field_text_(false) {
-}
+      should_attempt_to_use_distance_field_text_(false) {}
 
 DisplayListRasterSource::DisplayListRasterSource(
     const DisplayListRecordingSource* other,
     bool can_use_lcd_text)
     : display_list_(other->display_list_),
+      painter_reported_memory_usage_(other->painter_reported_memory_usage_),
       background_color_(other->background_color_),
       requires_clear_(other->requires_clear_),
       can_use_lcd_text_(can_use_lcd_text),
@@ -49,13 +50,13 @@ DisplayListRasterSource::DisplayListRasterSource(
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
-      should_attempt_to_use_distance_field_text_(false) {
-}
+      should_attempt_to_use_distance_field_text_(false) {}
 
 DisplayListRasterSource::DisplayListRasterSource(
     const DisplayListRasterSource* other,
     bool can_use_lcd_text)
     : display_list_(other->display_list_),
+      painter_reported_memory_usage_(other->painter_reported_memory_usage_),
       background_color_(other->background_color_),
       requires_clear_(other->requires_clear_),
       can_use_lcd_text_(can_use_lcd_text),
@@ -67,8 +68,7 @@ DisplayListRasterSource::DisplayListRasterSource(
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(
-          other->should_attempt_to_use_distance_field_text_) {
-}
+          other->should_attempt_to_use_distance_field_text_) {}
 
 DisplayListRasterSource::~DisplayListRasterSource() {
 }
@@ -138,7 +138,8 @@ skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
 size_t DisplayListRasterSource::GetPictureMemoryUsage() const {
   if (!display_list_)
     return 0;
-  return display_list_->ApproximateMemoryUsage();
+  return display_list_->ApproximateMemoryUsage() +
+         painter_reported_memory_usage_;
 }
 
 void DisplayListRasterSource::PerformSolidColorAnalysis(

@@ -1359,6 +1359,7 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
     return nullptr;
   }
   bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 
  private:
   Layer* test_layer_;
@@ -1957,6 +1958,7 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     }
 
     bool FillsBoundsCompletely() const override { return false; }
+    size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 
    private:
     Layer* layer_;
