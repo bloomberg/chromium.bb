@@ -5,7 +5,6 @@
 from core import perf_benchmark
 
 from benchmarks import silk_flags
-from benchmarks import webgl_expectations
 from measurements import smoothness
 import page_sets
 import page_sets.key_silk_cases
@@ -70,10 +69,6 @@ class SmoothnessToughWebGLCases(perf_benchmark.PerfBenchmark):
   page_set = page_sets.ToughWebglCasesPageSet
 
   @classmethod
-  def CreateExpectations(cls):
-    return webgl_expectations.WebGLExpectations()
-
-  @classmethod
   def Name(cls):
     return 'smoothness.tough_webgl_cases'
 
@@ -81,10 +76,6 @@ class SmoothnessToughWebGLCases(perf_benchmark.PerfBenchmark):
 @benchmark.Enabled('android')
 class SmoothnessMaps(perf_benchmark.PerfBenchmark):
   page_set = page_sets.MapsPageSet
-
-  @classmethod
-  def CreateExpectations(cls):
-    return webgl_expectations.MapsExpectations()
 
   @classmethod
   def Name(cls):

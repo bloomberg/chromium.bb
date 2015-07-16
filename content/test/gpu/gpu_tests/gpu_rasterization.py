@@ -37,7 +37,7 @@ class _GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
                                     '--force-gpu-rasterization',
                                     '--enable-gpu-benchmarking'])
 
-  def ValidateAndMeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePageInner(self, page, tab, results):
     if not _DidTestSucceed(tab):
       raise page_test.Failure('Page indicated a failure')
 
@@ -73,10 +73,10 @@ class GpuRasterization(cloud_storage_test_base.TestBase):
     return 'gpu_rasterization'
 
   def CreateStorySet(self, options):
-    story_set = page_sets.GpuRasterizationTestsStorySet()
+    story_set = page_sets.GpuRasterizationTestsStorySet(self.GetExpectations())
     for page in story_set:
       page.script_to_evaluate_on_commit = test_harness_script
     return story_set
 
-  def CreateExpectations(self):
+  def _CreateExpectations(self):
     return gpu_rasterization_expectations.GpuRasterizationExpectations()

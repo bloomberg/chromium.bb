@@ -6,12 +6,11 @@ import optparse
 import os
 import sys
 
+import gpu_test_base
 import webgl_conformance_expectations
 
-from telemetry import benchmark as benchmark_module
 from telemetry.core import util
 from telemetry.internal.browser import browser_finder
-from telemetry.page import page as page_module
 from telemetry.page import page_test
 from telemetry.page import shared_page_state
 from telemetry.story.story_set import StorySet
@@ -72,11 +71,11 @@ def _CompareVersion(version1, version2):
   size = min(len(ver_num1), len(ver_num2))
   return cmp(ver_num1[0:size], ver_num2[0:size])
 
-class WebglConformanceValidator(page_test.PageTest):
+class WebglConformanceValidator(gpu_test_base.ValidatorBase):
   def __init__(self):
     super(WebglConformanceValidator, self).__init__()
 
-  def ValidateAndMeasurePage(self, page, tab, results):
+  def ValidateAndMeasurePageInner(self, page, tab, results):
     if not _DidWebGLTestSucceed(tab):
       raise page_test.Failure(_WebGLTestMessages(tab))
 
@@ -113,25 +112,28 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
         '--enable-unsafe-es3-apis'
     ])
 
-class WebglConformancePage(page_module.Page):
+class WebglConformancePage(gpu_test_base.PageBase):
   def __init__(self, story_set, test, expectations):
     super(WebglConformancePage, self).__init__(
       url='file://' + test, page_set=story_set, base_dir=story_set.base_dir,
       shared_page_state_class=shared_page_state.SharedDesktopPageState,
       name=('WebglConformance.%s' %
               test.replace('/', '_').replace('-', '_').
-                 replace('\\', '_').rpartition('.')[0].replace('.', '_')))
+                 replace('\\', '_').rpartition('.')[0].replace('.', '_')),
+      expectations=expectations)
     self.script_to_evaluate_on_commit = conformance_harness_script
-    self._expectations = expectations
 
-  def RunNavigateSteps(self, action_runner):
-    num_tries = 1 + self._expectations.GetFlakyRetriesForPage(
+  def RunNavigateStepsInner(self, action_runner):
+    num_tries = 1 + self.GetExpectations().GetFlakyRetriesForPage(
       self, action_runner.tab.browser)
     # This loop will run once for tests that aren't marked flaky, and
     # will fall through to the validator's ValidateAndMeasurePage on
     # the last iteration.
     for ii in xrange(0, num_tries):
-      super(WebglConformancePage, self).RunNavigateSteps(action_runner)
+      # The first time through, the superclass has already run the
+      # default navigation steps.
+      if ii > 0:
+        self.RunDefaultNavigateSteps(action_runner)
       action_runner.WaitForJavaScriptCondition(
           'webglTestHarness._finished', timeout_in_seconds=180)
       if ii < num_tries - 1:
@@ -142,7 +144,7 @@ class WebglConformancePage(page_module.Page):
           print 'Error messages from test run:'
           print _WebGLTestMessages(action_runner.tab)
 
-class WebglConformance(benchmark_module.Benchmark):
+class WebglConformance(gpu_test_base.TestBase):
   """Conformance with Khronos WebGL Conformance Tests"""
   def __init__(self):
     super(WebglConformance, self).__init__(max_failures=10)
@@ -180,15 +182,9 @@ class WebglConformance(benchmark_module.Benchmark):
 
     return ps
 
-  def GetExpectations(self):
-    if not self._cached_expectations:
-      self._cached_expectations = (
-        webgl_conformance_expectations.WebGLConformanceExpectations(
-          conformance_path))
-    return self._cached_expectations
-
-  def CreateExpectations(self):
-    return self.GetExpectations()
+  def _CreateExpectations(self):
+    return webgl_conformance_expectations.WebGLConformanceExpectations(
+        conformance_path)
 
   @staticmethod
   def _ParseTests(path, version, webgl2_only, folder_min_version):
