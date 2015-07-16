@@ -41,10 +41,16 @@ class GpuJpegDecodeAccelerator
   bool Send(IPC::Message* message) override;
 
  private:
+  using CreateJDAFp = scoped_ptr<media::JpegDecodeAccelerator> (
+      GpuJpegDecodeAccelerator::*)();
+
   class Client;
   class MessageFilter;
 
   void ClientRemoved();
+
+  scoped_ptr<media::JpegDecodeAccelerator> CreateV4L2JDA();
+  scoped_ptr<media::JpegDecodeAccelerator> CreateVaapiJDA();
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuJpegDecodeAccelerator that they own when
