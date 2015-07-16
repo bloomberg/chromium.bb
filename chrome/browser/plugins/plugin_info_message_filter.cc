@@ -388,6 +388,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
 
   PluginMetadata::SecurityStatus plugin_status =
       plugin_metadata->GetSecurityStatus(plugin);
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   // Check if the plugin is outdated.
   if (plugin_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
       !allow_outdated_plugins_.GetValue()) {
@@ -398,7 +399,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     }
     return;
   }
-
+#endif
   // Check if the plugin or its group is enabled by policy.
   PluginPrefs::PolicyStatus plugin_policy =
       plugin_prefs_->PolicyStatusForPlugin(plugin.name);

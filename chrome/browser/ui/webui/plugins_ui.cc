@@ -458,10 +458,12 @@ void PluginsDOMHandler::PluginsLoaded(
     group_data->SetString("description", active_plugin->desc);
     group_data->SetString("version", active_plugin->version);
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
     bool out_of_date = plugin_metadata->GetSecurityStatus(*active_plugin) ==
         PluginMetadata::SECURITY_STATUS_OUT_OF_DATE;
     group_data->SetBoolean("critical", out_of_date);
     group_data->SetString("update_url", plugin_metadata->plugin_url().spec());
+#endif
 
     std::string enabled_mode;
     if (all_plugins_enabled_by_policy) {
