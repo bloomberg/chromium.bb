@@ -3364,6 +3364,8 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
 {
     // Avoid drawing two sets of scrollbars when pinch viewport is enabled.
     if (pinchViewportSuppliesScrollbars()) {
+        setHasHorizontalScrollbar(false);
+        setHasVerticalScrollbar(false);
         setScrollOffsetFromUpdateScrollbars(desiredOffset);
         return;
     }

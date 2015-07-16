@@ -807,8 +807,11 @@ void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedSt
         return;
 
     // Avoid drawing two sets of scrollbars when pinch viewport is enabled.
-    if (pinchViewportSuppliesScrollbars())
+    if (pinchViewportSuppliesScrollbars()) {
+        setHasHorizontalScrollbar(false);
+        setHasVerticalScrollbar(false);
         return;
+    }
 
     EOverflow overflowX = box().style()->overflowX();
     EOverflow overflowY = box().style()->overflowY();
