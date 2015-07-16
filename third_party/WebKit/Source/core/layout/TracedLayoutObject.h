@@ -31,6 +31,7 @@ private:
     bool m_isAnonymous;
     bool m_isPositioned;
     bool m_isRelPositioned;
+    bool m_isStickyPositioned;
     bool m_isFloating;
     bool m_selfNeeds;
     bool m_positionedMovement;

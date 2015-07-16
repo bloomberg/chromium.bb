@@ -850,6 +850,9 @@ standalone
 minimal-ui
 browser
 
+// position
+sticky
+
 // (pointer:) media feature
 // none
 coarse

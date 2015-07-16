@@ -49,6 +49,7 @@ CSSMaskSourceType status=experimental
 CSSMotionPath status=experimental
 CSSOMSmoothScroll status=experimental
 CSSScrollBlocksOn status=experimental
+CSSStickyPosition
 CSSTouchActionPanDirections status=experimental
 CSSViewport status=experimental
 CSSScrollSnapPoints status=test

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<style type="text/css">
+div {
+    height: 100px;
+    width: 100px;
+}
+.spacer {
+    background-color: red;
+}
+.sticky {
+    background-color: green;
+    position: relative;
+}
+.absoffset {
+    background-color: green;
+    position: absolute;
+    top: -100px;
+}
+</style>
+<div class="spacer"></div>
+<div class="sticky">
+    <!--
+    Tests that the absolute positioned child is positioned relative to the sticky container. You should see only a
+    green box as this will cover up the red box above the sticky div.
+    -->
+    <div class="absoffset"></div>
+</div>

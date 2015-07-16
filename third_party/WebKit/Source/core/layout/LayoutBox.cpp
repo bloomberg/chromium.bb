@@ -1274,8 +1274,8 @@ bool LayoutBox::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, u
         if (!isCandidateForOpaquenessTest(*childBox))
             continue;
         LayoutPoint childLocation = childBox->location();
-        if (childBox->isRelPositioned())
-            childLocation.move(childBox->relativePositionOffset());
+        if (childBox->isInFlowPositioned())
+            childLocation.move(childBox->offsetForInFlowPosition());
         LayoutRect childLocalRect = localRect;
         childLocalRect.moveBy(-childLocation);
         if (childLocalRect.y() < 0 || childLocalRect.x() < 0) {
@@ -1642,7 +1642,7 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
     ASSERT(o == container());
 
     LayoutSize offset;
-    if (isRelPositioned())
+    if (isInFlowPositioned())
         offset += offsetForInFlowPosition();
 
     if (!isInline() || isReplaced()) {
@@ -1661,7 +1661,7 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
     if (o->hasOverflowClip())
         offset -= toLayoutBox(o)->scrolledContentOffset();
 
-    if (style()->position() == AbsolutePosition && o->isRelPositioned() && o->isLayoutInline())
+    if (style()->position() == AbsolutePosition && o->isInFlowPositioned() && o->isLayoutInline())
         offset += toLayoutInline(o)->offsetForInFlowPositionedInline(*this);
 
     return offset;
@@ -1720,7 +1720,7 @@ void LayoutBox::positionLineBox(InlineBox* box)
 
 void LayoutBox::moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal)
 {
-    ASSERT(isOutOfFlowPositioned() && container()->isLayoutInline() && container()->isRelPositioned());
+    ASSERT(isOutOfFlowPositioned() && container()->isLayoutInline() && container()->isInFlowPositioned());
     // If this object is inside a relative positioned inline and its inline position is an explicit offset from the edge of its container
     // then it will need to move if its inline container has changed width. We do not track if the width has changed
     // but if we are here then we are laying out lines inside it, so it probably has - mark our object for layout so that it can
@@ -1826,7 +1826,7 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
         topLeft.move(locationOffset());
     }
 
-    if (position == AbsolutePosition && o->isRelPositioned() && o->isLayoutInline()) {
+    if (position == AbsolutePosition && o->isInFlowPositioned() && o->isLayoutInline()) {
         topLeft += toLayoutInline(o)->offsetForInFlowPositionedInline(*this);
     } else if (styleToUse.hasInFlowPosition() && layer()) {
         // Apply the relative position offset when invalidating a rectangle.  The layer
@@ -2749,7 +2749,7 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
     if (containingBlock->isBox())
         return toLayoutBox(containingBlock)->clientLogicalWidth();
 
-    ASSERT(containingBlock->isLayoutInline() && containingBlock->isRelPositioned());
+    ASSERT(containingBlock->isLayoutInline() && containingBlock->isInFlowPositioned());
 
     const LayoutInline* flow = toLayoutInline(containingBlock);
     InlineFlowBox* first = flow->firstLineBox();
@@ -2796,7 +2796,7 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
         return cb->clientLogicalHeight();
     }
 
-    ASSERT(containingBlock->isLayoutInline() && containingBlock->isRelPositioned());
+    ASSERT(containingBlock->isLayoutInline() && containingBlock->isInFlowPositioned());
 
     const LayoutInline* flow = toLayoutInline(containingBlock);
     InlineFlowBox* first = flow->firstLineBox();
@@ -2827,10 +2827,10 @@ static void computeInlineStaticDistance(Length& logicalLeft, Length& logicalRigh
         for (LayoutObject* curr = child->parent(); curr && curr != containerBlock; curr = curr->container()) {
             if (curr->isBox()) {
                 staticPosition += toLayoutBox(curr)->logicalLeft();
-                if (toLayoutBox(curr)->isRelPositioned())
-                    staticPosition += toLayoutBox(curr)->relativePositionOffset().width();
+                if (toLayoutBox(curr)->isInFlowPositioned())
+                    staticPosition += toLayoutBox(curr)->offsetForInFlowPosition().width();
             } else if (curr->isInline()) {
-                if (curr->isRelPositioned()) {
+                if (curr->isInFlowPositioned()) {
                     if (!curr->style()->logicalLeft().isAuto())
                         staticPosition += valueForLength(curr->style()->logicalLeft(), curr->containingBlock()->availableWidth());
                     else
@@ -2846,13 +2846,13 @@ static void computeInlineStaticDistance(Length& logicalLeft, Length& logicalRigh
             if (curr->isBox()) {
                 if (curr != containerBlock) {
                     staticPosition -= toLayoutBox(curr)->logicalLeft();
-                    if (toLayoutBox(curr)->isRelPositioned())
-                        staticPosition -= toLayoutBox(curr)->relativePositionOffset().width();
+                    if (toLayoutBox(curr)->isInFlowPositioned())
+                        staticPosition -= toLayoutBox(curr)->offsetForInFlowPosition().width();
                 }
                 if (curr == enclosingBox)
                     staticPosition -= enclosingBox->logicalWidth();
             } else if (curr->isInline()) {
-                if (curr->isRelPositioned()) {
+                if (curr->isInFlowPositioned()) {
                     if (!curr->style()->logicalLeft().isAuto())
                         staticPosition -= valueForLength(curr->style()->logicalLeft(), curr->containingBlock()->availableWidth());
                     else
@@ -4433,7 +4433,7 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(const ComputedStyle& pare
         rect.unite(layoutOverflowRect());
 
     bool hasTransform = hasLayer() && layer()->transform();
-    if (isRelPositioned() || hasTransform) {
+    if (isInFlowPositioned() || hasTransform) {
         // If we are relatively positioned or if we have a transform, then we have to convert
         // this rectangle into physical coordinates, apply relative positioning and transforms
         // to it, and then convert it back.
@@ -4442,7 +4442,7 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(const ComputedStyle& pare
         if (hasTransform)
             rect = layer()->currentTransform().mapRect(rect);
 
-        if (isRelPositioned())
+        if (isInFlowPositioned())
             rect.move(offsetForInFlowPosition());
 
         // Now we need to flip back.

@@ -85,8 +85,8 @@ enum EPosition {
     StaticPosition = 0,
     RelativePosition = 1,
     AbsolutePosition = 2,
+    StickyPosition = 3,
     // This value is required to pack our bits efficiently in LayoutObject.
-    // FIXME: Is this still true now that we've remove position: sticky.
     FixedPosition = 6
 };
 

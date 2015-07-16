@@ -59,6 +59,7 @@ namespace blink {
 InternalSettings::Backup::Backup(Settings* settings)
     : m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
     , m_originalCSP(RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
+    , m_originalCSSStickyPositionEnabled(RuntimeEnabledFeatures::cssStickyPositionEnabled())
     , m_originalOverlayScrollbarsEnabled(RuntimeEnabledFeatures::overlayScrollbarsEnabled())
     , m_originalEditingBehavior(settings->editingBehaviorType())
     , m_originalTextAutosizingEnabled(settings->textAutosizingEnabled())
@@ -82,6 +83,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 {
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(m_originalCSP);
+    RuntimeEnabledFeatures::setCSSStickyPositionEnabled(m_originalCSSStickyPositionEnabled);
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_originalOverlayScrollbarsEnabled);
     settings->setEditingBehaviorType(m_originalEditingBehavior);
     settings->setTextAutosizingEnabled(m_originalTextAutosizingEnabled);
@@ -180,6 +182,11 @@ void InternalSettings::setMockGestureTapHighlightsEnabled(bool enabled, Exceptio
 void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)
 {
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(isEnabled);
+}
+
+void InternalSettings::setCSSStickyPositionEnabled(bool enabled)
+{
+    RuntimeEnabledFeatures::setCSSStickyPositionEnabled(enabled);
 }
 
 void InternalSettings::setExperimentalContentSecurityPolicyFeaturesEnabled(bool enabled)

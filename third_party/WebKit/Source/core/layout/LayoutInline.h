@@ -142,7 +142,7 @@ private:
 
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;
 
-    DeprecatedPaintLayerType layerTypeRequired() const override { return isRelPositioned() || createsGroup() || hasClipPath() || style()->shouldCompositeForCurrentAnimations() || style()->hasCompositorProxy() ? NormalDeprecatedPaintLayer : NoDeprecatedPaintLayer; }
+    DeprecatedPaintLayerType layerTypeRequired() const override { return isInFlowPositioned() || createsGroup() || hasClipPath() || style()->shouldCompositeForCurrentAnimations() || style()->hasCompositorProxy() ? NormalDeprecatedPaintLayer : NoDeprecatedPaintLayer; }
 
     LayoutUnit offsetLeft() const final;
     LayoutUnit offsetTop() const final;

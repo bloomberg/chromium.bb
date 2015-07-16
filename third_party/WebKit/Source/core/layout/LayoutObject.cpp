@@ -1093,6 +1093,8 @@ String LayoutObject::decoratedName() const
         name.append(" (positioned)");
     if (isRelPositioned())
         name.append(" (relative positioned)");
+    if (isStickyPositioned())
+        name.append(" (sticky positioned)");
     if (isFloating())
         name.append(" (floating)");
     if (spannerPlaceholder())
@@ -1945,7 +1947,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
 
         // Preserve the position style of anonymous block continuations as they can have relative position when
         // they contain block descendants of relative positioned inlines.
-        if (child->isRelPositioned() && toLayoutBlock(child)->isAnonymousBlockContinuation())
+        if (child->isInFlowPositioned() && toLayoutBlock(child)->isAnonymousBlockContinuation())
             newStyle->setPosition(child->style()->position());
 
         updateAnonymousChildStyle(*child, *newStyle);

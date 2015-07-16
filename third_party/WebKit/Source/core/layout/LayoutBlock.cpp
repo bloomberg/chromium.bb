@@ -331,7 +331,7 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
             // the inline elements position in PaintInvalidationState.
             if (box->style()->position() == AbsolutePosition) {
                 LayoutObject* container = box->container(&paintInvalidationContainerForChild, 0);
-                if (container->isRelPositioned() && container->isLayoutInline()) {
+                if (container->isInFlowPositioned() && container->isLayoutInline()) {
                     // FIXME: We should be able to use PaintInvalidationState for this.
                     // Currently, we will place absolutely positioned elements inside
                     // relatively positioned inline blocks in the wrong location. crbug.com/371485
@@ -1768,7 +1768,7 @@ static inline bool isEditingBoundary(LayoutObject* ancestor, LayoutObject* child
 static PositionWithAffinity positionForPointRespectingEditingBoundaries(LayoutBlock* parent, LayoutBox* child, const LayoutPoint& pointInParentCoordinates)
 {
     LayoutPoint childLocation = child->location();
-    if (child->isRelPositioned())
+    if (child->isInFlowPositioned())
         childLocation += child->offsetForInFlowPosition();
 
     // FIXME: This is wrong if the child's writing-mode is different from the parent's.

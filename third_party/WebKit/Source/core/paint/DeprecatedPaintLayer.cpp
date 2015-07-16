@@ -745,7 +745,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
             localPoint -= offset;
         }
 
-        if (positionedParent->layoutObject()->isRelPositioned() && positionedParent->layoutObject()->isLayoutInline()) {
+        if (positionedParent->layoutObject()->isInFlowPositioned() && positionedParent->layoutObject()->isLayoutInline()) {
             LayoutSize offset = toLayoutInline(positionedParent->layoutObject())->offsetForInFlowPositionedInline(*toLayoutBox(layoutObject()));
             localPoint += offset;
         }
@@ -755,7 +755,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
     }
 
     bool positionOrOffsetChanged = false;
-    if (layoutObject()->isRelPositioned()) {
+    if (layoutObject()->isInFlowPositioned()) {
         LayoutSize newOffset = layoutObject()->offsetForInFlowPosition();
         positionOrOffsetChanged = newOffset != m_offsetForInFlowPosition;
         m_offsetForInFlowPosition = newOffset;

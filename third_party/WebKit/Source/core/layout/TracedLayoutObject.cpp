@@ -31,6 +31,7 @@ TracedLayoutObject::TracedLayoutObject(const LayoutObject& object)
     , m_isAnonymous(object.isAnonymous())
     , m_isPositioned(object.isOutOfFlowPositioned())
     , m_isRelPositioned(object.isRelPositioned())
+    , m_isStickyPositioned(object.isStickyPositioned())
     , m_isFloating(object.isFloating())
     , m_selfNeeds(object.selfNeedsLayout())
     , m_positionedMovement(object.needsPositionedMovementLayout())
@@ -125,6 +126,8 @@ PassRefPtr<JSONObject> TracedLayoutObject::toJSON() const
         json->setBoolean("anonymous", m_isAnonymous);
     if (m_isRelPositioned)
         json->setBoolean("relativePositioned", m_isRelPositioned);
+    if (m_isStickyPositioned)
+        json->setBoolean("stickyPositioned", m_isStickyPositioned);
     if (m_isFloating)
         json->setBoolean("float", m_isFloating);
     if (m_children.size()) {

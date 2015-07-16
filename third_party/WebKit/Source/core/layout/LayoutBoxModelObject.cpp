@@ -454,12 +454,12 @@ void LayoutBoxModelObject::updateFromStyle()
 
 static LayoutSize accumulateInFlowPositionOffsets(const LayoutObject* child)
 {
-    if (!child->isAnonymousBlock() || !child->isRelPositioned())
+    if (!child->isAnonymousBlock() || !child->isInFlowPositioned())
         return LayoutSize();
     LayoutSize offset;
     LayoutObject* p = toLayoutBlock(child)->inlineElementContinuation();
     while (p && p->isLayoutInline()) {
-        if (p->isRelPositioned()) {
+        if (p->isInFlowPositioned()) {
             LayoutInline* layoutInline = toLayoutInline(p);
             offset += layoutInline->offsetForInFlowPosition();
         }
@@ -576,7 +576,7 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
         if (offsetParent->isBox() && !offsetParent->isBody())
             referencePoint.move(-toLayoutBox(offsetParent)->borderLeft(), -toLayoutBox(offsetParent)->borderTop());
         if (!isOutOfFlowPositioned() || flowThreadContainingBlock()) {
-            if (isRelPositioned())
+            if (isInFlowPositioned())
                 referencePoint.move(relativePositionOffset());
 
             LayoutObject* current;

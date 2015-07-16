@@ -144,7 +144,7 @@ void LayoutInline::updateFromStyle()
 static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
 {
     while (p && p->isLayoutInline()) {
-        if (p->isRelPositioned())
+        if (p->isInFlowPositioned())
             return p;
         p = p->parent();
     }
@@ -1129,7 +1129,7 @@ LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container, cons
     ASSERT(container == this->container());
 
     LayoutSize offset;
-    if (isRelPositioned())
+    if (isInFlowPositioned())
         offset += offsetForInFlowPosition();
 
     offset += container->columnOffset(point);
@@ -1299,8 +1299,8 @@ LayoutSize LayoutInline::offsetForInFlowPositionedInline(const LayoutBox& child)
 {
     // FIXME: This function isn't right with mixed writing modes.
 
-    ASSERT(isRelPositioned());
-    if (!isRelPositioned())
+    ASSERT(isInFlowPositioned());
+    if (!isInFlowPositioned())
         return LayoutSize();
 
     // When we have an enclosing relpositioned inline, we need to add in the offset of the first line
