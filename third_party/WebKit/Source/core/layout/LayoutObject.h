@@ -1258,7 +1258,6 @@ private:
     RefPtr<ComputedStyle> m_style;
 
     // Oilpan: raw pointer back to the owning Node is considered safe.
-    GC_PLUGIN_IGNORE("http://crbug.com/497595")
     Node* m_node;
 
     LayoutObject* m_parent;

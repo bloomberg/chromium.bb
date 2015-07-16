@@ -44,8 +44,6 @@ private:
     void adjustForTopAndBottomMarginBorderAndPadding();
     void repositionCueSnapToLinesNotSet();
 
-    // VTTCue is kept alive by VTTCueBox.
-    GC_PLUGIN_IGNORE("http://crbug.com/497595")
     VTTCue* m_cue;
 };
 

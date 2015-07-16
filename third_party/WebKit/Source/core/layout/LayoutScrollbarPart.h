@@ -103,7 +103,6 @@ private:
     void computeScrollbarWidth();
     void computeScrollbarHeight();
 
-    GC_PLUGIN_IGNORE("http://crbug.com/497595")
     LayoutScrollbar* m_scrollbar;
     ScrollbarPart m_part;
 };
