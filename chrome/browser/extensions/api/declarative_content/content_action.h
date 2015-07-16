@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/common/user_script.h"
 
@@ -26,7 +26,7 @@ namespace extensions {
 class Extension;
 
 // Base class for all ContentActions of the declarative content API.
-class ContentAction : public base::RefCounted<ContentAction> {
+class ContentAction {
  public:
   struct ApplyInfo {
     const Extension* extension;
@@ -34,6 +34,8 @@ class ContentAction : public base::RefCounted<ContentAction> {
     content::WebContents* tab;
     int priority;
   };
+
+  virtual ~ContentAction();
 
   // Applies or reverts this ContentAction on a particular tab for a particular
   // extension.  Revert exists to keep the actions up to date as the page
@@ -47,16 +49,14 @@ class ContentAction : public base::RefCounted<ContentAction> {
   // according to |json_action|, the representation of the ContentAction as
   // received from the extension API.  Sets |error| and returns NULL in case of
   // an error.
-  static scoped_refptr<ContentAction> Create(
+  static scoped_ptr<ContentAction> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
       const base::Value& json_action,
       std::string* error);
 
  protected:
-  friend class base::RefCounted<ContentAction>;
   ContentAction();
-  virtual ~ContentAction();
 };
 
 // Action that injects a content script.
@@ -71,13 +71,15 @@ class RequestContentScript : public ContentAction {
                        const Extension* extension,
                        const ScriptData& script_data);
 
-  static scoped_refptr<ContentAction> Create(
+  ~RequestContentScript() override;
+
+  static scoped_ptr<ContentAction> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
       const base::DictionaryValue* dict,
       std::string* error);
 
-  static scoped_refptr<ContentAction> CreateForTest(
+  static scoped_ptr<ContentAction> CreateForTest(
       DeclarativeUserScriptMaster* master,
       const Extension* extension,
       const base::Value& json_action,
@@ -101,8 +103,6 @@ class RequestContentScript : public ContentAction {
     DCHECK(master_);
     master_->AddScript(script_);
   }
-
-  ~RequestContentScript() override;
 
   void InstructRenderProcessToInject(content::WebContents* contents,
                                      const Extension* extension) const;

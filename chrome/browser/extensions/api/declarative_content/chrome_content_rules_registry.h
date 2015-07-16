@@ -12,15 +12,14 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker.h"
-#include "chrome/browser/extensions/api/declarative_content/declarative_content_rule.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -51,9 +50,8 @@ namespace extensions {
 //
 // Here is the high level overview of this functionality:
 //
-// RulesRegistry::Rule consists of Conditions and Actions, these are
-// represented as a DeclarativeContentRule with ContentConditions and
-// ContentRuleActions.
+// RulesRegistry::Rule consists of conditions and actions, these are represented
+// as a ContentRule with ContentConditions and ContentRuleActions.
 //
 // The evaluation of URL related condition attributes (host_suffix, path_prefix)
 // is delegated to a URLMatcher, because this is capable of evaluating many
@@ -121,6 +119,25 @@ class ChromeContentRulesRegistry
   ~ChromeContentRulesRegistry() override;
 
  private:
+  // The internal declarative rule representation. Corresponds to a declarative
+  // API rule: https://developer.chrome.com/extensions/events.html#declarative.
+  struct ContentRule {
+   public:
+    ContentRule(const Extension* extension,
+                ScopedVector<const ContentCondition> conditions,
+                ScopedVector<const ContentAction> actions,
+                int priority);
+    ~ContentRule();
+
+    const Extension* extension;
+    ScopedVector<const ContentCondition> conditions;
+    ScopedVector<const ContentAction> actions;
+    int priority;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ContentRule);
+  };
+
   // Specifies what to do with evaluation requests.
   // TODO(wittman): Try to eliminate the need for IGNORE after refactoring to
   // treat all condition evaluation consistently. Currently RemoveRulesImpl only
@@ -134,10 +151,20 @@ class ChromeContentRulesRegistry
 
   class EvaluationScope;
 
+  // Creates a ContentRule for |extension| given a json definition.  The format
+  // of each condition and action's json is up to the specific ContentCondition
+  // and ContentAction.  |extension| may be NULL in tests.  If |error| is empty,
+  // the translation was successful and the returned rule is internally
+  // consistent.
+  scoped_ptr<const ContentRule> CreateRule(
+      const Extension* extension,
+      const core_api::events::Rule& api_rule,
+      std::string* error);
+
   // True if this object is managing the rules for |context|.
   bool ManagingRulesForBrowserContext(content::BrowserContext* context);
 
-  std::set<const DeclarativeContentRule*> GetMatches(
+  std::set<const ContentRule*> GetMatches(
       const RendererContentMatchData& renderer_data,
       bool is_incognito_renderer) const;
 
@@ -154,12 +181,10 @@ class ChromeContentRulesRegistry
   using ExtensionRuleIdPair = std::pair<const Extension*, std::string>;
   using RuleAndConditionForURLMatcherId =
       std::map<url_matcher::URLMatcherConditionSet::ID,
-               std::pair<const DeclarativeContentRule*,
-                         const ContentCondition*>>;
-  using RulesMap = std::map<ExtensionRuleIdPair,
-                            linked_ptr<const DeclarativeContentRule>>;
+               std::pair<const ContentRule*, const ContentCondition*>>;
+  using RulesMap = std::map<ExtensionRuleIdPair, linked_ptr<const ContentRule>>;
 
-  // Map that tells us which DeclarativeContentRules and ContentConditions may
+  // Map that tells us which ContentRules and ContentConditions may
   // match for a URLMatcherConditionSet::ID returned by the |url_matcher_|.
   RuleAndConditionForURLMatcherId rule_and_conditions_for_match_id_;
 
@@ -169,8 +194,7 @@ class ChromeContentRulesRegistry
   // This lets us call Revert as appropriate. Note that this is expected to have
   // a key-value pair for every WebContents the registry is tracking, even if
   // the value is the empty set.
-  std::map<content::WebContents*,
-           std::set<const DeclarativeContentRule*>> active_rules_;
+  std::map<content::WebContents*, std::set<const ContentRule*>> active_rules_;
 
   // Responsible for tracking declarative content page URL condition state.
   DeclarativeContentPageUrlConditionTracker page_url_condition_tracker_;

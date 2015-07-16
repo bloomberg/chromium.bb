@@ -223,8 +223,6 @@
       'browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker.h',
       'browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker.cc',
       'browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker.h',
-      'browser/extensions/api/declarative_content/declarative_content_rule.cc',
-      'browser/extensions/api/declarative_content/declarative_content_rule.h',
       'browser/extensions/api/desktop_capture/desktop_capture_api.cc',
       'browser/extensions/api/desktop_capture/desktop_capture_api.h',
       'browser/extensions/api/desktop_capture/desktop_capture_base.cc',

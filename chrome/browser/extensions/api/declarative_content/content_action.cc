@@ -51,8 +51,9 @@ const char kNoPageOrBrowserAction[] =
 class ShowPageAction : public ContentAction {
  public:
   ShowPageAction() {}
+  ~ShowPageAction() override {}
 
-  static scoped_refptr<ContentAction> Create(
+  static scoped_ptr<ContentAction> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
       const base::DictionaryValue* dict,
@@ -60,9 +61,9 @@ class ShowPageAction : public ContentAction {
     // We can't show a page action if the extension doesn't have one.
     if (ActionInfo::GetPageActionInfo(extension) == NULL) {
       *error = kNoPageAction;
-      return scoped_refptr<ContentAction>();
+      return scoped_ptr<ContentAction>();
     }
-    return scoped_refptr<ContentAction>(new ShowPageAction);
+    return make_scoped_ptr(new ShowPageAction);
   }
 
   // Implementation of ContentAction:
@@ -91,7 +92,6 @@ class ShowPageAction : public ContentAction {
     return ExtensionActionManager::Get(browser_context)
         ->GetPageAction(*extension);
   }
-  ~ShowPageAction() override {}
 
   DISALLOW_COPY_AND_ASSIGN(ShowPageAction);
 };
@@ -101,8 +101,9 @@ class SetIcon : public ContentAction {
  public:
   SetIcon(const gfx::Image& icon, ActionInfo::Type action_type)
       : icon_(icon), action_type_(action_type) {}
+  ~SetIcon() override {}
 
-  static scoped_refptr<ContentAction> Create(
+  static scoped_ptr<ContentAction> Create(
       content::BrowserContext* browser_context,
       const Extension* extension,
       const base::DictionaryValue* dict,
@@ -152,7 +153,6 @@ class SetIcon : public ContentAction {
     }
     return NULL;
   }
-  ~SetIcon() override {}
 
   gfx::Image icon_;
   ActionInfo::Type action_type_;
@@ -181,7 +181,7 @@ struct ContentActionFactory {
   // Factory methods for ContentAction instances. |extension| is the extension
   // for which the action is being created. |dict| contains the json dictionary
   // that describes the action. |error| is used to return error messages.
-  using FactoryMethod = scoped_refptr<ContentAction>(*)(
+  using FactoryMethod = scoped_ptr<ContentAction>(*)(
       content::BrowserContext* /* browser_context */,
       const Extension* /* extension */,
       const base::DictionaryValue* /* dict */,
@@ -225,23 +225,21 @@ RequestContentScript::ScriptData::ScriptData()
 RequestContentScript::ScriptData::~ScriptData() {}
 
 // static
-scoped_refptr<ContentAction> RequestContentScript::Create(
+scoped_ptr<ContentAction> RequestContentScript::Create(
     content::BrowserContext* browser_context,
     const Extension* extension,
     const base::DictionaryValue* dict,
     std::string* error) {
   ScriptData script_data;
   if (!InitScriptData(dict, error, &script_data))
-    return scoped_refptr<ContentAction>();
+    return scoped_ptr<ContentAction>();
 
-  return scoped_refptr<ContentAction>(new RequestContentScript(
-      browser_context,
-      extension,
-      script_data));
+  return make_scoped_ptr(new RequestContentScript(browser_context, extension,
+                                                  script_data));
 }
 
 // static
-scoped_refptr<ContentAction> RequestContentScript::CreateForTest(
+scoped_ptr<ContentAction> RequestContentScript::CreateForTest(
     DeclarativeUserScriptMaster* master,
     const Extension* extension,
     const base::Value& json_action,
@@ -254,19 +252,17 @@ scoped_refptr<ContentAction> RequestContentScript::CreateForTest(
   if (!(json_action.GetAsDictionary(&action_dict) &&
         action_dict->GetString(keys::kInstanceType, &instance_type) &&
         instance_type == std::string(keys::kRequestContentScript)))
-    return scoped_refptr<ContentAction>();
+    return scoped_ptr<ContentAction>();
 
   // Normal RequestContentScript data initialization.
   ScriptData script_data;
   if (!InitScriptData(action_dict, error, &script_data))
-    return scoped_refptr<ContentAction>();
+    return scoped_ptr<ContentAction>();
 
   // Inject provided DeclarativeUserScriptMaster, rather than looking it up
   // using a BrowserContext.
-  return scoped_refptr<ContentAction>(new RequestContentScript(
-      master,
-      extension,
-      script_data));
+  return make_scoped_ptr(new RequestContentScript(master, extension,
+                                                  script_data));
 }
 
 // static
@@ -384,7 +380,7 @@ void RequestContentScript::InstructRenderProcessToInject(
 }
 
 // static
-scoped_refptr<ContentAction> SetIcon::Create(
+scoped_ptr<ContentAction> SetIcon::Create(
     content::BrowserContext* browser_context,
     const Extension* extension,
     const base::DictionaryValue* dict,
@@ -397,7 +393,7 @@ scoped_refptr<ContentAction> SetIcon::Create(
     type = ActionInfo::TYPE_BROWSER;
   } else {
     *error = kNoPageOrBrowserAction;
-    return scoped_refptr<ContentAction>();
+    return scoped_ptr<ContentAction>();
   }
 
   gfx::ImageSkia icon;
@@ -405,21 +401,19 @@ scoped_refptr<ContentAction> SetIcon::Create(
   if (dict->GetDictionary("imageData", &canvas_set) &&
       !ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon)) {
     *error = kInvalidIconDictionary;
-    return scoped_refptr<ContentAction>();
+    return scoped_ptr<ContentAction>();
   }
-  return scoped_refptr<ContentAction>(new SetIcon(gfx::Image(icon), type));
+  return make_scoped_ptr(new SetIcon(gfx::Image(icon), type));
 }
 
 //
 // ContentAction
 //
 
-ContentAction::ContentAction() {}
-
 ContentAction::~ContentAction() {}
 
 // static
-scoped_refptr<ContentAction> ContentAction::Create(
+scoped_ptr<ContentAction> ContentAction::Create(
     content::BrowserContext* browser_context,
     const Extension* extension,
     const base::Value& json_action,
@@ -429,7 +423,7 @@ scoped_refptr<ContentAction> ContentAction::Create(
   std::string instance_type;
   if (!(json_action.GetAsDictionary(&action_dict) &&
         action_dict->GetString(keys::kInstanceType, &instance_type)))
-    return scoped_refptr<ContentAction>();
+    return scoped_ptr<ContentAction>();
 
   ContentActionFactory& factory = g_content_action_factory.Get();
   std::map<std::string, ContentActionFactory::FactoryMethod>::iterator
@@ -439,7 +433,9 @@ scoped_refptr<ContentAction> ContentAction::Create(
         browser_context, extension, action_dict, error);
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
-  return scoped_refptr<ContentAction>();
+  return scoped_ptr<ContentAction>();
 }
+
+ContentAction::ContentAction() {}
 
 }  // namespace extensions

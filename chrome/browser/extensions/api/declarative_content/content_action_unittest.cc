@@ -68,7 +68,7 @@ class RequestContentScriptTest : public ExtensionServiceTestBase {
 TEST(DeclarativeContentActionTest, InvalidCreation) {
   TestExtensionEnvironment env;
   std::string error;
-  scoped_refptr<const ContentAction> result;
+  scoped_ptr<const ContentAction> result;
 
   // Test wrong data type passed.
   error.clear();
@@ -100,7 +100,7 @@ TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
 
   const Extension* extension = env.MakeExtension(base::DictionaryValue());
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       NULL,
       extension,
       *ParseJson(
@@ -118,7 +118,7 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
   const Extension* extension = env.MakeExtension(
       *ParseJson("{\"page_action\": { \"default_title\": \"Extension\" } }"));
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       NULL,
       extension,
       *ParseJson(
@@ -172,7 +172,7 @@ TEST(DeclarativeContentActionTest, SetIcon) {
   const Extension* extension = env.MakeExtension(
       *ParseJson("{\"page_action\": { \"default_title\": \"Extension\" } }"));
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       NULL,
       extension,
       *dict,
@@ -200,7 +200,7 @@ TEST(DeclarativeContentActionTest, SetIcon) {
 TEST_F(RequestContentScriptTest, MissingScripts) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
@@ -217,7 +217,7 @@ TEST_F(RequestContentScriptTest, MissingScripts) {
 TEST_F(RequestContentScriptTest, CSS) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
@@ -233,7 +233,7 @@ TEST_F(RequestContentScriptTest, CSS) {
 TEST_F(RequestContentScriptTest, JS) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
@@ -249,7 +249,7 @@ TEST_F(RequestContentScriptTest, JS) {
 TEST_F(RequestContentScriptTest, CSSBadType) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
@@ -264,7 +264,7 @@ TEST_F(RequestContentScriptTest, CSSBadType) {
 TEST_F(RequestContentScriptTest, JSBadType) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
@@ -279,7 +279,7 @@ TEST_F(RequestContentScriptTest, JSBadType) {
 TEST_F(RequestContentScriptTest, AllFrames) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
@@ -296,7 +296,7 @@ TEST_F(RequestContentScriptTest, AllFrames) {
 TEST_F(RequestContentScriptTest, MatchAboutBlank) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
@@ -313,7 +313,7 @@ TEST_F(RequestContentScriptTest, MatchAboutBlank) {
 TEST_F(RequestContentScriptTest, AllFramesBadType) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
@@ -329,7 +329,7 @@ TEST_F(RequestContentScriptTest, AllFramesBadType) {
 TEST_F(RequestContentScriptTest, MatchAboutBlankBadType) {
   Init();
   std::string error;
-  scoped_refptr<const ContentAction> result = ContentAction::Create(
+  scoped_ptr<const ContentAction> result = ContentAction::Create(
       profile(),
       extension(),
       *ParseJson(
