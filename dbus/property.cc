@@ -18,6 +18,10 @@ namespace dbus {
 // PropertyBase implementation.
 //
 
+PropertyBase::PropertyBase() : property_set_(nullptr), is_valid_(false) {}
+
+PropertyBase::~PropertyBase() {}
+
 void PropertyBase::Init(PropertySet* property_set, const std::string& name) {
   DCHECK(!property_set_);
   property_set_ = property_set;

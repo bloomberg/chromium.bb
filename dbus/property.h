@@ -132,9 +132,10 @@ class PropertySet;
 // the Property<> template that are not type-specific, such as the
 // associated PropertySet, property name, and the type-unsafe parts
 // used by PropertySet.
-class PropertyBase {
+class CHROME_DBUS_EXPORT PropertyBase {
  public:
-  PropertyBase() : property_set_(nullptr), is_valid_(false) {}
+  PropertyBase();
+  virtual ~PropertyBase();
 
   // Initializes the |property_set| and property |name| so that method
   // calls may be made from this class. This method is called by
@@ -367,6 +368,7 @@ template <class T>
 class CHROME_DBUS_EXPORT Property : public PropertyBase {
  public:
   Property() {}
+  ~Property() override {}
 
   // Retrieves the cached value.
   const T& value() const { return value_; }
