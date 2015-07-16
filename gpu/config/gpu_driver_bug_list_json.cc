@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.20",
+  "version": "8.21",
   "entries": [
     {
       "id": 1,
@@ -1495,6 +1495,18 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno.*",
       "features": [
         "unbind_egl_context_to_flush_driver_caches"
+      ]
+    },
+    {
+      "id": 126,
+      "description": "Program binaries contain incorrect bound attribute locations on Adreno 3xx GPUs",
+      "cr_bugs": [510637],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno \\(TM\\) 3.*",
+      "features": [
+        "disable_program_cache"
       ]
     }
   ]
