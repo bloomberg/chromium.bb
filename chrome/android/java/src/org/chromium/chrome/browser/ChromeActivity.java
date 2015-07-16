@@ -39,7 +39,6 @@ import android.view.accessibility.AccessibilityManager.TouchExplorationStateChan
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BaseSwitches;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -461,10 +460,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        if (BuildInfo.isMncOrLater()) {
-            // Android support library workaround for Android M. See crbug.com/510128
-            getDelegate().setHandleNativeActionModesEnabled(false);
-        }
         getChromeApplication().onStartWithNative();
         Tab tab = getActivityTab();
         if (tab != null) tab.onActivityStart();
