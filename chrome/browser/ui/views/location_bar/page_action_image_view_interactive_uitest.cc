@@ -7,15 +7,36 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
+#include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/menu/menu_controller.h"
 
 using PageActionImageViewInteractiveUITest = ExtensionBrowserTest;
+
+// An ImageSkia source that will do nothing. We need this because we need a
+// blank canvas at a certain size, and that can't be done by just using a null
+// ImageSkia.
+class BlankImageSource : public gfx::CanvasImageSource {
+ public:
+  explicit BlankImageSource(const gfx::Size& size)
+      : gfx::CanvasImageSource(size, false) {}
+  ~BlankImageSource() override {}
+
+  void Draw(gfx::Canvas* canvas) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BlankImageSource);
+};
 
 void TestMenuIsOpenHelper(const base::Closure& quit_closure) {
   views::MenuController* menu_controller =
@@ -67,6 +88,27 @@ IN_PROC_BROWSER_TEST_F(PageActionImageViewInteractiveUITest,
       page_action_with_badge_view->image_view();
   ASSERT_TRUE(page_action_view);
   EXPECT_TRUE(page_action_view->visible());
+
+  // Compare the actual and expected icons.
+  ExtensionAction* action = extensions::ExtensionActionManager::Get(profile())
+                                ->GetPageAction(*extension);
+  ExtensionActionIconFactory icon_factory(profile(), extension, action,
+                                          nullptr);
+  int tab_id = SessionTabHelper::IdForTab(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  gfx::ImageSkia expected_icon = icon_factory.GetIcon(tab_id).AsImageSkia();
+
+  // We need to resize the expected icon to be the size of the page action
+  // button for comparison purposes.
+  const gfx::Size size(extension_misc::EXTENSION_ICON_ACTION,
+                       extension_misc::EXTENSION_ICON_ACTION);
+  gfx::ImageSkia bg(new BlankImageSource(size), size);
+  expected_icon =
+      gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, expected_icon);
+  SkBitmap expected_bitmap = expected_icon.GetRepresentation(1.0).sk_bitmap();
+  SkBitmap actual_bitmap =
+      page_action_view->GetImage().GetRepresentation(1.0).sk_bitmap();
+  EXPECT_TRUE(gfx::BitmapsAreEqual(expected_bitmap, actual_bitmap));
 
   // Move the mouse over the center of the page action view.
   {
