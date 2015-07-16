@@ -123,10 +123,7 @@ config("compiler") {
       }
 
       if (current_cpu == "x86") {
-        cflags += [
-          "/fallback",
-          "-m32",
-        ]
+        cflags += [ "-m32" ]
       } else {
         cflags += [ "-m64" ]
       }

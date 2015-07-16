@@ -5745,14 +5745,6 @@
                 ],
               },
             }],
-            ['clang==1 and target_arch=="ia32"', {
-              'VCCLCompilerTool': {
-                'WarnAsError': 'false',
-                'AdditionalOptions': [
-                  '/fallback',
-                ],
-              },
-            }],
             ['clang==1 and clang_use_chrome_plugins==1', {
               'VCCLCompilerTool': {
                 'AdditionalOptions': [
