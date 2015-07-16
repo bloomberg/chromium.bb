@@ -14,6 +14,8 @@
       'accessible_pane_view.h',
       'animation/bounds_animator.cc',
       'animation/bounds_animator.h',
+      'animation/ink_drop_animation_controller.cc',
+      'animation/ink_drop_animation_controller.h',
       'animation/scroll_animator.cc',
       'animation/scroll_animator.h',
       'background.cc',

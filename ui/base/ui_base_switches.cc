@@ -54,6 +54,25 @@ const char kEnableTouchEditing[] = "enable-touch-editing";
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";
 
+// Defines the Material Design visual feedback shape.
+const char kMaterialDesignInkDrop[] = "material-design-ink-drop";
+
+// Defines the Material Design visual feedback as a circle.
+const char kMaterialDesignInkDropCircle[] = "circle";
+
+// Defines the Material Design visual feedback as a sqaure.
+const char kMaterialDesignInkDropSquare[] = "square";
+
+// Defines the speed of Material Design visual feedback animations.
+const char kMaterialDesignInkDropAnimationSpeed[] =
+    "material-design-ink-drop-animation-speed";
+
+// Defines that Material Design visual feedback animations should be fast.
+const char kMaterialDesignInkDropAnimationSpeedFast[] = "fast";
+
+// Defines that Material Design visual feedback animations should be slow.
+const char kMaterialDesignInkDropAnimationSpeedSlow[] = "slow";
+
 #if defined(ENABLE_TOPCHROME_MD)
 // Enables top Chrome material design elements.
 const char kTopChromeMD[] = "top-chrome-md";

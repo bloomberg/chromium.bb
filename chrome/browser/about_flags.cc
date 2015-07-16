@@ -450,6 +450,24 @@ const Experiment::Choice kTopChromeMaterialDesignChoices[] = {
 #endif
 
 #if defined(OS_CHROMEOS)
+const Experiment::Choice kAshMaterialDesignInkDrop[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_CIRCLE,
+     switches::kMaterialDesignInkDrop,
+     switches::kMaterialDesignInkDropCircle},
+    {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_SQUARE,
+     switches::kMaterialDesignInkDrop,
+     switches::kMaterialDesignInkDropSquare}};
+
+const Experiment::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_FAST,
+     switches::kMaterialDesignInkDropAnimationSpeed,
+     switches::kMaterialDesignInkDropAnimationSpeedFast},
+    {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SLOW,
+     switches::kMaterialDesignInkDropAnimationSpeed,
+     switches::kMaterialDesignInkDropAnimationSpeedSlow}};
+
 const Experiment::Choice kDataSaverPromptChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
@@ -813,10 +831,10 @@ const Experiment kExperiments[] = {
 #if defined(ENABLE_SPELLCHECK)
 #if defined(OS_ANDROID)
     {"enable-android-spellchecker",
-      IDS_OPTIONS_ENABLE_SPELLCHECK,
-      IDS_OPTIONS_ENABLE_ANDROID_SPELLCHECKER_DESCRIPTION,
-      kOsAndroid,
-      SINGLE_VALUE_TYPE(switches::kEnableAndroidSpellChecker)},
+     IDS_OPTIONS_ENABLE_SPELLCHECK,
+     IDS_OPTIONS_ENABLE_ANDROID_SPELLCHECKER_DESCRIPTION,
+     kOsAndroid,
+     SINGLE_VALUE_TYPE(switches::kEnableAndroidSpellChecker)},
 #endif
     {"spellcheck-autocorrect",
      IDS_FLAGS_SPELLCHECK_AUTOCORRECT,
@@ -1028,6 +1046,16 @@ const Experiment kExperiments[] = {
     },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
+    {"material-design-ink-drop",
+     IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_NAME,
+     IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_DESCRIPTION,
+     kOsCrOS,
+     MULTI_VALUE_TYPE(kAshMaterialDesignInkDrop)},
+    {"material-design-ink-drop-animation-speed",
+     IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SPEED_NAME,
+     IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SPEED_DESCRIPTION,
+     kOsCrOS,
+     MULTI_VALUE_TYPE(kAshMaterialDesignInkDropAnimationSpeed)},
     {"disable-cloud-import",
      IDS_FLAGS_DISABLE_CLOUD_IMPORT,
      IDS_FLAGS_DISABLE_CLOUD_IMPORT_DESCRIPTION,

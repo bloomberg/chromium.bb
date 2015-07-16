@@ -60725,6 +60725,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="78998551" label="disable-hosted-app-shim-creation"/>
   <int value="79503461" label="disable-account-consistency"/>
   <int value="91938915" label="enable-suggestions-service"/>
+  <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
   <int value="120429808" label="disable-new-profile-management"/>
@@ -60756,6 +60757,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="455698038"
       label="disable-gesture-requirement-for-media-playback"/>
   <int value="458410433" label="disable-views-rect-based-targeting"/>
+  <int value="474743272" label="material-design-ink-drop"/>
   <int value="494733611" label="disable-drop-sync-credential"/>
   <int value="535976218" label="enable-plugin-power-saver"/>
   <int value="546710806" label="disable-easy-signin"/>
