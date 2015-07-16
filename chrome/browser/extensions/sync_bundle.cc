@@ -78,7 +78,7 @@ void SyncBundle::PushSyncDeletion(const std::string& extension_id,
                          sync_data)));
 }
 
-void SyncBundle::PushSyncChangeIfNeeded(const Extension& extension) {
+void SyncBundle::PushSyncAddOrUpdate(const Extension& extension) {
   syncer::SyncChangeList sync_change_list(
       1,
       CreateSyncChange(extension.id(),

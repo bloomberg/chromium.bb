@@ -36,7 +36,7 @@ void PendingEnables::OnSyncStarted(ExtensionService* service) {
        it != ids_.end(); ++it) {
     const Extension* extension = service->GetExtensionById(*it, true);
     if (extension)
-      sync_bundle_->PushSyncChangeIfNeeded(*extension);
+      sync_bundle_->PushSyncAddOrUpdate(*extension);
   }
   ids_.clear();
 }

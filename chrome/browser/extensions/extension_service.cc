@@ -743,15 +743,6 @@ bool ExtensionService::UninstallExtension(
     return false;
   }
 
-  syncer::SyncData sync_data;
-  // Don't sync the uninstall if we're going to reinstall the extension
-  // momentarily.
-  if (extension_sync_service_ &&
-      reason != extensions::UNINSTALL_REASON_REINSTALL) {
-    sync_data = extension_sync_service_->PrepareToSyncUninstallExtension(
-        *extension);
-  }
-
   InstallVerifier::Get(GetBrowserContext())->Remove(extension->id());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
@@ -783,9 +774,11 @@ bool ExtensionService::UninstallExtension(
   ExtensionRegistry::Get(profile_)
       ->TriggerOnUninstalled(extension.get(), reason);
 
-  if (sync_data.IsValid()) {
-    extension_sync_service_->ProcessSyncUninstallExtension(extension->id(),
-                                                           sync_data);
+  // Don't sync the uninstall if we're going to reinstall the extension
+  // momentarily.
+  if (extension_sync_service_ &&
+      reason != extensions::UNINSTALL_REASON_REINSTALL) {
+    extension_sync_service_->SyncUninstallExtension(*extension);
   }
 
   delayed_installs_.Remove(extension->id());

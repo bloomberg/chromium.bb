@@ -57,7 +57,7 @@ class SyncBundle {
                         const syncer::SyncData& sync_data);
 
   // Pushes any sync changes to |extension| to the server.
-  void PushSyncChangeIfNeeded(const Extension& extension);
+  void PushSyncAddOrUpdate(const Extension& extension);
 
   // Applies the given SyncChange coming from the server.
   void ApplySyncChange(const syncer::SyncChange& sync_change);

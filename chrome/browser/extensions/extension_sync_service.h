@@ -43,15 +43,7 @@ class ExtensionSyncService : public syncer::SyncableService,
   // Convenience function to get the ExtensionSyncService for a BrowserContext.
   static ExtensionSyncService* Get(content::BrowserContext* context);
 
-  // Extracts the data needed to sync the uninstall of |extension|, but doesn't
-  // actually sync anything now. Call |ProcessSyncUninstallExtension| later with
-  // the returned SyncData to actually commit the change.
-  syncer::SyncData PrepareToSyncUninstallExtension(
-      const extensions::Extension& extension);
-  // Commit a sync uninstall that was previously prepared with
-  // PrepareToSyncUninstallExtension.
-  void ProcessSyncUninstallExtension(const std::string& extension_id,
-                                     const syncer::SyncData& sync_data);
+  void SyncUninstallExtension(const extensions::Extension& extension);
 
   void SyncEnableExtension(const extensions::Extension& extension);
   void SyncDisableExtension(const extensions::Extension& extension);

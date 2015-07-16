@@ -112,33 +112,26 @@ ExtensionSyncService* ExtensionSyncService::Get(
   return ExtensionSyncServiceFactory::GetForBrowserContext(context);
 }
 
-syncer::SyncData ExtensionSyncService::PrepareToSyncUninstallExtension(
-    const Extension& extension) {
-  // Extract the data we need for sync now, but don't actually sync until we've
-  // completed the uninstallation.
+void ExtensionSyncService::SyncUninstallExtension(
+    const extensions::Extension& extension) {
+  if (!extensions::util::ShouldSync(&extension, profile_))
+    return;
+
   // TODO(tim): If we get here and IsSyncing is false, this will cause
   // "back from the dead" style bugs, because sync will add-back the extension
   // that was uninstalled here when MergeDataAndStartSyncing is called.
   // See crbug.com/256795.
   syncer::ModelType type =
       extension.is_app() ? syncer::APPS : syncer::EXTENSIONS;
-  const SyncBundle* bundle = GetSyncBundle(type);
-  if (extensions::util::ShouldSync(&extension, profile_)) {
-    if (bundle->IsSyncing())
-      return CreateSyncData(extension).GetSyncData();
+  SyncBundle* bundle = GetSyncBundle(type);
+  if (!bundle->IsSyncing()) {
     if (extension_service_->is_ready() && !flare_.is_null())
       flare_.Run(type);  // Tell sync to start ASAP.
+    return;
   }
-
-  return syncer::SyncData();
-}
-
-void ExtensionSyncService::ProcessSyncUninstallExtension(
-    const std::string& extension_id,
-    const syncer::SyncData& sync_data) {
-  SyncBundle* bundle = GetSyncBundle(sync_data.GetDataType());
-  if (bundle->HasExtensionId(extension_id))
-    bundle->PushSyncDeletion(extension_id, sync_data);
+  const std::string& id = extension.id();
+  if (bundle->HasExtensionId(id))
+    bundle->PushSyncDeletion(id, CreateSyncData(extension).GetSyncData());
 }
 
 void ExtensionSyncService::SyncEnableExtension(const Extension& extension) {
@@ -166,7 +159,7 @@ void ExtensionSyncService::SyncExtensionChangeIfNeeded(
       extension.is_app() ? syncer::APPS : syncer::EXTENSIONS;
   SyncBundle* bundle = GetSyncBundle(type);
   if (bundle->IsSyncing())
-    bundle->PushSyncChangeIfNeeded(extension);
+    bundle->PushSyncAddOrUpdate(extension);
   else if (extension_service_->is_ready() && !flare_.is_null())
     flare_.Run(type);
 }
