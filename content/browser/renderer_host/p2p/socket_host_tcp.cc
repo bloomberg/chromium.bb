@@ -86,13 +86,15 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
   state_ = STATE_CONNECTING;
 
   net::HostPortPair dest_host_port_pair;
-  // If there is no resolved address, let's try with domain name, assuming
-  // socket layer will do the DNS resolve.
-  if (remote_address.ip_address.address().empty()) {
-    DCHECK(!remote_address.hostname.empty());
+  // If there is a domain name, let's try it first, it's required by some proxy
+  // to only take hostname for CONNECT. If it has been DNS resolved, the result
+  // is likely cached and shouldn't cause 2nd DNS resolution in the case of
+  // direct connect (i.e. no proxy).
+  if (!remote_address.hostname.empty()) {
     dest_host_port_pair = net::HostPortPair(remote_address.hostname,
                                             remote_address.ip_address.port());
   } else {
+    DCHECK(!remote_address.ip_address.address().empty());
     dest_host_port_pair = net::HostPortPair::FromIPEndPoint(
         remote_address.ip_address);
   }
