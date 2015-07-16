@@ -18,6 +18,7 @@ from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
+from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
@@ -379,13 +380,18 @@ class GetOptionsTest(patch_unittest.MockPatchBase):
 
   def testResultForBadConfigFile(self):
     """Test whether the return is None when handle a malformat config file."""
+    build_root = 'foo/build/root'
+    change = self.GetPatches(how_many=1)
+    self.PatchObject(git.ManifestCheckout, 'Cached')
+    self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout',
+                     return_value=git.ProjectCheckout(attrs={}))
+    self.PatchObject(git.ProjectCheckout, 'GetPath')
+
     with osutils.TempDir(set_global=True) as tempdir:
       path = os.path.join(tempdir, 'COMMIT-QUEUE.ini')
       osutils.WriteFile(path, 'foo\n')
       self.PatchObject(triage_lib, '_GetConfigFileForChange', return_value=path)
 
-      build_root = 'foo/build/root'
-      change = self.GetPatches(how_many=1)
       result = triage_lib.GetOptionForChange(build_root, change, 'a', 'b')
       self.assertEqual(None, result)
 
