@@ -497,6 +497,7 @@ mojom("mojo_bindings") {
     "process_control.mojom",
     "render_frame_setup.mojom",
     "service_port_service.mojom",
+    "service_worker/embedded_worker_setup.mojom",
     "vr_service.mojom",
   ]
 

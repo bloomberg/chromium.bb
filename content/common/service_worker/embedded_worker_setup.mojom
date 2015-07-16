@@ -1,0 +1,13 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content;
+
+import "mojo/application/public/interfaces/service_provider.mojom";
+
+interface EmbeddedWorkerSetup {
+  ExchangeServiceProviders(int32 thread_id,
+                           mojo.ServiceProvider& services,
+                           mojo.ServiceProvider exposed_services);
+};

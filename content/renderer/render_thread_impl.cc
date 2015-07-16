@@ -67,6 +67,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/render_frame_setup.mojom.h"
 #include "content/common/resource_messages.h"
+#include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_constants.h"
@@ -110,6 +111,7 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/scheduler/resource_dispatch_throttler.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
+#include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_context_message_filter.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "gin/public/debug.h"
@@ -375,6 +377,44 @@ blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
   attributes.antialias = false;
   attributes.noAutomaticFlushes = true;
   return attributes;
+}
+
+void SetupEmbeddedWorkerOnWorkerThread(
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
+  ServiceWorkerContextClient* client =
+      ServiceWorkerContextClient::ThreadSpecificInstance();
+  // It is possible for client to be null if for some reason the worker died
+  // before this call made it to the worker thread. In that case just do
+  // nothing and let mojo close the connection.
+  if (!client)
+    return;
+  client->BindServiceRegistry(services.Pass(), exposed_services.Pass());
+}
+
+class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
+ public:
+  explicit EmbeddedWorkerSetupImpl(
+      mojo::InterfaceRequest<EmbeddedWorkerSetup> request)
+      : binding_(this, request.Pass()) {}
+
+  void ExchangeServiceProviders(
+      int32_t thread_id,
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services) override {
+    WorkerTaskRunner::Instance()->GetTaskRunnerFor(thread_id)->PostTask(
+        FROM_HERE,
+        base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&services),
+                   base::Passed(&exposed_services)));
+  }
+
+ private:
+  mojo::StrongBinding<EmbeddedWorkerSetup> binding_;
+};
+
+void CreateEmbeddedWorkerSetup(
+    mojo::InterfaceRequest<EmbeddedWorkerSetup> request) {
+  new EmbeddedWorkerSetupImpl(request.Pass());
 }
 
 }  // namespace
@@ -807,6 +847,8 @@ void RenderThreadImpl::Init() {
 
   service_registry()->AddService<RenderFrameSetup>(
       base::Bind(CreateRenderFrameSetup));
+  service_registry()->AddService<EmbeddedWorkerSetup>(
+      base::Bind(CreateEmbeddedWorkerSetup));
 
   TRACE_EVENT_END_ETW("RenderThreadImpl::Init", 0, "");
 }

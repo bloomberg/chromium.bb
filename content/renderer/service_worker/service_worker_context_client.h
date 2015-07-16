@@ -17,6 +17,7 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
@@ -70,6 +71,13 @@ class ServiceWorkerContextClient
   void OnMessageReceived(int thread_id,
                          int embedded_worker_id,
                          const IPC::Message& message);
+
+  // Called some time after the worker has started. Attempts to use the
+  // ServiceRegistry to connect to services before this method is called are
+  // queued up and will resolve after this method is called.
+  void BindServiceRegistry(
+      mojo::InterfaceRequest<mojo::ServiceProvider> services,
+      mojo::ServiceProviderPtr exposed_services);
 
   // WebServiceWorkerContextClient overrides.
   virtual blink::WebURL scope() const;

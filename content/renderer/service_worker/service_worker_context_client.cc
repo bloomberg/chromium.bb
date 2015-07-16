@@ -26,6 +26,7 @@
 #include "content/child/worker_task_runner.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/message_port_messages.h"
+#include "content/common/mojo/service_registry_impl.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/referrer.h"
@@ -198,6 +199,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Pending callbacks for ClaimClients().
   ClaimClientsCallbacksMap claim_clients_callbacks;
 
+  ServiceRegistryImpl service_registry;
+
   base::ThreadChecker thread_checker;
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
 };
@@ -269,6 +272,13 @@ void ServiceWorkerContextClient::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
+}
+
+void ServiceWorkerContextClient::BindServiceRegistry(
+    mojo::InterfaceRequest<mojo::ServiceProvider> services,
+    mojo::ServiceProviderPtr exposed_services) {
+  context_->service_registry.Bind(services.Pass());
+  context_->service_registry.BindRemoteServiceProvider(exposed_services.Pass());
 }
 
 blink::WebURL ServiceWorkerContextClient::scope() const {

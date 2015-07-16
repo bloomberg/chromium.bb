@@ -37,6 +37,8 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 class MessagePortMessageFilter;
+class ServiceRegistry;
+class ServiceRegistryImpl;
 class ServiceWorkerContextCore;
 struct ServiceWorkerFetchRequest;
 
@@ -117,6 +119,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // It is invalid to call this while the worker is not in STARTING or RUNNING
   // status.
   ServiceWorkerStatusCode SendMessage(const IPC::Message& message);
+
+  // Returns the ServiceRegistry for this worker. It is invalid to call this
+  // when the worker is not in STARTING or RUNNING status.
+  ServiceRegistry* GetServiceRegistry();
 
   int embedded_worker_id() const { return embedded_worker_id_; }
   Status status() const { return status_; }
@@ -235,6 +241,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Current running information. -1 indicates the worker is not running.
   int process_id_;
   int thread_id_;
+  scoped_ptr<ServiceRegistryImpl> service_registry_;
 
   // Whether devtools is attached or not.
   bool devtools_attached_;

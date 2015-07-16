@@ -16,3 +16,8 @@ per-file *_messages*.h=nasko@chromium.org
 per-file *_messages*.h=palmer@chromium.org
 per-file *_messages*.h=tsepez@chromium.org
 per-file *_messages*.h=wfh@chromium.org
+
+# Changes to Mojo interfaces require a security review to avoid
+# introducing new sandbox escapes.
+per-file *.mojom=set noparent
+per-file *.mojom=tsepez@chromium.org
