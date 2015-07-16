@@ -43,6 +43,7 @@ interface Boolean
     method valueOf
 interface Cache
     method add
+    method addAll
     method constructor
     method delete
     method keys

@@ -131,7 +131,6 @@ ScriptedSpeech status=stable
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop
 SelectionForComposedTree status=stable
-ServiceWorkerCacheAddAll status=experimental
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerNotifications status=stable
 ServiceWorkerPerformanceTimeline status=stable
