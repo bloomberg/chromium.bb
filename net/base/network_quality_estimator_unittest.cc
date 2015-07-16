@@ -513,6 +513,8 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
 
 // Tests if the cache size remains bounded. Also, ensure that the cache is
 // LRU.
+// Disabled on Windows due to flakiness. See https://crbug.com/510689.
+#if !defined(OS_WIN)
 TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params);
@@ -565,5 +567,6 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
     EXPECT_EQ(expect_present_in_cache, found);
   }
 }
+#endif  // !defined(OS_WIN)
 
 }  // namespace net
