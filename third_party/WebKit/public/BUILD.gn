@@ -613,6 +613,7 @@ source_set("blink_headers") {
     "web/WebEmbeddedWorker.h",
     "web/WebSocket.h",
     "web/WebArrayBufferView.h",
+    "web/WebCSSParser.h"
   ]
 }
 

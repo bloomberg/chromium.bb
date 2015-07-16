@@ -118,6 +118,7 @@
       'WebColorSuggestion.cpp',
       'WebCryptoNormalize.cpp',
       'WebCustomElement.cpp',
+      'WebCSSParser.cpp',
       'WebDOMActivityLogger.cpp',
       'WebDOMCustomEvent.cpp',
       'WebDOMError.cpp',
