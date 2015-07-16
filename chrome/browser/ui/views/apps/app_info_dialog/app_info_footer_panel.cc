@@ -190,7 +190,8 @@ void AppInfoFooterPanel::UninstallApp() {
       extensions::ExtensionUninstallDialog::Create(
           profile_, GetWidget()->GetNativeWindow(), this));
   extension_uninstall_dialog_->ConfirmUninstall(
-      app_, extensions::UNINSTALL_REASON_USER_INITIATED);
+      app_, extensions::UNINSTALL_REASON_USER_INITIATED,
+      extensions::UNINSTALL_SOURCE_APP_INFO_DIALOG);
 }
 
 bool AppInfoFooterPanel::CanUninstallApp() const {

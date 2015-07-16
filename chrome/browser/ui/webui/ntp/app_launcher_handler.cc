@@ -571,7 +571,8 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
     CleanupAfterUninstall();
   } else {
     GetExtensionUninstallDialog()->ConfirmUninstall(
-        extension, extensions::UNINSTALL_REASON_USER_INITIATED);
+        extension, extensions::UNINSTALL_REASON_USER_INITIATED,
+        extensions::UNINSTALL_SOURCE_CHROME_APPS_PAGE);
   }
 }
 

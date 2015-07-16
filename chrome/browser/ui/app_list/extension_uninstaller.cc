@@ -34,7 +34,8 @@ void ExtensionUninstaller::Run() {
   dialog_.reset(extensions::ExtensionUninstallDialog::Create(
       profile_, controller_->GetAppListWindow(), this));
   dialog_->ConfirmUninstall(extension,
-                            extensions::UNINSTALL_REASON_USER_INITIATED);
+                            extensions::UNINSTALL_REASON_USER_INITIATED,
+                            extensions::UNINSTALL_SOURCE_APP_LIST);
 }
 
 void ExtensionUninstaller::OnExtensionUninstallDialogClosed(

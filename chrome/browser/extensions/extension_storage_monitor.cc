@@ -609,7 +609,8 @@ void ExtensionStorageMonitor::ShowUninstallPrompt(
 
   uninstall_extension_id_ = extension->id();
   uninstall_dialog_->ConfirmUninstall(
-      extension, extensions::UNINSTALL_REASON_STORAGE_THRESHOLD_EXCEEDED);
+      extension, extensions::UNINSTALL_REASON_STORAGE_THRESHOLD_EXCEEDED,
+      UNINSTALL_SOURCE_STORAGE_THRESHOLD_EXCEEDED);
 }
 
 int64 ExtensionStorageMonitor::GetNextStorageThreshold(

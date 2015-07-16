@@ -237,7 +237,8 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
           extensions::ExtensionUninstallDialog::Create(
               profile_, browser_->window()->GetNativeWindow(), this));
       extension_uninstall_dialog_->ConfirmUninstall(
-          extension, extensions::UNINSTALL_REASON_USER_INITIATED);
+          extension, extensions::UNINSTALL_REASON_USER_INITIATED,
+          extensions::UNINSTALL_SOURCE_TOOLBAR_CONTEXT_MENU);
       break;
     }
     case MANAGE: {

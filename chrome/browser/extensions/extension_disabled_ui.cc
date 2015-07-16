@@ -376,7 +376,8 @@ void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
       FROM_HERE,
       base::Bind(&extensions::ExtensionUninstallDialog::ConfirmUninstall,
                  uninstall_dialog_->AsWeakPtr(), extension_,
-                 extensions::UNINSTALL_REASON_EXTENSION_DISABLED));
+                 extensions::UNINSTALL_REASON_EXTENSION_DISABLED,
+                 extensions::UNINSTALL_SOURCE_PERMISSIONS_INCREASE));
 }
 
 bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {

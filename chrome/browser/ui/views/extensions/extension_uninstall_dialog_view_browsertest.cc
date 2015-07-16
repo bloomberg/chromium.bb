@@ -70,7 +70,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
   content::RunAllPendingInMessageLoop();
 
   dialog->ConfirmUninstall(extension.get(),
-                           extensions::UNINSTALL_REASON_FOR_TESTING);
+                           extensions::UNINSTALL_REASON_FOR_TESTING,
+                           extensions::UNINSTALL_SOURCE_FOR_TESTING);
   run_loop.Run();
   EXPECT_TRUE(delegate.canceled());
 }

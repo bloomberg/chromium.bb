@@ -65,15 +65,21 @@ ExtensionUninstallDialog::~ExtensionUninstallDialog() {
 void ExtensionUninstallDialog::ConfirmUninstallByExtension(
     const scoped_refptr<const Extension>& extension,
     const scoped_refptr<const Extension>& triggering_extension,
-    UninstallReason reason) {
+    UninstallReason reason,
+    UninstallSource source) {
   triggering_extension_ = triggering_extension;
-  ConfirmUninstall(extension, reason);
+  ConfirmUninstall(extension, reason, source);
 }
 
 void ExtensionUninstallDialog::ConfirmUninstall(
     const scoped_refptr<const Extension>& extension,
-    UninstallReason reason) {
+    UninstallReason reason,
+    UninstallSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallSource", source,
+                            NUM_UNINSTALL_SOURCES);
+
   extension_ = extension;
   uninstall_reason_ = reason;
   // Bookmark apps may not have 128x128 icons so accept 64x64 icons.

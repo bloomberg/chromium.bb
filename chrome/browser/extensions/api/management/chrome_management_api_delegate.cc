@@ -82,13 +82,18 @@ class ManagementUninstallFunctionUninstallDialogDelegate
     extension_uninstall_dialog_.reset(
         extensions::ExtensionUninstallDialog::Create(
             details.GetProfile(), details.GetNativeWindowForUI(), this));
+    extensions::UninstallSource source =
+        function->source_context_type() == extensions::Feature::WEBUI_CONTEXT
+            ? extensions::UNINSTALL_SOURCE_CHROME_EXTENSIONS_PAGE
+            : extensions::UNINSTALL_SOURCE_EXTENSION;
     if (show_programmatic_uninstall_ui) {
       extension_uninstall_dialog_->ConfirmUninstallByExtension(
           target_extension, function->extension(),
-          extensions::UNINSTALL_REASON_MANAGEMENT_API);
+          extensions::UNINSTALL_REASON_MANAGEMENT_API, source);
     } else {
       extension_uninstall_dialog_->ConfirmUninstall(
-          target_extension, extensions::UNINSTALL_REASON_MANAGEMENT_API);
+          target_extension, extensions::UNINSTALL_REASON_MANAGEMENT_API,
+          source);
     }
   }
   ~ManagementUninstallFunctionUninstallDialogDelegate() override {}

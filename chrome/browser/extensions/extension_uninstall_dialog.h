@@ -63,14 +63,16 @@ class ExtensionUninstallDialog
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
   void ConfirmUninstall(const scoped_refptr<const Extension>& extension,
-                        UninstallReason reason);
+                        UninstallReason reason,
+                        UninstallSource source);
 
   // This shows the same dialog as above, except it also shows which extension
   // triggered the dialog.
   void ConfirmUninstallByExtension(
       const scoped_refptr<const Extension>& extension,
       const scoped_refptr<const Extension>& triggering_extension,
-      UninstallReason reason);
+      UninstallReason reason,
+      UninstallSource source);
 
   std::string GetHeadingText();
 

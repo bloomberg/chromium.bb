@@ -11596,6 +11596,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.UninstallSource" enum="ExtensionUninstallSource">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The source for the extension uninstall. This is only recorded if an
+    uninstall dialog is shown to the user (i.e., it is not recorded for internal
+    &quot;cleanups&quot;).
+  </summary>
+</histogram>
+
 <histogram name="Extensions.UninstallType" enum="ExtensionType">
   <owner>kalman@chromium.org</owner>
   <summary>Uninstalls grouped by Extension::HistogramType.</summary>
@@ -56583,6 +56592,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Uninstall only"/>
   <int value="1" label="Uninstall and report abuse"/>
   <int value="2" label="Dialog canceled"/>
+</enum>
+
+<enum name="ExtensionUninstallSource" type="int">
+  <int value="0" label="Internal"/>
+  <int value="1" label="Context menu"/>
+  <int value="2" label="App list"/>
+  <int value="3" label="App info dialog"/>
+  <int value="4" label="App launcher page"/>
+  <int value="5" label="Extensions page"/>
+  <int value="6" label="Extension"/>
 </enum>
 
 <enum name="ExtensionUnpackFailureReason" type="int">
