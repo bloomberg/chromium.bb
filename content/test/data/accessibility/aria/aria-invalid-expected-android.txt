@@ -7,4 +7,4 @@ android.webkit.WebView focusable focused scrollable
 ++android.view.View clickable name='invalid=<default>'
 ++android.view.View clickable name='invalid=unknown'
 ++android.view.View
-++++android.widget.EditText clickable editable_text focusable name='1234' input_type=1
+++++android.widget.EditText clickable editable_text focusable name='1234' input_type=1 text_change_added_count=4

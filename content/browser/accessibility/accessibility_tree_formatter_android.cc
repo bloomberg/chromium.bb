@@ -62,6 +62,8 @@ const char* INT_ATTRIBUTES[] = {
   "range_min",
   "range_max",
   "range_current_value",
+  "text_change_added_count",
+  "text_change_removed_count",
 };
 }
 
@@ -117,6 +119,10 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->SetInteger("range_max", static_cast<int>(android_node->RangeMax()));
   dict->SetInteger("range_current_value",
                    static_cast<int>(android_node->RangeCurrentValue()));
+  dict->SetInteger("text_change_added_count",
+                   android_node->GetTextChangeAddedCount());
+  dict->SetInteger("text_change_removed_count",
+                   android_node->GetTextChangeRemovedCount());
 
   // Actions.
   dict->SetBoolean("action_scroll_forward", android_node->CanScrollForward());
