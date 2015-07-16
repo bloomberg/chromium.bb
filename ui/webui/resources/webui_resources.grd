@@ -219,7 +219,8 @@ without changes to the corresponding grd file. -->
                  file="css/chrome_shared.css" type="chrome_html"
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_CONTROLLED_INDICATOR"
-                 file="css/controlled_indicator.css" type="chrome_html" />
+                 file="css/controlled_indicator.css" type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_DIALOGS"
                  file="css/dialogs.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_I18N_PROCESS"

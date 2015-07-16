@@ -16,33 +16,37 @@
   display: none;
 }
 
-.controlled-setting-indicator[controlled-by='policy'] > div {
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
-}
-
-.controlled-setting-indicator[controlled-by='owner'] > div {
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_OWNER);
-}
-
-.controlled-setting-indicator[controlled-by='extension'] > div {
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION);
-}
-
-.controlled-setting-indicator[controlled-by='shared'] > div {
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_SHARED);
-}
-
-.controlled-setting-indicator[controlled-by='child-custodian'] > div {
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_CHILD);
-}
-
-.controlled-setting-indicator[controlled-by='supervised-user-custodian'] > div {
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_SUPERVISED);
+.controlled-setting-indicator[controlled-by] > div {
+  background-position: 50%;
+  background-size: 18px;
 }
 
 .controlled-setting-indicator:-webkit-any([controlled-by='recommended'],
-    [controlled-by='hasRecommendation']) > div {
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
+    [controlled-by='hasRecommendation']) > div,
+    .controlled-setting-indicator[controlled-by='policy'] > div {
+  background-image: url(../images/business.svg);
+}
+
+.controlled-setting-indicator[controlled-by='owner'] > div {
+  background-image: url(../images/account_circle.svg);
+}
+
+.controlled-setting-indicator[controlled-by='extension'] > div {
+  background-image: url(../images/extension.svg);
+}
+
+<if expr="chromeos">
+.controlled-setting-indicator[controlled-by='shared'] > div {
+  background-image: url(../images/group.svg);
+}
+</if>
+
+.controlled-setting-indicator[controlled-by='child-custodian'] > div {
+  background-image: url(../images/account_child_invert.svg);
+}
+
+.controlled-setting-indicator[controlled-by='supervised-user-custodian'] > div {
+  background-image: url(../images/supervisor_account.svg);
 }
 
 .controlled-setting-bubble-action {

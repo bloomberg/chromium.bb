@@ -349,8 +349,9 @@ void ControlledSettingIndicatorView::Layout() {
 }
 
 void ControlledSettingIndicatorView::Init() {
-  image_ = ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_CONTROLLED_SETTING_MANDATORY).ToImageSkia();
+  image_ = ResourceBundle::GetSharedInstance()
+               .GetImageNamed(IDR_OMNIBOX_HTTPS_POLICY_WARNING)
+               .ToImageSkia();
   image_view_ = new views::ImageView();
   // Disable |image_view_| so mouse events propagate to the parent.
   image_view_->SetEnabled(false);

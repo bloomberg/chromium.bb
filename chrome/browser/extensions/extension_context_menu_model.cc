@@ -312,7 +312,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
       int uninstall_index = GetIndexOfCommandId(UNINSTALL);
       SetIcon(uninstall_index,
               ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                  IDR_CONTROLLED_SETTING_MANDATORY));
+                  IDR_OMNIBOX_HTTPS_POLICY_WARNING));
     }
   }
 
