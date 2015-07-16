@@ -4,6 +4,8 @@
 
 #include "content/browser/dom_storage/session_storage_database.h"
 
+#include <vector>
+
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -61,7 +63,7 @@ namespace content {
 // should be in the database.
 class SessionStorageDatabase::DBOperation {
  public:
-  DBOperation(SessionStorageDatabase* session_storage_database)
+  explicit DBOperation(SessionStorageDatabase* session_storage_database)
       : session_storage_database_(session_storage_database) {
     base::AutoLock auto_lock(session_storage_database_->db_lock_);
     ++session_storage_database_->operation_count_;
@@ -76,14 +78,8 @@ class SessionStorageDatabase::DBOperation {
         !session_storage_database_->invalid_db_deleted_) {
       // No other operations are ongoing and the data is bad -> delete it now.
       session_storage_database_->db_.reset();
-#if defined(OS_WIN)
-      leveldb::DestroyDB(
-          base::WideToUTF8(session_storage_database_->file_path_.value()),
-          leveldb::Options());
-#else
-      leveldb::DestroyDB(session_storage_database_->file_path_.value(),
+      leveldb::DestroyDB(session_storage_database_->file_path_.AsUTF8Unsafe(),
                          leveldb::Options());
-#endif
       session_storage_database_->invalid_db_deleted_ = true;
     }
   }
@@ -159,8 +155,7 @@ bool SessionStorageDatabase::CommitAreaChanges(
       if (!DeepCopyArea(namespace_id, origin, !clear_all_first,
                         &map_id, &batch))
         return false;
-    }
-    else if (clear_all_first) {
+    } else if (clear_all_first) {
       if (!ClearMap(map_id, &batch))
         return false;
     }
@@ -386,11 +381,7 @@ leveldb::Status SessionStorageDatabase::TryToOpen(leveldb::DB** db) {
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
-#if defined(OS_WIN)
-  return leveldb::DB::Open(options, base::WideToUTF8(file_path_.value()), db);
-#elif defined(OS_POSIX)
-  return leveldb::DB::Open(options, file_path_.value(), db);
-#endif
+  return leveldb::DB::Open(options, file_path_.AsUTF8Unsafe(), db);
 }
 
 bool SessionStorageDatabase::IsOpen() const {
