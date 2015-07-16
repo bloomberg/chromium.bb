@@ -83,7 +83,11 @@ def ProvisionDevice(device, options):
     return not options.phases or phase_name in options.phases
 
   def run_phase(phase_func, reboot=True):
-    device.WaitUntilFullyBooted(timeout=reboot_timeout)
+    try:
+      device.WaitUntilFullyBooted(timeout=reboot_timeout, retries=0)
+    except device_errors.CommandTimeoutError:
+      logging.error('Device did not finish booting. Will try to reboot.')
+      device.Reboot(timeout=reboot_timeout)
     phase_func(device, options)
     if reboot:
       device.Reboot(False, retries=0)
