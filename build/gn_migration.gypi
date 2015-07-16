@@ -544,6 +544,7 @@
             '../sql/sql.gyp:sql_unittests_run',
             '../sync/sync.gyp:sync_unit_tests_run',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests_run',
+            '../third_party/mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests_run',
             '../tools/gn/gn.gyp:gn_unittests_run',
             '../ui/accessibility/accessibility.gyp:accessibility_unittests_run',
             '../ui/app_list/app_list.gyp:app_list_unittests_run',
