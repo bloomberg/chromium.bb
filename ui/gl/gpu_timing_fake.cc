@@ -53,9 +53,48 @@ void GPUTimingFake::ExpectNoDisjointCalls(MockGLInterface& gl) {
   EXPECT_CALL(gl, GetIntegerv(GL_GPU_DISJOINT_EXT, _)).Times(Exactly(0));
 }
 
+void GPUTimingFake::ExpectGPUTimeStampQuery(
+    MockGLInterface& gl, bool elapsed_query) {
+  EXPECT_CALL(gl, GenQueries(1, NotNull())).Times(Exactly(1))
+      .WillRepeatedly(Invoke(this, &GPUTimingFake::FakeGLGenQueries));
+
+  if (!elapsed_query) {
+    // Time Stamp based queries.
+    EXPECT_CALL(gl, GetInteger64v(GL_TIMESTAMP, _))
+        .WillRepeatedly(
+            Invoke(this, &GPUTimingFake::FakeGLGetInteger64v));
+
+    EXPECT_CALL(gl, QueryCounter(_, GL_TIMESTAMP)).Times(Exactly(1))
+        .WillRepeatedly(
+             Invoke(this, &GPUTimingFake::FakeGLQueryCounter));
+  } else {
+    // Time Elapsed based queries.
+    EXPECT_CALL(gl, BeginQuery(GL_TIME_ELAPSED, _)).Times(Exactly(1))
+        .WillRepeatedly(
+            Invoke(this, &GPUTimingFake::FakeGLBeginQuery));
+
+    EXPECT_CALL(gl, EndQuery(GL_TIME_ELAPSED)).Times(Exactly(1))
+      .WillRepeatedly(Invoke(this, &GPUTimingFake::FakeGLEndQuery));
+  }
+
+  EXPECT_CALL(gl, GetQueryObjectuiv(_, GL_QUERY_RESULT_AVAILABLE,
+                                    NotNull()))
+      .WillRepeatedly(
+          Invoke(this, &GPUTimingFake::FakeGLGetQueryObjectuiv));
+
+  EXPECT_CALL(gl, GetQueryObjectui64v(_, GL_QUERY_RESULT, NotNull()))
+      .WillRepeatedly(
+           Invoke(this, &GPUTimingFake::FakeGLGetQueryObjectui64v));
+
+  EXPECT_CALL(gl, DeleteQueries(1, NotNull())).Times(AtLeast(1))
+      .WillRepeatedly(
+           Invoke(this, &GPUTimingFake::FakeGLDeleteQueries));
+}
+
 void GPUTimingFake::ExpectGPUTimerQuery(
     MockGLInterface& gl, bool elapsed_query) {
-  EXPECT_CALL(gl, GenQueries(1, NotNull())).Times(AtLeast(2))
+  EXPECT_CALL(gl, GenQueries(1, NotNull()))
+      .Times(AtLeast(elapsed_query ? 1 : 2))
       .WillRepeatedly(Invoke(this, &GPUTimingFake::FakeGLGenQueries));
 
   if (!elapsed_query) {
@@ -86,7 +125,8 @@ void GPUTimingFake::ExpectGPUTimerQuery(
       .WillRepeatedly(
            Invoke(this, &GPUTimingFake::FakeGLGetQueryObjectui64v));
 
-  EXPECT_CALL(gl, DeleteQueries(1, NotNull())).Times(AtLeast(2))
+  EXPECT_CALL(gl, DeleteQueries(1, NotNull()))
+      .Times(AtLeast(elapsed_query ? 1 : 2))
       .WillRepeatedly(
            Invoke(this, &GPUTimingFake::FakeGLDeleteQueries));
 }

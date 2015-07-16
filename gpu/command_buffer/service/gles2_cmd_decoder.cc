@@ -11622,7 +11622,6 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
       }
       break;
     case GL_TIME_ELAPSED:
-      // TODO(dyen): Also support GL_TIMESTAMP.
       if (!query_manager_->GPUTimingAvailable()) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, "glBeginQueryEXT",
@@ -11632,7 +11631,7 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
       break;
     default:
       LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION, "glBeginQueryEXT",
+          GL_INVALID_ENUM, "glBeginQueryEXT",
           "unknown query target");
       return error::kNoError;
   }
@@ -11700,6 +11699,50 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(uint32 immediate_data_size,
   query_manager_->ProcessPendingTransferQueries();
 
   state_.current_queries.erase(it);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleQueryCounterEXT(uint32 immediate_data_size,
+                                                     const void* cmd_data) {
+  const gles2::cmds::QueryCounterEXT& c =
+      *static_cast<const gles2::cmds::QueryCounterEXT*>(cmd_data);
+  GLuint client_id = static_cast<GLuint>(c.id);
+  GLenum target = static_cast<GLenum>(c.target);
+  int32 sync_shm_id = static_cast<int32>(c.sync_data_shm_id);
+  uint32 sync_shm_offset = static_cast<uint32>(c.sync_data_shm_offset);
+  uint32 submit_count = static_cast<GLuint>(c.submit_count);
+
+  switch (target) {
+    case GL_TIMESTAMP:
+      if (!query_manager_->GPUTimingAvailable()) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, "glQueryCounterEXT",
+            "not enabled for timing queries");
+        return error::kNoError;
+      }
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_ENUM, "glQueryCounterEXT",
+          "unknown query target");
+      return error::kNoError;
+  }
+
+  QueryManager::Query* query = query_manager_->GetQuery(client_id);
+  if (!query) {
+    if (!query_manager_->IsValidQuery(client_id)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                         "glQueryCounterEXT",
+                         "id not made by glGenQueriesEXT");
+      return error::kNoError;
+    }
+    query = query_manager_->CreateQuery(
+        target, client_id, sync_shm_id, sync_shm_offset);
+  }
+  if (!query_manager_->QueryCounter(query, submit_count)) {
+    return error::kOutOfBounds;
+  }
+
   return error::kNoError;
 }
 

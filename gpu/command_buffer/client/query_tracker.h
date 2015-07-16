@@ -143,6 +143,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
 
     void Begin(GLES2Implementation* gl);
     void End(GLES2Implementation* gl);
+    void QueryCounter(GLES2Implementation* gl);
 
     GLuint id_;
     GLenum target_;
@@ -167,6 +168,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
 
   bool BeginQuery(GLuint id, GLenum target, GLES2Implementation* gl);
   bool EndQuery(GLenum target, GLES2Implementation* gl);
+  bool QueryCounter(GLuint id, GLenum target, GLES2Implementation* gl);
 
  private:
   typedef base::hash_map<GLuint, Query*> QueryIdMap;

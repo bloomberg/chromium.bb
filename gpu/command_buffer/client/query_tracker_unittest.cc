@@ -290,6 +290,7 @@ TEST_F(QueryTrackerTest, ManyQueries) {
     EXPECT_EQ(use_count_before_remove - 1, GetBucketUsedCount(bucket));
   }
 }
+
 }  // namespace gles2
 }  // namespace gpu
 

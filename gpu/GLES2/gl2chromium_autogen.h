@@ -244,6 +244,7 @@
 #define glTexStorage2DEXT GLES2_GET_FUN(TexStorage2DEXT)
 #define glGenQueriesEXT GLES2_GET_FUN(GenQueriesEXT)
 #define glDeleteQueriesEXT GLES2_GET_FUN(DeleteQueriesEXT)
+#define glQueryCounterEXT GLES2_GET_FUN(QueryCounterEXT)
 #define glIsQueryEXT GLES2_GET_FUN(IsQueryEXT)
 #define glBeginQueryEXT GLES2_GET_FUN(BeginQueryEXT)
 #define glBeginTransformFeedback GLES2_GET_FUN(BeginTransformFeedback)

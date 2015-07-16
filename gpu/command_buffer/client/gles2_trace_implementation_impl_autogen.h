@@ -1642,6 +1642,11 @@ void GLES2TraceImplementation::DeleteQueriesEXT(GLsizei n,
   gl_->DeleteQueriesEXT(n, queries);
 }
 
+void GLES2TraceImplementation::QueryCounterEXT(GLuint id, GLenum target) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::QueryCounterEXT");
+  gl_->QueryCounterEXT(id, target);
+}
+
 GLboolean GLES2TraceImplementation::IsQueryEXT(GLuint id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::IsQueryEXT");
   return gl_->IsQueryEXT(id);

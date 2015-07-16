@@ -718,7 +718,6 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
         return true;
       }
       break;
-    // TODO(dyen): Also support GL_GPU_DISJOINT_EXT.
     case GL_TIMESTAMP_EXT:
       // We convert all GPU timestamps to CPU time.
       *params = base::saturated_cast<GLint>(
@@ -4863,7 +4862,6 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
                  << GLES2Util::GetStringQueryTarget(target)
                  << ", " << id << ")");
 
-  // Check capabilities
   switch (target) {
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
@@ -4888,7 +4886,6 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
         return;
       }
       break;
-    // TODO(dyen): Also support GL_TIMESTAMP.
     case GL_TIME_ELAPSED_EXT:
       if (!capabilities_.timer_queries) {
         SetGLError(
@@ -4899,7 +4896,7 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
       break;
     default:
       SetGLError(
-          GL_INVALID_OPERATION, "glBeginQueryEXT", "unknown query target");
+          GL_INVALID_ENUM, "glBeginQueryEXT", "unknown query target");
       return;
   }
 
@@ -4910,13 +4907,11 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
     return;
   }
 
-  // id = 0 INV_OP
   if (id == 0) {
     SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT", "id is 0");
     return;
   }
 
-  // if not GENned INV_OPERATION
   if (!query_id_allocator_->InUse(id)) {
     SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT", "invalid id");
     return;
@@ -4936,6 +4931,41 @@ void GLES2Implementation::EndQueryEXT(GLenum target) {
   }
 
   if (query_tracker_->EndQuery(target, this))
+    CheckGLError();
+}
+
+void GLES2Implementation::QueryCounterEXT(GLuint id, GLenum target) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] QueryCounterEXT("
+                 << id
+                 << ", " << GLES2Util::GetStringQueryTarget(target) << ")");
+
+  switch (target) {
+    case GL_TIMESTAMP_EXT:
+      if (!capabilities_.timer_queries) {
+        SetGLError(
+            GL_INVALID_OPERATION, "glQueryCounterEXT",
+            "not enabled for timing queries");
+        return;
+      }
+      break;
+    default:
+      SetGLError(
+          GL_INVALID_ENUM, "glQueryCounterEXT", "unknown query target");
+      return;
+  }
+
+  if (id == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glQueryCounterEXT", "id is 0");
+    return;
+  }
+
+  if (!query_id_allocator_->InUse(id)) {
+    SetGLError(GL_INVALID_OPERATION, "glQueryCounterEXT", "invalid id");
+    return;
+  }
+
+  if (query_tracker_->QueryCounter(id, target, this))
     CheckGLError();
 }
 

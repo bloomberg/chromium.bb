@@ -1255,6 +1255,9 @@ void MojoGLES2Impl::DeleteQueriesEXT(GLsizei n, const GLuint* queries) {
   MojoGLES2MakeCurrent(context_);
   glDeleteQueriesEXT(n, queries);
 }
+void MojoGLES2Impl::QueryCounterEXT(GLuint id, GLenum target) {
+  NOTREACHED() << "Unimplemented QueryCounterEXT.";
+}
 GLboolean MojoGLES2Impl::IsQueryEXT(GLuint id) {
   MojoGLES2MakeCurrent(context_);
   return glIsQueryEXT(id);

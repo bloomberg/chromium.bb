@@ -43,12 +43,9 @@
 namespace gfx {
 
 class GLContextReal;
-class GPUTiming;
 class GPUTimingClient;
 class GPUTimingImpl;
 class QueryResult;
-class TimeElapsedTimerQuery;
-class TimerQuery;
 
 class GPUTiming {
  public:
@@ -86,6 +83,12 @@ class GL_EXPORT GPUTimer {
   // this object.
   void Destroy(bool have_context);
 
+  // Clears current queries.
+  void Reset();
+
+  // Start an instant timer, start and end will be equal.
+  void QueryTimeStamp();
+
   // Start a timer range.
   void Start();
   void End();
@@ -102,8 +105,12 @@ class GL_EXPORT GPUTimer {
                     bool use_elapsed_timer);
 
   bool use_elapsed_timer_ = false;
-  bool end_requested_ = false;
-  bool end_available_ = false;
+  enum TimerState {
+    kTimerState_Ready,
+    kTimerState_WaitingForEnd,
+    kTimerState_WaitingForResult,
+    kTimerState_ResultAvailable
+  } timer_state_ = kTimerState_Ready;
   scoped_refptr<GPUTimingClient> gpu_timing_client_;
   scoped_refptr<QueryResult> time_stamp_result_;
   scoped_refptr<QueryResult> elapsed_timer_result_;

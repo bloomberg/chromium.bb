@@ -38,13 +38,17 @@ class QueryManagerTest : public GpuServiceTest {
 
  protected:
   void SetUp() override {
-    GpuServiceTest::SetUpWithGLVersion("2.1", "GL_ARB_occlusion_query");
+    GpuServiceTest::SetUpWithGLVersion("2.1",
+                                       "GL_ARB_occlusion_query, "
+                                       "GL_ARB_timer_query");
     engine_.reset(new MockCommandBufferEngine());
     decoder_.reset(new MockGLES2Decoder());
     decoder_->set_engine(engine_.get());
     TestHelper::SetupFeatureInfoInitExpectations(
         gl_.get(),
-        "GL_EXT_occlusion_query_boolean");
+        "GL_EXT_occlusion_query_boolean, GL_ARB_timer_query");
+    EXPECT_CALL(*decoder_.get(), GetGLContext())
+     .WillRepeatedly(Return(GetGLContext()));
     scoped_refptr<FeatureInfo> feature_info(new FeatureInfo());
     feature_info->Initialize();
     manager_.reset(new QueryManager(decoder_.get(), feature_info.get()));
@@ -524,6 +528,50 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery) {
   EXPECT_TRUE(manager->BeginQuery(query));
   EXPECT_TRUE(manager->EndQuery(query, kSubmitCount));
   manager->Destroy(false);
+}
+
+TEST_F(QueryManagerTest, TimeElapsedQuery) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLenum kTarget = GL_TIME_ELAPSED_EXT;
+  const base::subtle::Atomic32 kSubmitCount = 123;
+
+  EXPECT_CALL(*gl_, GenQueries(1, _))
+     .WillOnce(SetArgumentPointee<1>(kService1Id))
+     .RetiresOnSaturation();
+  QueryManager::Query* query = manager_->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  EXPECT_CALL(*gl_, BeginQuery(GL_TIME_ELAPSED_EXT, kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, EndQuery(GL_TIME_ELAPSED_EXT))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(manager_->BeginQuery(query));
+  EXPECT_TRUE(manager_->EndQuery(query, kSubmitCount));
+  manager_->Destroy(false);
+}
+
+TEST_F(QueryManagerTest, TimeStampQuery) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLenum kTarget = GL_TIMESTAMP_EXT;
+  const base::subtle::Atomic32 kSubmitCount = 123;
+
+  EXPECT_CALL(*gl_, GenQueries(1, _))
+     .WillOnce(SetArgumentPointee<1>(kService1Id))
+     .RetiresOnSaturation();
+  QueryManager::Query* query = manager_->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  EXPECT_CALL(*gl_, QueryCounter(kService1Id, GL_TIMESTAMP_EXT))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(manager_->QueryCounter(query, kSubmitCount));
+  manager_->Destroy(false);
 }
 
 TEST_F(QueryManagerTest, GetErrorQuery) {

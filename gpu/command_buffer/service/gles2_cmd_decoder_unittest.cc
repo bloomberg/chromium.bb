@@ -26,6 +26,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
+#include "ui/gl/gpu_timing_fake.h"
 
 
 #if !defined(GL_DEPTH24_STENCIL8)
@@ -562,7 +563,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
 
 struct QueryType {
   GLenum type;
-  bool is_gl;
+  bool is_counter;
 };
 
 const QueryType kQueryTypes[] = {
@@ -572,9 +573,122 @@ const QueryType kQueryTypes[] = {
     {GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, false},
     {GL_GET_ERROR_QUERY_CHROMIUM, false},
     {GL_COMMANDS_COMPLETED_CHROMIUM, false},
-    {GL_ANY_SAMPLES_PASSED_EXT, true},
-    {GL_TIME_ELAPSED, true},
+    {GL_ANY_SAMPLES_PASSED_EXT, false},
+    {GL_TIME_ELAPSED, false},
+    {GL_TIMESTAMP, true},
 };
+const GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
+
+static void ExecuteGenerateQueryCmd(GLES2DecoderTestBase* test,
+                                    ::gfx::MockGLInterface* gl,
+                                    GLenum target,
+                                    GLuint client_id,
+                                    GLuint service_id) {
+  test->GenHelper<GenQueriesEXTImmediate>(client_id);
+  if (GL_ANY_SAMPLES_PASSED_EXT == target) {
+    EXPECT_CALL(*gl, GenQueries(1, _))
+        .WillOnce(SetArgPointee<1>(service_id))
+        .RetiresOnSaturation();
+  }
+}
+
+static error::Error ExecuteBeginQueryCmd(GLES2DecoderTestBase* test,
+                                         ::gfx::MockGLInterface* gl,
+                                         ::gfx::GPUTimingFake* timing_queries,
+                                         GLenum target,
+                                         GLuint client_id,
+                                         GLuint service_id,
+                                         int32 shm_id,
+                                         uint32 shm_offset) {
+  if (GL_ANY_SAMPLES_PASSED_EXT == target) {
+    EXPECT_CALL(*gl, BeginQuery(target, service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else if (GL_TIME_ELAPSED == target) {
+    timing_queries->ExpectGPUTimerQuery(*gl, true);
+  }
+
+  BeginQueryEXT begin_cmd;
+  begin_cmd.Init(target, client_id, shm_id, shm_offset);
+  return test->ExecuteCmd(begin_cmd);
+}
+
+static error::Error ExecuteEndQueryCmd(GLES2DecoderTestBase* test,
+                                       ::gfx::MockGLInterface* gl,
+                                       GLenum target,
+                                       uint32_t submit_count) {
+  if (GL_ANY_SAMPLES_PASSED_EXT == target) {
+    EXPECT_CALL(*gl, EndQuery(target))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else if (GL_GET_ERROR_QUERY_CHROMIUM == target) {
+    EXPECT_CALL(*gl, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  } else if (GL_COMMANDS_COMPLETED_CHROMIUM == target) {
+    EXPECT_CALL(*gl, Flush()).RetiresOnSaturation();
+    EXPECT_CALL(*gl, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+        .WillOnce(Return(kGlSync))
+        .RetiresOnSaturation();
+#if DCHECK_IS_ON()
+    EXPECT_CALL(*gl, IsSync(kGlSync))
+        .WillRepeatedly(Return(GL_TRUE));
+#endif
+  }
+
+  EndQueryEXT end_cmd;
+  end_cmd.Init(target, submit_count);
+  return test->ExecuteCmd(end_cmd);
+}
+
+static error::Error ExecuteQueryCounterCmd(GLES2DecoderTestBase* test,
+                                         ::gfx::MockGLInterface* gl,
+                                         ::gfx::GPUTimingFake* timing_queries,
+                                         GLenum target,
+                                         GLuint client_id,
+                                         GLuint service_id,
+                                         int32 shm_id,
+                                         uint32 shm_offset,
+                                         uint32_t submit_count) {
+  if (GL_TIMESTAMP == target) {
+    timing_queries->ExpectGPUTimeStampQuery(*gl, false);
+  }
+
+  QueryCounterEXT query_counter_cmd;
+  query_counter_cmd.Init(client_id,
+                         target,
+                         shm_id,
+                         shm_offset,
+                         submit_count);
+  return test->ExecuteCmd(query_counter_cmd);
+}
+
+static bool ProcessQuery(GLES2DecoderTestBase* test,
+                         ::gfx::MockGLInterface* gl,
+                         GLenum target,
+                         GLuint service_id) {
+  if (GL_ANY_SAMPLES_PASSED_EXT == target) {
+    EXPECT_CALL(
+        *gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
+        .WillOnce(SetArgPointee<2>(1))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_EXT, _))
+        .WillOnce(SetArgPointee<2>(1))
+        .RetiresOnSaturation();
+  } else if (GL_COMMANDS_COMPLETED_CHROMIUM == target) {
+    EXPECT_CALL(*gl, ClientWaitSync(kGlSync, _, _))
+        .WillOnce(Return(GL_ALREADY_SIGNALED))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, DeleteSync(kGlSync)).Times(1).RetiresOnSaturation();
+  }
+
+  QueryManager* query_manager = test->GetDecoder()->GetQueryManager();
+  EXPECT_TRUE(nullptr != query_manager);
+  if (!query_manager)
+    return false;
+
+  return query_manager->ProcessPendingQueries(false);
+}
 
 static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
                                              GLuint client_id,
@@ -588,96 +702,40 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   init.extensions = "GL_EXT_occlusion_query_boolean"
                     " GL_ARB_sync"
                     " GL_ARB_timer_query";
-  init.gl_version = "opengl es 2.0";
+  init.gl_version = "opengl es 3.0";
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
   test->InitDecoder(init);
   ::testing::StrictMock< ::gfx::MockGLInterface>* gl = test->GetGLMock();
+  ::gfx::GPUTimingFake gpu_timing_queries;
 
-  BeginQueryEXT begin_cmd;
-
-  test->GenHelper<GenQueriesEXTImmediate>(client_id);
-
-  if (query_type.is_gl) {
-    EXPECT_CALL(*gl, GenQueries(1, _))
-        .WillOnce(SetArgPointee<1>(service_id))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl, BeginQuery(query_type.type, service_id))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
+  ExecuteGenerateQueryCmd(test, gl, query_type.type,
+                          client_id, service_id);
 
   // Test bad shared memory fails
-  begin_cmd.Init(query_type.type, client_id, shm_id, shm_offset);
-  error::Error error1 = test->ExecuteCmd(begin_cmd);
-
-  if (query_type.is_gl) {
-    EXPECT_CALL(*gl, EndQuery(query_type.type))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-  if (query_type.type == GL_GET_ERROR_QUERY_CHROMIUM) {
-    EXPECT_CALL(*gl, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-  GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
-  if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
-    EXPECT_CALL(*gl, Flush()).RetiresOnSaturation();
-    EXPECT_CALL(*gl, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
-        .WillOnce(Return(kGlSync))
-        .RetiresOnSaturation();
-#if DCHECK_IS_ON()
-    EXPECT_CALL(*gl, IsSync(kGlSync))
-        .WillOnce(Return(GL_TRUE))
-        .RetiresOnSaturation();
-#endif
+  error::Error error1 = error::kNoError;
+  error::Error error2 = error::kNoError;
+  if (query_type.is_counter) {
+    error1 = ExecuteQueryCounterCmd(test, gl, &gpu_timing_queries,
+                                    query_type.type,
+                                    client_id, service_id,
+                                    shm_id, shm_offset, 1);
+  } else {
+    error1 = ExecuteBeginQueryCmd(test, gl, &gpu_timing_queries,
+                                  query_type.type,
+                                  client_id, service_id,
+                                  shm_id, shm_offset);
+    error2 = ExecuteEndQueryCmd(test, gl, query_type.type, 1);
   }
 
-  EndQueryEXT end_cmd;
-  end_cmd.Init(query_type.type, 1);
-  error::Error error2 = test->ExecuteCmd(end_cmd);
-
-  if (query_type.is_gl) {
-    EXPECT_CALL(
-        *gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
-        .WillOnce(SetArgPointee<2>(1))
-        .RetiresOnSaturation();
-    if (query_type.type == GL_TIME_ELAPSED) {
-      EXPECT_CALL(*gl, GetQueryObjectui64v(service_id, GL_QUERY_RESULT_EXT, _))
-          .WillOnce(SetArgPointee<2>(1))
-          .RetiresOnSaturation();
-    } else {
-      EXPECT_CALL(*gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_EXT, _))
-          .WillOnce(SetArgPointee<2>(1))
-          .RetiresOnSaturation();
-    }
-    EXPECT_CALL(*gl, DeleteQueries(1, _)).Times(1).RetiresOnSaturation();
-  }
-  if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
-#if DCHECK_IS_ON()
-    EXPECT_CALL(*gl, IsSync(kGlSync))
-        .WillOnce(Return(GL_TRUE))
-        .RetiresOnSaturation();
-#endif
-    EXPECT_CALL(*gl, ClientWaitSync(kGlSync, _, _))
-        .WillOnce(Return(GL_ALREADY_SIGNALED))
-        .RetiresOnSaturation();
-#if DCHECK_IS_ON()
-    EXPECT_CALL(*gl, IsSync(kGlSync))
-        .WillOnce(Return(GL_TRUE))
-        .RetiresOnSaturation();
-#endif
-    EXPECT_CALL(*gl, DeleteSync(kGlSync)).Times(1).RetiresOnSaturation();
-  }
-
-  QueryManager* query_manager = test->GetDecoder()->GetQueryManager();
-  ASSERT_TRUE(query_manager != NULL);
-  bool process_success = query_manager->ProcessPendingQueries(false);
+  bool process_success = ProcessQuery(test, gl, query_type.type, service_id);
 
   EXPECT_TRUE(error1 != error::kNoError || error2 != error::kNoError ||
               !process_success);
+
+  if (GL_ANY_SAMPLES_PASSED_EXT == query_type.type)
+    EXPECT_CALL(*gl, DeleteQueries(1, _)).Times(1).RetiresOnSaturation();
   test->ResetDecoder();
 }
 
@@ -708,6 +766,79 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
                                      kQueryTypes[i],
                                      kSharedMemoryId,
                                      0xfffffffcu);
+  }
+}
+
+TEST_P(GLES2DecoderManualInitTest, QueryReuseTest) {
+  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+    const QueryType& query_type = kQueryTypes[i];
+
+    GLES2DecoderTestBase::InitState init;
+    init.extensions = "GL_EXT_occlusion_query_boolean"
+                      " GL_ARB_sync"
+                      " GL_ARB_timer_query";
+    init.gl_version = "opengl es 3.0";
+    init.has_alpha = true;
+    init.request_alpha = true;
+    init.bind_generates_resource = true;
+    InitDecoder(init);
+    ::testing::StrictMock< ::gfx::MockGLInterface>* gl = GetGLMock();
+    ::gfx::GPUTimingFake gpu_timing_queries;
+
+    ExecuteGenerateQueryCmd(this, gl, query_type.type,
+                            kNewClientId, kNewServiceId);
+
+    // Query once.
+    if (query_type.is_counter) {
+      EXPECT_EQ(error::kNoError, ExecuteQueryCounterCmd(this, gl,
+                                                        &gpu_timing_queries,
+                                                        query_type.type,
+                                                        kNewClientId,
+                                                        kNewServiceId,
+                                                        kSharedMemoryId,
+                                                        kSharedMemoryOffset,
+                                                        1));
+    } else {
+      EXPECT_EQ(error::kNoError, ExecuteBeginQueryCmd(this, gl,
+                                                      &gpu_timing_queries,
+                                                      query_type.type,
+                                                      kNewClientId,
+                                                      kNewServiceId,
+                                                      kSharedMemoryId,
+                                                      kSharedMemoryOffset));
+      EXPECT_EQ(error::kNoError, ExecuteEndQueryCmd(this, gl,
+                                                    query_type.type, 1));
+    }
+
+    EXPECT_TRUE(ProcessQuery(this, gl, query_type.type, kNewServiceId));
+
+    // Reuse query.
+    if (query_type.is_counter) {
+      EXPECT_EQ(error::kNoError, ExecuteQueryCounterCmd(this, gl,
+                                                        &gpu_timing_queries,
+                                                        query_type.type,
+                                                        kNewClientId,
+                                                        kNewServiceId,
+                                                        kSharedMemoryId,
+                                                        kSharedMemoryOffset,
+                                                        2));
+    } else {
+      EXPECT_EQ(error::kNoError, ExecuteBeginQueryCmd(this, gl,
+                                                      &gpu_timing_queries,
+                                                      query_type.type,
+                                                      kNewClientId,
+                                                      kNewServiceId,
+                                                      kSharedMemoryId,
+                                                      kSharedMemoryOffset));
+      EXPECT_EQ(error::kNoError, ExecuteEndQueryCmd(this, gl,
+                                                    query_type.type, 2));
+    }
+
+    EXPECT_TRUE(ProcessQuery(this, gl, query_type.type, kNewServiceId));
+
+    if (GL_ANY_SAMPLES_PASSED_EXT == query_type.type)
+      EXPECT_CALL(*gl, DeleteQueries(1, _)).Times(1).RetiresOnSaturation();
+    ResetDecoder();
   }
 }
 
@@ -798,7 +929,6 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   ASSERT_TRUE(query != NULL);
   EXPECT_FALSE(query->pending());
 
-  GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
   EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
   EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
       .WillOnce(Return(kGlSync))
@@ -883,12 +1013,81 @@ TEST_P(GLES2DecoderManualInitTest, BeginInvalidTargetQueryFails) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
-  begin_cmd.Init(0xdeadbeef,
+  begin_cmd.Init(GL_TIME_ELAPSED,
                  kNewClientId,
                  kSharedMemoryId,
                  kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  begin_cmd.Init(0xdeadbeef,
+                 kNewClientId,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderManualInitTest, QueryCounterEXTTimeStamp) {
+  InitState init;
+  init.extensions = "GL_ARB_timer_query";
+  init.gl_version = "opengl 2.0";
+  init.has_alpha = true;
+  init.request_alpha = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  EXPECT_CALL(*gl_, GenQueries(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, QueryCounter(kNewServiceId, GL_TIMESTAMP))
+      .Times(1)
+      .RetiresOnSaturation();
+  QueryCounterEXT query_counter_cmd;
+  query_counter_cmd.Init(kNewClientId,
+                         GL_TIMESTAMP,
+                         kSharedMemoryId,
+                         kSharedMemoryOffset,
+                         1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(query_counter_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  ASSERT_TRUE(query != NULL);
+  EXPECT_TRUE(query->pending());
+}
+
+TEST_P(GLES2DecoderManualInitTest, InvalidTargetQueryCounterFails) {
+  InitState init;
+  init.extensions = "";
+  init.gl_version = "opengl es 2.0";
+  init.has_alpha = true;
+  init.request_alpha = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  QueryCounterEXT query_counter_cmd;
+  query_counter_cmd.Init(kNewClientId,
+                         GL_TIMESTAMP,
+                         kSharedMemoryId,
+                         kSharedMemoryOffset,
+                         1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(query_counter_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  query_counter_cmd.Init(kNewClientId,
+                         0xdeadbeef,
+                         kSharedMemoryId,
+                         kSharedMemoryOffset,
+                         1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(query_counter_cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_P(GLES2DecoderTest, IsEnabledReturnsCachedValue) {

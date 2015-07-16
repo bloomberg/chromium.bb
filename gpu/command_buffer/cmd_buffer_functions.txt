@@ -231,6 +231,7 @@ GL_APICALL void         GL_APIENTRY glFramebufferTexture2DMultisampleEXT (GLenum
 GL_APICALL void         GL_APIENTRY glTexStorage2DEXT (GLenumTextureBindTarget target, GLsizei levels, GLenumTextureInternalFormatStorage internalFormat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glGenQueriesEXT (GLsizeiNotNegative n, GLuint* queries);
 GL_APICALL void         GL_APIENTRY glDeleteQueriesEXT (GLsizeiNotNegative n, const GLuint* queries);
+GL_APICALL void         GL_APIENTRY glQueryCounterEXT (GLidQuery id, GLenumQueryTarget target);
 GL_APICALL GLboolean    GL_APIENTRY glIsQueryEXT (GLidQuery id);
 GL_APICALL void         GL_APIENTRY glBeginQueryEXT (GLenumQueryTarget target, GLidQuery id);
 GL_APICALL void         GL_APIENTRY glBeginTransformFeedback (GLenumTransformFeedbackPrimitiveMode primitivemode);

@@ -69,6 +69,9 @@ class GPU_EXPORT QueryManager {
     virtual bool End(base::subtle::Atomic32 submit_count) = 0;
 
     // Returns false if shared memory for sync is invalid.
+    virtual bool QueryCounter(base::subtle::Atomic32 submit_count) = 0;
+
+    // Returns false if shared memory for sync is invalid.
     virtual bool Process(bool did_finish) = 0;
 
     virtual void Destroy(bool have_context) = 0;
@@ -174,6 +177,9 @@ class GPU_EXPORT QueryManager {
   // Returns false if any query is pointing to invalid shared memory.
   bool EndQuery(Query* query, base::subtle::Atomic32 submit_count);
 
+  // Returns false if any query is pointing to invalid shared memory.
+  bool QueryCounter(Query* query, base::subtle::Atomic32 submit_count);
+
   // Processes pending queries. Returns false if any queries are pointing
   // to invalid shared memory. |did_finish| is true if this is called as
   // a result of calling glFinish().
@@ -249,7 +255,6 @@ class GPU_EXPORT QueryManager {
   // Async pixel transfer queries waiting for completion.
   QueryQueue pending_transfer_queries_;
 
-  // Used for timer queries.
   scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
 
   DISALLOW_COPY_AND_ASSIGN(QueryManager);

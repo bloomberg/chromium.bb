@@ -1049,6 +1049,9 @@ void GLES2GenQueriesEXT(GLsizei n, GLuint* queries) {
 void GLES2DeleteQueriesEXT(GLsizei n, const GLuint* queries) {
   gles2::GetGLContext()->DeleteQueriesEXT(n, queries);
 }
+void GLES2QueryCounterEXT(GLuint id, GLenum target) {
+  gles2::GetGLContext()->QueryCounterEXT(id, target);
+}
 GLboolean GLES2IsQueryEXT(GLuint id) {
   return gles2::GetGLContext()->IsQueryEXT(id);
 }
@@ -2387,6 +2390,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glDeleteQueriesEXT",
      reinterpret_cast<GLES2FunctionPointer>(glDeleteQueriesEXT),
+    },
+    {
+     "glQueryCounterEXT",
+     reinterpret_cast<GLES2FunctionPointer>(glQueryCounterEXT),
     },
     {
      "glIsQueryEXT",

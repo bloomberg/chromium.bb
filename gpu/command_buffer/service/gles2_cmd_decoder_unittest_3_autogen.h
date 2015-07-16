@@ -325,6 +325,8 @@ TEST_P(GLES2DecoderTest3, ViewportInvalidArgs3_0) {
 // TODO(gman): TexStorage2DEXT
 // TODO(gman): GenQueriesEXTImmediate
 // TODO(gman): DeleteQueriesEXTImmediate
+// TODO(gman): QueryCounterEXT
+
 // TODO(gman): BeginQueryEXT
 
 TEST_P(GLES2DecoderTest3, BeginTransformFeedbackValidArgs) {

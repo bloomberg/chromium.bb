@@ -11,6 +11,9 @@
 
 namespace gfx {
 
+class TimeElapsedTimerQuery;
+class TimerQuery;
+
 int64_t NanoToMicro(uint64_t nano_seconds) {
   const uint64_t up = nano_seconds + base::Time::kNanosecondsPerMicrosecond / 2;
   return static_cast<int64_t>(up / base::Time::kNanosecondsPerMicrosecond);
@@ -313,6 +316,7 @@ GPUTimingImpl::GPUTimingImpl(GLContextReal* context) {
     timer_type_ = GPUTiming::kTimerTypeARB;
   } else if (context->HasExtension("GL_EXT_timer_query")) {
     timer_type_ = GPUTiming::kTimerTypeEXT;
+    force_time_elapsed_query_ = true;
   }
 }
 
@@ -375,8 +379,7 @@ void GPUTimingImpl::EndElapsedTimeQuery(scoped_refptr<QueryResult> result) {
 }
 
 scoped_refptr<QueryResult> GPUTimingImpl::DoTimeStampQuery() {
-  DCHECK(timer_type_ == GPUTiming::kTimerTypeDisjoint ||
-         timer_type_ == GPUTiming::kTimerTypeARB);
+  DCHECK(timer_type_ != GPUTiming::kTimerTypeInvalid);
 
   if (force_time_elapsed_query_) {
     // Replace with elapsed timer queries instead.
@@ -467,7 +470,7 @@ GPUTimer::~GPUTimer() {
 
 void GPUTimer::Destroy(bool have_context) {
   if (have_context) {
-    if (!end_requested_) {
+    if (timer_state_ == kTimerState_WaitingForEnd) {
       DCHECK(gpu_timing_client_->gpu_timing_);
       DCHECK(elapsed_timer_result_.get());
       gpu_timing_client_->gpu_timing_->EndElapsedTimeQuery(
@@ -476,56 +479,81 @@ void GPUTimer::Destroy(bool have_context) {
   }
 }
 
+void GPUTimer::Reset() {
+  // We can reset from any state other than when a Start() is waiting for End().
+  DCHECK(timer_state_ != kTimerState_WaitingForEnd);
+  time_stamp_result_ = nullptr;
+  elapsed_timer_result_ = nullptr;
+  timer_state_ = kTimerState_Ready;
+}
+
+void GPUTimer::QueryTimeStamp() {
+  DCHECK(gpu_timing_client_->gpu_timing_);
+  Reset();
+  time_stamp_result_ = gpu_timing_client_->gpu_timing_->DoTimeStampQuery();
+  timer_state_ = kTimerState_WaitingForResult;
+}
+
 void GPUTimer::Start() {
   DCHECK(gpu_timing_client_->gpu_timing_);
+  Reset();
   if (!use_elapsed_timer_)
     time_stamp_result_ = gpu_timing_client_->gpu_timing_->DoTimeStampQuery();
 
   elapsed_timer_result_ =
       gpu_timing_client_->gpu_timing_->BeginElapsedTimeQuery();
+  timer_state_ = kTimerState_WaitingForEnd;
 }
 
 void GPUTimer::End() {
+  DCHECK(timer_state_ == kTimerState_WaitingForEnd);
   DCHECK(elapsed_timer_result_.get());
-  end_requested_ = true;
   gpu_timing_client_->gpu_timing_->EndElapsedTimeQuery(elapsed_timer_result_);
+  timer_state_ = kTimerState_WaitingForResult;
 }
 
 bool GPUTimer::IsAvailable() {
-  if (!end_requested_)
-    return false;
-  if (!end_available_) {
-    DCHECK(elapsed_timer_result_.get());
-    if (elapsed_timer_result_->IsAvailable()) {
-      end_available_ = true;
+  if (timer_state_ == kTimerState_WaitingForResult) {
+    // Elapsed timer are only used during start/end queries and always after
+    // the timestamp query. Otherwise only the timestamp is used.
+    scoped_refptr<QueryResult> result =
+        elapsed_timer_result_.get() ?
+        elapsed_timer_result_ :
+        time_stamp_result_;
+
+    DCHECK(result.get());
+    if (result->IsAvailable()) {
+      timer_state_ = kTimerState_ResultAvailable;
     } else {
       gpu_timing_client_->gpu_timing_->UpdateQueryResults();
-      end_available_ = elapsed_timer_result_->IsAvailable();
+      if (result->IsAvailable())
+        timer_state_ = kTimerState_ResultAvailable;
     }
   }
-  return end_available_;
+
+  return (timer_state_ == kTimerState_ResultAvailable);
 }
 
 void GPUTimer::GetStartEndTimestamps(int64* start, int64* end) {
   DCHECK(start && end);
-  DCHECK(elapsed_timer_result_.get());
+  DCHECK(elapsed_timer_result_.get() || time_stamp_result_.get());
   DCHECK(IsAvailable());
-  if (time_stamp_result_.get()) {
-    DCHECK(time_stamp_result_->IsAvailable());
-    const int64_t time_stamp = time_stamp_result_->GetStartValue();
-    *start = time_stamp;
-    *end = time_stamp + elapsed_timer_result_->GetDelta();
-  } else {
-    // Use estimation from elasped timer results.
-    *start = elapsed_timer_result_->GetStartValue();
-    *end = elapsed_timer_result_->GetEndValue();
-  }
+  const int64_t time_stamp = time_stamp_result_.get() ?
+                             time_stamp_result_->GetStartValue() :
+                             elapsed_timer_result_->GetStartValue();
+  const int64_t elapsed_time = elapsed_timer_result_.get() ?
+                               elapsed_timer_result_->GetDelta() :
+                               0;
+
+  *start = time_stamp;
+  *end = time_stamp + elapsed_time;
 }
 
 int64 GPUTimer::GetDeltaElapsed() {
-  DCHECK(elapsed_timer_result_.get());
   DCHECK(IsAvailable());
-  return elapsed_timer_result_->GetDelta();
+  if (elapsed_timer_result_.get())
+    return elapsed_timer_result_->GetDelta();
+  return 0;
 }
 
 GPUTimer::GPUTimer(scoped_refptr<GPUTimingClient> gpu_timing_client,

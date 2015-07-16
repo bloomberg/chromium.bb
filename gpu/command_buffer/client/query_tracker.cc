@@ -166,6 +166,14 @@ void QueryTracker::Query::End(GLES2Implementation* gl) {
   MarkAsPending(gl->helper()->InsertToken());
 }
 
+void QueryTracker::Query::QueryCounter(GLES2Implementation* gl) {
+  MarkAsActive();
+  flush_count_ = gl->helper()->flush_generation();
+  gl->helper()->QueryCounterEXT(target(), id(), shm_id(), shm_offset(),
+                                submit_count());
+  MarkAsPending(gl->helper()->InsertToken());
+}
+
 bool QueryTracker::Query::CheckResultsAvailable(
     CommandBufferHelper* helper) {
   if (Pending()) {
@@ -321,6 +329,28 @@ bool QueryTracker::EndQuery(GLenum target, GLES2Implementation* gl) {
 
   target_it->second->End(gl);
   current_queries_.erase(target_it);
+  return true;
+}
+
+bool QueryTracker::QueryCounter(GLuint id, GLenum target,
+                                GLES2Implementation* gl) {
+  QueryTracker::Query* query = GetQuery(id);
+  if (!query) {
+    query = CreateQuery(id, target);
+    if (!query) {
+      gl->SetGLError(GL_OUT_OF_MEMORY,
+                     "glQueryCounterEXT",
+                     "transfer buffer allocation failed");
+      return false;
+    }
+  } else if (query->target() != target) {
+    gl->SetGLError(GL_INVALID_OPERATION,
+                   "glQueryCounterEXT",
+                   "target does not match");
+    return false;
+  }
+
+  query->QueryCounter(gl);
   return true;
 }
 

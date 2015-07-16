@@ -32,6 +32,7 @@ class GPUTimingFake {
   void ExpectNoDisjointCalls(MockGLInterface& gl);
 
   // GPUTimer fake queries which can only be called once per setup.
+  void ExpectGPUTimeStampQuery(MockGLInterface& gl, bool elapsed_query);
   void ExpectGPUTimerQuery(MockGLInterface& gl, bool elapsed_query);
   void ExpectOffsetCalculationQuery(MockGLInterface& gl);
   void ExpectNoOffsetCalculationQuery(MockGLInterface& gl);

@@ -66,6 +66,7 @@ class AsyncPixelTransfersCompletedQuery
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
@@ -107,6 +108,12 @@ bool AsyncPixelTransfersCompletedQuery::End(
   return AddToPendingTransferQueue(submit_count);
 }
 
+bool AsyncPixelTransfersCompletedQuery::QueryCounter(
+    base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
+}
+
 bool AsyncPixelTransfersCompletedQuery::Process(bool did_finish) {
   QuerySync* sync = manager()->decoder()->GetSharedMemoryAs<QuerySync*>(
       shm_id(), shm_offset(), sizeof(*sync));
@@ -143,6 +150,7 @@ class AllSamplesPassedQuery : public QueryManager::Query {
       GLuint service_id);
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
@@ -169,6 +177,11 @@ bool AllSamplesPassedQuery::Begin() {
 bool AllSamplesPassedQuery::End(base::subtle::Atomic32 submit_count) {
   EndQueryHelper(target());
   return AddToPendingQueue(submit_count);
+}
+
+bool AllSamplesPassedQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
 }
 
 bool AllSamplesPassedQuery::Process(bool did_finish) {
@@ -202,6 +215,7 @@ class CommandsIssuedQuery : public QueryManager::Query {
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
@@ -228,6 +242,11 @@ bool CommandsIssuedQuery::End(base::subtle::Atomic32 submit_count) {
   return MarkAsCompleted(elapsed.InMicroseconds());
 }
 
+bool CommandsIssuedQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
+}
+
 bool CommandsIssuedQuery::Process(bool did_finish) {
   NOTREACHED();
   return true;
@@ -249,6 +268,7 @@ class CommandLatencyQuery : public QueryManager::Query {
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
@@ -269,6 +289,11 @@ bool CommandLatencyQuery::End(base::subtle::Atomic32 submit_count) {
     base::TimeDelta now = base::TimeTicks::Now() - base::TimeTicks();
     MarkAsPending(submit_count);
     return MarkAsCompleted(now.InMicroseconds());
+}
+
+bool CommandLatencyQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
 }
 
 bool CommandLatencyQuery::Process(bool did_finish) {
@@ -295,6 +320,7 @@ class AsyncReadPixelsCompletedQuery
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
@@ -329,6 +355,12 @@ bool AsyncReadPixelsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
   return Process(false);
 }
 
+bool AsyncReadPixelsCompletedQuery::QueryCounter(
+    base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
+}
+
 void AsyncReadPixelsCompletedQuery::Complete() {
   completed_ = true;
   complete_result_ = MarkAsCompleted(1);
@@ -355,6 +387,7 @@ class GetErrorQuery : public QueryManager::Query {
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
@@ -376,6 +409,11 @@ bool GetErrorQuery::Begin() {
 bool GetErrorQuery::End(base::subtle::Atomic32 submit_count) {
   MarkAsPending(submit_count);
   return MarkAsCompleted(manager()->decoder()->GetErrorState()->GetGLError());
+}
+
+bool GetErrorQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
 }
 
 bool GetErrorQuery::Process(bool did_finish) {
@@ -402,6 +440,7 @@ class CommandsCompletedQuery : public QueryManager::Query {
   // Overridden from QueryManager::Query:
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
@@ -428,6 +467,11 @@ bool CommandsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
   fence_.reset(gfx::GLFence::Create());
   DCHECK(fence_);
   return AddToPendingQueue(submit_count);
+}
+
+bool CommandsCompletedQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
 }
 
 bool CommandsCompletedQuery::Process(bool did_finish) {
@@ -460,6 +504,7 @@ class TimeElapsedQuery : public QueryManager::Query {
   // Overridden from QueryManager::Query:
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
   bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
@@ -487,6 +532,11 @@ bool TimeElapsedQuery::End(base::subtle::Atomic32 submit_count) {
   return AddToPendingQueue(submit_count);
 }
 
+bool TimeElapsedQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
+}
+
 bool TimeElapsedQuery::Process(bool did_finish) {
   if (!gpu_timer_->IsAvailable())
     return true;
@@ -504,6 +554,71 @@ void TimeElapsedQuery::Destroy(bool have_context) {
 }
 
 TimeElapsedQuery::~TimeElapsedQuery() {}
+
+class TimeStampQuery : public QueryManager::Query {
+ public:
+  TimeStampQuery(QueryManager* manager,
+                 GLenum target,
+                 int32 shm_id,
+                 uint32 shm_offset);
+
+  // Overridden from QueryManager::Query:
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
+  bool Process(bool did_finish) override;
+  void Destroy(bool have_context) override;
+
+ protected:
+  ~TimeStampQuery() override;
+
+ private:
+  scoped_ptr<gfx::GPUTimer> gpu_timer_;
+};
+
+TimeStampQuery::TimeStampQuery(QueryManager* manager,
+                               GLenum target,
+                               int32 shm_id,
+                               uint32 shm_offset)
+    : Query(manager, target, shm_id, shm_offset),
+      gpu_timer_(manager->CreateGPUTimer(false)) {}
+
+bool TimeStampQuery::Begin() {
+  NOTREACHED();
+  return false;
+}
+
+bool TimeStampQuery::End(base::subtle::Atomic32 submit_count) {
+  NOTREACHED();
+  return false;
+}
+
+bool TimeStampQuery::QueryCounter(base::subtle::Atomic32 submit_count) {
+  gpu_timer_->QueryTimeStamp();
+  return AddToPendingQueue(submit_count);
+}
+
+bool TimeStampQuery::Process(bool did_finish) {
+  if (!gpu_timer_->IsAvailable())
+    return true;
+
+  int64_t start = 0;
+  int64_t end = 0;
+  gpu_timer_->GetStartEndTimestamps(&start, &end);
+  DCHECK(start == end);
+
+  const uint64_t nano_seconds = start * base::Time::kNanosecondsPerMicrosecond;
+  return MarkAsCompleted(nano_seconds);
+}
+
+void TimeStampQuery::Destroy(bool have_context) {
+  if (gpu_timer_.get()) {
+    gpu_timer_->Destroy(have_context);
+    gpu_timer_.reset();
+  }
+}
+
+TimeStampQuery::~TimeStampQuery() {}
 
 QueryManager::QueryManager(
     GLES2Decoder* decoder,
@@ -572,6 +687,9 @@ QueryManager::Query* QueryManager::CreateQuery(
       break;
     case GL_TIME_ELAPSED:
       query = new TimeElapsedQuery(this, target, shm_id, shm_offset);
+      break;
+    case GL_TIMESTAMP:
+      query = new TimeStampQuery(this, target, shm_id, shm_offset);
       break;
     default: {
       GLuint service_id = 0;
@@ -825,6 +943,12 @@ bool QueryManager::EndQuery(Query* query, base::subtle::Atomic32 submit_count) {
     return false;
   }
   return query->End(submit_count);
+}
+
+bool QueryManager::QueryCounter(
+    Query* query, base::subtle::Atomic32 submit_count) {
+  DCHECK(query);
+  return query->QueryCounter(submit_count);
 }
 
 }  // namespace gles2

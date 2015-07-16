@@ -590,6 +590,7 @@ virtual void TexStorage2DEXT(GLenum target,
                              GLsizei height) = 0;
 virtual void GenQueriesEXT(GLsizei n, GLuint* queries) = 0;
 virtual void DeleteQueriesEXT(GLsizei n, const GLuint* queries) = 0;
+virtual void QueryCounterEXT(GLuint id, GLenum target) = 0;
 virtual GLboolean IsQueryEXT(GLuint id) = 0;
 virtual void BeginQueryEXT(GLenum target, GLuint id) = 0;
 virtual void BeginTransformFeedback(GLenum primitivemode) = 0;

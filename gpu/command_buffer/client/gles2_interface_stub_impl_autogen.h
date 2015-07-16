@@ -975,6 +975,8 @@ void GLES2InterfaceStub::GenQueriesEXT(GLsizei /* n */, GLuint* /* queries */) {
 void GLES2InterfaceStub::DeleteQueriesEXT(GLsizei /* n */,
                                           const GLuint* /* queries */) {
 }
+void GLES2InterfaceStub::QueryCounterEXT(GLuint /* id */, GLenum /* target */) {
+}
 GLboolean GLES2InterfaceStub::IsQueryEXT(GLuint /* id */) {
   return 0;
 }

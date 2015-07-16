@@ -3820,6 +3820,14 @@ _FUNCTION_INFO = {
     'pepper_interface': 'Query',
     'extension': "occlusion_query_EXT",
   },
+  'QueryCounterEXT' : {
+    'type': 'Manual',
+    'cmd_args': 'GLidQuery id, GLenumQueryTarget target, '
+                'void* sync_data, GLuint submit_count',
+    'data_transfer_methods': ['shm'],
+    'gl_test_func': 'glQueryCounter',
+    'extension': "disjoint_timer_query_EXT",
+  },
   'GetQueryObjectuivEXT': {
     'gen_cmd': False,
     'client_test': False,
