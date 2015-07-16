@@ -616,11 +616,11 @@ typedef unrestricted float GLclampf;
     // Supported forms:
     // FIXME: should be union type
     // https://www.khronos.org/bugzilla/show_bug.cgi?id=1172
-    [RaisesException] void texImage2D(
+    void texImage2D(
         GLenum target, GLint level, GLenum internalformat,
         GLsizei width, GLsizei height, GLint border,
         GLenum format, GLenum type, ArrayBufferView? pixels);
-    [RaisesException] void texImage2D(
+    void texImage2D(
         GLenum target, GLint level, GLenum internalformat,
         GLenum format, GLenum type, ImageData? pixels);
     [RaisesException] void texImage2D(
@@ -633,11 +633,11 @@ typedef unrestricted float GLclampf;
         GLenum target, GLint level, GLenum internalformat,
         GLenum format, GLenum type, HTMLVideoElement video);
 
-    [RaisesException] void texSubImage2D(
+    void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLsizei width, GLsizei height,
         GLenum format, GLenum type, ArrayBufferView? pixels);
-    [RaisesException] void texSubImage2D(
+    void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, ImageData? pixels);
     [RaisesException] void texSubImage2D(
