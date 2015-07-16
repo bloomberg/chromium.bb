@@ -7,9 +7,11 @@
 #include <string>
 #include <vector>
 
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/crash_keys.h"
+#include "chrome/common/variations/fieldtrial_testing_config.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
@@ -61,6 +63,27 @@ bool AssociateParamsFromString(const std::string& varations_string) {
     variations::AssociateVariationParams(trial, group, params);
   }
   return true;
+}
+
+void AssociateParamsFromFieldTrialConfig(
+    const FieldTrialTestingConfig& config) {
+  for (size_t i = 0; i < config.groups_size; ++i) {
+    const FieldTrialTestingGroup& group = config.groups[i];
+    if (group.params_size != 0) {
+      std::map<std::string, std::string> params;
+      for (size_t j = 0; j < group.params_size; ++j) {
+        const FieldTrialGroupParams& param = group.params[j];
+        params[param.key] = param.value;
+      }
+      variations::AssociateVariationParams(group.study, group.group_name,
+                                           params);
+    }
+    base::FieldTrialList::CreateFieldTrial(group.study, group.group_name);
+  }
+}
+
+void AssociateDefaultFieldTrialConfig() {
+  AssociateParamsFromFieldTrialConfig(kFieldTrialConfig);
 }
 
 }  // namespace chrome_variations

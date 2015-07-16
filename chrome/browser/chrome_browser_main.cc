@@ -634,6 +634,14 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     CHECK(result) << "Invalid --" << switches::kForceFieldTrials
                   << " list specified.";
   }
+
+#if !defined(GOOGLE_CHROME_BUILD)
+  if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
+      !command_line->HasSwitch(switches::kForceFieldTrials) &&
+      !command_line->HasSwitch(switches::kVariationsServerURL))
+    chrome_variations::AssociateDefaultFieldTrialConfig();
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+
   if (command_line->HasSwitch(switches::kForceVariationIds)) {
     // Create default variation ids which will always be included in the
     // X-Client-Data request header.

@@ -270,6 +270,9 @@ const char kDisableExtensionsFileAccessCheck[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
+// Disable field trial tests configured in fieldtrial_testing_config.json.
+const char kDisableFieldTrialTestingConfig[] = "disable-field-trial-config";
+
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
 const char kDisableMinimizeOnSecondLauncherItemClick[] =

@@ -50,14 +50,6 @@
             "group_name": "DoNotShow"
         }
     ],
-    "SyncBackingDatabase32K": [
-        {
-            "group_name": "Enabled"
-        },
-        {
-            "group_name": "Disabled"
-        }
-    ],
     "ContextualSearch": [
         {
             "group_name": "OptOut",

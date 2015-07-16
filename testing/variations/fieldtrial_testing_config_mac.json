@@ -1,10 +1,1 @@
-{
-    "SyncBackingDatabase32K": [
-        {
-            "group_name": "Enabled"
-        },
-        {
-            "group_name": "Disabled"
-        }
-    ]
-}
+{}

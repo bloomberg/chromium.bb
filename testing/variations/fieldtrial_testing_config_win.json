@@ -63,13 +63,5 @@
         {
             "group_name": "enforce_always_with_extensions_and_dse"
         }
-    ],
-    "SyncBackingDatabase32K": [
-        {
-            "group_name": "Enabled"
-        },
-        {
-            "group_name": "Disabled"
-        }
     ]
 }
