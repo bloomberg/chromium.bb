@@ -11,7 +11,9 @@
 
 namespace resource_provider {
 
-ResourceProviderApp::ResourceProviderApp() {
+ResourceProviderApp::ResourceProviderApp(
+    const std::string& resource_provider_app_url)
+    : resource_provider_app_url_(resource_provider_app_url) {
 }
 
 ResourceProviderApp::~ResourceProviderApp() {
@@ -39,7 +41,9 @@ void ResourceProviderApp::Create(
   // We validated path at ConfigureIncomingConnection() time, so it should still
   // be valid.
   CHECK(!app_path.empty());
-  bindings_.AddBinding(new ResourceProviderImpl(app_path), request.Pass());
+  bindings_.AddBinding(
+      new ResourceProviderImpl(app_path, resource_provider_app_url_),
+      request.Pass());
 }
 
 }  // namespace resource_provider

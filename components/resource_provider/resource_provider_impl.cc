@@ -45,8 +45,10 @@ ScopedHandle GetHandleForPath(const base::FilePath& path) {
 }  // namespace
 
 ResourceProviderImpl::ResourceProviderImpl(
-    const base::FilePath& application_path)
-    : application_path_(application_path) {
+    const base::FilePath& application_path,
+    const std::string& resource_provider_app_url)
+    : application_path_(application_path),
+      resource_provider_app_url_(resource_provider_app_url) {
   CHECK(!application_path_.empty());
 }
 
@@ -68,9 +70,9 @@ void ResourceProviderImpl::GetResources(mojo::Array<mojo::String> paths,
 
 void ResourceProviderImpl::GetICUHandle(const GetICUHandleCallback& callback) {
   const base::FilePath resource_app_path(
-      GetPathForApplicationUrl(GURL("mojo:resource_provider")));
+      GetPathForApplicationUrl(GURL(resource_provider_app_url_)));
   mojo::ScopedHandle handle = GetHandleForPath(
-    GetPathForResourceNamed(resource_app_path, kResourceIcudtl));
+      GetPathForResourceNamed(resource_app_path, kResourceIcudtl));
   callback.Run(handle.Pass());
 }
 

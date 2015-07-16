@@ -124,30 +124,32 @@ void CoreServicesApplicationDelegate::StartApplication(
   std::string url = response->url;
 
   scoped_ptr<mojo::ApplicationDelegate> delegate;
-  if (url == "mojo://browser/")
+  if (url == "mojo://browser/") {
     delegate.reset(new mandoline::BrowserManager);
-  else if (url == "mojo://clipboard/")
+  } else if (url == "mojo://clipboard/") {
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
-  else if (url == "mojo://filesystem/")
+  } else if (url == "mojo://filesystem/") {
     delegate.reset(new filesystem::FileSystemApp);
-  else if (url == "mojo://surfaces_service/")
+  } else if (url == "mojo://surfaces_service/") {
     delegate.reset(new surfaces::SurfacesServiceApplication);
-  else if (url == "mojo://tracing/")
+  } else if (url == "mojo://tracing/") {
     delegate.reset(new tracing::TracingApp);
 #if defined(USE_AURA)
-  else if (url == "mojo://omnibox/")
+  } else if (url == "mojo://omnibox/") {
     delegate.reset(new mandoline::OmniboxImpl);
 #endif
 #if !defined(OS_ANDROID)
-  else if (url == "mojo://network_service/")
+  } else if (url == "mojo://network_service/") {
     delegate.reset(new mojo::NetworkServiceDelegate);
-  else if (url == "mojo://resource_provider/")
-    delegate.reset(new resource_provider::ResourceProviderApp);
-  else if (url == "mojo://view_manager/")
+  } else if (url == "mojo://resource_provider/") {
+    delegate.reset(
+        new resource_provider::ResourceProviderApp("mojo:core_services"));
+  } else if (url == "mojo://view_manager/") {
     delegate.reset(new view_manager::ViewManagerApp);
 #endif
-  else
+  } else {
     NOTREACHED() << "This application package does not support " << url;
+  }
 
   scoped_ptr<ApplicationThread> thread(
       new ApplicationThread(weak_factory_.GetWeakPtr(), url, delegate.Pass(),

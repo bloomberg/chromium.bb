@@ -7,6 +7,7 @@
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new resource_provider::ResourceProviderApp);
+  mojo::ApplicationRunner runner(
+      new resource_provider::ResourceProviderApp("mojo:resource_provider"));
   return runner.Run(shell_handle);
 }

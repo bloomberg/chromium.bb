@@ -11,14 +11,12 @@ import("//mojo/public/mojo_application.gni")
 mojo_native_application("core_services") {
   deps = [
     ":sources",
-    "//third_party/icu:icudata",
     "//third_party/angle:libEGL",
     "//third_party/angle:libGLESv2",
   ]
   if (is_win) {
     copy("copy_files") {
       sources = [
-        "$root_out_dir/icudtl.dat",
         "$root_out_dir/libEGL.dll",
         "$root_out_dir/libGLESv2.dll",
       ]
@@ -27,6 +25,11 @@ mojo_native_application("core_services") {
       ]
     }
     deps += [ ":copy_files" ]
+  }
+
+  if (!is_android) {
+    deps += [ "//third_party/icu:icudata" ]
+    resources = [ "$root_out_dir/icudtl.dat" ]
   }
 }
 
