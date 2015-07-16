@@ -1097,6 +1097,25 @@ TEST_F(BackgroundSyncManagerTest, FailedOneShotStillExists) {
   EXPECT_TRUE(GetRegistration(sync_options_1_));
 }
 
+TEST_F(BackgroundSyncManagerTest, FailedOneShotReregisteredAndFires) {
+  InitFailedSyncEventTest();
+
+  // The initial sync event fails.
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_EQ(1, sync_events_called_);
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  BackgroundSyncRegistration first_registration = callback_registration_;
+
+  InitSyncEventTest();
+
+  // Reregistering should cause the sync event to fire again, this time
+  // succeeding.
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_EQ(first_registration.id(), callback_registration_.id());
+  EXPECT_EQ(2, sync_events_called_);
+  EXPECT_FALSE(GetRegistration(sync_options_1_));
+}
+
 TEST_F(BackgroundSyncManagerTest, DelayOneShotMidSync) {
   InitDelayedSyncEventTest();
 

@@ -298,10 +298,20 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
-  const BackgroundSyncRegistration* existing_registration =
+  BackgroundSyncRegistration* existing_registration =
       LookupRegistration(sw_registration_id, RegistrationKey(options));
   if (existing_registration &&
       existing_registration->options()->Equals(options)) {
+    if (existing_registration->sync_state() == SYNC_STATE_FAILED) {
+      existing_registration->set_sync_state(SYNC_STATE_PENDING);
+      StoreRegistrations(
+          sw_registration_id,
+          base::Bind(&BackgroundSyncManager::RegisterDidStore,
+                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                     *existing_registration, callback));
+      return;
+    }
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, *existing_registration));
     return;
