@@ -359,7 +359,8 @@
     "whitelist": [
       "657FEC7E77355CA205B0E226586621F86B33F611",  // http://crbug.com/246857
       "5894126C625EF31852F215ED301A5FF1F9B7D026",  // http://crbug.com/246857
-      "8DAE23A10703C926B21862B2F318FB4E110B17BD"   // http://crbug.com/487455
+      "8DAE23A10703C926B21862B2F318FB4E110B17BD",  // http://crbug.com/487455
+      "34412790FC81BC9B563CBE599ED10ABF26B209F7"   // http://crbug.com/509149
     ]
   },
   "experienceSamplingPrivate": {
