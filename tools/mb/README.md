@@ -18,5 +18,5 @@ one place, in `//tools/mb/mb_config.pyl`.
 
 For more information, see:
 
-* [The User Guide](docs/user_guide.md)
-* [The Design Spec](docs/design_spec.md)
+* [the user guide](docs/user_guide.md)
+* [the design spec](docs/design_spec.md)
