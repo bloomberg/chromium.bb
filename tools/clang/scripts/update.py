@@ -729,6 +729,9 @@ def main():
       is_clang_required = True
     if not is_clang_required:
       return 0
+    if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
+      print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
+      return 0
 
   if use_head_revision:
     # TODO(hans): Remove after the next roll.
@@ -745,10 +748,6 @@ def main():
 
   if args.print_clang_version:
     sys.stdout.write(VERSION)
-    return 0
-
-  if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
-    print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
     return 0
 
   # Don't buffer stdout, so that print statements are immediately flushed.
