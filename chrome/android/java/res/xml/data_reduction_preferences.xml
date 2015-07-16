@@ -5,10 +5,9 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <org.chromium.chrome.browser.preferences.bandwidth.BandwidthStatisticsPreferenceCategory
-        android:id="@+id/data_usage_statistics_category"
-        android:key="data_usage_statistics_category"
+    <org.chromium.chrome.browser.preferences.datareduction.DataReductionStatsPreference
+        android:key="data_reduction_stats"
         android:layout="@layout/custom_preference"
-        android:widgetLayout="@layout/data_reduction_statistics_layout" />
+        android:widgetLayout="@layout/data_reduction_stats_layout" />
 
 </PreferenceScreen>

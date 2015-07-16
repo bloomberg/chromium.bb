@@ -5,7 +5,7 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/data_reduction_statistics_container"
+    android:id="@+id/data_reduction_stats_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clipChildren="false"
@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fadingEdge="horizontal"
-        android:text="@string/data_reduction_statistics_title"
+        android:text="@string/data_reduction_stats_title"
         android:textAppearance="@style/PreferenceCategoryTextStyle" />
 
     <include layout="@layout/data_usage_chart" />

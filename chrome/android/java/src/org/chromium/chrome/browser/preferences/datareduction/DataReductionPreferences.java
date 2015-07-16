@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.preferences.bandwidth;
+package org.chromium.chrome.browser.preferences.datareduction;
 
 import static org.chromium.third_party.android.datausagechart.ChartDataUsageView.DAYS_IN_CHART;
 
@@ -29,11 +29,10 @@ import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
 /**
  * Settings fragment that allows the user to configure Data Saver.
  */
-public class BandwidthReductionPreferences extends PreferenceFragment {
+public class DataReductionPreferences extends PreferenceFragment {
 
-    private static final String PREF_REDUCE_DATA_USAGE_STATISTICS =
-            "data_usage_statistics_category";
-    public static final String PREF_REDUCE_DATA_USAGE_SWITCH = "reduce_data_usage_switch";
+    public static final String PREF_DATA_REDUCTION_SWITCH = "data_reduction_switch";
+    private static final String PREF_DATA_REDUCTION_STATS = "data_reduction_stats";
 
     private static final String SHARED_PREF_DISPLAYED_INFOBAR = "displayed_data_reduction_infobar";
 
@@ -65,8 +64,8 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        addPreferencesFromResource(R.xml.bandwidth_reduction_preferences);
-        getActivity().setTitle(R.string.reduce_data_usage_title);
+        addPreferencesFromResource(R.xml.data_reduction_preferences);
+        getActivity().setTitle(R.string.data_reduction_title);
         boolean isEnabled =
                 DataReductionProxySettings.getInstance().isDataReductionProxyEnabled();
         mIsEnabled = !isEnabled;
@@ -109,18 +108,18 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
     }
 
     /**
-     * Switches preference screens depending on whether bandwidth reduction is enabled/disabled.
-     * @param isEnabled Indicates whether bandwidth reduction is enabled.
+     * Switches preference screens depending on whether data reduction is enabled/disabled.
+     * @param isEnabled Indicates whether data reduction is enabled.
      */
     public void updatePreferences(boolean isEnabled) {
         if (mIsEnabled == isEnabled) return;
         getPreferenceScreen().removeAll();
-        createReduceDataUsageSwitch(isEnabled);
+        createDataReductionSwitch(isEnabled);
         if (isEnabled) {
-            addPreferencesFromResource(R.xml.bandwidth_reduction_preferences);
+            addPreferencesFromResource(R.xml.data_reduction_preferences);
             updateReductionStatistics();
         } else {
-            addPreferencesFromResource(R.xml.bandwidth_reduction_preferences_off);
+            addPreferencesFromResource(R.xml.data_reduction_preferences_off);
             if (!DataReductionProxySettings.getInstance().isIncludedInAltFieldTrial()) {
                 getPreferenceScreen().removePreference(
                         findPreference("data_reduction_experiment_text"));
@@ -132,17 +131,16 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
     }
 
     /**
-     * Updates the preference screen to convey current statistics on bandwidth reduction.
+     * Updates the preference screen to convey current statistics on data reduction.
      */
     public void updateReductionStatistics() {
         DataReductionProxySettings config = DataReductionProxySettings.getInstance();
 
-        BandwidthStatisticsPreferenceCategory bandwidthStatsPref =
-                (BandwidthStatisticsPreferenceCategory)
-                getPreferenceScreen().findPreference(PREF_REDUCE_DATA_USAGE_STATISTICS);
+        DataReductionStatsPreference statsPref = (DataReductionStatsPreference)
+                getPreferenceScreen().findPreference(PREF_DATA_REDUCTION_STATS);
         long original[] = config.getOriginalNetworkStatsHistory();
         long received[] = config.getReceivedNetworkStatsHistory();
-        bandwidthStatsPref.setReductionStats(
+        statsPref.setReductionStats(
                 config.getDataReductionLastUpdateTime(),
                 getNetworkStatsHistory(original, DAYS_IN_CHART),
                 getNetworkStatsHistory(received, DAYS_IN_CHART));
@@ -181,23 +179,23 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
         return networkStatsHistory;
     }
 
-    private void createReduceDataUsageSwitch(boolean isEnabled) {
-        final ChromeSwitchPreference reduceDataUsageSwitch =
+    private void createDataReductionSwitch(boolean isEnabled) {
+        final ChromeSwitchPreference dataReductionSwitch =
                 new ChromeSwitchPreference(getActivity(), null);
-        reduceDataUsageSwitch.setKey(PREF_REDUCE_DATA_USAGE_SWITCH);
-        reduceDataUsageSwitch.setSummaryOn(R.string.text_on);
-        reduceDataUsageSwitch.setSummaryOff(R.string.text_off);
-        reduceDataUsageSwitch.setDrawDivider(true);
-        reduceDataUsageSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+        dataReductionSwitch.setKey(PREF_DATA_REDUCTION_SWITCH);
+        dataReductionSwitch.setSummaryOn(R.string.text_on);
+        dataReductionSwitch.setSummaryOff(R.string.text_off);
+        dataReductionSwitch.setDrawDivider(true);
+        dataReductionSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        reduceDataUsageSwitch.getContext(), (boolean) newValue);
-                BandwidthReductionPreferences.this.updatePreferences((boolean) newValue);
+                        dataReductionSwitch.getContext(), (boolean) newValue);
+                DataReductionPreferences.this.updatePreferences((boolean) newValue);
                 return true;
             }
         });
-        reduceDataUsageSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+        dataReductionSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 return CommandLine.getInstance().hasSwitch(ENABLE_DATA_REDUCTION_PROXY)
@@ -205,13 +203,13 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
             }
         });
 
-        getPreferenceScreen().addPreference(reduceDataUsageSwitch);
+        getPreferenceScreen().addPreference(dataReductionSwitch);
 
         // Note: setting the switch state before the preference is added to the screen results in
         // some odd behavior where the switch state doesn't always match the internal enabled state
-        // (e.g. the switch will say "On" when reduced data usage is really turned off), so
+        // (e.g. the switch will say "On" when data reduction is really turned off), so
         // .setChecked() should be called after .addPreference()
-        reduceDataUsageSwitch.setChecked(isEnabled);
+        dataReductionSwitch.setChecked(isEnabled);
     }
 
     private static boolean getDisplayedDataReductionInfoBar(Context context) {

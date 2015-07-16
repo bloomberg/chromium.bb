@@ -47,7 +47,7 @@ public class DataReductionProxySettings {
 
     private static DataReductionProxySettings sSettings;
 
-    private static final String ENABLED_PREFERENCE_TAG = "BANDWIDTH_REDUCTION_PROXY_ENABLED";
+    private static final String DATA_REDUCTION_ENABLED_PREF = "BANDWIDTH_REDUCTION_PROXY_ENABLED";
 
     /**
      * Returns whether the data reduction proxy is enabled.
@@ -68,7 +68,7 @@ public class DataReductionProxySettings {
         // TODO(lizeb): Add a listener for the native preference change to keep
         // both in sync and avoid the false-positives and false-negatives.
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
-            ENABLED_PREFERENCE_TAG, false);
+            DATA_REDUCTION_ENABLED_PREF, false);
     }
 
     /**
@@ -87,7 +87,7 @@ public class DataReductionProxySettings {
         ThreadUtils.assertOnUiThread();
         boolean enabled = getInstance().isDataReductionProxyEnabled();
         PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(ENABLED_PREFERENCE_TAG, enabled).apply();
+                .putBoolean(DATA_REDUCTION_ENABLED_PREF, enabled).apply();
     }
 
     /**
@@ -133,7 +133,7 @@ public class DataReductionProxySettings {
      */
     public void setDataReductionProxyEnabled(Context context, boolean enabled) {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(ENABLED_PREFERENCE_TAG, enabled).apply();
+                .putBoolean(DATA_REDUCTION_ENABLED_PREF, enabled).apply();
         nativeSetDataReductionProxyEnabled(mNativeDataReductionProxySettings, enabled);
     }
 

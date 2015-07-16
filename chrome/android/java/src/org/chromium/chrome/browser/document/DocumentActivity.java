@@ -40,8 +40,8 @@ import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.bandwidth.BandwidthReductionPreferences;
-import org.chromium.chrome.browser.preferences.bandwidth.DataReductionPromoScreen;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
@@ -649,7 +649,7 @@ public class DocumentActivity extends ChromeActivity {
         removeWindowBackground();
 
         if (mDocumentTab != null) {
-            BandwidthReductionPreferences.launchDataReductionSSLInfoBar(
+            DataReductionPreferences.launchDataReductionSSLInfoBar(
                     DocumentActivity.this, mDocumentTab.getWebContents());
         }
     }

@@ -13,7 +13,7 @@ import android.view.MenuInflater;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.bandwidth.DataReductionProxyUma;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 /**

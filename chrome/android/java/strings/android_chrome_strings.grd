@@ -689,16 +689,16 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_LO_FI_SNACKBAR_ACTION" desc="Button to load images when page is opened in low fidelity mode when there is a slow unreliable connection.">
         Load images
       </message>
-      <message name="IDS_REDUCE_DATA_USAGE_TITLE" desc="Menu item for reducing data usage.">
+      <message name="IDS_DATA_REDUCTION_TITLE" desc="Menu item for Data Saver, which allows users to save mobile data by compressing network traffic.">
         Data Saver
       </message>
-      <message name="IDS_REDUCE_DATA_USAGE_DESCRIPTION" desc="Description text for reducing data usage">
+      <message name="IDS_DATA_REDUCTION_DESCRIPTION" desc="Description text for the Data Saver feature.">
         When this feature is turned on, Chrome will use Google servers to compress pages you visit before downloading them. SSL and incognito pages will not be included.
       </message>
       <message name="IDS_DATA_REDUCTION_MENU_ITEM_SUMMARY" desc="Summary text for data reduction menu item.">
         <ph name="PERCENT">%1$s<ex>49%</ex></ph> data savings
       </message>
-      <message name="IDS_DATA_REDUCTION_STATISTICS_TITLE" desc="Data reduction statistics title.">
+      <message name="IDS_DATA_REDUCTION_STATS_TITLE" desc="Data reduction statistics title.">
         Data savings
       </message>
       <message name="IDS_DATA_REDUCTION_ORIGINAL_SIZE_LABEL" desc="Data Reduction statistics original size label">

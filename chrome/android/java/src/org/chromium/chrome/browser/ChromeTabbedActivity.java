@@ -64,8 +64,8 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.ConnectionChangeReceiver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.bandwidth.BandwidthReductionPreferences;
-import org.chromium.chrome.browser.preferences.bandwidth.DataReductionPromoScreen;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarPopupController;
 import org.chromium.chrome.browser.sync.SyncController;
@@ -270,7 +270,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             super.finishNativeInitialization();
 
             if (getActivityTab() != null) {
-                BandwidthReductionPreferences.launchDataReductionSSLInfoBar(
+                DataReductionPreferences.launchDataReductionSSLInfoBar(
                         this, getActivityTab().getWebContents());
             }
         } finally {

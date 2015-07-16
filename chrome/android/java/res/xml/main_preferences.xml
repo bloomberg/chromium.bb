@@ -46,9 +46,9 @@
         android:key="content_settings"
         android:title="@string/prefs_content_settings" />
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.preferences.bandwidth.BandwidthReductionPreferences"
-        android:key="reduce_data_usage"
-        android:title="@string/reduce_data_usage_title" />
+        android:fragment="org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences"
+        android:key="data_reduction"
+        android:title="@string/data_reduction_title" />
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.AboutChromePreferences"
         android:key="about_chrome"

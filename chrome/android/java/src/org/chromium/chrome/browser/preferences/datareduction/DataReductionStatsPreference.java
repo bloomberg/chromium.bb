@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.preferences.bandwidth;
+package org.chromium.chrome.browser.preferences.datareduction;
 
 import static android.text.format.DateUtils.FORMAT_NO_YEAR;
 import static android.text.format.DateUtils.FORMAT_SHOW_DATE;
@@ -26,9 +26,9 @@ import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
 import java.util.TimeZone;
 
 /**
- * Preference category used to display statistics on bandwidth reduction.
+ * Preference category used to display statistics on data reduction.
  */
-public class BandwidthStatisticsPreferenceCategory extends PreferenceCategory {
+public class DataReductionStatsPreference extends PreferenceCategory {
     private NetworkStatsHistory mOriginalNetworkStatsHistory;
     private NetworkStatsHistory mReceivedNetworkStatsHistory;
 
@@ -47,16 +47,16 @@ public class BandwidthStatisticsPreferenceCategory extends PreferenceCategory {
     private String mStartDatePhrase;
     private String mEndDatePhrase;
 
-    public BandwidthStatisticsPreferenceCategory(
+    public DataReductionStatsPreference(
             Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
-    public BandwidthStatisticsPreferenceCategory(Context context, AttributeSet attrs) {
+    public DataReductionStatsPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public BandwidthStatisticsPreferenceCategory(Context context) {
+    public DataReductionStatsPreference(Context context) {
         super(context);
     }
 
@@ -127,7 +127,7 @@ public class BandwidthStatisticsPreferenceCategory extends PreferenceCategory {
     }
 
     /**
-     * Update bandwidth reduction statistics whenever the chart's inspection
+     * Update data reduction statistics whenever the chart's inspection
      * range changes. In particular, this creates strings describing the total
      * original size of all data received over the date range, the total size
      * of all data received (after compression), the percent data reduction

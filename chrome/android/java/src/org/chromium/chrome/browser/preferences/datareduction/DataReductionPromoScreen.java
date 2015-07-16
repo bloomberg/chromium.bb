@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.preferences.bandwidth;
+package org.chromium.chrome.browser.preferences.datareduction;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -110,7 +110,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
                 Context context = getContext();
                 if (context == null) return;
                 Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                        context, BandwidthReductionPreferences.class.getName());
+                        context, DataReductionPreferences.class.getName());
                 intent.putExtra(FROM_PROMO, true);
                 context.startActivity(intent);
                 // Don't report an action. One will be reported in the settings
