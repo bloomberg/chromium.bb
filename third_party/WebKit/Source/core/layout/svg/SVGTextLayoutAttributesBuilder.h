@@ -21,7 +21,6 @@
 #define SVGTextLayoutAttributesBuilder_h
 
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/Unicode.h"
 
@@ -53,9 +52,8 @@ public:
     void clearTextPositioningElements() { m_textPositions.clear(); }
     unsigned numberOfTextPositioningElements() const { return m_textPositions.size(); }
 
+private:
     struct TextPosition {
-        ALLOW_ONLY_INLINE_ALLOCATION();
-    public:
         TextPosition(SVGTextPositioningElement* newElement = nullptr, unsigned newStart = 0, unsigned newLength = 0)
             : element(newElement)
             , start(newStart)
@@ -63,26 +61,21 @@ public:
         {
         }
 
-        DECLARE_TRACE();
-
-        RawPtrWillBeMember<SVGTextPositioningElement> element;
+        SVGTextPositioningElement* element;
         unsigned start;
         unsigned length;
     };
 
-private:
     void buildCharacterDataMap(LayoutSVGText&);
     void collectTextPositioningElements(LayoutBoxModelObject&, UChar& lastCharacter);
     void fillCharacterDataMap(const TextPosition&);
 
 private:
     unsigned m_textLength;
-    WillBePersistentHeapVector<TextPosition> m_textPositions;
+    Vector<TextPosition> m_textPositions;
     SVGCharacterDataMap m_characterDataMap;
 };
 
 } // namespace blink
-
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::SVGTextLayoutAttributesBuilder::TextPosition);
 
 #endif
