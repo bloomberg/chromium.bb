@@ -25,7 +25,7 @@ std::string AndroidAboutAppInfo::GetOsInfo() {
   // Append information about the device.
   bool semicolon_inserted = false;
   std::string android_build_codename = base::SysInfo::GetAndroidBuildCodename();
-  std::string android_device_name = base::SysInfo::GetDeviceName();
+  std::string android_device_name = base::SysInfo::HardwareModelName();
   if ("REL" == android_build_codename && android_device_name.size() > 0) {
     android_info_str += "; " + android_device_name;
     semicolon_inserted = true;

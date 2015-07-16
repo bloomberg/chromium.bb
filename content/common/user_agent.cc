@@ -23,16 +23,6 @@
 
 namespace content {
 
-namespace {
-
-#if defined(OS_ANDROID)
-std::string GetAndroidDeviceName() {
-  return base::SysInfo::GetDeviceName();
-}
-#endif
-
-}  // namespace
-
 std::string GetWebKitVersion() {
   return base::StringPrintf("%d.%d (%s)",
                             WEBKIT_VERSION_MAJOR,
@@ -107,7 +97,7 @@ std::string BuildOSCpuInfo() {
   // Send information about the device.
   bool semicolon_inserted = false;
   std::string android_build_codename = base::SysInfo::GetAndroidBuildCodename();
-  std::string android_device_name = GetAndroidDeviceName();
+  std::string android_device_name = base::SysInfo::HardwareModelName();
   if ("REL" == android_build_codename && android_device_name.size() > 0) {
     android_info_str += "; " + android_device_name;
     semicolon_inserted = true;

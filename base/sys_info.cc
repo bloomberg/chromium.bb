@@ -48,7 +48,7 @@ bool SysInfo::IsLowEndDevice() {
 }
 #endif
 
-#if !defined(OS_MACOSX) || defined(OS_IOS)
+#if (!defined(OS_MACOSX) || defined(OS_IOS)) && !defined(OS_ANDROID)
 std::string SysInfo::HardwareModelName() {
   return std::string();
 }

@@ -112,10 +112,14 @@ message SystemProfileProto {
     // (Logged only on Windows.)
     optional int64 dll_base = 3;
 
-    // The Chrome OS device hardware class ID is a unique string associated with
-    // each Chrome OS device product revision generally assigned at hardware
-    // qualification time.  The hardware class effectively identifies the
-    // configured system components such as CPU, WiFi adapter, etc.
+    // The hardware_class describes the current machine model, e.g. "MacPro1,1"
+    // on Mac, or "Nexus 5" on Android. Only implemented on OS X, Android, and
+    // Chrome OS.
+    //
+    // For Chrome OS, the device hardware class ID is a unique string associated
+    // with each Chrome OS device product revision generally assigned at
+    // hardware qualification time. The hardware class effectively identifies
+    // the configured system components such as CPU, WiFi adapter, etc.
     //
     // An example of such a hardware class is "IEC MARIO PONY 6101".  An
     // internal database associates this hardware class with the qualified
