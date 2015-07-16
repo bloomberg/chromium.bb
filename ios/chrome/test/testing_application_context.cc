@@ -60,3 +60,7 @@ TestingApplicationContext::GetChromeBrowserStateManager() {
 metrics::MetricsService* TestingApplicationContext::GetMetricsService() {
   return nullptr;
 }
+
+rappor::RapporService* TestingApplicationContext::GetRapporService() {
+  return nullptr;
+}

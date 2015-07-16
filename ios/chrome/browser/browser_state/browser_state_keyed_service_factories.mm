@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -42,6 +43,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::HistoryServiceFactory::GetInstance();
   ios::SigninErrorControllerFactory::GetInstance();
   ios::StartupTaskRunnerServiceFactory::GetInstance();
+  ios::TemplateURLServiceFactory::GetInstance();
   ios::TopSitesFactory::GetInstance();
   ios::WebDataServiceFactory::GetInstance();
   ios::WebHistoryServiceFactory::GetInstance();

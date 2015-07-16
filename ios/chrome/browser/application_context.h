@@ -21,6 +21,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace rappor {
+class RapporService;
+}
+
 class ApplicationContext;
 class PrefService;
 
@@ -46,6 +50,9 @@ class ApplicationContext {
 
   // Gets the MetricsService used by this application.
   virtual metrics::MetricsService* GetMetricsService() = 0;
+
+  // Gets the RapporService. May returns null.
+  virtual rappor::RapporService* GetRapporService() = 0;
 
  protected:
   // Sets the global ApplicationContext instance.

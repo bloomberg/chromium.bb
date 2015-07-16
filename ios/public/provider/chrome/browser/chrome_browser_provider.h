@@ -26,6 +26,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace rappor {
+class RapporService;
+}
+
 // TODO(ios): Determine the best way to interface with Obj-C code through
 // the ChromeBrowserProvider. crbug/298181
 #ifdef __OBJC__
@@ -43,6 +47,7 @@ namespace ios {
 class ChromeBrowserProvider;
 class ChromeBrowserStateManager;
 class GeolocationUpdaterProvider;
+class SearchProvider;
 class StringProvider;
 class UpdatableResourceProvider;
 
@@ -79,6 +84,8 @@ class ChromeBrowserProvider {
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Displays the Translate settings screen.
   virtual void ShowTranslateSettings();
+  // Returns the distribution brand code.
+  virtual std::string GetDistributionBrandCode();
   // Returns whether the new bookmark collection experience is enabled.
   virtual bool IsBookmarkCollectionEnabled();
   // Returns the chrome UI scheme.
@@ -101,6 +108,10 @@ class ChromeBrowserProvider {
   virtual std::string GetVersionString();
   // Version number, e.g. "6.0.490.1".
   virtual std::string GetVersionNumber();
+  // Returns the RapporService. May be null.
+  virtual rappor::RapporService* GetRapporService();
+  // Returns the SearchProvider.
+  virtual SearchProvider* GetSearchProvider();
 };
 
 }  // namespace ios

@@ -21,9 +21,11 @@ include_rules = [
   "+components/keyed_service/ios",
   "+components/leveldb_proto",
   "+components/metrics",
-  "-components/metrics/profile",  # Depends on //content.
+  "+components/omnibox/browser",
   "+components/password_manager/core/browser",
   "+components/pref_registry",
+  "+components/rlz",
+  "+components/search",
   "+components/search_engines",
   "+components/signin/core/browser",
   "+components/signin/core/common",
@@ -46,6 +48,10 @@ include_rules = [
   "+sync",
   "+third_party/google_toolbox_for_mac",
   "+ui",
+
+  # Those don't works on iOS or depends on //content, exclude them.
+  "-components/metrics/gpu",
+  "-components/metrics/profiler",
 
   # For tests.
   "+ios/chrome/test",

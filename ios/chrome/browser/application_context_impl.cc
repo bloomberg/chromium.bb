@@ -50,3 +50,7 @@ ApplicationContextImpl::GetChromeBrowserStateManager() {
 metrics::MetricsService* ApplicationContextImpl::GetMetricsService() {
   return ios::GetChromeBrowserProvider()->GetMetricsService();
 }
+
+rappor::RapporService* ApplicationContextImpl::GetRapporService() {
+  return ios::GetChromeBrowserProvider()->GetRapporService();
+}

@@ -70,6 +70,10 @@ ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
 void ChromeBrowserProvider::ShowTranslateSettings() {
 }
 
+std::string ChromeBrowserProvider::GetDistributionBrandCode() {
+  return std::string();
+}
+
 bool ChromeBrowserProvider::IsBookmarkCollectionEnabled() {
   return false;
 }
@@ -108,6 +112,14 @@ std::string ChromeBrowserProvider::GetVersionString() {
 
 std::string ChromeBrowserProvider::GetVersionNumber() {
   return std::string();
+}
+
+rappor::RapporService* ChromeBrowserProvider::GetRapporService() {
+  return nullptr;
+}
+
+SearchProvider* ChromeBrowserProvider::GetSearchProvider() {
+  return nullptr;
 }
 
 }  // namespace ios
