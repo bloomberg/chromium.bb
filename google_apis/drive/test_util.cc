@@ -26,7 +26,7 @@ namespace test_util {
 bool RemovePrefix(const std::string& input,
                   const std::string& prefix,
                   std::string* output) {
-  if (!base::StartsWithASCII(input, prefix, true /* case sensitive */))
+  if (!base::StartsWith(input, prefix, base::CompareCase::SENSITIVE))
     return false;
 
   *output = input.substr(prefix.size());

@@ -31,8 +31,9 @@ bool HasLinux32Bug() {
   bool is_kernel_64bit =
       base::SysInfo::OperatingSystemArchitecture() == "x86_64";
   bool is_linux = base::SysInfo::OperatingSystemName() == "Linux";
-  bool is_3_dot_2 = base::StartsWithASCII(
-      base::SysInfo::OperatingSystemVersion(), "3.2", /*case_sensitive=*/false);
+  bool is_3_dot_2 = base::StartsWith(
+      base::SysInfo::OperatingSystemVersion(), "3.2",
+      base::CompareCase::INSENSITIVE_ASCII);
   if (is_kernel_64bit && is_linux && is_3_dot_2)
     return true;
 #endif  // defined(__i386__)

@@ -1029,7 +1029,8 @@ bool GpuControlList::GpuControlListEntry::GLVersionInfoMismatch(
 
     gl_type = kGLTypeGLES;
     if (segments.size() > 3 &&
-        base::StartsWithASCII(segments[3], "(ANGLE", false)) {
+        base::StartsWith(segments[3], "(ANGLE",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       gl_type = kGLTypeANGLE;
     }
   } else {

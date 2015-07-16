@@ -85,7 +85,8 @@ bool IsCloudPrintURL(const GURL& url) {
   GURL cloud_print_url = GetCloudPrintURL();
   return url.host() == cloud_print_url.host() &&
          url.scheme() == cloud_print_url.scheme() &&
-         base::StartsWithASCII(url.path(), cloud_print_url.path(), true);
+         base::StartsWith(url.path(), cloud_print_url.path(),
+                          base::CompareCase::SENSITIVE);
 }
 
 GURL GetCloudPrintEnableURL(const std::string& proxy_id) {

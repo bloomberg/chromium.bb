@@ -17,7 +17,9 @@ namespace ui {
 InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
   DCHECK(!base::MessageLoopForUI::IsCurrent());
   std::string event_node = path.BaseName().value();
-  if (event_node.empty() || !base::StartsWithASCII(event_node, "event", false))
+  if (event_node.empty() ||
+      !base::StartsWith(event_node, "event",
+                        base::CompareCase::INSENSITIVE_ASCII))
     return InputDeviceType::INPUT_DEVICE_UNKNOWN;
 
   // Find sysfs device path for this device.

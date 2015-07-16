@@ -161,10 +161,11 @@ bool MimeUtil::IsSupportedNonImageMimeType(const std::string& mime_type) const {
 #if !defined(OS_IOS)
          media::IsSupportedMediaMimeType(mime_type) ||
 #endif
-         (base::StartsWithASCII(mime_type, "text/",
-                                false /* case insensitive */) &&
+         (base::StartsWith(mime_type, "text/",
+                           base::CompareCase::INSENSITIVE_ASCII) &&
           !IsUnsupportedTextMimeType(mime_type)) ||
-         (base::StartsWithASCII(mime_type, "application/", false) &&
+         (base::StartsWith(mime_type, "application/",
+                           base::CompareCase::INSENSITIVE_ASCII) &&
           net::MatchesMimeType("application/*+json", mime_type));
 }
 
@@ -179,7 +180,8 @@ bool MimeUtil::IsSupportedJavascriptMimeType(
 }
 
 bool MimeUtil::IsSupportedMimeType(const std::string& mime_type) const {
-  return (base::StartsWithASCII(mime_type, "image/", false) &&
+  return (base::StartsWith(mime_type, "image/",
+                           base::CompareCase::INSENSITIVE_ASCII) &&
           IsSupportedImageMimeType(mime_type)) ||
          IsSupportedNonImageMimeType(mime_type);
 }

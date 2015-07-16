@@ -1251,7 +1251,7 @@ WindowManagerName GuessWindowManager() {
       return WM_FLUXBOX;
     if (name == "i3")
       return WM_I3;
-    if (base::StartsWithASCII(name, "IceWM", true))
+    if (base::StartsWith(name, "IceWM", base::CompareCase::SENSITIVE))
       return WM_ICE_WM;
     if (name == "ion3")
       return WM_ION3;

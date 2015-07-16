@@ -64,7 +64,7 @@ APIPermissionSet PermissionsInfo::GetAllByName(
 bool PermissionsInfo::HasChildPermissions(const std::string& name) const {
   NameMap::const_iterator i = name_map_.lower_bound(name + '.');
   if (i == name_map_.end()) return false;
-  return base::StartsWithASCII(i->first, name + '.', true);
+  return base::StartsWith(i->first, name + '.', base::CompareCase::SENSITIVE);
 }
 
 PermissionsInfo::PermissionsInfo()

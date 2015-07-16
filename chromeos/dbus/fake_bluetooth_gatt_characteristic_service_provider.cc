@@ -29,8 +29,9 @@ FakeBluetoothGattCharacteristicServiceProvider::
   DCHECK(service_path_.IsValid());
   DCHECK(!uuid.empty());
   DCHECK(delegate_);
-  DCHECK(base::StartsWithASCII(object_path_.value(),
-                               service_path_.value() + "/", true));
+  DCHECK(base::StartsWith(object_path_.value(),
+                          service_path_.value() + "/",
+                          base::CompareCase::SENSITIVE));
 
   // TODO(armansito): Do something with |flags| and |permissions|.
 

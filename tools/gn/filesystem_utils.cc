@@ -748,7 +748,8 @@ OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
     const std::string& build_dir =
         settings->build_settings()->build_dir().value();
 
-    if (base::StartsWithASCII(source_dir.value(), build_dir, true)) {
+    if (base::StartsWith(source_dir.value(), build_dir,
+                         base::CompareCase::SENSITIVE)) {
       size_t build_dir_size = build_dir.size();
       result.value().append(&source_dir.value()[build_dir_size],
                             source_dir.value().size() - build_dir_size);

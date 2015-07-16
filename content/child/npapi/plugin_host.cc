@@ -464,7 +464,8 @@ static NPError PostURLNotify(NPP id,
     std::string file_path_ascii(buf);
     base::FilePath file_path;
     static const char kFileUrlPrefix[] = "file:";
-    if (base::StartsWithASCII(file_path_ascii, kFileUrlPrefix, false)) {
+    if (base::StartsWith(file_path_ascii, kFileUrlPrefix,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       GURL file_url(file_path_ascii);
       DCHECK(file_url.SchemeIsFile());
       net::FileURLToFilePath(file_url, &file_path);

@@ -63,7 +63,8 @@ void NormalizeInitState(gpu::gles2::GLES2DecoderTestBase::InitState* init) {
       return;
     if (!init->extensions.empty())
       init->extensions += " ";
-    if (base::StartsWithASCII(init->gl_version, "opengl es", false)) {
+    if (base::StartsWith(init->gl_version, "opengl es",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       init->extensions += kVAOExtensions[0];
     } else {
 #if !defined(OS_MACOSX)

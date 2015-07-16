@@ -178,8 +178,9 @@ void SuggestionsService::UndoBlacklistURL(
 // static
 bool SuggestionsService::GetBlacklistedUrl(const net::URLFetcher& request,
                                            GURL* url) {
-  bool is_blacklist_request = base::StartsWithASCII(
-      request.GetOriginalURL().spec(), kSuggestionsBlacklistURLPrefix, true);
+  bool is_blacklist_request = base::StartsWith(
+      request.GetOriginalURL().spec(), kSuggestionsBlacklistURLPrefix,
+      base::CompareCase::SENSITIVE);
   if (!is_blacklist_request) return false;
 
   // Extract the blacklisted URL from the blacklist request.

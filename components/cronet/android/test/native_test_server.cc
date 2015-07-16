@@ -102,7 +102,8 @@ scoped_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
     return response.Pass();
   }
 
-  if (base::StartsWithASCII(request.relative_url, kEchoHeaderPath, true)) {
+  if (base::StartsWith(request.relative_url, kEchoHeaderPath,
+                       base::CompareCase::SENSITIVE)) {
     GURL url = g_test_server->GetURL(request.relative_url);
     auto it = request.headers.find(url.query());
     if (it != request.headers.end()) {
@@ -141,7 +142,8 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
   DCHECK(get_data_dir);
   dir_path = dir_path.Append(FILE_PATH_LITERAL("test"));
 
-  if (base::StartsWithASCII(request.relative_url, kSdchPath, true)) {
+  if (base::StartsWith(request.relative_url, kSdchPath,
+                       base::CompareCase::SENSITIVE)) {
     base::FilePath file_path = dir_path.Append("sdch/index");
     scoped_ptr<CustomHttpResponse> response =
         ConstructResponseBasedOnFile(file_path).Pass();
@@ -162,7 +164,8 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
     return response.Pass();
   }
 
-  if (base::StartsWithASCII(request.relative_url, kSdchTestPath, true)) {
+  if (base::StartsWith(request.relative_url, kSdchTestPath,
+                       base::CompareCase::SENSITIVE)) {
     auto avail_dictionary_header = request.headers.find("Avail-Dictionary");
     if (avail_dictionary_header != request.headers.end()) {
       base::FilePath file_path = dir_path.Append(

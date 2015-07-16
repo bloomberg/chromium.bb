@@ -519,8 +519,8 @@ bool GaiaAuthFetcher::ParseClientLoginToOAuth2Cookie(const std::string& cookie,
   std::vector<std::string>::const_iterator iter;
   for (iter = parts.begin(); iter != parts.end(); ++iter) {
     const std::string& part = *iter;
-    if (base::StartsWithASCII(part, kClientLoginToOAuth2CookiePartCodePrefix,
-                              false)) {
+    if (base::StartsWith(part, kClientLoginToOAuth2CookiePartCodePrefix,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       auth_code->assign(part.substr(
           kClientLoginToOAuth2CookiePartCodePrefixLength));
       return true;
@@ -1051,8 +1051,9 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     OnClientLoginFetched(data, status, response_code);
   } else if (url == issue_auth_token_gurl_) {
     OnIssueAuthTokenFetched(data, status, response_code);
-  } else if (base::StartsWithASCII(url.spec(),
-                                   client_login_to_oauth2_gurl_.spec(), true)) {
+  } else if (base::StartsWith(url.spec(),
+                              client_login_to_oauth2_gurl_.spec(),
+                              base::CompareCase::SENSITIVE)) {
     OnClientLoginToOAuth2Fetched(data, cookies, status, response_code);
   } else if (url == oauth2_token_gurl_) {
     OnOAuth2TokenPairFetched(data, status, response_code);

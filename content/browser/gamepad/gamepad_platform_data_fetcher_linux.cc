@@ -42,7 +42,8 @@ bool IsGamepad(udev_device* dev, int* index, std::string* path) {
     return false;
 
   static const char kJoystickRoot[] = "/dev/input/js";
-  bool is_gamepad = base::StartsWithASCII(node_path, kJoystickRoot, true);
+  bool is_gamepad = base::StartsWith(node_path, kJoystickRoot,
+                                     base::CompareCase::SENSITIVE);
   if (!is_gamepad)
     return false;
 

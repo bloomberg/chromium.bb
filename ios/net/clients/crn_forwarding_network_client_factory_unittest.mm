@@ -142,7 +142,8 @@ TEST_F(ForwardingNetworkClientFactoryTest, TestSubclassImplementations) {
   for (NSInteger i = 0; i < class_count; i++) {
     std::string class_name = class_getName(classes[i]);
     // Skip the test classes defined above.
-    if (base::StartsWithASCII(class_name, "TestFactory", false))
+    if (base::StartsWith(class_name, "TestFactory",
+                         base::CompareCase::INSENSITIVE_ASCII))
       continue;
 
     Class subclass_super = classes[i];

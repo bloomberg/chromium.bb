@@ -22,8 +22,8 @@ scoped_ptr<RegistrationInfo> RegistrationInfo::BuildFromString(
     std::string* registration_id) {
   scoped_ptr<RegistrationInfo> registration;
 
-  if (base::StartsWithASCII(serialzied_key, kInsanceIDSerializationPrefix,
-                            true))
+  if (base::StartsWith(serialzied_key, kInsanceIDSerializationPrefix,
+                       base::CompareCase::SENSITIVE))
     registration.reset(new InstanceIDTokenInfo);
   else
     registration.reset(new GCMRegistrationInfo);
@@ -184,8 +184,8 @@ bool InstanceIDTokenInfo::Deserialize(
   if (serialized_key.empty() || serialized_value.empty())
     return false;
 
-  if (!base::StartsWithASCII(serialized_key, kInsanceIDSerializationPrefix,
-                             true))
+  if (!base::StartsWith(serialized_key, kInsanceIDSerializationPrefix,
+                        base::CompareCase::SENSITIVE))
     return false;
 
   std::vector<std::string> fields = base::SplitString(

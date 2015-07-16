@@ -674,12 +674,14 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
   SupportedCodecs media_type_codec_mask = EME_CODEC_NONE;
   switch (media_type) {
     case EmeMediaType::AUDIO:
-      if (!base::StartsWithASCII(container_mime_type, "audio/", true))
+      if (!base::StartsWith(container_mime_type, "audio/",
+                            base::CompareCase::SENSITIVE))
         return EmeConfigRule::NOT_SUPPORTED;
       media_type_codec_mask = audio_codec_mask_;
       break;
     case EmeMediaType::VIDEO:
-      if (!base::StartsWithASCII(container_mime_type, "video/", true))
+      if (!base::StartsWith(container_mime_type, "video/",
+                            base::CompareCase::SENSITIVE))
         return EmeConfigRule::NOT_SUPPORTED;
       media_type_codec_mask = video_codec_mask_;
       break;

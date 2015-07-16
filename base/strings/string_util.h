@@ -372,16 +372,6 @@ BASE_EXPORT bool EndsWith(StringPiece16 str,
                           StringPiece16 search_for,
                           CompareCase case_sensitivity);
 
-// DEPRECATED. Returns true if str starts/ends with search, or false otherwise.
-// TODO(brettw) remove in favor of the "enum" versions above.
-inline bool StartsWithASCII(const std::string& str,
-                            const std::string& search,
-                            bool case_sensitive) {
-  return StartsWith(StringPiece(str), StringPiece(search),
-                    case_sensitive ? CompareCase::SENSITIVE
-                                   : CompareCase::INSENSITIVE_ASCII);
-}
-
 // Determines the type of ASCII character, independent of locale (the C
 // library versions will change based on locale).
 template <typename Char>

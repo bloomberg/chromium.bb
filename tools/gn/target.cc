@@ -219,7 +219,8 @@ std::string Target::GetComputedOutputName(bool include_prefix) const {
     const Tool* tool = toolchain_->GetToolForTargetFinalOutput(this);
     if (tool) {
       // Only add the prefix if the name doesn't already have it.
-      if (!base::StartsWithASCII(name, tool->output_prefix(), true))
+      if (!base::StartsWith(name, tool->output_prefix(),
+                            base::CompareCase::SENSITIVE))
         result = tool->output_prefix();
     }
   }

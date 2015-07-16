@@ -71,7 +71,7 @@ MultipartResponseDelegate::MultipartResponseDelegate(
       stop_sending_(false),
       has_sent_first_response_(false) {
   // Some servers report a boundary prefixed with "--".  See bug 5786.
-  if (base::StartsWithASCII(boundary, "--", true)) {
+  if (base::StartsWith(boundary, "--", base::CompareCase::SENSITIVE)) {
     boundary_.assign(boundary);
   } else {
     boundary_.append(boundary);

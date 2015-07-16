@@ -130,7 +130,8 @@ void PatternParser::Parse(const std::string& pattern_spec,
                                            host_component.len);
     if (host == kHostWildcard) {
       builder->WithDomainWildcard();
-    } else if (base::StartsWithASCII(host, kDomainWildcard, true)) {
+    } else if (base::StartsWith(host, kDomainWildcard,
+                                base::CompareCase::SENSITIVE)) {
       host = host.substr(kDomainWildcardLength);
       builder->WithDomainWildcard();
       builder->WithHost(host);

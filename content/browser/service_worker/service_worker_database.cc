@@ -122,7 +122,7 @@ base::LazyInstance<ServiceWorkerEnv>::Leaky g_service_worker_env =
 bool RemovePrefix(const std::string& str,
                   const std::string& prefix,
                   std::string* out) {
-  if (!base::StartsWithASCII(str, prefix, true))
+  if (!base::StartsWith(str, prefix, base::CompareCase::SENSITIVE))
     return false;
   if (out)
     *out = str.substr(prefix.size());

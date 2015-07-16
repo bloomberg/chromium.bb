@@ -78,7 +78,8 @@ scoped_ptr<BlobDataSnapshot> BlobProtocolHandler::LookupBlobData(
   // TODO(michaeln): Replace this use case and others like it with a BlobReader
   // impl that does not depend on urlfetching to perform this function.
   const std::string kPrefix("blob:uuid/");
-  if (!base::StartsWithASCII(request->url().spec(), kPrefix, true))
+  if (!base::StartsWith(request->url().spec(), kPrefix,
+                        base::CompareCase::SENSITIVE))
     return NULL;
   std::string uuid = request->url().spec().substr(kPrefix.length());
   scoped_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(uuid);

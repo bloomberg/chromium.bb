@@ -97,7 +97,8 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string url_str;
   source->GetResponseAsString(&url_str);
   base::TrimWhitespace(url_str, base::TRIM_ALL, &url_str);
-  if (!base::StartsWithASCII(url_str, ".google.", false))
+  if (!base::StartsWith(url_str, ".google.",
+                        base::CompareCase::INSENSITIVE_ASCII))
     return;
   GURL url("https://www" + url_str);
   if (!url.is_valid() || (url.path().length() > 1) || url.has_query() ||

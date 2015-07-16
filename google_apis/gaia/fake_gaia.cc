@@ -102,8 +102,8 @@ bool GetAccessToken(const HttpRequest& request,
   std::map<std::string, std::string>::const_iterator auth_header_entry =
       request.headers.find("Authorization");
   if (auth_header_entry != request.headers.end()) {
-    if (base::StartsWithASCII(auth_header_entry->second, auth_token_prefix,
-                              true)) {
+    if (base::StartsWith(auth_header_entry->second, auth_token_prefix,
+                         base::CompareCase::SENSITIVE)) {
       *access_token = auth_header_entry->second.substr(
           strlen(auth_token_prefix));
       return true;

@@ -147,7 +147,8 @@ ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
   // We also consider that the file name is unsafe, if it's absolute.
   // On Windows, IsAbsolute() returns false for paths starting with "/".
   if (file_path_.IsAbsolute() ||
-      base::StartsWithASCII(file_name_in_zip, "/", false))
+      base::StartsWith(file_name_in_zip, "/",
+                       base::CompareCase::INSENSITIVE_ASCII))
     is_unsafe_ = true;
 
   // Construct the last modified time. The timezone info is not present in

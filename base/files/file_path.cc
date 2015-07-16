@@ -1314,7 +1314,7 @@ FilePath FilePath::NormalizePathSeparatorsTo(CharType separator) const {
 
 #if defined(OS_ANDROID)
 bool FilePath::IsContentUri() const {
-  return StartsWithASCII(path_, "content://", false /*case_sensitive*/);
+  return StartsWith(path_, "content://", base::CompareCase::INSENSITIVE_ASCII);
 }
 #endif
 

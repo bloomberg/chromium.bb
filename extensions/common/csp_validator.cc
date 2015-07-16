@@ -57,7 +57,8 @@ struct DirectiveStatus {
 bool isNonWildcardTLD(const std::string& url,
                       const std::string& scheme_and_separator,
                       bool should_check_rcd) {
-  if (!base::StartsWithASCII(url, scheme_and_separator, true))
+  if (!base::StartsWith(url, scheme_and_separator,
+                        base::CompareCase::SENSITIVE))
     return false;
 
   size_t start_of_host = scheme_and_separator.length();
@@ -133,14 +134,17 @@ void GetSecureDirectiveValues(const std::string& directive_name,
         base::LowerCaseEqualsASCII(source, "blob:") ||
         base::LowerCaseEqualsASCII(source, "filesystem:") ||
         base::LowerCaseEqualsASCII(source, "http://localhost") ||
-        base::StartsWithASCII(source, "http://127.0.0.1:", true) ||
-        base::StartsWithASCII(source, "http://localhost:", true) ||
+        base::StartsWith(source, "http://127.0.0.1:",
+                         base::CompareCase::SENSITIVE) ||
+        base::StartsWith(source, "http://localhost:",
+                         base::CompareCase::SENSITIVE) ||
         isNonWildcardTLD(source, "https://", true) ||
         isNonWildcardTLD(source, "chrome://", false) ||
         isNonWildcardTLD(source, std::string(extensions::kExtensionScheme) +
                                      url::kStandardSchemeSeparator,
                          false) ||
-        base::StartsWithASCII(source, "chrome-extension-resource:", true)) {
+        base::StartsWith(source, "chrome-extension-resource:",
+                         base::CompareCase::SENSITIVE)) {
       is_secure_csp_token = true;
     } else if ((options & OPTIONS_ALLOW_UNSAFE_EVAL) &&
                source == "'unsafe-eval'") {

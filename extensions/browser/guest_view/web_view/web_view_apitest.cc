@@ -59,13 +59,14 @@ static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
     const std::string& path,
     const GURL& redirect_target,
     const net::test_server::HttpRequest& request) {
-  if (!base::StartsWithASCII(path, request.relative_url, true))
+  if (!base::StartsWith(path, request.relative_url,
+                        base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   std::map<std::string, std::string>::const_iterator it =
         request.headers.find("User-Agent");
   EXPECT_TRUE(it != request.headers.end());
-  if (!base::StartsWithASCII("foobar", it->second, true))
+  if (!base::StartsWith("foobar", it->second, base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
@@ -104,7 +105,8 @@ scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
     const std::string& path,
     const GURL& redirect_target,
     const net::test_server::HttpRequest& request) {
-  if (!base::StartsWithASCII(path, request.relative_url, true))
+  if (!base::StartsWith(path, request.relative_url,
+                        base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
@@ -118,7 +120,8 @@ scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
 scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
     const std::string& path,
     const net::test_server::HttpRequest& request) {
-  if (base::StartsWithASCII(path, request.relative_url, true)) {
+  if (base::StartsWith(path, request.relative_url,
+                       base::CompareCase::SENSITIVE)) {
     return scoped_ptr<net::test_server::HttpResponse>(new EmptyHttpResponse);
   }
 

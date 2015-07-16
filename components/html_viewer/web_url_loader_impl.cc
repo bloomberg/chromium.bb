@@ -30,10 +30,12 @@ blink::WebURLResponse::HTTPVersion StatusLineToHTTPVersion(
   if (status_line.is_null())
     return blink::WebURLResponse::HTTP_0_9;
 
-  if (base::StartsWithASCII(status_line, "HTTP/1.0", true))
+  if (base::StartsWith(status_line.get(), "HTTP/1.0",
+                       base::CompareCase::SENSITIVE))
     return blink::WebURLResponse::HTTP_1_0;
 
-  if (base::StartsWithASCII(status_line, "HTTP/1.1", true))
+  if (base::StartsWith(status_line.get(), "HTTP/1.1",
+                       base::CompareCase::SENSITIVE))
     return blink::WebURLResponse::HTTP_1_1;
 
   return blink::WebURLResponse::Unknown;

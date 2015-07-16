@@ -183,12 +183,14 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
     const std::string& test_name) {
   all_test_names_.insert(test_case_name + "." + test_name);
 
-  if (base::StartsWithASCII(test_name, kManualTestPrefix, true) &&
+  if (base::StartsWith(test_name, kManualTestPrefix,
+                       base::CompareCase::SENSITIVE) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(kRunManualTestsFlag)) {
     return false;
   }
 
-  if (base::StartsWithASCII(test_name, kPreTestPrefix, true)) {
+  if (base::StartsWith(test_name, kPreTestPrefix,
+                       base::CompareCase::SENSITIVE)) {
     // We will actually run PRE_ tests, but to ensure they run on the same shard
     // as dependent tests, handle all these details internally.
     return false;

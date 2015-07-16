@@ -207,7 +207,8 @@ bool OnBeginJSONRequest(const std::string& path,
   }
 
   const char* beginRecordingPath = "json/begin_recording?";
-  if (base::StartsWithASCII(path, beginRecordingPath, true)) {
+  if (base::StartsWith(path, beginRecordingPath,
+                       base::CompareCase::SENSITIVE)) {
     std::string data = path.substr(strlen(beginRecordingPath));
     return BeginRecording(data, callback);
   }
@@ -253,7 +254,7 @@ bool OnBeginJSONRequest(const std::string& path,
 
 bool OnTracingRequest(const std::string& path,
                       const WebUIDataSource::GotDataCallback& callback) {
-  if (base::StartsWithASCII(path, "json/", true)) {
+  if (base::StartsWith(path, "json/", base::CompareCase::SENSITIVE)) {
     if (!OnBeginJSONRequest(path, callback)) {
       std::string error("##ERROR##");
       callback.Run(base::RefCountedString::TakeString(&error));

@@ -163,8 +163,8 @@ GURL CommandLineGoogleBaseURL() {
 bool StartsWithCommandLineGoogleBaseURL(const GURL& url) {
   GURL base_url(CommandLineGoogleBaseURL());
   return base_url.is_valid() &&
-         base::StartsWithASCII(url.possibly_invalid_spec(), base_url.spec(),
-                               true);
+         base::StartsWith(url.possibly_invalid_spec(), base_url.spec(),
+                          base::CompareCase::SENSITIVE);
 }
 
 bool IsGoogleHostname(const std::string& host,
@@ -190,7 +190,8 @@ bool IsGoogleHomePageUrl(const GURL& url) {
 
   // Make sure the path is a known home page path.
   std::string path(url.path());
-  return IsPathHomePageBase(path) || base::StartsWithASCII(path, "/ig", false);
+  return IsPathHomePageBase(path) ||
+         base::StartsWith(path, "/ig", base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool IsGoogleSearchUrl(const GURL& url) {

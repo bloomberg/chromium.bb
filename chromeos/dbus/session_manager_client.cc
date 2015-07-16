@@ -565,7 +565,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    const bool success = base::StartsWithASCII(result_string, "success", false);
+    const bool success = base::StartsWith(result_string, "success",
+                                          base::CompareCase::INSENSITIVE_ASCII);
     FOR_EACH_OBSERVER(Observer, observers_, OwnerKeySet(success));
   }
 
@@ -577,7 +578,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    const bool success = base::StartsWithASCII(result_string, "success", false);
+    const bool success = base::StartsWith(result_string, "success",
+                                          base::CompareCase::INSENSITIVE_ASCII);
     FOR_EACH_OBSERVER(Observer, observers_, PropertyChangeComplete(success));
   }
 

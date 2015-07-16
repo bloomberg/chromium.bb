@@ -357,7 +357,8 @@ void GCMStoreImpl::Backend::Load(StoreOpenMode open_mode,
   int gcm_registration_count = 0;
   int instance_id_token_count = 0;
   for (const auto& registration : result->registrations) {
-    if (base::StartsWithASCII(registration.first, "iid-", true))
+    if (base::StartsWith(registration.first, "iid-",
+                         base::CompareCase::SENSITIVE))
       instance_id_token_count++;
     else
       gcm_registration_count++;

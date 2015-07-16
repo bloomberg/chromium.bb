@@ -61,28 +61,31 @@ std::string GetComponentIDByInputMethodID(const std::string& input_method_id) {
 }
 
 std::string GetInputMethodIDByEngineID(const std::string& engine_id) {
-  if (base::StartsWithASCII(engine_id, kComponentExtensionIMEPrefix, true) ||
-      base::StartsWithASCII(engine_id, kExtensionIMEPrefix, true)) {
+  if (base::StartsWith(engine_id, kComponentExtensionIMEPrefix,
+                       base::CompareCase::SENSITIVE) ||
+      base::StartsWith(engine_id, kExtensionIMEPrefix,
+                       base::CompareCase::SENSITIVE)) {
     return engine_id;
   }
-  if (base::StartsWithASCII(engine_id, "xkb:", true))
+  if (base::StartsWith(engine_id, "xkb:", base::CompareCase::SENSITIVE))
     return GetComponentInputMethodID(kXkbExtensionId, engine_id);
-  if (base::StartsWithASCII(engine_id, "vkd_", true))
+  if (base::StartsWith(engine_id, "vkd_", base::CompareCase::SENSITIVE))
     return GetComponentInputMethodID(kM17nExtensionId, engine_id);
-  if (base::StartsWithASCII(engine_id, "nacl_mozc_", true))
+  if (base::StartsWith(engine_id, "nacl_mozc_", base::CompareCase::SENSITIVE))
     return GetComponentInputMethodID(kMozcExtensionId, engine_id);
-  if (base::StartsWithASCII(engine_id, "hangul_", true))
+  if (base::StartsWith(engine_id, "hangul_",
+                       base::CompareCase::SENSITIVE))
     return GetComponentInputMethodID(kHangulExtensionId, engine_id);
 
-  if (base::StartsWithASCII(engine_id, "zh-", true) &&
+  if (base::StartsWith(engine_id, "zh-", base::CompareCase::SENSITIVE) &&
       engine_id.find("pinyin") != std::string::npos) {
     return GetComponentInputMethodID(kChinesePinyinExtensionId, engine_id);
   }
-  if (base::StartsWithASCII(engine_id, "zh-", true) &&
+  if (base::StartsWith(engine_id, "zh-", base::CompareCase::SENSITIVE) &&
       engine_id.find("zhuyin") != std::string::npos) {
     return GetComponentInputMethodID(kChineseZhuyinExtensionId, engine_id);
   }
-  if (base::StartsWithASCII(engine_id, "zh-", true) &&
+  if (base::StartsWith(engine_id, "zh-", base::CompareCase::SENSITIVE) &&
       engine_id.find("cangjie") != std::string::npos) {
     return GetComponentInputMethodID(kChineseCangjieExtensionId, engine_id);
   }
@@ -93,30 +96,30 @@ std::string GetInputMethodIDByEngineID(const std::string& engine_id) {
 }
 
 bool IsExtensionIME(const std::string& input_method_id) {
-  return base::StartsWithASCII(input_method_id, kExtensionIMEPrefix,
-                               true /* Case sensitive */) &&
+  return base::StartsWith(input_method_id, kExtensionIMEPrefix,
+                          base::CompareCase::SENSITIVE) &&
          input_method_id.size() >
              kExtensionIMEPrefixLength + kExtensionIdLength;
 }
 
 bool IsComponentExtensionIME(const std::string& input_method_id) {
-  return base::StartsWithASCII(input_method_id, kComponentExtensionIMEPrefix,
-                               true /* Case sensitive */) &&
+  return base::StartsWith(input_method_id, kComponentExtensionIMEPrefix,
+                          base::CompareCase::SENSITIVE) &&
          input_method_id.size() >
              kComponentExtensionIMEPrefixLength + kExtensionIdLength;
 }
 
 bool IsMemberOfExtension(const std::string& input_method_id,
                          const std::string& extension_id) {
-  return base::StartsWithASCII(input_method_id,
-                               kExtensionIMEPrefix + extension_id,
-                               true /* Case sensitive */);
+  return base::StartsWith(input_method_id,
+                          kExtensionIMEPrefix + extension_id,
+                          base::CompareCase::SENSITIVE);
 }
 
 bool IsKeyboardLayoutExtension(const std::string& input_method_id) {
   if (IsComponentExtensionIME(input_method_id))
-    return base::StartsWithASCII(GetComponentIDByInputMethodID(input_method_id),
-                                 "xkb:", true);
+    return base::StartsWith(GetComponentIDByInputMethodID(input_method_id),
+                            "xkb:", base::CompareCase::SENSITIVE);
   return false;
 }
 

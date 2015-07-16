@@ -251,7 +251,8 @@ void Logger::LogSocketEventForMessage(int channel_id,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SocketEvent event = CreateEvent(event_type);
-  if (base::StartsWithASCII(message_namespace, kInternalNamespacePrefix, false))
+  if (base::StartsWith(message_namespace, kInternalNamespacePrefix,
+                       base::CompareCase::INSENSITIVE_ASCII))
     event.set_message_namespace(message_namespace);
   event.set_details(details);
 

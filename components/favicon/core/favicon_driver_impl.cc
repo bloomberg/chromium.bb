@@ -30,7 +30,7 @@ bool IsIconNTPEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableIconNtp))
     return true;
 
-  return base::StartsWithASCII(group_name, "Enabled", true);
+  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

@@ -1312,7 +1312,8 @@ bool UnownedFormElementsAndFieldSetsToFormData(
   std::string lang;
   if (!html_element.isNull())
     lang = html_element.getAttribute("lang").utf8();
-  if ((lang.empty() || base::StartsWithASCII(lang, "en", false)) &&
+  if ((lang.empty() ||
+       base::StartsWith(lang, "en", base::CompareCase::INSENSITIVE_ASCII)) &&
       !MatchesPattern(document.title(),
           base::UTF8ToUTF16("payment|checkout|address|delivery|shipping"))) {
     return false;

@@ -256,7 +256,8 @@ void InterstitialHTMLSource::StartDataRequest(
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents_));
   }
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  else if (base::StartsWithASCII(path, "captiveportal", true))
+  else if (base::StartsWith(path, "captiveportal",
+                            base::CompareCase::SENSITIVE))
   {
     interstitial_delegate.reset(CreateCaptivePortalBlockingPage(web_contents_));
   }

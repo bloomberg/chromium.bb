@@ -27,7 +27,7 @@ void CrosSettingsProvider::Set(const std::string& path,
   // It should not reach here from UI in the guest mode, but just in case.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kGuestSession) &&
-      !::base::StartsWithASCII(path, "cros.session.", true)) {
+      !base::StartsWith(path, "cros.session.", base::CompareCase::SENSITIVE)) {
     LOG(ERROR) << "Ignoring the guest request to change: " << path;
     return;
   }

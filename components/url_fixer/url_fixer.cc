@@ -436,8 +436,9 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
     if (!found_scheme) {
       // Couldn't determine the scheme, so just pick one.
       parts->scheme.reset();
-      scheme = base::StartsWithASCII(*text, "ftp.", false) ? url::kFtpScheme
-                                                           : url::kHttpScheme;
+      scheme = base::StartsWith(*text, "ftp.",
+                                base::CompareCase::INSENSITIVE_ASCII) ?
+          url::kFtpScheme : url::kHttpScheme;
     }
   }
 
@@ -528,7 +529,8 @@ GURL url_fixer::FixupURL(const std::string& text,
   if (scheme == kViewSourceScheme) {
     // Reject "view-source:view-source:..." to avoid deep recursion.
     std::string view_source(kViewSourceScheme + std::string(":"));
-    if (!base::StartsWithASCII(text, view_source + view_source, false)) {
+    if (!base::StartsWith(text, view_source + view_source,
+                          base::CompareCase::INSENSITIVE_ASCII)) {
       return GURL(kViewSourceScheme + std::string(":") +
                   FixupURL(trimmed.substr(scheme.length() + 1), desired_tld)
                       .possibly_invalid_spec());

@@ -1074,8 +1074,8 @@ WebData BlinkPlatformImpl::loadResource(const char* name) {
     return WebData();
 
   // Check the name prefix to see if it's an audio resource.
-  if (base::StartsWithASCII(name, "IRC_Composite", true) ||
-      base::StartsWithASCII(name, "Composite", true))
+  if (base::StartsWith(name, "IRC_Composite", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(name, "Composite", base::CompareCase::SENSITIVE))
     return loadAudioSpatializationResource(name);
 
   // TODO(flackr): We should use a better than linear search here, a trie would

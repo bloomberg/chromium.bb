@@ -234,7 +234,8 @@ scoped_ptr<net::test_server::HttpResponse> CrossSiteRedirectResponseHandler(
     const GURL& server_base_url,
     const net::test_server::HttpRequest& request) {
   std::string prefix("/cross-site/");
-  if (!base::StartsWithASCII(request.relative_url, prefix, true))
+  if (!base::StartsWith(request.relative_url, prefix,
+                        base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   std::string params = request.relative_url.substr(prefix.length());

@@ -102,19 +102,23 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& deny_str =
         AccessibilityTreeFormatter::GetDenyString();
     const std::string& wait_str = "@WAIT-FOR:";
-    if (base::StartsWithASCII(line, allow_empty_str, true)) {
+    if (base::StartsWith(line, allow_empty_str,
+                         base::CompareCase::SENSITIVE)) {
       filters->push_back(
           Filter(base::UTF8ToUTF16(line.substr(allow_empty_str.size())),
                  Filter::ALLOW_EMPTY));
-    } else if (base::StartsWithASCII(line, allow_str, true)) {
+    } else if (base::StartsWith(line, allow_str,
+                                base::CompareCase::SENSITIVE)) {
       filters->push_back(Filter(base::UTF8ToUTF16(
           line.substr(allow_str.size())),
                                 Filter::ALLOW));
-    } else if (base::StartsWithASCII(line, deny_str, true)) {
+    } else if (base::StartsWith(line, deny_str,
+                                base::CompareCase::SENSITIVE)) {
       filters->push_back(Filter(base::UTF8ToUTF16(
           line.substr(deny_str.size())),
                                 Filter::DENY));
-    } else if (base::StartsWithASCII(line, wait_str, true)) {
+    } else if (base::StartsWith(line, wait_str,
+                                base::CompareCase::SENSITIVE)) {
       *wait_for = line.substr(wait_str.size());
     }
   }

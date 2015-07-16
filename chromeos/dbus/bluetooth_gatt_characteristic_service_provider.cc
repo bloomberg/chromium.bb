@@ -52,8 +52,9 @@ class BluetoothGattCharacteristicServiceProviderImpl
     DCHECK(!uuid_.empty());
     DCHECK(object_path_.IsValid());
     DCHECK(service_path_.IsValid());
-    DCHECK(base::StartsWithASCII(object_path_.value(),
-                                 service_path_.value() + "/", true));
+    DCHECK(base::StartsWith(object_path_.value(),
+                            service_path_.value() + "/",
+                            base::CompareCase::SENSITIVE));
 
     exported_object_ = bus_->GetExportedObject(object_path_);
 

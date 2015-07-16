@@ -108,7 +108,8 @@ static bool IsDeviceBlackListed(const std::string& name) {
   DCHECK_EQ(BLACKLISTED_CAMERA_MAX + 1,
             static_cast<int>(arraysize(kBlacklistedCameraNames)));
   for (size_t i = 0; i < arraysize(kBlacklistedCameraNames); ++i) {
-    if (base::StartsWithASCII(name, kBlacklistedCameraNames[i], false)) {
+    if (base::StartsWith(name, kBlacklistedCameraNames[i],
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       DVLOG(1) << "Enumerated blacklisted device: " << name;
       UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.BlacklistedDevice",
           i, BLACKLISTED_CAMERA_MAX + 1);

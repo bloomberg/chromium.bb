@@ -28,7 +28,8 @@ namespace {
 scoped_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
     const std::string& echotitle_path,
     const net::test_server::HttpRequest& request) {
-  if (!base::StartsWithASCII(request.relative_url, echotitle_path, true))
+  if (!base::StartsWith(request.relative_url, echotitle_path,
+                        base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(

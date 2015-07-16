@@ -37,7 +37,8 @@ static bool ShouldUseVideoRenderingPath() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNewVideoRenderer);
   return !disabled_via_cli &&
-         !base::StartsWithASCII(group_name, "Disabled", true);
+         !base::StartsWith(group_name, "Disabled",
+                           base::CompareCase::SENSITIVE);
 }
 
 VideoRendererImpl::VideoRendererImpl(

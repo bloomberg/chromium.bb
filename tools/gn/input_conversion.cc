@@ -116,7 +116,8 @@ Value DoConvertInputToValue(const Settings* settings,
     return Value();  // Empty string means discard the result.
 
   const char kTrimPrefix[] = "trim ";
-  if (base::StartsWithASCII(input_conversion, kTrimPrefix, true)) {
+  if (base::StartsWith(input_conversion, kTrimPrefix,
+                       base::CompareCase::SENSITIVE)) {
     std::string trimmed;
     base::TrimWhitespaceASCII(input, base::TRIM_ALL, &trimmed);
 

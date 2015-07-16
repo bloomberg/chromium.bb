@@ -27,7 +27,8 @@ TEST_F(SafeModeUtilTest, GetAllImages) {
   string lib_system_prefix("libSystem");
   for (size_t i = 0; i < images.size(); ++i) {
     string base_name = base::FilePath(images[i]).BaseName().value();
-    if (base::StartsWithASCII(base_name, lib_system_prefix, true)) {
+    if (base::StartsWith(base_name, lib_system_prefix,
+                         base::CompareCase::SENSITIVE)) {
       found_lib_system = true;
       break;
     }
