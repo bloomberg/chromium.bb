@@ -15,7 +15,7 @@ class TickClock;
 
 namespace scheduler {
 
-class NestableSingleThreadTaskRunner;
+class SchedulerTaskRunnerDelegate;
 
 // Common scheduler functionality for default tasks.
 class SCHEDULER_EXPORT SchedulerHelper {
@@ -23,12 +23,11 @@ class SCHEDULER_EXPORT SchedulerHelper {
   // NOTE |total_task_queue_count| must be >= TASK_QUEUE_COUNT.
   // Category strings must have application lifetime (statics or
   // literals). They may not include " chars.
-  SchedulerHelper(
-      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
-      const char* tracing_category,
-      const char* disabled_by_default_tracing_category,
-      const char* disabled_by_default_verbose_tracing_category,
-      size_t total_task_queue_count);
+  SchedulerHelper(scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner,
+                  const char* tracing_category,
+                  const char* disabled_by_default_tracing_category,
+                  const char* disabled_by_default_verbose_tracing_category,
+                  size_t total_task_queue_count);
   ~SchedulerHelper();
 
   // Returns the default task runner.
@@ -104,6 +103,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
   friend class SchedulerHelperTest;
 
   base::ThreadChecker thread_checker_;
+  scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner_;
   scoped_ptr<PrioritizingTaskQueueSelector> task_queue_selector_;
   scoped_ptr<TaskQueueManager> task_queue_manager_;
 

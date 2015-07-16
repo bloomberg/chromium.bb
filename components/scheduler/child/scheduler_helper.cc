@@ -7,18 +7,19 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "components/scheduler/child/nestable_single_thread_task_runner.h"
+#include "components/scheduler/child/scheduler_task_runner_delegate.h"
 #include "components/scheduler/child/task_queue.h"
 
 namespace scheduler {
 
 SchedulerHelper::SchedulerHelper(
-    scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category,
     size_t total_task_queue_count)
-    : task_queue_selector_(new PrioritizingTaskQueueSelector()),
+    : main_task_runner_(main_task_runner),
+      task_queue_selector_(new PrioritizingTaskQueueSelector()),
       task_queue_manager_(
           new TaskQueueManager(total_task_queue_count,
                                main_task_runner,
@@ -65,14 +66,19 @@ SchedulerHelper::SchedulerHelper(
 
   // TODO(skyostil): Increase this to 4 (crbug.com/444764).
   task_queue_manager_->SetWorkBatchSize(1);
+
+  main_task_runner_->SetDefaultTaskRunner(
+      task_queue_manager_->TaskRunnerForQueue(QueueId::DEFAULT_TASK_QUEUE));
 }
 
 SchedulerHelper::~SchedulerHelper() {
+  Shutdown();
 }
 
 void SchedulerHelper::Shutdown() {
   CheckOnValidThread();
   task_queue_manager_.reset();
+  main_task_runner_->RestoreDefaultTaskRunner();
 }
 
 scoped_refptr<TaskQueue> SchedulerHelper::DefaultTaskRunner() {

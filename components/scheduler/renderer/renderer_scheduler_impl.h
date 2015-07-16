@@ -26,7 +26,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
                                                public IdleHelper::Delegate {
  public:
   RendererSchedulerImpl(
-      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner);
   ~RendererSchedulerImpl() override;
 
   // RendererScheduler implementation:

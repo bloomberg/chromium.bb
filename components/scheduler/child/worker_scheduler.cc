@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/null_worker_scheduler.h"
-#include "components/scheduler/child/scheduler_message_loop_delegate.h"
+#include "components/scheduler/child/scheduler_task_runner_delegate.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
 #include "components/scheduler/common/scheduler_switches.h"
 
@@ -21,13 +21,12 @@ WorkerScheduler::~WorkerScheduler() {
 
 // static
 scoped_ptr<WorkerScheduler> WorkerScheduler::Create(
-    base::MessageLoop* message_loop) {
+    scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableBlinkScheduler)) {
     return make_scoped_ptr(new NullWorkerScheduler());
   } else {
-    return make_scoped_ptr(new WorkerSchedulerImpl(
-        SchedulerMessageLoopDelegate::Create(message_loop)));
+    return make_scoped_ptr(new WorkerSchedulerImpl(main_task_runner.Pass()));
   }
 }
 

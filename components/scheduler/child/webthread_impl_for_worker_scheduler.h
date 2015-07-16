@@ -17,6 +17,7 @@ class WebScheduler;
 };
 
 namespace scheduler {
+class SchedulerTaskRunnerDelegate;
 class SingleThreadIdleTaskRunner;
 class WebSchedulerImpl;
 class WorkerScheduler;
@@ -46,12 +47,15 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
       base::MessageLoop::TaskObserver* observer) override;
 
   void InitOnThread(base::WaitableEvent* completion);
+  void RestoreTaskRunnerOnThread(base::WaitableEvent* completion);
 
   scoped_ptr<base::Thread> thread_;
   scoped_ptr<scheduler::WorkerScheduler> worker_scheduler_;
   scoped_ptr<scheduler::WebSchedulerImpl> web_scheduler_;
+  scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;
+  scoped_refptr<SchedulerTaskRunnerDelegate> task_runner_delegate_;
 };
 
 }  // namespace scheduler
