@@ -34,8 +34,6 @@
                                [Default=Undefined] optional Window? view,
                                [Default=Undefined] optional long detail);
 
-    // FIXME: these belong on the KeyboardEvent interface
-    [MeasureAs=UIEventCharCode] readonly attribute long charCode;
-    [MeasureAs=UIEventKeyCode] readonly attribute long keyCode;
+    // FIXME: this belongs on the KeyboardEvent interface
     [MeasureAs=UIEventWhich] readonly attribute long which;
 };

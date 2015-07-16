@@ -62,9 +62,6 @@ public:
     const AtomicString& interfaceName() const override;
     bool isUIEvent() const final;
 
-    virtual int keyCode() const;
-    virtual int charCode() const;
-
     virtual int which() const;
 
     DECLARE_VIRTUAL_TRACE();

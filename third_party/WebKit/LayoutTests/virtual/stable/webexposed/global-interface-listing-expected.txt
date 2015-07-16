@@ -4834,9 +4834,7 @@ interface TreeWalker
     method previousSibling
     setter currentNode
 interface UIEvent
-    getter charCode
     getter detail
-    getter keyCode
     getter view
     getter which
     method constructor

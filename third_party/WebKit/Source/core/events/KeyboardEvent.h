@@ -80,8 +80,8 @@ public:
 
     const PlatformKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
 
-    int keyCode() const override; // key code for keydown and keyup, character for keypress
-    int charCode() const override; // character code for keypress, 0 for keydown and keyup
+    int keyCode() const; // key code for keydown and keyup, character for keypress
+    int charCode() const; // character code for keypress, 0 for keydown and keyup
     bool repeat() const { return m_isAutoRepeat; }
 
     const AtomicString& interfaceName() const override;

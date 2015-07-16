@@ -75,16 +75,6 @@ const AtomicString& UIEvent::interfaceName() const
     return EventNames::UIEvent;
 }
 
-int UIEvent::keyCode() const
-{
-    return 0;
-}
-
-int UIEvent::charCode() const
-{
-    return 0;
-}
-
 int UIEvent::which() const
 {
     return 0;

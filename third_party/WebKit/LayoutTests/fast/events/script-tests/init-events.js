@@ -100,8 +100,6 @@ shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003,
 shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003, 1004, 1005, false, false, false, false, 1006, document').fromElement", "document");
 shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003, 1004, 1005, false, false, false, false, 1006, null').toElement", "null");
 shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003, 1004, 1005, false, false, false, false, 1006, null').dataTransfer", "null");
-shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003, 1004, 1005, false, false, false, false, 1006, null').keyCode", "0");
-shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003, 1004, 1005, false, false, false, false, 1006, null').charCode", "0");
 shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003, 1004, 1005, false, false, false, false, 1006, null').layerX", "1004");
 shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003, 1004, 1005, false, false, false, false, 1006, null').layerY", "1005");
 shouldBe("testInitEvent('Mouse', '\"a\", false, false, window, 1001, 1002, 1003, 1004, 1005, false, false, false, false, 1006, null').pageX", "1004");
@@ -150,8 +148,6 @@ shouldBe("testInitEvent('Text', '\"a\", false, false, null, \"b\"').view", "null
 shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').data", "'b'");
 shouldBe("testInitEvent('Text', '\"a\", false, false, window, null').data", "'null'");
 shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').detail", "0");
-shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').keyCode", "0");
-shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').charCode", "0");
 shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').which", "0");
 
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').type", "'a'");
@@ -163,8 +159,6 @@ shouldBe("testInitEvent('UI', '\"a\", false, true, window, 1001').cancelable", "
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').view", "window");
 shouldBe("testInitEvent('UI', '\"a\", false, false, null, 1001').view", "null");
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').detail", "1001");
-shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').keyCode", "0");
-shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').charCode", "0");
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').which", "0");
 
 // WheelEvent has no init function yet; roughly speaking, we are waiting for that part of DOM 3 to stabilize.

@@ -508,8 +508,6 @@ public:
 
         SetReferrerPolicy = 593,
         MouseEventWhich = 595,
-        UIEventCharCode = 596,
-        UIEventKeyCode = 597,
         UIEventWhich = 598,
         TextWholeText = 599,
         NotificationCloseEvent = 603,
