@@ -26,12 +26,11 @@
 namespace blink {
 
 SVGFilter::SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
-    : Filter(1.0f)
+    : Filter(targetBoundingBox, filterRegion, 1.0f)
     , m_absoluteSourceDrawingRegion(absoluteSourceDrawingRegion)
     , m_targetBoundingBox(targetBoundingBox)
     , m_effectBBoxMode(effectBBoxMode)
 {
-    setFilterRegion(filterRegion);
 }
 
 float SVGFilter::applyHorizontalScale(float value) const

@@ -44,9 +44,14 @@ class FilterEffect;
 
 class PLATFORM_EXPORT ReferenceFilter: public Filter {
 public:
+    static PassRefPtrWillBeRawPtr<ReferenceFilter> create(const FloatRect& targetBoundingBox, const FloatRect& filterRegion, float scale)
+    {
+        return adoptRefWillBeNoop(new ReferenceFilter(targetBoundingBox, filterRegion, scale));
+    }
+
     static PassRefPtrWillBeRawPtr<ReferenceFilter> create(float scale)
     {
-        return adoptRefWillBeNoop(new ReferenceFilter(scale));
+        return adoptRefWillBeNoop(new ReferenceFilter(FloatRect(), FloatRect(), scale));
     }
 
     ~ReferenceFilter() override;
@@ -60,7 +65,7 @@ public:
     SourceGraphic* sourceGraphic() const { return m_sourceGraphic.get(); }
 
 private:
-    explicit ReferenceFilter(float scale);
+    ReferenceFilter(const FloatRect& targetBoundingBox, const FloatRect& filterRegion, float scale);
 
     RefPtrWillBeMember<SourceGraphic> m_sourceGraphic;
     RefPtrWillBeMember<FilterEffect> m_lastEffect;

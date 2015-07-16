@@ -45,26 +45,23 @@ public:
 
     virtual IntRect sourceImageRect() const = 0;
 
-    FloatRect absoluteFilterRegion() const { return m_absoluteFilterRegion; }
+    FloatRect absoluteFilterRegion() const { FloatRect result = m_filterRegion; result.scale(m_scale); return result; }
 
-    FloatRect filterRegion() const { return m_filterRegion; }
-    void setFilterRegion(const FloatRect& rect)
-    {
-        m_filterRegion = rect;
-        m_absoluteFilterRegion = rect;
-        m_absoluteFilterRegion.scale(m_scale);
-    }
+    const FloatRect& filterRegion() const { return m_filterRegion; }
+    const FloatRect& targetBoundingBox() const { return m_targetBoundingBox; }
 
 protected:
-    explicit Filter(float scale)
-        : m_scale(scale)
+    Filter(const FloatRect& targetBoundingBox, const FloatRect& filterRegion, float scale)
+        : m_targetBoundingBox(targetBoundingBox)
+        , m_filterRegion(filterRegion)
+        , m_scale(scale)
     {
     }
 
 private:
-    float m_scale;
-    FloatRect m_absoluteFilterRegion;
+    FloatRect m_targetBoundingBox;
     FloatRect m_filterRegion;
+    float m_scale;
 };
 
 } // namespace blink

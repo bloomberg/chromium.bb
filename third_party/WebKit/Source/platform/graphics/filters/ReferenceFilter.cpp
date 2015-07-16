@@ -37,8 +37,8 @@
 
 namespace blink {
 
-ReferenceFilter::ReferenceFilter(float scale)
-    : Filter(scale)
+ReferenceFilter::ReferenceFilter(const FloatRect& targetBoundingBox, const FloatRect& filterRegion, float scale)
+    : Filter(targetBoundingBox, filterRegion, scale)
     , m_sourceGraphic(SourceGraphic::create(this))
 {
 }
