@@ -1278,7 +1278,6 @@
       'browser/chromeos/net/cert_verify_proc_chromeos_unittest.cc',
       'browser/chromeos/net/network_portal_detector_impl_unittest.cc',
       'browser/chromeos/net/network_portal_notification_controller_unittest.cc',
-      'browser/chromeos/offline/offline_load_page_unittest.cc',
       'browser/chromeos/options/network_property_ui_data_unittest.cc',
       'browser/chromeos/ownership/fake_owner_settings_service.cc',
       'browser/chromeos/ownership/fake_owner_settings_service.h',

@@ -83,7 +83,6 @@ extern const char kDisableExtensions[];
 extern const char kDisableJavaScriptHarmonyShipping[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNewBookmarkApps[];
-extern const char kDisableNewOfflineErrorPage[];
 extern const char kDisableOfflineAutoReload[];
 extern const char kDisableOfflineAutoReloadVisibleOnly[];
 extern const char kDisableOutOfProcessPac[];
@@ -400,7 +399,6 @@ bool AboutInSettingsEnabled();
 bool MdDownloadsEnabled();
 bool MdSettingsEnabled();
 bool MediaRouterEnabled();
-bool NewOfflineErrorPageEnabled();
 bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();
 

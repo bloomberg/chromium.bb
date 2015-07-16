@@ -98,8 +98,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/signin/merge_session_throttle.h"
-// TODO(oshima): Enable this for other platforms.
-#include "chrome/browser/renderer_host/offline_resource_throttle.h"
 #endif
 
 using content::BrowserThread;
@@ -403,19 +401,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #endif
 
 #if defined(OS_CHROMEOS)
-  // Check if we need to add offline throttle. This should be done only
-  // for main frames.
-  // We will fall back to the old ChromeOS offline error page if the
-  // --disable-new-offline-error-page command-line switch is defined.
-  bool new_error_page_enabled = switches::NewOfflineErrorPageEnabled();
-  if (!new_error_page_enabled &&
-      resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
-    // We check offline first, then check safe browsing so that we still can
-    // block unsafe site after we remove offline page.
-    throttles->push_back(new OfflineResourceThrottle(request,
-                                                     appcache_service));
-  }
-
   // Check if we need to add merge session throttle. This throttle will postpone
   // loading of main frames and XHR request.
   if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||

@@ -898,8 +898,6 @@
       'browser/metrics/chromeos_metrics_provider.h',
       'browser/metrics/windowed_incognito_observer.cc',
       'browser/metrics/windowed_incognito_observer.h',
-      'browser/renderer_host/offline_resource_throttle.cc',
-      'browser/renderer_host/offline_resource_throttle.h',
       # This is technically also dependent on enable_plugins but we don't
       # support ChromeOS with enable_plugins==0.
       'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',

@@ -740,8 +740,6 @@
         'browser/chromeos/net/proxy_config_handler.h',
         'browser/chromeos/net/wake_on_wifi_manager.cc',
         'browser/chromeos/net/wake_on_wifi_manager.h',
-        'browser/chromeos/offline/offline_load_page.cc',
-        'browser/chromeos/offline/offline_load_page.h',
         'browser/chromeos/options/cert_library.cc',
         'browser/chromeos/options/cert_library.h',
         'browser/chromeos/options/network_config_view.cc',
