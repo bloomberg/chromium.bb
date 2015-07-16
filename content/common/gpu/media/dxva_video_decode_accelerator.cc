@@ -100,7 +100,8 @@ DEFINE_GUID(CLSID_VideoProcessorMFT,
 // regeneration (repaint).
 DEFINE_GUID(MF_XVP_PLAYBACK_MODE, 0x3c5d293f, 0xad67, 0x4e29, 0xaf, 0x12,
             0xcf, 0x3e, 0x23, 0x8a, 0xcc, 0xe9);
-}
+
+}  // namespace
 
 namespace content {
 
@@ -239,6 +240,34 @@ static IMFSample* CreateSampleFromInputBuffer(
                            bitstream_buffer.size(),
                            stream_size,
                            alignment);
+}
+
+// Helper function to create a COM object instance from a DLL. The alternative
+// is to use the CoCreateInstance API which requires the COM apartment to be
+// initialized which is not the case on the GPU main thread. We want to avoid
+// initializing COM as it may have sideeffects.
+HRESULT CreateCOMObjectFromDll(HMODULE dll, const CLSID& clsid, const IID& iid,
+                               void** object) {
+  if (!dll || !object)
+    return E_INVALIDARG;
+
+  using GetClassObject = HRESULT (WINAPI*)(
+      const CLSID& clsid, const IID& iid, void** object);
+
+  GetClassObject get_class_object = reinterpret_cast<GetClassObject>(
+      GetProcAddress(dll, "DllGetClassObject"));
+  RETURN_ON_FAILURE(
+      get_class_object, "Failed to get DllGetClassObject pointer", false);
+
+  base::win::ScopedComPtr<IClassFactory> factory;
+  HRESULT hr = get_class_object(
+      clsid,
+      __uuidof(IClassFactory),
+      factory.ReceiveVoid());
+  RETURN_ON_HR_FAILURE(hr, "DllGetClassObject failed", false);
+
+  hr = factory->CreateInstance(NULL, iid, object);
+  return hr;
 }
 
 // Maintains information about a DXVA picture buffer, i.e. whether it is
@@ -727,13 +756,15 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
       d3d11_query_.Receive());
   RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device query", false);
 
-  hr = ::CoCreateInstance(
-      CLSID_VideoProcessorMFT,
-      NULL,
-      CLSCTX_INPROC_SERVER,
-      IID_IMFTransform,
-      reinterpret_cast<void**>(video_format_converter_mft_.Receive()));
+  HMODULE video_processor_dll = ::LoadLibrary(L"msvproc.dll");
+  RETURN_ON_FAILURE(video_processor_dll, "Failed to load video processor",
+                    false);
 
+  hr = CreateCOMObjectFromDll(
+      video_processor_dll,
+      CLSID_VideoProcessorMFT,
+      __uuidof(IMFTransform),
+      video_format_converter_mft_.ReceiveVoid());
   if (FAILED(hr)) {
     base::debug::Alias(&hr);
     // TODO(ananta)
@@ -741,6 +772,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
     // stablizes.
     CHECK(false);
   }
+
   RETURN_ON_HR_FAILURE(hr, "Failed to create video format converter", false);
   return true;
 }
@@ -943,6 +975,8 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles() {
 bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
   HMODULE decoder_dll = NULL;
 
+  CLSID clsid = {};
+
   // Profile must fall within the valid range for one of the supported codecs.
   if (profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX) {
     // We mimic the steps CoCreateInstance uses to instantiate the object. This
@@ -967,6 +1001,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
                       "blacklisted version of msmpeg2vdec.dll 6.7.7140",
                       false);
     codec_ = media::kCodecH264;
+    clsid = __uuidof(CMSH264DecoderMFT);
   } else if (profile == media::VP8PROFILE_ANY ||
              profile == media::VP9PROFILE_ANY) {
     int program_files_key = base::DIR_PROGRAM_FILES;
@@ -983,9 +1018,11 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
     if (profile == media::VP8PROFILE_ANY) {
       codec_ = media::kCodecVP8;
       dll_path = dll_path.Append(kVP8DecoderDLLName);
+      clsid = CLSID_WebmMfVp8Dec;
     } else {
       codec_ = media::kCodecVP9;
       dll_path = dll_path.Append(kVP9DecoderDLLName);
+      clsid = CLSID_WebmMfVp9Dec;
     }
     decoder_dll = ::LoadLibraryEx(dll_path.value().data(), NULL,
         LOAD_WITH_ALTERED_SEARCH_PATH);
@@ -994,36 +1031,10 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
     RETURN_ON_FAILURE(false, "Unsupported codec.", false);
   }
 
-  typedef HRESULT(WINAPI * GetClassObject)(
-      const CLSID & clsid, const IID & iid, void * *object);
-
-  GetClassObject get_class_object = reinterpret_cast<GetClassObject>(
-      GetProcAddress(decoder_dll, "DllGetClassObject"));
-  RETURN_ON_FAILURE(
-      get_class_object, "Failed to get DllGetClassObject pointer", false);
-
-  base::win::ScopedComPtr<IClassFactory> factory;
-  HRESULT hr;
-  if (codec_ == media::kCodecH264) {
-    hr  = get_class_object(__uuidof(CMSH264DecoderMFT),
-                           __uuidof(IClassFactory),
-                           reinterpret_cast<void**>(factory.Receive()));
-  } else if (codec_ == media::kCodecVP8) {
-    hr  = get_class_object(CLSID_WebmMfVp8Dec,
-                           __uuidof(IClassFactory),
-                           reinterpret_cast<void**>(factory.Receive()));
-  } else if (codec_ == media::kCodecVP9) {
-    hr  = get_class_object(CLSID_WebmMfVp9Dec,
-                           __uuidof(IClassFactory),
-                           reinterpret_cast<void**>(factory.Receive()));
-  } else {
-    RETURN_ON_FAILURE(false, "Unsupported codec.", false);
-  }
-  RETURN_ON_HR_FAILURE(hr, "DllGetClassObject for decoder failed", false);
-
-  hr = factory->CreateInstance(NULL,
-                               __uuidof(IMFTransform),
-                               reinterpret_cast<void**>(decoder_.Receive()));
+  HRESULT hr = CreateCOMObjectFromDll(decoder_dll,
+                                      clsid,
+                                      __uuidof(IMFTransform),
+                                      decoder_.ReceiveVoid());
   RETURN_ON_HR_FAILURE(hr, "Failed to create decoder instance", false);
 
   RETURN_ON_FAILURE(CheckDecoderDxvaSupport(),
