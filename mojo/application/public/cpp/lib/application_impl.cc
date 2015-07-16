@@ -18,7 +18,8 @@ namespace mojo {
 namespace {
 
 void DefaultTerminationClosure() {
-  if (base::MessageLoop::current()->is_running())
+  if (base::MessageLoop::current() &&
+      base::MessageLoop::current()->is_running())
     base::MessageLoop::current()->Quit();
 }
 
