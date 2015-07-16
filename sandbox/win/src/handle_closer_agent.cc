@@ -89,14 +89,20 @@ bool HandleCloserAgent::AttemptToStuffHandleSlot(HANDLE closed_handle,
 }
 
 // Reads g_handles_to_close and creates the lookup map.
-void HandleCloserAgent::InitializeHandlesToClose() {
+void HandleCloserAgent::InitializeHandlesToClose(bool* is_csrss_connected) {
   CHECK(g_handles_to_close != NULL);
+
+  // Default to connected state
+  *is_csrss_connected = true;
 
   // Grab the header.
   HandleListEntry* entry = g_handles_to_close->handle_entries;
   for (size_t i = 0; i < g_handles_to_close->num_handle_types; ++i) {
     // Set the type name.
     base::char16* input = entry->handle_type;
+    if (!wcscmp(input, L"ALPC Port")) {
+      *is_csrss_connected = false;
+    }
     HandleMap::mapped_type& handle_names = handles_to_close_[input];
     input = reinterpret_cast<base::char16*>(reinterpret_cast<char*>(entry)
         + entry->offset_to_names);

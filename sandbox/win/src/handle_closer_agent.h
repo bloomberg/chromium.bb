@@ -10,6 +10,8 @@
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/handle_closer.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "sandbox/win/src/target_services.h"
+
 
 namespace sandbox {
 
@@ -20,7 +22,8 @@ class HandleCloserAgent {
   ~HandleCloserAgent();
 
   // Reads the serialized list from the broker and creates the lookup map.
-  void InitializeHandlesToClose();
+  // Updates is_csrss_connected based on type of handles closed.
+  void InitializeHandlesToClose(bool* is_csrss_connected);
 
   // Closes any handles matching those in the lookup map.
   bool CloseHandles();

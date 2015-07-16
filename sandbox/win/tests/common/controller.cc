@@ -123,6 +123,11 @@ void TestRunner::Init(JobLevel job_level, TokenLevel startup_token,
   policy_->SetJobLevel(job_level, 0);
   policy_->SetTokenLevel(startup_token, main_token);
 
+  // Close all ALPC ports.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    policy_->AddKernelObjectToClose(L"ALPC Port", NULL);
+  }
+
   is_init_ = true;
 }
 

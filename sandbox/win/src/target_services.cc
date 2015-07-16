@@ -47,17 +47,18 @@ bool FlushCachedRegHandles() {
 }
 
 // Checks if we have handle entries pending and runs the closer.
-bool CloseOpenHandles() {
+// Updates is_csrss_connected based on which handle types are closed.
+bool CloseOpenHandles(bool* is_csrss_connected) {
   if (sandbox::HandleCloserAgent::NeedsHandlesClosed()) {
     sandbox::HandleCloserAgent handle_closer;
-
-    handle_closer.InitializeHandlesToClose();
+    handle_closer.InitializeHandlesToClose(is_csrss_connected);
     if (!handle_closer.CloseHandles())
       return false;
   }
 
   return true;
 }
+
 
 // Used as storage for g_target_services, because other allocation facilities
 // are not available early. We can't use a regular function static because on
@@ -96,8 +97,10 @@ void TargetServicesBase::LowerToken() {
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_FLUSHANDLES);
   if (ERROR_SUCCESS != ::RegDisablePredefinedCache())
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_CACHEDISABLE);
-  if (!CloseOpenHandles())
+  bool is_csrss_connected = true;
+  if (!CloseOpenHandles(&is_csrss_connected))
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_CLOSEHANDLES);
+  process_state_.SetCsrssConnected(is_csrss_connected);
   // Enabling mitigations must happen last otherwise handle closing breaks
   if (g_shared_delayed_mitigations &&
       !ApplyProcessMitigationsToCurrentProcess(g_shared_delayed_mitigations))
@@ -167,7 +170,7 @@ bool TargetServicesBase::TestIPCPing(int version) {
   return true;
 }
 
-ProcessState::ProcessState() : process_state_(0) {
+ProcessState::ProcessState() : process_state_(0), csrss_connected_(true) {
 }
 
 bool ProcessState::IsKernel32Loaded() const {
@@ -180,6 +183,10 @@ bool ProcessState::InitCalled() const {
 
 bool ProcessState::RevertedToSelf() const {
   return process_state_ > 2;
+}
+
+bool ProcessState::IsCsrssConnected() const {
+  return csrss_connected_;
 }
 
 void ProcessState::SetKernel32Loaded() {
@@ -196,6 +203,11 @@ void ProcessState::SetRevertedToSelf() {
   if (process_state_ < 3)
     process_state_ = 3;
 }
+
+void ProcessState::SetCsrssConnected(bool csrss_connected) {
+  csrss_connected_ = csrss_connected;
+}
+
 
 ResultCode TargetServicesBase::DuplicateHandle(HANDLE source_handle,
                                                DWORD target_process_id,

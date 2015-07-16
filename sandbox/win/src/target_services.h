@@ -20,13 +20,17 @@ class ProcessState {
   bool InitCalled() const;
   // Returns true if LowerToken has been called.
   bool RevertedToSelf() const;
+  // Returns true if Csrss is connected.
+  bool IsCsrssConnected() const;
   // Set the current state.
   void SetKernel32Loaded();
   void SetInitCalled();
   void SetRevertedToSelf();
+  void SetCsrssConnected(bool csrss_connected);
 
  private:
   int process_state_;
+  bool csrss_connected_;
   DISALLOW_COPY_AND_ASSIGN(ProcessState);
 };
 
