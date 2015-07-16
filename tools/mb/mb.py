@@ -65,8 +65,8 @@ class MetaBuildWrapper(object):
                         help='Do a dry run (i.e., do nothing, just print '
                              'the commands that will run)')
       subp.add_argument('-q', '--quiet', action='store_true',
-                        help='Do not print anything, just return an exit '
-                             'code.')
+                        help='Do not print anything on success, '
+                             'just return an exit code.')
       subp.add_argument('-v', '--verbose', action='count',
                         help='verbose logging (may specify multiple times).')
 
@@ -108,7 +108,13 @@ class MetaBuildWrapper(object):
 
     subp = subps.add_parser('validate',
                             help='validate the config file')
-    AddCommonOptions(subp)
+    subp.add_argument('-f', '--config-file', metavar='PATH',
+                      default=self.default_config,
+                      help='path to config file '
+                          '(default is //tools/mb/mb_config.pyl)')
+    subp.add_argument('-q', '--quiet', action='store_true',
+                      help='Do not print anything on success, '
+                           'just return an exit code.')
     subp.set_defaults(func=self.CmdValidate)
 
     subp = subps.add_parser('help',

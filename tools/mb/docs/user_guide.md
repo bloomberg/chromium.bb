@@ -14,26 +14,11 @@ that Chromium is built in.
 
 Ideally this tool will no longer be needed after the migration is complete.
 
-## `mb gen`
+For more discussion of MB, see also [the design spec](design_spec.md).
 
-`mb gen` is responsible for generating the Ninja files by invoking either GYP
-or GN as appropriate. It takes arguments to specify a build config and
-a directory, then runs GYP or GN as appropriate:
+## MB subcommands
 
-```
-% mb gen -m tryserver.chromium.linux -b linux_rel //out/Release
-% mb gen -c linux_rel_trybot //out/Release
-```
-
-Either the `-c/--config` flag or the `-m/--master` and `-b/--builder` flags
-must be specified so that `mb` can figure out which config to use.
-
-The path must be a GN-style "source-absolute" path (as above).
-
-If gen ends up using GYP, the path must have a valid GYP configuration as the
-last component of the path (i.e., specify `//out/Release_x64`, not `//out`).
-
-## `mb analyze`
+### `mb analyze`
 
 `mb analyze` is reponsible for determining what targets are affected by
 a list of files (e.g., the list of files in a patch on a trybot):
@@ -44,7 +29,6 @@ mb analyze -c chromium_linux_rel //out/Release input.json output.json
 
 Either the `-c/--config` flag or the `-m/--master` and `-b/--builder` flags
 must be specified so that `mb` can figure out which config to use.
-
 
 The first positional argument must be a GN-style "source-absolute" path
 to the build directory.
@@ -71,16 +55,57 @@ fields:
     * `"Found dependency (all)"` (build everything, in which case
       `targets` and `build_targets` are not returned).
 
-## `mb help`
+The `-b/--builder`, `-c/--config`, `-f/--config-file`, `-m/--master`,
+`-q/--quiet`, and `-v/--verbose` flags work as documented for `mb gen`.
+
+
+### `mb gen`
+
+`mb gen` is responsible for generating the Ninja files by invoking either GYP
+or GN as appropriate. It takes arguments to specify a build config and
+a directory, then runs GYP or GN as appropriate:
+
+```
+% mb gen -m tryserver.chromium.linux -b linux_rel //out/Release
+% mb gen -c linux_rel_trybot //out/Release
+```
+
+Either the `-c/--config` flag or the `-m/--master` and `-b/--builder` flags
+must be specified so that `mb` can figure out which config to use.
+
+By default, MB will look in `//tools/mb/mb_config.pyl` to look up the config
+information, but you can specify a custom config file using the
+`-f/--config-file` flag.
+
+The path must be a GN-style "source-absolute" path (as above).
+
+You can pass the `-n/--dryrun` flag to mb gen to see what will happen without
+actually writing anything.
+
+You can pass the `-q/--quiet` flag to get mb to be silent unless there is an
+error, and pass the `-v/--verbose` flag to get mb to log all of the files
+that are read and written, and all the commands that are run.
+
+If the build config will use the Goma distributed-build system, you can pass
+the path to your Goma client in the `-g/--goma-dir` flag, and it will be
+incorporated into the appropriate flags for GYP or GN as needed.
+
+If gen ends up using GYP, the path must have a valid GYP configuration as the
+last component of the path (i.e., specify `//out/Release_x64`, not `//out`).
+
+### `mb help`
 
 Produces help output on the other subcommands
 
-## `mb lookup`
+### `mb lookup`
 
 Prints what command will be run by `mb gen` (like `mb gen -n` but does
 not require you to specify a path).
 
-## `mb validate`
+The `-b/--builder`, `-c/--config`, `-f/--config-file`, `-m/--master`,
+`-q/--quiet`, and `-v/--verbose` flags work as documented for `mb gen`.
+
+### `mb validate`
 
 Does internal checking to make sure the config file is syntactically
 valid and that all of the entries are used properly. It does not validate
@@ -88,10 +113,35 @@ that the flags make sense, or that the builder names are legal or
 comprehensive, but it does complain about configs and mixins that aren't
 used.
 
+The `-f/--config-file` and `-q/--quiet` flags work as documented for
+`mb gen`.
+
 This is mostly useful as a presubmit check and for verifying changes to
 the config file.
 
-## mb_config.pyl
+## Isolates and Swarming
+
+`mb gen` is also responsible for generating the `.isolate` and
+`.isolated.gen.json` files needed to run test executables through swarming
+in a GN build (in a GYP build, this is done as part of the compile step).
+
+If you wish to generate the isolate files, pass `mb gen` the
+`--swarming-targets-file` command line argument; that arg should be a path
+to a file containing a list of ninja build targets to compute the runtime
+dependencies for (on Windows, use the ninja target name, not the file, so
+`base_unittests`, not `base_unittests.exe`).
+
+MB will take this file, translate each build target to the matching GN
+label (e.g., `base_unittests` -> `//base:base_unittests`, write that list
+to a file called `runtime_deps` in the build directory, and pass that to
+`gn gen $BUILD ... --runtime-deps-list-file=$BUILD/runtime_deps`.
+
+Once GN has computed the lists of runtime dependencies, MB will then
+look up the command line for each target (currently this is hard-coded
+in [mb.py](https://code.google.com/p/chromium/codesearch?q=mb.py#chromium/src/tools/mb/mb.py&q=mb.py%20GetIsolateCommand&sq=package:chromium&type=cs)), and write out the
+matching `.isolate` and `.isolated.gen.json` files.
+
+## The `mb_config.pyl` config file
 
 The `mb_config.pyl` config file is intended to enumerate all of the
 supported build configurations for Chromium. Generally speaking, you
@@ -178,7 +228,7 @@ translate into a call to `gyp_chromium -G Release` with `GYP_DEFINES` set to
 (From that you can see that mb is intentionally dumb and does not
 attempt to de-dup the flags, it lets gyp do that).
 
-## Debugging (-v/--verbose and -n/--dry-run)
+## Debugging MB
 
 By design, MB should be simple enough that very little can go wrong.
 

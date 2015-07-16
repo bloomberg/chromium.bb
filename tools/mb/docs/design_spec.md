@@ -20,6 +20,9 @@ Ninja files, and the `analyze` step that takes a list of modified files
 and a list of targets to build and returns which targets are affected by
 the files.
 
+For more information on how to actually use MB, see
+[the user guide](user_guide.md).
+
 ## Design
 
 MB is intended to be as simple as possible, and to defer as much work as
@@ -122,7 +125,7 @@ This design allows us to determine easily all of the different sets
 of flags that we need to support, but *not* which flags are used on which
 host/target combinations.
 
-It may be that we should really track the latter. Doing so is just a 
+It may be that we should really track the latter. Doing so is just a
 config file change, however.
 
 ### Non-goals
@@ -137,7 +140,7 @@ config file change, however.
   the GYP->GN migration is done, and so we should not add things for
   developers that can't easily be added to GN itself.
 
-* MB is not intended to replace the 
+* MB is not intended to replace the
   [CR tool](https://code.google.com/p/chromium/wiki/CRUserManual). Not
   only is it only intended to replace the gyp\_chromium part of `'gclient
   runhooks'`, it is not really meant as a developer-facing tool.
@@ -147,7 +150,7 @@ config file change, however.
 * Some common flags (goma\_dir being the obvious one) may need to be
   specified via the user, and it's unclear how to integrate this with
   the concept of build\_configs.
-  
+
   Right now, MB has hard-coded support for a few flags (i.e., you can
   pass the --goma-dir flag, and it will know to expand "${goma\_dir}" in
   the string before calling out to the tool. We may want to generalize
