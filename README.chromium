@@ -50,7 +50,6 @@ This directory contains the source code of ICU 54.1 for C/C++.
           See http://unicode.org/cldr/trac/ticket/4200 and
               http://crbug.com/39779
 
-
    - Add a new file brklocal.mk (copied from brkfiles.mk) with line_ja.txt
      and word_POSIX.txt dropped from the build list.
 
@@ -307,3 +306,8 @@ This directory contains the source code of ICU 54.1 for C/C++.
    - patches/mutex.patch
    - upstream bug (fixed in ToT and will be included in 56)
      http://bugs.icu-project.org/trac/ticket/11599
+
+20. Cherry-pick an upstream patch for a data loading bug.
+   - patches/dataload.patch
+   - upstream change (fixed in ToT and will be included in 56)
+     http://bugs.icu-project.org/trac/changeset/37670
