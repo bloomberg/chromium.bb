@@ -23,6 +23,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -46,9 +47,9 @@ void SVGImageForContainer::drawPattern(GraphicsContext* context, const FloatRect
     m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, op, dstRect, repeatSpacing);
 }
 
-bool SVGImageForContainer::bitmapForCurrentFrame(SkBitmap* bitmap)
+PassRefPtr<SkImage> SVGImageForContainer::imageForCurrentFrame()
 {
-    return m_image->bitmapForCurrentFrame(bitmap);
+    return m_image->imageForCurrentFrame();
 }
 
 } // namespace blink

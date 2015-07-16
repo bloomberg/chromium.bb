@@ -52,9 +52,8 @@ bool FrameData::clear(bool clearMetadata)
     m_orientation = DefaultImageOrientation;
     m_frameBytes = 0;
 
-    if (!m_frame.isNull()) {
-        m_frame.reset();
-
+    if (m_frame) {
+        m_frame.clear();
         return true;
     }
     return false;

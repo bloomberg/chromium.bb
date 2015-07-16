@@ -38,6 +38,8 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
+class SkImage;
+
 namespace blink {
 
 class ImageFrameGenerator;
@@ -58,7 +60,7 @@ public:
 
     String filenameExtension() const;
 
-    bool createFrameAtIndex(size_t, SkBitmap*);
+    PassRefPtr<SkImage> createFrameAtIndex(size_t);
 
     void setData(SharedBuffer& data, bool allDataReceived);
 

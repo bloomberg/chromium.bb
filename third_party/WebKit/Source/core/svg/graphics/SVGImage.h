@@ -62,7 +62,7 @@ public:
     void stopAnimation() override;
     void resetAnimation() override;
 
-    bool bitmapForCurrentFrame(SkBitmap*) override;
+    PassRefPtr<SkImage> imageForCurrentFrame() override;
 
     // Returns the SVG image document's frame.
     FrameView* frameView() const;
