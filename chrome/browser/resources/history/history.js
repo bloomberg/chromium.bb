@@ -1754,14 +1754,16 @@ HistoryView.prototype.updateClearBrowsingDataButton_ = function() {
 HistoryView.prototype.setTimeColumnWidth_ = function() {
   // Find the maximum width of all the time elements on the page.
   var times = this.resultDiv_.querySelectorAll('.entry .time');
-  var widths = Array.prototype.map.call(times, function(el) {
+  Array.prototype.forEach.call(times, function(el) {
     el.style.minWidth = '-webkit-min-content';
-    var width = el.clientWidth;
-    el.style.minWidth = '';
-
+  });
+  var widths = Array.prototype.map.call(times, function(el) {
     // Add an extra pixel to prevent rounding errors from causing the text to
     // be ellipsized at certain zoom levels (see crbug.com/329779).
-    return width + 1;
+    return el.clientWidth + 1;
+  });
+  Array.prototype.forEach.call(times, function(el) {
+    el.style.minWidth = '';
   });
   var maxWidth = widths.length ? Math.max.apply(null, widths) : 0;
 
