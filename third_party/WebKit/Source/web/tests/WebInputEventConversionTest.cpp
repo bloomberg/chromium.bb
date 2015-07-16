@@ -775,7 +775,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll)
     FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
 
     FloatSize elasticOverscroll(10, -20);
-    view->setElasticOverscroll(elasticOverscroll);
+    webViewImpl->applyViewportDeltas(WebFloatSize(), WebFloatSize(), elasticOverscroll, 1.0f, 0.0f);
 
     // Just elastic overscroll.
     {
@@ -815,6 +815,44 @@ TEST(WebInputEventConversionTest, ElasticOverscroll)
         PlatformMouseEventBuilder platformMouseBuilder(view, webMouseEvent);
         EXPECT_EQ(webMouseEvent.x / pageScale + pinchOffset.x() + elasticOverscroll.width(), platformMouseBuilder.position().x());
         EXPECT_EQ(webMouseEvent.y / pageScale + pinchOffset.y() + elasticOverscroll.height(), platformMouseBuilder.position().y());
+        EXPECT_EQ(webMouseEvent.globalX, platformMouseBuilder.globalPosition().x());
+        EXPECT_EQ(webMouseEvent.globalY, platformMouseBuilder.globalPosition().y());
+    }
+}
+
+// Page reload/navigation should not reset elastic overscroll.
+TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload)
+{
+    const std::string baseURL("http://www.test5.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    FloatSize elasticOverscroll(10, -20);
+    webViewImpl->applyViewportDeltas(WebFloatSize(), WebFloatSize(), elasticOverscroll, 1.0f, 0.0f);
+    FrameTestHelpers::reloadFrame(webViewHelper.webView()->mainFrame());
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
+
+    // Just elastic overscroll.
+    {
+        WebMouseEvent webMouseEvent;
+        webMouseEvent.type = WebInputEvent::MouseMove;
+        webMouseEvent.x = 10;
+        webMouseEvent.y = 50;
+        webMouseEvent.windowX = 10;
+        webMouseEvent.windowY = 50;
+        webMouseEvent.globalX = 10;
+        webMouseEvent.globalY = 50;
+
+        PlatformMouseEventBuilder platformMouseBuilder(view, webMouseEvent);
+        EXPECT_EQ(webMouseEvent.x + elasticOverscroll.width(), platformMouseBuilder.position().x());
+        EXPECT_EQ(webMouseEvent.y + elasticOverscroll.height(), platformMouseBuilder.position().y());
         EXPECT_EQ(webMouseEvent.globalX, platformMouseBuilder.globalPosition().x());
         EXPECT_EQ(webMouseEvent.globalY, platformMouseBuilder.globalPosition().y());
     }

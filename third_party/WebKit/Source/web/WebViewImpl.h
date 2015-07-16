@@ -526,6 +526,8 @@ public:
 
     PageScaleConstraintsSet& pageScaleConstraintsSet() const;
 
+    FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
+
 private:
     void setPageScaleFactorAndLocation(float, const FloatPoint&);
 
@@ -747,6 +749,8 @@ private:
 
     bool m_userGestureObserved;
     WebDisplayMode m_displayMode;
+
+    FloatSize m_elasticOverscroll;
 
     RefPtr<EventListener> m_popupMouseWheelEventListener;
 };

@@ -167,6 +167,8 @@ public:
     void onMouseDown(Node*) override;
     void didUpdateTopControls() const override;
 
+    FloatSize elasticOverscroll() const override;
+
 private:
     bool isChromeClientImpl() const override { return true; }
     void registerPopupOpeningObserver(PopupOpeningObserver*) override;

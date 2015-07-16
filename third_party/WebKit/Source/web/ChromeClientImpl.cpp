@@ -960,4 +960,9 @@ void ChromeClientImpl::notifyPopupOpeningObservers() const
         observer->willOpenPopup();
 }
 
+FloatSize ChromeClientImpl::elasticOverscroll() const
+{
+    return m_webView->elasticOverscroll();
+}
+
 } // namespace blink

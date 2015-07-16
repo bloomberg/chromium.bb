@@ -1482,9 +1482,12 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scr
     ScrollableArea::setScrollPosition(newScrollPosition, scrollType, scrollBehavior);
 }
 
-void FrameView::setElasticOverscroll(const FloatSize& elasticOverscroll)
+void FrameView::didUpdateElasticOverscroll()
 {
-    m_elasticOverscroll = elasticOverscroll;
+    Page* page = frame().page();
+    if (!page)
+        return;
+    FloatSize elasticOverscroll = page->chromeClient().elasticOverscroll();
     if (m_horizontalScrollbar) {
         float delta = elasticOverscroll.width() - m_horizontalScrollbar->elasticOverscroll();
         if (delta != 0) {

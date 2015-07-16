@@ -425,6 +425,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_zoomFactorOverride(0)
     , m_userGestureObserved(false)
     , m_displayMode(WebDisplayModeBrowser)
+    , m_elasticOverscroll(FloatSize())
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -4190,7 +4191,8 @@ void WebViewImpl::applyViewportDeltas(
     if (pageScaleDelta != 1)
         m_doubleTapZoomPending = false;
 
-    frameView->setElasticOverscroll(elasticOverscrollDelta + frameView->elasticOverscroll());
+    m_elasticOverscroll += elasticOverscrollDelta;
+    frameView->didUpdateElasticOverscroll();
 
     ScrollableArea* layoutViewport = frameView->layoutViewportScrollableArea();
 
