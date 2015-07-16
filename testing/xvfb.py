@@ -79,7 +79,7 @@ def start_xvfb(env, build_dir, xvfb_path='Xvfb', display=':9'):
       print 'Xvfb output:'
       for l in xvfb_proc.communicate()[0].splitlines():
         print '> %s' % l
-      return None
+      return (None, None)
 
     # Some ChromeOS tests need a window manager.
     openbox_proc = subprocess.Popen('openbox', stdout=subprocess.PIPE,

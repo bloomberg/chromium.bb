@@ -147,7 +147,8 @@ def _run_test_with_xvfb(config, shell, args, apptest):
   xvfb_proc = None
   openbox_proc = None
   env = os.environ.copy()
-  if '--gtest_list_tests' not in args and xvfb.should_start_xvfb(env):
+  if (config.target_os == Config.OS_LINUX and '--gtest_list_tests' not in args
+      and xvfb.should_start_xvfb(env)):
     (xvfb_proc, openbox_proc) = xvfb.start_xvfb(env, Paths(config).build_dir)
     if not xvfb_proc or not xvfb_proc.pid:
       raise Exception('Xvfb failed to start; aborting test run.')
@@ -197,7 +198,7 @@ def _run_test(config, shell, args, apptest, env, result):
   output = ''
   exception = ''
   try:
-    if (config.target_os != Config.OS_ANDROID):
+    if config.target_os != Config.OS_ANDROID:
       command = _build_command_line(config, args, apptest)
       process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, env=env)
