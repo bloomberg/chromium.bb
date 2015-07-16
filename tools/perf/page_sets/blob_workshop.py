@@ -32,7 +32,7 @@ class BlobCreateThenRead(page_module.Page):
 
     errors = action_runner.EvaluateJavaScript('errors')
     if errors:
-      raise page_test.Failure('Errors on page: ' + ', '.join(self.errors))
+      raise page_test.Failure('Errors on page: ' + ', '.join(errors))
 
 
 class BlobMassCreate(page_module.Page):
@@ -62,7 +62,7 @@ class BlobMassCreate(page_module.Page):
 
     errors = action_runner.EvaluateJavaScript('errors')
     if errors:
-      raise page_test.Failure('Errors on page: ' + ', '.join(self.errors))
+      raise page_test.Failure('Errors on page: ' + ', '.join(errors))
 
 
 class BlobWorkshopPageSet(story.StorySet):
