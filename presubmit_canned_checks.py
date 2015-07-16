@@ -345,11 +345,14 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   OBJC_FILE_EXTS = ('h', 'm', 'mm')
   OBJC_EXCEPTIONS = ('#define', '#endif', '#if', '#import', '#include',
                      '#pragma')
+  PY_FILE_EXTS = ('py')
+  PY_EXCEPTIONS = ('import', 'from')
 
   LANGUAGE_EXCEPTIONS = [
     (CPP_FILE_EXTS, CPP_EXCEPTIONS),
     (JAVA_FILE_EXTS, JAVA_EXCEPTIONS),
     (OBJC_FILE_EXTS, OBJC_EXCEPTIONS),
+    (PY_FILE_EXTS, PY_EXCEPTIONS),
   ]
 
   def no_long_lines(file_extension, line):
@@ -379,6 +382,9 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
       return True
 
     if '<include' in line and file_extension in ('css', 'html', 'js'):
+      return True
+
+    if 'pylint: disable=line-too-long' in line and file_extension == 'py':
       return True
 
     return input_api.re.match(
