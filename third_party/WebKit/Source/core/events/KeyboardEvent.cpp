@@ -219,6 +219,11 @@ int KeyboardEvent::which() const
     return keyCode();
 }
 
+PassRefPtrWillBeRawPtr<EventDispatchMediator> KeyboardEvent::createMediator()
+{
+    return KeyboardEventDispatchMediator::create(this);
+}
+
 DEFINE_TRACE(KeyboardEvent)
 {
     UIEventWithKeyState::trace(visitor);

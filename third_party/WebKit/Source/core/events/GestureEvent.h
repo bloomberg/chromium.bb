@@ -46,6 +46,8 @@ public:
     float deltaX() const { return m_deltaX; }
     float deltaY() const { return m_deltaY; }
 
+    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

@@ -2362,28 +2362,26 @@ bool Element::isFocusedElementInDocument() const
 
 void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type)
 {
-    RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement);
-    EventDispatcher::dispatchEvent(*this, FocusEventDispatchMediator::create(event.release()));
+    dispatchEvent(FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement));
 }
 
 void Element::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type)
 {
-    RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::blur, false, false, document().domWindow(), 0, newFocusedElement);
-    EventDispatcher::dispatchEvent(*this, BlurEventDispatchMediator::create(event.release()));
+    dispatchEvent(FocusEvent::create(EventTypeNames::blur, false, false, document().domWindow(), 0, newFocusedElement));
 }
 
 void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(eventType == EventTypeNames::focusin || eventType == EventTypeNames::DOMFocusIn);
-    dispatchScopedEventDispatchMediator(FocusInEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document().domWindow(), 0, oldFocusedElement)));
+    dispatchScopedEvent(FocusEvent::create(eventType, true, false, document().domWindow(), 0, oldFocusedElement));
 }
 
 void Element::dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(eventType == EventTypeNames::focusout || eventType == EventTypeNames::DOMFocusOut);
-    dispatchScopedEventDispatchMediator(FocusOutEventDispatchMediator::create(FocusEvent::create(eventType, true, false, document().domWindow(), 0, newFocusedElement)));
+    dispatchScopedEvent(FocusEvent::create(eventType, true, false, document().domWindow(), 0, newFocusedElement));
 }
 
 String Element::innerHTML() const

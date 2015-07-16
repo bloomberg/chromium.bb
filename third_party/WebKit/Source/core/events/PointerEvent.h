@@ -36,6 +36,8 @@ public:
     bool isMouseEvent() const override;
     bool isPointerEvent() const override;
 
+    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

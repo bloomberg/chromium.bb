@@ -76,6 +76,8 @@ public:
 
     void preventDefault() override;
 
+    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

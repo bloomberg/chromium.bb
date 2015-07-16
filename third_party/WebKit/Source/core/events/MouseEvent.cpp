@@ -76,6 +76,7 @@ MouseEvent::MouseEvent()
     , m_relatedTarget(nullptr)
     , m_dataTransfer(nullptr)
     , m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable)
+    , m_isTrusted(false)
 {
 }
 
@@ -96,6 +97,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     , m_relatedTarget(relatedTarget)
     , m_dataTransfer(dataTransfer)
     , m_syntheticEventType(syntheticEventType)
+    , m_isTrusted(false)
 {
     setUICreateTime(uiCreateTime);
 }
@@ -110,6 +112,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& init
     , m_relatedTarget(initializer.relatedTarget())
     , m_dataTransfer(nullptr)
     , m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable)
+    , m_isTrusted(false)
 {
     initCoordinates(IntPoint(initializer.clientX(), initializer.clientY()));
 }
@@ -230,6 +233,7 @@ SimulatedMouseEvent::SimulatedMouseEvent(const AtomicString& eventType, PassRefP
     : MouseEvent(eventType, true, true, view, 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 0, 0,
         nullptr, nullptr, true, PlatformMouseEvent::RealOrIndistinguishable)
 {
+    setTrusted(true);
     if (UIEventWithKeyState* keyStateEvent = findEventWithKeyState(underlyingEvent.get())) {
         m_ctrlKey = keyStateEvent->ctrlKey();
         m_altKey = keyStateEvent->altKey();
@@ -245,18 +249,23 @@ SimulatedMouseEvent::SimulatedMouseEvent(const AtomicString& eventType, PassRefP
     }
 }
 
+PassRefPtrWillBeRawPtr<EventDispatchMediator> MouseEvent::createMediator()
+{
+    return MouseEventDispatchMediator::create(this);
+}
+
 DEFINE_TRACE(SimulatedMouseEvent)
 {
     MouseEvent::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> MouseEventDispatchMediator::create(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent, MouseEventType mouseEventType)
+PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> MouseEventDispatchMediator::create(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent)
 {
-    return adoptRefWillBeNoop(new MouseEventDispatchMediator(mouseEvent, mouseEventType));
+    return adoptRefWillBeNoop(new MouseEventDispatchMediator(mouseEvent));
 }
 
-MouseEventDispatchMediator::MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent, MouseEventType mouseEventType)
-    : EventDispatchMediator(mouseEvent), m_mouseEventType(mouseEventType)
+MouseEventDispatchMediator::MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent> mouseEvent)
+    : EventDispatchMediator(mouseEvent)
 {
 }
 
@@ -267,7 +276,7 @@ MouseEvent& MouseEventDispatchMediator::event() const
 
 bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    if (isSyntheticMouseEvent()) {
+    if (!event().isTrusted()) {
         event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
         return dispatcher.dispatch();
     }
@@ -297,6 +306,9 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) cons
         event().detail(), event().screenX(), event().screenY(), event().clientX(), event().clientY(),
         event().ctrlKey(), event().altKey(), event().shiftKey(), event().metaKey(),
         event().button(), relatedTarget, event().sourceDevice(), event().buttons());
+
+    // Inherit the trusted status from the original event.
+    doubleClickEvent->setTrusted(event().isTrusted());
     if (event().defaultHandled())
         doubleClickEvent->setDefaultHandled();
     EventDispatcher::dispatchEvent(dispatcher.node(), MouseEventDispatchMediator::create(doubleClickEvent));

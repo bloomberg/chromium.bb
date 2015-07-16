@@ -59,6 +59,11 @@ bool PointerEvent::isPointerEvent() const
     return true;
 }
 
+PassRefPtrWillBeRawPtr<EventDispatchMediator> PointerEvent::createMediator()
+{
+    return PointerEventDispatchMediator::create(this);
+}
+
 DEFINE_TRACE(PointerEvent)
 {
     MouseEvent::trace(visitor);

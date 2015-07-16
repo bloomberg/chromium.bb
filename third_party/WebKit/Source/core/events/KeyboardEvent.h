@@ -88,6 +88,8 @@ public:
     bool isKeyboardEvent() const override;
     int which() const override;
 
+    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

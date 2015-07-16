@@ -56,6 +56,8 @@ public:
     const AtomicString& interfaceName() const override;
     bool isFocusEvent() const override;
 
+    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -73,33 +75,6 @@ public:
     static PassRefPtrWillBeRawPtr<FocusEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
     explicit FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
-    FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
-    bool dispatchEvent(EventDispatcher&) const override;
-};
-
-class BlurEventDispatchMediator final : public EventDispatchMediator {
-public:
-    static PassRefPtrWillBeRawPtr<BlurEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
-private:
-    explicit BlurEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
-    FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
-    bool dispatchEvent(EventDispatcher&) const override;
-};
-
-class FocusInEventDispatchMediator final : public EventDispatchMediator {
-public:
-    static PassRefPtrWillBeRawPtr<FocusInEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
-private:
-    explicit FocusInEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
-    FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
-    bool dispatchEvent(EventDispatcher&) const override;
-};
-
-class FocusOutEventDispatchMediator final : public EventDispatchMediator {
-public:
-    static PassRefPtrWillBeRawPtr<FocusOutEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
-private:
-    explicit FocusOutEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
     bool dispatchEvent(EventDispatcher&) const override;
 };

@@ -624,7 +624,6 @@ public:
     virtual void postDispatchEventHandler(Event*, void* /*dataFromPreDispatch*/) { }
 
     void dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event>);
-    void dispatchScopedEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispatchMediator>);
 
     virtual void handleLocalEvents(Event&);
 
@@ -635,8 +634,6 @@ public:
     bool dispatchWheelEvent(const PlatformWheelEvent&);
     bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = nullptr);
     bool dispatchGestureEvent(const PlatformGestureEvent&);
-    bool dispatchTouchEvent(PassRefPtrWillBeRawPtr<TouchEvent>);
-    bool dispatchPointerEvent(PassRefPtrWillBeRawPtr<PointerEvent>);
 
     void dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions = SendNoEvents);
 

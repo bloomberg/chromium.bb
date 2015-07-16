@@ -30,6 +30,21 @@
 
 namespace blink {
 
+inline static unsigned convertDeltaMode(const PlatformWheelEvent& event)
+{
+    return event.granularity() == ScrollByPageWheelEvent ? WheelEvent::DOM_DELTA_PAGE : WheelEvent::DOM_DELTA_PIXEL;
+}
+
+PassRefPtrWillBeRawPtr<WheelEvent> WheelEvent::create(const PlatformWheelEvent& event, PassRefPtrWillBeRawPtr<AbstractView> view)
+{
+    return adoptRefWillBeNoop(new WheelEvent(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
+        convertDeltaMode(event), view, event.globalPosition(), event.position(),
+        event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
+        MouseEvent::platformModifiersToButtons(event.modifiers()),
+        event.canScroll(), event.hasPreciseScrollingDeltas(),
+        static_cast<Event::RailsMode>(event.railsMode())));
+}
+
 WheelEvent::WheelEvent()
     : m_deltaX(0)
     , m_deltaY(0)
@@ -86,29 +101,24 @@ bool WheelEvent::isWheelEvent() const
     return true;
 }
 
+PassRefPtrWillBeRawPtr<EventDispatchMediator> WheelEvent::createMediator()
+{
+    return WheelEventDispatchMediator::create(this);
+}
+
 DEFINE_TRACE(WheelEvent)
 {
     MouseEvent::trace(visitor);
 }
 
-inline static unsigned deltaMode(const PlatformWheelEvent& event)
+PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> WheelEventDispatchMediator::create(PassRefPtrWillBeRawPtr<WheelEvent> event)
 {
-    return event.granularity() == ScrollByPageWheelEvent ? WheelEvent::DOM_DELTA_PAGE : WheelEvent::DOM_DELTA_PIXEL;
+    return adoptRefWillBeNoop(new WheelEventDispatchMediator(event));
 }
 
-PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> WheelEventDispatchMediator::create(const PlatformWheelEvent& event, PassRefPtrWillBeRawPtr<AbstractView> view)
+WheelEventDispatchMediator::WheelEventDispatchMediator(PassRefPtrWillBeRawPtr<WheelEvent> event)
+    : EventDispatchMediator(event)
 {
-    return adoptRefWillBeNoop(new WheelEventDispatchMediator(event, view));
-}
-
-WheelEventDispatchMediator::WheelEventDispatchMediator(const PlatformWheelEvent& event, PassRefPtrWillBeRawPtr<AbstractView> view)
-{
-    setEvent(WheelEvent::create(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
-        deltaMode(event), view, event.globalPosition(), event.position(),
-        event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
-        MouseEvent::platformModifiersToButtons(event.modifiers()),
-        event.canScroll(), event.hasPreciseScrollingDeltas(),
-        static_cast<Event::RailsMode>(event.railsMode())));
 }
 
 WheelEvent& WheelEventDispatchMediator::event() const

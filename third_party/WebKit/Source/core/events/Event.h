@@ -190,6 +190,8 @@ public:
     // ErrorEvent behaves, can override this method.
     virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const { return true; }
 
+    virtual PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator();
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

@@ -1999,24 +1999,12 @@ void Node::handleLocalEvents(Event& event)
 
 void Node::dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
-    dispatchScopedEventDispatchMediator(EventDispatchMediator::create(event));
-}
-
-void Node::dispatchScopedEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispatchMediator> eventDispatchMediator)
-{
-    EventDispatcher::dispatchScopedEvent(*this, eventDispatchMediator);
+    EventDispatcher::dispatchScopedEvent(*this, event->createMediator());
 }
 
 bool Node::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
-    if (event->isMouseEvent())
-        return EventDispatcher::dispatchEvent(*this, MouseEventDispatchMediator::create(static_pointer_cast<MouseEvent>(event), MouseEventDispatchMediator::SyntheticMouseEvent));
-    if (event->isTouchEvent())
-        return dispatchTouchEvent(static_pointer_cast<TouchEvent>(event));
-    if (event->isPointerEvent())
-        return dispatchPointerEvent(static_pointer_cast<PointerEvent>(event));
-
-    return EventDispatcher::dispatchEvent(*this, EventDispatchMediator::create(event));
+    return EventDispatcher::dispatchEvent(*this, event->createMediator());
 }
 
 void Node::dispatchSubtreeModifiedEvent()
@@ -2041,15 +2029,17 @@ bool Node::dispatchDOMActivateEvent(int detail, PassRefPtrWillBeRawPtr<Event> un
     return event->defaultHandled();
 }
 
-bool Node::dispatchKeyEvent(const PlatformKeyboardEvent& event)
+bool Node::dispatchKeyEvent(const PlatformKeyboardEvent& nativeEvent)
 {
-    return EventDispatcher::dispatchEvent(*this, KeyboardEventDispatchMediator::create(KeyboardEvent::create(event, document().domWindow())));
+    return dispatchEvent(KeyboardEvent::create(nativeEvent, document().domWindow()));
 }
 
-bool Node::dispatchMouseEvent(const PlatformMouseEvent& event, const AtomicString& eventType,
+bool Node::dispatchMouseEvent(const PlatformMouseEvent& nativeEvent, const AtomicString& eventType,
     int detail, Node* relatedTarget)
 {
-    return EventDispatcher::dispatchEvent(*this, MouseEventDispatchMediator::create(MouseEvent::create(eventType, document().domWindow(), event, detail, relatedTarget)));
+    RefPtrWillBeRawPtr<MouseEvent> event = MouseEvent::create(eventType, document().domWindow(), nativeEvent, detail, relatedTarget);
+    event->setTrusted(true);
+    return dispatchEvent(event);
 }
 
 bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
@@ -2057,17 +2047,7 @@ bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
     RefPtrWillBeRawPtr<GestureEvent> gestureEvent = GestureEvent::create(document().domWindow(), event);
     if (!gestureEvent.get())
         return false;
-    return EventDispatcher::dispatchEvent(*this, GestureEventDispatchMediator::create(gestureEvent));
-}
-
-bool Node::dispatchTouchEvent(PassRefPtrWillBeRawPtr<TouchEvent> event)
-{
-    return EventDispatcher::dispatchEvent(*this, TouchEventDispatchMediator::create(event));
-}
-
-bool Node::dispatchPointerEvent(PassRefPtrWillBeRawPtr<PointerEvent> event)
-{
-    return EventDispatcher::dispatchEvent(*this, PointerEventDispatchMediator::create(event));
+    return dispatchEvent(gestureEvent);
 }
 
 void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions)
@@ -2077,7 +2057,7 @@ void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEve
 
 bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)
 {
-    return EventDispatcher::dispatchEvent(*this, WheelEventDispatchMediator::create(event, document().domWindow()));
+    return dispatchEvent(WheelEvent::create(event, document().domWindow()));
 }
 
 void Node::dispatchInputEvent()

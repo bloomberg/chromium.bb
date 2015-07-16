@@ -51,6 +51,8 @@ public:
         return adoptRefWillBeNoop(new WheelEvent);
     }
 
+    static PassRefPtrWillBeRawPtr<WheelEvent> create(const PlatformWheelEvent& platformEvent, PassRefPtrWillBeRawPtr<AbstractView>);
+
     static PassRefPtrWillBeRawPtr<WheelEvent> create(const AtomicString& type, const WheelEventInit& initializer)
     {
         return adoptRefWillBeNoop(new WheelEvent(type, initializer));
@@ -82,6 +84,8 @@ public:
     bool isMouseEvent() const override;
     bool isWheelEvent() const override;
 
+    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -105,9 +109,10 @@ DEFINE_EVENT_TYPE_CASTS(WheelEvent);
 
 class WheelEventDispatchMediator final : public EventDispatchMediator {
 public:
-    static PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> create(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
+    static PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> create(PassRefPtrWillBeRawPtr<WheelEvent>);
+
 private:
-    WheelEventDispatchMediator(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
+    explicit WheelEventDispatchMediator(PassRefPtrWillBeRawPtr<WheelEvent>);
     WheelEvent& event() const;
     bool dispatchEvent(EventDispatcher&) const override;
 };

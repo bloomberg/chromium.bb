@@ -92,6 +92,13 @@ public:
     bool isDragEvent() const final;
     int which() const final;
 
+    // TODO(dtapuska): Move isTrusted support from MouseEvent
+    // to Event. http://crbug.com/334015
+    void setTrusted(bool trusted) { m_isTrusted = trusted; }
+    bool isTrusted() const { return m_isTrusted; }
+
+    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -112,6 +119,7 @@ private:
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
     PersistentWillBeMember<DataTransfer> m_dataTransfer;
     PlatformMouseEvent::SyntheticEventType m_syntheticEventType;
+    unsigned m_isTrusted : 1;
 };
 
 class SimulatedMouseEvent final : public MouseEvent {
@@ -127,16 +135,13 @@ private:
 
 class MouseEventDispatchMediator final : public EventDispatchMediator {
 public:
-    enum MouseEventType { SyntheticMouseEvent, NonSyntheticMouseEvent};
-    static PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> create(PassRefPtrWillBeRawPtr<MouseEvent>, MouseEventType = NonSyntheticMouseEvent);
+    static PassRefPtrWillBeRawPtr<MouseEventDispatchMediator> create(PassRefPtrWillBeRawPtr<MouseEvent>);
 
 private:
-    explicit MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent>, MouseEventType);
+    explicit MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent>);
     MouseEvent& event() const;
 
     bool dispatchEvent(EventDispatcher&) const override;
-    bool isSyntheticMouseEvent() const { return m_mouseEventType == SyntheticMouseEvent; }
-    MouseEventType m_mouseEventType;
 };
 
 DEFINE_EVENT_TYPE_CASTS(MouseEvent);

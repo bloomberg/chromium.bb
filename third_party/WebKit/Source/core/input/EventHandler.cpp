@@ -3575,7 +3575,7 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
         pointerEventInit.setCancelable(!isEnterOrLeave && pointState != PlatformTouchPoint::TouchCancelled);
 
         RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(eventName, pointerEventInit);
-        touchInfo.touchTarget->toNode()->dispatchPointerEvent(pointerEvent.get());
+        touchInfo.touchTarget->dispatchEvent(pointerEvent.get());
         touchInfo.consumed = pointerEvent->defaultPrevented() || pointerEvent->defaultHandled();
 
         // Remove the released/cancelled id at the end to correctly determine primary id above.
@@ -3603,7 +3603,7 @@ void EventHandler::sendPointerCancels(WillBeHeapVector<TouchInfo>& touchInfos)
 
         RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(
             EventTypeNames::pointercancel, pointerEventInit);
-        touchInfo.touchTarget->toNode()->dispatchPointerEvent(pointerEvent.get());
+        touchInfo.touchTarget->dispatchEvent(pointerEvent.get());
 
         m_pointerIdManager.remove(PointerIdManager::PointerTypeTouch, pointerId);
     }
@@ -3706,7 +3706,7 @@ bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
                 event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
                 event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
 
-            touchEventTarget->toNode()->dispatchTouchEvent(touchEvent.get());
+            touchEventTarget->dispatchEvent(touchEvent.get());
             swallowedEvent = swallowedEvent || touchEvent->defaultPrevented() || touchEvent->defaultHandled();
         }
     }

@@ -109,6 +109,12 @@ void TouchEvent::preventDefault()
             "Ignored attempt to cancel a " + type() + " event with cancelable=false, for example because scrolling is in progress and cannot be interrupted."));
     }
 }
+
+PassRefPtrWillBeRawPtr<EventDispatchMediator> TouchEvent::createMediator()
+{
+    return TouchEventDispatchMediator::create(this);
+}
+
 DEFINE_TRACE(TouchEvent)
 {
     visitor->trace(m_touches);

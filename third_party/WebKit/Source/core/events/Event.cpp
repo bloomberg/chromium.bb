@@ -24,6 +24,7 @@
 #include "core/events/Event.h"
 
 #include "core/dom/StaticNodeList.h"
+#include "core/events/EventDispatchMediator.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/UseCounter.h"
@@ -235,6 +236,11 @@ WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::path(ScriptState* scrip
         return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>(1, window);
 
     return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>();
+}
+
+PassRefPtrWillBeRawPtr<EventDispatchMediator> Event::createMediator()
+{
+    return EventDispatchMediator::create(this);
 }
 
 EventTarget* Event::currentTarget() const
