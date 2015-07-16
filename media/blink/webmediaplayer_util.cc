@@ -146,6 +146,11 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
   }
 }
 
+void RecordOriginOfHLSPlayback(const GURL& origin_url) {
+  if (media::GetMediaClient())
+    GetMediaClient()->RecordRapporURL("Media.OriginUrl.HLS", origin_url);
+}
+
 EmeInitDataType ConvertToEmeInitDataType(
     blink::WebEncryptedMediaInitDataType init_data_type) {
   switch (init_data_type) {

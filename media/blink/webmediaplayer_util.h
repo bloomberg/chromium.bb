@@ -37,6 +37,9 @@ void MEDIA_EXPORT ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
                                 const GURL& url,
                                 const GURL& origin_url);
 
+// Record a RAPPOR metric for the origin of an HLS playback.
+void MEDIA_EXPORT RecordOriginOfHLSPlayback(const GURL& origin_url);
+
 // Convert Initialization Data Types.
 EmeInitDataType MEDIA_EXPORT
 ConvertToEmeInitDataType(blink::WebEncryptedMediaInitDataType init_data_type);

@@ -1078,10 +1078,8 @@ void WebMediaPlayerAndroid::InitializePlayer(
     const GURL& first_party_for_cookies,
     bool allow_stored_credentials,
     int demuxer_client_id) {
-  if (player_type_ == MEDIA_PLAYER_TYPE_URL) {
-    UMA_HISTOGRAM_BOOLEAN("Media.Android.IsHttpLiveStreamingMedia",
-                          IsHLSStream());
-  }
+  ReportHLSMetrics();
+
   allow_stored_credentials_ = allow_stored_credentials;
   player_manager_->Initialize(
       player_type_, player_id_, url, first_party_for_cookies, demuxer_client_id,
@@ -1882,6 +1880,18 @@ bool WebMediaPlayerAndroid::IsHLSStream() const {
   if (!net::GetMimeTypeFromFile(base::FilePath(url.path()), &mime))
     return false;
   return !mime.compare("application/x-mpegurl");
+}
+
+void WebMediaPlayerAndroid::ReportHLSMetrics() const {
+  if (player_type_ != MEDIA_PLAYER_TYPE_URL)
+    return;
+
+  bool is_hls = IsHLSStream();
+  UMA_HISTOGRAM_BOOLEAN("Media.Android.IsHttpLiveStreamingMedia", is_hls);
+  if (is_hls) {
+    media::RecordOriginOfHLSPlayback(
+        GURL(frame_->document().securityOrigin().toString()));
+  }
 }
 
 }  // namespace content

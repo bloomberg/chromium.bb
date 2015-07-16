@@ -338,6 +338,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
       bool success);
 
   bool IsHLSStream() const;
+  // Report whether the loaded url, after following redirects, points to a HLS
+  // playlist, and record the origin of the player.
+  void ReportHLSMetrics() const;
 
   blink::WebFrame* const frame_;
 
