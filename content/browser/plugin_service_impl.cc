@@ -581,7 +581,8 @@ base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
     // Many plugins on the Mac have .plugin in the actual name, which looks
     // terrible, so look for that and strip it off if present.
     const std::string kPluginExtension = ".plugin";
-    if (base::EndsWith(plugin_name, base::ASCIIToUTF16(kPluginExtension), true))
+    if (base::EndsWith(plugin_name, base::ASCIIToUTF16(kPluginExtension),
+                       base::CompareCase::SENSITIVE))
       plugin_name.erase(plugin_name.length() - kPluginExtension.length());
 #endif  // OS_MACOSX
   }

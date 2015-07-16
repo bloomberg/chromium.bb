@@ -37,7 +37,8 @@ bool IsLocaleSupported() {
   const std::string& locale = g_browser_process->GetApplicationLocale();
   static const char* const unsupported_locales[] = {"CN", "TR", "IR"};
   for (size_t i = 0; i < arraysize(unsupported_locales); ++i) {
-    if (base::EndsWith(locale, unsupported_locales[i], false)) {
+    if (base::EndsWith(locale, unsupported_locales[i],
+                       base::CompareCase::INSENSITIVE_ASCII)) {
       return false;
     }
   }

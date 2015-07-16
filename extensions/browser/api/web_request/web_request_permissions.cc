@@ -30,12 +30,12 @@ bool IsSensitiveURL(const GURL& url) {
   const std::string host = url.host();
   const char kGoogleCom[] = ".google.com";
   const char kClient[] = "clients";
-  if (base::EndsWith(host, kGoogleCom, true)) {
+  if (base::EndsWith(host, kGoogleCom, base::CompareCase::SENSITIVE)) {
     // Check for "clients[0-9]*.google.com" hosts.
     // This protects requests to several internal services such as sync,
     // extension update pings, captive portal detection, fraudulent certificate
     // reporting, autofill and others.
-    if (base::StartsWithASCII(host, kClient, true)) {
+    if (base::StartsWith(host, kClient, base::CompareCase::SENSITIVE)) {
       bool match = true;
       for (std::string::const_iterator i = host.begin() + strlen(kClient),
                end = host.end() - strlen(kGoogleCom); i != end; ++i) {
@@ -50,10 +50,12 @@ bool IsSensitiveURL(const GURL& url) {
     // others.
     sensitive_chrome_url =
         sensitive_chrome_url ||
-        base::EndsWith(url.host(), ".clients.google.com", true) ||
+        base::EndsWith(url.host(), ".clients.google.com",
+                       base::CompareCase::SENSITIVE) ||
         url.host() == "sb-ssl.google.com" ||
         (url.host() == "chrome.google.com" &&
-         base::StartsWithASCII(url.path(), "/webstore", true));
+         base::StartsWith(url.path(), "/webstore",
+                          base::CompareCase::SENSITIVE));
   }
   GURL::Replacements replacements;
   replacements.ClearQuery();

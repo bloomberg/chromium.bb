@@ -171,7 +171,8 @@ TEST_F(UnpackerTest, BadPathError) {
 
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(base::StartsWith(unpacker_->error_message(),
-                               ASCIIToUTF16(kExpected), false))
+                               ASCIIToUTF16(kExpected),
+                               base::CompareCase::INSENSITIVE_ASCII))
       << "Expected prefix: \"" << kExpected << "\", actual error: \""
       << unpacker_->error_message() << "\"";
 }
@@ -181,7 +182,8 @@ TEST_F(UnpackerTest, ImageDecodingError) {
   SetupUnpacker("bad_image.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(base::StartsWith(unpacker_->error_message(),
-                               ASCIIToUTF16(kExpected), false))
+                               ASCIIToUTF16(kExpected),
+                               base::CompareCase::INSENSITIVE_ASCII))
       << "Expected prefix: \"" << kExpected << "\", actual error: \""
       << unpacker_->error_message() << "\"";
 }

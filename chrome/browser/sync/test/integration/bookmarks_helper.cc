@@ -964,7 +964,8 @@ gfx::Image CreateFavicon(SkColor color) {
 
 gfx::Image Create1xFaviconFromPNGFile(const std::string& path) {
   const char* kPNGExtension = ".png";
-  if (!base::EndsWith(path, kPNGExtension, false))
+  if (!base::EndsWith(path, kPNGExtension,
+                      base::CompareCase::INSENSITIVE_ASCII))
     return gfx::Image();
 
   base::FilePath full_path;

@@ -381,19 +381,6 @@ inline bool StartsWithASCII(const std::string& str,
                     case_sensitive ? CompareCase::SENSITIVE
                                    : CompareCase::INSENSITIVE_ASCII);
 }
-BASE_EXPORT bool StartsWith(const string16& str,
-                            const string16& search,
-                            bool case_sensitive);
-inline bool EndsWith(const std::string& str,
-                     const std::string& search,
-                     bool case_sensitive) {
-  return EndsWith(StringPiece(str), StringPiece(search),
-                  case_sensitive ? CompareCase::SENSITIVE
-                                 : CompareCase::INSENSITIVE_ASCII);
-}
-BASE_EXPORT bool EndsWith(const string16& str,
-                          const string16& search,
-                          bool case_sensitive);
 
 // Determines the type of ASCII character, independent of locale (the C
 // library versions will change based on locale).

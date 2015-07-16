@@ -139,7 +139,8 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
     // of the original input.
     if (input->cursor_position() != base::string16::npos &&
         !remaining_input.empty() &&
-        base::EndsWith(input->text(), remaining_input, true)) {
+        base::EndsWith(input->text(), remaining_input,
+                       base::CompareCase::SENSITIVE)) {
       int offset = input->text().length() - input->cursor_position();
       // The cursor should never be past the last character or before the
       // first character.

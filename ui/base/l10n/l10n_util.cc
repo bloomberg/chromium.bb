@@ -201,8 +201,9 @@ bool IsDuplicateName(const std::string& locale_name) {
   };
 
   // Skip all the es_Foo other than es_419 for now.
-  if (base::StartsWithASCII(locale_name, "es_", false))
-    return !base::EndsWith(locale_name, "419", true);
+  if (base::StartsWith(locale_name, "es_",
+                       base::CompareCase::INSENSITIVE_ASCII))
+    return !base::EndsWith(locale_name, "419", base::CompareCase::SENSITIVE);
 
   for (size_t i = 0; i < arraysize(kDuplicateNames); ++i) {
     if (base::EqualsCaseInsensitiveASCII(kDuplicateNames[i], locale_name))
