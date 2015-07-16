@@ -123,7 +123,7 @@ void NudgeTracker::RecordSuccessfulSyncCycle() {
 base::TimeDelta NudgeTracker::RecordLocalChange(ModelTypeSet types) {
   // Start with the longest delay.
   base::TimeDelta delay =
-      base::TimeDelta::FromMilliseconds(kDefaultShortPollIntervalSeconds);
+      base::TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds);
   for (ModelTypeSet::Iterator type_it = types.First(); type_it.Good();
        type_it.Inc()) {
     TypeTrackerMap::const_iterator tracker_it =
