@@ -963,12 +963,6 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   if (g_num_frames_to_encode > 0)
     num_frames_to_encode_ = g_num_frames_to_encode;
 
-  // Speed up vector insertion.
-  if (g_env->needs_encode_latency()) {
-    encode_start_time_.reserve(num_frames_to_encode_);
-    encode_latencies_.reserve(num_frames_to_encode_);
-  }
-
   // We may need to loop over the stream more than once if more frames than
   // provided is required for bitrate tests.
   if (force_bitrate_ && num_frames_to_encode_ < kMinFramesForBitrateTests) {
