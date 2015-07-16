@@ -34,7 +34,13 @@ const base::FilePath::CharType kAccelerometerIioBasePath[] =
 
 // File within the device in kAccelerometerIioBasePath containing the scale of
 // the accelerometers.
-const base::FilePath::CharType kScaleNameFormatString[] = "in_accel_%s_scale";
+const base::FilePath::CharType kScaleFileName[] = "in_accel_scale";
+
+// This is the per source scale file in use on kernels older than 3.18. We
+// should remove this when all devices having accelerometers are on kernel 3.18
+// or later or have been patched to use new format: http://crbug.com/510831
+const base::FilePath::CharType kSourceScaleNameFormatString[] =
+    "in_accel_%s_scale";
 
 // The filename giving the path to read the scan index of each accelerometer
 // axis.
@@ -186,21 +192,37 @@ void AccelerometerFileReader::Initialize(
 
   base::FilePath iio_path(base::FilePath(kAccelerometerIioBasePath).Append(
       device));
+
+  // Read the scale for all axes.
+  int scale_divisor = 0;
+  bool per_source_scale =
+      !ReadFileToInt(iio_path.Append(kScaleFileName), &scale_divisor);
+  if (!per_source_scale && scale_divisor == 0) {
+    LOG(ERROR) << "Accelerometer " << kScaleFileName
+               << "has scale of 0 and will not be used.";
+    return;
+  }
+
   // Read configuration of each accelerometer axis from each accelerometer from
   // /sys/bus/iio/devices/iio:deviceX/.
   for (size_t i = 0; i < arraysize(kAccelerometerNames); ++i) {
-    // Read scale of accelerometer.
-    std::string accelerometer_scale_path = base::StringPrintf(
-        kScaleNameFormatString, kAccelerometerNames[i]);
-    int scale_divisor;
-    if (!ReadFileToInt(iio_path.Append(accelerometer_scale_path.c_str()),
-        &scale_divisor)) {
+    if (per_source_scale) {
       configuration_.has[i] = false;
-      continue;
+      // Read scale of accelerometer.
+      std::string accelerometer_scale_path = base::StringPrintf(
+          kSourceScaleNameFormatString, kAccelerometerNames[i]);
+      if (!ReadFileToInt(iio_path.Append(accelerometer_scale_path.c_str()),
+                         &scale_divisor)) {
+        continue;
+      }
+      if (scale_divisor == 0) {
+        LOG(ERROR) << "Accelerometer " << accelerometer_scale_path
+                   << "has scale of 0 and will not be used.";
+        continue;
+      }
     }
 
     configuration_.has[i] = true;
-    configuration_.count++;
     for (size_t j = 0; j < arraysize(kAccelerometerAxes); ++j) {
       configuration_.scale[i][j] = kMeanGravity / scale_divisor;
       std::string accelerometer_index_path = base::StringPrintf(
@@ -208,9 +230,12 @@ void AccelerometerFileReader::Initialize(
           kAccelerometerNames[i]);
       if (!ReadFileToInt(iio_path.Append(accelerometer_index_path.c_str()),
                          &(configuration_.index[i][j]))) {
-        return;
+        configuration_.has[i] = false;
+        break;
       }
     }
+    if (configuration_.has[i])
+      configuration_.count++;
   }
 
   // Adjust the directions of accelerometers to match the AccelerometerUpdate
