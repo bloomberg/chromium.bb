@@ -18,6 +18,7 @@
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/media_factory.h"
 #include "components/html_viewer/touch_handler.h"
+#include "components/html_viewer/web_layer_impl.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
@@ -275,6 +276,8 @@ void Frame::FinishSwapToRemote() {
   remote_frame->initializeFromFrame(web_frame_->toWebLocalFrame());
   // swap() ends up calling us back and we then close the frame.
   web_frame_->swap(remote_frame);
+  web_layer_.reset(new WebLayerImpl(this));
+  remote_frame->setRemoteWebLayer(web_layer_.get());
   web_frame_ = remote_frame;
 }
 

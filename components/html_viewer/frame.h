@@ -31,6 +31,7 @@ namespace html_viewer {
 
 class FrameTreeManager;
 class TouchHandler;
+class WebLayerImpl;
 class WebLayerTreeViewImpl;
 
 // Frame is used to represent a single frame in the frame tree of a page. The
@@ -189,6 +190,8 @@ class Frame : public blink::WebFrameClient,
 
   // TODO(sky): better factor this, maybe push to View.
   blink::WebTreeScopeType scope_;
+
+  scoped_ptr<WebLayerImpl> web_layer_;
 
   base::WeakPtrFactory<Frame> weak_factory_;
 

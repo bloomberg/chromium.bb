@@ -104,8 +104,7 @@ void Browser::OnEmbedForDescendant(mojo::View* view,
                                    mojo::ViewManagerClientPtr* client) {
   // TODO(sky): move this to Frame/FrameTree.
   Frame* frame = Frame::FindFirstFrameAncestor(view);
-  if (!frame || !frame->HasAncestor(frame_tree_->root()) ||
-      frame == frame_tree_->root()) {
+  if (!frame || !frame->HasAncestor(frame_tree_->root())) {
     // TODO(sky): add requestor url so that we can return false if it's not
     // an app we expect.
     mojo::ApplicationConnection* connection =
