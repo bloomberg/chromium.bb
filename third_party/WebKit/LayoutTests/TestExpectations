@@ -3605,3 +3605,8 @@ crbug.com/505086 css3/filters/effect-combined-hw.html [ NeedsManualRebaseline ]
 #crbug.com/505086 css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebaseline ]
 
 crbug.com/509855 webaudio/stereopannernode-no-glitch.html [ Pass Timeout ]
+
+Bug(epertoso) fast/events/window-onerror-11.html [ NeedsManualRebaseline ]
+Bug(epertoso) fast/events/window-onerror-12.html [ NeedsManualRebaseline ]
+Bug(epertoso) virtual/pointerevent/fast/events/window-onerror-11.html [ NeedsManualRebaseline ]
+Bug(epertoso) virtual/pointerevent/fast/events/window-onerror-12.html [ NeedsManualRebaseline ]
