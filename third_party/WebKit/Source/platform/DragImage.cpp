@@ -98,7 +98,7 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
             skBitmap.eraseColor(SK_ColorTRANSPARENT);
             SkCanvas canvas(skBitmap);
             canvas.concat(affineTransformToSkMatrix(orientation.transformFromDefault(sizeRespectingOrientation)));
-            canvas.drawBitmapRect(bitmap, 0, destRect);
+            canvas.drawBitmapRect(bitmap, destRect);
 
             return adoptPtr(new DragImage(skBitmap, deviceScaleFactor, interpolationQuality));
         }

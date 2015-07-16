@@ -332,9 +332,9 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     }
 
     SkRect skSrcRect = adjustedSrcRect;
-    SkCanvas::DrawBitmapRectFlags flags =
-        clampMode == ClampImageToSourceRect ? SkCanvas::kNone_DrawBitmapRectFlag : SkCanvas::kBleed_DrawBitmapRectFlag;
-    canvas->drawBitmapRectToRect(bitmap, &skSrcRect, adjustedDstRect, &paint, flags);
+    SkCanvas::SrcRectConstraint constraint =
+        clampMode == ClampImageToSourceRect ? SkCanvas::kStrict_SrcRectConstraint : SkCanvas::kFast_SrcRectConstraint;
+    canvas->drawBitmapRect(bitmap, &skSrcRect, adjustedDstRect, &paint, constraint);
     canvas->restoreToCount(initialSaveCount);
 
     if (DeferredImageDecoder::isLazyDecoded(bitmap))

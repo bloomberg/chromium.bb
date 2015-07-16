@@ -1341,7 +1341,6 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     }
 
     if (!imageSource->isVideoElement()) {
-        // TODO: Find a way to pass SkCanvas::kBleed_DrawBitmapRectFlag
         imagePaint.setAntiAlias(shouldDrawImageAntialiased(dstRect));
         image->draw(c, imagePaint, dstRect, srcRect, DoNotRespectImageOrientation, Image::DoNotClampImageToSourceRect);
     } else {

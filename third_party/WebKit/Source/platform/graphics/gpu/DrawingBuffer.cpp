@@ -933,7 +933,7 @@ void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int hei
         SkCanvas canvas(canvasBitmap);
         SkRect dst;
         dst.set(SkIntToScalar(0), SkIntToScalar(0), SkIntToScalar(canvasBitmap.width()), SkIntToScalar(canvasBitmap.height()));
-        canvas.drawBitmapRect(m_resizingBitmap, 0, dst);
+        canvas.drawBitmapRect(m_resizingBitmap, dst);
     }
 }
 

@@ -598,7 +598,7 @@ void LoggingCanvas::onDrawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar
     this->SkCanvas::onDrawBitmap(bitmap, left, top, paint);
 }
 
-void LoggingCanvas::onDrawBitmapRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst, const SkPaint* paint, SK_VIRTUAL_CONSTRAINT_TYPE constraint)
+void LoggingCanvas::onDrawBitmapRect(const SkBitmap& bitmap, const SkRect* src, const SkRect& dst, const SkPaint* paint, SrcRectConstraint constraint)
 {
     AutoLogger logger(this);
     RefPtr<JSONObject> params = logger.logItemWithParams("drawBitmapRectToRect");
@@ -636,7 +636,7 @@ void LoggingCanvas::onDrawImage(const SkImage* image, SkScalar left, SkScalar to
     this->SkCanvas::onDrawImage(image, left, top, paint);
 }
 
-void LoggingCanvas::onDrawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst, const SkPaint* paint SRC_RECT_CONSTRAINT_PARAM(constraint))
+void LoggingCanvas::onDrawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst, const SkPaint* paint, SrcRectConstraint constraint)
 {
     AutoLogger logger(this);
     RefPtr<JSONObject> params = logger.logItemWithParams("drawImageRect");
@@ -646,7 +646,7 @@ void LoggingCanvas::onDrawImageRect(const SkImage* image, const SkRect* src, con
     params->setObject("dst", objectForSkRect(dst));
     if (paint)
         params->setObject("paint", objectForSkPaint(*paint));
-    this->SkCanvas::onDrawImageRect(image, src, dst, paint SRC_RECT_CONSTRAINT_ARG(constraint));
+    this->SkCanvas::onDrawImageRect(image, src, dst, paint, constraint);
 }
 
 void LoggingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint)
