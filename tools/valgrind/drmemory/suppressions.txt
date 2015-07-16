@@ -773,6 +773,13 @@ ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlIntegerToUnicodeString
 
+HANDLE LEAK
+name=http://crbug.com/487500b
+system call NtCreateEvent
+ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
+ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
+ntdll.dll!RtlEncodePointer
+
 UNADDRESSABLE ACCESS
 name=http://crbug.com/508820
 ...
