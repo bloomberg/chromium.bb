@@ -191,7 +191,6 @@ class FormStructure {
   UploadRequired upload_required() const { return upload_required_; }
 
   // Returns a FormData containing the data this form structure knows about.
-  // |user_submitted| is currently always false.
   FormData ToFormData() const;
 
   bool operator==(const FormData& form) const;

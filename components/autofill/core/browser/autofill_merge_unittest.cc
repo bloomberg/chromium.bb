@@ -183,7 +183,6 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
   form.name = base::ASCIIToUTF16("MyTestForm");
   form.origin = GURL("https://www.example.com/origin.html");
   form.action = GURL("https://www.example.com/action.html");
-  form.user_submitted = true;
 
   // Parse the input line by line.
   std::vector<std::string> lines = base::SplitString(

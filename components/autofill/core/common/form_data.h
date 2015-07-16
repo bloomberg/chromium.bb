@@ -32,8 +32,6 @@ struct FormData {
   GURL origin;
   // The action target of the form.
   GURL action;
-  // true if this form was submitted by a user gesture and not javascript.
-  bool user_submitted;
   // true if this form is a form tag.
   bool is_form_tag;
   // A vector of all the input fields in the form.

@@ -50,9 +50,6 @@ struct PasswordFormFillData {
   // host, port and path; the rest is stripped.
   GURL action;
 
-  // True if this form was submitted by a user gesture and not javascript.
-  bool user_submitted;
-
   // Username and password input fields in the form.
   FormFieldData username_field;
   FormFieldData password_field;

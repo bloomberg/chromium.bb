@@ -108,15 +108,11 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
   }
 }
 
-void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
+void AutocompleteHistoryManager::OnWillSubmitForm(const FormData& form) {
   if (!autofill_client_->IsAutocompleteEnabled())
     return;
 
   if (driver_->IsOffTheRecord())
-    return;
-
-  // Don't save data that was submitted through JavaScript.
-  if (!form.user_submitted)
     return;
 
   // We put the following restriction on stored FormFields:

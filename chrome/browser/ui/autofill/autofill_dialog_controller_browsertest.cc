@@ -320,7 +320,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
 
     FormData form;
     form.name = ASCIIToUTF16("TestForm");
-    form.user_submitted = true;
 
     FormFieldData field;
     field.autocomplete_attribute = "shipping tel";

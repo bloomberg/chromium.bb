@@ -251,8 +251,7 @@ void ExpectFilledForm(int page_id,
                       const char* expiration_year,
                       bool has_address_fields,
                       bool has_credit_card_fields,
-                      bool use_month_type,
-                      bool is_user_submitted) {
+                      bool use_month_type) {
   // The number of fields in the address and credit card forms created above.
   const size_t kAddressFormSize = 11;
   const size_t kCreditCardFormSize = use_month_type ? 3 : 4;
@@ -266,7 +265,6 @@ void ExpectFilledForm(int page_id,
     EXPECT_EQ(GURL("http://myform.com/form.html"), filled_form.origin);
     EXPECT_EQ(GURL("http://myform.com/submit.html"), filled_form.action);
   }
-  EXPECT_EQ(is_user_submitted, filled_form.user_submitted);
 
   size_t form_size = 0;
   if (has_address_fields)
@@ -327,13 +325,12 @@ void ExpectFilledForm(int page_id,
 void ExpectFilledAddressFormElvis(int page_id,
                                   const FormData& filled_form,
                                   int expected_page_id,
-                                  bool has_credit_card_fields,
-                                  bool is_user_submitted) {
+                                  bool has_credit_card_fields) {
   ExpectFilledForm(page_id, filled_form, expected_page_id, "Elvis", "Aaron",
                    "Presley", "3734 Elvis Presley Blvd.", "Apt. 10", "Memphis",
                    "Tennessee", "38116", "United States", "12345678901",
                    "theking@gmail.com", "", "", "", "", true,
-                   has_credit_card_fields, false, is_user_submitted);
+                   has_credit_card_fields, false);
 }
 
 void ExpectFilledCreditCardFormElvis(int page_id,
@@ -342,7 +339,7 @@ void ExpectFilledCreditCardFormElvis(int page_id,
                                      bool has_address_fields) {
   ExpectFilledForm(page_id, filled_form, expected_page_id, "", "", "", "", "",
                    "", "", "", "", "", "", "Elvis Presley", "4234567890123456",
-                   "04", "2012", has_address_fields, true, false, true);
+                   "04", "2012", has_address_fields, true, false);
 }
 
 void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
@@ -353,7 +350,7 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
                                                   const char* month) {
   ExpectFilledForm(page_id, filled_form, expected_page_id, "", "", "", "", "",
                    "", "", "", "", "", "", "Miku Hatsune", "4234567890654321",
-                   month, year, has_address_fields, true, true, true);
+                   month, year, has_address_fields, true, true);
 }
 
 class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
@@ -367,7 +364,7 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
       const base::string16& prefix,
       const std::string& form_control_type,
       const std::vector<Suggestion>& suggestions));
-  MOCK_METHOD1(OnFormSubmitted, void(const FormData& form));
+  MOCK_METHOD1(OnWillSubmitForm, void(const FormData& form));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutocompleteHistoryManager);
@@ -714,7 +711,6 @@ class AutofillManagerTest : public testing::Test {
       form->action = GURL("http://myform.com/submit.html");
       autofill_client_.set_is_context_secure(false);
     }
-    form->user_submitted = true;
 
     FormFieldData field;
     test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
@@ -875,12 +871,11 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsUnknownFields) {
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
-  form.user_submitted = true;
 
   FormFieldData field;
-  test::CreateTestFormField("Username", "username", "", "text",&field);
+  test::CreateTestFormField("Username", "username", "", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField("Password", "password", "", "password",&field);
+  test::CreateTestFormField("Password", "password", "", "password", &field);
   form.fields.push_back(field);
   test::CreateTestFormField("Quest", "quest", "", "quest", &field);
   form.fields.push_back(field);
@@ -1361,7 +1356,6 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsForPhonePrefixOrSuffix) {
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
-  form.user_submitted = true;
 
   struct {
     const char* const label;
@@ -1430,7 +1424,7 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
+                               false);
 
   EXPECT_EQ(1U, profile->use_count());
   EXPECT_NE(base::Time(), profile->use_date());
@@ -1508,7 +1502,7 @@ TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
+                               false);
 }
 
 // Test that we correctly fill a credit card form.
@@ -1638,7 +1632,7 @@ TEST_F(AutofillManagerTest, FillAddressAndCreditCardForm) {
                                        MakeFrontendID(std::string(), guid),
                                        &response_page_id, &response_data);
     ExpectFilledAddressFormElvis(response_page_id, response_data,
-                                 kDefaultPageID, true, true);
+                                 kDefaultPageID, true);
   }
 
   // Now fill the credit card data.
@@ -1663,7 +1657,6 @@ TEST_F(AutofillManagerTest, FillFormWithNonFocusableFields) {
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("https://myform.com/form.html");
   form.action = GURL("https://myform.com/submit.html");
-  form.user_submitted = true;
 
   FormFieldData field;
 
@@ -1747,7 +1740,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
     // The first address section should be filled with Elvis's data.
     response_data.fields.resize(kAddressFormSize);
     ExpectFilledAddressFormElvis(response_page_id, response_data,
-                                 kDefaultPageID, false, true);
+                                 kDefaultPageID, false);
   }
 
   // Fill the second section, with the initiating field somewhere in the middle
@@ -1780,7 +1773,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
       secondSection.fields[i].name = original_name;
     }
     ExpectFilledAddressFormElvis(response_page_id, secondSection, kPageID2,
-                                 false, true);
+                                 false);
   }
 }
 
@@ -1793,7 +1786,6 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("https://myform.com/form.html");
   form.action = GURL("https://myform.com/submit.html");
-  form.user_submitted = true;
 
   FormFieldData field;
 
@@ -1857,7 +1849,6 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
     EXPECT_EQ(ASCIIToUTF16("MyForm"), response_data.name);
     EXPECT_EQ(GURL("https://myform.com/form.html"), response_data.origin);
     EXPECT_EQ(GURL("https://myform.com/submit.html"), response_data.action);
-    EXPECT_TRUE(response_data.user_submitted);
     ASSERT_EQ(11U, response_data.fields.size());
 
     ExpectFilledField("", "country", "", "text", response_data.fields[0]);
@@ -1889,7 +1880,6 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
     EXPECT_EQ(ASCIIToUTF16("MyForm"), response_data.name);
     EXPECT_EQ(GURL("https://myform.com/form.html"), response_data.origin);
     EXPECT_EQ(GURL("https://myform.com/submit.html"), response_data.action);
-    EXPECT_TRUE(response_data.user_submitted);
     ASSERT_EQ(11U, response_data.fields.size());
 
     ExpectFilledField("", "country", "US", "text",
@@ -1921,7 +1911,6 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
     EXPECT_EQ(ASCIIToUTF16("MyForm"), response_data.name);
     EXPECT_EQ(GURL("https://myform.com/form.html"), response_data.origin);
     EXPECT_EQ(GURL("https://myform.com/submit.html"), response_data.action);
-    EXPECT_TRUE(response_data.user_submitted);
     ASSERT_EQ(11U, response_data.fields.size());
 
     ExpectFilledField("", "country", "", "text", response_data.fields[0]);
@@ -1968,7 +1957,7 @@ TEST_F(AutofillManagerTest, FillFormWithMultipleEmails) {
   // The remainder of the form should be filled as usual.
   response_data.fields.pop_back();
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
+                               false);
 }
 
 // Test that we correctly fill a previously auto-filled form.
@@ -1993,7 +1982,7 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
     SCOPED_TRACE("Address");
     ExpectFilledForm(response_page_id, response_data, kDefaultPageID, "Elvis",
                      "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-                     true, true, false, true);
+                     true, true, false);
   }
 
   // Now fill the credit card data.
@@ -2026,7 +2015,7 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
     SCOPED_TRACE("Credit card 2");
     ExpectFilledForm(response_page_id, response_data, kPageID3, "", "", "", "",
                      "", "", "", "", "", "", "", "", "", "", "2012", true, true,
-                     false, true);
+                     false);
   }
 }
 
@@ -2038,7 +2027,6 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
   form_with_maxlength.name = ASCIIToUTF16("MyMaxlengthPhoneForm");
   form_with_maxlength.origin = GURL("http://myform.com/phone_form.html");
   form_with_maxlength.action = GURL("http://myform.com/phone_submit.html");
-  form_with_maxlength.user_submitted = true;
   FormData form_with_autocompletetype = form_with_maxlength;
   form_with_autocompletetype.name = ASCIIToUTF16("MyAutocompletetypePhoneForm");
 
@@ -2174,7 +2162,7 @@ TEST_F(AutofillManagerTest, FormChangesRemoveField) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
+                               false);
 }
 
 // Test that we can still fill a form when a field has been added to it.
@@ -2205,7 +2193,7 @@ TEST_F(AutofillManagerTest, FormChangesAddField) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
+                               false);
 }
 
 // Test that we are able to save form data when forms are submitted.
@@ -2224,33 +2212,7 @@ TEST_F(AutofillManagerTest, FormSubmitted) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
-
-  // Simulate form submission. We should call into the PDM to try to save the
-  // filled data.
-  FormSubmitted(response_data);
-  EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
-}
-
-// Test that we are able to save form data when forms are not user submitted.
-TEST_F(AutofillManagerTest, FormSubmittedNotUserSubmitted) {
-  // Set up our form data.
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  // Mark the form as not user submitted.
-  form.user_submitted = false;
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  // Fill the form.
-  std::string guid("00000000-0000-0000-0000-000000000001");
-  int response_page_id = 0;
-  FormData response_data;
-  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
-                                     &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, false);
+                               false);
 
   // Simulate form submission. We should call into the PDM to try to save the
   // filled data.
@@ -2275,7 +2237,7 @@ TEST_F(AutofillManagerTest, FormWillSubmitDoesNotSaveData) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
+                               false);
 
   // Simulate OnWillSubmitForm(). We should *not* be calling into the PDM at
   // this point (since the form was not submitted). Does not call
@@ -2302,8 +2264,7 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   MockAutocompleteHistoryManager* m = static_cast<
       MockAutocompleteHistoryManager*>(
           autofill_manager_->autocomplete_history_manager_.get());
-  EXPECT_CALL(*m,
-              OnFormSubmitted(_)).Times(1);
+  EXPECT_CALL(*m, OnWillSubmitForm(_)).Times(1);
   FormSubmitted(form);
 }
 
@@ -2391,7 +2352,7 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
+                               false);
 
   // Simulate form submission. We should call into the PDM to try to save the
   // filled data.
@@ -2416,7 +2377,7 @@ TEST_F(AutofillManagerTest, FormSubmittedPossibleTypesTwoSubmissions) {
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
   ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false, true);
+                               false);
 
   personal_data_.ClearAutofillProfiles();
   ASSERT_EQ(0u, personal_data_.GetProfiles().size());
@@ -2540,7 +2501,6 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
-  form.user_submitted = true;
 
   std::vector<ServerFieldTypeSet> expected_types;
   std::vector<base::string16> expected_values;
@@ -2937,7 +2897,6 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsForNumberSpitAcrossFields) {
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("https://myform.com/form.html");
   form.action = GURL("https://myform.com/submit.html");
-  form.user_submitted = true;
 
   FormFieldData name_field;
   test::CreateTestFormField("Name on Card", "nameoncard", "", "text",
@@ -2992,7 +2951,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsForNumberSpitAcrossFields) {
 }
 
 // Test that inputs detected to be CVC inputs are forced to
-// !should_autocomplete for AutocompleteHistoryManager::OnFormSubmitted.
+// !should_autocomplete for AutocompleteHistoryManager::OnWillSubmitForm.
 TEST_F(AutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
   autofill_manager_->autocomplete_history_manager_.reset(
       new MockAutocompleteHistoryManager(autofill_driver_.get(),
@@ -3001,14 +2960,13 @@ TEST_F(AutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
   MockAutocompleteHistoryManager* mock_ahm =
       static_cast<MockAutocompleteHistoryManager*>(
           autofill_manager_->autocomplete_history_manager_.get());
-  EXPECT_CALL(*mock_ahm, OnFormSubmitted(_))
+  EXPECT_CALL(*mock_ahm, OnWillSubmitForm(_))
       .WillOnce(SaveArg<0>(&form_seen_by_ahm));
 
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
-  form.user_submitted = true;
 
   struct {
     const char* label;

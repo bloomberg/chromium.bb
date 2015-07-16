@@ -980,7 +980,6 @@ size_t FormStructure::active_field_count() const {
 }
 
 FormData FormStructure::ToFormData() const {
-  // |data.user_submitted| will always be false.
   FormData data;
   data.name = form_name_;
   data.origin = source_url_;

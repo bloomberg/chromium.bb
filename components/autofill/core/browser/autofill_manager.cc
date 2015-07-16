@@ -307,9 +307,23 @@ bool AutofillManager::OnWillSubmitForm(const FormData& form,
   if (!IsValidFormData(form))
     return false;
 
+  // We will always give Autocomplete a chance to save the data.
   scoped_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
-  if (!submitted_form)
+  if (!submitted_form) {
+    autocomplete_history_manager_->OnWillSubmitForm(form);
     return false;
+  }
+
+  // However, if Autofill has recognized a field as CVC, that shouldn't be
+  // saved.
+  FormData form_for_autocomplete = submitted_form->ToFormData();
+  for (size_t i = 0; i < submitted_form->field_count(); ++i) {
+    if (submitted_form->field(i)->Type().GetStorableType() ==
+        CREDIT_CARD_VERIFICATION_CODE) {
+      form_for_autocomplete.fields[i].should_autocomplete = false;
+    }
+  }
+  autocomplete_history_manager_->OnWillSubmitForm(form_for_autocomplete);
 
   address_form_event_logger_->OnWillSubmitForm();
   credit_card_form_event_logger_->OnWillSubmitForm();
@@ -368,21 +382,8 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
   // We will always give Autocomplete a chance to save the data.
   scoped_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form) {
-    autocomplete_history_manager_->OnFormSubmitted(form);
     return false;
   }
-
-  // However, if Autofill has recognized a field as CVC, that shouldn't be
-  // saved.
-  FormData form_for_autocomplete = submitted_form->ToFormData();
-  form_for_autocomplete.user_submitted = form.user_submitted;
-  for (size_t i = 0; i < submitted_form->field_count(); ++i) {
-    if (submitted_form->field(i)->Type().GetStorableType() ==
-        CREDIT_CARD_VERIFICATION_CODE) {
-      form_for_autocomplete.fields[i].should_autocomplete = false;
-    }
-  }
-  autocomplete_history_manager_->OnFormSubmitted(form_for_autocomplete);
 
   address_form_event_logger_->OnFormSubmitted();
   credit_card_form_event_logger_->OnFormSubmitted();

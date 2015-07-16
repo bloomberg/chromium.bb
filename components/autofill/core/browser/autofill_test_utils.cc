@@ -78,7 +78,6 @@ void CreateTestAddressFormData(FormData* form,
   form->name = ASCIIToUTF16("MyForm");
   form->origin = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
-  form->user_submitted = true;
   types->clear();
 
   FormFieldData field;

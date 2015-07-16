@@ -289,7 +289,6 @@ class NativeBackendLibsecretTest : public testing::Test {
     form_google_.skip_zero_click = true;
     form_google_.generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
     form_google_.form_data.name = UTF8ToUTF16("form_name");
-    form_google_.form_data.user_submitted = true;
 
     form_facebook_.origin = GURL("http://www.facebook.com/");
     form_facebook_.action = GURL("http://www.facebook.com/login");

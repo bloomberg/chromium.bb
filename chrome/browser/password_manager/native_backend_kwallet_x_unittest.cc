@@ -166,7 +166,6 @@ class NativeBackendKWalletTestBase : public testing::Test {
     form_google_.times_used = 3;
     form_google_.type = PasswordForm::TYPE_GENERATED;
     form_google_.form_data.name = UTF8ToUTF16("form_name");
-    form_google_.form_data.user_submitted = true;
     form_google_.date_synced = base::Time::Now();
     form_google_.date_created = old_form_google_.date_created;
     form_google_.display_name = UTF8ToUTF16("Joe Schmoe");

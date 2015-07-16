@@ -23,8 +23,7 @@ bool UsernamesCollectionKey::operator<(
 }
 
 PasswordFormFillData::PasswordFormFillData()
-    : user_submitted(false),
-      wait_for_username(false),
+    : wait_for_username(false),
       is_possible_change_password_form(false) {
 }
 
@@ -53,7 +52,6 @@ void InitPasswordFormFillData(
   result->name = form_on_page.form_data.name;
   result->origin = form_on_page.origin;
   result->action = form_on_page.action;
-  result->user_submitted = form_on_page.form_data.user_submitted;
   result->username_field = username_field;
   result->password_field = password_field;
   result->wait_for_username = wait_for_username_before_autofill;

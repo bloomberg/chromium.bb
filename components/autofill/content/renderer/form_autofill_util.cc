@@ -1256,7 +1256,6 @@ bool WebFormElementToFormData(
   form->name = GetFormIdentifier(form_element);
   form->origin = frame->document().url();
   form->action = frame->document().completeURL(form_element.action());
-  form->user_submitted = form_element.wasUserSubmitted();
 
   // If the completed URL is not valid, just use the action we get from
   // WebKit.
@@ -1320,7 +1319,6 @@ bool UnownedFormElementsAndFieldSetsToFormData(
   }
 
   form->origin = document.url();
-  form->user_submitted = false;
   form->is_form_tag = false;
 
   return FormOrFieldsetsToFormData(nullptr, element, fieldsets,
