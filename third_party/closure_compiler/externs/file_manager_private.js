@@ -121,14 +121,6 @@ var CopyProgressStatus;
 
 /**
  * @typedef {{
- *   fileUrl: string,
- *   canceled: boolean
- * }}
- */
-var FileTransferCancelStatus;
-
-/**
- * @typedef {{
  *   url: string,
  *   changes: Array
  * }}
@@ -386,13 +378,17 @@ chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
 
 /**
  * Cancels ongoing file transfers for selected files. |fileUrls| Array of files
- * for which ongoing transfer should be canceled.     If this is absent, all
- * jobs are canceled.  |callback|
- * @param {Array=} fileUrls
- * @param {Function=} callback |fileTransferCancelStatuses| The list of
- * FileTransferCancelStatus.
+ * for which ongoing transfer should be canceled.
+ * @param {!Array<string>} fileUrls
+ * @param {function()=} callback
  */
 chrome.fileManagerPrivate.cancelFileTransfers = function(fileUrls, callback) {};
+
+/**
+ * Cancels all ongoing file transfers.
+ * @param {function()=} callback
+ */
+chrome.fileManagerPrivate.cancelAllFileTransfers = function(callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done

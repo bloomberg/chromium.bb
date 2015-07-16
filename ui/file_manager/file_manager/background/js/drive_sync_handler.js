@@ -206,7 +206,10 @@ DriveSyncHandler.prototype.removeItem_ = function(status) {
  */
 DriveSyncHandler.prototype.requestCancel_ = function(entry) {
   // Cancel all jobs.
-  chrome.fileManagerPrivate.cancelFileTransfers();
+  chrome.fileManagerPrivate.cancelAllFileTransfers(function() {
+    if (chrome.runtime.lastError)
+      console.error(chrome.runtime.lastError);
+  });
 };
 
 /**

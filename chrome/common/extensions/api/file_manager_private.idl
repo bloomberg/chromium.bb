@@ -416,15 +416,6 @@ dictionary CopyProgressStatus {
   DOMString? error;
 };
 
-// Payload data for file transfer cancel response.
-dictionary FileTransferCancelStatus {
-  // URL of file that is being transfered.
-  DOMString fileUrl;
-
-  // True if ongoing transfer operation was found and canceled.
-  boolean canceled;
-};
-
 // Detailed information of change.
 dictionary FileChange {
   // URL of changed file (or directory).
@@ -779,11 +770,13 @@ interface Functions {
 
   // Cancels ongoing file transfers for selected files.
   // |fileUrls| Array of files for which ongoing transfer should be canceled.
-  //     If this is absent, all jobs are canceled.
   // |callback| Completion callback of the cancel.
-  static void cancelFileTransfers(
-      optional DOMString[] fileUrls,
-      optional CancelFileTransfersCallback callback);
+  static void cancelFileTransfers(DOMString[] fileUrls,
+                                  optional SimpleCallback callback);
+
+  // Cancels all ongoing file transfers.
+  // |callback| Completion callback of the cancel.
+  static void cancelAllFileTransfers(optional SimpleCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.

@@ -96,6 +96,20 @@ class FileManagerPrivateCancelFileTransfersFunction
   bool RunAsync() override;
 };
 
+// Implements the chrome.fileManagerPrivate.cancelAllFileTransfers method.
+class FileManagerPrivateCancelAllFileTransfersFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.cancelAllFileTransfers",
+                             FILEMANAGERPRIVATE_CANCELALLFILETRANSFERS)
+
+ protected:
+  ~FileManagerPrivateCancelAllFileTransfersFunction() override {}
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+};
+
 class FileManagerPrivateSearchDriveFunction
     : public LoggedAsyncExtensionFunction {
  public:
