@@ -1,23 +1,27 @@
 #!/usr/bin/python
+# Copyright 2009 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
-# This script is wrapper for NaCl that adds some support for how GYP
-# is invoked by NaCl beyond what can be done it the gclient hooks.
+"""This script is wrapper for NaCl that adds some support for how GYP
+is invoked by NaCl beyond what can be done it the gclient hooks."""
 
 import glob
 import os
 import shlex
 import sys
 
-print 'Updating projects from gyp files...'
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-NACL_DIR = os.path.dirname(SCRIPT_DIR)
-GYP_DIR = os.path.join(os.path.dirname(NACL_DIR), 'tools', 'gyp')
+GCLIENT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+GYP_DIR = os.path.join(GCLIENT_ROOT, 'tools', 'gyp')
 sys.path.insert(0, os.path.join(GYP_DIR, 'pylib'))
 
 import gyp
 
-if __name__ == '__main__':
+def main():
+  print 'Updating projects from gyp files...'
+  os.chdir(GCLIENT_ROOT)
+
   if not os.environ.get('GYP_GENERATORS'):
     os.environ['GYP_GENERATORS'] = 'ninja'
 
@@ -46,4 +50,7 @@ if __name__ == '__main__':
   args += ['-D', 'nacl_standalone=1']
 
   # Off we go...
-  sys.exit(gyp.main(args))
+  return gyp.main(args)
+
+if __name__ == '__main__':
+  sys.exit(main())
