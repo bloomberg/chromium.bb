@@ -984,6 +984,8 @@ libzunitc_la_SOURCES = \
 	tools/zunitc/src/zuc_context.h		\
 	tools/zunitc/src/zuc_event.h		\
 	tools/zunitc/src/zuc_event_listener.h	\
+	tools/zunitc/src/zuc_junit_reporter.c	\
+	tools/zunitc/src/zuc_junit_reporter.h	\
 	tools/zunitc/src/zuc_types.h		\
 	tools/zunitc/src/zunitc_impl.c		\
 	shared/helpers.h
@@ -994,6 +996,13 @@ libzunitc_la_CFLAGS = \
 
 libzunitc_la_LIBADD = \
 	libshared.la
+
+if ENABLE_JUNIT_XML
+libzunitc_la_CFLAGS += \
+	$(LIBXML2_CFLAGS)
+libzunitc_la_LIBADD += \
+	$(LIBXML2_LIBS)
+endif
 
 libzunitcmain_la_SOURCES = \
 	tools/zunitc/src/main.c

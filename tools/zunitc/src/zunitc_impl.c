@@ -44,6 +44,7 @@
 #include "zuc_collector.h"
 #include "zuc_context.h"
 #include "zuc_event_listener.h"
+#include "zuc_junit_reporter.h"
 
 #include "shared/config-parser.h"
 #include "shared/helpers.h"
@@ -150,6 +151,12 @@ void
 zuc_set_break_on_failure(bool break_on_failure)
 {
 	g_ctx.break_on_failure = break_on_failure;
+}
+
+void
+zuc_set_output_junit(bool enable)
+{
+	g_ctx.output_junit = enable;
 }
 
 const char *
@@ -523,6 +530,7 @@ zuc_initialize(int *argc, char *argv[], bool *help_flagged)
 	int opt_repeat = 0;
 	int opt_random = 0;
 	int opt_break_on_failure = 0;
+	int opt_junit = 0;
 	char *opt_filter = NULL;
 
 	char *help_param = NULL;
@@ -535,6 +543,9 @@ zuc_initialize(int *argc, char *argv[], bool *help_flagged)
 		{ WESTON_OPTION_INTEGER, "zuc-random", 0, &opt_random },
 		{ WESTON_OPTION_BOOLEAN, "zuc-break-on-failure", 0,
 		  &opt_break_on_failure },
+#if ENABLE_JUNIT_XML
+		{ WESTON_OPTION_BOOLEAN, "zuc-output-xml", 0, &opt_junit },
+#endif
 		{ WESTON_OPTION_STRING, "zuc-filter", 0, &opt_filter },
 	};
 
@@ -623,6 +634,9 @@ zuc_initialize(int *argc, char *argv[], bool *help_flagged)
 		       "  --zuc-filter=FILTER\n"
 		       "  --zuc-list-tests\n"
 		       "  --zuc-nofork\n"
+#if ENABLE_JUNIT_XML
+		       "  --zuc-output-xml\n"
+#endif
 		       "  --zuc-random=N            [0|1|<seed number>]\n"
 		       "  --zuc-repeat=N\n"
 		       "  --help\n",
@@ -638,6 +652,7 @@ zuc_initialize(int *argc, char *argv[], bool *help_flagged)
 		zuc_set_random(opt_random);
 		zuc_set_spawn(!opt_nofork);
 		zuc_set_break_on_failure(opt_break_on_failure);
+		zuc_set_output_junit(opt_junit);
 		rc = EXIT_SUCCESS;
 	}
 
@@ -1301,6 +1316,8 @@ zucimpl_run_tests(void)
 	if (g_ctx.listeners == NULL) {
 		zuc_add_event_listener(zuc_collector_create(&(g_ctx.fds[1])));
 		zuc_add_event_listener(zuc_base_logger_create());
+		if (g_ctx.output_junit)
+			zuc_add_event_listener(zuc_junit_reporter_create());
 	}
 
 	if (g_ctx.case_count < 1) {

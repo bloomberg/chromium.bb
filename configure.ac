@@ -426,6 +426,30 @@ if test "x$enable_dbus" != "xno"; then
 fi
 AM_CONDITIONAL(ENABLE_DBUS, test "x$enable_dbus" = "xyes")
 
+# Note that other features might want libxml2, or this feature might use
+# alternative xml libraries at some point. Therefore the feature and
+# pre-requisite concepts are split.
+AC_ARG_ENABLE(junit_xml,
+	      AS_HELP_STRING([--disable-junit-xml],
+			     [do not build with JUnit XML output]),,
+	      enable_junit_xml=auto)
+if test "x$enable_junit_xml" != "xno"; then
+	PKG_CHECK_MODULES(LIBXML2,
+			  [libxml-2.0 >= 2.6],
+			  have_libxml2=yes,
+			  have_libxml2=no)
+	if test "x$have_libxml2" = "xno" -a "x$enable_junit_xml" = "xyes"; then
+		AC_MSG_ERROR([JUnit XML support explicitly requested, but libxml2 couldn't be found])
+	fi
+	if test "x$have_libxml2" = "xyes"; then
+		enable_junit_xml=yes
+		AC_DEFINE(ENABLE_JUNIT_XML, [1], [Build Weston with JUnit output support])
+	else
+		enable_junit_xml=no
+	fi
+fi
+AM_CONDITIONAL(ENABLE_JUNIT_XML, test "x$enable_junit_xml" = "xyes")
+
 # ivi-shell support
 AC_ARG_ENABLE(ivi-shell,
               AS_HELP_STRING([--disable-ivi-shell],
@@ -537,6 +561,7 @@ AC_MSG_RESULT([
 	FBDEV Compositor		${enable_fbdev_compositor}
 	RDP Compositor			${enable_rdp_compositor}
 	Screen Sharing			${enable_screen_sharing}
+	JUnit XML output		${enable_junit_xml}
 
 	Raspberry Pi BCM headers	${have_bcm_host}
 
