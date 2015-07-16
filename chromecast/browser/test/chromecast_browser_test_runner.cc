@@ -17,10 +17,6 @@ namespace shell {
 
 namespace {
 
-// Duplicate switch to avoid dependency on chromecast/internal.
-const char kSwitchesAVSettingsUnixSocketPath[] = "av-settings-unix-socket-path";
-
-const char kAvSettingsUnixSocketPath[] = "/tmp/avsettings";
 const char kTestTypeBrowser[] = "browser";
 
 class BrowserTestSuite : public content::ContentTestSuiteBase {
@@ -50,8 +46,6 @@ class ChromecastTestLauncherDelegate : public content::TestLauncherDelegate {
     // TODO(gunsch): handle temp_data_dir
     command_line->AppendSwitch(switches::kNoWifi);
     command_line->AppendSwitchASCII(switches::kTestType, kTestTypeBrowser);
-    command_line->AppendSwitchASCII(kSwitchesAVSettingsUnixSocketPath,
-                                    kAvSettingsUnixSocketPath);
     return true;
   }
 
