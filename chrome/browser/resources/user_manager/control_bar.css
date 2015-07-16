@@ -36,15 +36,11 @@ html[dir=rtl] #login-header-bar button {
 }
 
 #login-header-bar #add-user-button {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_ICON_PROFILES_ADD_USER) 1x,
-      url(chrome://theme/IDR_ICON_PROFILES_ADD_USER@2x) 2x);
+  background-image: url(../../../../ui/webui/resources/images/add_box.svg);
 }
 
 #login-header-bar #guest-user-button {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_ICON_PROFILES_BROWSE_GUEST) 1x,
-      url(chrome://theme/IDR_ICON_PROFILES_BROWSE_GUEST@2x) 2x);
+  background-image: url(../../../../ui/webui/resources/images/account_box.svg);
   border-right: 1px solid #e2e2e2;
   margin-right: 10px;
 }
@@ -59,6 +55,7 @@ html[dir=rtl] #login-header-bar #guest-user-button {
   background-color: white;
   background-position: left center;
   background-repeat: no-repeat;
+  background-size: 18px;
   border: none;
   border-radius: 0;
   box-shadow: none;

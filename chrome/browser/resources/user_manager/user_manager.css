@@ -99,30 +99,37 @@ html[dir=rtl] .pod .indicators {
 .pod .indicator {
   background-position: center;
   background-repeat: no-repeat;
+  background-size: 18px;
   display: none;
   float: left;
   height: 32px;
   width: 32px;
 }
 
+/* Using -webkit-mask on the indicators allows us to tweak the color. */
+.pod .indicator-container > div {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 24px;
+}
+
 .pod.locked .locked-indicator {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_ICON_PROFILES_LOCKED) 1x,
-      url(chrome://theme/IDR_ICON_PROFILES_LOCKED@2x) 2x);
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/lock.svg);
+  background-color: #757575;
   display: initial;
 }
 
 .pod.legacy-supervised .legacy-supervised-indicator {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_ICON_PROFILES_LEGACY_SUPERVISED) 1x,
-      url(chrome://theme/IDR_ICON_PROFILES_LEGACY_SUPERVISED@2x) 2x);
+  -webkit-mask-image:
+      url(../../../../ui/webui/resources/images/supervisor_account.svg);
+  background-color: rgb(66, 133, 244);
   display: initial;
 }
 
 .pod.child .child-indicator {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_ICON_PROFILES_CHILD) 1x,
-      url(chrome://theme/IDR_ICON_PROFILES_CHILD@2x) 2x);
+  -webkit-mask-image:
+      url(../../../../ui/webui/resources/images/account_child_invert.svg);
+  background-color: rgb(66, 133, 244);
   display: initial;
 }
 
