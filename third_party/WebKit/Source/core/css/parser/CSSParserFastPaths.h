@@ -25,7 +25,7 @@ public:
     static bool isKeywordPropertyID(CSSPropertyID);
     static bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID);
 
-    static PassRefPtrWillBeRawPtr<CSSValue> parseColor(const String&, bool quirksMode);
+    static PassRefPtrWillBeRawPtr<CSSValue> parseColor(const String&, CSSParserMode);
 };
 
 } // namespace blink

@@ -428,18 +428,20 @@ static bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters,
     return false;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSParserFastPaths::parseColor(const String& string, bool quirksMode)
+PassRefPtrWillBeRawPtr<CSSValue> CSSParserFastPaths::parseColor(const String& string, CSSParserMode parserMode)
 {
     ASSERT(!string.isEmpty());
     CSSParserString cssString;
     cssString.init(string);
     CSSValueID valueID = cssValueKeywordID(cssString);
-    if (valueID == CSSValueCurrentcolor || valueID == CSSValueGrey
-        || (valueID >= CSSValueAqua && valueID <= CSSValueWindowtext) || valueID == CSSValueMenu
-        || (quirksMode && valueID >= CSSValueWebkitFocusRingColor && valueID <= CSSValueWebkitText))
+    if (CSSPropertyParser::isColorKeyword(valueID)) {
+        if (!isValueAllowedInMode(valueID, parserMode))
+            return nullptr;
         return cssValuePool().createIdentifierValue(valueID);
+    }
 
     RGBA32 color;
+    bool quirksMode = isQuirksModeBehavior(parserMode);
 
     // Fast path for hex colors and rgb()/rgba() colors
     bool parseResult;
@@ -947,7 +949,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParserFastPaths::maybeParseValue(CSSProperty
     if (RefPtrWillBeRawPtr<CSSValue> length = parseSimpleLengthValue(propertyID, string, parserMode))
         return length.release();
     if (isColorPropertyID(propertyID))
-        return parseColor(string, isQuirksModeBehavior(parserMode));
+        return parseColor(string, parserMode);
     if (RefPtrWillBeRawPtr<CSSValue> keyword = parseKeywordValue(propertyID, string))
         return keyword.release();
     if (RefPtrWillBeRawPtr<CSSValue> transform = parseSimpleTransform(propertyID, string))

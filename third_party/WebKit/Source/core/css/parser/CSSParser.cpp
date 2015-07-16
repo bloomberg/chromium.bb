@@ -120,7 +120,7 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
         return true;
     }
 
-    RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::parseColor(string, !strict);
+    RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::parseColor(string, strict ? HTMLStandardMode : HTMLQuirksMode);
     // TODO(timloh): Why is this always strict mode?
     if (!value)
         value = parseSingleValue(CSSPropertyColor, string, strictCSSParserContext());
