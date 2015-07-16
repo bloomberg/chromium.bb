@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
+#import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
 
@@ -94,38 +96,39 @@ TEST_P(NativeWidgetMacInteractiveUITest, ShowAttainsKeyStatus) {
   EXPECT_EQ(2, activationCount_);
 }
 
-// Test that ShowInactive does not take keyWindow status from an active window.
+// Test that ShowInactive does not take keyWindow status.
 TEST_P(NativeWidgetMacInteractiveUITest, ShowInactiveIgnoresKeyStatus) {
   Widget* widget = MakeWidget();
 
-  // In an application with only a single window, that window is always "active"
-  // for the application unless that window is not visible. However, it will not
-  // be key.
-  EXPECT_FALSE(widget->IsActive());
-  widget->ShowInactive();
-  EXPECT_TRUE(widget->IsActive());
-  RunPendingMessages();
-  EXPECT_FALSE([widget->GetNativeWindow() isKeyWindow]);
+  base::scoped_nsobject<WindowedNSNotificationObserver> waiter(
+      [[WindowedNSNotificationObserver alloc]
+          initForNotification:NSWindowDidBecomeKeyNotification
+                       object:widget->GetNativeWindow()]);
 
-  // Creating a second widget should now keep that widget active.
-  Widget* widget2 = MakeWidget();
-  widget2->Show();
+  EXPECT_FALSE(widget->IsVisible());
+  EXPECT_FALSE([widget->GetNativeWindow() isVisible]);
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_FALSE([widget->GetNativeWindow() isKeyWindow]);
   widget->ShowInactive();
 
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_TRUE([widget->GetNativeWindow() isVisible]);
   EXPECT_FALSE(widget->IsActive());
-  EXPECT_TRUE(widget2->IsActive());
-  RunPendingMessages();
   EXPECT_FALSE([widget->GetNativeWindow() isKeyWindow]);
-  EXPECT_TRUE([widget2->GetNativeWindow() isKeyWindow]);
 
-  // And finally activating the inactive widget should activate it and make it
-  // key.
+  // If the window were to become active, this would activate it.
+  RunPendingMessages();
+  EXPECT_FALSE(widget->IsActive());
+  EXPECT_FALSE([widget->GetNativeWindow() isKeyWindow]);
+  EXPECT_EQ(0, [waiter notificationCount]);
+
+  // Activating the inactive widget should make it key, asynchronously.
   widget->Activate();
+  [waiter wait];
+  EXPECT_EQ(1, [waiter notificationCount]);
   EXPECT_TRUE(widget->IsActive());
-  RunPendingMessages();
   EXPECT_TRUE([widget->GetNativeWindow() isKeyWindow]);
 
-  widget2->CloseNow();
   widget->CloseNow();
 }
 
