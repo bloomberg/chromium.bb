@@ -63,6 +63,18 @@ bool MimeTypesHandler::CanHandleMIMEType(const std::string& mime_type) const {
   return mime_type_set_.find(mime_type) != mime_type_set_.end();
 }
 
+bool MimeTypesHandler::HasPlugin() const {
+  return !handler_url_.empty();
+}
+
+base::FilePath MimeTypesHandler::GetPluginPath() const {
+  // TODO(raymes): Storing the extension URL in a base::FilePath is really
+  // nasty. We should probably just use the extension ID as the placeholder path
+  // instead.
+  return base::FilePath::FromUTF8Unsafe(
+      std::string(extensions::kExtensionScheme) + "://" + extension_id_ + "/");
+}
+
 // static
 MimeTypesHandler* MimeTypesHandler::GetHandler(
     const extensions::Extension* extension) {
