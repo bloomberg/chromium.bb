@@ -23,6 +23,7 @@ class StorySetUnitTest(story_set_smoke_test.StorySetSmokeTest):
     self.RunSmokeTest(self.story_sets_dir, self.top_level_dir)
 
   # TODO(nednguyen): Remove this test once crbug.com/508538 is fixed.
+  @decorators.Disabled('chromeos')
   def testNoPageDefinedSyntheticDelay(self):
     for story_set_class in self.GetAllStorySetClasses(self.story_sets_dir,
                                                       self.top_level_dir):
