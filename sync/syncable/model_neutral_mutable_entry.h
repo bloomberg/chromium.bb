@@ -100,7 +100,7 @@ class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
  protected:
   explicit ModelNeutralMutableEntry(BaseWriteTransaction* trans);
 
-  syncable::MetahandleSet* GetDirtyIndexHelper();
+  void MarkDirty();
 
  private:
   friend class syncer::WriteNode;
