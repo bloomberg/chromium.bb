@@ -464,6 +464,11 @@ void WorkerThread::terminateV8Execution()
 
 void WorkerThread::appendDebuggerTask(PassOwnPtr<WebThread::Task> task)
 {
+    {
+        MutexLocker lock(m_threadStateMutex);
+        if (m_shutdown)
+            return;
+    }
     m_debuggerMessageQueue.append(task);
 }
 
