@@ -191,6 +191,7 @@ crbug.com/510337 inspector/console/console-format.html [ Slow Timeout ]
 crbug.com/510337 inspector/elements/edit/edit-dom-actions-shadow.html [ Slow Timeout ]
 crbug.com/510337 inspector/elements/edit/edit-dom-actions.html [ Slow Timeout ]
 crbug.com/510337 inspector/elements/styles-1/edit-value-url-with-color.html [ Slow Timeout ]
+crbug.com/510337 inspector/sources/debugger/live-edit.html [ Slow Timeout Crash ]
 
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
 
