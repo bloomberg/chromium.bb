@@ -124,7 +124,8 @@ PixelFormatToVideoPixelFormat(PixelFormat pixel_format);
 // Converts video formats to its corresponding FFmpeg's pixel formats.
 PixelFormat VideoPixelFormatToPixelFormat(VideoPixelFormat video_format);
 
-ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space);
+ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
+                                    AVColorRange color_range);
 
 // Convert FFmpeg UTC representation (YYYY-MM-DD HH:MM:SS) to base::Time.
 // Returns true and sets |*out| if |date_utc| contains a valid

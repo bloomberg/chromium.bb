@@ -433,7 +433,8 @@ void AVStreamToVideoDecoderConfig(
   }
 
   // Prefer the color space found by libavcodec if available.
-  ColorSpace color_space = AVColorSpaceToColorSpace(stream->codec->colorspace);
+  ColorSpace color_space = AVColorSpaceToColorSpace(stream->codec->colorspace,
+                                                    stream->codec->color_range);
   if (color_space == COLOR_SPACE_UNSPECIFIED) {
     // Otherwise, assume that SD video is usually Rec.601, and HD is usually
     // Rec.709.
@@ -455,6 +456,8 @@ void VideoDecoderConfigToAVCodecContext(
   codec_context->coded_width = config.coded_size().width();
   codec_context->coded_height = config.coded_size().height();
   codec_context->pix_fmt = VideoPixelFormatToPixelFormat(config.format());
+  if (config.color_space() == COLOR_SPACE_JPEG)
+    codec_context->color_range = AVCOL_RANGE_JPEG;
 
   if (config.extra_data()) {
     codec_context->extradata_size = config.extra_data_size();
@@ -536,12 +539,17 @@ ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout, int channels) {
 }
 
 VideoPixelFormat PixelFormatToVideoPixelFormat(PixelFormat pixel_format) {
+  // The YUVJ alternatives are FFmpeg's (deprecated, but still in use) way to
+  // specify a pixel format and full range color combination.
   switch (pixel_format) {
     case PIX_FMT_YUV422P:
+    case PIX_FMT_YUVJ422P:
       return PIXEL_FORMAT_YV16;
     case PIX_FMT_YUV444P:
+    case PIX_FMT_YUVJ444P:
       return PIXEL_FORMAT_YV24;
     case PIX_FMT_YUV420P:
+    case PIX_FMT_YUVJ420P:
       return PIXEL_FORMAT_YV12;
     case PIX_FMT_YUVA420P:
       return PIXEL_FORMAT_YV12A;
@@ -567,8 +575,11 @@ PixelFormat VideoPixelFormatToPixelFormat(VideoPixelFormat video_format) {
   return PIX_FMT_NONE;
 }
 
-ColorSpace AVColorSpaceToColorSpace(
-    AVColorSpace color_space) {
+ColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
+                                    AVColorRange color_range) {
+  if (color_range == AVCOL_RANGE_JPEG)
+    return COLOR_SPACE_JPEG;
+
   switch (color_space) {
     case AVCOL_SPC_UNSPECIFIED:
       break;

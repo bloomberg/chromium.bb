@@ -38,9 +38,11 @@ enum VideoPixelFormat {
 // Logged to UMA, so never reuse values. Leave gaps if necessary.
 enum ColorSpace {
   COLOR_SPACE_UNSPECIFIED = 0,  // In general this is Rec601.
-  COLOR_SPACE_JPEG = 1,         // JPEG color range.
-  COLOR_SPACE_HD_REC709 = 2,    // Rec709 "HD" color space.
-  COLOR_SPACE_SD_REC601 = 3,    // Rec601 "SD" color space.
+  // The JPEG color space is the combination of Rec.601 and full range colors
+  // (aka pc range colors).
+  COLOR_SPACE_JPEG = 1,
+  COLOR_SPACE_HD_REC709 = 2,  // Rec709 "HD" color space.
+  COLOR_SPACE_SD_REC601 = 3,  // Rec601 "SD" color space.
   COLOR_SPACE_MAX = COLOR_SPACE_SD_REC601,
 };
 

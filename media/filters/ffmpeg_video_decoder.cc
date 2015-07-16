@@ -130,7 +130,8 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
 
   // Prefer the color space from the codec context. If it's not specified (or is
   // set to an unsupported value), fall back on the value from the config.
-  ColorSpace color_space = AVColorSpaceToColorSpace(codec_context->colorspace);
+  ColorSpace color_space = AVColorSpaceToColorSpace(codec_context->colorspace,
+                                                    codec_context->color_range);
   if (color_space == COLOR_SPACE_UNSPECIFIED)
     color_space = config_.color_space();
   video_frame->metadata()->SetInteger(VideoFrameMetadata::COLOR_SPACE,
