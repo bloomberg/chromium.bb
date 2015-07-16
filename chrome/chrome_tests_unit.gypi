@@ -182,7 +182,6 @@
       'browser/prefs/chrome_pref_service_unittest.cc',
       'browser/prefs/command_line_pref_store_unittest.cc',
       'browser/prefs/incognito_mode_prefs_unittest.cc',
-      'browser/prefs/leveldb_pref_store_unittest.cc',
       'browser/prefs/pref_model_associator_unittest.cc',
       'browser/prefs/prefs_syncable_service_unittest.cc',
       'browser/prefs/profile_pref_store_manager_unittest.cc',

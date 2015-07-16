@@ -33,9 +33,6 @@ class BASE_PREFS_EXPORT PersistentPrefStore : public WriteablePrefStore {
     // Indicates that ReadPrefs() couldn't complete synchronously and is waiting
     // for an asynchronous task to complete first.
     PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE = 10,
-    PREF_READ_ERROR_LEVELDB_IO = 11,
-    PREF_READ_ERROR_LEVELDB_CORRUPTION_READ_ONLY = 12,
-    PREF_READ_ERROR_LEVELDB_CORRUPTION = 13,
     PREF_READ_ERROR_MAX_ENUM
   };
 

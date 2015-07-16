@@ -2272,8 +2272,6 @@
       'browser/prefs/command_line_pref_store.h',
       'browser/prefs/incognito_mode_prefs.cc',
       'browser/prefs/incognito_mode_prefs.h',
-      'browser/prefs/leveldb_pref_store.cc',
-      'browser/prefs/leveldb_pref_store.h',
       'browser/prefs/pref_metrics_service.cc',
       'browser/prefs/pref_metrics_service.h',
       'browser/prefs/pref_model_associator.cc',

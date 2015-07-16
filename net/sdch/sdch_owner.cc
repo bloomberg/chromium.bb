@@ -576,9 +576,6 @@ void SdchOwner::OnInitializationCompleted(bool succeeded) {
     case PersistentPrefStore::PREF_READ_ERROR_FILE_OTHER:
     case PersistentPrefStore::PREF_READ_ERROR_FILE_LOCKED:
     case PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT:
-    case PersistentPrefStore::PREF_READ_ERROR_LEVELDB_IO:
-    case PersistentPrefStore::PREF_READ_ERROR_LEVELDB_CORRUPTION_READ_ONLY:
-    case PersistentPrefStore::PREF_READ_ERROR_LEVELDB_CORRUPTION:
       RecordPersistenceFailure(PERSISTENCE_FAILURE_REASON_READ_FAILED);
       break;
 
