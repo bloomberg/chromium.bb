@@ -150,7 +150,11 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 }));
     }
 
-    @MediumTest
+    /**
+     * crbug.com/510659
+     * @MediumTest
+     */
+    @FlakyTest
     public void testAlertDialogDoesNotChangeActiveModel() throws InterruptedException {
         newIncognitoTabFromMenu();
         loadUrl(UrlUtils.getIsolatedTestFileUrl(TEST_FILE_PATH));
