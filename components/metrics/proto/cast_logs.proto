@@ -112,7 +112,7 @@ message CastLogsProto {
   repeated CastConnectionInfo cast_connection_info = 2;
 
   // Stores Cast-enabled device specific events with a various context data.
-  // Next tag: 9
+  // Next tag: 10
   message CastEventProto {
     // The name of the action, hashed by same logic used to hash user action
     // event and histogram.
@@ -129,6 +129,9 @@ message CastLogsProto {
 
     // Receiver side Cast SDK version.
     optional fixed64 cast_receiver_version = 5;
+
+    // Cast MPL version.
+    optional fixed64 cast_mpl_version = 9;
 
     // transport_connection_id related with this event.
     optional fixed32 transport_connection_id = 6;
