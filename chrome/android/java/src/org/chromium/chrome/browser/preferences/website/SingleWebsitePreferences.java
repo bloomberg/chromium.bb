@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Shows a list of HTML5 settings for a single website.
+ * Shows the permissions and other settings for a particular website.
  */
 public class SingleWebsitePreferences extends PreferenceFragment
         implements DialogInterface.OnClickListener, OnPreferenceChangeListener,
@@ -138,7 +138,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getActivity().setTitle(R.string.prefs_content_settings);
+        getActivity().setTitle(R.string.prefs_site_settings);
         ListView listView = (ListView) getView().findViewById(android.R.id.list);
         listView.setDivider(null);
 

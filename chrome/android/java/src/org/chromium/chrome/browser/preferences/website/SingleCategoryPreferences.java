@@ -43,11 +43,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Shows a list of sites with their associated HTML5 settings. When the
- * users selects a site, a SingleWebsitePreferences fragment is launched to
- * allow the user to modify the settings.
+ * Shows a list of sites in a particular Site Settings category. For example, this could show all
+ * the websites with microphone permissions. When the user selects a site, SingleWebsitePreferences
+ * is launched to allow the user to see or modify the settings for that particular website.
  */
-public class WebsitePreferences extends PreferenceFragment
+public class SingleCategoryPreferences extends PreferenceFragment
         implements OnPreferenceChangeListener, OnPreferenceClickListener,
                    AddExceptionPreference.SiteAddedCallback,
                    ProtectedContentResetCredentialConfirmDialogFragment.Listener {
@@ -333,7 +333,7 @@ public class WebsitePreferences extends PreferenceFragment
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
                     new ProtectedContentResetCredentialConfirmDialogFragment(
-                            WebsitePreferences.this).show(getFragmentManager(), null);
+                            SingleCategoryPreferences.this).show(getFragmentManager(), null);
                     return true;
                 }
             });

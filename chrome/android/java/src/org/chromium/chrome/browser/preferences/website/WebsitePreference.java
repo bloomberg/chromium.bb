@@ -23,9 +23,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 /**
- * A preference that displays a website's URL and, optionally, some extra permission-related data
- * (e.g. the amount of local storage used by the site, or an icon describing what type of media
- * access the site has.)
+ * A preference that displays a website's favicon and URL and, optionally, the amount of local
+ * storage used by the site.
  */
 @SuppressFBWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS")
 class WebsitePreference extends Preference implements FaviconImageCallback {

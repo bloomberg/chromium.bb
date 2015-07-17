@@ -26,9 +26,9 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferences;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.net.URI;
@@ -175,7 +175,7 @@ public class NotificationUIManager {
 
         String fragmentName = launchSingleWebsitePreferences
                 ? SingleWebsitePreferences.class.getName()
-                : WebsitePreferences.class.getName();
+                : SingleCategoryPreferences.class.getName();
         Intent preferencesIntent =
                 PreferencesLauncher.createIntentForSettingsPage(applicationContext, fragmentName);
 
@@ -186,9 +186,9 @@ public class NotificationUIManager {
         } else {
             // Notification preferences for all origins.
             fragmentArguments = new Bundle();
-            fragmentArguments.putString(WebsitePreferences.EXTRA_CATEGORY,
+            fragmentArguments.putString(SingleCategoryPreferences.EXTRA_CATEGORY,
                     SiteSettingsCategory.CATEGORY_NOTIFICATIONS);
-            fragmentArguments.putString(WebsitePreferences.EXTRA_TITLE,
+            fragmentArguments.putString(SingleCategoryPreferences.EXTRA_TITLE,
                     applicationContext.getResources().getString(
                             R.string.push_notifications_permission_title));
         }

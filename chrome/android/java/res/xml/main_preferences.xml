@@ -42,9 +42,9 @@
         android:key="accessibility"
         android:title="@string/prefs_accessibility" />
     <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.website.ContentPreferences"
+        android:fragment="org.chromium.chrome.browser.preferences.website.SiteSettingsPreferences"
         android:key="content_settings"
-        android:title="@string/prefs_content_settings" />
+        android:title="@string/prefs_site_settings" />
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences"
         android:key="data_reduction"

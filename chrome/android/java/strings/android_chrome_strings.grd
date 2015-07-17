@@ -457,7 +457,7 @@ Usage statistics include information such as preferences, button clicks, and mem
       </message>
 
       <!-- Site settings -->
-      <message name="IDS_PREFS_CONTENT_SETTINGS" desc="Title of the Website Settings screen. [CHAR-LIMIT=32]">
+      <message name="IDS_PREFS_SITE_SETTINGS" desc="Title of the Website Settings screen. [CHAR-LIMIT=32]">
         Site settings
       </message>
       <message name="IDS_ALL_SITES" desc='Title of the "All sites" settings screen that allows the user to see permissions for all websites. [CHAR-LIMIT=32]'>
@@ -620,10 +620,10 @@ particular permission.">
       </message>
 
       <!-- Camera and microphone preferences -->
-      <message name="IDS_WEBSITE_SETTINGS_USE_CAMERA" desc="The category filter 'Camera' for content settings.">
+      <message name="IDS_WEBSITE_SETTINGS_USE_CAMERA" desc="The category filter 'Camera' for site settings.">
         Camera
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_USE_MIC" desc="The category filter 'Mic' for content settings.">
+      <message name="IDS_WEBSITE_SETTINGS_USE_MIC" desc="The category filter 'Mic' for site settings.">
         Microphone
       </message>
       <message name="IDS_CAMERA_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied video access for the website [CHAR-LIMIT=32]">

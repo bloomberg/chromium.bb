@@ -19,9 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The fragment displayed on Settings -> Site Settings.
+ * The main Site Settings screen, which shows all the site settings categories: All sites, Location,
+ * Microphone, etc. By clicking into one of these categories, the user can see or and modify
+ * permissions that have been granted to websites, as well as enable or disable permissions
+ * browser-wide.
  */
-public class ContentPreferences extends PreferenceFragment
+public class SiteSettingsPreferences extends PreferenceFragment
         implements OnPreferenceClickListener {
     // The keys for each category shown on the Site Settings page.
     static final String ALL_SITES_KEY = "all_sites";
@@ -41,8 +44,8 @@ public class ContentPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.content_preferences);
-        getActivity().setTitle(R.string.prefs_content_settings);
+        addPreferencesFromResource(R.xml.site_settings_preferences);
+        getActivity().setTitle(R.string.prefs_site_settings);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             getPreferenceScreen().removePreference(findPreference(PROTECTED_CONTENT_KEY));
@@ -153,8 +156,8 @@ public class ContentPreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceClick(Preference preference) {
         preference.getExtras().putString(
-                WebsitePreferences.EXTRA_CATEGORY, preference.getKey());
-        preference.getExtras().putString(WebsitePreferences.EXTRA_TITLE,
+                SingleCategoryPreferences.EXTRA_CATEGORY, preference.getKey());
+        preference.getExtras().putString(SingleCategoryPreferences.EXTRA_TITLE,
                 preference.getTitle().toString());
         return false;
     }

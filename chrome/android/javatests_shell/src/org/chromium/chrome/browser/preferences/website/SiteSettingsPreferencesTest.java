@@ -33,20 +33,21 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for everything under Settings > Site Settings.
  */
-public class ContentPreferencesTest extends ChromeShellTestBase {
+public class SiteSettingsPreferencesTest extends ChromeShellTestBase {
 
     private void setAllowLocation(final boolean enabled) {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         final Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.LOCATION_KEY);
+                startContentSettingsCategory(SiteSettingsPreferences.LOCATION_KEY);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                WebsitePreferences websitePreferences = (WebsitePreferences)
+                SingleCategoryPreferences websitePreferences = (SingleCategoryPreferences)
                         preferenceActivity.getFragmentForTest();
                 ChromeSwitchPreference location = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
+                        websitePreferences.findPreference(
+                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
 
                 websitePreferences.onPreferenceChange(location, enabled);
                 assertEquals("Location should be " + (enabled ? "allowed" : "blocked"), enabled,
@@ -105,13 +106,13 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
 
     private Preferences startContentSettingsCategory(
             String categoryKey) {
-        // Launch main activity for initial ContentPreferences initialization.
+        // Launch main activity for initial SiteSettingsPreferences initialization.
         launchChromeShellWithBlankPage();
 
         Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(WebsitePreferences.EXTRA_CATEGORY, categoryKey);
+        fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, categoryKey);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                getInstrumentation().getTargetContext(), WebsitePreferences.class.getName());
+                getInstrumentation().getTargetContext(), SingleCategoryPreferences.class.getName());
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
         return (Preferences) getInstrumentation().startActivitySync(intent);
     }
@@ -120,14 +121,14 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                final WebsitePreferences websitePreferences =
-                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                final SingleCategoryPreferences websitePreferences =
+                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
                 final ChromeSwitchPreference cookies =
                         (ChromeSwitchPreference) websitePreferences.findPreference(
-                                WebsitePreferences.READ_WRITE_TOGGLE_KEY);
+                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
                 final ChromeBaseCheckBoxPreference thirdPartyCookies =
                         (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
-                                WebsitePreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
+                                SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
                 assertEquals("Third-party cookie toggle should be "
                         + (doesAcceptCookies() ? "enabled" : " disabled"),
@@ -148,11 +149,11 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                final WebsitePreferences websitePreferences =
-                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                final SingleCategoryPreferences websitePreferences =
+                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
                 final ChromeBaseCheckBoxPreference thirdPartyCookies =
                         (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
-                                WebsitePreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
+                                SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
                 websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
                 assertEquals("Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
@@ -164,15 +165,16 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
 
     private void setEnablePopups(final boolean enabled) {
         final Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.POPUPS_KEY);
+                startContentSettingsCategory(SiteSettingsPreferences.POPUPS_KEY);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                WebsitePreferences websitePreferences =
-                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                SingleCategoryPreferences websitePreferences =
+                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
                 ChromeSwitchPreference popups = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
+                        websitePreferences.findPreference(
+                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(popups, enabled);
                 assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"), enabled,
                         PrefServiceBridge.getInstance().popupsEnabled());
@@ -183,15 +185,16 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
 
     private void setEnableCamera(final boolean enabled) {
         final Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.CAMERA_KEY);
+                startContentSettingsCategory(SiteSettingsPreferences.CAMERA_KEY);
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                WebsitePreferences websitePreferences =
-                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                SingleCategoryPreferences websitePreferences =
+                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
                 ChromeSwitchPreference toggle = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
+                        websitePreferences.findPreference(
+                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(toggle, enabled);
                 assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"),
                         enabled, PrefServiceBridge.getInstance().isCameraEnabled());
@@ -202,15 +205,16 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
 
     private void setEnableMic(final boolean enabled) {
         final Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.MICROPHONE_KEY);
+                startContentSettingsCategory(SiteSettingsPreferences.MICROPHONE_KEY);
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                WebsitePreferences websitePreferences =
-                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                SingleCategoryPreferences websitePreferences =
+                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
                 ChromeSwitchPreference toggle = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
+                        websitePreferences.findPreference(
+                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(toggle, enabled);
                 assertEquals("Mic should be " + (enabled ? "allowed" : "blocked"),
                         enabled, PrefServiceBridge.getInstance().isMicEnabled());
@@ -226,7 +230,7 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
     @Feature({"Preferences"})
     public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
         Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.COOKIES_KEY);
+                startContentSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
         setCookiesEnabled(preferenceActivity, true);
         setThirdPartyCookiesEnabled(preferenceActivity, false);
         setThirdPartyCookiesEnabled(preferenceActivity, true);
@@ -241,7 +245,7 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
     @Feature({"Preferences"})
     public void testCookiesNotBlocked() throws Exception {
         Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.COOKIES_KEY);
+                startContentSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
         setCookiesEnabled(preferenceActivity, true);
         preferenceActivity.finish();
 
@@ -265,7 +269,7 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
     @Feature({"Preferences"})
     public void testCookiesBlocked() throws Exception {
         Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.COOKIES_KEY);
+                startContentSettingsCategory(SiteSettingsPreferences.COOKIES_KEY);
         setCookiesEnabled(preferenceActivity, false);
         preferenceActivity.finish();
 

@@ -13,8 +13,10 @@ import java.io.Serializable;
 import javax.annotation.Nullable;
 
 /**
- * WebsiteAddress is a robust class for storing website address, which can be a
- * fully specified origin, or just a host, or a website name pattern.
+ * A pattern that matches a certain set of URLs used in content settings rules. The pattern can be
+ * a fully specified origin, or just a host, or a domain name pattern.
+ *
+ * This is roughly equivalent to C++'s ContentSettingsPattern, though more limited.
  */
 public class WebsiteAddress implements Comparable<WebsiteAddress>, Serializable {
     private final String mOriginOrHostPattern;
