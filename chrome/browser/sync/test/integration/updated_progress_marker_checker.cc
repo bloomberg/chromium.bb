@@ -38,7 +38,7 @@ bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
   const syncer::sessions::SyncSessionSnapshot& snap =
       service()->GetLastSessionSnapshot();
   return snap.model_neutral_state().num_successful_commits == 0 &&
-         !service()->HasUnsyncedItems();
+         service()->IsSyncActive() && !service()->HasUnsyncedItems();
 }
 
 std::string UpdatedProgressMarkerChecker::GetDebugMessage() const {
