@@ -92,7 +92,7 @@ protected:
         document->animationClock().resetTimeForTesting();
         element = Element::create(QualifiedName::null() , document.get());
         platformTiming = new MockPlatformTiming;
-        timeline = AnimationTimeline::create(document.get(), adoptPtrWillBeNoop(platformTiming));
+        timeline = AnimationTimeline::create(document.get(), adoptPtrWillBeNoop(platformTiming.get()));
         ASSERT_EQ(0, timeline->currentTimeInternal());
     }
 
@@ -118,7 +118,7 @@ protected:
     RefPtrWillBePersistent<Element> element;
     RefPtrWillBePersistent<AnimationTimeline> timeline;
     Timing timing;
-    MockPlatformTiming* platformTiming;
+    RawPtrWillBePersistent<MockPlatformTiming> platformTiming;
 
     void wake()
     {

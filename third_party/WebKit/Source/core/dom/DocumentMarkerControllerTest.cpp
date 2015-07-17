@@ -59,7 +59,7 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    Document* m_document;
+    RefPtrWillBePersistent<Document> m_document;
 };
 
 void DocumentMarkerControllerTest::SetUp()

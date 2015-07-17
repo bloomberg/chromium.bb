@@ -26,7 +26,7 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    HTMLDocument* m_document;
+    RefPtrWillBePersistent<HTMLDocument> m_document;
 };
 
 void LayoutThemeTest::SetUp()

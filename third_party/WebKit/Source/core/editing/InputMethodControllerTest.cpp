@@ -26,7 +26,7 @@ private:
     void SetUp() override;
 
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    HTMLDocument* m_document;
+    RefPtrWillBePersistent<HTMLDocument> m_document;
 };
 
 void InputMethodControllerTest::SetUp()

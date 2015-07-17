@@ -98,7 +98,7 @@ private:
     static const int extensionGroup = 0;
 
     WebViewHelper m_webViewHelper;
-    ScriptController* m_scriptController;
+    RawPtrWillBePersistent<ScriptController> m_scriptController;
     // TestActivityLogger is owned by a static table within V8DOMActivityLogger
     // and should be alive as long as not overwritten.
     TestActivityLogger* m_activityLogger;

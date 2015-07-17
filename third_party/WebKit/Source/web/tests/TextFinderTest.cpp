@@ -39,7 +39,7 @@ protected:
 private:
     FrameTestHelpers::WebViewHelper m_webViewHelper;
     RefPtrWillBePersistent<Document> m_document;
-    TextFinder* m_textFinder;
+    RawPtrWillBePersistent<TextFinder> m_textFinder;
 };
 
 void TextFinderTest::SetUp()

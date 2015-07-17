@@ -39,7 +39,7 @@ protected:
 private:
     void SetUp() override;
 
-    HTMLDocument* m_document;
+    RefPtrWillBePersistent<HTMLDocument> m_document;
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
 
