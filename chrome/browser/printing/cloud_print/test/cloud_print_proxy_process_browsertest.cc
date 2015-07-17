@@ -21,8 +21,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/service_process/service_process_control.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_content_client.h"
@@ -39,7 +37,6 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -104,10 +101,6 @@ class TestServiceProcess : public ServiceProcess {
 
   bool Initialize(base::MessageLoopForUI* message_loop,
                   ServiceProcessState* state);
-
-  base::SingleThreadTaskRunner* IOMessageLoopProxy() {
-    return io_thread_->task_runner().get();
-  }
 };
 
 bool TestServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
@@ -253,7 +246,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   set_expectations.Run(&server);
 
   EXPECT_TRUE(server.Init());
-  EXPECT_TRUE(state->SignalReady(service_process.IOMessageLoopProxy(),
+  EXPECT_TRUE(state->SignalReady(service_process.io_task_runner().get(),
                                  base::Bind(&ShutdownTask)));
 #if defined(OS_MACOSX)
   mock_launchd.SignalReady();
@@ -272,7 +265,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
       IPC::ChannelProxy::Create(startup_channel_name,
                                 IPC::Channel::MODE_CLIENT,
                                 &listener,
-                                service_process.IOMessageLoopProxy());
+                                service_process.io_task_runner());
 
   main_message_loop.Run();
   if (!Mock::VerifyAndClearExpectations(&server))
@@ -518,12 +511,3 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   ShutdownAndWaitForExitWithTimeout(process.Pass());
   content::RunAllPendingInMessageLoop();
 }
-
-KeyedService* CloudPrintProxyServiceFactoryForPolicyTest(
-    content::BrowserContext* profile) {
-  CloudPrintProxyService* service =
-      new CloudPrintProxyService(static_cast<Profile*>(profile));
-  service->Initialize();
-  return service;
-}
-
