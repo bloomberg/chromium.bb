@@ -258,8 +258,6 @@ function doesAttributeHaveObservableSideEffectOnGet(object, attribute)
  */
 var InjectedScript = function()
 {
-    /** @type {!Object.<string, !Object>} */
-    this._modules = { __proto__: null };
 }
 
 /**
@@ -297,17 +295,6 @@ InjectedScript.prototype = {
         if (canAccessInspectedGlobalObject)
             return this._wrapObject(object, groupName, false, generatePreview);
         return this._fallbackWrapper(object);
-    },
-
-    /**
-     * @param {*} object
-     * @param {string} groupName
-     * @param {boolean=} doNotBind
-     * @return {!RuntimeAgent.RemoteObject}
-     */
-    wrapObjectForModule: function(object, groupName, doNotBind)
-    {
-        return this._wrapObject(object, groupName, false, false, null, false, doNotBind);
     },
 
     /**
@@ -1049,55 +1036,6 @@ InjectedScript.prototype = {
     _objectForId: function(objectId)
     {
         return objectId.injectedScriptId === injectedScriptId ? /** @type{!Object|symbol|undefined} */ (InjectedScriptHost.objectForId(objectId.id)) : void 0;
-    },
-
-    /**
-     * @param {string} objectId
-     * @return {!Object|symbol|undefined}
-     */
-    findObjectById: function(objectId)
-    {
-        var parsedObjectId = this._parseObjectId(objectId);
-        return this._objectForId(parsedObjectId);
-    },
-
-    /**
-     * @param {string} objectId
-     * @return {?Node}
-     */
-    nodeForObjectId: function(objectId)
-    {
-        var object = this.findObjectById(objectId);
-        if (!object || this._subtype(object) !== "node")
-            return null;
-        return /** @type {!Node} */ (object);
-    },
-
-    /**
-     * @param {string} name
-     * @return {!Object}
-     */
-    module: function(name)
-    {
-        return this._modules[name];
-    },
-
-    /**
-     * @param {string} name
-     * @param {string} source
-     * @return {?Object}
-     */
-    injectModule: function(name, source)
-    {
-        delete this._modules[name];
-        var moduleFunction = InjectedScriptHost.eval("(" + source + ")");
-        if (typeof moduleFunction !== "function") {
-            inspectedGlobalObject.console.error("Web Inspector error: A function was expected for module %s evaluation", name);
-            return null;
-        }
-        var module = /** @type {!Object} */ (InjectedScriptHost.callFunction(moduleFunction, inspectedGlobalObject, [InjectedScriptHost, inspectedGlobalObject, injectedScriptId, this]));
-        this._modules[name] = module;
-        return module;
     },
 
     /**

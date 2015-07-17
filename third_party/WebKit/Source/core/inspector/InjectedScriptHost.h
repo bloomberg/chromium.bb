@@ -74,7 +74,7 @@ public:
         m_client = injectedScriptHostClient;
     }
 
-    static EventTarget* scriptValueAsEventTarget(ScriptState*, ScriptValue);
+    static EventTarget* eventTargetFromV8Value(v8::Isolate*, v8::Local<v8::Value>);
 
     void disconnect();
 

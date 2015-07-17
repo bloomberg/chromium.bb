@@ -40,6 +40,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorState.h"
@@ -355,7 +356,15 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
         *errorString = "Inspected frame has gone";
         return;
     }
-    EventTarget* target = injectedScript.eventTargetForObjectId(objectId);
+
+    ScriptState* state = injectedScript.scriptState();
+    ScriptState::Scope scope(state);
+    v8::Local<v8::Value> value = injectedScript.findObject(*remoteId);
+    if (value.IsEmpty()) {
+        *errorString = "No object with passed objectId";
+        return;
+    }
+    EventTarget* target = InjectedScriptHost::eventTargetFromV8Value(state->isolate(), value);
     if (!target) {
         *errorString = "No event target with passed objectId";
         return;

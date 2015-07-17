@@ -32,7 +32,7 @@
 
 namespace blink {
 
-static EventTarget* eventTargetFromScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
+EventTarget* InjectedScriptHost::eventTargetFromV8Value(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, value);
     // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper exists on prototype chain.
@@ -41,14 +41,6 @@ static EventTarget* eventTargetFromScriptValue(v8::Isolate* isolate, v8::Local<v
     if (!target || !target->executionContext())
         return nullptr;
     return target;
-}
-
-EventTarget* InjectedScriptHost::scriptValueAsEventTarget(ScriptState* scriptState, ScriptValue value)
-{
-    ScriptState::Scope scope(scriptState);
-    if (value.isNull() || !value.isObject())
-        return nullptr;
-    return eventTargetFromScriptValue(scriptState->isolate(), value.v8Value());
 }
 
 void V8InjectedScriptHost::clearConsoleMessagesCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -298,7 +290,7 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
     if (info.Length() < 1)
         return;
 
-    EventTarget* target = eventTargetFromScriptValue(info.GetIsolate(), info[0]);
+    EventTarget* target = InjectedScriptHost::eventTargetFromV8Value(info.GetIsolate(), info[0]);
     if (!target)
         return;
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(info.Holder());

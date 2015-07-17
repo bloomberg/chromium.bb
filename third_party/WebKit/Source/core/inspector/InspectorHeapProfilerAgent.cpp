@@ -317,9 +317,9 @@ void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const
         *errorString = "Inspected context has gone";
         return;
     }
-    ScriptValue value = injectedScript.findObjectById(objectId);
     ScriptState::Scope scope(injectedScript.scriptState());
-    if (value.isEmpty() || value.isUndefined()) {
+    v8::Local<v8::Value> value = injectedScript.findObject(*remoteId);
+    if (value.IsEmpty() || value->IsUndefined()) {
         *errorString = "Object with given id not found";
         return;
     }

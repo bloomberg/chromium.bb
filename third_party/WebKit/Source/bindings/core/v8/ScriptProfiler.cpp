@@ -122,11 +122,11 @@ ScriptValue ScriptProfiler::objectByHeapObjectId(unsigned id)
     return ScriptValue(scriptState, object);
 }
 
-unsigned ScriptProfiler::getHeapObjectId(const ScriptValue& value)
+unsigned ScriptProfiler::getHeapObjectId(v8::Local<v8::Value> value)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
-    v8::SnapshotObjectId id = profiler->GetObjectId(value.v8Value());
+    v8::SnapshotObjectId id = profiler->GetObjectId(value);
     return id;
 }
 

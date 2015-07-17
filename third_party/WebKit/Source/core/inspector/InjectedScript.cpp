@@ -321,13 +321,6 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
         *properties = array;
 }
 
-EventTarget* InjectedScript::eventTargetForObjectId(const String& objectId)
-{
-    if (isEmpty() || !canAccessInspectedWindow())
-        return nullptr;
-    return InjectedScriptHost::scriptValueAsEventTarget(scriptState(), findObjectById(objectId));
-}
-
 void InjectedScript::releaseObject(const String& objectId)
 {
     RefPtr<JSONValue> parsedObjectId = parseJSON(objectId);
@@ -389,18 +382,6 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(const S
         return nullptr;
     RefPtr<JSONObject> rawResult = toJSONValue(r)->asObject();
     return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
-}
-
-ScriptValue InjectedScript::findObjectById(const String& objectId) const
-{
-    ASSERT(!isEmpty());
-    ScriptFunctionCall function(injectedScriptObject(), "findObjectById");
-    function.appendArgument(objectId);
-
-    bool hadException = false;
-    ScriptValue resultValue = callFunctionWithEvalEnabled(function, hadException);
-    ASSERT(!hadException);
-    return resultValue;
 }
 
 v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) const

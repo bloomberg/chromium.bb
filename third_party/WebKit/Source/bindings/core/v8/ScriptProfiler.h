@@ -60,7 +60,7 @@ public:
 
     static void collectGarbage();
     static ScriptValue objectByHeapObjectId(unsigned id);
-    static unsigned getHeapObjectId(const ScriptValue&);
+    static unsigned getHeapObjectId(v8::Local<v8::Value>);
     static void clearHeapObjectIds();
     static void setSamplingInterval(int intervalUs);
     static void start(const String& title);
