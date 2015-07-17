@@ -209,6 +209,7 @@ private:
     int viewLogicalWidthForBoxSizing() const;
     int viewLogicalHeightForBoxSizing() const;
 
+    GC_PLUGIN_IGNORE("http://crbug.com/509911")
     FrameView* m_frameView;
 
     LayoutObject* m_selectionStart;
