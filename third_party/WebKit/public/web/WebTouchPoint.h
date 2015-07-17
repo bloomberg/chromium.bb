@@ -33,18 +33,20 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebFloatPoint.h"
+#include "../platform/WebPointerProperties.h"
 
 namespace blink {
 
-class WebTouchPoint {
+// TODO(e_hakkinen): Replace WebTouchEvent with WebPointerEvent and remove
+// WebTouchEvent and this.
+class WebTouchPoint : public WebPointerProperties {
 public:
     WebTouchPoint()
-        : id(0)
+        : WebPointerProperties()
         , state(StateUndefined)
         , radiusX(0)
         , radiusY(0)
         , rotationAngle(0)
-        , force(0)
     {
     }
 
@@ -57,15 +59,15 @@ public:
         StateCancelled,
     };
 
-    int id;
     State state;
+
+    // TODO(e_hakkinen): Move position fields to WebPointerProperties.
     WebFloatPoint screenPosition;
     WebFloatPoint position;
 
     float radiusX;
     float radiusY;
     float rotationAngle;
-    float force;
 };
 
 } // namespace blink
