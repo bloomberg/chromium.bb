@@ -18,8 +18,11 @@ const NSInteger kMiddleButtonNumber = 2;
 
 }  // namespace
 
-@interface OmniboxPopupTableController ()
-- (instancetype)initWithArray:(NSArray*)array;
+@interface OmniboxPopupMatrix ()
+- (OmniboxPopupTableController*)controller;
+- (void)resetTrackingArea;
+- (void)highlightRowUnder:(NSEvent*)theEvent;
+- (BOOL)selectCellForEvent:(NSEvent*)theEvent;
 @end
 
 @implementation OmniboxPopupTableController
@@ -49,12 +52,13 @@ const NSInteger kMiddleButtonNumber = 2;
   }
 
   [tableView setMaxMatchContentsWidth:max_match_contents_width];
-  return [self initWithArray:array];
+  return [self initWithArray:array
+                     hovered:[[tableView controller] highlightedRow]];
 }
 
-- (instancetype)initWithArray:(NSArray*)array {
+- (instancetype)initWithArray:(NSArray*)array hovered:(NSInteger)hoveredIndex {
   if ((self = [super init])) {
-    hoveredIndex_ = -1;
+    hoveredIndex_ = hoveredIndex;
     array_.reset([array copy]);
   }
   return self;
@@ -108,13 +112,6 @@ const NSInteger kMiddleButtonNumber = 2;
   return height;
 }
 
-@end
-
-@interface OmniboxPopupMatrix ()
-- (OmniboxPopupTableController*)controller;
-- (void)resetTrackingArea;
-- (void)highlightRowUnder:(NSEvent*)theEvent;
-- (BOOL)selectCellForEvent:(NSEvent*)theEvent;
 @end
 
 @implementation OmniboxPopupMatrix
@@ -175,7 +172,7 @@ const NSInteger kMiddleButtonNumber = 2;
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
-  [[self controller] setHighlightedRow:-1];
+  [self highlightRowUnder:theEvent];
 }
 
 // The tracking area events aren't forwarded during a drag, so handle
