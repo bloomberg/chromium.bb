@@ -94,27 +94,27 @@ function foo() {
 }
 Tests number: 8
 
-Running: bound genericTest
+Running: 
 Autodetected indentation for test1: 8 spaces
 
-Running: bound 
+Running: 
 Autodetected indentation for test2: 4 spaces
 
-Running: bound 
+Running: 
 Autodetected indentation for test3: 2 spaces
 
-Running: bound 
+Running: 
 Autodetected indentation for test4: 4 spaces
 
-Running: bound 
+Running: 
 Autodetected indentation for test5: 2 spaces
 
-Running: bound 
+Running: 
 Autodetected indentation for test6: Tab
 
-Running: bound 
+Running: 
 Autodetected indentation for test7: 4 spaces
 
-Running: bound 
+Running: 
 Autodetected indentation for test8: 2 spaces
 

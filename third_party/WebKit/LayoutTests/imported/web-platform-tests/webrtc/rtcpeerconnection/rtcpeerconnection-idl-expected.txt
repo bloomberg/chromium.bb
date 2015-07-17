@@ -56,7 +56,7 @@ PASS RTCPeerConnection interface: calling setRemoteDescription(RTCSessionDescrip
 PASS RTCPeerConnection interface: pc must inherit property "remoteDescription" with the proper type (5) 
 FAIL RTCPeerConnection interface: pc must inherit property "signalingState" with the proper type (6) Unrecognized type RTCSignalingState
 PASS RTCPeerConnection interface: pc must inherit property "updateIce" with the proper type (7) 
-FAIL RTCPeerConnection interface: calling updateIce(RTCConfiguration) on pc with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function bound () { [native code] }" did not throw
+FAIL RTCPeerConnection interface: calling updateIce(RTCConfiguration) on pc with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () { [native code] }" did not throw
 PASS RTCPeerConnection interface: pc must inherit property "addIceCandidate" with the proper type (8) 
 PASS RTCPeerConnection interface: calling addIceCandidate(RTCIceCandidate) on pc with too few arguments must throw TypeError 
 FAIL RTCPeerConnection interface: pc must inherit property "iceGatheringState" with the proper type (9) Unrecognized type RTCIceGatheringState
