@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_MAC_H_
-#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_MAC_H_
+#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_PLATFORM_H_
+#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_PLATFORM_H_
 
 #include <map>
 
@@ -12,10 +12,10 @@
 #include "content/public/browser/browser_message_filter.h"
 
 // A message filter implementation that receives
-// the Mac-specific spell checker requests from SpellCheckProvider.
-class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
+// the platform-specific spell checker requests from SpellCheckProvider.
+class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
  public:
-  explicit SpellCheckMessageFilterMac(int render_process_id);
+  explicit SpellCheckMessageFilterPlatform(int render_process_id);
 
   // BrowserMessageFilter implementation.
   void OverrideThreadForMessage(const IPC::Message& message,
@@ -31,9 +31,9 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
 
  private:
   friend class TestingSpellCheckMessageFilter;
-  friend class SpellcheckMessageFilterMacTest;
+  friend class SpellcheckMessageFilterPlatformMacTest;
 
-  ~SpellCheckMessageFilterMac() override;
+  ~SpellCheckMessageFilterPlatform() override;
 
   void OnCheckSpelling(const base::string16& word, int route_id, bool* correct);
   void OnFillSuggestionList(const base::string16& word,
@@ -54,7 +54,7 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
   // A JSON-RPC client that calls the Spelling service in the background.
   scoped_ptr<SpellingServiceClient> client_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpellCheckMessageFilterMac);
+  DISALLOW_COPY_AND_ASSIGN(SpellCheckMessageFilterPlatform);
 };
 
-#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_MAC_H_
+#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_PLATFORM_H_

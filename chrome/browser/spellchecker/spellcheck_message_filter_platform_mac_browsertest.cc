@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
+
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -15,10 +16,10 @@
 
 // Fake filter for testing, which stores sent messages and
 // allows verification by the test case.
-class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
+class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterPlatform {
  public:
   explicit TestingSpellCheckMessageFilter(base::MessageLoopForUI* loop)
-      : SpellCheckMessageFilterMac(0),
+      : SpellCheckMessageFilterPlatform(0),
         loop_(loop) { }
 
   bool Send(IPC::Message* message) override {
@@ -34,10 +35,10 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
   ~TestingSpellCheckMessageFilter() override {}
 };
 
-typedef InProcessBrowserTest SpellCheckMessageFilterMacBrowserTest;
+typedef InProcessBrowserTest SpellCheckMessageFilterPlatformMacBrowserTest;
 
 // Uses browsertest to setup chrome threads.
-IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
+IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterPlatformMacBrowserTest,
                        SpellCheckReturnMessage) {
   scoped_refptr<TestingSpellCheckMessageFilter> target(
       new TestingSpellCheckMessageFilter(base::MessageLoopForUI::current()));
@@ -53,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
   bool ok = SpellCheckMsg_RespondTextCheck::Read(
       target->sent_messages_[0], &params);
   std::vector<SpellCheckResult> sent_results = base::get<2>(params);
- 
+
   EXPECT_TRUE(ok);
   EXPECT_EQ(1U, sent_results.size());
   EXPECT_EQ(sent_results[0].location, 0);

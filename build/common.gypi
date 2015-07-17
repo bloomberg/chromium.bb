@@ -811,7 +811,6 @@
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'cld_version%': 1,
-          'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
           'arm_neon%': 0,
@@ -823,8 +822,8 @@
           'video_hole%': 1,
         }],
 
-        # OSX has a built-in spellchecker can be utilized.
-        ['OS=="mac"', {
+        # Android and OSX have built-in spellcheckers that can be utilized.
+        ['OS=="android" or OS=="mac"', {
           'use_platform_spellchecker%': 1,
         }],
 

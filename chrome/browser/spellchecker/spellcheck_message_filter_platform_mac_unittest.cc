@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -13,7 +13,7 @@
 
 namespace {
 
-TEST(SpellcheckMessageFilterMacTest, CombineResults) {
+TEST(SpellcheckMessageFilterPlatformMacTest, CombineResults) {
   std::vector<SpellCheckResult> local_results;
   std::vector<SpellCheckResult> remote_results;
   base::string16 remote_suggestion = base::ASCIIToUTF16("remote");
@@ -33,7 +33,8 @@ TEST(SpellcheckMessageFilterMacTest, CombineResults) {
   result.replacement = remote_suggestion;
   remote_results.push_back(result);
 
-  SpellCheckMessageFilterMac::CombineResults(&remote_results, local_results);
+  SpellCheckMessageFilterPlatform::CombineResults(&remote_results,
+      local_results);
 
   ASSERT_EQ(2U, remote_results.size());
   EXPECT_EQ(SpellCheckResult::GRAMMAR, remote_results[0].decoration);
@@ -43,12 +44,12 @@ TEST(SpellcheckMessageFilterMacTest, CombineResults) {
   EXPECT_EQ(remote_suggestion, remote_results[1].replacement);
 }
 
-TEST(SpellCheckMessageFilterMacTest, TestOverrideThread) {
+TEST(SpellCheckMessageFilterPlatformMacTest, TestOverrideThread) {
   static const uint32 kSpellcheckMessages[] = {
     SpellCheckHostMsg_RequestTextCheck::ID,
   };
-  scoped_refptr<SpellCheckMessageFilterMac> filter(
-      new SpellCheckMessageFilterMac(0));
+  scoped_refptr<SpellCheckMessageFilterPlatform> filter(
+      new SpellCheckMessageFilterPlatform(0));
   content::BrowserThread::ID thread;
   IPC::Message message;
   for (size_t i = 0; i < arraysize(kSpellcheckMessages); ++i) {

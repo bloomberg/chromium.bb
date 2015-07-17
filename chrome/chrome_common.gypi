@@ -501,7 +501,6 @@
             'common/icon_with_badge_image_source.cc',
             'common/media_galleries/metadata_types.h',
             'common/net/url_util.cc',
-            'common/spellcheck_common.cc',
           ],
         }, {
           # Non-Android.

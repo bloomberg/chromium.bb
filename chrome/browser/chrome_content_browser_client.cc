@@ -150,7 +150,6 @@
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
-#include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
@@ -245,6 +244,10 @@
 
 #if defined(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
+#endif
+
+#if defined(USE_PLATFORM_SPELLCHECKER)
+#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -841,8 +844,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(ENABLE_SPELLCHECK)
   host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
-#if defined(OS_MACOSX)
-  host->AddFilter(new SpellCheckMessageFilterMac(id));
+#if defined(USE_PLATFORM_SPELLCHECKER)
+  host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
   host->AddFilter(new ChromeNetBenchmarkingMessageFilter(profile, context));
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));

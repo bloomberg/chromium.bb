@@ -192,7 +192,6 @@ static_library("common") {
       "chrome_version_info_posix.cc",
       "icon_with_badge_image_source.cc",
       "media_galleries/metadata_types.h",
-      "spellcheck_common.cc",
     ]
   } else {
     # Non-Android.

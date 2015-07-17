@@ -602,7 +602,7 @@
       'browser/spellchecker/spellcheck_action_unittest.cc',
       'browser/spellchecker/spellcheck_custom_dictionary_unittest.cc',
       'browser/spellchecker/spellcheck_host_metrics_unittest.cc',
-      'browser/spellchecker/spellcheck_message_filter_mac_unittest.cc',
+      'browser/spellchecker/spellcheck_message_filter_platform_mac_unittest.cc',
       'browser/spellchecker/spellcheck_message_filter_unittest.cc',
       'browser/spellchecker/spellcheck_platform_mac_unittest.cc',
       'browser/spellchecker/spellcheck_service_unittest.cc',
@@ -2649,6 +2649,9 @@
         ['OS=="android"', {
           'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+          ],
+          'sources!': [
+            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
           ],
           'ldflags': [
             # Some android targets still depend on --gc-sections to link.

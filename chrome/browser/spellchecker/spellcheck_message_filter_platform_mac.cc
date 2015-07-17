@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 
 #include <algorithm>
 #include <functional>
@@ -145,8 +145,8 @@ void SpellingRequest::OnCheckCompleted() {
   if (remote_success_) {
     std::sort(remote_results_.begin(), remote_results_.end(), CompareLocation);
     std::sort(local_results_.begin(), local_results_.end(), CompareLocation);
-    SpellCheckMessageFilterMac::CombineResults(&remote_results_,
-                                               local_results_);
+    SpellCheckMessageFilterPlatform::CombineResults(&remote_results_,
+                                                    local_results_);
     check_results = &remote_results_;
   }
 
@@ -191,22 +191,23 @@ void SpellingRequest::OnLocalCheckCompleted(
 }
 
 
-SpellCheckMessageFilterMac::SpellCheckMessageFilterMac(int render_process_id)
+SpellCheckMessageFilterPlatform::SpellCheckMessageFilterPlatform(
+    int render_process_id)
     : BrowserMessageFilter(SpellCheckMsgStart),
       render_process_id_(render_process_id),
       client_(new SpellingServiceClient) {
 }
 
-void SpellCheckMessageFilterMac::OverrideThreadForMessage(
+void SpellCheckMessageFilterPlatform::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   if (message.type() == SpellCheckHostMsg_RequestTextCheck::ID)
     *thread = BrowserThread::UI;
 }
 
-bool SpellCheckMessageFilterMac::OnMessageReceived(
+bool SpellCheckMessageFilterPlatform::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SpellCheckMessageFilterMac, message)
+  IPC_BEGIN_MESSAGE_MAP(SpellCheckMessageFilterPlatform, message)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CheckSpelling,
                         OnCheckSpelling)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_FillSuggestionList,
@@ -223,7 +224,7 @@ bool SpellCheckMessageFilterMac::OnMessageReceived(
 }
 
 // static
-void SpellCheckMessageFilterMac::CombineResults(
+void SpellCheckMessageFilterPlatform::CombineResults(
     std::vector<SpellCheckResult>* remote_results,
     const std::vector<SpellCheckResult>& local_results) {
   std::vector<SpellCheckResult>::const_iterator local_iter(
@@ -249,30 +250,31 @@ void SpellCheckMessageFilterMac::CombineResults(
   }
 }
 
-SpellCheckMessageFilterMac::~SpellCheckMessageFilterMac() {}
+SpellCheckMessageFilterPlatform::~SpellCheckMessageFilterPlatform() {}
 
-void SpellCheckMessageFilterMac::OnCheckSpelling(const base::string16& word,
-                                                 int route_id,
-                                                 bool* correct) {
+void SpellCheckMessageFilterPlatform::OnCheckSpelling(
+    const base::string16& word,
+    int route_id,
+    bool* correct) {
   *correct = spellcheck_mac::CheckSpelling(word, ToDocumentTag(route_id));
 }
 
-void SpellCheckMessageFilterMac::OnFillSuggestionList(
+void SpellCheckMessageFilterPlatform::OnFillSuggestionList(
     const base::string16& word,
     std::vector<base::string16>* suggestions) {
   spellcheck_mac::FillSuggestionList(word, suggestions);
 }
 
-void SpellCheckMessageFilterMac::OnShowSpellingPanel(bool show) {
+void SpellCheckMessageFilterPlatform::OnShowSpellingPanel(bool show) {
   spellcheck_mac::ShowSpellingPanel(show);
 }
 
-void SpellCheckMessageFilterMac::OnUpdateSpellingPanelWithMisspelledWord(
+void SpellCheckMessageFilterPlatform::OnUpdateSpellingPanelWithMisspelledWord(
     const base::string16& word) {
   spellcheck_mac::UpdateSpellingPanelWithMisspelledWord(word);
 }
 
-void SpellCheckMessageFilterMac::OnRequestTextCheck(
+void SpellCheckMessageFilterPlatform::OnRequestTextCheck(
     int route_id,
     int identifier,
     const base::string16& text,
@@ -300,7 +302,7 @@ void SpellCheckMessageFilterMac::OnRequestTextCheck(
       text, route_id, identifier, ToDocumentTag(route_id), markers);
 }
 
-int SpellCheckMessageFilterMac::ToDocumentTag(int route_id) {
+int SpellCheckMessageFilterPlatform::ToDocumentTag(int route_id) {
   if (!tag_map_.count(route_id))
     tag_map_[route_id] = spellcheck_mac::GetDocumentTag();
   return tag_map_[route_id];
@@ -309,7 +311,7 @@ int SpellCheckMessageFilterMac::ToDocumentTag(int route_id) {
 // TODO(groby): We are currently not notified of retired tags. We need
 // to track destruction of RenderViewHosts on the browser process side
 // to update our mappings when a document goes away.
-void SpellCheckMessageFilterMac::RetireDocumentTag(int route_id) {
+void SpellCheckMessageFilterPlatform::RetireDocumentTag(int route_id) {
   spellcheck_mac::CloseDocumentWithTag(ToDocumentTag(route_id));
   tag_map_.erase(route_id);
 }

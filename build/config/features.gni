@@ -123,7 +123,7 @@ if (is_android) {
 use_udev = is_linux
 
 # Enable the spell checker.
-enable_spellcheck = !is_android
+enable_spellcheck = !is_ios
 
 # Use the operating system's spellchecker rather than hunspell.
 use_platform_spellchecker = is_android || is_mac
