@@ -330,19 +330,6 @@ TEST(VideoFrame,
   EXPECT_EQ(release_sync_point, called_sync_point);
 }
 
-TEST(VideoFrame, ZeroInitialized) {
-  const int kWidth = 64;
-  const int kHeight = 48;
-  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1337);
-
-  gfx::Size size(kWidth, kHeight);
-  scoped_refptr<media::VideoFrame> frame = VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size, kTimestamp);
-
-  for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i)
-    EXPECT_EQ(0, frame->data(i)[0]);
-}
-
 TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
   VideoFrameMetadata metadata;
 

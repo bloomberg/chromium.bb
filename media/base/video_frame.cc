@@ -856,11 +856,8 @@ void VideoFrame::AllocateYUV() {
   DCHECK(IsValidPlane(kUPlane, format_));
   data_size += strides_[kUPlane] + kFrameSizePadding;
 
-  // FFmpeg expects the initialize allocation to be zero-initialized.  Failure
-  // to do so can lead to unitialized value usage.  See http://crbug.com/390941
   uint8* data = reinterpret_cast<uint8*>(
       base::AlignedAlloc(data_size, kFrameAddressAlignment));
-  memset(data, 0, data_size);
 
   for (size_t plane = 0; plane < NumPlanes(format_); ++plane)
     data_[plane] = data + offset[plane];

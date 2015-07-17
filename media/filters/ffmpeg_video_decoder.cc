@@ -127,6 +127,10 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
 
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
       format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp());
+#if defined(MEMORY_SANITIZER)
+  MSAN_UNPOISON(video_frame->data(0),
+                VideoFrame::AllocationSize(format, coded_size));
+#endif
 
   // Prefer the color space from the codec context. If it's not specified (or is
   // set to an unsupported value), fall back on the value from the config.
