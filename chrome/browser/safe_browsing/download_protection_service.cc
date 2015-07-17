@@ -42,6 +42,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_status_code.h"
@@ -1045,6 +1046,9 @@ void DownloadProtectionService::ShowDetailsForDownload(
   GURL learn_more_url(chrome::kDownloadScanningLearnMoreURL);
   learn_more_url = google_util::AppendGoogleLocaleParam(
       learn_more_url, g_browser_process->GetApplicationLocale());
+  learn_more_url = net::AppendQueryParameter(
+      learn_more_url, "ctx",
+      base::IntToString(static_cast<int>(item.GetDangerType())));
   navigator->OpenURL(
       content::OpenURLParams(learn_more_url,
                              content::Referrer(),

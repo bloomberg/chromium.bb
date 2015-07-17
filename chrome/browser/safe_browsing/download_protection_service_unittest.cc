@@ -31,9 +31,12 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
+#include "content/public/browser/download_danger_type.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -1859,4 +1862,37 @@ TEST_F(DownloadProtectionServiceTest, GetCertificateWhitelistStrings) {
       *cert.get(), *issuer_cert.get(), &whitelist_strings);
   EXPECT_THAT(whitelist_strings, ElementsAre());
 }
+
+namespace {
+
+class MockPageNavigator : public content::PageNavigator {
+ public:
+  MOCK_METHOD1(OpenURL, content::WebContents*(const content::OpenURLParams&));
+};
+
+// A custom matcher that matches a OpenURLParams value with a url with a query
+// parameter patching |value|.
+MATCHER_P(OpenURLParamsWithContextValue, value, "") {
+  std::string query_value;
+  return net::GetValueForKeyInQuery(arg.url, "ctx", &query_value) &&
+         query_value == value;
+}
+
+}  // namespace
+
+// ShowDetailsForDownload() should open a URL showing more information about why
+// a download was flagged by SafeBrowsing. The URL should have a &ctx= parameter
+// whose value is the DownloadDangerType.
+TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
+  StrictMock<MockPageNavigator> mock_page_navigator;
+  StrictMock<content::MockDownloadItem> mock_download_item;
+
+  EXPECT_CALL(mock_download_item, GetDangerType())
+      .WillOnce(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST));
+  EXPECT_CALL(mock_page_navigator, OpenURL(OpenURLParamsWithContextValue("7")));
+
+  download_service_->ShowDetailsForDownload(mock_download_item,
+                                            &mock_page_navigator);
+}
+
 }  // namespace safe_browsing
