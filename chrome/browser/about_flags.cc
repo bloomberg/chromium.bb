@@ -1443,14 +1443,14 @@ const Experiment kExperiments[] = {
      // Java-only switch: ContentSwitches.ENABLE_ACCESSIBILITY_SCRIPT_INJECTION.
      SINGLE_VALUE_TYPE("enable-accessibility-script-injection")},
 #endif
-    {"disable-one-copy",
-     IDS_FLAGS_DISABLE_ONE_COPY_NAME,
-     IDS_FLAGS_DISABLE_ONE_COPY_DESCRIPTION,
+    {"enable-one-copy",
+     IDS_FLAGS_ONE_COPY_NAME,
+     IDS_FLAGS_ONE_COPY_DESCRIPTION,
      kOsAll,
-     SINGLE_VALUE_TYPE(switches::kDisableOneCopy)},
+     SINGLE_VALUE_TYPE(switches::kEnableOneCopy)},
     {"enable-zero-copy",
-     IDS_FLAGS_ENABLE_ZERO_COPY_NAME,
-     IDS_FLAGS_ENABLE_ZERO_COPY_DESCRIPTION,
+     IDS_FLAGS_ZERO_COPY_NAME,
+     IDS_FLAGS_ZERO_COPY_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableZeroCopy)},
 #if defined(OS_CHROMEOS)

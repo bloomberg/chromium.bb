@@ -228,7 +228,15 @@ bool IsOneCopyUploadEnabled() {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(switches::kDisableOneCopy);
+  if (command_line.HasSwitch(switches::kEnableOneCopy))
+    return true;
+  if (command_line.HasSwitch(switches::kDisableOneCopy))
+    return false;
+
+#if defined(OS_ANDROID)
+  return false;
+#endif
+  return true;
 }
 
 bool IsZeroCopyUploadEnabled() {
