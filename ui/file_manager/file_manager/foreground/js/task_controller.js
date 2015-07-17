@@ -185,7 +185,8 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
   chrome.fileManagerPrivate.setDefaultTask(
       task.taskId,
       util.entriesToURLs(selection.entries),
-      selection.mimeTypes);
+      selection.mimeTypes,
+      util.checkAPIError);
   this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
 
   // Update task menu button unless the task button was updated other selection.

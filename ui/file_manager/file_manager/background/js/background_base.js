@@ -26,7 +26,11 @@ function BackgroundBase() {
   // Initializes the strings. This needs for the volume manager.
   this.initializationPromise_ = new Promise(function(fulfill, reject) {
     chrome.fileManagerPrivate.getStrings(function(stringData) {
-      loadTimeData.data = stringData;
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError.message);
+        return;
+      }
+      loadTimeData.data = assert(stringData);
       fulfill(stringData);
     });
   });

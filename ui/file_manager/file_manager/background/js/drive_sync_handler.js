@@ -205,11 +205,7 @@ DriveSyncHandler.prototype.removeItem_ = function(status) {
  * @private
  */
 DriveSyncHandler.prototype.requestCancel_ = function(entry) {
-  // Cancel all jobs.
-  chrome.fileManagerPrivate.cancelAllFileTransfers(function() {
-    if (chrome.runtime.lastError)
-      console.error(chrome.runtime.lastError);
-  });
+  chrome.fileManagerPrivate.cancelAllFileTransfers(util.checkAPIError);
 };
 
 /**

@@ -1040,3 +1040,11 @@ util.addEventListenerToBackgroundComponent = function(target, type, handler) {
     target.removeEventListener(type, handler);
   });
 };
+
+/**
+ * Checks if an API call returned an error, and if yes then prints it.
+ */
+util.checkAPIError = function() {
+  if (chrome.runtime.lastError)
+    console.error(chrome.runtime.lastError.message);
+};

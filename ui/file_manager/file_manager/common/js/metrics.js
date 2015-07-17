@@ -76,6 +76,11 @@ metrics.umaEnabledFilter_ = function(hit) {
 
   chrome.fileManagerPrivate.isUMAEnabled(
       function(enabled) {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+          return;
+        }
+        assert(enabled !== undefined);
         if (!enabled) {
           // If UMA was just toggled, reset the analytics ID.
           if (metrics.enabled_) {

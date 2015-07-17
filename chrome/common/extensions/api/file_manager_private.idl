@@ -648,18 +648,19 @@ interface Functions {
   // |callback|
   static void executeTask(DOMString taskId,
                           DOMString[] fileUrls,
-                          optional ExecuteTaskCallback callback);
+                          ExecuteTaskCallback callback);
 
   // Sets the default task for the supplied MIME types and suffixes of the
   // supplied file URLs. Lists of MIME types and URLs may contain duplicates.
+  // Additionally, the list of MIME types can be empty.
   // |taskId| The unique identifier of task to mark as default.
   // |fileUrls| Array of selected file URLs to extract suffixes from.
   // |mimeTypes| Array of selected file MIME types.
   // |callback|
   static void setDefaultTask(DOMString taskId,
                              DOMString[] fileUrls,
-                             optional DOMString[] mimeTypes,
-                             optional SimpleCallback callback);
+                             DOMString[] mimeTypes,
+                             SimpleCallback callback);
 
   // Gets the list of tasks that can be performed over selected files.
   // |fileUrls| Array of selected file URLs
@@ -743,7 +744,7 @@ interface Functions {
   [nocompile]
   static void pinDriveFile([instanceof=Entry] object entry,
                            boolean pin,
-                           optional SimpleCallback callback);
+                           SimpleCallback callback);
 
   // Resolves entries in the isolated file system and returns corresponding
   // entries in the external file system mounted to Chrome OS file manager
@@ -792,7 +793,7 @@ interface Functions {
   // Cancels the running copy task.
   // |copyId| ID of the copy task to be cancelled.
   // |callback| Completion callback of the cancel.
-  static void cancelCopy(long copyId, optional SimpleCallback callback);
+  static void cancelCopy(long copyId, SimpleCallback callback);
 
   // Retrieves total and remaining size of a mount point.
   // |volumeId| ID of the volume to be checked.
@@ -839,17 +840,17 @@ interface Functions {
   static void zipSelection(DOMString dirURL,
                            DOMString[] selectionUrls,
                            DOMString destName,
-                           optional ZipSelectionCallback callback);
+                           ZipSelectionCallback callback);
 
   // Retrieves the state of the current drive connection.
   // |callback|
   static void getDriveConnectionState(GetDriveConnectionStateCallback callback);
 
   // Checks whether the path name length fits in the limit of the filesystem.
-  // |parent_directory_url| The URL of the parent directory entry.
+  // |parentDirectoryUrl| The URL of the parent directory entry.
   // |name| The name of the file.
   // |callback| Called back when the check is finished.
-  static void validatePathNameLength(DOMString parent_directory_url,
+  static void validatePathNameLength(DOMString parentDirectoryUrl,
                                      DOMString name,
                                      ValidatePathNameLengthCallback callback);
 

@@ -208,7 +208,7 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
           callback(null);
           return;
         }
-        callback(token);
+        callback(assert(token));
       });
     }
   };

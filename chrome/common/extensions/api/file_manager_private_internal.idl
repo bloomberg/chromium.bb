@@ -48,6 +48,6 @@ namespace fileManagerPrivateInternal {
                             GetMimeTypeCallback callback);
     static void pinDriveFile(DOMString url,
                              boolean pin,
-                             optional SimpleCallback callback);
+                             SimpleCallback callback);
   };
 };

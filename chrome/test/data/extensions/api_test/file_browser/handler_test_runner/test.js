@@ -104,7 +104,7 @@ function run() {
           '"');
     }
     chrome.fileManagerPrivate.setDefaultTask(
-        tasks[0].taskId, [fileUrl],
+        tasks[0].taskId, [fileUrl], [],
         chrome.fileManagerPrivate.getFileTasks.bind(null, [fileUrl],
             onGotTasks.bind(null, fileUrl)));
   }

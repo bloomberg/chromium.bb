@@ -1137,15 +1137,13 @@ importer.RuntimeControllerEnvironment.prototype.getFreeStorageSpace =
       function(resolve, reject) {
         chrome.fileManagerPrivate.getSizeStats(
             localVolumeInfo.volumeId,
-            /** @param {Object} stats */
             function(stats) {
-              if (stats && !chrome.runtime.lastError) {
-                resolve(stats.remainingSize);
-              } else {
+              if (chrome.runtime.lastError) {
                 reject('Failed to ascertain available free space: ' +
-                    chrome.runtime.lastError.message ||
-                    chrome.runtime.lastError);
+                    chrome.runtime.lastError.message);
+                return;
               }
+              resolve(assert(stats).remainingSize);
             });
       });
 };

@@ -97,22 +97,25 @@ function runTests() {
                             'pkplfbidichfdicaijlchgnapepdginl|app|' +
                                 'magic_handler',
                             tasks[0].taskId);
-                        var onLaunched = function(event) {
-                          chrome.test.assertTrue(!!event);
-                          chrome.test.assertEq('magic_handler', event.id);
-                          chrome.test.assertTrue(!!event.items);
-                          chrome.test.assertEq(1, event.items.length);
-                          chrome.test.assertEq(
-                              TESTING_MIME_TYPE, event.items[0].type);
-                          chrome.test.assertEq(
-                              TESTING_WITH_MIME_FILE.name,
-                              event.items[0].entry.name);
-                          chrome.app.runtime.onLaunched.removeListener(
-                              onLaunched);
-                        };
+                        var onLaunched = chrome.test.callbackPass(
+                            function(event) {
+                              chrome.test.assertTrue(!!event);
+                              chrome.test.assertEq('magic_handler', event.id);
+                              chrome.test.assertTrue(!!event.items);
+                              chrome.test.assertEq(1, event.items.length);
+                              chrome.test.assertEq(
+                                  TESTING_MIME_TYPE, event.items[0].type);
+                              chrome.test.assertEq(
+                                  TESTING_WITH_MIME_FILE.name,
+                                  event.items[0].entry.name);
+                              chrome.app.runtime.onLaunched.removeListener(
+                                  onLaunched);
+                            });
                         chrome.app.runtime.onLaunched.addListener(onLaunched);
                         chrome.fileManagerPrivate.executeTask(
-                            tasks[0].taskId, [entry.toURL()]);
+                            tasks[0].taskId,
+                            [externalEntry.toURL()],
+                            chrome.test.callbackPass(function() {}));
                       }));
                 })).catch(chrome.test.fail);
           }), function(error) {

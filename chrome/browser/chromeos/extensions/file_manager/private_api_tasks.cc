@@ -206,14 +206,8 @@ bool FileManagerPrivateSetDefaultTaskFunction::RunSync() {
 
   const std::set<std::string> suffixes =
       GetUniqueSuffixes(params->file_urls, file_system_context.get());
-
-  // MIME types are an optional parameter.
-  std::set<std::string> mime_types;
-  if (params->mime_types && !params->mime_types->empty()) {
-    if (params->mime_types->size() != params->file_urls.size())
-      return false;
-    mime_types = GetUniqueMimeTypes(*params->mime_types);
-  }
+  const std::set<std::string> mime_types =
+      GetUniqueMimeTypes(params->mime_types);
 
   // If there weren't any mime_types, and all the suffixes were blank,
   // then we "succeed", but don't actually associate with anything.

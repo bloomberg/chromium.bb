@@ -372,7 +372,9 @@ fileOperationUtil.listEntries = function(directory, callback) {
 fileOperationUtil.copyTo = function(
     source, parent, newName, entryChangedCallback, progressCallback,
     successCallback, errorCallback) {
-  var copyId = null;
+
+  /** @type {number|undefined} */
+  var copyId;
   var pendingCallbacks = [];
 
   // Makes the callback called in order they were invoked.
@@ -443,7 +445,8 @@ fileOperationUtil.copyTo = function(
           console.error('Unknown progress type: ' + status.type);
           chrome.fileManagerPrivate.onCopyProgress.removeListener(
               onCopyProgress);
-          chrome.fileManagerPrivate.cancelCopy(copyId);
+          chrome.fileManagerPrivate.cancelCopy(
+              assert(copyId), util.checkAPIError);
           errorCallback(util.createDOMError(
               util.FileError.INVALID_STATE_ERR));
           callback();
@@ -477,14 +480,15 @@ fileOperationUtil.copyTo = function(
 
   return function() {
     // If copyId is not yet available, wait for it.
-    if (copyId == null) {
+    if (copyId === undefined) {
       pendingCallbacks.push(function() {
-        chrome.fileManagerPrivate.cancelCopy(copyId);
+        chrome.fileManagerPrivate.cancelCopy(
+            assert(copyId), util.checkAPIError);
       });
       return;
     }
 
-    chrome.fileManagerPrivate.cancelCopy(copyId);
+    chrome.fileManagerPrivate.cancelCopy(copyId, util.checkAPIError);
   };
 };
 
