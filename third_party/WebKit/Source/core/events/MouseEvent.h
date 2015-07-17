@@ -92,11 +92,6 @@ public:
     bool isDragEvent() const final;
     int which() const final;
 
-    // TODO(dtapuska): Move isTrusted support from MouseEvent
-    // to Event. http://crbug.com/334015
-    void setTrusted(bool trusted) { m_isTrusted = trusted; }
-    bool isTrusted() const { return m_isTrusted; }
-
     PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
 
     DECLARE_VIRTUAL_TRACE();
@@ -119,7 +114,6 @@ private:
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
     PersistentWillBeMember<DataTransfer> m_dataTransfer;
     PlatformMouseEvent::SyntheticEventType m_syntheticEventType;
-    unsigned m_isTrusted : 1;
 };
 
 class SimulatedMouseEvent final : public MouseEvent {

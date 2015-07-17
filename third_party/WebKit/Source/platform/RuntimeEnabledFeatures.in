@@ -156,6 +156,7 @@ ThreadedParserDataReceiver
 // touchscreen) in ApplyWebPreferences.
 Touch status=stable
 TouchIconLoading
+TrustedEvents status=experimental
 UnsafeES3APIs
 UnsandboxedAuxiliary status=stable
 UserSelectAll status=experimental

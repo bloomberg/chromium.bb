@@ -186,11 +186,13 @@ bool EventTarget::dispatchEventForBindings(PassRefPtrWillBeRawPtr<Event> event, 
     if (!executionContext())
         return false;
 
+    event->setTrusted(false);
     return dispatchEventInternal(event);
 }
 
 bool EventTarget::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
+    event->setTrusted(true);
     return dispatchEventInternal(event);
 }
 

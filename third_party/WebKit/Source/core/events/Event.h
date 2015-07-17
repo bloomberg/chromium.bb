@@ -192,6 +192,9 @@ public:
 
     virtual PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator();
 
+    bool isTrusted() const { return m_isTrusted; }
+    void setTrusted(bool value) { m_isTrusted = value; }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -214,6 +217,7 @@ private:
     unsigned m_defaultPrevented:1;
     unsigned m_defaultHandled:1;
     unsigned m_cancelBubble:1;
+    unsigned m_isTrusted : 1;
 
     unsigned short m_eventPhase;
     RefPtrWillBeMember<EventTarget> m_currentTarget;

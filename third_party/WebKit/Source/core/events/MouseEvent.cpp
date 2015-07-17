@@ -76,7 +76,6 @@ MouseEvent::MouseEvent()
     , m_relatedTarget(nullptr)
     , m_dataTransfer(nullptr)
     , m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable)
-    , m_isTrusted(false)
 {
 }
 
@@ -97,7 +96,6 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     , m_relatedTarget(relatedTarget)
     , m_dataTransfer(dataTransfer)
     , m_syntheticEventType(syntheticEventType)
-    , m_isTrusted(false)
 {
     setUICreateTime(uiCreateTime);
 }
@@ -112,7 +110,6 @@ MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& init
     , m_relatedTarget(initializer.relatedTarget())
     , m_dataTransfer(nullptr)
     , m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable)
-    , m_isTrusted(false)
 {
     initCoordinates(IntPoint(initializer.clientX(), initializer.clientY()));
 }

@@ -1999,6 +1999,7 @@ void Node::handleLocalEvents(Event& event)
 
 void Node::dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
+    event->setTrusted(true);
     EventDispatcher::dispatchScopedEvent(*this, event->createMediator());
 }
 
@@ -2038,7 +2039,6 @@ bool Node::dispatchMouseEvent(const PlatformMouseEvent& nativeEvent, const Atomi
     int detail, Node* relatedTarget)
 {
     RefPtrWillBeRawPtr<MouseEvent> event = MouseEvent::create(eventType, document().domWindow(), nativeEvent, detail, relatedTarget);
-    event->setTrusted(true);
     return dispatchEvent(event);
 }
 

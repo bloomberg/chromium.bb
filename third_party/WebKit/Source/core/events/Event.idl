@@ -43,8 +43,7 @@
     void preventDefault();
     readonly attribute boolean defaultPrevented;
 
-    // FIXME: Implement the isTrusted attribute. crbug.com/334015
-    // [Unforgeable] readonly attribute boolean isTrusted;
+    [RuntimeEnabled=TrustedEvents, Unforgeable] readonly attribute boolean isTrusted;
     readonly attribute DOMTimeStamp timeStamp;
 
     // FIXME: initEvent()'s arguments should not be optional.
