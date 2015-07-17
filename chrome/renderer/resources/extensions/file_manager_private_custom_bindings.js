@@ -112,6 +112,30 @@ binding.registerCustomHook(function(bindingsAPI) {
     var url = fileBrowserHandlerNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.pinDriveFile(url, pin, callback);
   });
+
+  apiFunctions.setHandleRequest('executeTask',
+      function(taskId, entries, callback) {
+        var urls = entries.map(function(entry) {
+          return fileBrowserHandlerNatives.GetEntryURL(entry);
+        });
+        fileManagerPrivateInternal.executeTask(taskId, urls, callback);
+      });
+
+  apiFunctions.setHandleRequest('setDefaultTask',
+      function(taskId, entries, mimeTypes, callback) {
+        var urls = entries.map(function(entry) {
+          return fileBrowserHandlerNatives.GetEntryURL(entry);
+        });
+        fileManagerPrivateInternal.setDefaultTask(
+            taskId, urls, mimeTypes, callback);
+      });
+
+  apiFunctions.setHandleRequest('getFileTasks', function(entries, callback) {
+    var urls = entries.map(function(entry) {
+      return fileBrowserHandlerNatives.GetEntryURL(entry);
+    });
+    fileManagerPrivateInternal.getFileTasks(urls, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(

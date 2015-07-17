@@ -119,9 +119,8 @@ function launchWithEntries(isolatedEntries) {
       })
       .then(
           function(entries) {
-            var urls = entries.map(function(entry) { return entry.toURL(); });
             var tasksPromise = new Promise(function(fulfill) {
-              chrome.fileManagerPrivate.getFileTasks(urls, fulfill);
+              chrome.fileManagerPrivate.getFileTasks(entries, fulfill);
             }).then(function(tasks) {
               chrome.test.assertEq(1, tasks.length);
               chrome.test.assertEq(
@@ -140,7 +139,7 @@ function launchWithEntries(isolatedEntries) {
               return new Promise(function(fulfill, reject) {
                 chrome.fileManagerPrivate.executeTask(
                     task.taskId,
-                    urls,
+                    entries,
                     function(result) {
                       if (result)
                         fulfill();

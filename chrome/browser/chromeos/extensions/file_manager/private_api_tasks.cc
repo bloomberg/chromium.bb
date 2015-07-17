@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
+#include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -30,11 +32,11 @@ const char kInvalidFileUrl[] = "Invalid file URL";
 
 // Make a set of unique filename suffixes out of the list of file URLs.
 std::set<std::string> GetUniqueSuffixes(
-    const std::vector<std::string>& file_url_list,
+    const std::vector<std::string>& url_list,
     const storage::FileSystemContext* context) {
   std::set<std::string> suffixes;
-  for (size_t i = 0; i < file_url_list.size(); ++i) {
-    const FileSystemURL url = context->CrackURL(GURL(file_url_list[i]));
+  for (size_t i = 0; i < url_list.size(); ++i) {
+    const FileSystemURL url = context->CrackURL(GURL(url_list[i]));
     if (!url.is_valid() || url.path().empty())
       return std::set<std::string>();
     // We'll skip empty suffixes.
@@ -59,9 +61,10 @@ std::set<std::string> GetUniqueMimeTypes(
 
 }  // namespace
 
-bool FileManagerPrivateExecuteTaskFunction::RunAsync() {
-  using extensions::api::file_manager_private::ExecuteTask::Params;
-  using extensions::api::file_manager_private::ExecuteTask::Results::Create;
+bool FileManagerPrivateInternalExecuteTaskFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::ExecuteTask::Params;
+  using extensions::api::file_manager_private_internal::ExecuteTask::Results::
+      Create;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -73,7 +76,7 @@ bool FileManagerPrivateExecuteTaskFunction::RunAsync() {
     return false;
   }
 
-  if (params->file_urls.empty()) {
+  if (params->urls.empty()) {
     results_ = Create(extensions::api::file_manager_private::TASK_RESULT_EMPTY);
     SendResponse(true);
     return true;
@@ -83,25 +86,23 @@ bool FileManagerPrivateExecuteTaskFunction::RunAsync() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           GetProfile(), render_frame_host());
 
-  std::vector<FileSystemURL> file_urls;
-  for (size_t i = 0; i < params->file_urls.size(); i++) {
+  std::vector<FileSystemURL> urls;
+  for (size_t i = 0; i < params->urls.size(); i++) {
     const FileSystemURL url =
-        file_system_context->CrackURL(GURL(params->file_urls[i]));
+        file_system_context->CrackURL(GURL(params->urls[i]));
     if (!chromeos::FileSystemBackend::CanHandleURL(url)) {
       SetError(kInvalidFileUrl);
       results_ =
           Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
       return false;
     }
-    file_urls.push_back(url);
+    urls.push_back(url);
   }
 
   const bool result = file_manager::file_tasks::ExecuteFileTask(
-      GetProfile(),
-      source_url(),
-      task,
-      file_urls,
-      base::Bind(&FileManagerPrivateExecuteTaskFunction::OnTaskExecuted, this));
+      GetProfile(), source_url(), task, urls,
+      base::Bind(&FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted,
+                 this));
   if (!result) {
     results_ =
         Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
@@ -109,29 +110,26 @@ bool FileManagerPrivateExecuteTaskFunction::RunAsync() {
   return result;
 }
 
-void FileManagerPrivateExecuteTaskFunction::OnTaskExecuted(
+void FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted(
     extensions::api::file_manager_private::TaskResult result) {
-  results_ =
-      extensions::api::file_manager_private::ExecuteTask::Results::Create(
-          result);
+  results_ = extensions::api::file_manager_private_internal::ExecuteTask::
+      Results::Create(result);
   SendResponse(result !=
                extensions::api::file_manager_private::TASK_RESULT_FAILED);
 }
 
-FileManagerPrivateGetFileTasksFunction::
-    FileManagerPrivateGetFileTasksFunction() {
-}
+FileManagerPrivateInternalGetFileTasksFunction::
+    FileManagerPrivateInternalGetFileTasksFunction() {}
 
-FileManagerPrivateGetFileTasksFunction::
-    ~FileManagerPrivateGetFileTasksFunction() {
-}
+FileManagerPrivateInternalGetFileTasksFunction::
+    ~FileManagerPrivateInternalGetFileTasksFunction() {}
 
-bool FileManagerPrivateGetFileTasksFunction::RunAsync() {
-  using extensions::api::file_manager_private::GetFileTasks::Params;
+bool FileManagerPrivateInternalGetFileTasksFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::GetFileTasks::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (params->file_urls.empty())
+  if (params->urls.empty())
     return false;
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -140,27 +138,27 @@ bool FileManagerPrivateGetFileTasksFunction::RunAsync() {
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
-  for (size_t i = 0; i < params->file_urls.size(); ++i) {
-    const GURL file_url(params->file_urls[i]);
-    storage::FileSystemURL file_system_url(
-        file_system_context->CrackURL(file_url));
+  for (size_t i = 0; i < params->urls.size(); ++i) {
+    const GURL url(params->urls[i]);
+    storage::FileSystemURL file_system_url(file_system_context->CrackURL(url));
     if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url))
       continue;
-    file_urls_.push_back(file_url);
+    urls_.push_back(url);
     local_paths_.push_back(file_system_url.path());
   }
 
   collector_.reset(new app_file_handler_util::MimeTypeCollector(GetProfile()));
   collector_->CollectForLocalPaths(
       local_paths_,
-      base::Bind(&FileManagerPrivateGetFileTasksFunction::OnMimeTypesCollected,
-                 this));
+      base::Bind(
+          &FileManagerPrivateInternalGetFileTasksFunction::OnMimeTypesCollected,
+          this));
 
   return true;
 }
 
-void FileManagerPrivateGetFileTasksFunction::OnMimeTypesCollected(
-    scoped_ptr<std::vector<std::string> > mime_types) {
+void FileManagerPrivateInternalGetFileTasksFunction::OnMimeTypesCollected(
+    scoped_ptr<std::vector<std::string>> mime_types) {
   app_file_handler_util::PathAndMimeTypeSet path_mime_set;
   for (size_t i = 0; i < local_paths_.size(); ++i) {
     path_mime_set.insert(std::make_pair(local_paths_[i], (*mime_types)[i]));
@@ -168,11 +166,8 @@ void FileManagerPrivateGetFileTasksFunction::OnMimeTypesCollected(
 
   std::vector<file_manager::file_tasks::FullTaskDescriptor> tasks;
   file_manager::file_tasks::FindAllTypesOfTasks(
-      GetProfile(),
-      drive::util::GetDriveAppRegistryByProfile(GetProfile()),
-      path_mime_set,
-      file_urls_,
-      &tasks);
+      GetProfile(), drive::util::GetDriveAppRegistryByProfile(GetProfile()),
+      path_mime_set, urls_, &tasks);
 
   // Convert the tasks into JSON compatible objects.
   using api::file_manager_private::FileTask;
@@ -190,13 +185,13 @@ void FileManagerPrivateGetFileTasksFunction::OnMimeTypesCollected(
     results.push_back(converted);
   }
 
-  results_ = extensions::api::file_manager_private::GetFileTasks::Results::
-      Create(results);
+  results_ = extensions::api::file_manager_private_internal::GetFileTasks::
+      Results::Create(results);
   SendResponse(true);
 }
 
-bool FileManagerPrivateSetDefaultTaskFunction::RunSync() {
-  using extensions::api::file_manager_private::SetDefaultTask::Params;
+bool FileManagerPrivateInternalSetDefaultTaskFunction::RunSync() {
+  using extensions::api::file_manager_private_internal::SetDefaultTask::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -205,7 +200,7 @@ bool FileManagerPrivateSetDefaultTaskFunction::RunSync() {
           GetProfile(), render_frame_host());
 
   const std::set<std::string> suffixes =
-      GetUniqueSuffixes(params->file_urls, file_system_context.get());
+      GetUniqueSuffixes(params->urls, file_system_context.get());
   const std::set<std::string> mime_types =
       GetUniqueMimeTypes(params->mime_types);
 

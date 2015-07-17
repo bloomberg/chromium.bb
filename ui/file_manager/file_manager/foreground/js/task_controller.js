@@ -180,11 +180,9 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
  * @private
  */
 TaskController.prototype.changeDefaultTask_ = function(selection, task) {
-  // TODO(mtomasz): Move conversion from entry to url to custom bindings.
-  // crbug.com/345527.
   chrome.fileManagerPrivate.setDefaultTask(
       task.taskId,
-      util.entriesToURLs(selection.entries),
+      selection.entries,
       selection.mimeTypes,
       util.checkAPIError);
   this.metadataUpdateController_.refreshCurrentDirectoryMetadata();

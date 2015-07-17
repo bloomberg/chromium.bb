@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
-#include "chrome/common/extensions/api/file_manager_private.h"
 
 namespace base {
 class FilePath;
@@ -24,15 +23,15 @@ namespace app_file_handler_util {
 class MimeTypeCollector;
 }  // namespace app_file_handler_util
 
-// Implements the chrome.fileManagerPrivate.executeTask method.
-class FileManagerPrivateExecuteTaskFunction
+// Implements the chrome.fileManagerPrivateInternal.executeTask method.
+class FileManagerPrivateInternalExecuteTaskFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.executeTask",
-                             FILEMANAGERPRIVATE_EXECUTETASK)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.executeTask",
+                             FILEMANAGERPRIVATEINTERNAL_EXECUTETASK)
 
  protected:
-  ~FileManagerPrivateExecuteTaskFunction() override {}
+  ~FileManagerPrivateInternalExecuteTaskFunction() override {}
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -42,17 +41,17 @@ class FileManagerPrivateExecuteTaskFunction
       extensions::api::file_manager_private::TaskResult success);
 };
 
-// Implements the chrome.fileManagerPrivate.getFileTasks method.
-class FileManagerPrivateGetFileTasksFunction
+// Implements the chrome.fileManagerPrivateInternal.getFileTasks method.
+class FileManagerPrivateInternalGetFileTasksFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  FileManagerPrivateGetFileTasksFunction();
+  FileManagerPrivateInternalGetFileTasksFunction();
 
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getFileTasks",
-                             FILEMANAGERPRIVATE_GETFILETASKS)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getFileTasks",
+                             FILEMANAGERPRIVATEINTERNAL_GETFILETASKS)
 
  protected:
-  ~FileManagerPrivateGetFileTasksFunction() override;
+  ~FileManagerPrivateInternalGetFileTasksFunction() override;
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -62,22 +61,22 @@ class FileManagerPrivateGetFileTasksFunction
 
   void OnSniffingMimeTypeCompleted(
       scoped_ptr<app_file_handler_util::PathAndMimeTypeSet> path_mime_set,
-      scoped_ptr<std::vector<GURL> > file_urls);
+      scoped_ptr<std::vector<GURL>> urls);
 
   scoped_ptr<app_file_handler_util::MimeTypeCollector> collector_;
-  std::vector<GURL> file_urls_;
+  std::vector<GURL> urls_;
   std::vector<base::FilePath> local_paths_;
 };
 
-// Implements the chrome.fileManagerPrivate.setDefaultTask method.
-class FileManagerPrivateSetDefaultTaskFunction
+// Implements the chrome.fileManagerPrivateInternal.setDefaultTask method.
+class FileManagerPrivateInternalSetDefaultTaskFunction
     : public ChromeSyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.setDefaultTask",
-                             FILEMANAGERPRIVATE_SETDEFAULTTASK)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.setDefaultTask",
+                             FILEMANAGERPRIVATEINTERNAL_SETDEFAULTTASK)
 
  protected:
-  ~FileManagerPrivateSetDefaultTaskFunction() override {}
+  ~FileManagerPrivateInternalSetDefaultTaskFunction() override {}
 
   // SyncExtensionFunction overrides.
   bool RunSync() override;

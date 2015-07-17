@@ -180,7 +180,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
           LaunchType.FOCUS_SAME_OR_CREATE);
     } else {
       // If the file is not directory, try to execute default task.
-      chrome.fileManagerPrivate.getFileTasks([entry.toURL()], function(tasks) {
+      chrome.fileManagerPrivate.getFileTasks([entry], function(tasks) {
         // Select default task.
         var defaultTask = null;
         for (var i = 0; i < tasks.length; i++) {
@@ -208,7 +208,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
           // Execute default task.
           chrome.fileManagerPrivate.executeTask(
               defaultTask.taskId,
-              [entry.toURL()],
+              [entry],
               function(result) {
                 if (result === 'opened' || result === 'message_sent')
                   return;
@@ -233,7 +233,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
 LauncherSearch.prototype.openFileManagerWithSelectionURL_ = function(
     selectionURL) {
   launchFileManager(
-      { selectionURL: selectionURL },
+      {selectionURL: selectionURL},
       undefined, /* App ID */
       LaunchType.FOCUS_SAME_OR_CREATE);
 };

@@ -23,6 +23,8 @@ namespace fileManagerPrivateInternal {
   callback GetEntryActionsCallback = void(fileSystemProvider.Action[] actions);
   callback ComputeChecksumCallback = void(DOMString checksum);
   callback GetMimeTypeCallback = void(DOMString result);
+  callback ExecuteTaskCallback = void(fileManagerPrivate.TaskResult result);
+  callback GetFileTasksCallback = void(fileManagerPrivate.FileTask[] tasks);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -49,5 +51,14 @@ namespace fileManagerPrivateInternal {
     static void pinDriveFile(DOMString url,
                              boolean pin,
                              SimpleCallback callback);
+    static void executeTask(DOMString taskId,
+                            DOMString[] urls,
+                            ExecuteTaskCallback callback);
+    static void setDefaultTask(DOMString taskId,
+                               DOMString[] urls,
+                               DOMString[] mimeTypes,
+                               SimpleCallback callback);
+    static void getFileTasks(DOMString[] urls,
+                             GetFileTasksCallback callback);
   };
 };

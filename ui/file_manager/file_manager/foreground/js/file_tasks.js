@@ -107,7 +107,7 @@ FileTasks.createWebStoreLink = function(extension, mimeType) {
 /**
  * Complete the initialization.
  *
- * @param {Array<Entry>} entries List of file entries.
+ * @param {!Array<!Entry>} entries List of file entries.
  * @param {Array<string>=} opt_mimeTypes Mime-type specified for each entries.
  * @return {!Promise} Promise to be fulfilled when the initialization completes.
  */
@@ -115,12 +115,9 @@ FileTasks.prototype.init = function(entries, opt_mimeTypes) {
   this.entries_ = entries;
   this.mimeTypes_ = opt_mimeTypes || [];
 
-  // TODO(mtomasz): Move conversion from entry to url to custom bindings.
-  // crbug.com/345527.
-  var urls = util.entriesToURLs(entries);
-  if (urls.length > 0) {
+  if (entries.length > 0) {
     return new Promise(function(fulfill) {
-      chrome.fileManagerPrivate.getFileTasks(urls, function(taskItems) {
+      chrome.fileManagerPrivate.getFileTasks(entries, function(taskItems) {
         this.onTasks_(taskItems);
         fulfill();
       }.bind(this));
@@ -205,7 +202,7 @@ FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
 /**
  * Records trial of opening file grouped by extensions.
  *
- * @param {Array<Entry>} entries The entries to be opened.
+ * @param {Array<!Entry>} entries The entries to be opened.
  * @private
  */
 FileTasks.recordViewingFileTypeUMA_ = function(entries) {
@@ -326,11 +323,12 @@ FileTasks.prototype.processTasks_ = function(tasks) {
 /**
  * Executes default task.
  *
- * @param {function(boolean, Array<Entry>)=} opt_callback Called when the
+ * @param {function(boolean, Array<!Entry>)=} opt_callback Called when the
  *     default task is executed, or the error is occurred.
  * @private
  */
 FileTasks.prototype.executeDefault_ = function(opt_callback) {
+  assert(this.entries_);  // Set by init().
   FileTasks.recordViewingFileTypeUMA_(this.entries_);
   this.executeDefaultInternal_(this.entries_, opt_callback);
 };
@@ -338,8 +336,8 @@ FileTasks.prototype.executeDefault_ = function(opt_callback) {
 /**
  * Executes default task.
  *
- * @param {Array<Entry>} entries Entries to execute.
- * @param {function(boolean, Array<Entry>)=} opt_callback Called when the
+ * @param {!Array<!Entry>} entries Entries to execute.
+ * @param {function(boolean, Array<!Entry>)=} opt_callback Called when the
  *     default task is executed, or the error is occurred.
  * @private
  */
@@ -435,11 +433,8 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
   }.bind(this);
 
   this.checkAvailability_(function() {
-    // TODO(mtomasz): Move conversion from entry to url to custom bindings.
-    // crbug.com/345527.
-    var urls = util.entriesToURLs(entries);
     var taskId = chrome.runtime.id + '|file|view-in-browser';
-    chrome.fileManagerPrivate.executeTask(taskId, urls, onViewFiles);
+    chrome.fileManagerPrivate.executeTask(taskId, entries, onViewFiles);
   }.bind(this));
 };
 
@@ -447,12 +442,12 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
  * Executes a single task.
  *
  * @param {string} taskId Task identifier.
- * @param {Array<Entry>=} opt_entries Entries to xecute on instead of
- *     this.entries_|.
+ * @param {!Array<!Entry>=} opt_entries Entries to execute on instead of
+ *     |this.entries_|.
  * @private
  */
 FileTasks.prototype.execute_ = function(taskId, opt_entries) {
-  var entries = opt_entries || this.entries_;
+  var entries = opt_entries || assert(this.entries_);  // Entries set by init().
   FileTasks.recordViewingFileTypeUMA_(entries);
   this.executeInternal_(taskId, entries);
 };
@@ -461,7 +456,7 @@ FileTasks.prototype.execute_ = function(taskId, opt_entries) {
  * The core implementation to execute a single task.
  *
  * @param {string} taskId Task identifier.
- * @param {Array<Entry>} entries Entries to execute.
+ * @param {!Array<!Entry>} entries Entries to execute.
  * @private
  */
 FileTasks.prototype.executeInternal_ = function(taskId, entries) {
@@ -470,10 +465,7 @@ FileTasks.prototype.executeInternal_ = function(taskId, entries) {
       var taskParts = taskId.split('|');
       this.executeInternalTask_(taskParts[2], entries);
     } else {
-      // TODO(mtomasz): Move conversion from entry to url to custom bindings.
-      // crbug.com/345527.
-      var urls = util.entriesToURLs(entries);
-      chrome.fileManagerPrivate.executeTask(taskId, urls, function(result) {
+      chrome.fileManagerPrivate.executeTask(taskId, entries, function(result) {
         if (result !== 'message_sent')
           return;
         util.isTeleported(window).then(function(teleported) {
@@ -569,7 +561,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
  * Executes an internal task.
  *
  * @param {string} id The short task id.
- * @param {Array<Entry>} entries The entries to execute on.
+ * @param {!Array<!Entry>} entries The entries to execute on.
  * @private
  */
 FileTasks.prototype.executeInternalTask_ = function(id, entries) {
@@ -586,7 +578,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
 /**
  * Mounts archives.
  *
- * @param {Array<Entry>} entries Mount file entries list.
+ * @param {!Array<!Entry>} entries Mount file entries list.
  */
 FileTasks.prototype.mountArchives = function(entries) {
   FileTasks.recordViewingFileTypeUMA_(entries);
@@ -596,7 +588,7 @@ FileTasks.prototype.mountArchives = function(entries) {
 /**
  * The core implementation of mounts archives.
  *
- * @param {Array<Entry>} entries Mount file entries list.
+ * @param {!Array<!Entry>} entries Mount file entries list.
  * @private
  */
 FileTasks.prototype.mountArchivesInternal_ = function(entries) {
@@ -804,7 +796,7 @@ FileTasks.prototype.display = function(combobutton) {
  * Executes a single task.
  *
  * @param {string} taskId Task identifier.
- * @param {Array<Entry>=} opt_entries Entries to xecute on instead of
+ * @param {!Array<!Entry>=} opt_entries Entries to xecute on instead of
  *     this.entries_|.
  */
 FileTasks.prototype.execute = function(taskId, opt_entries) {
@@ -817,7 +809,7 @@ FileTasks.prototype.execute = function(taskId, opt_entries) {
 /**
  * Executes default task.
  *
- * @param {function(boolean, Array<Entry>)=} opt_callback Called when the
+ * @param {function(boolean, Array<!Entry>)=} opt_callback Called when the
  *     default task is executed, or the error is occurred.
  */
 FileTasks.prototype.executeDefault = function(opt_callback) {

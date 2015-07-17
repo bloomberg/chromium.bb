@@ -235,36 +235,36 @@ chrome.fileManagerPrivate.cancelDialog = function() {};
 
 /**
  * Executes file browser task over selected files. |taskId| The unique
- * identifier of task to execute. |fileUrls| Array of file URLs |callback|
+ * identifier of task to execute. |entries| Array of file entries |callback|
  * @param {string} taskId
- * @param {!Array} fileUrls
+ * @param {!Array<!Entry>} entries
  * @param {function((boolean|undefined))} callback |result| Result of the task
  *     execution.
  */
-chrome.fileManagerPrivate.executeTask = function(taskId, fileUrls, callback) {};
+chrome.fileManagerPrivate.executeTask = function(taskId, entries, callback) {};
 
 /**
- * Sets the default task for the supplied MIME types and suffixes of the
- * supplied file URLs. Lists of MIME types and URLs may contain duplicates.
+ * Sets the default task for the supplied MIME types and path extensions.
+ * Lists of MIME types and URLs may contain duplicates.
  * |taskId| The unique identifier of task to mark as default. |fileUrls| Array
- * of selected file URLs to extract suffixes from. |mimeTypes| Array of
+ * of selected file URLs to extract path extensions from. |mimeTypes| Array of
  * selected file MIME types. |callback|
  * @param {string} taskId
- * @param {!Array} fileUrls
- * @param {!Array} mimeTypes
- * @param {function()} callback Callback that does not take arguments.
+ * @param {!Array<!Entry>} entries
+ * @param {!Array<string>} mimeTypes
+ * @param {!function()} callback Callback that does not take arguments.
  */
-chrome.fileManagerPrivate.setDefaultTask = function(taskId, fileUrls, mimeTypes,
+chrome.fileManagerPrivate.setDefaultTask = function(taskId, entries, mimeTypes,
     callback) {};
 
 /**
- * Gets the list of tasks that can be performed over selected files. |fileUrls|
- * Array of selected file URLs |callback|
- * @param {!Array<string>} fileUrls
+ * Gets the list of tasks that can be performed over selected files. |entries|
+ * Array of selected entries |callback|
+ * @param {!Array<!Entry>} entries
  * @param {function((!Array<!FileTask>|undefined))} callback |tasks| The list of
  *     matched file URL patterns for this task.
  */
-chrome.fileManagerPrivate.getFileTasks = function(fileUrls, callback) {};
+chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
 
 /**
  * Gets localized strings and initialization data. |callback|

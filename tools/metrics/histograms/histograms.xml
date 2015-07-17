@@ -55256,7 +55256,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="52" label="SERIAL_SETCONTROLSIGNALS"/>
   <int value="53" label="DELETED_FILEMANAGERPRIVATE_SETLASTMODIFIED"/>
   <int value="54" label="IDLE_SETDETECTIONINTERVAL"/>
-  <int value="55" label="FILEMANAGERPRIVATE_GETFILETASKS"/>
+  <int value="55" label="FILEMANAGERPRIVATEINTERNAL_GETFILETASKS"/>
   <int value="56" label="WEBSTOREPRIVATE_GETSTORELOGIN"/>
   <int value="57" label="SYSTEMPRIVATE_GETINCOGNITOMODEAVAILABILITY"/>
   <int value="58" label="IDLTEST_SENDARRAYBUFFERVIEW"/>
@@ -55344,7 +55344,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="140" label="FONTSETTINGS_CLEARMINIMUMFONTSIZE"/>
   <int value="141" label="DELETED_FILEMANAGERPRIVATE_GETFILELOCATIONS"/>
   <int value="142" label="EXPERIMENTAL_DISCOVERY_SUGGEST"/>
-  <int value="143" label="FILEMANAGERPRIVATE_SETDEFAULTTASK"/>
+  <int value="143" label="FILEMANAGERPRIVATEINTERNAL_SETDEFAULTTASK"/>
   <int value="144" label="BROWSERACTION_GETBADGETEXT"/>
   <int value="145" label="APP_CURRENTWINDOWINTERNAL_HIDE"/>
   <int value="146" label="SOCKET_CONNECT"/>
@@ -55373,7 +55373,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="168" label="TABS_REMOVE"/>
   <int value="169" label="MANAGEMENT_GETPERMISSIONWARNINGSBYID"/>
   <int value="170" label="WINDOWS_GET"/>
-  <int value="171" label="FILEMANAGERPRIVATE_EXECUTETASK"/>
+  <int value="171" label="FILEMANAGERPRIVATEINTERNAL_EXECUTETASK"/>
   <int value="172" label="TTS_GETVOICES"/>
   <int value="173" label="MANAGEMENT_GETALL"/>
   <int value="174" label="MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST"/>

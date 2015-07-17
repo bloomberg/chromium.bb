@@ -13,7 +13,7 @@ window.chrome = {
         }
       ]), 0);
     },
-    executeTask: function(taskId, urls, onViewFiles) {
+    executeTask: function(taskId, entries, onViewFiles) {
       onViewFiles('failed');
     }
   },

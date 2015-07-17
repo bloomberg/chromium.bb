@@ -35,15 +35,15 @@ function run() {
    * Test cases after the file path has been resolved to FileEntry. Each
    * resolved test case contains the resolved FileEntry object.
    *
-   * @type Array<FileEntry>
+   * @type {!Array<!FileEntry>}
    */
   var resolvedEntries = [];
 
   /**
    * List of tasks found for a testCase. Each object contains the found task id
-   * and file URL for which the task should be executed.
+   * and entry for which the task should be executed.
    *
-   * @type {Array<Object<string, string>>}
+   * @type {!Array<!Object<string, !Entry>>}
    */
   var foundTasks = [];
 
@@ -73,12 +73,12 @@ function run() {
    * Callback to chrome.fileManagerPrivate.executeTask. Verifies the function
    * succeeded.
    *
-   * @param {string} url The url of file for which the handler was executed.
+   * @param {!Entry} entry The entry of file for which the handler was executed.
    * @param {boolean} success Whether the function succeeded.
    */
-  function onExecuteTask(url, success) {
+  function onExecuteTask(entry, success) {
     if (!success)
-      onError('Failed to execute task for ' + url);
+      onError('Failed to execute task for ' + entry.fullPath);
   }
 
   /**
@@ -86,57 +86,63 @@ function run() {
    * It checks that the returned task is not the default, sets it as the default
    * and calls getFileTasks again.
    *
-   * @param {string} fileUrl File url for which getFileTasks was called.
+   * @param {string} entry File entry for which getFileTasks was called.
    * @param {Array<Object>} tasks List of found task objects.
    */
 
-  function onGotNonDefaultTasks(fileUrl, tasks) {
+  function onGotNonDefaultTasks(entry, tasks) {
     if (!tasks) {
-      onError('Failed getting tasks for ' + fileUrl);
+      onError('Failed getting tasks for ' + entry.fullPath);
       return;
     }
     if (tasks.length != 1) {
-      onError('Got invalid number of tasks for "' + fileUrl + '": ' +
+      onError('Got invalid number of tasks for "' + entry.fullPath + '": ' +
               tasks.length);
     }
     if (tasks[0].isDefault) {
-      onError('Task "' + tasks[0].taskId + '" is default for "' + fileUrl +
-          '"');
+      onError('Task "' + tasks[0].taskId + '" is default for "' +
+          entry.fullPath + '"');
     }
     chrome.fileManagerPrivate.setDefaultTask(
-        tasks[0].taskId, [fileUrl], [],
-        chrome.fileManagerPrivate.getFileTasks.bind(null, [fileUrl],
-            onGotTasks.bind(null, fileUrl)));
+        tasks[0].taskId, [entry], [],
+        function() {
+          if (chrome.runtime.lastError) {
+            onError('Failed to set a task to default: ' + tasks[0].taskId);
+            return;
+          }
+          chrome.fileManagerPrivate.getFileTasks([entry],
+              onGotTasks.bind(null, entry));
+        });
   }
 
   /**
    * Callback to chrome.fileManagerPrivate.getFileTasks.
-   * It remembers the returned task id and url. When tasks for all test cases
+   * It remembers the returned task id and entry. When tasks for all test cases
    * are found, they are executed.
    *
-   * @param {string} fileUrl File url for which getFileTasks was called.
+   * @param {!Entry} entry File entry for which getFileTasks was called.
    * @param {Array<Object>} tasks List of found task objects.
    */
-  function onGotTasks(fileUrl, tasks) {
+  function onGotTasks(entry, tasks) {
     if (!tasks) {
-      onError('Failed getting tasks for ' + fileUrl);
+      onError('Failed getting tasks for ' + entry.fullPath);
       return;
     }
     if (tasks.length != 1) {
-      onError('Got invalid number of tasks for "' + fileUrl + '": ' +
+      onError('Got invalid number of tasks for "' + entry.fullPath + '": ' +
               tasks.length);
     }
     if (!tasks[0].isDefault) {
-      onError('Task "' + tasks[0].taskId + '" is not default for "' + fileUrl +
-          '"');
+      onError('Task "' + tasks[0].taskId + '" is not default for "' +
+          entry.fullPath + '"');
     }
 
-    foundTasks.push({id: tasks[0].taskId, url: fileUrl});
+    foundTasks.push({id: tasks[0].taskId, entry: entry});
 
     if (foundTasks.length == kTestPaths.length) {
       foundTasks.forEach(function(task) {
-        chrome.fileManagerPrivate.executeTask(task.id, [task.url],
-            onExecuteTask.bind(null, task.url));
+        chrome.fileManagerPrivate.executeTask(task.id, [task.entry],
+            onExecuteTask.bind(null, task.entry));
       });
     }
   }
@@ -158,8 +164,8 @@ function run() {
           if (resolvedEntries.length == kTestPaths.length) {
             resolvedEntries.forEach(function(entry) {
               chrome.fileManagerPrivate.getFileTasks(
-                  [entry.toURL()],
-                  onGotNonDefaultTasks.bind(null, entry.toURL()));
+                  [entry],
+                  onGotNonDefaultTasks.bind(null, entry));
             });
           }
         });
