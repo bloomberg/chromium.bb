@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 
 /**
 * JNI call glue for AutofillExternalDelagate C++ and Java objects.
@@ -24,10 +25,12 @@ public class AutofillLogger {
             mProfileFullName = profileFullName;
         }
 
+        @VisibleForTesting
         public String getAutofilledValue() {
             return mAutofilledValue;
         }
 
+        @VisibleForTesting
         public String getProfileFullName() {
             return mProfileFullName;
         }
@@ -43,6 +46,7 @@ public class AutofillLogger {
 
     private static Logger sLogger = null;
 
+    @VisibleForTesting
     public static void setLogger(Logger logger) {
         sLogger = logger;
     }

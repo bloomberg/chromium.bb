@@ -11,8 +11,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -29,7 +30,17 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Integration tests for interaction of the AutofillPopup and a keyboard.
  */
-public class AutofillPopupWithKeyboardTest extends ChromeShellTestBase {
+public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
+    public AutofillPopupWithKeyboardTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        // Don't launch activity automatically.
+    }
+
     /**
      * Test that showing autofill popup and keyboard will not hide the autofill popup.
      */
@@ -37,7 +48,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeShellTestBase {
     @Feature({"autofill-keyboard"})
     public void testShowAutofillPopupAndKeyboardimultaneously()
             throws InterruptedException, ExecutionException, TimeoutException {
-        launchChromeShellWithUrl(UrlUtils.encodeHtmlDataUri("<html><head>"
+        startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html><head>"
                 + "<meta name=\"viewport\""
                 + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
                 + "<body><form method=\"POST\">"
@@ -57,7 +68,6 @@ public class AutofillPopupWithKeyboardTest extends ChromeShellTestBase {
                 + "</select>"
                 + "<input type=\"submit\" />"
                 + "</form></body></html>"));
-        assertTrue(waitForActiveShellToBeDoneLoading());
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
                 "John Smith", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "", "94102", "",
                 "US", "(415) 888-9999", "john@acme.inc", "en"));
@@ -67,7 +77,7 @@ public class AutofillPopupWithKeyboardTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                viewCoreRef.set(getActivity().getActiveContentViewCore());
+                viewCoreRef.set(getActivity().getCurrentContentViewCore());
                 webContentsRef.set(viewCoreRef.get().getWebContents());
                 viewRef.set(viewCoreRef.get().getContainerView());
             }
@@ -130,13 +140,13 @@ public class AutofillPopupWithKeyboardTest extends ChromeShellTestBase {
                     public boolean isSatisfied() {
                         return shown == UiUtils.isKeyboardShowing(
                                 getActivity(),
-                                getActivity().getActiveContentViewCore().getContainerView());
+                                getActivity().getCurrentContentViewCore().getContainerView());
                     }
                 }));
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ContentViewCore viewCore = getActivity().getActiveContentViewCore();
+                ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
                 viewCore.onSizeChanged(viewCore.getViewportWidthPix(),
                         viewCore.getViewportHeightPix() + (shown ? -100 : 100),
                         viewCore.getViewportWidthPix(), viewCore.getViewportHeightPix());
