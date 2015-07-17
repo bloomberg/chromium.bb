@@ -27,8 +27,10 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -36,12 +38,14 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "ipc/ipc_security_test_util.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1960,4 +1964,62 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 }
 
+// The password manager driver will kill processes when they try to access
+// passwords of sites other than the site the process is dedicated to, under
+// site isolation.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       CrossSitePasswordEnforcement) {
+  // The code under test is only active under site isolation.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kSitePerProcess)) {
+    return;
+  }
+
+  // Setup the mock host resolver
+  host_resolver()->AddRule("*", "127.0.0.1");
+
+  // Navigate the main frame.
+  GURL main_frame_url = embedded_test_server()->GetURL(
+      "/password/password_form_in_crosssite_iframe.html");
+  NavigationObserver observer(WebContents());
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+  observer.Wait();
+
+  // Create an iframe and navigate cross-site.
+  NavigationObserver iframe_observer(WebContents());
+  iframe_observer.SetPathToWaitFor("/password/crossite_iframe_content.html");
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "foo.com", "/password/crossite_iframe_content.html");
+  std::string create_iframe =
+      base::StringPrintf("create_iframe('%s');", iframe_url.spec().c_str());
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), create_iframe));
+  iframe_observer.Wait();
+
+  // The iframe should get its own process.
+  content::RenderFrameHost* main_frame = WebContents()->GetMainFrame();
+  content::RenderFrameHost* iframe = iframe_observer.render_frame_host();
+  content::SiteInstance* main_site_instance = main_frame->GetSiteInstance();
+  content::SiteInstance* iframe_site_instance = iframe->GetSiteInstance();
+  EXPECT_NE(main_site_instance, iframe_site_instance);
+  EXPECT_NE(main_frame->GetProcess(), iframe->GetProcess());
+
+  // Try to get cross-site passwords from the subframe's process and wait for it
+  // to be killed.
+  std::vector<autofill::PasswordForm> password_forms;
+  password_forms.push_back(autofill::PasswordForm());
+  password_forms.back().origin = main_frame_url;
+  AutofillHostMsg_PasswordFormsParsed illegal_forms_parsed(
+      iframe->GetRoutingID(), password_forms);
+
+  content::RenderProcessHostWatcher iframe_killed(
+      iframe->GetProcess(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      iframe->GetProcess()->GetChannel(), illegal_forms_parsed);
+
+  iframe_killed.Wait();
+}
+
 }  // namespace password_manager
+

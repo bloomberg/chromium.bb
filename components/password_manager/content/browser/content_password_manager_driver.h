@@ -30,6 +30,7 @@ class Message;
 }
 
 namespace password_manager {
+enum class BadMessageReason;
 
 // There is one ContentPasswordManagerDriver per RenderFrameHost.
 // The lifetime is managed by the ContentPasswordManagerDriverFactory.
@@ -73,6 +74,8 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
 
   // Pass-throughs to PasswordManager.
   void OnPasswordFormsParsed(const std::vector<autofill::PasswordForm>& forms);
+  void OnPasswordFormsParsedNoRenderCheck(
+      const std::vector<autofill::PasswordForm>& forms);
   void OnPasswordFormsRendered(
       const std::vector<autofill::PasswordForm>& visible_forms,
       bool did_stop_loading);
@@ -82,6 +85,9 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   void OnFocusedPasswordFormFound(const autofill::PasswordForm& password_form);
 
  private:
+  bool CheckChildProcessSecurityPolicy(const GURL& url,
+                                       BadMessageReason reason);
+
   content::RenderFrameHost* render_frame_host_;
   PasswordManagerClient* client_;
   PasswordGenerationManager password_generation_manager_;

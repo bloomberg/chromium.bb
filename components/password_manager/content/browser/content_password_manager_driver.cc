@@ -7,12 +7,15 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -151,23 +154,45 @@ bool ContentPasswordManagerDriver::HandleMessage(const IPC::Message& message) {
 
 void ContentPasswordManagerDriver::OnPasswordFormsParsed(
     const std::vector<autofill::PasswordForm>& forms) {
+  for (const auto& form : forms)
+    if (!CheckChildProcessSecurityPolicy(
+            form.origin, BadMessageReason::CPMD_BAD_ORIGIN_FORMS_PARSED))
+      return;
+
+  OnPasswordFormsParsedNoRenderCheck(forms);
+}
+
+void ContentPasswordManagerDriver::OnPasswordFormsParsedNoRenderCheck(
+    const std::vector<autofill::PasswordForm>& forms) {
   GetPasswordManager()->OnPasswordFormsParsed(this, forms);
 }
 
 void ContentPasswordManagerDriver::OnPasswordFormsRendered(
     const std::vector<autofill::PasswordForm>& visible_forms,
     bool did_stop_loading) {
+  for (const auto& form : visible_forms)
+    if (!CheckChildProcessSecurityPolicy(
+            form.origin, BadMessageReason::CPMD_BAD_ORIGIN_FORMS_RENDERED))
+      return;
   GetPasswordManager()->OnPasswordFormsRendered(this, visible_forms,
                                                 did_stop_loading);
 }
 
 void ContentPasswordManagerDriver::OnPasswordFormSubmitted(
     const autofill::PasswordForm& password_form) {
+  if (!CheckChildProcessSecurityPolicy(
+          password_form.origin,
+          BadMessageReason::CPMD_BAD_ORIGIN_FORM_SUBMITTED))
+    return;
   GetPasswordManager()->OnPasswordFormSubmitted(this, password_form);
 }
 
 void ContentPasswordManagerDriver::OnFocusedPasswordFormFound(
     const autofill::PasswordForm& password_form) {
+  if (!CheckChildProcessSecurityPolicy(
+          password_form.origin,
+          BadMessageReason::CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND))
+    return;
   GetPasswordManager()->OnPasswordFormForceSaveRequested(this, password_form);
 }
 
@@ -183,13 +208,35 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
 
 void ContentPasswordManagerDriver::OnInPageNavigation(
     const autofill::PasswordForm& password_form) {
+  if (!CheckChildProcessSecurityPolicy(
+          password_form.origin,
+          BadMessageReason::CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION))
+    return;
   GetPasswordManager()->OnInPageNavigation(this, password_form);
 }
 
 void ContentPasswordManagerDriver::OnPasswordNoLongerGenerated(
     const autofill::PasswordForm& password_form) {
+  if (!CheckChildProcessSecurityPolicy(
+          password_form.origin,
+          BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED))
+    return;
   GetPasswordManager()->SetHasGeneratedPasswordForForm(this, password_form,
                                                        false);
+}
+
+bool ContentPasswordManagerDriver::CheckChildProcessSecurityPolicy(
+    const GURL& url,
+    BadMessageReason reason) {
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  if (!policy->CanAccessDataForOrigin(render_frame_host_->GetProcess()->GetID(),
+                                      url)) {
+    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(), reason);
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace password_manager

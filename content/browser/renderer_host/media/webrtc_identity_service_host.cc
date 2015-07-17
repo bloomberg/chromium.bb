@@ -50,7 +50,7 @@ void WebRTCIdentityServiceHost::OnRequestIdentity(
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessCookiesForOrigin(renderer_process_id_, origin)) {
+  if (!policy->CanAccessDataForOrigin(renderer_process_id_, origin)) {
     DLOG(WARNING) << "Request rejected because origin access is denied.";
     SendErrorMessage(sequence_number, net::ERR_ACCESS_DENIED);
     return;

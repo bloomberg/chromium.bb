@@ -354,6 +354,12 @@ void SiteInstanceImpl::LockToOrigin() {
     if (site_.SchemeIs(content::kGuestScheme))
       return;
 
+    // TODO(creis, nick) https://crbug.com/510588 Chrome UI pages use the same
+    // site (chrome://chrome), so they can't be locked because the site being
+    // loaded doesn't match the SiteInstance.
+    if (site_.SchemeIs(content::kChromeUIScheme))
+      return;
+
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
     policy->LockToOrigin(process_->GetID(), site_);

@@ -30,6 +30,9 @@ class NavigationObserver : public content::WebContentsObserver {
   // Wait for navigation to succeed.
   void Wait();
 
+  // Returns the RenderFrameHost that navigated.
+  content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
+
   // content::WebContentsObserver:
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
@@ -38,6 +41,7 @@ class NavigationObserver : public content::WebContentsObserver {
 
  private:
   std::string wait_for_path_;
+  content::RenderFrameHost* render_frame_host_;
   bool quit_on_entry_committed_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 

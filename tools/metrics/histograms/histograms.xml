@@ -42494,6 +42494,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Stability.BadMessageTerminated.PasswordManager"
+    enum="BadMessageReasonPasswordManager">
+  <owner>nick@chromium.org</owner>
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Count of processes killed because they sent a bad IPC that couldn't be
+    properly handled. Categories are the reasons (code locations) for the kills.
+  </summary>
+</histogram>
+
 <histogram name="Stability.BrowserExitCodes" enum="WindowsExitCode">
   <owner>siggi@chromium.org</owner>
   <owner>erikwright@chromium.org</owner>
@@ -51144,6 +51154,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="NFH_OPEN_EXECUTABLE_BAD_ROUTING_ID"/>
   <int value="1" label="NHMF_LAUNCH_CONTINUATION_BAD_ROUTING_ID"/>
   <int value="2" label="NHMF_GET_NEXE_FD_BAD_URL"/>
+</enum>
+
+<enum name="BadMessageReasonPasswordManager" type="int">
+<!-- Generated from components/password_manager/content/browser/bad_message.h -->
+
+  <int value="1" label="CPMD_BAD_ORIGIN_FORMS_PARSED"/>
+  <int value="2" label="CPMD_BAD_ORIGIN_FORMS_RENDERED"/>
+  <int value="3" label="CPMD_BAD_ORIGIN_FORM_SUBMITTED"/>
+  <int value="4" label="CPMD_BAD_ORIGIN_FOCUSED_PASSWORD_FORM_FOUND"/>
+  <int value="5" label="CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION"/>
+  <int value="6" label="CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED"/>
 </enum>
 
 <enum name="BadSyncDataReason" type="int">

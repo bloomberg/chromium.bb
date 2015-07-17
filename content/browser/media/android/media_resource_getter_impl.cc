@@ -227,7 +227,7 @@ void MediaResourceGetterTask::RequestCookies(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
+  if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
     callback.Run(std::string());
     return;
   }

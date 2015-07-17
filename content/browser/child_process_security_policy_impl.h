@@ -74,6 +74,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                const std::string& filesystem_id) override;
   bool HasWebUIBindings(int child_id) override;
   void GrantSendMidiSysExMessage(int child_id) override;
+  bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking
@@ -144,12 +145,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Returns true if the specified child_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int child_id);
-
-  // Returns true if the process is permitted to read and modify the cookies for
-  // the given origin.  Does not affect cookies attached to or set by network
-  // requests.
-  // Only might return false if the --site-per-process flag is used.
-  bool CanAccessCookiesForOrigin(int child_id, const GURL& gurl);
 
   // Sets the process as only permitted to use and see the cookies for the
   // given origin.

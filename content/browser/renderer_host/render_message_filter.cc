@@ -566,7 +566,7 @@ void RenderMessageFilter::OnSetCookie(int render_frame_id,
                                       const std::string& cookie) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
+  if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::RMF_SET_COOKIE_BAD_ORIGIN);
     return;
@@ -589,7 +589,7 @@ void RenderMessageFilter::OnGetCookies(int render_frame_id,
                                        IPC::Message* reply_msg) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
+  if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::RMF_GET_COOKIES_BAD_ORIGIN);
     delete reply_msg;

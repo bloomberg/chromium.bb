@@ -225,7 +225,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return origin_lock_ == site_gurl;
   }
 
-  bool CanAccessCookiesForOrigin(const GURL& gurl) {
+  bool CanAccessDataForOrigin(const GURL& gurl) {
     if (origin_lock_.is_empty())
       return true;
     // TODO(creis): We must pass the valid browser_context to convert hosted
@@ -793,13 +793,13 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
   return state->second->HasPermissionsForFile(file, permissions);
 }
 
-bool ChildProcessSecurityPolicyImpl::CanAccessCookiesForOrigin(
-    int child_id, const GURL& gurl) {
+bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
+                                                            const GURL& gurl) {
   base::AutoLock lock(lock_);
   SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
-  return state->second->CanAccessCookiesForOrigin(gurl);
+  return state->second->CanAccessDataForOrigin(gurl);
 }
 
 void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,

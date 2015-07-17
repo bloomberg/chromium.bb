@@ -515,7 +515,7 @@ void ShowLoginPrompt(const GURL& request_url,
   // Tell the password manager to look for saved passwords.
   std::vector<PasswordForm> v;
   MakeInputForPasswordManager(request_url, auth_info, handler, &v);
-  driver->OnPasswordFormsParsed(v);
+  driver->OnPasswordFormsParsedNoRenderCheck(v);
   handler->SetPasswordManager(driver->GetPasswordManager());
 
   handler->BuildViewForPasswordManager(driver->GetPasswordManager(),

@@ -38,6 +38,7 @@ NavigationObserver::~NavigationObserver() {
 void NavigationObserver::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
+  render_frame_host_ = render_frame_host;
   if (!wait_for_path_.empty()) {
     if (validated_url.path() == wait_for_path_)
       message_loop_runner_->Quit();

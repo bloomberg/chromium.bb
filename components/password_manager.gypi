@@ -259,6 +259,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'password_manager/content/browser/bad_message.cc',
+            'password_manager/content/browser/bad_message.h',
             'password_manager/content/browser/content_password_manager_driver.cc',
             'password_manager/content/browser/content_password_manager_driver.h',
             'password_manager/content/browser/content_password_manager_driver_factory.cc',
