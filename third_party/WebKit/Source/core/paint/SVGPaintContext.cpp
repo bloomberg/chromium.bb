@@ -214,7 +214,10 @@ bool SVGPaintContext::paintForLayoutObject(const PaintInfo& paintInfo, const Com
     float paintAlpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity() : svgStyle.strokeOpacity();
     paintServer.applyToSkPaint(paint, paintAlpha);
 
-    paint.setFilterQuality(WebCoreInterpolationQualityToSkFilterQuality(InterpolationDefault));
+    // We always set filter quality to 'low' here. This value will only have an
+    // effect for patterns, which are SkPictures, so using high-order filter
+    // should have little effect on the overall quality.
+    paint.setFilterQuality(kLow_SkFilterQuality);
 
     // TODO(fs): The color filter can set when generating a picture for a mask -
     // due to color-interpolation. We could also just apply the
