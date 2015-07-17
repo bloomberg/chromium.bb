@@ -746,9 +746,13 @@ if (!is_ios) {
         "//breakpad:dump_syms($host_toolchain)",
         "//breakpad:minidump_stackwalk($host_toolchain)",
         "//content/shell/android:content_shell_apk",
+        "//tools/imagediff($host_toolchain)",
       ]
     } else {
-      deps += [ "//content/shell:content_shell" ]
+      deps += [
+        "//content/shell:content_shell",
+        "//tools/imagediff",
+      ]
     }
 
     if (is_win) {

@@ -526,10 +526,12 @@
                 '../content/content_shell_and_tests.gyp:content_shell_apk',
                 '../breakpad/breakpad.gyp:dump_syms#host',
                 '../breakpad/breakpad.gyp:minidump_stackwalk#host',
+                '../tools/imagediff/image_diff.gyp:image_diff#host',
               ],
             }, {  # OS!="android"
               'dependencies': [
                 '../content/content_shell_and_tests.gyp:content_shell',
+                '../tools/imagediff/image_diff.gyp:image_diff',
               ],
             }],
             ['OS=="win"', {
