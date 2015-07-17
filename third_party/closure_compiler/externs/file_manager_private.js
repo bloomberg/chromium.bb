@@ -389,13 +389,13 @@ chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
  * Cancels ongoing file transfers for selected files. |fileUrls| Array of files
  * for which ongoing transfer should be canceled.
  * @param {!Array<string>} fileUrls
- * @param {function()} callback
+ * @param {function()=} callback
  */
 chrome.fileManagerPrivate.cancelFileTransfers = function(fileUrls, callback) {};
 
 /**
  * Cancels all ongoing file transfers.
- * @param {function()} callback
+ * @param {function()=} callback
  */
 chrome.fileManagerPrivate.cancelAllFileTransfers = function(callback) {};
 

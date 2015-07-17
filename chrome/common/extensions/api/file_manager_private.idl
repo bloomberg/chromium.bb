@@ -776,11 +776,11 @@ interface Functions {
   // |fileUrls| Array of files for which ongoing transfer should be canceled.
   // |callback| Completion callback of the cancel.
   static void cancelFileTransfers(DOMString[] fileUrls,
-                                  SimpleCallback callback);
+                                  optional SimpleCallback callback);
 
   // Cancels all ongoing file transfers.
   // |callback| Completion callback of the cancel.
-  static void cancelAllFileTransfers(SimpleCallback callback);
+  static void cancelAllFileTransfers(optional SimpleCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
