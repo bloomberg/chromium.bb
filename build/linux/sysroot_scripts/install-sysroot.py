@@ -94,6 +94,27 @@ def DetectArch(gyp_defines):
   return None
 
 
+def UsingSysroot(target_arch, gyp_defines):
+  # ChromeOS uses a chroot, so doesn't need a sysroot
+  if 'chromeos=1' in gyp_defines:
+    return False
+
+  # When cross-compiling we always use a sysroot
+  if target_arch in ('arm', 'mips', 'ia32'):
+    return True
+
+  # Setting use_sysroot=1 GYP_DEFINES forces the use of the sysroot even
+  # when not cross compiling
+  if 'use_sysroot=1' in gyp_defines:
+    return True
+
+  # Official builds always use the sysroot.
+  if 'branding=Chrome' in gyp_defines and 'buildtype=Official' in gyp_defines:
+    return True
+
+  return False
+
+
 def main():
   if options.running_as_hook and not sys.platform.startswith('linux'):
     return 0
@@ -108,17 +129,8 @@ def main():
       print 'Unable to detect host architecture'
       return 1
 
-  if options.running_as_hook and target_arch != 'arm' and target_arch != 'mips':
-    # When run from runhooks, only install the sysroot for an Official Chrome
-    # Linux build, except on ARM where we always use a sysroot.
-    skip_if_defined = ['branding=Chrome', 'buildtype=Official']
-    skip_if_undefined = ['chromeos=1']
-    for option in skip_if_defined:
-      if option not in gyp_defines:
-        return 0
-    for option in skip_if_undefined:
-      if option in gyp_defines:
-        return 0
+  if options.running_as_hook and not UsingSysroot(target_arch, gyp_defines):
+    return 0
 
   # The sysroot directory should match the one specified in build/common.gypi.
   # TODO(thestig) Consider putting this else where to avoid having to recreate
