@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "sandbox/mac/xpc.h"
 #import "testing/gtest_mac.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -78,6 +79,11 @@ NSString* const kTestNotification = @"org.chromium.bootstrap_sandbox_test";
 
 namespace sandbox {
 
+void InitializeXPCIfRequired() {
+  if (base::mac::IsOSYosemiteOrLater())
+    CHECK(InitializeXPC());
+}
+
 class BootstrapSandboxTest : public base::MultiProcessTest {
  public:
   void SetUp() override {
@@ -89,6 +95,7 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
 
   BootstrapSandboxPolicy BaselinePolicy() {
     BootstrapSandboxPolicy policy;
+    policy.rules["com.apple.cfprefsd.daemon"] = Rule(POLICY_ALLOW);
     if (base::mac::IsOSSnowLeopard())
       policy.rules["com.apple.SecurityServer"] = Rule(POLICY_ALLOW);
     return policy;
@@ -169,6 +176,8 @@ TEST_F(BootstrapSandboxTest, DistributedNotifications_SandboxAllow) {
 }
 
 MULTIPROCESS_TEST_MAIN(PostNotification) {
+  InitializeXPCIfRequired();
+
   [[NSDistributedNotificationCenter defaultCenter]
       postNotificationName:kTestNotification
                     object:[NSString stringWithFormat:@"%d", getpid()]];
@@ -186,6 +195,8 @@ TEST_F(BootstrapSandboxTest, PolicyDenyError) {
 }
 
 MULTIPROCESS_TEST_MAIN(PolicyDenyError) {
+  InitializeXPCIfRequired();
+
   mach_port_t port = MACH_PORT_NULL;
   kern_return_t kr = bootstrap_look_up(bootstrap_port, kTestServer,
       &port);
@@ -209,6 +220,8 @@ TEST_F(BootstrapSandboxTest, PolicyDenyDummyPort) {
 }
 
 MULTIPROCESS_TEST_MAIN(PolicyDenyDummyPort) {
+  InitializeXPCIfRequired();
+
   mach_port_t port = MACH_PORT_NULL;
   kern_return_t kr = bootstrap_look_up(bootstrap_port, kTestServer,
       &port);
@@ -274,6 +287,8 @@ TEST_F(BootstrapSandboxTest, PolicySubstitutePort) {
 }
 
 MULTIPROCESS_TEST_MAIN(PolicySubstitutePort) {
+  InitializeXPCIfRequired();
+
   mach_port_t port = MACH_PORT_NULL;
   kern_return_t kr = bootstrap_look_up(bootstrap_port, kTestServer, &port);
   CHECK_EQ(KERN_SUCCESS, kr);
@@ -391,6 +406,8 @@ TEST_F(BootstrapSandboxTest, DefaultRuleAllow) {
 }
 
 MULTIPROCESS_TEST_MAIN(DefaultRuleAllow) {
+  InitializeXPCIfRequired();
+
   [[NSDistributedNotificationCenter defaultCenter]
       postNotificationName:kTestNotification
                     object:[NSString stringWithFormat:@"%d", getpid()]];
@@ -472,6 +489,8 @@ TEST_F(BootstrapSandboxTest, ChildOutliveSandbox) {
 }
 
 MULTIPROCESS_TEST_MAIN(ChildOutliveSandbox) {
+  InitializeXPCIfRequired();
+
   // Get the synchronization channel.
   mach_port_t port = MACH_PORT_NULL;
   CHECK_EQ(KERN_SUCCESS, bootstrap_look_up(bootstrap_port, "sync", &port));

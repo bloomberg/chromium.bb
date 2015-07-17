@@ -20,22 +20,28 @@
 
 namespace sandbox {
 
-typedef uint64_t (*IPCMessageGetID)(const IPCMessage);
+using IPCMessageGetID = uint64_t (*)(const IPCMessage);
 
-typedef std::string (*LookUp2GetRequestName)(const IPCMessage);
-typedef void (*LookUp2FillReply)(IPCMessage, mach_port_t service_port);
+using IPCMessageRouter = bool (*)(const IPCMessage);
 
-typedef bool (*SwapIntegerIsGetOnly)(const IPCMessage);
+using LookUp2GetRequestName = std::string (*)(const IPCMessage);
+using LookUp2FillReply = void (*)(IPCMessage, mach_port_t service_port);
+
+using SwapIntegerIsGetOnly = bool (*)(const IPCMessage);
 
 struct LaunchdCompatibilityShim {
-  // Gets the message ID of an IPC message.
+  // Gets the message and subsystem ID of an IPC message.
+  IPCMessageGetID ipc_message_get_subsystem;
   IPCMessageGetID ipc_message_get_id;
 
-  // The msgh_id for look_up2.
-  uint64_t msg_id_look_up2;
+  // Returns true if the message is a Launchd look up request.
+  IPCMessageRouter is_launchd_look_up;
 
-  // The msgh_id for swap_integer.
-  uint64_t msg_id_swap_integer;
+  // Returns true if the message is a Launchd vproc swap_integer request.
+  IPCMessageRouter is_launchd_vproc_swap_integer;
+
+  // Returns true if the message is an XPC domain management message.
+  IPCMessageRouter is_xpc_domain_management;
 
   // A function to take a look_up2 message and return the string service name
   // that was requested via the message.

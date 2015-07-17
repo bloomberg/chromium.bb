@@ -18,27 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-#if defined(MAC_OS_X_VERSION_10_7) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
-// Redeclare methods that only exist on 10.7+ to suppress
-// -Wpartial-availability warnings.
-extern "C" {
-XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL int64_t
-xpc_dictionary_get_int64(xpc_object_t xdict, const char* key);
-
-XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL uint64_t
-xpc_dictionary_get_uint64(xpc_object_t xdict, const char* key);
-
-XPC_EXPORT XPC_NONNULL1 XPC_NONNULL2 void
-xpc_dictionary_set_uint64(xpc_object_t xdict, const char* key, uint64_t value);
-
-XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT xpc_object_t
-xpc_dictionary_create(const char* const* keys,
-                      const xpc_object_t* values,
-                      size_t count);
-}  // extern "C"
-#endif
-
 namespace sandbox {
 
 class XPCMessageServerTest : public testing::Test {
@@ -148,6 +127,20 @@ XPC_TEST_F(RejectMessage)  // {
 
   xpc_release(request);
   xpc_release(reply);
+}
+
+XPC_TEST_F(RejectMessageSimpleRoutine)  // {
+  BlockDemuxer fixture;
+  XPCMessageServer* server = fixture.server();
+  ASSERT_TRUE(fixture.Initialize(^(IPCMessage request) {
+      server->RejectMessage(request, -99);
+  }));
+
+  // Create a message that is not expecting a reply.
+  xpc_object_t request = xpc_dictionary_create(NULL, NULL, 0);
+  EXPECT_EQ(0, xpc_pipe_simpleroutine(fixture.pipe(), request));
+
+  xpc_release(request);
 }
 
 char kGetSenderPID[] = "org.chromium.sandbox.test.GetSenderPID";

@@ -12,17 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "sandbox/mac/xpc.h"
 
-#if defined(MAC_OS_X_VERSION_10_7) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
-// Redeclare methods that only exist on 10.7+ to suppress
-// -Wpartial-availability warnings.
-extern "C" {
-XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT XPC_NONNULL_ALL
-    xpc_object_t
-    xpc_dictionary_create_reply(xpc_object_t original);
-}  // extern "C"
-#endif
-
 namespace sandbox {
 
 XPCMessageServer::XPCMessageServer(MessageDemuxer* demuxer,
@@ -30,6 +19,7 @@ XPCMessageServer::XPCMessageServer(MessageDemuxer* demuxer,
     : demuxer_(demuxer),
       server_port_(server_receive_right),
       reply_message_(NULL) {
+  CHECK(InitializeXPC());
 }
 
 XPCMessageServer::~XPCMessageServer() {
@@ -78,6 +68,9 @@ IPCMessage XPCMessageServer::CreateReply(IPCMessage request) {
 }
 
 bool XPCMessageServer::SendReply(IPCMessage reply) {
+  if (!reply.xpc)
+    return false;
+
   int rv = xpc_pipe_routine_reply(reply.xpc);
   if (rv) {
     LOG(ERROR) << "Failed to xpc_pipe_routine_reply(): " << rv;
@@ -98,8 +91,11 @@ void XPCMessageServer::ForwardMessage(IPCMessage request,
 
 void XPCMessageServer::RejectMessage(IPCMessage request, int error_code) {
   IPCMessage reply = CreateReply(request);
-  xpc_dictionary_set_int64(reply.xpc, "error", error_code);
-  SendReply(reply);
+  // The message wasn't expecting a reply, so rejecting means ignoring it.
+  if (reply.xpc) {
+    xpc_dictionary_set_int64(reply.xpc, "error", error_code);
+    SendReply(reply);
+  }
 }
 
 mach_port_t XPCMessageServer::GetServerPort() const {

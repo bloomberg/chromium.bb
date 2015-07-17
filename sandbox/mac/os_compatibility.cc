@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "base/mac/mac_util.h"
+#include "sandbox/mac/xpc.h"
 
 namespace sandbox {
 
@@ -69,8 +70,24 @@ size_t strnlen(const char* str, size_t maxlen) {
   return len;
 }
 
+bool FalseMessageRouter(const IPCMessage message) {
+  return false;
+}
+
+uint64_t MachGetMessageSubsystem(const IPCMessage message) {
+  return (message.mach->msgh_id / 100) * 100;
+}
+
 uint64_t MachGetMessageID(const IPCMessage message) {
   return message.mach->msgh_id;
+}
+
+bool MachIsLaunchdLookUp(const IPCMessage message) {
+  return MachGetMessageID(message) == 404;
+}
+
+bool MachIsLauchdVprocSwapInteger(const IPCMessage message) {
+  return MachGetMessageID(message) == 416;
 }
 
 template <typename R>
@@ -104,13 +121,57 @@ bool LaunchdSwapIntegerIsGetOnly(const IPCMessage message) {
   return request->inkey == 0 && request->inval == 0 && request->outkey != 0;
 }
 
+uint64_t XPCGetMessageSubsystem(const IPCMessage message) {
+  return xpc_dictionary_get_uint64(message.xpc, "subsystem");
+}
+
+uint64_t XPCGetMessageID(const IPCMessage message) {
+  return xpc_dictionary_get_uint64(message.xpc, "routine");
+}
+
+bool XPCIsLaunchdLookUp(const IPCMessage message) {
+  uint64_t subsystem = XPCGetMessageSubsystem(message);
+  uint64_t id = XPCGetMessageID(message);
+  // Lookup requests in XPC can either go through the Mach bootstrap subsytem
+  // (5) from bootstrap_look_up(), or the XPC domain subsystem (3) for
+  // xpc_connection_create(). Both use the same message format.
+  return (subsystem == 5 && id == 207) || (subsystem == 3 && id == 804);
+}
+
+bool XPCIsLaunchdVprocSwapInteger(const IPCMessage message) {
+  return XPCGetMessageSubsystem(message) == 6 &&
+         XPCGetMessageID(message) == 301;
+}
+
+bool XPCIsDomainManagement(const IPCMessage message) {
+  return XPCGetMessageSubsystem(message) == 3;
+}
+
+std::string XPCLaunchdLookUpGetRequestName(const IPCMessage message) {
+  const char* name = xpc_dictionary_get_string(message.xpc, "name");
+  const size_t name_length = strnlen(name, BOOTSTRAP_MAX_NAME_LEN);
+  return std::string(name, name_length);
+}
+
+bool XPCLaunchdSwapIntegerIsGetOnly(const IPCMessage message) {
+  return xpc_dictionary_get_bool(message.xpc, "set") == false &&
+         xpc_dictionary_get_uint64(message.xpc, "ingsk") == 0 &&
+         xpc_dictionary_get_int64(message.xpc, "in") == 0;
+}
+
+void XPCLaunchdLookUpFillReply(IPCMessage message, mach_port_t port) {
+  xpc_dictionary_set_mach_send(message.xpc, "port", port);
+}
+
 }  // namespace
 
 const LaunchdCompatibilityShim GetLaunchdCompatibilityShim() {
   LaunchdCompatibilityShim shim = {
+    .ipc_message_get_subsystem = &MachGetMessageSubsystem,
     .ipc_message_get_id = &MachGetMessageID,
-    .msg_id_look_up2 = 404,
-    .msg_id_swap_integer = 416,
+    .is_launchd_look_up = &MachIsLaunchdLookUp,
+    .is_launchd_vproc_swap_integer = &MachIsLauchdVprocSwapInteger,
+    .is_xpc_domain_management = &FalseMessageRouter,
     .look_up2_fill_reply = &LaunchdLookUp2FillReply<look_up2_reply_10_6>,
     .swap_integer_is_get_only =
         &LaunchdSwapIntegerIsGetOnly<swap_integer_request_10_6>,
@@ -120,9 +181,18 @@ const LaunchdCompatibilityShim GetLaunchdCompatibilityShim() {
     shim.look_up2_get_request_name =
         &LaunchdLookUp2GetRequestName<look_up2_request_10_6>;
   } else if (base::mac::IsOSLionOrLater() &&
-             !base::mac::IsOSYosemiteOrLater()) {
+             base::mac::IsOSMavericksOrEarlier()) {
     shim.look_up2_get_request_name =
         &LaunchdLookUp2GetRequestName<look_up2_request_10_7>;
+  } else if (base::mac::IsOSYosemite()) {
+    shim.ipc_message_get_subsystem = &XPCGetMessageSubsystem;
+    shim.ipc_message_get_id = &XPCGetMessageID;
+    shim.is_launchd_look_up = &XPCIsLaunchdLookUp;
+    shim.is_launchd_vproc_swap_integer = &XPCIsLaunchdVprocSwapInteger;
+    shim.is_xpc_domain_management = &XPCIsDomainManagement;
+    shim.look_up2_get_request_name = &XPCLaunchdLookUpGetRequestName;
+    shim.look_up2_fill_reply = &XPCLaunchdLookUpFillReply;
+    shim.swap_integer_is_get_only = &XPCLaunchdSwapIntegerIsGetOnly;
   } else {
     DLOG(ERROR) << "Unknown OS, using launchd compatibility shim from 10.7.";
     shim.look_up2_get_request_name =

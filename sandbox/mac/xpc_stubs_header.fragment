@@ -28,4 +28,42 @@ extern "C" {
 typedef struct _xpc_pipe_s* xpc_pipe_t;
 }  // extern "C"
 
+#if defined(MAC_OS_X_VERSION_10_7) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+// Redeclare methods that only exist on 10.7+ to suppress
+// -Wpartial-availability warnings.
+extern "C" {
+XPC_EXPORT XPC_NONNULL1 XPC_NONNULL2 void
+xpc_dictionary_set_int64(xpc_object_t xdict, const char* key, int64_t value);
+
+XPC_EXPORT XPC_NONNULL1 void xpc_release(xpc_object_t object);
+
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL
+bool xpc_dictionary_get_bool(xpc_object_t xdict, const char* key);
+
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL int64_t
+xpc_dictionary_get_int64(xpc_object_t xdict, const char* key);
+
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL
+const char* xpc_dictionary_get_string(xpc_object_t xdict, const char* key);
+
+XPC_EXPORT XPC_WARN_RESULT XPC_NONNULL_ALL uint64_t
+xpc_dictionary_get_uint64(xpc_object_t xdict, const char* key);
+
+XPC_EXPORT XPC_NONNULL1 XPC_NONNULL2 void
+xpc_dictionary_set_uint64(xpc_object_t xdict, const char* key, uint64_t value);
+
+XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT xpc_object_t
+xpc_dictionary_create(const char* const* keys,
+                      const xpc_object_t* values,
+                      size_t count);
+XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT XPC_NONNULL_ALL
+    xpc_object_t
+    xpc_dictionary_create_reply(xpc_object_t original);
+
+XPC_EXPORT XPC_MALLOC XPC_WARN_RESULT XPC_NONNULL1
+char* xpc_copy_description(xpc_object_t object);
+}  // extern "C"
+#endif
+
 #endif  // SANDBOX_MAC_XPC_STUBS_HEADER_FRAGMENT_

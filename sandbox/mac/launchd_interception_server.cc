@@ -7,9 +7,11 @@
 #include <servers/bootstrap.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "sandbox/mac/bootstrap_sandbox.h"
 #include "sandbox/mac/mach_message_server.h"
+#include "sandbox/mac/xpc_message_server.h"
 
 namespace sandbox {
 
@@ -47,14 +49,20 @@ bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
   }
   sandbox_send_port_.reset(sandbox_port_);
 
-  message_server_.reset(
-      new MachMessageServer(this, server_receive_right, kBufferSize));
+  if (base::mac::IsOSYosemiteOrLater()) {
+    message_server_.reset(new XPCMessageServer(this, server_receive_right));
+  } else {
+    message_server_.reset(
+        new MachMessageServer(this, server_receive_right, kBufferSize));
+  }
   return message_server_->Initialize();
 }
 
 void LaunchdInterceptionServer::DemuxMessage(IPCMessage request) {
+  const uint64_t message_subsystem =
+      compat_shim_.ipc_message_get_subsystem(request);
   const uint64_t message_id = compat_shim_.ipc_message_get_id(request);
-  VLOG(3) << "Incoming message #" << message_id;
+  VLOG(3) << "Incoming message #" << message_subsystem << "," << message_id;
 
   pid_t sender_pid = message_server_->GetMessageSenderPID(request);
   const BootstrapSandboxPolicy* policy =
@@ -67,13 +75,16 @@ void LaunchdInterceptionServer::DemuxMessage(IPCMessage request) {
     return;
   }
 
-  if (message_id == compat_shim_.msg_id_look_up2) {
+  if (compat_shim_.is_launchd_look_up(request)) {
     // Filter messages sent via bootstrap_look_up to enforce the sandbox policy
     // over the bootstrap namespace.
     HandleLookUp(request, policy);
-  } else if (message_id == compat_shim_.msg_id_swap_integer) {
+  } else if (compat_shim_.is_launchd_vproc_swap_integer(request)) {
     // Ensure that any vproc_swap_integer requests are safe.
     HandleSwapInteger(request);
+  } else if (compat_shim_.is_xpc_domain_management(request)) {
+    // XPC domain management requests just require an ACK.
+    message_server_->SendReply(message_server_->CreateReply(request));
   } else {
     // All other messages are not permitted.
     VLOG(1) << "Rejecting unhandled message #" << message_id;

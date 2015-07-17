@@ -43,6 +43,17 @@ void ReplaceBootstrapPort(const std::string& new_bootstrap_name) {
   if (kr != KERN_SUCCESS) {
     RAW_LOG(FATAL, "Failed to replace bootstrap port.");
   }
+
+  // On OS X 10.10 and higher, libxpc uses the port stash to transfer the
+  // XPC root port. This is effectively the same connection as the Mach
+  // bootstrap port, but not transferred using the task special port.
+  // Therefore, stash the replacement bootstrap port, so that on 10.10 it
+  // will be retrieved by the XPC code and used as a replacement for the
+  // XPC root port as well.
+  kr = mach_ports_register(mach_task_self(), &port, 1);
+  if (kr != KERN_SUCCESS) {
+    RAW_LOG(ERROR, "Failed to register replacement bootstrap port.");
+  }
 }
 
 }  // namespace base
