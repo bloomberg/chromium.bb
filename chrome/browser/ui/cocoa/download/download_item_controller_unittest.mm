@@ -35,37 +35,10 @@ using ::testing::ReturnRefOfCopy;
 }
 @end
 
-@interface DownloadItemControllerWithInitCallback : DownloadItemController {
- @private
-  base::Closure initCallback_;
-}
-- (id)initWithDownload:(content::DownloadItem*)downloadItem
-                 shelf:(DownloadShelfController*)shelf
-          initCallback:(const base::Closure&)callback;
-- (void)awakeFromNib;
-@end
-
 @interface DownloadItemButton(DownloadItemButtonTest)
 
 - (BOOL)showingContextMenu;
 
-@end
-
-
-@implementation DownloadItemControllerWithInitCallback
-
-- (id)initWithDownload:(content::DownloadItem*)downloadItem
-                 shelf:(DownloadShelfController*)shelf
-          initCallback:(const base::Closure&)callback {
-  if ((self = [super initWithDownload:downloadItem shelf:shelf navigator:NULL]))
-    initCallback_ = callback;
-  return self;
-}
-
-- (void)awakeFromNib {
-  [super awakeFromNib];
-  initCallback_.Run();
-}
 @end
 
 namespace {
@@ -112,13 +85,12 @@ class DownloadItemControllerTest : public CocoaProfileTest {
     @autoreleasepool {
       base::RunLoop run_loop;
       base::scoped_nsobject<DownloadItemController> item(
-          [[DownloadItemControllerWithInitCallback alloc]
-              initWithDownload:download_item_.get()
-                         shelf:shelf_.get()
-                  initCallback:run_loop.QuitClosure()]);
+          [[DownloadItemController alloc] initWithDownload:download_item_.get()
+                                                     shelf:shelf_.get()
+                                                 navigator:NULL]);
 
       [[test_window() contentView] addSubview:[item view]];
-      run_loop.Run();
+      run_loop.RunUntilIdle();
       return item.release();
     }
   }
