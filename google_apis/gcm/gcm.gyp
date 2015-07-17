@@ -175,6 +175,8 @@
         'engine/checkin_request_unittest.cc',
         'engine/connection_factory_impl_unittest.cc',
         'engine/connection_handler_impl_unittest.cc',
+        'engine/gcm_request_test_base.cc',
+        'engine/gcm_request_test_base.h',
         'engine/gcm_store_impl_unittest.cc',
         'engine/gservices_settings_unittest.cc',
         'engine/heartbeat_manager_unittest.cc',

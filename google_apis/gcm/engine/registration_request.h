@@ -112,9 +112,8 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
-  // Schedules a retry attempt, informs the backoff of a previous request's
-  // failure, when |update_backoff| is true.
-  void RetryWithBackoff(bool update_backoff);
+  // Schedules a retry attempt with a backoff.
+  void RetryWithBackoff();
 
   void BuildRequestHeaders(std::string* extra_headers);
   void BuildRequestBody(std::string* body);

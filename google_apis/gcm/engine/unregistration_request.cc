@@ -147,34 +147,26 @@ UnregistrationRequest::Status UnregistrationRequest::ParseResponse(
   return custom_request_handler_->ParseResponse(source);
 }
 
-void UnregistrationRequest::RetryWithBackoff(bool update_backoff) {
-  if (update_backoff) {
-    DCHECK_GT(retries_left_, 0);
-    --retries_left_;
-    url_fetcher_.reset();
-    backoff_entry_.InformOfRequest(false);
-  }
+void UnregistrationRequest::RetryWithBackoff() {
+  DCHECK_GT(retries_left_, 0);
+  --retries_left_;
+  url_fetcher_.reset();
+  backoff_entry_.InformOfRequest(false);
 
-  if (backoff_entry_.ShouldRejectRequest()) {
-    DVLOG(1) << "Delaying GCM unregistration of app: "
-             << request_info_.app_id << ", for "
-             << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
-             << " milliseconds.";
-    recorder_->RecordUnregistrationRetryDelayed(
-        request_info_.app_id,
-        source_to_record_,
-        backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
-        retries_left_ + 1);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&UnregistrationRequest::RetryWithBackoff,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   false),
-        backoff_entry_.GetTimeUntilRelease());
-    return;
-  }
-
-  Start();
+  DVLOG(1) << "Delaying GCM unregistration of app: "
+           << request_info_.app_id << ", for "
+           << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
+           << " milliseconds.";
+  recorder_->RecordUnregistrationRetryDelayed(
+      request_info_.app_id,
+      source_to_record_,
+      backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
+      retries_left_ + 1);
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&UnregistrationRequest::Start, weak_ptr_factory_.GetWeakPtr()),
+      backoff_entry_.GetTimeUntilRelease());
 }
 
 void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -199,7 +191,7 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
       status == INCORRECT_APP_ID ||
       status == RESPONSE_PARSING_FAILED) {
     if (retries_left_ > 0) {
-      RetryWithBackoff(true);
+      RetryWithBackoff();
       return;
     }
 

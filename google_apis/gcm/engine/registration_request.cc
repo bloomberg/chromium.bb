@@ -156,34 +156,26 @@ void RegistrationRequest::BuildRequestBody(std::string* body) {
   custom_request_handler_->BuildRequestBody(body);
 }
 
-void RegistrationRequest::RetryWithBackoff(bool update_backoff) {
-  if (update_backoff) {
-    DCHECK_GT(retries_left_, 0);
-    --retries_left_;
-    url_fetcher_.reset();
-    backoff_entry_.InformOfRequest(false);
-  }
+void RegistrationRequest::RetryWithBackoff() {
+  DCHECK_GT(retries_left_, 0);
+  --retries_left_;
+  url_fetcher_.reset();
+  backoff_entry_.InformOfRequest(false);
 
-  if (backoff_entry_.ShouldRejectRequest()) {
-    DVLOG(1) << "Delaying GCM registration of app: "
-             << request_info_.app_id << ", for "
-             << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
-             << " milliseconds.";
-    recorder_->RecordRegistrationRetryDelayed(
-        request_info_.app_id,
-        source_to_record_,
-        backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
-        retries_left_ + 1);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RegistrationRequest::RetryWithBackoff,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   false),
-        backoff_entry_.GetTimeUntilRelease());
-    return;
-  }
-
-  Start();
+  DVLOG(1) << "Delaying GCM registration of app: "
+           << request_info_.app_id << ", for "
+           << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
+           << " milliseconds.";
+  recorder_->RecordRegistrationRetryDelayed(
+      request_info_.app_id,
+      source_to_record_,
+      backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
+      retries_left_ + 1);
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RegistrationRequest::Start, weak_ptr_factory_.GetWeakPtr()),
+      backoff_entry_.GetTimeUntilRelease());
 }
 
 RegistrationRequest::Status RegistrationRequest::ParseResponse(
@@ -243,7 +235,7 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
 
   if (ShouldRetryWithStatus(status)) {
     if (retries_left_ > 0) {
-      RetryWithBackoff(true);
+      RetryWithBackoff();
       return;
     }
 

@@ -120,9 +120,8 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
   void BuildRequestBody(std::string* body);
   Status ParseResponse(const net::URLFetcher* source);
 
-  // Schedules a retry attempt and informs the backoff of previous request's
-  // failure, when |update_backoff| is true.
-  void RetryWithBackoff(bool update_backoff);
+  // Schedules a retry attempt with a backoff.
+  void RetryWithBackoff();
 
   UnregistrationCallback callback_;
   RequestInfo request_info_;

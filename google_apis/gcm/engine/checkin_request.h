@@ -72,9 +72,8 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  private:
-  // Schedules a retry attempt, informs the backoff of a previous request's
-  // failure when |update_backoff| is true.
-  void RetryWithBackoff(bool update_backoff);
+  // Schedules a retry attempt with a backoff.
+  void RetryWithBackoff();
 
   net::URLRequestContextGetter* request_context_getter_;
   CheckinRequestCallback callback_;
