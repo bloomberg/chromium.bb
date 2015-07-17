@@ -103,13 +103,14 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
         paintRect.width() + leftWidth / 2 + (rightWidth + 1) / 2,
         paintRect.height() + topWidth / 2 + (bottomWidth + 1) / 2);
 
-    // TODO(wangxianzhu): For now this can be here because we skip caching for collapsed borders.
-    // Should reconsider this when optimizing. crbug.com/510492.
     if (!borderRect.intersects(paintInfo.rect))
         return;
 
     GraphicsContext* graphicsContext = paintInfo.context;
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*graphicsContext, m_layoutTableCell, paintInfo.phase))
+        return;
 
+    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, paintInfo.phase, borderRect);
     Color cellColor = m_layoutTableCell.resolveColor(CSSPropertyColor);
     bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
 
