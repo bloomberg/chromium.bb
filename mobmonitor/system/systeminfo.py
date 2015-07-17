@@ -21,6 +21,16 @@ On retrieving a new record, the time at which it is collected is stored
 in update_times with the record name as key, and the record itself is
 stored in resources. Every subsequent collection returns what is stored
 in the resources dict until the record goes stale.
+
+Users should not directly access the system information classes, but
+should instead use the 'getters' (ie. GetCpu, GetDisk, GetMemory) defined
+at the bottom of this file.
+
+Each of these getters is decorated with the CacheInfoClass decorator.
+This decorator caches instances of each storage class by the specified
+update interval. With this, multiple checkfiles can access the same
+information class instance, which can help to reduce additional and
+redundant system checks being performed.
 """
 
 from __future__ import print_function
@@ -37,6 +47,11 @@ SYSTEMFILE_PROC_MEMINFO = '/proc/meminfo'
 SYSTEMFILE_PROC_FILESYSTEMS = '/proc/filesystems'
 SYSTEMFILE_PROC_STAT = '/proc/stat'
 
+
+UPDATE_DEFAULT_SEC = 30
+UPDATE_MEMORY_SEC = UPDATE_DEFAULT_SEC
+UPDATE_DISK_SEC = UPDATE_DEFAULT_SEC
+UPDATE_CPU_SEC = 2
 
 RESOURCENAME_MEMORY = 'memory'
 RESOURCENAME_DISKPARTITIONS = 'diskpartitions'
@@ -113,10 +128,53 @@ def CheckStorage(resource_basename):
   return func_deco
 
 
+def CacheInfoClass(class_name, update_default_sec):
+  """Cache system information class instances by update_sec interval time.
+
+  Args:
+    class_name: The name of the system information class.
+    update_default_sec: The default update interval for this class.
+
+  Returns:
+    The real function decorator.
+  """
+  def func_deco(func):
+    """Return the cached class instance.
+
+    Args:
+      func: The system information class 'getter'.
+
+    Returns:
+      The function wrapper.
+    """
+    cache = {}
+
+    @functools.wraps(func)
+    def wrapper(update_sec=update_default_sec):
+      """Function wrapper for caching system information class objects.
+
+      Args:
+        update_sec: The update interval for the class instance.
+
+      Returns:
+        The cached class instance that has this update interval.
+      """
+      key = '%s:%s' % (class_name, update_sec)
+
+      if key not in cache:
+        cache[key] = func(update_sec=update_sec)
+
+      return cache[key]
+
+    return wrapper
+
+  return func_deco
+
+
 class SystemInfoStorage(object):
   """Store and access system information."""
 
-  def __init__(self, update_sec=30):
+  def __init__(self, update_sec=UPDATE_DEFAULT_SEC):
     self.update_sec = update_sec
     self.update_times = {}
     self.resources = {}
@@ -153,7 +211,7 @@ class SystemInfoStorage(object):
 class Memory(SystemInfoStorage):
   """Access memory information."""
 
-  def __init__(self, update_sec=30):
+  def __init__(self, update_sec=UPDATE_MEMORY_SEC):
     super(Memory, self).__init__(update_sec=update_sec)
 
   @CheckStorage(RESOURCENAME_MEMORY)
@@ -192,7 +250,7 @@ class Memory(SystemInfoStorage):
 class Disk(SystemInfoStorage):
   """Access disk information."""
 
-  def __init__(self, update_sec=30):
+  def __init__(self, update_sec=UPDATE_DISK_SEC):
     super(Disk, self).__init__(update_sec=update_sec)
 
   @CheckStorage(RESOURCENAME_DISKPARTITIONS)
@@ -268,7 +326,7 @@ class Disk(SystemInfoStorage):
 class Cpu(SystemInfoStorage):
   """Access CPU information."""
 
-  def __init__(self, update_sec=2):
+  def __init__(self, update_sec=UPDATE_CPU_SEC):
     super(Cpu, self).__init__(update_sec=update_sec)
 
     # CpuLoad depends on having two CpuTime collections at different
@@ -349,3 +407,18 @@ class Cpu(SystemInfoStorage):
       cpuloads.append(RESOURCE_CPULOAD(cpu, load))
 
     return cpuloads
+
+
+@CacheInfoClass(Cpu.__name__, UPDATE_CPU_SEC)
+def GetCpu(update_sec=UPDATE_CPU_SEC):
+  return Cpu(update_sec=update_sec)
+
+
+@CacheInfoClass(Memory.__name__, UPDATE_MEMORY_SEC)
+def GetMemory(update_sec=UPDATE_MEMORY_SEC):
+  return Memory(update_sec=update_sec)
+
+
+@CacheInfoClass(Disk.__name__, UPDATE_DISK_SEC)
+def GetDisk(update_sec=UPDATE_DISK_SEC):
+  return Disk(update_sec=update_sec)

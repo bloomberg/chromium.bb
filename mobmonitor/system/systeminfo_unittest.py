@@ -420,3 +420,46 @@ class Cpu(cros_test_lib.MockTestCase):
 
     self.assertEquals(cpu.resources.get(systeminfo.RESOURCENAME_CPULOADS),
                       mock_cpuloads)
+
+
+class InfoClassCacheTest(cros_test_lib.MockTestCase):
+  """Unittests for checking that information class caching."""
+
+  def testGetCpu(self):
+    """Test caching explicitly for Cpu information objects."""
+    cpus1 = [systeminfo.GetCpu(), systeminfo.GetCpu(),
+             systeminfo.GetCpu(systeminfo.UPDATE_CPU_SEC),
+             systeminfo.GetCpu(update_sec=systeminfo.UPDATE_CPU_SEC)]
+
+    cpus2 = [systeminfo.GetCpu(10), systeminfo.GetCpu(10),
+             systeminfo.GetCpu(update_sec=10)]
+
+    self.assertTrue(all(id(x) == id(cpus1[0]) for x in cpus1))
+    self.assertTrue(all(id(x) == id(cpus2[0]) for x in cpus2))
+    self.assertTrue(id(cpus1[0]) != id(cpus2[0]))
+
+  def testGetMemory(self):
+    """Test caching explicitly for Memory information objects."""
+    mems1 = [systeminfo.GetMemory(), systeminfo.GetMemory(),
+             systeminfo.GetMemory(systeminfo.UPDATE_MEMORY_SEC),
+             systeminfo.GetMemory(update_sec=systeminfo.UPDATE_MEMORY_SEC)]
+
+    mems2 = [systeminfo.GetMemory(10), systeminfo.GetMemory(10),
+             systeminfo.GetMemory(update_sec=10)]
+
+    self.assertTrue(all(id(x) == id(mems1[0]) for x in mems1))
+    self.assertTrue(all(id(x) == id(mems2[0]) for x in mems2))
+    self.assertTrue(id(mems1[0]) != id(mems2[0]))
+
+  def testGetDisk(self):
+    """Test caching explicitly for Disk information objects."""
+    disks1 = [systeminfo.GetDisk(), systeminfo.GetDisk(),
+              systeminfo.GetDisk(systeminfo.UPDATE_MEMORY_SEC),
+              systeminfo.GetDisk(update_sec=systeminfo.UPDATE_MEMORY_SEC)]
+
+    disks2 = [systeminfo.GetDisk(10), systeminfo.GetDisk(10),
+              systeminfo.GetDisk(update_sec=10)]
+
+    self.assertTrue(all(id(x) == id(disks1[0]) for x in disks1))
+    self.assertTrue(all(id(x) == id(disks2[0]) for x in disks2))
+    self.assertTrue(id(disks1[0]) != id(disks2[0]))
