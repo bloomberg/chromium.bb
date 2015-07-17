@@ -37,6 +37,13 @@ class ContentVerifierIOData;
 class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                         public ExtensionRegistryObserver {
  public:
+  class TestObserver {
+   public:
+    virtual void OnFetchComplete(const std::string& extension_id,
+                                 bool success) = 0;
+  };
+  static void SetObserverForTests(TestObserver* observer);
+
   // Takes ownership of |delegate|.
   ContentVerifier(content::BrowserContext* context,
                   ContentVerifierDelegate* delegate);
