@@ -29,10 +29,6 @@ ServiceProcessStateTest.ForceShutdown
 # fails sporadically: http://crbug.com/108205
 MultiProcessLockTest.RecursiveLock
 
-# Poor isolation, DCHECKs when no MessageLoop exists.  Breaks when sharded.
-# http://crbug.com/117679
-WebsiteSettingsModelTest.*
-
 # fails to create thread
 # http://crbug.com/144087
 DesktopNotificationServiceTest.SettingsForSchemes

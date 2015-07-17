@@ -1,10 +1,6 @@
 # Times out too often
 # crbug.com/15817
 IPCSyncChannelTest.*
-# Hangs
-# http://crbug.com/21890
-WebDropTargetTest.URL
-WebDropTargetTest.Data
 # http://crbug.com/69037
 FirefoxImporterTest.Firefox3NSS3Decryptor
 # http://crbug.com/69039
@@ -23,17 +19,9 @@ BookmarkBarControllerTest.HideWhenShowBookmarkBarFalse
 # Crashes, see http://crbug.com/86656
 MacSandboxTest.FileAccess
 
-# http://crbug.com/87769
-BalloonControllerTest.ShowAndCloseTest
-BalloonControllerTest.SizesTest
-
-# http://crbug.com/89030
-ConnectionTesterTest.DeleteWhileInProgress
-
 # http://crbug.com/93245
 GeolocationWifiDataProviderCommonTest.*
 
 # http://crbug.com/96298
 FileSystemDirURLRequestJobTest.*
 FileSystemURLRequestJobTest.*
-FileSystemOperationWriteTest.*
