@@ -242,6 +242,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   matrix_frame.size.width = tableWidth;
   matrix_frame.size.height = matrixHeight;
   [matrix_ setFrame:matrix_frame];
+  [[[matrix_ tableColumns] objectAtIndex:0] setWidth:tableWidth];
 
   NSRect current_poup_frame = [popup_ frame];
   target_popup_frame_ = popup_frame;
