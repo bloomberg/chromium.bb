@@ -65,10 +65,10 @@ public:
         return m_fastMallocAllocator.root();
     }
 
-    ALWAYS_INLINE static PartitionRoot* objectModelPartition()
+    ALWAYS_INLINE static PartitionRoot* nodePartition()
     {
         ASSERT(s_initialized);
-        return m_objectModelAllocator.root();
+        return m_nodeAllocator.root();
     }
     ALWAYS_INLINE static PartitionRoot* layoutPartition()
     {
@@ -79,7 +79,7 @@ public:
     static size_t currentDOMMemoryUsage()
     {
         ASSERT(s_initialized);
-        return m_objectModelAllocator.root()->totalSizeOfCommittedPages;
+        return m_nodeAllocator.root()->totalSizeOfCommittedPages;
     }
 
     static size_t totalSizeOfCommittedPages()
@@ -87,7 +87,7 @@ public:
         size_t totalSize = 0;
         totalSize += m_fastMallocAllocator.root()->totalSizeOfCommittedPages;
         totalSize += m_bufferAllocator.root()->totalSizeOfCommittedPages;
-        totalSize += m_objectModelAllocator.root()->totalSizeOfCommittedPages;
+        totalSize += m_nodeAllocator.root()->totalSizeOfCommittedPages;
         totalSize += m_layoutAllocator.root()->totalSizeOfCommittedPages;
         return totalSize;
     }
@@ -103,7 +103,7 @@ private:
     static bool s_initialized;
     static PartitionAllocatorGeneric m_fastMallocAllocator;
     static PartitionAllocatorGeneric m_bufferAllocator;
-    static SizeSpecificPartitionAllocator<3328> m_objectModelAllocator;
+    static SizeSpecificPartitionAllocator<3328> m_nodeAllocator;
     static SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
     static HistogramEnumerationFunction m_histogramEnumeration;
 };

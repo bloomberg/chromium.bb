@@ -42,7 +42,7 @@ bool Partitions::s_initialized = false;
 
 PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
 PartitionAllocatorGeneric Partitions::m_bufferAllocator;
-SizeSpecificPartitionAllocator<3328> Partitions::m_objectModelAllocator;
+SizeSpecificPartitionAllocator<3328> Partitions::m_nodeAllocator;
 SizeSpecificPartitionAllocator<1024> Partitions::m_layoutAllocator;
 HistogramEnumerationFunction Partitions::m_histogramEnumeration = nullptr;
 
@@ -53,7 +53,7 @@ void Partitions::initialize()
     if (!s_initialized) {
         m_fastMallocAllocator.init();
         m_bufferAllocator.init();
-        m_objectModelAllocator.init();
+        m_nodeAllocator.init();
         m_layoutAllocator.init();
         s_initialized = true;
     }
@@ -73,7 +73,7 @@ void Partitions::shutdown()
     // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
     // the valgrind and heapcheck bots, which run without partitions.
     (void) m_layoutAllocator.shutdown();
-    (void) m_objectModelAllocator.shutdown();
+    (void) m_nodeAllocator.shutdown();
     (void) m_bufferAllocator.shutdown();
     (void) m_fastMallocAllocator.shutdown();
 }
@@ -84,7 +84,7 @@ void Partitions::decommitFreeableMemory()
 
     partitionPurgeMemoryGeneric(bufferPartition(), PartitionPurgeDecommitEmptyPages);
     partitionPurgeMemoryGeneric(fastMallocPartition(), PartitionPurgeDecommitEmptyPages);
-    partitionPurgeMemory(objectModelPartition(), PartitionPurgeDecommitEmptyPages);
+    partitionPurgeMemory(nodePartition(), PartitionPurgeDecommitEmptyPages);
     partitionPurgeMemory(layoutPartition(), PartitionPurgeDecommitEmptyPages);
 }
 
@@ -118,7 +118,7 @@ void Partitions::dumpMemoryStats(PartitionStatsDumper* partitionStatsDumper)
 
     partitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc_partition", partitionStatsDumper);
     partitionDumpStatsGeneric(bufferPartition(), "buffer_partition", partitionStatsDumper);
-    partitionDumpStats(objectModelPartition(), "object_model_partition", partitionStatsDumper);
+    partitionDumpStats(nodePartition(), "object_model_partition", partitionStatsDumper);
     partitionDumpStats(layoutPartition(), "layout_partition", partitionStatsDumper);
 }
 
