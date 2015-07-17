@@ -61,7 +61,7 @@ def ensure_infra():
         cwd=TARGET_DIR,
         stdout=subprocess.PIPE)
   subprocess.check_call(
-      [sys.executable, GCLIENT, 'sync', '--revision', 'deployed'],
+      [sys.executable, GCLIENT, 'sync', '--revision', 'origin/deployed'],
       cwd=TARGET_DIR,
       stdout=subprocess.PIPE)
 
