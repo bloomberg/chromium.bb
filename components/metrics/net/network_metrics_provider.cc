@@ -36,8 +36,10 @@ NetworkMetricsProvider::~NetworkMetricsProvider() {
 }
 
 void NetworkMetricsProvider::OnDidCreateMetricsLog() {
+#if defined(OS_ANDROID)
   net::NetworkChangeNotifier::LogOperatorCodeHistogram(
       net::NetworkChangeNotifier::GetConnectionType());
+#endif  // OS_ANDROID
 }
 
 void NetworkMetricsProvider::ProvideSystemProfileMetrics(
