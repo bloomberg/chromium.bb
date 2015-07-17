@@ -64,7 +64,7 @@ struct HarfBuzzRunGlyphData {
 struct ShapeResult::RunInfo {
     RunInfo(const SimpleFontData* font, hb_direction_t dir, hb_script_t script,
         unsigned startIndex, unsigned numGlyphs, unsigned numCharacters)
-        : m_fontData(font), m_direction(dir), m_script(script)
+        : m_fontData(const_cast<SimpleFontData*>(font)), m_direction(dir), m_script(script)
         , m_startIndex(startIndex), m_numCharacters(numCharacters)
         , m_numGlyphs(numGlyphs), m_width(0.0f)
     {
@@ -86,7 +86,7 @@ struct ShapeResult::RunInfo {
         return m_startIndex + m_glyphData[i].characterIndex;
     }
 
-    const SimpleFontData* m_fontData;
+    RefPtrWillBeMember<SimpleFontData> m_fontData;
     hb_direction_t m_direction;
     hb_script_t m_script;
     Vector<HarfBuzzRunGlyphData> m_glyphData;
@@ -201,7 +201,7 @@ float ShapeResult::fillGlyphBufferForRun(GlyphBuffer* glyphBuffer,
         } else if ((direction == RTL && currentCharacterIndex >= from)
             || (direction == LTR && currentCharacterIndex < to)) {
             addGlyphToBuffer(glyphBuffer, advanceSoFar, run->m_direction,
-                run->m_fontData, glyphData);
+                run->m_fontData.get(), glyphData);
             advanceSoFar += glyphData.advance;
         }
     }
@@ -1099,7 +1099,8 @@ void HarfBuzzShaper::shapeResult(ShapeResult* result, unsigned index,
 
     run->m_width = totalAdvance > 0.0 ? totalAdvance : 0.0;
     result->m_width += run->m_width;
-    result->m_fallbackFonts = *m_fallbackFonts;
+    for (auto& fallbackFont : *m_fallbackFonts)
+        result->m_fallbackFonts.add(const_cast<SimpleFontData*>(fallbackFont));
 }
 
 float HarfBuzzShaper::adjustSpacing(ShapeResult::RunInfo* run, size_t glyphIndex, unsigned currentCharacterIndex, float& offset, float& totalAdvance)

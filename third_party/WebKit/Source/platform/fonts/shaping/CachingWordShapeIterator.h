@@ -95,11 +95,8 @@ private:
         HashSet<const SimpleFontData*>* fallbackFonts)
     {
         if (fallbackFonts) {
-            const HashSet<const SimpleFontData*>* fontsForWord =
-                wordResult->fallbackFonts();
-            HashSet<const SimpleFontData*>::const_iterator it;
-            for (it = fontsForWord->begin(); it != fontsForWord->end(); ++it)
-                fallbackFonts->add(*it);
+            for (auto& fallbackFont : *wordResult->fallbackFonts())
+                fallbackFonts->add(fallbackFont.get());
         }
     }
 

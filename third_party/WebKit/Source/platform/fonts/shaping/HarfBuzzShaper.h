@@ -63,7 +63,7 @@ public:
     FloatRect bounds() { return m_glyphBoundingBox; }
     int offsetForPosition(float targetX);
     unsigned numCharacters() const { return m_numCharacters; }
-    const HashSet<const SimpleFontData*>* fallbackFonts() const
+    const HashSet<RefPtr<SimpleFontData>>* fallbackFonts() const
     {
         return &m_fallbackFonts;
     }
@@ -103,7 +103,7 @@ private:
     float m_width;
     FloatRect m_glyphBoundingBox;
     Vector<RunInfo*> m_runs;
-    HashSet<const SimpleFontData*> m_fallbackFonts;
+    HashSet<RefPtr<SimpleFontData>> m_fallbackFonts;
 
     unsigned m_numCharacters;
     unsigned m_numGlyphs : 31;
