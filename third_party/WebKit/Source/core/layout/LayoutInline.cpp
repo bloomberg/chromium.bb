@@ -32,6 +32,7 @@
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
@@ -772,7 +773,7 @@ LayoutUnit LayoutInline::marginAfter(const ComputedStyle* otherStyle) const
 bool LayoutInline::nodeAtPoint(HitTestResult& result,
     const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
-    return m_lineBoxes.hitTest(this, result, locationInContainer, accumulatedOffset, hitTestAction);
+    return m_lineBoxes.hitTest(LineLayoutBoxModel(this), result, locationInContainer, accumulatedOffset, hitTestAction);
 }
 
 namespace {

@@ -502,6 +502,7 @@
             'layout/api/HitTestAction.h',
             'layout/api/LineLayoutBlockFlow.h',
             'layout/api/LineLayoutBox.h',
+            'layout/api/LineLayoutBoxModel.h',
             'layout/api/LineLayoutInline.h',
             'layout/api/LineLayoutItem.h',
             'layout/api/LineLayoutText.h',

@@ -42,6 +42,7 @@ class LayoutBoxModelObject;
 class LayoutPoint;
 class LayoutRect;
 class LayoutUnit;
+class LineLayoutBoxModel;
 class LineLayoutItem;
 struct PaintInfo;
 
@@ -74,10 +75,10 @@ public:
     void dirtyLineBoxes();
     void dirtyLinesFromChangedChild(LineLayoutItem parent, LineLayoutItem child);
 
-    bool hitTest(LayoutBoxModelObject*, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) const;
-    bool anyLineIntersectsRect(LayoutBoxModelObject*, const LayoutRect&, const LayoutPoint&) const;
-    bool lineIntersectsDirtyRect(LayoutBoxModelObject*, InlineFlowBox*, const PaintInfo&, const LayoutPoint&) const;
-    bool rangeIntersectsRect(LayoutBoxModelObject*, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect&, const LayoutPoint&) const;
+    bool hitTest(LineLayoutBoxModel, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) const;
+    bool anyLineIntersectsRect(LineLayoutBoxModel, const LayoutRect&, const LayoutPoint&) const;
+    bool lineIntersectsDirtyRect(LineLayoutBoxModel, InlineFlowBox*, const PaintInfo&, const LayoutPoint&) const;
+    bool rangeIntersectsRect(LineLayoutBoxModel, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect&, const LayoutPoint&) const;
 
 private:
 

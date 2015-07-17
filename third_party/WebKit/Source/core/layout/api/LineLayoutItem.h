@@ -14,6 +14,7 @@ namespace blink {
 class ComputedStyle;
 class Document;
 class LayoutObject;
+class LineLayoutBox;
 
 class LineLayoutItem {
 public:
@@ -36,11 +37,22 @@ public:
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
+    // TODO(ojan): We shouldn't have these pretend they're pointers.
     LineLayoutItem* operator->() { return this; }
 
     LineLayoutItem parent() const
     {
         return LineLayoutItem(m_layoutObject->parent());
+    }
+
+    // Implemented in LineLayoutBox.h
+    // Intentionally returns a Box instead of a Block to avoid exposing LayoutBlock
+    // to the line layout code.
+    LineLayoutBox containingBlock() const;
+
+    void updateHitTestResult(HitTestResult& result, const LayoutPoint& point)
+    {
+        return m_layoutObject->updateHitTestResult(result, point);
     }
 
     LineLayoutItem nextSibling() const
@@ -118,6 +130,11 @@ public:
         return m_layoutObject->isBox();
     }
 
+    bool isBoxModelObject() const
+    {
+        return m_layoutObject->isBoxModelObject();
+    }
+
     bool isBR() const
     {
         return m_layoutObject->isBR();
@@ -181,6 +198,11 @@ public:
     bool isText() const
     {
         return m_layoutObject->isText();
+    }
+
+    bool hasLayer() const
+    {
+        return m_layoutObject->hasLayer();
     }
 
     bool selfNeedsLayout() const

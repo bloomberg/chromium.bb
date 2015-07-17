@@ -32,6 +32,8 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutBox.h"
+#include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -146,15 +148,15 @@ void LineBoxList::dirtyLineBoxes()
         curr->dirtyLineBoxes();
 }
 
-bool LineBoxList::rangeIntersectsRect(LayoutBoxModelObject* layoutObject, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect& rect, const LayoutPoint& offset) const
+bool LineBoxList::rangeIntersectsRect(LineLayoutBoxModel layoutObject, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect& rect, const LayoutPoint& offset) const
 {
-    LayoutBox* block;
+    LineLayoutBox block;
     if (layoutObject->isBox())
-        block = toLayoutBox(layoutObject);
+        block = layoutObject;
     else
         block = layoutObject->containingBlock();
-    LayoutUnit physicalStart = block->flipForWritingMode(logicalTop);
-    LayoutUnit physicalEnd = block->flipForWritingMode(logicalBottom);
+    LayoutUnit physicalStart = block.flipForWritingMode(logicalTop);
+    LayoutUnit physicalEnd = block.flipForWritingMode(logicalBottom);
     LayoutUnit physicalExtent = absoluteValue(physicalEnd - physicalStart);
     physicalStart = std::min(physicalStart, physicalEnd);
 
@@ -171,7 +173,7 @@ bool LineBoxList::rangeIntersectsRect(LayoutBoxModelObject* layoutObject, Layout
     return true;
 }
 
-bool LineBoxList::anyLineIntersectsRect(LayoutBoxModelObject* layoutObject, const LayoutRect& rect, const LayoutPoint& offset) const
+bool LineBoxList::anyLineIntersectsRect(LineLayoutBoxModel layoutObject, const LayoutRect& rect, const LayoutPoint& offset) const
 {
     // We can check the first box and last box and avoid painting/hit testing if we don't
     // intersect.  This is a quick short-circuit that we can take to avoid walking any lines.
@@ -185,7 +187,7 @@ bool LineBoxList::anyLineIntersectsRect(LayoutBoxModelObject* layoutObject, cons
     return rangeIntersectsRect(layoutObject, firstLineTop, lastLineBottom, rect, offset);
 }
 
-bool LineBoxList::lineIntersectsDirtyRect(LayoutBoxModelObject* layoutObject, InlineFlowBox* box, const PaintInfo& paintInfo, const LayoutPoint& offset) const
+bool LineBoxList::lineIntersectsDirtyRect(LineLayoutBoxModel layoutObject, InlineFlowBox* box, const PaintInfo& paintInfo, const LayoutPoint& offset) const
 {
     RootInlineBox& root = box->root();
     LayoutUnit logicalTop = std::min<LayoutUnit>(box->logicalTopVisualOverflow(root.lineTop()), root.selectionTop());
@@ -194,7 +196,7 @@ bool LineBoxList::lineIntersectsDirtyRect(LayoutBoxModelObject* layoutObject, In
     return rangeIntersectsRect(layoutObject, logicalTop, logicalBottom, LayoutRect(paintInfo.rect), offset);
 }
 
-bool LineBoxList::hitTest(LayoutBoxModelObject* layoutObject, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction) const
+bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction) const
 {
     if (hitTestAction != HitTestForeground)
         return false;
