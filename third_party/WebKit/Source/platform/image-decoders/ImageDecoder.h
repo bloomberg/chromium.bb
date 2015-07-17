@@ -99,9 +99,6 @@ public:
     // Sets m_maxDecodedBytes to Platform::maxImageDecodedBytes().
     static PassOwnPtr<ImageDecoder> create(const SharedBuffer& data, AlphaOption, GammaAndColorProfileOption);
 
-    // Returns a decoder with custom maxDecodedSize.
-    static PassOwnPtr<ImageDecoder> create(const SharedBuffer& data, AlphaOption, GammaAndColorProfileOption, size_t maxDecodedSize);
-
     virtual String filenameExtension() const = 0;
 
     bool isAllDataReceived() const { return m_isAllDataReceived; }
