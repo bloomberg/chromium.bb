@@ -150,6 +150,7 @@ static int submit(unsigned ndw, unsigned ip)
 
 	ibs_request.number_of_ibs = 1;
 	ibs_request.ibs = &ib_info;
+	ibs_request.fence_info.handle = NULL;
 
 	r = amdgpu_cs_submit(context_handle, 0, &ibs_request, 1);
 	if (r)
@@ -161,6 +162,7 @@ static int submit(unsigned ndw, unsigned ip)
 
 	fence_status.context = context_handle;
 	fence_status.ip_type = ip;
+	fence_status.fence = ibs_request.seq_no;
 
 	r = amdgpu_cs_query_fence_status(&fence_status,
 					 AMDGPU_TIMEOUT_INFINITE,
