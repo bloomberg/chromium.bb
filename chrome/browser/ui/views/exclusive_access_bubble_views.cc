@@ -287,10 +287,10 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent =
       bubble_view_context_->GetBubbleAssociatedWidget()->GetNativeView();
-  params.bounds = GetPopupRect(false);
   popup_->Init(params);
-  gfx::Size size = GetPopupRect(true).size();
   popup_->SetContentsView(view_);
+  gfx::Size size = GetPopupRect(true).size();
+  popup_->SetBounds(GetPopupRect(false));
   // We set layout manager to nullptr to prevent the widget from sizing its
   // contents to the same size as itself. This prevents the widget contents from
   // shrinking while we animate the height of the popup to give the impression
