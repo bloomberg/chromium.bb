@@ -1006,7 +1006,11 @@
       <label>
         <input id="gpu-mode-checkbox"
             pref="hardware_acceleration_mode.enabled" type="checkbox">
-        <span i18n-content="gpuModeCheckbox">
+        <span>
+          <span i18n-content="gpuModeCheckbox"></span>
+          <span class="controlled-setting-indicator"
+              pref="hardware_acceleration_mode.enabled"></span>
+        </span>
       </label>
       <span id="gpu-mode-reset-restart"
           i18n-values=".innerHTML:gpuModeResetRestart"></span>

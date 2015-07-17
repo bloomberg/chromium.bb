@@ -327,6 +327,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSSLErrorOverrideAllowed,
     prefs::kSSLErrorOverrideAllowed,
     base::Value::TYPE_BOOLEAN },
+  { key::kHardwareAccelerationModeEnabled,
+    prefs::kHardwareAccelerationModeEnabled,
+    base::Value::TYPE_BOOLEAN },
 
 #if defined(ENABLE_SPELLCHECK)
   { key::kSpellCheckServiceEnabled,

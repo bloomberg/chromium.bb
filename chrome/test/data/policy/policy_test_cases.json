@@ -2253,6 +2253,20 @@
   "KeyPermissions": {
   },
 
+  "HardwareAccelerationModeEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "HardwareAccelerationModeEnabled": true },
+    "pref_mappings": [
+      { "pref": "hardware_acceleration_mode.enabled",
+        "local_state": true,
+        "indicator_tests": [
+          { "policy": { "HardwareAccelerationModeEnabled": true } },
+          { "policy": { "HardwareAccelerationModeEnabled": false } }
+        ]
+      }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

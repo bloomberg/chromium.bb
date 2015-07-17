@@ -3838,4 +3838,31 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
 
 #endif  // !defined(CHROME_OS)
 
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+// Sets the hardware acceleration mode policy before the browser is started.
+class HardwareAccelerationModePolicyTest : public PolicyTest {
+ public:
+  HardwareAccelerationModePolicyTest() {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(key::kHardwareAccelerationModeEnabled,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 new base::FundamentalValue(false),
+                 NULL);
+    provider_.UpdateChromePolicy(policies);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(HardwareAccelerationModePolicyTest,
+                       HardwareAccelerationDisabled) {
+  // Verifies that hardware acceleration can be disabled with policy.
+  EXPECT_FALSE(
+      content::GpuDataManager::GetInstance()->GpuAccessAllowed(nullptr));
+}
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+
 }  // namespace policy

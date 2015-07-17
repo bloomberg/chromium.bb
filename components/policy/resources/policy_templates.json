@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 303
+#   For your editing convenience: highest ID currently used: 304
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3237,7 +3237,9 @@
 
       Enabling this setting prevents web pages from accessing the graphics processing unit (GPU). Specifically, web pages can not access the WebGL API and plugins can not use the Pepper 3D API.
 
-      Disabling this setting or leaving it not set potentially allows web pages to use the WebGL API and plugins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.''',
+      Disabling this setting or leaving it not set potentially allows web pages to use the WebGL API and plugins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.
+
+      If HardwareAccelerationModeEnabled is set to false, Disable3DAPIs is ignored and it is equivalent to Disable3DAPIs being set to true.''',
     },
     {
       'name': 'PolicyRefreshRate',
@@ -7414,7 +7416,25 @@
         'per_profile': False
       },
       'example_value': False
-    }
+    },
+    {
+      'name': 'HardwareAccelerationModeEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:45-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 304,
+      'caption': '''Use hardware acceleration when available''',
+      'desc': '''Use hardware acceleration when available.
+
+      If this policy is set to true or left unset, hardware acceleration will be enabled unless a certain GPU feature is blacklisted.
+
+      If this policy is set to false, hardware acceleration will be disabled.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.

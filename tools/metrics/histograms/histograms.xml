@@ -54512,6 +54512,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="301" label="Allows QUIC protocol"/>
   <int value="302" label="Key Permissions"/>
   <int value="303" label="Welcome page on OS upgrade enabled"/>
+  <int value="304" label="Use hardware acceleration when available"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
