@@ -28,7 +28,7 @@ class MediaSinksObserver;
 // The second argument is the error string, which will be nonempty if the route
 // request failed.
 using MediaRouteResponseCallback =
-    base::Callback<void(scoped_ptr<MediaRoute>, const std::string&)>;
+    base::Callback<void(const MediaRoute*, const std::string&)>;
 
 // Used in cases where a tab ID is not applicable in CreateRoute/JoinRoute.
 const int kInvalidTabId = -1;
@@ -53,12 +53,14 @@ class MediaRouter {
   // requesting JoinRoute() must have the same origin as the page that requested
   // CreateRoute()).
   // The caller may pass in|kInvalidTabId| if tab is not applicable.
-  // |callback| is invoked with a response indicating success or failure.
-  virtual void CreateRoute(const MediaSource::Id& source_id,
-                           const MediaSink::Id& sink_id,
-                           const GURL& origin,
-                           int tab_id,
-                           const MediaRouteResponseCallback& callback) = 0;
+  // Each callback in |callbacks| is invoked with a response indicating
+  // success or failure, in the order they are listed.
+  virtual void CreateRoute(
+      const MediaSource::Id& source_id,
+      const MediaSink::Id& sink_id,
+      const GURL& origin,
+      int tab_id,
+      const std::vector<MediaRouteResponseCallback>& callbacks) = 0;
 
   // Joins an existing route identified by |presentation_id|.
   // |source|: The source to route to the existing route.
@@ -66,12 +68,14 @@ class MediaRouter {
   // |origin|, |tab_id|: Origin and tab of the join route request. Used for
   // validation when enforcing same-origin and/or same-tab scope.
   // (See CreateRoute documentation).
-  // |callback| is invoked with a response indicating success or failure.
-  virtual void JoinRoute(const MediaSource::Id& source,
-                         const std::string& presentation_id,
-                         const GURL& origin,
-                         int tab_id,
-                         const MediaRouteResponseCallback& callback) = 0;
+  // Each callback in |callbacks| is invoked with a response indicating
+  // success or failure, in the order they are listed.
+  virtual void JoinRoute(
+      const MediaSource::Id& source,
+      const std::string& presentation_id,
+      const GURL& origin,
+      int tab_id,
+      const std::vector<MediaRouteResponseCallback>& callbacks) = 0;
 
   // Closes the media route specified by |route_id|.
   virtual void CloseRoute(const MediaRoute::Id& route_id) = 0;

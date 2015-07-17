@@ -63,16 +63,10 @@ bool ArePresentationSessionMessagesEqual(
 
 }  // namespace
 
-// Adapts Invoke(), which takes a move-only scoped_ptr parameter (not mockable)
-// to a variant that accepts raw pointers instead (mock friendly).
 class RouteResponseCallbackHandler {
  public:
-  void Invoke(scoped_ptr<MediaRoute> route, const std::string& error_text) {
-    InvokeObserver(route.get(), error_text);
-  }
-
-  MOCK_METHOD2(InvokeObserver,
-               void(MediaRoute* route, const std::string& error_text));
+  MOCK_METHOD2(Invoke,
+               void(const MediaRoute* route, const std::string& error_text));
 };
 
 class SendMessageCallbackHandler {
@@ -172,10 +166,12 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
       }));
 
   RouteResponseCallbackHandler handler;
-  EXPECT_CALL(handler, InvokeObserver(Pointee(Equals(expected_route)), ""));
+  EXPECT_CALL(handler, Invoke(Pointee(Equals(expected_route)), ""));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->CreateRoute(kSource, kSink, GURL(kOrigin), kTabId,
-                        base::Bind(&RouteResponseCallbackHandler::Invoke,
-                                   base::Unretained(&handler)));
+                        route_response_callbacks);
   ProcessEventLoop();
 }
 
@@ -192,10 +188,12 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
           }));
 
   RouteResponseCallbackHandler handler;
-  EXPECT_CALL(handler, InvokeObserver(nullptr, kError));
+  EXPECT_CALL(handler, Invoke(nullptr, kError));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->CreateRoute(kSource, kSink, GURL(kOrigin), kTabId,
-                        base::Bind(&RouteResponseCallbackHandler::Invoke,
-                                   base::Unretained(&handler)));
+                        route_response_callbacks);
   ProcessEventLoop();
 }
 
@@ -224,10 +222,12 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
       }));
 
   RouteResponseCallbackHandler handler;
-  EXPECT_CALL(handler, InvokeObserver(Pointee(Equals(expected_route)), ""));
+  EXPECT_CALL(handler, Invoke(Pointee(Equals(expected_route)), ""));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), kTabId,
-                      base::Bind(&RouteResponseCallbackHandler::Invoke,
-                                 base::Unretained(&handler)));
+                      route_response_callbacks);
   ProcessEventLoop();
 }
 
@@ -243,10 +243,12 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteFails) {
           }));
 
   RouteResponseCallbackHandler handler;
-  EXPECT_CALL(handler, InvokeObserver(nullptr, kError));
+  EXPECT_CALL(handler, Invoke(nullptr, kError));
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), kTabId,
-                      base::Bind(&RouteResponseCallbackHandler::Invoke,
-                                 base::Unretained(&handler)));
+                      route_response_callbacks);
   ProcessEventLoop();
 }
 

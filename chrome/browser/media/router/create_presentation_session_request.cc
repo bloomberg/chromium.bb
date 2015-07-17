@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/create_session_request.h"
+#include "chrome/browser/media/router/create_presentation_session_request.h"
 
 #include "chrome/browser/media/router/media_source_helper.h"
 
@@ -11,7 +11,7 @@ using content::PresentationError;
 
 namespace media_router {
 
-CreateSessionRequest::CreateSessionRequest(
+CreatePresentationSessionRequest::CreatePresentationSessionRequest(
     const std::string& presentation_url,
     const std::string& presentation_id,
     const GURL& frame_url,
@@ -23,12 +23,18 @@ CreateSessionRequest::CreateSessionRequest(
       success_cb_(success_cb),
       error_cb_(error_cb),
       cb_invoked_(false) {
+  DCHECK(!success_cb.is_null());
+  DCHECK(!error_cb.is_null());
 }
 
-CreateSessionRequest::~CreateSessionRequest() {
+CreatePresentationSessionRequest::~CreatePresentationSessionRequest() {
+  if (!cb_invoked_) {
+    error_cb_.Run(content::PresentationError(
+        content::PRESENTATION_ERROR_UNKNOWN, "Unknown error."));
+  }
 }
 
-void CreateSessionRequest::MaybeInvokeSuccessCallback(
+void CreatePresentationSessionRequest::MaybeInvokeSuccessCallback(
     const MediaRoute::Id& route_id) {
   if (!cb_invoked_) {
     // Overwrite presentation ID.
@@ -40,7 +46,7 @@ void CreateSessionRequest::MaybeInvokeSuccessCallback(
   }
 }
 
-void CreateSessionRequest::MaybeInvokeErrorCallback(
+void CreatePresentationSessionRequest::MaybeInvokeErrorCallback(
     const content::PresentationError& error) {
   if (!cb_invoked_) {
     error_cb_.Run(error);

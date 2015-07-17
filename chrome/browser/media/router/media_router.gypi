@@ -6,8 +6,8 @@
   'variables': {
     # File lists shared with GN build.
     'media_router_sources': [
-      'create_session_request.cc',
-      'create_session_request.h',
+      'create_presentation_session_request.cc',
+      'create_presentation_session_request.h',
       'issue.cc',
       'issue.h',
       'issue_manager.cc',

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/media/router/create_session_request.h"
+#include "chrome/browser/media/router/create_presentation_session_request.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -40,7 +40,7 @@ class MediaRouterDialogController
   // Returns WebContents for the media router dialog if a dialog was created.
   // Otherwise returns nullptr and |request| is deleted.
   content::WebContents* ShowMediaRouterDialogForPresentation(
-      scoped_ptr<CreateSessionRequest> request);
+      scoped_ptr<CreatePresentationSessionRequest> request);
 
   // Returns the media router dialog WebContents.
   // Returns nullptr if there is no dialog.
@@ -82,7 +82,7 @@ class MediaRouterDialogController
   // Data for dialogs created under a Presentation API context.
   // Passed from the caller of ShowMediaRouterDialogForPresentation(), and
   // passed to the MediaRouterUI when it is initialized.
-  scoped_ptr<CreateSessionRequest> presentation_request_;
+  scoped_ptr<CreatePresentationSessionRequest> presentation_request_;
 
   base::ThreadChecker thread_checker_;
 

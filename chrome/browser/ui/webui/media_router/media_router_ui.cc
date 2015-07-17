@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/strings/string_util.h"
-#include "chrome/browser/media/router/create_session_request.h"
+#include "chrome/browser/media/router/create_presentation_session_request.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_route.h"
@@ -22,6 +22,7 @@
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
 #include "chrome/browser/ui/webui/media_router/media_router_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/media_router/media_router_resources_provider.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
@@ -34,6 +35,19 @@
 namespace media_router {
 
 namespace {
+
+void HandleRouteResponseForPresentationApi(
+    scoped_ptr<CreatePresentationSessionRequest> presentation_request,
+    const MediaRoute* route,
+    const std::string& error) {
+  DCHECK(presentation_request);
+  if (!route) {
+    presentation_request->MaybeInvokeErrorCallback(
+        content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN, error));
+  } else {
+    presentation_request->MaybeInvokeSuccessCallback(route->media_route_id());
+  }
+}
 
 std::string GetHostFromURL(const GURL& gurl) {
   if (gurl.is_empty())
@@ -121,15 +135,22 @@ MediaRouterUI::~MediaRouterUI() {
     query_result_manager_->RemoveObserver(this);
   if (presentation_service_delegate_.get())
     presentation_service_delegate_->RemoveDefaultMediaSourceObserver(this);
+  // If |presentation_request_| still exists, then it means presentation route
+  // request was never attempted.
+  if (presentation_request_) {
+    presentation_request_->MaybeInvokeErrorCallback(content::PresentationError(
+        content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+        "Dialog closed."));
+  }
 }
 
 void MediaRouterUI::InitWithDefaultMediaSource(
-    PresentationServiceDelegateImpl* delegate) {
+    const base::WeakPtr<PresentationServiceDelegateImpl>& delegate) {
   DCHECK(delegate);
   DCHECK(!presentation_service_delegate_);
   DCHECK(!query_result_manager_.get());
 
-  presentation_service_delegate_ = delegate->GetWeakPtr();
+  presentation_service_delegate_ = delegate;
   presentation_service_delegate_->AddDefaultMediaSourceObserver(this);
   InitCommon(presentation_service_delegate_->web_contents(),
              presentation_service_delegate_->default_source(),
@@ -137,18 +158,19 @@ void MediaRouterUI::InitWithDefaultMediaSource(
 }
 
 void MediaRouterUI::InitWithPresentationSessionRequest(
-    const content::WebContents* initiator,
-    scoped_ptr<CreateSessionRequest> request) {
-  DCHECK(request.get());
-  DCHECK(!presentation_session_request_.get());
-  DCHECK(!query_result_manager_.get());
+    content::WebContents* initiator,
+    scoped_ptr<CreatePresentationSessionRequest> presentation_request) {
+  DCHECK(initiator);
+  DCHECK(presentation_request);
+  DCHECK(!presentation_request_);
+  DCHECK(!query_result_manager_);
 
-  presentation_session_request_ = request.Pass();
-  InitCommon(initiator, presentation_session_request_->GetMediaSource(),
-             presentation_session_request_->frame_url());
+  presentation_request_ = presentation_request.Pass();
+  InitCommon(initiator, presentation_request_->GetMediaSource(),
+             presentation_request_->frame_url());
 }
 
-void MediaRouterUI::InitCommon(const content::WebContents* initiator,
+void MediaRouterUI::InitCommon(content::WebContents* initiator,
                                const MediaSource& default_source,
                                const GURL& default_frame_url) {
   DCHECK(initiator);
@@ -182,20 +204,6 @@ void MediaRouterUI::OnDefaultMediaSourceChanged(const MediaSource& source,
   UpdateSourceHostAndCastModes(frame_url);
 }
 
-void MediaRouterUI::HandleRouteResponseForPresentation(
-    const MediaRoute* route,
-    const std::string& error) {
-  if (!route) {
-    presentation_session_request_->MaybeInvokeErrorCallback(
-        content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN, error));
-  } else {
-    // TODO(imcheng): Presentation ID should come from the response
-    // as the IDs might not be the same.
-    presentation_session_request_->MaybeInvokeSuccessCallback(
-        route->media_route_id());
-  }
-}
-
 void MediaRouterUI::UpdateSourceHostAndCastModes(const GURL& frame_url) {
   DCHECK(query_result_manager_);
   frame_url_ = frame_url;
@@ -205,13 +213,6 @@ void MediaRouterUI::UpdateSourceHostAndCastModes(const GURL& frame_url) {
 }
 
 void MediaRouterUI::Close() {
-  if (presentation_session_request_.get()) {
-    presentation_session_request_->MaybeInvokeErrorCallback(
-        content::PresentationError(
-            content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
-            "Dialog closed."));
-  }
-
   ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (delegate) {
     delegate->GetWebDialogDelegate()->OnDialogClosed(std::string());
@@ -269,7 +270,7 @@ void MediaRouterUI::OnRoutesUpdated(const std::vector<MediaRoute>& routes) {
     handler_->UpdateRoutes(routes_);
 }
 
-void MediaRouterUI::OnRouteResponseReceived(scoped_ptr<MediaRoute> route,
+void MediaRouterUI::OnRouteResponseReceived(const MediaRoute* route,
                                             const std::string& error) {
   DVLOG(1) << "OnRouteResponseReceived";
   // TODO(imcheng): Display error in UI. (crbug.com/490372)
@@ -277,18 +278,6 @@ void MediaRouterUI::OnRouteResponseReceived(scoped_ptr<MediaRoute> route,
     LOG(ERROR) << "MediaRouteResponse returned error: " << error;
   else
     handler_->AddRoute(*route);
-
-  if (requesting_route_for_default_source_) {
-    if (presentation_session_request_.get()) {
-      HandleRouteResponseForPresentation(route.get(), error);
-    } else {
-      // Dialog initiated via browser action. Let
-      // PresentationServiceDelegateImpl perform the match against the default
-      // presentation URL.
-      if (route && presentation_service_delegate_.get())
-        presentation_service_delegate_->OnRouteCreated(*route);
-    }
-  }
 
   has_pending_route_request_ = false;
   requesting_route_for_default_source_ = false;
@@ -325,10 +314,35 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
 
   DVLOG(1) << "DoCreateRoute: origin: " << origin;
 
+  // There are 3 cases. In all cases the MediaRouterUI will need to be notified.
+  // (1) Non-presentation route request (e.g., mirroring). No additional
+  // notification necessary.
+  // (2) Presentation route request for a Presentation API startSession call.
+  // The startSession (CreatePresentationSessionRequest) will need to be
+  // answered with the
+  // route response.
+  // (3) Browser-initiated presentation route request. If successful,
+  // PresentationServiceDelegateImpl will have to be notified.
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr()));
+  if (requesting_route_for_default_source_) {
+    if (presentation_request_) {
+      // |presentation_request_| will be nullptr after this call, as the
+      // object will be transferred to the callback.
+      route_response_callbacks.push_back(
+          base::Bind(&HandleRouteResponseForPresentationApi,
+                     base::Passed(&presentation_request_)));
+    } else if (presentation_service_delegate_) {
+      route_response_callbacks.push_back(
+          base::Bind(&PresentationServiceDelegateImpl::OnRouteResponse,
+                     presentation_service_delegate_));
+    }
+  }
+
   router_->CreateRoute(source.id(), sink_id, origin,
                        SessionTabHelper::IdForTab(initiator_),
-                       base::Bind(&MediaRouterUI::OnRouteResponseReceived,
-                                  weak_factory_.GetWeakPtr()));
+                       route_response_callbacks);
   return true;
 }
 

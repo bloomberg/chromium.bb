@@ -58,16 +58,18 @@ class MediaRouterMojoImpl : public MediaRouter,
   // MediaRouter implementation.
   // Execution of the requests is delegated to the Do* methods, which can be
   // enqueued for later use if the extension is temporarily suspended.
-  void CreateRoute(const MediaSource::Id& source_id,
-                   const MediaSink::Id& sink_id,
-                   const GURL& origin,
-                   int tab_id,
-                   const MediaRouteResponseCallback& callback) override;
-  void JoinRoute(const MediaSource::Id& source_id,
-                 const std::string& presentation_id,
-                 const GURL& origin,
-                 int tab_id,
-                 const MediaRouteResponseCallback& callback) override;
+  void CreateRoute(
+      const MediaSource::Id& source_id,
+      const MediaSink::Id& sink_id,
+      const GURL& origin,
+      int tab_id,
+      const std::vector<MediaRouteResponseCallback>& callbacks) override;
+  void JoinRoute(
+      const MediaSource::Id& source_id,
+      const std::string& presentation_id,
+      const GURL& origin,
+      int tab_id,
+      const std::vector<MediaRouteResponseCallback>& callbacks) override;
   void CloseRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
@@ -121,12 +123,12 @@ class MediaRouterMojoImpl : public MediaRouter,
                      const MediaSink::Id& sink_id,
                      const std::string& origin,
                      int tab_id,
-                     const MediaRouteResponseCallback& callback);
+                     const std::vector<MediaRouteResponseCallback>& callbacks);
   void DoJoinRoute(const MediaSource::Id& source_id,
                    const std::string& presentation_id,
                    const std::string& origin,
                    int tab_id,
-                   const MediaRouteResponseCallback& callback);
+                   const std::vector<MediaRouteResponseCallback>& callbacks);
   void DoCloseRoute(const MediaRoute::Id& route_id);
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
                             const std::string& message,

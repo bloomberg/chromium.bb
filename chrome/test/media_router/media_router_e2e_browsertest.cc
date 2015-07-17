@@ -61,9 +61,9 @@ void MediaRouterE2EBrowserTest::TearDownOnMainThread() {
 }
 
 void MediaRouterE2EBrowserTest::OnRouteResponseReceived(
-    scoped_ptr<MediaRoute> route,
+    const MediaRoute* route,
     const std::string& error) {
-  ASSERT_TRUE(route.get());
+  ASSERT_TRUE(route);
   route_id_ = route->media_route_id();
 }
 
@@ -85,10 +85,12 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(const MediaSource& source,
   const MediaSink& sink = it->second;
 
   // The callback will set route_id_ when invoked.
-  media_router_->CreateRoute(
-      source.id(), sink.id(), origin, tab_id,
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(
       base::Bind(&MediaRouterE2EBrowserTest::OnRouteResponseReceived,
                  base::Unretained(this)));
+  media_router_->CreateRoute(source.id(), sink.id(), origin, tab_id,
+                             route_response_callbacks);
 
   // Wait for the route request to be fulfilled (and route to be started).
   ConditionalWait(base::TimeDelta::FromSeconds(30),

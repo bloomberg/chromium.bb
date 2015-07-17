@@ -28,13 +28,13 @@ class MockMediaRouter : public MediaRouter {
                     const MediaSink::Id& sink_id,
                     const GURL& origin,
                     int tab_id,
-                    const MediaRouteResponseCallback& callback));
+                    const std::vector<MediaRouteResponseCallback>& callbacks));
   MOCK_METHOD5(JoinRoute,
                void(const MediaSource::Id& source,
                     const std::string& presentation_id,
                     const GURL& origin,
                     int tab_id,
-                    const MediaRouteResponseCallback& callback));
+                    const std::vector<MediaRouteResponseCallback>& callbacks));
   MOCK_METHOD1(CloseRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD3(SendRouteMessage,
                void(const MediaRoute::Id& route_id,

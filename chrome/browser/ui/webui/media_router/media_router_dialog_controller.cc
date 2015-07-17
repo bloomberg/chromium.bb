@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
@@ -207,7 +208,7 @@ WebContents* MediaRouterDialogController::ShowMediaRouterDialog() {
 }
 
 WebContents* MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
-    scoped_ptr<CreateSessionRequest> request) {
+    scoped_ptr<CreatePresentationSessionRequest> request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Get the media router dialog for |initiator|, or create a new dialog
@@ -341,10 +342,11 @@ void MediaRouterDialogController::PopulateDialog(
   }
 
   if (!presentation_request_.get()) {
-    PresentationServiceDelegateImpl::CreateForWebContents(initiator);
-    PresentationServiceDelegateImpl* delegate =
-        PresentationServiceDelegateImpl::FromWebContents(initiator);
-    CHECK(delegate);
+    // TODO(imcheng): Don't create PresentationServiceDelegateImpl if it doesn't
+    // exist (crbug.com/508695).
+    base::WeakPtr<PresentationServiceDelegateImpl> delegate =
+        PresentationServiceDelegateImpl::GetOrCreateForWebContents(initiator)
+            ->GetWeakPtr();
     media_router_ui->InitWithDefaultMediaSource(delegate);
   } else {
     media_router_ui->InitWithPresentationSessionRequest(

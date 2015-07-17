@@ -11,7 +11,7 @@
 #include "base/guid.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/media/router/create_session_request.h"
+#include "chrome/browser/media/router/create_presentation_session_request.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
@@ -543,9 +543,9 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     const content::PresentationSessionInfo& session,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb,
-    scoped_ptr<MediaRoute> route,
+    const MediaRoute* route,
     const std::string& error_text) {
-  if (!route.get()) {
+  if (!route) {
     error_cb.Run(content::PresentationError(
         content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND, error_text));
   } else {
@@ -596,13 +596,14 @@ void PresentationServiceDelegateImpl::StartSession(
   if (presentation_id.empty())
     presentation_id = base::GenerateGUID();
 
-  scoped_ptr<CreateSessionRequest> context(new CreateSessionRequest(
-      presentation_url, presentation_id,
-      GetLastCommittedURLForFrame(render_frame_host_id),
-      base::Bind(&PresentationServiceDelegateImpl::OnStartSessionSucceeded,
-                 weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
-                 success_cb),
-      error_cb));
+  scoped_ptr<CreatePresentationSessionRequest> context(
+      new CreatePresentationSessionRequest(
+          presentation_url, presentation_id,
+          GetLastCommittedURLForFrame(render_frame_host_id),
+          base::Bind(&PresentationServiceDelegateImpl::OnStartSessionSucceeded,
+                     weak_factory_.GetWeakPtr(), render_process_id,
+                     render_frame_id, success_cb),
+          error_cb));
   // NOTE: Currently this request is ignored if a dialog is already open, e.g.
   // via browser action. In practice, this should rarely happen, but log
   // an error message in case it does.
@@ -625,16 +626,18 @@ void PresentationServiceDelegateImpl::JoinSession(
     const std::string& presentation_id,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb) {
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(base::Bind(
+      &PresentationServiceDelegateImpl::OnJoinRouteResponse,
+      weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
+      content::PresentationSessionInfo(presentation_url, presentation_id),
+      success_cb, error_cb));
   router_->JoinRoute(
       MediaSourceForPresentationUrl(presentation_url).id(), presentation_id,
       GetLastCommittedURLForFrame(
-          RenderFrameHostId(render_process_id, render_frame_id)).GetOrigin(),
-      SessionTabHelper::IdForTab(web_contents_),
-      base::Bind(
-          &PresentationServiceDelegateImpl::OnJoinRouteResponse,
-          weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
-          content::PresentationSessionInfo(presentation_url, presentation_id),
-          success_cb, error_cb));
+          RenderFrameHostId(render_process_id, render_frame_id))
+          .GetOrigin(),
+      SessionTabHelper::IdForTab(web_contents_), route_response_callbacks);
 }
 
 void PresentationServiceDelegateImpl::CloseSession(
@@ -696,8 +699,12 @@ void PresentationServiceDelegateImpl::ListenForSessionStateChange(
       RenderFrameHostId(render_process_id, render_frame_id), state_changed_cb);
 }
 
-void PresentationServiceDelegateImpl::OnRouteCreated(const MediaRoute& route) {
-  const MediaSource& source = route.media_source();
+void PresentationServiceDelegateImpl::OnRouteResponse(
+    const MediaRoute* route,
+    const std::string& error) {
+  if (!route)
+    return;
+  const MediaSource& source = route->media_source();
   DCHECK(!source.Empty());
   if (!default_source_.Equals(source))
     return;
@@ -706,12 +713,12 @@ void PresentationServiceDelegateImpl::OnRouteCreated(const MediaRoute& route) {
     return;
   RenderFrameHostId render_frame_host_id(GetRenderFrameHostId(main_frame));
   std::string presentation_id =
-      GetPresentationIdAndUrl(route.media_route_id()).first;
+      GetPresentationIdAndUrl(route->media_route_id()).first;
   frame_manager_->OnPresentationSessionStarted(
       render_frame_host_id, true,
       content::PresentationSessionInfo(PresentationUrlFromMediaSource(source),
                                        presentation_id),
-      route.media_route_id());
+      route->media_route_id());
 }
 
 void PresentationServiceDelegateImpl::AddDefaultMediaSourceObserver(

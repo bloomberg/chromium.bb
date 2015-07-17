@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "chrome/browser/media/router/create_session_request.h"
+#include "chrome/browser/media/router/create_presentation_session_request.h"
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,10 +19,10 @@ const char kRouteId[] =
 
 }  // namespace
 
-class CreateSessionRequestTest : public ::testing::Test {
+class CreatePresentationSessionRequestTest : public ::testing::Test {
  public:
-  CreateSessionRequestTest() : cb_invoked_(false) {}
-  ~CreateSessionRequestTest() override {}
+  CreatePresentationSessionRequestTest() : cb_invoked_(false) {}
+  ~CreatePresentationSessionRequestTest() override {}
 
   void OnSuccess(const content::PresentationSessionInfo& expected_info,
                  const content::PresentationSessionInfo& actual_info,
@@ -40,7 +40,7 @@ class CreateSessionRequestTest : public ::testing::Test {
   }
 
   void FailOnSuccess(const content::PresentationSessionInfo& info,
-    const MediaRoute::Id& route_id) {
+                     const MediaRoute::Id& route_id) {
     FAIL() << "Success callback should not have been called.";
   }
 
@@ -52,16 +52,19 @@ class CreateSessionRequestTest : public ::testing::Test {
 };
 
 // Test that the object's getters match the constructor parameters.
-TEST_F(CreateSessionRequestTest, Getters) {
+TEST_F(CreatePresentationSessionRequestTest, Getters) {
   GURL frame_url("http://frameUrl");
 
   content::PresentationSessionInfo session_info(kPresentationUrl,
                                                 kPresentationId);
-
-  CreateSessionRequest context(
+  content::PresentationError error(content::PRESENTATION_ERROR_UNKNOWN,
+                                   "Unknown error.");
+  CreatePresentationSessionRequest context(
       kPresentationUrl, kPresentationId, frame_url,
-      CreateSessionRequest::PresentationSessionSuccessCallback(),
-      CreateSessionRequest::PresentationSessionErrorCallback());
+      base::Bind(&CreatePresentationSessionRequestTest::FailOnSuccess,
+                 base::Unretained(this)),
+      base::Bind(&CreatePresentationSessionRequestTest::OnError,
+                 base::Unretained(this), error));
   EXPECT_TRUE(MediaSourceForPresentationUrl(kPresentationUrl)
                   .Equals(context.GetMediaSource()));
   EXPECT_EQ(frame_url, context.frame_url());
@@ -69,17 +72,19 @@ TEST_F(CreateSessionRequestTest, Getters) {
       context.presentation_info());
   EXPECT_EQ(kPresentationUrl, actual_session_info.presentation_url);
   EXPECT_EQ(kPresentationId, actual_session_info.presentation_id);
+  // Since we didn't explicitly call MaybeInvoke*, the error callback will be
+  // invoked when |context| is destroyed.
 }
 
-TEST_F(CreateSessionRequestTest, SuccessCallback) {
+TEST_F(CreatePresentationSessionRequestTest, SuccessCallback) {
   GURL frame_url("http://frameUrl");
   content::PresentationSessionInfo session_info(kPresentationUrl,
                                                 kPresentationId);
-  CreateSessionRequest context(
+  CreatePresentationSessionRequest context(
       kPresentationUrl, kPresentationId, frame_url,
-      base::Bind(&CreateSessionRequestTest::OnSuccess, base::Unretained(this),
-                 session_info),
-      base::Bind(&CreateSessionRequestTest::FailOnError,
+      base::Bind(&CreatePresentationSessionRequestTest::OnSuccess,
+                 base::Unretained(this), session_info),
+      base::Bind(&CreatePresentationSessionRequestTest::FailOnError,
                  base::Unretained(this)));
   context.MaybeInvokeSuccessCallback(kRouteId);
   // No-op since success callback is already invoked.
@@ -88,19 +93,19 @@ TEST_F(CreateSessionRequestTest, SuccessCallback) {
   EXPECT_TRUE(cb_invoked_);
 }
 
-TEST_F(CreateSessionRequestTest, ErrorCallback) {
+TEST_F(CreatePresentationSessionRequestTest, ErrorCallback) {
   GURL frame_url("http://frameUrl");
   content::PresentationSessionInfo session_info(kPresentationUrl,
                                                 kPresentationId);
   content::PresentationError error(
       content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
       "This is an error message");
-  CreateSessionRequest context(
+  CreatePresentationSessionRequest context(
       kPresentationUrl, kPresentationId, frame_url,
-      base::Bind(&CreateSessionRequestTest::FailOnSuccess,
+      base::Bind(&CreatePresentationSessionRequestTest::FailOnSuccess,
                  base::Unretained(this)),
-      base::Bind(&CreateSessionRequestTest::OnError, base::Unretained(this),
-                 error));
+      base::Bind(&CreatePresentationSessionRequestTest::OnError,
+                 base::Unretained(this), error));
   context.MaybeInvokeErrorCallback(error);
   // No-op since error callback is already invoked.
   context.MaybeInvokeSuccessCallback(kRouteId);

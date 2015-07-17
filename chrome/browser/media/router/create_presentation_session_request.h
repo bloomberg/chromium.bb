@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_CREATE_SESSION_REQUEST_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_CREATE_SESSION_REQUEST_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_CREATE_PRESENTATION_SESSION_REQUEST_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_CREATE_PRESENTATION_SESSION_REQUEST_H_
 
 #include <string>
 
@@ -25,7 +25,7 @@ namespace media_router {
 // MediaRouterUI. |success_cb| will be invoked when create-session
 // succeeds, or |error_cb| will be invoked when create-session fails or
 // the UI closes.
-class CreateSessionRequest {
+class CreatePresentationSessionRequest {
  public:
   using PresentationSessionSuccessCallback =
       base::Callback<void(const content::PresentationSessionInfo&,
@@ -34,12 +34,13 @@ class CreateSessionRequest {
       content::PresentationServiceDelegate::PresentationSessionErrorCallback;
 
   // |presentation_url| must be valid.
-  CreateSessionRequest(const std::string& presentation_url,
-                       const std::string& presentation_id,
-                       const GURL& frame_url,
-                       const PresentationSessionSuccessCallback& success_cb,
-                       const PresentationSessionErrorCallback& error_cb);
-  ~CreateSessionRequest();
+  CreatePresentationSessionRequest(
+      const std::string& presentation_url,
+      const std::string& presentation_id,
+      const GURL& frame_url,
+      const PresentationSessionSuccessCallback& success_cb,
+      const PresentationSessionErrorCallback& error_cb);
+  ~CreatePresentationSessionRequest();
 
   // Gets the MediaSource derived from this instance's presentation URL.
   const MediaSource& GetMediaSource() const { return media_source_; }
@@ -63,9 +64,9 @@ class CreateSessionRequest {
   PresentationSessionErrorCallback error_cb_;
   bool cb_invoked_;
 
-  DISALLOW_COPY_AND_ASSIGN(CreateSessionRequest);
+  DISALLOW_COPY_AND_ASSIGN(CreatePresentationSessionRequest);
 };
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_CREATE_SESSION_REQUEST_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_CREATE_PRESENTATION_SESSION_REQUEST_H_
