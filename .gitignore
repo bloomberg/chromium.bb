@@ -139,6 +139,7 @@ v8.log
 /chrome/unit_tests_run.xml
 /chrome/web_ui_mojo_bindings.xml
 /chrome_elf/chrome_elf_resources.xml
+/chromecast/internal
 /clank
 /cloud_print/cloud_print_version_resources.xml
 /components/chrome_settings_proto_generated_compile.xml
@@ -258,6 +259,7 @@ v8.log
 /tools/luci-go/linux64/isolate
 /tools/luci-go/mac64/isolate
 /tools/luci-go/win64/isolate.exe
+/third_party/__START__
 /third_party/accessibility-developer-tools/
 /third_party/adobe/flash/binaries
 /third_party/adobe/flash/symbols
