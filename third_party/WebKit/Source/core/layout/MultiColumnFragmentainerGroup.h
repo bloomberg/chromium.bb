@@ -99,6 +99,9 @@ private:
     // not inside any of the columns.
     unsigned columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const;
 
+    // Get the first and the last column intersecting the specified visual rectangle.
+    void columnIntervalForVisualRect(const LayoutRect&, unsigned& firstColumn, unsigned& lastColumn) const;
+
     LayoutMultiColumnSet& m_columnSet;
 
     LayoutUnit m_logicalTop;

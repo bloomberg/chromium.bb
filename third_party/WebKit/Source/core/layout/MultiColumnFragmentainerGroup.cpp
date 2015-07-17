@@ -214,10 +214,21 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
     LayoutUnit layerLogicalTop = isHorizontalWritingMode ? layerBoundsInFlowThread.y() : layerBoundsInFlowThread.x();
     LayoutUnit layerLogicalBottom = (isHorizontalWritingMode ? layerBoundsInFlowThread.maxY() : layerBoundsInFlowThread.maxX()) - 1;
 
-    // Figure out the start and end columns and only check within that range so that we don't walk the
-    // entire column row.
+    // Figure out the start and end columns for the layer and only check within that range so that
+    // we don't walk the entire column row.
     unsigned startColumn = columnIndexAtOffset(layerLogicalTop);
     unsigned endColumn = columnIndexAtOffset(layerLogicalBottom);
+
+    // Now intersect with the columns actually occupied by the dirty rect, to narrow it down even further.
+    unsigned firstColumnInDirtyRect, lastColumnInDirtyRect;
+    columnIntervalForVisualRect(dirtyRect, firstColumnInDirtyRect, lastColumnInDirtyRect);
+    if (firstColumnInDirtyRect > endColumn || lastColumnInDirtyRect < startColumn)
+        return; // The two column intervals are disjoint. There's nothing to collect.
+    if (startColumn < firstColumnInDirtyRect)
+        startColumn = firstColumnInDirtyRect;
+    if (endColumn > lastColumnInDirtyRect)
+        endColumn = lastColumnInDirtyRect;
+    ASSERT(endColumn >= startColumn);
 
     LayoutUnit colLogicalWidth = m_columnSet.pageLogicalWidth();
     LayoutUnit colGap = m_columnSet.columnGap();
@@ -235,14 +246,6 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
         // Now get the overflow rect that corresponds to the column.
         LayoutRect flowThreadOverflowPortion = flowThreadPortionOverflowRect(flowThreadPortion, i, colCount, colGap);
 
-        // In order to create a fragment we must intersect the portion painted by this column.
-        LayoutRect clippedRect(layerBoundsInFlowThread);
-        clippedRect.intersect(flowThreadOverflowPortion);
-        if (clippedRect.isEmpty())
-            continue;
-
-        // We also need to intersect the dirty rect. We have to apply a translation and shift based off
-        // our column index.
         LayoutPoint translationOffset;
         LayoutUnit inlineOffset = progressionIsInline ? i * (colLogicalWidth + colGap) : LayoutUnit();
         if (!leftToRight)
@@ -264,18 +267,8 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
         if (!isHorizontalWritingMode)
             translationOffset = translationOffset.transposedPoint();
 
-        // Shift the dirty rect to be in flow thread coordinates with this translation applied.
-        LayoutRect translatedDirtyRect(dirtyRect);
-        translatedDirtyRect.moveBy(-translationOffset);
-
-        // See if we intersect the dirty rect.
-        clippedRect = layerBoundingBox;
-        clippedRect.intersect(translatedDirtyRect);
-        if (clippedRect.isEmpty())
-            continue;
-
-        // Something does need to paint in this column. Make a fragment now and supply the physical translation
-        // offset and the clip rect for the column with that offset applied.
+        // Make a fragment now and supply the physical translation offset and the clip rect for the
+        // column with that offset applied.
         DeprecatedPaintLayerFragment fragment;
         fragment.paginationOffset = translationOffset;
 
@@ -556,6 +549,30 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoi
     if (index < 0)
         return 0;
     return std::min(unsigned(index), actualColumnCount() - 1);
+}
+
+void MultiColumnFragmentainerGroup::columnIntervalForVisualRect(const LayoutRect& rect, unsigned& firstColumn, unsigned& lastColumn) const
+{
+    bool isColumnProgressionInline = m_columnSet.multiColumnFlowThread()->progressionIsInline();
+    bool isFlippedColumnProgression = !m_columnSet.style()->isLeftToRightDirection() && isColumnProgressionInline;
+    if (m_columnSet.isHorizontalWritingMode() == isColumnProgressionInline) {
+        if (isFlippedColumnProgression) {
+            firstColumn = columnIndexAtVisualPoint(rect.maxXMinYCorner());
+            lastColumn = columnIndexAtVisualPoint(rect.minXMinYCorner());
+        } else {
+            firstColumn = columnIndexAtVisualPoint(rect.minXMinYCorner());
+            lastColumn = columnIndexAtVisualPoint(rect.maxXMinYCorner());
+        }
+    } else {
+        if (isFlippedColumnProgression) {
+            firstColumn = columnIndexAtVisualPoint(rect.minXMaxYCorner());
+            lastColumn = columnIndexAtVisualPoint(rect.minXMinYCorner());
+        } else {
+            firstColumn = columnIndexAtVisualPoint(rect.minXMinYCorner());
+            lastColumn = columnIndexAtVisualPoint(rect.minXMaxYCorner());
+        }
+    }
+    ASSERT(firstColumn <= lastColumn);
 }
 
 MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(LayoutMultiColumnSet& columnSet)
