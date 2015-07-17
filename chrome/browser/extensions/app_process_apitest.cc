@@ -766,7 +766,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
       browser()->tab_strip_model()->GetWebContentsAt(0)->GetRenderProcessHost();
   EXPECT_TRUE(process_map->Contains(process->GetID()));
 
-  // Popup window should be in the app's process.
+  // Popup window should be in the app's process if site isolation is off;
+  // otherwise they should be in different processes.
   const BrowserList* active_browser_list =
       BrowserList::GetInstance(chrome::GetActiveDesktop());
   EXPECT_EQ(2U, active_browser_list->size());
@@ -774,8 +775,14 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
       active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
   content::WaitForLoadStop(popup_contents);
 
-  RenderViewHost* popup_host = popup_contents->GetRenderViewHost();
-  EXPECT_EQ(process, popup_host->GetProcess());
+  bool should_be_in_same_process =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess);
+  content::RenderProcessHost* popup_process =
+      popup_contents->GetRenderProcessHost();
+  EXPECT_EQ(should_be_in_same_process, process == popup_process);
+  EXPECT_EQ(should_be_in_same_process,
+            process_map->Contains(popup_process->GetID()));
 }
 
 // http://crbug.com/118502
