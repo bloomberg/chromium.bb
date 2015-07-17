@@ -49,6 +49,8 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
+#include <set>
+
 namespace blink {
 class WebLayer;
 }
@@ -102,6 +104,21 @@ class WebGLVertexArrayObjectBase;
 
 class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
+
+struct FormatType {
+    GLenum internalformat;
+    GLenum format;
+    GLenum type;
+};
+
+struct FormatTypeCompare {
+    bool operator() (const FormatType& lhs, const FormatType& rhs) const
+    {
+        return (lhs.internalformat < rhs.internalformat
+            || ((lhs.internalformat == rhs.internalformat) && (lhs.format < rhs.format))
+            || ((lhs.internalformat == rhs.internalformat) && (lhs.format == rhs.format) && (lhs.type < rhs.type)));
+    }
+};
 
 class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext, public Page::MultisamplingChangedObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebGLRenderingContextBase);
@@ -716,6 +733,17 @@ protected:
     // Errors raised by synthesizeGLError() while the context is lost.
     Vector<GLenum> m_lostContextErrors;
 
+    bool m_isWebGL2FormatsTypesAdded;
+    bool m_isOESTextureFloatFormatsTypesAdded;
+    bool m_isOESTextureHalfFloatFormatsTypesAdded;
+    bool m_isWebGLDepthTextureFormatsTypesAdded;
+    bool m_isEXTsRGBFormatsTypesAdded;
+
+    std::set<GLenum> m_supportedInternalFormats;
+    std::set<GLenum> m_supportedFormats;
+    std::set<GLenum> m_supportedTypes;
+    std::set<FormatType, FormatTypeCompare> m_supportedFormatTypeCombinations;
+
     // Helpers for getParameter and others
     ScriptValue getBooleanParameter(ScriptState*, GLenum);
     ScriptValue getBooleanArrayParameter(ScriptState*, GLenum);
@@ -785,9 +813,9 @@ protected:
     // null.  Otherwise, return the texture bound to the target.
     virtual WebGLTexture* validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap);
 
-    // Helper function to check input format/type for functions {copy}Tex{Sub}Image.
+    // Helper function to check input internalformat/format/type for functions {copy}Tex{Sub}Image.
     // Generates GL error and returns false if parameters are invalid.
-    bool validateTexFuncFormatAndType(const char* functionName, GLenum format, GLenum type, GLint level);
+    bool validateTexFuncFormatAndType(const char* functionName, GLenum internalformat, GLenum format, GLenum type, GLint level);
 
     virtual GLint getMaxTextureLevelForTarget(GLenum target);
 
@@ -806,8 +834,6 @@ protected:
         SourceHTMLCanvasElement,
         SourceHTMLVideoElement,
     };
-
-    bool validateInternalFormat(GLenum internalformat, GLenum format);
 
     // Helper function for tex{Sub}Image2D to check if the input format/type/level/target/width/height/border/xoffset/yoffset are valid.
     // Otherwise, it would return quickly without doing other work.
@@ -830,7 +856,7 @@ protected:
     // Helper function to validate that the given ArrayBufferView
     // is of the correct type and contains enough data for the texImage call.
     // Generates GL error and returns false if parameters are invalid.
-    bool validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition);
+    bool validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum internalformat, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition);
 
     // Helper function to validate a given texture format is settable as in
     // you can supply data to texImage2D, or call texImage2D, copyTexImage2D and

@@ -623,6 +623,281 @@ void WebGLRenderingContextBase::forceNextWebGLContextCreationToFail()
     shouldFailContextCreationForTesting = true;
 }
 
+namespace {
+
+// ES2 enums
+static const GLenum kSupportedInternalFormatsES2[] = {
+    GL_RGB,
+    GL_RGBA,
+    GL_LUMINANCE_ALPHA,
+    GL_LUMINANCE,
+    GL_ALPHA,
+};
+
+// Exposed by GL_ANGLE_depth_texture
+static const GLenum kSupportedInternalFormatsOESDepthTex[] = {
+    GL_DEPTH_COMPONENT,
+    GL_DEPTH_STENCIL,
+};
+
+// Exposed by GL_EXT_sRGB
+static const GLenum kSupportedInternalFormatsEXTsRGB[] = {
+    GL_SRGB,
+    GL_SRGB_ALPHA_EXT,
+};
+
+// ES3 enums
+static const GLenum kSupportedInternalFormatsES3[] = {
+    GL_R8,
+    GL_R8_SNORM,
+    GL_R16F,
+    GL_R32F,
+    GL_R8UI,
+    GL_R8I,
+    GL_R16UI,
+    GL_R16I,
+    GL_R32UI,
+    GL_R32I,
+    GL_RG8,
+    GL_RG8_SNORM,
+    GL_RG16F,
+    GL_RG32F,
+    GL_RG8UI,
+    GL_RG8I,
+    GL_RG16UI,
+    GL_RG16I,
+    GL_RG32UI,
+    GL_RG32I,
+    GL_RGB8,
+    GL_SRGB8,
+    GL_RGB565,
+    GL_RGB8_SNORM,
+    GL_R11F_G11F_B10F,
+    GL_RGB9_E5,
+    GL_RGB16F,
+    GL_RGB32F,
+    GL_RGB8UI,
+    GL_RGB8I,
+    GL_RGB16UI,
+    GL_RGB16I,
+    GL_RGB32UI,
+    GL_RGB32I,
+    GL_RGBA8,
+    GL_SRGB8_ALPHA8,
+    GL_RGBA8_SNORM,
+    GL_RGB5_A1,
+    GL_RGBA4,
+    GL_RGB10_A2,
+    GL_RGBA16F,
+    GL_RGBA32F,
+    GL_RGBA8UI,
+    GL_RGBA8I,
+    GL_RGB10_A2UI,
+    GL_RGBA16UI,
+    GL_RGBA16I,
+    GL_RGBA32I,
+    GL_RGBA32UI,
+    GL_DEPTH_COMPONENT16,
+    GL_DEPTH_COMPONENT24,
+    GL_DEPTH_COMPONENT32F,
+    GL_DEPTH24_STENCIL8,
+};
+
+// ES2 enums
+static const GLenum kSupportedFormatsES2[] = {
+    GL_RGB,
+    GL_RGBA,
+    GL_LUMINANCE_ALPHA,
+    GL_LUMINANCE,
+    GL_ALPHA,
+};
+
+// Exposed by GL_ANGLE_depth_texture
+static const GLenum kSupportedFormatsOESDepthTex[] = {
+    GL_DEPTH_COMPONENT,
+    GL_DEPTH_STENCIL,
+};
+
+// Exposed by GL_EXT_sRGB
+static const GLenum kSupportedFormatsEXTsRGB[] = {
+    GL_SRGB,
+    GL_SRGB_ALPHA_EXT,
+};
+
+// ES3 enums
+static const GLenum kSupportedFormatsES3[] = {
+    GL_RED,
+    GL_RED_INTEGER,
+    GL_RG,
+    GL_RG_INTEGER,
+    GL_RGB,
+    GL_RGB_INTEGER,
+    GL_RGBA,
+    GL_RGBA_INTEGER,
+    GL_DEPTH_COMPONENT,
+    GL_DEPTH_STENCIL,
+};
+
+// ES2 enums
+static const GLenum kSupportedTypesES2[] = {
+    GL_UNSIGNED_BYTE,
+    GL_UNSIGNED_SHORT_5_6_5,
+    GL_UNSIGNED_SHORT_4_4_4_4,
+    GL_UNSIGNED_SHORT_5_5_5_1,
+};
+
+// Exposed by GL_OES_texture_float
+static const GLenum kSupportedTypesOESTexFloat[] = {
+    GL_FLOAT,
+};
+
+// Exposed by GL_OES_texture_half_float
+static const GLenum kSupportedTypesOESTexHalfFloat[] = {
+    GL_HALF_FLOAT_OES,
+};
+
+// Exposed by GL_ANGLE_depth_texture
+static const GLenum kSupportedTypesOESDepthTex[] = {
+    GL_UNSIGNED_SHORT,
+    GL_UNSIGNED_INT,
+    GL_UNSIGNED_INT_24_8,
+};
+
+// ES3 enums
+static const GLenum kSupportedTypesES3[] = {
+    GL_BYTE,
+    GL_UNSIGNED_SHORT,
+    GL_SHORT,
+    GL_UNSIGNED_INT,
+    GL_INT,
+    GL_HALF_FLOAT,
+    GL_FLOAT,
+    GL_UNSIGNED_INT_2_10_10_10_REV,
+    GL_UNSIGNED_INT_10F_11F_11F_REV,
+    GL_UNSIGNED_INT_5_9_9_9_REV,
+    GL_UNSIGNED_INT_24_8,
+};
+
+// ES2 enums
+static const FormatType kSupportedFormatTypesES2[] = {
+    { GL_RGB, GL_RGB, GL_UNSIGNED_BYTE },
+    { GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5 },
+    { GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE },
+    { GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4 },
+    { GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1 },
+    { GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE },
+    { GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE },
+    { GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE },
+};
+
+// Exposed by GL_OES_texture_float
+static const FormatType kSupportedFormatTypesOESTexFloat[] = {
+    { GL_RGB, GL_RGB, GL_FLOAT },
+    { GL_RGBA, GL_RGBA, GL_FLOAT },
+    { GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_FLOAT },
+    { GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT },
+    { GL_ALPHA, GL_ALPHA, GL_FLOAT },
+};
+
+// Exposed by GL_OES_texture_half_float
+static const FormatType kSupportedFormatTypesOESTexHalfFloat[] = {
+    { GL_RGB, GL_RGB, GL_HALF_FLOAT_OES },
+    { GL_RGBA, GL_RGBA, GL_HALF_FLOAT_OES },
+    { GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES },
+    { GL_LUMINANCE, GL_LUMINANCE, GL_HALF_FLOAT_OES },
+    { GL_ALPHA, GL_ALPHA, GL_HALF_FLOAT_OES },
+};
+
+// Exposed by GL_ANGLE_depth_texture
+static const FormatType kSupportedFormatTypesOESDepthTex[] = {
+    { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT },
+    { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
+    { GL_DEPTH_STENCIL, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8 },
+};
+
+// Exposed by GL_EXT_sRGB
+static const FormatType kSupportedFormatTypesEXTsRGB[] = {
+    { GL_SRGB, GL_SRGB, GL_UNSIGNED_BYTE },
+    { GL_SRGB_ALPHA_EXT, GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE },
+};
+
+// ES3 enums
+static const FormatType kSupportedFormatTypesES3[] = {
+    { GL_R8, GL_RED, GL_UNSIGNED_BYTE },
+    { GL_R8_SNORM, GL_RED, GL_BYTE },
+    { GL_R16F, GL_RED, GL_HALF_FLOAT },
+    { GL_R16F, GL_RED, GL_FLOAT },
+    { GL_R32F, GL_RED, GL_FLOAT },
+    { GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE },
+    { GL_R8I, GL_RED_INTEGER, GL_BYTE },
+    { GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT },
+    { GL_R16I, GL_RED_INTEGER, GL_SHORT },
+    { GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT },
+    { GL_R32I, GL_RED_INTEGER, GL_INT },
+    { GL_RG8, GL_RG, GL_UNSIGNED_BYTE },
+    { GL_RG8_SNORM, GL_RG, GL_BYTE },
+    { GL_RG16F, GL_RG, GL_HALF_FLOAT },
+    { GL_RG16F, GL_RG, GL_FLOAT },
+    { GL_RG32F, GL_RG, GL_FLOAT },
+    { GL_RG8UI, GL_RG_INTEGER, GL_UNSIGNED_BYTE },
+    { GL_RG8I, GL_RG_INTEGER, GL_BYTE },
+    { GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT },
+    { GL_RG16I, GL_RG_INTEGER, GL_SHORT },
+    { GL_RG32UI, GL_RG_INTEGER, GL_UNSIGNED_INT },
+    { GL_RG32I, GL_RG_INTEGER, GL_INT },
+    { GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
+    { GL_SRGB8, GL_RGB, GL_UNSIGNED_BYTE },
+    { GL_RGB565, GL_RGB, GL_UNSIGNED_BYTE, },
+    { GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5 },
+    { GL_RGB8_SNORM, GL_RGB, GL_BYTE },
+    { GL_R11F_G11F_B10F, GL_RGB, GL_UNSIGNED_INT_10F_11F_11F_REV },
+    { GL_R11F_G11F_B10F, GL_RGB, GL_HALF_FLOAT },
+    { GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT },
+    { GL_RGB9_E5, GL_RGB, GL_UNSIGNED_INT_5_9_9_9_REV },
+    { GL_RGB9_E5, GL_RGB, GL_HALF_FLOAT },
+    { GL_RGB9_E5, GL_RGB, GL_FLOAT },
+    { GL_RGB16F, GL_RGB, GL_HALF_FLOAT },
+    { GL_RGB16F, GL_RGB, GL_FLOAT },
+    { GL_RGB32F, GL_RGB, GL_FLOAT },
+    { GL_RGB8UI, GL_RGB_INTEGER, GL_UNSIGNED_BYTE },
+    { GL_RGB8I, GL_RGB_INTEGER, GL_BYTE },
+    { GL_RGB16UI, GL_RGB_INTEGER, GL_UNSIGNED_SHORT },
+    { GL_RGB16I, GL_RGB_INTEGER, GL_SHORT },
+    { GL_RGB32UI, GL_RGB_INTEGER, GL_UNSIGNED_INT },
+    { GL_RGB32I, GL_RGB_INTEGER, GL_INT },
+    { GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE },
+    { GL_SRGB8_ALPHA8, GL_RGBA, GL_UNSIGNED_BYTE },
+    { GL_RGBA8_SNORM, GL_RGBA, GL_BYTE },
+    { GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_BYTE },
+    { GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1 },
+    { GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV },
+    { GL_RGBA4, GL_RGBA, GL_UNSIGNED_BYTE },
+    { GL_RGBA4, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4 },
+    { GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV },
+    { GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT },
+    { GL_RGBA16F, GL_RGBA, GL_FLOAT },
+    { GL_RGBA32F, GL_RGBA, GL_FLOAT },
+    { GL_RGBA8UI, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE },
+    { GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE },
+    { GL_RGB10_A2UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT_2_10_10_10_REV },
+    { GL_RGBA16UI, GL_RGBA_INTEGER, GL_UNSIGNED_SHORT },
+    { GL_RGBA16I, GL_RGBA_INTEGER, GL_SHORT },
+    { GL_RGBA32I, GL_RGBA_INTEGER, GL_INT },
+    { GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT },
+    { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT },
+    { GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
+    { GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
+    { GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT },
+    { GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8 },
+};
+
+} // namespace anonymous
+
+#define ADD_VALUES_TO_SET(set, values) \
+    for (size_t i = 0; i < arraysize(values); ++i) {   \
+        set.insert(values[i]);                         \
+    }
+
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
     , m_contextLostMode(NotLostContext)
@@ -637,6 +912,11 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_multisamplingAllowed(false)
     , m_multisamplingObserverRegistered(false)
     , m_onePlusMaxNonDefaultTextureUnit(0)
+    , m_isWebGL2FormatsTypesAdded(false)
+    , m_isOESTextureFloatFormatsTypesAdded(false)
+    , m_isOESTextureHalfFloatFormatsTypesAdded(false)
+    , m_isWebGLDepthTextureFormatsTypesAdded(false)
+    , m_isEXTsRGBFormatsTypesAdded(false)
 {
     ASSERT(context);
 
@@ -656,6 +936,11 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
 
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     setupFlags();
+
+    ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES2);
+    ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES2);
+    ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES2);
+    ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesES2);
 }
 
 PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context)
@@ -755,6 +1040,21 @@ void WebGLRenderingContextBase::initializeNewContext()
 
     for (int i = 0; i < WebGLExtensionNameCount; ++i)
         m_extensionEnabled[i] = false;
+
+    m_isWebGL2FormatsTypesAdded = false;
+    m_isOESTextureFloatFormatsTypesAdded = false;
+    m_isOESTextureHalfFloatFormatsTypesAdded = false;
+    m_isWebGLDepthTextureFormatsTypesAdded = false;
+    m_isEXTsRGBFormatsTypesAdded = false;
+
+    m_supportedInternalFormats.clear();
+    ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES2);
+    m_supportedFormats.clear();
+    ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES2);
+    m_supportedTypes.clear();
+    ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES2);
+    m_supportedFormatTypeCombinations.clear();
+    ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesES2);
 
     activateContext(this);
 }
@@ -3718,15 +4018,6 @@ void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenu
         webContext()->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
 
-bool WebGLRenderingContextBase::validateInternalFormat(GLenum internalformat, GLenum format)
-{
-    if (internalformat == format)
-        return true;
-    if (isWebGL2OrHigher() && WebGLTexture::getValidFormatForInternalFormat(internalformat) == format)
-        return true;
-    return false;
-}
-
 bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexImageFunctionType functionType, TexFuncValidationSourceType sourceType, GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint xoffset, GLint yoffset)
 {
     WebGLTexture* texture = validateTextureBinding(functionName, target, true);
@@ -3768,8 +4059,9 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
             synthesizeGLError(GL_INVALID_VALUE, functionName, "dimensions out of range");
             return false;
         }
-        if (!validateInternalFormat(internalformat, format) || texture->getType(target, level) != type) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type and format do not match texture");
+        // FIXME: Remove this restriction if it won't be needed for WebGL2.
+        if (texture->getType(target, level) != type) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type of incoming data does not match that used to define the texture");
             return false;
         }
     }
@@ -3812,7 +4104,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     GLsizei width, GLsizei height, GLint border,
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !validateTexFuncData("texImage2D", level, width, height, format, type, pixels, NullAllowed)
+    if (isContextLost() || !validateTexFuncData("texImage2D", level, width, height, internalformat, format, type, pixels, NullAllowed)
         || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceArrayBufferView, target, level, internalformat, width, height, border, format, type, 0, 0))
         return;
     void* data = pixels ? pixels->baseAddress() : 0;
@@ -4095,7 +4387,6 @@ void WebGLRenderingContextBase::texSubImage2DBase(GLenum target, GLint level, GL
     ASSERT((yoffset + height) >= 0);
     ASSERT(tex->getWidth(target, level) >= (xoffset + width));
     ASSERT(tex->getHeight(target, level) >= (yoffset + height));
-    ASSERT(validateInternalFormat(tex->getInternalFormat(target, level), format));
     ASSERT(tex->getType(target, level) == type);
     webContext()->texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
@@ -4134,7 +4425,12 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     GLsizei width, GLsizei height,
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !validateTexFuncData("texSubImage2D", level, width, height, format, type, pixels, NullNotAllowed)
+    WebGLTexture* texture = validateTextureBinding("texSubImage2D", target, true);
+    if (!texture)
+        return;
+
+    GLenum internalformat = texture->getInternalFormat(target, level);
+    if (isContextLost() || !validateTexFuncData("texSubImage2D", level, width, height, internalformat, format, type, pixels, NullNotAllowed)
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceArrayBufferView, target, level, 0, width, height, 0, format, type, xoffset, yoffset))
         return;
     void* data = pixels->baseAddress();
@@ -5039,121 +5335,70 @@ bool WebGLRenderingContextBase::validateString(const char* functionName, const S
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functionName, GLenum format, GLenum type, GLint level)
+bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functionName, GLenum internalformat, GLenum format, GLenum type, GLint level)
 {
-    switch (format) {
-    case GL_ALPHA:
-    case GL_LUMINANCE:
-    case GL_LUMINANCE_ALPHA:
-    case GL_RGB:
-    case GL_RGBA:
-        break;
-    case GL_DEPTH_STENCIL_OES:
-    case GL_DEPTH_COMPONENT:
-        if (extensionEnabled(WebGLDepthTextureName) || isWebGL2OrHigher())
-            break;
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "depth texture formats not enabled");
+    if (!m_isWebGL2FormatsTypesAdded && isWebGL2OrHigher()) {
+        ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES3);
+        ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES3);
+        ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES3);
+        ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesES3);
+        m_isWebGL2FormatsTypesAdded = true;
+    }
+
+    if (!isWebGL2OrHigher()) {
+        if (!m_isOESTextureFloatFormatsTypesAdded && extensionEnabled(OESTextureFloatName)) {
+            ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESTexFloat);
+            ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesOESTexFloat);
+            m_isOESTextureFloatFormatsTypesAdded = true;
+        }
+
+        if (!m_isOESTextureHalfFloatFormatsTypesAdded && extensionEnabled(OESTextureHalfFloatName)) {
+            ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESTexHalfFloat);
+            ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesOESTexHalfFloat);
+            m_isOESTextureHalfFloatFormatsTypesAdded = true;
+        }
+
+        if (!m_isWebGLDepthTextureFormatsTypesAdded && extensionEnabled(WebGLDepthTextureName)) {
+            ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsOESDepthTex);
+            ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsOESDepthTex);
+            ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESDepthTex);
+            ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesOESDepthTex);
+            m_isWebGLDepthTextureFormatsTypesAdded = true;
+        }
+
+        if (!m_isEXTsRGBFormatsTypesAdded && extensionEnabled(EXTsRGBName)) {
+            ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsEXTsRGB);
+            ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsEXTsRGB);
+            ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesEXTsRGB);
+            m_isEXTsRGBFormatsTypesAdded = true;
+        }
+    }
+
+    if (m_supportedInternalFormats.find(internalformat) == m_supportedInternalFormats.end()) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
         return false;
-    case GL_SRGB_EXT:
-    case GL_SRGB_ALPHA_EXT:
-        if (extensionEnabled(EXTsRGBName) || isWebGL2OrHigher())
-            break;
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "sRGB texture formats not enabled");
+    }
+    if (m_supportedFormats.find(format) == m_supportedFormats.end()) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid format");
         return false;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture format");
+    }
+    if (m_supportedTypes.find(type) == m_supportedTypes.end()) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid type");
+        return false;
+    }
+    FormatType combinationQuery = { internalformat, format, type };
+    if (m_supportedFormatTypeCombinations.find(combinationQuery) == m_supportedFormatTypeCombinations.end()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid internalformat/format/type combination");
         return false;
     }
 
-    switch (type) {
-    case GL_UNSIGNED_BYTE:
-    case GL_UNSIGNED_SHORT_5_6_5:
-    case GL_UNSIGNED_SHORT_4_4_4_4:
-    case GL_UNSIGNED_SHORT_5_5_5_1:
-        break;
-    case GL_FLOAT:
-        if (extensionEnabled(OESTextureFloatName) || isWebGL2OrHigher())
-            break;
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture type");
-        return false;
-    case GL_HALF_FLOAT_OES:
-        if (extensionEnabled(OESTextureHalfFloatName) || isWebGL2OrHigher())
-            break;
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture type");
-        return false;
-    case GL_UNSIGNED_INT:
-    case GL_UNSIGNED_INT_24_8_OES:
-    case GL_UNSIGNED_SHORT:
-        if (extensionEnabled(WebGLDepthTextureName) || isWebGL2OrHigher())
-            break;
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture type");
-        return false;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture type");
+    if (format == GL_DEPTH_COMPONENT && level > 0 && !isWebGL2OrHigher()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "level must be 0 for DEPTH_COMPONENT format");
         return false;
     }
-
-    // Verify that the combination of format and type is supported.
-    switch (format) {
-    case GL_ALPHA:
-    case GL_LUMINANCE:
-    case GL_LUMINANCE_ALPHA:
-        if (type != GL_UNSIGNED_BYTE
-            && type != GL_FLOAT
-            && type != GL_HALF_FLOAT_OES) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for format");
-            return false;
-        }
-        break;
-    case GL_RGB:
-        if (type != GL_UNSIGNED_BYTE
-            && type != GL_UNSIGNED_SHORT_5_6_5
-            && type != GL_FLOAT
-            && type != GL_HALF_FLOAT_OES) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for RGB format");
-            return false;
-        }
-        break;
-    case GL_RGBA:
-        if (type != GL_UNSIGNED_BYTE
-            && type != GL_UNSIGNED_SHORT_4_4_4_4
-            && type != GL_UNSIGNED_SHORT_5_5_5_1
-            && type != GL_FLOAT
-            && type != GL_HALF_FLOAT_OES) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for RGBA format");
-            return false;
-        }
-        break;
-    case GL_DEPTH_COMPONENT:
-        if (type != GL_UNSIGNED_SHORT
-            && type != GL_UNSIGNED_INT) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for DEPTH_COMPONENT format");
-            return false;
-        }
-        if (level > 0) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "level must be 0 for DEPTH_COMPONENT format");
-            return false;
-        }
-        break;
-    case GL_DEPTH_STENCIL_OES:
-        if (type != GL_UNSIGNED_INT_24_8_OES) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for DEPTH_STENCIL format");
-            return false;
-        }
-        if (level > 0) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "level must be 0 for DEPTH_STENCIL format");
-            return false;
-        }
-        break;
-    case GL_SRGB_EXT:
-    case GL_SRGB_ALPHA_EXT:
-        if (type != GL_UNSIGNED_BYTE) {
-            synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid type for SRGB format");
-            return false;
-        }
-        break;
-    default:
-        ASSERT_NOT_REACHED();
+    if (format == GL_DEPTH_STENCIL_OES && level > 0 && !isWebGL2OrHigher()) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "level must be 0 for DEPTH_STENCIL format");
+        return false;
     }
 
     return true;
@@ -5234,19 +5479,17 @@ bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionNa
 bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionName, TexImageFunctionType functionType, GLenum target,
     GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type)
 {
+    if (!validateTexFuncLevel(functionName, target, level))
+        return false;
+
     // We absolutely have to validate the format and type combination.
     // The texImage2D entry points taking HTMLImage, etc. will produce
     // temporary data based on this combination, so it must be legal.
-    if (!validateTexFuncFormatAndType(functionName, format, type, level) || !validateTexFuncLevel(functionName, target, level))
+    if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
         return false;
 
     if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height))
         return false;
-
-    if (!validateInternalFormat(internalformat, format)) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "incompatible format and internalformat");
-        return false;
-    }
 
     if (border) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "border != 0");
@@ -5256,7 +5499,7 @@ bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionNa
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition)
+bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum internalformat, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     if (!pixels) {
@@ -5266,12 +5509,13 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
         return false;
     }
 
-    if (!validateTexFuncFormatAndType(functionName, format, type, level))
+    if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
         return false;
     if (!validateSettableTexFormat(functionName, format))
         return false;
 
     switch (type) {
+    case GL_BYTE:
     case GL_UNSIGNED_BYTE:
         if (pixels->type() != DOMArrayBufferView::TypeUint8) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
@@ -5286,12 +5530,27 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
             return false;
         }
         break;
+    case GL_INT:
+        if (pixels->type() != DOMArrayBufferView::TypeInt32) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type INT but ArrayBufferView not Int32Array");
+            return false;
+        }
+        break;
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+        if (pixels->type() != DOMArrayBufferView::TypeUint32) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "type UNSIGNED_INT but ArrayBufferView not Uint32Array");
+            return false;
+        }
+        break;
     case GL_FLOAT: // OES_texture_float
         if (pixels->type() != DOMArrayBufferView::TypeFloat32) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type FLOAT but ArrayBufferView not Float32Array");
             return false;
         }
         break;
+    case GL_HALF_FLOAT:
     case GL_HALF_FLOAT_OES: // OES_texture_half_float
         // As per the specification, ArrayBufferView should be null or a Uint16Array when
         // OES_texture_half_float is enabled.
