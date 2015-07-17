@@ -1053,6 +1053,22 @@ config("no_size_t_to_int_warning") {
   }
 }
 
+# Some code presumes that pointers to structures/objects are compatible
+# regardless of whether what they point to is already known to be valid.
+# gcc 4.9 and earlier had no way of suppressing this warning without
+# supressing the rest of them.  Here we centralize the identification of
+# the gcc 4.9 toolchains.
+config("no_incompatible_pointer_warnings") {
+  cflags = []
+  if (is_clang) {
+    cflags += [ "-Wno-incompatible-pointer-types" ]
+  } else if (current_cpu == "mipsel") {
+    cflags += [ "-w" ]
+  } else if (is_chromeos && current_cpu == "arm") {
+    cflags += [ "-w" ]
+  }
+}
+
 # Optimization -----------------------------------------------------------------
 #
 # Note that BUILDCONFIG.gn sets up a variable "default_optimization_config"

@@ -250,6 +250,7 @@ if (current_toolchain == host_toolchain) {
     configs += [
       ":yasm_config",
       "//build/config/compiler:no_chromium_code",
+      "//build/config/compiler:no_incompatible_pointer_warnings",
     ]
 
     # Yasm generates a bunch of .c files which its source file #include.
@@ -263,9 +264,6 @@ if (current_toolchain == host_toolchain) {
         "-ansi",
         "-pedantic",
       ]
-      if (is_clang) {
-        cflags += [ "-Wno-incompatible-pointer-types" ]
-      }
     }
 
     # TODO(ajwong): This should take most of the generated output as

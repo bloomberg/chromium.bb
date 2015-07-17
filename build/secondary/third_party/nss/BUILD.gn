@@ -220,6 +220,9 @@ if (is_linux) {
     configs += [
       "//build/config/compiler:no_chromium_code",
       "//build/config/compiler:no_size_t_to_int_warning",
+
+      # nspr passes "const char*" through "void*".
+      "//build/compiler:no_incompatible_pointer_warnings",
     ]
 
     cflags = []
@@ -325,9 +328,6 @@ if (is_linux) {
         # nspr uses a bunch of deprecated functions (NSLinkModule etc) in
         # prlink.c on mac.
         "-Wno-deprecated-declarations",
-
-        # nspr passes "const char*" through "void*".
-        "-Wno-incompatible-pointer-types",
 
         # nspr passes "int*" through "unsigned int*".
         "-Wno-pointer-sign",
@@ -885,6 +885,9 @@ if (is_linux) {
     configs += [
       "//build/config/compiler:no_chromium_code",
       "//build/config/compiler:no_size_t_to_int_warning",
+
+      # nss passes "const char*" through "void*".
+      "//build/compiler:no_incompatible_pointer_warnings",
     ]
     public_configs = [ ":nss_static_config" ]
 
@@ -1181,9 +1184,6 @@ if (is_linux) {
       cflags += [
         # nss doesn"t explicitly cast between different enum types.
         "-Wno-conversion",
-
-        # nss passes "const char*" through "void*".
-        "-Wno-incompatible-pointer-types",
 
         # nss prefers `a && b || c` over `(a && b) || c`.
         "-Wno-logical-op-parentheses",

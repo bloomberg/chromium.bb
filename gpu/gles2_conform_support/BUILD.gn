@@ -72,6 +72,7 @@ if (internal_gles2_conform_tests) {
       "//gpu/gles2_conform_support/native:windowless",
       "//gpu/command_buffer/client:gles2_c_libnocheck",
     ]
+    configs += [ "//build/compiler:no_incompatible_pointer_warnings" ]
     if (is_linux) {
       if (!is_chromeos) {
         deps += [ "//build/linux/system/gtk" ]
@@ -80,7 +81,6 @@ if (internal_gles2_conform_tests) {
           cflags = [
             "-Wno-array-bounds",
             "-Wno-implicit-function-declaration",
-            "-Wno-incompatible-pointer-types",
             "-Wno-parentheses-equality",
             "-Wno-pointer-sign",
             "-Wno-return-type",

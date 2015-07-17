@@ -86,6 +86,7 @@ static_library("usrsctp") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ "//build/config/compiler:no_incompatible_pointer_warnings" ]
 
   public_configs = [ ":usrsctp_config" ]
 
@@ -119,15 +120,6 @@ static_library("usrsctp") {
     configs -= [ "//build/config/win:winver" ]
   } else {
     defines += [ "NON_WINDOWS_DEFINE" ]
-  }
-
-  if (is_clang) {
-    cflags = [ "-Wno-incompatible-pointer-types" ]
-  } else if (target_cpu == "mipsel") {
-    # mipsel is still using gcc (4.9),
-    # which does not support "-Wno-incompatible-pointer-types"
-    # so let's disable all warnings for this module.
-    cflags = [ "-w" ]
   }
 
   deps = [
