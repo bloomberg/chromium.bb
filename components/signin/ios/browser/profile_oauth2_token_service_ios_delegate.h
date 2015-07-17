@@ -66,6 +66,16 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // this change to be effective.
   void ExcludeAllSecondaryAccounts();
 
+ protected:
+  // Adds |account_id| to |accounts_| if it does not exist or udpates
+  // the auth error state of |account_id| if it exists. Fires
+  // |OnRefreshTokenAvailable| if the account info is updated.
+  virtual void AddOrUpdateAccount(const std::string& account_id);
+
+  // Removes |account_id| from |accounts_|. Fires |OnRefreshTokenRevoked|
+  // if the account info is removed.
+  virtual void RemoveAccount(const std::string& account_id);
+
  private:
   friend class ProfileOAuth2TokenServiceIOSDelegateTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
@@ -96,15 +106,6 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
 
     DISALLOW_COPY_AND_ASSIGN(AccountInfo);
   };
-
-  // Adds |account_id| to |accounts_| if it does not exist or udpates
-  // the auth error state of |account_id| if it exists. Fires
-  // |OnRefreshTokenAvailable| if the account info is updated.
-  void AddOrUpdateAccount(const std::string& account_id);
-
-  // Removes |account_id| from |accounts_|. Fires |OnRefreshTokenRevoked|
-  // if the account info is removed.
-  void RemoveAccount(const std::string& account_id);
 
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.

@@ -150,6 +150,7 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
+            '../google_apis/google_apis.gyp:google_apis_test_support',
             'signin_ios_browser',
           ],
           'include_dirs': [
@@ -157,11 +158,12 @@
           ],
           'sources': [
             # Note: file list duplicated in GN build.
+            'signin/ios/browser/fake_profile_oauth2_token_service_ios_delegate.h',
+            'signin/ios/browser/fake_profile_oauth2_token_service_ios_delegate.mm',
             'signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h',
             'signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.mm',
           ],
         },
-
       ],
     }],
   ],

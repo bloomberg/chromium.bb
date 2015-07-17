@@ -17,10 +17,14 @@ FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {
 }
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
-    : ProfileOAuth2TokenService(new FakeOAuth2TokenServiceDelegate(nullptr)),
+    : FakeProfileOAuth2TokenService(
+          new FakeOAuth2TokenServiceDelegate(nullptr)) {}
+
+FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
+    OAuth2TokenServiceDelegate* delegate)
+    : ProfileOAuth2TokenService(delegate),
       auto_post_fetch_response_on_message_loop_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {
 }

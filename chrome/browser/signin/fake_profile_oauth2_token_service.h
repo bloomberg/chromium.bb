@@ -47,6 +47,7 @@ class FakeProfileOAuth2TokenService
   };
 
   FakeProfileOAuth2TokenService();
+  explicit FakeProfileOAuth2TokenService(OAuth2TokenServiceDelegate* delegate);
   ~FakeProfileOAuth2TokenService() override;
 
   // Gets a list of active requests (can be used by tests to validate that the

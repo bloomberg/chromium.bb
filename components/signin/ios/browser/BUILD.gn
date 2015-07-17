@@ -21,12 +21,15 @@ static_library("browser") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "fake_profile_oauth2_token_service_ios_delegate.h",
+    "fake_profile_oauth2_token_service_ios_delegate.mm",
     "fake_profile_oauth2_token_service_ios_provider.h",
     "fake_profile_oauth2_token_service_ios_provider.mm",
   ]
 
   deps = [
     "//base",
+    "//google_apis:test_support",
     ":browser",
   ]
 }
