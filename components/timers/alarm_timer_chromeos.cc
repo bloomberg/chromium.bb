@@ -351,6 +351,9 @@ void AlarmTimer::Init() {
 }
 
 void AlarmTimer::Stop() {
+  if (!base::Timer::is_running())
+    return;
+
   if (!can_wake_from_suspend_) {
     base::Timer::Stop();
     return;
