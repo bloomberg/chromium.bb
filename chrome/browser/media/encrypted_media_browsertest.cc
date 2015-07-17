@@ -93,6 +93,14 @@ enum EmeVersion {
 // Whether the video should be played once or twice.
 enum class PlayTwice { NO, YES };
 
+// Format of a container when testing different streams.
+enum class EncryptedContainer {
+  CLEAR_WEBM,
+  CLEAR_MP4,
+  ENCRYPTED_WEBM,
+  ENCRYPTED_MP4
+};
+
 // MSE is available on all desktop platforms and on Android 4.1 and later.
 static bool IsMSESupported() {
 #if defined(OS_ANDROID)
@@ -472,6 +480,36 @@ class EncryptedMediaTest
                               kEnded);
   }
 
+  std::string ConvertContainerFormat(EncryptedContainer format) {
+    switch (format) {
+      case EncryptedContainer::CLEAR_MP4:
+        return "CLEAR_MP4";
+      case EncryptedContainer::CLEAR_WEBM:
+        return "CLEAR_WEBM";
+      case EncryptedContainer::ENCRYPTED_MP4:
+        return "ENCRYPTED_MP4";
+      case EncryptedContainer::ENCRYPTED_WEBM:
+        return "ENCRYPTED_WEBM";
+    }
+    NOTREACHED();
+    return "UNKNOWN";
+  }
+
+  void TestDifferentContainers(EncryptedContainer video_format,
+                               EncryptedContainer audio_format) {
+    DCHECK(IsMSESupported());
+    DCHECK_NE(CurrentEmeVersion(), PREFIXED);
+    base::StringPairs query_params;
+    query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
+    query_params.push_back(std::make_pair("runEncrypted", "1"));
+    query_params.push_back(
+        std::make_pair("videoFormat", ConvertContainerFormat(video_format)));
+    query_params.push_back(
+        std::make_pair("audioFormat", ConvertContainerFormat(audio_format)));
+    RunEncryptedMediaTestPage("mse_different_containers.html",
+                              CurrentKeySystem(), query_params, kEnded);
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
@@ -656,6 +694,63 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
     return;
   }
   TestSimplePlayback("bear-640x360-a_frag-cenc.mp4", kMP4AudioOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       Playback_EncryptedVideo_MP4_ClearAudio_WEBM) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  if (CurrentEmeVersion() != UNPREFIXED) {
+    DVLOG(0) << "Skipping test; Only supported by unprefixed EME";
+    return;
+  }
+  if (!IsPlayBackPossible(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Test requires video playback.";
+    return;
+  }
+  TestDifferentContainers(EncryptedContainer::ENCRYPTED_MP4,
+                          EncryptedContainer::CLEAR_WEBM);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       Playback_ClearVideo_WEBM_EncryptedAudio_MP4) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  if (CurrentEmeVersion() != UNPREFIXED) {
+    DVLOG(0) << "Skipping test; Only supported by unprefixed EME";
+    return;
+  }
+  if (!IsPlayBackPossible(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Test requires video playback.";
+    return;
+  }
+  TestDifferentContainers(EncryptedContainer::CLEAR_WEBM,
+                          EncryptedContainer::ENCRYPTED_MP4);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       Playback_EncryptedVideo_WEBM_EncryptedAudio_MP4) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  if (CurrentEmeVersion() != UNPREFIXED) {
+    DVLOG(0) << "Skipping test; Only supported by unprefixed EME";
+    return;
+  }
+  if (!IsPlayBackPossible(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Test requires video playback.";
+    return;
+  }
+  TestDifferentContainers(EncryptedContainer::ENCRYPTED_WEBM,
+                          EncryptedContainer::ENCRYPTED_MP4);
 }
 #endif  // defined(USE_PROPRIETARY_CODECS)
 

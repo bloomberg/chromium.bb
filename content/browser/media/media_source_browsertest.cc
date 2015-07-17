@@ -47,7 +47,6 @@ class MediaSourceTest : public content::MediaBrowserTest {
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));
-    query_params.push_back(std::make_pair("usePrefixedEME", "1"));
     RunMediaTestPage("media_source_player.html", query_params, expectation,
                      false);
   }
@@ -90,10 +89,32 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
     VLOG(0) << "Skipping test - MSE not supported.";
     return;
   }
-  base::StringPairs query_params;
-  query_params.push_back(std::make_pair("usePrefixedEME", "1"));
-  RunMediaTestPage("mse_config_change.html", query_params, kEnded, true);
+  RunMediaTestPage("mse_config_change.html", base::StringPairs(), kEnded, true);
 }
+
+#if defined(USE_PROPRIETARY_CODECS)
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
+  if (!IsMSESupported()) {
+    VLOG(0) << "Skipping test - MSE not supported.";
+    return;
+  }
+  base::StringPairs query_params;
+  query_params.push_back(std::make_pair("videoFormat", "CLEAR_MP4"));
+  query_params.push_back(std::make_pair("audioFormat", "CLEAR_WEBM"));
+  RunMediaTestPage("mse_different_containers.html", query_params, kEnded, true);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
+  if (!IsMSESupported()) {
+    VLOG(0) << "Skipping test - MSE not supported.";
+    return;
+  }
+  base::StringPairs query_params;
+  query_params.push_back(std::make_pair("videoFormat", "CLEAR_WEBM"));
+  query_params.push_back(std::make_pair("audioFormat", "CLEAR_MP4"));
+  RunMediaTestPage("mse_different_containers.html", query_params, kEnded, true);
+}
+#endif
 
 #if defined(USE_PROPRIETARY_CODECS) && defined(ENABLE_MPEG2TS_STREAM_PARSER)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioVideo_Mp2t) {
