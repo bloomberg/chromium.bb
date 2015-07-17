@@ -42,7 +42,7 @@ namespace blink {
 
 template <typename T> class Timer;
 
-class PLATFORM_EXPORT BitmapImage : public Image {
+class PLATFORM_EXPORT BitmapImage final : public Image {
     friend class GeneratedImage;
     friend class CrossfadeGeneratedImage;
     friend class GradientGeneratedImage;
@@ -62,7 +62,6 @@ public:
 
     bool isBitmapImage() const override;
     bool isLazyDecodedBitmap() override;
-    bool isImmutableBitmap() override;
 
     bool currentFrameHasSingleSecurityOrigin() const override;
 
@@ -87,9 +86,10 @@ public:
     ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
     void advanceTime(double deltaTimeInSeconds) override;
 
-    bool bitmapForCurrentFrame(SkBitmap*) override;
+    PassRefPtr<SkImage> imageForCurrentFrame() override;
     PassRefPtr<Image> imageForDefaultFrame() override;
     bool currentFrameKnownToBeOpaque() override;
+    bool currentFrameIsComplete() override;
     ImageOrientation currentFrameOrientation();
 
 private:
@@ -112,7 +112,7 @@ private:
     size_t currentFrame() const { return m_currentFrame; }
     size_t frameCount();
 
-    bool frameAtIndex(size_t, SkBitmap*) WARN_UNUSED_RETURN;
+    PassRefPtr<SkImage> frameAtIndex(size_t);
 
     bool frameIsCompleteAtIndex(size_t);
     float frameDurationAtIndex(size_t);

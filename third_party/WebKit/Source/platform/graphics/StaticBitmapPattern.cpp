@@ -14,7 +14,7 @@ namespace blink {
 
 PassRefPtr<Pattern> StaticBitmapPattern::create(PassRefPtr<Image> tileImage, RepeatMode repeatMode)
 {
-    return adoptRef(new StaticBitmapPattern(tileImage->skImage(), repeatMode));
+    return adoptRef(new StaticBitmapPattern(tileImage->imageForCurrentFrame(), repeatMode));
 }
 
 StaticBitmapPattern::StaticBitmapPattern(PassRefPtr<SkImage> image, RepeatMode repeatMode)

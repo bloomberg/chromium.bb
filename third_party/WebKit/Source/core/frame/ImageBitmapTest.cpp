@@ -187,13 +187,13 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
     // The ImageBitmap should contain the same data as the original cached image but should no longer hold a reference.
     ASSERT_NE(imageBitmap->bitmapImage().get(), originalImageResource->image());
     SkBitmap bitmap1, bitmap2;
-    ASSERT_TRUE(imageBitmap->bitmapImage()->bitmapForCurrentFrame(&bitmap1));
-    ASSERT_TRUE(originalImageResource->image()->bitmapForCurrentFrame(&bitmap2));
+    ASSERT_TRUE(imageBitmap->bitmapImage()->deprecatedBitmapForCurrentFrame(&bitmap1));
+    ASSERT_TRUE(originalImageResource->image()->deprecatedBitmapForCurrentFrame(&bitmap2));
     ASSERT_EQ(bitmap1.pixelRef()->pixels(), bitmap2.pixelRef()->pixels());
 
     ASSERT_NE(imageBitmap->bitmapImage().get(), newImageResource->image());
-    ASSERT_TRUE(imageBitmap->bitmapImage()->bitmapForCurrentFrame(&bitmap1));
-    ASSERT_TRUE(newImageResource->image()->bitmapForCurrentFrame(&bitmap2));
+    ASSERT_TRUE(imageBitmap->bitmapImage()->deprecatedBitmapForCurrentFrame(&bitmap1));
+    ASSERT_TRUE(newImageResource->image()->deprecatedBitmapForCurrentFrame(&bitmap2));
     ASSERT_NE(bitmap1.pixelRef()->pixels(), bitmap2.pixelRef()->pixels());
 }
 

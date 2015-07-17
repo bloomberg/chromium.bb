@@ -16,7 +16,7 @@ BitmapPattern::BitmapPattern(PassRefPtr<Image> image, RepeatMode repeatMode)
 {
     if (image) {
         // If image is animated, what about the pattern?
-        if (image->bitmapForCurrentFrame(&m_tileImage))
+        if (image->deprecatedBitmapForCurrentFrame(&m_tileImage))
             adjustExternalMemoryAllocated(m_tileImage.getSafeSize());
     }
 }

@@ -30,6 +30,7 @@
 
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
 
@@ -104,9 +105,12 @@ size_t ImageSource::frameCount() const
     return m_decoder ? m_decoder->frameCount() : 0;
 }
 
-bool ImageSource::createFrameAtIndex(size_t index, SkBitmap* bitmap)
+PassRefPtr<SkImage> ImageSource::createFrameAtIndex(size_t index)
 {
-    return m_decoder && m_decoder->createFrameAtIndex(index, bitmap);
+    if (!m_decoder)
+        return nullptr;
+
+    return m_decoder->createFrameAtIndex(index);
 }
 
 float ImageSource::frameDurationAtIndex(size_t index) const

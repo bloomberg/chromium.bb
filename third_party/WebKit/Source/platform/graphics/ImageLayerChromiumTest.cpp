@@ -26,6 +26,8 @@
 #include "platform/graphics/Image.h"
 
 #include "platform/graphics/GraphicsLayer.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 
@@ -50,8 +52,13 @@ public:
         : Image(0)
         , m_size(size)
     {
-        m_bitmap.allocN32Pixels(size.width(), size.height(), isOpaque);
-        m_bitmap.eraseColor(SK_ColorTRANSPARENT);
+        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRaster(SkImageInfo::MakeN32(
+            size.width(), size.height(), isOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType)));
+        if (!surface)
+            return;
+
+        surface->getCanvas()->clear(SK_ColorTRANSPARENT);
+        m_image = adoptRef(surface->newImageSnapshot());
     }
 
     bool isBitmapImage() const override
@@ -61,7 +68,7 @@ public:
 
     bool currentFrameKnownToBeOpaque() override
     {
-        return m_bitmap.isOpaque();
+        return m_image->isOpaque();
     }
 
     IntSize size() const override
@@ -69,13 +76,9 @@ public:
         return m_size;
     }
 
-    bool bitmapForCurrentFrame(SkBitmap* bitmap) override
+    PassRefPtr<SkImage> imageForCurrentFrame() override
     {
-        if (m_size.isZero())
-            return false;
-
-        *bitmap = m_bitmap;
-        return true;
+        return m_image;
     }
 
     // Stub implementations of pure virtual Image functions.
@@ -89,7 +92,7 @@ public:
 
 private:
     IntSize m_size;
-    SkBitmap m_bitmap;
+    RefPtr<SkImage> m_image;
 };
 
 class GraphicsLayerForTesting : public GraphicsLayer {

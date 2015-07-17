@@ -2020,7 +2020,7 @@ bool WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
 {
     if (!m_image)
         return false;
-    bool success = m_image->bitmapForCurrentFrame(&m_skiaBitmap);
+    bool success = m_image->deprecatedBitmapForCurrentFrame(&m_skiaBitmap);
     m_alphaOp = AlphaDoNothing;
     bool hasAlpha = success ? !m_skiaBitmap.isOpaque() : true;
     if ((!success || ignoreGammaAndColorProfile || (hasAlpha && !premultiplyAlpha)) && m_image->data()) {

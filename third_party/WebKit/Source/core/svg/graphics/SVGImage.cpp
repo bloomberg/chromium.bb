@@ -58,6 +58,7 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -215,20 +216,23 @@ void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const Fl
     draw(canvas, paint, dstRect, scaledSrc, DoNotRespectImageOrientation, ClampImageToSourceRect);
 }
 
-bool SVGImage::bitmapForCurrentFrame(SkBitmap* bitmap)
+PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
 {
+    // TODO(fmalita): instead of rasterizing, investigate returning a SkPicture-backed image.
+
     if (!m_page)
-        return false;
+        return nullptr;
 
-    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(size());
-    if (!buffer)
-        return false;
+    IntSize size = this->size();
+    SkImageInfo imageInfo = SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType);
+    SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
+    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRaster(imageInfo, &disableLCDProps));
+    if (!surface)
+        return nullptr;
 
-    SkPaint paint;
-    drawForContainer(buffer->canvas(), paint, size(), 1, rect(), rect());
+    drawForContainer(surface->getCanvas(), SkPaint(), size, 1, rect(), rect());
 
-    *bitmap = buffer->bitmap();
-    return true;
+    return adoptRef(surface->newImageSnapshot());
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,

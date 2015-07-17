@@ -47,6 +47,8 @@ public:
     // Assume that generated content has no decoded data we need to worry about
     void destroyDecodedData(bool) override { }
 
+    PassRefPtr<SkImage> imageForCurrentFrame() override;
+
 protected:
     void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, SkXfermode::Mode,

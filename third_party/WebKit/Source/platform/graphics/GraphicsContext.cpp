@@ -908,7 +908,7 @@ SkFilterQuality GraphicsContext::computeFilterQuality(Image* image, const FloatR
         resampling = computeInterpolationQuality(
             SkScalarToFloat(src.width()), SkScalarToFloat(src.height()),
             SkScalarToFloat(destRectTarget.width()), SkScalarToFloat(destRectTarget.height()),
-            image->isImmutableBitmap());
+            image->currentFrameIsComplete());
 
         if (resampling == InterpolationNone) {
             // FIXME: This is to not break tests (it results in the filter bitmap flag
