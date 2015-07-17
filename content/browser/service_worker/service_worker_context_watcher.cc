@@ -254,7 +254,8 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
 void ServiceWorkerContextWatcher::OnControlleeRemoved(int64 version_id,
                                                       const std::string& uuid) {
   ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
-  DCHECK(version);
+  if (!version)
+    return;
   version->clients.erase(uuid);
   SendVersionInfo(*version);
 }
