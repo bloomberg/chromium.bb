@@ -49,6 +49,7 @@ namespace blink {
 using namespace HTMLNames;
 
 class TypingCommandLineOperation {
+    STACK_ALLOCATED();
 public:
     TypingCommandLineOperation(TypingCommand* typingCommand, bool selectInsertedText, const String& text)
     : m_typingCommand(typingCommand)
@@ -69,7 +70,7 @@ public:
     }
 
 private:
-    TypingCommand* m_typingCommand;
+    RawPtrWillBeMember<TypingCommand> m_typingCommand;
     bool m_selectInsertedText;
     const String& m_text;
 };
