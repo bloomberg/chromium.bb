@@ -57,3 +57,5 @@ Modifications made:
   e20a2df4017ab10dd7199936948c6ac809bfacb6 to fix issues with
   glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT_OES) when no
   framebuffer is bound
+
+- Statically link libstdc++ in chromecast build

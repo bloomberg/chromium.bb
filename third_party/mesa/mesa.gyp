@@ -694,6 +694,16 @@
             ],
           },
         }],
+        ['OS=="linux" and chromecast==1', {
+          'sources': [
+            'chromium/empty.cc',
+          ],
+          'link_settings': {
+            'libraries!': [
+              '-lstdc++',
+            ],
+          },
+        }],
       ],
       'include_dirs': [
         'src/src/mapi',
