@@ -82,6 +82,8 @@ using namespace HTMLNames;
 namespace {
 
 struct ScopedFramePaintingState {
+    STACK_ALLOCATED();
+public:
     ScopedFramePaintingState(LocalFrame* frame, Node* node)
         : frame(frame)
         , node(node)
@@ -100,8 +102,8 @@ struct ScopedFramePaintingState {
         frame->view()->setNodeToDraw(0);
     }
 
-    LocalFrame* frame;
-    Node* node;
+    RawPtrWillBeMember<LocalFrame> frame;
+    RawPtrWillBeMember<Node> node;
     PaintBehavior paintBehavior;
 };
 
