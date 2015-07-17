@@ -18,11 +18,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// See
-// https://docs.google.com/document/d/1VnvAqeWFG9JFZfgG5evBqrLGDZYRE5w6G5jEDORekPY
-// for details.
-enum NativeScrollBehavior { "disable-native-scroll", "perform-before-native-scroll", "perform-after-native-scroll" };
-
 // https://dom.spec.whatwg.org/#interface-element
 
 [
@@ -107,10 +102,6 @@ enum NativeScrollBehavior { "disable-native-scroll", "perform-before-native-scro
     [DeprecateAs=ElementOffsetLeft] readonly attribute long offsetLeft;
     [DeprecateAs=ElementOffsetWidth] readonly attribute long offsetWidth;
     [DeprecateAs=ElementOffsetHeight] readonly attribute long offsetHeight;
-
-    // Scroll Customization API. See crbug.com/410974 for details.
-    [RuntimeEnabled=ScrollCustomization] void setApplyScroll(ScrollStateCallback scrollStateCallback, NativeScrollBehavior nativeScrollBehavior);
-    [RuntimeEnabled=ScrollCustomization] void setDistributeScroll(ScrollStateCallback scrollStateCallback, NativeScrollBehavior nativeScrollBehavior);
 
     // Non-standard APIs
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=19962

@@ -311,7 +311,7 @@
 
     DictionaryTest dictionaryTest();
     UnionTypesTest unionTypesTest();
-    [RaisesException, TypeChecking=Interface] void setScrollChain(ScrollState scrollState, Element[] elements);
+
     void forceBlinkGCWithoutV8GC();
 
     DOMString selectedHTMLForClipboard();

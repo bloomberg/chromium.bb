@@ -112,9 +112,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/SpatialNavigation.h"
-#include "core/page/scrolling/ScrollCustomizationCallbacks.h"
 #include "core/page/scrolling/ScrollState.h"
-#include "core/page/scrolling/ScrollStateCallback.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
@@ -129,25 +127,6 @@
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
-
-namespace {
-
-// We need to retain the scroll customization callbacks until the element
-// they're associated with is destroyed. It would be simplest if the callbacks
-// could be stored in ElementRareData, but we can't afford the space
-// increase. Instead, keep the scroll customization callbacks here. The other
-// option would be to store these callbacks on the FrameHost or document, but
-// that necessitates a bunch more logic for transferring the callbacks between
-// FrameHosts when elements are moved around.
-ScrollCustomizationCallbacks& scrollCustomizationCallbacks()
-{
-    ASSERT(RuntimeEnabledFeatures::scrollCustomizationEnabled());
-    DEFINE_STATIC_LOCAL(Persistent<ScrollCustomizationCallbacks>,
-        scrollCustomizationCallbacks, (new ScrollCustomizationCallbacks()));
-    return *scrollCustomizationCallbacks;
-}
-
-} // namespace
 
 using namespace HTMLNames;
 using namespace XMLNames;
@@ -175,9 +154,6 @@ Element::~Element()
 
     if (isCustomElement())
         CustomElement::wasDestroyed(this);
-
-    if (RuntimeEnabledFeatures::scrollCustomizationEnabled())
-        scrollCustomizationCallbacks().removeCallbacksForElement(this);
 
     // With Oilpan, either the Element has been removed from the Document
     // or the Document is dead as well. If the Element has been removed from
@@ -494,19 +470,7 @@ void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
         layoutObject()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
-void Element::setDistributeScroll(ScrollStateCallback* scrollStateCallback, String nativeScrollBehavior)
-{
-    scrollStateCallback->setNativeScrollBehavior(ScrollStateCallback::toNativeScrollBehavior(nativeScrollBehavior));
-    scrollCustomizationCallbacks().setDistributeScroll(this, scrollStateCallback);
-}
-
-void Element::setApplyScroll(ScrollStateCallback* scrollStateCallback, String nativeScrollBehavior)
-{
-    scrollStateCallback->setNativeScrollBehavior(ScrollStateCallback::toNativeScrollBehavior(nativeScrollBehavior));
-    scrollCustomizationCallbacks().setApplyScroll(this, scrollStateCallback);
-}
-
-void Element::nativeDistributeScroll(ScrollState& scrollState)
+void Element::distributeScroll(ScrollState& scrollState)
 {
     ASSERT(RuntimeEnabledFeatures::scrollCustomizationEnabled());
     if (scrollState.fullyConsumed())
@@ -526,27 +490,13 @@ void Element::nativeDistributeScroll(ScrollState& scrollState)
     const double deltaX = scrollState.deltaX();
     const double deltaY = scrollState.deltaY();
 
-    callApplyScroll(scrollState);
+    applyScroll(scrollState);
 
     if (deltaX != scrollState.deltaX() || deltaY != scrollState.deltaY())
         scrollState.setCurrentNativeScrollingElement(this);
 }
 
-void Element::callDistributeScroll(ScrollState& scrollState)
-{
-    ScrollStateCallback* callback = scrollCustomizationCallbacks().getDistributeScroll(this);
-    if (!callback) {
-        nativeDistributeScroll(scrollState);
-    } else {
-        if (callback->nativeScrollBehavior() == NativeScrollBehavior::PerformAfterNativeScroll)
-            nativeDistributeScroll(scrollState);
-        callback->handleEvent(&scrollState);
-        if (callback->nativeScrollBehavior() == NativeScrollBehavior::PerformBeforeNativeScroll)
-            nativeDistributeScroll(scrollState);
-    }
-};
-
-void Element::nativeApplyScroll(ScrollState& scrollState)
+void Element::applyScroll(ScrollState& scrollState)
 {
     ASSERT(RuntimeEnabledFeatures::scrollCustomizationEnabled());
     if (scrollState.fullyConsumed())
@@ -556,11 +506,8 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
     const double deltaY = scrollState.deltaY();
     bool scrolled = false;
 
-    if (deltaY || deltaX)
-        document().updateLayoutIgnorePendingStylesheets();
-
-    // Handle the scrollingElement separately, as it scrolls the viewport.
-    if (this == document().scrollingElement()) {
+    // Handle the documentElement separately, as it scrolls the FrameView.
+    if (this == document().documentElement()) {
         FloatSize delta(deltaX, deltaY);
         if (document().frame()->applyScrollDelta(delta, scrollState.isBeginning()).didScroll()) {
             scrolled = true;
@@ -593,20 +540,6 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
     scrollState.setCurrentNativeScrollingElement(this);
     if (scrollState.fromUserInput())
         document().frame()->view()->setWasScrolledByUser(true);
-};
-
-void Element::callApplyScroll(ScrollState& scrollState)
-{
-    ScrollStateCallback* callback = scrollCustomizationCallbacks().getApplyScroll(this);
-    if (!callback) {
-        nativeApplyScroll(scrollState);
-    } else {
-        if (callback->nativeScrollBehavior() == NativeScrollBehavior::PerformAfterNativeScroll)
-            nativeApplyScroll(scrollState);
-        callback->handleEvent(&scrollState);
-        if (callback->nativeScrollBehavior() == NativeScrollBehavior::PerformBeforeNativeScroll)
-            nativeApplyScroll(scrollState);
-    }
 };
 
 static float localZoomForLayoutObject(LayoutObject& layoutObject)

@@ -55,7 +55,6 @@ public:
     // Non web exposed methods.
     void consumeDeltaNative(double x, double y);
 
-    // TODO(tdresser): this needs to be web exposed. See crbug.com/483091.
     void setScrollChain(WillBeHeapDeque<RefPtrWillBeMember<Element>> scrollChain)
     {
         m_scrollChain = scrollChain;
