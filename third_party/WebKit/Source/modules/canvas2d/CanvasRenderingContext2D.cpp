@@ -92,8 +92,9 @@ static bool contextLostRestoredEventsEnabled()
 // Drawing methods need to use this instead of SkAutoCanvasRestore in case overdraw
 // detection substitutes the recording canvas (to discard overdrawn draw calls).
 class CanvasRenderingContext2DAutoRestoreSkCanvas {
+    STACK_ALLOCATED();
 public:
-    CanvasRenderingContext2DAutoRestoreSkCanvas(CanvasRenderingContext2D* context)
+    explicit CanvasRenderingContext2DAutoRestoreSkCanvas(CanvasRenderingContext2D* context)
         : m_context(context)
         , m_saveCount(0)
     {
@@ -112,7 +113,7 @@ public:
         m_context->validateStateStack();
     }
 private:
-    CanvasRenderingContext2D* m_context;
+    RawPtrWillBeMember<CanvasRenderingContext2D> m_context;
     int m_saveCount;
 };
 
