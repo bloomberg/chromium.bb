@@ -88,8 +88,8 @@
 ## Investigating Cr-Internals-Network bugs
 
 * It's recommended that while on triage duty, you subscribe to the
-  Cr-Internals-Network label.  To do this, go to
-  https://code.google.com/p/chromium/issues/ and click on "Subscriptions".
+  Cr-Internals-Network label.  To do this, go to the issue tracker and click on
+  [Subscriptions](https://code.google.com/p/chromium/issues/subscriptions).
   Enter "Cr-Internals-Network" and click submit.
 
 * Look through uncomfirmed and untriaged Cr-Internals-Network bugs,
