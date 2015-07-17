@@ -16,14 +16,14 @@
  * Otherwise its $placeholders won't be expanded. */
 
 html {
-  direction: $1;
+  direction: ${textDirection};
 }
 
 body {
-  font-family: $2;
-  font-size: $3;
+  font-family: ${fontFamily};
+  font-size: ${fontSize};
 }
 
 button {
-  font-family: $2;
+  font-family: ${fontFamily};
 }

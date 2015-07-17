@@ -16,6 +16,7 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/template_expressions.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
@@ -119,10 +120,10 @@ void SetLoadTimeDataDefaults(const std::string& app_locale,
 }
 
 std::string GetWebUiCssTextDefaults() {
-  std::vector<std::string> placeholders;
-  placeholders.push_back(GetTextDirection());  // $1
-  placeholders.push_back(GetFontFamily());  // $2
-  placeholders.push_back(GetFontSize());  // $3
+  std::map<base::StringPiece, std::string> placeholders;
+  placeholders["textDirection"] = GetTextDirection();
+  placeholders["fontFamily"] = GetFontFamily();
+  placeholders["fontSize"] = GetFontSize();
 
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
@@ -130,7 +131,7 @@ std::string GetWebUiCssTextDefaults() {
       resource_bundle.GetRawDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS)
           .as_string();
 
-  return base::ReplaceStringPlaceholders(css_template, placeholders, nullptr);
+  return ui::ReplaceTemplateExpressions(css_template, placeholders);
 }
 
 void AppendWebUiCssTextDefaults(std::string* html) {

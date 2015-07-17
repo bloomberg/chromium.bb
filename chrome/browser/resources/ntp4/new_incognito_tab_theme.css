@@ -5,18 +5,18 @@
 
 html {
   background-attachment: fixed;
-  background-color: $2;
-  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
-  background-position: $3;
-  background-repeat: $5;
+  background-color: ${colorBackground};
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?${themeId});
+  background-position: ${backgroundBarDetached};
+  background-repeat: ${backgroundTiling};
   height: 100%;
   overflow: auto;
 }
 
 #attribution-img {
-  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?$1);
+  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?${themeId});
 }
 
 html[bookmarkbarattached='true'] {
-  background-position: $4;
+  background-position: ${backgroundBarAttached};
 }

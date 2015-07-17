@@ -762,6 +762,10 @@ blah /* hey! */
   100% { height: 500px; }
 }
 
+#rule { /* ${TemplateExpressions} should be ignored. */
+  rule: ${someValue};
+}
+
 #rule {
   rule: value; }""", """
 - Always put a rule closing brace (}) on a new line.

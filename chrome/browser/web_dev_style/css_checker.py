@@ -29,7 +29,11 @@ class CSSChecker(object):
       return s[0] == s[1] == s[2] if len(s) == 3 else s[0:2] == s[2:4] == s[4:6]
 
     def _remove_all(s):
-      return _remove_grit(_remove_ats(_remove_comments(s)))
+      s = _remove_grit(s)
+      s = _remove_ats(s)
+      s = _remove_comments(s)
+      s = _remove_template_expressions(s)
+      return s
 
     def _remove_ats(s):
       at_reg = re.compile(r"""
@@ -42,6 +46,9 @@ class CSSChecker(object):
 
     def _remove_comments(s):
       return re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', s)
+
+    def _remove_template_expressions(s):
+      return re.sub(re.compile(r'\${[^}]*}', re.DOTALL), '', s)
 
     def _remove_grit(s):
       grit_reg = re.compile(r"""

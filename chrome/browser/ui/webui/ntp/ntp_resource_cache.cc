@@ -53,6 +53,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/template_expressions.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -545,17 +546,17 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
       GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND);
 
   // Generate the replacements.
-  std::vector<std::string> subst;
+  std::map<base::StringPiece, std::string> substitutions;
 
   // Cache-buster for background.
-  subst.push_back(
-      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID));  // $1
+  substitutions["themeId"] =
+      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 
   // Colors.
-  subst.push_back(SkColorToRGBAString(color_background));  // $2
-  subst.push_back(GetNewTabBackgroundCSS(tp, false));  // $3
-  subst.push_back(GetNewTabBackgroundCSS(tp, true));  // $4
-  subst.push_back(GetNewTabBackgroundTilingCSS(tp));  // $5
+  substitutions["colorBackground"] = SkColorToRGBAString(color_background);
+  substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
+  substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
+  substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
@@ -563,8 +564,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
           IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  std::string full_css = base::ReplaceStringPlaceholders(
-      new_tab_theme_css, subst, NULL);
+  std::string full_css =
+      ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
 
   new_tab_incognito_css_ = base::RefCountedString::TakeString(&full_css);
 }
@@ -578,17 +579,17 @@ void NTPResourceCache::CreateNewTabGuestCSS() {
       GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND);
 
   // Generate the replacements.
-  std::vector<std::string> subst;
+  std::map<base::StringPiece, std::string> substitutions;
 
   // Cache-buster for background.
-  subst.push_back(
-      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID));  // $1
+  substitutions["themeId"] =
+      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 
   // Colors.
-  subst.push_back(SkColorToRGBAString(color_background));  // $2
-  subst.push_back(GetNewTabBackgroundCSS(tp, false));  // $3
-  subst.push_back(GetNewTabBackgroundCSS(tp, true));  // $4
-  subst.push_back(GetNewTabBackgroundTilingCSS(tp));  // $5
+  substitutions["colorBackground"] = SkColorToRGBAString(color_background);
+  substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
+  substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
+  substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
@@ -596,8 +597,8 @@ void NTPResourceCache::CreateNewTabGuestCSS() {
           IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  std::string full_css = base::ReplaceStringPlaceholders(
-      new_tab_theme_css, subst, NULL);
+  std::string full_css =
+      ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
 
   new_tab_guest_css_ = base::RefCountedString::TakeString(&full_css);
 }
@@ -610,26 +611,6 @@ void NTPResourceCache::CreateNewTabCSS() {
   SkColor color_background =
       GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND);
   SkColor color_text = GetThemeColor(tp, ThemeProperties::COLOR_NTP_TEXT);
-  SkColor color_link = GetThemeColor(tp, ThemeProperties::COLOR_NTP_LINK);
-  SkColor color_link_underline =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_LINK_UNDERLINE);
-
-  SkColor color_section =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_SECTION);
-  SkColor color_section_text =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_SECTION_TEXT);
-  SkColor color_section_link =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_SECTION_LINK);
-  SkColor color_section_link_underline =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_SECTION_LINK_UNDERLINE);
-  SkColor color_section_header_text =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT);
-  SkColor color_section_header_text_hover =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER);
-  SkColor color_section_header_rule =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE);
-  SkColor color_section_header_rule_light =
-      GetThemeColor(tp, ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE_LIGHT);
   SkColor color_text_light =
       GetThemeColor(tp, ThemeProperties::COLOR_NTP_TEXT_LIGHT);
 
@@ -639,8 +620,6 @@ void NTPResourceCache::CreateNewTabCSS() {
   color_utils::HSL header_lighter;
   color_utils::SkColorToHSL(color_header, &header_lighter);
   header_lighter.l += (1 - header_lighter.l) * 0.33;
-  SkColor color_header_gradient_light =
-      color_utils::HSLToSkColor(header_lighter, SkColorGetA(color_header));
 
   // Generate section border color from the header color. See
   // BookmarkBarView::Paint for how we do this for the bookmark bar
@@ -652,38 +631,24 @@ void NTPResourceCache::CreateNewTabCSS() {
                      SkColorGetB(color_header));
 
   // Generate the replacements.
-  std::vector<std::string> subst;
+  std::map<base::StringPiece, std::string> substitutions;
 
   // Cache-buster for background.
-  subst.push_back(
-      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID));  // $1
+  substitutions["themeId"] =
+      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 
   // Colors.
-  subst.push_back(SkColorToRGBAString(color_background));  // $2
-  subst.push_back(GetNewTabBackgroundCSS(tp, false));  // $3
-  subst.push_back(GetNewTabBackgroundCSS(tp, true));  // $4
-  subst.push_back(GetNewTabBackgroundTilingCSS(tp));  // $5
-  subst.push_back(SkColorToRGBAString(color_header));  // $6
-  subst.push_back(SkColorToRGBAString(color_header_gradient_light));  // $7
-  subst.push_back(SkColorToRGBAString(color_text));  // $8
-  subst.push_back(SkColorToRGBAString(color_link));  // $9
-  subst.push_back(SkColorToRGBAString(color_section));  // $10
-  subst.push_back(SkColorToRGBAString(color_section_border));  // $11
-  subst.push_back(SkColorToRGBAString(color_section_text));  // $12
-  subst.push_back(SkColorToRGBAString(color_section_link));  // $13
-  subst.push_back(SkColorToRGBAString(color_link_underline));  // $14
-  subst.push_back(SkColorToRGBAString(color_section_link_underline));  // $15
-  subst.push_back(SkColorToRGBAString(color_section_header_text));  // $16
-  subst.push_back(SkColorToRGBAString(
-      color_section_header_text_hover));  // $17
-  subst.push_back(SkColorToRGBAString(color_section_header_rule));  // $18
-  subst.push_back(SkColorToRGBAString(
-      color_section_header_rule_light));  // $19
-  subst.push_back(SkColorToRGBAString(
-      SkColorSetA(color_section_header_rule, 0)));  // $20
-  subst.push_back(SkColorToRGBAString(color_text_light));  // $21
-  subst.push_back(SkColorToRGBComponents(color_section_border));  // $22
-  subst.push_back(SkColorToRGBComponents(color_text));  // $23
+  substitutions["colorBackground"] = SkColorToRGBAString(color_background);
+  substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
+  substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
+  substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
+  substitutions["colorTextRgba"] = SkColorToRGBAString(color_text);
+  substitutions["colorSectionBorder"] =
+      SkColorToRGBAString(color_section_border);
+  substitutions["colorTextLight"] = SkColorToRGBAString(color_text_light);
+  substitutions["colorSectionBorder"] =
+      SkColorToRGBComponents(color_section_border);
+  substitutions["colorText"] = SkColorToRGBComponents(color_text);
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
@@ -691,7 +656,7 @@ void NTPResourceCache::CreateNewTabCSS() {
           IDR_NEW_TAB_4_THEME_CSS));
 
   // Create the string from our template and the replacements.
-  std::string css_string;
-  css_string = base::ReplaceStringPlaceholders(new_tab_theme_css, subst, NULL);
+  std::string css_string =
+      ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
   new_tab_css_ = base::RefCountedString::TakeString(&css_string);
 }
