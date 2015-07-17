@@ -72,6 +72,7 @@ def container_context(union_type, interfaces_info):
     dictionary_type = None
     interface_types = []
     numeric_type = None
+    object_type = None
     string_type = None
     for member in union_type.member_types:
         context = member_context(member, interfaces_info)
@@ -84,8 +85,7 @@ def container_context(union_type, interfaces_info):
             if array_buffer_view_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             array_buffer_view_type = context
-        # FIXME: Remove generic Dictionary special casing.
-        elif member.is_dictionary or member.base_type == 'Dictionary':
+        elif member.is_dictionary:
             if dictionary_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             dictionary_type = context
@@ -93,6 +93,11 @@ def container_context(union_type, interfaces_info):
             if array_or_sequence_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             array_or_sequence_type = context
+        # "Dictionary" is an object, rather than an IDL dictionary.
+        elif member.base_type == 'Dictionary':
+            if object_type:
+                raise Exception('%s is ambiguous.' % union_type.name)
+            object_type = context
         elif member.is_interface_type:
             interface_types.append(context)
         elif member is union_type.boolean_member_type:
@@ -122,6 +127,7 @@ def container_context(union_type, interfaces_info):
         'interface_types': interface_types,
         'members': members,
         'numeric_type': numeric_type,
+        'object_type': object_type,
         'string_type': string_type,
         'type_string': str(union_type),
     }
