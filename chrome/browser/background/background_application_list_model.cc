@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/crx_file/id_util.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
@@ -69,6 +70,14 @@ bool ExtensionNameComparator::operator()(
   return l10n_util::StringComparator<base::string16>(collator_)(
       base::UTF8ToUTF16(x->name()), base::UTF8ToUTF16(y->name()));
 }
+
+class ExtensionIdComparator {
+ public:
+  bool operator()(const scoped_refptr<const Extension>& x,
+                  const scoped_refptr<const Extension>& y) {
+    return x->id() < y->id();
+  }
+};
 
 // Background application representation, private to the
 // BackgroundApplicationListModel class.
@@ -121,12 +130,18 @@ void GetServiceApplications(ExtensionService* service,
     }
   }
 
-  std::string locale = g_browser_process->GetApplicationLocale();
-  icu::Locale loc(locale.c_str());
-  UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
-  std::sort(applications_result->begin(), applications_result->end(),
-       ExtensionNameComparator(collator.get()));
+  if (!variations::GetVariationParamValue("LightSpeed", "AvoidMMap").empty()) {
+    std::sort(applications_result->begin(), applications_result->end(),
+              ExtensionIdComparator());
+  } else {
+    std::string locale = g_browser_process->GetApplicationLocale();
+    icu::Locale loc(locale.c_str());
+    UErrorCode error = U_ZERO_ERROR;
+    scoped_ptr<icu::Collator> collator(
+        icu::Collator::createInstance(loc, error));
+    std::sort(applications_result->begin(), applications_result->end(),
+              ExtensionNameComparator(collator.get()));
+  }
 }
 
 }  // namespace
