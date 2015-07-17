@@ -46,13 +46,6 @@ class HTMLAreaElement;
 class FrameView;
 class Widget;
 
-struct TextMarkerData {
-    AXID axID;
-    Node* node;
-    int offset;
-    EAffinity affinity;
-};
-
 // This class should only be used from inside the accessibility directory.
 class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl);
@@ -193,11 +186,6 @@ protected:
     void textChanged(AXObject*);
     void labelChanged(Element*);
 
-    // This is a weak reference cache for knowing if Nodes used by TextMarkers are valid.
-    void setNodeInUse(Node* n) { m_textMarkerNodes.add(n); }
-    void removeNodeForUse(Node* n) { m_textMarkerNodes.remove(n); }
-    bool isNodeInUse(Node* n) { return m_textMarkerNodes.contains(n); }
-
     PassRefPtrWillBeRawPtr<AXObject> createFromRenderer(LayoutObject*);
     PassRefPtrWillBeRawPtr<AXObject> createFromNode(Node*);
     PassRefPtrWillBeRawPtr<AXObject> createFromInlineTextBox(AbstractInlineTextBox*);
@@ -212,7 +200,6 @@ private:
     WillBeHeapHashMap<RawPtrWillBeMember<Widget>, AXID> m_widgetObjectMapping;
     WillBeHeapHashMap<RawPtrWillBeMember<Node>, AXID> m_nodeObjectMapping;
     HashMap<AbstractInlineTextBox*, AXID> m_inlineTextBoxObjectMapping;
-    WillBeHeapHashSet<RawPtrWillBeMember<Node>> m_textMarkerNodes;
     int m_modificationCount;
 
     HashSet<AXID> m_idsInUse;

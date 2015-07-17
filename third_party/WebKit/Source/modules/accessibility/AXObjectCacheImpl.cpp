@@ -549,8 +549,6 @@ void AXObjectCacheImpl::remove(Node* node)
     if (!node)
         return;
 
-    removeNodeForUse(node);
-
     // This is all safe even if we didn't have a mapping.
     AXID axID = m_nodeObjectMapping.get(node);
     remove(axID);
@@ -1352,7 +1350,6 @@ DEFINE_TRACE(AXObjectCacheImpl)
     visitor->trace(m_widgetObjectMapping);
     visitor->trace(m_nodeObjectMapping);
     visitor->trace(m_notificationsToPost);
-    visitor->trace(m_textMarkerNodes);
 #endif
     AXObjectCache::trace(visitor);
 }
