@@ -19,8 +19,13 @@
 + (void)setPendingReloadTimeout:(NSTimeInterval)seconds;
 @end
 
-@protocol TargetActionMock <NSObject>
+@interface ReloadButtonTarget : NSObject
 - (void)anAction:(id)sender;
+@end
+
+@implementation ReloadButtonTarget
+- (void)anAction:(id)sender {
+}
 @end
 
 namespace {
@@ -68,7 +73,9 @@ TEST_F(ReloadButtonTest, IsMouseInside) {
 // Verify that multiple clicks do not result in multiple messages to
 // the target.
 TEST_F(ReloadButtonTest, IgnoredMultiClick) {
-  id mock_target = [OCMockObject mockForProtocol:@protocol(TargetActionMock)];
+  base::scoped_nsobject<ReloadButtonTarget> target(
+      [[ReloadButtonTarget alloc] init]);
+  id mock_target = [OCMockObject partialMockForObject:target];
   [button_ setTarget:mock_target];
   [button_ setAction:@selector(anAction:)];
 
@@ -225,7 +232,9 @@ TEST_F(ReloadButtonTest, DISABLED_SetIsLoadingNoForceTimeout) {
 // Test that pressing stop after reload mode has been requested
 // doesn't forward the stop message.
 TEST_F(ReloadButtonTest, StopAfterReloadSet) {
-  id mock_target = [OCMockObject mockForProtocol:@protocol(TargetActionMock)];
+  base::scoped_nsobject<ReloadButtonTarget> target(
+      [[ReloadButtonTarget alloc] init]);
+  id mock_target = [OCMockObject partialMockForObject:target];
   [button_ setTarget:mock_target];
   [button_ setAction:@selector(anAction:)];
 
