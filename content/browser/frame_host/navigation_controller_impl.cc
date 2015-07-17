@@ -1651,17 +1651,28 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   DiscardNonCommittedEntriesInternal();
 
   int current_size = static_cast<int>(entries_.size());
-  DCHECK_IMPLIES(replace, current_size > 0);
+
+  // When replacing, don't prune the forward history.
+  if (replace) {
+    DCHECK_GT(current_size, 0);
+    int32 page_id = entry->GetPageID();
+
+    // ScopedVectors don't automatically delete the replaced value, so make sure
+    // the previous value gets deleted.
+    scoped_ptr<NavigationEntryImpl> old_entry(
+        entries_[last_committed_entry_index_]);
+    entries_[last_committed_entry_index_] = entry.release();
+
+    // This is a new page ID, so we need everybody to know about it.
+    delegate_->UpdateMaxPageID(page_id);
+    return;
+  }
 
   if (current_size > 0) {
     // Prune any entries which are in front of the current entry.
-    // Also prune the current entry if we are to replace the current entry.
     // last_committed_entry_index_ must be updated here since calls to
     // NotifyPrunedEntries() below may re-enter and we must make sure
     // last_committed_entry_index_ is not left in an invalid state.
-    if (replace)
-      --last_committed_entry_index_;
-
     int num_pruned = 0;
     while (last_committed_entry_index_ < (current_size - 1)) {
       num_pruned++;
