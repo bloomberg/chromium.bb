@@ -426,6 +426,7 @@ def RunBranchUtilTest(buildroot, version):
         '--branch-name', 'test_branch',
         '--version', version,
         '--buildroot', tempdir,
+        '--nobuildbottags',
     ]
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 

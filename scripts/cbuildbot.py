@@ -520,6 +520,11 @@ def _CreateParser():
                                 'to skip verification by the bootstrap code'))
   group.add_remote_option('--buildbot', dest='buildbot', action='store_true',
                           default=False, help='This is running on a buildbot')
+  group.add_remote_option('--no-buildbot-tags', action='store_false',
+                          dest='enable_buildbot_tags', default=True,
+                          help='Suppress buildbot specific tags from log '
+                               'output. This is used to hide recursive '
+                               'cbuilbot runs on the waterfall.')
   group.add_remote_option('--buildnumber', help='build number', type='int',
                           default=0)
   group.add_option('--chrome_root', default=None, type='path',
@@ -1078,7 +1083,8 @@ def main(argv):
 
   cros_build_lib.AssertOutsideChroot()
 
-  logging.EnableBuildbotMarkers()
+  if options.enable_buildbot_tags:
+    logging.EnableBuildbotMarkers()
   if options.remote:
     logging.getLogger().setLevel(logging.WARNING)
 
