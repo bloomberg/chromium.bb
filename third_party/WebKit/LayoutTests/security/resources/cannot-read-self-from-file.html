@@ -4,10 +4,12 @@
 <script>
 var req = new XMLHttpRequest();
 req.open('GET', location);
-req.onerror = function() {
-  window.parent.postMessage('PASS', '*');
+try {
+  req.send();
+  window.parent.postMessage('FAIL', '*');
+} catch (e) {
+  window.parent.postMessage(e.name, '*');
 }
-req.send();
 </script>
 </head>
 <body>
