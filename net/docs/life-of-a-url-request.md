@@ -17,7 +17,7 @@ better explained, please do not hesitate to submit patches.
 
 # Anatomy of the Network Stack
 
-The top-level network stack object is the URLRequextContext. The context has
+The top-level network stack object is the URLRequestContext. The context has
 non-owning pointers to everything needed to create and issue a URLRequest. The
 context must outlive all requests that use it. Creating a context is a rather
 complicated process, and it's recommended that most consumers use
