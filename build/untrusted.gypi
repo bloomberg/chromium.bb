@@ -95,6 +95,7 @@
           'build_irt': 0,
           'build_nonsfi_helper': 0,
           'disable_glibc%': 0,
+          'disable_newlib%': 0,
           'disable_bionic%': 1,
           'extra_args': [],
           'enable_x86_32': 1,
@@ -151,6 +152,7 @@
           'build_glibc': 0,
           'build_irt': 0,
           'build_nonsfi_helper': 0,
+          'disable_newlib%': 0,
           'disable_glibc%': 0,
           'disable_bionic%': 1,
           'extra_args': [],
@@ -201,6 +203,7 @@
           'build_glibc': 0,
           'build_irt': 0,
           'build_nonsfi_helper': 0,
+          'disable_newlib%': 0,
           'disable_glibc%': 1,
           'disable_bionic%': 1,
           'extra_args': [],
@@ -232,7 +235,7 @@
       'target_defaults': {
         # x86-64 newlib nexe action
         'target_conditions': [
-           ['nexe_target!="" and build_newlib!=0 and enable_x86_64!=0', {
+           ['nexe_target!="" and build_newlib!=0 and disable_newlib==0 and enable_x86_64!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'out_newlib64%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x64.nexe',
@@ -273,7 +276,7 @@
              ],
            }],
            # x86-64 newlib library action
-           ['nlib_target!="" and build_newlib!=0 and enable_x86_64!=0', {
+           ['nlib_target!="" and build_newlib!=0 and disable_newlib==0 and enable_x86_64!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'objdir_newlib64%': '>(INTERMEDIATE_DIR)/<(tool_name)-x86-64/>(_target_name)',
@@ -400,7 +403,7 @@
              ],
            }],
            # x86-32 newlib nexe action
-           ['nexe_target!="" and build_newlib!=0 and enable_x86_32!=0', {
+           ['nexe_target!="" and build_newlib!=0 and disable_newlib==0 and enable_x86_32!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'out_newlib32%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_x32.nexe',
@@ -441,7 +444,7 @@
              ],
            }],
            # x86-32 newlib library action
-           ['nlib_target!="" and build_newlib!=0 and enable_x86_32!=0', {
+           ['nlib_target!="" and build_newlib!=0 and disable_newlib==0 and enable_x86_32!=0', {
              'variables': {
                 'tool_name': 'newlib',
                 'out_newlib32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib32/>(nlib_target)',
@@ -680,7 +683,7 @@
       'target_defaults': {
         'target_conditions': [
           # arm glibc nexe action
-          ['nexe_target!="" and build_glibc!=0', {
+          ['nexe_target!="" and build_glibc!=0 and disable_glibc==0', {
             'variables': {
                'tool_name': 'glibc',
                'out_glibc_arm%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_arm.nexe',
@@ -800,7 +803,7 @@
              ],
            }],
           # arm newlib nexe action
-          ['nexe_target!="" and build_newlib!=0', {
+          ['nexe_target!="" and build_newlib!=0 and disable_newlib==0', {
             'variables': {
                'tool_name': 'newlib',
                'out_newlib_arm%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_arm.nexe',
@@ -841,7 +844,7 @@
             ],
           }],
           # arm newlib library action
-          ['nlib_target!="" and build_newlib!=0', {
+          ['nlib_target!="" and build_newlib!=0 and disable_newlib==0', {
             'variables': {
               'tool_name': 'newlib',
               'out_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
@@ -1112,7 +1115,7 @@
       'target_defaults': {
         'target_conditions': [
           # mips newlib nexe action
-          ['nexe_target!="" and build_newlib!=0', {
+          ['nexe_target!="" and build_newlib!=0 and disable_newlib==0', {
             'variables': {
                'tool_name': 'newlib',
                'out_newlib_mips%': '<(PRODUCT_DIR)/>(nexe_target)_newlib_mips32.nexe',
@@ -1153,7 +1156,7 @@
             ],
           }],
           # mips newlib library action
-          ['nlib_target!="" and build_newlib!=0', {
+          ['nlib_target!="" and build_newlib!=0 and disable_newlib==0', {
             'variables': {
               'tool_name': 'newlib',
               'out_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
