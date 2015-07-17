@@ -771,6 +771,9 @@
               ],
             }],
             ['use_cras==1', {
+              'dependencies': [
+                '../chromeos/chromeos.gyp:chromeos',
+              ],
               'cflags': [
                 '<!@(<(pkg-config) --cflags libcras)',
               ],

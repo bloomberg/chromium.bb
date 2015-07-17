@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
+#include "chromeos/audio/audio_device.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "media/audio/cras/cras_input.h"
 #include "media/audio/cras/cras_unified.h"
 #include "media/base/channel_layout.h"
@@ -49,7 +51,13 @@ bool AudioManagerCras::HasAudioOutputDevices() {
 }
 
 bool AudioManagerCras::HasAudioInputDevices() {
-  return true;
+  chromeos::AudioDeviceList devices;
+  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+  for (size_t i = 0; i < devices.size(); ++i) {
+    if (devices[i].is_input && devices[i].is_for_simple_usage())
+      return true;
+  }
+  return false;
 }
 
 AudioManagerCras::AudioManagerCras(AudioLogFactory* audio_log_factory)

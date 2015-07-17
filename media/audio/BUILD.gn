@@ -220,6 +220,7 @@ source_set("audio") {
       packages = [ "libcras" ]
     }
     configs += [ ":libcras" ]
+    deps += [ "//chromeos:chromeos" ]
   }
 
   if (use_pulseaudio) {
