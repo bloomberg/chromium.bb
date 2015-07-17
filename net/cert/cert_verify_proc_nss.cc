@@ -15,6 +15,7 @@
 #include <sslerr.h>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/sha2.h"
@@ -35,6 +36,8 @@
 
 #if defined(USE_NSS_CERTS)
 #include <dlfcn.h>
+#else
+#include <ocsp.h>
 #endif
 
 namespace net {
@@ -765,6 +768,9 @@ CertVerifyProcNSS::CertVerifyProcNSS()
     : cache_ocsp_response_from_side_channel_(
           reinterpret_cast<CacheOCSPResponseFromSideChannelFunction>(
               dlsym(RTLD_DEFAULT, "CERT_CacheOCSPResponseFromSideChannel")))
+#else
+    : cache_ocsp_response_from_side_channel_(
+          &CERT_CacheOCSPResponseFromSideChannel)
 #endif
 {
 }
@@ -776,12 +782,7 @@ bool CertVerifyProcNSS::SupportsAdditionalTrustAnchors() const {
 }
 
 bool CertVerifyProcNSS::SupportsOCSPStapling() const {
-#if defined(USE_NSS_CERTS)
   return cache_ocsp_response_from_side_channel_;
-#else
-  // TODO(davidben): Support OCSP stapling on iOS.
-  return false;
-#endif
 }
 
 int CertVerifyProcNSS::VerifyInternalImpl(
@@ -802,7 +803,6 @@ int CertVerifyProcNSS::VerifyInternalImpl(
   CERTCertificate* cert_handle = cert->os_cert_handle();
 #endif  // defined(OS_IOS)
 
-#if defined(USE_NSS_CERTS)
   if (!ocsp_response.empty() && cache_ocsp_response_from_side_channel_) {
     // Note: NSS uses a thread-safe global hash table, so this call will
     // affect any concurrent verification operations on |cert| or copies of
@@ -813,9 +813,9 @@ int CertVerifyProcNSS::VerifyInternalImpl(
         const_cast<char*>(ocsp_response.data()));
     ocsp_response_item.len = ocsp_response.size();
     cache_ocsp_response_from_side_channel_(CERT_GetDefaultCertDB(), cert_handle,
-                                           PR_Now(), &ocsp_response_item, NULL);
+                                           PR_Now(), &ocsp_response_item,
+                                           nullptr);
   }
-#endif  // defined(USE_NSS_CERTS)
 
   if (!cert->VerifyNameMatch(hostname,
                              &verify_result->common_name_fallback_used)) {

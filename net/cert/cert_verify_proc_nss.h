@@ -44,16 +44,14 @@ class NET_EXPORT_PRIVATE CertVerifyProcNSS : public CertVerifyProc {
                      const CertificateList& additional_trust_anchors,
                      CertVerifyResult* verify_result) override;
 
-#if defined(USE_NSS_CERTS)
   using CacheOCSPResponseFromSideChannelFunction =
       SECStatus (*)(CERTCertDBHandle* handle,
                     CERTCertificate* cert,
                     PRTime time,
-                    SECItem* encodedResponse,
+                    const SECItem* encodedResponse,
                     void* pwArg);
   const CacheOCSPResponseFromSideChannelFunction
       cache_ocsp_response_from_side_channel_;
-#endif
 };
 
 }  // namespace net
