@@ -93,6 +93,9 @@ static const char* const kSwitchNames[] = {
 #if defined(ENABLE_WEBRTC)
   switches::kDisableWebRtcHWEncoding,
 #endif
+#if defined(OS_WIN)
+  switches::kEnableAcceleratedVpxDecode,
+#endif
   switches::kEnableLogging,
   switches::kEnableShareGroupAsyncTextureUpload,
 #if defined(OS_CHROMEOS)
