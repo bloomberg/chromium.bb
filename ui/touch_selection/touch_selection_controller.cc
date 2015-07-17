@@ -80,6 +80,15 @@ void TouchSelectionController::OnSelectionBoundsChanged(
   if (!force_next_update_ && start == start_ && end_ == end)
     return;
 
+  // Notify if selection bounds have just been established or dissolved.
+  if (start.type() != SelectionBound::EMPTY &&
+      start_.type() == SelectionBound::EMPTY) {
+    client_->OnSelectionEvent(SELECTION_ESTABLISHED);
+  } else if (start.type() == SelectionBound::EMPTY &&
+             start_.type() != SelectionBound::EMPTY) {
+    client_->OnSelectionEvent(SELECTION_DISSOLVED);
+  }
+
   start_ = start;
   end_ = end;
   start_orientation_ = ToTouchHandleOrientation(start_.type());
@@ -296,7 +305,7 @@ void TouchSelectionController::OnDragBegin(
     const gfx::PointF& drag_position) {
   if (&draggable == insertion_handle_.get()) {
     DCHECK_EQ(active_status_, INSERTION_ACTIVE);
-    client_->OnSelectionEvent(INSERTION_DRAG_STARTED);
+    client_->OnSelectionEvent(INSERTION_HANDLE_DRAG_STARTED);
     anchor_drag_to_selection_start_ = true;
     return;
   }
@@ -324,7 +333,7 @@ void TouchSelectionController::OnDragBegin(
   // When moving the handle we want to move only the extent point. Before doing
   // so we must make sure that the base point is set correctly.
   client_->SelectBetweenCoordinates(base, extent);
-  client_->OnSelectionEvent(SELECTION_DRAG_STARTED);
+  client_->OnSelectionEvent(SELECTION_HANDLE_DRAG_STARTED);
 }
 
 void TouchSelectionController::OnDragUpdate(
@@ -345,9 +354,9 @@ void TouchSelectionController::OnDragUpdate(
 void TouchSelectionController::OnDragEnd(
     const TouchSelectionDraggable& draggable) {
   if (&draggable == insertion_handle_.get())
-    client_->OnSelectionEvent(INSERTION_DRAG_STOPPED);
+    client_->OnSelectionEvent(INSERTION_HANDLE_DRAG_STOPPED);
   else
-    client_->OnSelectionEvent(SELECTION_DRAG_STOPPED);
+    client_->OnSelectionEvent(SELECTION_HANDLE_DRAG_STOPPED);
 }
 
 bool TouchSelectionController::IsWithinTapSlop(
@@ -358,7 +367,7 @@ bool TouchSelectionController::IsWithinTapSlop(
 
 void TouchSelectionController::OnHandleTapped(const TouchHandle& handle) {
   if (insertion_handle_ && &handle == insertion_handle_.get())
-    client_->OnSelectionEvent(INSERTION_TAPPED);
+    client_->OnSelectionEvent(INSERTION_HANDLE_TAPPED);
 }
 
 void TouchSelectionController::SetNeedsAnimate() {
@@ -435,7 +444,8 @@ void TouchSelectionController::OnInsertionChanged() {
   insertion_handle_->SetVisible(GetStartVisible(), animation);
   insertion_handle_->SetPosition(GetStartPosition());
 
-  client_->OnSelectionEvent(activated ? INSERTION_SHOWN : INSERTION_MOVED);
+  client_->OnSelectionEvent(activated ? INSERTION_HANDLE_SHOWN
+                                      : INSERTION_HANDLE_MOVED);
 }
 
 void TouchSelectionController::OnSelectionChanged() {
@@ -452,7 +462,8 @@ void TouchSelectionController::OnSelectionChanged() {
   start_selection_handle_->SetPosition(GetStartPosition());
   end_selection_handle_->SetPosition(GetEndPosition());
 
-  client_->OnSelectionEvent(activated ? SELECTION_SHOWN : SELECTION_MOVED);
+  client_->OnSelectionEvent(activated ? SELECTION_HANDLES_SHOWN
+                                      : SELECTION_HANDLES_MOVED);
 }
 
 bool TouchSelectionController::ActivateInsertionIfNecessary() {
@@ -477,7 +488,7 @@ void TouchSelectionController::DeactivateInsertion() {
   DCHECK(insertion_handle_);
   active_status_ = INACTIVE;
   insertion_handle_->SetEnabled(false);
-  client_->OnSelectionEvent(INSERTION_CLEARED);
+  client_->OnSelectionEvent(INSERTION_HANDLE_CLEARED);
 }
 
 bool TouchSelectionController::ActivateSelectionIfNecessary() {
@@ -499,7 +510,8 @@ bool TouchSelectionController::ActivateSelectionIfNecessary() {
 
   // As a long press received while a selection is already active may trigger
   // an entirely new selection, notify the client but avoid sending an
-  // intervening SELECTION_CLEARED update to avoid unnecessary state changes.
+  // intervening SELECTION_HANDLES_CLEARED update to avoid unnecessary state
+  // changes.
   if (active_status_ == INACTIVE ||
       response_pending_input_event_ == LONG_PRESS) {
     if (active_status_ == SELECTION_ACTIVE) {
@@ -526,7 +538,7 @@ void TouchSelectionController::DeactivateSelection() {
   start_selection_handle_->SetEnabled(false);
   end_selection_handle_->SetEnabled(false);
   active_status_ = INACTIVE;
-  client_->OnSelectionEvent(SELECTION_CLEARED);
+  client_->OnSelectionEvent(SELECTION_HANDLES_CLEARED);
 }
 
 void TouchSelectionController::ForceNextUpdateIfInactive() {

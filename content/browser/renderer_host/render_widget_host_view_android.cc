@@ -1271,7 +1271,7 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
   // If a selection drag has started, it has taken over the active touch
   // sequence. Immediately cancel gesture detection and any downstream touch
   // listeners (e.g., web content) to communicate this transfer.
-  if (event == ui::SELECTION_SHOWN)
+  if (event == ui::SELECTION_HANDLES_SHOWN)
     ResetGestureDetection();
   content_view_core_->OnSelectionEvent(
       event, selection_controller_->GetStartPosition(),

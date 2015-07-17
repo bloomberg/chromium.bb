@@ -2203,7 +2203,7 @@ public class ContentViewCore implements
         if (left == right) ++right;
         if (top == bottom) ++bottom;
         switch (eventType) {
-            case SelectionEventType.SELECTION_SHOWN:
+            case SelectionEventType.SELECTION_HANDLES_SHOWN:
                 mSelectionRect.set(left, top, right, bottom);
                 mHasSelection = true;
                 mUnselectAllOnActionModeDismiss = true;
@@ -2213,30 +2213,30 @@ public class ContentViewCore implements
                 showSelectActionMode(true);
                 break;
 
-            case SelectionEventType.SELECTION_MOVED:
+            case SelectionEventType.SELECTION_HANDLES_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
                 invalidateActionModeContentRect();
                 break;
 
-            case SelectionEventType.SELECTION_CLEARED:
+            case SelectionEventType.SELECTION_HANDLES_CLEARED:
                 mHasSelection = false;
                 mUnselectAllOnActionModeDismiss = false;
                 hideSelectActionMode();
                 mSelectionRect.setEmpty();
                 break;
 
-            case SelectionEventType.SELECTION_DRAG_STARTED:
+            case SelectionEventType.SELECTION_HANDLE_DRAG_STARTED:
                 break;
 
-            case SelectionEventType.SELECTION_DRAG_STOPPED:
+            case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
                 break;
 
-            case SelectionEventType.INSERTION_SHOWN:
+            case SelectionEventType.INSERTION_HANDLE_SHOWN:
                 mSelectionRect.set(left, top, right, bottom);
                 mHasInsertion = true;
                 break;
 
-            case SelectionEventType.INSERTION_MOVED:
+            case SelectionEventType.INSERTION_HANDLE_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
                 if (!isScrollInProgress() && isPastePopupShowing()) {
                     showPastePopup(xAnchor, yAnchor);
@@ -2245,7 +2245,7 @@ public class ContentViewCore implements
                 }
                 break;
 
-            case SelectionEventType.INSERTION_TAPPED:
+            case SelectionEventType.INSERTION_HANDLE_TAPPED:
                 if (mWasPastePopupShowingOnInsertionDragStart) {
                     hidePastePopup();
                 } else {
@@ -2253,18 +2253,20 @@ public class ContentViewCore implements
                 }
                 break;
 
-            case SelectionEventType.INSERTION_CLEARED:
+            case SelectionEventType.INSERTION_HANDLE_CLEARED:
                 hidePastePopup();
                 mHasInsertion = false;
                 mSelectionRect.setEmpty();
                 break;
 
-            case SelectionEventType.INSERTION_DRAG_STARTED:
+            case SelectionEventType.INSERTION_HANDLE_DRAG_STARTED:
                 mWasPastePopupShowingOnInsertionDragStart = isPastePopupShowing();
                 hidePastePopup();
                 break;
 
-            case SelectionEventType.INSERTION_DRAG_STOPPED:
+            case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
+            case SelectionEventType.SELECTION_ESTABLISHED:
+            case SelectionEventType.SELECTION_DISSOLVED:
                 break;
 
             default:
