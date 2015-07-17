@@ -90,6 +90,8 @@ config("compiler") {
   cflags = []
   cflags_c = []
   cflags_cc = []
+  cflags_objc = []
+  cflags_objcc = []
   ldflags = []
   defines = []
 
@@ -127,6 +129,7 @@ config("compiler") {
       } else {
         cflags += [ "-m64" ]
       }
+
       # TODO(thakis): Remove this once llvm.org/PR24167 is fixed.
       if (is_asan) {
         cflags += [ "/fallback" ]
@@ -269,7 +272,7 @@ config("compiler") {
 
     # Without this, the constructors and destructors of a C++ object inside
     # an Objective C struct won't be called, which is very bad.
-    cflags_objcc = [ "-fobjc-call-cxx-cdtors" ]
+    cflags_objcc += [ "-fobjc-call-cxx-cdtors" ]
 
     cflags_c += [ "-std=c99" ]
 
@@ -569,6 +572,10 @@ config("compiler") {
       }
     }
   }
+
+  # Pass the same C/C++ flags to the objective C/C++ compiler.
+  cflags_objc += cflags_c
+  cflags_objcc += cflags_cc
 }
 
 config("compiler_arm_fpu") {

@@ -81,7 +81,7 @@ template("mac_toolchain") {
 
     tool("objc") {
       depfile = "{{output}}.d"
-      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} {{cflags_objc}} -c {{source}} -o {{output}}"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJC {{output}}"
       outputs = [
@@ -91,7 +91,7 @@ template("mac_toolchain") {
 
     tool("objcxx") {
       depfile = "{{output}}.d"
-      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} {{cflags_objcc}} -c {{source}} -o {{output}}"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJCXX {{output}}"
       outputs = [
