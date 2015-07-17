@@ -71275,7 +71275,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="DataReductionProxy.NetworkTypes" separator=".">
   <suffix name="Unknown" label="On Unknown network"/>
   <suffix name="Ethernet" label="On Ethernet network"/>
-  <suffix name="Wifi" label="On WiFi network"/>
+  <suffix name="WiFi" label="On WiFi network"/>
   <suffix name="2G" label="On 2G network"/>
   <suffix name="3G" label="On 3G Network"/>
   <suffix name="4G" label="On 4G network"/>
@@ -73882,7 +73882,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="NQE.NetworkTypes" separator=".">
   <suffix name="Unknown" label="On Unknown network"/>
   <suffix name="Ethernet" label="On Ethernet network"/>
-  <suffix name="Wifi" label="On WiFi network"/>
+  <suffix name="WiFi" label="On WiFi network"/>
   <suffix name="2G" label="On 2G network"/>
   <suffix name="3G" label="On 3G Network"/>
   <suffix name="4G" label="On 4G network"/>
