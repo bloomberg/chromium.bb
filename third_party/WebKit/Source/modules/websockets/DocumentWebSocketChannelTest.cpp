@@ -14,6 +14,7 @@
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSerializedOrigin.h"
 #include "public/platform/WebSocketHandle.h"
 #include "public/platform/WebSocketHandleClient.h"
