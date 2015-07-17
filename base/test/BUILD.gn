@@ -27,10 +27,6 @@ source_set("test_support") {
   # TODO http://crbug.com/412064 enable this flag all the time.
   testonly = !is_component_build
   sources = [
-    "expectations/expectation.cc",
-    "expectations/expectation.h",
-    "expectations/parser.cc",
-    "expectations/parser.h",
     "gtest_util.cc",
     "gtest_util.h",
     "gtest_xml_unittest_result_printer.cc",

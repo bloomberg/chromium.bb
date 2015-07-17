@@ -1356,8 +1356,6 @@ test("base_unittests") {
     "task/cancelable_task_tracker_unittest.cc",
     "task_runner_util_unittest.cc",
     "template_util_unittest.cc",
-    "test/expectations/expectation_unittest.cc",
-    "test/expectations/parser_unittest.cc",
     "test/histogram_tester_unittest.cc",
     "test/test_reg_util_win_unittest.cc",
     "test/trace_event_analyzer_unittest.cc",
