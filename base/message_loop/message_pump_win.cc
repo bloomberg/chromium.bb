@@ -614,8 +614,8 @@ bool MessagePumpForIO::GetIOItem(DWORD timeout, IOItem* item) {
 }
 
 bool MessagePumpForIO::ProcessInternalIOItem(const IOItem& item) {
-  if (this == reinterpret_cast<MessagePumpForIO*>(item.context) &&
-      this == reinterpret_cast<MessagePumpForIO*>(item.handler)) {
+  if (reinterpret_cast<void*>(this) == reinterpret_cast<void*>(item.context) &&
+      reinterpret_cast<void*>(this) == reinterpret_cast<void*>(item.handler)) {
     // This is our internal completion.
     DCHECK(!item.bytes_transfered);
     InterlockedExchange(&have_work_, 0);
