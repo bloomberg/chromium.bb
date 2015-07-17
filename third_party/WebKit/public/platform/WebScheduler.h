@@ -66,7 +66,14 @@ public:
     // tasks usually have the default priority, but may be delayed
     // when the user is interacting with the device.
     // Takes ownership of |WebThread::Task|. Can be called from any thread.
-    virtual void postTimerTask(const WebTraceLocation&, WebThread::Task*, long long delayMs) { }
+    virtual void postTimerTask(const WebTraceLocation&, WebThread::Task*, long long delayMs) {}
+
+    // Schedule a timer task to be run on the the associated WebThread. Timer Tasks
+    // tasks usually have the default priority, but may be delayed
+    // when the user is interacting with the device.
+    // |monotonicTime| is in the timebase of WTF::monotonicallyIncreasingTime().
+    // Takes ownership of |WebThread::Task|. Can be called from any thread.
+    virtual void postTimerTaskAt(const WebTraceLocation&, WebThread::Task*, double monotonicTime) {}
 
     // Suspends the timer queue and increments the timer queue suspension count.
     // May only be called from the main thread.

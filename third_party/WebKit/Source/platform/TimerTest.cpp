@@ -108,6 +108,11 @@ public:
         m_timerTasks.push(DelayedTask(task, delayMs));
     }
 
+    void postTimerTaskAt(const WebTraceLocation&, WebThread::Task* task, double monotonicTime) override
+    {
+        m_timerTasks.push(DelayedTask(task, (monotonicTime - monotonicallyIncreasingTime()) * 1000));
+    }
+
     void runUntilIdle()
     {
         while (!m_timerTasks.empty()) {

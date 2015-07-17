@@ -96,15 +96,22 @@ void TimerBase::setNextFireTime(double now, double delay)
     double newTime = alignedFireTime(m_unalignedNextFireTime);
     if (m_nextFireTime != newTime) {
         m_nextFireTime = newTime;
-        // Round the delay up to the nearest millisecond to be consistant with the
-        // previous behavior of BlinkPlatformImpl::setSharedTimerFireInterval.
-        long long delayMs = static_cast<long long>(ceil((newTime - now) * 1000.0));
-        if (delayMs < 0)
-            delayMs = 0;
         if (m_cancellableTimerTask)
             m_cancellableTimerTask->cancel();
         m_cancellableTimerTask = new CancellableTimerTask(this);
-        m_webScheduler->postTimerTask(m_location, m_cancellableTimerTask, delayMs);
+        if (newTime != m_unalignedNextFireTime) {
+            // If the timer is being aligned, use postTimerTaskAt() to schedule it
+            // so that the relative order of aligned timers is preserved.
+            // TODO(skyostil): Move timer alignment into the scheduler.
+            m_webScheduler->postTimerTaskAt(m_location, m_cancellableTimerTask, m_nextFireTime);
+        } else {
+            // Round the delay up to the nearest millisecond to be consistant with the
+            // previous behavior of BlinkPlatformImpl::setSharedTimerFireInterval.
+            long long delayMs = static_cast<long long>(ceil((newTime - now) * 1000.0));
+            if (delayMs < 0)
+                delayMs = 0;
+            m_webScheduler->postTimerTask(m_location, m_cancellableTimerTask, delayMs);
+        }
     }
 }
 
@@ -136,6 +143,11 @@ double TimerBase::nextUnalignedFireInterval() const
 {
     ASSERT(isActive());
     return std::max(m_unalignedNextFireTime - monotonicallyIncreasingTime(), 0.0);
+}
+
+bool TimerBase::Comparator::operator()(const TimerBase* a, const TimerBase* b) const
+{
+    return a->m_unalignedNextFireTime < b->m_unalignedNextFireTime;
 }
 
 } // namespace blink

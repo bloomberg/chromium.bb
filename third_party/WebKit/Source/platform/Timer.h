@@ -71,6 +71,10 @@ public:
 
     void didChangeAlignmentInterval(double now);
 
+    struct PLATFORM_EXPORT Comparator {
+        bool operator()(const TimerBase* a, const TimerBase* b) const;
+    };
+
 private:
     virtual void fired() = 0;
 
