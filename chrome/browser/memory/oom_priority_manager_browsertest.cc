@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
@@ -19,13 +20,22 @@
 
 using content::OpenURLParams;
 
-// OomPriorityManager is only active on Chrome OS.
-#if defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 
 namespace memory {
 namespace {
 
-typedef InProcessBrowserTest OomPriorityManagerTest;
+class OomPriorityManagerTest : public InProcessBrowserTest {
+ public:
+  // Tab discarding is enabled by default on CrOS, on other platforms, force it
+  // by setting the command line flag.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+#if !defined(OS_CHROMEOS)
+    command_line->AppendSwitch(switches::kEnableTabDiscarding);
+#endif
+  }
+
+};
 
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using content::WindowedNotificationObserver;
@@ -211,4 +221,4 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
 }  // namespace
 }  // namespace memory
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // OS_WIN || OS_CHROMEOS

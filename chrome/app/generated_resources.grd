@@ -15802,6 +15802,16 @@ After you create a new supervised user, you can manage their settings at any tim
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your password for <ph name="ORIGIN">$2<ex>example.com</ex></ph>?
       </message>
 
+    <if expr="is_win">
+      <!-- Tab discarding -->
+      <message name="IDS_FLAGS_ENABLE_TAB_DISCARDING_NAME" desc="Name for the flag to enable tab discarding.">
+        Enable tab discarding
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TAB_DISCARDING_DESCRIPTION" desc="Description for the flag to enable tab description.">
+        If enabled, tabs get discarded from memory when the system memory is low. Discarded tabs are still visible on the tab strip and get reloaded when clicked on.
+      </message>
+    </if>
+
     </messages>
   </release>
 </grit>

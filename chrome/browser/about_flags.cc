@@ -2070,6 +2070,13 @@ const Experiment kExperiments[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignDownloads)},
 #endif
+#if defined(OS_WIN)
+    {"enable-tab-discarding",
+     IDS_FLAGS_ENABLE_TAB_DISCARDING_NAME,
+     IDS_FLAGS_ENABLE_TAB_DISCARDING_DESCRIPTION,
+     kOsWin,
+     SINGLE_VALUE_TYPE(switches::kEnableTabDiscarding)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

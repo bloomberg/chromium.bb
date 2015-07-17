@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/memory/tab_stats.h"
 
+class BrowserList;
 class GURL;
 
 namespace memory {
@@ -102,6 +103,12 @@ class OomPriorityManager {
 
   // Returns the list of the stats for all renderers.
   TabStatsList GetTabStatsOnUIThread();
+
+  // Adds all the stats of the tabs in |browser_list| into |stats_list|. If
+  // |active_desktop| is true, we consider its first window as being active.
+  void AddTabStats(BrowserList* browser_list,
+                   bool active_desktop,
+                   TabStatsList* stats_list);
 
   // Callback for when |update_timer_| fires. Takes care of executing the tasks
   // that need to be run periodically (see comment in implementation).

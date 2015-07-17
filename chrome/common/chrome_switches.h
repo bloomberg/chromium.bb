@@ -371,6 +371,7 @@ extern const char kRelauncherProcess[];
 #if defined(OS_WIN)
 extern const char kEnableCloudPrintXps[];
 extern const char kEnableProfileShortcutManager[];
+extern const char kEnableTabDiscarding[];
 extern const char kForceDesktop[];
 extern const char kForceImmersive[];
 extern const char kHideIcons[];

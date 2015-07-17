@@ -95,7 +95,6 @@ extern const char kChromeUIBluetoothPairingURL[];
 extern const char kChromeUICertificateManagerDialogURL[];
 extern const char kChromeUIChooseMobileNetworkURL[];
 extern const char kChromeUIDeviceEmulatorURL[];
-extern const char kChromeUIDiscardsURL[];
 extern const char kChromeUIFirstRunURL[];
 extern const char kChromeUIImageBurnerURL[];
 extern const char kChromeUIKeyboardOverlayURL[];
@@ -138,6 +137,11 @@ extern const char kChromeUIWebRtcLogsURL[];
 
 #if defined(ENABLE_MEDIA_ROUTER)
 extern const char kChromeUIMediaRouterURL[];
+#endif
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+extern const char kChromeUIDiscardsHost[];
+extern const char kChromeUIDiscardsURL[];
 #endif
 
 // chrome components of URLs. Should be kept in sync with the full URLs above.
@@ -257,7 +261,6 @@ extern const char kChromeUICertificateManagerHost[];
 extern const char kChromeUIChooseMobileNetworkHost[];
 extern const char kChromeUICryptohomeHost[];
 extern const char kChromeUIDeviceEmulatorHost[];
-extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIFirstRunHost[];
 extern const char kChromeUIImageBurnerHost[];
 extern const char kChromeUIKeyboardOverlayHost[];
@@ -545,6 +548,11 @@ extern const char kMac32BitDeprecationURL[];
 
 // The URL for the "Learn more" link the the Easy Unlock settings.
 extern const char kEasyUnlockLearnMoreUrl[];
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+extern const char kChromeUIDiscardsHost[];
+extern const char kChromeUIDiscardsURL[];
+#endif
 
 }  // namespace chrome
 

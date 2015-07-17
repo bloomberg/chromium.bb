@@ -344,13 +344,9 @@ bool OomPriorityManager::CompareTabStats(TabStats first, TabStats second) {
 // if needed (if we detect that the machine was asleep) and will fire the stats
 // updating on ChromeOS via the delegate.
 void OomPriorityManager::UpdateTimerCallback() {
-#if defined(USE_ASH) || defined(OS_CHROMEOS)
-  if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty())
+  if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty() &&
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty())
     return;
-#else
-  if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty())
-    return;
-#endif
 
   // Check for a discontinuity in time caused by the machine being suspended.
   if (!last_adjust_time_.is_null()) {
@@ -381,14 +377,33 @@ TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open
-  bool browser_active = true;
-#if defined(USE_ASH) || defined(OS_CHROMEOS)
-  const BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-#else
-  const BrowserList* browser_list =
-      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
-#endif
+
+  // We go through each window to get all the tabs. Depending on the platform,
+  // windows are either native or ash or both. We want to make sure to go
+  // through them all, starting with the active window first (we use
+  // chrome::GetActiveDesktop to get the current used type).
+  AddTabStats(BrowserList::GetInstance(chrome::GetActiveDesktop()), true,
+              &stats_list);
+  if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_NATIVE) {
+    AddTabStats(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE),
+                false, &stats_list);
+  } else if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH) {
+    AddTabStats(BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH), false,
+                &stats_list);
+  }
+
+  // Sort the data we collected so that least desirable to be
+  // killed is first, most desirable is last.
+  std::sort(stats_list.begin(), stats_list.end(), CompareTabStats);
+  return stats_list;
+}
+
+void OomPriorityManager::AddTabStats(BrowserList* browser_list,
+                                     bool active_desktop,
+                                     TabStatsList* stats_list) {
+  // If it's the active desktop, the first window will be the active one.
+  // Otherwise, we assume no active windows.
+  bool browser_active = active_desktop;
   for (BrowserList::const_reverse_iterator browser_iterator =
            browser_list->begin_last_active();
        browser_iterator != browser_list->end_last_active();
@@ -412,16 +427,12 @@ TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
         stats.child_process_host_id = contents->GetRenderProcessHost()->GetID();
         stats.title = contents->GetTitle();
         stats.tab_contents_id = IdFromWebContents(contents);
-        stats_list.push_back(stats);
+        stats_list->push_back(stats);
       }
     }
     // We process the active browser window in the first iteration.
     browser_active = false;
   }
-  // Sort the data we collected so that least desirable to be
-  // killed is first, most desirable is last.
-  std::sort(stats_list.begin(), stats_list.end(), CompareTabStats);
-  return stats_list;
 }
 
 void OomPriorityManager::OnMemoryPressure(

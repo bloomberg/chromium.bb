@@ -456,7 +456,7 @@ std::string ChromeURLs() {
   return html;
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 
 // Html output helper functions
 
@@ -534,7 +534,7 @@ std::string AboutDiscards(const std::string& path) {
   output.append(base::StringPrintf("<a href='%s%s'>Discard tab now</a>",
                                    chrome::kChromeUIDiscardsURL,
                                    kRunCommand));
-
+#if defined(OS_CHROMEOS)
   base::SystemMemoryInfoKB meminfo;
   base::GetSystemMemoryInfo(&meminfo);
   output.append("<h3>System memory information in MB</h3>");
@@ -567,12 +567,12 @@ std::string AboutDiscards(const std::string& path) {
   output.append(AddStringRow(
       "Graphics", base::IntToString(meminfo.gem_size / 1024 / 1024)));
   output.append("</table>");
-
+#endif  // OS_CHROMEOS
   AppendFooter(&output);
   return output;
 }
 
-#endif  // OS_CHROMEOS
+#endif  // OS_WIN || OS_CHROMEOS
 
 // AboutDnsHandler bounces the request back to the IO thread to collect
 // the DNS information.
@@ -904,7 +904,7 @@ void AboutUIHTMLSource::StartDataRequest(
 
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         idr).as_string();
-#if defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   } else if (source_name_ == chrome::kChromeUIDiscardsHost) {
     response = AboutDiscards(path);
 #endif

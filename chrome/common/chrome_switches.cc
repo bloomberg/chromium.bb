@@ -1292,6 +1292,9 @@ const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
 // they use a custom-user-data-dir which disables this.
 const char kEnableProfileShortcutManager[]  = "enable-profile-shortcut-manager";
 
+// Enable tab discarding when system is under memory pressure.
+const char kEnableTabDiscarding[] = "enable-tab-discarding";
+
 // For the DelegateExecute verb handler to launch Chrome in metro mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceImmersive[]                = "force-immersive";

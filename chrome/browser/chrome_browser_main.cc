@@ -1116,11 +1116,17 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 
   three_d_observer_.reset(new ThreeDAPIObserver());
 
-#if defined(OS_CHROMEOS)
   // Start the out-of-memory priority manager here so that we give the most
   // amount of time for the other services to start up before we start
   // adjusting the oom priority.
+  //
+  // On CrOS, it is always enabled. On other platforms, it's behind a flag for
+  // now.
+#if defined(OS_CHROMEOS)
   g_browser_process->GetOomPriorityManager()->Start();
+#elif defined(OS_WIN)
+  if (parsed_command_line().HasSwitch(switches::kEnableTabDiscarding))
+    g_browser_process->GetOomPriorityManager()->Start();
 #endif
 }
 
@@ -1733,10 +1739,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Android specific MessageLoop
   NOTREACHED();
 #else
-#if defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   // TODO(georgesak): Check if this is really needed and remove if possible.
   g_browser_process->GetOomPriorityManager()->Stop();
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.

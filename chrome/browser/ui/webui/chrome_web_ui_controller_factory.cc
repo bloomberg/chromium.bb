@@ -272,14 +272,16 @@ bool IsAboutUI(const GURL& url) {
           || url.host() == chrome::kChromeUITermsHost
 #endif
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
-          || url.host() == chrome::kChromeUILinuxProxyConfigHost
-          || url.host() == chrome::kChromeUISandboxHost
+          || url.host() == chrome::kChromeUILinuxProxyConfigHost ||
+          url.host() == chrome::kChromeUISandboxHost
 #endif
 #if defined(OS_CHROMEOS)
-          || url.host() == chrome::kChromeUIDiscardsHost
           || url.host() == chrome::kChromeUIOSCreditsHost
 #endif
-         );  // NOLINT
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+          || url.host() == chrome::kChromeUIDiscardsHost
+#endif
+          );  // NOLINT
 }
 
 // Returns a function that can be used to create the right type of WebUI for a
