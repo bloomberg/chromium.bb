@@ -83,7 +83,7 @@ inline bool matchesBMPSignature(char* contents)
     return !memcmp(contents, "BM", 2);
 }
 
-PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOption alphaOption, GammaAndColorProfileOption gammaAndColorProfileOption)
+PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
 {
     const unsigned longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
     ASSERT(longestSignatureLength == 14);
@@ -95,22 +95,22 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOpt
         return nullptr;
 
     if (matchesJPEGSignature(contents))
-        return adoptPtr(new JPEGImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
+        return adoptPtr(new JPEGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesPNGSignature(contents))
-        return adoptPtr(new PNGImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
+        return adoptPtr(new PNGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesGIFSignature(contents))
-        return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
+        return adoptPtr(new GIFImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesWebPSignature(contents))
-        return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
+        return adoptPtr(new WEBPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesICOSignature(contents) || matchesCURSignature(contents))
-        return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
+        return adoptPtr(new ICOImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     if (matchesBMPSignature(contents))
-        return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
+        return adoptPtr(new BMPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     return nullptr;
 }

@@ -83,9 +83,9 @@ public:
         GammaAndColorProfileIgnored
     };
 
-    ImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption gammaAndColorProfileOption, size_t maxDecodedBytes)
+    ImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
         : m_premultiplyAlpha(alphaOption == AlphaPremultiplied)
-        , m_ignoreGammaAndColorProfile(gammaAndColorProfileOption == GammaAndColorProfileIgnored)
+        , m_ignoreGammaAndColorProfile(colorOptions == GammaAndColorProfileIgnored)
         , m_maxDecodedBytes(maxDecodedBytes)
         , m_sizeAvailable(false)
         , m_isAllDataReceived(false)
