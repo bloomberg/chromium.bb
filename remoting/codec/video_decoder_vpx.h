@@ -12,6 +12,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
+typedef const struct vpx_codec_iface vpx_codec_iface_t;
 typedef struct vpx_image vpx_image_t;
 
 namespace remoting {
@@ -25,7 +26,7 @@ class VideoDecoderVpx : public VideoDecoder {
   ~VideoDecoderVpx() override;
 
   // VideoDecoder interface.
-  void Initialize(const webrtc::DesktopSize& screen_size) override;
+  void Initialize(const webrtc::DesktopSize& source_size) override;
   bool DecodePacket(const VideoPacket& packet) override;
   void Invalidate(const webrtc::DesktopSize& view_size,
                   const webrtc::DesktopRegion& region) override;
@@ -37,29 +38,21 @@ class VideoDecoderVpx : public VideoDecoder {
   const webrtc::DesktopRegion* GetImageShape() override;
 
  private:
-  explicit VideoDecoderVpx(ScopedVpxCodec codec);
+  explicit VideoDecoderVpx(vpx_codec_iface_t* codec);
 
-  // Calculates the difference between the desktop shape regions in two
-  // consecutive frames and updates |updated_region_| and |transparent_region_|
-  // accordingly.
-  void UpdateImageShapeRegion(webrtc::DesktopRegion* new_desktop_shape);
+  // Returns the dimensions of the most recent frame as a DesktopSize.
+  webrtc::DesktopSize image_size() const;
 
   ScopedVpxCodec codec_;
 
-  // Pointer to the last decoded image.
-  vpx_image_t* last_image_;
+  // Pointer to the most recently decoded image.
+  vpx_image_t* image_;
 
-  // The region updated that hasn't been copied to the screen yet.
+  // Area of the source that has changed since the last RenderFrame call.
   webrtc::DesktopRegion updated_region_;
 
-  // Output dimensions.
-  webrtc::DesktopSize screen_size_;
-
-  // The region occupied by the top level windows.
-  webrtc::DesktopRegion desktop_shape_;
-
-  // The region that should be make transparent.
-  webrtc::DesktopRegion transparent_region_;
+  // The shape of the most-recent frame, if any.
+  scoped_ptr<webrtc::DesktopRegion> desktop_shape_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderVpx);
 };

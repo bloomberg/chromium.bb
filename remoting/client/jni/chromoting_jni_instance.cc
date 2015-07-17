@@ -387,28 +387,28 @@ void ChromotingJniInstance::ConnectToHostOnDisplayThread() {
   view_.reset(new JniFrameConsumer(jni_runtime_, this));
   view_weak_factory_.reset(new base::WeakPtrFactory<JniFrameConsumer>(
       view_.get()));
-  frame_consumer_ = new FrameConsumerProxy(jni_runtime_->display_task_runner(),
-                                           view_weak_factory_->GetWeakPtr());
+  scoped_ptr<FrameConsumerProxy> frame_consumer =
+      make_scoped_ptr(new FrameConsumerProxy(view_weak_factory_->GetWeakPtr()));
 
   jni_runtime_->network_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromotingJniInstance::ConnectToHostOnNetworkThread,
-                 this));
+      base::Bind(&ChromotingJniInstance::ConnectToHostOnNetworkThread, this,
+                 base::Passed(&frame_consumer)));
 }
 
-void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
+void ChromotingJniInstance::ConnectToHostOnNetworkThread(
+    scoped_ptr<FrameConsumerProxy> frame_consumer) {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(frame_consumer);
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
-  client_context_.reset(new ClientContext(
-      jni_runtime_->network_task_runner().get()));
+  client_context_.reset(new ClientContext(jni_runtime_->network_task_runner()));
   client_context_->Start();
 
-  SoftwareVideoRenderer* renderer =
-      new SoftwareVideoRenderer(client_context_->main_task_runner(),
-                                client_context_->decode_task_runner(),
-                                frame_consumer_);
+  SoftwareVideoRenderer* renderer = new SoftwareVideoRenderer(
+      client_context_->main_task_runner(),
+      client_context_->decode_task_runner(), frame_consumer.Pass());
   view_->set_frame_producer(renderer);
   video_renderer_.reset(renderer);
 

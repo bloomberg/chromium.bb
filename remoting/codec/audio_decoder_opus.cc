@@ -26,10 +26,7 @@ const AudioPacket::SamplingRate kSamplingRate =
 }  // namespace
 
 AudioDecoderOpus::AudioDecoderOpus()
-    : sampling_rate_(0),
-      channels_(0),
-      decoder_(nullptr) {
-}
+    : sampling_rate_(0), channels_(0), decoder_(nullptr) {}
 
 AudioDecoderOpus::~AudioDecoderOpus() {
   DestroyDecoder();

@@ -36,11 +36,10 @@ class SoftwareVideoRenderer : public VideoRenderer,
   // outputting to |consumer|. The |main_task_runner_| is responsible for
   // receiving and queueing packets. The |decode_task_runner_| is responsible
   // for decoding the video packets.
-  // TODO(wez): Replace the ref-counted proxy with an owned FrameConsumer.
   SoftwareVideoRenderer(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-      scoped_refptr<FrameConsumerProxy> consumer);
+      scoped_ptr<FrameConsumerProxy> consumer);
   ~SoftwareVideoRenderer() override;
 
   // VideoRenderer interface.

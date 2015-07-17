@@ -46,8 +46,9 @@ void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
                                    const webrtc::DesktopRect& clip_area,
                                    webrtc::DesktopFrame* buffer,
                                    const webrtc::DesktopRegion& region,
-                                   const webrtc::DesktopRegion& shape) {
+                                   const webrtc::DesktopRegion* shape) {
   DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
+  DCHECK(!shape);
 
   if (bitmap_->size().width() != buffer->size().width() ||
       bitmap_->size().height() != buffer->size().height()) {

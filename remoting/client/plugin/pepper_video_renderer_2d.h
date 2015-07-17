@@ -30,7 +30,6 @@ class DesktopFrame;
 
 namespace remoting {
 
-class FrameConsumerProxy;
 class SoftwareVideoRenderer;
 
 // Video renderer that wraps SoftwareVideoRenderer and displays it using Pepper
@@ -60,7 +59,7 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
                    const webrtc::DesktopRect& clip_area,
                    webrtc::DesktopFrame* buffer,
                    const webrtc::DesktopRegion& region,
-                   const webrtc::DesktopRegion& shape) override;
+                   const webrtc::DesktopRegion* shape) override;
   void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
   void SetSourceSize(const webrtc::DesktopSize& source_size,
                      const webrtc::DesktopVector& dpi) override;
@@ -92,7 +91,6 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
   pp::Graphics2D graphics2d_;
 
-  scoped_refptr<FrameConsumerProxy> frame_consumer_proxy_;
   scoped_ptr<SoftwareVideoRenderer> software_video_renderer_;
 
   // List of allocated image buffers.
@@ -125,6 +123,9 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
   // Resolution of the most recent source frame dots-per-inch.
   webrtc::DesktopVector source_dpi_;
+
+  // Shape of the most recent source frame.
+  scoped_ptr<webrtc::DesktopRegion> source_shape_;
 
   // True if there is already a Flush() pending on the Graphics2D context.
   bool flush_pending_;

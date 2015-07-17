@@ -26,19 +26,20 @@ class FrameConsumer {
     FORMAT_RGBA,  // Used for Android's Bitmap class.
   };
 
-  // Accepts a buffer to be painted to the screen. The buffer's dimensions and
-  // relative position within the frame are specified by |clip_area|. Only
-  // pixels falling within |region| and the current clipping area are painted.
-  // The function assumes that the passed buffer was scaled to fit a window
-  // having |view_size| dimensions.
+  // Paints the contents of |buffer| into the area of the view identified
+  // by |clip_area|. |view_size| specifies the full-frame dimensions to which
+  // the |buffer|/|clip_area| portion was scaled. Implementations may be
+  // optimized to only paint pixels within the intersection of |region| and
+  // |clip_area|. If |shape| is non-NULL then it specifies the complete shape
+  // of the frame, otherwise the frame is un-shaped.
   //
-  // N.B. Both |clip_area| and |region| are in output coordinates relative to
-  // the frame.
+  // N.B. |clip_area|, |region| and |shape| should be provided in output view
+  // coordinates.
   virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
                            const webrtc::DesktopRect& clip_area,
                            webrtc::DesktopFrame* buffer,
                            const webrtc::DesktopRegion& region,
-                           const webrtc::DesktopRegion& shape) = 0;
+                           const webrtc::DesktopRegion* shape) = 0;
 
   // Accepts a buffer that couldn't be used for drawing for any reason (shutdown
   // is in progress, the view area has changed, etc.). The accepted buffer can

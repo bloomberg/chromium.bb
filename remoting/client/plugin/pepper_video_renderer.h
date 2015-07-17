@@ -40,8 +40,9 @@ class PepperVideoRenderer : public VideoRenderer {
     virtual void OnVideoSize(const webrtc::DesktopSize& size,
                              const webrtc::DesktopVector& dpi) = 0;
 
-    // Called when desktop shape changes.
-    virtual void OnVideoShape(const webrtc::DesktopRegion& shape) = 0;
+    // Called when desktop shape changes. |shape| should be NULL if frames are
+    // un-shaped.
+    virtual void OnVideoShape(const webrtc::DesktopRegion* shape) = 0;
 
     // Called with each frame's updated region, if EnableDebugDirtyRegion(true)
     // was called.

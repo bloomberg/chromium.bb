@@ -100,11 +100,11 @@ bool PepperVideoRenderer2D::Initialize(pp::Instance* instance,
 
   instance_ = instance;
   event_handler_ = event_handler;
-  frame_consumer_proxy_ = new FrameConsumerProxy(
-      context.main_task_runner(), weak_factory_.GetWeakPtr());
+  scoped_ptr<FrameConsumerProxy> frame_consumer_proxy =
+      make_scoped_ptr(new FrameConsumerProxy(weak_factory_.GetWeakPtr()));
   software_video_renderer_.reset(new SoftwareVideoRenderer(
       context.main_task_runner(), context.decode_task_runner(),
-      frame_consumer_proxy_));
+      frame_consumer_proxy.Pass()));
 
   return true;
 }
@@ -207,7 +207,7 @@ void PepperVideoRenderer2D::ApplyBuffer(const webrtc::DesktopSize& view_size,
                                         const webrtc::DesktopRect& clip_area,
                                         webrtc::DesktopFrame* buffer,
                                         const webrtc::DesktopRegion& region,
-                                        const webrtc::DesktopRegion& shape) {
+                                        const webrtc::DesktopRegion* shape) {
   DCHECK(CalledOnValidThread());
 
   if (!frame_received_) {
@@ -216,15 +216,20 @@ void PepperVideoRenderer2D::ApplyBuffer(const webrtc::DesktopSize& view_size,
   }
   // We cannot use the data in the buffer if its dimensions don't match the
   // current view size.
-  // TODO(alexeypa): We could rescale and draw it (or even draw it without
-  // rescaling) to reduce the perceived lag while we are waiting for
-  // the properly scaled data.
   if (!view_size_.equals(view_size)) {
     FreeBuffer(buffer);
     AllocateBuffers();
   } else {
     FlushBuffer(clip_area, buffer, region);
-    event_handler_->OnVideoShape(shape);
+    if (shape) {
+      if (!source_shape_ || !source_shape_->Equals(*shape)) {
+        source_shape_ = make_scoped_ptr(new webrtc::DesktopRegion(*shape));
+        event_handler_->OnVideoShape(source_shape_.get());
+      }
+    } else if (source_shape_) {
+      source_shape_ = nullptr;
+      event_handler_->OnVideoShape(nullptr);
+    }
   }
 }
 

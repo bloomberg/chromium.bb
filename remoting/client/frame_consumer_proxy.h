@@ -10,7 +10,6 @@
 #ifndef REMOTING_CLIENT_FRAME_CONSUMER_PROXY_H_
 #define REMOTING_CLIENT_FRAME_CONSUMER_PROXY_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/client/frame_consumer.h"
 
@@ -20,33 +19,29 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class FrameConsumerProxy
-    : public base::RefCountedThreadSafe<FrameConsumerProxy>,
-      public FrameConsumer {
+class FrameConsumerProxy : public FrameConsumer {
  public:
-  // Constructs a proxy for |frame_consumer| which will trampoline invocations
-  // to |frame_consumer_message_loop|.
-  FrameConsumerProxy(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                     const base::WeakPtr<FrameConsumer>& frame_consumer);
+  // Constructs a FrameConsumer proxy which can be passed to another thread,
+  // and will direct calls to |frame_consumer| on the thread from which the
+  // proxy was constructed.
+  FrameConsumerProxy(const base::WeakPtr<FrameConsumer>& frame_consumer);
+  ~FrameConsumerProxy() override;
 
   // FrameConsumer implementation.
   void ApplyBuffer(const webrtc::DesktopSize& view_size,
                    const webrtc::DesktopRect& clip_area,
                    webrtc::DesktopFrame* buffer,
                    const webrtc::DesktopRegion& region,
-                   const webrtc::DesktopRegion& shape) override;
+                   const webrtc::DesktopRegion* shape) override;
   void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
   void SetSourceSize(const webrtc::DesktopSize& source_size,
                      const webrtc::DesktopVector& dpi) override;
   PixelFormat GetPixelFormat() override;
 
  private:
-  friend class base::RefCountedThreadSafe<FrameConsumerProxy>;
-  ~FrameConsumerProxy() override;
-
   base::WeakPtr<FrameConsumer> frame_consumer_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   PixelFormat pixel_format_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameConsumerProxy);

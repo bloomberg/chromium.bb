@@ -80,7 +80,7 @@ class SoftwareVideoRenderer::Core {
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-       scoped_refptr<FrameConsumerProxy> consumer);
+       scoped_ptr<FrameConsumerProxy> consumer);
   ~Core();
 
   void OnSessionConfig(const protocol::SessionConfig& config);
@@ -104,7 +104,7 @@ class SoftwareVideoRenderer::Core {
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
-  scoped_refptr<FrameConsumerProxy> consumer_;
+  scoped_ptr<FrameConsumerProxy> consumer_;
   scoped_ptr<VideoDecoder> decoder_;
 
   // Remote screen size in pixels.
@@ -129,13 +129,12 @@ class SoftwareVideoRenderer::Core {
 SoftwareVideoRenderer::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-    scoped_refptr<FrameConsumerProxy> consumer)
+    scoped_ptr<FrameConsumerProxy> consumer)
     : main_task_runner_(main_task_runner),
       decode_task_runner_(decode_task_runner),
-      consumer_(consumer),
+      consumer_(consumer.Pass()),
       paint_scheduled_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 SoftwareVideoRenderer::Core::~Core() {
 }
@@ -242,7 +241,7 @@ void SoftwareVideoRenderer::Core::DoPaint() {
   if (!output_region.is_empty()) {
     buffers_.pop_front();
     consumer_->ApplyBuffer(view_size_, clip_area_, buffer, output_region,
-                           *decoder_->GetImageShape());
+                           decoder_->GetImageShape());
   }
 }
 
@@ -315,9 +314,9 @@ void SoftwareVideoRenderer::Core::SetOutputSizeAndClip(
 SoftwareVideoRenderer::SoftwareVideoRenderer(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-    scoped_refptr<FrameConsumerProxy> consumer)
+    scoped_ptr<FrameConsumerProxy> consumer)
     : decode_task_runner_(decode_task_runner),
-      core_(new Core(main_task_runner, decode_task_runner, consumer)),
+      core_(new Core(main_task_runner, decode_task_runner, consumer.Pass())),
       latest_event_timestamp_(0),
       weak_factory_(this) {
   DCHECK(CalledOnValidThread());

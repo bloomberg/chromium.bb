@@ -103,7 +103,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
-  webrtc::DesktopRegion desktop_shape_;
+  scoped_ptr<webrtc::DesktopRegion> frame_shape_;
 
   webrtc::DesktopSize view_size_;
 

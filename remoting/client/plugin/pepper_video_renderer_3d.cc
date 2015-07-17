@@ -238,24 +238,24 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
   if (resolution_changed)
     event_handler_->OnVideoSize(frame_size_, frame_dpi_);
 
-  // Update the desktop shape region.
-  webrtc::DesktopRegion desktop_shape;
+  // Process the frame shape, if supplied.
   if (packet->has_use_desktop_shape()) {
-    for (int i = 0; i < packet->desktop_shape_rects_size(); ++i) {
-      Rect remoting_rect = packet->desktop_shape_rects(i);
-      desktop_shape.AddRect(webrtc::DesktopRect::MakeXYWH(
-          remoting_rect.x(), remoting_rect.y(),
-          remoting_rect.width(), remoting_rect.height()));
+    if (packet->use_desktop_shape()) {
+      scoped_ptr<webrtc::DesktopRegion> shape(new webrtc::DesktopRegion);
+      for (int i = 0; i < packet->desktop_shape_rects_size(); ++i) {
+        Rect remoting_rect = packet->desktop_shape_rects(i);
+        shape->AddRect(webrtc::DesktopRect::MakeXYWH(
+            remoting_rect.x(), remoting_rect.y(), remoting_rect.width(),
+            remoting_rect.height()));
+      }
+      if (!frame_shape_ || !frame_shape_->Equals(*shape)) {
+        frame_shape_ = shape.Pass();
+        event_handler_->OnVideoShape(frame_shape_.get());
+      }
+    } else if (frame_shape_) {
+      frame_shape_ = nullptr;
+      event_handler_->OnVideoShape(nullptr);
     }
-  } else {
-    // Fallback for the case when the host didn't include the desktop shape.
-    desktop_shape =
-        webrtc::DesktopRegion(webrtc::DesktopRect::MakeSize(frame_size_));
-  }
-
-  if (!desktop_shape_.Equals(desktop_shape)) {
-    desktop_shape_.Swap(&desktop_shape);
-    event_handler_->OnVideoShape(desktop_shape_);
   }
 
   // Report the dirty region, for debugging, if requested.

@@ -44,7 +44,7 @@ class JniFrameConsumer : public FrameConsumer {
                    const webrtc::DesktopRect& clip_area,
                    webrtc::DesktopFrame* buffer,
                    const webrtc::DesktopRegion& region,
-                   const webrtc::DesktopRegion& shape) override;
+                   const webrtc::DesktopRegion* shape) override;
   void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
   void SetSourceSize(const webrtc::DesktopSize& source_size,
                      const webrtc::DesktopVector& dpi) override;

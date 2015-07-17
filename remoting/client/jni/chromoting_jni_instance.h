@@ -119,7 +119,8 @@ class ChromotingJniInstance
   ~ChromotingJniInstance() override;
 
   void ConnectToHostOnDisplayThread();
-  void ConnectToHostOnNetworkThread();
+  void ConnectToHostOnNetworkThread(
+      scoped_ptr<FrameConsumerProxy> frame_consumer);
   void DisconnectFromHostOnNetworkThread();
 
   // Notifies the user interface that the user needs to enter a PIN. The
@@ -150,9 +151,8 @@ class ChromotingJniInstance
   std::string host_jid_;
 
   // This group of variables is to be used on the display thread.
-  scoped_refptr<FrameConsumerProxy> frame_consumer_;
   scoped_ptr<JniFrameConsumer> view_;
-  scoped_ptr<base::WeakPtrFactory<JniFrameConsumer> > view_weak_factory_;
+  scoped_ptr<base::WeakPtrFactory<JniFrameConsumer>> view_weak_factory_;
 
   // This group of variables is to be used on the network thread.
   scoped_ptr<ClientContext> client_context_;

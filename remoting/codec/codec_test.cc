@@ -205,10 +205,7 @@ class VideoDecoderTester {
 // the message to other subprograms for validaton.
 class VideoEncoderTester {
  public:
-  VideoEncoderTester()
-      : decoder_tester_(nullptr),
-        data_available_(0) {
-  }
+  VideoEncoderTester() : decoder_tester_(nullptr), data_available_(0) {}
 
   ~VideoEncoderTester() {
     EXPECT_GT(data_available_, 0);
