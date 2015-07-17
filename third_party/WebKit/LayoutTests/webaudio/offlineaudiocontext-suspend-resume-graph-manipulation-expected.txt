@@ -1,0 +1,14 @@
+Test synchronous graph manipulation with OfflineAudioContext.suspend() and OfflineAudioContext.resume().
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS The first suspend time is equal to 1.
+PASS The second suspend time is equal to 2.
+PASS Buffer [0, 12800) contains only the constant 0.
+PASS Buffer [12800, 25600) contains only the constant 1.
+PASS Buffer [25600, 38400) contains only the constant 0.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

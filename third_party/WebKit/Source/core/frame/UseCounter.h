@@ -791,6 +791,9 @@ public:
         HTMLMediaElementPreloadMetadata = 893,
         HTMLMediaElementPreloadAuto = 894,
         HTMLMediaElementPreloadDefault = 895,
+        OfflineAudioContextStartRendering = 896,
+        OfflineAudioContextSuspend = 897,
+        OfflineAudioContextResume = 898,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

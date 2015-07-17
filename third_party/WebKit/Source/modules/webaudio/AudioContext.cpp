@@ -77,6 +77,29 @@ DEFINE_TRACE(AudioContext)
     AbstractAudioContext::trace(visitor);
 }
 
+ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
+{
+    if (isContextClosed()) {
+        // We've already closed the context previously, but it hasn't yet been resolved, so just
+        // create a new promise and reject it.
+        return ScriptPromise::rejectWithDOMException(
+            scriptState,
+            DOMException::create(InvalidStateError,
+                "Cannot close a context that is being closed or has already been closed."));
+    }
+
+    m_closeResolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = m_closeResolver->promise();
+
+    // Stop the audio context. This will stop the destination node from pulling audio anymore. And
+    // since we have disconnected the destination from the audio graph, and thus has no references,
+    // the destination node can GCed if JS has no references. uninitialize() will also resolve the Promise
+    // created here.
+    uninitialize();
+
+    return promise;
+}
+
 ScriptPromise AudioContext::suspendContext(ScriptState* scriptState)
 {
     ASSERT(isMainThread());
@@ -101,6 +124,15 @@ ScriptPromise AudioContext::suspendContext(ScriptState* scriptState)
     return promise;
 }
 
+ScriptPromise AudioContext::suspendContext(ScriptState* scriptState, double suspendTime)
+{
+    // This CANNOT be called on AudioContext; it is to implement the pure
+    // virtual interface from AbstractAudioContext.
+    RELEASE_ASSERT_NOT_REACHED();
+
+    return ScriptPromise();
+}
+
 ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
 {
     ASSERT(isMainThread());
@@ -123,32 +155,9 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
     // Save the resolver which will get resolved when the destination node starts pulling on the
     // graph again.
     {
-        AutoLocker locker(this);
+        AutoLocker(this);
         m_resumeResolvers.append(resolver);
     }
-
-    return promise;
-}
-
-ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
-{
-    if (isContextClosed()) {
-        // We've already closed the context previously, but it hasn't yet been resolved, so just
-        // create a new promise and reject it.
-        return ScriptPromise::rejectWithDOMException(
-            scriptState,
-            DOMException::create(InvalidStateError,
-                "Cannot close a context that is being closed or has already been closed."));
-    }
-
-    m_closeResolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = m_closeResolver->promise();
-
-    // Stop the audio context. This will stop the destination node from pulling audio anymore. And
-    // since we have disconnected the destination from the audio graph, and thus has no references,
-    // the destination node can GCed if JS has no references. uninitialize() will also resolve the Promise
-    // created here.
-    uninitialize();
 
     return promise;
 }

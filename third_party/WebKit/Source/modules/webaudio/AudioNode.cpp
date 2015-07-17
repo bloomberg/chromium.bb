@@ -43,10 +43,10 @@
 namespace blink {
 
 AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
-    : m_isInitialized(false)
+    : m_context(node.context())
+    , m_isInitialized(false)
     , m_nodeType(NodeTypeUnknown)
     , m_node(&node)
-    , m_context(node.context())
     , m_sampleRate(sampleRate)
     , m_lastProcessingTime(-1)
     , m_lastNonSilentTime(-1)

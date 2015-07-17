@@ -27,6 +27,7 @@
 
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioDestinationNode.h"
+#include "modules/webaudio/OfflineAudioContext.h"
 #include "public/platform/WebThread.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -35,6 +36,7 @@ namespace blink {
 
 class AbstractAudioContext;
 class AudioBus;
+class OfflineAudioContext;
 
 class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 public:
@@ -46,16 +48,32 @@ public:
     void initialize() override;
     void uninitialize() override;
 
-    // AudioDestinationHandler
+    OfflineAudioContext* context() const final;
+
+    // Override the one from AudioContext. Create a rendering thread and
+    // initiate rendering loop or resume rendering if already started and
+    // suspended.
     void startRendering() override;
+
+    // There is no support of the explicit stopping in OfflineAudioContext. This
+    // is just to match the class method signature.
     void stopRendering() override;
 
-    float sampleRate()  const override { return m_renderTarget->sampleRate(); }
+    float sampleRate() const override { return m_renderTarget->sampleRate(); }
+
+    // Return the frame position by quantizing the time (in seconds) and
+    // rounding it down to the nearest render quantum boundary.
+    size_t quantizeTimeToRenderQuantum(double when) const;
+
+    WebThread* offlineRenderThread();
 
 private:
     OfflineAudioDestinationHandler(AudioNode&, AudioBuffer* renderTarget);
-    void offlineRender();
-    void offlineRenderInternal();
+
+    // For start/suspend/resume rendering in the destination node.
+    void startOfflineRendering();
+    void runOfflineRendering();
+    void finishOfflineRendering();
 
     // For completion callback on main thread.
     void notifyComplete();
@@ -69,7 +87,11 @@ private:
 
     // Rendering thread.
     OwnPtr<WebThread> m_renderThread;
-    bool m_startedRendering;
+
+    size_t m_framesProcessed;
+    size_t m_framesToProcess;
+
+    bool m_isRenderingStarted;
 };
 
 class OfflineAudioDestinationNode final : public AudioDestinationNode {

@@ -26,11 +26,14 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     ScriptPromise closeContext(ScriptState*) final;
-    bool isContextClosed() const final;
-
     ScriptPromise suspendContext(ScriptState*) final;
     ScriptPromise resumeContext(ScriptState*) final;
 
+    // This is to implement the pure virtual method from AbstractAudioContext.
+    // CANNOT be called on OfflineAudioContext.
+    ScriptPromise suspendContext(ScriptState*, double) final;
+
+    bool isContextClosed() const final;
     bool hasRealtimeConstraint() final { return true; }
 
 protected:
