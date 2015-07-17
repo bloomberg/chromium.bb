@@ -55177,6 +55177,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="334" label="LAUNCHER_PAGE_ON_POP_SUBPAGE"/>
   <int value="335" label="DIAL_ON_DEVICE_LIST"/>
   <int value="336" label="DIAL_ON_ERROR"/>
+  <int value="337" label="CAST_CHANNEL_ON_MESSAGE"/>
+  <int value="338" label="CAST_CHANNEL_ON_ERROR"/>
+  <int value="339" label="SCREENLOCK_PRIVATE_ON_CHANGED"/>
+  <int value="340" label="SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

@@ -17,6 +17,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/common/api/bluetooth_low_energy.h"
 
 namespace base {
@@ -286,6 +287,7 @@ class BluetoothLowEnergyEventRouter
   // should be the instance ID of the involved characteristic. Otherwise, an
   // empty string should be passed.
   void DispatchEventToExtensionsWithPermission(
+      events::HistogramValue histogram_value,
       const std::string& event_name,
       const device::BluetoothUUID& uuid,
       const std::string& characteristic_id,

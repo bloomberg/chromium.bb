@@ -139,8 +139,8 @@ void SettingsPrivateEventRouter::OnPreferenceChanged(
       api::settings_private::OnPrefsChanged::Create(prefs));
 
   scoped_ptr<Event> extension_event(new Event(
-      events::UNKNOWN, api::settings_private::OnPrefsChanged::kEventName,
-      args.Pass()));
+      events::SETTINGS_PRIVATE_ON_PREFS_CHANGED,
+      api::settings_private::OnPrefsChanged::kEventName, args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
 }
 

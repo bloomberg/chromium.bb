@@ -134,7 +134,7 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     accept_info.client_socket_id = client_socket_id;
     scoped_ptr<base::ListValue> args =
         sockets_tcp_server::OnAccept::Create(accept_info);
-    scoped_ptr<Event> event(new Event(events::UNKNOWN,
+    scoped_ptr<Event> event(new Event(events::SOCKETS_TCP_SERVER_ON_ACCEPT,
                                       sockets_tcp_server::OnAccept::kEventName,
                                       args.Pass()));
     PostEvent(params, event.Pass());
@@ -154,7 +154,7 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     scoped_ptr<base::ListValue> args =
         sockets_tcp_server::OnAcceptError::Create(accept_error_info);
     scoped_ptr<Event> event(
-        new Event(events::UNKNOWN,
+        new Event(events::SOCKETS_TCP_SERVER_ON_ACCEPT_ERROR,
                   sockets_tcp_server::OnAcceptError::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
 

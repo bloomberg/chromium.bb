@@ -104,7 +104,7 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
     receive_info.data = data;
     scoped_ptr<base::ListValue> args = serial::OnReceive::Create(receive_info);
     scoped_ptr<extensions::Event> event(
-        new extensions::Event(extensions::events::UNKNOWN,
+        new extensions::Event(extensions::events::SERIAL_ON_RECEIVE,
                               serial::OnReceive::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
   }
@@ -116,7 +116,7 @@ void SerialEventDispatcher::ReceiveCallback(const ReceiveParams& params,
     scoped_ptr<base::ListValue> args =
         serial::OnReceiveError::Create(error_info);
     scoped_ptr<extensions::Event> event(
-        new extensions::Event(extensions::events::UNKNOWN,
+        new extensions::Event(extensions::events::SERIAL_ON_RECEIVE_ERROR,
                               serial::OnReceiveError::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
     if (ShouldPauseOnReceiveError(error)) {

@@ -170,7 +170,7 @@ void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
   scoped_ptr<base::ListValue> args(
       core_api::networking_private::OnNetworkListChanged::Create(changes));
   scoped_ptr<Event> extension_event(
-      new Event(events::UNKNOWN,
+      new Event(events::NETWORKING_PRIVATE_ON_NETWORK_LIST_CHANGED,
                 core_api::networking_private::OnNetworkListChanged::kEventName,
                 args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
@@ -186,7 +186,7 @@ void NetworkingPrivateEventRouterImpl::DeviceListChanged() {
   scoped_ptr<base::ListValue> args(
       core_api::networking_private::OnDeviceStateListChanged::Create());
   scoped_ptr<Event> extension_event(new Event(
-      events::UNKNOWN,
+      events::NETWORKING_PRIVATE_ON_DEVICE_STATE_LIST_CHANGED,
       core_api::networking_private::OnDeviceStateListChanged::kEventName,
       args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
@@ -206,7 +206,7 @@ void NetworkingPrivateEventRouterImpl::NetworkPropertiesUpdated(
       core_api::networking_private::OnNetworksChanged::Create(
           std::vector<std::string>(1, network->guid())));
   scoped_ptr<Event> extension_event(
-      new Event(events::UNKNOWN,
+      new Event(events::NETWORKING_PRIVATE_ON_NETWORKS_CHANGED,
                 core_api::networking_private::OnNetworksChanged::kEventName,
                 args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
@@ -270,7 +270,7 @@ void NetworkingPrivateEventRouterImpl::OnPortalDetectionCompleted(
       core_api::networking_private::OnPortalDetectionCompleted::Create(path,
                                                                        status));
   scoped_ptr<Event> extension_event(new Event(
-      events::UNKNOWN,
+      events::NETWORKING_PRIVATE_ON_PORTAL_DETECTION_COMPLETED,
       core_api::networking_private::OnPortalDetectionCompleted::kEventName,
       args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());

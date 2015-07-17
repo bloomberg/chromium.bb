@@ -866,8 +866,9 @@ void BluetoothLowEnergyEventRouter::GattServiceRemoved(
 
   scoped_ptr<base::ListValue> args =
       apibtle::OnServiceRemoved::Create(api_service);
-  scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, apibtle::OnServiceRemoved::kEventName, args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::BLUETOOTH_LOW_ENERGY_ON_SERVICE_REMOVED,
+                apibtle::OnServiceRemoved::kEventName, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
@@ -887,8 +888,9 @@ void BluetoothLowEnergyEventRouter::GattDiscoveryCompleteForService(
 
   scoped_ptr<base::ListValue> args =
       apibtle::OnServiceAdded::Create(api_service);
-  scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, apibtle::OnServiceAdded::kEventName, args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::BLUETOOTH_LOW_ENERGY_ON_SERVICE_ADDED,
+                apibtle::OnServiceAdded::kEventName, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
@@ -906,8 +908,8 @@ void BluetoothLowEnergyEventRouter::GattServiceChanged(
   PopulateService(service, &api_service);
 
   DispatchEventToExtensionsWithPermission(
-      apibtle::OnServiceChanged::kEventName,
-      service->GetUUID(),
+      events::BLUETOOTH_LOW_ENERGY_ON_SERVICE_CHANGED,
+      apibtle::OnServiceChanged::kEventName, service->GetUUID(),
       "" /* characteristic_id */,
       apibtle::OnServiceChanged::Create(api_service));
 }
@@ -1014,10 +1016,9 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
   args->Append(apibtle::CharacteristicToValue(&api_characteristic).release());
 
   DispatchEventToExtensionsWithPermission(
-      apibtle::OnCharacteristicValueChanged::kEventName,
-      service->GetUUID(),
-      characteristic->GetIdentifier(),
-      args.Pass());
+      events::BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_VALUE_CHANGED,
+      apibtle::OnCharacteristicValueChanged::kEventName, service->GetUUID(),
+      characteristic->GetIdentifier(), args.Pass());
 }
 
 void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
@@ -1045,9 +1046,9 @@ void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
   args->Append(apibtle::DescriptorToValue(&api_descriptor).release());
 
   DispatchEventToExtensionsWithPermission(
+      events::BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_VALUE_CHANGED,
       apibtle::OnDescriptorValueChanged::kEventName,
-      characteristic->GetService()->GetUUID(),
-      "" /* characteristic_id */,
+      characteristic->GetService()->GetUUID(), "" /* characteristic_id */,
       args.Pass());
 }
 
@@ -1116,6 +1117,7 @@ void BluetoothLowEnergyEventRouter::InitializeIdentifierMappings() {
 }
 
 void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     const device::BluetoothUUID& uuid,
     const std::string& characteristic_id,
@@ -1161,7 +1163,7 @@ void BluetoothLowEnergyEventRouter::DispatchEventToExtensionsWithPermission(
     // Send the event.
     scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
     scoped_ptr<Event> event(
-        new Event(events::UNKNOWN, event_name, args_copy.Pass()));
+        new Event(histogram_value, event_name, args_copy.Pass()));
     EventRouter::Get(browser_context_)->DispatchEventToExtension(
         extension_id, event.Pass());
   }

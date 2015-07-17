@@ -106,6 +106,7 @@ class TabsEventRouter : public TabStripModelObserver,
   // The TabsEventRouter listens to events for all profiles,
   // so we avoid duplication by dropping events destined for other profiles.
   void DispatchEvent(Profile* profile,
+                     events::HistogramValue histogram_value,
                      const std::string& event_name,
                      scoped_ptr<base::ListValue> args,
                      EventRouter::UserGestureState user_gesture);
@@ -115,10 +116,6 @@ class TabsEventRouter : public TabStripModelObserver,
       const std::string& event_name,
       scoped_ptr<base::ListValue> event_args,
       scoped_ptr<base::ListValue> cross_incognito_args);
-
-  void DispatchSimpleBrowserEvent(Profile* profile,
-                                  const int window_id,
-                                  const std::string& event_name);
 
   // Packages |changed_properties| as a tab updated event for the tab |contents|
   // and dispatches the event to the extension.

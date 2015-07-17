@@ -355,6 +355,10 @@ enum HistogramValue {
   LAUNCHER_PAGE_ON_POP_SUBPAGE,
   DIAL_ON_DEVICE_LIST,
   DIAL_ON_ERROR,
+  CAST_CHANNEL_ON_MESSAGE,
+  CAST_CHANNEL_ON_ERROR,
+  SCREENLOCK_PRIVATE_ON_CHANGED,
+  SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

@@ -65,8 +65,8 @@ void WindowsEventRouter::OnWindowControllerAdded(
   base::DictionaryValue* window_dictionary =
       window_controller->CreateWindowValue();
   args->Append(window_dictionary);
-  DispatchEvent(windows::OnCreated::kEventName, window_controller->profile(),
-                args.Pass());
+  DispatchEvent(events::WINDOWS_ON_CREATED, windows::OnCreated::kEventName,
+                window_controller->profile(), args.Pass());
 }
 
 void WindowsEventRouter::OnWindowControllerRemoved(
@@ -79,9 +79,8 @@ void WindowsEventRouter::OnWindowControllerRemoved(
   int window_id = window_controller->GetWindowId();
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::FundamentalValue(window_id));
-  DispatchEvent(windows::OnRemoved::kEventName,
-                window_controller->profile(),
-                args.Pass());
+  DispatchEvent(events::WINDOWS_ON_REMOVED, windows::OnRemoved::kEventName,
+                window_controller->profile(), args.Pass());
 }
 
 #if !defined(OS_MACOSX)
@@ -145,7 +144,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
   if (!HasEventListener(windows::OnFocusChanged::kEventName))
     return;
 
-  scoped_ptr<Event> event(new Event(events::UNKNOWN,
+  scoped_ptr<Event> event(new Event(events::WINDOWS_ON_FOCUS_CHANGED,
                                     windows::OnFocusChanged::kEventName,
                                     make_scoped_ptr(new base::ListValue())));
   event->will_dispatch_callback =
@@ -155,10 +154,11 @@ void WindowsEventRouter::OnActiveWindowChanged(
   EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
-void WindowsEventRouter::DispatchEvent(const std::string& event_name,
-                                      Profile* profile,
-                                      scoped_ptr<base::ListValue> args) {
-  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
+void WindowsEventRouter::DispatchEvent(events::HistogramValue histogram_value,
+                                       const std::string& event_name,
+                                       Profile* profile,
+                                       scoped_ptr<base::ListValue> args) {
+  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
   event->restrict_to_browser_context = profile;
   EventRouter::Get(profile)->BroadcastEvent(event.Pass());
 }

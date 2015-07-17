@@ -161,8 +161,8 @@ void OperationManager::OnProgress(const ExtensionId& extension_id,
   scoped_ptr<base::ListValue> args(
       image_writer_api::OnWriteProgress::Create(info));
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, image_writer_api::OnWriteProgress::kEventName,
-                args.Pass()));
+      new Event(events::IMAGE_WRITER_PRIVATE_ON_WRITE_PROGRESS,
+                image_writer_api::OnWriteProgress::kEventName, args.Pass()));
 
   EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
@@ -173,8 +173,8 @@ void OperationManager::OnComplete(const ExtensionId& extension_id) {
 
   scoped_ptr<base::ListValue> args(image_writer_api::OnWriteComplete::Create());
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, image_writer_api::OnWriteComplete::kEventName,
-                args.Pass()));
+      new Event(events::IMAGE_WRITER_PRIVATE_ON_WRITE_COMPLETE,
+                image_writer_api::OnWriteComplete::kEventName, args.Pass()));
 
   EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
@@ -196,7 +196,7 @@ void OperationManager::OnError(const ExtensionId& extension_id,
 
   scoped_ptr<base::ListValue> args(
       image_writer_api::OnWriteError::Create(info, error_message));
-  scoped_ptr<Event> event(new Event(events::UNKNOWN,
+  scoped_ptr<Event> event(new Event(events::IMAGE_WRITER_PRIVATE_ON_WRITE_ERROR,
                                     image_writer_api::OnWriteError::kEventName,
                                     args.Pass()));
 

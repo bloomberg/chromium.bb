@@ -619,8 +619,9 @@ SessionsEventRouter::~SessionsEventRouter() {
 void SessionsEventRouter::TabRestoreServiceChanged(
     TabRestoreService* service) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  EventRouter::Get(profile_)->BroadcastEvent(make_scoped_ptr(new Event(
-      events::UNKNOWN, api::sessions::OnChanged::kEventName, args.Pass())));
+  EventRouter::Get(profile_)->BroadcastEvent(make_scoped_ptr(
+      new Event(events::SESSIONS_ON_CHANGED,
+                api::sessions::OnChanged::kEventName, args.Pass())));
 }
 
 void SessionsEventRouter::TabRestoreServiceDestroyed(

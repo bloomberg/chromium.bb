@@ -172,8 +172,9 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   }
 
   scoped_ptr<base::ListValue> results = mdns::OnServiceList::Create(args);
-  scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, mdns::OnServiceList::kEventName, results.Pass()));
+  scoped_ptr<Event> event(new Event(events::MDNS_ON_SERVICE_LIST,
+                                    mdns::OnServiceList::kEventName,
+                                    results.Pass()));
   event->restrict_to_browser_context = browser_context_;
   event->filter_info.SetServiceType(service_type);
 

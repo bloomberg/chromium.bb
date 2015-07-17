@@ -65,8 +65,8 @@ void NotificationProviderEventRouter::Create(
           sender_id, notification_id, options);
 
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, api::notification_provider::OnCreated::kEventName,
-      args.Pass()));
+      events::NOTIFICATION_PROVIDER_ON_CREATED,
+      api::notification_provider::OnCreated::kEventName, args.Pass()));
 
   EventRouter::Get(profile_)
       ->DispatchEventToExtension(notification_provider_id, event.Pass());
@@ -82,8 +82,8 @@ void NotificationProviderEventRouter::Update(
           sender_id, notification_id, options);
 
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, api::notification_provider::OnUpdated::kEventName,
-      args.Pass()));
+      events::NOTIFICATION_PROVIDER_ON_UPDATED,
+      api::notification_provider::OnUpdated::kEventName, args.Pass()));
 
   EventRouter::Get(profile_)
       ->DispatchEventToExtension(notification_provider_id, event.Pass());
@@ -97,8 +97,8 @@ void NotificationProviderEventRouter::Clear(
       api::notification_provider::OnCleared::Create(sender_id, notification_id);
 
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, api::notification_provider::OnCleared::kEventName,
-      args.Pass()));
+      events::NOTIFICATION_PROVIDER_ON_CLEARED,
+      api::notification_provider::OnCleared::kEventName, args.Pass()));
 
   EventRouter::Get(profile_)
       ->DispatchEventToExtension(notification_provider_id, event.Pass());

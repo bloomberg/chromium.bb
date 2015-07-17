@@ -527,7 +527,7 @@ void PrinterProviderAPIImpl::DispatchGetPrintersRequested(
   internal_args->AppendInteger(request_id);
 
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN,
+      new Event(events::PRINTER_PROVIDER_ON_GET_PRINTERS_REQUESTED,
                 core_api::printer_provider::OnGetPrintersRequested::kEventName,
                 internal_args.Pass()));
   // This callback is called synchronously during |BroadcastEvent|, so
@@ -566,7 +566,7 @@ void PrinterProviderAPIImpl::DispatchGetCapabilityRequested(
   internal_args->AppendString(internal_printer_id);
 
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN,
+      events::PRINTER_PROVIDER_ON_GET_CAPABILITY_REQUESTED,
       core_api::printer_provider::OnGetCapabilityRequested::kEventName,
       internal_args.Pass()));
 
@@ -614,9 +614,10 @@ void PrinterProviderAPIImpl::DispatchPrintRequested(
   // custom bindings.
   internal_args->AppendInteger(request_id);
   internal_args->Append(print_job.ToValue().release());
-  scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, core_api::printer_provider::OnPrintRequested::kEventName,
-      internal_args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(events::PRINTER_PROVIDER_ON_PRINT_REQUESTED,
+                core_api::printer_provider::OnPrintRequested::kEventName,
+                internal_args.Pass()));
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -655,7 +656,7 @@ void PrinterProviderAPIImpl::DispatchGetUsbPrinterInfoRequested(
   internal_args->AppendInteger(request_id);
   internal_args->Append(usb_device.ToValue().release());
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN,
+      events::PRINTER_PROVIDER_ON_GET_USB_PRINTER_INFO_REQUESTED,
       core_api::printer_provider::OnGetUsbPrinterInfoRequested::kEventName,
       internal_args.Pass()));
   event_router->DispatchEventToExtension(extension_id, event.Pass());

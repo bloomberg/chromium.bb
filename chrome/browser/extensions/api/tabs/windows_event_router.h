@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/window_controller_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 
 #if !defined(OS_MACOSX)
 #include "ui/views/focus/widget_focus_manager.h"
@@ -55,7 +56,8 @@ class WindowsEventRouter : public WindowControllerListObserver,
   void OnActiveWindowChanged(WindowController* window_controller);
 
  private:
-  void DispatchEvent(const std::string& event_name,
+  void DispatchEvent(events::HistogramValue histogram_value,
+                     const std::string& event_name,
                      Profile* profile,
                      scoped_ptr<base::ListValue> args);
   bool HasEventListener(const std::string& event_name);

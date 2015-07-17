@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 
 namespace extensions {
 
@@ -51,7 +52,7 @@ class ScreenlockPrivateAcceptAuthAttemptFunction
 };
 
 class ScreenlockPrivateEventRouter
-    : public extensions::BrowserContextKeyedAPI,
+    : public BrowserContextKeyedAPI,
       public proximity_auth::ScreenlockBridge::Observer {
  public:
   explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
@@ -62,9 +63,8 @@ class ScreenlockPrivateEventRouter
       const std::string& value);
 
   // BrowserContextKeyedAPI
-  static extensions::BrowserContextKeyedAPIFactory<
-      ScreenlockPrivateEventRouter>*
-      GetFactoryInstance();
+  static BrowserContextKeyedAPIFactory<ScreenlockPrivateEventRouter>*
+  GetFactoryInstance();
   void Shutdown() override;
 
   // proximity_auth::ScreenlockBridge::Observer
@@ -76,8 +76,7 @@ class ScreenlockPrivateEventRouter
   void OnFocusedUserChanged(const std::string& user_id) override;
 
  private:
-  friend class extensions::BrowserContextKeyedAPIFactory<
-      ScreenlockPrivateEventRouter>;
+  friend class BrowserContextKeyedAPIFactory<ScreenlockPrivateEventRouter>;
 
   // BrowserContextKeyedAPI
   static const char* service_name() {
@@ -86,7 +85,9 @@ class ScreenlockPrivateEventRouter
   static const bool kServiceIsNULLWhileTesting = true;
   static const bool kServiceRedirectedInIncognito = true;
 
-  void DispatchEvent(const std::string& event_name, base::Value* arg);
+  void DispatchEvent(events::HistogramValue histogram_value,
+                     const std::string& event_name,
+                     base::Value* arg);
 
   content::BrowserContext* browser_context_;
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateEventRouter);

@@ -232,7 +232,7 @@ void IdentityAPI::OnAccountSignInChanged(const gaia::AccountIds& ids,
 
   scoped_ptr<base::ListValue> args =
       api::identity::OnSignInChanged::Create(account_info, is_signed_in);
-  scoped_ptr<Event> event(new Event(events::UNKNOWN,
+  scoped_ptr<Event> event(new Event(events::IDENTITY_ON_SIGN_IN_CHANGED,
                                     api::identity::OnSignInChanged::kEventName,
                                     args.Pass(), browser_context_));
 

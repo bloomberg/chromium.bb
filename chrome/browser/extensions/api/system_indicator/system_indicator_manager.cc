@@ -82,7 +82,7 @@ void ExtensionIndicatorIcon::OnStatusIconClicked() {
       api::system_indicator::OnClicked::Create());
 
   EventRouter* event_router = EventRouter::Get(profile_);
-  scoped_ptr<Event> event(new Event(events::UNKNOWN,
+  scoped_ptr<Event> event(new Event(events::SYSTEM_INDICATOR_ON_CLICKED,
                                     system_indicator::OnClicked::kEventName,
                                     params.Pass(), profile_));
   event_router->DispatchEventToExtension(

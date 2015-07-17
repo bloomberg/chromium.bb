@@ -137,9 +137,8 @@ void NetworkingConfigService::OnGotProperties(
     const base::Closure& authentication_callback,
     const std::string& service_path,
     const base::DictionaryValue& onc_network_config) {
-  authentication_result_ =
-      extensions::NetworkingConfigService::AuthenticationResult(
-          std::string(), guid, extensions::NetworkingConfigService::NOTRY);
+  authentication_result_ = NetworkingConfigService::AuthenticationResult(
+      std::string(), guid, NetworkingConfigService::NOTRY);
   authentication_callback_ = authentication_callback;
 
   // Try to extract |bssid| field.
@@ -183,9 +182,8 @@ scoped_ptr<Event> NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
     return nullptr;
 
   // Populate the NetworkInfo object.
-  extensions::core_api::networking_config::NetworkInfo network_info;
-  network_info.type =
-      extensions::core_api::networking_config::NETWORK_TYPE_WIFI;
+  core_api::networking_config::NetworkInfo network_info;
+  network_info.type = core_api::networking_config::NETWORK_TYPE_WIFI;
   const std::vector<uint8_t>& raw_ssid = network->raw_ssid();
   std::string hex_ssid =
       base::HexEncode(vector_as_array(&raw_ssid), raw_ssid.size());
@@ -195,12 +193,12 @@ scoped_ptr<Event> NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
   if (bssid)
     network_info.bssid.reset(new std::string(*bssid));
   scoped_ptr<base::ListValue> results =
-      extensions::core_api::networking_config::OnCaptivePortalDetected::Create(
+      core_api::networking_config::OnCaptivePortalDetected::Create(
           network_info);
-  scoped_ptr<Event> event(new Event(events::UNKNOWN,
-                                    extensions::core_api::networking_config::
-                                        OnCaptivePortalDetected::kEventName,
-                                    results.Pass()));
+  scoped_ptr<Event> event(new Event(
+      events::NETWORKING_CONFIG_ON_CAPTIVE_PORTAL_DETECTED,
+      core_api::networking_config::OnCaptivePortalDetected::kEventName,
+      results.Pass()));
   return event.Pass();
 }
 

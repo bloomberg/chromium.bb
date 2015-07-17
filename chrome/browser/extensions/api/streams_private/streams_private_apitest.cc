@@ -180,10 +180,10 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
     info.tab_id = 10;
     info.expected_content_size = 20;
 
-    scoped_ptr<Event> event(
-        new Event(extensions::events::UNKNOWN,
-                  streams_private::OnExecuteMimeTypeHandler::kEventName,
-                  streams_private::OnExecuteMimeTypeHandler::Create(info)));
+    scoped_ptr<Event> event(new Event(
+        extensions::events::STREAMS_PRIVATE_ON_EXECUTE_MIME_TYPE_HANDLER,
+        streams_private::OnExecuteMimeTypeHandler::kEventName,
+        streams_private::OnExecuteMimeTypeHandler::Create(info)));
 
     extensions::EventRouter::Get(browser()->profile())
         ->DispatchEventToExtension(test_extension_id_, event.Pass());

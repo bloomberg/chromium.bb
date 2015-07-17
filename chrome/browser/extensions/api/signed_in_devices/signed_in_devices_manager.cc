@@ -78,8 +78,8 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
   scoped_ptr<base::ListValue> result =
       api::signed_in_devices::OnDeviceInfoChange::Create(args);
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, api::signed_in_devices::OnDeviceInfoChange::kEventName,
-      result.Pass()));
+      events::SIGNED_IN_DEVICES_ON_DEVICE_INFO_CHANGE,
+      api::signed_in_devices::OnDeviceInfoChange::kEventName, result.Pass()));
 
   event->restrict_to_browser_context = profile_;
 
