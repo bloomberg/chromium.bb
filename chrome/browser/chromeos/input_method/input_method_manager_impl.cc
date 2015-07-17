@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/hash.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -862,25 +863,6 @@ InputMethodManagerImpl::InputMethodManagerImpl(
   const InputMethodDescriptors& descriptors =
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
   util_.ResetInputMethods(descriptors);
-
-  // Initializes the stat id map.
-  std::map<int, std::vector<std::string> > buckets;
-  for (InputMethodDescriptors::const_iterator it = descriptors.begin();
-       it != descriptors.end(); ++it) {
-    char first_char;
-    int cat_id = static_cast<int>(
-        GetInputMethodCategory(it->id(), &first_char));
-    int key = cat_id * 1000 + first_char;
-    buckets[key].push_back(it->id());
-  }
-  for (std::map<int, std::vector<std::string>>::iterator i =
-       buckets.begin(); i != buckets.end(); ++i) {
-    std::sort(i->second.begin(), i->second.end());
-    for (size_t j = 0; j < i->second.size() && j < 100; ++j) {
-      int key = i->first * 100 + j;
-      stat_id_map_[i->second[j]] = key;
-    }
-  }
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
@@ -893,8 +875,8 @@ void InputMethodManagerImpl::RecordInputMethodUsage(
   UMA_HISTOGRAM_ENUMERATION("InputMethod.Category",
                             GetInputMethodCategory(input_method_id),
                             INPUT_METHOD_CATEGORY_MAX);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("InputMethod.ID",
-                              stat_id_map_[input_method_id]);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "InputMethod.ID2", static_cast<int32_t>(base::Hash(input_method_id)));
 }
 
 void InputMethodManagerImpl::AddObserver(

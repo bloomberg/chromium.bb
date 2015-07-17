@@ -13843,6 +13843,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="InputMethod.ID" enum="InputMethodID">
+  <obsolete>
+    This is deprecated since M46, InputMethod.ID2 is used since then.
+  </obsolete>
+  <owner>shuchen@chromium.org</owner>
+  <summary>
+    The breakdown of input method usage by input method IDs. Recorded when the
+    user presses keys on physical or on-screen keyboard.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.ID2" enum="InputMethodID2">
   <owner>shuchen@chromium.org</owner>
   <summary>
     The breakdown of input method usage by input method IDs. Recorded when the
@@ -59428,6 +59439,192 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="611601" label="te-t-i0-und">Transliteration Telugu</int>
   <int value="611602" label="ti-t-i0-und">Transliteration Tigrinya</int>
   <int value="611700" label="ur-t-i0-und">Transliteration Urdu</int>
+</enum>
+
+<enum name="InputMethodID2" type="int">
+  <int value="-2082426075" label="xkb:cz:qwerty:cze">Czech QWERTY keyboard</int>
+  <int value="-2039513744" label="xkb:ru::rus">Russian keyboard</int>
+  <int value="-2004968165" label="xkb:gb:dvorak:eng">UK Dvorak keyboard</int>
+  <int value="-2004834194" label="xkb:ca:multix:fra">
+    Canadian Multilingual keyboard
+  </int>
+  <int value="-1992142310" label="xkb:dk::dan">Danish keyboard</int>
+  <int value="-1972379678" label="vkd_deva_phone">
+    Devanagari keyboard (Phonetic)
+  </int>
+  <int value="-1957398030" label="ta-t-i0-und">Tamil transliteration</int>
+  <int value="-1955862460" label="xkb:ro::rum">Romanian keyboard</int>
+  <int value="-1951732875" label="xkb:be::nld">Belgian keyboard</int>
+  <int value="-1931838225" label="zh-hant-t-i0-cangjie-1987-x-m0-simplified">
+    Quick input method
+  </int>
+  <int value="-1899483055" label="vkd_my">Myanmar keyboard</int>
+  <int value="-1856842164" label="xkb:ge::geo">Georgian keyboard</int>
+  <int value="-1856063724" label="vkd_km">Khmer keyboard</int>
+  <int value="-1749961581" label="vkd_ta_inscript">
+    Tamil keyboard (InScript)
+  </int>
+  <int value="-1710145174" label="xkb:am:phonetic:arm">
+    Armenian Phonetic keyboard
+  </int>
+  <int value="-1709647399" label="xkb:mn::mon">Mongolian keyboard</int>
+  <int value="-1668610460" label="xkb:us:dvp:eng">
+    US Programmer Dvorak keyboard
+  </int>
+  <int value="-1667829653" label="zh-hant-t-i0-cangjie-1987">
+    Cangjie input method
+  </int>
+  <int value="-1591721678" label="vkd_ne_inscript">
+    Nepali keyboard (InScript)
+  </int>
+  <int value="-1474243589" label="xkb:it::ita">Italian keyboard</int>
+  <int value="-1408581676" label="xkb:gb:extd:eng">UK keyboard</int>
+  <int value="-1402880636" label="xkb:se::swe">Swedish keyboard</int>
+  <int value="-1396156987" label="vkd_ru_phone_aatseel">
+    Russian Phonetic (AATSEEL) keyboard
+  </int>
+  <int value="-1338032348" label="xkb:de:neo:ger">German NEO 2 keyboard</int>
+  <int value="-1288127107" label="vkd_vi_telex">
+    Vietnamese keyboard (Telex)
+  </int>
+  <int value="-1263201701" label="hi-t-i0-und">Hindi transliteration</int>
+  <int value="-1242404917" label="sr-t-i0-und">Serbian transliteration</int>
+  <int value="-1148371254" label="xkb:us:intl:por">
+    US International keyboard
+  </int>
+  <int value="-1105197074" label="vkd_ar">Arabic keyboard</int>
+  <int value="-1096071752" label="vkd_fa">Persian keyboard</int>
+  <int value="-1065120196" label="vkd_th">Thai keyboard (Kedmanee)</int>
+  <int value="-1053378431" label="xkb:tr::tur">Turkish keyboard</int>
+  <int value="-1032532014" label="xkb:bg:phonetic:bul">
+    Bulgarian Phonetic keyboard
+  </int>
+  <int value="-1024152574" label="xkb:ca:eng:eng">
+    Canadian English keyboard
+  </int>
+  <int value="-1021036210" label="xkb:us::ind">US keyboard</int>
+  <int value="-1018545698" label="vkd_ckb_en">
+    Sorani Kurdish English-based keyboard
+  </int>
+  <int value="-994915284" label="xkb:ch:fr:fra">Swiss French keyboard</int>
+  <int value="-955047705" label="xkb:sk::slo">Slovakian keyboard</int>
+  <int value="-923332388" label="xkb:ua::ukr">Ukrainian keyboard</int>
+  <int value="-917118451" label="vkd_vi_tcvn">Vietnamese keyboard (TCVN)</int>
+  <int value="-848378885" label="vkd_ethi">Ethiopic keyboard</int>
+  <int value="-827208209" label="xkb:hu::hun">Hungarian keyboard</int>
+  <int value="-797137387" label="ml-t-i0-und">Malayalam transliteration</int>
+  <int value="-676861102" label="vkd_vi_viqr">Vietnamese keyboard (VIQR)</int>
+  <int value="-666585286" label="xkb:bg::bul">Bulgarian keyboard</int>
+  <int value="-650362029" label="xkb:ie::ga">Irish keyboard</int>
+  <int value="-639620912" label="te-t-i0-und">Telugu transliteration</int>
+  <int value="-622670909" label="zh-hant-t-i0-dayi-1988">Dayi input method</int>
+  <int value="-547772150" label="xkb:ro:std:rum">
+    Romanian standard keyboard
+  </int>
+  <int value="-535089160" label="xkb:us::msa">US keyboard</int>
+  <int value="-519506383" label="he-t-i0-und">Hebrew transliteration</int>
+  <int value="-512360986" label="xkb:us:altgr-intl:eng">
+    US Extended keyboard
+  </int>
+  <int value="-498028381" label="sa-t-i0-und">Sanskrit transliteration</int>
+  <int value="-496003957" label="xkb:de::ger">German keyboard</int>
+  <int value="-439432295" label="vkd_ru_phone_yazhert">
+    Russian Phonetic (YaZHert) keyboard
+  </int>
+  <int value="-378677550" label="vkd_bn_phone">Bengali keyboard (Phonetic)</int>
+  <int value="-352571373" label="xkb:rs::srp">Serbian keyboard</int>
+  <int value="-299716106" label="xkb:si::slv">Slovenian keyboard</int>
+  <int value="-292687390" label="xkb:fi::fin">Finnish keyboard</int>
+  <int value="-280690349" label="vkd_vi_vni">Vietnamese keyboard (VNI)</int>
+  <int value="-263932473" label="xkb:ch::ger">Swiss keyboard</int>
+  <int value="-231610124" label="ne-t-i0-und">Nepali transliteration</int>
+  <int value="-225482038" label="vkd_si">Sinhala keyboard</int>
+  <int value="-219542410" label="ko-t-i0-und">Korean input method</int>
+  <int value="-202781885" label="xkb:us:intl:eng">
+    US International keyboard
+  </int>
+  <int value="-193738949" label="gu-t-i0-und">Gujarati transliteration</int>
+  <int value="-147742988" label="mr-t-i0-und">Marathi transliteration</int>
+  <int value="-83634292" label="vkd_my_myansan">Myanmar Myansan keyboard</int>
+  <int value="-70827301" label="xkb:be::fra">Belgian keyboard</int>
+  <int value="-69316526" label="fa-t-i0-und">Persian transliteration</int>
+  <int value="2215666" label="xkb:jp::jpn">Japanese keyboard</int>
+  <int value="28549849" label="xkb:pt::por">Portuguese keyboard</int>
+  <int value="87135772" label="xkb:fr::fra">French keyboard</int>
+  <int value="150803493" label="vkd_ta_phone">Tamil keyboard (Phonetic)</int>
+  <int value="193122406" label="xkb:gr::gre">Greek keyboard</int>
+  <int value="197116831" label="xkb:es::spa">Spanish keyboard</int>
+  <int value="214846098" label="zh-t-i0-wubi-1986">Wubi input method</int>
+  <int value="319509360" label="xkb:be::ger">Belgian keyboard</int>
+  <int value="382485416" label="xkb:lv:apostrophe:lav">Latvian keyboard</int>
+  <int value="398887705" label="ti-t-i0-und">Tigrinya transliteration</int>
+  <int value="414827905" label="vkd_ta_typewriter">
+    Tamil keyboard (Typewriter)
+  </int>
+  <int value="428624332" label="zh-t-i0-pinyin">Pinyin input method</int>
+  <int value="452111434" label="kn-t-i0-und">Kannada transliteration</int>
+  <int value="467269371" label="el-t-i0-und">Greek transliteration</int>
+  <int value="469000663" label="xkb:es:cat:cat">Catalan keyboard</int>
+  <int value="520692028" label="vkd_ta_itrans">Tamil keyboard (itrans)</int>
+  <int value="601883646" label="vkd_th_tis">Thai keyboard (TIS 820-2531)</int>
+  <int value="629336408" label="vkd_ckb_ar">
+    Sorani Kurdish Arabic-based keyboard
+  </int>
+  <int value="629711326" label="xkb:il::heb">Hebrew keyboard</int>
+  <int value="683071754" label="xkb:hr::scr">Croatian keyboard</int>
+  <int value="789603234" label="xkb:by::bel">Belarusian keyboard</int>
+  <int value="822222165" label="xkb:ru:phonetic:rus">
+    Russian Phonetic keyboard
+  </int>
+  <int value="825747412" label="xkb:latam::spa">Latin American keyboard</int>
+  <int value="871656925" label="xkb:us::fil">US keyboard</int>
+  <int value="1024422775" label="vkd_ml_phone">
+    Malayalam keyboard (Phonetic)
+  </int>
+  <int value="1127372618" label="vkd_ta_tamil99">Tamil keyboard (Tamil99)</int>
+  <int value="1194237527" label="bn-t-i0-und">Bengali transliteration</int>
+  <int value="1196273343" label="vkd_te_phone">Telugu keyboard (Phonetic)</int>
+  <int value="1201986464" label="pa-t-i0-und">Punjabi transliteration</int>
+  <int value="1241606786" label="vkd_gu_phone">
+    Gujarati keyboard (Phonetic)
+  </int>
+  <int value="1275989482" label="xkb:ee::est">Estonian keyboard</int>
+  <int value="1342665179" label="or-t-i0-und">Oriya transliteration</int>
+  <int value="1355267172" label="nacl_mozc_jp">
+    Google Japanese Input (for Japanese keyboard)
+  </int>
+  <int value="1376109158" label="zh-hant-t-i0-pinyin">
+    Traditional Pinyin input method
+  </int>
+  <int value="1391164751" label="vkd_ne_phone">Nepali keyboard (Phonetic)</int>
+  <int value="1409029247" label="xkb:ca::fra">Canadian French keyboard</int>
+  <int value="1486336701" label="zh-hant-t-i0-und">Zhuyin input method</int>
+  <int value="1683010298" label="xkb:is::ice">Icelandic keyboard</int>
+  <int value="1698488657" label="ar-t-i0-und">Arabic transliteration</int>
+  <int value="1718072990" label="xkb:us::eng">US keyboard</int>
+  <int value="1756602568" label="zh-hant-t-i0-array-1992">
+    Array input method
+  </int>
+  <int value="1763643144" label="xkb:lt::lit">Lithuanian keyboard</int>
+  <int value="1772226972" label="ur-t-i0-und">Urdu transliteration</int>
+  <int value="1847701260" label="xkb:pl::pol">Polish keyboard</int>
+  <int value="1882667893" label="xkb:us:colemak:eng">US Colemak keyboard</int>
+  <int value="1925299009" label="xkb:br::por">Brazilian keyboard</int>
+  <int value="1934249765" label="vkd_th_pattajoti">
+    Thai keyboard (Pattachote)
+  </int>
+  <int value="1957701631" label="am-t-i0-und">Amharic transliteration</int>
+  <int value="1970923579" label="xkb:us:intl:nld">Netherlands keyboard</int>
+  <int value="1983264676" label="xkb:no::nob">Norwegian keyboard</int>
+  <int value="2007323478" label="xkb:cz::cze">Czech keyboard</int>
+  <int value="2024146574" label="vkd_lo">Lao keyboard</int>
+  <int value="2029882285" label="vkd_kn_phone">Kannada keyboard (Phonetic)</int>
+  <int value="2031967946" label="xkb:mt::mlt">Maltese keyboard</int>
+  <int value="2051698871" label="nacl_mozc_us">
+    Google Japanese Input (for US keyboard)
+  </int>
+  <int value="2060414855" label="braille">Braille Keyboard</int>
+  <int value="2121258069" label="xkb:us:dvorak:eng">US Dvorak keyboard</int>
 </enum>
 
 <enum name="InsecureContentType" type="int">

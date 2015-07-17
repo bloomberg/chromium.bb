@@ -258,16 +258,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   typedef std::map<Profile*, EngineMap, ProfileCompare> ProfileEngineMap;
   ProfileEngineMap engine_map_;
 
-  // The map from input method id to the input method stat id.
-  // The stat id has the format: <category#><first char after prefix><index>
-  // For example, Chinese Simplified Pinyin IME has the stat id:
-  //   2,'p',1 -> 211201
-  //   2 means it in INPUT_METHOD_CATEGORY_ZH;
-  //   112 means the first char after prefix is 'p' of 'pinyin';
-  //   01 means it's the second pinyin as the first pinyin is for Traditional
-  //   Chinese Pinyin IME. Note "zh-hant-t-i0-pinyin" < "zh-t-i0-pinyin".
-  std::map<std::string, int> stat_id_map_;
-
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };
 
