@@ -272,7 +272,8 @@ Status FindElement(
 
     if (base::TimeTicks::Now() - start_time >= session->implicit_wait) {
       if (only_one) {
-        return Status(kNoSuchElement);
+        return Status(kNoSuchElement, "Unable to locate element: {\"method\":\""
+         + strategy + "\",\"selector\":\"" + target + "\"}");
       } else {
         value->reset(new base::ListValue());
         return Status(kOk);

@@ -430,6 +430,16 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertTrue(
         isinstance(self._driver.FindElement('tag name', 'div'), WebElement))
 
+  def testNoSuchElementExceptionMessage(self):
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>a</div><div>b</div>";')
+    self.assertRaisesRegexp(chromedriver.NoSuchElement,
+                            'no such element: Unable '
+                            'to locate element: {"method":"tag name",'
+                            '"selector":"divine"}',
+                            self._driver.FindElement,
+                            'tag name','divine')
+
   def testFindElements(self):
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
