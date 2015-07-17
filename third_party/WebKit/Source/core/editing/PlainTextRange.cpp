@@ -58,21 +58,24 @@ PlainTextRange::PlainTextRange(int start, int end)
     ASSERT(start <= end);
 }
 
+// TODO(yosin) We should return |EphemeralRange| to avoid using temporary
+// |Range| object.
 PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRange(const ContainerNode& scope) const
 {
-    return createRangeFor(scope, ForGeneric);
+    EphemeralRange range = createRangeFor(scope, ForGeneric);
+    if (range.isNull())
+        return nullptr;
+    return Range::create(range.document(), range.startPosition(), range.endPosition());
 }
 
-PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeForSelection(const ContainerNode& scope) const
+EphemeralRange PlainTextRange::createRangeForSelection(const ContainerNode& scope) const
 {
     return createRangeFor(scope, ForSelection);
 }
 
-PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode& scope, GetRangeFor getRangeFor) const
+EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRangeFor getRangeFor) const
 {
     ASSERT(isNotNull());
-
-    RefPtrWillBeRawPtr<Range> resultRange = scope.document().createRange();
 
     size_t docTextPosition = 0;
     bool startRangeFound = false;
@@ -86,12 +89,13 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
     auto range = EphemeralRange::rangeOfContents(scope);
     TextIterator it(range.startPosition(), range.endPosition(), behaviorFlags);
 
-    // FIXME: the atEnd() check shouldn't be necessary, workaround for <http://bugs.webkit.org/show_bug.cgi?id=6289>.
-    if (!start() && !length() && it.atEnd()) {
-        resultRange->setStart(it.currentContainer(), 0, ASSERT_NO_EXCEPTION);
-        resultRange->setEnd(it.currentContainer(), 0, ASSERT_NO_EXCEPTION);
-        return resultRange.release();
-    }
+    // FIXME: the atEnd() check shouldn't be necessary, workaround for
+    // <http://bugs.webkit.org/show_bug.cgi?id=6289>.
+    if (!start() && !length() && it.atEnd())
+        return EphemeralRange(Position(it.currentContainer(), 0));
+
+    Position resultStart = Position(&scope.document(), 0);
+    Position resultEnd = resultStart;
 
     for (; !it.atEnd(); it.advance()) {
         int len = it.length();
@@ -124,24 +128,24 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
             startRangeFound = true;
             if (textRunStartPosition.containerNode()->isTextNode()) {
                 int offset = start() - docTextPosition;
-                resultRange->setStart(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
+                resultStart = Position(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode());
             } else {
                 if (start() == docTextPosition)
-                    resultRange->setStart(textRunStartPosition.containerNode(), textRunStartPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
+                    resultStart = Position(textRunStartPosition.containerNode(), textRunStartPosition.offsetInContainerNode());
                 else
-                    resultRange->setStart(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
+                    resultStart = Position(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode());
             }
         }
 
         if (foundEnd) {
             if (textRunStartPosition.containerNode()->isTextNode()) {
                 int offset = end() - docTextPosition;
-                resultRange->setEnd(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
+                resultEnd = Position(textRunStartPosition.containerNode(), offset + textRunStartPosition.offsetInContainerNode());
             } else {
                 if (end() == docTextPosition)
-                    resultRange->setEnd(textRunStartPosition.containerNode(), textRunStartPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
+                    resultEnd = Position(textRunStartPosition.containerNode(), textRunStartPosition.offsetInContainerNode());
                 else
-                    resultRange->setEnd(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
+                    resultEnd = Position(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode());
             }
             docTextPosition += len;
             break;
@@ -150,13 +154,13 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
     }
 
     if (!startRangeFound)
-        return nullptr;
+        return EphemeralRange();
 
     if (length() && end() > docTextPosition) { // end() is out of bounds
-        resultRange->setEnd(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode(), IGNORE_EXCEPTION);
+        resultEnd = Position(textRunEndPosition.containerNode(), textRunEndPosition.offsetInContainerNode());
     }
 
-    return resultRange.release();
+    return EphemeralRange(resultStart, resultEnd);
 }
 
 PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& range)

@@ -292,10 +292,13 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
         nextParagraphStart = endOfParagraph(paragraphStart).next();
     }
 
-    startRange = PlainTextRange(startIndex).createRangeForSelection(toContainerNode(scope));
-    endRange = PlainTextRange(endIndex).createRangeForSelection(toContainerNode(scope));
-    if (startRange && endRange)
-        updateStartEnd(startRange->startPosition(), endRange->startPosition());
+    EphemeralRange startEphemeralRange = PlainTextRange(startIndex).createRangeForSelection(toContainerNode(scope));
+    if (startEphemeralRange.isNull())
+        return;
+    EphemeralRange endEphemeralRange = PlainTextRange(endIndex).createRangeForSelection(toContainerNode(scope));
+    if (endEphemeralRange.isNull())
+        return;
+    updateStartEnd(startEphemeralRange.startPosition(), endEphemeralRange.startPosition());
 }
 
 static PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyStyleOrCreateEmpty(const StylePropertySet* style)

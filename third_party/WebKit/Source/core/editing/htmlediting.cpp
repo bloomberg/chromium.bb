@@ -1303,12 +1303,13 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
 {
     if (!scope)
         return VisiblePosition();
-    RefPtrWillBeRawPtr<Range> range = PlainTextRange(index).createRangeForSelection(*scope);
-    // Check for an invalid index. Certain editing operations invalidate indices because
-    // of problems with TextIteratorEmitsCharactersBetweenAllVisiblePositions.
-    if (!range)
+    EphemeralRange range = PlainTextRange(index).createRangeForSelection(*scope);
+    // Check for an invalid index. Certain editing operations invalidate indices
+    // because of problems with
+    // TextIteratorEmitsCharactersBetweenAllVisiblePositions.
+    if (range.isNull())
         return VisiblePosition();
-    return VisiblePosition(range->startPosition());
+    return VisiblePosition(range.startPosition());
 }
 
 // Determines whether a node is inside a range or visibly starts and ends at the boundaries of the range.

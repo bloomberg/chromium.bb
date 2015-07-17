@@ -1267,19 +1267,23 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     if (styleInEmptyParagraph && selectionIsEmptyParagraph)
         applyStyle(styleInEmptyParagraph.get());
 
-    if (preserveSelection && startIndex != -1) {
-        if (Element* documentElement = document().documentElement()) {
-            // Fragment creation (using createMarkup) incorrectly uses regular
-            // spaces instead of nbsps for some spaces that were rendered (11475), which
-            // causes spaces to be collapsed during the move operation. This results
-            // in a call to rangeFromLocationAndLength with a location past the end
-            // of the document (which will return null).
-            RefPtrWillBeRawPtr<Range> start = PlainTextRange(destinationIndex + startIndex).createRangeForSelection(*documentElement);
-            RefPtrWillBeRawPtr<Range> end = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*documentElement);
-            if (start && end)
-                setEndingSelection(VisibleSelection(start->startPosition(), end->startPosition(), DOWNSTREAM, originalIsDirectional));
-        }
-    }
+    if (!preserveSelection || startIndex == -1)
+        return;
+    Element* documentElement = document().documentElement();
+    if (!documentElement)
+        return;
+    // Fragment creation (using createMarkup) incorrectly uses regular spaces
+    // instead of nbsps for some spaces that were rendered (11475), which causes
+    // spaces to be collapsed during the move operation. This results in a call
+    // to rangeFromLocationAndLength with a location past the end of the
+    // document (which will return null).
+    EphemeralRange startRange = PlainTextRange(destinationIndex + startIndex).createRangeForSelection(*documentElement);
+    if (startRange.isNull())
+        return;
+    EphemeralRange endRange = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*documentElement);
+    if (endRange.isNull())
+        return;
+    setEndingSelection(VisibleSelection(startRange.startPosition(), endRange.startPosition(), DOWNSTREAM, originalIsDirectional));
 }
 
 // FIXME: Send an appropriate shouldDeleteRange call.
