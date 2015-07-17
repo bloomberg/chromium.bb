@@ -48,26 +48,4 @@
 #
 # START OVERRIDES HERE
 
-# Very minor changes to antialiased edges of stroked paths
-crbug.com/509750 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
-
-crbug.com/511257 css3/blending/background-blend-mode-crossfade-image-gradient.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-gif-color-2.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-gif-color.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-gradient-color.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-gradient-gradient.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-gradient-image.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-image-color.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-image-image.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-image-svg.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/background-blend-mode-tiled-gradient.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/effect-background-blend-mode-tiled.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/effect-background-blend-mode.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/mix-blend-mode-isolated-group-1.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/mix-blend-mode-isolated-group-2.html [ NeedsManualRebaseline ]
-crbug.com/511257 css3/blending/mix-blend-mode-isolated-group-3.html [ NeedsManualRebaseline ]
-crbug.com/511257 fast/canvas/canvas-composite-shadow.html [ NeedsManualRebaseline ]
-crbug.com/511257 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
-crbug.com/511257 virtual/display_list_2d_canvas/fast/canvas/canvas-composite-shadow.html [ NeedsManualRebaseline ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
