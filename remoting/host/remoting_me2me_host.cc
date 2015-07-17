@@ -312,8 +312,6 @@ class HostProcess : public ConfigWatcher::Delegate,
                const std::string& file_name,
                const int& line_number);
 
-  bool using_gcd() { return !gcd_device_id_.empty(); }
-
   scoped_ptr<ChromotingHostContext> context_;
 
   // Accessed on the UI thread.
@@ -343,7 +341,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool use_service_account_;
   bool enable_vp9_;
   int64_t frame_recorder_buffer_size_;
-  std::string gcd_device_id_;
 
   scoped_ptr<PolicyWatcher> policy_watcher_;
   PolicyState policy_state_;
@@ -375,8 +372,10 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
+#if defined(USE_GCD)
   scoped_ptr<GcdStateUpdater> gcd_state_updater_;
   scoped_ptr<PushNotificationSubscriber> gcd_subscriber_;
+#endif  // defined(USE_GCD)
 
   scoped_ptr<HostChangeNotificationListener> host_change_notification_listener_;
   scoped_ptr<HostStatusLogger> host_status_logger_;
@@ -937,15 +936,7 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   if (!config.GetString(kHostIdConfigPath, &host_id_)) {
-    host_id_.clear();
-  }
-
-  if (!config.GetString(kGcdDeviceIdConfigPath, &gcd_device_id_)) {
-    gcd_device_id_.clear();
-  }
-
-  if (host_id_.empty() && gcd_device_id_.empty()) {
-    LOG(ERROR) << "Neither host_id nor gcd_device_id is defined in the config.";
+    LOG(ERROR) << "Config does not define " << kHostIdConfigPath << ".";
     return false;
   }
 
@@ -1336,14 +1327,15 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
 }
 
 void HostProcess::InitializeSignaling() {
-  // ApplyConfig() should already have been run.
-  DCHECK(!host_id_.empty() || !gcd_device_id_.empty());
+  DCHECK(!host_id_.empty());  // ApplyConfig() should already have been run.
 
   DCHECK(!signal_strategy_);
   DCHECK(!oauth_token_getter_);
   DCHECK(!signaling_connector_);
+#if defined(USE_GCD)
   DCHECK(!gcd_state_updater_);
   DCHECK(!gcd_subscriber_);
+#endif  // defined(USE_GCD)
   DCHECK(!heartbeat_sender_);
 
   // Create SignalStrategy.
@@ -1360,39 +1352,37 @@ void HostProcess::InitializeSignaling() {
                                              oauth_refresh_token_,
                                              use_service_account_));
   oauth_token_getter_.reset(new OAuthTokenGetterImpl(
-      oauth_credentials.Pass(), context_->url_request_context_getter(), false,
-      !using_gcd()));
+      oauth_credentials.Pass(), context_->url_request_context_getter(), false));
   signaling_connector_.reset(new SignalingConnector(
       xmpp_signal_strategy, dns_blackhole_checker.Pass(),
       oauth_token_getter_.get(),
       base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
 
-  if (using_gcd()) {
-    // Create objects to manage GCD state.
-    ServiceUrls* service_urls = ServiceUrls::GetInstance();
-    scoped_ptr<GcdRestClient> gcd_rest_client(new GcdRestClient(
-        service_urls->gcd_base_url(), gcd_device_id_,
-        context_->url_request_context_getter(), oauth_token_getter_.get()));
-    gcd_state_updater_.reset(
-        new GcdStateUpdater(base::Bind(&HostProcess::OnHeartbeatSuccessful,
-                                       base::Unretained(this)),
-                            base::Bind(&HostProcess::OnUnknownHostIdError,
-                                       base::Unretained(this)),
-                            signal_strategy_.get(), gcd_rest_client.Pass()));
+#if defined(USE_GCD)
+  // Create objects to manage GCD state.
+  ServiceUrls* service_urls = ServiceUrls::GetInstance();
+  scoped_ptr<GcdRestClient> gcd_rest_client(new GcdRestClient(
+      service_urls->gcd_base_url(), host_id_,
+      context_->url_request_context_getter(), oauth_token_getter_.get()));
+  gcd_state_updater_.reset(
+      new GcdStateUpdater(base::Bind(&HostProcess::OnHeartbeatSuccessful,
+                                     base::Unretained(this)),
+                          base::Bind(&HostProcess::OnUnknownHostIdError,
+                                     base::Unretained(this)),
+                          signal_strategy_.get(), gcd_rest_client.Pass()));
+  PushNotificationSubscriber::Subscription sub;
+  sub.channel = "cloud_devices";
+  PushNotificationSubscriber::SubscriptionList subs;
+  subs.push_back(sub);
+  gcd_subscriber_.reset(
+      new PushNotificationSubscriber(signal_strategy_.get(), subs));
+#endif  // defined(USE_GCD)
 
-    PushNotificationSubscriber::Subscription sub;
-    sub.channel = "cloud_devices";
-    PushNotificationSubscriber::SubscriptionList subs;
-    subs.push_back(sub);
-    gcd_subscriber_.reset(
-        new PushNotificationSubscriber(signal_strategy_.get(), subs));
-  } else {
-    // Create HeartbeatSender.
-    heartbeat_sender_.reset(new HeartbeatSender(
-        base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
-        base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
-        host_id_, signal_strategy_.get(), key_pair_, directory_bot_jid_));
-  }
+  // Create HeartbeatSender.
+  heartbeat_sender_.reset(new HeartbeatSender(
+      base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
+      base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
+      host_id_, signal_strategy_.get(), key_pair_, directory_bot_jid_));
 }
 
 void HostProcess::StartHostIfReady() {
@@ -1468,14 +1458,9 @@ void HostProcess::StartHost() {
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
       this, host_id_, signal_strategy_.get(), directory_bot_jid_));
 
-  if (using_gcd()) {
-    // TODO(jrw): Implement logging for GCD hosts.
-    HOST_LOG << "Logging not implemented for GCD hosts.";
-  } else {
-    host_status_logger_.reset(new HostStatusLogger(
-        host_->AsWeakPtr(), ServerLogEntry::ME2ME,
-        signal_strategy_.get(), directory_bot_jid_));
-  }
+  host_status_logger_.reset(new HostStatusLogger(
+      host_->AsWeakPtr(), ServerLogEntry::ME2ME,
+      signal_strategy_.get(), directory_bot_jid_));
 
   // Set up reporting the host status notifications.
 #if defined(REMOTING_MULTI_PROCESS)
@@ -1555,12 +1540,14 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
           base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
           base::Bind(&HostProcess::OnHostOfflineReasonAck, this));
     }
+#if defined(USE_GCD)
     if (gcd_state_updater_) {
       gcd_state_updater_->SetHostOfflineReason(
           host_offline_reason,
           base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
           base::Bind(&HostProcess::OnHostOfflineReasonAck, this));
     }
+#endif  // defined(USE_GCD)
     return;  // Shutdown will resume after OnHostOfflineReasonAck.
   }
 
@@ -1579,8 +1566,10 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   oauth_token_getter_.reset();
   signaling_connector_.reset();
   signal_strategy_.reset();
+#if defined(USE_GCD)
   gcd_state_updater_.reset();
   gcd_subscriber_.reset();
+#endif  // defined(USE_GCD)
 
   if (state_ == HOST_GOING_OFFLINE_TO_RESTART) {
     SetState(HOST_STARTING);

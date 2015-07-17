@@ -370,11 +370,7 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
         host_secret_hash: fakePinHash,
         private_key: FAKE_PRIVATE_KEY
       };
-      if (remoting.settings.USE_GCD) {
-        expectedConfig['gcd_device_id'] = FAKE_HOST_ID;
-      } else {
-        expectedConfig['host_id'] = FAKE_HOST_ID;
-      }
+      expectedConfig['host_id'] = FAKE_HOST_ID;
       assert.deepEqual(
           startDaemonSpy.args[0].slice(0, 2),
           [expectedConfig, consent]);

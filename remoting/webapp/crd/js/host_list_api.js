@@ -112,14 +112,10 @@ remoting.HostListApi.setInstance = function(newInstance) {
  *
  * hostId: The ID of the newly registered host.
  *
- * isLegacy: True for registrations in the legacy directory, false for
- *     registrations in GCD.
- *
  * @typedef {{
  *   authCode: string,
  *   email: string,
- *   hostId: string,
- *   isLegacy: boolean
+ *   hostId: string
  * }}
  */
 remoting.HostListApi.RegisterResult;

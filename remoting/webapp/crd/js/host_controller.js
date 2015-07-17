@@ -234,12 +234,7 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
     if (hostOwnerEmail != hostOwner) {
       hostConfig['host_owner_email'] = hostOwnerEmail;
     }
-    if (registerResult.isLegacy) {
-      hostConfig['host_id'] = registerResult.hostId;
-    }
-    else {
-      hostConfig['gcd_device_id'] = registerResult.hostId;
-    }
+    hostConfig['host_id'] = registerResult.hostId;
     return hostConfig;
   });
 
@@ -397,10 +392,7 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
   function onConfig(config) {
     var hostId = null;
     if (isHostConfigValid_(config)) {
-      // Use the |gcd_device_id| field if it exists, or the |host_id|
-      // field otherwise.
-      hostId = base.getStringAttr(
-          config, 'gcd_device_id', base.getStringAttr(config, 'host_id'));
+      hostId = base.getStringAttr(config, 'host_id');
     }
     onDone(hostId);
   };

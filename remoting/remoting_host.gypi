@@ -187,6 +187,11 @@
                 '<@(remoting_cast_sources)',
               ],
             }],
+            ['remoting_use_gcd==1', {
+              'defines': [
+                'USE_GCD',
+              ]
+            }],
           ],
         },  # end of target 'remoting_host'
 
@@ -446,6 +451,11 @@
               'defines': [
                 'USE_REMOTING_MACOSX_INTERNAL'
               ],
+            }],
+            ['remoting_use_gcd==1', {
+              'defines': [
+                'USE_GCD',
+              ]
             }],
           ],  # end of 'conditions'
         },  # end of target 'remoting_me2me_host_static'

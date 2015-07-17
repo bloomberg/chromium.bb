@@ -48,8 +48,7 @@ remoting.LegacyHostListApi.prototype.register = function(
       return {
         authCode: authCode,
         email: '',
-        hostId: newHostId,
-        isLegacy: true
+        hostId: newHostId
       };
     } else {
       console.log(
