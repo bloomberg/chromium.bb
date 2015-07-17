@@ -75,6 +75,11 @@ define('serial_service', [
     'disconnected': serialMojom.ReceiveError.DISCONNECTED,
     'device_lost': serialMojom.ReceiveError.DEVICE_LOST,
     'timeout': serialMojom.ReceiveError.TIMEOUT,
+    'break': serialMojom.ReceiveError.BREAK,
+    'frame_error': serialMojom.ReceiveError.FRAME_ERROR,
+    'overrun': serialMojom.ReceiveError.OVERRUN,
+    'buffer_overflow': serialMojom.ReceiveError.BUFFER_OVERFLOW,
+    'parity_error': serialMojom.ReceiveError.PARITY_ERROR,
     'system_error': serialMojom.ReceiveError.SYSTEM_ERROR,
   };
 

@@ -602,6 +602,36 @@ TEST_F(SerialApiTest, ReceiveErrorDeviceLost) {
   RunTest("serial_unittest.js", "testReceiveErrorDeviceLost");
 }
 
+TEST_F(SerialApiTest, ReceiveErrorBreak) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_BREAK);
+  RunTest("serial_unittest.js", "testReceiveErrorBreak");
+}
+
+TEST_F(SerialApiTest, ReceiveErrorFrameError) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_FRAME_ERROR);
+  RunTest("serial_unittest.js", "testReceiveErrorFrameError");
+}
+
+TEST_F(SerialApiTest, ReceiveErrorOverrun) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_OVERRUN);
+  RunTest("serial_unittest.js", "testReceiveErrorOverrun");
+}
+
+TEST_F(SerialApiTest, ReceiveErrorBufferOverflow) {
+  io_handler_ = new ReceiveErrorTestIoHandler(
+      device::serial::RECEIVE_ERROR_BUFFER_OVERFLOW);
+  RunTest("serial_unittest.js", "testReceiveErrorBufferOverflow");
+}
+
+TEST_F(SerialApiTest, ReceiveErrorParityError) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_PARITY_ERROR);
+  RunTest("serial_unittest.js", "testReceiveErrorParityError");
+}
+
 TEST_F(SerialApiTest, ReceiveErrorSystemError) {
   io_handler_ =
       new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_SYSTEM_ERROR);

@@ -764,6 +764,36 @@ unittestBindings.exportTests([
   },
 
   // Test that a receive from error the service is correctly dispatched. This
+  // test uses an IoHandler that only reports 'break' receive errors.
+  function testReceiveErrorBreak() {
+    runReceiveErrorTest('break');
+  },
+
+  // Test that a receive from error the service is correctly dispatched. This
+  // test uses an IoHandler that only reports 'frame_error' receive errors.
+  function testReceiveErrorFrameError() {
+    runReceiveErrorTest('frame_error');
+  },
+
+  // Test that a receive from error the service is correctly dispatched. This
+  // test uses an IoHandler that only reports 'overrun' receive errors.
+  function testReceiveErrorOverrun() {
+    runReceiveErrorTest('overrun');
+  },
+
+  // Test that a receive from error the service is correctly dispatched. This
+  // test uses an IoHandler that only reports 'buffer_overflow' receive errors.
+  function testReceiveErrorBufferOverflow() {
+    runReceiveErrorTest('buffer_overflow');
+  },
+
+  // Test that a receive from error the service is correctly dispatched. This
+  // test uses an IoHandler that only reports 'parity_error' receive errors.
+  function testReceiveErrorParityError() {
+    runReceiveErrorTest('parity_error');
+  },
+
+  // Test that a receive from error the service is correctly dispatched. This
   // test uses an IoHandler that only reports 'system_error' receive errors.
   function testReceiveErrorSystemError() {
     runReceiveErrorTest('system_error');
