@@ -108,15 +108,8 @@ public:
     bool isAudioThread() const { return currentThread() == acquireLoad(&m_audioThread); }
 
     void lock();
-
-    // This must be used only for OfflineAudioContext. It allows the regular
-    // lock (instead of tryLock) in offline audio rendering and it is okay to
-    // lock the offline audio render thread because it is not real-time thread.
-    void offlineContextLock();
-
     bool tryLock();
     void unlock();
-
 #if ENABLE(ASSERT)
     // Returns true if this thread owns the context's lock.
     bool isGraphOwner();

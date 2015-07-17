@@ -28,7 +28,6 @@
 
 #include "core/dom/CrossThreadTask.h"
 #include "modules/webaudio/AbstractAudioContext.h"
-#include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/Task.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
@@ -42,10 +41,7 @@ const size_t renderQuantumSize = 128;
 OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(AudioNode& node, AudioBuffer* renderTarget)
     : AudioDestinationHandler(node, renderTarget->sampleRate())
     , m_renderTarget(renderTarget)
-    , m_renderThread(adoptPtr(Platform::current()->createThread("offline audio renderer")))
-    , m_framesProcessed(0)
-    , m_framesToProcess(0)
-    , m_isRenderingStarted(false)
+    , m_startedRendering(false)
 {
     m_renderBus = AudioBus::create(renderTarget->numberOfChannels(), renderQuantumSize);
 }
@@ -85,30 +81,18 @@ void OfflineAudioDestinationHandler::uninitialize()
     AudioHandler::uninitialize();
 }
 
-OfflineAudioContext* OfflineAudioDestinationHandler::context() const
-{
-    return static_cast<OfflineAudioContext*>(m_context);
-}
-
 void OfflineAudioDestinationHandler::startRendering()
 {
     ASSERT(isMainThread());
     ASSERT(m_renderTarget);
-    ASSERT(m_renderThread);
-
     if (!m_renderTarget)
         return;
 
-    // Rendering was not started. Starting now.
-    if (!m_isRenderingStarted) {
-        m_renderThread->postTask(FROM_HERE, new Task(threadSafeBind(&OfflineAudioDestinationHandler::startOfflineRendering, this)));
-        m_isRenderingStarted = true;
-        return;
+    if (!m_startedRendering) {
+        m_startedRendering = true;
+        m_renderThread = adoptPtr(Platform::current()->createThread("Offline Audio Renderer"));
+        m_renderThread->postTask(FROM_HERE, new Task(threadSafeBind(&OfflineAudioDestinationHandler::offlineRender, PassRefPtr<OfflineAudioDestinationHandler>(this))));
     }
-
-    // Rendering is already started, which implicitly means we resume the
-    // rendering by calling |runOfflineRendering| on m_renderThread.
-    m_renderThread->postTask(FROM_HERE, threadSafeBind(&OfflineAudioDestinationHandler::runOfflineRendering, this));
 }
 
 void OfflineAudioDestinationHandler::stopRendering()
@@ -116,25 +100,15 @@ void OfflineAudioDestinationHandler::stopRendering()
     ASSERT_NOT_REACHED();
 }
 
-size_t OfflineAudioDestinationHandler::quantizeTimeToRenderQuantum(double when) const
+void OfflineAudioDestinationHandler::offlineRender()
 {
-    ASSERT(when >= 0);
-
-    size_t whenAsFrame = when * sampleRate();
-    return whenAsFrame - (whenAsFrame % renderQuantumSize);
+    offlineRenderInternal();
+    context()->handlePostRenderTasks();
 }
 
-WebThread* OfflineAudioDestinationHandler::offlineRenderThread()
-{
-    ASSERT(m_renderThread);
-
-    return m_renderThread.get();
-}
-
-void OfflineAudioDestinationHandler::startOfflineRendering()
+void OfflineAudioDestinationHandler::offlineRenderInternal()
 {
     ASSERT(!isMainThread());
-
     ASSERT(m_renderBus);
     if (!m_renderBus)
         return;
@@ -154,59 +128,31 @@ void OfflineAudioDestinationHandler::startOfflineRendering()
     if (!isRenderBusAllocated)
         return;
 
-    m_framesToProcess = m_renderTarget->length();
-
-    // Start rendering.
-    runOfflineRendering();
-}
-
-void OfflineAudioDestinationHandler::runOfflineRendering()
-{
-    ASSERT(!isMainThread());
-
+    // Break up the render target into smaller "render quantize" sized pieces.
+    // Render until we're finished.
+    size_t framesToProcess = m_renderTarget->length();
     unsigned numberOfChannels = m_renderTarget->numberOfChannels();
 
-    // If there is more to process and there is no suspension at the moment,
-    // do continue to render quanta. If there is a suspend scheduled at the
-    // current sample frame, stop the render loop and put the context into the
-    // suspended state. Then calling OfflineAudioContext.resume() will pick up
-    // the render loop again from where it was suspended.
-    while (m_framesToProcess > 0 && !context()->shouldSuspendNow()) {
-
-        // Render one render quantum. Note that this includes pre/post render
-        // tasks from the online audio context.
+    unsigned n = 0;
+    while (framesToProcess > 0) {
+        // Render one render quantum.
         render(0, m_renderBus.get(), renderQuantumSize);
 
-        size_t framesAvailableToCopy = std::min(m_framesToProcess, renderQuantumSize);
+        size_t framesAvailableToCopy = std::min(framesToProcess, renderQuantumSize);
 
         for (unsigned channelIndex = 0; channelIndex < numberOfChannels; ++channelIndex) {
             const float* source = m_renderBus->channel(channelIndex)->data();
             float* destination = m_renderTarget->getChannelData(channelIndex)->data();
-            memcpy(destination + m_framesProcessed, source, sizeof(float) * framesAvailableToCopy);
+            memcpy(destination + n, source, sizeof(float) * framesAvailableToCopy);
         }
 
-        m_framesProcessed += framesAvailableToCopy;
-        m_framesToProcess -= framesAvailableToCopy;
+        n += framesAvailableToCopy;
+        framesToProcess -= framesAvailableToCopy;
     }
-
-    // Finish up the rendering loop if there is no more to process.
-    if (m_framesToProcess <= 0) {
-        ASSERT(m_framesToProcess == 0);
-        finishOfflineRendering();
-        return;
-    }
-
-    // Otherwise resolve pending suspend promises.
-    context()->resolvePendingSuspendPromises();
-}
-
-void OfflineAudioDestinationHandler::finishOfflineRendering()
-{
-    ASSERT(!isMainThread());
 
     // Our work is done. Let the AbstractAudioContext know.
     if (context()->executionContext())
-        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, this));
+        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, PassRefPtr<OfflineAudioDestinationHandler>(this)));
 }
 
 void OfflineAudioDestinationHandler::notifyComplete()

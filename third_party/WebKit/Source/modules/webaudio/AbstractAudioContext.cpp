@@ -719,37 +719,9 @@ void AbstractAudioContext::handleStoppableSourceNodes()
     }
 }
 
-void AbstractAudioContext::performPostRenderTasks()
-{
-    // Take care of AudioNode tasks where the tryLock() failed previously.
-    deferredTaskHandler().breakConnections();
-
-    // Dynamically clean up nodes which are no longer needed.
-    releaseFinishedSourceNodes();
-
-    deferredTaskHandler().handleDeferredTasks();
-    deferredTaskHandler().requestToDeleteHandlersOnMainThread();
-}
-
 void AbstractAudioContext::handlePreRenderTasks()
 {
     ASSERT(isAudioThread());
-
-    // For the precise offline audio rendering, we need these tasks to be
-    // performed every render quantum. Thus, we wait for the graph lock (rather
-    // than tryLock()) so we can run the pre-render tasks without deferring
-    // them.
-    //
-    // Also note that we do not need to run resolvePromiseForResume() here
-    // because the offline audio context keeps its own suspend/resume promise
-    // resolvers separately.
-    if (!hasRealtimeConstraint()) {
-        deferredTaskHandler().offlineContextLock();
-        deferredTaskHandler().handleDeferredTasks();
-        handleStoppableSourceNodes();
-        unlock();
-        return;
-    }
 
     // At the beginning of every render quantum, try to update the internal rendering graph state (from main thread changes).
     // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
@@ -769,20 +741,19 @@ void AbstractAudioContext::handlePostRenderTasks()
 {
     ASSERT(isAudioThread());
 
-    // Same as |handlePreRenderTasks()|. We force to perform the post-render
-    // tasks for the offline rendering.
-    if (!hasRealtimeConstraint()) {
-        deferredTaskHandler().offlineContextLock();
-        performPostRenderTasks();
-        unlock();
-        return;
-    }
-
     // Must use a tryLock() here too.  Don't worry, the lock will very rarely be contended and this method is called frequently.
     // The worst that can happen is that there will be some nodes which will take slightly longer than usual to be deleted or removed
     // from the render graph (in which case they'll render silence).
     if (tryLock()) {
-        performPostRenderTasks();
+        // Take care of AudioNode tasks where the tryLock() failed previously.
+        deferredTaskHandler().breakConnections();
+
+        // Dynamically clean up nodes which are no longer needed.
+        releaseFinishedSourceNodes();
+
+        deferredTaskHandler().handleDeferredTasks();
+        deferredTaskHandler().requestToDeleteHandlersOnMainThread();
+
         unlock();
     }
 }
@@ -855,8 +826,33 @@ void AbstractAudioContext::startRendering()
     }
 }
 
+void AbstractAudioContext::fireCompletionEvent()
+{
+    ASSERT(isMainThread());
+    if (!isMainThread())
+        return;
+
+    AudioBuffer* renderedBuffer = m_renderTarget.get();
+
+    // For an offline context, we set the state to closed here so that the oncomplete handler sees
+    // that the context has been closed.
+    setContextState(Closed);
+
+    ASSERT(renderedBuffer);
+    if (!renderedBuffer)
+        return;
+
+    // Avoid firing the event if the document has already gone away.
+    if (executionContext()) {
+        // Call the offline rendering completion event listener and resolve the promise too.
+        dispatchEvent(OfflineAudioCompletionEvent::create(renderedBuffer));
+        m_offlineResolver->resolve(renderedBuffer);
+    }
+}
+
 DEFINE_TRACE(AbstractAudioContext)
 {
+    visitor->trace(m_offlineResolver);
     visitor->trace(m_renderTarget);
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);

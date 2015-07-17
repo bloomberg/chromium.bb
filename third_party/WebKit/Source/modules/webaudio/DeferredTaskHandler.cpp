@@ -41,12 +41,6 @@ void DeferredTaskHandler::lock()
     m_contextGraphMutex.lock();
 }
 
-void DeferredTaskHandler::offlineContextLock()
-{
-    ASSERT(!isMainThread());
-    m_contextGraphMutex.lock();
-}
-
 bool DeferredTaskHandler::tryLock()
 {
     // Try to catch cases of using try lock on main thread

@@ -28,19 +28,9 @@
 #include "modules/ModulesExport.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 
-#include "wtf/HashMap.h"
-
 namespace blink {
 
 class ExceptionState;
-class ScheduledSuspendContainer;
-class OfflineAudioDestinationHandler;
-
-// The HashMap with 'zero' key is needed because |currentSampleFrame| can be
-// zero. Also ScheduledSuspendContainer is a raw pointer (rather than RefPtr)
-// because it must be guaranteed that the main thread keeps it alive while the
-// render thread uses it.
-using SuspendContainerMap = HashMap<size_t, ScheduledSuspendContainer*, DefaultHash<size_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<size_t>>;
 
 class MODULES_EXPORT OfflineAudioContext final : public AbstractAudioContext {
     DEFINE_WRAPPERTYPEINFO();
@@ -49,95 +39,16 @@ public:
 
     ~OfflineAudioContext() override;
 
-    DECLARE_VIRTUAL_TRACE();
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
-
-    // Check all the scheduled suspends if the context should suspend at
-    // currentTime(). Then post tasks to resolve promises on the main thread
-    // if necessary.
-    bool shouldSuspendNow();
-
-    // Clear suspensions marked as 'resolved' in the list.
-    void resolvePendingSuspendPromises();
-
-    // Fire completion event when the rendering is finished.
-    void fireCompletionEvent();
-
     ScriptPromise startOfflineRendering(ScriptState*);
 
     ScriptPromise closeContext(ScriptState*) final;
-    ScriptPromise suspendContext(ScriptState*, double) final;
-    ScriptPromise resumeContext(ScriptState*) final;
-
-    // This is to implement the pure virtual method from AbstractAudioContext.
-    // CANNOT be called on OfflineAudioContext.
     ScriptPromise suspendContext(ScriptState*) final;
+    ScriptPromise resumeContext(ScriptState*) final;
 
     bool hasRealtimeConstraint() final { return false; }
 
 private:
     OfflineAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
-
-    // Fetch directly the destination handler.
-    OfflineAudioDestinationHandler& destinationHandler();
-
-    // Check a suspend container if it has a duplicate scheduled frame or
-    // is behind the current frame. If the validation fails, post a task to the
-    // main thread to reject the promise.
-    void validateSuspendContainerOnRenderThread(ScheduledSuspendContainer*);
-
-    // Reject a suspend container on the main thread when the validation fails.
-    void rejectSuspendContainerOnMainThread(ScheduledSuspendContainer*);
-
-    // Resolve a pending suspend container.
-    void resolveSuspendContainerOnMainThread(ScheduledSuspendContainer*);
-
-    SuspendContainerMap m_scheduledSuspends;
-    RefPtrWillBeMember<ScriptPromiseResolver> m_completeResolver;
-
-    // This flag is necessary to indicate the rendering has actually started.
-    // Note that initial state of context is 'Suspended', which is the same
-    // state when the context is suspended.
-    bool m_isRenderingStarted;
-
-    // Total render sample length.
-    size_t m_totalRenderFrames;
-};
-
-// A container class for a pair of time information and the suspend promise
-// resolver. This class does not need to be |ThreadSafeRefCounted| because it
-// needs to be created and destructed in the main thread.
-class ScheduledSuspendContainer {
-public:
-    static ScheduledSuspendContainer* create(double suspendTime, size_t suspendFrame, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>);
-    ~ScheduledSuspendContainer();
-
-    double suspendTime() const { return m_suspendTime; }
-    size_t suspendFrame() const { return m_suspendFrame; }
-
-    // Set the error message for the reason of rejection on the render thread
-    // before sending it to the main thread.
-    void setErrorMessageForRejection(ExceptionCode, const String&);
-
-    // {Resolve, Reject} the promise resolver on the main thread.
-    void resolvePromise();
-    void rejectPromise();
-
-private:
-    ScheduledSuspendContainer(double suspendTime, size_t suspendFrame, PassRefPtrWillBeRawPtr<ScriptPromiseResolver>);
-
-    // Actual suspend time before the quantization by render quantum frame.
-    double m_suspendTime;
-
-    // Suspend sample frame. This is quantized by the render quantum size.
-    size_t m_suspendFrame;
-
-    // Associated promise resolver.
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
-
-    ExceptionCode m_errorCode;
-    String m_errorMessage;
 };
 
 } // namespace blink

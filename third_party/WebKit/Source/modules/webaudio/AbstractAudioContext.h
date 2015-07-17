@@ -160,13 +160,8 @@ public:
     // Close
     virtual ScriptPromise closeContext(ScriptState*) = 0;
 
-    // Suspend for online audio context.
+    // Suspend/Resume
     virtual ScriptPromise suspendContext(ScriptState*) = 0;
-
-    // Suspend for offline audio context.
-    virtual ScriptPromise suspendContext(ScriptState*, double) = 0;
-
-    // Resume
     virtual ScriptPromise resumeContext(ScriptState*) = 0;
 
     // When a source node has started processing and needs to be protected,
@@ -225,13 +220,12 @@ public:
     const AtomicString& interfaceName() const final;
     ExecutionContext* executionContext() const final;
 
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     void startRendering();
+    void fireCompletionEvent();
     void notifyStateChange();
-
-    // TODO(hongchan): move this to OfflineAudioContext.
-    AudioBuffer* renderTarget() const { return m_renderTarget.get(); }
 
     // A context is considered closed if:
     //  - closeContext() has been called.
@@ -248,6 +242,8 @@ protected:
     void setContextState(AudioContextState);
     virtual void didClose() {}
     void uninitialize();
+
+    RefPtrWillBeMember<ScriptPromiseResolver> m_offlineResolver;
 
     // FIXME(dominicc): Move m_resumeResolvers to AudioContext, because only
     // it creates these Promises.
@@ -304,8 +300,6 @@ private:
     bool m_didInitializeContextGraphMutex;
     RefPtr<DeferredTaskHandler> m_deferredTaskHandler;
 
-    // For offline audio context.
-    // TODO(hongchan): move this to OfflineAudioContext class.
     Member<AudioBuffer> m_renderTarget;
 
     // The state of the AbstractAudioContext.
@@ -317,9 +311,6 @@ private:
     // connected. Because these never get pulled anymore, they will stay around forever. So if we
     // can, try to stop them so they can be collected.
     void handleStoppableSourceNodes();
-
-    // Perform common tasks after the render quantum. Called by handlePostRenderTasks().
-    void performPostRenderTasks();
 
     // This is considering 32 is large enough for multiple channels audio.
     // It is somewhat arbitrary and could be increased if necessary.

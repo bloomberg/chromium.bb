@@ -3439,9 +3439,7 @@ interface OfflineAudioCompletionEvent
 interface OfflineAudioContext
     getter oncomplete
     method constructor
-    method resume
     method startRendering
-    method suspend
     setter oncomplete
 interface Option
     method constructor
@@ -6453,9 +6451,7 @@ interface webkitMediaStream
 interface webkitOfflineAudioContext
     getter oncomplete
     method constructor
-    method resume
     method startRendering
-    method suspend
     setter oncomplete
 interface webkitRTCPeerConnection
     getter iceConnectionState

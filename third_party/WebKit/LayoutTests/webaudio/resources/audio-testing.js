@@ -631,36 +631,6 @@ var Should = (function () {
         this._testPassed('has no glitch above the threshold of ' + threshold);
     };
 
-    // Check if the target promise is resolved correctly.
-    //
-    // Example:
-    // Should('My promise', promise).beResolved().then(nextStuff);
-    // Result:
-    // "PASS My promise resolved correctly."
-    // "FAIL My promise rejected incorrectly (with _ERROR_)."
-    ShouldModel.prototype.beResolved = function () {
-        return this.target.then(function () {
-            this._testPassed('resolved correctly');
-        }.bind(this), function (err) {
-            this._testFailed('rejected incorrectly (with ' + err + ')');
-        }.bind(this));
-    };
-
-    // Check if the target promise is rejected correctly.
-    //
-    // Example:
-    // Should('My promise', promise).beRejected().then(nextStuff);
-    // Result:
-    // "PASS My promise rejected correctly (with _ERROR_)."
-    // "FAIL My promise resolved incorrectly."
-    ShouldModel.prototype.beRejected = function () {
-        return this.target.then(function () {
-            this._testFailed('resolved incorrectly');
-        }.bind(this), function (err) {
-            this._testPassed('rejected correctly (with ' + err + ')');
-        }.bind(this));
-    };
-
     // Should() method.
     //
     // |desc| is the description of the task or check and |target| is a value
@@ -682,4 +652,5 @@ var Should = (function () {
 
         return new ShouldModel(desc, target, _opts);
     };
+
 })();
