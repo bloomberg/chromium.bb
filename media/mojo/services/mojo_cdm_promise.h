@@ -17,7 +17,7 @@ namespace media {
 template <typename... T>
 class MojoCdmPromise : public CdmPromiseTemplate<T...> {
  public:
-  typedef mojo::Callback<void(mojo::CdmPromiseResultPtr,
+  typedef mojo::Callback<void(interfaces::CdmPromiseResultPtr,
                               typename MojoTypeTrait<T>::MojoType...)>
       CallbackType;
 

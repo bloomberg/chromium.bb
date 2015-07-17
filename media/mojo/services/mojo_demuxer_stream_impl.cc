@@ -15,9 +15,8 @@ namespace media {
 
 MojoDemuxerStreamImpl::MojoDemuxerStreamImpl(
     media::DemuxerStream* stream,
-    mojo::InterfaceRequest<mojo::DemuxerStream> request)
-    : binding_(this, request.Pass()), stream_(stream), weak_factory_(this) {
-}
+    mojo::InterfaceRequest<interfaces::DemuxerStream> request)
+    : binding_(this, request.Pass()), stream_(stream), weak_factory_(this) {}
 
 MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() {
 }
@@ -47,20 +46,20 @@ void MojoDemuxerStreamImpl::Initialize(const InitializeCallback& callback) {
   stream_pipe_ = data_pipe.producer_handle.Pass();
 
   // Prepare the initial config.
-  mojo::AudioDecoderConfigPtr audio_config;
-  mojo::VideoDecoderConfigPtr video_config;
+  interfaces::AudioDecoderConfigPtr audio_config;
+  interfaces::VideoDecoderConfigPtr video_config;
   if (stream_->type() == media::DemuxerStream::AUDIO) {
     audio_config =
-        mojo::AudioDecoderConfig::From(stream_->audio_decoder_config());
+        interfaces::AudioDecoderConfig::From(stream_->audio_decoder_config());
   } else if (stream_->type() == media::DemuxerStream::VIDEO) {
     video_config =
-        mojo::VideoDecoderConfig::From(stream_->video_decoder_config());
+        interfaces::VideoDecoderConfig::From(stream_->video_decoder_config());
   } else {
     NOTREACHED() << "Unsupported stream type: " << stream_->type();
     return;
   }
 
-  callback.Run(static_cast<mojo::DemuxerStream::Type>(stream_->type()),
+  callback.Run(static_cast<interfaces::DemuxerStream::Type>(stream_->type()),
                data_pipe.consumer_handle.Pass(), audio_config.Pass(),
                video_config.Pass());
 }
@@ -74,8 +73,8 @@ void MojoDemuxerStreamImpl::OnBufferReady(
     const ReadCallback& callback,
     media::DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
-  mojo::AudioDecoderConfigPtr audio_config;
-  mojo::VideoDecoderConfigPtr video_config;
+  interfaces::AudioDecoderConfigPtr audio_config;
+  interfaces::VideoDecoderConfigPtr video_config;
 
   if (status == media::DemuxerStream::kConfigChanged) {
     DVLOG(2) << __FUNCTION__ << ": ConfigChange!";
@@ -83,24 +82,24 @@ void MojoDemuxerStreamImpl::OnBufferReady(
     // Status obtained via Run() below.
     if (stream_->type() == media::DemuxerStream::AUDIO) {
       audio_config =
-          mojo::AudioDecoderConfig::From(stream_->audio_decoder_config());
+          interfaces::AudioDecoderConfig::From(stream_->audio_decoder_config());
     } else if (stream_->type() == media::DemuxerStream::VIDEO) {
       video_config =
-          mojo::VideoDecoderConfig::From(stream_->video_decoder_config());
+          interfaces::VideoDecoderConfig::From(stream_->video_decoder_config());
     } else {
       NOTREACHED() << "Unsupported config change encountered for type: "
                    << stream_->type();
     }
 
-    callback.Run(mojo::DemuxerStream::STATUS_CONFIG_CHANGED,
-                 mojo::MediaDecoderBufferPtr(), audio_config.Pass(),
+    callback.Run(interfaces::DemuxerStream::STATUS_CONFIG_CHANGED,
+                 interfaces::MediaDecoderBufferPtr(), audio_config.Pass(),
                  video_config.Pass());
     return;
   }
 
   if (status == media::DemuxerStream::kAborted) {
-    callback.Run(mojo::DemuxerStream::STATUS_ABORTED,
-                 mojo::MediaDecoderBufferPtr(), audio_config.Pass(),
+    callback.Run(interfaces::DemuxerStream::STATUS_ABORTED,
+                 interfaces::MediaDecoderBufferPtr(), audio_config.Pass(),
                  video_config.Pass());
     return;
   }
@@ -119,9 +118,9 @@ void MojoDemuxerStreamImpl::OnBufferReady(
   // TODO(dalecurtis): Once we can write framed data to the DataPipe, fill via
   // the producer handle and then read more to keep the pipe full.  Waiting for
   // space can be accomplished using an AsyncWaiter.
-  callback.Run(static_cast<mojo::DemuxerStream::Status>(status),
-               mojo::MediaDecoderBuffer::From(buffer), audio_config.Pass(),
-               video_config.Pass());
+  callback.Run(static_cast<interfaces::DemuxerStream::Status>(status),
+               interfaces::MediaDecoderBuffer::From(buffer),
+               audio_config.Pass(), video_config.Pass());
 }
 
 }  // namespace media

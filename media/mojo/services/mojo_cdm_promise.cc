@@ -14,13 +14,15 @@
 
 namespace media {
 
-static mojo::CdmPromiseResultPtr GetRejectResult(
+static interfaces::CdmPromiseResultPtr GetRejectResult(
     MediaKeys::Exception exception,
     uint32_t system_code,
     const std::string& error_message) {
-  mojo::CdmPromiseResultPtr cdm_promise_result(mojo::CdmPromiseResult::New());
+  interfaces::CdmPromiseResultPtr cdm_promise_result(
+      interfaces::CdmPromiseResult::New());
   cdm_promise_result->success = false;
-  cdm_promise_result->exception = static_cast<mojo::CdmException>(exception);
+  cdm_promise_result->exception =
+      static_cast<interfaces::CdmException>(exception);
   cdm_promise_result->system_code = system_code;
   cdm_promise_result->error_message = error_message;
   return cdm_promise_result.Pass();
@@ -41,7 +43,8 @@ MojoCdmPromise<T...>::~MojoCdmPromise() {
 template <typename... T>
 void MojoCdmPromise<T...>::resolve(const T&... result) {
   MarkPromiseSettled();
-  mojo::CdmPromiseResultPtr cdm_promise_result(mojo::CdmPromiseResult::New());
+  interfaces::CdmPromiseResultPtr cdm_promise_result(
+      interfaces::CdmPromiseResult::New());
   cdm_promise_result->success = true;
   callback_.Run(cdm_promise_result.Pass(),
                 MojoTypeTrait<T>::MojoType::From(result)...);

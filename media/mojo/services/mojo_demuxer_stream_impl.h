@@ -15,17 +15,19 @@ namespace media {
 class DemuxerStream;
 
 // This class wraps a media::DemuxerStream and exposes it as a
-// mojo::DemuxerStream for use as a proxy from remote applications.
-class MojoDemuxerStreamImpl : public mojo::DemuxerStream {
+// interfaces::DemuxerStream for use as a proxy from remote applications.
+class MojoDemuxerStreamImpl : public interfaces::DemuxerStream {
  public:
   // |stream| is the underlying DemuxerStream we are proxying for.
   // Note: |this| does not take ownership of |stream|.
-  MojoDemuxerStreamImpl(media::DemuxerStream* stream,
-                        mojo::InterfaceRequest<mojo::DemuxerStream> request);
+  MojoDemuxerStreamImpl(
+      media::DemuxerStream* stream,
+      mojo::InterfaceRequest<interfaces::DemuxerStream> request);
   ~MojoDemuxerStreamImpl() override;
 
-  // mojo::DemuxerStream implementation.
-  // InitializeCallback and ReadCallback are defined in mojo::DemuxerStream.
+  // interfaces::DemuxerStream implementation.
+  // InitializeCallback and ReadCallback are defined in
+  // interfaces::DemuxerStream.
   void Initialize(const InitializeCallback& callback) override;
   void Read(const ReadCallback& callback) override;
 
@@ -34,7 +36,7 @@ class MojoDemuxerStreamImpl : public mojo::DemuxerStream {
                      media::DemuxerStream::Status status,
                      const scoped_refptr<media::DecoderBuffer>& buffer);
 
-  mojo::StrongBinding<mojo::DemuxerStream> binding_;
+  mojo::StrongBinding<interfaces::DemuxerStream> binding_;
 
   // See constructor.  We do not own |stream_|.
   media::DemuxerStream* stream_;

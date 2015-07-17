@@ -19,7 +19,7 @@ namespace media {
 
 template <typename PromiseType>
 static void RejectPromise(scoped_ptr<PromiseType> promise,
-                          mojo::CdmPromiseResultPtr result) {
+                          interfaces::CdmPromiseResultPtr result) {
   promise->reject(static_cast<MediaKeys::Exception>(result->exception),
                   result->system_code, result->error_message);
 }
@@ -31,7 +31,7 @@ void MojoCdm::Create(
     const std::string& key_system,
     const GURL& security_origin,
     const media::CdmConfig& cdm_config,
-    mojo::ContentDecryptionModulePtr remote_cdm,
+    interfaces::ContentDecryptionModulePtr remote_cdm,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::LegacySessionErrorCB& legacy_session_error_cb,
@@ -52,7 +52,7 @@ void MojoCdm::Create(
                               promise.Pass());
 }
 
-MojoCdm::MojoCdm(mojo::ContentDecryptionModulePtr remote_cdm,
+MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const LegacySessionErrorCB& legacy_session_error_cb,
@@ -76,7 +76,7 @@ MojoCdm::MojoCdm(mojo::ContentDecryptionModulePtr remote_cdm,
   DCHECK(!session_keys_change_cb_.is_null());
   DCHECK(!session_expiration_update_cb_.is_null());
 
-  mojo::ContentDecryptionModuleClientPtr client_ptr;
+  interfaces::ContentDecryptionModuleClientPtr client_ptr;
   binding_.Bind(GetProxy(&client_ptr));
   remote_cdm_->SetClient(client_ptr.Pass());
 }
@@ -91,9 +91,10 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
                             scoped_ptr<CdmInitializedPromise> promise) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
   remote_cdm_->Initialize(
-      key_system, security_origin.spec(), mojo::CdmConfig::From(cdm_config),
-      cdm_id_, base::Bind(&MojoCdm::OnPromiseResult<>,
-                          weak_factory_.GetWeakPtr(), base::Passed(&promise)));
+      key_system, security_origin.spec(),
+      interfaces::CdmConfig::From(cdm_config), cdm_id_,
+      base::Bind(&MojoCdm::OnPromiseResult<>, weak_factory_.GetWeakPtr(),
+                 base::Passed(&promise)));
 }
 
 void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
@@ -112,8 +113,10 @@ void MojoCdm::CreateSessionAndGenerateRequest(
     scoped_ptr<NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   remote_cdm_->CreateSessionAndGenerateRequest(
-      static_cast<mojo::ContentDecryptionModule::SessionType>(session_type),
-      static_cast<mojo::ContentDecryptionModule::InitDataType>(init_data_type),
+      static_cast<interfaces::ContentDecryptionModule::SessionType>(
+          session_type),
+      static_cast<interfaces::ContentDecryptionModule::InitDataType>(
+          init_data_type),
       mojo::Array<uint8_t>::From(init_data),
       base::Bind(&MojoCdm::OnPromiseResult<std::string>,
                  weak_factory_.GetWeakPtr(), base::Passed(&promise)));
@@ -124,7 +127,8 @@ void MojoCdm::LoadSession(SessionType session_type,
                           scoped_ptr<NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   remote_cdm_->LoadSession(
-      static_cast<mojo::ContentDecryptionModule::SessionType>(session_type),
+      static_cast<interfaces::ContentDecryptionModule::SessionType>(
+          session_type),
       session_id,
       base::Bind(&MojoCdm::OnPromiseResult<std::string>,
                  weak_factory_.GetWeakPtr(), base::Passed(&promise)));
@@ -172,7 +176,7 @@ int MojoCdm::GetCdmId() const {
 }
 
 void MojoCdm::OnSessionMessage(const mojo::String& session_id,
-                               mojo::CdmMessageType message_type,
+                               interfaces::CdmMessageType message_type,
                                mojo::Array<uint8_t> message,
                                const mojo::String& legacy_destination_url) {
   DVLOG(2) << __FUNCTION__;
@@ -194,7 +198,7 @@ void MojoCdm::OnSessionClosed(const mojo::String& session_id) {
 }
 
 void MojoCdm::OnLegacySessionError(const mojo::String& session_id,
-                                   mojo::CdmException exception,
+                                   interfaces::CdmException exception,
                                    uint32_t system_code,
                                    const mojo::String& error_message) {
   DVLOG(2) << __FUNCTION__;
@@ -206,7 +210,7 @@ void MojoCdm::OnLegacySessionError(const mojo::String& session_id,
 void MojoCdm::OnSessionKeysChange(
     const mojo::String& session_id,
     bool has_additional_usable_key,
-    mojo::Array<mojo::CdmKeyInformationPtr> keys_info) {
+    mojo::Array<interfaces::CdmKeyInformationPtr> keys_info) {
   DVLOG(2) << __FUNCTION__;
   media::CdmKeysInfo key_data;
   key_data.reserve(keys_info.size());

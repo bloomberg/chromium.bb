@@ -32,23 +32,24 @@ class Renderer;
 class RendererFactory;
 class VideoRendererSink;
 
-// A mojo::MediaRenderer implementation that uses media::AudioRenderer to
+// A interfaces::MediaRenderer implementation that uses media::AudioRenderer to
 // decode and render audio to a sink obtained from the ApplicationConnection.
 class MEDIA_EXPORT MojoRendererService
-    : NON_EXPORTED_BASE(mojo::MediaRenderer) {
+    : NON_EXPORTED_BASE(interfaces::MediaRenderer) {
  public:
   // |cdm_context_provider| can be used to find the CdmContext to support
   // encrypted media. If null, encrypted media is not supported.
-  MojoRendererService(CdmContextProvider* cdm_context_provider,
-                      RendererFactory* renderer_factory,
-                      const scoped_refptr<MediaLog>& media_log,
-                      mojo::InterfaceRequest<mojo::MediaRenderer> request);
+  MojoRendererService(
+      CdmContextProvider* cdm_context_provider,
+      RendererFactory* renderer_factory,
+      const scoped_refptr<MediaLog>& media_log,
+      mojo::InterfaceRequest<interfaces::MediaRenderer> request);
   ~MojoRendererService() final;
 
-  // mojo::MediaRenderer implementation.
-  void Initialize(mojo::MediaRendererClientPtr client,
-                  mojo::DemuxerStreamPtr audio,
-                  mojo::DemuxerStreamPtr video,
+  // interfaces::MediaRenderer implementation.
+  void Initialize(interfaces::MediaRendererClientPtr client,
+                  interfaces::DemuxerStreamPtr audio,
+                  interfaces::DemuxerStreamPtr video,
                   const mojo::Callback<void(bool)>& callback) final;
   void Flush(const mojo::Closure& callback) final;
   void StartPlayingFrom(int64_t time_delta_usec) final;
@@ -99,7 +100,7 @@ class MEDIA_EXPORT MojoRendererService
   // Callback executed once SetCdm() completes.
   void OnCdmAttached(const mojo::Callback<void(bool)>& callback, bool success);
 
-  mojo::StrongBinding<mojo::MediaRenderer> binding_;
+  mojo::StrongBinding<interfaces::MediaRenderer> binding_;
 
   CdmContextProvider* cdm_context_provider_;
 
@@ -116,7 +117,7 @@ class MEDIA_EXPORT MojoRendererService
   base::RepeatingTimer<MojoRendererService> time_update_timer_;
   uint64_t last_media_time_usec_;
 
-  mojo::MediaRendererClientPtr client_;
+  interfaces::MediaRendererClientPtr client_;
 
   base::WeakPtr<MojoRendererService> weak_this_;
   base::WeakPtrFactory<MojoRendererService> weak_factory_;

@@ -30,7 +30,7 @@ void MojoCdmFactory::Create(
   DVLOG(2) << __FUNCTION__ << ": " << key_system;
   DCHECK(service_provider_);
 
-  mojo::ContentDecryptionModulePtr cdm_ptr;
+  interfaces::ContentDecryptionModulePtr cdm_ptr;
   mojo::ConnectToService(service_provider_, &cdm_ptr);
 
   MojoCdm::Create(key_system, security_origin, cdm_config, cdm_ptr.Pass(),

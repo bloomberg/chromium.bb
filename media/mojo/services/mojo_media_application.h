@@ -18,8 +18,8 @@ class RendererFactory;
 
 class MojoMediaApplication
     : public mojo::ApplicationDelegate,
-      public mojo::InterfaceFactory<mojo::ContentDecryptionModule>,
-      public mojo::InterfaceFactory<mojo::MediaRenderer> {
+      public mojo::InterfaceFactory<interfaces::ContentDecryptionModule>,
+      public mojo::InterfaceFactory<interfaces::MediaRenderer> {
  public:
   static GURL AppUrl();
   static scoped_ptr<mojo::ApplicationDelegate> CreateApp();
@@ -33,14 +33,14 @@ class MojoMediaApplication
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) final;
 
-  // mojo::InterfaceFactory<mojo::ContentDecryptionModule> implementation.
-  void Create(
-      mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojo::ContentDecryptionModule> request) final;
-
-  // mojo::InterfaceFactory<mojo::MediaRenderer> implementation.
+  // mojo::InterfaceFactory<interfaces::ContentDecryptionModule> implementation.
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::MediaRenderer> request) final;
+              mojo::InterfaceRequest<interfaces::ContentDecryptionModule>
+                  request) final;
+
+  // mojo::InterfaceFactory<interfaces::MediaRenderer> implementation.
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<interfaces::MediaRenderer> request) final;
 
   RendererFactory* GetRendererFactory();
   CdmFactory* GetCdmFactory();

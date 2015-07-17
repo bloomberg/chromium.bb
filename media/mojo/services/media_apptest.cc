@@ -31,14 +31,14 @@ namespace {
 const char kInvalidKeySystem[] = "invalid.key.system";
 const char kSecurityOrigin[] = "http://foo.com";
 
-class MockMediaRendererClient : public mojo::MediaRendererClient {
+class MockMediaRendererClient : public interfaces::MediaRendererClient {
  public:
   MockMediaRendererClient(){};
   ~MockMediaRendererClient() override{};
 
-  // mojo::MediaRendererClient implementation.
+  // interfaces::MediaRendererClient implementation.
   MOCK_METHOD2(OnTimeUpdate, void(int64_t time_usec, int64_t max_time_usec));
-  MOCK_METHOD1(OnBufferingStateChange, void(mojo::BufferingState state));
+  MOCK_METHOD1(OnBufferingStateChange, void(interfaces::BufferingState state));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());
 
@@ -70,7 +70,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   // MOCK_METHOD* doesn't support move only types. Work around this by having
   // an extra method.
   MOCK_METHOD1(OnCdmInitializedInternal, void(bool result));
-  void OnCdmInitialized(mojo::CdmPromiseResultPtr result) {
+  void OnCdmInitialized(interfaces::CdmPromiseResultPtr result) {
     OnCdmInitializedInternal(result->success);
   }
 
@@ -79,8 +79,8 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     cdm_->Initialize(
-        key_system, kSecurityOrigin, mojo::CdmConfig::From(CdmConfig()), 1,
-        base::Bind(&MediaAppTest::OnCdmInitialized, base::Unretained(this)));
+        key_system, kSecurityOrigin, interfaces::CdmConfig::From(CdmConfig()),
+        1, base::Bind(&MediaAppTest::OnCdmInitialized, base::Unretained(this)));
   }
 
   MOCK_METHOD1(OnRendererInitialized, void(bool));
@@ -89,10 +89,10 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
                           bool expected_result) {
     video_demuxer_stream_.set_video_decoder_config(video_config);
 
-    mojo::DemuxerStreamPtr video_stream;
+    interfaces::DemuxerStreamPtr video_stream;
     new MojoDemuxerStreamImpl(&video_demuxer_stream_, GetProxy(&video_stream));
 
-    mojo::MediaRendererClientPtr client_ptr;
+    interfaces::MediaRendererClientPtr client_ptr;
     media_renderer_client_binding_.Bind(GetProxy(&client_ptr));
 
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
@@ -106,11 +106,11 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
  protected:
   scoped_ptr<base::RunLoop> run_loop_;
 
-  mojo::ContentDecryptionModulePtr cdm_;
-  mojo::MediaRendererPtr media_renderer_;
+  interfaces::ContentDecryptionModulePtr cdm_;
+  interfaces::MediaRendererPtr media_renderer_;
 
   StrictMock<MockMediaRendererClient> media_renderer_client_;
-  mojo::Binding<mojo::MediaRendererClient> media_renderer_client_binding_;
+  mojo::Binding<interfaces::MediaRendererClient> media_renderer_client_binding_;
 
   StrictMock<MockDemuxerStream> video_demuxer_stream_;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module media.interfaces;
 
 import "ui/mojo/geometry/geometry.mojom";
 
@@ -174,9 +174,9 @@ struct VideoDecoderConfig {
   VideoCodecProfile profile;
   VideoFormat format;
   ColorSpace color_space;
-  Size coded_size;
-  Rect visible_rect;
-  Size natural_size;
+  mojo.Size coded_size;
+  mojo.Rect visible_rect;
+  mojo.Size natural_size;
   array<uint8>? extra_data;
   bool is_encrypted;
 };

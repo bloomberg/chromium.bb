@@ -19,7 +19,7 @@ namespace media {
 
 MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    mojo::MediaRendererPtr remote_media_renderer)
+    interfaces::MediaRendererPtr remote_media_renderer)
     : task_runner_(task_runner),
       remote_media_renderer_(remote_media_renderer.Pass()),
       binding_(this),
@@ -52,22 +52,22 @@ void MojoRendererImpl::Initialize(
   error_cb_ = error_cb;
   buffering_state_cb_ = buffering_state_cb;
 
-  // Create audio and video mojo::DemuxerStream and bind its lifetime to the
-  // pipe.
+  // Create audio and video interfaces::DemuxerStream and bind its lifetime to
+  // the pipe.
   DemuxerStream* const audio =
       demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
   DemuxerStream* const video =
       demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 
-  mojo::DemuxerStreamPtr audio_stream;
+  interfaces::DemuxerStreamPtr audio_stream;
   if (audio)
     new MojoDemuxerStreamImpl(audio, GetProxy(&audio_stream));
 
-  mojo::DemuxerStreamPtr video_stream;
+  interfaces::DemuxerStreamPtr video_stream;
   if (video)
     new MojoDemuxerStreamImpl(video, GetProxy(&video_stream));
 
-  mojo::MediaRendererClientPtr client_ptr;
+  interfaces::MediaRendererClientPtr client_ptr;
   binding_.Bind(GetProxy(&client_ptr));
   remote_media_renderer_->Initialize(
       client_ptr.Pass(),
@@ -159,7 +159,8 @@ void MojoRendererImpl::OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) {
   max_time_ = base::TimeDelta::FromMicroseconds(max_time_usec);
 }
 
-void MojoRendererImpl::OnBufferingStateChange(mojo::BufferingState state) {
+void MojoRendererImpl::OnBufferingStateChange(
+    interfaces::BufferingState state) {
   DVLOG(2) << __FUNCTION__;
 
   if (!task_runner_->BelongsToCurrentThread()) {

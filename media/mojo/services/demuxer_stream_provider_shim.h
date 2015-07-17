@@ -13,14 +13,14 @@
 
 namespace media {
 
-// DemuxerStreamProvider shim for mojo::DemuxerStreams.
+// DemuxerStreamProvider shim for interfaces::DemuxerStreams.
 class DemuxerStreamProviderShim : public DemuxerStreamProvider {
  public:
   // Constructs the shim; at least a single audio or video stream must be
   // provided.  |demuxer_ready_cb| will be called once the streams have been
   // initialized.  Calling any method before then is an error.
-  DemuxerStreamProviderShim(mojo::DemuxerStreamPtr audio,
-                            mojo::DemuxerStreamPtr video,
+  DemuxerStreamProviderShim(interfaces::DemuxerStreamPtr audio,
+                            interfaces::DemuxerStreamPtr video,
                             const base::Closure& demuxer_ready_cb);
   ~DemuxerStreamProviderShim() override;
 
@@ -28,8 +28,9 @@ class DemuxerStreamProviderShim : public DemuxerStreamProvider {
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
 
  private:
-  // Called as each mojo::DemuxerStream becomes ready.  Once all streams are
-  // ready it will fire the |demuxer_ready_cb_| provided during construction.
+  // Called as each interfaces::DemuxerStream becomes ready.  Once all streams
+  // are ready it will fire the |demuxer_ready_cb_| provided during
+  // construction.
   void OnStreamReady();
 
   // Stored copy the ready callback provided during construction; cleared once

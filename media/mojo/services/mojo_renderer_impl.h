@@ -18,18 +18,19 @@ namespace media {
 
 class DemuxerStreamProvider;
 
-// A media::Renderer that proxies to a mojo::MediaRenderer. That
-// mojo::MediaRenderer proxies back to the MojoRendererImpl via the
-// mojo::MediaRendererClient interface.
+// A media::Renderer that proxies to a interfaces::MediaRenderer. That
+// interfaces::MediaRenderer proxies back to the MojoRendererImpl via the
+// interfaces::MediaRendererClient interface.
 //
 // MojoRendererImpl implements media::Renderer for use as either an audio
 // or video renderer.
-class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
+class MojoRendererImpl : public Renderer,
+                         public interfaces::MediaRendererClient {
  public:
   // |task_runner| is the TaskRunner on which all methods are invoked.
   MojoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      mojo::MediaRendererPtr remote_media_renderer);
+      interfaces::MediaRendererPtr remote_media_renderer);
   ~MojoRendererImpl() override;
 
   // Renderer implementation.
@@ -50,9 +51,9 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
   bool HasAudio() override;
   bool HasVideo() override;
 
-  // mojo::MediaRendererClient implementation.
+  // interfaces::MediaRendererClient implementation.
   void OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) override;
-  void OnBufferingStateChange(mojo::BufferingState state) override;
+  void OnBufferingStateChange(interfaces::BufferingState state) override;
   void OnEnded() override;
   void OnError() override;
 
@@ -64,7 +65,7 @@ class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DemuxerStreamProvider* demuxer_stream_provider_;
-  mojo::MediaRendererPtr remote_media_renderer_;
+  interfaces::MediaRendererPtr remote_media_renderer_;
   mojo::Binding<MediaRendererClient> binding_;
 
   // Callbacks passed to Initialize() that we forward messages from

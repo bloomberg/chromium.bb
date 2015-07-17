@@ -619,7 +619,7 @@ class PipelineIntegrationTestHost : public mojo::test::ApplicationTestBase,
             ->ConnectToApplication(request.Pass())
             ->GetServiceProvider();
 
-    mojo::MediaRendererPtr mojo_media_renderer;
+    interfaces::MediaRendererPtr mojo_media_renderer;
     mojo::ConnectToService(service_provider, &mojo_media_renderer);
     return make_scoped_ptr(new MojoRendererImpl(message_loop_.task_runner(),
                                                 mojo_media_renderer.Pass()));

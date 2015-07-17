@@ -32,7 +32,7 @@ MojoRendererService::MojoRendererService(
     CdmContextProvider* cdm_context_provider,
     RendererFactory* renderer_factory,
     const scoped_refptr<MediaLog>& media_log,
-    mojo::InterfaceRequest<mojo::MediaRenderer> request)
+    mojo::InterfaceRequest<interfaces::MediaRenderer> request)
     : binding_(this, request.Pass()),
       cdm_context_provider_(cdm_context_provider),
       state_(STATE_UNINITIALIZED),
@@ -70,9 +70,9 @@ MojoRendererService::~MojoRendererService() {
 }
 
 void MojoRendererService::Initialize(
-    mojo::MediaRendererClientPtr client,
-    mojo::DemuxerStreamPtr audio,
-    mojo::DemuxerStreamPtr video,
+    interfaces::MediaRendererClientPtr client,
+    interfaces::DemuxerStreamPtr audio,
+    interfaces::DemuxerStreamPtr video,
     const mojo::Callback<void(bool)>& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -192,7 +192,7 @@ void MojoRendererService::OnBufferingStateChanged(
     BufferingState new_buffering_state) {
   DVLOG(2) << __FUNCTION__ << "(" << new_buffering_state << ")";
   client_->OnBufferingStateChange(
-      static_cast<mojo::BufferingState>(new_buffering_state));
+      static_cast<interfaces::BufferingState>(new_buffering_state));
 }
 
 void MojoRendererService::OnRendererEnded() {

@@ -18,16 +18,18 @@
 
 namespace mojo {
 
-#define ASSERT_ENUM_EQ(media_enum, media_prefix, mojo_prefix, value)    \
-  static_assert(media::media_prefix##value ==                           \
-                    static_cast<media::media_enum>(mojo_prefix##value), \
-                "Mismatched enum: " #media_prefix #value                \
+#define ASSERT_ENUM_EQ(media_enum, media_prefix, mojo_prefix, value) \
+  static_assert(media::media_prefix##value ==                        \
+                    static_cast<media::media_enum>(                  \
+                        media::interfaces::mojo_prefix##value),      \
+                "Mismatched enum: " #media_prefix #value             \
                 " != " #mojo_prefix #value)
 
-#define ASSERT_ENUM_EQ_RAW(media_enum, media_enum_value, mojo_enum_value) \
-  static_assert(media::media_enum_value ==                                \
-                    static_cast<media::media_enum>(mojo_enum_value),      \
-                "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
+#define ASSERT_ENUM_EQ_RAW(media_enum, media_enum_value, mojo_enum_value)     \
+  static_assert(                                                              \
+      media::media_enum_value ==                                              \
+          static_cast<media::media_enum>(media::interfaces::mojo_enum_value), \
+      "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
 
 // BufferingState.
 ASSERT_ENUM_EQ(BufferingState, BUFFERING_, BUFFERING_STATE_, HAVE_NOTHING);
@@ -217,11 +219,11 @@ ASSERT_ENUM_EQ(VideoCodecProfile,
                VIDEO_CODEC_PROFILE_MAX);
 
 // CdmException
-#define ASSERT_CDM_EXCEPTION(value)                                        \
-  static_assert(                                                           \
-      media::MediaKeys::value ==                                           \
-          static_cast<media::MediaKeys::Exception>(CDM_EXCEPTION_##value), \
-      "Mismatched CDM Exception")
+#define ASSERT_CDM_EXCEPTION(value)                                \
+  static_assert(media::MediaKeys::value ==                         \
+                    static_cast<media::MediaKeys::Exception>(      \
+                        media::interfaces::CDM_EXCEPTION_##value), \
+                "Mismatched CDM Exception")
 ASSERT_CDM_EXCEPTION(NOT_SUPPORTED_ERROR);
 ASSERT_CDM_EXCEPTION(INVALID_STATE_ERROR);
 ASSERT_CDM_EXCEPTION(INVALID_ACCESS_ERROR);
@@ -231,20 +233,22 @@ ASSERT_CDM_EXCEPTION(CLIENT_ERROR);
 ASSERT_CDM_EXCEPTION(OUTPUT_ERROR);
 
 // CDM Session Type
-#define ASSERT_CDM_SESSION_TYPE(value)                                  \
-  static_assert(media::MediaKeys::value ==                              \
-                    static_cast<media::MediaKeys::SessionType>(         \
-                        ContentDecryptionModule::SESSION_TYPE_##value), \
+#define ASSERT_CDM_SESSION_TYPE(value)                               \
+  static_assert(media::MediaKeys::value ==                           \
+                    static_cast<media::MediaKeys::SessionType>(      \
+                        media::interfaces::ContentDecryptionModule:: \
+                            SESSION_TYPE_##value),                   \
                 "Mismatched CDM Session Type")
 ASSERT_CDM_SESSION_TYPE(TEMPORARY_SESSION);
 ASSERT_CDM_SESSION_TYPE(PERSISTENT_LICENSE_SESSION);
 ASSERT_CDM_SESSION_TYPE(PERSISTENT_RELEASE_MESSAGE_SESSION);
 
 // CDM InitDataType
-#define ASSERT_CDM_INIT_DATA_TYPE(value)                                  \
-  static_assert(media::EmeInitDataType::value ==                          \
-                    static_cast<media::EmeInitDataType>(                  \
-                        ContentDecryptionModule::INIT_DATA_TYPE_##value), \
+#define ASSERT_CDM_INIT_DATA_TYPE(value)                             \
+  static_assert(media::EmeInitDataType::value ==                     \
+                    static_cast<media::EmeInitDataType>(             \
+                        media::interfaces::ContentDecryptionModule:: \
+                            INIT_DATA_TYPE_##value),                 \
                 "Mismatched CDM Init Data Type")
 ASSERT_CDM_INIT_DATA_TYPE(UNKNOWN);
 ASSERT_CDM_INIT_DATA_TYPE(WEBM);
@@ -255,7 +259,7 @@ ASSERT_CDM_INIT_DATA_TYPE(KEYIDS);
 #define ASSERT_CDM_KEY_STATUS(value)                                  \
   static_assert(media::CdmKeyInformation::value ==                    \
                     static_cast<media::CdmKeyInformation::KeyStatus>( \
-                        CDM_KEY_STATUS_##value),                      \
+                        media::interfaces::CDM_KEY_STATUS_##value),   \
                 "Mismatched CDM Key Status")
 ASSERT_CDM_KEY_STATUS(USABLE);
 ASSERT_CDM_KEY_STATUS(INTERNAL_ERROR);
@@ -263,20 +267,21 @@ ASSERT_CDM_KEY_STATUS(EXPIRED);
 ASSERT_CDM_KEY_STATUS(OUTPUT_NOT_ALLOWED);
 
 // CDM Message Type
-#define ASSERT_CDM_MESSAGE_TYPE(value)                                       \
-  static_assert(                                                             \
-      media::MediaKeys::value == static_cast<media::MediaKeys::MessageType>( \
-                                     CDM_MESSAGE_TYPE_##value),              \
-      "Mismatched CDM Message Type")
+#define ASSERT_CDM_MESSAGE_TYPE(value)                                \
+  static_assert(media::MediaKeys::value ==                            \
+                    static_cast<media::MediaKeys::MessageType>(       \
+                        media::interfaces::CDM_MESSAGE_TYPE_##value), \
+                "Mismatched CDM Message Type")
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_REQUEST);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RENEWAL);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RELEASE);
 
 // static
-SubsampleEntryPtr
-TypeConverter<SubsampleEntryPtr, media::SubsampleEntry>::Convert(
-    const media::SubsampleEntry& input) {
-  SubsampleEntryPtr mojo_subsample_entry(SubsampleEntry::New());
+media::interfaces::SubsampleEntryPtr TypeConverter<
+    media::interfaces::SubsampleEntryPtr,
+    media::SubsampleEntry>::Convert(const media::SubsampleEntry& input) {
+  media::interfaces::SubsampleEntryPtr mojo_subsample_entry(
+      media::interfaces::SubsampleEntry::New());
   mojo_subsample_entry->clear_bytes = input.clear_bytes;
   mojo_subsample_entry->cypher_bytes = input.cypher_bytes;
   return mojo_subsample_entry.Pass();
@@ -284,38 +289,43 @@ TypeConverter<SubsampleEntryPtr, media::SubsampleEntry>::Convert(
 
 // static
 media::SubsampleEntry
-TypeConverter<media::SubsampleEntry, SubsampleEntryPtr>::Convert(
-    const SubsampleEntryPtr& input) {
+TypeConverter<media::SubsampleEntry, media::interfaces::SubsampleEntryPtr>::
+    Convert(const media::interfaces::SubsampleEntryPtr& input) {
   return media::SubsampleEntry(input->clear_bytes, input->cypher_bytes);
 }
 
 // static
-DecryptConfigPtr TypeConverter<DecryptConfigPtr, media::DecryptConfig>::Convert(
-    const media::DecryptConfig& input) {
-  DecryptConfigPtr mojo_decrypt_config(DecryptConfig::New());
+media::interfaces::DecryptConfigPtr TypeConverter<
+    media::interfaces::DecryptConfigPtr,
+    media::DecryptConfig>::Convert(const media::DecryptConfig& input) {
+  media::interfaces::DecryptConfigPtr mojo_decrypt_config(
+      media::interfaces::DecryptConfig::New());
   mojo_decrypt_config->key_id = input.key_id();
   mojo_decrypt_config->iv = input.iv();
   mojo_decrypt_config->subsamples =
-      Array<SubsampleEntryPtr>::From(input.subsamples());
+      Array<media::interfaces::SubsampleEntryPtr>::From(input.subsamples());
   return mojo_decrypt_config.Pass();
 }
 
 // static
 scoped_ptr<media::DecryptConfig>
-TypeConverter<scoped_ptr<media::DecryptConfig>, DecryptConfigPtr>::Convert(
-    const DecryptConfigPtr& input) {
+TypeConverter<scoped_ptr<media::DecryptConfig>,
+              media::interfaces::DecryptConfigPtr>::
+    Convert(const media::interfaces::DecryptConfigPtr& input) {
   return make_scoped_ptr(new media::DecryptConfig(
       input->key_id, input->iv,
       input->subsamples.To<std::vector<media::SubsampleEntry>>()));
 }
 
 // static
-MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
-    scoped_refptr<media::DecoderBuffer> >::Convert(
-        const scoped_refptr<media::DecoderBuffer>& input) {
+media::interfaces::MediaDecoderBufferPtr
+TypeConverter<media::interfaces::MediaDecoderBufferPtr,
+              scoped_refptr<media::DecoderBuffer>>::
+    Convert(const scoped_refptr<media::DecoderBuffer>& input) {
   DCHECK(input);
 
-  MediaDecoderBufferPtr mojo_buffer(MediaDecoderBuffer::New());
+  media::interfaces::MediaDecoderBufferPtr mojo_buffer(
+      media::interfaces::MediaDecoderBuffer::New());
   if (input->end_of_stream())
     return mojo_buffer.Pass();
 
@@ -336,8 +346,10 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
                                  input->side_data() + input->side_data_size());
   mojo_buffer->side_data.Swap(&side_data);
 
-  if (input->decrypt_config())
-    mojo_buffer->decrypt_config = DecryptConfig::From(*input->decrypt_config());
+  if (input->decrypt_config()) {
+    mojo_buffer->decrypt_config =
+        media::interfaces::DecryptConfig::From(*input->decrypt_config());
+  }
 
   // TODO(dalecurtis): We intentionally do not serialize the data section of
   // the DecoderBuffer here; this must instead be done by clients via their
@@ -347,9 +359,10 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
 }
 
 // static
-scoped_refptr<media::DecoderBuffer>  TypeConverter<
-    scoped_refptr<media::DecoderBuffer>, MediaDecoderBufferPtr>::Convert(
-        const MediaDecoderBufferPtr& input) {
+scoped_refptr<media::DecoderBuffer>
+TypeConverter<scoped_refptr<media::DecoderBuffer>,
+              media::interfaces::MediaDecoderBufferPtr>::
+    Convert(const media::interfaces::MediaDecoderBufferPtr& input) {
   if (!input->data_size)
     return media::DecoderBuffer::CreateEOSBuffer();
 
@@ -386,15 +399,17 @@ scoped_refptr<media::DecoderBuffer>  TypeConverter<
 }
 
 // static
-AudioDecoderConfigPtr
-TypeConverter<AudioDecoderConfigPtr, media::AudioDecoderConfig>::Convert(
-    const media::AudioDecoderConfig& input) {
-  AudioDecoderConfigPtr config(AudioDecoderConfig::New());
-  config->codec = static_cast<AudioCodec>(input.codec());
+media::interfaces::AudioDecoderConfigPtr TypeConverter<
+    media::interfaces::AudioDecoderConfigPtr,
+    media::AudioDecoderConfig>::Convert(const media::AudioDecoderConfig&
+                                            input) {
+  media::interfaces::AudioDecoderConfigPtr config(
+      media::interfaces::AudioDecoderConfig::New());
+  config->codec = static_cast<media::interfaces::AudioCodec>(input.codec());
   config->sample_format =
-      static_cast<SampleFormat>(input.sample_format());
+      static_cast<media::interfaces::SampleFormat>(input.sample_format());
   config->channel_layout =
-      static_cast<ChannelLayout>(input.channel_layout());
+      static_cast<media::interfaces::ChannelLayout>(input.channel_layout());
   config->samples_per_second = input.samples_per_second();
   if (input.extra_data()) {
     std::vector<uint8_t> data(input.extra_data(),
@@ -409,8 +424,9 @@ TypeConverter<AudioDecoderConfigPtr, media::AudioDecoderConfig>::Convert(
 
 // static
 media::AudioDecoderConfig
-TypeConverter<media::AudioDecoderConfig, AudioDecoderConfigPtr>::Convert(
-    const AudioDecoderConfigPtr& input) {
+TypeConverter<media::AudioDecoderConfig,
+              media::interfaces::AudioDecoderConfigPtr>::
+    Convert(const media::interfaces::AudioDecoderConfigPtr& input) {
   media::AudioDecoderConfig config;
   config.Initialize(
       static_cast<media::AudioCodec>(input->codec),
@@ -427,14 +443,18 @@ TypeConverter<media::AudioDecoderConfig, AudioDecoderConfigPtr>::Convert(
 }
 
 // static
-VideoDecoderConfigPtr
-TypeConverter<VideoDecoderConfigPtr, media::VideoDecoderConfig>::Convert(
-    const media::VideoDecoderConfig& input) {
-  VideoDecoderConfigPtr config(VideoDecoderConfig::New());
-  config->codec = static_cast<VideoCodec>(input.codec());
-  config->profile = static_cast<VideoCodecProfile>(input.profile());
-  config->format = static_cast<VideoFormat>(input.format());
-  config->color_space = static_cast<ColorSpace>(input.color_space());
+media::interfaces::VideoDecoderConfigPtr TypeConverter<
+    media::interfaces::VideoDecoderConfigPtr,
+    media::VideoDecoderConfig>::Convert(const media::VideoDecoderConfig&
+                                            input) {
+  media::interfaces::VideoDecoderConfigPtr config(
+      media::interfaces::VideoDecoderConfig::New());
+  config->codec = static_cast<media::interfaces::VideoCodec>(input.codec());
+  config->profile =
+      static_cast<media::interfaces::VideoCodecProfile>(input.profile());
+  config->format = static_cast<media::interfaces::VideoFormat>(input.format());
+  config->color_space =
+      static_cast<media::interfaces::ColorSpace>(input.color_space());
   config->coded_size = Size::From(input.coded_size());
   config->visible_rect = Rect::From(input.visible_rect());
   config->natural_size = Size::From(input.natural_size());
@@ -449,8 +469,9 @@ TypeConverter<VideoDecoderConfigPtr, media::VideoDecoderConfig>::Convert(
 
 // static
 media::VideoDecoderConfig
-TypeConverter<media::VideoDecoderConfig, VideoDecoderConfigPtr>::Convert(
-    const VideoDecoderConfigPtr& input) {
+TypeConverter<media::VideoDecoderConfig,
+              media::interfaces::VideoDecoderConfigPtr>::
+    Convert(const media::interfaces::VideoDecoderConfigPtr& input) {
   media::VideoDecoderConfig config;
   config.Initialize(
       static_cast<media::VideoCodec>(input->codec),
@@ -465,21 +486,23 @@ TypeConverter<media::VideoDecoderConfig, VideoDecoderConfigPtr>::Convert(
 }
 
 // static
-CdmKeyInformationPtr
-TypeConverter<CdmKeyInformationPtr, media::CdmKeyInformation>::Convert(
-    const media::CdmKeyInformation& input) {
-  CdmKeyInformationPtr info(CdmKeyInformation::New());
+media::interfaces::CdmKeyInformationPtr TypeConverter<
+    media::interfaces::CdmKeyInformationPtr,
+    media::CdmKeyInformation>::Convert(const media::CdmKeyInformation& input) {
+  media::interfaces::CdmKeyInformationPtr info(
+      media::interfaces::CdmKeyInformation::New());
   std::vector<uint8_t> key_id_copy(input.key_id);
   info->key_id.Swap(&key_id_copy);
-  info->status = static_cast<CdmKeyStatus>(input.status);
+  info->status = static_cast<media::interfaces::CdmKeyStatus>(input.status);
   info->system_code = input.system_code;
   return info.Pass();
 }
 
 // static
-scoped_ptr<media::CdmKeyInformation> TypeConverter<
-    scoped_ptr<media::CdmKeyInformation>,
-    CdmKeyInformationPtr>::Convert(const CdmKeyInformationPtr& input) {
+scoped_ptr<media::CdmKeyInformation>
+TypeConverter<scoped_ptr<media::CdmKeyInformation>,
+              media::interfaces::CdmKeyInformationPtr>::
+    Convert(const media::interfaces::CdmKeyInformationPtr& input) {
   scoped_ptr<media::CdmKeyInformation> info(new media::CdmKeyInformation());
   info->key_id = input->key_id.storage();
   info->status =
@@ -489,9 +512,10 @@ scoped_ptr<media::CdmKeyInformation> TypeConverter<
 }
 
 // static
-CdmConfigPtr TypeConverter<CdmConfigPtr, media::CdmConfig>::Convert(
+media::interfaces::CdmConfigPtr
+TypeConverter<media::interfaces::CdmConfigPtr, media::CdmConfig>::Convert(
     const media::CdmConfig& input) {
-  CdmConfigPtr config(CdmConfig::New());
+  media::interfaces::CdmConfigPtr config(media::interfaces::CdmConfig::New());
   config->allow_distinctive_identifier = input.allow_distinctive_identifier;
   config->allow_persistent_state = input.allow_persistent_state;
   config->use_hw_secure_codecs = input.use_hw_secure_codecs;
@@ -499,8 +523,9 @@ CdmConfigPtr TypeConverter<CdmConfigPtr, media::CdmConfig>::Convert(
 }
 
 // static
-media::CdmConfig TypeConverter<media::CdmConfig, CdmConfigPtr>::Convert(
-    const CdmConfigPtr& input) {
+media::CdmConfig
+TypeConverter<media::CdmConfig, media::interfaces::CdmConfigPtr>::Convert(
+    const media::interfaces::CdmConfigPtr& input) {
   media::CdmConfig config;
   config.allow_distinctive_identifier = input->allow_distinctive_identifier;
   config.allow_persistent_state = input->allow_persistent_state;

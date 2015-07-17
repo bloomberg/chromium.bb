@@ -11,8 +11,8 @@
 namespace media {
 
 DemuxerStreamProviderShim::DemuxerStreamProviderShim(
-    mojo::DemuxerStreamPtr audio,
-    mojo::DemuxerStreamPtr video,
+    interfaces::DemuxerStreamPtr audio,
+    interfaces::DemuxerStreamPtr video,
     const base::Closure& demuxer_ready_cb)
     : demuxer_ready_cb_(demuxer_ready_cb),
       streams_ready_(0),

@@ -45,14 +45,14 @@ void MojoMediaApplication::Initialize(mojo::ApplicationImpl* app) {
 
 bool MojoMediaApplication::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  connection->AddService<mojo::ContentDecryptionModule>(this);
-  connection->AddService<mojo::MediaRenderer>(this);
+  connection->AddService<interfaces::ContentDecryptionModule>(this);
+  connection->AddService<interfaces::MediaRenderer>(this);
   return true;
 }
 
 void MojoMediaApplication::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::ContentDecryptionModule> request) {
+    mojo::InterfaceRequest<interfaces::ContentDecryptionModule> request) {
   // The created object is owned by the pipe.
   new MojoCdmService(&cdm_service_context_, connection->GetServiceProvider(),
                      GetCdmFactory(), request.Pass());
@@ -60,7 +60,7 @@ void MojoMediaApplication::Create(
 
 void MojoMediaApplication::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::MediaRenderer> request) {
+    mojo::InterfaceRequest<interfaces::MediaRenderer> request) {
   // The created object is owned by the pipe.
   new MojoRendererService(&cdm_service_context_, GetRendererFactory(),
                           media_log_, request.Pass());

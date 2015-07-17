@@ -25,7 +25,7 @@ scoped_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     VideoRendererSink* /* video_renderer_sink */) {
   DCHECK(service_provider_);
 
-  mojo::MediaRendererPtr mojo_media_renderer;
+  interfaces::MediaRendererPtr mojo_media_renderer;
   mojo::ConnectToService(service_provider_, &mojo_media_renderer);
 
   return scoped_ptr<Renderer>(

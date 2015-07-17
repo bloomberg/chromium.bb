@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace media {
 class AudioDecoderConfig;
@@ -20,76 +21,95 @@ struct CdmKeyInformation;
 struct SubsampleEntry;
 }
 
+// These are specializations of mojo::TypeConverter and have to be in the mojo
+// namespace.
 namespace mojo {
 
 template <>
-struct TypeConverter<SubsampleEntryPtr, media::SubsampleEntry> {
-  static SubsampleEntryPtr Convert(const media::SubsampleEntry& input);
+struct TypeConverter<media::interfaces::SubsampleEntryPtr,
+                     media::SubsampleEntry> {
+  static media::interfaces::SubsampleEntryPtr Convert(
+      const media::SubsampleEntry& input);
 };
 template <>
-struct TypeConverter<media::SubsampleEntry, SubsampleEntryPtr> {
-  static media::SubsampleEntry Convert(const SubsampleEntryPtr& input);
+struct TypeConverter<media::SubsampleEntry,
+                     media::interfaces::SubsampleEntryPtr> {
+  static media::SubsampleEntry Convert(
+      const media::interfaces::SubsampleEntryPtr& input);
 };
 
 template <>
-struct TypeConverter<DecryptConfigPtr, media::DecryptConfig> {
-  static DecryptConfigPtr Convert(const media::DecryptConfig& input);
+struct TypeConverter<media::interfaces::DecryptConfigPtr,
+                     media::DecryptConfig> {
+  static media::interfaces::DecryptConfigPtr Convert(
+      const media::DecryptConfig& input);
 };
 template <>
-struct TypeConverter<scoped_ptr<media::DecryptConfig>, DecryptConfigPtr> {
+struct TypeConverter<scoped_ptr<media::DecryptConfig>,
+                     media::interfaces::DecryptConfigPtr> {
   static scoped_ptr<media::DecryptConfig> Convert(
-      const DecryptConfigPtr& input);
+      const media::interfaces::DecryptConfigPtr& input);
 };
 
 template <>
-struct TypeConverter<MediaDecoderBufferPtr,
+struct TypeConverter<media::interfaces::MediaDecoderBufferPtr,
                      scoped_refptr<media::DecoderBuffer>> {
-  static MediaDecoderBufferPtr Convert(
+  static media::interfaces::MediaDecoderBufferPtr Convert(
       const scoped_refptr<media::DecoderBuffer>& input);
 };
-template<>
+template <>
 struct TypeConverter<scoped_refptr<media::DecoderBuffer>,
-                     MediaDecoderBufferPtr> {
+                     media::interfaces::MediaDecoderBufferPtr> {
   static scoped_refptr<media::DecoderBuffer> Convert(
-      const MediaDecoderBufferPtr& input);
+      const media::interfaces::MediaDecoderBufferPtr& input);
 };
 
 template <>
-struct TypeConverter<AudioDecoderConfigPtr, media::AudioDecoderConfig> {
-  static AudioDecoderConfigPtr Convert(const media::AudioDecoderConfig& input);
+struct TypeConverter<media::interfaces::AudioDecoderConfigPtr,
+                     media::AudioDecoderConfig> {
+  static media::interfaces::AudioDecoderConfigPtr Convert(
+      const media::AudioDecoderConfig& input);
 };
 template <>
-struct TypeConverter<media::AudioDecoderConfig, AudioDecoderConfigPtr> {
-  static media::AudioDecoderConfig Convert(const AudioDecoderConfigPtr& input);
-};
-
-template <>
-struct TypeConverter<VideoDecoderConfigPtr, media::VideoDecoderConfig> {
-  static VideoDecoderConfigPtr Convert(const media::VideoDecoderConfig& input);
-};
-template <>
-struct TypeConverter<media::VideoDecoderConfig, VideoDecoderConfigPtr> {
-  static media::VideoDecoderConfig Convert(const VideoDecoderConfigPtr& input);
+struct TypeConverter<media::AudioDecoderConfig,
+                     media::interfaces::AudioDecoderConfigPtr> {
+  static media::AudioDecoderConfig Convert(
+      const media::interfaces::AudioDecoderConfigPtr& input);
 };
 
 template <>
-struct TypeConverter<CdmKeyInformationPtr, media::CdmKeyInformation> {
-  static CdmKeyInformationPtr Convert(const media::CdmKeyInformation& input);
+struct TypeConverter<media::interfaces::VideoDecoderConfigPtr,
+                     media::VideoDecoderConfig> {
+  static media::interfaces::VideoDecoderConfigPtr Convert(
+      const media::VideoDecoderConfig& input);
+};
+template <>
+struct TypeConverter<media::VideoDecoderConfig,
+                     media::interfaces::VideoDecoderConfigPtr> {
+  static media::VideoDecoderConfig Convert(
+      const media::interfaces::VideoDecoderConfigPtr& input);
+};
+
+template <>
+struct TypeConverter<media::interfaces::CdmKeyInformationPtr,
+                     media::CdmKeyInformation> {
+  static media::interfaces::CdmKeyInformationPtr Convert(
+      const media::CdmKeyInformation& input);
 };
 template <>
 struct TypeConverter<scoped_ptr<media::CdmKeyInformation>,
-                     CdmKeyInformationPtr> {
+                     media::interfaces::CdmKeyInformationPtr> {
   static scoped_ptr<media::CdmKeyInformation> Convert(
-      const CdmKeyInformationPtr& input);
+      const media::interfaces::CdmKeyInformationPtr& input);
 };
 
 template <>
-struct TypeConverter<CdmConfigPtr, media::CdmConfig> {
-  static CdmConfigPtr Convert(const media::CdmConfig& input);
+struct TypeConverter<media::interfaces::CdmConfigPtr, media::CdmConfig> {
+  static media::interfaces::CdmConfigPtr Convert(const media::CdmConfig& input);
 };
 template <>
-struct TypeConverter<media::CdmConfig, CdmConfigPtr> {
-  static media::CdmConfig Convert(const CdmConfigPtr& input);
+struct TypeConverter<media::CdmConfig, media::interfaces::CdmConfigPtr> {
+  static media::CdmConfig Convert(const media::interfaces::CdmConfigPtr& input);
 };
 
 }  // namespace mojo
