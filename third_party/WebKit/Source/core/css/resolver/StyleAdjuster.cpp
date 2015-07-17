@@ -98,14 +98,20 @@ static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool s
     return BLOCK;
 }
 
+static bool isOutermostSVGElement(const Element* e)
+{
+    return e && e->isSVGElement() && toSVGElement(*e).isOutermostSVGSVGElement();
+}
+
 // CSS requires text-decoration to be reset at each DOM element for tables,
 // inline blocks, inline tables, shadow DOM crossings, floating elements,
-// and absolute or relatively positioned elements.
+// and absolute or relatively positioned elements. Outermost <svg> roots are
+// considered to be atomic inline-level.
 static bool doesNotInheritTextDecoration(const ComputedStyle& style, const Element* e)
 {
     return style.display() == TABLE || style.display() == INLINE_TABLE
         || style.display() == INLINE_BLOCK || style.display() == INLINE_BOX || isAtShadowBoundary(e)
-        || style.isFloating() || style.hasOutOfFlowPosition();
+        || style.isFloating() || style.hasOutOfFlowPosition() || isOutermostSVGElement(e);
 }
 
 // FIXME: This helper is only needed because pseudoStyleForElement passes a null
