@@ -178,14 +178,6 @@ void SerialIoHandlerWin::ReadImpl() {
   DCHECK(pending_read_buffer());
   DCHECK(file().IsValid());
 
-  DWORD errors;
-  COMSTAT status;
-  if (!ClearCommError(file().GetPlatformFile(), &errors, &status) ||
-      errors != 0) {
-    QueueReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
-    return;
-  }
-
   if (!SetCommMask(file().GetPlatformFile(), EV_RXCHAR)) {
     VPLOG(1) << "Failed to set serial event flags";
   }
@@ -238,7 +230,7 @@ bool SerialIoHandlerWin::ConfigurePortImpl() {
 
   // Set up some sane default options that are not configurable.
   config.fBinary = TRUE;
-  config.fParity = FALSE;
+  config.fParity = TRUE;
   config.fAbortOnError = TRUE;
   config.fOutxDsrFlow = FALSE;
   config.fDtrControl = DTR_CONTROL_ENABLE;
@@ -291,6 +283,26 @@ void SerialIoHandlerWin::OnIOCompleted(
     DWORD error) {
   DCHECK(CalledOnValidThread());
   if (context == comm_context_) {
+    DWORD errors;
+    COMSTAT status;
+    if (!ClearCommError(file().GetPlatformFile(), &errors, &status) ||
+        errors != 0) {
+      if (errors & CE_BREAK) {
+        ReadCompleted(0, serial::RECEIVE_ERROR_BREAK);
+      } else if (errors & CE_FRAME) {
+        ReadCompleted(0, serial::RECEIVE_ERROR_FRAME_ERROR);
+      } else if (errors & CE_OVERRUN) {
+        ReadCompleted(0, serial::RECEIVE_ERROR_OVERRUN);
+      } else if (errors & CE_RXOVER) {
+        ReadCompleted(0, serial::RECEIVE_ERROR_BUFFER_OVERFLOW);
+      } else if (errors & CE_RXPARITY) {
+        ReadCompleted(0, serial::RECEIVE_ERROR_PARITY_ERROR);
+      } else {
+        ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
+      }
+      return;
+    }
+
     if (read_canceled()) {
       ReadCompleted(bytes_transferred, read_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
