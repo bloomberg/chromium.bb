@@ -12,6 +12,8 @@ test(function() {
     assert_true('joinSession' in navigator.presentation);
     assert_true('ondefaultsessionstart' in navigator.presentation);
     assert_true('getAvailability' in navigator.presentation);
+
+    assert_true('PresentationRequest' in window);
 }, "Test that the Presentation API is present.")
 
 test(function() {
@@ -26,6 +28,16 @@ test(function() {
 test(function() {
   assert_true(navigator.presentation instanceof EventTarget);
 }, "Test that navigator.presentation is an EventTarget.");
+
+test(function() {
+  var request = new PresentationRequest('foo.html');
+  assert_equals(typeof(request.start), "function");
+  assert_equals(typeof(request.join), "function");
+  assert_equals(typeof(request.getAvailability), "function");
+  assert_equals(typeof(request.onconnect), "object");
+
+  assert_true(request instanceof EventTarget);
+}, "Test PresentationRequest API types.");
 
 </script>
 </body>
