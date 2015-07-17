@@ -124,6 +124,10 @@ class PpapiThread : public ChildThreadImpl,
   void ReportLoadErrorCode(const base::FilePath& path,
                            const base::NativeLibraryLoadError& error);
 
+  // Reports time to load the plugin.
+  void ReportLoadTime(const base::FilePath& path,
+                      const base::TimeDelta load_time);
+
   // True if running in a broker process rather than a normal plugin process.
   bool is_broker_;
 

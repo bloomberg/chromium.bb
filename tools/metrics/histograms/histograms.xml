@@ -31301,6 +31301,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The result from an attempt to load a PPAPI broker.</summary>
 </histogram>
 
+<histogram name="Plugin.PpapiBrokerLoadTime" units="milliseconds">
+  <owner>xhwang@chromium.org</owner>
+  <summary>The time spent to load a PPAPI broker.</summary>
+</histogram>
+
 <histogram name="Plugin.PpapiPluginLoadErrorCode" units="code">
   <owner>xhwang@chromium.org</owner>
   <summary>The error code of a PPAPI plugin load failure.</summary>
@@ -31309,6 +31314,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Plugin.PpapiPluginLoadResult" enum="PluginLoadResult">
   <owner>xhwang@chromium.org</owner>
   <summary>The result from an attempt to load a PPAPI plugin.</summary>
+</histogram>
+
+<histogram name="Plugin.PpapiPluginLoadTime" units="milliseconds">
+  <owner>xhwang@chromium.org</owner>
+  <summary>The time spent to load a PPAPI plugin.</summary>
 </histogram>
 
 <histogram name="Plugin.PpapiSyncIPCTime" units="ms">
@@ -73904,8 +73914,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="widevinecdmadapter.plugin" label="Widevine CDM on Mac"/>
   <affected-histogram name="Plugin.PpapiBrokerLoadErrorCode"/>
   <affected-histogram name="Plugin.PpapiBrokerLoadResult"/>
+  <affected-histogram name="Plugin.PpapiBrokerLoadTime"/>
   <affected-histogram name="Plugin.PpapiPluginLoadErrorCode"/>
   <affected-histogram name="Plugin.PpapiPluginLoadResult"/>
+  <affected-histogram name="Plugin.PpapiPluginLoadTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PrecacheCellular" separator=".">
