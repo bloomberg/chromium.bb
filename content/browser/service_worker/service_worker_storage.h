@@ -267,7 +267,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   typedef std::vector<ServiceWorkerDatabase::RegistrationData> RegistrationList;
   typedef std::map<int64, scoped_refptr<ServiceWorkerRegistration> >
       RegistrationRefsById;
-  typedef base::Callback<void(InitialData* data,
+  typedef base::Callback<void(scoped_ptr<InitialData> data,
                               ServiceWorkerDatabase::Status status)>
       InitializeCallback;
   typedef base::Callback<void(ServiceWorkerDatabase::Status status)>
@@ -316,7 +316,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   bool LazyInitialize(
       const base::Closure& callback);
-  void DidReadInitialData(InitialData* data,
+  void DidReadInitialData(scoped_ptr<InitialData> data,
                           ServiceWorkerDatabase::Status status);
   void DidFindRegistrationForDocument(
       const GURL& document_url,
