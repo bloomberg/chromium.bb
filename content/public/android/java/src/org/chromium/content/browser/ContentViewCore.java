@@ -28,6 +28,7 @@ import android.text.Editable;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -559,6 +560,10 @@ public class ContentViewCore implements
     // handles. Note that a scroll sequence will *always* bound a pinch
     // sequence, so this will also be true for the duration of a pinch gesture.
     private boolean mTouchScrollInProgress;
+
+    // Multiplier that determines how many (device) pixels to scroll per mouse
+    // wheel tick. Defaults to the preferred list item height.
+    private float mWheelScrollFactorInPixels;
 
     // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
     // onNativeFlingStopped() is called asynchronously.
@@ -1766,8 +1771,9 @@ public class ContentViewCore implements
 
                     nativeSendMouseWheelEvent(mNativeContentViewCore, event.getEventTime(),
                             event.getX(), event.getY(),
+                            event.getAxisValue(MotionEvent.AXIS_HSCROLL),
                             event.getAxisValue(MotionEvent.AXIS_VSCROLL),
-                            event.getAxisValue(MotionEvent.AXIS_HSCROLL));
+                            getWheelScrollFactorInPixels());
 
                     mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
                     // Send a delayed onMouseMove event so that we end
@@ -3084,6 +3090,23 @@ public class ContentViewCore implements
         if (potentiallyActiveFlingCount > 0) updateGestureStateListener(GestureEventType.FLING_END);
     }
 
+    private float getWheelScrollFactorInPixels() {
+        if (mWheelScrollFactorInPixels == 0) {
+            TypedValue outValue = new TypedValue();
+            // This is the same attribute used by Android Views to scale wheel
+            // event motion into scroll deltas.
+            if (mContext.getTheme().resolveAttribute(
+                        android.R.attr.listPreferredItemHeight, outValue, true)) {
+                mWheelScrollFactorInPixels =
+                        outValue.getDimension(mContext.getResources().getDisplayMetrics());
+            } else {
+                // If attribute retrieval fails, just use a sensible default.
+                mWheelScrollFactorInPixels = 64 * mRenderCoordinates.getDeviceScaleFactor();
+            }
+        }
+        return mWheelScrollFactorInPixels;
+    }
+
     ContentVideoViewClient getContentVideoViewClient() {
         return getContentViewClient().getContentVideoViewClient();
     }
@@ -3160,9 +3183,8 @@ public class ContentViewCore implements
     private native int nativeSendMouseMoveEvent(
             long nativeContentViewCoreImpl, long timeMs, float x, float y);
 
-    private native int nativeSendMouseWheelEvent(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y, float verticalAxis,
-            float horizontalAxis);
+    private native int nativeSendMouseWheelEvent(long nativeContentViewCoreImpl, long timeMs,
+            float x, float y, float ticksX, float ticksY, float pixelsPerTick);
 
     private native void nativeScrollBegin(long nativeContentViewCoreImpl, long timeMs, float x,
             float y, float hintX, float hintY, boolean targetViewport);

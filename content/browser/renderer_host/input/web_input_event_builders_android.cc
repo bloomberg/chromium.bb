@@ -78,7 +78,9 @@ WebMouseEvent WebMouseEventBuilder::Build(blink::WebInputEvent::Type type,
   return result;
 }
 
-WebMouseWheelEvent WebMouseWheelEventBuilder::Build(Direction direction,
+WebMouseWheelEvent WebMouseWheelEventBuilder::Build(float ticks_x,
+                                                    float ticks_y,
+                                                    float tick_multiplier,
                                                     double time_sec,
                                                     int window_x,
                                                     int window_y) {
@@ -91,28 +93,11 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(Direction direction,
   result.windowY = window_y;
   result.timeStampSeconds = time_sec;
   result.button = WebMouseEvent::ButtonNone;
-
-  // The below choices are matched from GTK.
-  const float scrollbar_pixels_per_tick = 160.0f / 3.0f;
-
-  switch (direction) {
-    case DIRECTION_UP:
-      result.deltaY = scrollbar_pixels_per_tick;
-      result.wheelTicksY = 1;
-      break;
-    case DIRECTION_DOWN:
-      result.deltaY = -scrollbar_pixels_per_tick;
-      result.wheelTicksY = -1;
-      break;
-    case DIRECTION_LEFT:
-      result.deltaX = scrollbar_pixels_per_tick;
-      result.wheelTicksX = 1;
-      break;
-    case DIRECTION_RIGHT:
-      result.deltaX = -scrollbar_pixels_per_tick;
-      result.wheelTicksX = -1;
-      break;
-  }
+  result.hasPreciseScrollingDeltas = true;
+  result.deltaX = ticks_x * tick_multiplier;
+  result.deltaY = ticks_y * tick_multiplier;
+  result.wheelTicksX = ticks_x;
+  result.wheelTicksY = ticks_y;
 
   return result;
 }

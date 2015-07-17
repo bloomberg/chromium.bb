@@ -977,26 +977,19 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(JNIEnv* env,
                                                   jlong time_ms,
                                                   jfloat x,
                                                   jfloat y,
-                                                  jfloat vertical_axis,
-                                                  jfloat horizontal_axis) {
+                                                  jfloat ticks_x,
+                                                  jfloat ticks_y,
+                                                  jfloat pixels_per_tick) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (!rwhv)
     return false;
 
-  WebMouseWheelEventBuilder::Direction direction;
-  if (vertical_axis > 0) {
-    direction = WebMouseWheelEventBuilder::DIRECTION_UP;
-  } else if (vertical_axis < 0) {
-    direction = WebMouseWheelEventBuilder::DIRECTION_DOWN;
-  } else if (horizontal_axis > 0) {
-    direction = WebMouseWheelEventBuilder::DIRECTION_RIGHT;
-  } else if (horizontal_axis < 0) {
-    direction = WebMouseWheelEventBuilder::DIRECTION_LEFT;
-  } else {
+  if (!ticks_x && !ticks_y)
     return false;
-  }
+
   blink::WebMouseWheelEvent event = WebMouseWheelEventBuilder::Build(
-      direction, time_ms / 1000.0, x / dpi_scale(), y / dpi_scale());
+      ticks_x, ticks_y, pixels_per_tick / dpi_scale(), time_ms / 1000.0,
+      x / dpi_scale(), y / dpi_scale());
 
   rwhv->SendMouseWheelEvent(event);
   return true;

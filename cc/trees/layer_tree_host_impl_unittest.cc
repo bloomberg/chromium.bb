@@ -7085,6 +7085,38 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
   host_impl_->ScrollEnd();
 }
 
+TEST_F(LayerTreeHostImplWithTopControlsTest, WheelUnhandledByTopControls) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+  host_impl_->top_controls_manager()->UpdateTopControlsState(BOTH, SHOWN,
+                                                             false);
+  DrawFrame();
+
+  LayerImpl* viewport_layer = host_impl_->OuterViewportScrollLayer()
+                                  ? host_impl_->OuterViewportScrollLayer()
+                                  : host_impl_->InnerViewportScrollLayer();
+
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::WHEEL));
+  EXPECT_EQ(0, host_impl_->top_controls_manager()->ControlsTopOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), viewport_layer->CurrentScrollOffset());
+
+  // Wheel scrolls should not affect the top controls, and should pass
+  // directly through to the viewport.
+  const float delta = top_controls_height_;
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, delta)).did_scroll);
+  EXPECT_FLOAT_EQ(0, host_impl_->top_controls_manager()->ControlsTopOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, delta),
+                   viewport_layer->CurrentScrollOffset());
+
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, delta)).did_scroll);
+  EXPECT_FLOAT_EQ(0, host_impl_->top_controls_manager()->ControlsTopOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, delta * 2),
+                   viewport_layer->CurrentScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
   host_impl_->SetViewportSize(gfx::Size(100, 200));

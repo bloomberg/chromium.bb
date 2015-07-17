@@ -2680,7 +2680,10 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
     gfx::Vector2dF applied_delta;
     if (layer_impl == InnerViewportScrollLayer()) {
-      bool affect_top_controls = true;
+      // Each wheel event triggers a ScrollBegin/Update/End. This can interact
+      // poorly with the top controls animation, which is triggered after each
+      // call to ScrollEnd.
+      bool affect_top_controls = !wheel_scrolling_;
       Viewport::ScrollResult result =
           viewport()->ScrollBy(pending_delta, viewport_point, !wheel_scrolling_,
                                affect_top_controls);

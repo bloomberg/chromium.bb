@@ -26,14 +26,9 @@ class WebMouseEventBuilder {
 
 class WebMouseWheelEventBuilder {
  public:
-  enum Direction {
-    DIRECTION_UP,
-    DIRECTION_DOWN,
-    DIRECTION_LEFT,
-    DIRECTION_RIGHT,
-  };
-
-  static blink::WebMouseWheelEvent Build(Direction direction,
+  static blink::WebMouseWheelEvent Build(float ticks_x,
+                                         float ticks_y,
+                                         float tick_multiplier,
                                          double time_sec,
                                          int window_x,
                                          int window_y);
