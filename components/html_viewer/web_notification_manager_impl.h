@@ -7,6 +7,10 @@
 
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 
+namespace blink {
+class WebSecurityOrigin;
+}
+
 namespace html_viewer {
 
 // TODO(erg): This class is currently a stub; blink expects this object to
@@ -17,9 +21,16 @@ class WebNotificationManagerImpl : public blink::WebNotificationManager {
   virtual ~WebNotificationManagerImpl();
 
   // blink::WebNotificationManager methods:
+  virtual void show(const blink::WebSecurityOrigin&,
+                    const blink::WebNotificationData&,
+                    blink::WebNotificationDelegate*);
   virtual void show(const blink::WebSerializedOrigin&,
                     const blink::WebNotificationData&,
                     blink::WebNotificationDelegate*);
+  virtual void showPersistent(const blink::WebSecurityOrigin&,
+                              const blink::WebNotificationData&,
+                              blink::WebServiceWorkerRegistration*,
+                              blink::WebNotificationShowCallbacks*);
   virtual void showPersistent(const blink::WebSerializedOrigin&,
                               const blink::WebNotificationData&,
                               blink::WebServiceWorkerRegistration*,
@@ -28,12 +39,19 @@ class WebNotificationManagerImpl : public blink::WebNotificationManager {
                                 blink::WebServiceWorkerRegistration*,
                                 blink::WebNotificationGetCallbacks*);
   virtual void close(blink::WebNotificationDelegate*);
+  virtual void closePersistent(const blink::WebSecurityOrigin&,
+                               int64_t persistentNotificationId);
   virtual void closePersistent(const blink::WebSerializedOrigin&,
                                int64_t persistentNotificationId);
+  virtual void closePersistent(
+      const blink::WebSecurityOrigin&,
+      const blink::WebString& persistentNotificationId);
   virtual void closePersistent(
       const blink::WebSerializedOrigin&,
       const blink::WebString& persistentNotificationId);
   virtual void notifyDelegateDestroyed(blink::WebNotificationDelegate*);
+  virtual blink::WebNotificationPermission checkPermission(
+      const blink::WebSecurityOrigin&);
   virtual blink::WebNotificationPermission checkPermission(
       const blink::WebSerializedOrigin&);
 
