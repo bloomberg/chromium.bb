@@ -4,7 +4,9 @@
 
 #include "content/common/gpu/image_transport_surface_calayer_mac.h"
 
+#include <IOSurface/IOSurface.h>
 #include <OpenGL/CGLRenderers.h>
+#include <OpenGL/CGLIOSurface.h>
 
 #include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -21,12 +23,11 @@
 
 namespace {
 const size_t kFramesToKeepCAContextAfterDiscard = 2;
-const size_t kFramesToKeepNSCGLSurfaceAfterDiscard = 2;
 const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 const base::TimeDelta kMinDeltaToSwitchToAsync =
     base::TimeDelta::FromSecondsD(1. / 15.);
 
-bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
+bool CanUseIOSurface(const gpu::gles2::FeatureInfo* feature_info,
                         bool has_attempted_and_failed) {
   // Respect command line flags for the API's usage.
   static bool forced_at_command_line =
@@ -40,6 +41,10 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
   if (disabled_at_command_line)
     return false;
 
+  // TODO(ccameron):
+  // Remove the blacklist entries for multi-GPU and multi-display
+  // configurations.
+
   // If we have attempted to use the API and it failed, don't try it again.
   if (has_attempted_and_failed)
     return false;
@@ -52,9 +57,9 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
     return false;
 
   // If there are multiple displays connected, then it is possible that we will
-  // end up on the slow path, where -[NSCGLSurface layerContents] will return
+  // end up on the slow path, where -[IOSurface layerContents] will return
   // a CGImage that is a dearly-made copy of the surface. Since we don't yet
-  // know how to avoid those sharp edges, just avoid using NSCGLSurface when
+  // know how to avoid those sharp edges, just avoid using IOSurface when
   // multiple screens are present.
   uint32_t count = 0;
   CGError cg_error = CGGetActiveDisplayList(count, NULL, &count);
@@ -70,8 +75,8 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
 
 }  // namespace
 
-// Private NSCGLSurface API.
-@interface NSCGLSurface : NSObject
+// Private IOSurface API.
+@interface IOSurface : NSObject
 - (void)flushRect:(CGRect)rect;
 - (void)attachToCGLContext:(CGLContextObj)cglContext;
 - (id)initWithSize:(CGSize)size
@@ -114,10 +119,12 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
 - (void)resetStorageProvider;
 @end
 
-@interface ImageTransportNSCGLSurface : CALayer {
+@interface ImageTransportIOSurface : CALayer {
   content::CALayerStorageProvider* storageProvider_;
   base::ScopedTypeRef<CGLContextObj> cglContext_;
-  base::scoped_nsobject<NSCGLSurface> surface_;
+  base::ScopedCFTypeRef<IOSurfaceRef> ioSurface_;
+  GLuint glTexture_;
+  GLuint glFbo_;
   gfx::Size pixelSize_;
 }
 
@@ -240,7 +247,7 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
   gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
 
   if (storageProvider_) {
-    storageProvider_->LayerDoDraw(gfx::Rect(pixelSize_));
+    storageProvider_->LayerDoDraw(gfx::Rect(pixelSize_), false);
     storageProvider_->LayerUnblockBrowserIfNeeded();
     // A trace value of 0 indicates that there is no longer a pending swap ack.
     TRACE_COUNTER_ID1("gpu", "CALayerPendingSwap", self, 0);
@@ -259,7 +266,7 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
 
 @end
 
-@implementation ImageTransportNSCGLSurface
+@implementation ImageTransportIOSurface
 
 - (id)initWithStorageProvider:
     (content::CALayerStorageProvider*)storageProvider
@@ -267,18 +274,11 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
                   scaleFactor:(float)scaleFactor {
   if (self = [super init]) {
     ScopedCAActionDisabler disabler;
+    pixelSize_ = pixelSize;
     gfx::Size dipSize = gfx::ConvertSizeToDIP(scaleFactor, pixelSize);
     [self setContentsScale:scaleFactor];
     [self setFrame:CGRectMake(0, 0, dipSize.width(), dipSize.height())];
     storageProvider_ = storageProvider;
-
-    // Allocate the NSCGLSurface to render into.
-    base::ScopedCFTypeRef<CGColorSpaceRef> cgColorSpace(
-        CGDisplayCopyColorSpace(CGMainDisplayID()));
-    Class NSCGLSurface_class = NSClassFromString(@"NSCGLSurface");
-    surface_.reset([[NSCGLSurface_class alloc] initWithSize:pixelSize.ToCGSize()
-                                                 colorSpace:cgColorSpace
-                                                     atomic:NO]);
 
     // Create a context in the share group of the storage provider. We will
     // draw content using this context.
@@ -288,9 +288,71 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
         storageProvider_->LayerShareGroupContext(),
         cglContext_.InitializeInto());
     LOG_IF(ERROR, cglError != kCGLNoError) <<
-        "Failed to create CGL context for NSCGL surface.";
+        "Failed to create CGL context for IOSurface.";
 
-    pixelSize_ = pixelSize;
+    // Create the IOSurface to set as the CALayer's contents.
+    uint32_t ioSurfacePixelFormat = 'BGRA';
+    NSDictionary* properties = @{
+        static_cast<NSString*>(kIOSurfaceWidth) : @(pixelSize.width()),
+        static_cast<NSString*>(kIOSurfaceHeight) : @(pixelSize.height()),
+        static_cast<NSString*>(kIOSurfacePixelFormat) : @(ioSurfacePixelFormat),
+        static_cast<NSString*>(kIOSurfaceBytesPerElement) : @(4),
+    };
+    ioSurface_.reset(IOSurfaceCreate(static_cast<CFDictionaryRef>(properties)));
+    if (!ioSurface_) {
+      LOG(ERROR) << "Failed to allocate IOSurface";
+      [self release];
+      return nil;
+    }
+    // Create a framebuffer view of the IOSurface.
+    {
+      gfx::ScopedCGLSetCurrentContext scopedSetCurrentContext(cglContext_);
+      gfx::ScopedSetGLToRealGLApi scopedSetRealGLApi;
+      bool gl_init_failed = false;
+
+      glGenTextures(1, &glTexture_);
+      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, glTexture_);
+      CGLError cglError = CGLTexImageIOSurface2D(
+          cglContext_,
+          GL_TEXTURE_RECTANGLE_ARB,
+          GL_RGBA,
+          pixelSize.width(),
+          pixelSize.height(),
+          GL_BGRA,
+          GL_UNSIGNED_INT_8_8_8_8_REV,
+          ioSurface_,
+          0);
+      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
+      if (cglError != kCGLNoError) {
+        DLOG(ERROR) << "CGLTexImageIOSurface2D failed with CGL error: "
+                    << cglError;
+        gl_init_failed = true;
+      }
+      glGenFramebuffersEXT(1, &glFbo_);
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glFbo_);
+      glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+                                GL_COLOR_ATTACHMENT0_EXT,
+                                GL_TEXTURE_RECTANGLE_ARB,
+                                glTexture_,
+                                0);
+      GLenum fboStatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+      if (fboStatus != GL_FRAMEBUFFER_COMPLETE_EXT) {
+        DLOG(ERROR) << "Framebuffer was incomplete: " << fboStatus;
+        gl_init_failed = true;
+      }
+
+      // If initialization failed, ensure that the partially initialized GL
+      // objects do not leak into the sharegroup.
+      if (gl_init_failed) {
+        if (glTexture_)
+          glDeleteTextures(1, &glTexture_);
+        if (glFbo_)
+          glDeleteFramebuffersEXT(1, &glFbo_);
+        [self release];
+        return nil;
+      }
+    }
   }
   return self;
 }
@@ -307,42 +369,35 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
   if (![self contents])
     dirtyRect = gfx::Rect(pixelSize_);
 
-  // A silent failure mechanism for the NSCGLSurface API is to have the layer
-  // contents be nil.
-  if (![surface_ layerContents])
-    return NO;
-
   // Make the context current to the thread, make the surface be the current
   // drawable for the context, and draw.
   BOOL framebuffer_was_complete = YES;
-  [surface_ attachToCGLContext:cglContext_];
   {
     gfx::ScopedCGLSetCurrentContext scopedSetCurrentContext(cglContext_);
     gfx::ScopedSetGLToRealGLApi scopedSetRealGLApi;
-    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, glFbo_);
 
-    // Another silent failure mechanism for the NSCGLSurface API is to provide
+    // Another silent failure mechanism for the IOSurface API is to provide
     // a backbuffer that is not framebuffer complete.
-    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     if (status == GL_FRAMEBUFFER_COMPLETE_EXT) {
       glViewport(0, 0, pixelSize_.width(), pixelSize_.height());
-      storageProvider_->LayerDoDraw(dirtyRect);
-      glFlush();
+      storageProvider_->LayerDoDraw(dirtyRect, true);
       framebuffer_was_complete = YES;
     } else {
       framebuffer_was_complete = NO;
     }
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    glFlush();
   }
-  [surface_ attachToCGLContext:NULL];
   if (!framebuffer_was_complete)
     return NO;
-  [surface_ flushRect:dirtyRect.ToCGRect()];
 
   if (![self contents]) {
     // The first time we draw, set the layer contents and the CAContext's layer
     {
       ScopedCAActionDisabler disabler;
-      [self setContents:[surface_ layerContents]];
+      [self setContents:(id)ioSurface_.get()];
     }
     [storageProvider_->LayerCAContext() setLayer:self];
   } else {
@@ -355,7 +410,14 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
 }
 
 - (void)resetStorageProvider {
-  storageProvider_ = NULL;
+  {
+    gfx::ScopedCGLSetCurrentContext scopedSetCurrentContext(cglContext_);
+    gfx::ScopedSetGLToRealGLApi scopedSetRealGLApi;
+    glDeleteTextures(1, &glTexture_);
+    glDeleteFramebuffersEXT(1, &glFbo_);
+    glBegin(GL_TRIANGLES);
+    glEnd();
+  }
 }
 
 @end
@@ -378,7 +440,7 @@ CALayerStorageProvider::CALayerStorageProvider(
       tex_location_(0),
       vertex_buffer_(0),
       vertex_array_(0),
-      ns_cgl_surface_api_attempted_and_failed_(false),
+      io_surface_api_attempted_and_failed_(false),
       recreate_layer_after_gpu_switch_(false),
       pending_draw_weak_factory_(this) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
@@ -584,15 +646,15 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
     recreate_layer_after_gpu_switch_ = false;
   }
 
-  // Determine if it is safe to use an NSCGLSurface, or if we should use the
+  // Determine if it is safe to use an IOSurface, or if we should use the
   // CAOpenGLLayer fallback. If we're not using the preferred type of layer,
   // then reset the layer and re-create one of the preferred type.
-  bool can_use_ns_cgl_surface = CanUseNSCGLSurface(
+  bool can_use_io_surface = CanUseIOSurface(
       transport_surface_->GetFeatureInfo(),
-      ns_cgl_surface_api_attempted_and_failed_);
-  if (can_use_ns_cgl_surface && ca_opengl_layer_)
+      io_surface_api_attempted_and_failed_);
+  if (can_use_io_surface && ca_opengl_layer_)
     ResetLayer();
-  if (!can_use_ns_cgl_surface && ns_cgl_surface_layer_)
+  if (!can_use_io_surface && io_surface_layer_)
     ResetLayer();
 
   // Set the pending draw flag only after potentially destroying the old layer
@@ -612,7 +674,7 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
   // Create the appropriate CALayer (if needed) and request that it draw.
   bool should_draw_immediately = gpu_vsync_disabled_ || throttling_disabled_;
   CreateLayerAndRequestDraw(
-      can_use_ns_cgl_surface, should_draw_immediately, dirty_rect);
+      can_use_io_surface, should_draw_immediately, dirty_rect);
 
   // CoreAnimation may not call the function to un-block the browser in a
   // timely manner (or ever). Post a task to force the draw and un-block
@@ -629,25 +691,25 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
 }
 
 void CALayerStorageProvider::CreateLayerAndRequestDraw(
-    bool can_use_ns_cgl_surface, bool should_draw_immediately,
+    bool can_use_io_surface, bool should_draw_immediately,
     const gfx::Rect& dirty_rect) {
-  // Attempt to use the NSCGLSurface API if nothing suggests that it will fail.
-  if (can_use_ns_cgl_surface) {
-    if (!ns_cgl_surface_layer_) {
-      ns_cgl_surface_layer_.reset([[ImageTransportNSCGLSurface alloc]
+  // Attempt to use the IOSurface API if nothing suggests that it will fail.
+  if (can_use_io_surface) {
+    if (!io_surface_layer_) {
+      io_surface_layer_.reset([[ImageTransportIOSurface alloc]
           initWithStorageProvider:this
                         pixelSize:fbo_pixel_size_
                       scaleFactor:fbo_scale_factor_]);
     }
-    if ([ns_cgl_surface_layer_ drawNewFrame:dirty_rect])
+    if ([io_surface_layer_ drawNewFrame:dirty_rect])
       return;
 
     // If the draw fails, then fall back to the CAOpenGLLayer path permanently.
-    ns_cgl_surface_api_attempted_and_failed_ = true;
+    io_surface_api_attempted_and_failed_ = true;
     ResetLayer();
   }
 
-  // If the NSCGLSurface API wasn't tried, or if it failed in a way that could
+  // If the IOSurface API wasn't tried, or if it failed in a way that could
   // only be detected after attempting to use it, then attempt to use the
   // CAOpenGLLayer API.
   {
@@ -724,8 +786,6 @@ void CALayerStorageProvider::SwapBuffersAckedByBrowser(
   throttling_disabled_ = disable_throttling;
   if (!previously_discarded_contexts_.empty())
     previously_discarded_contexts_.pop_front();
-  if (!previous_layers_.empty())
-    previous_layers_.pop_front();
 }
 
 CGLContextObj CALayerStorageProvider::LayerShareGroupContext() {
@@ -736,7 +796,8 @@ base::Closure CALayerStorageProvider::LayerShareGroupContextDirtiedCallback() {
   return share_group_context_dirtied_callback_;
 }
 
-void CALayerStorageProvider::LayerDoDraw(const gfx::Rect& dirty_rect) {
+void CALayerStorageProvider::LayerDoDraw(
+    const gfx::Rect& dirty_rect, bool flipped) {
   TRACE_EVENT0("gpu", "CALayerStorageProvider::LayerDoDraw");
   if (gfx::GetGLImplementation() ==
       gfx::kGLImplementationDesktopGLCoreProfile) {
@@ -769,7 +830,10 @@ void CALayerStorageProvider::LayerDoDraw(const gfx::Rect& dirty_rect) {
     // Set the coordinate system to be one-to-one with pixels.
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, viewport_size.width(), 0, viewport_size.height(), -1, 1);
+    if (flipped)
+      glOrtho(0, viewport_size.width(), viewport_size.height(), 0, -1, 1);
+    else
+      glOrtho(0, viewport_size.width(), 0, viewport_size.height(), -1, 1);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -849,16 +913,11 @@ void CALayerStorageProvider::ResetLayer() {
     UnblockBrowserIfNeeded();
     ca_opengl_layer_.reset();
   }
-  if (ns_cgl_surface_layer_) {
-    [ns_cgl_surface_layer_ resetStorageProvider];
+  if (io_surface_layer_) {
+    [io_surface_layer_ resetStorageProvider];
 
-    // Keep a reference to the NSCGLSurface alive for another few frames, to
-    // avoid black and yellow flashes.
-    while (previous_layers_.size() < kFramesToKeepNSCGLSurfaceAfterDiscard)
-      previous_layers_.push_back(base::scoped_nsobject<CALayer>());
-    previous_layers_.push_back(ns_cgl_surface_layer_);
-
-    ns_cgl_surface_layer_.reset();
+    io_surface_layer_.reset();
+    return;
   }
 }
 

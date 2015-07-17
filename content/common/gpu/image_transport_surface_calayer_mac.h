@@ -12,7 +12,7 @@
 #include "ui/gl/scoped_cgl.h"
 
 @class ImageTransportCAOpenGLLayer;
-@class ImageTransportNSCGLSurface;
+@class ImageTransportIOSurface;
 
 namespace content {
 
@@ -41,7 +41,7 @@ class CALayerStorageProvider
   CGLContextObj LayerShareGroupContext();
   base::Closure LayerShareGroupContextDirtiedCallback();
   bool LayerHasPendingDraw() const;
-  void LayerDoDraw(const gfx::Rect& dirty_rect);
+  void LayerDoDraw(const gfx::Rect& dirty_rect, bool flipped);
   void LayerUnblockBrowserIfNeeded();
   CAContext* LayerCAContext() { return context_.get(); }
 
@@ -49,7 +49,7 @@ class CALayerStorageProvider
   void OnGpuSwitched() override;
 
  private:
-  void CreateLayerAndRequestDraw(bool can_use_ns_cgl_surface,
+  void CreateLayerAndRequestDraw(bool can_use_io_surface,
                                  bool should_draw_immediately,
                                  const gfx::Rect& dirty_rect);
   void DrawImmediatelyAndUnblockBrowser();
@@ -73,7 +73,7 @@ class CALayerStorageProvider
   bool throttling_disabled_;
 
   // Set when a new swap occurs, and un-set when the frame is acked to the
-  // browser. This is when the CAOpenGLLayer draws or when then NSCGLSurface
+  // browser. This is when the CAOpenGLLayer draws or when then IOSurface
   // is committed.
   bool has_pending_ack_;
 
@@ -97,22 +97,15 @@ class CALayerStorageProvider
   // The CALayer that the current frame is being drawn into.
   base::scoped_nsobject<CAContext> context_;
   base::scoped_nsobject<ImageTransportCAOpenGLLayer> ca_opengl_layer_;
-  base::scoped_nsobject<ImageTransportNSCGLSurface> ns_cgl_surface_layer_;
+  base::scoped_nsobject<ImageTransportIOSurface> io_surface_layer_;
 
-  bool ns_cgl_surface_api_attempted_and_failed_;
+  bool io_surface_api_attempted_and_failed_;
 
   // When a CAContext is destroyed in the GPU process, it will become a blank
   // CALayer in the browser process. Put retains on these contexts in this queue
   // when they are discarded, and remove one item from the queue as each frame
   // is acked.
   std::list<base::scoped_nsobject<CAContext>> previously_discarded_contexts_;
-
-  // When a NSCGLSurface is discarded, it is placed into this queue. When the
-  // browser acks a new frame, one element is removed from this queue. This is
-  // because releasing NSCGLSurfaces too early will result in the screen
-  // flashing black or yellow.
-  // http://crbug.com/505271
-  std::list<base::scoped_nsobject<CALayer>> previous_layers_;
 
   // Indicates that the CALayer should be recreated at the next swap. This is
   // to ensure that the CGLContext created for the CALayer be on the right GPU.
