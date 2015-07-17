@@ -7,8 +7,6 @@ function test()
     var requestsSent = 0;
     var responsesReceived = 0;
 
-    InspectorTest.startDumpingProtocolMessages();
-
     function finishWhenDone(agentName, action, errorString)
     {
         if (action === "enable")

@@ -973,9 +973,6 @@ function runTest(enableWatchDogWhileDebugging)
             }
         }
 
-        if (testPath.startsWith("LayoutTests/inspector/elements/styles"))
-            InspectorTest.startDumpingProtocolMessages();
-
         // 3. Run test function.
         Promise.all(promises).then(function() {
             if (lastLoadedPanel)
