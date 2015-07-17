@@ -41,7 +41,7 @@
 namespace blink {
 
 class JSONValue;
-class Node;
+class RemoteObjectId;
 class ScriptFunctionCall;
 
 typedef String ErrorString;
@@ -100,7 +100,6 @@ public:
     void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CollectionEntry> >* result);
     void getProperties(ErrorString*, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
     void getInternalProperties(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
-    Node* nodeForObjectId(const String& objectId);
     EventTarget* eventTargetForObjectId(const String& objectId);
     void releaseObject(const String& objectId);
 
@@ -108,8 +107,8 @@ public:
 
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(const ScriptValue&, const String& groupName, bool generatePreview = false) const;
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(const ScriptValue& table, const ScriptValue& columns) const;
-    PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapNode(Node*, const String& groupName);
     ScriptValue findObjectById(const String& objectId) const;
+    v8::Local<v8::Value> findObject(const RemoteObjectId&) const;
 
     String objectIdToObjectGroupName(const String& objectId) const;
     void releaseObjectGroup(const String&);
@@ -121,7 +120,6 @@ private:
     using InspectedStateAccessCheck = bool (*)(ScriptState*);
     InjectedScript(ScriptValue, InspectedStateAccessCheck, PassRefPtr<InjectedScriptNative>);
 
-    ScriptValue nodeAsScriptValue(Node*);
     void initialize(ScriptValue, InspectedStateAccessCheck);
     bool canAccessInspectedWindow() const;
     const ScriptValue& injectedScriptObject() const;

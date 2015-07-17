@@ -47,7 +47,6 @@ class InjectedScriptHostClient;
 class InspectorConsoleAgent;
 class InspectorDebuggerAgent;
 class JSONValue;
-class Node;
 class ScriptValue;
 class V8Debugger;
 
@@ -75,8 +74,6 @@ public:
         m_client = injectedScriptHostClient;
     }
 
-    static Node* scriptValueAsNode(ScriptState*, ScriptValue);
-    static ScriptValue nodeAsScriptValue(ScriptState*, Node*);
     static EventTarget* scriptValueAsEventTarget(ScriptState*, ScriptValue);
 
     void disconnect();

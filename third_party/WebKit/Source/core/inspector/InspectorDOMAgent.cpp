@@ -31,7 +31,9 @@
 #include "config.h"
 #include "core/inspector/InspectorDOMAgent.h"
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Node.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CharacterData.h"
@@ -95,10 +97,12 @@ namespace DOMAgentState {
 static const char domAgentEnabled[] = "domAgentEnabled";
 };
 
-static const size_t maxTextSize = 10000;
-static const UChar ellipsisUChar[] = { 0x2026, 0 };
+namespace {
 
-static Color parseColor(const RefPtr<JSONObject>* colorObject)
+const size_t maxTextSize = 10000;
+const UChar ellipsisUChar[] = { 0x2026, 0 };
+
+Color parseColor(const RefPtr<JSONObject>* colorObject)
 {
     if (!colorObject || !(*colorObject))
         return Color::transparent;
@@ -126,13 +130,13 @@ static Color parseColor(const RefPtr<JSONObject>* colorObject)
     return Color(r, g, b, static_cast<int>(a * 255));
 }
 
-static Color parseConfigColor(const String& fieldName, JSONObject* configObject)
+Color parseConfigColor(const String& fieldName, JSONObject* configObject)
 {
     const RefPtr<JSONObject> colorObject = configObject->getObject(fieldName);
     return parseColor(&colorObject);
 }
 
-static bool parseQuad(const RefPtr<JSONArray>& quadArray, FloatQuad* quad)
+bool parseQuad(const RefPtr<JSONArray>& quadArray, FloatQuad* quad)
 {
     if (!quadArray)
         return false;
@@ -152,7 +156,7 @@ static bool parseQuad(const RefPtr<JSONArray>& quadArray, FloatQuad* quad)
     return true;
 }
 
-static Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootFrame, bool ignorePointerEventsNone)
+Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootFrame, bool ignorePointerEventsNone)
 {
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
     if (ignorePointerEventsNone)
@@ -166,23 +170,35 @@ static Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootF
     return node;
 }
 
-static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformGestureEvent& event, bool ignorePointerEventsNone)
+Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformGestureEvent& event, bool ignorePointerEventsNone)
 {
     return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
 }
 
-static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
+Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
 {
     return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
 }
 
-static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& event, bool ignorePointerEventsNone)
+Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& event, bool ignorePointerEventsNone)
 {
     const Vector<PlatformTouchPoint>& points = event.touchPoints();
     if (!points.size())
         return nullptr;
     return hoveredNodeForPoint(frame, roundedIntPoint(points[0].pos()), ignorePointerEventsNone);
 }
+
+ScriptValue nodeAsScriptValue(ScriptState* scriptState, Node* node)
+{
+    ScriptState::Scope scope(scriptState);
+    v8::Isolate* isolate = scriptState->isolate();
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAsScriptValue", "InjectedScriptHost", scriptState->context()->Global(), isolate);
+    if (!BindingSecurity::shouldAllowAccessToNode(isolate, node, exceptionState))
+        return ScriptValue(scriptState, v8::Null(isolate));
+    return ScriptValue(scriptState, toV8(node, scriptState->context()->Global(), isolate));
+}
+
+} // namespace
 
 class InspectorRevalidateDOMTask final : public NoBaseWillBeGarbageCollectedFinalized<InspectorRevalidateDOMTask> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorRevalidateDOMTask);
@@ -1300,9 +1316,20 @@ Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String&
         *errorString = "Cannot find context for specified object id";
         return nullptr;
     }
-    Node* node = injectedScript.nodeForObjectId(objectId);
-    if (!node)
+    ScriptState::Scope scope(injectedScript.scriptState());
+    v8::Local<v8::Value> value = injectedScript.findObject(*remoteId);
+    if (value.IsEmpty()) {
         *errorString = "Node for given objectId not found";
+        return nullptr;
+    }
+    v8::Isolate* isolate = injectedScript.scriptState()->isolate();
+    if (!V8Node::hasInstance(value, isolate)) {
+        *errorString = "Object id doesn't reference a Node";
+        return nullptr;
+    }
+    Node* node = V8Node::toImpl(v8::Local<v8::Object>::Cast(value));
+    if (!node)
+        *errorString = "Couldn't convert object with given objectId to Node";
     return node;
 }
 
@@ -2128,7 +2155,7 @@ public:
     explicit InspectableNode(Node* node) : m_node(node) { }
     ScriptValue get(ScriptState* state) override
     {
-        return InjectedScriptHost::nodeAsScriptValue(state, m_node);
+        return nodeAsScriptValue(state, m_node);
     }
 private:
     Node* m_node;
@@ -2174,11 +2201,13 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
     if (!frame)
         return nullptr;
 
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(ScriptState::forMainWorld(frame));
+    ScriptState* state = ScriptState::forMainWorld(frame);
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(state);
     if (injectedScript.isEmpty())
         return nullptr;
 
-    return injectedScript.wrapNode(node, objectGroup);
+    ScriptValue scriptValue = nodeAsScriptValue(state, node);
+    return injectedScript.wrapObject(scriptValue, objectGroup);
 }
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)

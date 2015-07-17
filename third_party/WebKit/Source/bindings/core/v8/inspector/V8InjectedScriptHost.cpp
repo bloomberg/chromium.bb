@@ -5,7 +5,6 @@
 #include "config.h"
 #include "bindings/core/v8/inspector/V8InjectedScriptHost.h"
 
-#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
@@ -32,24 +31,6 @@
 #include <algorithm>
 
 namespace blink {
-
-Node* InjectedScriptHost::scriptValueAsNode(ScriptState* scriptState, ScriptValue value)
-{
-    ScriptState::Scope scope(scriptState);
-    if (!value.isObject() || value.isNull())
-        return 0;
-    return V8Node::toImpl(v8::Local<v8::Object>::Cast(value.v8Value()));
-}
-
-ScriptValue InjectedScriptHost::nodeAsScriptValue(ScriptState* scriptState, Node* node)
-{
-    ScriptState::Scope scope(scriptState);
-    v8::Isolate* isolate = scriptState->isolate();
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAsScriptValue", "InjectedScriptHost", scriptState->context()->Global(), isolate);
-    if (!BindingSecurity::shouldAllowAccessToNode(isolate, node, exceptionState))
-        return ScriptValue(scriptState, v8::Null(isolate));
-    return ScriptValue(scriptState, toV8(node, scriptState->context()->Global(), isolate));
-}
 
 static EventTarget* eventTargetFromScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
