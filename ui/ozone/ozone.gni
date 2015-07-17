@@ -16,6 +16,7 @@ declare_args() {
   ozone_platform_drm = false
   ozone_platform_egltest = false
   ozone_platform_gbm = false
+  ozone_platform_ozonex = false
   ozone_platform_test = false
 
   if (ozone_auto_platforms) {

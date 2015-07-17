@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//tools/generate_library_loader/generate_library_loader.gni")
+import("//ui/ozone/ozone.gni")
 
 source_set("egltest") {
   sources = [
@@ -39,4 +40,23 @@ generate_library_loader("eglplatform_shim") {
     "ShimReleaseNativeWindow",
   ]
 }
-# TODO(spang): eglplatform_shim_x11 once support lands: http://crbug.com/380327
+
+# TODO(spang): eglplatform_shim_x11 should become a loadable_module once
+# support lands: http://crbug.com/380327. Until then, it is not valid on
+# platforms other than Linux.
+
+# GYP version: "ui/ozone/platform/egltest/egltest.gypi:eglplatform_shim_x11"
+if (is_linux && ozone_platform_ozonex) {
+  shared_library("eglplatform_shim_x11") {
+    output_name = "libeglplatform_shim"
+
+    output_extension = "so.1"
+
+    sources = [
+      "eglplatform_shim.h",
+      "eglplatform_shim_xeleven.cc",
+    ]
+
+    configs += [ "//build/config/linux:x11" ]
+  }
+}
