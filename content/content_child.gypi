@@ -122,6 +122,8 @@
       'child/mojo/mojo_application.h',
       'child/multipart_response_delegate.cc',
       'child/multipart_response_delegate.h',
+      'child/navigator_connect/service_port_dispatcher_impl.cc',
+      'child/navigator_connect/service_port_dispatcher_impl.h',
       'child/navigator_connect/service_port_provider.cc',
       'child/navigator_connect/service_port_provider.h',
       'child/notifications/notification_data_conversions.cc',

@@ -12,6 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
+#include "content/child/navigator_connect/service_port_dispatcher_impl.h"
 #include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
@@ -181,7 +182,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
       IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
-      : weak_factory(owner) {}
+      : weak_factory(owner), proxy_weak_factory(owner->proxy_) {}
 
   ~WorkerContextData() {
     DCHECK(thread_checker.CalledOnValidThread());
@@ -203,6 +204,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   base::ThreadChecker thread_checker;
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
+  base::WeakPtrFactory<blink::WebServiceWorkerContextProxy> proxy_weak_factory;
 };
 
 ServiceWorkerContextClient*
@@ -251,8 +253,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
                         OnNotificationClickEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GeofencingEvent, OnGeofencingEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginConnectEvent,
-                        OnCrossOriginConnectEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginMessageToWorker,
                         OnCrossOriginMessageToWorker)
@@ -348,6 +348,11 @@ void ServiceWorkerContextClient::workerContextStarted(
   // same thread before the worker context goes away in
   // willDestroyWorkerContext.
   context_.reset(new WorkerContextData(this));
+
+  // Register Mojo services.
+  context_->service_registry.ServiceRegistry::AddService(
+      base::Bind(&ServicePortDispatcherImpl::Create,
+                 context_->proxy_weak_factory.GetWeakPtr()));
 
   SetRegistrationInServiceWorkerGlobalScope();
 
@@ -495,13 +500,6 @@ void ServiceWorkerContextClient::didHandleSyncEvent(
     blink::WebServiceWorkerEventResult result) {
   Send(new ServiceWorkerHostMsg_SyncEventFinished(GetRoutingID(), request_id,
                                                   result));
-}
-
-void ServiceWorkerContextClient::didHandleCrossOriginConnectEvent(
-    int request_id,
-    bool accept_connection) {
-  Send(new ServiceWorkerHostMsg_CrossOriginConnectEventFinished(
-      GetRoutingID(), request_id, accept_connection));
 }
 
 blink::WebServiceWorkerNetworkProvider*
@@ -734,18 +732,6 @@ void ServiceWorkerContextClient::OnGeofencingEvent(
       request_id, event_type, blink::WebString::fromUTF8(region_id), region);
   Send(new ServiceWorkerHostMsg_GeofencingEventFinished(GetRoutingID(),
                                                         request_id));
-}
-
-void ServiceWorkerContextClient::OnCrossOriginConnectEvent(
-    int request_id,
-    const NavigatorConnectClient& client) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnCrossOriginConnectEvent");
-  blink::WebCrossOriginServiceWorkerClient web_client;
-  web_client.origin = client.origin;
-  web_client.targetURL = client.target_url;
-  web_client.clientID = client.message_port_id;
-  proxy_->dispatchCrossOriginConnectEvent(request_id, web_client);
 }
 
 void ServiceWorkerContextClient::OnPostMessage(

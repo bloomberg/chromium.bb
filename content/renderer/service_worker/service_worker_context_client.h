@@ -125,8 +125,6 @@ class ServiceWorkerContextClient
                                   blink::WebServiceWorkerEventResult result);
   virtual void didHandleSyncEvent(int request_id,
                                   blink::WebServiceWorkerEventResult result);
-  virtual void didHandleCrossOriginConnectEvent(int request_id,
-                                                bool accept_connection);
 
   // Called on the main thread.
   virtual blink::WebServiceWorkerNetworkProvider*
@@ -173,8 +171,6 @@ class ServiceWorkerContextClient
                          blink::WebGeofencingEventType event_type,
                          const std::string& region_id,
                          const blink::WebCircularGeofencingRegion& region);
-  void OnCrossOriginConnectEvent(int request_id,
-                                 const NavigatorConnectClient& client);
   void OnPostMessage(
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,

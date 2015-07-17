@@ -238,9 +238,6 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_PushEventFinished,
                     blink::WebServiceWorkerEventResult)
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GeofencingEventFinished,
                     int /* request_id */)
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CrossOriginConnectEventFinished,
-                    int /* request_id */,
-                    bool /* accept_connection */)
 
 // Responds to a Ping from the browser.
 // Routed to the target ServiceWorkerVersion.
@@ -439,9 +436,6 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GeofencingEvent,
                      blink::WebGeofencingEventType /* event_type */,
                      std::string /* region_id */,
                      blink::WebCircularGeofencingRegion /* region */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CrossOriginConnectEvent,
-                     int /* request_id */,
-                     content::NavigatorConnectClient /* client */)
 IPC_MESSAGE_CONTROL3(
     ServiceWorkerMsg_MessageToWorker,
     base::string16 /* message */,

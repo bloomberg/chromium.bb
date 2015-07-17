@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/navigator_connect_service_factory.h"
 
@@ -42,14 +43,16 @@ class NavigatorConnectServiceWorkerServiceFactory
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
-  // Callback called when the service worker finished handling the cross origin
+  // Callback called when the service worker finished handling the service port
   // connection event.
   void OnConnectResult(
       const ConnectCallback& callback,
       const NavigatorConnectClient& client,
       const scoped_refptr<ServiceWorkerRegistration>& registration,
       ServiceWorkerStatusCode status,
-      bool accept_connection);
+      bool accept_connection,
+      const base::string16& name,
+      const base::string16& data);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<NavigatorConnectServiceWorkerServiceFactory>

@@ -42,6 +42,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "mojo/common/common_type_converters.h"
+#include "mojo/common/url_type_converters.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 
@@ -165,10 +167,11 @@ void RunErrorMessageCallback(
   callback.Run(status);
 }
 
-void RunErrorCrossOriginConnectCallback(
-    const ServiceWorkerVersion::CrossOriginConnectCallback& callback,
+void RunErrorServicePortConnectCallback(
+    const ServiceWorkerVersion::ServicePortConnectCallback& callback,
     ServiceWorkerStatusCode status) {
-  callback.Run(status, false /* accept_connection */);
+  callback.Run(status, false /* accept_connection */, base::string16(),
+               base::string16());
 }
 
 void RunErrorSendStashedPortsCallback(
@@ -894,14 +897,17 @@ void ServiceWorkerVersion::DispatchGeofencingEvent(
   }
 }
 
-void ServiceWorkerVersion::DispatchCrossOriginConnectEvent(
-    const CrossOriginConnectCallback& callback,
-    const NavigatorConnectClient& client) {
+void ServiceWorkerVersion::DispatchServicePortConnectEvent(
+    const ServicePortConnectCallback& callback,
+    const GURL& target_url,
+    const GURL& origin,
+    int port_id) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT, false);
+    callback.Run(SERVICE_WORKER_ERROR_ABORT, false, base::string16(),
+                 base::string16());
     return;
   }
 
@@ -909,20 +915,26 @@ void ServiceWorkerVersion::DispatchCrossOriginConnectEvent(
     // Schedule calling this method after starting the worker.
     StartWorker(
         base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
-                   base::Bind(&RunErrorCrossOriginConnectCallback, callback),
-                   base::Bind(&self::DispatchCrossOriginConnectEvent,
-                              weak_factory_.GetWeakPtr(), callback, client)));
+                   base::Bind(&RunErrorServicePortConnectCallback, callback),
+                   base::Bind(&self::DispatchServicePortConnectEvent,
+                              weak_factory_.GetWeakPtr(), callback, target_url,
+                              origin, port_id)));
     return;
   }
 
-  int request_id = AddRequest(callback, &cross_origin_connect_requests_,
-                              REQUEST_CROSS_ORIGIN_CONNECT);
-  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      ServiceWorkerMsg_CrossOriginConnectEvent(request_id, client));
-  if (status != SERVICE_WORKER_OK) {
-    cross_origin_connect_requests_.Remove(request_id);
-    RunSoon(base::Bind(callback, status, false));
+  int request_id = AddRequest(callback, &service_port_connect_requests_,
+                              REQUEST_SERVICE_PORT_CONNECT);
+  if (!service_port_dispatcher_) {
+    embedded_worker_->GetServiceRegistry()->ConnectToRemoteService(
+        mojo::GetProxy(&service_port_dispatcher_));
+    service_port_dispatcher_.set_connection_error_handler(base::Bind(
+        &ServiceWorkerVersion::OnServicePortDispatcherConnectionError,
+        weak_factory_.GetWeakPtr()));
   }
+  service_port_dispatcher_->Connect(
+      mojo::String::From(target_url), mojo::String::From(origin), port_id,
+      base::Bind(&ServiceWorkerVersion::OnServicePortConnectEventFinished,
+                 weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
@@ -1203,8 +1215,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnPushEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GeofencingEventFinished,
                         OnGeofencingEventFinished)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CrossOriginConnectEventFinished,
-                        OnCrossOriginConnectEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenWindow,
                         OnOpenWindow)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetCachedMetadata,
@@ -1462,22 +1472,26 @@ void ServiceWorkerVersion::OnGeofencingEventFinished(int request_id) {
   RemoveCallbackAndStopIfRedundant(&geofencing_requests_, request_id);
 }
 
-void ServiceWorkerVersion::OnCrossOriginConnectEventFinished(
+void ServiceWorkerVersion::OnServicePortConnectEventFinished(
     int request_id,
-    bool accept_connection) {
+    ServicePortConnectResult result,
+    const mojo::String& name,
+    const mojo::String& data) {
   TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerVersion::OnCrossOriginConnectEventFinished",
+               "ServiceWorkerVersion::OnServicePortConnectEventFinished",
                "Request id", request_id);
-  PendingRequest<CrossOriginConnectCallback>* request =
-      cross_origin_connect_requests_.Lookup(request_id);
+  PendingRequest<ServicePortConnectCallback>* request =
+      service_port_connect_requests_.Lookup(request_id);
   if (!request) {
     NOTREACHED() << "Got unexpected message: " << request_id;
     return;
   }
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
-  request->callback.Run(SERVICE_WORKER_OK, accept_connection);
-  RemoveCallbackAndStopIfRedundant(&cross_origin_connect_requests_, request_id);
+  request->callback.Run(SERVICE_WORKER_OK,
+                        result == SERVICE_PORT_CONNECT_RESULT_ACCEPT,
+                        name.To<base::string16>(), data.To<base::string16>());
+  RemoveCallbackAndStopIfRedundant(&service_port_connect_requests_, request_id);
 }
 
 void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
@@ -1980,7 +1994,7 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
          !fetch_requests_.IsEmpty() || !sync_requests_.IsEmpty() ||
          !notification_click_requests_.IsEmpty() || !push_requests_.IsEmpty() ||
          !geofencing_requests_.IsEmpty() ||
-         !cross_origin_connect_requests_.IsEmpty() ||
+         !service_port_connect_requests_.IsEmpty() ||
          !streaming_url_request_jobs_.empty();
 }
 
@@ -2071,10 +2085,11 @@ bool ServiceWorkerVersion::OnRequestTimeout(const RequestInfo& info) {
     case REQUEST_GEOFENCING:
       return RunIDMapCallback(&geofencing_requests_, info.id,
                               SERVICE_WORKER_ERROR_TIMEOUT);
-    case REQUEST_CROSS_ORIGIN_CONNECT:
-      return RunIDMapCallback(&cross_origin_connect_requests_, info.id,
+    case REQUEST_SERVICE_PORT_CONNECT:
+      return RunIDMapCallback(&service_port_connect_requests_, info.id,
                               SERVICE_WORKER_ERROR_TIMEOUT,
-                              false /* accept_connection */);
+                              false /* accept_connection */, base::string16(),
+                              base::string16());
   }
   NOTREACHED() << "Got unexpected request type: " << info.type;
   return false;
@@ -2191,8 +2206,10 @@ void ServiceWorkerVersion::OnStoppedInternal(
   RunIDMapCallbacks(&notification_click_requests_, SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&push_requests_, SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&geofencing_requests_, SERVICE_WORKER_ERROR_FAILED);
-  RunIDMapCallbacks(&cross_origin_connect_requests_,
-                    SERVICE_WORKER_ERROR_FAILED, false);
+
+  // Close all mojo services. This will also fire and clear all callbacks
+  // for messages that are still outstanding for those services.
+  OnServicePortDispatcherConnectionError();
 
   streaming_url_request_jobs_.clear();
 
@@ -2200,6 +2217,13 @@ void ServiceWorkerVersion::OnStoppedInternal(
 
   if (should_restart)
     StartWorkerInternal();
+}
+
+void ServiceWorkerVersion::OnServicePortDispatcherConnectionError() {
+  RunIDMapCallbacks(&service_port_connect_requests_,
+                    SERVICE_WORKER_ERROR_FAILED, false, base::string16(),
+                    base::string16());
+  service_port_dispatcher_.reset();
 }
 
 }  // namespace content

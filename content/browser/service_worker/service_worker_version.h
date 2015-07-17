@@ -22,8 +22,10 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
+#include "content/common/service_port_service.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/service_registry.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 
@@ -69,8 +71,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&)> FetchCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode,
-                              bool /* accept_connction */)>
-      CrossOriginConnectCallback;
+                              bool /* accept_connction */,
+                              const base::string16& /* name */,
+                              const base::string16& /* data */)>
+      ServicePortConnectCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode, const std::vector<int>&)>
       SendStashedPortsCallback;
 
@@ -237,13 +241,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const std::string& region_id,
       const blink::WebCircularGeofencingRegion& region);
 
-  // Sends a cross origin connect event to the associated embedded worker and
+  // Sends a ServicePort connect event to the associated embedded worker and
   // asynchronously calls |callback| with the response from the worker.
   //
   // This must be called when the status() is ACTIVATED.
-  void DispatchCrossOriginConnectEvent(
-      const CrossOriginConnectCallback& callback,
-      const NavigatorConnectClient& client);
+  void DispatchServicePortConnectEvent(
+      const ServicePortConnectCallback& callback,
+      const GURL& target_url,
+      const GURL& origin,
+      int port_id);
 
   // Sends a cross origin message event to the associated embedded worker and
   // asynchronously calls |callback| when the message was sent (or failed to
@@ -364,7 +370,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     REQUEST_NOTIFICATION_CLICK,
     REQUEST_PUSH,
     REQUEST_GEOFENCING,
-    REQUEST_CROSS_ORIGIN_CONNECT
+    REQUEST_SERVICE_PORT_CONNECT
   };
 
   struct RequestInfo {
@@ -438,8 +444,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnPushEventFinished(int request_id,
                            blink::WebServiceWorkerEventResult result);
   void OnGeofencingEventFinished(int request_id);
-  void OnCrossOriginConnectEventFinished(int request_id,
-                                         bool accept_connection);
+  void OnServicePortConnectEventFinished(int request_id,
+                                         ServicePortConnectResult result,
+                                         const mojo::String& name,
+                                         const mojo::String& data);
   void OnOpenWindow(int request_id, GURL url);
   void DidOpenWindow(int request_id,
                      int render_process_id,
@@ -533,6 +541,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnStoppedInternal(EmbeddedWorkerInstance::Status old_status);
 
+  // Called when the connection to a ServicePortDispatcher drops or fails.
+  // Calls callbacks for any outstanding requests to the dispatcher as well
+  // as cleans up the dispatcher.
+  void OnServicePortDispatcherConnectionError();
+
   const int64 version_id_;
   const int64 registration_id_;
   const GURL script_url_;
@@ -554,8 +567,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
       notification_click_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> push_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> geofencing_requests_;
-  IDMap<PendingRequest<CrossOriginConnectCallback>, IDMapOwnPointer>
-      cross_origin_connect_requests_;
+  IDMap<PendingRequest<ServicePortConnectCallback>, IDMapOwnPointer>
+      service_port_connect_requests_;
+
+  ServicePortDispatcherPtr service_port_dispatcher_;
 
   std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
 

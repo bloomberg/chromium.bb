@@ -156,24 +156,25 @@ void NavigatorConnectServiceWorkerServiceFactory::GotServiceWorkerRegistration(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   if (status != SERVICE_WORKER_OK) {
     // No service worker found, reject connection attempt.
-    OnConnectResult(callback, client, registration, status, false);
+    OnConnectResult(callback, client, registration, status, false,
+                    base::string16(), base::string16());
     return;
   }
 
   ServiceWorkerVersion* active_version = registration->active_version();
   if (!active_version) {
     // No active version, reject connection attempt.
-    OnConnectResult(callback, client, registration, status, false);
+    OnConnectResult(callback, client, registration, status, false,
+                    base::string16(), base::string16());
     return;
   }
 
-  active_version->DispatchCrossOriginConnectEvent(
+  active_version->DispatchServicePortConnectEvent(
       base::Bind(&NavigatorConnectServiceWorkerServiceFactory::OnConnectResult,
                  weak_factory_.GetWeakPtr(), callback, client, registration),
-      client);
+      client.target_url, client.origin, client.message_port_id);
 }
 
 void NavigatorConnectServiceWorkerServiceFactory::OnConnectResult(
@@ -181,7 +182,9 @@ void NavigatorConnectServiceWorkerServiceFactory::OnConnectResult(
     const NavigatorConnectClient& client,
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
     ServiceWorkerStatusCode status,
-    bool accept_connection) {
+    bool accept_connection,
+    const base::string16& name,
+    const base::string16& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status != SERVICE_WORKER_OK || !accept_connection) {
@@ -189,6 +192,7 @@ void NavigatorConnectServiceWorkerServiceFactory::OnConnectResult(
     return;
   }
 
+  // TODO(mek): Keep track of name and data for this port.
   // TODO(mek): http://crbug.com/462744 Keep track of these
   // NavigatorConnectServiceWorkerService instances and clean them up when a
   // service worker registration is deleted.

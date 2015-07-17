@@ -30,3 +30,8 @@ interface ServicePortServiceClient {
               array<MojoTransferredMessagePort> ports,
               array<int32> new_routing_ids);
 };
+
+interface ServicePortDispatcher {
+  Connect(string target_url, string origin, int32 port_id)
+      => (ServicePortConnectResult result, string name, string data);
+};
