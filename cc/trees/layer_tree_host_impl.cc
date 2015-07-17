@@ -1988,11 +1988,9 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   else
     EvictAllUIResources();
 
-  // Call PrepareTiles unconditionally on visibility change since this tab may
-  // never get another draw or timer tick. When becoming visible we care about
-  // unblocking the scheduler which might be waiting for activation / ready to
-  // draw. When becoming invisible we care about evicting tiles immediately.
-  PrepareTiles();
+  // PrepareTiles when becoming invisible so that we evict tiles immediately.
+  if (!visible_)
+    PrepareTiles();
 
   if (!renderer_)
     return;
