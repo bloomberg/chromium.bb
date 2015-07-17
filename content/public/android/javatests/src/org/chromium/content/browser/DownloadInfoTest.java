@@ -13,6 +13,7 @@ import org.chromium.content.browser.DownloadInfo.Builder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -178,8 +179,9 @@ public class DownloadInfoTest extends InstrumentationTestCase {
 
         Builder builder = new Builder();
         // Create a DownloadInfo object with these values.
-        for (AccessorSignature signature : builderSetters.keySet()) {
-            Method setter = builderSetters.get(signature);
+        for (Map.Entry<AccessorSignature, Method> builderSetter : builderSetters.entrySet()) {
+            AccessorSignature signature = builderSetter.getKey();
+            Method setter = builderSetter.getValue();
             try {
                 invokeMethod(setter, builder, valuesForBuilder.get(signature));
             } catch (Exception e) {
@@ -188,8 +190,10 @@ public class DownloadInfoTest extends InstrumentationTestCase {
             }
         }
         DownloadInfo downloadInfo = builder.build();
-        for (AccessorSignature signature : downloadInfoGetters.keySet()) {
-            Method getter = downloadInfoGetters.get(signature);
+        for (Map.Entry<AccessorSignature, Method> downloadInfoGetter :
+                downloadInfoGetters.entrySet()) {
+            AccessorSignature signature = downloadInfoGetter.getKey();
+            Method getter = downloadInfoGetter.getValue();
             try {
                 Object returnValue = invokeMethod(getter, downloadInfo);
                 assertEquals(signature.toString(),
@@ -202,8 +206,10 @@ public class DownloadInfoTest extends InstrumentationTestCase {
 
         // Test DownloadInfo.fromDownloadInfo copies all fields.
         DownloadInfo newDownloadInfo = Builder.fromDownloadInfo(downloadInfo).build();
-        for (AccessorSignature signature : downloadInfoGetters.keySet()) {
-            Method getter = downloadInfoGetters.get(signature);
+        for (Map.Entry<AccessorSignature, Method> downloadInfoGetter :
+                downloadInfoGetters.entrySet()) {
+            AccessorSignature signature = downloadInfoGetter.getKey();
+            Method getter = downloadInfoGetter.getValue();
             try {
                 Object returnValue1 = invokeMethod(getter, downloadInfo);
                 Object returnValue2 = invokeMethod(getter, newDownloadInfo);

@@ -26,7 +26,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -35,7 +34,9 @@ import android.widget.AdapterView.OnItemClickListener;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.UiUtils;
@@ -51,7 +52,7 @@ import java.util.List;
  */
 public class ShareHelper {
 
-    private static final String TAG = "ShareHelper";
+    private static final String TAG = "cr.chrome.browser";
 
     private static final String PACKAGE_NAME_KEY = "last_shared_package_name";
     private static final String CLASS_NAME_KEY = "last_shared_class_name";
@@ -64,13 +65,14 @@ public class ShareHelper {
 
     private ShareHelper() {}
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static void deleteScreenshotFiles(File file) {
         if (!file.exists()) return;
         if (file.isDirectory()) {
             for (File f : file.listFiles()) deleteScreenshotFiles(f);
         }
         if (!file.delete()) {
-            Log.w(TAG, "Failed to delete screenshot file: " + file.getAbsolutePath());
+            Log.w(TAG, "Failed to delete screenshot file: %s", file.getAbsolutePath());
         }
     }
 

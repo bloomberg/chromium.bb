@@ -370,8 +370,9 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     private Map<ModelType, CheckBoxPreference> getDataTypes(SyncCustomizationFragment fragment) {
         Map<ModelType, CheckBoxPreference> dataTypes =
                 new HashMap<ModelType, CheckBoxPreference>();
-        for (ModelType modelType : UI_DATATYPES.keySet()) {
-            String prefId = UI_DATATYPES.get(modelType);
+        for (Map.Entry<ModelType, String> uiDataType : UI_DATATYPES.entrySet()) {
+            ModelType modelType = uiDataType.getKey();
+            String prefId = uiDataType.getValue();
             dataTypes.put(modelType, (CheckBoxPreference) fragment.findPreference(prefId));
         }
         return dataTypes;

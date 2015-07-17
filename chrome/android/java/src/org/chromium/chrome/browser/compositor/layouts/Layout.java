@@ -460,7 +460,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      *                           selection occurs.
      */
     public void startHiding(int nextTabId, boolean hintAtTabSelection) {
-        getLayoutTab(nextTabId);
         mUpdateHost.startHiding(nextTabId, hintAtTabSelection);
         mIsHiding = true;
         mNextTabId = nextTabId;

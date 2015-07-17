@@ -159,6 +159,7 @@ public class CronetTestActivity extends Activity {
         return PathUtils.getDataDirectory(getApplicationContext()) + "/test_storage";
     }
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private boolean recursiveDelete(File path) {
         if (path.isDirectory()) {
             for (File c : path.listFiles()) {

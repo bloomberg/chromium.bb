@@ -28,6 +28,7 @@ import android.provider.Settings;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -409,6 +410,7 @@ class AudioManagerAndroid {
      * Required permissions: android.Manifest.permission.MODIFY_AUDIO_SETTINGS
      * and android.Manifest.permission.RECORD_AUDIO.
      */
+    @SuppressFBWarnings("UC_USELESS_OBJECT")
     @CalledByNative
     private AudioDeviceName[] getAudioInputDeviceNames() {
         if (DEBUG) logd("getAudioInputDeviceNames");
@@ -1013,12 +1015,12 @@ class AudioManagerAndroid {
      * TODO(henrika): add support for state change listener.
      */
     private void reportUpdate() {
-        synchronized (mLock) {
-            List<String> devices = new ArrayList<String>();
-            for (int i = 0; i < DEVICE_COUNT; ++i) {
-                if (mAudioDevices[i]) devices.add(DEVICE_NAMES[i]);
-            }
-            if (DEBUG) {
+        if (DEBUG) {
+            synchronized (mLock) {
+                List<String> devices = new ArrayList<String>();
+                for (int i = 0; i < DEVICE_COUNT; ++i) {
+                    if (mAudioDevices[i]) devices.add(DEVICE_NAMES[i]);
+                }
                 logd("reportUpdate: requested=" + mRequestedAudioDevice
                         + ", btSco=" + mBluetoothScoState
                         + ", devices=" + devices);

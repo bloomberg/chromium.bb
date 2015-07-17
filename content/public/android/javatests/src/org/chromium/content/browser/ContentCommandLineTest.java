@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content_shell_apk.ContentShellApplication;
@@ -124,6 +125,7 @@ public class ContentCommandLineTest extends NativeLibraryTestBase {
         checkSettingThenGetting();
     }
 
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testFileInitialization() {

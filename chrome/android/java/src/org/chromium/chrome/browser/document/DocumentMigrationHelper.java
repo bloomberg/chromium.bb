@@ -214,21 +214,23 @@ public class DocumentMigrationHelper {
         // All the TabStates (incognito or not) live in the same directory.
         File[] allTabs = normalTabModel.getStorageDelegate().getStateDirectory().listFiles();
         try {
-            for (int i = 0; i < allTabs.length; i++) {
-                String fileName = allTabs[i].getName();
-                Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(fileName);
-                if (tabInfo == null) continue;
-                int tabId = tabInfo.first;
+            if (allTabs != null) {
+                for (int i = 0; i < allTabs.length; i++) {
+                    String fileName = allTabs[i].getName();
+                    Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(fileName);
+                    if (tabInfo == null) continue;
+                    int tabId = tabInfo.first;
 
-                // Also remove the tab state file for the closed tabs.
-                boolean success;
-                if (!tabIdsToRemove.contains(tabId)) {
-                    success = allTabs[i].renameTo(new File(migratedFolder, fileName));
-                } else {
-                    success = allTabs[i].delete();
+                    // Also remove the tab state file for the closed tabs.
+                    boolean success;
+                    if (!tabIdsToRemove.contains(tabId)) {
+                        success = allTabs[i].renameTo(new File(migratedFolder, fileName));
+                    } else {
+                        success = allTabs[i].delete();
+                    }
+
+                    if (!success) Log.e(TAG, "Failed to move/delete file for tab ID: " + tabId);
                 }
-
-                if (!success) Log.e(TAG, "Failed to move/delete file for tab ID: " + tabId);
             }
 
             if (normalTabModel.getCount() != 0) {
@@ -331,10 +333,11 @@ public class DocumentMigrationHelper {
         // Create maps for all tabs that will be used during TabModel initialization.
         final List<Entry> normalEntryMap = new ArrayList<Entry>();
 
-        int currentSelectorIndex = 0;
-        File currentFolder = TabPersistentStore.getStateDirectory(activity, currentSelectorIndex);
+        File currentFolder = null;
         MigrationTabStateReadCallback callback = new MigrationTabStateReadCallback();
-        while (currentFolder.listFiles() != null && currentFolder.listFiles().length != 0) {
+        for (int currentSelectorIndex = 0;
+                (currentFolder = getNextNonEmptyFolder(activity, currentSelectorIndex)) != null;
+                ++currentSelectorIndex) {
             File[] allTabs = TabPersistentStore
                     .getStateDirectory(activity, currentSelectorIndex).listFiles();
             try {
@@ -343,27 +346,33 @@ public class DocumentMigrationHelper {
                 Log.e(TAG, "IO Exception while trying to get the last used tab id");
             }
 
-            for (int i = 0; i < allTabs.length; i++) {
-                // Move tab state file to the document side folder.
-                String fileName = allTabs[i].getName();
-                Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(fileName);
-                if (tabInfo == null) continue;
+            if (allTabs != null) {
+                for (int i = 0; i < allTabs.length; i++) {
+                    // Move tab state file to the document side folder.
+                    String fileName = allTabs[i].getName();
+                    Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(fileName);
+                    if (tabInfo == null) continue;
 
-                boolean success;
-                if (tabInfo.second) {
-                    success = allTabs[i].delete();
-                } else {
-                    success = allTabs[i].renameTo(new File(migratedFolder, fileName));
-                    normalEntryMap.add(new Entry(tabInfo.first, UrlConstants.NTP_URL));
+                    boolean success;
+                    if (tabInfo.second) {
+                        success = allTabs[i].delete();
+                    } else {
+                        success = allTabs[i].renameTo(new File(migratedFolder, fileName));
+                        normalEntryMap.add(new Entry(tabInfo.first, UrlConstants.NTP_URL));
+                    }
+
+                    if (!success) Log.e(TAG, "Failed to move/delete file: " + fileName);
                 }
-
-                if (!success) Log.e(TAG, "Failed to move/delete file: " + fileName);
             }
-            currentSelectorIndex++;
-            currentFolder = TabPersistentStore.getStateDirectory(activity, currentSelectorIndex);
         }
 
         return new MigrationActivityDelegate(normalEntryMap, callback.getSelectedTabId());
+    }
+
+    private static File getNextNonEmptyFolder(Activity activity, int currentSelectorIndex) {
+        File folder = TabPersistentStore.getStateDirectory(activity, currentSelectorIndex);
+        File[] files = folder.listFiles();
+        return (files == null || files.length == 0) ? null : folder;
     }
 
     private static void addAppTasksFromFiles(final Activity activity,

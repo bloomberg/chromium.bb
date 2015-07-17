@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Test suite for different Android URL schemes.
- */
-
 package org.chromium.chrome.browser;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
@@ -20,10 +16,13 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.TestContentProvider;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 
+
+/** Test suite for different Android URL schemes. */
 public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     public UrlSchemeTest() {
@@ -95,18 +94,17 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Navigation"})
-    @SuppressLint("SdCardPath")
     public void testContentUrlFromFile() throws InterruptedException, IOException {
         final String target = "content_from_file";
-        final String fileName = "/sdcard/" + target + ".html";
+        final File file = new File(Environment.getExternalStorageDirectory(), target + ".html");
         try {
             TestFileUtil.createNewHtmlFile(
-                    fileName, target, "<img src=\"" + createContentUrl(target) + "\">");
+                    file, target, "<img src=\"" + createContentUrl(target) + "\">");
             resetResourceRequestCountInContentProvider(target);
-            loadUrl("file:///" + fileName);
+            loadUrl("file:///" + file.getAbsolutePath());
             ensureResourceRequestCountInContentProviderNotLessThan(target, 1);
         } finally {
-            TestFileUtil.deleteFile(fileName);
+            TestFileUtil.deleteFile(file);
         }
     }
 
@@ -115,16 +113,16 @@ public class UrlSchemeTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Navigation"})
-    @SuppressLint("SdCardPath")
     public void testFileUrlNavigation() throws InterruptedException, IOException {
-        final String target = "/sdcard/url_navigation_test.html";
+        final File file = new File(Environment.getExternalStorageDirectory(),
+                "url_navigation_test.html");
 
         try {
-            TestFileUtil.createNewHtmlFile(target, "File", null);
-            loadUrl("file://" + target);
+            TestFileUtil.createNewHtmlFile(file, "File", null);
+            loadUrl("file://" + file.getAbsolutePath());
             assertEquals("File", getTitleOnUiThread());
         } finally {
-            TestFileUtil.deleteFile(target);
+            TestFileUtil.deleteFile(file);
         }
     }
 

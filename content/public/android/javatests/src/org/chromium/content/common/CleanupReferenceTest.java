@@ -14,6 +14,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Test suite for {@link CleanupReference}. */
 public class CleanupReferenceTest extends InstrumentationTestCase {
 
     private static AtomicInteger sObjectCount = new AtomicInteger();
@@ -73,6 +74,7 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         }));
     }
 
+    @SuppressFBWarnings("UC_USELESS_OBJECT")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testCreateMany() throws Throwable {

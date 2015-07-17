@@ -11,6 +11,7 @@ import android.provider.Settings;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.File;
 
@@ -42,6 +43,7 @@ public final class ChromeCommandLineInitUtil {
     private ChromeCommandLineInitUtil() {
     }
 
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public static void initChromeCommandLine(Context context) {
         if (!CommandLine.isInitialized()) {
             File commandLineFile = getAlternativeCommandLinePath(context);
@@ -55,6 +57,7 @@ public final class ChromeCommandLineInitUtil {
     /**
      * Use an alternative path if adb is enabled and the debug app is chrome.
      */
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private static File getAlternativeCommandLinePath(Context context) {
         File alternativeCommandLineFile =
                 new File(COMMAND_LINE_FILE_PATH_DEBUG_APP, COMMAND_LINE_FILE);

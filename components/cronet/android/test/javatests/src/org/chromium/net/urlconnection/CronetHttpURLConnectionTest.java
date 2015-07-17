@@ -504,7 +504,11 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         connection.disconnect();
     }
 
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
+    @SuppressFBWarnings({
+            "DLS_DEAD_LOCAL_STORE",
+            "RANGE_ARRAY_OFFSET",
+            "RANGE_ARRAY_LENGTH"
+            })
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet

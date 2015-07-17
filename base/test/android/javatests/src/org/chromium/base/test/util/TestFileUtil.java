@@ -21,9 +21,13 @@ import java.util.Arrays;
 public class TestFileUtil {
     public static void createNewHtmlFile(String name, String title, String body)
             throws IOException {
-        File file = new File(name);
+        createNewHtmlFile(new File(name), title, body);
+    }
+
+    public static void createNewHtmlFile(File file, String title, String body)
+            throws IOException {
         if (!file.createNewFile()) {
-            throw new IOException("File \"" + name + "\" already exists");
+            throw new IOException("File \"" + file.getAbsolutePath() + "\" already exists");
         }
 
         Writer writer = null;
@@ -43,7 +47,10 @@ public class TestFileUtil {
     }
 
     public static void deleteFile(String name) {
-        File file = new File(name);
+        deleteFile(new File(name));
+    }
+
+    public static void deleteFile(File file) {
         boolean deleted = file.delete();
         assert (deleted || !file.exists());
     }

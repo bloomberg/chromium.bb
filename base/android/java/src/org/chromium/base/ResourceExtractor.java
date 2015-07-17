@@ -13,7 +13,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Trace;
-import android.util.Log;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 
@@ -34,7 +33,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class ResourceExtractor {
 
-    private static final String LOGTAG = "ResourceExtractor";
+    private static final String TAG = "cr.base";
     private static final String ICU_DATA_FILENAME = "icudtl.dat";
     private static final String V8_NATIVES_DATA_FILENAME = "natives_blob.bin";
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
@@ -66,7 +65,7 @@ public class ResourceExtractor {
             OutputStream os = null;
             try {
                 os = new FileOutputStream(outFile);
-                Log.i(LOGTAG, "Extracting resource " + outFile);
+                Log.i(TAG, "Extracting resource %s", outFile);
 
                 int count = 0;
                 while ((count = is.read(buffer, 0, BUFFER_SIZE)) != -1) {
@@ -94,7 +93,7 @@ public class ResourceExtractor {
         private void doInBackgroundImpl() {
             final File outputDir = getOutputDir();
             if (!outputDir.exists() && !outputDir.mkdirs()) {
-                Log.e(LOGTAG, "Unable to create pak resources directory!");
+                Log.e(TAG, "Unable to create pak resources directory!");
                 return;
             }
 
@@ -132,7 +131,7 @@ public class ResourceExtractor {
                 // Try to recover here, can we try again after deleting files instead of
                 // returning null? It might be useful to gather UMA here too to track if
                 // this happens with regularity.
-                Log.w(LOGTAG, "Exception unpacking required pak resources: " + e.getMessage());
+                Log.w(TAG, "Exception unpacking required pak resources: %s", e.getMessage());
                 deleteFiles();
                 return;
             } finally {
@@ -146,7 +145,7 @@ public class ResourceExtractor {
                 } catch (IOException e) {
                     // Worst case we don't write a timestamp, so we'll re-extract the resource
                     // paks next start up.
-                    Log.w(LOGTAG, "Failed to write resource pak timestamp!");
+                    Log.w(TAG, "Failed to write resource pak timestamp!");
                 }
             }
         }
@@ -214,7 +213,7 @@ public class ResourceExtractor {
                 }
             });
 
-            if (timestamps.length != 1) {
+            if (timestamps == null || timestamps.length != 1) {
                 // If there's no timestamp, nuke to be safe as we can't tell the age of the files.
                 // If there's multiple timestamps, something's gone wrong so nuke.
                 return expectedTimestamp;
@@ -370,24 +369,25 @@ public class ResourceExtractor {
     private void deleteFiles() {
         File icudata = new File(getAppDataDir(), ICU_DATA_FILENAME);
         if (icudata.exists() && !icudata.delete()) {
-            Log.e(LOGTAG, "Unable to remove the icudata " + icudata.getName());
+            Log.e(TAG, "Unable to remove the icudata %s", icudata.getName());
         }
         File v8_natives = new File(getAppDataDir(), V8_NATIVES_DATA_FILENAME);
         if (v8_natives.exists() && !v8_natives.delete()) {
-            Log.e(LOGTAG,
-                    "Unable to remove the v8 data " + v8_natives.getName());
+            Log.e(TAG, "Unable to remove the v8 data %s", v8_natives.getName());
         }
         File v8_snapshot = new File(getAppDataDir(), V8_SNAPSHOT_DATA_FILENAME);
         if (v8_snapshot.exists() && !v8_snapshot.delete()) {
-            Log.e(LOGTAG,
-                    "Unable to remove the v8 data " + v8_snapshot.getName());
+            Log.e(TAG, "Unable to remove the v8 data %s", v8_snapshot.getName());
         }
         File dir = getOutputDir();
         if (dir.exists()) {
             File[] files = dir.listFiles();
-            for (File file : files) {
-                if (!file.delete()) {
-                    Log.e(LOGTAG, "Unable to remove existing resource " + file.getName());
+
+            if (files != null) {
+                for (File file : files) {
+                    if (!file.delete()) {
+                        Log.e(TAG, "Unable to remove existing resource %s", file.getName());
+                    }
                 }
             }
         }

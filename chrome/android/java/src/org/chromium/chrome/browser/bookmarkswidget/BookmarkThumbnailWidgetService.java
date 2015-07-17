@@ -261,7 +261,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
             }
 
             // Use the Mobile Bookmarks folder by default.
-            if (folderId < 0 || folderId == ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
+            if (folderId < 0) {
                 folderId = ChromeBrowserProviderClient.getMobileBookmarksFolderId(mContext);
                 if (folderId == ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) return null;
             }

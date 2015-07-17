@@ -12,6 +12,7 @@ import org.chromium.android_webview.R;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.ui.base.ResourceBundle;
 
@@ -22,6 +23,7 @@ public class AwShellApplication extends ContentApplication {
 
     private static final String TAG = "AwShellApplication";
 
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @Override
     public void onCreate() {
         super.onCreate();

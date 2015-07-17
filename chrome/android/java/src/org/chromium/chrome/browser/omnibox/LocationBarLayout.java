@@ -2438,7 +2438,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         }
 
         // Record UMA event for how the URL bar was focused.
-        assert !mHasRecordedUrlFocusSource;
         if (mHasRecordedUrlFocusSource) return;
 
         Tab currentTab = getCurrentTab();

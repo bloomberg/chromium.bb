@@ -739,6 +739,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             protected Void doInBackground(Void... voids) {
                 File stateDirectory = mStorageDelegate.getStateDirectory();
                 String[] files = stateDirectory.list();
+                if (files == null) return null;
+
                 for (final String fileName : files) {
                     Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(fileName);
                     if (tabInfo == null) continue;

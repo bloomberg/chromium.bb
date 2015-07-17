@@ -7,6 +7,7 @@ package org.chromium.chrome.shell;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
@@ -56,6 +57,7 @@ public class ChromeShellApplication extends ChromeApplication {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
     }
 
+    @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     @Override
     public void initCommandLine() {
         if (!CommandLine.isInitialized()) {
