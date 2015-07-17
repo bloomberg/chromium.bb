@@ -175,6 +175,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
 }
 
 ServiceWorkerContextCore::~ServiceWorkerContextCore() {
+  DCHECK(storage_);
   for (VersionMap::iterator it = live_versions_.begin();
        it != live_versions_.end();
        ++it) {
