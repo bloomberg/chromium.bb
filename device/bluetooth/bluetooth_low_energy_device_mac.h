@@ -7,19 +7,21 @@
 
 #if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>
-#else
+#else  // !defined(OS_IOS)
 #import <IOBluetooth/IOBluetooth.h>
-#endif
+#endif  // defined(OS_IOS)
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "crypto/sha2.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 
 namespace device {
 
 class BluetoothLowEnergyDiscoverManagerMac;
 
-class BluetoothLowEnergyDeviceMac : public BluetoothDeviceMac {
+class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
+    : public BluetoothDeviceMac {
  public:
   BluetoothLowEnergyDeviceMac(CBPeripheral* peripheral,
                               NSDictionary* advertisementData,
@@ -84,8 +86,18 @@ class BluetoothLowEnergyDeviceMac : public BluetoothDeviceMac {
 
   static std::string GetPeripheralIdentifier(CBPeripheral* peripheral);
 
+  // Hashes and truncates the peripheral identifier to deterministically
+  // construct an address. The use of fake addresses is a temporary fix before
+  // we switch to using bluetooth identifiers throughout Chrome.
+  // http://crbug.com/507824
+  static std::string GetPeripheralHashAddress(CBPeripheral* peripheral);
+
  private:
   friend class BluetoothAdapterMac;
+  friend class BluetoothAdapterMacTest;
+
+  // Equivalent to [peripheral_ state].  Allows compilation on OS X 10.6.
+  CBPeripheralState GetPeripheralState() const;
 
   // CoreBluetooth data structure.
   base::scoped_nsobject<CBPeripheral> peripheral_;
@@ -95,6 +107,13 @@ class BluetoothLowEnergyDeviceMac : public BluetoothDeviceMac {
 
   // Whether the device is connectable.
   bool connectable_;
+
+  // The peripheral's identifier, as returned by [CBPeripheral identifier].
+  std::string identifier_;
+
+  // A local address for the device created by hashing the peripheral
+  // identifier.
+  std::string hash_address_;
 
   // Stores the time of the most recent call to Update().
   base::scoped_nsobject<NSDate> last_update_time_;

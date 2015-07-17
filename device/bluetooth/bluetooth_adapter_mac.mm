@@ -32,13 +32,13 @@ namespace {
 // The frequency with which to poll the adapter for updates.
 const int kPollIntervalMs = 500;
 
-// The length of time that must elapse since the last Inquiry response before a
-// discovered Classic device is considered to be no longer available.
-const NSTimeInterval kDiscoveryTimeoutSec = 3 * 60;  // 3 minutes
-
 }  // namespace
 
 namespace device {
+
+// static
+const NSTimeInterval BluetoothAdapterMac::kDiscoveryTimeoutSec =
+    180;  // 3 minutes
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
@@ -309,7 +309,6 @@ void BluetoothAdapterMac::Init() {
 void BluetoothAdapterMac::InitForTest(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner) {
   ui_task_runner_ = ui_task_runner;
-  PollAdapter();
 }
 
 void BluetoothAdapterMac::PollAdapter() {
@@ -372,8 +371,15 @@ void BluetoothAdapterMac::PollAdapter() {
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile5(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461181 BluetoothAdapterMac::PollAdapter::UpdateDevices"));
-  UpdateDevices();
+          "461181 BluetoothAdapterMac::PollAdapter::RemoveTimedOutDevices"));
+  RemoveTimedOutDevices();
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "461181 BluetoothAdapterMac::PollAdapter::AddPairedDevices"));
+  AddPairedDevices();
 
   ui_task_runner_->PostDelayedTask(
       FROM_HERE,
@@ -396,15 +402,13 @@ void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
                     DeviceAdded(this, devices_[device_address]));
 }
 
-// TODO(krstnmnlsn): This method to be implemented as soon as UpdateDevices can
-// handle instances of LowEnergyBluetoothDevice in |devices_|. crbug.com/498009
+// TODO(krstnmnlsn): Implement method. http://crbug.com/496987.
 void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     CBPeripheral* peripheral,
-    NSDictionary* advertisementData,
-    int rssi) {
-}
+    NSDictionary* advertisement_data,
+    int rssi) {}
 
-void BluetoothAdapterMac::UpdateDevices() {
+void BluetoothAdapterMac::RemoveTimedOutDevices() {
   // Notify observers if any previously seen devices are no longer available,
   // i.e. if they are no longer paired, connected, nor recently discovered via
   // an inquiry.
@@ -430,7 +434,9 @@ void BluetoothAdapterMac::UpdateDevices() {
     size_t num_removed = devices_.erase(device_address);
     DCHECK_EQ(num_removed, 1U);
   }
+}
 
+void BluetoothAdapterMac::AddPairedDevices() {
   // Add any new paired devices.
   for (IOBluetoothDevice* device in [IOBluetoothDevice pairedDevices]) {
     ClassicDeviceAdded(device);

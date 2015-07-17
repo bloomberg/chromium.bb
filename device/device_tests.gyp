@@ -113,9 +113,17 @@
           ],
         }],
         ['OS=="mac"', {
+          'dependencies': [
+            '../third_party/ocmock/ocmock.gyp:ocmock',
+          ],
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/IOBluetooth.framework',
+            ],
+          },
+          'xcode_settings' : {
+            'OTHER_LDFLAGS' : [
+              '-ObjC',
             ],
           },
         }],

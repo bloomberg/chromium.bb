@@ -13,6 +13,7 @@
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../crypto/crypto.gyp:crypto',
         '../../net/net.gyp:net',
         '../../ui/base/ui_base.gyp:ui_base',
         'bluetooth_strings.gyp:device_bluetooth_strings',

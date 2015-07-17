@@ -7,8 +7,24 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_low_energy_device_mac.h"
 #include "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/ocmock/OCMock/OCMock.h"
+
+#if defined(OS_IOS)
+#import <CoreBluetooth/CoreBluetooth.h>
+#else  // !defined(OS_IOS)
+#import <IOBluetooth/IOBluetooth.h>
+#endif  // defined(OS_IOS)
+
+#import <Foundation/Foundation.h>
+
+namespace {
+// |kTestHashAddress| is the hash corresponding to identifier |kTestNSUUID|.
+NSString* const kTestNSUUID = @"00000000-1111-2222-3333-444444444444";
+const std::string kTestHashAddress = "D1:6F:E3:22:FD:5B";
+}  // namespace
 
 namespace device {
 
@@ -24,6 +40,64 @@ class BluetoothAdapterMacTest : public testing::Test {
   }
 
   // Helper methods for setup and access to BluetoothAdapterMacTest's members.
+  void PollAdapter() { adapter_mac_->PollAdapter(); }
+
+  CBPeripheral* CreateMockPeripheral(NSString* identifier) {
+    if (!BluetoothAdapterMac::IsLowEnergyAvailable()) {
+      // For stability we only use CoreBluetooth on OS X >= 10.10.  Thus on
+      // previous OS X versions the code cannot be tested.
+      LOG(WARNING) << "OS X version < 10.10, skipping unit test.";
+      return nil;
+    }
+    Class peripheral_class = NSClassFromString(@"CBPeripheral");
+    id mock_peripheral =
+        [[OCMockObject mockForClass:[peripheral_class class]] retain];
+    [static_cast<CBPeripheral*>([[mock_peripheral stub]
+        andReturnValue:@(CBPeripheralStateDisconnected)])
+        performSelector:@selector(state)];
+    [[[mock_peripheral stub] andReturn:[NSString string]] name];
+    Class uuid_class = NSClassFromString(@"NSUUID");
+    [[[mock_peripheral stub]
+        andReturn:[[uuid_class performSelector:@selector(UUID)]
+                      performSelector:@selector(initWithUUIDString:)
+                           withObject:identifier]] identifier];
+
+    return mock_peripheral;
+  }
+
+  NSDictionary* CreateAdvertisementData() {
+    NSDictionary* advertisement_data = @{
+      @"CBAdvertisementDataIsConnectable" : @(YES),
+      @"CBAdvertisementDataServiceDataKey" : [NSDictionary dictionary],
+    };
+    [advertisement_data retain];
+    return advertisement_data;
+  }
+
+  std::string GetHashAddress(CBPeripheral* peripheral) {
+    return BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
+  }
+
+  void SetDeviceTimeGreaterThanTimeout(BluetoothLowEnergyDeviceMac* device) {
+    device->last_update_time_.reset([[NSDate
+        dateWithTimeInterval:-(BluetoothAdapterMac::kDiscoveryTimeoutSec + 1)
+                   sinceDate:[NSDate date]] retain]);
+  }
+
+  void AddLowEnergyDevice(BluetoothLowEnergyDeviceMac* device) {
+    adapter_mac_->devices_[device->GetAddress()] = device;
+  }
+
+  int NumDevices() { return adapter_mac_->devices_.size(); }
+
+  bool DevicePresent(CBPeripheral* peripheral) {
+    BluetoothDevice* device = adapter_mac_->GetDevice(
+        BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral));
+    return (device != NULL);
+  }
+
+  void RemoveTimedOutDevices() { adapter_mac_->RemoveTimedOutDevices(); }
+
   bool SetMockCentralManager() {
     if (!BluetoothAdapterMac::IsLowEnergyAvailable()) {
       LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -70,6 +144,7 @@ class BluetoothAdapterMacTest : public testing::Test {
 };
 
 TEST_F(BluetoothAdapterMacTest, Poll) {
+  PollAdapter();
   EXPECT_FALSE(ui_task_runner_->GetPendingTasks().empty());
 }
 
@@ -157,6 +232,35 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilterFail) {
 
   // Check that stopScan was not called.
   EXPECT_EQ(0, [mock_central_manager_ stopScanCallCount]);
+}
+
+TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
+  base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
+  if (mock_peripheral.get() == nil)
+    return;
+  EXPECT_EQ(kTestHashAddress, GetHashAddress(mock_peripheral));
+}
+
+TEST_F(BluetoothAdapterMacTest, UpdateDevicesRemovesLowEnergyDevice) {
+  base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
+  if (mock_peripheral.get() == nil)
+    return;
+  base::scoped_nsobject<NSDictionary> advertisement_data(
+      CreateAdvertisementData());
+
+  BluetoothLowEnergyDeviceMac* device =
+      new BluetoothLowEnergyDeviceMac(mock_peripheral, advertisement_data, 0);
+  SetDeviceTimeGreaterThanTimeout(device);
+
+  EXPECT_EQ(0, NumDevices());
+  AddLowEnergyDevice(device);
+  EXPECT_EQ(1, NumDevices());
+  EXPECT_TRUE(DevicePresent(mock_peripheral));
+
+  // Check that object pointed to by |device| is deleted by the adapter.
+  RemoveTimedOutDevices();
+  EXPECT_EQ(0, NumDevices());
+  EXPECT_FALSE(DevicePresent(mock_peripheral));
 }
 
 }  // namespace device

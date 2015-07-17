@@ -83,11 +83,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   void ClassicDeviceFound(IOBluetoothDevice* device) override;
   void ClassicDiscoveryStopped(bool unexpected) override;
 
-  // BluetoothLowEnergyDiscoveryManagerMac::Observer override:
-  void LowEnergyDeviceUpdated(CBPeripheral* peripheral,
-                              NSDictionary* advertisementData,
-                              int rssi) override;
-
   // Registers that a new |device| has connected to the local host.
   void DeviceConnected(IOBluetoothDevice* device);
 
@@ -103,6 +98,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
+  // The length of time that must elapse since the last Inquiry response (on
+  // Classic devices) or call to BluetoothLowEnergyDevice::Update() (on Low
+  // Energy) before a discovered device is considered to be no longer available.
+  const static NSTimeInterval kDiscoveryTimeoutSec;
+
   friend class BluetoothAdapterMacTest;
 
   BluetoothAdapterMac();
@@ -131,10 +131,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // connected to the local host.
   void ClassicDeviceAdded(IOBluetoothDevice* device);
 
-  // Updates |devices_| to include the currently paired devices, as well as any
-  // connected, but unpaired, devices. Notifies observers if any previously
-  // paired or connected devices are no longer present.
-  void UpdateDevices();
+  // BluetoothLowEnergyDiscoveryManagerMac::Observer override:
+  void LowEnergyDeviceUpdated(CBPeripheral* peripheral,
+                              NSDictionary* advertisement_data,
+                              int rssi) override;
+
+  // Removes from |devices_| any previously paired, connected or seen devices
+  // which are no longer present. Notifies observers.
+  void RemoveTimedOutDevices();
+
+  // Updates |devices_| to include the currently paired devices and notifies
+  // observers.
+  void AddPairedDevices();
 
   std::string address_;
   std::string name_;
