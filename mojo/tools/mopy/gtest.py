@@ -19,6 +19,10 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)),
 import xvfb
 
 
+# The DISPLAY ID number used for xvfb, incremented with each use.
+XVFB_DISPLAY_ID = 9
+
+
 def set_color():
   '''Run gtests with color on TTY, unless its environment variable is set.'''
   if sys.stdout.isatty() and 'GTEST_COLOR' not in os.environ:
@@ -142,24 +146,31 @@ def _build_command_line(config, args, apptest):
 
 def _run_test_with_xvfb(config, shell, args, apptest):
   '''Run the test with xvfb; return the output or raise an exception.'''
-  # Prepending testing/xvfb.py to the command line precludes direct control of
-  # the test subprocess, and prevents easily getting output when tests timeout.
-  xvfb_proc = None
-  openbox_proc = None
   env = os.environ.copy()
-  if (config.target_os == Config.OS_LINUX and '--gtest_list_tests' not in args
-      and xvfb.should_start_xvfb(env)):
-    (xvfb_proc, openbox_proc) = xvfb.start_xvfb(env, Paths(config).build_dir)
+  if (config.target_os != Config.OS_LINUX or '--gtest_list_tests' in args
+      or not xvfb.should_start_xvfb(env)):
+    return _run_test_with_timeout(config, shell, args, apptest, env)
+
+  try:
+    # Simply prepending xvfb.py to the command line precludes direct control of
+    # test subprocesses, and prevents easily getting output when tests timeout.
+    xvfb_proc = None
+    openbox_proc = None
+    global XVFB_DISPLAY_ID
+    display_string = ':' + str(XVFB_DISPLAY_ID)
+    (xvfb_proc, openbox_proc) = xvfb.start_xvfb(env, Paths(config).build_dir,
+                                                display=display_string)
+    XVFB_DISPLAY_ID = (XVFB_DISPLAY_ID + 1) % 50000
     if not xvfb_proc or not xvfb_proc.pid:
       raise Exception('Xvfb failed to start; aborting test run.')
     if not openbox_proc or not openbox_proc.pid:
       raise Exception('Openbox failed to start; aborting test run.')
-    logging.getLogger().debug('Running with Xvfb and Openbox.')
-
-  output = _run_test_with_timeout(config, shell, args, apptest, env)
-  xvfb.kill(xvfb_proc)
-  xvfb.kill(openbox_proc)
-  return output
+    logging.getLogger().debug('Running Xvfb %s (pid %d) and Openbox (pid %d).' %
+                              (display_string, xvfb_proc.pid, openbox_proc.pid))
+    return _run_test_with_timeout(config, shell, args, apptest, env)
+  finally:
+    xvfb.kill(xvfb_proc)
+    xvfb.kill(openbox_proc)
 
 
 # TODO(msw): Determine proper test timeout durations (starting small).
