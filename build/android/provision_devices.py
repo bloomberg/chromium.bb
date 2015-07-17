@@ -34,6 +34,9 @@ sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
 import errors
 
 
+_SYSTEM_WEBVIEW_PATHS = ['/system/app/webview', '/system/app/WebViewGoogle']
+
+
 class _DEFAULT_TIMEOUTS(object):
   # L can take a while to reboot after a wipe.
   LOLLIPOP = 600
@@ -194,6 +197,18 @@ def SetProperties(device, options):
     device_settings.ConfigureContentSettings(
         device, device_settings.NETWORK_DISABLED_SETTINGS)
 
+  if options.remove_system_webview:
+    if device.HasRoot():
+      # This is required, e.g., to replace the system webview on a device.
+      device.adb.Remount()
+      device.RunShellCommand(['stop'], check_return=True)
+      device.RunShellCommand(['rm', '-rf'] + _SYSTEM_WEBVIEW_PATHS,
+                             check_return=True)
+      device.RunShellCommand(['start'], check_return=True)
+    else:
+      logging.warning('Cannot remove system webview from a non-rooted device')
+
+
 def _ConfigureLocalProperties(device, java_debug=True):
   """Set standard readonly testing device properties prior to reboot."""
   local_props = [
@@ -324,6 +339,8 @@ def main():
   parser.add_argument('--disable-java-debug', action='store_false',
                       dest='enable_java_debug', default=True,
                       help='disable Java property asserts and JNI checking')
+  parser.add_argument('--remove-system-webview', action='store_true',
+                      help='Remove the system webview from devices.')
   parser.add_argument('-t', '--target', default='Debug',
                       help='the build target (default: %(default)s)')
   parser.add_argument('-r', '--auto-reconnect', action='store_true',
