@@ -40,7 +40,7 @@ namespace blink {
 class PLATFORM_EXPORT GIFImageDecoder : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(GIFImageDecoder);
 public:
-    GIFImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
+    GIFImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);
     ~GIFImageDecoder() override;
 
     enum GIFParseQuery { GIFSizeQuery, GIFFrameCountQuery };

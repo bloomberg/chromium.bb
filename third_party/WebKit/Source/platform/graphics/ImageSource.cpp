@@ -33,9 +33,7 @@
 
 namespace blink {
 
-ImageSource::ImageSource(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
-    : m_alphaOption(alphaOption)
-    , m_gammaAndColorProfileOption(gammaAndColorProfileOption)
+ImageSource::ImageSource()
 {
 }
 
@@ -53,7 +51,7 @@ void ImageSource::setData(SharedBuffer& data, bool allDataReceived)
     // Create a decoder by sniffing the encoded data. If insufficient data bytes are available to
     // determine the encoded image type, no decoder is created.
     if (!m_decoder)
-        m_decoder = DeferredImageDecoder::create(data, m_alphaOption, m_gammaAndColorProfileOption);
+        m_decoder = DeferredImageDecoder::create(data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
 
     if (m_decoder)
         m_decoder->setData(data, allDataReceived);

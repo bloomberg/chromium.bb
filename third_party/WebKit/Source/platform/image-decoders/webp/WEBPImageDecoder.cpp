@@ -122,7 +122,7 @@ void alphaBlendNonPremultiplied(blink::ImageFrame& src, blink::ImageFrame& dst, 
 
 namespace blink {
 
-WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+WEBPImageDecoder::WEBPImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_decoder(0)
     , m_formatFlags(0)
@@ -137,7 +137,7 @@ WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption, ImageSo
     , m_repetitionCount(cAnimationLoopOnce)
     , m_decodedHeight(0)
 {
-    m_blendFunction = (alphaOption == ImageSource::AlphaPremultiplied) ? alphaBlendPremultiplied : alphaBlendNonPremultiplied;
+    m_blendFunction = (alphaOption == AlphaPremultiplied) ? alphaBlendPremultiplied : alphaBlendNonPremultiplied;
 }
 
 WEBPImageDecoder::~WEBPImageDecoder()

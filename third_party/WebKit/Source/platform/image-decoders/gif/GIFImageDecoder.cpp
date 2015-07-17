@@ -33,7 +33,7 @@
 
 namespace blink {
 
-GIFImageDecoder::GIFImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+GIFImageDecoder::GIFImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_repetitionCount(cAnimationLoopOnce)
 {

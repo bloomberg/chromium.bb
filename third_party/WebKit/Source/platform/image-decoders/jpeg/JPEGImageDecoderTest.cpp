@@ -57,7 +57,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
 
 PassOwnPtr<JPEGImageDecoder> createDecoder(size_t maxDecodedBytes)
 {
-    return adoptPtr(new JPEGImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, maxDecodedBytes));
+    return adoptPtr(new JPEGImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, maxDecodedBytes));
 }
 
 } // anonymous namespace

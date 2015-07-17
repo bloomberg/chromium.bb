@@ -45,17 +45,7 @@ class SharedBuffer;
 class PLATFORM_EXPORT ImageSource {
     WTF_MAKE_NONCOPYABLE(ImageSource);
 public:
-    enum AlphaOption {
-        AlphaPremultiplied,
-        AlphaNotPremultiplied
-    };
-
-    enum GammaAndColorProfileOption {
-        GammaAndColorProfileApplied,
-        GammaAndColorProfileIgnored
-    };
-
-    ImageSource(AlphaOption alphaOption = AlphaPremultiplied, GammaAndColorProfileOption gammaAndColorProfileOption = GammaAndColorProfileApplied);
+    ImageSource();
     ~ImageSource();
 
     // Tells the ImageSource that the Image no longer cares about decoded frame
@@ -107,9 +97,6 @@ public:
 
 private:
     OwnPtr<DeferredImageDecoder> m_decoder;
-
-    AlphaOption m_alphaOption;
-    GammaAndColorProfileOption m_gammaAndColorProfileOption;
 };
 
 } // namespace blink

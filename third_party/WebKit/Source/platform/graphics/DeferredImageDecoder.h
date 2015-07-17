@@ -32,7 +32,6 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/FrameData.h"
 #include "platform/graphics/ImageFrameGenerator.h"
-#include "platform/graphics/ImageSource.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -47,7 +46,7 @@ class PLATFORM_EXPORT DeferredImageDecoder {
     WTF_MAKE_NONCOPYABLE(DeferredImageDecoder);
 public:
     ~DeferredImageDecoder();
-    static PassOwnPtr<DeferredImageDecoder> create(const SharedBuffer& data, ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption);
+    static PassOwnPtr<DeferredImageDecoder> create(const SharedBuffer& data, ImageDecoder::AlphaOption, ImageDecoder::GammaAndColorProfileOption);
 
     static PassOwnPtr<DeferredImageDecoder> createForTesting(PassOwnPtr<ImageDecoder>);
 

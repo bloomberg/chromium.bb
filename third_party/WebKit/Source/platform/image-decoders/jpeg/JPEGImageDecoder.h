@@ -40,7 +40,7 @@ class JPEGImageReader;
 class PLATFORM_EXPORT JPEGImageDecoder : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(JPEGImageDecoder);
 public:
-    JPEGImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
+    JPEGImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);
     ~JPEGImageDecoder() override;
 
     // ImageDecoder:

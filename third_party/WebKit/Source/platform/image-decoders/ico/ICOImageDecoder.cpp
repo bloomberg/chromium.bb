@@ -44,7 +44,7 @@ namespace blink {
 static const size_t sizeOfDirectory = 6;
 static const size_t sizeOfDirEntry = 16;
 
-ICOImageDecoder::ICOImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+ICOImageDecoder::ICOImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_decodedOffset(0)
 {
@@ -192,8 +192,8 @@ bool ICOImageDecoder::decodeAtIndex(size_t index)
 
     if (!m_pngDecoders[index]) {
         m_pngDecoders[index] = adoptPtr(
-            new PNGImageDecoder(m_premultiplyAlpha ? ImageSource::AlphaPremultiplied : ImageSource::AlphaNotPremultiplied,
-                m_ignoreGammaAndColorProfile ? ImageSource::GammaAndColorProfileIgnored : ImageSource::GammaAndColorProfileApplied, m_maxDecodedBytes));
+            new PNGImageDecoder(m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied,
+                m_ignoreGammaAndColorProfile ? GammaAndColorProfileIgnored : GammaAndColorProfileApplied, m_maxDecodedBytes));
         setDataForPNGDecoderAtIndex(index);
     }
     // Fail if the size the PNGImageDecoder calculated does not match the size

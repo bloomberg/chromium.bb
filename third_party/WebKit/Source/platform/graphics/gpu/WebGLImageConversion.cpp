@@ -2026,8 +2026,8 @@ bool WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
     if ((!success || ignoreGammaAndColorProfile || (hasAlpha && !premultiplyAlpha)) && m_image->data()) {
         // Attempt to get raw unpremultiplied image data.
         OwnPtr<ImageDecoder> decoder(ImageDecoder::create(
-            *(m_image->data()), ImageSource::AlphaNotPremultiplied,
-            ignoreGammaAndColorProfile ? ImageSource::GammaAndColorProfileIgnored : ImageSource::GammaAndColorProfileApplied));
+            *(m_image->data()), ImageDecoder::AlphaNotPremultiplied,
+            ignoreGammaAndColorProfile ? ImageDecoder::GammaAndColorProfileIgnored : ImageDecoder::GammaAndColorProfileApplied));
         if (!decoder)
             return false;
         decoder->setData(m_image->data(), true);

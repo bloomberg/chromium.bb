@@ -52,7 +52,7 @@ public:
     static PassOwnPtr<MockImageDecoder> create(MockImageDecoderClient* client) { return adoptPtr(new MockImageDecoder(client)); }
 
     MockImageDecoder(MockImageDecoderClient* client)
-        : ImageDecoder(ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied, noDecodedImageByteLimit)
+        : ImageDecoder(AlphaPremultiplied, GammaAndColorProfileApplied, noDecodedImageByteLimit)
         , m_client(client)
     { }
 

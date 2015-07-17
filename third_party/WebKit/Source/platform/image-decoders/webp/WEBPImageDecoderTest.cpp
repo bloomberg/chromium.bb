@@ -56,9 +56,9 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
     return Platform::current()->unitTestSupport()->readFromFile(filePath);
 }
 
-PassOwnPtr<WEBPImageDecoder> createDecoder(ImageSource::AlphaOption alphaOption = ImageSource::AlphaNotPremultiplied)
+PassOwnPtr<WEBPImageDecoder> createDecoder(ImageDecoder::AlphaOption alphaOption = ImageDecoder::AlphaNotPremultiplied)
 {
-    return adoptPtr(new WEBPImageDecoder(alphaOption, ImageSource::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
+    return adoptPtr(new WEBPImageDecoder(alphaOption, ImageDecoder::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
 }
 
 unsigned hashSkBitmap(const SkBitmap& bitmap)
@@ -295,10 +295,10 @@ void testAlphaBlending(const char* webpFile)
     RefPtr<SharedBuffer> data = readFile(webpFile);
     ASSERT_TRUE(data.get());
 
-    OwnPtr<WEBPImageDecoder> decoderA = createDecoder(ImageSource::AlphaPremultiplied);
+    OwnPtr<WEBPImageDecoder> decoderA = createDecoder(ImageDecoder::AlphaPremultiplied);
     decoderA->setData(data.get(), true);
 
-    OwnPtr<WEBPImageDecoder> decoderB = createDecoder(ImageSource::AlphaNotPremultiplied);
+    OwnPtr<WEBPImageDecoder> decoderB = createDecoder(ImageDecoder::AlphaNotPremultiplied);
     decoderB->setData(data.get(), true);
 
     size_t frameCount = decoderA->frameCount();

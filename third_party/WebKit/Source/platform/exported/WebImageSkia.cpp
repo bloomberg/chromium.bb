@@ -48,7 +48,7 @@ namespace blink {
 WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
 {
     RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
-    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*buffer.get(), ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileIgnored));
+    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*buffer.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
     if (!decoder)
         return WebImage();
 
@@ -92,7 +92,7 @@ WebVector<WebImage> WebImage::framesFromData(const WebData& data)
     const size_t maxFrameCount = 8;
 
     RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
-    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*buffer.get(), ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileIgnored));
+    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*buffer.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
     if (!decoder)
         return WebVector<WebImage>();
 

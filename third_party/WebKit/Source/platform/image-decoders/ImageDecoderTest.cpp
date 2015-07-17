@@ -42,7 +42,7 @@ namespace blink {
 class TestImageDecoder : public ImageDecoder {
 public:
     TestImageDecoder()
-        : ImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, noDecodedImageByteLimit)
+        : ImageDecoder(AlphaNotPremultiplied, GammaAndColorProfileApplied, noDecodedImageByteLimit)
     {
     }
 

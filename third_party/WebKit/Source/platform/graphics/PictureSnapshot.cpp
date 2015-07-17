@@ -32,7 +32,6 @@
 #include "platform/graphics/PictureSnapshot.h"
 
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/ImageSource.h"
 #include "platform/graphics/LoggingCanvas.h"
 #include "platform/graphics/ProfilingCanvas.h"
 #include "platform/graphics/ReplayingCanvas.h"
@@ -56,7 +55,7 @@ PictureSnapshot::PictureSnapshot(PassRefPtr<const SkPicture> picture)
 static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
 {
     RefPtr<SharedBuffer> buffer = SharedBuffer::create(static_cast<const char*>(data), length);
-    OwnPtr<ImageDecoder> imageDecoder = ImageDecoder::create(*buffer, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileIgnored);
+    OwnPtr<ImageDecoder> imageDecoder = ImageDecoder::create(*buffer, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
     if (!imageDecoder)
         return false;
     imageDecoder->setData(buffer.get(), true);

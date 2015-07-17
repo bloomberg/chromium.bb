@@ -23,7 +23,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
 
 PassOwnPtr<BMPImageDecoder> createDecoder()
 {
-    return adoptPtr(new BMPImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
+    return adoptPtr(new BMPImageDecoder(ImageDecoder::AlphaNotPremultiplied, ImageDecoder::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
 }
 
 } // anonymous namespace

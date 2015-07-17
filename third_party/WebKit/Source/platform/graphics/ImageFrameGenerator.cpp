@@ -170,7 +170,7 @@ bool ImageFrameGenerator::decodeToYUV(SkISize componentSizes[3], void* planes[3]
     // FIXME: YUV decoding does not currently support progressive decoding.
     ASSERT(allDataReceived);
 
-    OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
+    OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     if (!decoder)
         return false;
 
@@ -280,7 +280,7 @@ bool ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, SkBitmap*
             *decoder = m_imageDecoderFactory->create().leakPtr();
 
         if (!*decoder)
-            *decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied).leakPtr();
+            *decoder = ImageDecoder::create(*data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied).leakPtr();
 
         if (!*decoder)
             return false;
@@ -345,7 +345,7 @@ bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
     if (!allDataReceived)
         return false;
 
-    OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
+    OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     if (!decoder)
         return false;
 

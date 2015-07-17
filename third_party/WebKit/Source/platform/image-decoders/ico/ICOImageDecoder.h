@@ -40,7 +40,7 @@ class PNGImageDecoder;
 // This class decodes the ICO and CUR image formats.
 class PLATFORM_EXPORT ICOImageDecoder : public ImageDecoder {
 public:
-    ICOImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
+    ICOImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);
     ~ICOImageDecoder() override;
 
     // ImageDecoder:

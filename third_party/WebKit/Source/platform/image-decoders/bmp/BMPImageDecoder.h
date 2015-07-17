@@ -39,7 +39,7 @@ namespace blink {
 // This class decodes the BMP image format.
 class PLATFORM_EXPORT BMPImageDecoder : public ImageDecoder {
 public:
-    BMPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
+    BMPImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);
 
     // ImageDecoder:
     String filenameExtension() const override { return "bmp"; }
