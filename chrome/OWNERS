@@ -17,7 +17,6 @@ per-file *.isolate=tandrii@chromium.org
 per-file *.isolate=vadimsh@chromium.org
 
 # Android OWNERS from chrome/android/OWNERS
-per-file chrome_android*.gypi=aruslan@chromium.org
 per-file chrome_android*.gypi=bauerb@chromium.org
 per-file chrome_android*.gypi=dtrainor@chromium.org
 per-file chrome_android*.gypi=miguelg@chromium.org
