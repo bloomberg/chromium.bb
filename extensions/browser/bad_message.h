@@ -19,9 +19,7 @@ namespace bad_message {
 //
 // NOTE: Do not remove or reorder elements in this list. Add new entries at the
 // end. Items may be renamed but do not change the values. We rely on the enum
-// values in histograms. Also update histograms.xml with any new values by
-// running:
-//    python tools/metrics/histograms/update_bad_message_reasons.py
+// values in histograms.
 enum BadMessageReason {
   EOG_BAD_ORIGIN = 0,
   EVG_BAD_ORIGIN = 1,
@@ -32,7 +30,8 @@ enum BadMessageReason {
   AVG_NULL_AVG = 6,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ExtensionHost becomes EH) plus a unique description of the
-  // reason.
+  // reason. After making changes, you MUST update histograms.xml by running:
+  // "python tools/metrics/histograms/update_bad_message_reasons.py"
   BAD_MESSAGE_MAX
 };
 
