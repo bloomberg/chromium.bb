@@ -407,7 +407,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     # we're using shortened versions).
     self.assertRaises(cros_patch.BrokenCQDepends,
                       self._CheckPaladin, git1, cid1,
-                      ['1234567'], 'CQ-DEPEND=%s' % '1234567')
+                      ['123456789'], 'CQ-DEPEND=%s' % '123456789')
     # Single key, gerrit number, internal.
     self._CheckPaladin(git1, cid1, ['*123'],
                        'CQ-DEPEND=%s' % '*123')
@@ -992,7 +992,7 @@ class TestFormatting(cros_test_lib.TestCase):
       self.assertTrue(cros_patch.ParsePatchDep(val) is not None)
 
     self._assertBad(cros_patch.ParsePatchDep,
-                    ['1454623', 'I47ea3', 'i47ea3'.ljust(41, '0')])
+                    ['145462399', 'I47ea3', 'i47ea3'.ljust(41, '0')])
 
 
 class MockPatchBase(cros_test_lib.MockTestCase):

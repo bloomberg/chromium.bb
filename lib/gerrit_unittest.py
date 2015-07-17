@@ -213,9 +213,9 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
                       [gpatch.change_id, invalid_change_id])
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
-                      ['12345', gpatch.gerrit_number])
+                      ['9876543', gpatch.gerrit_number])
     self.assertRaises(gerrit.GerritException, gerrit.GetGerritPatchInfo,
-                      [gpatch.gerrit_number, '12345'])
+                      [gpatch.gerrit_number, '9876543'])
 
     # Simple query by project/changeid/sha1.
     patch_info = helper.GrabPatchFromGerrit(gpatch.project, gpatch.change_id,
