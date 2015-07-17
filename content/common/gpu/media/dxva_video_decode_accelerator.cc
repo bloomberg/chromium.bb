@@ -258,14 +258,14 @@ HRESULT CreateCOMObjectFromDll(HMODULE dll, const CLSID& clsid, const IID& iid,
   GetClassObject get_class_object = reinterpret_cast<GetClassObject>(
       GetProcAddress(dll, "DllGetClassObject"));
   RETURN_ON_FAILURE(
-      get_class_object, "Failed to get DllGetClassObject pointer", false);
+      get_class_object, "Failed to get DllGetClassObject pointer", E_FAIL);
 
   base::win::ScopedComPtr<IClassFactory> factory;
   HRESULT hr = get_class_object(
       clsid,
       __uuidof(IClassFactory),
       factory.ReceiveVoid());
-  RETURN_ON_HR_FAILURE(hr, "DllGetClassObject failed", false);
+  RETURN_ON_HR_FAILURE(hr, "DllGetClassObject failed", hr);
 
   hr = factory->CreateInstance(NULL, iid, object);
   return hr;
