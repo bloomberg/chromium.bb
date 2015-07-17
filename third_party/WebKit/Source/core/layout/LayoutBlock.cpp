@@ -347,6 +347,34 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
     }
 }
 
+inline static void invalidateDisplayItemClientForStartOfContinuationsIfNeeded(const LayoutBlock& block)
+{
+    // If the block is a continuation or containing block of an inline continuation, invalidate the
+    // start object of the continuations if it has focus ring because change of continuation may change
+    // the shape of the focus ring.
+    if (!block.isAnonymous())
+        return;
+
+    LayoutObject* startOfContinuations = nullptr;
+    if (LayoutInline* inlineElementContinuation = block.inlineElementContinuation()) {
+        // This block is an anonymous block continuation.
+        startOfContinuations = inlineElementContinuation->node()->layoutObject();
+    } else if (LayoutObject* firstChild = block.firstChild()) {
+        // This block is the anonymous containing block of an inline element continuation.
+        if (firstChild->isElementContinuation())
+            startOfContinuations = firstChild->node()->layoutObject();
+    }
+    if (startOfContinuations && startOfContinuations->styleRef().outlineStyleIsAuto())
+        startOfContinuations->invalidateDisplayItemClient(*startOfContinuations);
+}
+
+void LayoutBlock::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
+{
+    LayoutBox::invalidateDisplayItemClients(paintInvalidationContainer);
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+    invalidateDisplayItemClientForStartOfContinuationsIfNeeded(*this);
+}
+
 void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (beforeChild && beforeChild->parent() != this) {

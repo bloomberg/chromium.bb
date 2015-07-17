@@ -297,6 +297,7 @@ protected:
     bool isInlineBlockOrInlineTable() const final { return isInline() && isReplaced(); }
 
     void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState) override;
+    void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const override;
 
 private:
     LayoutObjectChildList* virtualChildren() final { return children(); }
