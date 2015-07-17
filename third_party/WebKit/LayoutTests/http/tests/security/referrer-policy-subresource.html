@@ -3,12 +3,21 @@
 <head>
     <script src="/resources/testharness.js"></script>
     <script src="/resources/testharnessreport.js"></script>
-    <meta name="referrer" content="no-referrer">
 </head>
 <body>
-    <script src="resources/referrer-policy-script.php"></script>
+    <script src="resources/referrer-policy-script.php?1"></script>
+    <meta name="referrer" content="no-referrer">
     <script>
-        // Test that referrer policies are applied on subresources.
+        // Test that meta referrer policies are not applied on subresources
+        // loaded before the policy.
+        test(function () {
+            assert_not_equals("none", scriptReferrer);
+        }, "Meta referrer policy is not set on subresource before meta tag");
+    </script>
+    <script src="resources/referrer-policy-script.php?2"></script>
+    <script>
+        // Test that meta referrer policies are applied on subresources
+        // loaded after the policy.
         // crbug.com/508310
         test(function () {
             assert_equals("none", scriptReferrer);
