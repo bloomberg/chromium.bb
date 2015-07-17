@@ -111,11 +111,6 @@ public class MockAccountManager implements AccountManagerDelegate {
     }
 
     @Override
-    public Account[] getAccounts() {
-        return getAccountsByType(null);
-    }
-
-    @Override
     public Account[] getAccountsByType(@Nullable String type) {
         if (!AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(type)) {
             throw new IllegalArgumentException("Invalid account type: " + type);
@@ -137,13 +132,6 @@ public class MockAccountManager implements AccountManagerDelegate {
             }
             return accounts;
         }
-    }
-
-    @Override
-    public boolean addAccountExplicitly(Account account, String password, Bundle userdata) {
-        AccountHolder accountHolder =
-                AccountHolder.create().account(account).password(password).build();
-        return addAccountHolderExplicitly(accountHolder, false);
     }
 
     public boolean addAccountHolderExplicitly(AccountHolder accountHolder) {
@@ -184,69 +172,6 @@ public class MockAccountManager implements AccountManagerDelegate {
             postAsyncAccountChangedEvent();
         }
         return result;
-    }
-
-    @Override
-    public String getPassword(Account account) {
-        return getAccountHolder(account).getPassword();
-    }
-
-    @Override
-    public void setPassword(Account account, String password) {
-        mAccounts.add(getAccountHolder(account).withPassword(password));
-    }
-
-    @Override
-    public void clearPassword(Account account) {
-        setPassword(account, null);
-    }
-
-    @Override
-    public AccountManagerFuture<Bundle> confirmCredentials(Account account, Bundle bundle,
-            Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
-        String password = bundle.getString(AccountManager.KEY_PASSWORD);
-        if (password == null) {
-            throw new IllegalArgumentException("Password is null");
-        }
-        final AccountHolder accountHolder = getAccountHolder(account);
-        final boolean correctPassword = password.equals(accountHolder.getPassword());
-        return runTask(mExecutor, new AccountManagerTask<Bundle>(handler, callback,
-                new Callable<Bundle>() {
-                    @Override
-                    public Bundle call() throws Exception {
-                        Bundle result = new Bundle();
-                        result.putString(AccountManager.KEY_ACCOUNT_NAME,
-                                accountHolder.getAccount().name);
-                        result.putString(
-                                AccountManager.KEY_ACCOUNT_TYPE,
-                                AccountManagerHelper.GOOGLE_ACCOUNT_TYPE);
-                        result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, correctPassword);
-                        return result;
-                    }
-                }));
-    }
-
-    @Override
-    public String blockingGetAuthToken(Account account, String authTokenType,
-            boolean notifyAuthFailure)
-            throws OperationCanceledException, IOException, AuthenticatorException {
-        AccountHolder accountHolder = getAccountHolder(account);
-        if (accountHolder.hasBeenAccepted(authTokenType)) {
-            // If account has already been accepted we can just return the auth token.
-            return internalGenerateAndStoreAuthToken(accountHolder, authTokenType);
-        }
-        AccountAuthTokenPreparation prepared = getPreparedPermission(account, authTokenType);
-        Intent intent = newGrantCredentialsPermissionIntent(false, account, authTokenType);
-        waitForActivity(mContext, intent);
-        applyPreparedPermission(prepared);
-        return internalGenerateAndStoreAuthToken(accountHolder, authTokenType);
-    }
-
-    @Override
-    public AccountManagerFuture<Bundle> getAuthToken(Account account, String authTokenType,
-            Bundle options, Activity activity, AccountManagerCallback<Bundle> callback,
-            Handler handler) {
-        return getAuthTokenFuture(account, authTokenType, activity, callback, handler);
     }
 
     @Override
@@ -310,11 +235,6 @@ public class MockAccountManager implements AccountManagerDelegate {
             }
         }
         return ah.getAuthToken(authTokenType);
-    }
-
-    @Override
-    public String peekAuthToken(Account account, String authTokenType) {
-        return getAccountHolder(account).getAuthToken(authTokenType);
     }
 
     @Override

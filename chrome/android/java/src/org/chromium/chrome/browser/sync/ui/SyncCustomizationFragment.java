@@ -4,13 +4,6 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
-import android.accounts.OperationCanceledException;
-import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -42,9 +35,7 @@ import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.PassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
-import org.chromium.sync.signin.AccountManagerHelper;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -376,41 +367,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             // Re-display our config UI to properly reflect the new state.
             updateSyncState();
         }
-    }
-
-    private void handleEncryptWithGaia(final String passphrase) {
-        AccountManager accountManager = (AccountManager) getActivity().getSystemService(
-                Activity.ACCOUNT_SERVICE);
-        String username = getArguments().getString(ARGUMENT_ACCOUNT);
-        AccountManagerCallback<Bundle> callback = new AccountManagerCallback<Bundle>() {
-            @Override
-            public void run(AccountManagerFuture<Bundle> future) {
-                boolean validPassword = false;
-                try {
-                    Bundle result = future.getResult();
-                    validPassword = result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT);
-                } catch (OperationCanceledException e) {
-                    // TODO(jgreenwald): notify user that we're unable to
-                    // validate passphrase?
-                    Log.e(TAG, "unable to verify password", e);
-                } catch (AuthenticatorException e) {
-                    Log.e(TAG, "unable to verify password", e);
-                } catch (IOException e) {
-                    Log.e(TAG, "unable to verify password", e);
-                }
-
-                Log.d(TAG, "GAIA password valid: " + validPassword);
-                if (validPassword) {
-                    configureEncryption(passphrase, true);
-                } else {
-                    notifyInvalidPassphrase();
-                }
-            }
-        };
-        Account account = AccountManagerHelper.createAccountFromName(username);
-        Bundle options = new Bundle();
-        options.putString(AccountManager.KEY_PASSWORD, passphrase);
-        accountManager.confirmCredentials(account, options, null, callback, null);
     }
 
     private void handleEncryptWithCustomPassphrase(String passphrase) {

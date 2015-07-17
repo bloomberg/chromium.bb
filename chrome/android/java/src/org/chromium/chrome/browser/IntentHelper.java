@@ -41,7 +41,7 @@ public abstract class IntentHelper {
     static void sendEmail(Context context, String email, String subject, String body,
             String chooserTitle, String fileToAttach) {
         if (TextUtils.isEmpty(email)) {
-            Account[] accounts = AccountManagerHelper.get(context).getAccounts();
+            Account[] accounts = AccountManagerHelper.get(context).getGoogleAccounts();
             if (accounts != null && accounts.length == 1
                     && Patterns.EMAIL_ADDRESS.matcher(accounts[0].name).matches()) {
                 email = accounts[0].name;

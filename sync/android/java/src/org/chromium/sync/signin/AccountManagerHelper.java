@@ -135,16 +135,6 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Returns all accounts on the device, including non-Google accounts. Unless it is really
-     * necessary to get absolutely all accounts on the device, use {@link #getGoogleAccounts}.
-     * @return an array of accounts.
-     */
-    public Account[] getAccounts() {
-        if (!hasGetAccountsPermission()) return new Account[]{};
-        return mAccountManager.getAccounts();
-    }
-
-    /**
      * Returns all Google accounts on the device.
      * @return an array of accounts.
      */
@@ -353,33 +343,6 @@ public class AccountManagerHelper {
         } else {
             NetworkChangeNotifier.addConnectionTypeObserver(retry);
         }
-    }
-
-    /**
-     * Invalidates the old token (if non-null/non-empty) and synchronously generates a new one.
-     * Also notifies the user (via status bar) if any user action is required. The method will
-     * return null if any user action is required to generate the new token.
-     *
-     * - Assumes that the account is a valid account.
-     * - Should not be called on the main thread.
-     */
-    @Deprecated
-    public String getNewAuthToken(Account account, String authToken, String authTokenType) {
-        invalidateAuthToken(authToken);
-
-        // TODO(dsmyers): consider reimplementing using an AccountManager function with an
-        // explicit timeout.
-        // Bug: https://code.google.com/p/chromium/issues/detail?id=172394.
-        try {
-            return mAccountManager.blockingGetAuthToken(account, authTokenType, true);
-        } catch (OperationCanceledException e) {
-            Log.w(TAG, "Auth token - operation cancelled", e);
-        } catch (AuthenticatorException e) {
-            Log.w(TAG, "Auth token - authenticator exception", e);
-        } catch (IOException e) {
-            Log.w(TAG, "Auth token - IO exception", e);
-        }
-        return null;
     }
 
     /**
