@@ -16,9 +16,9 @@ var pluginLoadStarted = false;
  * Otherwise, does nothing.
  */
 function sendResult() {
-  if (!readyToSendResult)
+  if (!readyToSendResult || !pluginLoadStarted)
     return;
-  window.domAutomationController.send(pluginLoadStarted);
+  window.domAutomationController.send(true);
   readyToSendResult = false;
 }
 
