@@ -1810,7 +1810,6 @@
         'safe_browsing%': 2,
         'enable_web_speech%': 0,
         'java_bridge%': 1,
-        'build_ffmpegsumo%': 0,
         'use_allocator%': 'none',
 
         # Disable Native Client.
