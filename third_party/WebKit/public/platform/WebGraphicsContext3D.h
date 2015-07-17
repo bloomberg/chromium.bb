@@ -276,7 +276,7 @@ public:
     virtual WGC3Dint getUniformLocation(WebGLId program, const WGC3Dchar* name) = 0;
     virtual void getVertexAttribfv(WGC3Duint index, WGC3Denum pname, WGC3Dfloat* value) = 0;
     virtual void getVertexAttribiv(WGC3Duint index, WGC3Denum pname, WGC3Dint* value) = 0;
-    virtual WGC3Dsizeiptr getVertexAttribOffset(WGC3Duint index, WGC3Denum pname) = 0;
+    virtual WGC3Dintptr getVertexAttribOffset(WGC3Duint index, WGC3Denum pname) = 0;
 
     virtual void hint(WGC3Denum target, WGC3Denum mode) = 0;
     virtual WGC3Dboolean isBuffer(WebGLId buffer) = 0;

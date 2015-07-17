@@ -581,7 +581,7 @@ typedef unrestricted float GLclampf;
 
     [CallWith=ScriptState] any getVertexAttrib(GLuint index, GLenum pname);
 
-    GLsizeiptr getVertexAttribOffset(GLuint index, GLenum pname);
+    GLintptr getVertexAttribOffset(GLuint index, GLenum pname);
 
     void hint(GLenum target, GLenum mode);
     GLboolean isBuffer(WebGLBuffer? buffer);

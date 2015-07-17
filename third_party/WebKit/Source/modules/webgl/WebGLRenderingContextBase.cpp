@@ -3452,7 +3452,7 @@ long long WebGLRenderingContextBase::getVertexAttribOffset(GLuint index, GLenum 
         synthesizeGLError(GL_INVALID_ENUM, "getVertexAttribOffset", "invalid parameter name");
         return 0;
     }
-    GLsizeiptr result = webContext()->getVertexAttribOffset(index, pname);
+    GLintptr result = webContext()->getVertexAttribOffset(index, pname);
     return static_cast<long long>(result);
 }
 

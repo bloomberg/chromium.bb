@@ -29,8 +29,8 @@ public:
     ~WebGL2RenderingContextBase() override;
 
     /* Buffer objects */
-    void copyBufferSubData(GLenum, GLenum, GLintptr, GLintptr, GLsizeiptr);
-    void getBufferSubData(GLenum target, GLintptr offset, DOMArrayBuffer* returnedData);
+    void copyBufferSubData(GLenum, GLenum, long long, long long, long long);
+    void getBufferSubData(GLenum target, long long offset, DOMArrayBuffer* returnedData);
 
     /* Framebuffer objects */
     void blitFramebuffer(GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum);
@@ -85,13 +85,13 @@ public:
     void vertexAttribI4iv(GLuint, const Vector<GLint>&);
     void vertexAttribI4ui(GLuint, GLuint, GLuint, GLuint, GLuint);
     void vertexAttribI4uiv(GLuint, const Vector<GLuint>&);
-    void vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, GLintptr offset);
+    void vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, long long offset);
 
     /* Writing to the drawing buffer */
     void vertexAttribDivisor(GLuint, GLuint);
     void drawArraysInstanced(GLenum, GLint, GLsizei, GLsizei);
-    void drawElementsInstanced(GLenum, GLsizei, GLenum, GLintptr, GLsizei);
-    void drawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, GLintptr offset);
+    void drawElementsInstanced(GLenum, GLsizei, GLenum, long long, GLsizei);
+    void drawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, long long offset);
 
     /* Multiple Render Targets */
     void drawBuffers(const Vector<GLenum>&);
@@ -144,7 +144,7 @@ public:
 
     /* Uniform Buffer Objects and Transform Feedback Buffers */
     void bindBufferBase(GLenum, GLuint, WebGLBuffer*);
-    void bindBufferRange(GLenum, GLuint, WebGLBuffer*, GLintptr, GLsizeiptr);
+    void bindBufferRange(GLenum, GLuint, WebGLBuffer*, long long, long long);
     ScriptValue getIndexedParameter(ScriptState*, GLenum, GLuint);
     Vector<GLuint> getUniformIndices(WebGLProgram*, const Vector<String>&);
     Vector<GLint> getActiveUniforms(WebGLProgram*, const Vector<GLuint>&, GLenum);

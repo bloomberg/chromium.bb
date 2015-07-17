@@ -89,10 +89,16 @@ void WebGL2RenderingContextBase::initializeNewContext()
     WebGLRenderingContextBase::initializeNewContext();
 }
 
-void WebGL2RenderingContextBase::copyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
+void WebGL2RenderingContextBase::copyBufferSubData(GLenum readTarget, GLenum writeTarget, long long readOffset, long long writeOffset, long long size)
 {
     if (isContextLost())
         return;
+
+    if (!validateValueFitNonNegInt32("copyBufferSubData", "readOffset", readOffset)
+        || !validateValueFitNonNegInt32("copyBufferSubData", "writeOffset", writeOffset)
+        || !validateValueFitNonNegInt32("copyBufferSubData", "size", size)) {
+        return;
+    }
 
     WebGLBuffer* readBuffer = validateBufferDataTarget("copyBufferSubData", readTarget);
     if (!readBuffer)
@@ -111,10 +117,10 @@ void WebGL2RenderingContextBase::copyBufferSubData(GLenum readTarget, GLenum wri
     if (writeBuffer->getInitialTarget() == 0)
         writeBuffer->setInitialTarget(readBuffer->getInitialTarget());
 
-    webContext()->copyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size);
+    webContext()->copyBufferSubData(readTarget, writeTarget, static_cast<GLintptr>(readOffset), static_cast<GLintptr>(writeOffset), static_cast<GLsizeiptr>(size));
 }
 
-void WebGL2RenderingContextBase::getBufferSubData(GLenum target, GLintptr offset, DOMArrayBuffer* returnedData)
+void WebGL2RenderingContextBase::getBufferSubData(GLenum target, long long offset, DOMArrayBuffer* returnedData)
 {
     if (isContextLost())
         return;
@@ -124,12 +130,11 @@ void WebGL2RenderingContextBase::getBufferSubData(GLenum target, GLintptr offset
         return;
     }
 
-    if (offset < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, "getBufferSubData", "offset must be greater than 0");
+    if (!validateValueFitNonNegInt32("getBufferSubData", "offset", offset)) {
         return;
     }
 
-    void* mappedData = webContext()->mapBufferRange(target, offset, returnedData->byteLength(), GL_MAP_READ_BIT);
+    void* mappedData = webContext()->mapBufferRange(target, static_cast<GLintptr>(offset), returnedData->byteLength(), GL_MAP_READ_BIT);
 
     if (!mappedData)
         return;
@@ -890,7 +895,7 @@ void WebGL2RenderingContextBase::vertexAttribI4uiv(GLuint index, const Vector<GL
     attribValue.value.uintValue[3] = value[3];
 }
 
-void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, GLintptr offset)
+void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, long long offset)
 {
     if (isContextLost())
         return;
@@ -964,7 +969,7 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode, GLint first, G
     markContextChanged(CanvasChanged);
 }
 
-void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei instanceCount)
+void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei instanceCount)
 {
     if (!validateDrawElements("drawElementsInstanced", mode, count, type, offset))
         return;
@@ -980,7 +985,7 @@ void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei coun
     markContextChanged(CanvasChanged);
 }
 
-void WebGL2RenderingContextBase::drawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, GLintptr offset)
+void WebGL2RenderingContextBase::drawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, long long offset)
 {
     if (!validateDrawElements("drawRangeElements", mode, count, type, offset))
         return;
@@ -1545,12 +1550,17 @@ void WebGL2RenderingContextBase::bindBufferBase(GLenum target, GLuint index, Web
     webContext()->bindBufferBase(target, index, objectOrZero(buffer));
 }
 
-void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, WebGLBuffer* buffer, GLintptr offset, GLsizeiptr size)
+void WebGL2RenderingContextBase::bindBufferRange(GLenum target, GLuint index, WebGLBuffer* buffer, long long offset, long long size)
 {
     if (isContextLost() || !validateWebGLObject("bindBufferRange", buffer))
         return;
 
-    webContext()->bindBufferRange(target, index, objectOrZero(buffer), offset, size);
+    if (!validateValueFitNonNegInt32("bindBufferRange", "offset", offset)
+        || !validateValueFitNonNegInt32("bindBufferRange", "size", size)) {
+        return;
+    }
+
+    webContext()->bindBufferRange(target, index, objectOrZero(buffer), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size));
 }
 
 ScriptValue WebGL2RenderingContextBase::getIndexedParameter(ScriptState* scriptState, GLenum target, GLuint index)
