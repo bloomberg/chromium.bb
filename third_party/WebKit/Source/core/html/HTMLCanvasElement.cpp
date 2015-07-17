@@ -463,28 +463,43 @@ const AtomicString HTMLCanvasElement::imageSourceURL() const
     return AtomicString(toDataURLInternal("image/png", 0, FrontBuffer));
 }
 
+ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer) const
+{
+    ImageData* imageData;
+    if (is3D()) {
+        // Get non-premultiplied data because of inaccurate premultiplied alpha conversion of buffer()->toDataURL().
+        imageData = m_context->paintRenderingResultsToImageData(sourceBuffer);
+        if (imageData)
+            return imageData;
+
+        m_context->paintRenderingResultsToCanvas(sourceBuffer);
+        imageData = ImageData::create(m_size);
+        SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+        buffer()->bitmap().readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+        return imageData;
+    }
+
+    imageData = ImageData::create(m_size);
+
+    if (m_context) {
+        ASSERT(m_context->is2d());
+        SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+        buffer()->bitmap().readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
+    }
+    return imageData;
+}
+
 String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality, SourceDrawingBuffer sourceBuffer) const
 {
     if (!isPaintable())
         return String("data:,");
 
     String encodingMimeType = toEncodingMimeType(mimeType);
-    if (!m_context) {
-        ImageData* imageData = ImageData::create(m_size);
-        ScopedDisposal<ImageData> disposer(imageData);
-        return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
-    }
 
-    if (m_context->is3d()) {
-        // Get non-premultiplied data because of inaccurate premultiplied alpha conversion of buffer()->toDataURL().
-        ImageData* imageData = m_context->paintRenderingResultsToImageData(sourceBuffer);
-        ScopedDisposal<ImageData> disposer(imageData);
-        if (imageData)
-            return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
-        m_context->paintRenderingResultsToCanvas(sourceBuffer);
-    }
+    ImageData* imageData = toImageData(sourceBuffer);
+    ScopedDisposal<ImageData> disposer(imageData);
 
-    return buffer()->toDataURL(encodingMimeType, quality);
+    return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
 }
 
 String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState) const
