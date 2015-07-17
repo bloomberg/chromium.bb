@@ -7,6 +7,7 @@
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -248,6 +249,16 @@ TEST_F(ExtensionSyncTypeTest, DontSyncDefault) {
                             Manifest::INTERNAL, base::FilePath(),
                             Extension::WAS_INSTALLED_BY_DEFAULT));
   EXPECT_FALSE(sync_helper::IsSyncable(extension_default.get()));
+}
+
+TEST_F(ExtensionSyncTypeTest, DontSyncExtensionInDoNotSyncList) {
+  scoped_refptr<Extension> extension(
+      MakeSyncTestExtension(EXTENSION, GURL(), GURL(), Manifest::INTERNAL,
+                            base::FilePath(), Extension::NO_FLAGS));
+  EXPECT_TRUE(extension->is_extension());
+  EXPECT_TRUE(sync_helper::IsSyncable(extension.get()));
+  SimpleFeature::ScopedWhitelistForTest whitelist(extension->id());
+  EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
 }
 
 // These plugin tests don't make sense on Chrome OS, where extension plugins
