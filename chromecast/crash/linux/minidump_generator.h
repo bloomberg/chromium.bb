@@ -9,15 +9,12 @@
 
 namespace chromecast {
 
-// An interface to generate a minidump at a given filepath.
 class MinidumpGenerator {
  public:
   virtual ~MinidumpGenerator() {}
 
-  // Generates a minidump file at |minidump_path|. This method should only be
-  // called on a thread without IO restrictions, as non-trivial implementations
-  // will almost certainly require IO permissions. Returns true if minidump was
-  // successfully generated.
+  // Interface to generate a minidump file in given path.
+  // This is called inside MinidumpWriter::DoWorkLocked().
   virtual bool Generate(const std::string& minidump_path) = 0;
 };
 

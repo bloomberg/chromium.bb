@@ -153,10 +153,12 @@ int SynchronizedMinidumpManager::ParseLockFile() {
   // Grab each entry.
   while (std::getline(in, entry)) {
     scoped_ptr<DumpInfo> info(new DumpInfo(entry));
-    if (info->valid() && info->crashed_process_dump().size() > 0)
+    if (info->valid() && info->crashed_process_dump().size() > 0) {
       dumps->push_back(info.Pass());
-    else
-      LOG(WARNING) << "Ignoring invalid entry: " << entry;
+    } else {
+      LOG(WARNING) << "Entry is not valid: " << entry;
+      return -1;
+    }
   }
 
   dump_metadata_ = dumps.Pass();
