@@ -44,8 +44,8 @@ size_t CustomElementProcessingStack::s_elementQueueEnd = kNumSentinels;
 
 CustomElementProcessingStack& CustomElementProcessingStack::instance()
 {
-    DEFINE_STATIC_LOCAL(CustomElementProcessingStack, instance, ());
-    return instance;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CustomElementProcessingStack>, instance, (adoptPtrWillBeNoop(new CustomElementProcessingStack())));
+    return *instance;
 }
 
 // Dispatches callbacks when popping the processing stack.
@@ -90,6 +90,11 @@ void CustomElementProcessingStack::enqueue(CustomElementCallbackQueue* callbackQ
 
     m_flattenedProcessingStack.append(callbackQueue);
     ++s_elementQueueEnd;
+}
+
+DEFINE_TRACE(CustomElementProcessingStack)
+{
+    visitor->trace(m_flattenedProcessingStack);
 }
 
 } // namespace blink
