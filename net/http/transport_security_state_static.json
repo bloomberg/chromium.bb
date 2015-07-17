@@ -2222,7 +2222,6 @@
     { "name": "lapetition.be", "include_subdomains": true, "mode": "force-https" },
     { "name": "maartenvandekamp.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "mcard.vn", "include_subdomains": true, "mode": "force-https" },
-    { "name": "mccrypto.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "mcnext.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "micropple.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "munki.org", "include_subdomains": true, "mode": "force-https" },
