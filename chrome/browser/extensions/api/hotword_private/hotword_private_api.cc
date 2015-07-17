@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_audio_history_handler.h"
@@ -17,11 +18,16 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "extensions/browser/event_router.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/devicetype_utils.h"
+#endif
 
 namespace extensions {
 
@@ -328,6 +334,15 @@ bool HotwordPrivateStopTrainingFunction::RunSync() {
 }
 
 bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
+#if defined(OS_CHROMEOS)
+  base::string16 device_type = ash::GetChromeOSDeviceName();
+#else
+  base::string16 product_name =
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+  base::string16 device_type =
+      l10n_util::GetStringFUTF16(IDS_HOTWORD_BROWSER_NAME, product_name);
+#endif
+
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
 
   localized_strings->SetString(
@@ -344,11 +359,13 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_INTRO_SUBTITLE));
   localized_strings->SetString(
       "introDescription",
-      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION));
+      l10n_util::GetStringFUTF16(IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION,
+                                 device_type));
   localized_strings->SetString(
       "introDescriptionAudioHistoryEnabled",
-      l10n_util::GetStringUTF16(
-          IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION_AUDIO_HISTORY_ENABLED));
+      l10n_util::GetStringFUTF16(
+          IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION_AUDIO_HISTORY_ENABLED,
+          device_type));
   localized_strings->SetString(
       "introStart",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_INTRO_START));
@@ -377,11 +394,12 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
       "error",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_ERROR));
   localized_strings->SetString(
-      "trainingTitle",
-      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_TITLE));
+      "trainingTitle", l10n_util::GetStringFUTF16(
+                           IDS_HOTWORD_OPT_IN_TRAINING_TITLE, device_type));
   localized_strings->SetString(
       "trainingDescription",
-      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_DESCRIPTION));
+      l10n_util::GetStringFUTF16(IDS_HOTWORD_OPT_IN_TRAINING_DESCRIPTION,
+                                 device_type));
   localized_strings->SetString(
       "trainingSpeak",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_SPEAK));
@@ -408,7 +426,8 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_TITLE));
   localized_strings->SetString(
       "finishedListIntro",
-      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_LIST_INTRO));
+      l10n_util::GetStringFUTF16(IDS_HOTWORD_OPT_IN_FINISHED_LIST_INTRO,
+                                 device_type));
   localized_strings->SetString(
       "finishedListItem1",
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_LIST_ITEM_1));

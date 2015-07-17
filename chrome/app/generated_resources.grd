@@ -15560,7 +15560,10 @@ After you create a new supervised user, you can manage their settings at any tim
         This option disables support in Cast Streaming for encoding video streams using platform hardware.
       </message>
 
-     <!-- Hotword Audio Verification (opt-in) App strings. -->
+      <!-- Hotword Audio Verification (opt-in) App strings. -->
+      <message name="IDS_HOTWORD_BROWSER_NAME" desc="Name of the device when we're not running in CrOS">
+        <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chromium</ex></ph> browser
+      </message>
       <message name="IDS_HOTWORD_OPT_IN_CLOSE" desc="Label for the close button for the 'Ok Google' hotword opt-in dialog.">
         Close
       </message>
@@ -15574,10 +15577,10 @@ After you create a new supervised user, you can manage their settings at any tim
         Say "Ok Google" when your screen is on and unlocked
       </message>
       <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION" desc="Description explaining the steps required to continue through the hotword opt-in process.">
-        To make this happen, you'll need to enable Voice &amp; Audio Activity and train your Chromebook in the following steps.
+        To make this happen, you'll need to enable Voice &amp; Audio Activity and train your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> in the following steps.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION_AUDIO_HISTORY_ENABLED" desc="Description explaining the steps required to continue through the hotword opt-in process.">
-        To make this happen, you'll need to train your Chromebook in the following step.
+        To make this happen, you'll need to train your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> in the following step.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_INTRO_START" desc="Text on the start button for the 'Ok Google' hotword opt-in dialog.">
         Get Started
@@ -15604,10 +15607,10 @@ After you create a new supervised user, you can manage their settings at any tim
         Something went wrong. Please try again.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_TRAINING_TITLE" desc="Title of the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        Let's train your Chromebook
+        Let's train your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
       <message name="IDS_HOTWORD_OPT_IN_TRAINING_DESCRIPTION" desc="Description on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
-        To help your Chromebook respond to you and for reliable and easy access to voice search, you need to teach Google the sound of your voice.
+        To help your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> respond to you and for reliable and easy access to voice search, you need to teach Google the sound of your voice.
       </message>
       <message name="IDS_HOTWORD_OPT_IN_TRAINING_SPEAK" desc="The text describing the action the user should take on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
         Just say "Ok Google" three times
@@ -15634,7 +15637,7 @@ After you create a new supervised user, you can manage their settings at any tim
         You're all set!
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISHED_LIST_INTRO" desc="The text at the beginning of the list describing the Chromebook's new abilities. ">
-        Your Chromebook can now:
+        Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can now:
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISHED_LIST_ITEM_1" desc="The text of the first item in the list of Chromebook abilities. ">
         Recognize your voice when you say "Ok Google"
