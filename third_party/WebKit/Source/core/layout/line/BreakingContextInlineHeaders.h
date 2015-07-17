@@ -59,7 +59,7 @@ public:
         , m_lastObject(m_current.object())
         , m_nextObject(nullptr)
         , m_currentStyle(nullptr)
-        , m_blockStyle(block->style())
+        , m_blockStyle(block.style())
         , m_lineInfo(inLineInfo)
         , m_layoutTextInfo(inLayoutTextInfo)
         , m_lastFloatFromPreviousLine(inLastFloatFromPreviousLine)
@@ -78,7 +78,7 @@ public:
         , m_floatsFitOnLine(true)
         , m_collapseWhiteSpace(false)
         , m_startingNewParagraph(m_lineInfo.previousLineBrokeCleanly())
-        , m_allowImagesToBreak(!block->document().inQuirksMode() || !block->isTableCell() || !m_blockStyle->logicalWidth().isIntrinsicOrAuto())
+        , m_allowImagesToBreak(!block.document().inQuirksMode() || !block.isTableCell() || !m_blockStyle->logicalWidth().isIntrinsicOrAuto())
         , m_atEnd(false)
         , m_lineMidpointState(resolver.midpointState())
     {
@@ -195,17 +195,17 @@ inline bool alwaysRequiresLineBox(LayoutObject* flow)
 
 inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo = LineInfo(), WhitespacePosition whitespacePosition = LeadingWhitespace)
 {
-    if (it.object()->isFloatingOrOutOfFlowPositioned())
+    if (it.object().isFloatingOrOutOfFlowPositioned())
         return false;
 
-    if (it.object()->isLayoutInline() && !alwaysRequiresLineBox(it.object()) && !requiresLineBoxForContent(toLayoutInline(it.object()), lineInfo))
+    if (it.object().isLayoutInline() && !alwaysRequiresLineBox(it.object()) && !requiresLineBoxForContent(toLayoutInline(it.object()), lineInfo))
         return false;
 
-    if (!shouldCollapseWhiteSpace(it.object()->styleRef(), lineInfo, whitespacePosition) || it.object()->isBR())
+    if (!shouldCollapseWhiteSpace(it.object().styleRef(), lineInfo, whitespacePosition) || it.object().isBR())
         return true;
 
     UChar current = it.current();
-    bool notJustWhitespace = current != spaceCharacter && current != tabulationCharacter && current != softHyphenCharacter && (current != newlineCharacter || it.object()->preservesNewline());
+    bool notJustWhitespace = current != spaceCharacter && current != tabulationCharacter && current != softHyphenCharacter && (current != newlineCharacter || it.object().preservesNewline());
     return notJustWhitespace || isEmptyInline(LineLayoutItem(it.object()));
 }
 
@@ -251,15 +251,15 @@ inline void BreakingContext::skipTrailingWhitespace(InlineIterator& iterator, co
 
 inline void BreakingContext::initializeForCurrentObject()
 {
-    m_currentStyle = m_current.object()->style();
+    m_currentStyle = m_current.object().style();
     m_nextObject = bidiNextSkippingEmptyInlines(m_block, LineLayoutItem(m_current.object()));
-    if (m_nextObject && m_nextObject->parent() && !m_nextObject->parent()->isDescendantOf(m_current.object()->parent()))
+    if (m_nextObject && m_nextObject->parent() && !m_nextObject->parent()->isDescendantOf(m_current.object().parent()))
         m_includeEndWidth = true;
 
-    m_currWS = m_current.object()->isReplaced() ? m_current.object()->parent()->style()->whiteSpace() : m_currentStyle->whiteSpace();
+    m_currWS = m_current.object().isReplaced() ? m_current.object().parent().style()->whiteSpace() : m_currentStyle->whiteSpace();
     m_lastWS = m_lastObject->isReplaced() ? m_lastObject->parent()->style()->whiteSpace() : m_lastObject->style()->whiteSpace();
 
-    bool isSVGText = m_current.object()->isSVGInlineText();
+    bool isSVGText = m_current.object().isSVGInlineText();
     m_autoWrap = !isSVGText && ComputedStyle::autoWrap(m_currWS);
     m_autoWrapWasEverTrueOnLine = m_autoWrapWasEverTrueOnLine || m_autoWrap;
 
@@ -458,7 +458,7 @@ inline void BreakingContext::handleReplaced()
         m_width.updateAvailableWidth(replacedBox->logicalHeight());
 
     // Break on replaced elements if either has normal white-space.
-    if ((m_autoWrap || ComputedStyle::autoWrap(m_lastWS)) && (!m_current.object()->isImage() || m_allowImagesToBreak)) {
+    if ((m_autoWrap || ComputedStyle::autoWrap(m_lastWS)) && (!m_current.object().isImage() || m_allowImagesToBreak)) {
         m_width.commit();
         m_lineBreak.moveToStartOf(m_current.object());
     }
@@ -474,7 +474,7 @@ inline void BreakingContext::handleReplaced()
     // Optimize for a common case. If we can't find whitespace after the list
     // item, then this is all moot.
     LayoutUnit replacedLogicalWidth = m_block.logicalWidthForChild(*replacedBox) + m_block.marginStartForChild(*replacedBox) + m_block.marginEndForChild(*replacedBox) + inlineLogicalWidth(m_current.object());
-    if (m_current.object()->isListMarker()) {
+    if (m_current.object().isListMarker()) {
         if (m_blockStyle->collapseWhiteSpace() && shouldSkipWhitespaceAfterStartObject(m_block, m_current.object(), m_lineMidpointState)) {
             // Like with inline flows, we start ignoring spaces to make sure that any
             // additional spaces we see will be discarded.
@@ -486,7 +486,7 @@ inline void BreakingContext::handleReplaced()
     } else {
         m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
     }
-    if (m_current.object()->isRubyRun())
+    if (m_current.object().isRubyRun())
         m_width.applyOverhang(toLayoutRubyRun(m_current.object()), m_lastObject, m_nextObject);
     // Update prior line break context characters, using U+FFFD (OBJECT REPLACEMENT CHARACTER) for replaced element.
     m_layoutTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
@@ -690,7 +690,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                         m_lineInfo.setPreviousLineBrokeCleanly(true);
                         wordMeasurement.endOffset = m_lineBreak.offset();
                     }
-                    if (m_lineBreak.object() && m_lineBreak.offset() && m_lineBreak.object()->isText() && toLayoutText(m_lineBreak.object())->textLength() && toLayoutText(m_lineBreak.object())->characterAt(m_lineBreak.offset() - 1) == softHyphenCharacter)
+                    if (m_lineBreak.object() && m_lineBreak.offset() && m_lineBreak.object().isText() && toLayoutText(m_lineBreak.object())->textLength() && toLayoutText(m_lineBreak.object())->characterAt(m_lineBreak.offset() - 1) == softHyphenCharacter)
                         hyphenated = true;
                     if (m_lineBreak.offset() && m_lineBreak.offset() != (unsigned)wordMeasurement.endOffset && !wordMeasurement.width) {
                         if (charWidth) {
@@ -838,7 +838,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
     bool checkForBreak = m_autoWrap;
     if (m_width.committedWidth() && !m_width.fitsOnLine() && m_lineBreak.object() && m_currWS == NOWRAP) {
         checkForBreak = true;
-    } else if (m_nextObject && m_current.object()->isText() && m_nextObject->isText() && !m_nextObject->isBR() && (m_autoWrap || m_nextObject->style()->autoWrap())) {
+    } else if (m_nextObject && m_current.object().isText() && m_nextObject->isText() && !m_nextObject->isBR() && (m_autoWrap || m_nextObject->style()->autoWrap())) {
         if (m_autoWrap && m_currentCharacterIsSpace) {
             checkForBreak = true;
         } else {
@@ -890,7 +890,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
         m_width.fitBelowFloats(m_lineInfo.isFirstLine());
     }
 
-    if (!m_current.object()->isFloatingOrOutOfFlowPositioned()) {
+    if (!m_current.object().isFloatingOrOutOfFlowPositioned()) {
         m_lastObject = m_current.object();
         if (m_lastObject->isReplaced() && m_autoWrap && (!m_lastObject->isImage() || m_allowImagesToBreak) && (!m_lastObject->isListMarker() || toLayoutListMarker(m_lastObject)->isInside())) {
             m_width.commit();

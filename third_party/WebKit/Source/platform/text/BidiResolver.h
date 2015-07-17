@@ -83,7 +83,7 @@ public:
             if (currpoint == lBreak) {
                 // We hit the line break before the start point. Shave off the start point.
                 m_numMidpoints--;
-                if (endpoint.object()->style()->collapseWhiteSpace() && endpoint.object()->isText())
+                if (endpoint.object().style()->collapseWhiteSpace() && endpoint.object().isText())
                     endpoint.setOffset(endpoint.offset() - 1);
             }
         }

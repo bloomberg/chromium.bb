@@ -37,9 +37,6 @@ public:
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
-    // TODO(ojan): We shouldn't have these pretend they're pointers.
-    LineLayoutItem* operator->() { return this; }
-
     LineLayoutItem parent() const
     {
         return LineLayoutItem(m_layoutObject->parent());

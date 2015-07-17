@@ -151,16 +151,16 @@ void LineBoxList::dirtyLineBoxes()
 bool LineBoxList::rangeIntersectsRect(LineLayoutBoxModel layoutObject, LayoutUnit logicalTop, LayoutUnit logicalBottom, const LayoutRect& rect, const LayoutPoint& offset) const
 {
     LineLayoutBox block;
-    if (layoutObject->isBox())
+    if (layoutObject.isBox())
         block = layoutObject;
     else
-        block = layoutObject->containingBlock();
+        block = layoutObject.containingBlock();
     LayoutUnit physicalStart = block.flipForWritingMode(logicalTop);
     LayoutUnit physicalEnd = block.flipForWritingMode(logicalBottom);
     LayoutUnit physicalExtent = absoluteValue(physicalEnd - physicalStart);
     physicalStart = std::min(physicalStart, physicalEnd);
 
-    if (layoutObject->style()->isHorizontalWritingMode()) {
+    if (layoutObject.style()->isHorizontalWritingMode()) {
         physicalStart += offset.y();
         if (physicalStart >= rect.maxY() || physicalStart + physicalExtent <= rect.y())
             return false;
@@ -201,7 +201,7 @@ bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject, HitTestResult& result
     if (hitTestAction != HitTestForeground)
         return false;
 
-    ASSERT(layoutObject->isLayoutBlock() || (layoutObject->isLayoutInline() && layoutObject->hasLayer())); // The only way an inline could hit test like this is if it has a layer.
+    ASSERT(layoutObject.isLayoutBlock() || (layoutObject.isLayoutInline() && layoutObject.hasLayer())); // The only way an inline could hit test like this is if it has a layer.
 
     // If we have no lines then we have no work to do.
     if (!firstLineBox())
@@ -223,7 +223,7 @@ bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject, HitTestResult& result
         if (rangeIntersectsRect(layoutObject, curr->logicalTopVisualOverflow(root.lineTop()), curr->logicalBottomVisualOverflow(root.lineBottom()), rect, accumulatedOffset)) {
             bool inside = curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, root.lineTop(), root.lineBottom());
             if (inside) {
-                layoutObject->updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
+                layoutObject.updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
                 return true;
             }
         }
@@ -234,19 +234,19 @@ bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject, HitTestResult& result
 
 void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container, LineLayoutItem child)
 {
-    if (!container->parent() || (container->isLayoutBlock() && (container->selfNeedsLayout() || !container->isLayoutBlockFlow())))
+    if (!container.parent() || (container.isLayoutBlock() && (container.selfNeedsLayout() || !container.isLayoutBlockFlow())))
         return;
 
-    LayoutInline* inlineContainer = container->isLayoutInline() ? toLayoutInline(container) : 0;
+    LayoutInline* inlineContainer = container.isLayoutInline() ? toLayoutInline(container) : 0;
     InlineBox* firstBox = inlineContainer ? inlineContainer->firstLineBoxIncludingCulling() : firstLineBox();
 
     // If we have no first line box, then just bail early.
     if (!firstBox) {
         // For an empty inline, go ahead and propagate the check up to our parent, unless the parent
         // is already dirty.
-        if (container->isInline() && !container->ancestorLineBoxDirty()) {
-            container->parent()->dirtyLinesFromChangedChild(container);
-            container->setAncestorLineBoxDirty(); // Mark the container to avoid dirtying the same lines again across multiple destroy() calls of the same subtree.
+        if (container.isInline() && !container.ancestorLineBoxDirty()) {
+            container.parent().dirtyLinesFromChangedChild(container);
+            container.setAncestorLineBoxDirty(); // Mark the container to avoid dirtying the same lines again across multiple destroy() calls of the same subtree.
         }
         return;
     }
@@ -256,19 +256,19 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container, LineLayou
     // parent's first line box.
     RootInlineBox* box = nullptr;
     LineLayoutItem curr = nullptr;
-    for (curr = child->previousSibling(); curr; curr = curr->previousSibling()) {
-        if (curr->isFloatingOrOutOfFlowPositioned())
+    for (curr = child.previousSibling(); curr; curr = curr.previousSibling()) {
+        if (curr.isFloatingOrOutOfFlowPositioned())
             continue;
 
-        if (curr->isReplaced()) {
+        if (curr.isReplaced()) {
             InlineBox* wrapper = toLayoutBox(curr)->inlineBoxWrapper();
             if (wrapper)
                 box = &wrapper->root();
-        } else if (curr->isText()) {
+        } else if (curr.isText()) {
             InlineTextBox* textBox = toLayoutText(curr)->lastTextBox();
             if (textBox)
                 box = &textBox->root();
-        } else if (curr->isLayoutInline()) {
+        } else if (curr.isLayoutInline()) {
             InlineBox* lastSiblingBox = toLayoutInline(curr)->lastLineBoxIncludingCulling();
             if (lastSiblingBox)
                 box = &lastSiblingBox->root();
