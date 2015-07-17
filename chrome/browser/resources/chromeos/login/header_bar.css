@@ -86,6 +86,11 @@ html[screen=oobe] .login-header-bar-animate-slow {
   width: 180px;
 }
 
+html[dir=rtl] #more-settings-header-bar-item.active
+                button.add-supervised-user-menu {
+  right: 0;
+}
+
 html[dir=rtl] .header-bar-item {
   background-position: right center;
 }
