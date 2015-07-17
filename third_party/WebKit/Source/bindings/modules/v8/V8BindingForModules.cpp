@@ -34,7 +34,6 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8DOMStringList.h"
 #include "bindings/core/v8/V8File.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8IDBCursor.h"
@@ -123,8 +122,8 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
 // IDBAny is a a variant type used to hold the values produced by the |result|
 // attribute of IDBRequest and (as a convenience) the |source| attribute of
 // IDBRequest and IDBCursor.
-// TODO(jsbell): Once the custom wrapper linking between cursor and request
-// is eliminated, remove the |source| support by using union types in the IDL.
+// TODO(jsbell): Replace the use of IDBAny for |source| attributes (which are
+// ScriptWrappable types) using unions per IDL.
 v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
@@ -137,30 +136,10 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
         return v8::Null(isolate);
     case IDBAny::DOMStringListType:
         return toV8(impl->domStringList(), creationContext, isolate);
-    case IDBAny::IDBCursorType: {
-        // Ensure request wrapper is kept alive at least as long as the cursor wrapper,
-        // so that event listeners are retained.
-        // TODO(jsbell): Use [SetWrapperReferenceTo] instead.
-        v8::Local<v8::Value> cursor = toV8(impl->idbCursor(), creationContext, isolate);
-        v8::Local<v8::Value> request = toV8(impl->idbCursor()->request(), creationContext, isolate);
-
-        // FIXME: Due to race at worker shutdown, V8 may return empty handles.
-        if (!cursor.IsEmpty() && cursor->IsObject())
-            V8HiddenValue::setHiddenValue(isolate, cursor.As<v8::Object>(), V8HiddenValue::idbCursorRequest(isolate), request);
-        return cursor;
-    }
-    case IDBAny::IDBCursorWithValueType: {
-        // Ensure request wrapper is kept alive at least as long as the cursor wrapper,
-        // so that event listeners are retained.
-        // TODO(jsbell): Use [SetWrapperReferenceTo] instead.
-        v8::Local<v8::Value> cursor = toV8(impl->idbCursorWithValue(), creationContext, isolate);
-        v8::Local<v8::Value> request = toV8(impl->idbCursorWithValue()->request(), creationContext, isolate);
-
-        // FIXME: Due to race at worker shutdown, V8 may return empty handles.
-        if (!cursor.IsEmpty() && cursor->IsObject())
-            V8HiddenValue::setHiddenValue(isolate, cursor.As<v8::Object>(), V8HiddenValue::idbCursorRequest(isolate), request);
-        return cursor;
-    }
+    case IDBAny::IDBCursorType:
+        return toV8(impl->idbCursor(), creationContext, isolate);
+    case IDBAny::IDBCursorWithValueType:
+        return toV8(impl->idbCursorWithValue(), creationContext, isolate);
     case IDBAny::IDBDatabaseType:
         return toV8(impl->idbDatabase(), creationContext, isolate);
     case IDBAny::IDBIndexType:

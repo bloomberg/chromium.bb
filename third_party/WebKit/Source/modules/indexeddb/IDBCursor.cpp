@@ -28,8 +28,10 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
+#include "bindings/modules/v8/V8IDBRequest.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "modules/IndexedDBNames.h"
@@ -81,6 +83,16 @@ DEFINE_TRACE(IDBCursor)
     visitor->trace(m_transaction);
     visitor->trace(m_key);
     visitor->trace(m_primaryKey);
+}
+
+// Keep the request's wrapper alive as long as the cursor's wrapper is alive,
+// so that the same script object is seen each time the cursor is used.
+v8::Local<v8::Object> IDBCursor::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Local<v8::Object> wrapper)
+{
+    wrapper = ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
+    if (!wrapper.IsEmpty())
+        V8HiddenValue::setHiddenValue(isolate, wrapper, V8HiddenValue::idbCursorRequest(isolate), toV8(m_request.get(), wrapper, isolate));
+    return wrapper;
 }
 
 IDBRequest* IDBCursor::update(ScriptState* scriptState, const ScriptValue& value, ExceptionState& exceptionState)
