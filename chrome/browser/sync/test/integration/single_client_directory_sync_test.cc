@@ -84,8 +84,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 //
 // If this test fails, see the definition of kNumEntriesRequiredForCorruption
 // for one possible cause.
+// TODO:(gangwu): flaky test on windows and linux, see http://crbug.com/511388
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
-                       DeleteDirectoryWhenCorrupted) {
+                       DISABLED_DeleteDirectoryWhenCorrupted) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   // Sync and wait for syncing to complete.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
