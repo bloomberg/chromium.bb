@@ -209,6 +209,24 @@
         # Note: file list duplicated in GN build.
         'gcm_driver/crypto/gcm_key_store.cc',
         'gcm_driver/crypto/gcm_key_store.h',
+        'gcm_driver/crypto/gcm_message_cryptographer.cc',
+        'gcm_driver/crypto/gcm_message_cryptographer.h',
+        'gcm_driver/crypto/gcm_message_cryptographer_nss.cc',
+        'gcm_driver/crypto/gcm_message_cryptographer_openssl.cc',
+      ],
+      'conditions': [
+        ['use_openssl==1', {
+          'sources!': [
+            'gcm_driver/crypto/gcm_message_cryptographer_nss.cc',
+          ],
+          'dependencies': [
+            '../third_party/boringssl/boringssl.gyp:boringssl',
+          ],
+        }, {
+          'sources!': [
+            'gcm_driver/crypto/gcm_message_cryptographer_openssl.cc',
+          ],
+        }],
       ],
     },
     {

@@ -232,6 +232,7 @@
     ],
     'gcm_driver_crypto_unittest_sources': [
       'gcm_driver/crypto/gcm_key_store_unittest.cc',
+      'gcm_driver/crypto/gcm_message_cryptographer_unittest.cc',
     ],
     'google_unittest_sources': [
       'google/core/browser/google_url_tracker_unittest.cc',
