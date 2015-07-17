@@ -86,7 +86,7 @@ struct ShapeResult::RunInfo {
         return m_startIndex + m_glyphData[i].characterIndex;
     }
 
-    RefPtrWillBeMember<SimpleFontData> m_fontData;
+    RefPtr<SimpleFontData> m_fontData;
     hb_direction_t m_direction;
     hb_script_t m_script;
     Vector<HarfBuzzRunGlyphData> m_glyphData;
