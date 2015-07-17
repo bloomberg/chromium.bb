@@ -8108,6 +8108,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS" desc="Information that some data may remain even though the user clears their browsing history. The text in '|'s and '#'s will be turned into buttons. The translated text should contain exactly one phrase in '|'s and one in '#'s.">
         Saved |content settings| and #search engines# will not be cleared and may reflect your browsing habits.
       </message>
+      <message name="IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_NAME" desc="Name of the flag that enables the data volume counters in the Clear browsing data dialog.">
+        Enable Clear browsing data counters.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_DESCRIPTION" desc="Description of the flag that enables the data volume counters in the Clear browsing data dialog.">
+        Shows data volume counters in the Clear browsing data dialog.
+      </message>
 
       <!-- Supervised User Avatar Menu -->
       <message name="IDS_SUPERVISED_USER_INFO" desc="Text which explains that a supervised user is managed by a custodian.">

@@ -396,6 +396,11 @@ const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 const char kEnableChildAccountDetection[] =
     "enable-child-account-detection";
 
+// If true, the clear browsing data dialog will show data volume counters,
+// where available.
+const char kEnableClearBrowsingDataCounters[] =
+    "enable-clear-browsing-data-counters";
+
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
