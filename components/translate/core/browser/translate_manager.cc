@@ -29,6 +29,7 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/translate/core/common/translate_util.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 
@@ -92,6 +93,17 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
       language_state_.translation_pending() ||
       language_state_.translation_declined() ||
       language_state_.IsPageTranslated()) {
+    return;
+  }
+
+  if (!ignore_missing_key_for_testing_ &&
+      !::google_apis::HasKeysConfigured()) {
+    // Without an API key, translate won't work, so don't offer to translate
+    // in the first place. Leave prefs::kEnableTranslate on, though, because
+    // that settings syncs and we don't want to turn off translate everywhere
+    // else.
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_KEY);
     return;
   }
 
@@ -388,6 +400,13 @@ std::string TranslateManager::GetAutoTargetLanguage(
 
 LanguageState& TranslateManager::GetLanguageState() {
   return language_state_;
+}
+
+bool TranslateManager::ignore_missing_key_for_testing_ = false;
+
+// static
+void TranslateManager::SetIgnoreMissingKeyForTesting(bool ignore) {
+  ignore_missing_key_for_testing_ = ignore;
 }
 
 }  // namespace translate

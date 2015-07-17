@@ -54,6 +54,11 @@ class TranslateBrowserTest : public InProcessBrowserTest {
                       base::FilePath(kTranslateRoot)),
         infobar_service_(NULL) {}
 
+  void SetUp() override {
+    translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
+    InProcessBrowserTest::SetUp();
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(https_server_.Start());
     // Setup alternate security origin for testing in order to allow XHR against

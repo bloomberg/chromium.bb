@@ -99,6 +99,10 @@ class TranslateManager {
   // Gets the LanguageState associated with the TranslateManager
   LanguageState& GetLanguageState();
 
+  // By default, don't offer to translate in builds lacking an API key. For
+  // testing, set to true to offer anyway.
+  static void SetIgnoreMissingKeyForTesting(bool ignore);
+
  private:
   // Sends a translation request to the TranslateDriver.
   void DoTranslatePage(const std::string& translate_script,
@@ -124,6 +128,10 @@ class TranslateManager {
   LanguageState language_state_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;
+
+  // By default, don't offer to translate in builds lacking an API key. For
+  // testing, set to true to offer anyway.
+  static bool ignore_missing_key_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };

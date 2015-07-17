@@ -37,6 +37,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/infobars/core/infobar.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -1055,6 +1056,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
   // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
   if (TranslateService::IsTranslateBubbleEnabled())
     return;
+
+  translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
 
   CreateTestProfile();
 

@@ -67,6 +67,7 @@ void TranslateService::Shutdown(bool cleanup_pending_fetcher) {
 void TranslateService::InitializeForTesting() {
   if (!g_translate_service) {
     TranslateService::Initialize();
+    translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
   } else {
     translate::TranslateDownloadManager::GetInstance()->ResetForTesting();
     g_translate_service->OnResourceRequestsAllowed();
