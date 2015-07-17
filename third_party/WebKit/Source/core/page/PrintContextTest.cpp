@@ -237,17 +237,15 @@ TEST_F(PrintContextTest, LinkTargetComplex)
     printSinglePage(canvas);
 
     const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
-    ASSERT_EQ(5u, operations.size());
+    ASSERT_EQ(4u, operations.size());
     EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
     EXPECT_SKRECT_EQ(0, 0, 111, 10, operations[0].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
     EXPECT_SKRECT_EQ(0, 10, 122, 20, operations[1].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[2].type);
-    EXPECT_SKRECT_EQ(0, 30, 133, 30, operations[2].rect);
+    EXPECT_SKRECT_EQ(0, 100, 144, 40, operations[2].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[3].type);
-    EXPECT_SKRECT_EQ(0, 100, 144, 40, operations[3].rect);
-    EXPECT_EQ(MockCanvas::DrawRect, operations[4].type);
-    EXPECT_SKRECT_EQ(50, 190, 155, 50, operations[4].rect);
+    EXPECT_SKRECT_EQ(50, 190, 155, 50, operations[3].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetSvg)
