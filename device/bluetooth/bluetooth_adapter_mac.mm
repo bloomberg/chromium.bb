@@ -402,11 +402,42 @@ void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
                     DeviceAdded(this, devices_[device_address]));
 }
 
-// TODO(krstnmnlsn): Implement method. http://crbug.com/496987.
 void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     CBPeripheral* peripheral,
     NSDictionary* advertisement_data,
-    int rssi) {}
+    int rssi) {
+  std::string device_address =
+      BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
+  // Get a reference to the actual device pointer held by |devices_| (if
+  // |device_address| has no entry in the map a NULL pointer is created by the
+  // std::map [] operator).
+  BluetoothDevice*& device_reference = devices_[device_address];
+  if (!device_reference) {
+    // A new device has been found.
+    device_reference =
+        new BluetoothLowEnergyDeviceMac(peripheral, advertisement_data, rssi);
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceAdded(this, device_reference));
+    return;
+  }
+
+  if (static_cast<BluetoothLowEnergyDeviceMac*>(device_reference)
+          ->GetIdentifier() !=
+      BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(peripheral)) {
+    // Collision, two identifiers map to the same hash address.  With a 48 bit
+    // hash the probability of this occuring with 10,000 devices
+    // simultaneously present is 1e-6 (see
+    // https://en.wikipedia.org/wiki/Birthday_problem#Probability_table).  We
+    // ignore the second device by returning.
+    return;
+  }
+
+  // A device has an update.
+  static_cast<BluetoothLowEnergyDeviceMac*>(device_reference)
+      ->Update(peripheral, advertisement_data, rssi);
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    DeviceChanged(this, device_reference));
+}
 
 void BluetoothAdapterMac::RemoveTimedOutDevices() {
   // Notify observers if any previously seen devices are no longer available,

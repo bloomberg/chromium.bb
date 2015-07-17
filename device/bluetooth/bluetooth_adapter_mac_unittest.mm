@@ -24,6 +24,7 @@ namespace {
 // |kTestHashAddress| is the hash corresponding to identifier |kTestNSUUID|.
 NSString* const kTestNSUUID = @"00000000-1111-2222-3333-444444444444";
 const std::string kTestHashAddress = "D1:6F:E3:22:FD:5B";
+const int kTestRssi = 0;
 }  // namespace
 
 namespace device {
@@ -42,11 +43,19 @@ class BluetoothAdapterMacTest : public testing::Test {
   // Helper methods for setup and access to BluetoothAdapterMacTest's members.
   void PollAdapter() { adapter_mac_->PollAdapter(); }
 
+  void LowEnergyDeviceUpdated(CBPeripheral* peripheral,
+                              NSDictionary* advertisement_data,
+                              int rssi) {
+    adapter_mac_->LowEnergyDeviceUpdated(peripheral, advertisement_data, rssi);
+  }
+
+  BluetoothDevice* GetDevice(const std::string& address) {
+    return adapter_->GetDevice(address);
+  }
+
   CBPeripheral* CreateMockPeripheral(NSString* identifier) {
     if (!BluetoothAdapterMac::IsLowEnergyAvailable()) {
-      // For stability we only use CoreBluetooth on OS X >= 10.10.  Thus on
-      // previous OS X versions the code cannot be tested.
-      LOG(WARNING) << "OS X version < 10.10, skipping unit test.";
+      LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
       return nil;
     }
     Class peripheral_class = NSClassFromString(@"CBPeripheral");
@@ -241,6 +250,50 @@ TEST_F(BluetoothAdapterMacTest, CheckGetPeripheralHashAddress) {
   EXPECT_EQ(kTestHashAddress, GetHashAddress(mock_peripheral));
 }
 
+TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedNewDevice) {
+  base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
+  if (mock_peripheral.get() == nil)
+    return;
+  base::scoped_nsobject<NSDictionary> advertisement_data(
+      CreateAdvertisementData());
+
+  EXPECT_EQ(0, NumDevices());
+  EXPECT_FALSE(DevicePresent(mock_peripheral));
+  LowEnergyDeviceUpdated(mock_peripheral, advertisement_data, kTestRssi);
+  EXPECT_EQ(1, NumDevices());
+  EXPECT_TRUE(DevicePresent(mock_peripheral));
+}
+
+TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedOldDevice) {
+  base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
+  if (mock_peripheral.get() == nil)
+    return;
+  base::scoped_nsobject<NSDictionary> advertisement_data(
+      CreateAdvertisementData());
+
+  // Update the device for the first time and check it was correctly added to
+  // |devices_|.
+  EXPECT_EQ(0, NumDevices());
+  EXPECT_FALSE(DevicePresent(mock_peripheral));
+  LowEnergyDeviceUpdated(mock_peripheral, advertisement_data, kTestRssi);
+  EXPECT_EQ(1, NumDevices());
+  EXPECT_TRUE(DevicePresent(mock_peripheral));
+  // Search for the device by the address corresponding to |kTestNSUUID|.
+  BluetoothDeviceMac* device =
+      static_cast<BluetoothDeviceMac*>(GetDevice(kTestHashAddress));
+  base::scoped_nsobject<NSDate> first_update_time(
+      [device->GetLastUpdateTime() retain]);
+
+  // Update the device a second time. The device should be updated in
+  // |devices_| so check the time returned by GetLastUpdateTime() has increased.
+  LowEnergyDeviceUpdated(mock_peripheral, advertisement_data, kTestRssi);
+  EXPECT_EQ(1, NumDevices());
+  EXPECT_TRUE(DevicePresent(mock_peripheral));
+  device = static_cast<BluetoothDeviceMac*>(GetDevice(kTestHashAddress));
+  EXPECT_TRUE([device->GetLastUpdateTime() compare:first_update_time] ==
+              NSOrderedDescending);
+}
+
 TEST_F(BluetoothAdapterMacTest, UpdateDevicesRemovesLowEnergyDevice) {
   base::scoped_nsobject<id> mock_peripheral(CreateMockPeripheral(kTestNSUUID));
   if (mock_peripheral.get() == nil)
@@ -248,8 +301,8 @@ TEST_F(BluetoothAdapterMacTest, UpdateDevicesRemovesLowEnergyDevice) {
   base::scoped_nsobject<NSDictionary> advertisement_data(
       CreateAdvertisementData());
 
-  BluetoothLowEnergyDeviceMac* device =
-      new BluetoothLowEnergyDeviceMac(mock_peripheral, advertisement_data, 0);
+  BluetoothLowEnergyDeviceMac* device = new BluetoothLowEnergyDeviceMac(
+      mock_peripheral, advertisement_data, kTestRssi);
   SetDeviceTimeGreaterThanTimeout(device);
 
   EXPECT_EQ(0, NumDevices());
