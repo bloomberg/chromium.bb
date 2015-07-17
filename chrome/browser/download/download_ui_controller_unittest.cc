@@ -229,6 +229,7 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
   EXPECT_CALL(*item, GetOpened()).WillRepeatedly(Return(false));
   EXPECT_CALL(*item, GetMimeType()).WillRepeatedly(Return(std::string()));
   EXPECT_CALL(*item, GetURL()).WillRepeatedly(testing::ReturnRefOfCopy(GURL()));
+  EXPECT_CALL(*item, GetWebContents()).WillRepeatedly(Return(nullptr));
   EXPECT_CALL(*item, IsTemporary()).WillRepeatedly(Return(false));
   return item.Pass();
 }

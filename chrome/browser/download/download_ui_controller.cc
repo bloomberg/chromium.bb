@@ -8,8 +8,11 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
@@ -85,8 +88,11 @@ void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
                                                 chrome::GetActiveDesktop());
   }
 
-  if (browser)
-    browser->ShowDownload(item);
+  if (browser && browser->window() &&
+      DownloadItemModel(item).ShouldShowInShelf()) {
+    // GetDownloadShelf creates the download shelf if it was not yet created.
+    browser->window()->GetDownloadShelf()->AddDownload(item);
+  }
 }
 
 #endif  // !OS_ANDROID
@@ -143,5 +149,25 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
     return;
 
   DownloadItemModel(item).SetWasUINotified(true);
+
+#if !defined(OS_ANDROID)
+  content::WebContents* web_contents = item->GetWebContents();
+  if (web_contents) {
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+    // If the download occurs in a new tab, and it's not a save page
+    // download (started before initial navigation completed) close it.
+    // Avoid calling CloseContents if the tab is not in this browser's tab strip
+    // model; this can happen if the download was initiated by something
+    // internal to Chrome, such as by the app list.
+    if (browser && web_contents->GetController().IsInitialNavigation() &&
+        browser->tab_strip_model()->count() > 1 &&
+        browser->tab_strip_model()->GetIndexOfWebContents(web_contents) !=
+            TabStripModel::kNoTab &&
+        !item->IsSavePackageDownload()) {
+      web_contents->Close();
+    }
+  }
+#endif
+
   delegate_->OnNewDownloadReady(item);
 }

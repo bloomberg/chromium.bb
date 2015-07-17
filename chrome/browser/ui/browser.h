@@ -481,9 +481,6 @@ class Browser : public TabStripModelObserver,
   // Show the first run search engine bubble on the location bar.
   void ShowFirstRunBubble();
 
-  // Show a download on the download shelf.
-  void ShowDownload(content::DownloadItem* download);
-
   ExclusiveAccessManager* exclusive_access_manager() {
     return exclusive_access_manager_.get();
   }

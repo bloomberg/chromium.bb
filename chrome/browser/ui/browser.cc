@@ -48,10 +48,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -169,8 +167,6 @@
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1403,32 +1399,6 @@ void Browser::OnWindowDidShow() {
 
 void Browser::ShowFirstRunBubble() {
   window()->GetLocationBar()->ShowFirstRunBubble();
-}
-
-void Browser::ShowDownload(content::DownloadItem* download) {
-  if (!window())
-    return;
-
-  // If the download occurs in a new tab, and it's not a save page
-  // download (started before initial navigation completed) close it.
-  // Avoid calling CloseContents if the tab is not in this browser's tab strip
-  // model; this can happen if the download was initiated by something internal
-  // to Chrome, such as by the app list.
-  WebContents* source = download->GetWebContents();
-  if (source && source->GetController().IsInitialNavigation() &&
-      tab_strip_model_->count() > 1 &&
-      tab_strip_model_->GetIndexOfWebContents(source) !=
-          TabStripModel::kNoTab &&
-      !download->IsSavePackageDownload()) {
-    CloseContents(source);
-  }
-
-  // Some (app downloads) are not supposed to appear on the shelf.
-  if (!DownloadItemModel(download).ShouldShowInShelf())
-    return;
-
-  // GetDownloadShelf creates the download shelf if it was not yet created.
-  window()->GetDownloadShelf()->AddDownload(download);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
