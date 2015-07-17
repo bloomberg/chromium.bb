@@ -3986,6 +3986,10 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
       &handles_map, &delete_journals, &metahandles_to_purge, &kernel_load_info);
   EXPECT_EQ(open_result, OPENED);
 
+  // Set up database's page size to 4096
+  EXPECT_TRUE(dbs->db_->Execute("PRAGMA page_size=4096;"));
+  EXPECT_TRUE(dbs->Vacuum());
+
   // Check if update is successful.
   int pageSize = 0;
   dbs->GetDatabasePageSize(&pageSize);

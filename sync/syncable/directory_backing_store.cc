@@ -10,7 +10,6 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -177,12 +176,6 @@ namespace {
 // modifies all the columns in the entry table.
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
-bool IsSyncBackingDatabase32KEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("SyncBackingDatabase32K");
-  return group_name == "Enabled";
-}
-
 void OnSqliteError(const base::Closure& catastrophic_error_handler,
                    int err,
                    sql::Statement* statement) {
@@ -236,7 +229,7 @@ bool SaveEntryToDB(sql::Statement* save_statement, const EntryKernel& entry) {
 
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
     : dir_name_(dir_name),
-      database_page_size_(IsSyncBackingDatabase32KEnabled() ? 32768 : 4096),
+      database_page_size_(32768),
       needs_column_refresh_(false) {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   ResetAndCreateConnection();
@@ -245,7 +238,7 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
                                              sql::Connection* db)
     : dir_name_(dir_name),
-      database_page_size_(IsSyncBackingDatabase32KEnabled() ? 32768 : 4096),
+      database_page_size_(32768),
       db_(db),
       needs_column_refresh_(false) {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
@@ -388,8 +381,7 @@ bool DirectoryBackingStore::OpenInMemory() {
 
 bool DirectoryBackingStore::InitializeTables() {
   int page_size = 0;
-  if (IsSyncBackingDatabase32KEnabled() && GetDatabasePageSize(&page_size) &&
-      page_size == 4096) {
+  if (GetDatabasePageSize(&page_size) && page_size == 4096) {
     IncreasePageSizeTo32K();
   }
   sql::Transaction transaction(db_.get());

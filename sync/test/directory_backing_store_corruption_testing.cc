@@ -15,7 +15,7 @@ namespace corruption_testing {
 // from disk before writing, but small enough so that tests don't take too long
 // and timeout. The value *may* depend on the underlying DB page size as well as
 // the DB's cache_size PRAGMA.
-const int kNumEntriesRequiredForCorruption = 2000;
+const int kNumEntriesRequiredForCorruption = 12000;
 
 bool CorruptDatabase(const base::FilePath& backing_file_path) {
   // Corrupt the DB by write a bunch of zeros at the beginning.
