@@ -539,6 +539,10 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (existingResource->isPreloaded())
         return Use;
 
+    // Defer to the browser process cache for Vary header handling.
+    if (existingResource->hasVaryHeader())
+        return Reload;
+
     // CachePolicyHistoryBuffer uses the cache no matter what.
     CachePolicy cachePolicy = context().cachePolicy();
     if (cachePolicy == CachePolicyHistoryBuffer)

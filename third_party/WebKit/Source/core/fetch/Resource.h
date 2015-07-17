@@ -234,6 +234,7 @@ public:
     Resource* resourceToRevalidate() const { return m_resourceToRevalidate; }
     void setResourceToRevalidate(Resource*);
     bool hasCacheControlNoStoreHeader();
+    bool hasVaryHeader() const;
 
     double currentAge() const;
     double freshnessLifetime();

@@ -43,6 +43,29 @@
 
 namespace blink {
 
+class ResourceFetcherTestMockFetchContext : public FetchContext {
+public:
+    static ResourceFetcherTestMockFetchContext* create()
+    {
+        return new ResourceFetcherTestMockFetchContext;
+    }
+
+    virtual ~ResourceFetcherTestMockFetchContext() { }
+
+    bool allowImage(bool imagesEnabled, const KURL&) const override { return true; }
+    bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const override { return true; }
+
+    void setCachePolicy(CachePolicy policy) { m_policy = policy; }
+    CachePolicy cachePolicy() const override { return m_policy; }
+
+private:
+    ResourceFetcherTestMockFetchContext()
+        : m_policy(CachePolicyVerify)
+    { }
+
+    CachePolicy m_policy;
+};
+
 class ResourceFetcherTest : public ::testing::Test {
 };
 
@@ -67,6 +90,77 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
     ResourcePtr<Resource> resource = fetcher->requestResource(fetchRequest, TestResourceFactory());
     EXPECT_EQ(resource.get(), static_cast<Resource*>(nullptr));
     EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(nullptr));
+}
+
+TEST_F(ResourceFetcherTest, UseExistingResource)
+{
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourcePtr<Resource> resource = new Resource(url, Resource::Image);
+    memoryCache()->add(resource.get());
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
+    resource->responseReceived(response, nullptr);
+    resource->finish();
+
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    ResourcePtr<Resource> newResource = fetcher->requestResource(fetchRequest, TestResourceFactory());
+    EXPECT_EQ(resource, newResource);
+    memoryCache()->remove(resource.get());
+}
+
+
+TEST_F(ResourceFetcherTest, Vary)
+{
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourcePtr<Resource> resource = new Resource(url, Resource::Image);
+    memoryCache()->add(resource.get());
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
+    response.setHTTPHeaderField("Vary", "*");
+    resource->responseReceived(response, nullptr);
+    resource->finish();
+    ASSERT_TRUE(resource->hasVaryHeader());
+
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    ResourcePtr<Resource> newResource = fetcher->requestResource(fetchRequest, TestResourceFactory());
+
+    // ResourceFetcherTestMockFetchContext won't give ResourceFetcher permission to actually start a load, so newResource
+    // will be null if the test passes. That's ok for this test, so long as we don't reuse the existing resource.
+    EXPECT_NE(resource, newResource);
+}
+
+TEST_F(ResourceFetcherTest, VaryOnBack)
+{
+    ResourceFetcherTestMockFetchContext* context = ResourceFetcherTestMockFetchContext::create();
+    context->setCachePolicy(CachePolicyHistoryBuffer);
+    ResourceFetcher* fetcher = ResourceFetcher::create(context);
+
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourcePtr<Resource> resource = new Resource(url, Resource::Image);
+    memoryCache()->add(resource.get());
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
+    response.setHTTPHeaderField("Vary", "*");
+    resource->responseReceived(response, nullptr);
+    resource->finish();
+    ASSERT_TRUE(resource->hasVaryHeader());
+
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    ResourcePtr<Resource> newResource = fetcher->requestResource(fetchRequest, TestResourceFactory());
+
+    // ResourceFetcherTestMockFetchContext won't give ResourceFetcher permission to actually start a load, so newResource
+    // will be null if the test passes. That's ok for this test, so long as we don't reuse the existing resource.
+    EXPECT_NE(resource, newResource);
 }
 
 } // namespace blink

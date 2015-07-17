@@ -896,6 +896,11 @@ bool Resource::hasCacheControlNoStoreHeader()
     return m_response.cacheControlContainsNoStore() || m_resourceRequest.cacheControlContainsNoStore();
 }
 
+bool Resource::hasVaryHeader() const
+{
+    return !m_response.httpHeaderField("Vary").isNull();
+}
+
 bool Resource::mustRevalidateDueToCacheHeaders()
 {
     return !canUseResponse(m_response, m_responseTimestamp) || m_resourceRequest.cacheControlContainsNoCache() || m_resourceRequest.cacheControlContainsNoStore();
