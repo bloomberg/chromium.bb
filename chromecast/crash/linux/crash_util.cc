@@ -4,10 +4,10 @@
 
 #include "chromecast/crash/linux/crash_util.h"
 
-#include <stdlib.h>
-
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/version.h"
@@ -37,12 +37,13 @@ bool CrashUtil::RequestUploadCrashDump(
     const std::string& existing_minidump_path,
     const std::string& crashed_process_name,
     uint64_t crashed_process_start_time_ms) {
+  // Remove IO restrictions from this thread. Chromium IO functions must be used
+  // to access the file system and upload information to the crash server.
+  const bool io_allowed = base::ThreadRestrictions::SetIOAllowed(true);
+
   LOG(INFO) << "Request to upload crash dump " << existing_minidump_path
             << " for process " << crashed_process_name;
 
-  // Note: Do not use Chromium IO methods in this function. When cast_shell
-  // crashes, this function can be called by any thread, which may not allow IO.
-  // Use stdlib system calls for IO instead.
   uint64_t uptime_ms = GetCurrentTimeMs() - crashed_process_start_time_ms;
   MinidumpParams params(crashed_process_name,
                         uptime_ms,
@@ -68,16 +69,20 @@ bool CrashUtil::RequestUploadCrashDump(
   writer->set_non_blocking(false);
   success = (0 == writer->Write());  // error already logged.
 
-  // In case the file is still in $TEMP, remove it.
-  if (remove(existing_minidump_path.c_str()) < 0 && errno != ENOENT) {
+  // In case the file is still in $TEMP, remove it. Note that DeleteFile() will
+  // return true if |existing_minidump_path| has already been moved.
+  if (!base::DeleteFile(base::FilePath(existing_minidump_path), false)) {
     LOG(ERROR) << "Unable to delete temp minidump file "
-               << existing_minidump_path << ": " << strerror(errno);
+               << existing_minidump_path;
     success = false;
   }
 
   // Use std::endl to flush the log stream in case this process exits.
   LOG(INFO) << "Request to upload crash dump finished. "
             << "Exit now if it is main process that crashed." << std::endl;
+
+  // Restore the original IO restrictions on the thread, if there were any.
+  base::ThreadRestrictions::SetIOAllowed(io_allowed);
 
   return success;
 }
