@@ -2952,7 +2952,7 @@ recorder_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 }
 #else
 static void
-recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+recorder_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 		 void *data)
 {
 	weston_log("Compiled without libva support\n");
