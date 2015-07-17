@@ -12,10 +12,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "modules/bluetooth/BluetoothError.h"
+#include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "modules/bluetooth/RequestDeviceOptions.h"
 #include "platform/UserGestureIndicator.h"
-#include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
 
@@ -64,7 +64,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDe
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "Must be handling a user gesture to show a permission request."));
     }
 
-    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
     if (!webbluetooth)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 

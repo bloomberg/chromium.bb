@@ -55,6 +55,7 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoo
 
         // SecurityErrors:
         MAP_ERROR(GATTNotAuthorized, SecurityError, "GATT operation not authorized.");
+        MAP_ERROR(RequestDeviceWithoutFrame, SecurityError, "No window to show the requestDevice() dialog.");
 
 #undef MAP_ERROR
     }

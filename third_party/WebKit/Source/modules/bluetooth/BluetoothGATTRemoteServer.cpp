@@ -12,8 +12,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothGATTService.h"
+#include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
-#include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "wtf/OwnPtr.h"
 
@@ -32,7 +32,7 @@ BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver
 
 ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)
 {
-    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
 
     String serviceUUID = BluetoothUUID::getService(service, exceptionState);
     if (exceptionState.hadException())

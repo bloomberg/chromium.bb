@@ -12,8 +12,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothGATTCharacteristic.h"
+#include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
-#include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ BluetoothGATTService* BluetoothGATTService::take(ScriptPromiseResolver*, PassOwn
 ScriptPromise BluetoothGATTService::getCharacteristic(ScriptState* scriptState,
     const StringOrUnsignedLong& characteristic, ExceptionState& exceptionState)
 {
-    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
 
     String characteristicUUID = BluetoothUUID::getCharacteristic(characteristic, exceptionState);
     if (exceptionState.hadException())

@@ -11,8 +11,8 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/bluetooth/BluetoothError.h"
+#include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/ConvertWebVectorToArrayBuffer.h"
-#include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 
 namespace blink {
@@ -32,7 +32,7 @@ BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseReso
 
 ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
 {
-    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -43,7 +43,7 @@ ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
 
 ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, const DOMArrayPiece& value)
 {
-    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+    WebBluetooth* webbluetooth = BluetoothSupplement::from(scriptState);
     // Partial implementation of writeValue algorithm:
     // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
 

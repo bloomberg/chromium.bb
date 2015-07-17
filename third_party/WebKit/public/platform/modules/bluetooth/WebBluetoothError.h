@@ -48,6 +48,7 @@ enum class WebBluetoothError {
     GATTUntranslatedErrorCode,
     // SecurityError:
     GATTNotAuthorized,
+    RequestDeviceWithoutFrame,
     // SyntaxError:
 
     ENUM_MAX_VALUE = GATTNotAuthorized,

@@ -60,6 +60,7 @@ enum class WebTreeScopeType;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebAppBannerClient;
+class WebBluetooth;
 class WebCachedURLRequest;
 class WebColorChooser;
 class WebColorChooserClient;
@@ -668,6 +669,9 @@ public:
     {
         return WebCustomHandlersNew;
     }
+
+    // Bluetooth -----------------------------------------------------------
+    virtual WebBluetooth* bluetooth() { return 0; }
 
 protected:
     virtual ~WebFrameClient() { }
