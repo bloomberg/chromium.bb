@@ -5,8 +5,8 @@
 // This file defines the interface that any platform-specific spellchecker
 // needs to implement in order to be used by the browser.
 
-#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_
-#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_
+#ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_H_
+#define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_H_
 
 #include <string>
 #include <vector>
@@ -20,7 +20,7 @@ namespace content {
 class BrowserMessageFilter;
 }  // namespace content
 
-namespace spellcheck_mac {
+namespace spellcheck_platform {
 
 typedef base::Callback<void(
         const std::vector<SpellCheckResult>& /* results */)>
@@ -107,6 +107,6 @@ class ScopedEnglishLanguageForTest {
   SpellcheckerStateInternal* state_;
 };
 
-}  // namespace spellcheck_mac
+}  // namespace spellcheck_platform
 
-#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_
+#endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_H_

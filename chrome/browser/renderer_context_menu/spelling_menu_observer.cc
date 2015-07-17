@@ -16,7 +16,7 @@
 #include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
-#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/browser/ui/confirm_bubble.h"
@@ -296,8 +296,8 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
         spellcheck->GetFeedbackSender()->AddedToDictionary(misspelling_hash_);
       }
     }
-#if defined(OS_MACOSX)
-    spellcheck_mac::AddWord(misspelled_word_);
+#if defined(USE_PLATFORM_SPELLCHECKER)
+    spellcheck_platform::AddWord(misspelled_word_);
 #endif
   }
 

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
-#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -132,7 +132,7 @@ void SpellingRequest::RequestRemoteCheck() {
 }
 
 void SpellingRequest::RequestLocalCheck() {
-  spellcheck_mac::RequestTextCheck(
+  spellcheck_platform::RequestTextCheck(
       document_tag_,
       text_,
       base::Bind(&SpellingRequest::OnLocalCheckCompleted,
@@ -256,22 +256,22 @@ void SpellCheckMessageFilterPlatform::OnCheckSpelling(
     const base::string16& word,
     int route_id,
     bool* correct) {
-  *correct = spellcheck_mac::CheckSpelling(word, ToDocumentTag(route_id));
+  *correct = spellcheck_platform::CheckSpelling(word, ToDocumentTag(route_id));
 }
 
 void SpellCheckMessageFilterPlatform::OnFillSuggestionList(
     const base::string16& word,
     std::vector<base::string16>* suggestions) {
-  spellcheck_mac::FillSuggestionList(word, suggestions);
+  spellcheck_platform::FillSuggestionList(word, suggestions);
 }
 
 void SpellCheckMessageFilterPlatform::OnShowSpellingPanel(bool show) {
-  spellcheck_mac::ShowSpellingPanel(show);
+  spellcheck_platform::ShowSpellingPanel(show);
 }
 
 void SpellCheckMessageFilterPlatform::OnUpdateSpellingPanelWithMisspelledWord(
     const base::string16& word) {
-  spellcheck_mac::UpdateSpellingPanelWithMisspelledWord(word);
+  spellcheck_platform::UpdateSpellingPanelWithMisspelledWord(word);
 }
 
 void SpellCheckMessageFilterPlatform::OnRequestTextCheck(
@@ -304,7 +304,7 @@ void SpellCheckMessageFilterPlatform::OnRequestTextCheck(
 
 int SpellCheckMessageFilterPlatform::ToDocumentTag(int route_id) {
   if (!tag_map_.count(route_id))
-    tag_map_[route_id] = spellcheck_mac::GetDocumentTag();
+    tag_map_[route_id] = spellcheck_platform::GetDocumentTag();
   return tag_map_[route_id];
 }
 
@@ -312,6 +312,6 @@ int SpellCheckMessageFilterPlatform::ToDocumentTag(int route_id) {
 // to track destruction of RenderViewHosts on the browser process side
 // to update our mappings when a document goes away.
 void SpellCheckMessageFilterPlatform::RetireDocumentTag(int route_id) {
-  spellcheck_mac::CloseDocumentWithTag(ToDocumentTag(route_id));
+  spellcheck_platform::CloseDocumentWithTag(ToDocumentTag(route_id));
   tag_map_.erase(route_id);
 }

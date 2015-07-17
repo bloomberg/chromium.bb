@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/spellcheck_common.h"
@@ -65,7 +65,7 @@ bool SaveDictionaryData(scoped_ptr<std::string> data,
 }  // namespace
 
 SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile() {
- }
+}
 
  SpellcheckHunspellDictionary::DictionaryFile::~DictionaryFile() {
   if (file.IsValid()) {
@@ -108,19 +108,22 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
 void SpellcheckHunspellDictionary::Load() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(OS_MACOSX)
-  if (spellcheck_mac::SpellCheckerAvailable() &&
-      spellcheck_mac::PlatformSupportsLanguage(language_)) {
+#if defined(USE_PLATFORM_SPELLCHECKER)
+  if (spellcheck_platform::SpellCheckerAvailable() &&
+      spellcheck_platform::PlatformSupportsLanguage(language_)) {
     use_platform_spellchecker_ = true;
-    spellcheck_mac::SetLanguage(language_);
+    spellcheck_platform::SetLanguage(language_);
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(
             &SpellcheckHunspellDictionary::InformListenersOfInitialization,
             weak_ptr_factory_.GetWeakPtr()));
     return;
   }
-#endif  // OS_MACOSX
+#endif  // USE_PLATFORM_SPELLCHECKER
 
+// Mac falls back on hunspell if its platform spellchecker isn't available.
+// However, Android does not support hunspell.
+#if !defined(OS_ANDROID)
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
@@ -128,6 +131,7 @@ void SpellcheckHunspellDictionary::Load() {
       base::Bind(
           &SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete,
           weak_ptr_factory_.GetWeakPtr()));
+#endif // !OS_ANDROID
 }
 
 void SpellcheckHunspellDictionary::RetryDownloadDictionary(

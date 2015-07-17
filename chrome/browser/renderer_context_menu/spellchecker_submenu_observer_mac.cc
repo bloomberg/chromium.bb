@@ -9,7 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/spelling_bubble_model.h"
-#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -50,7 +50,7 @@ void SpellCheckerSubMenuObserver::InitMenu(
   submenu_model_.AddCheckItem(
       IDC_SPELLPANEL_TOGGLE,
       l10n_util::GetStringUTF16(
-          spellcheck_mac::SpellingPanelVisible() ?
+          spellcheck_platform::SpellingPanelVisible() ?
               IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL :
               IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL));
   submenu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -133,7 +133,7 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
 
     case IDC_SPELLPANEL_TOGGLE:
       rvh->Send(new SpellCheckMsg_ToggleSpellPanel(
-          rvh->GetRoutingID(), spellcheck_mac::SpellingPanelVisible()));
+          rvh->GetRoutingID(), spellcheck_platform::SpellingPanelVisible()));
       break;
   }
 }

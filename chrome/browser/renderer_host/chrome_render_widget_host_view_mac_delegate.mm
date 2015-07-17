@@ -11,7 +11,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper.h"
-#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -223,17 +223,17 @@ class SpellCheckObserver : public content::WebContentsObserver {
 - (void)ignoreSpelling:(id)sender {
   // Ideally, we would ask the current RenderView for its tag, but that would
   // mean making a blocking IPC call from the browser. Instead,
-  // spellcheck_mac::CheckSpelling remembers the last tag and
-  // spellcheck_mac::IgnoreWord assumes that is the correct tag.
+  // spellcheck_platform::CheckSpelling remembers the last tag and
+  // spellcheck_platform::IgnoreWord assumes that is the correct tag.
   NSString* wordToIgnore = [sender stringValue];
   if (wordToIgnore != nil)
-    spellcheck_mac::IgnoreWord(base::SysNSStringToUTF16(wordToIgnore));
+    spellcheck_platform::IgnoreWord(base::SysNSStringToUTF16(wordToIgnore));
 }
 
 - (void)showGuessPanel:(id)sender {
   renderWidgetHost_->Send(new SpellCheckMsg_ToggleSpellPanel(
       renderWidgetHost_->GetRoutingID(),
-      spellcheck_mac::SpellingPanelVisible()));
+      spellcheck_platform::SpellingPanelVisible()));
 }
 
 - (void)toggleContinuousSpellChecking:(id)sender {

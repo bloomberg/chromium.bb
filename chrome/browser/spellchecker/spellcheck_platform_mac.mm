@@ -4,7 +4,7 @@
 
 // Integration with OS X built-in spellchecker.
 
-#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
+#include "chrome/browser/spellchecker/spellcheck_platform.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -100,7 +100,7 @@ std::string ConvertLanguageCodeFromMac(NSString* lang_code) {
 
 } // namespace
 
-namespace spellcheck_mac {
+namespace spellcheck_platform {
 
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
   NSArray* availableLanguages = [SharedSpellChecker() availableLanguages];
@@ -303,4 +303,4 @@ ScopedEnglishLanguageForTest::~ScopedEnglishLanguageForTest() {
   delete state_;
 }
 
-}  // namespace spellcheck_mac
+}  // namespace spellcheck_platform

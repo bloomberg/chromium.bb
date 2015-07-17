@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/spellchecker/spellcheck_platform.h"
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class SpellcheckMacTest: public testing::Test {
+class SpellcheckPlatformMacTest: public testing::Test {
  public:
-  SpellcheckMacTest()
-      : callback_(base::Bind(&SpellcheckMacTest::CompletionCallback,
+  SpellcheckPlatformMacTest()
+      : callback_(base::Bind(&SpellcheckPlatformMacTest::CompletionCallback,
                              base::Unretained(this))),
         callback_finished_(false) {}
 
@@ -25,7 +26,7 @@ class SpellcheckMacTest: public testing::Test {
   }
 
   std::vector<SpellCheckResult> results_;
-  spellcheck_mac::TextCheckCompleteCallback callback_;
+  spellcheck_platform::TextCheckCompleteCallback callback_;
   bool callback_finished_;
 
  private:
@@ -37,20 +38,20 @@ class SpellcheckMacTest: public testing::Test {
   void CompletionCallback(const std::vector<SpellCheckResult>& results) {
     results_ = results;
     callback_finished_ = true;
-    message_loop_.PostTask(FROM_HERE,
-                           base::Bind(&SpellcheckMacTest::QuitMessageLoop,
-                                      base::Unretained(this)));
+    message_loop_.PostTask(FROM_HERE, base::Bind(
+                             &SpellcheckPlatformMacTest::QuitMessageLoop,
+                             base::Unretained(this)));
   }
 
   base::MessageLoopForUI message_loop_;
-  spellcheck_mac::ScopedEnglishLanguageForTest scoped_language_;
+  spellcheck_platform::ScopedEnglishLanguageForTest scoped_language_;
 };
 
 // Tests that words are properly ignored. Currently only enabled on OS X as it
 // is the only platform to support ignoring words. Note that in this test, we
 // supply a non-zero doc_tag, in order to test that ignored words are matched to
 // the correct document.
-TEST_F(SpellcheckMacTest, IgnoreWords_EN_US) {
+TEST_F(SpellcheckPlatformMacTest, IgnoreWords_EN_US) {
   const char* kTestCases[] = {
     "teh",
     "morblier",
@@ -60,27 +61,27 @@ TEST_F(SpellcheckMacTest, IgnoreWords_EN_US) {
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const base::string16 word(base::ASCIIToUTF16(kTestCases[i]));
-    const int doc_tag = spellcheck_mac::GetDocumentTag();
+    const int doc_tag = spellcheck_platform::GetDocumentTag();
 
     // The word should show up as misspelled.
-    EXPECT_FALSE(spellcheck_mac::CheckSpelling(word, doc_tag)) << word;
+    EXPECT_FALSE(spellcheck_platform::CheckSpelling(word, doc_tag)) << word;
 
     // Ignore the word.
-    spellcheck_mac::IgnoreWord(word);
+    spellcheck_platform::IgnoreWord(word);
 
     // The word should now show up as correctly spelled.
-    EXPECT_TRUE(spellcheck_mac::CheckSpelling(word, doc_tag)) << word;
+    EXPECT_TRUE(spellcheck_platform::CheckSpelling(word, doc_tag)) << word;
 
     // Close the docuemnt. Any words that we had previously ignored should no
     // longer be ignored and thus should show up as misspelled.
-    spellcheck_mac::CloseDocumentWithTag(doc_tag);
+    spellcheck_platform::CloseDocumentWithTag(doc_tag);
 
     // The word should now show be spelled wrong again
-    EXPECT_FALSE(spellcheck_mac::CheckSpelling(word, doc_tag)) << word;
+    EXPECT_FALSE(spellcheck_platform::CheckSpelling(word, doc_tag)) << word;
   }
 }  // Test IgnoreWords_EN_US
 
-TEST_F(SpellcheckMacTest, SpellCheckSuggestions_EN_US) {
+TEST_F(SpellcheckPlatformMacTest, SpellCheckSuggestions_EN_US) {
   static const struct {
     const char* input;           // A string to be tested.
     const char* suggested_word;  // A suggested word that should occur.
@@ -358,11 +359,11 @@ TEST_F(SpellcheckMacTest, SpellCheckSuggestions_EN_US) {
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     const base::string16 word(base::ASCIIToUTF16(kTestCases[i].input));
-    EXPECT_FALSE(spellcheck_mac::CheckSpelling(word, 0)) << word;
+    EXPECT_FALSE(spellcheck_platform::CheckSpelling(word, 0)) << word;
 
     // Check if the suggested words occur.
     std::vector<base::string16> suggestions;
-    spellcheck_mac::FillSuggestionList(word, &suggestions);
+    spellcheck_platform::FillSuggestionList(word, &suggestions);
     bool suggested_word_is_present = false;
     const base::string16 suggested_word(
         base::ASCIIToUTF16(kTestCases[i].suggested_word));
@@ -380,9 +381,9 @@ TEST_F(SpellcheckMacTest, SpellCheckSuggestions_EN_US) {
 // sentence, specifically an NSTextCheckingTypeOrthography result indicating
 // the language used in that sentence. Test that it is filtered out from
 // RequestTextCheck results.
-TEST_F(SpellcheckMacTest, SpellCheckIgnoresOrthography)  {
+TEST_F(SpellcheckPlatformMacTest, SpellCheckIgnoresOrthography)  {
   base::string16 test_string(base::ASCIIToUTF16("Icland is awesome."));
-  spellcheck_mac::RequestTextCheck(0, test_string, callback_);
+  spellcheck_platform::RequestTextCheck(0, test_string, callback_);
   WaitForCallback();
   EXPECT_TRUE(callback_finished_);
   EXPECT_EQ(1U, results_.size());
