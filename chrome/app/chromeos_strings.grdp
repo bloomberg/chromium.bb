@@ -4925,6 +4925,9 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_IRISH" desc="In the language menu button, this shows the input mode [Irish keyboard].">
     Irish
   </message>
+  <message name="IDS_STATUSBAR_LAYOUT_MACEDONIAN" desc="In the language menu button, this shows the input mode [Macedonian keyboard].">
+    Macedonian
+  </message>
 
   <message name="IDS_IME_NAME_KEYBOARD_ARMENIAN_PHONETIC" desc="The input method name shows in system tray menu, this shows [Armenian Phonetic keyboard].">
     Armenian Phonetic keyboard
@@ -5015,6 +5018,9 @@ Battery full
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_LITHUANIAN" desc="The input method name shows in system tray menu, this shows [Lithuanian keyboard].">
     Lithuanian keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_MACEDONIAN" desc="The input method name shows in system tray menu, this shows [Macedonian keyboard].">
+    Macedonian keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_MALTESE" desc="The input method name shows in system tray menu, this shows [Maltese keyboard].">
     Maltese keyboard

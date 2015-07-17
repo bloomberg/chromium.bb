@@ -59588,6 +59588,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="469000663" label="xkb:es:cat:cat">Catalan keyboard</int>
   <int value="520692028" label="vkd_ta_itrans">Tamil keyboard (itrans)</int>
   <int value="601883646" label="vkd_th_tis">Thai keyboard (TIS 820-2531)</int>
+  <int value="602570138" label="xkb:mk::mkd">Macedonian keyboard</int>
   <int value="629336408" label="vkd_ckb_ar">
     Sorani Kurdish Arabic-based keyboard
   </int>

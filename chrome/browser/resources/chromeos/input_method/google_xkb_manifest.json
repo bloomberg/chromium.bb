@@ -956,6 +956,20 @@
       ],
       "input_view": "inputview.html#id=mt&language=mt&passwordLayout=mt&name=keyboard_maltese",
       "options_page": "hmm_options.html?code=xkb:mt::mlt"
+    },
+    {
+      "name": "__MSG_keyboard_macedonian__",
+      "type": "ime",
+      "id": "xkb:mk::mkd",
+      "description": "",
+      "language": [
+        "mk"
+      ],
+      "layouts": [
+        "mk"
+      ],
+      "input_view": "inputview.html#id=mk&language=mk&passwordLayout=us-ltr&name=keyboard_macedonian",
+      "options_page": "hmm_options.html?code=xkb:mk::mkd"
     }
   ],
   "manifest_version": 2
