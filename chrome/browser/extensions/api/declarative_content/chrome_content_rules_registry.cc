@@ -294,13 +294,10 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   for (const RulesMap::value_type& rule_id_rule_pair : new_content_rules) {
     const linked_ptr<const ContentRule>& rule = rule_id_rule_pair.second;
     for (const ContentCondition* condition : rule->conditions) {
-      URLMatcherConditionSet::Vector url_condition_sets;
-      condition->GetURLMatcherConditionSets(&url_condition_sets);
-      for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
-               url_condition_sets) {
-        rule_and_conditions_for_match_id_[condition_set->id()] =
-            std::make_pair(rule.get(), condition);
-      }
+      URLMatcherConditionSet::ID condition_set_id =
+          condition->url_matcher_condition_set()->id();
+      rule_and_conditions_for_match_id_[condition_set_id] =
+          std::make_pair(rule.get(), condition);
     }
   }
 
@@ -309,7 +306,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   for (const RulesMap::value_type& rule_id_rule_pair : new_content_rules) {
     const linked_ptr<const ContentRule>& rule = rule_id_rule_pair.second;
     for (const ContentCondition* condition : rule->conditions)
-      condition->GetURLMatcherConditionSets(&all_new_condition_sets);
+      all_new_condition_sets.push_back(condition->url_matcher_condition_set());
   }
   page_url_condition_tracker_.AddConditionSets(
       all_new_condition_sets);
@@ -341,12 +338,11 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
     // Remove all triggers but collect their IDs.
     URLMatcherConditionSet::Vector condition_sets;
     const ContentRule* rule = content_rules_entry->second.get();
-    for (const ContentCondition* condition : rule->conditions)
-      condition->GetURLMatcherConditionSets(&condition_sets);
-    for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
-         condition_sets) {
-      condition_set_ids_to_remove.push_back(condition_set->id());
-      rule_and_conditions_for_match_id_.erase(condition_set->id());
+    for (const ContentCondition* condition : rule->conditions) {
+      URLMatcherConditionSet::ID condition_set_id =
+          condition->url_matcher_condition_set()->id();
+      condition_set_ids_to_remove.push_back(condition_set_id);
+      rule_and_conditions_for_match_id_.erase(condition_set_id);
     }
 
     // Remove the ContentRule from active_rules_.

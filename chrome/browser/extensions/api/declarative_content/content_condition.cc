@@ -11,9 +11,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 
-using url_matcher::URLMatcherConditionFactory;
 using url_matcher::URLMatcherConditionSet;
-using url_matcher::URLMatcherFactory;
 
 namespace extensions {
 
@@ -44,20 +42,16 @@ namespace keys = declarative_content_constants;
 RendererContentMatchData::RendererContentMatchData() : is_bookmarked(false) {}
 RendererContentMatchData::~RendererContentMatchData() {}
 
-//
-// ContentCondition
-//
-
 ContentCondition::ContentCondition(
     scoped_refptr<const Extension> extension,
-    scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
+    scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set,
     const std::vector<std::string>& css_selectors,
     BookmarkedStateMatch bookmarked_state)
     : extension_(extension.Pass()),
-      url_matcher_conditions_(url_matcher_conditions),
+      url_matcher_condition_set_(url_matcher_condition_set),
       css_selectors_(css_selectors),
       bookmarked_state_(bookmarked_state) {
-  CHECK(url_matcher_conditions.get());
+  DCHECK(url_matcher_condition_set_.get());
 }
 
 ContentCondition::~ContentCondition() {}
@@ -65,20 +59,20 @@ ContentCondition::~ContentCondition() {}
 bool ContentCondition::IsFulfilled(
     const RendererContentMatchData& renderer_data) const {
   if (!ContainsKey(renderer_data.page_url_matches,
-                   url_matcher_conditions_->id()))
+                   url_matcher_condition_set_->id()))
     return false;
 
   // All attributes must be fulfilled for a fulfilled condition.
-  for (std::vector<std::string>::const_iterator i =
-       css_selectors_.begin(); i != css_selectors_.end(); ++i) {
-    if (!ContainsKey(renderer_data.css_selectors, *i))
+  for (const std::string& css_selector : css_selectors_) {
+    if (!ContainsKey(renderer_data.css_selectors, css_selector))
       return false;
   }
 
-  if (HasBookmarkAPIPermission(extension_.get()) &&
-      bookmarked_state_ != DONT_CARE) {
-    return (bookmarked_state_ == BOOKMARKED && renderer_data.is_bookmarked) ||
-        (bookmarked_state_ == NOT_BOOKMARKED && !renderer_data.is_bookmarked);
+  if (HasBookmarkAPIPermission(extension_.get())) {
+    if ((bookmarked_state_ == BOOKMARKED && !renderer_data.is_bookmarked) ||
+        (bookmarked_state_ == NOT_BOOKMARKED && renderer_data.is_bookmarked)) {
+      return false;
+    }
   }
 
   return true;
@@ -87,7 +81,7 @@ bool ContentCondition::IsFulfilled(
 // static
 scoped_ptr<ContentCondition> ContentCondition::Create(
     scoped_refptr<const Extension> extension,
-    URLMatcherConditionFactory* url_matcher_condition_factory,
+    url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
     const base::Value& condition,
     std::string* error) {
   const base::DictionaryValue* condition_dict = NULL;
@@ -124,7 +118,7 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
                                     condition_attribute_name.c_str());
       } else {
         url_matcher_condition_set =
-            URLMatcherFactory::CreateFromURLFilterDictionary(
+            url_matcher::URLMatcherFactory::CreateFromURLFilterDictionary(
                 url_matcher_condition_factory, dict, ++g_next_id, error);
       }
     } else if (condition_attribute_name == keys::kCss) {

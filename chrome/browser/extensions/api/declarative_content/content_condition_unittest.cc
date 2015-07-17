@@ -118,7 +118,7 @@ TEST(DeclarativeContentConditionTest, ConditionWithUrlAndCss) {
   ASSERT_TRUE(result);
 
   URLMatcherConditionSet::Vector all_new_condition_sets;
-  result->GetURLMatcherConditionSets(&all_new_condition_sets);
+  all_new_condition_sets.push_back(result->url_matcher_condition_set());
   matcher.AddConditionSets(all_new_condition_sets);
   EXPECT_FALSE(matcher.IsEmpty());
 
@@ -130,7 +130,7 @@ TEST(DeclarativeContentConditionTest, ConditionWithUrlAndCss) {
   match_data.page_url_matches = matcher.MatchURL(
       GURL("http://www.example.com/foobar"));
   EXPECT_THAT(match_data.page_url_matches,
-              ElementsAre(result->url_matcher_condition_set_id()));
+              ElementsAre(result->url_matcher_condition_set()->id()));
 
   EXPECT_TRUE(result->IsFulfilled(match_data));
 
@@ -204,7 +204,7 @@ TEST(DeclarativeContentConditionTest, IsBookmarkedTrue) {
   // ChromeContentRulesRegistry to not depend on a ContentCondition always
   // having a URL matcher condition.
   URLMatcherConditionSet::Vector all_new_condition_sets;
-  result->GetURLMatcherConditionSets(&all_new_condition_sets);
+  all_new_condition_sets.push_back(result->url_matcher_condition_set());
   matcher.AddConditionSets(all_new_condition_sets);
 
   RendererContentMatchData data;
@@ -240,7 +240,7 @@ TEST(DeclarativeContentConditionTest, IsBookmarkedFalse) {
   // ChromeContentRulesRegistry to not depend on a ContentCondition always
   // having a URL matcher condition.
   URLMatcherConditionSet::Vector all_new_condition_sets;
-  result->GetURLMatcherConditionSets(&all_new_condition_sets);
+  all_new_condition_sets.push_back(result->url_matcher_condition_set());
   matcher.AddConditionSets(all_new_condition_sets);
 
   RendererContentMatchData data;

@@ -60,7 +60,8 @@ class ContentCondition {
 
   ContentCondition(
       scoped_refptr<const Extension> extension,
-      scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions,
+      scoped_refptr<url_matcher::URLMatcherConditionSet>
+          url_matcher_condition_set,
       const std::vector<std::string>& css_selectors,
       BookmarkedStateMatch bookmarked_state);
   ~ContentCondition();
@@ -75,28 +76,11 @@ class ContentCondition {
       std::string* error);
 
   // Returns whether the request is a match, given that the URLMatcher found
-  // a match for |url_matcher_conditions_|.
+  // a match for |url_matcher_condition_set_|.
   bool IsFulfilled(const RendererContentMatchData& renderer_data) const;
 
-  // Returns a URLMatcherConditionSet::ID which is the canonical representation
-  // for all URL patterns that need to be matched by this ContentCondition.
-  // This ID is registered in a URLMatcher that can inform us in case of a
-  // match.
-  url_matcher::URLMatcherConditionSet::ID url_matcher_condition_set_id() const {
-    return url_matcher_conditions_->id();
-  }
-
-  // If this Condition has a url filter, appends it to |condition_sets|.
-  void GetURLMatcherConditionSets(
-      url_matcher::URLMatcherConditionSet::Vector* condition_sets) const {
-    if (url_matcher_conditions_.get())
-      condition_sets->push_back(url_matcher_conditions_);
-  }
-
-  // True if GetURLMatcherConditionSets would append anything to its
-  // argument.
-  bool has_url_matcher_condition_set() const {
-    return url_matcher_conditions_.get() != NULL;
+  url_matcher::URLMatcherConditionSet* url_matcher_condition_set() const {
+    return url_matcher_condition_set_.get();
   }
 
   // Returns the CSS selectors required to match by this condition.
@@ -104,11 +88,9 @@ class ContentCondition {
     return css_selectors_;
   }
 
-  BookmarkedStateMatch bookmarked_state() const { return bookmarked_state_; }
-
  private:
   const scoped_refptr<const Extension> extension_;
-  scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_conditions_;
+  scoped_refptr<url_matcher::URLMatcherConditionSet> url_matcher_condition_set_;
   std::vector<std::string> css_selectors_;
   BookmarkedStateMatch bookmarked_state_;
 
