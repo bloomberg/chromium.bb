@@ -301,7 +301,6 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/455665
 "race:mojo::common::*::tick_clock\n"
 "race:mojo::common::internal::NowTicks\n"
-"race:tracked_objects::ThreadData::InitializeThreadContext\n"
 
 // https://crbug.com/459429
 "race:randomnessPid\n"
