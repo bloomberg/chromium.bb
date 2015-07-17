@@ -4831,10 +4831,8 @@ void Document::initSecurityContext(const DocumentInit& initializer)
                 // Some clients want local URLs to have universal access, but that setting is dangerous for other clients.
                 securityOrigin()->grantUniversalAccess();
             } else if (!settings->allowFileAccessFromFileURLs()) {
-                // Some clients want local URLs to have even tighter restrictions by default, and not be able to access other local files.
-                // FIXME 81578: The naming of this is confusing. Files with restricted access to other local files
-                // still can have other privileges that can be remembered, thereby not making them unique origins.
-                securityOrigin()->enforceFilePathSeparation();
+                // Some clients do not want local URLs to have access to other local URLs.
+                securityOrigin()->blockLocalAccessFromLocalOrigin();
             }
         }
     }

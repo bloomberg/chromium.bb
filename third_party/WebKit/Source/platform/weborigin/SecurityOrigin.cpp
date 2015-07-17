@@ -125,7 +125,7 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
     , m_isUnique(false)
     , m_universalAccess(false)
     , m_domainWasSetInDOM(false)
-    , m_enforceFilePathSeparation(false)
+    , m_blockLocalAccessFromLocalOrigin(false)
     , m_needsDatabaseIdentifierQuirkForFiles(false)
 {
     // Suborigins are serialized into the host, so extract it if necessary.
@@ -153,7 +153,7 @@ SecurityOrigin::SecurityOrigin()
     , m_universalAccess(false)
     , m_domainWasSetInDOM(false)
     , m_canLoadLocalResources(false)
-    , m_enforceFilePathSeparation(false)
+    , m_blockLocalAccessFromLocalOrigin(false)
     , m_needsDatabaseIdentifierQuirkForFiles(false)
 {
 }
@@ -168,7 +168,7 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
     , m_universalAccess(other->m_universalAccess)
     , m_domainWasSetInDOM(other->m_domainWasSetInDOM)
     , m_canLoadLocalResources(other->m_canLoadLocalResources)
-    , m_enforceFilePathSeparation(other->m_enforceFilePathSeparation)
+    , m_blockLocalAccessFromLocalOrigin(other->m_blockLocalAccessFromLocalOrigin)
     , m_needsDatabaseIdentifierQuirkForFiles(other->m_needsDatabaseIdentifierQuirkForFiles)
 {
 }
@@ -289,7 +289,7 @@ bool SecurityOrigin::passesFileCheck(const SecurityOrigin* other) const
 {
     ASSERT(isLocal() && other->isLocal());
 
-    return !m_enforceFilePathSeparation && !other->m_enforceFilePathSeparation;
+    return !m_blockLocalAccessFromLocalOrigin && !other->m_blockLocalAccessFromLocalOrigin;
 }
 
 bool SecurityOrigin::canRequest(const KURL& url) const
@@ -387,10 +387,10 @@ void SecurityOrigin::grantUniversalAccess()
     m_universalAccess = true;
 }
 
-void SecurityOrigin::enforceFilePathSeparation()
+void SecurityOrigin::blockLocalAccessFromLocalOrigin()
 {
     ASSERT(isLocal());
-    m_enforceFilePathSeparation = true;
+    m_blockLocalAccessFromLocalOrigin = true;
 }
 
 bool SecurityOrigin::isLocal() const
@@ -425,7 +425,7 @@ String SecurityOrigin::toString() const
 {
     if (isUnique())
         return "null";
-    if (m_protocol == "file" && m_enforceFilePathSeparation)
+    if (isLocal() && m_blockLocalAccessFromLocalOrigin)
         return "null";
     return toRawString();
 }
@@ -434,7 +434,7 @@ AtomicString SecurityOrigin::toAtomicString() const
 {
     if (isUnique())
         return AtomicString("null", AtomicString::ConstructFromLiteral);
-    if (m_protocol == "file" && m_enforceFilePathSeparation)
+    if (isLocal() && m_blockLocalAccessFromLocalOrigin)
         return AtomicString("null", AtomicString::ConstructFromLiteral);
     return toRawAtomicString();
 }
@@ -540,7 +540,7 @@ void SecurityOrigin::transferPrivilegesFrom(const SecurityOrigin& origin)
 {
     m_universalAccess = origin.m_universalAccess;
     m_canLoadLocalResources = origin.m_canLoadLocalResources;
-    m_enforceFilePathSeparation = origin.m_enforceFilePathSeparation;
+    m_blockLocalAccessFromLocalOrigin = origin.m_blockLocalAccessFromLocalOrigin;
 }
 
 } // namespace blink

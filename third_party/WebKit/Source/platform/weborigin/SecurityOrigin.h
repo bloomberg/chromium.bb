@@ -184,10 +184,10 @@ public:
     bool hasSuborigin() const { return !m_suboriginName.isNull(); }
     const String& suboriginName() const { return m_suboriginName; }
 
-    // Marks a file:// origin as being in a domain defined by its path.
-    // FIXME 81578: The naming of this is confusing. Files with restricted access to other local files
-    // still can have other privileges that can be remembered, thereby not making them unique.
-    void enforceFilePathSeparation();
+    // By default 'file:' URLs may access other 'file:' URLs. This method
+    // denies access. If either SecurityOrigin sets this flag, the access
+    // check will fail.
+    void blockLocalAccessFromLocalOrigin();
 
     // Convert this SecurityOrigin into a string. The string
     // representation of a SecurityOrigin is similar to a URL, except it
@@ -254,7 +254,7 @@ private:
     bool m_universalAccess;
     bool m_domainWasSetInDOM;
     bool m_canLoadLocalResources;
-    bool m_enforceFilePathSeparation;
+    bool m_blockLocalAccessFromLocalOrigin;
     bool m_needsDatabaseIdentifierQuirkForFiles;
 };
 

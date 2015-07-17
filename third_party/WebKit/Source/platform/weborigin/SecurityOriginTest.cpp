@@ -63,6 +63,31 @@ TEST_F(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins)
     }
 }
 
+TEST_F(SecurityOriginTest, LocalAccess)
+{
+    RefPtr<SecurityOrigin> file1 = SecurityOrigin::createFromString("file:///etc/passwd");
+    RefPtr<SecurityOrigin> file2 = SecurityOrigin::createFromString("file:///etc/shadow");
+
+    EXPECT_TRUE(file1->isSameSchemeHostPort(file1.get()));
+    EXPECT_TRUE(file1->isSameSchemeHostPort(file2.get()));
+    EXPECT_TRUE(file2->isSameSchemeHostPort(file1.get()));
+
+    EXPECT_TRUE(file1->canAccess(file1.get()));
+    EXPECT_TRUE(file1->canAccess(file2.get()));
+    EXPECT_TRUE(file2->canAccess(file1.get()));
+
+    // Block |file1|'s access to local origins. It should now be same-origin
+    // with itself, but shouldn't have access to |file2|.
+    file1->blockLocalAccessFromLocalOrigin();
+    EXPECT_FALSE(file1->isSameSchemeHostPort(file1.get()));
+    EXPECT_FALSE(file1->isSameSchemeHostPort(file2.get()));
+    EXPECT_FALSE(file2->isSameSchemeHostPort(file1.get()));
+
+    EXPECT_TRUE(file1->canAccess(file1.get()));
+    EXPECT_FALSE(file1->canAccess(file2.get()));
+    EXPECT_FALSE(file2->canAccess(file1.get()));
+}
+
 TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy)
 {
     struct TestCase {
