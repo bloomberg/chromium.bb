@@ -151,6 +151,13 @@ public class AppBannerManager extends EmptyTabObserver {
         nativeDisableSecureSchemeCheckForTesting();
     }
 
+    /** Sets the weights of direct and indirect page navigations for testing. */
+    @VisibleForTesting
+    static void forceEngagementWeightsForTesting(double directEngagement,
+            double indirectEngagement) {
+        nativeForceEngagementWeightsForTesting(directEngagement, indirectEngagement);
+    }
+
     /** Returns whether a AppBannerDataFetcher is actively retrieving data. */
     @VisibleForTesting
     public boolean isFetcherActiveForTesting() {
@@ -168,5 +175,7 @@ public class AppBannerManager extends EmptyTabObserver {
     // Testing methods.
     private static native void nativeSetTimeDeltaForTesting(int days);
     private static native void nativeDisableSecureSchemeCheckForTesting();
+    private static native void nativeForceEngagementWeightsForTesting(
+            double directEngagement, double indirectEngagement);
     private native boolean nativeIsFetcherActive(long nativeAppBannerManagerAndroid);
 }

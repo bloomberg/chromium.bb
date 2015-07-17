@@ -150,6 +150,14 @@ void DisableSecureSchemeCheckForTesting(JNIEnv* env, jclass clazz) {
   AppBannerManager::DisableSecureSchemeCheckForTesting();
 }
 
+void ForceEngagementWeightsForTesting(JNIEnv* env,
+                                      jclass clazz,
+                                      jdouble direct_engagement,
+                                      jdouble indirect_engagement) {
+  AppBannerManager::ForceEngagementWeightsForTesting(direct_engagement,
+                                                     indirect_engagement);
+}
+
 jboolean IsEnabled(JNIEnv* env, jclass clazz) {
   return base::FieldTrialList::FindFullName("AppBanners") == "Enabled";
 }

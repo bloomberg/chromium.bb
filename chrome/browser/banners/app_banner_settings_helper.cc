@@ -53,9 +53,11 @@ const char kBannerTimeKey[] = "time";
 const char kBannerEngagementKey[] = "engagement";
 
 // Engagement weight assigned to direct and indirect navigations.
-// TODO(dominickn) make direct enagagements worth more than indirect by default.
+// By default, a direct navigation is a page visit via ui::PAGE_TRANSITION_TYPED
+// or ui::PAGE_TRANSITION_GENERATED. These are weighted twice the engagement of
+// all other navigations.
 double kDirectNavigationEngagement = 1;
-double kIndirectNavigationEnagagement = 1;
+double kIndirectNavigationEnagagement = 0.5;
 
 scoped_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,

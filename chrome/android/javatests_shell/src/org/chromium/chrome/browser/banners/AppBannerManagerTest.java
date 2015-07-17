@@ -135,6 +135,10 @@ public class AppBannerManagerTest extends ChromeShellTestBase {
         launchChromeShellWithUrl("about:blank");
         assertTrue(waitForActiveShellToBeDoneLoading());
         AppBannerManager.disableSecureSchemeCheckForTesting();
+
+        // Navigations in this test are all of type ui::PAGE_TRANSITION_LINK, i.e. indirect.
+        // Force indirect navigations to be worth the same as direct for testing.
+        AppBannerManager.forceEngagementWeightsForTesting(1, 1);
     }
 
     private boolean waitUntilNoInfoBarsExist() throws Exception {

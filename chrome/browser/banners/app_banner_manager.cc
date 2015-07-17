@@ -104,4 +104,11 @@ void AppBannerManager::DisableSecureSchemeCheckForTesting() {
   gDisableSecureCheckForTesting = true;
 }
 
+void AppBannerManager::ForceEngagementWeightsForTesting(
+    double direct_engagement,
+    double indirect_engagement) {
+  AppBannerSettingsHelper::SetEngagementWeights(direct_engagement,
+                                                indirect_engagement);
+}
+
 }  // namespace banners

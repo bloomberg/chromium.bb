@@ -32,6 +32,9 @@ class AppBannerManager : public content::WebContentsObserver,
  public:
   static void DisableSecureSchemeCheckForTesting();
 
+  static void ForceEngagementWeightsForTesting(double direct_engagement,
+                                               double indirect_engagement);
+
   // Returns whether or not the URLs match for everything except for the ref.
   static bool URLsAreForTheSamePage(const GURL& first, const GURL& second);
 
