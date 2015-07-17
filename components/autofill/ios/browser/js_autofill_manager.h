@@ -16,6 +16,15 @@
 @interface JsAutofillManager : CRWJSInjectionManager
 
 // Extracts forms from a web page. Only forms with at least |requiredFields|
+// fields are extracted.
+// |completionHandler| is called with the JSON string of forms of a web page.
+// |completionHandler| cannot be nil.
+- (void)fetchFormsWithMinimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
+                               completionHandler:
+                                   (void (^)(NSString*))completionHandler;
+
+// TODO(jdonnelly): Remove this as soon as the downstream code stops using it.
+// Extracts forms from a web page. Only forms with at least |requiredFields|
 // fields and the appropriate attribute requirements are extracted.
 // |completionHandler| is called with the JSON string of forms of a web page.
 // |completionHandler| cannot be nil.

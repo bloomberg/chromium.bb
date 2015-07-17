@@ -10,6 +10,14 @@
 
 @implementation JsAutofillManager
 
+- (void)fetchFormsWithMinimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
+                               completionHandler:
+                                   (void (^)(NSString*))completionHandler {
+  [self fetchFormsWithRequirements:autofill::REQUIRE_NONE
+        minimumRequiredFieldsCount:requiredFieldsCount
+                 completionHandler:completionHandler];
+}
+
 - (void)fetchFormsWithRequirements:(autofill::RequirementsMask)requirements
         minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
                  completionHandler:(void (^)(NSString*))completionHandler {
