@@ -1,0 +1,43 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package gcm;
+
+// Stores a public/private key-pair.
+// Next tag: 3
+message KeyPair {
+  // The type of key used for key agreement. Currently only the ECDH key
+  // agreement scheme is supported, using Curve 25519.
+  enum KeyType {
+    ECDH_CURVE_25519 = 0;
+  }
+
+  required KeyType type = 1;
+
+  // The private key matching the size requirements of |type|.
+  required bytes private_key = 2;
+
+  // The public key matching the size requirements of |type|.
+  required bytes public_key = 3;
+}
+
+// Stores a vector of public/private key-pairs associated with an app id.
+//
+// In the current implementation, each app id will have a single encryption key-
+// pair associated with it at most. The message allows for multiple key pairs
+// in case we need to force-cycle all keys, allowing the old keys to remain
+// valid for a period of time enabling the web app to update.
+//
+// Next tag: 2 
+message EncryptionData {
+  // The app id to whom this encryption data belongs.
+  required string app_id = 1;
+
+  // The actual public/private key-pairs.
+  repeated KeyPair keys = 2;
+}

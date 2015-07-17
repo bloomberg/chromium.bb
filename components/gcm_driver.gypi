@@ -77,11 +77,6 @@
         'gcm_driver/system_encryptor.cc',
         'gcm_driver/system_encryptor.h',
       ],
-      'variables': {
-        'proto_in_dir': 'gcm_driver/proto',
-        'proto_out_dir': 'components/gcm_driver/proto',
-      },
-      'includes': [ '../build/protoc.gypi' ],
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
@@ -101,13 +96,10 @@
             'gcm_driver/gcm_client_factory.h',
             'gcm_driver/gcm_client_impl.cc',
             'gcm_driver/gcm_client_impl.h',
-            'gcm_driver/gcm_delayed_task_controller.cc',
-            'gcm_driver/gcm_delayed_task_controller.h',
             'gcm_driver/gcm_driver_desktop.cc',
             'gcm_driver/gcm_driver_desktop.h',
             'gcm_driver/gcm_stats_recorder_impl.cc',
             'gcm_driver/gcm_stats_recorder_impl.h',
-            'gcm_driver/proto/gcm_channel_status.proto',
           ],
         }],
         ['chromeos == 1', {
@@ -199,6 +191,38 @@
         'gcm_driver/instance_id/fake_gcm_driver_for_instance_id.cc',
         'gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h',
       ],
+    },
+    {
+      # GN version: //components/gcm_driver/crypto
+      'target_name': 'gcm_driver_crypto',
+      'type': 'static_library',
+      'dependencies': [
+        'gcm_driver_crypto_proto',
+        '../base/base.gyp:base',
+        '../components/components.gyp:leveldb_proto',
+        '../crypto/crypto.gyp:crypto',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: file list duplicated in GN build.
+        'gcm_driver/crypto/gcm_key_store.cc',
+        'gcm_driver/crypto/gcm_key_store.h',
+      ],
+    },
+    {
+      # GN version: //components/gcm_driver/crypto/proto
+      'target_name': 'gcm_driver_crypto_proto',
+      'type': 'static_library',
+      'sources': [
+        'gcm_driver/crypto/proto/gcm_encryption_data.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'gcm_driver/crypto/proto',
+        'proto_out_dir': 'components/gcm_driver/crypto/proto',
+      },
+      'includes': [ '../build/protoc.gypi' ],
     },
   ],
   'conditions': [

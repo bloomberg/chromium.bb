@@ -230,6 +230,9 @@
       'gcm_driver/gcm_driver_desktop_unittest.cc',
       'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
     ],
+    'gcm_driver_crypto_unittest_sources': [
+      'gcm_driver/crypto/gcm_key_store_unittest.cc',
+    ],
     'google_unittest_sources': [
       'google/core/browser/google_url_tracker_unittest.cc',
       'google/core/browser/google_util_unittest.cc',
@@ -718,6 +721,7 @@
         '<@(favicon_base_unittest_sources)',
         '<@(favicon_unittest_sources)',
         '<@(gcm_driver_unittest_sources)',
+        '<@(gcm_driver_crypto_unittest_sources)',
         '<@(google_unittest_sources)',
         '<@(history_unittest_sources)',
         '<@(instance_id_unittest_sources)',
@@ -814,6 +818,7 @@
         'components.gyp:favicon_base',
         'components.gyp:favicon_core',
         'components.gyp:gcm_driver',
+        'components.gyp:gcm_driver_crypto',
         'components.gyp:gcm_driver_test_support',
         'components.gyp:google_core_browser',
         'components.gyp:history_core_browser',

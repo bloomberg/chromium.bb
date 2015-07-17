@@ -1,0 +1,34 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: components/gcm_driver.gypi:gcm_driver_crypto
+source_set("crypto") {
+  sources = [
+    "gcm_key_store.cc",
+    "gcm_key_store.h",
+  ]
+
+  deps = [
+    "//base",
+    "//crypto",
+    "//components/gcm_driver",
+    "//components/gcm_driver/crypto/proto",
+    "//components/leveldb_proto",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "gcm_key_store_unittest.cc",
+  ]
+
+  deps = [
+    ":crypto",
+    "//base",
+    "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}
