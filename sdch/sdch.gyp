@@ -60,22 +60,20 @@
         [ 'OS == "linux" or OS == "android"', { 'include_dirs': [ 'linux' ] } ],
         [ 'os_bsd==1 or OS=="solaris"', { 'include_dirs': [ 'bsd' ] } ],
         [ 'OS == "ios"', { 'include_dirs': [ 'ios' ] } ],
-        [ 'OS == "mac"', { 'include_dirs': [ 'mac' ] } ],
+        [ 'OS == "mac"', {
+          'include_dirs': [ 'mac' ],
+          'defines': [ 'OPEN_VCDIFF_USE_AUTO_PTR' ],
+        }],
         [ 'OS == "win"', { 'include_dirs': [ 'win' ] } ],
       ],
       # open-vcdiff's logging.h introduces static initializers. This was
       # reported upstream years ago (
-      # https://code.google.com/p/open-vcdiff/issues/detail?id=33 ). Since
+      # https://github.com/google/open-vcdiff/issues/33 ). Since
       # upstream won't fix this, work around it on the chromium side:
       # Inject a header that forwards to base/logging.h instead (which doesn't
       # introduce static initializers, and which prevents open-vcdiff's
       # logging.h from being used).
       'variables': {
-        'clang_warning_flags': [
-          # sdch uses the pre-c++11 typedef-as-static_assert hack.
-          # https://code.google.com/p/open-vcdiff/issues/detail?id=44
-          '-Wno-unused-local-typedef',
-        ],
         'logging_path': 'logging_forward.h',
         'conditions': [
           # gyp leaves unspecified what the cwd is when running the compiler,

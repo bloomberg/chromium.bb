@@ -58,12 +58,6 @@ static_library("sdch") {
       # TODO(mostynb): remove this if open-vcdiff is ever updated for c++11:
       cflags += [ "-Wno-deprecated-declarations" ]
     }
-
-    if (is_clang) {
-      # sdch uses the pre-c++11 typedef-as-static_assert hack.
-      # https://code.google.com/p/open-vcdiff/issues/detail?id=44
-      cflags += [ "-Wno-unused-local-typedef" ]
-    }
   }
   configs += [ ":sdch_warnings" ]
 
@@ -79,7 +73,7 @@ static_library("sdch") {
 
   # open-vcdiff's logging.h introduces static initializers. This was
   # reported upstream years ago (
-  # https://code.google.com/p/open-vcdiff/issues/detail?id=33 ). Since
+  # https://github.com/google/open-vcdiff/issues/33 ). Since
   # upstream won't fix this, work around it on the chromium side:
   # Inject a header that forwards to base/logging.h instead (which doesn't
   # introduce static initializers, and which prevents open-vcdiff's
