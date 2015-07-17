@@ -27,8 +27,7 @@ const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 const base::TimeDelta kMinDeltaToSwitchToAsync =
     base::TimeDelta::FromSecondsD(1. / 15.);
 
-bool CanUseIOSurface(const gpu::gles2::FeatureInfo* feature_info,
-                        bool has_attempted_and_failed) {
+bool CanUseIOSurface() {
   // Respect command line flags for the API's usage.
   static bool forced_at_command_line =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -41,35 +40,8 @@ bool CanUseIOSurface(const gpu::gles2::FeatureInfo* feature_info,
   if (disabled_at_command_line)
     return false;
 
-  // TODO(ccameron):
-  // Remove the blacklist entries for multi-GPU and multi-display
-  // configurations.
-
-  // If we have attempted to use the API and it failed, don't try it again.
-  if (has_attempted_and_failed)
-    return false;
-
-  // Systems with multiple GPUs can exhibit problems where incorrect content
-  // will briefly flash during resize, and especially during transitions between
-  // the iGPU and the dGPU. These problems are exhibited by layer-backed
-  // NSOpenGLViews as well.
-  if (feature_info->workarounds().disable_ns_cgl_surface_api)
-    return false;
-
-  // If there are multiple displays connected, then it is possible that we will
-  // end up on the slow path, where -[IOSurface layerContents] will return
-  // a CGImage that is a dearly-made copy of the surface. Since we don't yet
-  // know how to avoid those sharp edges, just avoid using IOSurface when
-  // multiple screens are present.
-  uint32_t count = 0;
-  CGError cg_error = CGGetActiveDisplayList(count, NULL, &count);
-  if (cg_error != kCGErrorSuccess) {
-    LOG(ERROR) << "Failed to query the number of displays.";
-    return false;
-  }
-  if (count != 1)
-    return false;
-
+  // Ignore blacklist settings.
+  // TODO(ccameron): Remove fields for blacklist settings.
   return true;
 }
 
@@ -440,7 +412,6 @@ CALayerStorageProvider::CALayerStorageProvider(
       tex_location_(0),
       vertex_buffer_(0),
       vertex_array_(0),
-      io_surface_api_attempted_and_failed_(false),
       recreate_layer_after_gpu_switch_(false),
       pending_draw_weak_factory_(this) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
@@ -646,17 +617,6 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
     recreate_layer_after_gpu_switch_ = false;
   }
 
-  // Determine if it is safe to use an IOSurface, or if we should use the
-  // CAOpenGLLayer fallback. If we're not using the preferred type of layer,
-  // then reset the layer and re-create one of the preferred type.
-  bool can_use_io_surface = CanUseIOSurface(
-      transport_surface_->GetFeatureInfo(),
-      io_surface_api_attempted_and_failed_);
-  if (can_use_io_surface && ca_opengl_layer_)
-    ResetLayer();
-  if (!can_use_io_surface && io_surface_layer_)
-    ResetLayer();
-
   // Set the pending draw flag only after potentially destroying the old layer
   // (otherwise destroying it will un-set the flag).
   has_pending_ack_ = true;
@@ -673,8 +633,7 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
 
   // Create the appropriate CALayer (if needed) and request that it draw.
   bool should_draw_immediately = gpu_vsync_disabled_ || throttling_disabled_;
-  CreateLayerAndRequestDraw(
-      can_use_io_surface, should_draw_immediately, dirty_rect);
+  CreateLayerAndRequestDraw(should_draw_immediately, dirty_rect);
 
   // CoreAnimation may not call the function to un-block the browser in a
   // timely manner (or ever). Post a task to force the draw and un-block
@@ -691,28 +650,24 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
 }
 
 void CALayerStorageProvider::CreateLayerAndRequestDraw(
-    bool can_use_io_surface, bool should_draw_immediately,
-    const gfx::Rect& dirty_rect) {
-  // Attempt to use the IOSurface API if nothing suggests that it will fail.
-  if (can_use_io_surface) {
+    bool should_draw_immediately, const gfx::Rect& dirty_rect) {
+  // Use the IOSurface API unless it is explicitly disabled.
+  if (CanUseIOSurface()) {
     if (!io_surface_layer_) {
       io_surface_layer_.reset([[ImageTransportIOSurface alloc]
           initWithStorageProvider:this
                         pixelSize:fbo_pixel_size_
                       scaleFactor:fbo_scale_factor_]);
     }
-    if ([io_surface_layer_ drawNewFrame:dirty_rect])
+    if (io_surface_layer_ && [io_surface_layer_ drawNewFrame:dirty_rect])
       return;
 
-    // If the draw fails, then fall back to the CAOpenGLLayer path permanently.
-    io_surface_api_attempted_and_failed_ = true;
+    // If the draw fails, destroy everything and try again next frame. The
+    // likely cause for this is video memory stress.
+    LOG(ERROR) << "Failed to allocate or draw IOSurface layer, "
+               << "page will be blank";
     ResetLayer();
-  }
-
-  // If the IOSurface API wasn't tried, or if it failed in a way that could
-  // only be detected after attempting to use it, then attempt to use the
-  // CAOpenGLLayer API.
-  {
+  } else {
     if (!ca_opengl_layer_) {
       ca_opengl_layer_.reset([[ImageTransportCAOpenGLLayer alloc]
           initWithStorageProvider:this

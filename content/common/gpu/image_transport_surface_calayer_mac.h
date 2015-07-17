@@ -49,8 +49,7 @@ class CALayerStorageProvider
   void OnGpuSwitched() override;
 
  private:
-  void CreateLayerAndRequestDraw(bool can_use_io_surface,
-                                 bool should_draw_immediately,
+  void CreateLayerAndRequestDraw(bool should_draw_immediately,
                                  const gfx::Rect& dirty_rect);
   void DrawImmediatelyAndUnblockBrowser();
 
@@ -98,8 +97,6 @@ class CALayerStorageProvider
   base::scoped_nsobject<CAContext> context_;
   base::scoped_nsobject<ImageTransportCAOpenGLLayer> ca_opengl_layer_;
   base::scoped_nsobject<ImageTransportIOSurface> io_surface_layer_;
-
-  bool io_surface_api_attempted_and_failed_;
 
   // When a CAContext is destroyed in the GPU process, it will become a blank
   // CALayer in the browser process. Put retains on these contexts in this queue
