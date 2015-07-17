@@ -553,7 +553,7 @@ FileTransferController.prototype.paste =
                           return;
                         return new Promise(function(fulfill) {
                           chrome.fileManagerPrivate.requestDriveShare(
-                              shareEntries[index].toURL(),
+                              shareEntries[index],
                               dialogResult,
                               function() {
                                 // TODO(hirono): Check chrome.runtime.lastError

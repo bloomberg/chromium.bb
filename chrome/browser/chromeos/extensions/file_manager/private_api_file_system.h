@@ -311,13 +311,14 @@ class FileManagerPrivateIsUMAEnabledFunction
 };
 
 // Implements the chrome.fileManagerPrivate.setEntryTag method.
-class FileManagerPrivateSetEntryTagFunction : public UIThreadExtensionFunction {
+class FileManagerPrivateInternalSetEntryTagFunction
+    : public UIThreadExtensionFunction {
  public:
-  FileManagerPrivateSetEntryTagFunction();
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.setEntryTag",
-                             FILEMANAGERPRIVATE_SETENTRYTAG)
+  FileManagerPrivateInternalSetEntryTagFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.setEntryTag",
+                             FILEMANAGERPRIVATEINTERNAL_SETENTRYTAG)
  protected:
-  ~FileManagerPrivateSetEntryTagFunction() override {}
+  ~FileManagerPrivateInternalSetEntryTagFunction() override {}
 
  private:
   const ChromeExtensionFunctionDetails chrome_details_;
@@ -326,7 +327,7 @@ class FileManagerPrivateSetEntryTagFunction : public UIThreadExtensionFunction {
   void OnSetEntryPropertyCompleted(drive::FileError result);
 
   ExtensionFunction::ResponseAction Run() override;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateSetEntryTagFunction);
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateInternalSetEntryTagFunction);
 };
 
 }  // namespace extensions

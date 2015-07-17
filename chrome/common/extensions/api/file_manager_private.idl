@@ -874,19 +874,24 @@ interface Functions {
       RequestWebStoreAccessTokenCallback callback);
 
   // Requests a share dialog url for the specified file.
-  // |url| Url for the file.
+  // |entry| The entry to share.
   // |callback|
-  static void getShareUrl(DOMString url, GetUrlCallback callback);
+  [nocompile]
+  static void getShareUrl([instanceof=Entry] object entry,
+                          GetUrlCallback callback);
 
   // Requests a download url to download the file contents.
-  // |url| Url for the file.
+  // |entry| The entry to download.
   // |callback|
-  static void getDownloadUrl(DOMString url, GetUrlCallback callback);
+  [nocompile]
+  static void getDownloadUrl([instanceof=Entry] object entry,
+                             GetUrlCallback callback);
 
   // Requests to share drive files.
-  // |url| URL of a file to be shared.
+  // |entry| Entry to be shared.
   // |shareType| Type of access that is getting granted.
-  static void requestDriveShare(DOMString url,
+  [nocompile]
+  static void requestDriveShare([instanceof=Entry] object entry,
                                 DriveShareType shareType,
                                 SimpleCallback callback);
 
@@ -908,7 +913,8 @@ interface Functions {
   static void isUMAEnabled(BooleanCallback callback);
 
   // Sets a tag on a file or a directory. Only Drive files are supported.
-  static void setEntryTag(DOMString entryURL,
+  [nocompile]
+  static void setEntryTag([instanceof=Entry] object entry,
                           EntryTagVisibility visibility,
                           DOMString key,
                           DOMString value,

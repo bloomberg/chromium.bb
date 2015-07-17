@@ -25,6 +25,7 @@ namespace fileManagerPrivateInternal {
   callback GetMimeTypeCallback = void(DOMString result);
   callback ExecuteTaskCallback = void(fileManagerPrivate.TaskResult result);
   callback GetFileTasksCallback = void(fileManagerPrivate.FileTask[] tasks);
+  callback GetUrlCallback = void(DOMString url);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -60,5 +61,15 @@ namespace fileManagerPrivateInternal {
                                SimpleCallback callback);
     static void getFileTasks(DOMString[] urls,
                              GetFileTasksCallback callback);
+    static void getShareUrl(DOMString  url, GetUrlCallback callback);
+    static void getDownloadUrl(DOMString url, GetUrlCallback callback);
+    static void requestDriveShare(DOMString url,
+                                fileManagerPrivate.DriveShareType shareType,
+                                SimpleCallback callback);
+    static void setEntryTag(DOMString url,
+                            fileManagerPrivate.EntryTagVisibility visibility,
+                            DOMString key,
+                            DOMString value,
+                            SimpleCallback callback);
   };
 };

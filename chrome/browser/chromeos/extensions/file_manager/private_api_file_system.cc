@@ -898,18 +898,18 @@ FileManagerPrivateIsUMAEnabledFunction::Run() {
       ChromeMetricsServiceAccessor::IsMetricsReportingEnabled())));
 }
 
-FileManagerPrivateSetEntryTagFunction::FileManagerPrivateSetEntryTagFunction()
-    : chrome_details_(this) {
-}
+FileManagerPrivateInternalSetEntryTagFunction::
+    FileManagerPrivateInternalSetEntryTagFunction()
+    : chrome_details_(this) {}
 
-ExtensionFunction::ResponseAction FileManagerPrivateSetEntryTagFunction::Run() {
-  using extensions::api::file_manager_private::SetEntryTag::Params;
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalSetEntryTagFunction::Run() {
+  using extensions::api::file_manager_private_internal::SetEntryTag::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
-      render_frame_host(), chrome_details_.GetProfile(),
-      GURL(params->entry_url));
+      render_frame_host(), chrome_details_.GetProfile(), GURL(params->url));
   const base::FilePath drive_path = drive::util::ExtractDrivePath(local_path);
   if (drive_path.empty())
     return RespondNow(Error("Only Drive files and directories are supported."));
@@ -936,13 +936,13 @@ ExtensionFunction::ResponseAction FileManagerPrivateSetEntryTagFunction::Run() {
 
   file_system->SetProperty(
       drive_path, visibility, params->key, params->value,
-      base::Bind(
-          &FileManagerPrivateSetEntryTagFunction::OnSetEntryPropertyCompleted,
-          this));
+      base::Bind(&FileManagerPrivateInternalSetEntryTagFunction::
+                     OnSetEntryPropertyCompleted,
+                 this));
   return RespondLater();
 }
 
-void FileManagerPrivateSetEntryTagFunction::OnSetEntryPropertyCompleted(
+void FileManagerPrivateInternalSetEntryTagFunction::OnSetEntryPropertyCompleted(
     drive::FileError result) {
   Respond(result == drive::FILE_ERROR_OK ? NoArguments()
                                          : Error("Failed to set a tag."));

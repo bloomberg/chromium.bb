@@ -921,8 +921,8 @@ void FileManagerPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
   SendResponse(true);
 }
 
-bool FileManagerPrivateGetShareUrlFunction::RunAsync() {
-  using extensions::api::file_manager_private::GetShareUrl::Params;
+bool FileManagerPrivateInternalGetShareUrlFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::GetShareUrl::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -942,11 +942,12 @@ bool FileManagerPrivateGetShareUrlFunction::RunAsync() {
   file_system->GetShareUrl(
       drive_path,
       GURL("chrome-extension://" + extension_id()),  // embed origin
-      base::Bind(&FileManagerPrivateGetShareUrlFunction::OnGetShareUrl, this));
+      base::Bind(&FileManagerPrivateInternalGetShareUrlFunction::OnGetShareUrl,
+                 this));
   return true;
 }
 
-void FileManagerPrivateGetShareUrlFunction::OnGetShareUrl(
+void FileManagerPrivateInternalGetShareUrlFunction::OnGetShareUrl(
     drive::FileError error,
     const GURL& share_url) {
   if (error != drive::FILE_ERROR_OK) {
@@ -959,8 +960,9 @@ void FileManagerPrivateGetShareUrlFunction::OnGetShareUrl(
   SendResponse(true);
 }
 
-bool FileManagerPrivateRequestDriveShareFunction::RunAsync() {
-  using extensions::api::file_manager_private::RequestDriveShare::Params;
+bool FileManagerPrivateInternalRequestDriveShareFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::RequestDriveShare::
+      Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -1001,29 +1003,26 @@ bool FileManagerPrivateRequestDriveShareFunction::RunAsync() {
 
   // Share |drive_path| in |owner_file_system| to |user->email()|.
   owner_file_system->AddPermission(
-      drive_path,
-      user->email(),
-      role,
-      base::Bind(&FileManagerPrivateRequestDriveShareFunction::OnAddPermission,
-                 this));
+      drive_path, user->email(), role,
+      base::Bind(
+          &FileManagerPrivateInternalRequestDriveShareFunction::OnAddPermission,
+          this));
   return true;
 }
 
-void FileManagerPrivateRequestDriveShareFunction::OnAddPermission(
+void FileManagerPrivateInternalRequestDriveShareFunction::OnAddPermission(
     drive::FileError error) {
   SendResponse(error == drive::FILE_ERROR_OK);
 }
 
-FileManagerPrivateGetDownloadUrlFunction::
-    FileManagerPrivateGetDownloadUrlFunction() {
-}
+FileManagerPrivateInternalGetDownloadUrlFunction::
+    FileManagerPrivateInternalGetDownloadUrlFunction() {}
 
-FileManagerPrivateGetDownloadUrlFunction::
-    ~FileManagerPrivateGetDownloadUrlFunction() {
-}
+FileManagerPrivateInternalGetDownloadUrlFunction::
+    ~FileManagerPrivateInternalGetDownloadUrlFunction() {}
 
-bool FileManagerPrivateGetDownloadUrlFunction::RunAsync() {
-  using extensions::api::file_manager_private::GetShareUrl::Params;
+bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::GetShareUrl::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -1048,12 +1047,13 @@ bool FileManagerPrivateGetDownloadUrlFunction::RunAsync() {
 
   file_system->GetResourceEntry(
       file_path,
-      base::Bind(&FileManagerPrivateGetDownloadUrlFunction::OnGetResourceEntry,
-                 this));
+      base::Bind(
+          &FileManagerPrivateInternalGetDownloadUrlFunction::OnGetResourceEntry,
+          this));
   return true;
 }
 
-void FileManagerPrivateGetDownloadUrlFunction::OnGetResourceEntry(
+void FileManagerPrivateInternalGetDownloadUrlFunction::OnGetResourceEntry(
     drive::FileError error,
     scoped_ptr<drive::ResourceEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1084,10 +1084,10 @@ void FileManagerPrivateGetDownloadUrlFunction::OnGetResourceEntry(
                                    GetProfile()->GetRequestContext(),
                                    scopes));
   auth_service_->StartAuthentication(base::Bind(
-      &FileManagerPrivateGetDownloadUrlFunction::OnTokenFetched, this));
+      &FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched, this));
 }
 
-void FileManagerPrivateGetDownloadUrlFunction::OnTokenFetched(
+void FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched(
     google_apis::DriveApiErrorCode code,
     const std::string& access_token) {
   if (code != google_apis::HTTP_SUCCESS) {

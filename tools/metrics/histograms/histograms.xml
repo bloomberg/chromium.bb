@@ -55726,7 +55726,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="509" label="SYSTEM_DISPLAY_GETINFO"/>
   <int value="510" label="SYSTEM_DISPLAY_SETDISPLAYPROPERTIES"/>
   <int value="511" label="SYSTEM_MEMORY_GETINFO"/>
-  <int value="512" label="FILEMANAGERPRIVATE_GETSHAREURL"/>
+  <int value="512" label="FILEMANAGERPRIVATEINTERNAL_GETSHAREURL"/>
   <int value="513" label="SYSTEM_STORAGE_GETINFO"/>
   <int value="514" label="SYSTEM_STORAGE_EJECTDEVICE"/>
   <int value="515" label="DELETED_SYSTEM_STORAGE_ADDAVAILABLECAPACITYWATCH"/>
@@ -55920,7 +55920,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="700" label="APP_CURRENTWINDOWINTERNAL_SETSIZECONSTRAINTS"/>
   <int value="701" label="BLUETOOTH_GETDEVICE"/>
   <int value="702" label="GCM_UNREGISTER"/>
-  <int value="703" label="FILEMANAGERPRIVATE_REQUESTDRIVESHARE"/>
+  <int value="703" label="FILEMANAGERPRIVATEINTERNAL_REQUESTDRIVESHARE"/>
   <int value="704" label="METRICSPRIVATE_RECORDSPARSEVALUE"/>
   <int value="705" label="HOTWORDPRIVATE_SETAUDIOLOGGINGENABLED"/>
   <int value="706" label="BLUETOOTHPRIVATE_SETADAPTERSTATE"/>
@@ -56070,7 +56070,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="838" label="GCDPRIVATE_GETCOMMANDSLIST"/>
   <int value="839" label="APPVIEWINTERNAL_ATTACHFRAME"/>
   <int value="840" label="APPVIEWINTERNAL_DENYREQUEST"/>
-  <int value="841" label="FILEMANAGERPRIVATE_GETDOWNLOADURL"/>
+  <int value="841" label="FILEMANAGERPRIVATEINTERNAL_GETDOWNLOADURL"/>
   <int value="842" label="EASYUNLOCKPRIVATE_PERFORMECDHKEYAGREEMENT"/>
   <int value="843" label="EASYUNLOCKPRIVATE_GENERATEECP256KEYPAIR"/>
   <int value="844" label="EASYUNLOCKPRIVATE_CREATESECUREMESSAGE"/>
@@ -56200,7 +56200,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="967" label="AUDIOMODEM_STOPRECEIVE"/>
   <int value="968" label="WEBRTCLOGGINGPRIVATE_STORE"/>
   <int value="969" label="WEBRTCLOGGINGPRIVATE_UPLOADSTORED"/>
-  <int value="970" label="FILEMANAGERPRIVATE_SETENTRYTAG"/>
+  <int value="970" label="FILEMANAGERPRIVATEINTERNAL_SETENTRYTAG"/>
   <int value="971" label="INPUTMETHODPRIVATE_FETCHALLDICTIONARYWORDS"/>
   <int value="972" label="INPUTMETHODPRIVATE_ADDWORDTODICTIONARY"/>
   <int value="973"

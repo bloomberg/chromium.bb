@@ -530,29 +530,26 @@ chrome.fileManagerPrivate.requestAccessToken = function(refresh, callback) {};
 chrome.fileManagerPrivate.requestWebStoreAccessToken = function(callback) {};
 
 /**
- * Requests a share dialog url for the specified file. |url| Url for the file.
- * |callback|
- * @param {string} url
+ * Requests a share dialog url for the specified file.
+ * @param {!Entry} entry
  * @param {function((string|undefined))} callback Callback with the result url.
  */
-chrome.fileManagerPrivate.getShareUrl = function(url, callback) {};
+chrome.fileManagerPrivate.getShareUrl = function(entry, callback) {};
 
 /**
- * Requests a download url to download the file contents. |url| Url for the
- * file. |callback|
- * @param {string} url
+ * Requests a download url to download the file contents.
+ * @param {!Entry} entry
  * @param {function((string|undefined))} callback Callback with the result url.
  */
-chrome.fileManagerPrivate.getDownloadUrl = function(url, callback) {};
+chrome.fileManagerPrivate.getDownloadUrl = function(entry, callback) {};
 
 /**
- * Requests to share drive files. |url| URL of a file to be shared. |shareType|
- * Type of access that is getting granted.
- * @param {string} url
+ * Requests to share drive files.
+ * @param {!Entry} entry
  * @param {string} shareType
  * @param {function()} callback Callback that does not take arguments.
  */
-chrome.fileManagerPrivate.requestDriveShare = function(url, shareType,
+chrome.fileManagerPrivate.requestDriveShare = function(entry, shareType,
     callback) {};
 
 /**
@@ -605,13 +602,13 @@ chrome.fileManagerPrivate.isUMAEnabled = function(callback) {};
 
 /**
  * Sets a tag on a file or a directory. Only Drive files are supported.
- * @param {string} entryURL
+ * @param {!Entry} entry
  * @param {string} visibility 'private' or 'public'
  * @param {string} key
  * @param {string} value
  * @param {function()} callback
  */
-chrome.fileManagerPrivate.setEntryTag = function(entryURL, visibility, key,
+chrome.fileManagerPrivate.setEntryTag = function(entry, visibility, key,
     value, callback) {};
 
 /**

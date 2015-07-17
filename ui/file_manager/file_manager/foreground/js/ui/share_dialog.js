@@ -302,7 +302,7 @@ ShareDialog.prototype.showEntry = function(entry, callback) {
     // Fetches an url to the sharing dialog.
     group.add(function(inCallback) {
       chrome.fileManagerPrivate.getShareUrl(
-          entry.toURL(),
+          entry,
           function(inShareUrl) {
             if (!chrome.runtime.lastError)
               shareUrl = inShareUrl;

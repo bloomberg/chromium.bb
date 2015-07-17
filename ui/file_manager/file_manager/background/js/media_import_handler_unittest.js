@@ -359,16 +359,16 @@ function testTagsEntriesAfterImport(callback) {
             });
       });
 
-  var taggedUrls = [];
+  var taggedEntries = [];
   // Replace chrome.fileManagerPrivate.setEntryTag with a listener.
-  chrome.fileManagerPrivate.setEntryTag = function(url) {
-    taggedUrls.push(url);
+  chrome.fileManagerPrivate.setEntryTag = function(entry) {
+    taggedEntries.push(entry);
   };
 
   reportPromise(
       whenImportDone.then(
           function() {
-            assertEquals(entries.length, taggedUrls.length);
+            assertEquals(entries.length, taggedEntries.length);
           }),
       callback);
 

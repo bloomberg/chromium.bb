@@ -197,14 +197,14 @@ class FileManagerPrivateRequestAccessTokenFunction
 };
 
 // Implements the chrome.fileManagerPrivate.getShareUrl method.
-class FileManagerPrivateGetShareUrlFunction
+class FileManagerPrivateInternalGetShareUrlFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getShareUrl",
-                             FILEMANAGERPRIVATE_GETSHAREURL)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getShareUrl",
+                             FILEMANAGERPRIVATEINTERNAL_GETSHAREURL)
 
  protected:
-  ~FileManagerPrivateGetShareUrlFunction() override {}
+  ~FileManagerPrivateInternalGetShareUrlFunction() override {}
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -215,14 +215,14 @@ class FileManagerPrivateGetShareUrlFunction
 };
 
 // Implements the chrome.fileManagerPrivate.requestDriveShare method.
-class FileManagerPrivateRequestDriveShareFunction
+class FileManagerPrivateInternalRequestDriveShareFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.requestDriveShare",
-                             FILEMANAGERPRIVATE_REQUESTDRIVESHARE);
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.requestDriveShare",
+                             FILEMANAGERPRIVATEINTERNAL_REQUESTDRIVESHARE);
 
  protected:
-  ~FileManagerPrivateRequestDriveShareFunction() override {}
+  ~FileManagerPrivateInternalRequestDriveShareFunction() override {}
   bool RunAsync() override;
 
  private:
@@ -231,16 +231,16 @@ class FileManagerPrivateRequestDriveShareFunction
 };
 
 // Implements the chrome.fileManagerPrivate.getDownloadUrl method.
-class FileManagerPrivateGetDownloadUrlFunction
+class FileManagerPrivateInternalGetDownloadUrlFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  FileManagerPrivateGetDownloadUrlFunction();
+  FileManagerPrivateInternalGetDownloadUrlFunction();
 
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getDownloadUrl",
-                             FILEMANAGERPRIVATE_GETDOWNLOADURL)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getDownloadUrl",
+                             FILEMANAGERPRIVATEINTERNAL_GETDOWNLOADURL)
 
  protected:
-  ~FileManagerPrivateGetDownloadUrlFunction() override;
+  ~FileManagerPrivateInternalGetDownloadUrlFunction() override;
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;

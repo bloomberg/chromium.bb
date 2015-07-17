@@ -166,7 +166,7 @@ importer.MediaImportHandler.prototype.onFileImported_ =
 
   // Tag the import with a private drive property.
   chrome.fileManagerPrivate.setEntryTag(
-      info.destination.toURL(),
+      info.destination,
       'private',  // Scoped to just this app.
       importer.MediaImportHandler.IMPORTS_TAG_KEY,
       importer.MediaImportHandler.IMPORTS_TAG_VALUE,

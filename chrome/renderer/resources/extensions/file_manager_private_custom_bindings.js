@@ -136,6 +136,29 @@ binding.registerCustomHook(function(bindingsAPI) {
     });
     fileManagerPrivateInternal.getFileTasks(urls, callback);
   });
+
+  apiFunctions.setHandleRequest('getShareUrl', function(entry, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.getShareUrl(url, callback);
+  });
+
+  apiFunctions.setHandleRequest('getDownloadUrl', function(entry, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.getDownloadUrl(url, callback);
+  });
+
+  apiFunctions.setHandleRequest('requestDriveShare', function(
+        entry, shareType, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.requestDriveShare(url, shareType, callback);
+  });
+
+  apiFunctions.setHandleRequest('setEntryTag', function(
+        entry, visibility, key, value, callback) {
+    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.setEntryTag(
+        url, visibility, key, value, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(
