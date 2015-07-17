@@ -477,7 +477,7 @@ bool HTMLPlugInElement::allowedToLoadFrameURL(const String& url)
 {
     KURL completeURL = document().completeURL(url);
     if (contentFrame() && protocolIsJavaScript(completeURL)
-        && !document().securityOrigin()->canAccess(contentDocument()->securityOrigin()))
+        && !document().securityOrigin()->canAccess(contentFrame()->securityContext()->securityOrigin()))
         return false;
     return document().frame()->isURLAllowed(completeURL);
 }
