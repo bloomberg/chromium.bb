@@ -506,7 +506,8 @@ bool WebMediaPlayerAndroid::hasAudio() const {
 
   if (mime.find("audio/") != std::string::npos ||
       mime.find("video/") != std::string::npos ||
-      mime.find("application/ogg") != std::string::npos) {
+      mime.find("application/ogg") != std::string::npos ||
+      mime.find("application/x-mpegurl") != std::string::npos) {
     return true;
   }
   return false;
