@@ -113,7 +113,7 @@ void PrepareRestartOnCrashEnviroment(
 }  // namespace
 
 ServiceProcess::ServiceProcess()
-  : shutdown_event_(true, false),
+  : shutdown_event_(true /* manual_reset */, false /* initially_signaled */),
     main_message_loop_(NULL),
     enabled_services_(0),
     update_available_(false) {
@@ -190,7 +190,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
 
   VLOG(1) << "Starting Service Process IPC Server";
   ipc_server_.reset(new ServiceIPCServer(
-      service_process_state_->GetServiceProcessChannel()));
+      service_process_state_->GetServiceProcessChannel(),
+      &shutdown_event_));
   ipc_server_->Init();
 
   // After the IPC server has started we signal that the service process is

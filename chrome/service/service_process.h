@@ -63,7 +63,7 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
   // A global event object that is signalled when the main thread's message
   // loop exits. This gives background threads a way to observe the main
   // thread shutting down.
-  base::WaitableEvent* shutdown_event() {
+  base::WaitableEvent* GetShutdownEventForTesting() {
     return &shutdown_event_;
   }
 

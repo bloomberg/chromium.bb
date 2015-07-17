@@ -10,16 +10,17 @@
 #include "chrome/service/service_process.h"
 #include "ipc/ipc_logging.h"
 
-ServiceIPCServer::ServiceIPCServer(const IPC::ChannelHandle& channel_handle)
-    : channel_handle_(channel_handle), client_connected_(false) {
+ServiceIPCServer::ServiceIPCServer(const IPC::ChannelHandle& channel_handle,
+                                   base::WaitableEvent* shutdown_event)
+    : channel_handle_(channel_handle),
+      shutdown_event_(shutdown_event),
+      client_connected_(false) {
 }
 
 bool ServiceIPCServer::Init() {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
-  sync_message_filter_ =
-      new IPC::SyncMessageFilter(g_service_process->shutdown_event());
   CreateChannel();
   return true;
 }
@@ -29,17 +30,13 @@ void ServiceIPCServer::CreateChannel() {
   channel_ = IPC::SyncChannel::Create(
       channel_handle_, IPC::Channel::MODE_NAMED_SERVER, this,
       g_service_process->io_task_runner().get(), true,
-      g_service_process->shutdown_event());
-  DCHECK(sync_message_filter_.get());
-  channel_->AddFilter(sync_message_filter_.get());
+      shutdown_event_);
 }
 
 ServiceIPCServer::~ServiceIPCServer() {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
-
-  channel_->RemoveFilter(sync_message_filter_.get());
 }
 
 void ServiceIPCServer::OnChannelConnected(int32 peer_pid) {
