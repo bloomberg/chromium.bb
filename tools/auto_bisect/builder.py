@@ -145,10 +145,17 @@ class AndroidBuilder(Builder):
 
   # TODO(qyearsley): Make this a class method and verify that it works with
   # a unit test.
+  # TODO (prasadv): Remove android-chrome-shell target once we confirm there are
+  # no pending bisect jobs with this in command.
   # pylint: disable=R0201
   def _GetTargets(self):
     """Returns a list of build targets."""
-    return ['chrome_shell_apk', 'cc_perftests_apk', 'android_tools']
+    return [
+        'chrome_public_apk',
+        'chrome_shell_apk',
+        'cc_perftests_apk',
+        'android_tools'
+    ]
 
   def Build(self, depot, opts):
     """Builds the android content shell and other necessary tools.

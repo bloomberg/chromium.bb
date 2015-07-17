@@ -285,65 +285,6 @@ class BisectPerfRegressionTest(unittest.TestCase):
     self._AssertParseResult([], '{}kb')
     self._AssertParseResult([], '{XYZ}kb')
 
-  def _AssertCompatibleCommand(
-      self, expected_command, original_command, revision, target_platform):
-    """Tests the modification of the command that might be done.
-
-    This modification to the command is done in order to get a Telemetry
-    command that works; before some revisions, the browser name that Telemetry
-    expects is different in some cases, but we want it to work anyway.
-
-    Specifically, only for android:
-      After r276628, only android-chrome-shell works.
-      Prior to r274857, only android-chromium-testshell works.
-      In the range [274857, 276628], both work.
-    """
-    bisect_options = bisect_perf_regression.BisectOptions()
-    bisect_options.output_buildbot_annotations = None
-    bisect_instance = bisect_perf_regression.BisectPerformanceMetrics(
-        bisect_options, os.getcwd())
-    bisect_instance.opts.target_platform = target_platform
-    git_revision = source_control.ResolveToRevision(
-        revision, 'chromium', bisect_utils.DEPOT_DEPS_NAME, 100)
-    depot = 'chromium'
-    command = bisect_instance.GetCompatibleCommand(
-        original_command, git_revision, depot)
-    self.assertEqual(expected_command, command)
-
-  def testGetCompatibleCommand_ChangeToTestShell(self):
-    # For revisions <= r274857, only android-chromium-testshell is used.
-    self._AssertCompatibleCommand(
-        'tools/perf/run_benchmark -v --browser=android-chromium-testshell foo',
-        'tools/perf/run_benchmark -v --browser=android-chrome-shell foo',
-        274857, 'android')
-
-  def testGetCompatibleCommand_ChangeToShell(self):
-    # For revisions >= r276728, only android-chrome-shell can be used.
-    self._AssertCompatibleCommand(
-        'tools/perf/run_benchmark -v --browser=android-chrome-shell foo',
-        'tools/perf/run_benchmark -v --browser=android-chromium-testshell foo',
-        276628, 'android')
-
-  def testGetCompatibleCommand_NoChange(self):
-    # For revisions < r276728, android-chromium-testshell can be used.
-    self._AssertCompatibleCommand(
-        'tools/perf/run_benchmark -v --browser=android-chromium-testshell foo',
-        'tools/perf/run_benchmark -v --browser=android-chromium-testshell foo',
-        274858, 'android')
-    # For revisions > r274857, android-chrome-shell can be used.
-    self._AssertCompatibleCommand(
-        'tools/perf/run_benchmark -v --browser=android-chrome-shell foo',
-        'tools/perf/run_benchmark -v --browser=android-chrome-shell foo',
-        274858, 'android')
-
-  def testGetCompatibleCommand_NonAndroidPlatform(self):
-    # In most cases, there's no need to change Telemetry command.
-    # For revisions >= r276728, only android-chrome-shell can be used.
-    self._AssertCompatibleCommand(
-        'tools/perf/run_benchmark -v --browser=release foo',
-        'tools/perf/run_benchmark -v --browser=release foo',
-        276628, 'chromium')
-
   # This method doesn't reference self; it fails if an error is thrown.
   # pylint: disable=R0201
   def testDryRun(self):

@@ -1238,37 +1238,6 @@ class BisectPerformanceMetrics(object):
   def _IsBisectModeStandardDeviation(self):
     return self.opts.bisect_mode in [bisect_utils.BISECT_MODE_STD_DEV]
 
-  def GetCompatibleCommand(self, command_to_run, revision, depot):
-    """Return a possibly modified test command depending on the revision.
-
-    Prior to crrev.com/274857 *only* android-chromium-testshell
-    Then until crrev.com/276628 *both* (android-chromium-testshell and
-    android-chrome-shell) work. After that rev 276628 *only*
-    android-chrome-shell works. The bisect_perf_regression.py script should
-    handle these cases and set appropriate browser type based on revision.
-    """
-    if self.opts.target_platform in ['android']:
-      # When its a third_party depot, get the chromium revision.
-      if depot != 'chromium':
-        revision = bisect_utils.CheckRunGit(
-            ['rev-parse', 'HEAD'], cwd=self.src_cwd).strip()
-      commit_position = source_control.GetCommitPosition(revision,
-                                                         cwd=self.src_cwd)
-      if not commit_position:
-        return command_to_run
-      cmd_re = re.compile(r'--browser=(?P<browser_type>\S+)')
-      matches = cmd_re.search(command_to_run)
-      if bisect_utils.IsStringInt(commit_position) and matches:
-        cmd_browser = matches.group('browser_type')
-        if commit_position <= 274857 and cmd_browser == 'android-chrome-shell':
-          return command_to_run.replace(cmd_browser,
-                                        'android-chromium-testshell')
-        elif (commit_position >= 276628 and
-              cmd_browser == 'android-chromium-testshell'):
-          return command_to_run.replace(cmd_browser,
-                                        'android-chrome-shell')
-    return command_to_run
-
   def RunPerformanceTestAndParseResults(
       self, command_to_run, metric, reset_on_first_run=False,
       upload_on_last_run=False, results_label=None, test_run_multiplier=1,
@@ -1541,9 +1510,6 @@ class BisectPerformanceMetrics(object):
       return ('Failed to build revision: [%s]' % str(revision),
               BUILD_RESULT_FAIL)
     after_build_time = time.time()
-
-    # Possibly alter the command.
-    command = self.GetCompatibleCommand(command, revision, depot)
 
     # Run the command and get the results.
     results = self.RunPerformanceTestAndParseResults(
