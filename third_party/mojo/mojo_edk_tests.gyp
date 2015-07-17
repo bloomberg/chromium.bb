@@ -288,6 +288,19 @@
             'mojo_public_bindings_unittests.isolate',
           ],
         },
+        {
+          'target_name': 'mojo_public_environment_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'mojo_public_environment_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'mojo_public_environment_unittests.isolate',
+          ],
+        },
       ],
     }],
   ],
