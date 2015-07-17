@@ -159,7 +159,6 @@
       'browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc',
       'browser/net/ssl_config_service_manager_pref_unittest.cc',
       'browser/net/url_info_unittest.cc',
-      'browser/offline_pages/offline_page_mhtml_archiver_unittest.cc',
       'browser/offline_pages/offline_page_metadata_store_impl_unittest.cc',
       'browser/password_manager/chrome_password_manager_client_unittest.cc',
       'browser/password_manager/password_manager_internals_service_unittest.cc',
@@ -1640,6 +1639,10 @@
     'chrome_unit_tests_app_list_chromeos_sources': [
       'browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc',
     ],
+    # Sources for Offline pages. For now only for Android.
+    'chrome_unit_tests_offline_pages_sources': [
+      'browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc',
+    ],
   },
   'targets': [
     {
@@ -2647,6 +2650,7 @@
           'sources': [ '<@(chrome_unit_tests_non_android_or_chromeos_sources)' ],
         }],
         ['OS=="android"', {
+          'sources': [ '<@(chrome_unit_tests_offline_pages_sources)' ],
           'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
