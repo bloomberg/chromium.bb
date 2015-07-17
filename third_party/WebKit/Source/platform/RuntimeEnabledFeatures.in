@@ -106,7 +106,7 @@ OrientationEvent
 OverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
-PathOpsSVGClipping status=experimental
+PathOpsSVGClipping status=stable
 Permissions status=stable
 PointerEvent
 PreciseMemoryInfo
