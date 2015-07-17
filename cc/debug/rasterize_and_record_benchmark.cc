@@ -237,7 +237,8 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
     }
 
     if (mode_index == RecordingSource::RECORD_NORMALLY) {
-      record_results_.bytes_used += memory_used;
+      record_results_.bytes_used +=
+          memory_used + painter->GetApproximateUnsharedMemoryUsage();
       record_results_.pixels_recorded +=
           visible_layer_rect.width() * visible_layer_rect.height();
     }
