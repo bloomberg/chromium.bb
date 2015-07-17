@@ -10,7 +10,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "media/video/capture/fake_video_capture_device.h"
+#include "media/capture/video/fake_video_capture_device.h"
 
 namespace content {
 

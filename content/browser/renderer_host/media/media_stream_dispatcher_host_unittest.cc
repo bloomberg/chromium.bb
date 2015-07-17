@@ -30,7 +30,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/base/media_switches.h"
-#include "media/video/capture/fake_video_capture_device_factory.h"
+#include "media/capture/video/fake_video_capture_device_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

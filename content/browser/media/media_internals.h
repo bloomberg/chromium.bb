@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "media/audio/audio_logging.h"
 #include "media/base/media_log.h"
-#include "media/video/capture/video_capture_device_info.h"
+#include "media/capture/video/video_capture_device_info.h"
 
 namespace media {
 class AudioParameters;

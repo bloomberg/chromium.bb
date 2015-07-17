@@ -27,8 +27,8 @@
 #include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
-#include "media/video/capture/video_capture_device.h"
-#include "media/video/capture/video_capture_device_factory.h"
+#include "media/capture/video/video_capture_device.h"
+#include "media/capture/video/video_capture_device_factory.h"
 
 #if defined(ENABLE_SCREEN_CAPTURE)
 #include "content/browser/media/capture/desktop_capture_device.h"

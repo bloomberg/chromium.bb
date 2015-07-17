@@ -14,7 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
-#include "media/video/capture/video_capture_device.h"
+#include "media/capture/video/video_capture_device.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
 namespace media {

@@ -51,7 +51,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "media/base/video_capture_types.h"
-#include "media/video/capture/video_capture_device.h"
+#include "media/capture/video/video_capture_device.h"
 
 namespace content {
 class VideoCaptureBufferPool;

@@ -3,7 +3,7 @@
 # - cast
 # - midi
 # - ozone
-# - video/capture
+# - capture/{content,video}
 # Instead prefer the OWNERS in the subdirectory as they will be more familiar,
 # and to load balance. Only use OWNERS in this file for these subdirectories
 # when doing refactorings and general cleanups.

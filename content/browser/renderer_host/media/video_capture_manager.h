@@ -29,9 +29,9 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "media/base/video_capture_types.h"
-#include "media/video/capture/video_capture_device.h"
-#include "media/video/capture/video_capture_device_factory.h"
-#include "media/video/capture/video_capture_device_info.h"
+#include "media/capture/video/video_capture_device.h"
+#include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video/video_capture_device_info.h"
 
 namespace content {
 class VideoCaptureController;

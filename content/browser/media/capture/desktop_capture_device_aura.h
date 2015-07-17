@@ -10,8 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "media/capture/screen_capture_device_core.h"
-#include "media/video/capture/video_capture_device.h"
+#include "media/capture/content/screen_capture_device_core.h"
+#include "media/capture/video/video_capture_device.h"
 
 namespace aura {
 class Window;

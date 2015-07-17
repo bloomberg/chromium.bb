@@ -38,7 +38,7 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_switches.h"
-#include "media/video/capture/video_capture_device_factory.h"
+#include "media/capture/video/video_capture_device_factory.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
