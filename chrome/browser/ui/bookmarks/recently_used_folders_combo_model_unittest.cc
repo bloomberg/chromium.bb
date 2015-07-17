@@ -7,16 +7,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/bookmarks/test/test_bookmark_client.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/combobox_model_observer.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+using bookmarks::TestBookmarkClient;
 using content::BrowserThread;
 
 // Implementation of ComboboxModelObserver that records when
@@ -48,17 +48,10 @@ class RecentlyUsedFoldersComboModelTest : public testing::Test {
  public:
   RecentlyUsedFoldersComboModelTest();
 
-  void SetUp() override;
-  void TearDown() override;
-
- protected:
-  BookmarkModel* GetModel();
-
  private:
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentlyUsedFoldersComboModelTest);
 };
@@ -68,27 +61,14 @@ RecentlyUsedFoldersComboModelTest::RecentlyUsedFoldersComboModelTest()
       file_thread_(BrowserThread::FILE, &message_loop_) {
 }
 
-void RecentlyUsedFoldersComboModelTest::SetUp() {
-  profile_.reset(new TestingProfile());
-  profile_->CreateBookmarkModel(true);
-  bookmarks::test::WaitForBookmarkModelToLoad(GetModel());
-}
-
-void RecentlyUsedFoldersComboModelTest::TearDown() {
-  // Flush the message loop to make application verifiers happy.
-  message_loop_.RunUntilIdle();
-}
-
-BookmarkModel* RecentlyUsedFoldersComboModelTest::GetModel() {
-  return BookmarkModelFactory::GetForProfile(profile_.get());
-}
-
 // Verifies there are no duplicate nodes in the model.
 TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
-  const BookmarkNode* new_node = GetModel()->AddURL(
-      GetModel()->bookmark_bar_node(), 0, base::ASCIIToUTF16("a"),
+  TestBookmarkClient client;
+  scoped_ptr<BookmarkModel> bookmark_model(client.CreateModel());
+  const BookmarkNode* new_node = bookmark_model->AddURL(
+      bookmark_model->bookmark_bar_node(), 0, base::ASCIIToUTF16("a"),
       GURL("http://a"));
-  RecentlyUsedFoldersComboModel model(GetModel(), new_node);
+  RecentlyUsedFoldersComboModel model(bookmark_model.get(), new_node);
   std::set<base::string16> items;
   for (int i = 0; i < model.GetItemCount(); ++i) {
     if (!model.IsItemSeparatorAt(i))
@@ -98,25 +78,27 @@ TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
 
 // Verifies that observers are notified on changes.
 TEST_F(RecentlyUsedFoldersComboModelTest, NotifyObserver) {
-  const BookmarkNode* folder = GetModel()->AddFolder(
-      GetModel()->bookmark_bar_node(), 0, base::ASCIIToUTF16("a"));
-  const BookmarkNode* sub_folder = GetModel()->AddFolder(
+  TestBookmarkClient client;
+  scoped_ptr<BookmarkModel> bookmark_model(client.CreateModel());
+  const BookmarkNode* folder = bookmark_model->AddFolder(
+      bookmark_model->bookmark_bar_node(), 0, base::ASCIIToUTF16("a"));
+  const BookmarkNode* sub_folder = bookmark_model->AddFolder(
       folder, 0, base::ASCIIToUTF16("b"));
-  const BookmarkNode* new_node = GetModel()->AddURL(
+  const BookmarkNode* new_node = bookmark_model->AddURL(
       sub_folder, 0, base::ASCIIToUTF16("a"), GURL("http://a"));
-  RecentlyUsedFoldersComboModel model(GetModel(), new_node);
+  RecentlyUsedFoldersComboModel model(bookmark_model.get(), new_node);
   TestComboboxModelObserver observer;
   model.AddObserver(&observer);
 
   const int initial_count = model.GetItemCount();
   // Remove a folder, it should remove an item from the model too.
-  GetModel()->Remove(sub_folder);
+  bookmark_model->Remove(sub_folder);
   EXPECT_TRUE(observer.GetAndClearChanged());
   const int updated_count = model.GetItemCount();
   EXPECT_LT(updated_count, initial_count);
 
   // Remove all, which should remove a folder too.
-  GetModel()->RemoveAllUserBookmarks();
+  bookmark_model->RemoveAllUserBookmarks();
   EXPECT_TRUE(observer.GetAndClearChanged());
   EXPECT_LT(model.GetItemCount(), updated_count);
 
