@@ -431,7 +431,8 @@ class CONTENT_EXPORT RenderFrameImpl
                                blink::WebTextDirection direction);
   virtual void didChangeIcon(blink::WebLocalFrame* frame,
                              blink::WebIconURL::Type icon_type);
-  virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame);
+  virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame,
+                                     bool document_is_empty);
   virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   virtual void didFailLoad(blink::WebLocalFrame* frame,
                            const blink::WebURLError& error,
@@ -467,8 +468,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didReceiveResponse(blink::WebLocalFrame* frame,
                                   unsigned identifier,
                                   const blink::WebURLResponse& response);
-  virtual void didFinishResourceLoad(blink::WebLocalFrame* frame,
-                                     unsigned identifier);
   virtual void didLoadResourceFromMemoryCache(
       blink::WebLocalFrame* frame,
       const blink::WebURLRequest& request,

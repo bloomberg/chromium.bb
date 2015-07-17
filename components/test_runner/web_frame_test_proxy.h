@@ -110,9 +110,9 @@ class WebFrameTestProxy : public Base {
     Base::didChangeIcon(frame, icon_type);
   }
 
-  virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame) {
+  virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame, bool empty) {
     base_proxy_->DidFinishDocumentLoad(frame);
-    Base::didFinishDocumentLoad(frame);
+    Base::didFinishDocumentLoad(frame, empty);
   }
 
   virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame) {
@@ -240,7 +240,6 @@ class WebFrameTestProxy : public Base {
   virtual void didFinishResourceLoad(blink::WebLocalFrame* frame,
                                      unsigned identifier) {
     base_proxy_->DidFinishResourceLoad(frame, identifier);
-    Base::didFinishResourceLoad(frame, identifier);
   }
 
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(

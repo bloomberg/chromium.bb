@@ -2669,7 +2669,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     render_view_->webview()->resetScrollAndScaleState();
     internal_data->set_must_reset_scroll_and_scale_state(false);
   }
-  internal_data->set_use_error_page(false);
 
   bool is_new_navigation = commit_type == blink::WebStandardCommit;
   if (is_new_navigation) {
@@ -2831,7 +2830,8 @@ void RenderFrameImpl::didChangeIcon(blink::WebLocalFrame* frame,
   render_view_->didChangeIcon(frame, icon_type);
 }
 
-void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
+void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame,
+                                            bool document_is_empty) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::didFinishDocumentLoad",
                "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
@@ -2847,6 +2847,36 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
+
+  // If this is an empty document with an http status code indicating an error,
+  // we may want to display our own error page, so the user doesn't end up
+  // with an unexplained blank page.
+  if (!document_is_empty)
+    return;
+
+  // Do not show error page when DevTools is attached.
+  RenderFrameImpl* localRoot = this;
+  while (localRoot->frame_ && localRoot->frame_->parent() &&
+         localRoot->frame_->parent()->isWebLocalFrame()) {
+    localRoot = RenderFrameImpl::FromWebFrame(localRoot->frame_->parent());
+    DCHECK(localRoot);
+  }
+  if (localRoot->devtools_agent_ && localRoot->devtools_agent_->IsAttached())
+    return;
+
+  // Display error page instead of a blank page, if appropriate.
+  std::string error_domain = "http";
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDataSource(frame->dataSource());
+  int http_status_code = internal_data->http_status_code();
+  if (GetContentClient()->renderer()->HasErrorPage(http_status_code,
+                                                   &error_domain)) {
+    WebURLError error;
+    error.unreachableURL = frame->document().url();
+    error.domain = WebString::fromUTF8(error_domain);
+    error.reason = http_status_code;
+    LoadNavigationErrorPage(frame->dataSource()->request(), error, true);
+  }
 }
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
@@ -3349,41 +3379,6 @@ void RenderFrameImpl::didReceiveResponse(
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
   internal_data->set_http_status_code(http_status_code);
-  // Whether or not the http status code actually corresponds to an error is
-  // only checked when the page is done loading, if |use_error_page| is
-  // still true.
-  internal_data->set_use_error_page(true);
-}
-
-void RenderFrameImpl::didFinishResourceLoad(blink::WebLocalFrame* frame,
-                                            unsigned identifier) {
-  DCHECK(!frame_ || frame_ == frame);
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDataSource(frame->dataSource());
-  if (!internal_data->use_error_page())
-    return;
-
-  // Do not show error page when DevTools is attached.
-  RenderFrameImpl* localRoot = this;
-  while (localRoot->frame_ && localRoot->frame_->parent() &&
-      localRoot->frame_->parent()->isWebLocalFrame()) {
-    localRoot = RenderFrameImpl::FromWebFrame(localRoot->frame_->parent());
-    DCHECK(localRoot);
-  }
-  if (localRoot->devtools_agent_ && localRoot->devtools_agent_->IsAttached())
-    return;
-
-  // Display error page, if appropriate.
-  std::string error_domain = "http";
-  int http_status_code = internal_data->http_status_code();
-  if (GetContentClient()->renderer()->HasErrorPage(
-          http_status_code, &error_domain)) {
-    WebURLError error;
-    error.unreachableURL = frame->document().url();
-    error.domain = WebString::fromUTF8(error_domain);
-    error.reason = http_status_code;
-    LoadNavigationErrorPage(frame->dataSource()->request(), error, true);
-  }
 }
 
 void RenderFrameImpl::didLoadResourceFromMemoryCache(

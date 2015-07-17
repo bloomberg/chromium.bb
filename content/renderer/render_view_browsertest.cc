@@ -1971,7 +1971,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
   EXPECT_LT(last_input_type, last_selection);
 }
 
-class SuppressErrorPageTest : public RenderViewImplTest {
+class RendererErrorPageTest : public RenderViewImplTest {
  public:
   ContentRendererClient* CreateContentRendererClient() override {
     return new TestContentRendererClient;
@@ -2002,6 +2002,11 @@ class SuppressErrorPageTest : public RenderViewImplTest {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }
+
+    bool HasErrorPage(int http_status_code,
+                      std::string* error_domain) override {
+      return true;
+    }
   };
 };
 
@@ -2012,7 +2017,7 @@ class SuppressErrorPageTest : public RenderViewImplTest {
 #define MAYBE_Suppresses Suppresses
 #endif
 
-TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
+TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   WebURLError error;
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
@@ -2043,7 +2048,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
 #define MAYBE_DoesNotSuppress DoesNotSuppress
 #endif
 
-TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
+TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   WebURLError error;
   error.domain = WebString::fromUTF8(net::kErrorDomain);
   error.reason = net::ERR_FILE_NOT_FOUND;
@@ -2062,6 +2067,39 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   // An error occurred.
   main_frame->didFailProvisionalLoad(web_frame, error,
                                      blink::WebStandardCommit);
+
+  // The error page itself is loaded asynchronously.
+  FrameLoadWaiter(main_frame).Wait();
+  const int kMaxOutputCharacters = 22;
+  EXPECT_EQ("A suffusion of yellow.",
+            base::UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
+}
+
+#if defined(OS_ANDROID)
+// Crashing on Android: http://crbug.com/311341
+#define MAYBE_HttpStatusCodeErrorWithEmptyBody \
+  DISABLED_HttpStatusCodeErrorWithEmptyBody
+#else
+#define MAYBE_HttpStatusCodeErrorWithEmptyBody HttpStatusCodeErrorWithEmptyBody
+#endif
+TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
+  blink::WebURLResponse response;
+  response.initialize();
+  response.setHTTPStatusCode(503);
+  WebLocalFrame* web_frame = GetMainFrame();
+
+  // Start a load that will reach provisional state synchronously,
+  // but won't complete synchronously.
+  CommonNavigationParams common_params;
+  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.url = GURL("data:text/html,test data");
+  TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
+  main_frame->Navigate(common_params, StartNavigationParams(),
+                       RequestNavigationParams());
+
+  // Emulate a 4xx/5xx main resource response with an empty body.
+  main_frame->didReceiveResponse(web_frame, 1, response);
+  main_frame->didFinishDocumentLoad(web_frame, true);
 
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(main_frame).Wait();
