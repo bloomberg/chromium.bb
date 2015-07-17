@@ -310,7 +310,7 @@ base::LazyInstance<base::Lock>::Leaky
     ThreadData::list_lock_ = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ThreadData::Status ThreadData::status_ = ThreadData::UNINITIALIZED;
+base::subtle::Atomic32 ThreadData::status_ = ThreadData::UNINITIALIZED;
 
 ThreadData::ThreadData(const std::string& suggested_name)
     : next_(NULL),
@@ -692,7 +692,7 @@ static void OptionallyInitializeAlternateTimer() {
 }
 
 void ThreadData::Initialize() {
-  if (status_ >= DEACTIVATED)
+  if (base::subtle::Acquire_Load(&status_) >= DEACTIVATED)
     return;  // Someone else did the initialization.
   // Due to racy lazy initialization in tests, we'll need to recheck status_
   // after we acquire the lock.
@@ -701,7 +701,7 @@ void ThreadData::Initialize() {
   // threaded in the product, but some tests may be racy and lazy about our
   // initialization.
   base::AutoLock lock(*list_lock_.Pointer());
-  if (status_ >= DEACTIVATED)
+  if (base::subtle::Acquire_Load(&status_) >= DEACTIVATED)
     return;  // Someone raced in here and beat us.
 
   // Put an alternate timer in place if the environment calls for it, such as
@@ -714,12 +714,12 @@ void ThreadData::Initialize() {
   // Perform the "real" TLS initialization now, and leave it intact through
   // process termination.
   if (!tls_index_.initialized()) {  // Testing may have initialized this.
-    DCHECK_EQ(status_, UNINITIALIZED);
+    DCHECK_EQ(base::subtle::NoBarrier_Load(&status_), UNINITIALIZED);
     tls_index_.Initialize(&ThreadData::OnThreadTermination);
     DCHECK(tls_index_.initialized());
   } else {
     // TLS was initialzed for us earlier.
-    DCHECK_EQ(status_, DORMANT_DURING_TESTS);
+    DCHECK_EQ(base::subtle::NoBarrier_Load(&status_), DORMANT_DURING_TESTS);
   }
 
   // Incarnation counter is only significant to testing, as it otherwise will
@@ -729,8 +729,8 @@ void ThreadData::Initialize() {
   // The lock is not critical for setting status_, but it doesn't hurt.  It also
   // ensures that if we have a racy initialization, that we'll bail as soon as
   // we get the lock earlier in this method.
-  status_ = kInitialStartupState;
-  DCHECK(status_ != UNINITIALIZED);
+  base::subtle::Release_Store(&status_, kInitialStartupState);
+  DCHECK(base::subtle::NoBarrier_Load(&status_) != UNINITIALIZED);
 }
 
 // static
@@ -742,17 +742,17 @@ void ThreadData::InitializeAndSetTrackingStatus(Status status) {
 
   if (status > DEACTIVATED)
     status = PROFILING_ACTIVE;
-  status_ = status;
+  base::subtle::Release_Store(&status_, status);
 }
 
 // static
 ThreadData::Status ThreadData::status() {
-  return status_;
+  return static_cast<ThreadData::Status>(base::subtle::Acquire_Load(&status_));
 }
 
 // static
 bool ThreadData::TrackingStatus() {
-  return status_ > DEACTIVATED;
+  return base::subtle::Acquire_Load(&status_) > DEACTIVATED;
 }
 
 // static
@@ -817,7 +817,8 @@ void ThreadData::ShutdownSingleThreadedCleanup(bool leak) {
   worker_thread_data_creation_count_ = 0;
   cleanup_count_ = 0;
   tls_index_.Set(NULL);
-  status_ = DORMANT_DURING_TESTS;  // Almost UNINITIALIZED.
+  // Almost UNINITIALIZED.
+  base::subtle::Release_Store(&status_, DORMANT_DURING_TESTS);
 
   // To avoid any chance of racing in unit tests, which is the only place we
   // call this function, we may sometimes leak all the data structures we

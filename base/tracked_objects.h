@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
@@ -661,7 +662,7 @@ class BASE_EXPORT ThreadData {
   static base::LazyInstance<base::Lock>::Leaky list_lock_;
 
   // We set status_ to SHUTDOWN when we shut down the tracking service.
-  static Status status_;
+  static base::subtle::Atomic32 status_;
 
   // Link to next instance (null terminated list).  Used to globally track all
   // registered instances (corresponds to all registered threads where we keep
