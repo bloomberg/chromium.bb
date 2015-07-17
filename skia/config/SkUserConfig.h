@@ -226,10 +226,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_UNBALANCED_PIXELREF_LOCKCOUNT
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_XFERMODES
-#   define SK_SUPPORT_LEGACY_XFERMODES
-#endif
-
 #ifndef    SK_LEGACY_IMAGE_GENERATOR_ENUMS_AND_OPTIONS
 #   define SK_LEGACY_IMAGE_GENERATOR_ENUMS_AND_OPTIONS
 #endif
