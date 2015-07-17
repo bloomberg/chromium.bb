@@ -13,9 +13,8 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Pair;
@@ -48,6 +47,7 @@ import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.ChromeTab;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -164,14 +164,14 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public void addCustomActionButton(Bitmap buttonSource, OnClickListener listener) {
+    public void addCustomActionButton(Drawable drawable, OnClickListener listener) {
         Resources resources = getResources();
 
         // The height will be scaled to match spec while keeping the aspect ratio, so get the scaled
         // width through that.
-        int sourceHeight = buttonSource.getHeight();
+        int sourceHeight = drawable.getIntrinsicHeight();
         int sourceScaledHeight = resources.getDimensionPixelSize(R.dimen.toolbar_icon_height);
-        int sourceWidth = buttonSource.getWidth();
+        int sourceWidth = drawable.getIntrinsicWidth();
         int sourceScaledWidth = sourceWidth * sourceScaledHeight / sourceHeight;
         int minPadding = resources.getDimensionPixelSize(R.dimen.min_toolbar_icon_side_padding);
 
@@ -179,8 +179,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         int topPadding = mCustomActionButton.getPaddingTop();
         int bottomPadding = mCustomActionButton.getPaddingBottom();
         mCustomActionButton.setPadding(sidePadding, topPadding, sidePadding, bottomPadding);
+        mCustomActionButton.setImageDrawable(drawable);
 
-        mCustomActionButton.setImageDrawable(new BitmapDrawable(getResources(), buttonSource));
         mCustomActionButton.setOnClickListener(listener);
         mCustomActionButton.setVisibility(VISIBLE);
     }
@@ -301,6 +301,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                 ? R.color.dark_mode_tint : R.color.light_mode_tint);
         mMenuButton.setTint(colorStateList);
         mCloseButton.setTint(colorStateList);
+        if (mCustomActionButton.getDrawable() instanceof TintedDrawable) {
+            ((TintedDrawable) mCustomActionButton.getDrawable()).setTint(colorStateList);
+        }
         mUrlBar.setUseDarkTextColors(mUseDarkColors);
 
         int titleTextColor = mUseDarkColors ? resources.getColor(R.color.url_emphasis_default_text)

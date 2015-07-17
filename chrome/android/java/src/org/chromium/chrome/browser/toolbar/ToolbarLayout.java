@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -393,7 +392,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param buttonSource The {@link Bitmap} resource to use as the source for the button.
      * @param listener The {@link OnClickListener} to use for clicks to the button.
      */
-    public void addCustomActionButton(Bitmap buttonSource, OnClickListener listener) { }
+    public void addCustomActionButton(Drawable drawable, OnClickListener listener) { }
 
     /**
      * Triggered when the content view for the specified tab has changed.

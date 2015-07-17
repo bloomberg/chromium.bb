@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -593,11 +593,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
     /**
      * Adds a custom action button to the {@link Toolbar} if it is supported.
-     * @param buttonSource The {@link Bitmap} resource to use as the source for the button.
+     * @param drawable The {@link Drawable} to use as the background for the button.
      * @param listener The {@link OnClickListener} to use for clicks to the button.
      */
-    public void addCustomActionButton(Bitmap buttonSource, OnClickListener listener) {
-        mToolbar.addCustomActionButton(buttonSource, listener);
+    public void addCustomActionButton(Drawable drawable, OnClickListener listener) {
+        mToolbar.addCustomActionButton(drawable, listener);
     }
 
     /**

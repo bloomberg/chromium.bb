@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -22,6 +24,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +75,13 @@ public class CustomTabIntentDataProvider {
      */
     public static final int SHOW_PAGE_TITLE = 1;
 
+    /**
+     * Extra boolean that specifies whether the custom action button should be tinted. Default is
+     * false and the action button will not be tinted.
+     */
+    public static final String EXTRA_TINT_ACTION_BUTTON =
+            "android.support.customtabs.extra.TINT_ACTION_BUTTON";
+
     private static final String BUNDLE_PACKAGE_NAME = "android:packageName";
     private static final String BUNDLE_ENTER_ANIMATION_RESOURCE = "android:animEnterRes";
     private static final String BUNDLE_EXIT_ANIMATION_RESOURCE = "android:animExitRes";
@@ -80,7 +90,7 @@ public class CustomTabIntentDataProvider {
     private final int mTitleVisibilityState;
     private final int mCloseButtonResId;
     private int mToolbarColor;
-    private Bitmap mIcon;
+    private Drawable mIcon;
     private PendingIntent mActionButtonPendingIntent;
     private List<Pair<String, PendingIntent>> mMenuEntries = new ArrayList<>();
     private Bundle mAnimationBundle;
@@ -100,13 +110,21 @@ public class CustomTabIntentDataProvider {
         Bundle actionButtonBundle =
                 IntentUtils.safeGetBundleExtra(intent, CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         if (actionButtonBundle != null) {
-            mIcon = IntentUtils.safeGetParcelable(actionButtonBundle, CustomTabsIntent.KEY_ICON);
-            if (mIcon != null && !checkBitmapSizeWithinBounds(context, mIcon)) {
-                mIcon.recycle();
-                mIcon = null;
-            } else if (mIcon != null) {
+            Bitmap bitmap = IntentUtils.safeGetParcelable(actionButtonBundle,
+                    CustomTabsIntent.KEY_ICON);
+            if (bitmap != null && !checkBitmapSizeWithinBounds(context, bitmap)) {
+                bitmap.recycle();
+                bitmap = null;
+            } else if (bitmap != null) {
                 mActionButtonPendingIntent = IntentUtils.safeGetParcelable(
                         actionButtonBundle, CustomTabsIntent.KEY_PENDING_INTENT);
+                boolean shouldTint = IntentUtils.safeGetBooleanExtra(intent,
+                        EXTRA_TINT_ACTION_BUTTON, false);
+                if (shouldTint) {
+                    mIcon = TintedDrawable.constructTintedDrawable(context.getResources(), bitmap);
+                } else {
+                    mIcon = new BitmapDrawable(context.getResources(), bitmap);
+                }
             }
         }
 
@@ -188,7 +206,7 @@ public class CustomTabIntentDataProvider {
 
     /**
      * @return The title visibility state for the toolbar.
-     *         Default is {@link CustomTabIntentDataProvider#CUSTOM_TAB_NO_TITLE}.
+     *         Default is {@link CustomTabIntentDataProvider#NO_TITLE}.
      */
     public int getTitleVisibilityState() {
         return mTitleVisibilityState;
@@ -205,7 +223,7 @@ public class CustomTabIntentDataProvider {
     /**
      * @return The icon used for the action button. Will be null if not set in the intent.
      */
-    public Bitmap getActionButtonIcon() {
+    public Drawable getActionButtonIcon() {
         return mIcon;
     }
 
