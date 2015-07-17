@@ -265,7 +265,7 @@ tells its ResourceHandler chain to allocate memory to receive the response
 body. The AsyncResourceHandler creates a 512KB ring buffer of shared memory,
 and then passes the first 32KB of it to the ResourceLoader for the first read.
 The ResourceLoader then passes a 32KB body read request down through the
-URLRequest all the way down to the HttpResponseParser. Once some data is read,
+URLRequest all the way down to the HttpStreamParser. Once some data is read,
 possibly less than 32KB, the number of bytes read makes its way back to the
 AsyncResourceHandler, which passes the shared memory buffer and the offset and
 amount of data read to the renderer process.
