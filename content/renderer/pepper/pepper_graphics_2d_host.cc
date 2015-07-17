@@ -284,7 +284,7 @@ bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     dest_canvas->drawBitmapRect(
-        *image_data_->GetMappedBitmap(), &src_irect, dest_rect, &paint);
+        *image_data_->GetMappedBitmap(), src_irect, dest_rect, &paint);
   }
   return true;
 }
@@ -731,7 +731,7 @@ void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     backing_canvas->drawBitmapRect(
-        *image->GetMappedBitmap(), &src_irect, dest_rect, &paint);
+        *image->GetMappedBitmap(), src_irect, dest_rect, &paint);
   }
 }
 

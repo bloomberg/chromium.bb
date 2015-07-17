@@ -215,7 +215,7 @@ void ColorPicker::UpdateCursor() {
                                      last_cursor_y_ - pixel_count / 2,
                                      pixel_count, pixel_count);
   SkRect dst_rect = SkRect::MakeXYWH(padding, padding, kDiameter, kDiameter);
-  canvas.drawBitmapRectToRect(frame_, &src_rect, dst_rect);
+  canvas.drawBitmapRect(frame_, &src_rect, dst_rect, NULL);
 
   // Paint grid.
   paint.setStrokeWidth(1);

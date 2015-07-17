@@ -597,7 +597,7 @@ void Canvas::DrawImageIntHelper(const ImageSkia& image,
     // shift.
     SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
     const SkBitmap& bitmap = image_rep.sk_bitmap();
-    canvas_->drawBitmapRect(bitmap, &src_rect, dest_rect, &paint);
+    canvas_->drawBitmapRect(bitmap, src_rect, dest_rect, &paint);
     return;
   }
 

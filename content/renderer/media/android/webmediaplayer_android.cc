@@ -642,7 +642,7 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   paint.setXfermodeMode(mode);
   // It is not necessary to pass the dest into the drawBitmap call since all
   // the context have been set up before calling paintCurrentFrameInContext.
-  canvas->drawBitmapRect(bitmap_, 0, dest, &paint);
+  canvas->drawBitmapRect(bitmap_, dest, &paint);
 }
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(

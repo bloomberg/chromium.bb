@@ -697,7 +697,7 @@ void WebPluginDelegateProxy::Paint(SkCanvas* canvas,
   SkPaint paint;
   paint.setXfermodeMode(
       transparent_ ? SkXfermode::kSrcATop_Mode : SkXfermode::kSrc_Mode);
-  SkIRect src_rect = gfx::RectToSkIRect(offset_rect);
+  SkRect src_rect = gfx::RectToSkRect(offset_rect);
   canvas->drawBitmapRect(bitmap,
                          &src_rect,
                          gfx::RectToSkRect(rect),
