@@ -20,7 +20,7 @@ weston.ini : $(srcdir)/weston.ini.in
 		$< > $@
 
 ivi-shell/weston.ini : $(srcdir)/ivi-shell/weston.ini.in
-	$(AM_V_GEN)$(SED) \
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
 		-e 's|@bindir[@]|$(bindir)|g' \
 		-e 's|@abs_top_builddir[@]|$(abs_top_builddir)|g' \
 		-e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g' \
@@ -29,7 +29,7 @@ ivi-shell/weston.ini : $(srcdir)/ivi-shell/weston.ini.in
 		$< > $@
 
 tests/weston-ivi.ini : $(srcdir)/ivi-shell/weston.ini.in
-	$(AM_V_GEN)$(SED) \
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
 		-e 's|@bindir[@]|$(bindir)|g' \
 		-e 's|@abs_top_builddir[@]|$(abs_top_builddir)|g' \
 		-e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g' \
