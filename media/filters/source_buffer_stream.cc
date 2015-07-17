@@ -17,10 +17,24 @@
 
 namespace media {
 
+namespace {
+
+enum {
+  // An arbitrarily-chosen number to estimate the duration of a buffer if none
+  // is set and there's not enough information to get a better estimate.
+  kDefaultBufferDurationInMs = 125,
+
+  // Limit the number of MEDIA_LOG() logs for splice buffer generation warnings
+  // and successes. Though these values are high enough to possibly exhaust the
+  // media internals event cache (along with other events), these logs are
+  // important for debugging splice generation.
+  kMaxSpliceGenerationWarningLogs = 50,
+  kMaxSpliceGenerationSuccessLogs = 20,
+};
+
 // Helper method that returns true if |ranges| is sorted in increasing order,
 // false otherwise.
-static bool IsRangeListSorted(
-    const std::list<media::SourceBufferRange*>& ranges) {
+bool IsRangeListSorted(const std::list<media::SourceBufferRange*>& ranges) {
   DecodeTimestamp prev = kNoDecodeTimestamp();
   for (std::list<SourceBufferRange*>::const_iterator itr =
        ranges.begin(); itr != ranges.end(); ++itr) {
@@ -39,25 +53,21 @@ static bool IsRangeListSorted(
 // instead of an overall maximum interbuffer delta for range discontinuity
 // detection, and adjust similarly for splice frame discontinuity detection.
 // See http://crbug.com/351489 and http://crbug.com/351166.
-static base::TimeDelta ComputeFudgeRoom(base::TimeDelta approximate_duration) {
+base::TimeDelta ComputeFudgeRoom(base::TimeDelta approximate_duration) {
   // Because we do not know exactly when is the next timestamp, any buffer
   // that starts within 2x the approximate duration of a buffer is considered
   // within this range.
   return 2 * approximate_duration;
 }
 
-// An arbitrarily-chosen number to estimate the duration of a buffer if none
-// is set and there's not enough information to get a better estimate.
-static int kDefaultBufferDurationInMs = 125;
-
 // The amount of time the beginning of the buffered data can differ from the
 // start time in order to still be considered the start of stream.
-static base::TimeDelta kSeekToStartFudgeRoom() {
+base::TimeDelta kSeekToStartFudgeRoom() {
   return base::TimeDelta::FromMilliseconds(1000);
 }
 
 // Helper method for logging, converts a range into a readable string.
-static std::string RangeToString(const SourceBufferRange& range) {
+std::string RangeToString(const SourceBufferRange& range) {
   std::stringstream ss;
   ss << "[" << range.GetStartTimestamp().InSecondsF()
      << ";" << range.GetEndTimestamp().InSecondsF()
@@ -66,7 +76,7 @@ static std::string RangeToString(const SourceBufferRange& range) {
 }
 
 // Helper method for logging, converts a set of ranges into a readable string.
-static std::string RangesToString(const SourceBufferStream::RangeList& ranges) {
+std::string RangesToString(const SourceBufferStream::RangeList& ranges) {
   if (ranges.empty())
     return "<EMPTY>";
 
@@ -79,8 +89,7 @@ static std::string RangesToString(const SourceBufferStream::RangeList& ranges) {
   return ss.str();
 }
 
-static SourceBufferRange::GapPolicy TypeToGapPolicy(
-    SourceBufferStream::Type type) {
+SourceBufferRange::GapPolicy TypeToGapPolicy(SourceBufferStream::Type type) {
   switch (type) {
     case SourceBufferStream::kAudio:
     case SourceBufferStream::kVideo:
@@ -92,6 +101,8 @@ static SourceBufferRange::GapPolicy TypeToGapPolicy(
   NOTREACHED();
   return SourceBufferRange::NO_GAPS_ALLOWED;
 }
+
+}  // namespace
 
 SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
                                        const scoped_refptr<MediaLog>& media_log,
@@ -114,7 +125,9 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       config_change_pending_(false),
       splice_buffers_index_(0),
       pending_buffers_complete_(false),
-      splice_frames_enabled_(splice_frames_enabled) {
+      splice_frames_enabled_(splice_frames_enabled),
+      num_splice_generation_warning_logs_(0),
+      num_splice_generation_success_logs_(0) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
 }
@@ -140,7 +153,9 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       config_change_pending_(false),
       splice_buffers_index_(0),
       pending_buffers_complete_(false),
-      splice_frames_enabled_(splice_frames_enabled) {
+      splice_frames_enabled_(splice_frames_enabled),
+      num_splice_generation_warning_logs_(0),
+      num_splice_generation_success_logs_(0) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
 }
@@ -167,8 +182,9 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       config_change_pending_(false),
       splice_buffers_index_(0),
       pending_buffers_complete_(false),
-      splice_frames_enabled_(splice_frames_enabled) {
-}
+      splice_frames_enabled_(splice_frames_enabled),
+      num_splice_generation_warning_logs_(0),
+      num_splice_generation_success_logs_(0) {}
 
 SourceBufferStream::~SourceBufferStream() {
   while (!ranges_.empty()) {
@@ -1548,8 +1564,17 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
   //
   // We also do not want to generate splices if the first new buffer replaces an
   // existing buffer exactly.
-  if (pre_splice_buffers.front()->timestamp() >= splice_timestamp)
+  if (pre_splice_buffers.front()->timestamp() >= splice_timestamp) {
+    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_warning_logs_,
+                      kMaxSpliceGenerationWarningLogs)
+        << "Skipping splice frame generation: first new buffer at "
+        << splice_timestamp.InMicroseconds()
+        << "us begins at or before existing buffer at "
+        << pre_splice_buffers.front()->timestamp().InMicroseconds() << "us.";
+    DVLOG(1) << "Skipping splice: overlapped buffers begin at or after the "
+                "first new buffer.";
     return;
+  }
 
   // If any |pre_splice_buffers| are already splices or preroll, do not generate
   // a splice.
@@ -1557,12 +1582,22 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
     const BufferQueue& original_splice_buffers =
         pre_splice_buffers[i]->splice_buffers();
     if (!original_splice_buffers.empty()) {
+      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_warning_logs_,
+                        kMaxSpliceGenerationWarningLogs)
+          << "Skipping splice frame generation: overlapped buffers at "
+          << pre_splice_buffers[i]->timestamp().InMicroseconds()
+          << "us are in a previously buffered splice.";
       DVLOG(1) << "Can't generate splice: overlapped buffers contain a "
                   "pre-existing splice.";
       return;
     }
 
     if (pre_splice_buffers[i]->preroll_buffer().get()) {
+      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_warning_logs_,
+                        kMaxSpliceGenerationWarningLogs)
+          << "Skipping splice frame generation: overlapped buffers at "
+          << pre_splice_buffers[i]->timestamp().InMicroseconds()
+          << "us contain preroll.";
       DVLOG(1) << "Can't generate splice: overlapped buffers contain preroll.";
       return;
     }
@@ -1570,7 +1605,7 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
 
   // Don't generate splice frames which represent less than a millisecond (which
   // is frequently the extent of timestamp resolution for poorly encoded media)
-  // or less than two frames (need at least two to crossfade).
+  // or less than two samples (need at least two to crossfade).
   const base::TimeDelta splice_duration =
       pre_splice_buffers.back()->timestamp() +
       pre_splice_buffers.back()->duration() - splice_timestamp;
@@ -1579,15 +1614,27 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
       base::TimeDelta::FromSecondsD(
           2.0 / audio_configs_[append_config_index_].samples_per_second()));
   if (splice_duration < minimum_splice_duration) {
+    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_warning_logs_,
+                      kMaxSpliceGenerationWarningLogs)
+        << "Skipping splice frame generation: not enough samples for splicing "
+           "new buffer at "
+        << splice_timestamp.InMicroseconds() << "us. Have "
+        << splice_duration.InMicroseconds() << "us, but need "
+        << minimum_splice_duration.InMicroseconds() << "us.";
     DVLOG(1) << "Can't generate splice: not enough samples for crossfade; have "
-             << splice_duration.InMicroseconds() << " us, but need "
-             << minimum_splice_duration.InMicroseconds() << " us.";
+             << splice_duration.InMicroseconds() << "us, but need "
+             << minimum_splice_duration.InMicroseconds() << "us.";
     return;
   }
 
   DVLOG(1) << "Generating splice frame @ " << new_buffers.front()->timestamp()
            << ", splice duration: " << splice_duration.InMicroseconds()
            << " us";
+  LIMITED_MEDIA_LOG(DEBUG, media_log_, num_splice_generation_success_logs_,
+                    kMaxSpliceGenerationSuccessLogs)
+      << "Generated splice of overlap duration "
+      << splice_duration.InMicroseconds() << "us into new buffer at "
+      << splice_timestamp.InMicroseconds() << "us.";
   new_buffers.front()->ConvertToSpliceBuffer(pre_splice_buffers);
 }
 

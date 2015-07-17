@@ -419,6 +419,11 @@ class MEDIA_EXPORT SourceBufferStream {
   // Indicates that splice frame generation is enabled.
   const bool splice_frames_enabled_;
 
+  // To prevent log spam, count the number of splice generation warnings and
+  // successes logged.
+  int num_splice_generation_warning_logs_;
+  int num_splice_generation_success_logs_;
+
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStream);
 };
 
