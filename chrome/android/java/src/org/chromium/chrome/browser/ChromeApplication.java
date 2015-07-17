@@ -93,6 +93,9 @@ import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
 import org.chromium.printing.PrintingController;
+import org.chromium.sync.signin.AccountManagerDelegate;
+import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.sync.signin.SystemAccountManagerDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ResourceBundle;
@@ -205,6 +208,11 @@ public class ChromeApplication extends ContentApplication {
                 return activity != null && MultiWindowUtils.getInstance().isMultiWindow(activity);
             }
         });
+
+        // Set the default AccountManagerDelegate to ensure it is always used when the instance
+        // of the AccountManagerHelper is created. Must be done before AccountMangerHelper.get(...)
+        // is called.
+        AccountManagerHelper.setDefaultAccountManagerDelegate(createAccountManagerDelegate());
 
         // Set the unique identification generator for invalidations.  The
         // invalidations system can start and attempt to fetch the client ID
@@ -781,6 +789,14 @@ public class ChromeApplication extends ContentApplication {
      */
     public RevenueStats createRevenueStatsInstance() {
         return new RevenueStats();
+    }
+
+    /**
+     * Creates a new {@link AccountManagerDelegate}.
+     * @return the created {@link AccountManagerDelegate}.
+     */
+    public AccountManagerDelegate createAccountManagerDelegate() {
+        return new SystemAccountManagerDelegate(this);
     }
 
     /**

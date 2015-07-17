@@ -63,11 +63,23 @@ public class AccountManagerHelper {
 
     private static final int MAX_TRIES = 3;
 
+    private static AccountManagerDelegate sDefaultAccountManagerDelegate;
+
     private static AccountManagerHelper sAccountManagerHelper;
 
     private final AccountManagerDelegate mAccountManager;
 
     private Context mApplicationContext;
+
+    /**
+     * Provides functionality to set the default {@link AccountManagerDelegate} to be used when
+     * the AccountManagerHelper is created. This may be set during application startup to ensure
+     * all callers get the correct implementation.
+     * @param delegate the default AccountManagerDelegate to use when constructing the instance.
+     */
+    public static void setDefaultAccountManagerDelegate(AccountManagerDelegate delegate) {
+        sDefaultAccountManagerDelegate = delegate;
+    }
 
     /**
      * A simple callback for getAuthToken.
@@ -85,8 +97,7 @@ public class AccountManagerHelper {
      * @param context the Android context
      * @param accountManager the account manager to use as a backend service
      */
-    private AccountManagerHelper(Context context,
-                                 AccountManagerDelegate accountManager) {
+    private AccountManagerHelper(Context context, AccountManagerDelegate accountManager) {
         mApplicationContext = context.getApplicationContext();
         mAccountManager = accountManager;
     }
@@ -104,8 +115,13 @@ public class AccountManagerHelper {
     public static AccountManagerHelper get(Context context) {
         synchronized (sLock) {
             if (sAccountManagerHelper == null) {
-                sAccountManagerHelper = new AccountManagerHelper(context,
-                        new SystemAccountManagerDelegate(context));
+                if (sDefaultAccountManagerDelegate == null) {
+                    sAccountManagerHelper = new AccountManagerHelper(context,
+                            new SystemAccountManagerDelegate(context));
+                } else {
+                    sAccountManagerHelper = new AccountManagerHelper(context,
+                            sDefaultAccountManagerDelegate);
+                }
             }
         }
         return sAccountManagerHelper;
