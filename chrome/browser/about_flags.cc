@@ -1890,6 +1890,12 @@ const Experiment kExperiments[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(
          data_reduction_proxy::switches::kClearDataReductionProxyDataSavings)},
+    {"enable-data-reduction-proxy-config-client",
+     IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_NAME,
+     IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
+                           kEnableDataReductionProxyConfigClient)},
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
     {"enable-data-reduction-proxy-bypass-warnings",
      IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_BYPASS_WARNING_NAME,
@@ -2199,6 +2205,16 @@ bool SkipConditionalExperiment(const Experiment& experiment) {
   // the Canary/Dev/Beta channels.
   if (!strcmp("data-reduction-proxy-lo-fi", experiment.internal_name) &&
       channel != chrome::VersionInfo::CHANNEL_BETA &&
+      channel != chrome::VersionInfo::CHANNEL_DEV &&
+      channel != chrome::VersionInfo::CHANNEL_CANARY &&
+      channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {
+    return true;
+  }
+
+  // enable-data-reduction-proxy-config-client is only available for Chromium
+  // builds and the Canary/Dev channels.
+  if (!strcmp("enable-data-reduction-proxy-config-client",
+              experiment.internal_name) &&
       channel != chrome::VersionInfo::CHANNEL_DEV &&
       channel != chrome::VersionInfo::CHANNEL_CANARY &&
       channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {

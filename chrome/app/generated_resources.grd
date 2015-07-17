@@ -6586,6 +6586,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION" desc="Describes an about:flags experiment to enable using the carrier test data reduction proxy">
         Use a carrier-specific Data Reduction Proxy for testing.
       </message>
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_NAME" desc="Title in about::flags to use the Data Reduction Proxy configuration service">
+         Enable Data Reduction Proxy configuration service client.
+      </message>
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION" desc="Description in about::flags to use the Data Reduction Proxy configuration service">
+         Uses the Data Reduction Proxy configuration service for authentication and proxy configuration.
+      </message>
       <message name="IDS_FLAGS_LCD_TEXT_NAME" desc="Name of about:flags option for LCD text.">
         LCD text antialiasing
       </message>
