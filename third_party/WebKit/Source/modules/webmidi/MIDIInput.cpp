@@ -66,6 +66,15 @@ void MIDIInput::setOnmidimessage(PassRefPtr<EventListener> listener)
     setAttributeEventListener(EventTypeNames::midimessage, listener);
 }
 
+bool MIDIInput::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+{
+    if (eventType == EventTypeNames::midimessage) {
+        // Implicit open. See setOnmidimessage().
+        open();
+    }
+    return EventTarget::addEventListener(eventType, listener, useCapture);
+}
+
 void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
 {
     ASSERT(isMainThread());

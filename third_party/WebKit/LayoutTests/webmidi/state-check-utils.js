@@ -27,7 +27,11 @@ function checkStateTransition(options) {
     if (options.method == "setonmidimessage") {
         port.onmidimessage = function() {};
     }
-    if (options.method == "send" || options.method == "setonmidimessage") {
+    if (options.method == "addeventlistener") {
+        port.addEventListener("midimessage", function() {});
+    }
+    if (options.method == "send" || options.method == "setonmidimessage" ||
+        options.method == "addeventlistener") {
         // Following tests expect an implicit open finishes synchronously.
         // But it will be asynchronous in the future.
         debug("- check final state.");

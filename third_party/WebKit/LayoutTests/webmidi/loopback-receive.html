@@ -60,9 +60,6 @@ function test(useAddEventListener) {
             input.reject = reject;
             if (useAddEventListener) {
                 input.addEventListener('midimessage', verifyData);
-                // TODO(toyoshim): Explicit open() should not be needed.
-                // See crbug.com/510246.
-                input.open();  // TODO(toyoshim): Should not be needed.
             } else {
                 input.onmidimessage = verifyData;
             }

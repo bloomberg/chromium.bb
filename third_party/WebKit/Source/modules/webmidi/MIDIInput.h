@@ -50,6 +50,7 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const override { return EventTargetNames::MIDIInput; }
+    bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture) override;
 
     // |timeStamp| is a DOMHighResTimeStamp in the time coordinate system of performance.now().
     void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
