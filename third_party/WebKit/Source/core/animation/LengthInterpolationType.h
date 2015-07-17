@@ -18,7 +18,7 @@ public:
     void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 
 private:
-    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertLength(const Length&) const;
+    PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertLength(const Length&, float zoom) const;
     PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertNeutral() const final;
     PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertInitial() const final;
     PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState*, ConversionCheckers&) const final;
