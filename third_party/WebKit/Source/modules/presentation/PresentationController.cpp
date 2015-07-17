@@ -6,6 +6,7 @@
 #include "modules/presentation/PresentationController.h"
 
 #include "core/frame/LocalFrame.h"
+#include "modules/presentation/DefaultSessionStartEvent.h"
 #include "modules/presentation/PresentationSession.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
 
@@ -57,6 +58,7 @@ WebPresentationClient* PresentationController::client()
 DEFINE_TRACE(PresentationController)
 {
     visitor->trace(m_presentation);
+    visitor->trace(m_defaultRequest);
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
     LocalFrameLifecycleObserver::trace(visitor);
 }
@@ -69,6 +71,11 @@ void PresentationController::didStartDefaultSession(WebPresentationSessionClient
     }
 
     PresentationSession* session = PresentationSession::take(sessionClient, m_presentation);
+    if (m_defaultRequest)
+        m_defaultRequest->dispatchEvent(DefaultSessionStartEvent::create(EventTypeNames::connect, session));
+
+    // TODO(mlamouri): remove. this is only here to allow tests to upgrade to
+    // the new way of doing things.
     m_presentation->didStartDefaultSession(session);
 }
 
@@ -105,6 +112,19 @@ void PresentationController::didReceiveSessionBinaryMessage(WebPresentationSessi
 void PresentationController::setPresentation(Presentation* presentation)
 {
     m_presentation = presentation;
+}
+
+PresentationRequest* PresentationController::defaultRequest() const
+{
+    return m_defaultRequest;
+}
+
+void PresentationController::setDefaultRequest(PresentationRequest* request)
+{
+    m_defaultRequest = request;
+
+    if (m_client)
+        m_client->setDefaultPresentationUrl(m_defaultRequest->url().string());
 }
 
 void PresentationController::willDetachFrameHost()

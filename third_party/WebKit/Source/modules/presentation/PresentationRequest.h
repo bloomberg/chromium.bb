@@ -38,6 +38,8 @@ public:
     ScriptPromise join(ScriptState*, const String& id);
     ScriptPromise getAvailability(ScriptState*);
 
+    const KURL& url() const;
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
 
     DECLARE_VIRTUAL_TRACE();

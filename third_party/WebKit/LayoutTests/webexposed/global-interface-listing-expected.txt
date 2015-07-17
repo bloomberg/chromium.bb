@@ -3601,12 +3601,14 @@ interface PopStateEvent
     getter state
     method constructor
 interface Presentation
+    getter defaultRequest
     getter ondefaultsessionstart
     getter session
     method constructor
     method getAvailability
     method joinSession
     method startSession
+    setter defaultRequest
     setter ondefaultsessionstart
 interface PresentationAvailability
     getter onchange

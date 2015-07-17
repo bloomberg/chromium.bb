@@ -68,6 +68,11 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
     return promise;
 }
 
+const KURL& PresentationRequest::url() const
+{
+    return m_url;
+}
+
 DEFINE_TRACE(PresentationRequest)
 {
     RefCountedGarbageCollectedEventTargetWithInlineData<PresentationRequest>::trace(visitor);

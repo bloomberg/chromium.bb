@@ -17,6 +17,7 @@
 #include "modules/presentation/DefaultSessionStartEvent.h"
 #include "modules/presentation/PresentationAvailabilityCallback.h"
 #include "modules/presentation/PresentationController.h"
+#include "modules/presentation/PresentationRequest.h"
 #include "modules/presentation/PresentationSessionClientCallbacks.h"
 #include "public/platform/modules/presentation/WebPresentationSessionClient.h"
 
@@ -127,6 +128,26 @@ ScriptPromise Presentation::getAvailability(ScriptState* state, const String& pr
     client->getAvailability(presentationUrl, new PresentationAvailabilityCallback(resolver));
 
     return promise;
+}
+
+PresentationRequest* Presentation::defaultRequest() const
+{
+    if (!frame())
+        return nullptr;
+
+    PresentationController* controller = PresentationController::from(*frame());
+    return controller ? controller->defaultRequest() : nullptr;
+}
+
+void Presentation::setDefaultRequest(PresentationRequest* request)
+{
+    if (!frame())
+        return;
+
+    PresentationController* controller = PresentationController::from(*frame());
+    if (!controller)
+        return;
+    controller->setDefaultRequest(request);
 }
 
 void Presentation::didStartDefaultSession(PresentationSession* session)

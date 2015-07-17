@@ -8,6 +8,7 @@
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "modules/presentation/Presentation.h"
+#include "modules/presentation/PresentationRequest.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
@@ -53,6 +54,10 @@ public:
     // Connects the |Presentation| object with this controller.
     void setPresentation(Presentation*);
 
+    // Handling of the default request.
+    PresentationRequest* defaultRequest() const;
+    void setDefaultRequest(PresentationRequest*);
+
 private:
     PresentationController(LocalFrame&, WebPresentationClient*);
 
@@ -61,6 +66,7 @@ private:
 
     WebPresentationClient* m_client;
     PersistentWillBeMember<Presentation> m_presentation;
+    PersistentWillBeMember<PresentationRequest> m_defaultRequest;
 };
 
 } // namespace blink

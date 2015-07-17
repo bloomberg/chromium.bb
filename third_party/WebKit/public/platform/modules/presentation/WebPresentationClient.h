@@ -67,6 +67,10 @@ public:
     // Stop listening to changes in presentation displays availability. The
     // observer will no longer be notified in case of a change.
     virtual void stopListening(WebPresentationAvailabilityObserver*) = 0;
+
+    // Called when a defaultRequest has been set. It sends the url associated
+    // with it for the embedder.
+    virtual void setDefaultPresentationUrl(const WebString& url) {}
 };
 
 } // namespace blink

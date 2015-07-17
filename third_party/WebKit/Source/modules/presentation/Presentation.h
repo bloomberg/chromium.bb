@@ -20,6 +20,7 @@ namespace blink {
 
 class LocalFrame;
 class PresentationController;
+class PresentationRequest;
 class ScriptState;
 class WebPresentationSessionClient;
 enum class WebPresentationSessionState;
@@ -47,6 +48,9 @@ public:
     ScriptPromise startSession(ScriptState*, const String& presentationUrl);
     ScriptPromise joinSession(ScriptState*, const String& presentationUrl, const String& presentationId);
     ScriptPromise getAvailability(ScriptState*, const String& presentationUrl);
+
+    PresentationRequest* defaultRequest() const;
+    void setDefaultRequest(PresentationRequest*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(defaultsessionstart);
 
