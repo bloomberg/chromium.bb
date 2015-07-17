@@ -1219,27 +1219,8 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
-  if (!ui::PageTransitionCoreTypeIs(params.transition,
-                                    ui::PAGE_TRANSITION_MANUAL_SUBFRAME)) {
-    // There was a comment here that said, "This is not user-initiated. Ignore."
-    // But this makes no sense; non-user-initiated navigations should be
-    // determined to be of type NAVIGATION_TYPE_AUTO_SUBFRAME and sent to
-    // RendererDidNavigateAutoSubframe below.
-    //
-    // This if clause dates back to https://codereview.chromium.org/115919 and
-    // the handling of immediate redirects. TODO(avi): Is this still valid? I'm
-    // pretty sure that's there's nothing left of that code and that we should
-    // take this out.
-    //
-    // Except for cross-process iframes; this doesn't work yet for them.
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
-      NOTREACHED();
-    }
-
-    DiscardNonCommittedEntriesInternal();
-    return;
-  }
+  DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
+                                      ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
 
   // Manual subframe navigations just get the current entry cloned so the user
   // can go back or forward to it. The actual subframe information will be
