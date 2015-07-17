@@ -4558,6 +4558,7 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 		ec->renderer->destroy(ec);
 
 	weston_binding_list_destroy_all(&ec->key_binding_list);
+	weston_binding_list_destroy_all(&ec->modifier_binding_list);
 	weston_binding_list_destroy_all(&ec->button_binding_list);
 	weston_binding_list_destroy_all(&ec->touch_binding_list);
 	weston_binding_list_destroy_all(&ec->axis_binding_list);
