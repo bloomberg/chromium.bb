@@ -21,6 +21,7 @@ namespace blink {
 class CompositorProxy;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
+class DOMSharedArrayBuffer;
 class File;
 class FileList;
 
@@ -134,6 +135,7 @@ public:
     void writeRegExp(v8::Local<v8::String> pattern, v8::RegExp::Flags);
     void writeTransferredMessagePort(uint32_t index);
     void writeTransferredArrayBuffer(uint32_t index);
+    void writeTransferredSharedArrayBuffer(uint32_t index);
     void writeObjectReference(uint32_t reference);
     void writeObject(uint32_t numProperties);
     void writeSparseArray(uint32_t numProperties, uint32_t length);
@@ -396,6 +398,7 @@ private:
     StateBase* writeAndGreyArrayBufferView(v8::Local<v8::Object>, StateBase* next);
     StateBase* writeArrayBuffer(v8::Local<v8::Value>, StateBase* next);
     StateBase* writeTransferredArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
+    StateBase* writeTransferredSharedArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     static bool shouldSerializeDensely(uint32_t length, uint32_t propertyCount);
 
     StateBase* startArrayState(v8::Local<v8::Array>, StateBase* next);
@@ -446,6 +449,7 @@ public:
     virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
+    virtual bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool newSparseArray(uint32_t length) = 0;
     virtual bool newDenseArray(uint32_t length) = 0;
     virtual bool newMap() = 0;
@@ -588,6 +592,7 @@ public:
     void pushObjectReference(const v8::Local<v8::Value>&) override;
     bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) override;
     bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
+    bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
     bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) override;
     uint32_t objectReferenceCount() override;
 

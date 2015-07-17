@@ -141,5 +141,11 @@
     "prefix": "mediasession",
     "base": "media/mediasession",
     "args": ["--enable-blink-features=MediaSession"]
+  },
+  {
+    "prefix": "sharedarraybuffer",
+    "base": "fast/workers",
+    "args": ["--js-flags=--harmony-sharedarraybuffer",
+             "--enable-blink-features=SharedArrayBuffer"]
   }
 ]

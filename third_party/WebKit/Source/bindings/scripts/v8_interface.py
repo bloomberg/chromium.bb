@@ -96,7 +96,8 @@ def interface_context(interface):
     is_array_buffer_or_view = interface.idl_type.is_array_buffer_or_view
     is_typed_array_type = interface.idl_type.is_typed_array
     if is_array_buffer_or_view:
-        includes.add('bindings/core/v8/V8ArrayBuffer.h')
+        includes.update(('bindings/core/v8/V8ArrayBuffer.h',
+                         'bindings/core/v8/V8SharedArrayBuffer.h'))
     if interface.name == 'ArrayBufferView':
         includes.update((
             'bindings/core/v8/V8Int8Array.h',

@@ -23,6 +23,7 @@ public:
     void* data() { return buffer()->data(); }
     unsigned byteLength() const { return buffer()->byteLength(); }
     bool transfer(WTF::ArrayBufferContents& result) { return buffer()->transfer(result); }
+    bool shareContentsWith(WTF::ArrayBufferContents& result) { return buffer()->shareContentsWith(result); }
     bool isNeutered() const { return buffer()->isNeutered(); }
     bool isShared() const { return buffer()->isShared(); }
 

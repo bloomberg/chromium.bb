@@ -13,11 +13,15 @@
 #include "bindings/core/v8/V8FileList.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "core/dom/CompositorProxy.h"
 #include "core/dom/DOMDataView.h"
+#include "core/dom/DOMSharedArrayBuffer.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobInfo.h"
 #include "wtf/DateMath.h"
@@ -247,8 +251,7 @@ void SerializedScriptValueWriter::writeArrayBufferView(const DOMArrayBufferView&
 {
     append(ArrayBufferViewTag);
 #if ENABLE(ASSERT)
-    const DOMArrayBuffer& arrayBuffer = *arrayBufferView.buffer();
-    ASSERT(static_cast<const uint8_t*>(arrayBuffer.data()) + arrayBufferView.byteOffset() ==
+    ASSERT(static_cast<const uint8_t*>(arrayBufferView.bufferBase()->data()) + arrayBufferView.byteOffset() ==
         static_cast<const uint8_t*>(arrayBufferView.baseAddress()));
 #endif
     DOMArrayBufferView::ViewType type = arrayBufferView.type();
@@ -317,6 +320,13 @@ void SerializedScriptValueWriter::writeTransferredMessagePort(uint32_t index)
 void SerializedScriptValueWriter::writeTransferredArrayBuffer(uint32_t index)
 {
     append(ArrayBufferTransferTag);
+    doWriteUint32(index);
+}
+
+void SerializedScriptValueWriter::writeTransferredSharedArrayBuffer(uint32_t index)
+{
+    ASSERT(RuntimeEnabledFeatures::sharedArrayBufferEnabled());
+    append(SharedArrayBufferTransferTag);
     doWriteUint32(index);
 }
 
@@ -627,15 +637,14 @@ static v8::Local<v8::Object> toV8Object(MessagePort* impl, v8::Local<v8::Object>
     return wrapper.As<v8::Object>();
 }
 
-static v8::Local<v8::ArrayBuffer> toV8Object(DOMArrayBuffer* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Local<v8::Object> toV8Object(DOMArrayBufferBase* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
-        return v8::Local<v8::ArrayBuffer>();
+        return v8::Local<v8::Object>();
     v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
     if (wrapper.IsEmpty())
-        return v8::Local<v8::ArrayBuffer>();
-    ASSERT(wrapper->IsArrayBuffer());
-    return wrapper.As<v8::ArrayBuffer>();
+        return v8::Local<v8::Object>();
+    return wrapper.As<v8::Object>();
 }
 
 // Returns true if the provided object is to be considered a 'host object', as used in the
@@ -733,6 +742,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
         }
     } else if (V8ArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(value.As<v8::Object>(), &arrayBufferIndex)) {
         return writeTransferredArrayBuffer(value, arrayBufferIndex, next);
+    } else if (V8SharedArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(value.As<v8::Object>(), &arrayBufferIndex)) {
+        return writeTransferredSharedArrayBuffer(value, arrayBufferIndex, next);
     } else {
         v8::Local<v8::Object> jsObject = value.As<v8::Object>();
         if (jsObject.IsEmpty())
@@ -967,9 +978,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer
     DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
     if (!arrayBufferView)
         return 0;
-    if (!arrayBufferView->buffer())
+    if (!arrayBufferView->bufferBase())
         return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
-    v8::Local<v8::Value> underlyingBuffer = toV8(arrayBufferView->buffer(), m_scriptState->context()->Global(), isolate());
+    v8::Local<v8::Value> underlyingBuffer = toV8(arrayBufferView->bufferBase(), m_scriptState->context()->Global(), isolate());
     if (underlyingBuffer.IsEmpty())
         return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
     StateBase* stateOut = doSerializeArrayBuffer(underlyingBuffer, next);
@@ -1010,6 +1021,16 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredArrayBu
     if (arrayBuffer->isNeutered())
         return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
     m_writer.writeTransferredArrayBuffer(index);
+    return 0;
+}
+
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredSharedArrayBuffer(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
+{
+    ASSERT(RuntimeEnabledFeatures::sharedArrayBufferEnabled());
+    DOMSharedArrayBuffer* sharedArrayBuffer = V8SharedArrayBuffer::toImpl(value.As<v8::Object>());
+    if (!sharedArrayBuffer)
+        return 0;
+    m_writer.writeTransferredSharedArrayBuffer(index);
     return 0;
 }
 
@@ -1331,6 +1352,16 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
             return false;
         break;
     }
+    case SharedArrayBufferTransferTag: {
+        if (!m_version)
+            return false;
+        uint32_t index;
+        if (!doReadUint32(&index))
+            return false;
+        if (!creator.tryGetTransferredSharedArrayBuffer(index, value))
+            return false;
+        break;
+    }
     case ObjectReferenceTag: {
         if (!m_version)
             return false;
@@ -1552,7 +1583,7 @@ bool SerializedScriptValueReader::readArrayBufferView(v8::Local<v8::Value>* valu
     ArrayBufferViewSubTag subTag;
     uint32_t byteOffset;
     uint32_t byteLength;
-    RefPtr<DOMArrayBuffer> arrayBuffer;
+    RefPtr<DOMArrayBufferBase> arrayBuffer;
     v8::Local<v8::Value> arrayBufferV8Value;
     if (!readArrayBufferViewSubTag(&subTag))
         return false;
@@ -1564,9 +1595,17 @@ bool SerializedScriptValueReader::readArrayBufferView(v8::Local<v8::Value>* valu
         return false;
     if (arrayBufferV8Value.IsEmpty())
         return false;
-    arrayBuffer = V8ArrayBuffer::toImpl(arrayBufferV8Value.As<v8::Object>());
-    if (!arrayBuffer)
-        return false;
+    if (arrayBufferV8Value->IsArrayBuffer()) {
+        arrayBuffer = V8ArrayBuffer::toImpl(arrayBufferV8Value.As<v8::Object>());
+        if (!arrayBuffer)
+            return false;
+    } else if (arrayBufferV8Value->IsSharedArrayBuffer()) {
+        arrayBuffer = V8SharedArrayBuffer::toImpl(arrayBufferV8Value.As<v8::Object>());
+        if (!arrayBuffer)
+            return false;
+    } else {
+        ASSERT_NOT_REACHED();
+    }
 
     // Check the offset, length and alignment.
     int elementByteSize;
@@ -2016,6 +2055,27 @@ bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::L
     v8::Local<v8::Value> result = m_arrayBuffers.at(index);
     if (result.IsEmpty()) {
         RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(m_arrayBufferContents->at(index));
+        v8::Isolate* isolate = m_reader.scriptState()->isolate();
+        v8::Local<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
+        result = toV8(buffer.get(), creationContext, isolate);
+        if (result.IsEmpty())
+            return false;
+        m_arrayBuffers[index] = result;
+    }
+    *object = result;
+    return true;
+}
+
+bool ScriptValueDeserializer::tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>* object)
+{
+    ASSERT(RuntimeEnabledFeatures::sharedArrayBufferEnabled());
+    if (!m_arrayBufferContents)
+        return false;
+    if (index >= m_arrayBuffers.size())
+        return false;
+    v8::Local<v8::Value> result = m_arrayBuffers.at(index);
+    if (result.IsEmpty()) {
+        RefPtr<DOMSharedArrayBuffer> buffer = DOMSharedArrayBuffer::create(m_arrayBufferContents->at(index));
         v8::Isolate* isolate = m_reader.scriptState()->isolate();
         v8::Local<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
         result = toV8(buffer.get(), creationContext, isolate);

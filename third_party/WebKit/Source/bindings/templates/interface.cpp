@@ -724,11 +724,11 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 
 {##############################################################################}
 {% block to_impl %}
-{% if interface_name == 'ArrayBuffer' %}
-{{cpp_class}}* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
+{% if interface_name == 'ArrayBuffer' or interface_name == 'SharedArrayBuffer' %}
+{{cpp_class}}* V8{{interface_name}}::toImpl(v8::Local<v8::Object> object)
 {
-    ASSERT(object->IsArrayBuffer());
-    v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
+    ASSERT(object->Is{{interface_name}}());
+    v8::Local<v8::{{interface_name}}> v8buffer = object.As<v8::{{interface_name}}>();
     if (v8buffer->IsExternal()) {
         const WrapperTypeInfo* wrapperTypeInfo = toWrapperTypeInfo(object);
         RELEASE_ASSERT(wrapperTypeInfo);
@@ -736,10 +736,10 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
         return toScriptWrappable(object)->toImpl<{{cpp_class}}>();
     }
 
-    // Transfer the ownership of the allocated memory to an ArrayBuffer without
+    // Transfer the ownership of the allocated memory to an {{interface_name}} without
     // copying.
-    v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
-    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), WTF::ArrayBufferContents::NotShared);
+    v8::{{interface_name}}::Contents v8Contents = v8buffer->Externalize();
+    WTF::ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(), WTF::ArrayBufferContents::{% if interface_name == 'ArrayBuffer' %}Not{% endif %}Shared);
     RefPtr<{{cpp_class}}> buffer = {{cpp_class}}::create(contents);
     v8::Local<v8::Object> associatedWrapper = buffer->associateWithWrapper(v8::Isolate::GetCurrent(), buffer->wrapperTypeInfo(), object);
     ASSERT_UNUSED(associatedWrapper, associatedWrapper == object);
@@ -789,7 +789,15 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
         return scriptWrappable->toImpl<{{cpp_class}}>();
 
     v8::Local<v8::{{interface_name}}> v8View = object.As<v8::{{interface_name}}>();
-    RefPtr<{{cpp_class}}> typedArray = {{cpp_class}}::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->{% if interface_name == 'DataView' %}Byte{% endif %}Length());
+    v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
+    RefPtr<{{cpp_class}}> typedArray;
+    if (arrayBuffer->IsArrayBuffer()) {
+        typedArray = {{cpp_class}}::create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->{% if interface_name == 'DataView' %}Byte{% endif %}Length());
+    } else if (arrayBuffer->IsSharedArrayBuffer()) {
+        typedArray = {{cpp_class}}::create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->{% if interface_name == 'DataView' %}Byte{% endif %}Length());
+    } else {
+        ASSERT_NOT_REACHED();
+    }
     v8::Local<v8::Object> associatedWrapper = typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
     ASSERT_UNUSED(associatedWrapper, associatedWrapper == object);
 

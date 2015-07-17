@@ -39,6 +39,7 @@
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/SharedBuffer.h"
 #include "platform/blob/BlobData.h"
@@ -113,32 +114,42 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
 
     OwnPtr<ArrayBufferContentsArray> contents = adoptPtr(new ArrayBufferContentsArray(arrayBuffers.size()));
 
-    HashSet<DOMArrayBuffer*> visited;
+    HashSet<DOMArrayBufferBase*> visited;
     for (size_t i = 0; i < arrayBuffers.size(); i++) {
         if (visited.contains(arrayBuffers[i].get()))
             continue;
         visited.add(arrayBuffers[i].get());
 
-        Vector<v8::Local<v8::ArrayBuffer>, 4> bufferHandles;
-        v8::HandleScope handleScope(isolate);
-        acculumateArrayBuffersForAllWorlds(isolate, arrayBuffers[i].get(), bufferHandles);
-        bool isNeuterable = true;
-        for (size_t j = 0; j < bufferHandles.size(); j++)
-            isNeuterable &= bufferHandles[j]->IsNeuterable();
+        if (arrayBuffers[i]->isShared()) {
+            bool result = arrayBuffers[i]->shareContentsWith(contents->at(i));
+            if (!result) {
+                exceptionState.throwDOMException(DataCloneError, "SharedArrayBuffer at index " + String::number(i) + " could not be transferred.");
+                return nullptr;
+            }
+        } else {
+            Vector<v8::Local<v8::ArrayBuffer>, 4> bufferHandles;
+            v8::HandleScope handleScope(isolate);
+            acculumateArrayBuffersForAllWorlds(isolate, static_pointer_cast<DOMArrayBuffer>(arrayBuffers[i]).get(), bufferHandles);
+            bool isNeuterable = true;
+            for (size_t j = 0; j < bufferHandles.size(); j++)
+                isNeuterable &= bufferHandles[j]->IsNeuterable();
 
-        RefPtr<DOMArrayBuffer> toTransfer = arrayBuffers[i];
-        if (!isNeuterable)
-            toTransfer = DOMArrayBuffer::create(arrayBuffers[i]->buffer());
-        bool result = toTransfer->transfer(contents->at(i));
-        if (!result) {
-            exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " could not be transferred.");
-            return nullptr;
+            RefPtr<DOMArrayBufferBase> toTransfer = arrayBuffers[i];
+            if (!isNeuterable)
+                toTransfer = DOMArrayBuffer::create(arrayBuffers[i]->buffer());
+            bool result = toTransfer->transfer(contents->at(i));
+            if (!result) {
+                exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " could not be transferred.");
+                return nullptr;
+            }
+
+            if (isNeuterable)
+                for (size_t j = 0; j < bufferHandles.size(); j++)
+                    bufferHandles[j]->Neuter();
         }
 
-        if (isNeuterable)
-            for (size_t j = 0; j < bufferHandles.size(); j++)
-                bufferHandles[j]->Neuter();
     }
+
     return contents.release();
 }
 
@@ -204,6 +215,13 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
                 return false;
             }
             arrayBuffers.append(arrayBuffer.release());
+        } else if (V8SharedArrayBuffer::hasInstance(transferrable, isolate)) {
+            RefPtr<DOMSharedArrayBuffer> sharedArrayBuffer = V8SharedArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferrable));
+            if (arrayBuffers.contains(sharedArrayBuffer)) {
+                exceptionState.throwDOMException(DataCloneError, "SharedArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier SharedArrayBuffer.");
+                return false;
+            }
+            arrayBuffers.append(sharedArrayBuffer.release());
         } else {
             exceptionState.throwTypeError("Value at index " + String::number(i) + " does not have a transferable type.");
             return false;

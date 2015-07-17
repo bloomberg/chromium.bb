@@ -70,7 +70,9 @@ ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
     'ArrayBuffer',
     'ArrayBufferView',
     'DataView',
+    'SharedArrayBuffer',
 ]))
+
 
 IdlType.is_array_buffer_or_view = property(
     lambda self: self.base_type in ARRAY_BUFFER_AND_VIEW_TYPES)

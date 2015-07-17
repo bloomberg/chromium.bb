@@ -60,6 +60,7 @@ enum SerializationTag {
     ArrayBufferTag = 'B', // byteLength:uint32_t, data:byte[byteLength] -> ArrayBuffer (ref)
     ArrayBufferTransferTag = 't', // index:uint32_t -> ArrayBuffer. For ArrayBuffer transfer
     ArrayBufferViewTag = 'V', // subtag:byte, byteOffset:uint32_t, byteLength:uint32_t -> ArrayBufferView (ref). Consumes an ArrayBuffer from the top of the deserialization stack.
+    SharedArrayBufferTransferTag = 'u', // index:uint32_t -> SharedArrayBuffer. For SharedArrayBuffer transfer
     CryptoKeyTag = 'K', // subtag:byte, props, usages:uint32_t, keyDataLength:uint32_t, keyData:byte[keyDataLength]
         //                 If subtag=AesKeyTag:
         //                     props = keyLengthBytes:uint32_t, algorithmId:uint32_t

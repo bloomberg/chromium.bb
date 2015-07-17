@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -49,7 +50,15 @@ TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object)
         return scriptWrappable->toImpl<TestDataView>();
 
     v8::Local<v8::DataView> v8View = object.As<v8::DataView>();
-    RefPtr<TestDataView> typedArray = TestDataView::create(V8ArrayBuffer::toImpl(v8View->Buffer()), v8View->ByteOffset(), v8View->ByteLength());
+    v8::Local<v8::Object> arrayBuffer = v8View->Buffer();
+    RefPtr<TestDataView> typedArray;
+    if (arrayBuffer->IsArrayBuffer()) {
+        typedArray = TestDataView::create(V8ArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+    } else if (arrayBuffer->IsSharedArrayBuffer()) {
+        typedArray = TestDataView::create(V8SharedArrayBuffer::toImpl(arrayBuffer), v8View->ByteOffset(), v8View->ByteLength());
+    } else {
+        ASSERT_NOT_REACHED();
+    }
     v8::Local<v8::Object> associatedWrapper = typedArray->associateWithWrapper(v8::Isolate::GetCurrent(), typedArray->wrapperTypeInfo(), object);
     ASSERT_UNUSED(associatedWrapper, associatedWrapper == object);
 

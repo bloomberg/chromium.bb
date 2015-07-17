@@ -18,6 +18,7 @@
 #include "bindings/core/v8/V8Int32Array.h"
 #include "bindings/core/v8/V8Int8Array.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8SharedArrayBuffer.h"
 #include "bindings/core/v8/V8Uint16Array.h"
 #include "bindings/core/v8/V8Uint32Array.h"
 #include "bindings/core/v8/V8Uint8Array.h"

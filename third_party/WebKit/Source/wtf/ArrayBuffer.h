@@ -174,7 +174,10 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::createShared(unsigned numElements, unsigned
 ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)
     : m_firstView(0), m_isNeutered(false)
 {
-    contents.transfer(m_contents);
+    if (contents.isShared())
+        contents.shareWith(m_contents);
+    else
+        contents.transfer(m_contents);
 }
 
 void* ArrayBuffer::data()

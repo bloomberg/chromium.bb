@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Draft spec:
-// https://docs.google.com/document/d/1NDGA_gZJ7M7w1Bh8S0AoDyEqwDdRh4uSoTPSNn77PFk
-
+// Draft spec: https://github.com/lars-t-hansen/ecmascript_sharedmem
 [
     ImplementedAs=DOMSharedArrayBuffer,
     NoInterfaceObject,
