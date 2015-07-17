@@ -17,6 +17,9 @@
 #include "components/offline_pages/offline_page_archiver.h"
 
 class GURL;
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace offline_pages {
 
@@ -62,6 +65,7 @@ class OfflinePageModel : public KeyedService {
     SUCCESS,
     CANCELLED,
     STORE_FAILURE,
+    DEVICE_FAILURE,
     NOT_FOUND,
   };
 
@@ -77,7 +81,10 @@ class OfflinePageModel : public KeyedService {
   typedef base::Callback<void(LoadResult, const std::vector<OfflinePageItem>&)>
       LoadAllPagesCallback;
 
-  explicit OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store);
+  // All blocking calls/disk access will happen on the provided |task_runner|.
+  OfflinePageModel(
+      scoped_ptr<OfflinePageMetadataStore> store,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~OfflinePageModel() override;
 
   // KeyedService implementation.
@@ -123,8 +130,23 @@ class OfflinePageModel : public KeyedService {
 
   void DeletePendingArchiver(OfflinePageArchiver* archiver);
 
+  // Serialized steps of deleting files and data for an offline page.
+  void OnLoadDoneForDeletion(const GURL& url,
+                             const DeletePageCallback& callback,
+                             bool success,
+                             const std::vector<OfflinePageItem>& offline_pages);
+  void DeleteArchiverFile(const base::FilePath& file_path, bool* success);
+  void OnDeleteArchiverFileDone(
+      const GURL& url,
+      const DeletePageCallback& callback,
+      const bool* success);
+  void OnRemoveOfflinePageDone(
+      const DeletePageCallback& callback, bool success);
+
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Pending archivers owned by this model.
   PendingArchivers pending_archivers_;

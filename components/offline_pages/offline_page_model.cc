@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -47,8 +48,11 @@ SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
 
 }  // namespace
 
-OfflinePageModel::OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store)
+OfflinePageModel::OfflinePageModel(
+    scoped_ptr<OfflinePageMetadataStore> store,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : store_(store.Pass()),
+      task_runner_(task_runner),
       weak_ptr_factory_(this) {
 }
 
@@ -71,7 +75,10 @@ void OfflinePageModel::SavePage(
 
 void OfflinePageModel::DeletePage(const GURL& url,
                                   const DeletePageCallback& callback) {
-  NOTIMPLEMENTED();
+  // First we have to load all entries in order to find out the file path
+  // for the page to be deleted.
+  store_->Load(base::Bind(&OfflinePageModel::OnLoadDoneForDeletion,
+                          weak_ptr_factory_.GetWeakPtr(), url, callback));
 }
 
 void OfflinePageModel::LoadAllPages(const LoadAllPagesCallback& callback) {
@@ -144,6 +151,68 @@ void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
 void OfflinePageModel::DeletePendingArchiver(OfflinePageArchiver* archiver) {
   pending_archivers_.erase(std::find(
       pending_archivers_.begin(), pending_archivers_.end(), archiver));
+}
+
+void OfflinePageModel::OnLoadDoneForDeletion(
+    const GURL& url,
+    const DeletePageCallback& callback,
+    bool success,
+    const std::vector<OfflinePageItem>& offline_pages) {
+  if (!success) {
+    callback.Run(DeletePageResult::STORE_FAILURE);
+    return;
+  }
+
+  for (const auto& page : offline_pages) {
+    if (page.url == url) {
+      bool* success = new bool(false);
+      task_runner_->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&OfflinePageModel::DeleteArchiverFile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     page.file_path,
+                     success),
+          base::Bind(&OfflinePageModel::OnDeleteArchiverFileDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     url,
+                     callback,
+                     base::Owned(success)));
+      return;
+    }
+  }
+
+  callback.Run(DeletePageResult::NOT_FOUND);
+}
+
+void OfflinePageModel::DeleteArchiverFile(const base::FilePath& file_path,
+                                          bool* success) {
+  DCHECK(success);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  *success = base::DeleteFile(file_path, false);
+}
+
+void OfflinePageModel::OnDeleteArchiverFileDone(
+    const GURL& url,
+    const DeletePageCallback& callback,
+    const bool* success) {
+  DCHECK(success);
+
+  if (!*success) {
+    callback.Run(DeletePageResult::DEVICE_FAILURE);
+    return;
+  }
+
+  store_->RemoveOfflinePage(
+      url,
+      base::Bind(&OfflinePageModel::OnRemoveOfflinePageDone,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void OfflinePageModel::OnRemoveOfflinePageDone(
+    const DeletePageCallback& callback, bool success) {
+  callback.Run(
+      success ? DeletePageResult::SUCCESS : DeletePageResult::STORE_FAILURE);
 }
 
 }  // namespace offline_pages
