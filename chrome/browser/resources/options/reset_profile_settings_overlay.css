@@ -47,12 +47,16 @@
   white-space: pre-line;
 }
 
+#feedback-bar span {
+  vertical-align: middle;
+}
+
 #expand-feedback {
-  background: url(chrome://theme/IDR_QUESTION_MARK) no-repeat center;
+  -webkit-mask-box-image: url(../../../../ui/webui/resources/images/help.svg);
+  background-color: #828282;
   display: inline-block;
   height: 14px;
   opacity: 0.33;
-  vertical-align: bottom;
   width: 14px;
 }
 

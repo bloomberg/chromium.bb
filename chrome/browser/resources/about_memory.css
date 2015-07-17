@@ -50,17 +50,29 @@ div#header {
   color: white;
   margin-bottom: 0.75em;
   overflow: hidden;
-  padding: 0.6em 1em 0.75em 0;
+  padding: 0.5em 0;
   position: relative;
   text-shadow: 0 0 2px black;
 }
 
 div#header h1 {
-  background: url(chrome://resources/images/gear.png) 12px 60% no-repeat;
   color: white;
   display: inline;
-  margin: 0;
-  padding-left: 37px;
+}
+
+div#header h1::before {
+  /* grit doesn't flatten -webkit-mask, so define the properties separately
+   * for now. */
+  -webkit-mask-image: url(../../../ui/webui/resources/images/settings.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 24px;
+  background-color: white;
+  content: '';
+  display: inline-block;
+  height: 20px;
+  vertical-align: middle;
+  width: 37px;
 }
 
 div#header p {
@@ -258,12 +270,14 @@ table.list#browserComparison .name {
 }
 
 div.help {
-  background: url(chrome://resources/images/help.png) center bottom no-repeat;
+  -webkit-mask-box-image: url(../../../ui/webui/resources/images/help.svg);
+  background-color: rgb(66, 133, 244);
   display: inline-block;
-  height: 14px;
-  margin: -1px 0;
+  height: 16px;
+  margin: -1px 0 0 0;
   opacity: 0.33;
-  width: 14px;
+  vertical-align: bottom;
+  width: 16px;
 }
 
 div.help:hover {
