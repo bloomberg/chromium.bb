@@ -46,6 +46,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/JSONParser.h"
 #include "core/inspector/JavaScriptCallFrame.h"
+#include "core/inspector/RemoteObjectId.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -469,7 +470,12 @@ void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const 
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(callFrameId);
+    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(callFrameId);
+    if (!remoteId) {
+        *errorString = "Invalid call frame id";
+        return;
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -633,7 +639,12 @@ void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(callFrameId);
+    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(callFrameId);
+    if (!remoteId) {
+        *errorString = "Invalid call frame id";
+        return;
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -667,7 +678,12 @@ void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString, const 
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(functionId);
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(functionId);
+    if (!remoteId) {
+        *errorString = "Invalid object id";
+        return;
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
     if (injectedScript.isEmpty()) {
         *errorString = "Function object id is obsolete";
         return;
@@ -679,7 +695,12 @@ void InspectorDebuggerAgent::getGeneratorObjectDetails(ErrorString* errorString,
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
+    if (!remoteId) {
+        *errorString = "Invalid object id";
+        return;
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -691,7 +712,12 @@ void InspectorDebuggerAgent::getCollectionEntries(ErrorString* errorString, cons
 {
     if (!checkEnabled(errorString))
         return;
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
+    if (!remoteId) {
+        *errorString = "Invalid object id";
+        return;
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -879,21 +905,10 @@ void InspectorDebuggerAgent::setPauseOnExceptionsImpl(ErrorString* errorString, 
         m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, pauseState);
 }
 
-bool InspectorDebuggerAgent::callStackForId(ErrorString* errorString, const String& callFrameId, v8::Local<v8::Object>* callStack, bool* isAsync)
+bool InspectorDebuggerAgent::callStackForId(ErrorString* errorString, const RemoteCallFrameId& callFrameId, v8::Local<v8::Object>* callStack, bool* isAsync)
 {
-    RefPtr<JSONValue> parsedObjectId = parseJSON(callFrameId);
-    if (!parsedObjectId) {
-        *errorString = "Failed to parse frame id";
-        return false;
-    }
-    RefPtr<JSONObject> objectId = parsedObjectId->asObject();
-    if (!objectId) {
-        *errorString = "Failed to parse frame id";
-        return false;
-    }
-    unsigned asyncOrdinal = 0; // 0 is current call stack
-    bool success = parsedObjectId->asObject()->getNumber("asyncOrdinal", &asyncOrdinal);
-    if (!success || !asyncOrdinal) {
+    unsigned asyncOrdinal = callFrameId.asyncStackOrdinal(); // 0 is current call stack
+    if (!asyncOrdinal) {
         *callStack = m_currentCallStack.Get(m_isolate);
         *isAsync = false;
         return true;
@@ -914,7 +929,12 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
         *errorString = "Attempt to access callframe when debugger is not on pause";
         return;
     }
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(callFrameId);
+    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(callFrameId);
+    if (!remoteId) {
+        *errorString = "Invalid call frame id";
+        return;
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -923,7 +943,7 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
     v8::HandleScope scope(m_isolate);
     bool isAsync = false;
     v8::Local<v8::Object> callStack;
-    if (!callStackForId(errorString, callFrameId, &callStack, &isAsync))
+    if (!callStackForId(errorString, *remoteId, &callStack, &isAsync))
         return;
     ASSERT(!callStack.IsEmpty());
 
@@ -1039,13 +1059,23 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scop
             *errorString = "Attempt to access callframe when debugger is not on pause";
             return;
         }
-        injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*callFrameId);
+        OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(*callFrameId);
+        if (!remoteId) {
+            *errorString = "Invalid call frame id";
+            return;
+        }
+        injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
         if (injectedScript.isEmpty()) {
             *errorString = "Inspected frame has gone";
             return;
         }
     } else if (functionObjectId) {
-        injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*functionObjectId);
+        OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(*functionObjectId);
+        if (!remoteId) {
+            *errorString = "Invalid object id";
+            return;
+        }
+        injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
         if (injectedScript.isEmpty()) {
             *errorString = "Function object id cannot be resolved";
             return;

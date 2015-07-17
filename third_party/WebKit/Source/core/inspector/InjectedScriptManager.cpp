@@ -35,8 +35,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptNative.h"
-#include "core/inspector/JSONParser.h"
-#include "platform/JSONValues.h"
+#include "core/inspector/RemoteObjectId.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "wtf/PassOwnPtr.h"
@@ -103,16 +102,11 @@ int InjectedScriptManager::injectedScriptIdFor(ScriptState* scriptState)
     return id;
 }
 
-InjectedScript InjectedScriptManager::injectedScriptForObjectId(const String& objectId)
+InjectedScript InjectedScriptManager::findInjectedScript(RemoteObjectIdBase* objectId) const
 {
-    RefPtr<JSONValue> parsedObjectId = parseJSON(objectId);
-    if (parsedObjectId && parsedObjectId->type() == JSONValue::TypeObject) {
-        long injectedScriptId = 0;
-        bool success = parsedObjectId->asObject()->getNumber("injectedScriptId", &injectedScriptId);
-        if (success)
-            return m_idToInjectedScript.get(injectedScriptId);
-    }
-    return InjectedScript();
+    if (!objectId)
+        return InjectedScript();
+    return m_idToInjectedScript.get(objectId->contextId());
 }
 
 void InjectedScriptManager::discardInjectedScripts()

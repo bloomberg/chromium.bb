@@ -72,6 +72,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/RemoteObjectId.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/DocumentLoader.h"
@@ -1287,6 +1288,24 @@ void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const Ref
     m_overlay->highlightQuad(quad, *highlightConfig);
 }
 
+Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String& objectId)
+{
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
+    if (!remoteId) {
+        *errorString = "Invalid remote object id";
+        return nullptr;
+    }
+    InjectedScript injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
+    if (injectedScript.isEmpty()) {
+        *errorString = "Cannot find context for specified object id";
+        return nullptr;
+    }
+    Node* node = injectedScript.nodeForObjectId(objectId);
+    if (!node)
+        *errorString = "Node for given objectId not found";
+    return node;
+}
+
 void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSONObject>& highlightInspectorObject, const int* nodeId, const int* backendNodeId, const String* objectId)
 {
     Node* node = nullptr;
@@ -1295,10 +1314,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
     } else if (backendNodeId) {
         node = DOMNodeIds::nodeForId(*backendNodeId);
     } else if (objectId) {
-        InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*objectId);
-        node = injectedScript.nodeForObjectId(*objectId);
-        if (!node)
-            *errorString = "Node for given objectId not found";
+        node = nodeForRemoteId(errorString, *objectId);
     } else
         *errorString = "Either nodeId or objectId must be specified";
 
@@ -1503,10 +1519,9 @@ void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, RefP
     result = buildArrayForElementAttributes(element);
 }
 
-void InspectorDOMAgent::requestNode(ErrorString*, const String& objectId, int* nodeId)
+void InspectorDOMAgent::requestNode(ErrorString* errorString, const String& objectId, int* nodeId)
 {
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
-    Node* node = injectedScript.nodeForObjectId(objectId);
+    Node* node = nodeForRemoteId(errorString, objectId);
     if (node)
         *nodeId = pushNodePathToFrontend(node);
     else

@@ -1679,6 +1679,8 @@
             'inspector/PageRuntimeAgent.h',
             'inspector/PromiseTracker.cpp',
             'inspector/PromiseTracker.h',
+            'inspector/RemoteObjectId.cpp',
+            'inspector/RemoteObjectId.h',
             'inspector/ScriptArguments.cpp',
             'inspector/ScriptArguments.h',
             'inspector/ScriptAsyncCallStack.cpp',

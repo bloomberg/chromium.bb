@@ -42,6 +42,7 @@ namespace blink {
 class InjectedScript;
 class InjectedScriptHost;
 class InjectedScriptNative;
+class RemoteObjectIdBase;
 class ScriptValue;
 
 class CORE_EXPORT InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<InjectedScriptManager> {
@@ -60,7 +61,7 @@ public:
     InjectedScript injectedScriptFor(ScriptState*);
     InjectedScript injectedScriptForId(int);
     int injectedScriptIdFor(ScriptState*);
-    InjectedScript injectedScriptForObjectId(const String& objectId);
+    InjectedScript findInjectedScript(RemoteObjectIdBase*) const;
     void discardInjectedScripts();
     void discardInjectedScriptFor(ScriptState*);
     void releaseObjectGroup(const String& objectGroup);

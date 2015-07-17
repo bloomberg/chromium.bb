@@ -236,6 +236,7 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
 
     Node* nodeForPath(const String& path);
+    Node* nodeForRemoteId(ErrorString*, const String& id);
 
     void discardFrontendBindings();
 

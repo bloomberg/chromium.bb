@@ -55,6 +55,7 @@ class InjectedScript;
 class InjectedScriptManager;
 class JavaScriptCallFrame;
 class JSONObject;
+class RemoteCallFrameId;
 class ScriptAsyncCallStack;
 class ScriptRegexp;
 class V8AsyncCallTracker;
@@ -219,7 +220,7 @@ private:
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
-    bool callStackForId(ErrorString*, const String& callFrameId, v8::Local<v8::Object>* callStack, bool* isAsync);
+    bool callStackForId(ErrorString*, const RemoteCallFrameId&, v8::Local<v8::Object>* callStack, bool* isAsync);
 
     void clearCurrentAsyncOperation();
     void resetAsyncCallTracker();
