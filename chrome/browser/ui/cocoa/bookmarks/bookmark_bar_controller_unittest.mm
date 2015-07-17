@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -350,6 +351,13 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
     }
 
     InstallAndToggleBar(bar_.get());
+
+    // AppKit methods are not guaranteed to complete synchronously. Some of them
+    // have asynchronous side effects, such as invoking -[NSViewController
+    // viewDidAppear]. Spinning the run loop until it's idle ensures that there
+    // are no outstanding references to bar_, and that calling bar_.reset() will
+    // synchronously destroy bar_.
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual void AddCommandLineSwitches() {}
