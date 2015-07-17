@@ -16,6 +16,7 @@ goog.require('ClassicCompatibility');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('cursors.Cursor');
+goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.ExtensionBridge');
 
@@ -318,8 +319,10 @@ Background.prototype = {
       if (node) {
         current = cursors.Range.fromNode(node);
       } else {
+        if (predErrorMsg) {
           cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg(predErrorMsg),
-                                  cvox.QueueMode.FLUSH);
+                                   cvox.QueueMode.FLUSH);
+        }
         return;
       }
     }
@@ -338,6 +341,40 @@ Background.prototype = {
               this.currentRange_, prevRange, Output.EventType.NAVIGATE)
           .go();
     }
+  },
+
+  /**
+   * Handles a braille command.
+   * @param {!cvox.BrailleKeyEvent} evt
+   * @return {boolean} True if evt was processed.
+   */
+  onGotBrailleCommand: function(evt) {
+    if (this.mode_ === ChromeVoxMode.CLASSIC)
+      return false;
+
+    switch (evt.command) {
+      case cvox.BrailleKeyCommand.PAN_LEFT:
+        this.onGotCommand('previousElement', true);
+        break;
+      case cvox.BrailleKeyCommand.PAN_RIGHT:
+        this.onGotCommand('nextElement', true);
+        break;
+      case cvox.BrailleKeyCommand.LINE_UP:
+        this.onGotCommand('previousLine', true);
+        break;
+      case cvox.BrailleKeyCommand.LINE_DOWN:
+        this.onGotCommand('nextLine', true);
+        break;
+      case cvox.BrailleKeyCommand.TOP:
+        this.onGotCommand('goToBeginning', true);
+        break;
+      case cvox.BrailleKeyCommand.BOTTOM:
+        this.onGotCommand('goToEnd', true);
+        break;
+      default:
+        return false;
+    }
+    return true;
   },
 
   /**

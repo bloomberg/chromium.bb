@@ -37,11 +37,6 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
         views::AXAuraObjCache::GetInstance()->GetOrCreate(focused_window_);
     SendEvent(context, focus, ui::AX_EVENT_CHILDREN_CHANGED);
   }
-
-  if (!pending_alert_text_.empty()) {
-    HandleAlert(context, pending_alert_text_);
-    pending_alert_text_.clear();
-  }
 }
 
 void AutomationManagerAura::Disable() {
@@ -87,10 +82,8 @@ void AutomationManagerAura::HandleEvent(BrowserContext* context,
 
 void AutomationManagerAura::HandleAlert(content::BrowserContext* context,
                                         const std::string& text) {
-  if (!enabled_) {
-    pending_alert_text_ = text;
+  if (!enabled_)
     return;
-  }
 
   views::AXAuraObjWrapper* obj =
       static_cast<AXRootObjWrapper*>(current_tree_->GetRoot())

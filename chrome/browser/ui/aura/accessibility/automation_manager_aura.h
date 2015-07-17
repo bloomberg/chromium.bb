@@ -82,8 +82,6 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter,
   scoped_ptr<ui::AXTreeSerializer<views::AXAuraObjWrapper*>>
       current_tree_serializer_;
 
-  std::string pending_alert_text_;
-
   bool processing_events_;
 
   std::vector<std::pair<views::AXAuraObjWrapper*, ui::AXEvent>> pending_events_;
