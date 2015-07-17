@@ -2,25 +2,6 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
-h1 {
-  font-family: Verdana, Helvetica;
-}
-
-/* Form Styles */
-.container {
-  margin: 0 auto;
-  width: 1000px;
-}
-
-.control-group,
-.form-group,
-.group-body,
-.group-header {
-  float: left;
-}
-
-.control-group {
-  display: inline-block;
-  margin: 10px 0;
-  width: 100%;
+body {
+  font-family: 'Roboto', Arial, Verdana, Helvetica;
 }

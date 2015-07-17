@@ -1,0 +1,70 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
+
+<dom-module id="battery-settings">
+  <link rel="import" href="battery_settings_styles.html">
+  <template>
+    <div class="layout vertical">
+      <div class="element-label">{{title}}</div>
+      <form id="power-settings-form">
+        <div>
+          <p>
+            <label>
+              <span class="form-label">Battery Present</span>
+              <paper-toggle-button checked="{{batteryPresent}}"
+                  id="battery-present-checkbox" type="checkbox">
+            </label>
+          </p>
+        </div>
+
+        <div>
+          <p>
+            <label>
+              <span class="form-label">Battery Percentage</span>
+              <paper-input value="{{batteryPercent}}"
+                  id="battery-percent-text" type="number" min="0" max="100">
+            </label>
+          </p>
+        </div>
+
+        <div>
+          <p>
+            <label>
+              <span class="form-label">External Power</span>
+              <paper-radio-group selected="{{externalPower}}"
+                  id="external-power-radio-group">
+                <template is="dom-repeat" items="{{externalPowerOptions}}">
+                  <paper-radio-button
+                      name="{{item.text}}">{{item.text}}</paper-radio-button>
+                </template>
+              </paper-radio-group>
+            </label>
+          </p>
+        </div>
+
+        <div>
+          <p>
+            <label>
+              <span class="form-label">Time Until Battery Empty</span>
+              <paper-input value="{{timeUntilEmpty}}"
+               id="time-until-empty-text">
+            </label>
+          </p>
+
+          <p>
+            <label>
+              <span class="form-label">Time Until Battery Full</span>
+              <paper-input value="{{timeUntilFull}}" id="time-until-full-text">
+            </label>
+          </p>
+        </div>
+
+      </form>
+    </div>
+  </template>
+  <script src="battery_settings.js"></script>
+</dom-module>

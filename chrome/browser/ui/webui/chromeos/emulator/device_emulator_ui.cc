@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_message_handler.h"
 #include "chrome/common/url_constants.h"
-#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
@@ -22,18 +22,15 @@ content::WebUIDataSource* CreateDeviceEmulatorUIDataSource() {
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUIDeviceEmulatorHost);
 
-  // Add variables for the JS to use.
-  html->AddString("acPower", base::IntToString(
-      power_manager::PowerSupplyProperties_ExternalPower_AC));
-  html->AddString("usbPower", base::IntToString(
-      power_manager::PowerSupplyProperties_ExternalPower_USB));
-  html->AddString("disconnected", base::IntToString(
-      power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED));
   html->SetJsonPath("strings.js");
 
   // Add resources.
   html->AddResourcePath("device_emulator.css", IDR_DEVICE_EMULATOR_CSS);
   html->AddResourcePath("device_emulator.js", IDR_DEVICE_EMULATOR_JS);
+  html->AddResourcePath("battery_settings.html", IDR_BATTERY_SETTINGS_HTML);
+  html->AddResourcePath("battery_settings_styles.html",
+                        IDR_BATTERY_SETTINGS_STYLES_HTML);
+  html->AddResourcePath("battery_settings.js", IDR_BATTERY_SETTINGS_JS);
   html->SetDefaultResource(IDR_DEVICE_EMULATOR_HTML);
 
   return html;
@@ -43,10 +40,12 @@ content::WebUIDataSource* CreateDeviceEmulatorUIDataSource() {
 
 DeviceEmulatorUI::DeviceEmulatorUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new DeviceEmulatorMessageHandler());
+  DeviceEmulatorMessageHandler* handler = new DeviceEmulatorMessageHandler();
+  handler->Init();
+  web_ui->AddMessageHandler(handler);
 
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateDeviceEmulatorUIDataSource());
+  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
+                                CreateDeviceEmulatorUIDataSource());
 }
 
 DeviceEmulatorUI::~DeviceEmulatorUI() {
