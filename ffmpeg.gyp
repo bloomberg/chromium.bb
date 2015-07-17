@@ -7,9 +7,6 @@
 #     Controls whether we build the Chromium or Google Chrome version of
 #     FFmpeg.  The Google Chrome version contains additional codecs.
 #     Typical values are Chromium, Chrome, ChromiumOS, and ChromeOS.
-#   build_ffmpegsumo
-#     When set to zero, will not include ffmpegsumo as a library to be built as
-#     part of the larger chrome binary. Default value is 1.
 #   ffmpeg_component
 #     Set true to build ffmpeg as a shared library. NOTE: this means we should
 #     always consult the value of 'ffmpeg_component' instead of 'component' for
@@ -79,7 +76,6 @@
       }],
     ],
 
-    'build_ffmpegsumo%': 1,
     'ffmpeg_component%': '<(component)',
 
     # Locations for generated artifacts.
@@ -174,7 +170,9 @@
       'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
     },
     'conditions': [
-      ['build_ffmpegsumo == 1',
+      # This looks crazy, but it seems to be the only way to make this work. Without this
+      # conditions block, platform_config_root will be undefined when expanded below.
+      ['1 == 1',
         {
           'direct_dependent_settings': {
             'include_dirs': [
