@@ -356,7 +356,7 @@ class _BackgroundTask(multiprocessing.Process):
 
           # Print error messages if anything exceptional occurred.
           if len(all_errors) > len(task_errors):
-            cros_build_lib.PrintBuildbotStepFailure()
+            logging.PrintBuildbotStepFailure()
             msg = '\n'.join(x.str for x in all_errors if x)
             logging.warning(msg)
             traceback.print_stack()

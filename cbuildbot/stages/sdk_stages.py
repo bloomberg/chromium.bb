@@ -302,7 +302,7 @@ class SDKTestStage(generic_stages.BuilderStage):
 
     # Build all the boards with the new sdk.
     for board in self._boards:
-      cros_build_lib.PrintBuildbotStepText(board)
+      logging.PrintBuildbotStepText(board)
       cmd = ['./setup_board', '--board', board, '--skip_chroot_upgrade']
       cros_build_lib.RunCommand(
           cmd, cwd=self._build_root, enter_chroot=True,

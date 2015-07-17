@@ -327,7 +327,7 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
     # Not sure what the best answer is in this case.
     file_size = os.path.getsize(upload_item.sym_file)
     if file_size > CRASH_SERVER_FILE_LIMIT:
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
       logging.warning('upload file %s is awfully large, risking rejection by '
                       'the symbol server (%s > %s)', sym_file, file_size,
                       CRASH_SERVER_FILE_LIMIT)
@@ -737,7 +737,7 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
     # The process is taking too long, so kill it and complain.
     if storage_notify_proc.is_alive():
       logging.warning('notification process took too long')
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
 
       # Kill it gracefully first (traceback) before tacking it down harder.
       pid = storage_notify_proc.pid

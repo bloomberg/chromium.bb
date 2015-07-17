@@ -473,7 +473,7 @@ class PrebuiltUploader(object):
       link_name = 'Prebuilts[%s]: %s' % (self._target, self._version)
       url = '%s%s/index.html' % (gs.PUBLIC_BASE_HTTPS_URL,
                                  remote_location[len(gs.BASE_GS_URL):])
-      cros_build_lib.PrintBuildbotLink(link_name, url)
+      logging.PrintBuildbotLink(link_name, url)
 
   def _UploadSdkTarball(self, board_path, url_suffix, prepackaged,
                         toolchains_overlay_tarballs,

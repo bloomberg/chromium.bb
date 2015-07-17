@@ -12,7 +12,7 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import constants
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import sudo
 
@@ -69,9 +69,9 @@ class ChrootManager(object):
     """
     chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     if version and self.GetChrootVersion(chroot) == version:
-      cros_build_lib.PrintBuildbotStepText('(Using existing chroot)')
+      logging.PrintBuildbotStepText('(Using existing chroot)')
     else:
-      cros_build_lib.PrintBuildbotStepText('(Using fresh chroot)')
+      logging.PrintBuildbotStepText('(Using fresh chroot)')
       osutils.RmDir(chroot, ignore_missing=True, sudo=True)
 
   def ClearChrootVersion(self, chroot=None):

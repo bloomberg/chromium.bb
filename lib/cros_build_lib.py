@@ -669,33 +669,6 @@ def GetSysrootToolPath(sysroot, tool_name):
   return os.path.join(sysroot, 'build', 'bin', tool_name)
 
 
-def PrintBuildbotLink(text, url, handle=None):
-  """Prints out a link to buildbot."""
-  text = ' '.join(text.split())
-  (handle or sys.stderr).write('\n@@@STEP_LINK@%s@%s@@@\n' % (text, url))
-
-
-def PrintBuildbotStepText(text, handle=None):
-  """Prints out stage text to buildbot."""
-  text = ' '.join(text.split())
-  (handle or sys.stderr).write('\n@@@STEP_TEXT@%s@@@\n' % (text,))
-
-
-def PrintBuildbotStepWarnings(handle=None):
-  """Marks a stage as having warnings."""
-  (handle or sys.stderr).write('\n@@@STEP_WARNINGS@@@\n')
-
-
-def PrintBuildbotStepFailure(handle=None):
-  """Marks a stage as having failures."""
-  (handle or sys.stderr).write('\n@@@STEP_FAILURE@@@\n')
-
-
-def PrintBuildbotStepName(name, handle=None):
-  """Marks a step name for buildbot to display."""
-  (handle or sys.stderr).write('\n@@@BUILD_STEP %s@@@\n' % name)
-
-
 def ListFiles(base_dir):
   """Recursively list files in a directory.
 

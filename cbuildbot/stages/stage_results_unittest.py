@@ -20,6 +20,7 @@ from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 
@@ -119,6 +120,9 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     site_config = config_lib_unittest.MockSiteConfig()
     build_config = site_config[self._bot_id]
     self.build_root = '/fake_root'
+    # This test compares log output from the stages, so turn on buildbot
+    # logging.
+    logging.EnableBuildbotMarkers()
 
     # Create a class to hold
     class Options(object):
@@ -148,7 +152,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def tearDown(self):
     # Mimic exiting with statement for self._manager.
-    self._manager.__exit__(None, None, None)
+    if hasattr(self, '_manager') and self._manager is not None:
+      self._manager.__exit__(None, None, None)
 
   def _runStages(self):
     """Run a couple of stages so we can capture the results"""

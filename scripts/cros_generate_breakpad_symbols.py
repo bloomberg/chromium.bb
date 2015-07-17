@@ -99,7 +99,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
 
   def _CrashCheck(ret, msg):
     if ret < 0:
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
       logging.warning('dump_syms crashed with %s; %s',
                       signals.StrSignal(-ret), msg)
 
@@ -130,7 +130,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
       if result.returncode:
         # A lot of files (like kernel files) contain no debug information,
         # do not consider such occurrences as errors.
-        cros_build_lib.PrintBuildbotStepWarnings()
+        logging.PrintBuildbotStepWarnings()
         _CrashCheck(result.returncode, 'giving up entirely')
         if 'file contains no debugging information' in result.error:
           logging.warning('no symbols found for %s', elf_file)

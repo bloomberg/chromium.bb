@@ -15,20 +15,64 @@ from chromite.lib import cros_test_lib
 class CrosloggingTest(cros_test_lib.OutputTestCase):
   """Test logging works as expected."""
 
+  def setUp(self):
+    self.logger = logging.getLogger()
+    sh = logging.StreamHandler(sys.stdout)
+    self.logger.addHandler(sh)
+
+  def AssertLogContainsMsg(self, msg, functor, *args, **kwargs):
+    """Asserts that calling functor logs a line that contains msg.
+
+    Args:
+      msg: The message to look for.
+      functor: A function taking no arguments to test.
+      *args, **kwargs: passthrough arguments to AssertLogContainsMsg.
+    """
+    with self.OutputCapturer():
+      functor()
+    self.AssertOutputContainsLine(msg, *args, **kwargs)
+
   def testNotice(self):
     """Test logging.notice works and is between INFO and WARNING."""
-    logger = logging.getLogger()
-    sh = logging.StreamHandler(sys.stdout)
-    logger.addHandler(sh)
-
     msg = 'notice message'
+    self.logger.setLevel(logging.INFO)
+    self.AssertLogContainsMsg(msg, lambda: logging.notice(msg))
+    self.logger.setLevel(logging.WARNING)
+    self.AssertLogContainsMsg(msg, lambda: logging.notice(msg), invert=True)
 
-    logger.setLevel(logging.INFO)
-    with self.OutputCapturer():
-      logging.notice(msg)
-    self.AssertOutputContainsLine(msg)
+  def testPrintBuildbotFunctionsNoMarker(self):
+    """PrintBuildbot* without markers should not be recognized by buildbot."""
+    self.AssertLogContainsMsg('@@@STEP_LINK@',
+                              lambda: logging.PrintBuildbotLink('name', 'url'),
+                              check_stderr=True, invert=True)
+    self.AssertLogContainsMsg('@@@@STEP_TEXT@',
+                              lambda: logging.PrintBuildbotStepText('text'),
+                              check_stderr=True, invert=True)
+    self.AssertLogContainsMsg('@@@STEP_WARNINGS@@@',
+                              logging.PrintBuildbotStepWarnings,
+                              check_stderr=True, invert=True)
+    self.AssertLogContainsMsg('@@@STEP_FAILURE@@@',
+                              logging.PrintBuildbotStepFailure,
+                              check_stderr=True, invert=True)
+    self.AssertLogContainsMsg('@@@BUILD_STEP',
+                              lambda: logging.PrintBuildbotStepName('name'),
+                              check_stderr=True, invert=True)
 
-    logger.setLevel(logging.WARNING)
-    with self.OutputCapturer():
-      logging.notice(msg)
-    self.AssertOutputContainsLine(msg, invert=True)
+  def testPrintBuildbotFunctionsWithMarker(self):
+    """PrintBuildbot* with markers should be recognized by buildbot."""
+    logging.EnableBuildbotMarkers()
+    self.AssertLogContainsMsg('@@@STEP_LINK@name@url@@@',
+                              lambda: logging.PrintBuildbotLink('name', 'url'),
+                              check_stderr=True)
+    self.AssertLogContainsMsg('@@@STEP_TEXT@text@@@',
+                              lambda: logging.PrintBuildbotStepText('text'),
+                              check_stderr=True)
+    self.AssertLogContainsMsg('@@@STEP_WARNINGS@@@',
+                              logging.PrintBuildbotStepWarnings,
+                              check_stderr=True)
+    self.AssertLogContainsMsg('@@@STEP_FAILURE@@@',
+                              logging.PrintBuildbotStepFailure,
+                              check_stderr=True)
+    self.AssertLogContainsMsg('@@@BUILD_STEP@name@@@',
+                              lambda: logging.PrintBuildbotStepName('name'),
+                              check_stderr=True)

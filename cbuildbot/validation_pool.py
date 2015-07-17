@@ -26,7 +26,6 @@ from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
 from chromite.lib import clactions
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
@@ -1562,7 +1561,7 @@ class ValidationPool(object):
       if change.pass_count > 0:
         s += ' | passed:%d' % change.pass_count
 
-      cros_build_lib.PrintBuildbotLink(s, change.url)
+      logging.PrintBuildbotLink(s, change.url)
 
   def ApplyPoolIntoRepo(self, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.

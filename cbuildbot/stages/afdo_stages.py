@@ -9,7 +9,6 @@ from __future__ import print_function
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import constants
 from chromite.lib import alerts
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import portage_util
@@ -55,7 +54,7 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
                                    'AFDO profile.')
     # Will let system-exiting exceptions through.
     except Exception:
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
       logging.warning('AFDO profile generation failed with exception ',
                       exc_info=True)
 

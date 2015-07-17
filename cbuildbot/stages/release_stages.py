@@ -12,7 +12,6 @@ import os
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot.stages import artifact_stages
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -280,7 +279,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
     except timeout_util.TimeoutError:
       msg = 'Image signing timed out.'
       logging.error(msg)
-      cros_build_lib.PrintBuildbotStepText(msg)
+      logging.PrintBuildbotStepText(msg)
       raise SignerResultsTimeout(msg)
 
     # Log all signer results, then handle any signing failures.
@@ -288,7 +287,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
     for url_results in self.signing_results.values():
       for url, signer_result in url_results.iteritems():
         result_description = os.path.basename(url)
-        cros_build_lib.PrintBuildbotStepText(result_description)
+        logging.PrintBuildbotStepText(result_description)
         logging.info('Received results for: %s', result_description)
         logging.info(json.dumps(signer_result, indent=4))
 

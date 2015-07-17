@@ -123,8 +123,8 @@ class BuildStartStage(generic_stages.BuilderStage):
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if self._run.config['doc']:
-      cros_build_lib.PrintBuildbotLink('Builder documentation',
-                                       self._run.config['doc'])
+      logging.PrintBuildbotLink('Builder documentation',
+                                self._run.config['doc'])
 
     WriteBasicMetadata(self._run)
     d = self._run.attrs.metadata.GetDict()
@@ -170,8 +170,7 @@ class BuildStartStage(generic_stages.BuilderStage):
               master_build_status['waterfall'],
               master_build_status['builder_name'],
               master_build_status['build_number'])
-          cros_build_lib.PrintBuildbotLink('Link to master build',
-                                           master_url)
+          logging.PrintBuildbotLink('Link to master build', master_url)
 
   def HandleSkip(self):
     """Ensure that re-executions use the same db instance as initial db."""

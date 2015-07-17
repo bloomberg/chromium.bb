@@ -1078,6 +1078,7 @@ def main(argv):
 
   cros_build_lib.AssertOutsideChroot()
 
+  logging.EnableBuildbotMarkers()
   if options.remote:
     logging.getLogger().setLevel(logging.WARNING)
 

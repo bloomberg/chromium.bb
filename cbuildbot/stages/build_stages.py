@@ -181,8 +181,8 @@ class InitSDKStage(generic_stages.BuilderStage):
             self._build_root, chrome_root=self._run.options.chrome_root,
             extra_env=self._portage_extra_env)
       except failures_lib.BuildScriptFailure:
-        cros_build_lib.PrintBuildbotStepText('Replacing broken chroot')
-        cros_build_lib.PrintBuildbotStepWarnings()
+        logging.PrintBuildbotStepText('Replacing broken chroot')
+        logging.PrintBuildbotStepWarnings()
       else:
         # Clear the chroot manifest version as we are in the middle of building.
         chroot_manager = chroot_lib.ChrootManager(self._build_root)
@@ -200,9 +200,9 @@ class InitSDKStage(generic_stages.BuilderStage):
 
     post_ver = cros_build_lib.GetChrootVersion(chroot=chroot_path)
     if pre_ver is not None and pre_ver != post_ver:
-      cros_build_lib.PrintBuildbotStepText('%s->%s' % (pre_ver, post_ver))
+      logging.PrintBuildbotStepText('%s->%s' % (pre_ver, post_ver))
     else:
-      cros_build_lib.PrintBuildbotStepText(post_ver)
+      logging.PrintBuildbotStepText(post_ver)
 
     commands.SetSharedUserPassword(
         self._build_root,

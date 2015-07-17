@@ -309,7 +309,7 @@ class BuilderStage(object):
     """Can be overridden.  Called before a stage is performed."""
 
     # Tell the buildbot we are starting a new step for the waterfall
-    cros_build_lib.PrintBuildbotStepName(self.name)
+    logging.PrintBuildbotStepName(self.name)
 
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
         self.name, cros_build_lib.UserDateTimeFormat(), self.__doc__))
@@ -353,7 +353,7 @@ class BuilderStage(object):
     warnings instead of stage failures.
     """
     description = cls._StringifyException(exc_info)
-    cros_build_lib.PrintBuildbotStepWarnings()
+    logging.PrintBuildbotStepWarnings()
     logging.warning(description)
     return (results_lib.Results.FORGIVEN, description, retrying)
 
@@ -372,7 +372,7 @@ class BuilderStage(object):
     # Tell the user about the exception, and record it.
     retrying = False
     description = cls._StringifyException(exc_info)
-    cros_build_lib.PrintBuildbotStepFailure()
+    logging.PrintBuildbotStepFailure()
     logging.error(description)
     return (exc_info[1], description, retrying)
 
@@ -763,7 +763,7 @@ class ArchivingStageMixin(object):
     url = '%s/%s' % (self.download_url.rstrip('/'), filename)
     if not text_to_display:
       text_to_display = '%s%s' % (prefix, filename)
-    cros_build_lib.PrintBuildbotLink(text_to_display, url)
+    logging.PrintBuildbotLink(text_to_display, url)
 
   def _IsInUploadBlacklist(self, filename):
     """Check if this file is blacklisted to go into a board's extra buckets.
@@ -832,7 +832,7 @@ class ArchivingStageMixin(object):
           self.archive_path, upload_urls, filename, self._run.debug,
           update_list=True, acl=self.acl)
     except failures_lib.GSUploadFailure as e:
-      cros_build_lib.PrintBuildbotStepText('Upload failed')
+      logging.PrintBuildbotStepText('Upload failed')
       if e.HasFatalFailure(
           whitelist=[gs.GSContextException, timeout_util.TimeoutError]):
         raise

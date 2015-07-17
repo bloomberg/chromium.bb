@@ -430,7 +430,7 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
 
   def testTruncateReallyLargeFiles(self):
     """Verify we try to shrink really big files"""
-    warn_mock = self.PatchObject(cros_build_lib, 'PrintBuildbotStepWarnings')
+    warn_mock = self.PatchObject(logging, 'PrintBuildbotStepWarnings')
     with open(self.sym_file, 'w+b') as f:
       f.truncate(upload_symbols.CRASH_SERVER_FILE_LIMIT + 100)
       f.seek(0)

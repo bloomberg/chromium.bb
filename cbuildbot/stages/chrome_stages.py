@@ -75,13 +75,13 @@ class SyncChromeStage(generic_stages.BuilderStage,
     kwargs = {}
     if self._chrome_rev == constants.CHROME_REV_SPEC:
       kwargs['revision'] = self.chrome_version
-      cros_build_lib.PrintBuildbotStepText('revision %s' % kwargs['revision'])
+      logging.PrintBuildbotStepText('revision %s' % kwargs['revision'])
     else:
       if not self.chrome_version:
         self.chrome_version = self._run.DetermineChromeVersion()
 
       kwargs['tag'] = self.chrome_version
-      cros_build_lib.PrintBuildbotStepText('tag %s' % kwargs['tag'])
+      logging.PrintBuildbotStepText('tag %s' % kwargs['tag'])
 
     useflags = self._run.config.useflags
     commands.SyncChrome(self._build_root, self._run.options.chrome_root,
@@ -121,7 +121,7 @@ class PatchChromeStage(generic_stages.BuilderStage):
       if not colon:
         subdir = 'src'
       url = self.URL_BASE % {'id': patch}
-      cros_build_lib.PrintBuildbotLink(spatch, url)
+      logging.PrintBuildbotLink(spatch, url)
       commands.PatchChrome(self._run.options.chrome_root, patch, subdir)
 
 
@@ -163,7 +163,7 @@ class ChromeSDKStage(generic_stages.BoardSpecificBuilderStage,
       raise artifact_stages.NothingToArchiveException(
           'Failed to find package %s' % constants.CHROME_CP)
     if len(files) > 1:
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
       logging.warning('Expected one package for %s, found %d',
                       constants.CHROME_CP, len(files))
 
@@ -221,7 +221,7 @@ class ChromeSDKStage(generic_stages.BoardSpecificBuilderStage,
       # Chrome no longer builds on Lucid. See crbug.com/276311
       print('Ubuntu lucid is no longer supported.')
       print('Please upgrade to Ubuntu Precise.')
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
       return
 
     steps = [self._BuildAndArchiveChromeSysroot, self._ArchiveChromeEbuildEnv,

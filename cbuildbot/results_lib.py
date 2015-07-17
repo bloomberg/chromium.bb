@@ -253,7 +253,7 @@ class _Results(object):
         # Output the bot-id/version used in the archive url.
         link_name = '%s: %s' % (link_name, '/'.join(url.split('/')[-3:-1]))
         out.write('%s  %s' % (edge, named_url))
-        cros_build_lib.PrintBuildbotLink(link_name, url, handle=out)
+        logging.PrintBuildbotLink(link_name, url, handle=out)
       out.write(line)
 
     for x in self.GetTracebacks():
@@ -263,7 +263,7 @@ class _Results(object):
         out.write('\n')
 
     if warnings:
-      cros_build_lib.PrintBuildbotStepWarnings(out)
+      logging.PrintBuildbotStepWarnings(out)
 
 
 Results = _Results()

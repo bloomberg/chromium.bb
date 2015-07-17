@@ -633,7 +633,7 @@ def main(argv):
   else:
     sdk_version = options.sdk_version
   if options.buildbot_log_version:
-    cros_build_lib.PrintBuildbotStepText(sdk_version)
+    logging.PrintBuildbotStepText(sdk_version)
 
   # Based on selections, determine the tarball to fetch.
   if options.sdk_url:

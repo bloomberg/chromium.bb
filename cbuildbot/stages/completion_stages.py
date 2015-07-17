@@ -18,7 +18,6 @@ from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import clactions
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import portage_util
@@ -240,7 +239,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       no_stat: Set of builder names of slave builders that had status None.
     """
     if failing or inflight or no_stat:
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
 
     if failing:
       logging.warning('\n'.join([
@@ -327,10 +326,10 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         else:
           text = '%s: timed out' % builder
 
-        cros_build_lib.PrintBuildbotLink(text, statuses[builder].dashboard_url)
+        logging.PrintBuildbotLink(text, statuses[builder].dashboard_url)
 
     for builder in no_stat:
-      cros_build_lib.PrintBuildbotStepText('%s did not start.' % builder)
+      logging.PrintBuildbotStepText('%s did not start.' % builder)
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.

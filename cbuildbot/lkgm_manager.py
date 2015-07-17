@@ -457,7 +457,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       if ex.result.returncode != 128:
         raise
       logging.warning('Detected branch removed from local checkout.')
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
       return
     current_author = None
     current_committer = None
@@ -484,4 +484,4 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
           items.insert(0, 'CHUMP')
         elif only_print_chumps:
           continue
-        cros_build_lib.PrintBuildbotLink(' | '.join(items), review)
+        logging.PrintBuildbotLink(' | '.join(items), review)

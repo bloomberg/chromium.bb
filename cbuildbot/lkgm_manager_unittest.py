@@ -17,6 +17,7 @@ from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -296,7 +297,7 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     self.manager.incr_type = 'build'
     self.PatchObject(cros_build_lib, 'RunCommand', side_effect=Exception())
     exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
-    link_mock = self.PatchObject(cros_build_lib, 'PrintBuildbotLink')
+    link_mock = self.PatchObject(logging, 'PrintBuildbotLink')
 
     project = {
         'name': 'fake/repo',

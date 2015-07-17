@@ -136,9 +136,9 @@ class PatchChangesStage(generic_stages.BuilderStage):
 
       def ApplyChange(self, change):
         if isinstance(change, cros_patch.GerritPatch):
-          cros_build_lib.PrintBuildbotLink(str(change), change.url)
+          logging.PrintBuildbotLink(str(change), change.url)
         elif isinstance(change, cros_patch.UploadedLocalPatch):
-          cros_build_lib.PrintBuildbotStepText(str(change))
+          logging.PrintBuildbotStepText(str(change))
 
         return validation_pool.PatchSeries.ApplyChange(self, change)
 
@@ -244,7 +244,7 @@ class BootstrapStage(PatchChangesStage):
       # WARNING: For manifest patches, the Pre-CQ attempts to apply external
       # patches to the internal manifest, and this means we may flag a conflict
       # here even if the patch applies cleanly. TODO(davidjames): Fix this.
-      cros_build_lib.PrintBuildbotStepWarnings()
+      logging.PrintBuildbotStepWarnings()
       logging.error('Failed applying patches: %s\n'.join(map(str, failures)))
     else:
       PatchChangesStage.HandleApplyFailures(self, failures)
@@ -419,7 +419,7 @@ class SyncStage(generic_stages.BuilderStage):
 
       # Print the blamelist.
       if fresh_sync:
-        cros_build_lib.PrintBuildbotStepText('(From scratch)')
+        logging.PrintBuildbotStepText('(From scratch)')
       elif self._run.options.buildbot:
         lkgm_manager.GenerateBlameList(self.repo, old_filename)
 
@@ -427,7 +427,7 @@ class SyncStage(generic_stages.BuilderStage):
       if self._run.config.build_before_patching:
         pre_build_passed = self.RunPrePatchBuild()
         if not pre_build_passed:
-          cros_build_lib.PrintBuildbotStepText('Pre-patch build failed.')
+          logging.PrintBuildbotStepText('Pre-patch build failed.')
 
 
 class LKGMSyncStage(SyncStage):
@@ -481,7 +481,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
   def ForceVersion(self, version):
     """Creates a manifest manager from given version and returns manifest."""
-    cros_build_lib.PrintBuildbotStepText(version)
+    logging.PrintBuildbotStepText(version)
     return self.manifest_manager.BootstrapFromVersion(version)
 
   def VersionIncrementType(self):
@@ -557,13 +557,13 @@ class ManifestVersionedSyncStage(SyncStage):
     # Print the Blamelist here.
     url_prefix = 'http://chromeos-images.corp.google.com/diff/report?'
     url = url_prefix + 'from=%s&to=%s' % (previous_version, target_version)
-    cros_build_lib.PrintBuildbotLink('Blamelist', url)
+    logging.PrintBuildbotLink('Blamelist', url)
     # The testManifestVersionedSyncOnePartBranch interacts badly with this
     # function.  It doesn't fully initialize self.manifest_manager which
     # causes target_version to be None.  Since there isn't a clean fix in
     # either direction, just throw this through str().  In the normal case,
     # it's already a string anyways.
-    cros_build_lib.PrintBuildbotStepText(str(target_version))
+    logging.PrintBuildbotStepText(str(target_version))
 
     return to_return
 
@@ -962,10 +962,9 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     if self._run.config.build_before_patching:
       assert not self._run.config.master
       pre_build_passed = self.RunPrePatchBuild()
-      cros_build_lib.PrintBuildbotStepName(
-          'CommitQueueSync : Apply Patches')
+      logging.PrintBuildbotStepName('CommitQueueSync : Apply Patches')
       if not pre_build_passed:
-        cros_build_lib.PrintBuildbotStepText('Pre-patch build failed.')
+        logging.PrintBuildbotStepText('Pre-patch build failed.')
 
     # Make sure the chroot version is valid.
     lkgm_version = self._GetLGKMVersionFromManifest(next_manifest)
@@ -1102,7 +1101,7 @@ class PreCQLauncherStage(SyncStage):
         os.path.basename(patch.project),
         str(patch),
     )
-    cros_build_lib.PrintBuildbotLink(' | '.join(items), patch.url)
+    logging.PrintBuildbotLink(' | '.join(items), patch.url)
 
   def _ConfiguredVerificationsForChange(self, change):
     """Determine which configs to test |change| with.

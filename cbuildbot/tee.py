@@ -17,6 +17,7 @@ import sys
 import traceback
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 
 
 # Max amount of data we're hold in the buffer at a given time.
@@ -146,7 +147,7 @@ class _TeeProcess(multiprocessing.Process):
       failed = False
     except Exception as e:
       tb = traceback.format_exc()
-      cros_build_lib.PrintBuildbotStepFailure(self._error_handle)
+      logging.PrintBuildbotStepFailure(self._error_handle)
       self._error_handle.write(
           'Unhandled exception occured in tee:\n%s\n' % (tb,))
       # Try to signal the parent telling them of our

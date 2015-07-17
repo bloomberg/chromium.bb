@@ -20,8 +20,8 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import cgroups
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -77,12 +77,14 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     gce_path = constants.TEST_IMAGE_GCE_TAR
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
 
+    # pylint: disable=unused-argument
     def _MockRunTestSuite(buildroot, board, image_path, results_dir, test_type,
                           *args, **kwargs):
       self.assertEndsWith(image_path, gce_path)
       self.assertEqual(test_type, constants.GCE_VM_TEST_TYPE)
+    # pylint: enable=unused-argument
 
-    def _MockWaitForGsPaths(_, paths, *args, **kwargs):
+    def _MockWaitForGsPaths(_, paths, *_args, **_kwargs):
       self.assertEndsWith(paths[0], gce_path)
 
     self.PatchObject(generic_stages.BoardSpecificBuilderStage, 'GetParallel',
@@ -156,9 +158,9 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.lab_status_mock = self.PatchObject(lab_status, 'CheckLabStatus')
     self.run_suite_mock = self.PatchObject(commands, 'RunHWTestSuite')
     self.warning_mock = self.PatchObject(
-        cros_build_lib, 'PrintBuildbotStepWarnings')
+        logging, 'PrintBuildbotStepWarnings')
     self.failure_mock = self.PatchObject(
-        cros_build_lib, 'PrintBuildbotStepFailure')
+        logging, 'PrintBuildbotStepFailure')
 
     self.suite_config = None
     self.suite = None
@@ -420,7 +422,7 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallel('delta_payloads_generated', False)
     self.warning_mock = self.PatchObject(
-        cros_build_lib, 'PrintBuildbotStepWarnings')
+        logging, 'PrintBuildbotStepWarnings')
     self.run_suite_mock = self.PatchObject(commands, 'RunHWTestSuite')
 
     self.RunStage()

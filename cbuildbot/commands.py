@@ -167,7 +167,7 @@ def BuildRootGitCleanup(buildroot):
           git.GarbageCollection(cwd)
       except cros_build_lib.RunCommandError as e:
         result = e.result
-        cros_build_lib.PrintBuildbotStepWarnings()
+        logging.PrintBuildbotStepWarnings()
         logging.warning('\n%s', result.error)
 
         # If there's no repository corruption, just delete the index.
@@ -1140,7 +1140,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir,
         if not asan_log_signaled:
           asan_log_signaled = True
           logging.error('Asan crash occurred. See asan_logs in Artifacts.')
-          cros_build_lib.PrintBuildbotStepFailure()
+          logging.PrintBuildbotStepFailure()
 
       # Append the processed file to archive.
       filename = ArchiveFile(processed_file_path, archive_dir)
@@ -1497,7 +1497,7 @@ def UploadSymbols(buildroot, board, official, cnt, failed_list):
   if ret.returncode:
     # TODO(davidjames): Convert this to a fatal error.
     # See http://crbug.com/212437
-    cros_build_lib.PrintBuildbotStepWarnings()
+    logging.PrintBuildbotStepWarnings()
 
 
 def PushImages(board, archive_url, dryrun, profile, sign_types=()):
@@ -1521,7 +1521,7 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=()):
     return pushimage.PushImage(archive_url, board, profile=profile,
                                sign_types=sign_types, dry_run=dryrun)
   except pushimage.PushError as e:
-    cros_build_lib.PrintBuildbotStepFailure()
+    logging.PrintBuildbotStepFailure()
     return e.args[1]
 
 
@@ -1927,7 +1927,7 @@ def BuildStrippedPackagesTarball(buildroot, board, package_globs, archive_dir):
                              'Failed to find stripped files at %s.' %
                              (pkg, os.path.join(stripped_pkg_dir, pkg)))
       if len(files) > 1:
-        cros_build_lib.PrintBuildbotStepWarnings()
+        logging.PrintBuildbotStepWarnings()
         logging.warning('Expected one stripped package for %s, found %d',
                         pkg, len(files))
 

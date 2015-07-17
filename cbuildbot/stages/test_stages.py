@@ -18,7 +18,6 @@ from chromite.cbuildbot import lab_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cgroups
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import image_test_lib
@@ -279,7 +278,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('payloads_generated', pretty_name='payloads'):
-      cros_build_lib.PrintBuildbotStepWarnings('missing payloads')
+      logging.PrintBuildbotStepWarnings('missing payloads')
       logging.warning('Cannot run HWTest because UploadTestArtifacts failed. '
                       'See UploadTestArtifacts for details.')
       return
@@ -325,7 +324,7 @@ class AUTestStage(HWTestStage):
     # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('delta_payloads_generated',
                             pretty_name='delta payloads'):
-      cros_build_lib.PrintBuildbotStepWarnings('missing delta payloads')
+      logging.PrintBuildbotStepWarnings('missing delta payloads')
       logging.warning('Cannot run HWTest because UploadTestArtifacts failed. '
                       'See UploadTestArtifacts for details.')
       return
