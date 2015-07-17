@@ -199,6 +199,8 @@ private:
 
     bool areMethodAndURLValidForSend();
 
+    void throwForLoadFailureIfNeeded(ExceptionState&, const String&);
+
     bool initSend(ExceptionState&);
     void sendBytesData(const void*, size_t, ExceptionState&);
     void send(Document*, ExceptionState&);

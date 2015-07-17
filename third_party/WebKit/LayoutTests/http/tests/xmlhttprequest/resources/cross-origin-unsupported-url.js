@@ -20,24 +20,7 @@ function issueRequest(url, contentType)
     if (contentType)
         xhr.setRequestHeader('Content-Type', contentType);
 
-    if (self.importScripts) {
-        // Initiating the load on the main thread is not performed synchronously,
-        // so send() will not have an exception code set by the time it
-        // completes in the Worker case. Hence, no exception will be
-        // thrown by the operation.
-        shouldNotThrow('xhr.send()');
-    } else {
-        // The implementation of send() throws an exception if an
-        // exception code has been set, regardless of the sync flag.
-        // The spec restricts this to sync only, but as error progress
-        // events provide no actionable information, it is more helpful
-        // to the user to not follow spec.
-        //
-        // As the initiation of the request happens synchronously in send(),
-        // and it is determined that it is to an unsupported CORS URL, an
-        // exception is expected to be thrown.
-        shouldThrow('xhr.send()');
-    }
+    shouldNotThrow('xhr.send()');
 }
 
 var withContentType = true;

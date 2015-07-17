@@ -837,11 +837,34 @@ void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<FormData> formData, Ex
     m_exceptionCode = exceptionState.code();
 }
 
+void XMLHttpRequest::throwForLoadFailureIfNeeded(ExceptionState& exceptionState, const String& reason)
+{
+    if (m_error && !m_exceptionCode)
+        m_exceptionCode = NetworkError;
+
+    if (!m_exceptionCode)
+        return;
+
+    String message = "Failed to load '" + m_url.elidedString() + "'";
+    if (reason.isNull()) {
+        message.append(".");
+    } else {
+        message.append(": ");
+        message.append(reason);
+    }
+
+    exceptionState.throwDOMException(m_exceptionCode, message);
+}
+
 void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState& exceptionState)
 {
     // Only GET request is supported for blob URL.
     if (m_url.protocolIs("blob") && m_method != "GET") {
-        exceptionState.throwDOMException(NetworkError, "'GET' is the only method allowed for 'blob:' URLs.");
+        handleNetworkError();
+
+        if (!m_async) {
+            throwForLoadFailureIfNeeded(exceptionState, "'GET' is the only method allowed for 'blob:' URLs.");
+        }
         return;
     }
 
@@ -916,16 +939,15 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
         // FIXME: Maybe create() can return null for other reasons too?
         ASSERT(!m_loader);
         m_loader = ThreadableLoader::create(executionContext, this, request, options, resourceLoaderOptions);
-    } else {
-        // Use count for XHR synchronous requests.
-        UseCounter::count(&executionContext, UseCounter::XMLHttpRequestSynchronous);
-        ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options, resourceLoaderOptions);
+
+        return;
     }
 
-    if (!m_exceptionCode && m_error)
-        m_exceptionCode = NetworkError;
-    if (m_exceptionCode)
-        exceptionState.throwDOMException(m_exceptionCode, "Failed to load '" + m_url.elidedString() + "'.");
+    // Use count for XHR synchronous requests.
+    UseCounter::count(&executionContext, UseCounter::XMLHttpRequestSynchronous);
+    ThreadableLoader::loadResourceSynchronously(executionContext, request, *this, options, resourceLoaderOptions);
+
+    throwForLoadFailureIfNeeded(exceptionState, String());
 }
 
 void XMLHttpRequest::abort()
