@@ -2269,14 +2269,14 @@ cr.define('login', function() {
     /**
      * Runs app with a given id from the list of loaded apps.
      * @param {!string} app_id of an app to run.
-     * @param {boolean=} opt_diagnostic_mode Whether to run the app in
+     * @param {boolean=} opt_diagnosticMode Whether to run the app in
      *     diagnostic mode. Default is false.
      */
-    findAndRunAppForTesting: function(app_id, opt_diagnostic_mode) {
+    findAndRunAppForTesting: function(app_id, opt_diagnosticMode) {
       var app = this.getPodWithAppId_(app_id);
       if (app) {
         var activationEvent = cr.doc.createEvent('MouseEvents');
-        var ctrlKey = opt_diagnostic_mode;
+        var ctrlKey = opt_diagnosticMode;
         activationEvent.initMouseEvent('click', true, true, null,
             0, 0, 0, 0, 0, ctrlKey, false, false, false, 0, null);
         app.dispatchEvent(activationEvent);
@@ -2741,19 +2741,19 @@ cr.define('login', function() {
      * @param {UserPod=} podToFocus User pod to focus (undefined clears focus).
      * @param {boolean=} opt_force If true, forces focus update even when
      *     podToFocus is already focused.
+     * @param {boolean=} opt_skipInputFocus If true, don't focus on the input
+     *     box of user pod.
      */
-    focusPod: function(podToFocus, opt_force) {
+    focusPod: function(podToFocus, opt_force, opt_skipInputFocus) {
       if (this.isFocused(podToFocus) && !opt_force) {
         // Calling focusPod w/o podToFocus means reset.
         if (!podToFocus)
           Oobe.clearErrors();
-        this.keyboardActivated_ = false;
         return;
       }
 
       // Make sure there's only one focusPod operation happening at a time.
       if (this.insideFocusPod_) {
-        this.keyboardActivated_ = false;
         return;
       }
       this.insideFocusPod_ = true;
@@ -2786,9 +2786,13 @@ cr.define('login', function() {
         podToFocus.classList.add('focused');
         if (!podToFocus.multiProfilesPolicyApplied) {
           podToFocus.classList.toggle('signing-in', false);
-          podToFocus.focusInput();
+          if (!opt_skipInputFocus)
+            podToFocus.focusInput();
         } else {
           podToFocus.userTypeBubbleElement.classList.add('bubble-shown');
+          // Note it is not necessary to skip this focus request when
+          // |opt_skipInputFocus| is true. When |multiProfilesPolicyApplied|
+          // is false, it doesn't focus on the password input box by default.
           podToFocus.focus();
         }
 
@@ -2800,7 +2804,6 @@ cr.define('login', function() {
         this.scrollFocusedPodIntoView();
       }
       this.insideFocusPod_ = false;
-      this.keyboardActivated_ = false;
     },
 
     /**
@@ -3009,9 +3012,19 @@ cr.define('login', function() {
       var pod = findAncestorByClass(e.target, 'pod');
       if (pod && pod.parentNode == this) {
         // Focus on a control of a pod but not on the action area button.
-        if (!pod.classList.contains('focused') &&
-            !e.target.classList.contains('action-box-button')) {
-          this.focusPod(pod);
+        if (!pod.classList.contains('focused')) {
+          if (e.target.classList.contains('action-box-area') ||
+              e.target.classList.contains('remove-warning-button')) {
+            // focusPod usually moves focus on the password input box which
+            // triggers virtual keyboard to show up. But the focus may move to a
+            // non text input element shortly by e.target.focus. Hence, a
+            // virtual keyboard flicking might be observed. We need to manually
+            // prevent focus on password input box to avoid virtual keyboard
+            // flicking in this case. See crbug.com/396016 for details.
+            this.focusPod(pod, false, true /* opt_skipInputFocus */);
+          } else {
+            this.focusPod(pod);
+          }
           pod.userTypeBubbleElement.classList.remove('bubble-shown');
           e.target.focus();
         }
@@ -3043,7 +3056,6 @@ cr.define('login', function() {
       switch (e.keyIdentifier) {
         case 'Left':
           if (!editing) {
-            this.keyboardActivated_ = true;
             if (this.focusedPod_ && this.focusedPod_.previousElementSibling)
               this.focusPod(this.focusedPod_.previousElementSibling);
             else
@@ -3054,7 +3066,6 @@ cr.define('login', function() {
           break;
         case 'Right':
           if (!editing) {
-            this.keyboardActivated_ = true;
             if (this.focusedPod_ && this.focusedPod_.nextElementSibling)
               this.focusPod(this.focusedPod_.nextElementSibling);
             else
