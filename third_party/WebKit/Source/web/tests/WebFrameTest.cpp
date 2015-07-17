@@ -6401,6 +6401,29 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
     EXPECT_POINT_EQ(IntPoint(0, 1903), frameView->maximumScrollPosition());
 }
 
+TEST_F(WebFrameTest, MaximumScrollPositionCanBeNegative)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("rtl-overview-mode.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "rtl-overview-mode.html", true, 0, &client, enableViewportSettings);
+    webViewHelper.webView()->setInitialPageScaleOverride(-1);
+    webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
+    webViewHelper.webView()->settings()->setLoadWithOverviewMode(true);
+    webViewHelper.webView()->settings()->setUseWideViewport(true);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->layout();
+
+    FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    EXPECT_LT(frameView->maximumScrollPosition().x(), 0);
+}
+
 TEST_P(ParameterizedWebFrameTest, FullscreenLayerSize)
 {
     FakeCompositingWebViewClient client;

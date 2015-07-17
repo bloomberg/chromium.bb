@@ -3006,7 +3006,7 @@ IntPoint FrameView::maximumScrollPosition() const
     FloatSize maximumOffset = contentBounds - visibleSize - toIntSize(scrollOrigin());
 
     IntPoint snappedMaximumOffset = flooredIntPoint(maximumOffset);
-    snappedMaximumOffset.clampNegativeToZero();
+    snappedMaximumOffset = snappedMaximumOffset.expandedTo(minimumScrollPosition());
     return snappedMaximumOffset;
 }
 
