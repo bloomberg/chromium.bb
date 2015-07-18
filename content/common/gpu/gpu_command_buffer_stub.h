@@ -201,7 +201,7 @@ class GpuCommandBufferStub
 
   void OnRetireSyncPoint(uint32 sync_point);
   bool OnWaitSyncPoint(uint32 sync_point);
-  void OnSyncPointRetired();
+  void OnWaitSyncPointCompleted(uint32 sync_point);
   void OnSignalSyncPoint(uint32 sync_point, uint32 id);
   void OnSignalSyncPointAck(uint32 id);
   void OnSignalQuery(uint32 query, uint32 id);
@@ -235,6 +235,7 @@ class GpuCommandBufferStub
 
   bool CheckContextLost();
   void CheckCompleteWaits();
+  void PullTextureUpdates(uint32 sync_point);
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they

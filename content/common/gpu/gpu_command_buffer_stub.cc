@@ -870,6 +870,12 @@ void GpuCommandBufferStub::AddSyncPoint(uint32 sync_point) {
 void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {
   DCHECK(!sync_points_.empty() && sync_points_.front() == sync_point);
   sync_points_.pop_front();
+
+  gpu::gles2::MailboxManager* mailbox_manager =
+      context_group_->mailbox_manager();
+  if (mailbox_manager->UsesSync() && MakeCurrent())
+    mailbox_manager->PushTextureUpdates(sync_point);
+
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   manager->sync_point_manager()->RetireSyncPoint(sync_point);
 }
@@ -878,8 +884,10 @@ bool GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
   if (!sync_point)
     return true;
   GpuChannelManager* manager = channel_->gpu_channel_manager();
-  if (manager->sync_point_manager()->IsSyncPointRetired(sync_point))
+  if (manager->sync_point_manager()->IsSyncPointRetired(sync_point)) {
+    PullTextureUpdates(sync_point);
     return true;
+  }
 
   if (sync_point_wait_count_ == 0) {
     TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitSyncPoint", this,
@@ -888,19 +896,26 @@ bool GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
   scheduler_->SetScheduled(false);
   ++sync_point_wait_count_;
   manager->sync_point_manager()->AddSyncPointCallback(
-      sync_point,
-      base::Bind(&GpuCommandBufferStub::OnSyncPointRetired,
-                 this->AsWeakPtr()));
+      sync_point, base::Bind(&GpuCommandBufferStub::OnWaitSyncPointCompleted,
+                             this->AsWeakPtr(), sync_point));
   return scheduler_->IsScheduled();
 }
 
-void GpuCommandBufferStub::OnSyncPointRetired() {
+void GpuCommandBufferStub::OnWaitSyncPointCompleted(uint32 sync_point) {
+  PullTextureUpdates(sync_point);
   --sync_point_wait_count_;
   if (sync_point_wait_count_ == 0) {
     TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncPoint", this,
                            "GpuCommandBufferStub", this);
   }
   scheduler_->SetScheduled(true);
+}
+
+void GpuCommandBufferStub::PullTextureUpdates(uint32 sync_point) {
+  gpu::gles2::MailboxManager* mailbox_manager =
+      context_group_->mailbox_manager();
+  if (mailbox_manager->UsesSync() && MakeCurrent())
+    mailbox_manager->PullTextureUpdates(sync_point);
 }
 
 void GpuCommandBufferStub::OnSignalSyncPoint(uint32 sync_point, uint32 id) {
