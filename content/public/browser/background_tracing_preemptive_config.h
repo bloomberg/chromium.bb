@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BACKGROUND_TRACING_PREEMPTIVE_CONFIG_H_
 #define CONTENT_PUBLIC_BROWSER_BACKGROUND_TRACING_PREEMPTIVE_CONFIG_H_
 
+#include "base/metrics/histogram_base.h"
 #include "content/public/browser/background_tracing_config.h"
 
 namespace content {
@@ -24,8 +25,8 @@ struct CONTENT_EXPORT BackgroundTracingPreemptiveConfig
     MONITOR_AND_DUMP_WHEN_BROWSER_STARTUP_COMPLETE,
   };
   struct HistogramTriggerInfo {
-    std::string histogram_name_to_trigger_on;
-    int histogram_bin_to_trigger_on;
+    std::string histogram_name;
+    base::HistogramBase::Sample histogram_value;
   };
   struct NamedTriggerInfo {
     std::string trigger_name;

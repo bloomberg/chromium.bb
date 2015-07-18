@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/background_tracing_manager.h"
@@ -450,9 +451,78 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   }
 }
 
-// This tests that preemptive mode configs will fail.
+// This tests that histogram triggers for preemptive mode configs.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       DoesNotAllowPreemptiveConfigThatsNotManual) {
+                       ReceiveTraceSucceedsOnHigherHistogramSample) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    scoped_ptr<BackgroundTracingPreemptiveConfig> config(
+        new content::BackgroundTracingPreemptiveConfig());
+
+    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
+    rule.type = BackgroundTracingPreemptiveConfig::
+        MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE;
+    rule.histogram_trigger_info.histogram_name = "fake";
+    rule.histogram_trigger_info.histogram_value = 1;
+    config->configs.push_back(rule);
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING);
+
+    // Our reference value is "1", so a value of "2" should trigger a trace.
+    LOCAL_HISTOGRAM_COUNTS("fake", 2);
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  }
+}
+
+// This tests that histogram values < reference value don't trigger.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       ReceiveTraceFailsOnLowerHistogramSample) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    scoped_ptr<BackgroundTracingPreemptiveConfig> config(
+        new content::BackgroundTracingPreemptiveConfig());
+
+    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
+    rule.type = BackgroundTracingPreemptiveConfig::
+        MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE;
+    rule.histogram_trigger_info.histogram_name = "fake";
+    rule.histogram_trigger_info.histogram_value = 1;
+    config->configs.push_back(rule);
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING);
+
+    // This should fail to trigger a trace since the sample value < the
+    // the reference value above.
+    LOCAL_HISTOGRAM_COUNTS("fake", 0);
+
+    run_loop.RunUntilIdle();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 0);
+  }
+}
+
+// This tests that invalid preemptive mode configs will fail.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       SetActiveScenarioFailsWithInvalidPreemptiveConfig) {
   {
     SetupBackgroundTracingManager();
 
@@ -464,9 +534,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     BackgroundTracingPreemptiveConfig::MonitoringRule rule;
     rule.type = BackgroundTracingPreemptiveConfig::
-        MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE;
-    rule.histogram_trigger_info.histogram_name_to_trigger_on = "fake";
-    rule.histogram_trigger_info.histogram_bin_to_trigger_on = 0;
+        MONITOR_AND_DUMP_WHEN_BROWSER_STARTUP_COMPLETE;
     config->configs.push_back(rule);
 
     bool result = BackgroundTracingManager::GetInstance()->SetActiveScenario(

@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
@@ -47,6 +48,14 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
   void BeginFinalizing(StartedFinalizingCallback);
   void ValidateStartupScenario();
   void AbortScenario();
+
+  enum SetupUMACallMode { CLEAR_CALLBACKS, BIND_CALLBACKS };
+
+  void SetupUMACallbacks(SetupUMACallMode mode);
+
+  void OnHistogramChanged(const std::string& histogram_name,
+                          base::Histogram::Sample reference_value,
+                          base::Histogram::Sample actual_value);
 
   scoped_ptr<base::DictionaryValue> GenerateMetadataDict() const;
 

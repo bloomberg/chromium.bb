@@ -23,9 +23,14 @@ const char kConfigCategoryBenchmarkDeep[] = "BENCHMARK_DEEP";
 
 const char kConfigRuleKey[] = "rule";
 const char kConfigRuleTriggerNameKey[] = "trigger_name";
+const char kConfigRuleHistogramNameKey[] = "histogram_name";
+const char kConfigRuleHistogramValueKey[] = "histogram_value";
 
 const char kPreemptiveConfigRuleMonitorNamed[] =
     "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED";
+
+const char kPreemptiveConfigRuleMonitorHistogram[] =
+    "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE";
 
 const char kReactiveConfigRuleTraceFor10sOrTriggerOrFull[] =
     "TRACE_FOR_10S_OR_TRIGGER_OR_FULL";
@@ -95,8 +100,24 @@ BackgroundTracingPreemptiveConfig_FromDict(const base::DictionaryValue* dict) {
       rule.named_trigger_info.trigger_name = trigger_name;
 
       config->configs.push_back(rule);
+    } else if (type == kPreemptiveConfigRuleMonitorHistogram) {
+      std::string histogram_name;
+      if (!config_dict->GetString(kConfigRuleHistogramNameKey, &histogram_name))
+        return nullptr;
+
+      int histogram_value;
+      if (!config_dict->GetInteger(kConfigRuleHistogramValueKey,
+                                   &histogram_value))
+        return nullptr;
+
+      BackgroundTracingPreemptiveConfig::MonitoringRule rule;
+      rule.type = BackgroundTracingPreemptiveConfig::
+          MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE;
+      rule.histogram_trigger_info.histogram_name = histogram_name;
+      rule.histogram_trigger_info.histogram_value = histogram_value;
+
+      config->configs.push_back(rule);
     } else {
-      // TODO(simonhatch): Implement UMA triggers.
       continue;
     }
   }
@@ -168,8 +189,18 @@ bool BackgroundTracingPreemptiveConfig_IntoDict(
       config_dict->SetString(
           kConfigRuleTriggerNameKey,
           config->configs[i].named_trigger_info.trigger_name.c_str());
+    } else if (config->configs[i].type ==
+               BackgroundTracingPreemptiveConfig::
+                   MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE) {
+      config_dict->SetString(kConfigRuleKey,
+                             kPreemptiveConfigRuleMonitorHistogram);
+      config_dict->SetString(
+          kConfigRuleHistogramNameKey,
+          config->configs[i].histogram_trigger_info.histogram_name.c_str());
+      config_dict->SetInteger(
+          kConfigRuleHistogramValueKey,
+          config->configs[i].histogram_trigger_info.histogram_value);
     } else {
-      // TODO(simonhatch): Implement UMA triggers.
       continue;
     }
 

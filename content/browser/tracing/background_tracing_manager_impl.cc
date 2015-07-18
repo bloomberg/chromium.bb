@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/time/time.h"
 #include "content/public/browser/background_tracing_preemptive_config.h"
 #include "content/public/browser/background_tracing_reactive_config.h"
@@ -110,10 +111,14 @@ bool BackgroundTracingManagerImpl::IsSupportedConfig(
     const std::vector<BackgroundTracingPreemptiveConfig::MonitoringRule>&
         configs = preemptive_config->configs;
     for (size_t i = 0; i < configs.size(); ++i) {
-      if (configs[i].type !=
-          BackgroundTracingPreemptiveConfig::
-              MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED)
-        return false;
+      if (configs[i].type == BackgroundTracingPreemptiveConfig::
+                                 MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED ||
+          configs[i].type ==
+              BackgroundTracingPreemptiveConfig::
+                  MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE) {
+        continue;
+      }
+      return false;
     }
   }
 
@@ -130,6 +135,63 @@ bool BackgroundTracingManagerImpl::IsSupportedConfig(
   }
 
   return true;
+}
+
+void BackgroundTracingManagerImpl::SetupUMACallbacks(
+    BackgroundTracingManagerImpl::SetupUMACallMode mode) {
+  if (!config_ ||
+      config_->mode != BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE)
+    return;
+
+  BackgroundTracingPreemptiveConfig* preemptive_config =
+      static_cast<BackgroundTracingPreemptiveConfig*>(config_.get());
+  const std::vector<BackgroundTracingPreemptiveConfig::MonitoringRule>&
+      configs = preemptive_config->configs;
+  for (size_t i = 0; i < configs.size(); ++i) {
+    if (configs[i].type !=
+        BackgroundTracingPreemptiveConfig::
+            MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE) {
+      continue;
+    }
+
+    if (mode == CLEAR_CALLBACKS) {
+      base::StatisticsRecorder::ClearCallback(
+          configs[i].histogram_trigger_info.histogram_name);
+    } else {
+      base::StatisticsRecorder::SetCallback(
+          configs[i].histogram_trigger_info.histogram_name,
+          base::Bind(&BackgroundTracingManagerImpl::OnHistogramChanged,
+                     base::Unretained(this),
+                     configs[i].histogram_trigger_info.histogram_name,
+                     configs[i].histogram_trigger_info.histogram_value));
+    }
+  }
+}
+
+void BackgroundTracingManagerImpl::OnHistogramChanged(
+    const std::string& histogram_name,
+    base::Histogram::Sample reference_value,
+    base::Histogram::Sample actual_value) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&BackgroundTracingManagerImpl::OnHistogramChanged,
+                   base::Unretained(this), histogram_name, reference_value,
+                   actual_value));
+    return;
+  }
+
+  CHECK(config_ &&
+        config_->mode == BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE);
+
+  if (reference_value > actual_value)
+    return;
+
+  if (!is_tracing_ || is_gathering_)
+    return;
+
+  RecordBackgroundTracingMetric(PREEMPTIVE_TRIGGERED);
+  BeginFinalizing(StartedFinalizingCallback());
 }
 
 bool BackgroundTracingManagerImpl::SetActiveScenario(
@@ -168,9 +230,13 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   if (config && receive_callback.is_null())
     return false;
 
+  SetupUMACallbacks(CLEAR_CALLBACKS);
+
   config_ = config.Pass();
   receive_callback_ = receive_callback;
   requires_anonymized_data_ = requires_anonymized_data;
+
+  SetupUMACallbacks(BIND_CALLBACKS);
 
   EnableRecordingIfConfigNeedsIt();
 
@@ -228,11 +294,9 @@ bool BackgroundTracingManagerImpl::IsAbleToTriggerTracing(
         configs = preemptive_config->configs;
 
     for (size_t i = 0; i < configs.size(); ++i) {
-      if (configs[i].type != BackgroundTracingPreemptiveConfig::
-                                 MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED)
-        continue;
-
-      if (trigger_name == configs[i].named_trigger_info.trigger_name) {
+      if (configs[i].type == BackgroundTracingPreemptiveConfig::
+                                 MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED &&
+          configs[i].named_trigger_info.trigger_name == trigger_name) {
         return true;
       }
     }

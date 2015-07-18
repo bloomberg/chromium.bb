@@ -178,6 +178,21 @@ TEST_F(BackgroundTracingConfigTest, PreemptiveConfigFromValidString) {
   config = ReadPreemptiveFromJSONString(
       "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
       "\"BENCHMARK\",\"configs\": [{\"rule\": "
+      "\"MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE\", "
+      "\"histogram_name\":\"foo\", \"histogram_value\": 1}]}");
+  EXPECT_TRUE(config);
+  EXPECT_EQ(config->mode, BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE);
+  EXPECT_EQ(config->category_preset, BackgroundTracingConfig::BENCHMARK);
+  EXPECT_EQ(config->configs.size(), 1u);
+  EXPECT_EQ(config->configs[0].type,
+            BackgroundTracingPreemptiveConfig::
+                MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE);
+  EXPECT_EQ(config->configs[0].histogram_trigger_info.histogram_name, "foo");
+  EXPECT_EQ(config->configs[0].histogram_trigger_info.histogram_value, 1);
+
+  config = ReadPreemptiveFromJSONString(
+      "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
+      "\"BENCHMARK\",\"configs\": [{\"rule\": "
       "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", \"trigger_name\":\"foo1\"}, "
       "{\"rule\": \"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", "
       "\"trigger_name\":\"foo2\"}]}");
@@ -300,10 +315,6 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
               "\"trigger_name\":\"foo2\"}],\"mode\":\"PREEMPTIVE_TRACING_"
               "MODE\"}");
   }
-}
-
-TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
-  scoped_ptr<BackgroundTracingPreemptiveConfig> config;
 
   {
     config.reset(new BackgroundTracingPreemptiveConfig());
@@ -311,11 +322,19 @@ TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
     BackgroundTracingPreemptiveConfig::MonitoringRule rule;
     rule.type = BackgroundTracingPreemptiveConfig::
         MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE;
+    rule.histogram_trigger_info.histogram_name = "foo";
+    rule.histogram_trigger_info.histogram_value = 1;
     config->configs.push_back(rule);
     EXPECT_EQ(ConfigToString(config.get()),
-              "{\"category\":\"BENCHMARK\",\"configs\":[],\"mode\":"
-              "\"PREEMPTIVE_TRACING_MODE\"}");
+              "{\"category\":\"BENCHMARK\",\"configs\":[{\"histogram_name\":"
+              "\"foo\",\"histogram_value\":1,\"rule\":\"MONITOR_AND_DUMP_WHEN_"
+              "SPECIFIC_HISTOGRAM_AND_VALUE\"}],\"mode\":\"PREEMPTIVE_TRACING_"
+              "MODE\"}");
   }
+}
+
+TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
+  scoped_ptr<BackgroundTracingPreemptiveConfig> config;
 
   {
     config.reset(new BackgroundTracingPreemptiveConfig());
