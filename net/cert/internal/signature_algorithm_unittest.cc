@@ -603,6 +603,538 @@ TEST(SignatureAlgorithmTest, ParamsAreNullForWrongType_RsaPkcs1) {
   EXPECT_FALSE(alg1->ParamsForRsaPss());
 }
 
+// Parses a rsaPss algorithm that uses SHA1 and a salt length of 20.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (4 elem)
+//           [0] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER  1.3.14.3.2.26
+//                   NULL
+//           [1] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER  1.2.840.113549.1.1.8
+//                   SEQUENCE (2 elem)
+//                       OBJECT IDENTIFIER  1.3.14.3.2.26
+//                       NULL
+//           [2] (1 elem)
+//               INTEGER  20
+//           [3] (1 elem)
+//               INTEGER  1
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x3E,  // SEQUENCE (62 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x31,  // SEQUENCE (49 bytes)
+      0xA0, 0x0B,  // [0] (11 bytes)
+      0x30, 0x09,  // SEQUENCE (9 bytes)
+      0x06, 0x05,  // OBJECT IDENTIFIER (5 bytes)
+      0x2B, 0x0E, 0x03, 0x02, 0x1A,
+      0x05, 0x00,  // NULL (0 bytes)
+      0xA1, 0x18,  // [1] (24 bytes)
+      0x30, 0x16,  // SEQUENCE (22 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x08,
+      0x30, 0x09,  // SEQUENCE (9 bytes)
+      0x06, 0x05,  // OBJECT IDENTIFIER (5 bytes)
+      0x2B, 0x0E, 0x03, 0x02, 0x1A,
+      0x05, 0x00,  // NULL (0 bytes)
+      0xA2, 0x03,  // [2] (3 bytes)
+      0x02, 0x01,  // INTEGER (1 byte)
+      0x14,
+      0xA3, 0x03,  // [3] (3 bytes)
+      0x02, 0x01,  // INTEGER (1 byte)
+      0x01,
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  ASSERT_EQ(SignatureAlgorithmId::RsaPss, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha1, algorithm->digest());
+
+  const RsaPssParameters* params = algorithm->ParamsForRsaPss();
+
+  ASSERT_TRUE(params);
+  EXPECT_EQ(DigestAlgorithm::Sha1, params->mgf1_hash());
+  EXPECT_EQ(20u, params->salt_length());
+}
+
+// Parses a rsaPss algorithm that has an empty parameters. It should use all the
+// default values (SHA1 and salt length of 20).
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (0 elem)
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_EmptyParams) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x00,  // SEQUENCE (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  ASSERT_EQ(SignatureAlgorithmId::RsaPss, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha1, algorithm->digest());
+
+  const RsaPssParameters* params = algorithm->ParamsForRsaPss();
+
+  ASSERT_TRUE(params);
+  EXPECT_EQ(DigestAlgorithm::Sha1, params->mgf1_hash());
+  EXPECT_EQ(20u, params->salt_length());
+}
+
+// Parses a rsaPss algorithm that has NULL parameters. This fails.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       NULL
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NullParams) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
+// Parses a rsaPss algorithm that has no parameters. This fails.
+//
+//   SEQUENCE (1 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NoParams) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x0B,  // SEQUENCE (11 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
+// Parses a rsaPss algorithm that has data after the parameters sequence.
+//
+//   SEQUENCE (3 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (0 elem)
+//       NULL
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_DataAfterParams) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x0F,  // SEQUENCE (15 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x00,  // SEQUENCE (0 bytes)
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
+// Parses a rsaPss algorithm that uses defaults (by ommitting the values) for
+// everything except the salt length.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (1 elem)
+//           [2] (1 elem)
+//               INTEGER  23
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_DefaultsExceptForSaltLength) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x12,  // SEQUENCE (62 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x05,  // SEQUENCE (5 bytes)
+      0xA2, 0x03,  // [2] (3 bytes)
+      0x02, 0x01,  // INTEGER (1 byte)
+      0x17,
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  ASSERT_EQ(SignatureAlgorithmId::RsaPss, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha1, algorithm->digest());
+
+  const RsaPssParameters* params = algorithm->ParamsForRsaPss();
+
+  ASSERT_TRUE(params);
+  EXPECT_EQ(DigestAlgorithm::Sha1, params->mgf1_hash());
+  EXPECT_EQ(23u, params->salt_length());
+}
+
+// Parses a rsaPss algorithm that has unrecognized data (NULL) within the
+// parameters sequence.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (2 elem)
+//           [2] (1 elem)
+//               INTEGER  23
+//           NULL
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NullInsideParams) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x14,  // SEQUENCE (62 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x07,  // SEQUENCE (5 bytes)
+      0xA2, 0x03,  // [2] (3 bytes)
+      0x02, 0x01,  // INTEGER (1 byte)
+      0x17,
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
+// Parses a rsaPss algorithm that has an unsupported trailer value (2). Only
+// trailer values of 1 are allowed by RFC 4055.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (1 elem)
+//           [3] (1 elem)
+//               INTEGER  2
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedTrailer) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x12,  // SEQUENCE (18 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x05,  // SEQUENCE (5 bytes)
+      0xA3, 0x03,  // [3] (3 bytes)
+      0x02, 0x01,  // INTEGER (1 byte)
+      0x02,
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
+// Parses a rsaPss algorithm that has extra data appearing after the trailer in
+// the [3] section.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (1 elem)
+//           [3] (2 elem)
+//               INTEGER  1
+//               NULL
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_BadTrailer) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x14,  // SEQUENCE (20 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x07,  // SEQUENCE (7 bytes)
+      0xA3, 0x05,  // [3] (5 bytes)
+      0x02, 0x01,  // INTEGER (1 byte)
+      0x01,
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
+// Parses a rsaPss algorithm that uses SHA384 for the hash, and leaves the rest
+// as defaults (including the mask gen).
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (1 elem)
+//           [0] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.2
+//                   NULL
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHash) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x1E,  // SEQUENCE (30 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x11,  // SEQUENCE (17 bytes)
+      0xA0, 0x0F,  // [0] (15 bytes)
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02,
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  ASSERT_EQ(SignatureAlgorithmId::RsaPss, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha384, algorithm->digest());
+
+  const RsaPssParameters* params = algorithm->ParamsForRsaPss();
+
+  ASSERT_TRUE(params);
+  EXPECT_EQ(DigestAlgorithm::Sha1, params->mgf1_hash());
+  EXPECT_EQ(20u, params->salt_length());
+}
+
+// Parses a rsaPss algorithm that uses SHA384 for the hash, however in the
+// AlgorithmIdentifier for the hash function the parameters are omitted instead
+// of NULL.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (1 elem)
+//           [0] (1 elem)
+//               SEQUENCE (1 elem)
+//                   OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.2
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHash_AbsentParams) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x1C,  // SEQUENCE (28 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x0F,  // SEQUENCE (15 bytes)
+      0xA0, 0x0D,  // [0] (13 bytes)
+      0x30, 0x0B,  // SEQUENCE (11 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02,
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  ASSERT_EQ(SignatureAlgorithmId::RsaPss, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha384, algorithm->digest());
+
+  const RsaPssParameters* params = algorithm->ParamsForRsaPss();
+
+  ASSERT_TRUE(params);
+  EXPECT_EQ(DigestAlgorithm::Sha1, params->mgf1_hash());
+  EXPECT_EQ(20u, params->salt_length());
+}
+
+// Parses a rsaPss algorithm that uses an invalid hash algorithm (twiddled the
+// bytes for the SHA-384 OID a bit).
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (1 elem)
+//           [0] (1 elem)
+//               SEQUENCE (1 elem)
+//                   OBJECT IDENTIFIER  2.16.840.2.103.19.4.2.2
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedHashOid) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x1C,  // SEQUENCE (28 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x0F,  // SEQUENCE (15 bytes)
+      0xA0, 0x0D,  // [0] (13 bytes)
+      0x30, 0x0B,  // SEQUENCE (11 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x02, 0x67, 0x13, 0x04, 0x02, 0x02,
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
+// Parses a rsaPss algorithm that uses SHA512 MGF1 for the mask gen, and
+// defaults for the rest.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (1 elem)
+//           [1] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER  1.2.840.113549.1.1.8
+//                   SEQUENCE (2 elem)
+//                       OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.3
+//                       NULL
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultMaskGen) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x2B,  // SEQUENCE (43 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x1E,  // SEQUENCE (30 bytes)
+      0xA1, 0x1C,  // [1] (28 bytes)
+      0x30, 0x1A,  // SEQUENCE (26 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x08,
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03,
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  ASSERT_EQ(SignatureAlgorithmId::RsaPss, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha1, algorithm->digest());
+
+  const RsaPssParameters* params = algorithm->ParamsForRsaPss();
+
+  ASSERT_TRUE(params);
+  EXPECT_EQ(DigestAlgorithm::Sha512, params->mgf1_hash());
+  EXPECT_EQ(20u, params->salt_length());
+}
+
+// Parses a rsaPss algorithm that uses a mask gen with an unrecognized OID
+// (twiddled some of the bits).
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (1 elem)
+//           [1] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER  1.2.840.113618.1.2.8
+//                   SEQUENCE (2 elem)
+//                       OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.3
+//                       NULL
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_UnsupportedMaskGen) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x2B,  // SEQUENCE (43 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x1E,  // SEQUENCE (30 bytes)
+      0xA1, 0x1C,  // [1] (28 bytes)
+      0x30, 0x1A,  // SEQUENCE (26 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x52, 0x01, 0x02, 0x08,
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03,
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_FALSE(ParseDer(kData, &algorithm));
+}
+
+// Parses a rsaPss algorithm that uses SHA256 for the hash, and SHA512 for the
+// MGF1.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (2 elem)
+//           [0] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER 2.16.840.1.101.3.4.2.1
+//                   NULL
+//           [1] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER  1.2.840.113549.1.1.8
+//                   SEQUENCE (2 elem)
+//                       OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.3
+//                       NULL
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHashAndMaskGen) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x3C,  // SEQUENCE (60 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x2F,  // SEQUENCE (47 bytes)
+      0xA0, 0x0F,  // [0] (15 bytes)
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
+      0x05, 0x00,  // NULL (0 bytes)
+      0xA1, 0x1C,  // [1] (28 bytes)
+      0x30, 0x1A,  // SEQUENCE (26 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x08,
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03,
+      0x05, 0x00,  // NULL (0 bytes)
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  ASSERT_EQ(SignatureAlgorithmId::RsaPss, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha256, algorithm->digest());
+
+  const RsaPssParameters* params = algorithm->ParamsForRsaPss();
+
+  ASSERT_TRUE(params);
+  EXPECT_EQ(DigestAlgorithm::Sha512, params->mgf1_hash());
+  EXPECT_EQ(20u, params->salt_length());
+}
+
+// Parses a rsaPss algorithm that uses SHA256 for the hash, and SHA256 for the
+// MGF1, and a salt length of 10.
+//
+//   SEQUENCE (2 elem)
+//       OBJECT IDENTIFIER  1.2.840.113549.1.1.10
+//       SEQUENCE (3 elem)
+//           [0] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER 2.16.840.1.101.3.4.2.1
+//                   NULL
+//           [1] (1 elem)
+//               SEQUENCE (2 elem)
+//                   OBJECT IDENTIFIER  1.2.840.113549.1.1.8
+//                   SEQUENCE (2 elem)
+//                       OBJECT IDENTIFIER  2.16.840.1.101.3.4.2.1
+//                       NULL
+//           [2] (1 elem)
+//               INTEGER  10
+TEST(SignatureAlgorithmTest, ParseDer_rsaPss_NonDefaultHashAndMaskGenAndSalt) {
+  // clang-format off
+  const uint8_t kData[] = {
+      0x30, 0x41,  // SEQUENCE (65 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0A,
+      0x30, 0x34,  // SEQUENCE (52 bytes)
+      0xA0, 0x0F,  // [0] (15 bytes)
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
+      0x05, 0x00,  // NULL (0 bytes)
+      0xA1, 0x1C,  // [1] (28 bytes)
+      0x30, 0x1A,  // SEQUENCE (26 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x08,
+      0x30, 0x0D,  // SEQUENCE (13 bytes)
+      0x06, 0x09,  // OBJECT IDENTIFIER (9 bytes)
+      0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
+      0x05, 0x00,  // NULL (0 bytes)
+      0xA2, 0x03,  // [2] (3 bytes)
+      0x02, 0x01,  // INTEGER (1 byte)
+      0x0A,
+  };
+  // clang-format on
+  scoped_ptr<SignatureAlgorithm> algorithm;
+  ASSERT_TRUE(ParseDer(kData, &algorithm));
+
+  ASSERT_EQ(SignatureAlgorithmId::RsaPss, algorithm->algorithm());
+  EXPECT_EQ(DigestAlgorithm::Sha256, algorithm->digest());
+
+  const RsaPssParameters* params = algorithm->ParamsForRsaPss();
+
+  ASSERT_TRUE(params);
+  EXPECT_EQ(DigestAlgorithm::Sha256, params->mgf1_hash());
+  EXPECT_EQ(10u, params->salt_length());
+}
+
 }  // namespace
 
 }  // namespace net

@@ -4,7 +4,9 @@
 
 #include "net/cert/internal/signature_algorithm.h"
 
+#include "base/numerics/safe_math.h"
 #include "net/der/input.h"
+#include "net/der/parse_values.h"
 #include "net/der/parser.h"
 
 namespace net {
@@ -102,6 +104,61 @@ const uint8_t kOidEcdsaWithSha384[] =
 // In dotted notation: 1.2.840.10045.4.3.4
 const uint8_t kOidEcdsaWithSha512[] =
     {0x2a, 0x86, 0x48, 0xce, 0x3d, 0x04, 0x03, 0x04};
+
+// From RFC 5912:
+//
+//     id-RSASSA-PSS  OBJECT IDENTIFIER  ::=  { pkcs-1 10 }
+//
+// In dotted notation: 1.2.840.113549.1.1.10
+const uint8_t kOidRsaSsaPss[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
+                                 0x0d, 0x01, 0x01, 0x0a};
+
+// From RFC 5912:
+//
+//     id-sha1 OBJECT IDENTIFIER ::= {
+//      iso(1) identified-organization(3) oiw(14) secsig(3)
+//      algorithm(2) 26 }
+//
+// In dotted notation: 1.3.14.3.2.26
+const uint8_t kOidSha1[] = {0x2B, 0x0E, 0x03, 0x02, 0x1A};
+
+// From RFC 5912:
+//
+//     id-sha256  OBJECT IDENTIFIER  ::=
+//         { joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101)
+//         csor(3) nistAlgorithms(4) hashalgs(2) 1 }
+//
+// In dotted notation: 2.16.840.1.101.3.4.2.1
+const uint8_t kOidSha256[] = {0x60, 0x86, 0x48, 0x01, 0x65,
+                              0x03, 0x04, 0x02, 0x01};
+
+// From RFC 5912:
+//
+//     id-sha384  OBJECT IDENTIFIER  ::=
+//         { joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101)
+//         csor(3) nistAlgorithms(4) hashalgs(2) 2 }
+//
+// In dotted notation: 2.16.840.1.101.3.4.2.2
+const uint8_t kOidSha384[] = {0x60, 0x86, 0x48, 0x01, 0x65,
+                              0x03, 0x04, 0x02, 0x02};
+
+// From RFC 5912:
+//
+//     id-sha512  OBJECT IDENTIFIER  ::=
+//         { joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101)
+//         csor(3) nistAlgorithms(4) hashalgs(2) 3 }
+//
+// In dotted notation: 2.16.840.1.101.3.4.2.3
+const uint8_t kOidSha512[] = {0x60, 0x86, 0x48, 0x01, 0x65,
+                              0x03, 0x04, 0x02, 0x03};
+
+// From RFC 5912:
+//
+//     id-mgf1  OBJECT IDENTIFIER  ::=  { pkcs-1 8 }
+//
+// In dotted notation: 1.2.840.113549.1.1.8
+const uint8_t kOidMgf1[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
+                            0x0d, 0x01, 0x01, 0x08};
 
 // RFC 5280 section 4.1.1.2 defines signatureAlgorithm as:
 //
@@ -260,6 +317,222 @@ scoped_ptr<SignatureAlgorithm> ParseEcdsa(DigestAlgorithm digest,
   return SignatureAlgorithm::CreateEcdsa(digest);
 }
 
+// Parses a HashAlgorithm as defined by RFC 5912:
+//
+//     HashAlgorithm  ::=  AlgorithmIdentifier{DIGEST-ALGORITHM,
+//                             {HashAlgorithms}}
+//
+//     HashAlgorithms DIGEST-ALGORITHM ::=  {
+//         { IDENTIFIER id-sha1 PARAMS TYPE NULL ARE preferredPresent } |
+//         { IDENTIFIER id-sha224 PARAMS TYPE NULL ARE preferredPresent } |
+//         { IDENTIFIER id-sha256 PARAMS TYPE NULL ARE preferredPresent } |
+//         { IDENTIFIER id-sha384 PARAMS TYPE NULL ARE preferredPresent } |
+//         { IDENTIFIER id-sha512 PARAMS TYPE NULL ARE preferredPresent }
+//     }
+WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input input,
+                                           DigestAlgorithm* out) {
+  der::Input oid;
+  der::Input params;
+  if (!ParseAlgorithmIdentifier(input, &oid, &params))
+    return false;
+
+  DigestAlgorithm hash;
+
+  if (oid.Equals(der::Input(kOidSha1))) {
+    hash = DigestAlgorithm::Sha1;
+  } else if (oid.Equals(der::Input(kOidSha256))) {
+    hash = DigestAlgorithm::Sha256;
+  } else if (oid.Equals(der::Input(kOidSha384))) {
+    hash = DigestAlgorithm::Sha384;
+  } else if (oid.Equals(der::Input(kOidSha512))) {
+    hash = DigestAlgorithm::Sha512;
+  } else {
+    // Unsupported digest algorithm.
+    return false;
+  }
+
+  // From RFC 5912: "PARAMS TYPE NULL ARE preferredPresent". Which is to say
+  // the can either be absent, or NULL.
+  if (!IsEmpty(params) && !IsNull(params))
+    return false;
+
+  *out = hash;
+  return true;
+}
+
+// Parses a MaskGenAlgorithm as defined by RFC 5912:
+//
+//     MaskGenAlgorithm ::= AlgorithmIdentifier{ALGORITHM,
+//                             {PKCS1MGFAlgorithms}}
+//
+//     mgf1SHA1 MaskGenAlgorithm ::= {
+//         algorithm id-mgf1,
+//         parameters HashAlgorithm : sha1Identifier
+//     }
+//
+//     --
+//     --  Define the set of mask generation functions
+//     --
+//     --  If the identifier is id-mgf1, any of the listed hash
+//     --    algorithms may be used.
+//     --
+//
+//     PKCS1MGFAlgorithms ALGORITHM ::= {
+//         { IDENTIFIER id-mgf1 PARAMS TYPE HashAlgorithm ARE required },
+//         ...
+//     }
+//
+// Note that the possible mask gen algorithms is extensible. However at present
+// the only function supported is MGF1, as that is the singular mask gen
+// function defined by RFC 4055 / RFC 5912.
+WARN_UNUSED_RESULT bool ParseMaskGenAlgorithm(const der::Input input,
+                                              DigestAlgorithm* mgf1_hash) {
+  der::Input oid;
+  der::Input params;
+  if (!ParseAlgorithmIdentifier(input, &oid, &params))
+    return false;
+
+  // MGF1 is the only supported mask generation algorithm.
+  if (!oid.Equals(der::Input(kOidMgf1)))
+    return false;
+
+  return ParseHashAlgorithm(params, mgf1_hash);
+}
+
+// Consumes an optional, explicitly-tagged INTEGER from |parser|, using the
+// indicated context-specific class number. Values greater than 32-bits will be
+// rejected.
+//
+// Returns true on success and sets |*present| to true if the field was present.
+WARN_UNUSED_RESULT bool ReadOptionalContextSpecificUint32(der::Parser* parser,
+                                                          uint8_t class_number,
+                                                          uint32_t* out,
+                                                          bool* present) {
+  der::Input value;
+  bool has_value;
+
+  // Read the context specific value.
+  if (!parser->ReadOptionalTag(der::ContextSpecificConstructed(class_number),
+                               &value, &has_value)) {
+    return false;
+  }
+
+  if (has_value) {
+    // Parse the integer contained in it.
+    der::Parser number_parser(value);
+    uint64_t uint64_value;
+
+    if (!number_parser.ReadUint64(&uint64_value))
+      return false;
+    if (number_parser.HasMore())
+      return false;
+
+    // Cast the number to a uint32_t
+    base::CheckedNumeric<uint32_t> casted(uint64_value);
+    if (!casted.IsValid())
+      return false;
+    *out = casted.ValueOrDie();
+  }
+
+  *present = has_value;
+  return true;
+}
+
+// Parses the parameters for an RSASSA-PSS signature algorithm, as defined by
+// RFC 5912:
+//
+//     sa-rsaSSA-PSS SIGNATURE-ALGORITHM ::= {
+//         IDENTIFIER id-RSASSA-PSS
+//         PARAMS TYPE RSASSA-PSS-params ARE required
+//         HASHES { mda-sha1 | mda-sha224 | mda-sha256 | mda-sha384
+//                      | mda-sha512 }
+//         PUBLIC-KEYS { pk-rsa | pk-rsaSSA-PSS }
+//         SMIME-CAPS { IDENTIFIED BY id-RSASSA-PSS }
+//     }
+//
+//     RSASSA-PSS-params  ::=  SEQUENCE  {
+//         hashAlgorithm     [0] HashAlgorithm DEFAULT sha1Identifier,
+//         maskGenAlgorithm  [1] MaskGenAlgorithm DEFAULT mgf1SHA1,
+//         saltLength        [2] INTEGER DEFAULT 20,
+//         trailerField      [3] INTEGER DEFAULT 1
+//     }
+//
+// Which is to say the parameters MUST be present, and of type
+// RSASSA-PSS-params.
+scoped_ptr<SignatureAlgorithm> ParseRsaPss(const der::Input& params) {
+  der::Parser parser(params);
+  der::Parser params_parser;
+  if (!parser.ReadSequence(&params_parser))
+    return nullptr;
+
+  // There shouldn't be anything after the sequence (by definition the
+  // parameters is a single sequence).
+  if (parser.HasMore())
+    return nullptr;
+
+  bool has_field;
+  der::Input field;
+
+  // Parse:
+  //     hashAlgorithm     [0] HashAlgorithm DEFAULT sha1Identifier,
+  DigestAlgorithm hash = DigestAlgorithm::Sha1;
+  if (!params_parser.ReadOptionalTag(der::ContextSpecificConstructed(0), &field,
+                                     &has_field)) {
+    return nullptr;
+  }
+  if (has_field && !ParseHashAlgorithm(field, &hash))
+    return nullptr;
+
+  // Parse:
+  //     maskGenAlgorithm  [1] MaskGenAlgorithm DEFAULT mgf1SHA1,
+  DigestAlgorithm mgf1_hash = DigestAlgorithm::Sha1;
+  if (!params_parser.ReadOptionalTag(der::ContextSpecificConstructed(1), &field,
+                                     &has_field)) {
+    return nullptr;
+  }
+  if (has_field && !ParseMaskGenAlgorithm(field, &mgf1_hash))
+    return nullptr;
+
+  // Parse:
+  //     saltLength        [2] INTEGER DEFAULT 20,
+  uint32_t salt_length = 20u;
+  if (!ReadOptionalContextSpecificUint32(&params_parser, 2, &salt_length,
+                                         &has_field)) {
+    return nullptr;
+  }
+
+  // Parse:
+  //     trailerField      [3] INTEGER DEFAULT 1
+  uint32_t trailer_field = 1u;
+  if (!ReadOptionalContextSpecificUint32(&params_parser, 3, &trailer_field,
+                                         &has_field)) {
+    return nullptr;
+  }
+
+  // RFC 4055 says that the trailer field must be 1:
+  //
+  //     The trailerField field is an integer.  It provides
+  //     compatibility with IEEE Std 1363a-2004 [P1363A].  The value
+  //     MUST be 1, which represents the trailer field with hexadecimal
+  //     value 0xBC.  Other trailer fields, including the trailer field
+  //     composed of HashID concatenated with 0xCC that is specified in
+  //     IEEE Std 1363a, are not supported.  Implementations that
+  //     perform signature generation MUST omit the trailerField field,
+  //     indicating that the default trailer field value was used.
+  //     Implementations that perform signature validation MUST
+  //     recognize both a present trailerField field with value 1 and an
+  //     absent trailerField field.
+  if (trailer_field != 1)
+    return nullptr;
+
+  // There must not be any unconsumed data left. (RFC 5912 does not explicitly
+  // include an extensibility point for RSASSA-PSS-params)
+  if (params_parser.HasMore())
+    return nullptr;
+
+  return SignatureAlgorithm::CreateRsaPss(hash, mgf1_hash, salt_length);
+}
+
 }  // namespace
 
 RsaPssParameters::RsaPssParameters(DigestAlgorithm mgf1_hash,
@@ -308,7 +581,8 @@ scoped_ptr<SignatureAlgorithm> SignatureAlgorithm::CreateFromDer(
   if (oid.Equals(der::Input(kOidEcdsaWithSha512)))
     return ParseEcdsa(DigestAlgorithm::Sha512, params);
 
-  // TODO(eroman): Add parsing of RSASSA-PSS
+  if (oid.Equals(der::Input(kOidRsaSsaPss)))
+    return ParseRsaPss(params);
 
   if (oid.Equals(der::Input(kOidSha1WithRsaSignature)))
     return ParseRsaPkcs1(DigestAlgorithm::Sha1, params);
