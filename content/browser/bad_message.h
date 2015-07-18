@@ -114,6 +114,7 @@ enum BadMessageReason {
   BDH_INVALID_WRITE_VALUE_LENGTH = 90,
   WC_MEMORY_CACHE_RESOURCE_BAD_SECURITY_INFO = 91,
   WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO = 92,
+  BDH_DUPLICATE_REQUEST_DEVICE_ID = 93,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

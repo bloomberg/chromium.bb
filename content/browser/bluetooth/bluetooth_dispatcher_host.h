@@ -51,7 +51,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   friend class base::DeleteHelper<BluetoothDispatcherHost>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
 
-  struct DiscoverySessionOptions;
+  struct RequestDeviceSession;
 
   // Set |adapter_| to a BluetoothAdapter instance and register observers,
   // releasing references to previous |adapter_|.
@@ -85,7 +85,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnDiscoverySessionStarted(
       int thread_id,
       int request_id,
-      scoped_ptr<DiscoverySessionOptions> options,
       scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
   void OnDiscoverySessionStartedError(int thread_id, int request_id);
 
@@ -93,13 +92,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void StopDiscoverySession(
       int thread_id,
       int request_id,
-      scoped_ptr<DiscoverySessionOptions> options,
       scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
 
   // Callbacks for BluetoothDiscoverySession::Stop.
-  void OnDiscoverySessionStopped(int thread_id,
-                                 int request_id,
-                                 scoped_ptr<DiscoverySessionOptions> options);
+  void OnDiscoverySessionStopped(int thread_id, int request_id);
   void OnDiscoverySessionStoppedError(int thread_id, int request_id);
 
   // Callbacks for BluetoothDevice::CreateGattConnection.
@@ -136,6 +132,12 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnWriteValueFailed(int thread_id,
                           int request_id,
                           device::BluetoothGattService::GattErrorCode);
+
+  // Maps a (thread_id,request_id) to information about its requestDevice call,
+  // including the chooser dialog.
+  // An entry is added to this map in OnRequestDevice, and should be removed
+  // again everywhere a requestDevice() reply is sent.
+  std::map<std::pair<int, int>, RequestDeviceSession> request_device_sessions_;
 
   // Maps to get the object's parent based on it's instanceID
   // Map of service_instance_id to device_instance_id.
