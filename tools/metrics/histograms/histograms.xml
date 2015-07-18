@@ -44263,6 +44263,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.LocalDataFailedToLoad" enum="SyncModelTypes">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Counts cases when a sync type failed to load the local data during startup.
+  </summary>
+</histogram>
+
 <histogram name="Sync.LocalModelOutOfSync" enum="SyncModelTypes">
   <owner>zea@chromium.org</owner>
   <summary>
