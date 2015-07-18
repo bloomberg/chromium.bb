@@ -105,7 +105,7 @@ deps = {
    Var('chromium_git') + '/external/github.com/google/open-vcdiff.git' + '@' + '39ff500790fa8038f80bd2fdcd10c35568a12529',
 
   'src/testing/gtest':
-   Var('chromium_git') + '/external/googletest.git' + '@' + '23574bf2333f834ff665f894c97bef8a5b33a0a9', # from svn revision 711
+   Var('chromium_git') + '/external/googletest.git' + '@' + '00a70a9667d92a4695d84e4fa36b64f611f147da', # from svn revision 725
 
   'src/testing/gmock':
    Var('chromium_git') + '/external/googlemock.git' + '@' + '29763965ab52f24565299976b936d1265cb6a271', # from svn revision 501

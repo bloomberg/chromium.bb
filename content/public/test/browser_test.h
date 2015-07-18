@@ -40,6 +40,7 @@
           #test_name,                                                        \
           "",                                                                \
           "",                                                                \
+          ::testing::internal::CodeLocation(__FILE__, __LINE__),             \
           (parent_id),                                                       \
           parent_class::SetUpTestCase,                                       \
           parent_class::TearDownTestCase,                                    \
@@ -66,7 +67,8 @@
       ::testing::UnitTest::GetInstance()                                       \
           ->parameterized_test_registry()                                      \
           .GetTestCasePatternHolder<test_case_name>(                           \
-               #test_case_name, __FILE__, __LINE__)                            \
+               #test_case_name,                                                \
+               ::testing::internal::CodeLocation(__FILE__, __LINE__))          \
           ->AddTestPattern(                                                    \
               #test_case_name,                                                 \
               #test_name,                                                      \
