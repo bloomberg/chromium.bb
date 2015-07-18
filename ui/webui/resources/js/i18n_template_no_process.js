@@ -38,27 +38,27 @@ var i18nTemplate = (function() {
   var handlers = {
     /**
      * This handler sets the textContent of the element.
-     * @param {HTMLElement} element The node to modify.
-     * @param {string} key The name of the value in the dictionary.
-     * @param {LoadTimeData} dictionary The dictionary of strings to draw from.
+     * @param {!HTMLElement} element The node to modify.
+     * @param {string} key The name of the value in |data|.
+     * @param {!LoadTimeData} data The data source to draw from.
      * @param {!Array<ProcessingRoot>} visited
      */
-    'i18n-content': function(element, key, dictionary, visited) {
-      element.textContent = dictionary.getString(key);
+    'i18n-content': function(element, key, data, visited) {
+      element.textContent = data.getString(key);
     },
 
     /**
      * This handler adds options to a <select> element.
-     * @param {HTMLElement} select The node to modify.
-     * @param {string} key The name of the value in the dictionary. It should
+     * @param {!HTMLElement} select The node to modify.
+     * @param {string} key The name of the value in |data|. It should
      *     identify an array of values to initialize an <option>. Each value,
      *     if a pair, represents [content, value]. Otherwise, it should be a
      *     content string with no value.
-     * @param {LoadTimeData} dictionary The dictionary of strings to draw from.
+     * @param {!LoadTimeData} data The data source to draw from.
      * @param {!Array<ProcessingRoot>} visited
      */
-    'i18n-options': function(select, key, dictionary, visited) {
-      var options = dictionary.getValue(key);
+    'i18n-options': function(select, key, data, visited) {
+      var options = data.getValue(key);
       options.forEach(function(optionData) {
         var option = typeof optionData == 'string' ?
             new Option(optionData) :
@@ -72,14 +72,14 @@ var i18nTemplate = (function() {
      *   attributename:key;
      *   .domProperty:key;
      *   .nested.dom.property:key
-     * @param {HTMLElement} element The node to modify.
+     * @param {!HTMLElement} element The node to modify.
      * @param {string} attributeAndKeys The path of the attribute to modify
-     *     followed by a colon, and the name of the value in the dictionary.
+     *     followed by a colon, and the name of the value in |data|.
      *     Multiple attribute/key pairs may be separated by semicolons.
-     * @param {LoadTimeData} dictionary The dictionary of strings to draw from.
+     * @param {!LoadTimeData} data The data source to draw from.
      * @param {!Array<ProcessingRoot>} visited
      */
-    'i18n-values': function(element, attributeAndKeys, dictionary, visited) {
+    'i18n-values': function(element, attributeAndKeys, data, visited) {
       var parts = attributeAndKeys.replace(/\s/g, '').split(/;/);
       parts.forEach(function(part) {
         if (!part)
@@ -92,7 +92,7 @@ var i18nTemplate = (function() {
         var propName = attributeAndKeyPair[1];
         var propExpr = attributeAndKeyPair[2];
 
-        var value = dictionary.getValue(propExpr);
+        var value = data.getValue(propExpr);
 
         // Allow a property of the form '.foo.bar' to assign a value into
         // element.foo.bar.
@@ -107,9 +107,8 @@ var i18nTemplate = (function() {
             // In case we set innerHTML (ignoring others) we need to recursively
             // check the content.
             if (path == 'innerHTML') {
-              for (var temp = element.firstElementChild; temp;
-                   temp = temp.nextElementSibling) {
-                processWithoutCycles(temp, dictionary, visited);
+              for (var i = 0; i < element.children.length; ++i) {
+                processWithoutCycles(element.children[i], data, visited, false);
               }
             }
           }
@@ -120,28 +119,35 @@ var i18nTemplate = (function() {
     }
   };
 
+  var prefixes = [''];
+
+  // Only look through shadow DOM when it's supported. As of April 2015, iOS
+  // Chrome doesn't support shadow DOM.
+  if (Element.prototype.createShadowRoot)
+    prefixes.push('::shadow ');
+
   var attributeNames = Object.keys(handlers);
-  // Only use /deep/ when shadow DOM is supported. As of April 2015 iOS Chrome
-  // doesn't support shadow DOM.
-  var prefix = Element.prototype.createShadowRoot ? ':root /deep/ ' : '';
-  var selector = prefix + '[' + attributeNames.join('],' + prefix + '[') + ']';
+  var selector = prefixes.map(function(prefix) {
+    return prefix + '[' + attributeNames.join('], ' + prefix + '[') + ']';
+  }).join(', ');
 
   /**
-   * Processes a DOM tree with the {@code dictionary} map.
-   * @param {ProcessingRoot} root The root of the DOM tree to process.
-   * @param {LoadTimeData} dictionary The dictionary to draw from.
+   * Processes a DOM tree using a |data| source to populate template values.
+   * @param {!ProcessingRoot} root The root of the DOM tree to process.
+   * @param {!LoadTimeData} data The data to draw from.
    */
-  function process(root, dictionary) {
-    processWithoutCycles(root, dictionary, []);
+  function process(root, data) {
+    processWithoutCycles(root, data, [], true);
   }
 
   /**
    * Internal process() method that stops cycles while processing.
-   * @param {ProcessingRoot} root
-   * @param {LoadTimeData} dictionary
+   * @param {!ProcessingRoot} root
+   * @param {!LoadTimeData} data
    * @param {!Array<ProcessingRoot>} visited Already visited roots.
+   * @param {boolean} mark Whether nodes should be marked processed.
    */
-  function processWithoutCycles(root, dictionary, visited) {
+  function processWithoutCycles(root, data, visited, mark) {
     if (visited.indexOf(root) >= 0) {
       // Found a cycle. Stop it.
       return;
@@ -158,47 +164,44 @@ var i18nTemplate = (function() {
         // TODO(dbeam): should we log an error if we detect that here?
         continue;
       }
-      processWithoutCycles(importLink.import, dictionary, visited);
+      processWithoutCycles(importLink.import, data, visited, mark);
     }
 
     var templates = root.querySelectorAll('template');
     for (var i = 0; i < templates.length; ++i) {
       var template = /** @type {HTMLTemplateElement} */(templates[i]);
-      processWithoutCycles(template.content, dictionary, visited);
+      processWithoutCycles(template.content, data, visited, mark);
     }
 
-    var firstElement = root instanceof Element ? root : root.querySelector('*');
-
-    if (prefix) {
-      // Prefixes skip root level elements. This is typically <html> but can
-      // differ inside of DocumentFragments (i.e. <template>s). Process them
-      // explicitly.
-      for (var temp = firstElement; temp; temp = temp.nextElementSibling) {
-        processElement(/** @type {Element} */(temp), dictionary, visited);
-      }
-    }
+    var isElement = root instanceof Element;
+    if (isElement && root.matches(selector))
+      processElement(/** @type {!Element} */(root), data, visited);
 
     var elements = root.querySelectorAll(selector);
-    for (var element, i = 0; element = elements[i]; i++) {
-      processElement(element, dictionary, visited);
+    for (var i = 0; i < elements.length; ++i) {
+      processElement(elements[i], data, visited);
     }
 
-    if (firstElement)
-      firstElement.setAttribute('i18n-processed', '');
+    if (mark) {
+      var processed = isElement ? [root] : root.children;
+      for (var i = 0; i < processed.length; ++i) {
+        processed[i].setAttribute('i18n-processed', '');
+      }
+    }
   }
 
   /**
-   * Run through various [i18n-*] attributes and do activate replacements.
-   * @param {Element} element
-   * @param {LoadTimeData} dictionary
+   * Run through various [i18n-*] attributes and populate.
+   * @param {!Element} element
+   * @param {!LoadTimeData} data
    * @param {!Array<ProcessingRoot>} visited
    */
-  function processElement(element, dictionary, visited) {
+  function processElement(element, data, visited) {
     for (var i = 0; i < attributeNames.length; i++) {
       var name = attributeNames[i];
       var attribute = element.getAttribute(name);
       if (attribute != null)
-        handlers[name](element, attribute, dictionary, visited);
+        handlers[name](element, attribute, data, visited);
     }
   }
 

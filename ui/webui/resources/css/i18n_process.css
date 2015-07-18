@@ -3,15 +3,21 @@
  * found in the LICENSE file. */
 
 [i18n-content]::before,
-[i18n-values*=".innerHTML:"]::before {
-  /* Insert a non-breaking space into nodes that have i18n'd content. */
+[i18n-values*=".innerHTML:"]::before,
+::shadow [i18n-content]::before,
+::shadow [i18n-values*=".innerHTML:"]::before {
+  /* Insert a non-breaking space into nodes that have i18n content. */
   content: '\00a0';
 }
 
 [i18n-processed][i18n-content]::before,
 [i18n-processed] [i18n-content]::before,
 [i18n-processed][i18n-values*=".innerHTML:"]::before,
-[i18n-processed] [i18n-values*=".innerHTML:"]::before {
-  /* Undo the non-breaking space hack after i18n-processing has run. */
+[i18n-processed] [i18n-values*=".innerHTML:"]::before,
+::shadow [i18n-processed][i18n-content]::before,
+::shadow [i18n-processed] [i18n-content]::before,
+::shadow [i18n-processed][i18n-values*=".innerHTML:"]::before,
+::shadow [i18n-processed] [i18n-values*=".innerHTML:"]::before {
+  /* Undo the non-breaking space hack after i18n processing has run. */
   content: normal;
 }
