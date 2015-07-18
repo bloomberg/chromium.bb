@@ -135,9 +135,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   bool allow_noisy_errors = !command_line->HasSwitch(switches::kNoErrorDialogs);
   ExtensionErrorReporter::Init(allow_noisy_errors);
 
-  content_verifier_ = new ContentVerifier(
-      profile_, new ChromeContentVerifierDelegate(profile_));
-
   shared_user_script_master_.reset(new SharedUserScriptMaster(profile_));
 
   // ExtensionService depends on RuntimeData.
@@ -159,6 +156,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // load any extensions.
   {
     InstallVerifier::Get(profile_)->Init();
+    content_verifier_ = new ContentVerifier(
+        profile_, new ChromeContentVerifierDelegate(profile_));
     ContentVerifierDelegate::Mode mode =
         ChromeContentVerifierDelegate::GetDefaultMode();
 #if defined(OS_CHROMEOS)

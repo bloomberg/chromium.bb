@@ -20,17 +20,6 @@
 
 namespace extensions {
 
-namespace {
-
-ContentVerifier::TestObserver* g_test_observer = NULL;
-
-}  // namespace
-
-// static
-void ContentVerifier::SetObserverForTests(TestObserver* observer) {
-  g_test_observer = observer;
-}
-
 ContentVerifier::ContentVerifier(content::BrowserContext* context,
                                  ContentVerifierDelegate* delegate)
     : shutdown_(false),
@@ -199,9 +188,6 @@ void ContentVerifier::OnFetchComplete(
     bool success,
     bool was_force_check,
     const std::set<base::FilePath>& hash_mismatch_paths) {
-  if (g_test_observer)
-    g_test_observer->OnFetchComplete(extension_id, success);
-
   if (shutdown_)
     return;
 

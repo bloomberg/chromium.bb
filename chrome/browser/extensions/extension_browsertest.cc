@@ -401,9 +401,15 @@ const Extension* ExtensionBrowserTest::UpdateExtensionWaitForIdle(
 const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
     const base::FilePath& path,
     int expected_change) {
-  return InstallOrUpdateExtension(
-      std::string(), path, INSTALL_UI_TYPE_AUTO_CONFIRM, expected_change,
-      Manifest::INTERNAL, browser(), Extension::FROM_WEBSTORE, true, false);
+  return InstallOrUpdateExtension(std::string(),
+                                  path,
+                                  INSTALL_UI_TYPE_NONE,
+                                  expected_change,
+                                  Manifest::INTERNAL,
+                                  browser(),
+                                  Extension::FROM_WEBSTORE,
+                                  true,
+                                  false);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
