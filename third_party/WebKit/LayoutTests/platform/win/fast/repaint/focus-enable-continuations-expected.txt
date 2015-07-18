@@ -17,7 +17,9 @@
         "LayoutBlockFlow (anonymous)",
         "LayoutInline SPAN id='outer'",
         "LayoutBlockFlow (anonymous)",
+        "LayoutInline SPAN id='outer'",
         "LayoutBlockFlow (anonymous)",
+        "LayoutInline SPAN id='outer'",
         "LayoutInline SPAN id='outer'"
       ]
     }

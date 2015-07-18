@@ -371,8 +371,6 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-crbug.com/506669 fast/repaint/focus-enable-continuations.html [ NeedsRebaseline ]
-
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-003.xht [ ImageOnlyFailure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-005.xht [ ImageOnlyFailure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-011.xht [ ImageOnlyFailure ]
@@ -1260,8 +1258,6 @@ crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failur
 crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Pass Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.html [ Pass Slow ]
-
-crbug.com/506669 fast/repaint/focus-ring-on-continuation-move.html [ NeedsRebaseline ]
 
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 
