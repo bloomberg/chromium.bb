@@ -1480,8 +1480,9 @@ class PreCQLauncherStage(SyncStage):
         build_dicts = db.GetBuildStatuses(build_ids)
         urls = []
         for b in build_dicts:
+          waterfall_url = constants.WATERFALL_TO_DASHBOARD[b['waterfall']]
           urls.append(tree_status.ConstructDashboardURL(
-              b['waterfall'], b['builder_name'], b['build_number']))
+              waterfall_url, b['builder_name'], b['build_number']))
 
         # Send notifications.
         pool.HandleApplySuccess(change, build_log='\n'.join(urls))
