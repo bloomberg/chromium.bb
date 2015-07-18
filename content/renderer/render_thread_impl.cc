@@ -607,9 +607,8 @@ RenderThreadImpl* RenderThreadImpl::Create(
 
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
-    scoped_ptr<base::MessageLoop> main_message_loop) {
-  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
-      scheduler::RendererScheduler::Create();
+    scoped_ptr<base::MessageLoop> main_message_loop,
+    scoped_ptr<scheduler::RendererScheduler> renderer_scheduler) {
   return new RenderThreadImpl(main_message_loop.Pass(),
                               renderer_scheduler.Pass());
 }

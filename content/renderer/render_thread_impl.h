@@ -137,7 +137,8 @@ class CONTENT_EXPORT RenderThreadImpl
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
   static RenderThreadImpl* Create(
-      scoped_ptr<base::MessageLoop> main_message_loop);
+      scoped_ptr<base::MessageLoop> main_message_loop,
+      scoped_ptr<scheduler::RendererScheduler> renderer_scheduler);
   static RenderThreadImpl* current();
 
   ~RenderThreadImpl() override;

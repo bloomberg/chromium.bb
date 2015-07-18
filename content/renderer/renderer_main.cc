@@ -18,6 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/common/content_switches.h"
@@ -118,6 +119,8 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
 
   base::PlatformThread::SetName("CrRendererMain");
+  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler(
+      scheduler::RendererScheduler::Create());
 
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
 
@@ -162,7 +165,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     // TODO(markus): Check if it is OK to unconditionally move this
     // instruction down.
     RenderProcessImpl render_process;
-    RenderThreadImpl::Create(main_message_loop.Pass());
+    RenderThreadImpl::Create(main_message_loop.Pass(),
+                             renderer_scheduler.Pass());
 #endif
     bool run_loop = true;
     if (!no_sandbox) {
@@ -178,7 +182,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     RenderProcessImpl render_process;
-    RenderThreadImpl::Create(main_message_loop.Pass());
+    RenderThreadImpl::Create(main_message_loop.Pass(),
+                             renderer_scheduler.Pass());
 #endif
     base::HighResolutionTimerManager hi_res_timer_manager;
 
