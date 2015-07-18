@@ -822,8 +822,25 @@ int drmCheckModesettingSupported(const char *busid)
 #elif defined(__DragonFly__)
 	return 0;
 #endif
-	return -ENOSYS;
+#ifdef __OpenBSD__
+	int	fd;
+	struct drm_mode_card_res res;
+	drmModeResPtr r = 0;
 
+	if ((fd = drmOpen(NULL, busid)) < 0)
+		return -EINVAL;
+
+	memset(&res, 0, sizeof(struct drm_mode_card_res));
+
+	if (drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res)) {
+		drmClose(fd);
+		return -errno;
+	}
+
+	drmClose(fd);
+	return 0;
+#endif
+	return -ENOSYS;
 }
 
 int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
