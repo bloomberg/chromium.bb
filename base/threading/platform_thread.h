@@ -173,8 +173,12 @@ class BASE_EXPORT PlatformThread {
   // NOTE: When you are done with the thread handle, you must call Join to
   // release system resources associated with the thread.  You must ensure that
   // the Delegate object outlives the thread.
-  static bool Create(size_t stack_size, Delegate* delegate,
-                     PlatformThreadHandle* thread_handle);
+  static bool Create(size_t stack_size,
+                     Delegate* delegate,
+                     PlatformThreadHandle* thread_handle) {
+    return CreateWithPriority(stack_size, delegate, thread_handle,
+                              ThreadPriority::NORMAL);
+  }
 
   // CreateWithPriority() does the same thing as Create() except the priority of
   // the thread is set based on |priority|.

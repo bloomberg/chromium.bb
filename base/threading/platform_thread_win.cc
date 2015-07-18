@@ -189,13 +189,6 @@ const char* PlatformThread::GetName() {
 }
 
 // static
-bool PlatformThread::Create(size_t stack_size, Delegate* delegate,
-                            PlatformThreadHandle* thread_handle) {
-  return CreateWithPriority(
-      stack_size, delegate, thread_handle, ThreadPriority::NORMAL);
-}
-
-// static
 bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
                                         PlatformThreadHandle* thread_handle,
                                         ThreadPriority priority) {

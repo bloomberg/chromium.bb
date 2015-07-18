@@ -194,14 +194,6 @@ const char* PlatformThread::GetName() {
 }
 
 // static
-bool PlatformThread::Create(size_t stack_size, Delegate* delegate,
-                            PlatformThreadHandle* thread_handle) {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  return CreateThread(stack_size, true /* joinable thread */,
-                      delegate, thread_handle, ThreadPriority::NORMAL);
-}
-
-// static
 bool PlatformThread::CreateWithPriority(size_t stack_size, Delegate* delegate,
                                         PlatformThreadHandle* thread_handle,
                                         ThreadPriority priority) {

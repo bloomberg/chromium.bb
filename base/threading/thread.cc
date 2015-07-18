@@ -103,14 +103,8 @@ bool Thread::StartWithOptions(const Options& options) {
   // that thread_ is populated before the newly created thread accesses it.
   {
     AutoLock lock(thread_lock_);
-    bool created;
-    if (options.priority == ThreadPriority::NORMAL) {
-      created = PlatformThread::Create(options.stack_size, this, &thread_);
-    } else {
-      created = PlatformThread::CreateWithPriority(options.stack_size, this,
-                                                   &thread_, options.priority);
-    }
-    if (!created) {
+    if (!PlatformThread::CreateWithPriority(options.stack_size, this, &thread_,
+                                            options.priority)) {
       DLOG(ERROR) << "failed to create thread";
       message_loop_ = nullptr;
       start_event_.reset();
