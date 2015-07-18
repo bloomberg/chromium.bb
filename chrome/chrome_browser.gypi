@@ -1362,6 +1362,8 @@
       'browser/offline_pages/offline_page_metadata_store_impl.h',
     ],
     'chrome_browser_bookmark_android_sources': [
+      'browser/android/offline_pages/offline_page_bridge.cc',
+      'browser/android/offline_pages/offline_page_bridge.h',
       'browser/android/offline_pages/offline_page_mhtml_archiver.cc',
       'browser/android/offline_pages/offline_page_mhtml_archiver.h',
       'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.cc',
@@ -1759,6 +1761,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/DownloadOverwriteInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/notifications/NotificationUIManager.java',
+      'android/java/src/org/chromium/chrome/browser/offline_pages/OfflinePageBridge.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AnswersImage.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AutocompleteController.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxPrerender.java',
