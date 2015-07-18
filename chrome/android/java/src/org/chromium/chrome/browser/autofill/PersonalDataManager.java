@@ -9,7 +9,6 @@ import android.content.Context;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
@@ -90,7 +89,6 @@ public class PersonalDataManager {
         }
 
         /** TODO(estade): remove this constructor. */
-        @VisibleForTesting
         public AutofillProfile(String guid, String origin, String fullName, String companyName,
                 String streetAddress, String region, String locality, String dependentLocality,
                 String postalCode, String sortingCode, String countryCode, String phoneNumber,
@@ -190,7 +188,6 @@ public class PersonalDataManager {
             return mIsLocal;
         }
 
-        @VisibleForTesting
         public void setGUID(String guid) {
             mGUID = guid;
         }
@@ -211,7 +208,6 @@ public class PersonalDataManager {
             mCompanyName = companyName;
         }
 
-        @VisibleForTesting
         public void setStreetAddress(String streetAddress) {
             mStreetAddress = streetAddress;
         }
@@ -236,7 +232,6 @@ public class PersonalDataManager {
             mSortingCode = sortingCode;
         }
 
-        @VisibleForTesting
         public void setCountryCode(String countryCode) {
             mCountryCode = countryCode;
         }
@@ -249,7 +244,6 @@ public class PersonalDataManager {
             mEmailAddress = emailAddress;
         }
 
-        @VisibleForTesting
         public void setLanguageCode(String languageCode) {
             mLanguageCode = languageCode;
         }
@@ -293,7 +287,6 @@ public class PersonalDataManager {
         }
 
         /** TODO(estade): remove this constructor. */
-        @VisibleForTesting
         public CreditCard(String guid, String origin, String name, String number,
                 String obfuscatedNumber, String month, String year) {
             mGUID = guid;
@@ -355,7 +348,6 @@ public class PersonalDataManager {
             return mIsCached;
         }
 
-        @VisibleForTesting
         public void setGUID(String guid) {
             mGUID = guid;
         }
@@ -368,7 +360,6 @@ public class PersonalDataManager {
             mName = name;
         }
 
-        @VisibleForTesting
         public void setNumber(String number) {
             mNumber = number;
         }
@@ -377,7 +368,6 @@ public class PersonalDataManager {
             mObfuscatedNumber = obfuscatedNumber;
         }
 
-        @VisibleForTesting
         public void setMonth(String month) {
             mMonth = month;
         }

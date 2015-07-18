@@ -28,7 +28,6 @@ public class AutofillDialogControllerAndroid {
         /**
          * Cancels the requestAutocomplete.
          */
-        @VisibleForTesting
         void dialogCancel();
 
         /**
@@ -40,7 +39,6 @@ public class AutofillDialogControllerAndroid {
          * @param guidLastUsedShipping GUID of the last selected Autofill shipping address, or null
          * @param guidLastUsedCard GUID of the last selected Autofill credit card, or null
          */
-        @VisibleForTesting
         void dialogContinue(
                 AutofillDialogResult.ResultWallet fullWallet,
                 boolean lastUsedChoiceIsAutofill, String lastUsedAccountName,
@@ -102,7 +100,6 @@ public class AutofillDialogControllerAndroid {
      * Sets the factory to be used.
      * @param factory An instance of the AutofillDialogFactory that will handle requests.
      */
-    @VisibleForTesting
     public static void setDialogFactory(AutofillDialogFactory factory) {
         sDialogFactory = factory;
     }

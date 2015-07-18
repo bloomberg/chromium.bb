@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.VisibleForTesting;
 
 /**
  * Java-side result of a non-cancelled AutofillDialog invocation, and
@@ -30,7 +29,6 @@ public class AutofillDialogResult {
          * @param pan Credit card number
          * @param cvn Credit card verification number
          */
-        @VisibleForTesting
         public ResultCard(int expirationMonth, int expirationYear, String pan, String cvn) {
             mExpirationMonth = expirationMonth;
             mExpirationYear = expirationYear;
@@ -100,7 +98,6 @@ public class AutofillDialogResult {
          * @param countryCode Country code
          * @param languageCode Language code
          */
-        @VisibleForTesting
         public ResultAddress(
                 String name, String phoneNumber,
                 String streetAddress,
@@ -219,7 +216,6 @@ public class AutofillDialogResult {
          * @param billingAddress Information about the billing address
          * @param shippingAddress Information about the shipping address
          */
-        @VisibleForTesting
         public ResultWallet(
                 String email, String googleTransactionId,
                 ResultCard card, ResultAddress billingAddress, ResultAddress shippingAddress) {
