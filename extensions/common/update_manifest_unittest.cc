@@ -4,7 +4,6 @@
 
 #include "extensions/common/update_manifest.h"
 
-#include "libxml/globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const char kValidXml[] =
@@ -155,7 +154,6 @@ TEST(ExtensionUpdateManifestTest, TestUpdateManifest) {
   EXPECT_TRUE(parser.errors().empty());
   EXPECT_TRUE(parser.Parse(kSimilarTagnames));
   EXPECT_TRUE(parser.errors().empty());
-  xmlCleanupGlobals();
 
   // Parse xml with hash value
   EXPECT_TRUE(parser.Parse(valid_xml_with_hash));
