@@ -354,9 +354,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     if (!is_for_guests_only && site_instance &&
         site_instance->HasWrongProcessForURL(entry->GetURL())) {
       // Create a navigation entry that resembles the current one, but do not
-      // copy page id, site instance, content state, or timestamp. TODO(avi):
-      // This seems wrong. We're setting |pending_entry_| to a different value
-      // than what |pending_entry_index_| points to. Doesn't this leak?
+      // copy page id, site instance, content state, or timestamp.
       NavigationEntryImpl* nav_entry = NavigationEntryImpl::FromNavigationEntry(
           CreateNavigationEntry(
               entry->GetURL(), entry->GetReferrer(), entry->GetTransitionType(),
@@ -368,6 +366,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
 
       nav_entry->set_should_replace_entry(true);
       pending_entry_ = nav_entry;
+      DCHECK_EQ(-1, pending_entry_index_);
     } else {
       pending_entry_ = entry;
       pending_entry_index_ = current_index;
