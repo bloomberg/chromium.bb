@@ -1070,7 +1070,8 @@ def GetUploadPackageTargets():
 
   return package_targets
 
-if __name__ == '__main__':
+
+def main():
   # This sets the logging for gclient-alike repo sync. It will be overridden
   # by the package builder based on the command-line flags.
   logging.getLogger().setLevel(logging.DEBUG)
@@ -1091,6 +1092,13 @@ if __name__ == '__main__':
                       help='Build the sandboxed translators')
   parser.add_argument('--pnacl-in-pnacl', action='store_true', default=False,
                       help='Build with a PNaCl toolchain')
+  parser.add_argument('--no-sdk-libs', action='store_true',
+                      help='Don\'t build the core_sdk_libs scons target')
+  parser.add_argument('--no-nacl-gcc', action='store_true',
+                      help='Don\'t use nacl-gcc. This is normally used to '
+                           'build libgcc_eh on x86. '
+                           'WARNING: this results in an empty libgcc_eh '
+                           'on x86 and x86_64.')
   parser.add_argument('--extra-cc-args', default=None,
                       help='Extra arguments to pass to cc/cxx')
   parser.add_argument('--extra-configure-arg', dest='extra_configure_args',
@@ -1160,9 +1168,11 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.TargetLibs(bias, is_canonical))
     for arch in DIRECT_TO_NACL_ARCHES:
       packages.update(pnacl_targetlibs.TargetLibs(arch, is_canonical))
-      packages.update(pnacl_targetlibs.SDKLibs(arch, is_canonical))
+      if not args.no_sdk_libs:
+        packages.update(pnacl_targetlibs.SDKLibs(arch, is_canonical))
     for arch in TRANSLATOR_ARCHES:
-      packages.update(pnacl_targetlibs.TranslatorLibs(arch, is_canonical))
+      packages.update(pnacl_targetlibs.TranslatorLibs(arch, is_canonical,
+        args.no_nacl_gcc))
     packages.update(Metadata(rev, is_canonical))
     packages.update(pnacl_targetlibs.SDKCompiler(
                     ['le32'] + DIRECT_TO_NACL_ARCHES))
@@ -1178,4 +1188,8 @@ if __name__ == '__main__':
   tb = toolchain_main.PackageBuilder(packages,
                                      upload_packages,
                                      leftover_args)
-  sys.exit(tb.Main())
+  return tb.Main()
+
+
+if __name__ == '__main__':
+  sys.exit(main())

@@ -174,7 +174,7 @@ def BuildTargetTranslatorCmd(sourcefile, output, arch, extra_flags=[],
      '-o', command.path.join(output_dir, output)])
 
 
-def BuildLibgccEhCmd(sourcefile, output, arch):
+def BuildLibgccEhCmd(sourcefile, output, arch, no_nacl_gcc):
   # Return a command to compile a file from libgcc_eh (see comments in at the
   # rule definition below).
   flags_common = ['-DENABLE_RUNTIME_CHECKING', '-g', '-O2', '-W', '-Wall',
@@ -199,6 +199,8 @@ def BuildLibgccEhCmd(sourcefile, output, arch):
     flags_naclcc = ['-arch', arch, '--pnacl-bias=' + arch,
                     '--pnacl-allow-translate', '--pnacl-allow-native']
   else:
+    if no_nacl_gcc:
+      return command.WriteData('', output)
     os_name = pynacl.platform.GetOS()
     arch_name = pynacl.platform.GetArch()
     platform_dir = '%s_%s' % (os_name, arch_name)
@@ -603,7 +605,7 @@ def SubzeroRuntimeCommands(arch, out_dir):
         LlcArchArgs),
     ]
 
-def TranslatorLibs(arch, is_canonical):
+def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
   setjmp_arch = arch
   if setjmp_arch.endswith('-nonsfi'):
     setjmp_arch = setjmp_arch[:-len('-nonsfi')]
@@ -745,9 +747,10 @@ def TranslatorLibs(arch, is_canonical):
               command.Copy(os.path.join('%(scripts)s', 'libgcc-tconfig.h'),
                            'tconfig.h'),
               command.WriteData('', 'tm.h'),
-              BuildLibgccEhCmd('unwind-dw2.c', 'unwind-dw2.o', arch),
+              BuildLibgccEhCmd('unwind-dw2.c', 'unwind-dw2.o', arch,
+                               no_nacl_gcc),
               BuildLibgccEhCmd('unwind-dw2-fde-glibc.c',
-                               'unwind-dw2-fde-glibc.o', arch),
+                               'unwind-dw2-fde-glibc.o', arch, no_nacl_gcc),
               command.Command([PnaclTool('ar'), 'rc',
                                command.path.join('%(output)s', 'libgcc_eh.a'),
                                'unwind-dw2.o', 'unwind-dw2-fde-glibc.o']),
