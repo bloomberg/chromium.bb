@@ -36,7 +36,7 @@ void ClearGLBindingsGL();
 void SetGLToRealGLApi();
 void SetGLApi(GLApi* api);
 void SetGLApiToNoContext();
-const GLVersionInfo* GetGLVersionInfo();
+const GL_EXPORT GLVersionInfo* GetGLVersionInfo();
 
 class GL_EXPORT GLApiBase : public GLApi {
  public:

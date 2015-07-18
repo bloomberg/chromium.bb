@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_share_group.h"
 #if defined(USE_OZONE)
 #include "ui/ozone/public/gpu_platform_support.h"
@@ -68,7 +69,8 @@ GpuChannelManager::~GpuChannelManager() {
 gpu::gles2::ProgramCache* GpuChannelManager::program_cache() {
   if (!program_cache_.get() &&
       (gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
-       gfx::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
+       gfx::g_driver_gl.ext.b_GL_OES_get_program_binary ||
+       gfx::GetGLVersionInfo()->is_es3) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuProgramCache)) {
     program_cache_.reset(new gpu::gles2::MemoryProgramCache());
