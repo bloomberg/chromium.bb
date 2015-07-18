@@ -170,7 +170,7 @@ if (use_system_harfbuzz) {
     # pango uses mixed versions of harfbuzz and leads to crash.
     # See crbug.com/462689.
     if (is_linux && use_pango && !is_chromeos && !is_official_build &&
-        current_cpu != "arm") {
+        current_cpu != "arm" && current_cpu != "mipsel") {
       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
       configs += [
         "//build/config/linux:freetype2",
@@ -187,7 +187,8 @@ if (use_system_harfbuzz) {
     # See also chrome/browser/ui/libgtk2ui/BUILD.gn which pulls this.
     config("pangoft2_link_hack") {
       if (is_linux && use_pango && !is_chromeos && !is_official_build &&
-          current_cpu != "arm" && !is_component_build) {
+          current_cpu != "arm" && current_cpu != "mipsel" &&
+          !is_component_build) {
         # These symbols are referenced from libpangoft2, which will be
         # dynamically linked later.
         ldflags =
