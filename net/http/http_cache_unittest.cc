@@ -4105,6 +4105,34 @@ TEST(HttpCache, RangeGET_SyncOK) {
   RemoveMockTransaction(&transaction);
 }
 
+// Tests that if the previous transaction is cancelled while busy (doing sparse
+// IO), a new transaction (that reuses that same ActiveEntry) waits until the
+// entry is ready again.
+TEST(HttpCache, Sparse_WaitForEntry) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+
+  // Create a sparse entry.
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Simulate a previous transaction being cancelled.
+  disk_cache::Entry* entry;
+  ASSERT_TRUE(cache.OpenBackendEntry(kRangeGET_TransactionOK.url, &entry));
+  entry->CancelSparseIO();
+
+  // Test with a range request.
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Now test with a regular request.
+  entry->CancelSparseIO();
+  transaction.request_headers = EXTRA_HEADER;
+  transaction.data = kFullRangeData;
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  entry->Close();
+}
+
 // Tests that we don't revalidate an entry unless we are required to do so.
 TEST(HttpCache, RangeGET_Revalidate1) {
   MockHttpCache cache;

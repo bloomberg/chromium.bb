@@ -102,7 +102,7 @@ class MockDiskEntry : public disk_cache::Entry,
   bool fail_sparse_requests_;
   bool busy_;
   bool delayed_;
-  static bool cancel_;
+  bool cancel_;
   static bool ignore_callbacks_;
 };
 

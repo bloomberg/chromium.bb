@@ -2173,24 +2173,22 @@ int HttpCache::Transaction::BeginPartialCacheValidation() {
 
   // Partial requests should not be recorded in histograms.
   UpdateTransactionPattern(PATTERN_NOT_COVERED);
-  if (range_requested_) {
-    next_state_ = STATE_CACHE_QUERY_DATA;
-    return OK;
-  }
-
-  // The request is not for a range, but we have stored just ranges.
-
   if (request_->method == "HEAD")
     return BeginCacheValidation();
 
-  partial_.reset(new PartialData());
-  partial_->SetHeaders(request_->extra_headers);
-  if (!custom_request_.get()) {
-    custom_request_.reset(new HttpRequestInfo(*request_));
-    request_ = custom_request_.get();
+  if (!range_requested_) {
+    // The request is not for a range, but we have stored just ranges.
+
+    partial_.reset(new PartialData());
+    partial_->SetHeaders(request_->extra_headers);
+    if (!custom_request_.get()) {
+      custom_request_.reset(new HttpRequestInfo(*request_));
+      request_ = custom_request_.get();
+    }
   }
 
-  return ValidateEntryHeadersAndContinue();
+  next_state_ = STATE_CACHE_QUERY_DATA;
+  return OK;
 }
 
 // This should only be called once per request.
