@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -93,7 +94,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         intent.putExtra(ShortcutHelper.EXTRA_TITLE, title);
         intent.putExtra(ShortcutHelper.EXTRA_ICON, icon);
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.PORTRAIT);
-        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutHelper.SOURCE_UNKNOWN);
+        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
         if (addMac) {
             // Needed for security reasons.  If the MAC is excluded, the URL of the webapp is opened
             // in a browser window, instead.

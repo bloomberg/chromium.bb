@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
@@ -24,7 +25,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String url = "about:blank";
 
         WebappInfo info = WebappInfo.create(id, url,
-                null, title, ScreenOrientationValues.DEFAULT, ShortcutHelper.SOURCE_UNKNOWN);
+                null, title, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN);
         assertNotNull(info);
     }
 
@@ -36,7 +37,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String url = "http://google.com";
 
         WebappInfo info = WebappInfo.create(id, url,
-                null, title, ScreenOrientationValues.DEFAULT, ShortcutHelper.SOURCE_UNKNOWN);
+                null, title, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN);
         assertNotNull(info);
     }
 
@@ -64,9 +65,9 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String url = "http://money.cnn.com";
 
         WebappInfo info = WebappInfo.create(id, url,
-                null, title, ScreenOrientationValues.DEFAULT, ShortcutHelper.SOURCE_UNKNOWN);
+                null, title, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN);
         assertNotNull(info);
         assertEquals(info.orientation(), ScreenOrientationValues.DEFAULT);
-        assertEquals(info.source(), ShortcutHelper.SOURCE_UNKNOWN);
+        assertEquals(info.source(), ShortcutSource.UNKNOWN);
     }
 }

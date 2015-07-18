@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
@@ -20,7 +20,7 @@ public class WebappVisibilityTest extends WebappActivityTestBase {
     public void testShouldShowTopControls() {
         final String webappUrl = "http://originalwebsite.com";
         WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, webappUrl,
-                null, null, ScreenOrientationValues.DEFAULT, ShortcutHelper.SOURCE_UNKNOWN);
+                null, null, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN);
         getActivity().getWebappInfo().copy(mockInfo);
 
         // Show top controls for out-of-domain URLs.

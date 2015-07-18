@@ -35,9 +35,6 @@ public class ShortcutHelper {
     public static final String EXTRA_ORIENTATION = ScreenOrientationConstants.EXTRA_ORIENTATION;
     public static final String EXTRA_SOURCE = "org.chromium.chrome.browser.webapp_source";
 
-    // This value is equal to SOURCE_UNKNOWN in the C++ ShortcutInfo struct.
-    public static final int SOURCE_UNKNOWN = 0;
-
     /** Observes the data fetching pipeline. */
     public interface ShortcutHelperObserver {
         /** Called when the title of the page is available. */

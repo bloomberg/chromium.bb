@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
@@ -329,7 +330,7 @@ public class ChromeLauncherActivity extends Activity
         // Try to relaunch an existing task.
         if (reuse && !append) {
             int shortcutSource = getIntent().getIntExtra(
-                        ShortcutHelper.EXTRA_SOURCE, ShortcutHelper.SOURCE_UNKNOWN);
+                        ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
             LaunchMetrics.recordHomeScreenLaunchIntoTab(url, shortcutSource);
             if (relaunchTask(incognito, url)) return;
         }
@@ -771,7 +772,7 @@ public class ChromeLauncherActivity extends Activity
         int webappOrientation = IntentUtils.safeGetIntExtra(intent,
                 ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
         int webappSource = IntentUtils.safeGetIntExtra(intent,
-                ShortcutHelper.EXTRA_SOURCE, ShortcutHelper.SOURCE_UNKNOWN);
+                ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
 
         if (webappId != null && webappUrl != null) {
             String webappMacString = IntentUtils.safeGetStringExtra(

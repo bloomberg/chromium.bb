@@ -14,6 +14,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 import java.io.ByteArrayOutputStream;
@@ -46,7 +47,7 @@ public class WebappInfo {
         int orientation = intent.getIntExtra(
                 ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
         int source = intent.getIntExtra(
-                ShortcutHelper.EXTRA_SOURCE, ShortcutHelper.SOURCE_UNKNOWN);
+                ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
         return create(id, url, icon, title, orientation, source);
     }
 
