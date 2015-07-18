@@ -24,8 +24,9 @@ description('Test that fonts loaded after a popup menu is opened triggers a styl
 document.fonts.ready.then(onFontsReady);
 
 openPicker(menu, function() {}, function () {
+    // Note that we don't need to call finishJSTest() here because the font
+    // promise will still be resolved.
     testFailed('picker didn\'t open')
-    finishJSTest();
 });
 
 function onFontsReady() {
