@@ -31,7 +31,7 @@ typedef BOOL (WINAPI *GetProcessMitigationPolicyFunction)(
 GetProcessMitigationPolicyFunction get_process_mitigation_policy;
 
 bool CheckWin8DepPolicy() {
-  PROCESS_MITIGATION_DEP_POLICY policy;
+  PROCESS_MITIGATION_DEP_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(), ProcessDEPPolicy,
                                      &policy, sizeof(policy))) {
     return false;
@@ -40,7 +40,7 @@ bool CheckWin8DepPolicy() {
 }
 
 bool CheckWin8AslrPolicy() {
-  PROCESS_MITIGATION_ASLR_POLICY policy;
+  PROCESS_MITIGATION_ASLR_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(), ProcessASLRPolicy,
                                      &policy, sizeof(policy))) {
      return false;
@@ -49,7 +49,7 @@ bool CheckWin8AslrPolicy() {
 }
 
 bool CheckWin8StrictHandlePolicy() {
-  PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy;
+  PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(),
                                      ProcessStrictHandleCheckPolicy,
                                      &policy, sizeof(policy))) {
@@ -60,7 +60,7 @@ bool CheckWin8StrictHandlePolicy() {
 }
 
 bool CheckWin8Win32CallPolicy() {
-  PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY policy;
+  PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(),
                                      ProcessSystemCallDisablePolicy,
                                      &policy, sizeof(policy))) {
@@ -70,7 +70,7 @@ bool CheckWin8Win32CallPolicy() {
 }
 
 bool CheckWin8DllExtensionPolicy() {
-  PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY policy;
+  PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(),
                                      ProcessExtensionPointDisablePolicy,
                                      &policy, sizeof(policy))) {
@@ -91,8 +91,10 @@ SBOX_TESTS_COMMAND int CheckWin8(int argc, wchar_t **argv) {
   if (!get_process_mitigation_policy)
     return SBOX_TEST_NOT_FOUND;
 
+#if !defined(_WIN64)  // DEP is always enabled on 64-bit.
   if (!CheckWin8DepPolicy())
     return SBOX_TEST_FIRST_ERROR;
+#endif
 
 #if defined(NDEBUG)  // ASLR cannot be forced in debug builds.
   if (!CheckWin8AslrPolicy())
