@@ -24,7 +24,7 @@ class DownloadDestinationObserver;
 class DownloadManager;
 struct DownloadCreateInfo;
 
-class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
+class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
  public:
   // Takes ownership of the object pointed to by |request_handle|.
   // |bound_net_log| will be used for logging the download file's events.

@@ -87,7 +87,7 @@ namespace ash {
 ////////////////////////////////////////////////////////////////////////////////
 // MagnificationControllerImpl:
 
-class MagnificationControllerImpl : virtual public MagnificationController,
+class MagnificationControllerImpl : public MagnificationController,
                                     public ui::EventHandler,
                                     public ui::ImplicitAnimationObserver,
                                     public aura::WindowObserver,

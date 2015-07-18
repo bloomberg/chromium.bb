@@ -18,7 +18,7 @@
 namespace content {
 struct DownloadCreateInfo;
 
-class MockDownloadFile : virtual public DownloadFile {
+class MockDownloadFile : public DownloadFile {
  public:
   MockDownloadFile();
   virtual ~MockDownloadFile();
