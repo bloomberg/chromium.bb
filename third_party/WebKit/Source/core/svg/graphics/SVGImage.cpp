@@ -424,6 +424,12 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // types.
         EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
 
+        if (m_page) {
+            toLocalFrame(m_page->mainFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml", AtomicString::ConstructFromLiteral),
+                AtomicString("UTF-8", AtomicString::ConstructFromLiteral), KURL(), ForceSynchronousLoad)));
+            return true;
+        }
+
         static FrameLoaderClient* dummyFrameLoaderClient = new EmptyFrameLoaderClient;
 
         Page::PageClients pageClients;

@@ -95,6 +95,11 @@ const String& ScriptResource::script()
     return m_script.string();
 }
 
+void ScriptResource::destroyDecodedDataForFailedRevalidation()
+{
+    m_script = AtomicString();
+}
+
 bool ScriptResource::mimeTypeAllowedByNosniff() const
 {
     return parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
