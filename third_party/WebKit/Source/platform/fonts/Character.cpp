@@ -107,6 +107,8 @@ CodePath Character::characterRangeCodePath(const UChar* characters, unsigned len
         0x2CEF, 0x2CF1,
         // U+302A through U+302F Ideographic and Hangul Tone marks
         0x302A, 0x302F,
+        // Combining Katakana-Hiragana Voiced/Semi-voiced Sound Mark
+        0x3099, 0x309A,
         // U+A67C through U+A67D Combining marks for old Cyrillic
         0xA67C, 0xA67D,
         // U+A6F0 through U+A6F1 Combining mark for Bamum

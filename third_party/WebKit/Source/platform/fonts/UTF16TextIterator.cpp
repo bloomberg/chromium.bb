@@ -48,19 +48,8 @@ UTF16TextIterator::UTF16TextIterator(const UChar* characters, int currentCharact
 {
 }
 
-bool UTF16TextIterator::consumeSlowCase(UChar32& character)
+bool UTF16TextIterator::consumeSurrogatePair(UChar32& character)
 {
-    if (character <= 0x30FE) {
-        // Deal with Hiragana and Katakana voiced and semi-voiced syllables.
-        // Normalize into composed form, and then look for glyph with base +
-        // combined mark.
-        if (UChar32 normalized = normalizeVoicingMarks()) {
-            character = normalized;
-            m_currentGlyphLength = 2;
-        }
-        return true;
-    }
-
     if (!U16_IS_SURROGATE(character))
         return true;
 
@@ -98,27 +87,6 @@ void UTF16TextIterator::consumeMultipleUChar()
         markCharactersEnd += nextCharacterLength;
     }
     m_currentGlyphLength = markLength;
-}
-
-UChar32 UTF16TextIterator::normalizeVoicingMarks()
-{
-    // According to http://www.unicode.org/Public/UNIDATA/UCD.html#Canonical_Combining_Class_Values
-    static const uint8_t hiraganaKatakanaVoicingMarksCombiningClass = 8;
-
-    if (m_offset + 1 >= m_endOffset)
-        return 0;
-
-    if (combiningClass(m_characters[1]) == hiraganaKatakanaVoicingMarksCombiningClass) {
-        // Normalize into composed form using 3.2 rules.
-        UChar normalizedCharacters[2] = { 0, 0 };
-        UErrorCode uStatus = U_ZERO_ERROR;
-        int32_t resultLength = unorm_normalize(m_characters, 2, UNORM_NFC,
-            UNORM_UNICODE_3_2, &normalizedCharacters[0], 2, &uStatus);
-        if (resultLength == 1 && !uStatus)
-            return normalizedCharacters[0];
-    }
-
-    return 0;
 }
 
 }

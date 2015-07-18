@@ -45,7 +45,7 @@ public:
         character = *m_characters;
         m_currentGlyphLength = 1;
 
-        if (character < hiraganaLetterSmallACharacter || consumeSlowCase(character)) {
+        if (!U16_IS_SURROGATE(character) || consumeSurrogatePair(character)) {
             if (U_GET_GC_MASK(character) & U_GC_M_MASK)
                 consumeMultipleUChar();
             return true;
@@ -68,9 +68,8 @@ public:
     unsigned glyphLength() const { return m_currentGlyphLength; }
 
 private:
-    bool consumeSlowCase(UChar32&);
+    bool consumeSurrogatePair(UChar32&);
     void consumeMultipleUChar();
-    UChar32 normalizeVoicingMarks();
 
     const UChar* m_characters;
     const UChar* m_charactersEnd;

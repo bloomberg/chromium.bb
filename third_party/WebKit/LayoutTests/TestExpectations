@@ -1280,6 +1280,9 @@ crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/zero-wi
 
 crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 
+crbug.com/507351 [ Mac ] fast/text/international/kana-voiced-sound-marks.html [ ImageOnlyFailure ]
+crbug.com/507351 [ Mac ] virtual/antialiasedtext/fast/text/international/kana-voiced-sound-marks.html [ ImageOnlyFailure ]
+
 crbug.com/435865 fast/events/message-port-start-and-close-different-microtask.html [ Pass Failure ]
 
 # Two part change for layer intersection. Can be rebaselined after https://codereview.chromium.org/595593002/ lands
