@@ -103,7 +103,7 @@ class QuicCryptoServerConfigPeer {
     va_list ap;
     va_start(ap, server_config_id1);
 
-    vector<pair<ServerConfigID, bool> > expected;
+    vector<pair<ServerConfigID, bool>> expected;
     bool first = true;
     for (;;) {
       const char* server_config_id;
@@ -131,20 +131,19 @@ class QuicCryptoServerConfigPeer {
     ASSERT_EQ(expected.size(), server_config_->configs_.size())
         << ConfigsDebug();
 
-    for (QuicCryptoServerConfig::ConfigMap::const_iterator
-             i = server_config_->configs_.begin();
-         i != server_config_->configs_.end(); ++i) {
+    for (const pair<const ServerConfigID,
+                    scoped_refptr<QuicCryptoServerConfig::Config>>& i :
+         server_config_->configs_) {
       bool found = false;
-      for (vector<pair<ServerConfigID, bool> >::iterator j = expected.begin();
-           j != expected.end(); ++j) {
-        if (i->first == j->first && i->second->is_primary == j->second) {
+      for (pair<ServerConfigID, bool>& j : expected) {
+        if (i.first == j.first && i.second->is_primary == j.second) {
           found = true;
-          j->first.clear();
+          j.first.clear();
           break;
         }
       }
 
-      ASSERT_TRUE(found) << "Failed to find match for " << i->first
+      ASSERT_TRUE(found) << "Failed to find match for " << i.first
                          << " in configs:\n" << ConfigsDebug();
     }
   }
@@ -160,10 +159,8 @@ class QuicCryptoServerConfigPeer {
 
     string s;
 
-    for (QuicCryptoServerConfig::ConfigMap::const_iterator
-             i = server_config_->configs_.begin();
-         i != server_config_->configs_.end(); ++i) {
-      const scoped_refptr<QuicCryptoServerConfig::Config> config = i->second;
+    for (const auto& i : server_config_->configs_) {
+      const scoped_refptr<QuicCryptoServerConfig::Config> config = i.second;
       if (config->is_primary) {
         s += "(primary) ";
       } else {
@@ -239,7 +236,7 @@ TEST(QuicCryptoServerConfigTest, GetOrbitIsCalledWithoutTheStrikeRegisterLock) {
   server.SetStrikeRegisterClient(strike_register);
 
   QuicCryptoServerConfig::ConfigOptions options;
-  scoped_ptr<CryptoHandshakeMessage>(
+  scoped_ptr<CryptoHandshakeMessage> message(
       server.AddDefaultConfig(rand, &clock, options));
   EXPECT_TRUE(strike_register->is_known_orbit_called());
 }

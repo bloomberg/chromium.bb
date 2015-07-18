@@ -98,7 +98,7 @@ class QuicStreamSequencerTest : public ::testing::Test {
     }
     if (memcmp(iovec.iov_base, expected.data(), expected.length()) != 0) {
       LOG(ERROR) << "Invalid data: " << static_cast<char*>(iovec.iov_base)
-                 << " vs " << expected.data();
+                 << " vs " << expected;
       return false;
     }
     return true;
@@ -359,10 +359,13 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
       to_process = base::RandInt(0, len);
     }
     output_.append(data, to_process);
+    peeked_.append(data, to_process);
     return to_process;
   }
 
   string output_;
+  // Data which peek at using GetReadableRegion if we back up.
+  string peeked_;
   FrameList list_;
 };
 
@@ -383,6 +386,51 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingNoBackup) {
 
     list_.erase(list_.begin() + index);
   }
+}
+
+TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
+  char buffer[10];
+  iovec iov[2];
+  iov[0].iov_base = &buffer[0];
+  iov[0].iov_len = 5;
+  iov[1].iov_base = &buffer[5];
+  iov[1].iov_len = 5;
+
+  EXPECT_CALL(stream_, ProcessRawData(_, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(
+          Invoke(this, &QuicSequencerRandomTest::MaybeProcessMaybeBuffer));
+
+  while (output_.size() != arraysize(kPayload) - 1) {
+    if (!list_.empty() && (base::RandUint64() % 2 == 0)) {  // Send data
+      int index = OneToN(list_.size()) - 1;
+      OnFrame(list_[index].first, list_[index].second.data());
+      list_.erase(list_.begin() + index);
+    } else {  // Read data
+      bool has_bytes = sequencer_->HasBytesToRead();
+      iovec peek_iov[20];
+      int iovs_peeked = sequencer_->GetReadableRegions(peek_iov, 20);
+      if (has_bytes) {
+        ASSERT_LT(0, iovs_peeked);
+      } else {
+        ASSERT_EQ(0, iovs_peeked);
+      }
+      int total_bytes_to_peek = arraysize(buffer);
+      for (int i = 0; i < iovs_peeked; ++i) {
+        int bytes_to_peek = min<int>(peek_iov[i].iov_len, total_bytes_to_peek);
+        peeked_.append(static_cast<char*>(peek_iov[i].iov_base), bytes_to_peek);
+        total_bytes_to_peek -= bytes_to_peek;
+        if (total_bytes_to_peek == 0) {
+          break;
+        }
+      }
+      int bytes_read = sequencer_->Readv(iov, 2);
+      output_.append(buffer, bytes_read);
+      ASSERT_EQ(output_.size(), peeked_.size());
+    }
+  }
+  EXPECT_EQ(0, strcmp(kPayload, output_.data()));
+  EXPECT_EQ(0, strcmp(kPayload, peeked_.data()));
 }
 
 // Same as above, just using a different method for reading.

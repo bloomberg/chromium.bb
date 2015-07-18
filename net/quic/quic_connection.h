@@ -95,18 +95,16 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
  public:
   virtual ~QuicConnectionVisitorInterface() {}
 
-  // A simple visitor interface for dealing with data frames.
-  virtual void OnStreamFrames(const std::vector<QuicStreamFrame>& frames) = 0;
+  // A simple visitor interface for dealing with a data frame.
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) = 0;
 
-  // The session should process all WINDOW_UPDATE frames, adjusting both stream
+  // The session should process the WINDOW_UPDATE frame, adjusting both stream
   // and connection level flow control windows.
-  virtual void OnWindowUpdateFrames(
-      const std::vector<QuicWindowUpdateFrame>& frames) = 0;
+  virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) = 0;
 
-  // BLOCKED frames tell us that the peer believes it is flow control blocked on
-  // a specified stream. If the session at this end disagrees, something has
-  // gone wrong with our flow control accounting.
-  virtual void OnBlockedFrames(const std::vector<QuicBlockedFrame>& frames) = 0;
+  // A BLOCKED frame indicates the peer is flow control blocked
+  // on a specified stream.
+  virtual void OnBlockedFrame(const QuicBlockedFrame& frame) = 0;
 
   // Called when the stream is reset by the peer.
   virtual void OnRstStream(const QuicRstStreamFrame& frame) = 0;
@@ -787,6 +785,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   std::vector<QuicBlockedFrame> last_blocked_frames_;
   std::vector<QuicPingFrame> last_ping_frames_;
   std::vector<QuicConnectionCloseFrame> last_close_frames_;
+  bool should_last_packet_instigate_acks_;
 
   // Track some peer state so we can do less bookkeeping
   // Largest sequence sent by the peer which had an ack frame (latest ack info).

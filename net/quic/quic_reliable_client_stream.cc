@@ -110,7 +110,7 @@ void QuicReliableClientStream::OnError(int error) {
 bool QuicReliableClientStream::CanWrite(const CompletionCallback& callback) {
   bool can_write =  session()->connection()->CanWrite(HAS_RETRANSMITTABLE_DATA);
   if (!can_write) {
-    session()->MarkWriteBlocked(id(), EffectivePriority());
+    session()->MarkConnectionLevelWriteBlocked(id(), EffectivePriority());
     DCHECK(callback_.is_null());
     callback_ = callback;
   }

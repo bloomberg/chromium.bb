@@ -352,7 +352,7 @@ void ReliableQuicStream::MaybeSendBlocked() {
   // WINDOW_UPDATE arrives.
   if (connection_flow_controller_->IsBlocked() &&
       !flow_controller_.IsBlocked()) {
-    session_->MarkWriteBlocked(id(), EffectivePriority());
+    session_->MarkConnectionLevelWriteBlocked(id(), EffectivePriority());
   }
 }
 
@@ -411,10 +411,10 @@ QuicConsumedData ReliableQuicStream::WritevData(
       }
       CloseWriteSide();
     } else if (fin && !consumed_data.fin_consumed) {
-      session_->MarkWriteBlocked(id(), EffectivePriority());
+      session_->MarkConnectionLevelWriteBlocked(id(), EffectivePriority());
     }
   } else {
-    session_->MarkWriteBlocked(id(), EffectivePriority());
+    session_->MarkConnectionLevelWriteBlocked(id(), EffectivePriority());
   }
   return consumed_data;
 }

@@ -115,14 +115,16 @@ StrikeRegister::~StrikeRegister() { delete[] internal_nodes_; }
 void StrikeRegister::Reset() {
   // Thread a free list through all of the internal nodes.
   internal_node_free_head_ = 0;
-  for (unsigned i = 0; i < max_entries_ - 1; i++)
+  for (unsigned i = 0; i < max_entries_ - 1; i++) {
     internal_nodes_[i].SetNextPtr(i + 1);
+  }
   internal_nodes_[max_entries_ - 1].SetNextPtr(kNil);
 
   // Also thread a free list through the external nodes.
   external_node_free_head_ = 0;
-  for (unsigned i = 0; i < max_entries_ - 1; i++)
+  for (unsigned i = 0; i < max_entries_ - 1; i++) {
     external_node_next_ptr(i) = i + 1;
+  }
   external_node_next_ptr(max_entries_ - 1) = kNil;
 
   // This is the root of the tree.
@@ -304,7 +306,7 @@ void StrikeRegister::Validate() {
 
   if (internal_node_head_ != kNil &&
       ((internal_node_head_ >> 8) & kExternalFlag) == 0) {
-    vector<pair<unsigned, bool> > bits;
+    vector<pair<unsigned, bool>> bits;
     ValidateTree(internal_node_head_ >> 8, -1, bits, free_internal_nodes,
                  free_external_nodes, &used_internal_nodes,
                  &used_external_nodes);
@@ -441,14 +443,13 @@ void StrikeRegister::FreeInternalNode(uint32 index) {
   internal_node_free_head_ = index;
 }
 
-void StrikeRegister::ValidateTree(
-    uint32 internal_node,
-    int last_bit,
-    const vector<pair<unsigned, bool> >& bits,
-    const set<uint32>& free_internal_nodes,
-    const set<uint32>& free_external_nodes,
-    set<uint32>* used_internal_nodes,
-    set<uint32>* used_external_nodes) {
+void StrikeRegister::ValidateTree(uint32 internal_node,
+                                  int last_bit,
+                                  const vector<pair<unsigned, bool>>& bits,
+                                  const set<uint32>& free_internal_nodes,
+                                  const set<uint32>& free_external_nodes,
+                                  set<uint32>* used_internal_nodes,
+                                  set<uint32>* used_external_nodes) {
   CHECK_LT(internal_node, max_entries_);
   const InternalNode* i = &internal_nodes_[internal_node];
   unsigned bit = 0;
@@ -505,7 +506,7 @@ void StrikeRegister::ValidateTree(
       }
     } else {
       uint32 inter = i->child(child);
-      vector<pair<unsigned, bool> > new_bits(bits);
+      vector<pair<unsigned, bool>> new_bits(bits);
       new_bits.push_back(pair<unsigned, bool>(bit, child != 0));
       CHECK_EQ(free_internal_nodes.count(inter), 0u);
       CHECK_EQ(used_internal_nodes->count(inter), 0u);

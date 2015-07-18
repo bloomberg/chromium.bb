@@ -49,8 +49,8 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
       helper_(CreateQuicConnectionHelper()),
       initialized_(false),
       supported_versions_(supported_versions),
-      weak_factory_(this) {
-}
+      initial_max_packet_length_(0),
+      weak_factory_(this) {}
 
 QuicSimpleClient::~QuicSimpleClient() {
   if (connected()) {
@@ -168,6 +168,9 @@ void QuicSimpleClient::StartConnect() {
                                    supported_versions_);
   session_.reset(CreateQuicClientSession(config_, connection_, server_id_,
                                          &crypto_config_));
+  if (initial_max_packet_length_ != 0) {
+    session_->connection()->set_max_packet_length(initial_max_packet_length_);
+  }
   session_->Initialize();
   session_->CryptoConnect();
 }

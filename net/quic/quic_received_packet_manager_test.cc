@@ -212,7 +212,7 @@ class QuicReceivedPacketManagerTest : public ::testing::Test {
 };
 
 TEST_F(QuicReceivedPacketManagerTest, ReceivedPacketEntropyHash) {
-  vector<pair<QuicPacketSequenceNumber, QuicPacketEntropyHash> > entropies;
+  vector<pair<QuicPacketSequenceNumber, QuicPacketEntropyHash>> entropies;
   entropies.push_back(std::make_pair(1, 12));
   entropies.push_back(std::make_pair(7, 1));
   entropies.push_back(std::make_pair(2, 33));
@@ -254,7 +254,7 @@ TEST_F(QuicReceivedPacketManagerTest, EntropyHashAboveLargestObserved) {
 }
 
 TEST_F(QuicReceivedPacketManagerTest, SetCumulativeEntropyUpTo) {
-  vector<pair<QuicPacketSequenceNumber, QuicPacketEntropyHash> > entropies;
+  vector<pair<QuicPacketSequenceNumber, QuicPacketEntropyHash>> entropies;
   entropies.push_back(std::make_pair(1, 12));
   entropies.push_back(std::make_pair(2, 1));
   entropies.push_back(std::make_pair(3, 33));

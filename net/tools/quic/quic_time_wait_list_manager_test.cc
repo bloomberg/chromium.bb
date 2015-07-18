@@ -223,8 +223,7 @@ class ValidatePublicResetPacketPredicate
   QuicPacketSequenceNumber sequence_number_;
 };
 
-
-Matcher<const std::tr1::tuple<const char*, int> > PublicResetPacketEq(
+Matcher<const std::tr1::tuple<const char*, int>> PublicResetPacketEq(
     QuicConnectionId connection_id,
     QuicPacketSequenceNumber sequence_number) {
   return MakeMatcher(new ValidatePublicResetPacketPredicate(connection_id,

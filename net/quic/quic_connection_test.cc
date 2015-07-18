@@ -733,7 +733,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
   }
 
   void ProcessPacket(QuicPacketSequenceNumber number) {
-    EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
     ProcessDataPacket(number, 0, !kEntropyFlag);
   }
 
@@ -783,10 +783,9 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
   size_t ProcessFecProtectedPacket(QuicPacketSequenceNumber number,
                                    bool expect_revival, bool entropy_flag) {
     if (expect_revival) {
-      EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+      EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
     }
-    EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1).
-          RetiresOnSaturation();
+    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1).RetiresOnSaturation();
     return ProcessDataPacket(number, 1, entropy_flag);
   }
 
@@ -798,7 +797,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
                           bool entropy_flag,
                           QuicPacket* packet) {
     if (expect_revival) {
-      EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+      EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
     }
 
     // Construct the decrypted data packet so we can compute the correct
@@ -1073,7 +1072,7 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
   EXPECT_EQ(kMaxPacketSize, encrypted->length());
 
   framer_.set_version(version());
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
 
   EXPECT_EQ(kMaxPacketSize, connection_.max_packet_length());
@@ -1123,7 +1122,7 @@ TEST_P(QuicConnectionTest, DuplicatePacket) {
   EXPECT_TRUE(IsMissing(1));
 
   // Send packet 3 again, but do not set the expectation that
-  // the visitor OnStreamFrames() will be called.
+  // the visitor OnStreamFrame() will be called.
   ProcessDataPacket(3, 0, !kEntropyFlag);
   EXPECT_EQ(3u, outgoing_ack()->largest_observed);
   EXPECT_TRUE(IsMissing(2));
@@ -1264,7 +1263,6 @@ TEST_P(QuicConnectionTest, OutOfOrderReceiptCausesAckSend) {
 }
 
 TEST_P(QuicConnectionTest, OutOfOrderAckReceiptCausesNoAck) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_dont_ack_acks, true);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   SendStreamDataToPeer(1, "foo", 0, !kFin, nullptr);
@@ -1281,26 +1279,6 @@ TEST_P(QuicConnectionTest, OutOfOrderAckReceiptCausesNoAck) {
   ProcessAckPacket(1, &ack1);
   // Should not ack an ack filling a missing packet.
   EXPECT_EQ(2u, writer_->packets_write_attempts());
-}
-
-TEST_P(QuicConnectionTest, OutOfOrderAckReceiptCausesOneAck) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_dont_ack_acks, false);
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  SendStreamDataToPeer(1, "foo", 0, !kFin, nullptr);
-  SendStreamDataToPeer(1, "bar", 3, !kFin, nullptr);
-  EXPECT_EQ(2u, writer_->packets_write_attempts());
-
-  QuicAckFrame ack1 = InitAckFrame(1);
-  QuicAckFrame ack2 = InitAckFrame(2);
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  ProcessAckPacket(2, &ack2);
-  // Should ack immediately since we have missing packets.
-  EXPECT_EQ(3u, writer_->packets_write_attempts());
-
-  ProcessAckPacket(1, &ack1);
-  // Should not ack an ack filling a missing packet.
-  EXPECT_EQ(3u, writer_->packets_write_attempts());
 }
 
 TEST_P(QuicConnectionTest, AckReceiptCausesAckSend) {
@@ -2157,7 +2135,7 @@ TEST_P(QuicConnectionTest, FramePackingFEC) {
 TEST_P(QuicConnectionTest, FramePackingAckResponse) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   // Process a data packet to queue up a pending ack.
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   ProcessDataPacket(1, 1, kEntropyFlag);
 
   EXPECT_CALL(visitor_, OnCanWrite()).WillOnce(DoAll(
@@ -2979,12 +2957,12 @@ TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
   connection_.SetDecrypter(ENCRYPTION_INITIAL, new StrictTaggingDecrypter(tag));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(2);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(2);
   ProcessDataPacketAtLevel(2, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 
   // Finally, process a third packet and note that we do not reprocess the
   // buffered packet.
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   ProcessDataPacketAtLevel(3, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 }
 
@@ -3011,12 +2989,12 @@ TEST_P(QuicConnectionTest, Buffer100NonDecryptablePackets) {
   connection_.SetDecrypter(ENCRYPTION_INITIAL, new StrictTaggingDecrypter(tag));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(101);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(101);
   ProcessDataPacketAtLevel(101, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 
   // Finally, process a third packet and note that we do not reprocess the
   // buffered packet.
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   ProcessDataPacketAtLevel(102, 0, kEntropyFlag, ENCRYPTION_INITIAL);
 }
 
@@ -3646,7 +3624,7 @@ TEST_P(QuicConnectionTest, SendDelayedAck) {
 
   // The same as ProcessPacket(1) except that ENCRYPTION_INITIAL is used
   // instead of ENCRYPTION_NONE.
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   ProcessDataPacketAtLevel(1, 0, !kEntropyFlag, ENCRYPTION_INITIAL);
 
   // Check if delayed ack timer is running for the expected interval.
@@ -3878,7 +3856,7 @@ TEST_P(QuicConnectionTest, WindowUpdate) {
   QuicWindowUpdateFrame window_update;
   window_update.stream_id = 3;
   window_update.byte_offset = 1234;
-  EXPECT_CALL(visitor_, OnWindowUpdateFrames(_));
+  EXPECT_CALL(visitor_, OnWindowUpdateFrame(_));
   ProcessFramePacket(QuicFrame(&window_update));
 }
 
@@ -3887,7 +3865,7 @@ TEST_P(QuicConnectionTest, Blocked) {
 
   QuicBlockedFrame blocked;
   blocked.stream_id = 3;
-  EXPECT_CALL(visitor_, OnBlockedFrames(_));
+  EXPECT_CALL(visitor_, OnBlockedFrame(_));
   ProcessFramePacket(QuicFrame(&blocked));
 }
 
@@ -3908,7 +3886,7 @@ TEST_P(QuicConnectionTest, MissingPacketsBeforeLeastUnacked) {
 }
 
 TEST_P(QuicConnectionTest, ReceivedEntropyHashCalculation) {
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(AtLeast(1));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessDataPacket(1, 1, kEntropyFlag);
   ProcessDataPacket(4, 1, kEntropyFlag);
@@ -3919,7 +3897,7 @@ TEST_P(QuicConnectionTest, ReceivedEntropyHashCalculation) {
 
 TEST_P(QuicConnectionTest, ReceivedEntropyHashCalculationHalfFEC) {
   // FEC packets should not change the entropy hash calculation.
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(AtLeast(1));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessDataPacket(1, 1, kEntropyFlag);
   ProcessFecPacket(4, 1, false, kEntropyFlag, nullptr);
@@ -3929,7 +3907,7 @@ TEST_P(QuicConnectionTest, ReceivedEntropyHashCalculationHalfFEC) {
 }
 
 TEST_P(QuicConnectionTest, UpdateEntropyForReceivedPackets) {
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(AtLeast(1));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessDataPacket(1, 1, kEntropyFlag);
   ProcessDataPacket(5, 1, kEntropyFlag);
@@ -3950,7 +3928,7 @@ TEST_P(QuicConnectionTest, UpdateEntropyForReceivedPackets) {
 }
 
 TEST_P(QuicConnectionTest, UpdateEntropyHashUptoCurrentPacket) {
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(AtLeast(1));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessDataPacket(1, 1, kEntropyFlag);
   ProcessDataPacket(5, 1, !kEntropyFlag);
@@ -3971,7 +3949,7 @@ TEST_P(QuicConnectionTest, UpdateEntropyHashUptoCurrentPacket) {
 }
 
 TEST_P(QuicConnectionTest, EntropyCalculationForTruncatedAck) {
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(AtLeast(1));
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   QuicPacketEntropyHash entropy[51];
   entropy[0] = 0;
@@ -4123,7 +4101,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   char buffer[kMaxPacketSize];
   encrypted.reset(framer_.EncryptPayload(ENCRYPTION_NONE, 12, *packet, buffer,
                                          kMaxPacketSize));
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
 
@@ -4260,7 +4238,7 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
       ENCRYPTION_NONE, 1, *packet, buffer, kMaxPacketSize));
 
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, true));
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
@@ -4623,7 +4601,7 @@ TEST_P(QuicConnectionTest, ControlFramesInstigateAcks) {
   QuicWindowUpdateFrame window_update;
   window_update.stream_id = 3;
   window_update.byte_offset = 1234;
-  EXPECT_CALL(visitor_, OnWindowUpdateFrames(_));
+  EXPECT_CALL(visitor_, OnWindowUpdateFrame(_));
   ProcessFramePacket(QuicFrame(&window_update));
 
   // Ensure that this has caused the ACK alarm to be set.
@@ -4634,7 +4612,7 @@ TEST_P(QuicConnectionTest, ControlFramesInstigateAcks) {
   ack_alarm->Cancel();
   QuicBlockedFrame blocked;
   blocked.stream_id = 3;
-  EXPECT_CALL(visitor_, OnBlockedFrames(_));
+  EXPECT_CALL(visitor_, OnBlockedFrame(_));
   ProcessFramePacket(QuicFrame(&blocked));
   EXPECT_TRUE(ack_alarm->IsSet());
 }

@@ -41,19 +41,11 @@ QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
                        const QuicVersionVector& supported_versions,
                        EpollServer* epoll_server)
-    : server_address_(server_address),
-      server_id_(server_id),
-      local_port_(0),
-      epoll_server_(epoll_server),
-      fd_(-1),
-      helper_(CreateQuicConnectionHelper()),
-      initialized_(false),
-      packets_dropped_(0),
-      overflow_supported_(false),
-      supported_versions_(supported_versions),
-      store_response_(false),
-      latest_response_code_(-1) {
-}
+    : QuicClient(server_address,
+                 server_id,
+                 supported_versions,
+                 QuicConfig(),
+                 epoll_server) {}
 
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
@@ -72,8 +64,8 @@ QuicClient::QuicClient(IPEndPoint server_address,
       overflow_supported_(false),
       supported_versions_(supported_versions),
       store_response_(false),
-      latest_response_code_(-1) {
-}
+      latest_response_code_(-1),
+      initial_max_packet_length_(0) {}
 
 QuicClient::~QuicClient() {
   if (connected()) {
@@ -218,6 +210,9 @@ void QuicClient::StartConnect() {
                          /* owns_writer= */ false, Perspective::IS_CLIENT,
                          server_id_.is_https(), supported_versions_),
       server_id_, &crypto_config_));
+  if (initial_max_packet_length_ != 0) {
+    session_->connection()->set_max_packet_length(initial_max_packet_length_);
+  }
 
   // Reset |writer_| after |session_| so that the old writer outlives the old
   // session.

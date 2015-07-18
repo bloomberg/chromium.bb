@@ -255,9 +255,7 @@ QuicRstStreamErrorCode AdjustErrorForVersion(
 }
 
 QuicRstStreamFrame::QuicRstStreamFrame()
-    : stream_id(0),
-      error_code(QUIC_STREAM_NO_ERROR) {
-}
+    : stream_id(0), error_code(QUIC_STREAM_NO_ERROR), byte_offset(0) {}
 
 QuicRstStreamFrame::QuicRstStreamFrame(QuicStreamId stream_id,
                                        QuicRstStreamErrorCode error_code,

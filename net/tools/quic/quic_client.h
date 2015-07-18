@@ -201,6 +201,12 @@ class QuicClient : public EpollCallbackInterface,
   const std::string& latest_response_headers() const;
   const std::string& latest_response_body() const;
 
+  // Change the initial maximum packet size of the connection.  Has to be called
+  // before Connect()/StartConnect() in order to have any effect.
+  void set_initial_max_packet_length(QuicByteCount initial_max_packet_length) {
+    initial_max_packet_length_ = initial_max_packet_length;
+  }
+
  protected:
   virtual QuicConnectionId GenerateConnectionId();
   virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
@@ -297,6 +303,10 @@ class QuicClient : public EpollCallbackInterface,
   std::string latest_response_headers_;
   // Body of most recent response.
   std::string latest_response_body_;
+
+  // The initial value of maximum packet size of the connection.  If set to
+  // zero, the default is used.
+  QuicByteCount initial_max_packet_length_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

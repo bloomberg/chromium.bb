@@ -137,7 +137,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   void CancelRequest(StreamRequest* request);
 
   // QuicSession methods:
-  void OnStreamFrames(const std::vector<QuicStreamFrame>& frames) override;
+  void OnStreamFrame(const QuicStreamFrame& frame) override;
   QuicReliableClientStream* CreateOutgoingDynamicStream() override;
   QuicCryptoClientStream* GetCryptoStream() override;
   void CloseStream(QuicStreamId stream_id) override;

@@ -60,12 +60,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual void Initialize();
 
   // QuicConnectionVisitorInterface methods:
-  void OnStreamFrames(const std::vector<QuicStreamFrame>& frames) override;
+  void OnStreamFrame(const QuicStreamFrame& frame) override;
   void OnRstStream(const QuicRstStreamFrame& frame) override;
   void OnGoAway(const QuicGoAwayFrame& frame) override;
-  void OnWindowUpdateFrames(
-      const std::vector<QuicWindowUpdateFrame>& frames) override;
-  void OnBlockedFrames(const std::vector<QuicBlockedFrame>& frames) override;
+  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
+  void OnBlockedFrame(const QuicBlockedFrame& frame) override;
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
   void OnWriteBlocked() override {}
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
@@ -157,7 +156,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // streams.
   virtual size_t GetNumOpenStreams() const;
 
-  void MarkWriteBlocked(QuicStreamId id, QuicPriority priority);
+  // Add the stream to the session's write-blocked list because it is blocked by
+  // connection-level flow control but not by its own stream-level flow control.
+  // The stream will be given a chance to write when a connection-level
+  // WINDOW_UPDATE arrives.
+  void MarkConnectionLevelWriteBlocked(QuicStreamId id, QuicPriority priority);
 
   // Returns true if the session has data to be sent, either queued in the
   // connection, or in a write-blocked stream.

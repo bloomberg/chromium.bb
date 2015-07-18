@@ -276,11 +276,9 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MockConnectionVisitor();
   ~MockConnectionVisitor() override;
 
-  MOCK_METHOD1(OnStreamFrames, void(const std::vector<QuicStreamFrame>& frame));
-  MOCK_METHOD1(OnWindowUpdateFrames,
-               void(const std::vector<QuicWindowUpdateFrame>& frame));
-  MOCK_METHOD1(OnBlockedFrames,
-               void(const std::vector<QuicBlockedFrame>& frame));
+  MOCK_METHOD1(OnStreamFrame, void(const QuicStreamFrame& frame));
+  MOCK_METHOD1(OnWindowUpdateFrame, void(const QuicWindowUpdateFrame& frame));
+  MOCK_METHOD1(OnBlockedFrame, void(const QuicBlockedFrame& frame));
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnGoAway, void(const QuicGoAwayFrame& frame));
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));

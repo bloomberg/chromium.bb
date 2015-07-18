@@ -123,9 +123,7 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
   QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
-  vector<QuicStreamFrame> frames;
-  frames.push_back(data1);
-  session_->OnStreamFrames(frames);
+  session_->OnStreamFrame(data1);
   EXPECT_EQ(1u, session_->GetNumOpenStreams());
 
   // Send a reset (and expect the peer to send a RST in response).
@@ -136,7 +134,7 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
   // Send the same two bytes of payload in a new packet.
-  visitor_->OnStreamFrames(frames);
+  visitor_->OnStreamFrame(data1);
 
   // The stream should not be re-opened.
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
@@ -153,9 +151,7 @@ TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
 
   // Send two bytes of payload.
   QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
-  vector<QuicStreamFrame> frames;
-  frames.push_back(data1);
-  visitor_->OnStreamFrames(frames);
+  visitor_->OnStreamFrame(data1);
 
   // The stream should never be opened, now that the reset is received.
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
@@ -163,13 +159,13 @@ TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
 }
 
 TEST_P(QuicServerSessionTest, AcceptClosedStream) {
-  vector<QuicStreamFrame> frames;
   // Send (empty) compressed headers followed by two bytes of data.
-  frames.push_back(QuicStreamFrame(kClientDataStreamId1, false, 0,
-                                   StringPiece("\1\0\0\0\0\0\0\0HT")));
-  frames.push_back(QuicStreamFrame(kClientDataStreamId2, false, 0,
-                                   StringPiece("\2\0\0\0\0\0\0\0HT")));
-  visitor_->OnStreamFrames(frames);
+  QuicStreamFrame frame1(kClientDataStreamId1, false, 0,
+                         StringPiece("\1\0\0\0\0\0\0\0HT"));
+  QuicStreamFrame frame2(kClientDataStreamId2, false, 0,
+                         StringPiece("\2\0\0\0\0\0\0\0HT"));
+  visitor_->OnStreamFrame(frame1);
+  visitor_->OnStreamFrame(frame2);
   EXPECT_EQ(2u, session_->GetNumOpenStreams());
 
   // Send a reset (and expect the peer to send a RST in response).
@@ -181,12 +177,10 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
   // If we were tracking, we'd probably want to reject this because it's data
   // past the reset point of stream 3.  As it's a closed stream we just drop the
   // data on the floor, but accept the packet because it has data for stream 5.
-  frames.clear();
-  frames.push_back(
-      QuicStreamFrame(kClientDataStreamId1, false, 2, StringPiece("TP")));
-  frames.push_back(
-      QuicStreamFrame(kClientDataStreamId2, false, 2, StringPiece("TP")));
-  visitor_->OnStreamFrames(frames);
+  QuicStreamFrame frame3(kClientDataStreamId1, false, 2, StringPiece("TP"));
+  QuicStreamFrame frame4(kClientDataStreamId2, false, 2, StringPiece("TP"));
+  visitor_->OnStreamFrame(frame3);
+  visitor_->OnStreamFrame(frame4);
   // The stream should never be opened, now that the reset is received.
   EXPECT_EQ(1u, session_->GetNumOpenStreams());
   EXPECT_TRUE(connection_->connected());
@@ -348,8 +342,8 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
       &bandwidth_recorder, max_bandwidth_estimate_kbytes_per_second,
       max_bandwidth_estimate_timestamp);
   // Queue up some pending data.
-  session_->MarkWriteBlocked(kCryptoStreamId,
-                             QuicWriteBlockedList::kHighestPriority);
+  session_->MarkConnectionLevelWriteBlocked(
+      kCryptoStreamId, QuicWriteBlockedList::kHighestPriority);
   EXPECT_TRUE(session_->HasDataToWrite());
 
   // There will be no update sent yet - not enough time has passed.

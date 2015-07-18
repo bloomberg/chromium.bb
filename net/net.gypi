@@ -1814,6 +1814,8 @@
       'tools/quic/quic_time_wait_list_manager_test.cc',
       'tools/quic/test_tools/http_message.cc',
       'tools/quic/test_tools/http_message.h',
+      'tools/quic/test_tools/limited_mtu_test_writer.cc',
+      'tools/quic/test_tools/limited_mtu_test_writer.h',
       'tools/quic/test_tools/mock_epoll_server.cc',
       'tools/quic/test_tools/mock_epoll_server.h',
       'tools/quic/test_tools/mock_quic_dispatcher.cc',

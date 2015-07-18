@@ -25,6 +25,19 @@ class ReliableQuicStream;
 // up to the next layer.
 class NET_EXPORT_PRIVATE QuicStreamSequencer {
  public:
+  // A contiguous segment received by a QUIC stream.
+  struct FrameData {
+    FrameData(QuicStreamOffset offset, std::string segment);
+
+    const QuicStreamOffset offset;
+    std::string segment;
+  };
+
+  // TODO(alyssar) use something better than strings.
+  // Maybe write new frames into a ring buffer, and keep track of consumed
+  // bytes, and gaps.
+  typedef std::list<FrameData> FrameList;
+
   explicit QuicStreamSequencer(ReliableQuicStream* quic_stream);
   virtual ~QuicStreamSequencer();
 
@@ -77,12 +90,19 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
  private:
   friend class test::QuicStreamSequencerPeer;
 
+  // Finds the place the frame should be inserted.  If an identical frame is
+  // present, stops on the identical frame.
+  FrameList::iterator FindInsertionPoint(const QuicStreamFrame& frame);
+
   // Returns true if |frame| contains data which overlaps buffered data
   // (indicating an invalid stream frame has been received).
-  bool FrameOverlapsBufferedData(const QuicStreamFrame& frame) const;
+  bool FrameOverlapsBufferedData(
+      const QuicStreamFrame& frame,
+      FrameList::const_iterator insertion_point) const;
 
   // Returns true if the sequencer has received this frame before.
-  bool IsDuplicate(const QuicStreamFrame& frame) const;
+  bool IsDuplicate(const QuicStreamFrame& frame,
+                   FrameList::const_iterator insertion_point) const;
 
   // Wait until we've seen 'offset' bytes, and then terminate the stream.
   void CloseStreamAtOffset(QuicStreamOffset offset);
@@ -101,15 +121,8 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // The last data consumed by the stream.
   QuicStreamOffset num_bytes_consumed_;
 
-  // TODO(alyssar) use something better than strings.
-  // TODO(rjshade): In future we may support retransmission of partial stream
-  // frames, in which case we will have to allow receipt of overlapping frames.
-  // Maybe write new frames into a ring buffer, and keep track of consumed
-  // bytes, and gaps.
-  typedef std::map<QuicStreamOffset, std::string> FrameMap;
-
-  // Stores buffered frames (maps from byte offset -> frame data as string).
-  FrameMap buffered_frames_;
+  // Stores buffered frames in offset order.
+  FrameList buffered_frames_;
 
   // The offset, if any, we got a stream termination for.  When this many bytes
   // have been processed, the sequencer will be closed.

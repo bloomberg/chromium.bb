@@ -35,8 +35,8 @@ class VisitorShim : public QuicConnectionVisitorInterface {
  public:
   explicit VisitorShim(QuicSession* session) : session_(session) {}
 
-  void OnStreamFrames(const vector<QuicStreamFrame>& frames) override {
-    session_->OnStreamFrames(frames);
+  void OnStreamFrame(const QuicStreamFrame& frame) override {
+    session_->OnStreamFrame(frame);
     session_->PostProcessAfterData();
   }
   void OnRstStream(const QuicRstStreamFrame& frame) override {
@@ -49,14 +49,13 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->PostProcessAfterData();
   }
 
-  void OnWindowUpdateFrames(
-      const vector<QuicWindowUpdateFrame>& frames) override {
-    session_->OnWindowUpdateFrames(frames);
+  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {
+    session_->OnWindowUpdateFrame(frame);
     session_->PostProcessAfterData();
   }
 
-  void OnBlockedFrames(const vector<QuicBlockedFrame>& frames) override {
-    session_->OnBlockedFrames(frames);
+  void OnBlockedFrame(const QuicBlockedFrame& frame) override {
+    session_->OnBlockedFrame(frame);
     session_->PostProcessAfterData();
   }
 
@@ -134,26 +133,21 @@ QuicSession::~QuicSession() {
          "final byte offset: " << locally_closed_streams_highest_offset_.size();
 }
 
-void QuicSession::OnStreamFrames(const vector<QuicStreamFrame>& frames) {
-  for (size_t i = 0; i < frames.size() && connection_->connected(); ++i) {
-    // TODO(rch) deal with the error case of stream id 0.
-    const QuicStreamFrame& frame = frames[i];
-    QuicStreamId stream_id = frame.stream_id;
-    ReliableQuicStream* stream = GetStream(stream_id);
-    if (!stream) {
-      // The stream no longer exists, but we may still be interested in the
-      // final stream byte offset sent by the peer. A frame with a FIN can give
-      // us this offset.
-      if (frame.fin) {
-        QuicStreamOffset final_byte_offset = frame.offset + frame.data.size();
-        UpdateFlowControlOnFinalReceivedByteOffset(stream_id,
-                                                   final_byte_offset);
-      }
-
-      continue;
+void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
+  // TODO(rch) deal with the error case of stream id 0.
+  QuicStreamId stream_id = frame.stream_id;
+  ReliableQuicStream* stream = GetStream(stream_id);
+  if (!stream) {
+    // The stream no longer exists, but we may still be interested in the
+    // final stream byte offset sent by the peer. A frame with a FIN can give
+    // us this offset.
+    if (frame.fin) {
+      QuicStreamOffset final_byte_offset = frame.offset + frame.data.size();
+      UpdateFlowControlOnFinalReceivedByteOffset(stream_id, final_byte_offset);
     }
-    stream->OnStreamFrame(frames[i]);
+    return;
   }
+  stream->OnStreamFrame(frame);
 }
 
 void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
@@ -202,46 +196,37 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
 void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
 }
 
-void QuicSession::OnWindowUpdateFrames(
-    const vector<QuicWindowUpdateFrame>& frames) {
-  bool connection_window_updated = false;
-  for (size_t i = 0; i < frames.size(); ++i) {
-    // Stream may be closed by the time we receive a WINDOW_UPDATE, so we can't
-    // assume that it still exists.
-    QuicStreamId stream_id = frames[i].stream_id;
-    if (stream_id == kConnectionLevelId) {
-      // This is a window update that applies to the connection, rather than an
-      // individual stream.
-      DVLOG(1) << ENDPOINT
-               << "Received connection level flow control window update with "
-                  "byte offset: " << frames[i].byte_offset;
-      if (flow_controller_.UpdateSendWindowOffset(frames[i].byte_offset)) {
-        connection_window_updated = true;
-      }
-      continue;
+void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
+  // Stream may be closed by the time we receive a WINDOW_UPDATE, so we can't
+  // assume that it still exists.
+  QuicStreamId stream_id = frame.stream_id;
+  if (stream_id == kConnectionLevelId) {
+    // This is a window update that applies to the connection, rather than an
+    // individual stream.
+    DVLOG(1) << ENDPOINT << "Received connection level flow control window "
+                            "update with byte offset: "
+             << frame.byte_offset;
+    if (flow_controller_.UpdateSendWindowOffset(frame.byte_offset)) {
+      // Connection level flow control window has increased, so blocked streams
+      // can write again.
+      // TODO(ianswett): I suspect this can be delayed until the packet
+      // processing is complete.
+      OnCanWrite();
     }
-
-    ReliableQuicStream* stream = GetStream(stream_id);
-    if (stream) {
-      stream->OnWindowUpdateFrame(frames[i]);
-    }
+    return;
   }
-
-  // Connection level flow control window has increased, so blocked streams can
-  // write again.
-  if (connection_window_updated) {
-    OnCanWrite();
+  ReliableQuicStream* stream = GetStream(stream_id);
+  if (stream) {
+    stream->OnWindowUpdateFrame(frame);
   }
 }
 
-void QuicSession::OnBlockedFrames(const vector<QuicBlockedFrame>& frames) {
-  for (size_t i = 0; i < frames.size(); ++i) {
-    // TODO(rjshade): Compare our flow control receive windows for specified
-    //                streams: if we have a large window then maybe something
-    //                had gone wrong with the flow control accounting.
-    DVLOG(1) << ENDPOINT << "Received BLOCKED frame with stream id: "
-             << frames[i].stream_id;
-  }
+void QuicSession::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  // TODO(rjshade): Compare our flow control receive windows for specified
+  //                streams: if we have a large window then maybe something
+  //                had gone wrong with the flow control accounting.
+  DVLOG(1) << ENDPOINT
+           << "Received BLOCKED frame with stream id: " << frame.stream_id;
 }
 
 void QuicSession::OnCanWrite() {
@@ -655,7 +640,8 @@ size_t QuicSession::GetNumOpenStreams() const {
          draining_streams_.size();
 }
 
-void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
+void QuicSession::MarkConnectionLevelWriteBlocked(QuicStreamId id,
+                                                  QuicPriority priority) {
 #ifndef NDEBUG
   ReliableQuicStream* stream = GetStream(id);
   if (stream != nullptr) {

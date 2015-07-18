@@ -273,6 +273,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       last_packet_revived_(false),
       last_size_(0),
       last_decrypted_packet_level_(ENCRYPTION_NONE),
+      should_last_packet_instigate_acks_(false),
       largest_seen_packet_with_ack_(0),
       largest_seen_packet_with_stop_waiting_(0),
       max_undecryptable_packets_(0),
@@ -702,8 +703,14 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
     SendConnectionClose(QUIC_UNENCRYPTED_STREAM_DATA);
     return false;
   }
-  last_stream_frames_.push_back(frame);
-  return true;
+  if (FLAGS_quic_process_frames_inline) {
+    visitor_->OnStreamFrame(frame);
+    stats_.stream_bytes_received += frame.data.size();
+    should_last_packet_instigate_acks_ = true;
+  } else {
+    last_stream_frames_.push_back(frame);
+  }
+  return connected_;
 }
 
 bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
@@ -723,7 +730,22 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
-  last_ack_frames_.push_back(incoming_ack);
+  if (FLAGS_quic_process_frames_inline) {
+    ProcessAckFrame(incoming_ack);
+    if (incoming_ack.is_truncated) {
+      should_last_packet_instigate_acks_ = true;
+    }
+    QuicPacketSequenceNumber least_acked = GetLeastUnacked();
+    if (least_acked > 0 &&
+        (incoming_ack.missing_packets.empty() ||
+         least_acked > *incoming_ack.missing_packets.begin())) {
+      ++stop_waiting_count_;
+    } else {
+      stop_waiting_count_ = 0;
+    }
+  } else {
+    last_ack_frames_.push_back(incoming_ack);
+  }
   return connected_;
 }
 
@@ -774,7 +796,11 @@ bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPingFrame(frame);
   }
-  last_ping_frames_.push_back(frame);
+  if (FLAGS_quic_process_frames_inline) {
+    should_last_packet_instigate_acks_ = true;
+  } else {
+    last_ping_frames_.push_back(frame);
+  }
   return true;
 }
 
@@ -873,7 +899,12 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
   }
   DVLOG(1) << ENDPOINT << "Stream reset with error "
            << QuicUtils::StreamErrorToString(frame.error_code);
-  last_rst_frames_.push_back(frame);
+  if (FLAGS_quic_process_frames_inline) {
+    visitor_->OnRstStream(frame);
+    should_last_packet_instigate_acks_ = true;
+  } else {
+    last_rst_frames_.push_back(frame);
+  }
   return connected_;
 }
 
@@ -887,7 +918,11 @@ bool QuicConnection::OnConnectionCloseFrame(
            << " closed with error "
            << QuicUtils::ErrorToString(frame.error_code)
            << " " << frame.error_details;
-  last_close_frames_.push_back(frame);
+  if (FLAGS_quic_process_frames_inline) {
+    CloseConnection(frame.error_code, true);
+  } else {
+    last_close_frames_.push_back(frame);
+  }
   return connected_;
 }
 
@@ -899,7 +934,12 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   DVLOG(1) << ENDPOINT << "Go away received with error "
            << QuicUtils::ErrorToString(frame.error_code)
            << " and reason:" << frame.reason_phrase;
-  last_goaway_frames_.push_back(frame);
+  if (FLAGS_quic_process_frames_inline) {
+    visitor_->OnGoAway(frame);
+    should_last_packet_instigate_acks_ = true;
+  } else {
+    last_goaway_frames_.push_back(frame);
+  }
   return connected_;
 }
 
@@ -910,7 +950,12 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   }
   DVLOG(1) << ENDPOINT << "WindowUpdate received for stream: "
            << frame.stream_id << " with byte offset: " << frame.byte_offset;
-  last_window_update_frames_.push_back(frame);
+  if (FLAGS_quic_process_frames_inline) {
+    visitor_->OnWindowUpdateFrame(frame);
+    should_last_packet_instigate_acks_ = true;
+  } else {
+    last_window_update_frames_.push_back(frame);
+  }
   return connected_;
 }
 
@@ -921,7 +966,12 @@ bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   }
   DVLOG(1) << ENDPOINT << "Blocked frame received for stream: "
            << frame.stream_id;
-  last_blocked_frames_.push_back(frame);
+  if (FLAGS_quic_process_frames_inline) {
+    visitor_->OnBlockedFrame(frame);
+    should_last_packet_instigate_acks_ = true;
+  } else {
+    last_blocked_frames_.push_back(frame);
+  }
   return connected_;
 }
 
@@ -962,62 +1012,63 @@ void QuicConnection::OnPacketComplete() {
         last_size_, last_header_, time_of_last_received_packet_);
   }
 
-  if (!last_stream_frames_.empty()) {
-    visitor_->OnStreamFrames(last_stream_frames_);
-    if (!connected_) {
-      return;
+  if (!FLAGS_quic_process_frames_inline) {
+    for (const QuicStreamFrame& frame : last_stream_frames_) {
+      visitor_->OnStreamFrame(frame);
+      stats_.stream_bytes_received += frame.data.size();
+      if (!connected_) {
+        return;
+      }
     }
-  }
 
-  for (const QuicStreamFrame& stream_frame : last_stream_frames_) {
-    stats_.stream_bytes_received += stream_frame.data.size();
-  }
-  // Process window updates, blocked, stream resets, acks, then congestion
-  // feedback.
-  if (!last_window_update_frames_.empty()) {
-    visitor_->OnWindowUpdateFrames(last_window_update_frames_);
-    if (!connected_) {
+    // Process window updates, blocked, stream resets, acks, then stop waiting.
+    for (const QuicWindowUpdateFrame& frame : last_window_update_frames_) {
+      visitor_->OnWindowUpdateFrame(frame);
+      if (!connected_) {
+        return;
+      }
+    }
+    for (const QuicBlockedFrame& frame : last_blocked_frames_) {
+      visitor_->OnBlockedFrame(frame);
+      if (!connected_) {
+        return;
+      }
+    }
+    for (const QuicGoAwayFrame& frame : last_goaway_frames_) {
+      visitor_->OnGoAway(frame);
+      if (!connected_) {
+        return;
+      }
+    }
+    for (const QuicRstStreamFrame& frame : last_rst_frames_) {
+      visitor_->OnRstStream(frame);
+      if (!connected_) {
+        return;
+      }
+    }
+    for (const QuicAckFrame& frame : last_ack_frames_) {
+      ProcessAckFrame(frame);
+      if (!connected_) {
+        return;
+      }
+    }
+    if (!last_close_frames_.empty()) {
+      CloseConnection(last_close_frames_[0].error_code, true);
+      DCHECK(!connected_);
       return;
     }
   }
-  if (!last_blocked_frames_.empty()) {
-    visitor_->OnBlockedFrames(last_blocked_frames_);
+  // Continue to process stop waiting frames later, because the packet needs
+  // to be considered 'received' before the entropy can be updated.
+  for (const QuicStopWaitingFrame& frame : last_stop_waiting_frames_) {
+    ProcessStopWaitingFrame(frame);
     if (!connected_) {
       return;
     }
-  }
-  for (size_t i = 0; i < last_goaway_frames_.size(); ++i) {
-    visitor_->OnGoAway(last_goaway_frames_[i]);
-    if (!connected_) {
-      return;
-    }
-  }
-  for (size_t i = 0; i < last_rst_frames_.size(); ++i) {
-    visitor_->OnRstStream(last_rst_frames_[i]);
-    if (!connected_) {
-      return;
-    }
-  }
-  for (size_t i = 0; i < last_ack_frames_.size(); ++i) {
-    ProcessAckFrame(last_ack_frames_[i]);
-    if (!connected_) {
-      return;
-    }
-  }
-  for (size_t i = 0; i < last_stop_waiting_frames_.size(); ++i) {
-    ProcessStopWaitingFrame(last_stop_waiting_frames_[i]);
-    if (!connected_) {
-      return;
-    }
-  }
-  if (!last_close_frames_.empty()) {
-    CloseConnection(last_close_frames_[0].error_code, true);
-    DCHECK(!connected_);
-    return;
   }
 
   // If there are new missing packets to report, send an ack immediately.
-  if ((!FLAGS_quic_dont_ack_acks || ShouldLastPacketInstigateAck()) &&
+  if (ShouldLastPacketInstigateAck() &&
       received_packet_manager_.HasNewMissingPackets()) {
     ack_queued_ = true;
     ack_alarm_->Cancel();
@@ -1053,6 +1104,11 @@ void QuicConnection::MaybeQueueAck() {
 }
 
 void QuicConnection::ClearLastFrames() {
+  if (FLAGS_quic_process_frames_inline) {
+    should_last_packet_instigate_acks_ = false;
+    last_stop_waiting_frames_.clear();
+    return;
+  }
   last_stream_frames_.clear();
   last_ack_frames_.clear();
   last_stop_waiting_frames_.clear();
@@ -1095,17 +1151,19 @@ void QuicConnection::PopulateStopWaitingFrame(
 }
 
 bool QuicConnection::ShouldLastPacketInstigateAck() const {
-  if (!last_stream_frames_.empty() ||
-      !last_goaway_frames_.empty() ||
-      !last_rst_frames_.empty() ||
-      !last_window_update_frames_.empty() ||
-      !last_blocked_frames_.empty() ||
-      !last_ping_frames_.empty()) {
+  if (FLAGS_quic_process_frames_inline && should_last_packet_instigate_acks_) {
     return true;
   }
+  if (!FLAGS_quic_process_frames_inline) {
+    if (!last_stream_frames_.empty() || !last_goaway_frames_.empty() ||
+        !last_rst_frames_.empty() || !last_window_update_frames_.empty() ||
+        !last_blocked_frames_.empty() || !last_ping_frames_.empty()) {
+      return true;
+    }
 
-  if (!last_ack_frames_.empty() && last_ack_frames_.back().is_truncated) {
-    return true;
+    if (!last_ack_frames_.empty() && last_ack_frames_.back().is_truncated) {
+      return true;
+    }
   }
   // Always send an ack every 20 packets in order to allow the peer to discard
   // information from the SentPacketManager and provide an RTT measurement.
@@ -2246,7 +2304,7 @@ QuicConnection::ScopedRetransmissionScheduler::ScopedRetransmissionScheduler(
     QuicConnection* connection)
     : connection_(connection),
       already_delayed_(connection_->delay_setting_retransmission_alarm_) {
-  if (FLAGS_quic_delay_retransmission_alarm) {
+  if (!FLAGS_quic_delay_retransmission_alarm) {
     return;
   }
   connection_->delay_setting_retransmission_alarm_ = true;
@@ -2254,7 +2312,7 @@ QuicConnection::ScopedRetransmissionScheduler::ScopedRetransmissionScheduler(
 
 QuicConnection::ScopedRetransmissionScheduler::
     ~ScopedRetransmissionScheduler() {
-  if (FLAGS_quic_delay_retransmission_alarm || already_delayed_) {
+  if (!FLAGS_quic_delay_retransmission_alarm || already_delayed_) {
     return;
   }
   connection_->delay_setting_retransmission_alarm_ = false;
