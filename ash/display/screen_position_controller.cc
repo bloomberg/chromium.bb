@@ -14,8 +14,10 @@
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -76,7 +78,7 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
   *point = point_in_root;
 
 #if defined(USE_X11) || defined(USE_OZONE)
-  if (!root_window->ContainsPointInRoot(point_in_root)) {
+  if (!root_window->GetHost()->GetBounds().Contains(*point)) {
     // This conversion is necessary to deal with X's passive input
     // grab while dragging window. For example, if we have two
     // displays, say 1000x1000 (primary) and 500x500 (extended one

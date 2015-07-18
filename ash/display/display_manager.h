@@ -375,6 +375,14 @@ private:
   // Creates a display object from the DisplayInfo for |display_id|.
   gfx::Display CreateDisplayFromDisplayInfoById(int64 display_id);
 
+  // Creates a display object from the DisplayInfo for |display_id| for
+  // mirroring. The size of the display will be scaled using |scale|
+  // with the offset using |origin|.
+  gfx::Display CreateMirroringDisplayFromDisplayInfoById(
+      int64 display_id,
+      const gfx::Point& origin,
+      float scale);
+
   // Updates the bounds of all non-primary displays in |display_list| and
   // append the indices of displays updated to |updated_indices|.
   // When the size of |display_list| equals 2, the bounds are updated using

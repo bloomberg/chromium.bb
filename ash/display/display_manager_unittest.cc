@@ -1142,6 +1142,43 @@ TEST_F(DisplayManagerTest, Use125DSFRorUIScaling) {
   DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 
+TEST_F(DisplayManagerTest, UIScaleInUnifiedMode) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  UpdateDisplay("200x200, 400x400");
+
+  int64 unified_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  EXPECT_EQ("800x400",
+            Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
+  DisplayMode active_mode =
+      display_manager->GetActiveModeForDisplayId(unified_id);
+  EXPECT_EQ(1.0f, active_mode.ui_scale);
+  EXPECT_EQ("800x400", active_mode.size.ToString());
+
+  EXPECT_TRUE(display_manager->SetDisplayUIScale(unified_id, 0.5f));
+  EXPECT_EQ("400x200",
+            Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
+  active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
+  EXPECT_EQ(0.5f, active_mode.ui_scale);
+  EXPECT_EQ("800x400", active_mode.size.ToString());
+
+  // UI scale will not persist in unified desktop mode.
+  UpdateDisplay("200x200, 600x600");
+  EXPECT_EQ("1200x600",
+            Shell::GetScreen()->GetPrimaryDisplay().size().ToString());
+  active_mode = display_manager->GetActiveModeForDisplayId(unified_id);
+  EXPECT_EQ(1.0f, active_mode.ui_scale);
+  EXPECT_EQ("1200x600", active_mode.size.ToString());
+}
+
 #if defined(OS_WIN)
 // TODO(scottmg): RootWindow doesn't get resized on Windows
 // Ash. http://crbug.com/247916.
@@ -1508,13 +1545,15 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   // Defaults to the unified desktop.
   gfx::Screen* screen =
       gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
-  EXPECT_EQ("700x500", screen->GetPrimaryDisplay().size().ToString());
+  // The 1st display is scaled so that it has the same height as 2nd display.
+  // 300 * 500 / 200  + 400 = 1150.
+  EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
 
   display_manager()->SetMirrorMode(true);
   EXPECT_EQ("300x200", screen->GetPrimaryDisplay().size().ToString());
 
   display_manager()->SetMirrorMode(false);
-  EXPECT_EQ("700x500", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
 
   // Switch to single desktop.
   UpdateDisplay("500x300");
@@ -1522,7 +1561,8 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
 
   // Switch to unified desktop.
   UpdateDisplay("500x300,400x500");
-  EXPECT_EQ("900x500", screen->GetPrimaryDisplay().size().ToString());
+  // 500 * 500 / 300 + 400 ~= 1233.
+  EXPECT_EQ("1233x500", screen->GetPrimaryDisplay().size().ToString());
 
   // Switch back to extended desktop.
   display_manager()->SetDefaultMultiDisplayMode(DisplayManager::EXTENDED);
@@ -1560,13 +1600,13 @@ TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
   gfx::Screen* screen =
       gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
   const gfx::Display& display = screen->GetPrimaryDisplay();
-  EXPECT_EQ("700x500", display.size().ToString());
+  EXPECT_EQ("1150x500", display.size().ToString());
   display_manager()->SetDisplayRotation(display.id(), gfx::Display::ROTATE_90,
                                         gfx::Display::ROTATION_SOURCE_ACTIVE);
-  EXPECT_EQ("500x700", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("500x1150", screen->GetPrimaryDisplay().size().ToString());
   display_manager()->SetDisplayRotation(display.id(), gfx::Display::ROTATE_0,
                                         gfx::Display::ROTATION_SOURCE_ACTIVE);
-  EXPECT_EQ("700x500", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
 
   UpdateDisplay("300x200");
   EXPECT_EQ("300x200", screen->GetPrimaryDisplay().size().ToString());

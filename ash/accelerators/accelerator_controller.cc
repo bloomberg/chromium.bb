@@ -301,9 +301,7 @@ void HandleScaleReset() {
 }
 
 bool CanHandleScaleUI() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  int64 display_id = display_manager->GetDisplayIdForUIScaling();
-  return display_id != gfx::Display::kInvalidDisplayID;
+  return Shell::GetInstance()->display_manager()->IsDisplayUIScalingEnabled();
 }
 
 void HandleScaleUI(bool up) {

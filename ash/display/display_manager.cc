@@ -361,10 +361,9 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
 
 bool DisplayManager::SetDisplayUIScale(int64 display_id,
                                        float ui_scale) {
-  if (!IsDisplayUIScalingEnabled() ||
-      gfx::Display::InternalDisplayId() != display_id) {
+  if (GetDisplayIdForUIScaling() != display_id)
     return false;
-  }
+
   bool found = false;
   // TODO(mukai): merge this implementation into SetDisplayMode().
   DisplayInfoList display_info_list;
@@ -414,7 +413,7 @@ void DisplayManager::SetDisplayResolution(int64 display_id,
 
 bool DisplayManager::SetDisplayMode(int64 display_id,
                                     const DisplayMode& display_mode) {
-  if (IsInternalDisplayId(display_id)) {
+  if (GetDisplayIdForUIScaling() == display_id) {
     SetDisplayUIScale(display_id, display_mode.ui_scale);
     return false;
   }
@@ -502,7 +501,7 @@ DisplayMode DisplayManager::GetActiveModeForDisplayId(int64 display_id) const {
   const DisplayInfo& info = GetDisplayInfo(display_id);
   const std::vector<DisplayMode>& display_modes = info.display_modes();
 
-  if (IsInternalDisplayId(display_id)) {
+  if (GetDisplayIdForUIScaling() == display_id) {
     for (size_t i = 0; i < display_modes.size(); ++i) {
       if (info.configured_ui_scale() == display_modes[i].ui_scale)
         return display_modes[i];
@@ -955,12 +954,9 @@ std::string DisplayManager::GetDisplayNameForId(int64 id) {
 }
 
 int64 DisplayManager::GetDisplayIdForUIScaling() const {
-  // UI Scaling is effective only on internal display.
-  int64 display_id = gfx::Display::InternalDisplayId();
-#if defined(OS_WIN)
-  display_id = first_display_id();
-#endif
-  return display_id;
+  // UI Scaling is effective on internal display or on unified desktop.
+  return IsInUnifiedMode() ? kUnifiedDisplayId
+                           : gfx::Display::InternalDisplayId();
 }
 
 void DisplayManager::SetMirrorMode(bool mirror) {
@@ -974,22 +970,6 @@ void DisplayManager::SetMirrorMode(bool mirror) {
                : ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
     Shell::GetInstance()->display_configurator()->SetDisplayMode(new_state);
     return;
-  }
-
-  // This is fallback path to emulate mirroroing on desktop and unit test.
-  DisplayInfoList display_info_list;
-  for (DisplayList::const_iterator iter = active_display_list_.begin();
-       (display_info_list.size() < 2 && iter != active_display_list_.end());
-       ++iter) {
-    if (iter->id() == kUnifiedDisplayId)
-      continue;
-    display_info_list.push_back(GetDisplayInfo(iter->id()));
-  }
-  for (auto iter = software_mirroring_display_list_.begin();
-       (display_info_list.size() < 2 &&
-        iter != software_mirroring_display_list_.end());
-       ++iter) {
-    display_info_list.push_back(GetDisplayInfo(iter->id()));
   }
   multi_display_mode_ = mirror ? MIRRORING : default_multi_display_mode_;
   ReconfigureDisplays();
@@ -1167,30 +1147,50 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
         info.SetOverscanInsets(gfx::Insets());
         InsertAndUpdateDisplayInfo(info);
         software_mirroring_display_list_.push_back(
-            CreateDisplayFromDisplayInfoById(mirroring_display_id_));
+            CreateMirroringDisplayFromDisplayInfoById(mirroring_display_id_,
+                                                      gfx::Point(), 1.0f));
         display_info_list->erase(iter);
         break;
       }
       case UNIFIED: {
-        // TODO(oshima): Suport displays that have different heights.
         // TODO(oshima): Currently, all displays are laid out horizontally,
         // from left to right. Allow more flexible layouts, such as
         // right to left, or vertical layouts.
         gfx::Rect unified_bounds;
         software_mirroring_display_list_.clear();
+
+        int max_height = std::numeric_limits<int>::min();
+        for (auto& info : *display_info_list)
+          max_height = std::max(max_height, info.size_in_pixel().height());
+
+        std::vector<DisplayMode> display_mode_list;
+        std::set<float> ui_scales;
+
         for (auto& info : *display_info_list) {
           InsertAndUpdateDisplayInfo(info);
-          gfx::Display display = CreateDisplayFromDisplayInfoById(info.id());
           gfx::Point origin(unified_bounds.right(), 0);
-          display.set_bounds(gfx::Rect(origin, info.size_in_pixel()));
+          float ui_scale =
+              info.size_in_pixel().height() / static_cast<float>(max_height);
+          // The display is scaled to fit the unified desktop size.
+          gfx::Display display = CreateMirroringDisplayFromDisplayInfoById(
+              info.id(), origin, 1.0f / ui_scale);
           display.UpdateWorkAreaFromInsets(gfx::Insets());
           unified_bounds.Union(display.bounds());
+
+          ui_scales.insert(ui_scale);
+
           software_mirroring_display_list_.push_back(display);
         }
         DisplayInfo info(kUnifiedDisplayId, "Unified Desktop", false);
         info.SetBounds(unified_bounds);
+
+        DisplayMode native_mode(unified_bounds.size(), 60.0f, false, true);
+        info.SetDisplayModes(
+            CreateUnifiedDisplayModeList(native_mode, ui_scales));
+
         display_info_list->clear();
         display_info_list->push_back(info);
+        InsertAndUpdateDisplayInfo(info);
         break;
       }
       case EXTENDED:
@@ -1255,6 +1255,21 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
   new_display.SetScaleAndBounds(
       device_scale_factor, gfx::Rect(bounds_in_native.size()));
   new_display.set_rotation(display_info.GetActiveRotation());
+  new_display.set_touch_support(display_info.touch_support());
+  return new_display;
+}
+
+gfx::Display DisplayManager::CreateMirroringDisplayFromDisplayInfoById(
+    int64 id,
+    const gfx::Point& origin,
+    float scale) {
+  DCHECK(display_info_.find(id) != display_info_.end()) << "id=" << id;
+  const DisplayInfo& display_info = display_info_[id];
+
+  gfx::Display new_display(display_info.id());
+  new_display.SetScaleAndBounds(
+      1.0f, gfx::Rect(origin, gfx::ToFlooredSize(gfx::ScaleSize(
+                                  display_info.size_in_pixel(), scale))));
   new_display.set_touch_support(display_info.touch_support());
   return new_display;
 }

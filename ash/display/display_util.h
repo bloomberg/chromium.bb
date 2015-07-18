@@ -5,6 +5,7 @@
 #ifndef ASH_DISPLAY_DISPLAY_UTIL_H_
 #define ASH_DISPLAY_DISPLAY_UTIL_H_
 
+#include <set>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -25,6 +26,12 @@ class DisplayInfo;
 // based on |native_mode|.
 ASH_EXPORT std::vector<DisplayMode> CreateInternalDisplayModeList(
     const DisplayMode& native_mode);
+
+// Creates the display mode list for unified display
+// based on |native_mode| and |scales|.
+ASH_EXPORT std::vector<DisplayMode> CreateUnifiedDisplayModeList(
+    const DisplayMode& native_mode,
+    const std::set<float>& scales);
 
 // Returns next valid UI scale.
 float GetNextUIScale(const DisplayInfo& info, bool up);

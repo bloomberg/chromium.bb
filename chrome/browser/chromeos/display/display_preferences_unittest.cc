@@ -29,6 +29,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gfx/screen.h"
 #include "ui/message_center/message_center.h"
 
 using ash::ResolutionNotificationController;
@@ -878,36 +879,56 @@ TEST_F(DisplayPreferencesTest, RotationLockTriggersStore) {
 }
 
 TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
-  UpdateDisplay("100x100,200x200");
+  ash::test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
+
   LoggedInAsUser();
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
+
+  UpdateDisplay("100x100,200x200");
   ash::DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
-  std::string pair_key = ToPairString(pair);
+  EXPECT_EQ(
+      "400x200",
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().size().ToString());
 
-  // Unified mode should be recorded.
-  display_manager->SetDefaultMultiDisplayMode(ash::DisplayManager::UNIFIED);
-  display_manager->ReconfigureDisplays();
-
-  const base::DictionaryValue* displays =
+  const base::DictionaryValue* secondary_displays =
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
   const base::DictionaryValue* new_value = NULL;
-  EXPECT_TRUE(displays->GetDictionary(ToPairString(pair), &new_value));
+  EXPECT_TRUE(
+      secondary_displays->GetDictionary(ToPairString(pair), &new_value));
 
   ash::DisplayLayout stored_layout;
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
   EXPECT_TRUE(stored_layout.default_unified);
   EXPECT_FALSE(stored_layout.mirrored);
 
+  const base::DictionaryValue* displays =
+      local_state()->GetDictionary(prefs::kDisplayProperties);
+  int64 unified_id = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+  ASSERT_TRUE(
+      displays->GetDictionary(base::Int64ToString(unified_id), &new_value));
+  int ui_scale = 0;
+  EXPECT_FALSE(new_value->GetInteger("ui-scale", &ui_scale));
+
+  display_manager->SetDisplayUIScale(unified_id, 0.5f);
+  EXPECT_EQ(
+      "200x100",
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().size().ToString());
+  ASSERT_TRUE(
+      displays->GetDictionary(base::Int64ToString(unified_id), &new_value));
+  EXPECT_FALSE(new_value->GetInteger("ui-scale", &ui_scale));
+
   // Mirror mode should remember if the default mode was unified.
   display_manager->SetMirrorMode(true);
-  EXPECT_TRUE(displays->GetDictionary(ToPairString(pair), &new_value));
+  ASSERT_TRUE(
+      secondary_displays->GetDictionary(ToPairString(pair), &new_value));
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
   EXPECT_TRUE(stored_layout.default_unified);
   EXPECT_TRUE(stored_layout.mirrored);
 
   display_manager->SetMirrorMode(false);
-  EXPECT_TRUE(displays->GetDictionary(ToPairString(pair), &new_value));
+  ASSERT_TRUE(
+      secondary_displays->GetDictionary(ToPairString(pair), &new_value));
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
   EXPECT_TRUE(stored_layout.default_unified);
   EXPECT_FALSE(stored_layout.mirrored);
@@ -915,7 +936,8 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   // Exit unified mode.
   display_manager->SetDefaultMultiDisplayMode(ash::DisplayManager::EXTENDED);
   display_manager->ReconfigureDisplays();
-  EXPECT_TRUE(displays->GetDictionary(ToPairString(pair), &new_value));
+  ASSERT_TRUE(
+      secondary_displays->GetDictionary(ToPairString(pair), &new_value));
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
   EXPECT_FALSE(stored_layout.default_unified);
   EXPECT_FALSE(stored_layout.mirrored);

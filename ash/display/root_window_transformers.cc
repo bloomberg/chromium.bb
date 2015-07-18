@@ -141,14 +141,18 @@ class AshRootWindowTransformer : public RootWindowTransformer {
   AshRootWindowTransformer(aura::Window* root,
                            const gfx::Display& display)
       : root_window_(root) {
-    DisplayInfo info = Shell::GetInstance()->display_manager()->
-        GetDisplayInfo(display.id());
+    DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+    DisplayInfo info = display_manager->GetDisplayInfo(display.id());
     host_insets_ = info.GetOverscanInsetsInPixel();
     root_window_ui_scale_ = info.GetEffectiveUIScale();
+    // In unified mode, the scaling happen when mirroring, so don't apply
+    // scaling to the root window.
+    const float apply_ui_scale =
+        display_manager->IsInUnifiedMode() ? 1.0f : root_window_ui_scale_;
+
     root_window_bounds_transform_ =
-        CreateInsetsAndScaleTransform(host_insets_,
-                                      display.device_scale_factor(),
-                                      root_window_ui_scale_) *
+        CreateInsetsAndScaleTransform(
+            host_insets_, display.device_scale_factor(), apply_ui_scale) *
         CreateRotationTransform(root, display);
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAshEnableMirroredScreen)) {
@@ -173,11 +177,15 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     bounds = ui::ConvertRectToDIP(root_window_->layer(), bounds);
     gfx::RectF new_bounds(bounds);
     root_window_bounds_transform_.TransformRect(&new_bounds);
-    // Apply |root_window_scale_| twice as the downscaling
-    // is already applied once in |SetTransformInternal()|.
-    // TODO(oshima): This is a bit ugly. Consider specifying
-    // the pseudo host resolution instead.
-    new_bounds.Scale(root_window_ui_scale_ * root_window_ui_scale_);
+    if (Shell::GetInstance()->display_manager()->IsInUnifiedMode()) {
+      new_bounds.Scale(root_window_ui_scale_);
+    } else {
+      // Apply |root_window_scale_| twice as the downscaling
+      // is already applied once in |SetTransformInternal()|.
+      // TODO(oshima): This is a bit ugly. Consider specifying
+      // the pseudo host resolution instead.
+      new_bounds.Scale(root_window_ui_scale_ * root_window_ui_scale_);
+    }
     // Ignore the origin because RootWindow's insets are handled by
     // the transform.
     // Floor the size because the bounds is no longer aligned to
@@ -279,12 +287,14 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
  public:
   PartialBoundsRootWindowTransformer(const gfx::Rect& screen_bounds,
                                      const gfx::Display& display) {
-    gfx::SizeF root_size(display.bounds().size());
-    root_size.Scale(display.device_scale_factor());
-    root_bounds_ = gfx::Rect(gfx::ToFlooredSize(root_size));
-
+    DisplayInfo display_info =
+        Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
+    root_bounds_ = gfx::Rect(display_info.bounds_in_native().size());
     transform_.Translate(-SkIntToMScalar(display.bounds().x()),
                          -SkIntToMScalar(display.bounds().y()));
+    float scale =
+        root_bounds_.height() / static_cast<float>(screen_bounds.height());
+    transform_.Scale(scale, scale);
   }
 
   // RootWindowTransformer:

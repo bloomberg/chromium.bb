@@ -256,9 +256,13 @@ void StoreCurrentDisplayProperties() {
     property_value->SetInteger(
         "rotation",
         static_cast<int>(info.GetRotation(gfx::Display::ROTATION_SOURCE_USER)));
-    property_value->SetInteger(
-        "ui-scale",
-        static_cast<int>(info.configured_ui_scale() * 1000));
+    // Don't save the ui scale in unified mode because UI scale range
+    // changes depending on the display combinations.
+    if (!display_manager->IsInUnifiedMode()) {
+      property_value->SetInteger(
+          "ui-scale", static_cast<int>(info.configured_ui_scale() * 1000));
+    }
+
     ash::DisplayMode mode;
     if (!display.IsInternal() &&
         display_manager->GetSelectedModeForDisplayId(id, &mode) &&

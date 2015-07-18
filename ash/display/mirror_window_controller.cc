@@ -163,18 +163,14 @@ void MirrorWindowController::UpdateWindow(
 
   multi_display_mode_ = GetCurrentMultiDisplayMode();
 
-  gfx::Point mirroring_origin;
   for (const DisplayInfo& display_info : display_info_list) {
     scoped_ptr<RootWindowTransformer> transformer;
     if (display_manager->IsInMirrorMode()) {
       transformer.reset(CreateRootWindowTransformerForMirroredDisplay(
           source_display_info, display_info));
     } else if (display_manager->IsInUnifiedMode()) {
-      gfx::Display display;
-      display.SetScaleAndBounds(
-          1.0f,
-          gfx::Rect(mirroring_origin, display_info.bounds_in_native().size()));
-      mirroring_origin.SetPoint(display.bounds().right(), 0);
+      gfx::Display display =
+          display_manager->GetMirroringDisplayById(display_info.id());
       transformer.reset(CreateRootWindowTransformerForUnifiedDesktop(
           primary.bounds(), display));
     } else {

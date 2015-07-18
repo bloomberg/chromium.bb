@@ -15,6 +15,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -52,16 +53,21 @@ gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
       Shell::GetScreen()->GetDisplayNearestWindow(window).work_area());
 }
 
-gfx::Rect ScreenUtil::GetShelfDisplayBoundsInScreen(aura::Window* root_window) {
+gfx::Rect ScreenUtil::GetShelfDisplayBoundsInScreen(aura::Window* window) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   if (display_manager->IsInUnifiedMode()) {
     // In unified desktop mode, there is only one shelf in the 1st display.
     const gfx::Display& first =
         display_manager->software_mirroring_display_list()[0];
-    return first.bounds();
+    float scale =
+        static_cast<float>(window->GetRootWindow()->bounds().height()) /
+        first.size().height();
+    gfx::SizeF size(first.size());
+    size.Scale(scale, scale);
+    return gfx::Rect(gfx::ToCeiledSize(size));
   } else {
-    return gfx::Screen::GetScreenFor(root_window)
-        ->GetDisplayNearestWindow(root_window)
+    return gfx::Screen::GetScreenFor(window)
+        ->GetDisplayNearestWindow(window)
         .bounds();
   }
 }

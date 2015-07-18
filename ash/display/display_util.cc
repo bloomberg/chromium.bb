@@ -95,6 +95,21 @@ std::vector<DisplayMode> CreateInternalDisplayModeList(
   return display_mode_list;
 }
 
+std::vector<DisplayMode> CreateUnifiedDisplayModeList(
+    const DisplayMode& native_mode,
+    const std::set<float>& scales) {
+  std::vector<DisplayMode> display_mode_list;
+
+  float native_ui_scale = native_mode.device_scale_factor;
+  for (float ui_scale : scales) {
+    DisplayMode mode = native_mode;
+    mode.ui_scale = ui_scale;
+    mode.native = (ui_scale == native_ui_scale);
+    display_mode_list.push_back(mode);
+  }
+  return display_mode_list;
+}
+
 // static
 float GetNextUIScale(const DisplayInfo& info, bool up) {
   ScaleComparator comparator(info.configured_ui_scale());
