@@ -1034,6 +1034,7 @@ config("no_rtti") {
     cflags_cc = [ "/GR-" ]
   } else {
     cflags_cc = [ "-fno-rtti" ]
+    cflags_objcc = cflags_cc
   }
 }
 
