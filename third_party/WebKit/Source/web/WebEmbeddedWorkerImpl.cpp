@@ -251,7 +251,7 @@ void WebEmbeddedWorkerImpl::willSendRequest(
         m_networkProvider->willSendRequest(frame->dataSource(), request);
 }
 
-void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
+void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame, bool)
 {
     ASSERT(!m_mainScriptLoader);
     ASSERT(!m_networkProvider);

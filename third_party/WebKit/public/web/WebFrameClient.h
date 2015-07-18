@@ -298,9 +298,7 @@ public:
     virtual void didChangeIcon(WebLocalFrame*, WebIconURL::Type) { }
 
     // The frame's document finished loading.
-    virtual void didFinishDocumentLoad(WebLocalFrame* frame, bool documentIsEmpty) { didFinishDocumentLoad(frame); }
-    // DEPRECATED
-    virtual void didFinishDocumentLoad(WebLocalFrame*) { }
+    virtual void didFinishDocumentLoad(WebLocalFrame*, bool documentIsEmpty) { }
 
     // The 'load' event was dispatched.
     virtual void didHandleOnloadEvents(WebLocalFrame*) { }

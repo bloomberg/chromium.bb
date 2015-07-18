@@ -167,7 +167,7 @@ void WebSharedWorkerImpl::willSendRequest(
         m_networkProvider->willSendRequest(frame->dataSource(), request);
 }
 
-void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
+void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame, bool)
 {
     ASSERT(!m_loadingDocument);
     ASSERT(!m_mainScriptLoader);

@@ -77,7 +77,7 @@ private:
     void willSendRequest(
         WebLocalFrame*, unsigned identifier, WebURLRequest&,
         const WebURLResponse& redirectResponse) override;
-    void didFinishDocumentLoad(WebLocalFrame*) override;
+    void didFinishDocumentLoad(WebLocalFrame*, bool documentIsEmpty) override;
 
     // WebDevToolsAgentClient overrides.
     void sendProtocolMessage(int callId, const WebString&, const WebString&) override;
