@@ -226,9 +226,6 @@ void ChromeClassTester::BuildBannedLists() {
   // putting everything in the header.
   banned_directories_.push_back("/automation/");
 
-  // Don't check system headers.
-  banned_directories_.push_back("/Developer/");
-
   // Used in really low level threading code that probably shouldn't be out of
   // lined.
   ignored_record_names_.insert("ThreadLocalBoolean");
