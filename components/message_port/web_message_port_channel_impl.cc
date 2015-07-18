@@ -125,6 +125,8 @@ void WebMessagePortChannelImpl::WaitForNextMessage() {
 
 void WebMessagePortChannelImpl::OnMessageAvailable(MojoResult result) {
   DCHECK_EQ(MOJO_RESULT_OK, result);
+  if (!client_)
+    return;
   client_->messageAvailable();
   WaitForNextMessage();
 }
