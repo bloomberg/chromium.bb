@@ -13,6 +13,7 @@ namespace blink {
 
 class ScriptState;
 class ScriptValue;
+class WebPermissionClient;
 
 class Permissions final
     : public GarbageCollected<Permissions>
@@ -20,6 +21,9 @@ class Permissions final
     DEFINE_WRAPPERTYPEINFO();
 public:
     DEFINE_INLINE_TRACE() { }
+
+    // TODO(mlamouri): Find better place for this. https://crbug.com/510948
+    static WebPermissionClient* getClient(ExecutionContext*);
 
     ScriptPromise query(ScriptState*, const ScriptValue&);
 };

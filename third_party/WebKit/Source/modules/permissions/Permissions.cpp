@@ -22,9 +22,8 @@
 
 namespace blink {
 
-namespace {
-
-WebPermissionClient* permissionClient(ExecutionContext* executionContext)
+// static
+WebPermissionClient* Permissions::getClient(ExecutionContext* executionContext)
 {
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
@@ -36,11 +35,9 @@ WebPermissionClient* permissionClient(ExecutionContext* executionContext)
     return Platform::current()->permissionClient();
 }
 
-} // anonymous namespace
-
 ScriptPromise Permissions::query(ScriptState* scriptState, const ScriptValue& rawPermission)
 {
-    WebPermissionClient* client = permissionClient(scriptState->executionContext());
+    WebPermissionClient* client = getClient(scriptState->executionContext());
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
 

@@ -10,27 +10,11 @@
 #include "core/events/Event.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/permissions/PermissionController.h"
+#include "modules/permissions/Permissions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/permissions/WebPermissionClient.h"
 
 namespace blink {
-
-namespace {
-
-// TODO(mlamouri): move this to a common place.
-WebPermissionClient* permissionClient(ExecutionContext* executionContext)
-{
-    if (executionContext->isDocument()) {
-        Document* document = toDocument(executionContext);
-        if (!document->frame())
-            return nullptr;
-        PermissionController* controller = PermissionController::from(*document->frame());
-        return controller ? controller->client() : nullptr;
-    }
-    return Platform::current()->permissionClient();
-}
-
-} // anonymous namespace
 
 // static
 PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, WebPermissionStatus* status, WebPermissionType type)
@@ -111,7 +95,7 @@ void PermissionStatus::startListening()
 {
     ASSERT(!m_listening);
 
-    WebPermissionClient* client = permissionClient(executionContext());
+    WebPermissionClient* client = Permissions::getClient(executionContext());
     if (!client)
         return;
     m_listening = true;
@@ -126,7 +110,7 @@ void PermissionStatus::stopListening()
     ASSERT(executionContext());
 
     m_listening = false;
-    WebPermissionClient* client = permissionClient(executionContext());
+    WebPermissionClient* client = Permissions::getClient(executionContext());
     if (!client)
         return;
     client->stopListening(this);
