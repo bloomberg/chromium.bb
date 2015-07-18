@@ -32,9 +32,12 @@
 #include "core/loader/FrameFetchContext.h"
 
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/FrameOwner.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/network/ResourceRequest.h"
@@ -318,6 +321,118 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints)
     expectHeader("http://www.example.com/1.gif", "DPR", true, "1");
     expectHeader("http://www.example.com/1.gif", "Width", true, "400", 400);
     expectHeader("http://www.example.com/1.gif", "Viewport-Width", true, "500");
+}
+
+class StubFrameLoaderClientWithParent : public EmptyFrameLoaderClient {
+public:
+    explicit StubFrameLoaderClientWithParent(Frame* parent)
+        : m_parent(parent)
+    {
+    }
+
+    Frame* parent() const override { return m_parent; }
+
+private:
+    Frame* m_parent;
+};
+
+class StubFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<StubFrameOwner>, public FrameOwner {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StubFrameOwner);
+public:
+    DEFINE_INLINE_VIRTUAL_TRACE() { FrameOwner::trace(visitor); }
+
+    bool isLocal() const override { return false; }
+    SandboxFlags sandboxFlags() const override { return SandboxNone; }
+    void dispatchLoad() override { }
+    void renderFallbackContent() override { }
+};
+
+class FrameFetchContextCachePolicyTest : public ::testing::Test {
+public:
+    FrameFetchContextCachePolicyTest() { }
+
+protected:
+    void SetUp() override
+    {
+        dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
+        dummyPageHolder->page().setDeviceScaleFactor(1.0);
+        documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
+        document = toHTMLDocument(&dummyPageHolder->document());
+        fetchContext = static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
+        FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
+    }
+
+    void TearDown() override
+    {
+        documentLoader->detachFromFrame();
+        documentLoader.clear();
+    }
+
+    OwnPtr<DummyPageHolder> dummyPageHolder;
+    // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
+    // as the ResourceFetcher and Document live due to indirect usage.
+    RefPtrWillBePersistent<DocumentLoader> documentLoader;
+    RefPtrWillBePersistent<Document> document;
+    Persistent<FrameFetchContext> fetchContext;
+};
+
+TEST_F(FrameFetchContextCachePolicyTest, MainResource)
+{
+    // Default case
+    ResourceRequest request("http://www.example.com");
+    EXPECT_EQ(UseProtocolCachePolicy, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+
+    // Post
+    ResourceRequest postRequest("http://www.example.com");
+    postRequest.setHTTPMethod("POST");
+    EXPECT_EQ(ReloadIgnoringCacheData, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource));
+
+    // Re-post
+    document->frame()->loader().setLoadType(FrameLoadTypeBackForward);
+    EXPECT_EQ(ReturnCacheDataDontLoad, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource));
+
+    // Enconding overriden
+    document->frame()->loader().setLoadType(FrameLoadTypeStandard);
+    document->frame()->host()->setOverrideEncoding("foo");
+    EXPECT_EQ(ReturnCacheDataElseLoad, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    document->frame()->host()->setOverrideEncoding(AtomicString());
+
+    // FrameLoadTypeSame
+    document->frame()->loader().setLoadType(FrameLoadTypeSame);
+    EXPECT_EQ(ReloadIgnoringCacheData, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+
+    // Conditional request
+    document->frame()->loader().setLoadType(FrameLoadTypeStandard);
+    ResourceRequest conditional("http://www.example.com");
+    conditional.setHTTPHeaderField("If-Modified-Since", "foo");
+    EXPECT_EQ(ReloadIgnoringCacheData, fetchContext->resourceRequestCachePolicy(conditional, Resource::MainResource));
+
+    // Set up a child frame
+    StubFrameLoaderClientWithParent client(document->frame());
+    StubFrameOwner owner;
+    RefPtrWillBeRawPtr<LocalFrame> childFrame = LocalFrame::create(&client, document->frame()->host(), &owner);
+    childFrame->setView(FrameView::create(childFrame.get(), IntSize(500, 500)));
+    childFrame->init();
+    RefPtrWillBePersistent<DocumentLoader> childDocumentLoader =
+        DocumentLoader::create(childFrame.get(), ResourceRequest("http://www.example.com"), SubstituteData());
+    RefPtrWillBePersistent<Document> childDocument = childFrame->document();
+    FrameFetchContext* childFetchContext = static_cast<FrameFetchContext*>(&childDocumentLoader->fetcher()->context());
+    FrameFetchContext::provideDocumentToContext(*childFetchContext, childDocument.get());
+
+    // Child frame as part of back/forward
+    document->frame()->loader().setLoadType(FrameLoadTypeBackForward);
+    EXPECT_EQ(ReturnCacheDataElseLoad, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+
+    // Child frame as part of reload
+    document->frame()->loader().setLoadType(FrameLoadTypeReload);
+    EXPECT_EQ(ReloadIgnoringCacheData, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+
+    // Child frame as part of end to end reload
+    document->frame()->loader().setLoadType(FrameLoadTypeReloadFromOrigin);
+    EXPECT_EQ(ReloadBypassingCache, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+
+    childDocumentLoader->detachFromFrame();
+    childDocumentLoader.clear();
 }
 
 } // namespace

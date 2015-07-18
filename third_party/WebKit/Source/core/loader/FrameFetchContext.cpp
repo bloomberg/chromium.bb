@@ -162,15 +162,22 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
         FrameLoadType frameLoadType = frame()->loader().loadType();
         if (request.httpMethod() == "POST" && frameLoadType == FrameLoadTypeBackForward)
             return ReturnCacheDataDontLoad;
-        if (!frame()->host()->overrideEncoding().isEmpty() || frameLoadType == FrameLoadTypeBackForward)
+        if (!frame()->host()->overrideEncoding().isEmpty())
             return ReturnCacheDataElseLoad;
-        if (frameLoadType == FrameLoadTypeReloadFromOrigin)
-            return ReloadBypassingCache;
-        if (frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
+        if (frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
             return ReloadIgnoringCacheData;
-        Frame* parent = frame()->tree().parent();
-        if (parent && parent->isLocalFrame())
-            return toLocalFrame(parent)->document()->fetcher()->context().resourceRequestCachePolicy(request, type);
+
+        for (Frame* f = frame(); f; f = f->tree().parent()) {
+            if (!f->isLocalFrame())
+                continue;
+            frameLoadType = toLocalFrame(f)->loader().loadType();
+            if (frameLoadType == FrameLoadTypeBackForward)
+                return ReturnCacheDataElseLoad;
+            if (frameLoadType == FrameLoadTypeReloadFromOrigin)
+                return ReloadBypassingCache;
+            if (frameLoadType == FrameLoadTypeReload)
+                return ReloadIgnoringCacheData;
+        }
         return UseProtocolCachePolicy;
     }
 

@@ -739,8 +739,13 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         || (!m_stateMachine.committedMultipleRealLoads()
             && equalIgnoringCase(m_frame->document()->url(), blankURL())))
         return FrameLoadTypeReplaceCurrentItem;
-    if (!request.originDocument() && request.resourceRequest().url() == m_documentLoader->urlForHistory())
-        return FrameLoadTypeSame;
+
+    if (request.resourceRequest().url() == m_documentLoader->urlForHistory()) {
+        if (!request.originDocument())
+            return FrameLoadTypeSame;
+        return request.resourceRequest().httpMethod() == "POST" ? FrameLoadTypeStandard : FrameLoadTypeReplaceCurrentItem;
+    }
+
     if (request.substituteData().failingURL() == m_documentLoader->urlForHistory() && m_loadType == FrameLoadTypeReload)
         return FrameLoadTypeReload;
     return FrameLoadTypeStandard;
@@ -917,20 +922,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
         return;
     }
 
-    // Perform navigation to a different document.
-    bool sameURL = url == m_documentLoader->urlForHistory();
     startLoad(request, newLoadType, policy);
-
-    // Example of this case are sites that reload the same URL with a different cookie
-    // driving the generated content, or a master frame with links that drive a target
-    // frame, where the user has clicked on the same link repeatedly.
-    if (sameURL
-        && !isBackForwardLoadType(frameLoadType)
-        && newLoadType != FrameLoadTypeReload
-        && newLoadType != FrameLoadTypeReloadFromOrigin
-        && request.resourceRequest().httpMethod() != "POST") {
-        m_loadType = FrameLoadTypeSame;
-    }
 }
 
 SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
