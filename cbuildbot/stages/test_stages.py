@@ -10,6 +10,7 @@ import collections
 import os
 
 from chromite.cbuildbot import afdo
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
@@ -398,7 +399,13 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
         perf_entries[test_name].extend(entries)
 
     platform_name = self._run.bot_id
-    cros_ver = self._run.GetVersionInfo().VersionString()
+    try:
+      cros_ver = self._run.GetVersionInfo().VersionString()
+    except cbuildbot_run.VersionNotSetError:
+      logging.error('Could not obtain version info. '
+                    'Failed to upload perf results.')
+      return
+
     chrome_ver = self._run.DetermineChromeVersion()
     for test_name, perf_values in perf_entries.iteritems():
       try:
@@ -406,7 +413,8 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
                                        cros_version=cros_ver,
                                        chrome_version=chrome_ver)
       except Exception:
-        logging.exception('Fail to upload perf result for test %s.', test_name)
+        logging.exception('Failed to upload perf result for test %s.',
+                          test_name)
 
 
 class BinhostTestStage(generic_stages.BuilderStage):

@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 import sys
 
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -589,8 +590,17 @@ class ReportStage(generic_stages.BuilderStage,
       # ArchiveResults() depends the existence of this attr.
       self._run.attrs.release_tag = None
 
-    archive_urls = self.ArchiveResults(final_status)
-    metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
+    # Some operations can only be performed if a valid version is available.
+    try:
+      self._run.GetVersionInfo()
+      archive_urls = self.ArchiveResults(final_status)
+      metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
+    except cbuildbot_run.VersionNotSetError:
+      logging.error('A valid version was never set for this run. '
+                    'Can not archive results.')
+      archive_urls = ''
+      metadata_url = ''
+
 
     results_lib.Results.Report(
         sys.stdout, archive_urls=archive_urls,

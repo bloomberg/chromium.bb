@@ -50,6 +50,10 @@ class RunAttributesError(Exception):
     return self.msg
 
 
+class VersionNotSetError(RuntimeError):
+  """Error raised if trying to access version_info before it's set."""
+
+
 class ParallelAttributeError(AttributeError):
   """Custom version of AttributeError."""
 
@@ -744,10 +748,10 @@ class _BuilderRunBase(object):
       A manifest_version.VersionInfo object.
 
     Raises:
-      RuntimeError if the version has not yet been set.
+      VersionNotSetError if the version has not yet been set.
     """
     if not hasattr(self.attrs, 'version_info'):
-      raise RuntimeError('builder must call SetVersionInfo first')
+      raise VersionNotSetError('builder must call SetVersionInfo first')
     return self.attrs.version_info
 
   def GetVersion(self):
