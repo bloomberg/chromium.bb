@@ -20,15 +20,15 @@
     Cast desktop to...
   </message>
   <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE" desc="Message for tab mirror cast mode.">
-    Cast this tab
+    Cast tab
   </message>
   <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE_TITLE" desc="Title for tab mirror cast mode.">
-    Cast this tab to...
+    Cast tab to...
   </message>
 
   <!-- Cast Mode Picker -->
   <message name="IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER" desc="Header for select cast mode view.">
-   Select cast mode
+   Select source
   </message>
 
   <!-- Issue Actions -->

@@ -338,7 +338,7 @@ Polymer({
    */
   onCastModeClick_: function(event) {
     var clickedMode = this.$.castModeList.itemForElement(event.target);
-    this.headerText = clickedMode.title;
+    this.headerText = clickedMode.description;
     this.selectedCastModeValue_ = clickedMode.type;
   },
 

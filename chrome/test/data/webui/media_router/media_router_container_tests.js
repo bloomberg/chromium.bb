@@ -258,7 +258,7 @@ cr.define('media_router_container', function() {
 
           for (var i = 0; i < fakeCastModeList.length; i++) {
             MockInteractions.tap(castModeList[i]);
-            checkElementTextWithId(fakeCastModeList[i].title,
+            checkElementTextWithId(fakeCastModeList[i].description,
                 'sink-list-header-text');
             checkElementText(fakeCastModeList[i].description, castModeList[i]);
           }

@@ -248,8 +248,8 @@ std::string MediaRouterUI::GetInitialHeaderText() const {
   if (cast_modes_.empty())
     return std::string();
 
-  return MediaCastModeToTitle(GetPreferredCastMode(cast_modes_),
-                              GetHostFromURL(frame_url_));
+  return MediaCastModeToDescription(GetPreferredCastMode(cast_modes_),
+                                    GetHostFromURL(frame_url_));
 }
 
 void MediaRouterUI::OnResultsUpdated(
