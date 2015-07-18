@@ -27,6 +27,7 @@
  */
 
 [
+    Constructor(unsigned short argument),
     DoNotCheckConstants,
 ] exception TestException {
     readonly attribute unsigned short readonlyUnsignedShortAttribute;

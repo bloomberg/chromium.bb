@@ -43,6 +43,9 @@ class CORE_EXPORT DOMException final : public GarbageCollectedFinalized<DOMExcep
 public:
     static DOMException* create(ExceptionCode, const String& sanitizedMessage = String(), const String& unsanitizedMessage = String());
 
+    // Constructor exposed to script.
+    static DOMException* create(const String& message, const String& name);
+
     unsigned short code() const { return m_code; }
     String name() const { return m_name; }
 

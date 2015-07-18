@@ -12,6 +12,7 @@
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
@@ -78,12 +79,48 @@ static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestException", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    unsigned argument;
+    {
+        argument = toUInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
+    RefPtr<TestException> impl = TestException::create(argument);
+    v8::Local<v8::Object> wrapper = info.Holder();
+    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestException::wrapperTypeInfo, wrapper);
+    v8SetReturnValue(info, wrapper);
+}
+
 } // namespace TestExceptionV8Internal
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestExceptionAccessors[] = {
     {"readonlyUnsignedShortAttribute", TestExceptionV8Internal::readonlyUnsignedShortAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"readonlyStringAttribute", TestExceptionV8Internal::readonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
+
+void V8TestException::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
+    if (!info.IsConstructCall()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestException"));
+        return;
+    }
+
+    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::WrapExistingObject) {
+        v8SetReturnValue(info, info.Holder());
+        return;
+    }
+
+    TestExceptionV8Internal::constructor(info);
+}
 
 static void installV8TestExceptionTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
@@ -94,6 +131,8 @@ static void installV8TestExceptionTemplate(v8::Local<v8::FunctionTemplate> funct
         0, 0,
         V8TestExceptionAccessors, WTF_ARRAY_LENGTH(V8TestExceptionAccessors),
         0, 0);
+    functionTemplate->SetCallHandler(V8TestException::constructorCallback);
+    functionTemplate->SetLength(1);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();

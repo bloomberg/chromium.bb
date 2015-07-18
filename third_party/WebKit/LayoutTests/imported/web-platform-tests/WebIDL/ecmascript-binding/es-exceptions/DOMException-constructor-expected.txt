@@ -1,11 +1,11 @@
 This is a testharness.js-based test.
-FAIL new DOMException() Illegal constructor
-FAIL new DOMException(): own-ness Illegal constructor
-FAIL new DOMException(undefined) Illegal constructor
-FAIL new DOMException(undefined): own-ness Illegal constructor
-FAIL new DOMException("foo") Illegal constructor
-FAIL new DOMException("foo"): own-ness Illegal constructor
-FAIL new DOMException("bar", "NotSupportedError") Illegal constructor
-FAIL new DOMException("bar", "NotSupportedError"): own-ness Illegal constructor
+PASS new DOMException() 
+PASS new DOMException(): own-ness 
+PASS new DOMException(undefined) 
+PASS new DOMException(undefined): own-ness 
+PASS new DOMException("foo") 
+FAIL new DOMException("foo"): own-ness assert_true: The message property should be own expected true got false
+PASS new DOMException("bar", "NotSupportedError") 
+FAIL new DOMException("bar", "NotSupportedError"): own-ness assert_true: The name property should be own expected true got false
 Harness: the test ran to completion.
 

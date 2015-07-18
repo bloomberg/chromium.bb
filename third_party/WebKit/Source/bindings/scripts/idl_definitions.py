@@ -402,7 +402,11 @@ class IdlException(IdlInterface):
             elif child_class == 'Const':
                 self.constants.append(IdlConstant(idl_name, child))
             elif child_class == 'ExtAttributes':
-                self.extended_attributes = ext_attributes_node_to_extended_attributes(idl_name, child)
+                extended_attributes = ext_attributes_node_to_extended_attributes(idl_name, child)
+                self.constructors, self.custom_constructors = (
+                    extended_attributes_to_constructors(idl_name, extended_attributes))
+                clear_constructor_attributes(extended_attributes)
+                self.extended_attributes = extended_attributes
             elif child_class == 'ExceptionOperation':
                 self.operations.append(IdlOperation.from_exception_operation_node(idl_name, child))
             else:
