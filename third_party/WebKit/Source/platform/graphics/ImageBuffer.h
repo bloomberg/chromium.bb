@@ -124,6 +124,7 @@ public:
 
     void putByteArray(Multiply, const unsigned char* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint);
 
+    String toDataURL(const String& mimeType, const double* quality = 0) const;
     AffineTransform baseTransform() const { return AffineTransform(); }
     WebLayer* platformLayer() const;
 

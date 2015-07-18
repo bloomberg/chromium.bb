@@ -55,7 +55,6 @@ class HTMLCanvasElement;
 class Image;
 class ImageBuffer;
 class ImageBufferSurface;
-class ImageData;
 class IntSize;
 
 class CORE_EXPORT CanvasObserver : public WillBeGarbageCollectedMixin {
@@ -200,7 +199,6 @@ private:
 
     bool paintsIntoCanvasBuffer() const;
 
-    ImageData* toImageData(SourceDrawingBuffer) const;
     String toDataURLInternal(const String& mimeType, const double* quality, SourceDrawingBuffer) const;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver>> m_observers;
