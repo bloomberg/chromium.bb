@@ -99,7 +99,7 @@ protected:
         SkPictureBuilder pictureBuilder(pageRect);
         GraphicsContext& context = pictureBuilder.context();
         context.setPrinting(true);
-        document().view()->paintContents(&context, pageRect);
+        document().view()->paintContents(&context, GlobalPaintPrinting, pageRect);
         pictureBuilder.endRecording()->playback(&canvas);
         printContext().outputLinkedDestinations(&canvas, pageRect);
         printContext().end();

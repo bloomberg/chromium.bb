@@ -1192,7 +1192,9 @@ bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent)
     }
 
     BackgroundImageGeometry geometry;
-    BoxPainter::calculateBackgroundImageGeometry(*this, 0, style()->backgroundLayers(), backgroundRect, geometry);
+    // TODO(jchaffraix): This function should be rethought as it's called during and outside
+    // of the paint phase. Potentially returning different results at different phases.
+    BoxPainter::calculateBackgroundImageGeometry(*this, 0, GlobalPaintNormalPhase, style()->backgroundLayers(), backgroundRect, geometry);
     if (geometry.hasNonLocalGeometry())
         return false;
     paintedExtent = LayoutRect(geometry.destRect());

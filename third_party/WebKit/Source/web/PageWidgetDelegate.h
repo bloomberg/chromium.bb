@@ -71,6 +71,7 @@ public:
     static void animate(Page&, double monotonicFrameBeginTime, LocalFrame& root);
     static void layout(Page&, LocalFrame& root);
     static void paint(Page&, PageOverlayList*, WebCanvas*, const WebRect&, LocalFrame& root);
+    static void paintIgnoringCompositing(Page&, PageOverlayList*, WebCanvas*, const WebRect&, LocalFrame& root);
     static bool handleInputEvent(PageWidgetEventHandler&, const WebInputEvent&, LocalFrame* root);
 
 private:

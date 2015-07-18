@@ -36,6 +36,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
+#include "core/paint/PaintPhase.h"
 #include "platform/Supplementable.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -188,7 +189,7 @@ namespace blink {
 
         // Paints the area for the given rect into a DragImage, with the given displayItemClient id attached.
         // The rect is in the coordinate space of the frame.
-        PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClientWrapper&, DisplayItem::Type, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect);
+        PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClientWrapper&, DisplayItem::Type, RespectImageOrientationEnum shouldRespectImageOrientation, const GlobalPaintFlags, IntRect paintingRect);
 
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;

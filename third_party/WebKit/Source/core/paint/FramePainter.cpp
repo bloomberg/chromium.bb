@@ -27,7 +27,7 @@ namespace blink {
 
 bool FramePainter::s_inPaintContents = false;
 
-void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
+void FramePainter::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect)
 {
     m_frameView.notifyPageThatContentAreaWillPaint();
 
@@ -42,7 +42,7 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
         ClipRecorder recorder(*context, *m_frameView.layoutView(), DisplayItem::ClipFrameToVisibleContentRect, LayoutRect(m_frameView.visibleContentRect()));
 
         documentDirtyRect.moveBy(-m_frameView.location() + m_frameView.scrollPosition());
-        paintContents(context, documentDirtyRect);
+        paintContents(context, globalPaintFlags, documentDirtyRect);
     }
 
     // Now paint the scrollbars.
@@ -61,7 +61,7 @@ void FramePainter::paint(GraphicsContext* context, const IntRect& rect)
     }
 }
 
-void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
+void FramePainter::paintContents(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect)
 {
     Document* document = m_frameView.frame().document();
 
@@ -73,7 +73,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
         fillWithRed = false; // Subframe, don't fill with red.
     else if (m_frameView.isTransparent())
         fillWithRed = false; // Transparent, don't fill with red.
-    else if (m_frameView.paintBehavior() & PaintBehaviorSelectionOnly)
+    else if (globalPaintFlags & GlobalPaintSelectionOnly)
         fillWithRed = false; // Selections are transparent, don't fill with red.
     else if (m_frameView.nodeToDraw())
         fillWithRed = false; // Element images are transparent, don't fill with red.
@@ -102,15 +102,11 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
     FontCachePurgePreventer fontCachePurgePreventer;
 
-    PaintBehavior oldPaintBehavior = m_frameView.paintBehavior();
-
-    if (FrameView* parentView = m_frameView.parentFrameView()) {
-        if (parentView->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
-            m_frameView.setPaintBehavior(m_frameView.paintBehavior() | PaintBehaviorFlattenCompositingLayers);
-    }
-
+    // TODO(jchaffraix): GlobalPaintFlags should be const during a paint
+    // phase. Thus we should set this flag upfront (crbug.com/510280).
+    GlobalPaintFlags localPaintFlags = globalPaintFlags;
     if (document->printing())
-        m_frameView.setPaintBehavior(m_frameView.paintBehavior() | PaintBehaviorFlattenCompositingLayers | PaintBehaviorPrinting);
+        localPaintFlags |= GlobalPaintFlattenCompositingLayers | GlobalPaintPrinting;
 
     ASSERT(!m_frameView.isPainting());
     m_frameView.setIsPainting(true);
@@ -129,15 +125,13 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);
 
-    // TODO(jchaffraix): Convert to GlobalPaintFlags for real here and below.
-    layerPainter.paint(context, LayoutRect(rect), toGlobalPaintFlags(m_frameView.paintBehavior()), layoutObject);
+    layerPainter.paint(context, LayoutRect(rect), localPaintFlags, layoutObject);
 
     if (rootLayer->containsDirtyOverlayScrollbars())
-        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), toGlobalPaintFlags(m_frameView.paintBehavior()), layoutObject);
+        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), localPaintFlags, layoutObject);
 
     m_frameView.setIsPainting(false);
 
-    m_frameView.setPaintBehavior(oldPaintBehavior);
     m_frameView.setLastPaintTime(currentTime());
 
     // Regions may have changed as a result of the visibility/z-index of element changing.

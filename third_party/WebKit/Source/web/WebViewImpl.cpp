@@ -1928,13 +1928,7 @@ void WebViewImpl::paintCompositedDeprecated(WebCanvas* canvas, const WebRect& re
     //       the compositor.
     ASSERT(isAcceleratedCompositingActive());
 
-    FrameView* view = page()->deprecatedLocalMainFrame()->view();
-    PaintBehavior oldPaintBehavior = view->paintBehavior();
-    view->setPaintBehavior(oldPaintBehavior | PaintBehaviorFlattenCompositingLayers);
-
-    PageWidgetDelegate::paint(*m_page, pageOverlays(), canvas, rect, *m_page->deprecatedLocalMainFrame());
-
-    view->setPaintBehavior(oldPaintBehavior);
+    PageWidgetDelegate::paintIgnoringCompositing(*m_page, pageOverlays(), canvas, rect, *m_page->deprecatedLocalMainFrame());
 }
 #endif
 

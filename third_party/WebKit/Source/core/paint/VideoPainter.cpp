@@ -44,7 +44,7 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
 
     if (displayingPoster) {
         ImagePainter(m_layoutVideo).paintIntoRect(context, rect);
-    } else if ((m_layoutVideo.document().view() && m_layoutVideo.document().view()->paintBehavior() & PaintBehaviorFlattenCompositingLayers) || !m_layoutVideo.acceleratedRenderingInUse()) {
+    } else if ((paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers) || !m_layoutVideo.acceleratedRenderingInUse()) {
         SkPaint videoPaint = context->fillPaint();
         videoPaint.setColor(SK_ColorBLACK);
         m_layoutVideo.videoElement()->paintCurrentFrame(context->canvas(), pixelSnappedIntRect(rect), &videoPaint);

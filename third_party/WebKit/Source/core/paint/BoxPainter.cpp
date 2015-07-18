@@ -440,7 +440,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
 
     BackgroundImageGeometry geometry;
     if (bgImage)
-        calculateBackgroundImageGeometry(obj, paintInfo.paintContainer(), bgLayer, scrolledPaintRect, geometry, backgroundObject);
+        calculateBackgroundImageGeometry(obj, paintInfo.paintContainer(), paintInfo.globalPaintFlags(), bgLayer, scrolledPaintRect, geometry, backgroundObject);
     bool shouldPaintBackgroundImage = bgImage && bgImage->canRender(obj, obj.style()->effectiveZoom());
 
     // Paint the color first underneath all images, culled if background image occludes it.
@@ -528,7 +528,7 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
     // Figure out if we need to push a transparency layer to render our mask.
     bool pushTransparencyLayer = false;
     bool compositedMask = m_layoutBox.hasLayer() && m_layoutBox.layer()->hasCompositedMask();
-    bool flattenCompositingLayers = m_layoutBox.view()->frameView() && m_layoutBox.view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
+    bool flattenCompositingLayers = paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers;
 
     bool allMaskImagesLoaded = true;
 
@@ -587,7 +587,7 @@ static inline int getSpaceBetweenImageTiles(int areaSize, int tileSize)
     return space;
 }
 
-void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, const LayoutBoxModelObject* paintContainer, const FillLayer& fillLayer, const LayoutRect& paintRect,
+void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, const LayoutBoxModelObject* paintContainer, const GlobalPaintFlags globalPaintFlags, const FillLayer& fillLayer, const LayoutRect& paintRect,
     BackgroundImageGeometry& geometry, LayoutObject* backgroundObject)
 {
     LayoutUnit left = 0;
@@ -655,7 +655,7 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
         geometry.setHasNonLocalGeometry();
 
         IntRect viewportRect = pixelSnappedIntRect(obj.viewRect());
-        if (fixedBackgroundPaintsInLocalCoordinates(obj))
+        if (fixedBackgroundPaintsInLocalCoordinates(obj, globalPaintFlags))
             viewportRect.setLocation(IntPoint());
         else if (FrameView* frameView = obj.view()->frameView())
             viewportRect.setLocation(frameView->scrollPosition());
@@ -766,14 +766,14 @@ InterpolationQuality BoxPainter::chooseInterpolationQuality(LayoutObject& obj, G
     return ImageQualityController::imageQualityController()->chooseInterpolationQuality(context, &obj, image, layer, size);
 }
 
-bool BoxPainter::fixedBackgroundPaintsInLocalCoordinates(const LayoutObject& obj)
+bool BoxPainter::fixedBackgroundPaintsInLocalCoordinates(const LayoutObject& obj, const GlobalPaintFlags globalPaintFlags)
 {
     if (!obj.isLayoutView())
         return false;
 
     const LayoutView& view = toLayoutView(obj);
 
-    if (view.frameView() && view.frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
+    if (globalPaintFlags & GlobalPaintFlattenCompositingLayers)
         return false;
 
     DeprecatedPaintLayer* rootLayer = view.layer();

@@ -588,9 +588,12 @@ double LocalFrame::devicePixelRatio() const
 }
 
 PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
-    const DisplayItemClientWrapper& displayItemClient, DisplayItem::Type clipType, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect)
+    const DisplayItemClientWrapper& displayItemClient, DisplayItem::Type clipType, RespectImageOrientationEnum shouldRespectImageOrientation, const GlobalPaintFlags globalPaintFlags, IntRect paintingRect)
 {
     ASSERT(document()->isActive());
+    // Not flattening compositing layers will result in a broken image being painted.
+    ASSERT(globalPaintFlags & GlobalPaintFlattenCompositingLayers);
+
     float deviceScaleFactor = m_host->deviceScaleFactor();
     paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
     paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
@@ -611,7 +614,7 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
         ClipRecorder clipRecorder(paintContext, displayItemClient, clipType,
             LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
-        m_view->paintContents(&paintContext, paintingRect);
+        m_view->paintContents(&paintContext, globalPaintFlags, paintingRect);
 
     }
     RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
@@ -641,7 +644,7 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 
     IntRect rect;
 
-    return paintIntoDragImage(*layoutObject, DisplayItem::ClipNodeImage, layoutObject->shouldRespectImageOrientation(),
+    return paintIntoDragImage(*layoutObject, DisplayItem::ClipNodeImage, layoutObject->shouldRespectImageOrientation(), GlobalPaintFlattenCompositingLayers,
         layoutObject->paintingRootRect(rect));
 }
 
@@ -654,7 +657,7 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
     m_view->setPaintBehavior(PaintBehaviorSelectionOnly | PaintBehaviorFlattenCompositingLayers);
     m_view->updateAllLifecyclePhases();
 
-    return paintIntoDragImage(*this, DisplayItem::ClipSelectionImage, DoNotRespectImageOrientation, enclosingIntRect(selection().bounds()));
+    return paintIntoDragImage(*this, DisplayItem::ClipSelectionImage, DoNotRespectImageOrientation, GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers, enclosingIntRect(selection().bounds()));
 }
 
 String LocalFrame::selectedText() const

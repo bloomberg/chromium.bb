@@ -458,7 +458,7 @@ protected:
 
         ClipRecorder clipRecorder(context, *this, DisplayItem::ClipPrintedPage, LayoutRect(pageRect));
 
-        frame()->view()->paintContents(&context, pageRect);
+        frame()->view()->paintContents(&context, GlobalPaintNormalPhase, pageRect);
 
         return scale;
     }

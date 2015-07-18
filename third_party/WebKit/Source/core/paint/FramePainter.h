@@ -5,6 +5,8 @@
 #ifndef FramePainter_h
 #define FramePainter_h
 
+#include "core/paint/PaintPhase.h"
+
 namespace blink {
 
 class FrameView;
@@ -16,9 +18,9 @@ class FramePainter {
 public:
     FramePainter(FrameView& frameView) : m_frameView(frameView) { }
 
-    void paint(GraphicsContext*, const IntRect&);
+    void paint(GraphicsContext*, const GlobalPaintFlags, const IntRect&);
     void paintScrollbars(GraphicsContext*, const IntRect&);
-    void paintContents(GraphicsContext*, const IntRect& damageRect);
+    void paintContents(GraphicsContext*, const GlobalPaintFlags, const IntRect& damageRect);
     void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
 
 private:

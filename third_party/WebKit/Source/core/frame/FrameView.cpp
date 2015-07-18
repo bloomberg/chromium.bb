@@ -3747,12 +3747,17 @@ ScrollBehavior FrameView::scrollBehaviorStyle() const
 
 void FrameView::paint(GraphicsContext* context, const IntRect& rect)
 {
-    FramePainter(*this).paint(context, rect);
+    paint(context, GlobalPaintNormalPhase, rect);
 }
 
-void FrameView::paintContents(GraphicsContext* context, const IntRect& damageRect)
+void FrameView::paint(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& rect)
 {
-    FramePainter(*this).paintContents(context, damageRect);
+    FramePainter(*this).paint(context, globalPaintFlags, rect);
+}
+
+void FrameView::paintContents(GraphicsContext* context, const GlobalPaintFlags globalPaintFlags, const IntRect& damageRect)
+{
+    FramePainter(*this).paintContents(context, globalPaintFlags, damageRect);
 }
 
 bool FrameView::isPointInScrollbarCorner(const IntPoint& windowPoint)

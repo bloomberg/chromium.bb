@@ -66,8 +66,8 @@ void PageWidgetDelegate::layout(Page& page, LocalFrame& root)
     page.animator().updateLayoutAndStyleForPainting(&root);
 }
 
-void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas* canvas,
-    const WebRect& rect, LocalFrame& root)
+static void paintInternal(Page& page, PageOverlayList* overlays, WebCanvas* canvas,
+    const WebRect& rect, LocalFrame& root, const GlobalPaintFlags globalPaintFlags)
 {
     if (rect.isEmpty())
         return;
@@ -91,15 +91,34 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
         if (view) {
             ClipRecorder clipRecorder(paintContext, root, DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
 
-            view->paint(&paintContext, dirtyRect);
+            // TODO(jchaffraix): Remove this scaffolding code once we have migrated all the code to GlobalPaintFlags.
+            PaintBehavior oldPaintBehavior = view->paintBehavior();
+            if (globalPaintFlags & GlobalPaintFlattenCompositingLayers)
+                view->setPaintBehavior(oldPaintBehavior | PaintBehaviorFlattenCompositingLayers);
+
+            view->paint(&paintContext, globalPaintFlags, dirtyRect);
             if (overlays)
                 overlays->paintWebFrame(paintContext);
+
+            view->setPaintBehavior(oldPaintBehavior);
         } else if (!DrawingRecorder::useCachedDrawingIfPossible(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback)) {
             DrawingRecorder drawingRecorder(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
             paintContext.fillRect(dirtyRect, Color::white);
         }
     }
     pictureBuilder.endRecording()->playback(canvas);
+}
+
+void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas* canvas,
+    const WebRect& rect, LocalFrame& root)
+{
+    paintInternal(page, overlays, canvas, rect, root, GlobalPaintNormalPhase);
+}
+
+void PageWidgetDelegate::paintIgnoringCompositing(Page& page, PageOverlayList* overlays, WebCanvas* canvas,
+    const WebRect& rect, LocalFrame& root)
+{
+    paintInternal(page, overlays, canvas, rect, root, GlobalPaintFlattenCompositingLayers);
 }
 
 bool PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)

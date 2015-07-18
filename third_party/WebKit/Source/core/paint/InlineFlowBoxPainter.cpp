@@ -291,7 +291,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
     // Figure out if we need to push a transparency layer to render our mask.
     bool pushTransparencyLayer = false;
     bool compositedMask = m_inlineFlowBox.layoutObject().hasLayer() && m_inlineFlowBox.boxModelObject()->layer()->hasCompositedMask();
-    bool flattenCompositingLayers = m_inlineFlowBox.layoutObject().view()->frameView() && m_inlineFlowBox.layoutObject().view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
+    bool flattenCompositingLayers = paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers;
     SkXfermode::Mode compositeOp = SkXfermode::kSrcOver_Mode;
     if (!compositedMask || flattenCompositingLayers) {
         if ((maskBoxImage && m_inlineFlowBox.layoutObject().style()->maskLayers().hasImage()) || m_inlineFlowBox.layoutObject().style()->maskLayers().next()) {
