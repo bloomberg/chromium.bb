@@ -433,6 +433,7 @@ TEST_F(FrameFetchContextCachePolicyTest, MainResource)
 
     childDocumentLoader->detachFromFrame();
     childDocumentLoader.clear();
+    childFrame->detach(FrameDetachType::Remove);
 }
 
 } // namespace
