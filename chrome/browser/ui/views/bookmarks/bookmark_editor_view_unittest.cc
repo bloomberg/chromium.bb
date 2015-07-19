@@ -191,8 +191,7 @@ TEST_F(BookmarkEditorViewTest, EditTitleKeepsPosition) {
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
 
-  const BookmarkNode* bb_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
   ASSERT_EQ(ASCIIToUTF16("new_a"), bb_node->GetChild(0)->GetTitle());
   // The URL shouldn't have changed.
   ASSERT_TRUE(GURL(base_path() + "a") == bb_node->GetChild(0)->url());
@@ -210,8 +209,7 @@ TEST_F(BookmarkEditorViewTest, EditURLKeepsPosition) {
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(0));
 
-  const BookmarkNode* bb_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
   ASSERT_EQ(ASCIIToUTF16("a"), bb_node->GetChild(0)->GetTitle());
   // The URL should have changed.
   ASSERT_TRUE(GURL(base_path() + "new_a") == bb_node->GetChild(0)->url());
@@ -226,8 +224,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParent) {
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(1));
 
-  const BookmarkNode* other_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->other_node();
+  const BookmarkNode* other_node = model_->other_node();
   ASSERT_EQ(ASCIIToUTF16("a"), other_node->GetChild(2)->GetTitle());
   ASSERT_TRUE(GURL(base_path() + "a") == other_node->GetChild(2)->url());
 }
@@ -244,8 +241,7 @@ TEST_F(BookmarkEditorViewTest, ChangeParentAndURL) {
 
   ApplyEdits(editor_tree_model()->GetRoot()->GetChild(1));
 
-  const BookmarkNode* other_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->other_node();
+  const BookmarkNode* other_node = model_->other_node();
   ASSERT_EQ(ASCIIToUTF16("a"), other_node->GetChild(2)->GetTitle());
   ASSERT_TRUE(GURL(base_path() + "new_a") == other_node->GetChild(2)->url());
   ASSERT_TRUE(node_time == other_node->GetChild(2)->date_added());
@@ -268,8 +264,7 @@ TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
   // Parent the node to "F21".
   ApplyEdits(f2);
 
-  const BookmarkNode* bb_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
   const BookmarkNode* mf2 = bb_node->GetChild(1);
 
   // F2 in the model should have two children now: F21 and the node edited.
@@ -287,8 +282,7 @@ TEST_F(BookmarkEditorViewTest, MoveToNewParent) {
 
 // Brings up the editor, creating a new URL on the bookmark bar.
 TEST_F(BookmarkEditorViewTest, NewURL) {
-  const BookmarkNode* bb_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->bookmark_bar_node();
+  const BookmarkNode* bb_node = model_->bookmark_bar_node();
 
   CreateEditor(profile_.get(), bb_node,
                BookmarkEditor::EditDetails::AddNodeInFolder(
@@ -320,8 +314,7 @@ TEST_F(BookmarkEditorViewTest, ChangeURLNoTree) {
 
   ApplyEdits(NULL);
 
-  const BookmarkNode* other_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->other_node();
+  const BookmarkNode* other_node = model_->other_node();
   ASSERT_EQ(2, other_node->child_count());
 
   const BookmarkNode* new_node = other_node->GetChild(0);
@@ -341,8 +334,7 @@ TEST_F(BookmarkEditorViewTest, ChangeTitleNoTree) {
 
   ApplyEdits(NULL);
 
-  const BookmarkNode* other_node =
-      BookmarkModelFactory::GetForProfile(profile_.get())->other_node();
+  const BookmarkNode* other_node = model_->other_node();
   ASSERT_EQ(2, other_node->child_count());
 
   const BookmarkNode* new_node = other_node->GetChild(0);
@@ -411,9 +403,7 @@ TEST_F(BookmarkEditorViewTest, MoveFolder) {
 // Verifies the title of a new folder is updated correctly if ApplyEdits() is
 // is invoked while focus is still on the text field.
 TEST_F(BookmarkEditorViewTest, NewFolderTitleUpdatedOnCommit) {
-  const BookmarkNode* parent =
-      BookmarkModelFactory::GetForProfile(profile_.get())->
-      bookmark_bar_node() ->GetChild(2);
+  const BookmarkNode* parent = model_->bookmark_bar_node()->GetChild(2);
 
   CreateEditor(profile_.get(), parent,
                BookmarkEditor::EditDetails::AddNodeInFolder(
