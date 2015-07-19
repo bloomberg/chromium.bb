@@ -90,16 +90,22 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_INSIDE_DIV_TEST_URL);
     }
 
-    @DisabledTest
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithCallback_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_TEST_URL);
     }
 
-    @DisabledTest
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithCallback_videoInsideDiv() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_INSIDE_DIV_TEST_URL);
     }
@@ -119,9 +125,12 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_TEST_URL);
     }
 
-    @DisabledTest
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithJavascript_videoInsideDiv()
             throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_INSIDE_DIV_TEST_URL);
@@ -136,16 +145,22 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         });
     }
 
-    @DisabledTest
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithBackKey_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_TEST_URL);
     }
 
-    @DisabledTest
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithBackKey_videoInsideDiv()
             throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_INSIDE_DIV_TEST_URL);
@@ -392,9 +407,12 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertKeepScreenOnActive(mTestContainerView, false);
     }
 
-    @DisabledTest
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testPowerSaveBlockerIsTransferredToEmbedded()
             throws Throwable {
         // Enter fullscreen.

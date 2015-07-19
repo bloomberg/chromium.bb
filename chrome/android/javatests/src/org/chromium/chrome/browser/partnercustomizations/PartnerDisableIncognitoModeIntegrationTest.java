@@ -147,9 +147,12 @@ public class PartnerDisableIncognitoModeIntegrationTest extends
         assertIncognitoMenuItemEnabled(true);
     }
 
-    @DisabledTest
+    /*
     @MediumTest
     @Feature({"DisableIncognitoMode"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testEnabledParentalControlsClosesIncognitoTabs() throws InterruptedException {
         setParentalControlsEnabled(false);
         startMainActivityOnBlankPage();
