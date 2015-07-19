@@ -162,7 +162,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       in_flight_event_count_(0),
       in_get_backing_store_(false),
       ignore_input_events_(false),
-      input_method_active_(false),
       text_direction_updated_(false),
       text_direction_(blink::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
@@ -1247,11 +1246,6 @@ void RenderWidgetHostImpl::NotifyTextDirection() {
     text_direction_updated_ = false;
     text_direction_canceled_ = false;
   }
-}
-
-void RenderWidgetHostImpl::SetInputMethodActive(bool activate) {
-  input_method_active_ = activate;
-  Send(new ViewMsg_SetInputMethodActive(GetRoutingID(), activate));
 }
 
 void RenderWidgetHostImpl::ImeSetComposition(

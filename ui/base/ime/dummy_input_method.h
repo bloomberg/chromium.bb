@@ -31,7 +31,6 @@ class DummyInputMethod : public InputMethod {
   void CancelComposition(const TextInputClient* client) override;
   void OnInputLocaleChanged() override;
   std::string GetInputLocale() override;
-  bool IsActive() override;
   TextInputType GetTextInputType() const override;
   TextInputMode GetTextInputMode() const override;
   int GetTextInputFlags() const override;

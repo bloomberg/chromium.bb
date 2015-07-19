@@ -56,10 +56,6 @@ std::string DummyInputMethod::GetInputLocale() {
   return std::string();
 }
 
-bool DummyInputMethod::IsActive() {
-  return true;
-}
-
 TextInputType DummyInputMethod::GetTextInputType() const {
   return TEXT_INPUT_TYPE_NONE;
 }

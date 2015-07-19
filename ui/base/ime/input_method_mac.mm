@@ -36,10 +36,6 @@ std::string InputMethodMac::GetInputLocale() {
   return "";
 }
 
-bool InputMethodMac::IsActive() {
-  return true;
-}
-
 bool InputMethodMac::IsCandidatePopupOpen() const {
   // There seems to be no way to tell if a candidate window is open.
   return false;

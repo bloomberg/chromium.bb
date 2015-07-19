@@ -84,10 +84,6 @@ std::string MockInputMethod::GetInputLocale() {
   return "";
 }
 
-bool MockInputMethod::IsActive() {
-  return true;
-}
-
 TextInputType MockInputMethod::GetTextInputType() const {
   return TEXT_INPUT_TYPE_NONE;
 }

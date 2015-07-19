@@ -121,15 +121,6 @@ class InputMethod {
   // tag, or an empty string if the input method cannot provide it.
   virtual std::string GetInputLocale() = 0;
 
-  // Checks if the input method is active, i.e. if it's ready for processing
-  // keyboard event and generate composition or text result.
-  // If the input method is inactive, then it's not necessary to inform it the
-  // changes of caret bounds and text input type.
-  // Note: character results may still be generated and sent to the text input
-  // client by calling TextInputClient::InsertChar(), even if the input method
-  // is not active.
-  virtual bool IsActive() = 0;
-
   // TODO(yoichio): Following 3 methods(GetTextInputType, GetTextInputMode and
   // CanComposeInline) calls client's same method and returns its value. It is
   // not InputMethod itself's infomation. So rename these to

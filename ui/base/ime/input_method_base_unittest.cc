@@ -148,7 +148,6 @@ class MockInputMethodBase : public InputMethodBase {
   void CancelComposition(const TextInputClient* client) override {}
   void OnInputLocaleChanged() override {}
   std::string GetInputLocale() override { return ""; }
-  bool IsActive() override { return false; }
   bool IsCandidatePopupOpen() const override { return false; }
   // Overriden from InputMethodBase.
   void OnWillChangeFocusedClient(TextInputClient* focused_before,

@@ -250,10 +250,6 @@ class RemoteInputMethodWin : public InputMethod,
     return language.append(1, '-').append(region);
   }
 
-  bool IsActive() override {
-    return true;  // always turned on
-  }
-
   TextInputType GetTextInputType() const override {
     return text_input_client_ ? text_input_client_->GetTextInputType()
                               : TEXT_INPUT_TYPE_NONE;

@@ -2554,7 +2554,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     return NO;
 
   renderWidgetHostView_->render_widget_host_->Focus();
-  renderWidgetHostView_->render_widget_host_->SetInputMethodActive(true);
   renderWidgetHostView_->SetTextInputActive(true);
 
   // Cancel any onging composition text which was left before we lost focus.
@@ -2584,7 +2583,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (closeOnDeactivate_)
     renderWidgetHostView_->KillSelf();
 
-  renderWidgetHostView_->render_widget_host_->SetInputMethodActive(false);
   renderWidgetHostView_->render_widget_host_->Blur();
 
   // We should cancel any onging composition whenever RWH's Blur() method gets

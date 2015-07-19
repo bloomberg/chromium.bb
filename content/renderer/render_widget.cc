@@ -499,7 +499,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       host_closing_(false),
       is_swapped_out_(swapped_out),
       for_oopif_(false),
-      input_method_is_active_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       text_input_flags_(0),
@@ -728,7 +727,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ChangeResizeRect, OnChangeResizeRect)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnRepaint)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
@@ -1662,13 +1660,6 @@ WebRect RenderWidget::windowResizerRect() {
   return resizer_rect_;
 }
 
-void RenderWidget::OnSetInputMethodActive(bool is_active) {
-  // To prevent this renderer process from sending unnecessary IPC messages to
-  // a browser process, we permit the renderer process to send IPC messages
-  // only during the input method attached to the browser process is active.
-  input_method_is_active_ = is_active;
-}
-
 void RenderWidget::OnImeSetComposition(
     const base::string16& text,
     const std::vector<WebCompositionUnderline>& underlines,
@@ -1910,17 +1901,6 @@ void RenderWidget::FinishHandlingImeEvent() {
 }
 
 void RenderWidget::UpdateTextInputType() {
-  // On Windows, not only an IME but also an on-screen keyboard relies on the
-  // latest TextInputType to optimize its layout and functionality. Thus
-  // |input_method_is_active_| is no longer an appropriate condition to suppress
-  // TextInputTypeChanged IPC on Windows.
-  // TODO(yukawa, yoichio): Consider to stop checking |input_method_is_active_|
-  // on other platforms as well as Windows if the overhead is acceptable.
-#if !defined(OS_WIN)
-  if (!input_method_is_active_)
-    return;
-#endif
-
   ui::TextInputType new_type = GetTextInputType();
   if (IsDateTimeInput(new_type))
     return;  // Not considered as a text input field in WebKit/Chromium.
@@ -1953,8 +1933,6 @@ void RenderWidget::UpdateTextInputType() {
 void RenderWidget::UpdateTextInputState(ShowIme show_ime,
                                         ChangeSource change_source) {
   if (handling_ime_event_)
-    return;
-  if (show_ime == NO_SHOW_IME && !input_method_is_active_)
     return;
   ui::TextInputType new_type = GetTextInputType();
   if (IsDateTimeInput(new_type))
@@ -2180,9 +2158,6 @@ float RenderWidget::deviceScaleFactor() {
 }
 
 void RenderWidget::resetInputMethod() {
-  if (!input_method_is_active_)
-    return;
-
   ImeEventGuard guard(this);
   // If the last text input type is not None, then we should finish any
   // ongoing composition regardless of the new text input type.

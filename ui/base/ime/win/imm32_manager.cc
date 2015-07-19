@@ -4,8 +4,6 @@
 
 #include "ui/base/ime/win/imm32_manager.h"
 
-#include <msctf.h>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -118,7 +116,6 @@ namespace ui {
 
 IMM32Manager::IMM32Manager()
     : is_composing_(false),
-      ime_status_(false),
       input_language_id_(LANG_USER_DEFAULT),
       system_caret_(false),
       caret_rect_(-1, -1, 0, 0),
@@ -128,7 +125,7 @@ IMM32Manager::IMM32Manager()
 IMM32Manager::~IMM32Manager() {
 }
 
-bool IMM32Manager::SetInputLanguage() {
+void IMM32Manager::SetInputLanguage() {
   // Retrieve the current keyboard layout from Windows and determine whether
   // or not the current input context has IMEs.
   // Also save its input language for language-specific operations required
@@ -136,24 +133,6 @@ bool IMM32Manager::SetInputLanguage() {
   HKL keyboard_layout = ::GetKeyboardLayout(0);
   input_language_id_ =
       static_cast<LANGID>(reinterpret_cast<uintptr_t>(keyboard_layout));
-
-  // Check TSF Input Processor first.
-  // If the active profile is TSF INPUTPROCESSOR, this is IME.
-  base::win::ScopedComPtr<ITfInputProcessorProfileMgr> prof_mgr;
-  TF_INPUTPROCESSORPROFILE prof;
-  if (SUCCEEDED(prof_mgr.CreateInstance(CLSID_TF_InputProcessorProfiles)) &&
-      SUCCEEDED(prof_mgr->GetActiveProfile(GUID_TFCAT_TIP_KEYBOARD, &prof)) &&
-      prof.hkl == NULL &&
-      prof.dwProfileType == TF_PROFILETYPE_INPUTPROCESSOR) {
-      ime_status_ = true;
-  } else {
-    // If the curent language is not using TSF, check IMM32 based IMEs.
-    // As ImmIsIME always returns non-0 value on Vista+, use ImmGetIMEFileName
-    // instead to check if this HKL has any associated IME file.
-    ime_status_ = (ImmGetIMEFileName(keyboard_layout, NULL, 0) != 0);
-  }
-
-  return ime_status_;
 }
 
 void IMM32Manager::CreateImeWindow(HWND window_handle) {

@@ -304,14 +304,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void CancelUpdateTextDirection();
 
-  // Notifies the renderer whether or not the input method attached to this
-  // process is activated.
-  // When the input method is activated, a renderer process sends IPC messages
-  // to notify the status of its composition node. (This message is mainly used
-  // for notifying the position of the input cursor so that the browser can
-  // display input method windows under the cursor.)
-  void SetInputMethodActive(bool activate);
-
   // Update the composition node of the renderer (or WebKit).
   // WebKit has a special node (a composition node) for input method to change
   // its text without affecting any other DOM nodes. When the input method
@@ -352,10 +344,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool ignore_input_events() const {
     return ignore_input_events_;
-  }
-
-  bool input_method_active() const {
-    return input_method_active_;
   }
 
   // Whether forwarded WebInputEvents should be ignored.  True if either
@@ -764,9 +752,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Set to true if we shouldn't send input events from the render widget.
   bool ignore_input_events_;
-
-  // Indicates whether IME is active.
-  bool input_method_active_;
 
   // Set when we update the text direction of the selected input element.
   bool text_direction_updated_;

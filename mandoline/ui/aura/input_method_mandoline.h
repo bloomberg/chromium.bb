@@ -23,7 +23,6 @@ class InputMethodMandoline : public ui::InputMethodBase {
   void CancelComposition(const ui::TextInputClient* client) override;
   void OnInputLocaleChanged() override;
   std::string GetInputLocale() override;
-  bool IsActive() override;
   bool IsCandidatePopupOpen() const override;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMandoline);

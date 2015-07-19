@@ -573,14 +573,6 @@ void BrowserPluginGuest::SendTextInputTypeChangedToView(
 
   guest_rwhv->TextInputTypeChanged(last_text_input_type_, last_input_mode_,
                                    last_can_compose_inline_, last_input_flags_);
-  // Enable input method for guest if it's enabled for the embedder.
-  if (!static_cast<RenderViewHostImpl*>(
-           owner_web_contents_->GetRenderViewHost())->input_method_active()) {
-    return;
-  }
-  RenderViewHostImpl* guest_rvh =
-      static_cast<RenderViewHostImpl*>(GetWebContents()->GetRenderViewHost());
-  guest_rvh->SetInputMethodActive(true);
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
@@ -749,17 +741,8 @@ void BrowserPluginGuest::OnWillAttachComplete(
 
   delegate_->DidAttach(GetGuestProxyRoutingID());
 
-  if (!use_site_per_process) {
+  if (!use_site_per_process)
     has_render_view_ = true;
-
-    // Enable input method for guest if it's enabled for the embedder.
-    if (static_cast<RenderViewHostImpl*>(
-            owner_web_contents_->GetRenderViewHost())->input_method_active()) {
-      RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
-          GetWebContents()->GetRenderViewHost());
-      guest_rvh->SetInputMethodActive(true);
-    }
-  }
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }

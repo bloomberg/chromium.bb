@@ -66,10 +66,6 @@ std::string InputMethodMandoline::GetInputLocale() {
   return "";
 }
 
-bool InputMethodMandoline::IsActive() {
-  return true;
-}
-
 bool InputMethodMandoline::IsCandidatePopupOpen() const {
   return false;
 }

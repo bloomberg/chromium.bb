@@ -52,10 +52,6 @@ std::string InputMethodMinimal::GetInputLocale() {
   return std::string();
 }
 
-bool InputMethodMinimal::IsActive() {
-  return true;
-}
-
 bool InputMethodMinimal::IsCandidatePopupOpen() const {
   return false;
 }

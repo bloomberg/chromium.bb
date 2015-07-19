@@ -38,7 +38,6 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
   void CancelComposition(const TextInputClient* client) override;
   void OnInputLocaleChanged() override;
   std::string GetInputLocale() override;
-  bool IsActive() override;
   bool IsCandidatePopupOpen() const override;
 
  protected:

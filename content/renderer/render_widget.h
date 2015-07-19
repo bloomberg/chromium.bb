@@ -439,7 +439,6 @@ class CONTENT_EXPORT RenderWidget
   void OnCreateVideoAck(int32 video_id);
   void OnUpdateVideoAck(int32 video_id);
   void OnRequestMoveAck();
-  void OnSetInputMethodActive(bool is_active);
   virtual void OnImeSetComposition(
       const base::string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,
@@ -711,9 +710,6 @@ class CONTENT_EXPORT RenderWidget
   // OOPIF(crbug.com/471411).
   // Whether this RenderWidget is for an out-of-process iframe or not.
   bool for_oopif_;
-
-  // Indicates if an input method is active in the browser process.
-  bool input_method_is_active_;
 
   // Stores information about the current text input.
   blink::WebTextInputInfo text_input_info_;

@@ -76,7 +76,6 @@ class MockInputMethod : public ui::InputMethodBase {
   void CancelComposition(const ui::TextInputClient* client) override;
   void OnInputLocaleChanged() override {}
   std::string GetInputLocale() override;
-  bool IsActive() override;
   bool IsCandidatePopupOpen() const override;
   void ShowImeIfNeeded() override {}
 
@@ -192,10 +191,6 @@ void MockInputMethod::CancelComposition(const ui::TextInputClient* client) {
 
 std::string MockInputMethod::GetInputLocale() {
   return "en-US";
-}
-
-bool MockInputMethod::IsActive() {
-  return true;
 }
 
 bool MockInputMethod::IsCandidatePopupOpen() const {

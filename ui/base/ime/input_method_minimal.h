@@ -24,7 +24,6 @@ class UI_BASE_IME_EXPORT InputMethodMinimal : public InputMethodBase {
   void CancelComposition(const TextInputClient* client) override;
   void OnInputLocaleChanged() override;
   std::string GetInputLocale() override;
-  bool IsActive() override;
   bool IsCandidatePopupOpen() const override;
 
  private:

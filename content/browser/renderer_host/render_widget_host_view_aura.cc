@@ -1750,9 +1750,6 @@ void RenderWidgetHostViewAura::OnInputMethodChanged() {
   if (!host_)
     return;
 
-  if (GetInputMethod())
-    host_->SetInputMethodActive(GetInputMethod()->IsActive());
-
   // TODO(suzhe): implement the newly added “locale” property of HTML DOM
   // TextEvent.
 }
@@ -2302,14 +2299,11 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
       // Ask the system-wide IME to send all TextInputClient messages to |this|
       // object.
       input_method->SetFocusedTextInputClient(this);
-      host_->SetInputMethodActive(input_method->IsActive());
 
       // Often the application can set focus to the view in response to a key
       // down. However the following char event shouldn't be sent to the web
       // page.
       host_->SuppressNextCharEvents();
-    } else {
-      host_->SetInputMethodActive(false);
     }
 
     BrowserAccessibilityManager* manager =
@@ -2321,7 +2315,6 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     host_->Blur();
 
     DetachFromInputMethod();
-    host_->SetInputMethodActive(false);
 
     if (touch_editing_client_)
       touch_editing_client_->EndTouchEditing(false);

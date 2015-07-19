@@ -343,12 +343,6 @@ TEST_F(InputMethodChromeOSTest, GetInputLocale) {
   EXPECT_EQ("", ime_->GetInputLocale());
 }
 
-TEST_F(InputMethodChromeOSTest, IsActive) {
-  ime_->OnFocus();
-  // ui::InputMethodChromeOS always returns true.
-  EXPECT_TRUE(ime_->IsActive());
-}
-
 TEST_F(InputMethodChromeOSTest, GetInputTextType) {
   ime_->OnFocus();
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());

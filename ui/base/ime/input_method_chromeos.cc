@@ -259,10 +259,6 @@ std::string InputMethodChromeOS::GetInputLocale() {
   return "";
 }
 
-bool InputMethodChromeOS::IsActive() {
-  return true;
-}
-
 bool InputMethodChromeOS::IsCandidatePopupOpen() const {
   // TODO(yukishiino): Implement this method.
   return false;

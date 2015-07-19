@@ -359,7 +359,6 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
-  host_->SetInputMethodActive(false);
   host_->Blur();
   if (overscroll_controller_)
     overscroll_controller_->Disable();
@@ -512,7 +511,6 @@ void RenderWidgetHostViewAndroid::MovePluginWindows(
 
 void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
-  host_->SetInputMethodActive(true);
   if (overscroll_controller_)
     overscroll_controller_->Enable();
   if (content_view_core_) {

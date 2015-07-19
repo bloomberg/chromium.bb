@@ -33,7 +33,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   void CancelComposition(const TextInputClient* client) override;
   void OnInputLocaleChanged() override;
   std::string GetInputLocale() override;
-  bool IsActive() override;
   bool IsCandidatePopupOpen() const override;
 
  protected:
@@ -123,9 +122,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // TODO(yukawa, IME): Figure out long-term solution.
   bool accept_carriage_return_;
 
-  // Indicates if the current input locale has an IME.
-  bool active_;
-
   // True when an IME should be allowed to process key events.
   bool enabled_;
 
@@ -135,11 +131,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   // Window handle where composition is on-going. NULL when there is no
   // composition.
   HWND composing_window_handle_;
-
-  // Set to false initially. Tracks whether the IME has been initialized with
-  // the current input language.
-  // crbug.com/508668
-  bool default_input_language_initialized_;
 
   // Set to true to suppress the next WM_CHAR, when the WM_KEYDOWN gets stopped
   // propagation (e.g. triggered an accelerator).

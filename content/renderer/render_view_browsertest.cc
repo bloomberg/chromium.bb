@@ -911,9 +911,6 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
 // Test that our IME backend sends a notification message when the input focus
 // changes.
 TEST_F(RenderViewImplTest, OnImeTypeChanged) {
-  // Enable our IME backend code.
-  view()->OnSetInputMethodActive(true);
-
   // Load an HTML page consisting of two input fields.
   view()->set_send_content_state_immediately(true);
   LoadHTML("<html>"
@@ -1103,7 +1100,6 @@ TEST_F(RenderViewImplTest, ImeComposition) {
         // Load an HTML page consisting of a content-editable <div> element,
         // and move the input focus to the <div> element, where we can use
         // IMEs.
-        view()->OnSetInputMethodActive(ime_message->enable);
         view()->set_send_content_state_immediately(true);
         LoadHTML("<html>"
                 "<head>"
@@ -1116,8 +1112,6 @@ TEST_F(RenderViewImplTest, ImeComposition) {
         break;
 
       case IME_SETINPUTMODE:
-        // Activate (or deactivate) our IME back-end.
-        view()->OnSetInputMethodActive(ime_message->enable);
         break;
 
       case IME_SETFOCUS:
@@ -1750,7 +1744,6 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   const std::vector<blink::WebCompositionUnderline> empty_underline;
   std::vector<gfx::Rect> bounds;
   view()->OnSetFocus(true);
-  view()->OnSetInputMethodActive(true);
 
   // ASCII composition
   const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
@@ -1941,7 +1934,6 @@ TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
 }
 
 TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
-  view()->OnSetInputMethodActive(true);
   view()->set_send_content_state_immediately(true);
   LoadHTML("<textarea id=\"test\"></textarea>");
 

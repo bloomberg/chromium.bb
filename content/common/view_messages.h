@@ -757,20 +757,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetWebUIProperty,
                     std::string /* property_name */,
                     std::string /* property_value_json */)
 
-// This message starts/stop monitoring the input method status of the focused
-// edit control of a renderer process.
-// Parameters
-// * is_active (bool)
-//   Indicates if an input method is active in the browser process.
-//   The possible actions when a renderer process receives this message are
-//   listed below:
-//     Value Action
-//     true  Start sending IPC message ViewHostMsg_ImeUpdateTextInputState
-//           to notify the input method status of the focused edit control.
-//     false Stop sending IPC message ViewHostMsg_ImeUpdateTextInputState.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetInputMethodActive,
-                    bool /* is_active */)
-
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)

@@ -29,13 +29,12 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
     : toplevel_window_handle_(toplevel_window_handle),
       pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
       accept_carriage_return_(false),
-      active_(false),
       enabled_(false),
       is_candidate_popup_open_(false),
       composing_window_handle_(NULL),
-      default_input_language_initialized_(false),
       suppress_next_char_(false) {
   SetDelegate(delegate);
+  OnInputLocaleChanged();
 }
 
 void InputMethodWin::OnFocus() {
@@ -59,11 +58,6 @@ bool InputMethodWin::OnUntranslatedIMEMessage(
     InputMethod::NativeEventResult* result) {
   LRESULT original_result = 0;
   BOOL handled = FALSE;
-
-  if (!default_input_language_initialized_) {
-    // Gets the initial input locale.
-    OnInputLocaleChanged();
-  }
 
   switch (event.message) {
     case WM_IME_SETCONTEXT:
@@ -179,18 +173,12 @@ void InputMethodWin::CancelComposition(const TextInputClient* client) {
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
-  default_input_language_initialized_ = true;
-  active_ = imm32_manager_.SetInputLanguage();
   locale_ = imm32_manager_.GetInputLanguageName();
   OnInputMethodChanged();
 }
 
 std::string InputMethodWin::GetInputLocale() {
   return locale_;
-}
-
-bool InputMethodWin::IsActive() {
-  return active_;
 }
 
 bool InputMethodWin::IsCandidatePopupOpen() const {

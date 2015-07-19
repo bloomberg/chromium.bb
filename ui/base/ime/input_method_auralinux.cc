@@ -212,11 +212,6 @@ std::string InputMethodAuraLinux::GetInputLocale() {
   return "";
 }
 
-bool InputMethodAuraLinux::IsActive() {
-  // InputMethodAuraLinux is always ready and up.
-  return true;
-}
-
 bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
   // There seems no way to detect candidate windows or any popups.
   return false;
