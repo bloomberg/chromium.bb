@@ -48,12 +48,20 @@
         'gtest-linked_ptr.h',
         'gtest-param-util-generated.h',
         'gtest-param-util.h',
+        'gtest-port-arch.h',
         'gtest-port.h',
         'gtest-string.h',
         'gtest-tuple.h',
         'gtest-type-util.h',
       ],
       'DEST': 'include/gtest/internal',
+    },
+    {
+      'FILES': [
+        'gtest-port.h',
+        'gtest-printers.h',
+      ],
+      'DEST': 'include/gtest/internal/custom',
     },
     {
       # This is cheesy, but gtest.cc includes "src/gtest-internal-inl.h". Since

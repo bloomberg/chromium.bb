@@ -97,7 +97,7 @@ include/win/poll.h
 include/win/sys/poll.h
 [linux,mac]lib/${PLATFORM}_host/Debug/libgmock.a
 [linux,mac]lib/${PLATFORM}_host/Debug/libgtest.a
-[linux]lib/${PLATFORM}_host/Debug/libjsoncpp.a
+[linux,mac]lib/${PLATFORM}_host/Debug/libjsoncpp.a
 [linux,mac]lib/${PLATFORM}_host/Debug/libnacl_io.a
 [linux,mac]lib/${PLATFORM}_host/Debug/libppapi.a
 [linux,mac]lib/${PLATFORM}_host/Debug/libppapi_cpp.a
@@ -108,7 +108,7 @@ include/win/sys/poll.h
 [linux,mac]lib/${PLATFORM}_host/Debug/libsdk_util.a
 [linux,mac]lib/${PLATFORM}_host/Release/libgmock.a
 [linux,mac]lib/${PLATFORM}_host/Release/libgtest.a
-[linux]lib/${PLATFORM}_host/Release/libjsoncpp.a
+[linux,mac]lib/${PLATFORM}_host/Release/libjsoncpp.a
 [linux,mac]lib/${PLATFORM}_host/Release/libnacl_io.a
 [linux,mac]lib/${PLATFORM}_host/Release/libppapi.a
 [linux,mac]lib/${PLATFORM}_host/Release/libppapi_cpp.a
