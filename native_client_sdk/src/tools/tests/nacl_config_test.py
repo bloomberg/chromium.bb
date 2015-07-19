@@ -88,6 +88,8 @@ class TestNaclConfig(unittest.TestCase):
         ('newlib', 'arm'):
             '/sdk_root/toolchain/mac_arm_newlib/bin/arm-nacl-%s' % nacl_tool,
 
+        ('glibc', 'arm'):
+            '/sdk_root/toolchain/mac_arm_glibc/bin/arm-nacl-%s' % nacl_tool,
         ('glibc', 'x86_32'):
             '/sdk_root/toolchain/mac_x86_glibc/bin/i686-nacl-%s' % nacl_tool,
         ('glibc', 'x86_64'):
@@ -116,10 +118,6 @@ class TestNaclConfig(unittest.TestCase):
     for arch in ('x86_32', 'x86_64', 'arm', 'foobar'):
       self.assertRaises(nacl_config.Error,
                         nacl_config.GetToolPath, toolchain, arch, tool)
-
-    # No arm glibc.
-    self.assertRaises(nacl_config.Error,
-                      nacl_config.GetToolPath, 'glibc', 'arm', tool)
 
   def testCC(self):
     self._TestTool('cc', 'gcc', 'clang')

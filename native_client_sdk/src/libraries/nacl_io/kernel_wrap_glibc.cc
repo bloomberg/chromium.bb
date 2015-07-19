@@ -6,7 +6,9 @@
 
 // The entire file is wrapped in this #if. We do this so this .cc file can be
 // compiled, even on a non-glibc build.
-#if defined(__native_client__) && defined(__GLIBC__)
+// The ARM glibc toolchain uses a different IRT hooks mechanism and is not
+// yet supported by nacl_io.
+#if defined(__native_client__) && defined(__GLIBC__) && !defined(__arm__)
 
 #include "nacl_io/kernel_wrap.h"
 

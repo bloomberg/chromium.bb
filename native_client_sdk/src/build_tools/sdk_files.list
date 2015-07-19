@@ -58,6 +58,8 @@ getting_started/part2/*
 getting_started/README
 include/error_handling/*
 include/GLES2/*
+include/glibc/bits/*
+include/glibc/sys/mount.h
 include/gmock/*
 include/gmock/internal/*
 include/gtest/*
@@ -389,6 +391,7 @@ src/ppapi_simple_cpp/*
 [win]src/pthread/*
 [win]src/pthread/README
 src/sdk_util/*
+toolchain/${PLATFORM}_arm_glibc/*
 toolchain/${PLATFORM}_arm_newlib/*
 toolchain/${PLATFORM}_arm_newlib/arm-nacl/include/irt.h
 toolchain/${PLATFORM}_arm_newlib/arm-nacl/include/irt_dev.h

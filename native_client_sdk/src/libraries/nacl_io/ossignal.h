@@ -7,6 +7,11 @@
 
 #if !defined(WIN23)
 #include <signal.h>
+
+#if defined(__arm__) && defined(__GLIBC__)
+#define SIGWINCH 38
+#endif
+
 #if defined(__APPLE__)
 typedef void (*sighandler_t)(int);
 #elif defined(__GLIBC__) || defined(__BIONIC__)
@@ -14,6 +19,6 @@ typedef __sighandler_t sighandler_t;
 #else
 typedef _sig_func_ptr sighandler_t;
 #endif
-#endif
+#endif /*  !WIN23 */
 
 #endif  /* LIBRARIES_NACL_IO_OSSIGNAL_H_ */

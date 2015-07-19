@@ -49,12 +49,15 @@ TtyNode::TtyNode(Filesystem* filesystem)
 
 void TtyNode::InitTermios() {
   // Some sane values that produce good result.
-  termios_.c_iflag = ICRNL | IXON | IXOFF | IUTF8;
+  termios_.c_iflag = ICRNL | IXON | IXOFF;
+#ifdef IUTF8
+  termios_.c_iflag |= IUTF8;
+#endif
   termios_.c_oflag = OPOST | ONLCR;
   termios_.c_cflag = CREAD | 077;
   termios_.c_lflag =
       ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE | IEXTEN;
-#if !defined(__BIONIC__)
+#if !defined(__BIONIC__) && !(defined(__GLIBC__) && defined(__arm__))
   termios_.c_ispeed = B38400;
   termios_.c_ospeed = B38400;
 #endif

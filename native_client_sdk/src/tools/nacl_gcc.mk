@@ -30,6 +30,10 @@ ifneq (,$(findstring $(TOOLCHAIN),newlib bionic clang-newlib))
 ARM_SUPPORT=1
 endif
 
+ifdef ENABLE_ARM_GLIBC
+ARM_SUPPORT=1
+endif
+
 ifeq ($(ARM_SUPPORT),1)
 ARM_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=cc)
 ARM_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=c++)
@@ -541,8 +545,11 @@ endef
 #
 ifeq (x86_32,$(SYSARCH))
 LIB_NAME = lib32
-else
+ifeq (x86_64,$(SYSARCH))
 LIB_NAME = lib64
+else
+LIB_NAME = lib
+endif
 endif
 
 

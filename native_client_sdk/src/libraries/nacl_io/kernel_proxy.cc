@@ -1136,11 +1136,13 @@ int KernelProxy::kill(pid_t pid, int sig) {
 int KernelProxy::sigaction(int signum,
                            const struct sigaction* action,
                            struct sigaction* oaction) {
+#if defined(SA_SIGINFO)
   if (action && action->sa_flags & SA_SIGINFO) {
     // We don't support SA_SIGINFO (sa_sigaction field) yet
     errno = EINVAL;
     return -1;
   }
+#endif
 
   switch (signum) {
     // Handled signals.

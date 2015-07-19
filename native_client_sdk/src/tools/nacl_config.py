@@ -118,10 +118,6 @@ def CheckValidToolchainArch(toolchain, arch, arch_required=False):
     else:
       ExpectArch(arch, VALID_ARCHES)
 
-    if arch == 'arm':
-      Expect(toolchain in ['newlib', 'bionic', 'clang-newlib'],
-             'The arm arch only supports newlib.')
-
 
 def GetArchName(arch):
   return ARCH_NAME.get(arch)

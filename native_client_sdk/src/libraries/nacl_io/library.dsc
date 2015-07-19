@@ -238,6 +238,13 @@
     },
     {
       'FILES': [
+        "bits/ioctls.h",
+        "sys/mount.h",
+      ],
+      'DEST': 'include/glibc',
+    },
+    {
+      'FILES': [
         "arpa/inet.h",
         "memory.h",
         "netdb.h",

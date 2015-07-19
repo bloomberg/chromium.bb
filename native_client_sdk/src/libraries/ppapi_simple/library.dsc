@@ -4,6 +4,8 @@
     {
       'NAME' : 'ppapi_simple',
       'TYPE' : 'lib',
+      'LIBS': ['nacl_io'],
+      'DEPS': ['nacl_io'],
       'SOURCES' : [
         "ps.c",
         "ps_context_2d.c",

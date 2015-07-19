@@ -227,7 +227,7 @@ def DescMatchesFilter(desc, filters):
     value = desc.get(key, False)
 
     # If we provide an expected list, match at least one
-    if type(expected) != list:
+    if type(expected) not in (list, tuple):
       expected = set([expected])
     if type(value) != list:
       value = set([value])
