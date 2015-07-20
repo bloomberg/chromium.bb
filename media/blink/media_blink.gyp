@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../media_variables.gypi'
+  ],
   'targets': [
     {
       # GN version: //media/blink
@@ -76,7 +79,7 @@
         'websourcebuffer_impl.h',
       ],
       'conditions': [
-        ['OS=="android"', {
+        ['OS=="android" and media_use_ffmpeg==0', {
           'sources!': [
             'encrypted_media_player_support.cc',
             'encrypted_media_player_support.h',

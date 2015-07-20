@@ -3,20 +3,16 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    'media_variables.gypi',
+  ],
   'variables': {
-    'conditions': [
-      ['OS == "android"', {
-        # Android doesn't use ffmpeg.
-        'use_ffmpeg%': 0,
-      }, {  # 'OS != "android"'
-        'use_ffmpeg%': 1,
-      }],
-    ],
     # Set |use_fake_video_decoder| to 1 to ignore input frames in |clearkeycdm|,
     # and produce video frames filled with a solid color instead.
     'use_fake_video_decoder%': 0,
-    # Set |use_libvpx| to 1 to use libvpx for VP8 decoding in |clearkeycdm|.
-    'use_libvpx%': 0,
+    # Set |use_libvpx_in_clear_key_cdm| to 1 to use libvpx for VP8 decoding in
+    # |clearkeycdm|.
+    'use_libvpx_in_clear_key_cdm%': 0,
   },
   'conditions': [
     ['enable_pepper_cdms==1', {
@@ -39,7 +35,7 @@
                 'cdm/ppapi/external_clear_key/fake_cdm_video_decoder.h',
               ],
             }],
-            ['use_ffmpeg == 1'  , {
+            ['media_use_ffmpeg == 1'  , {
               'defines': ['CLEAR_KEY_CDM_USE_FFMPEG_DECODER'],
               'dependencies': [
                 '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
@@ -49,13 +45,13 @@
                 'cdm/ppapi/external_clear_key/ffmpeg_cdm_audio_decoder.h',
               ],
             }],
-            ['use_ffmpeg == 1 and use_fake_video_decoder == 0'  , {
+            ['media_use_ffmpeg == 1 and use_fake_video_decoder == 0' , {
               'sources': [
                 'cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.cc',
                 'cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h',
               ],
             }],
-            ['use_libvpx == 1 and use_fake_video_decoder == 0' , {
+            ['use_libvpx_in_clear_key_cdm == 1 and use_fake_video_decoder == 0' , {
               'defines': ['CLEAR_KEY_CDM_USE_LIBVPX_DECODER'],
               'dependencies': [
                 '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',

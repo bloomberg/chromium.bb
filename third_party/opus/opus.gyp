@@ -123,6 +123,11 @@
           'defines': [
             'FIXED_POINT',
           ],
+          'direct_dependent_settings': {
+            'defines': [
+              'OPUS_FIXED_POINT',
+            ],
+          },
           'include_dirs': [
             'src/silk/fixed',
           ],

@@ -408,6 +408,15 @@ void AVStreamToVideoDecoderConfig(
 
   VideoPixelFormat format =
       PixelFormatToVideoPixelFormat(stream->codec->pix_fmt);
+  // The format and coded size may be unknown if FFmpeg is compiled without
+  // video decoders.
+#if defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+  if (format == PIXEL_FORMAT_UNKNOWN)
+    format = PIXEL_FORMAT_YV12;
+  if (coded_size == gfx::Size(0, 0))
+    coded_size = visible_rect.size();
+#endif
+
   if (codec == kCodecVP9) {
     // TODO(tomfinegan): libavcodec doesn't know about VP9.
     format = PIXEL_FORMAT_YV12;

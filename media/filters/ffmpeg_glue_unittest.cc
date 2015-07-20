@@ -235,9 +235,11 @@ TEST_F(FFmpegGlueDestructionTest, WithOpenWithOpenStreams) {
   ASSERT_TRUE(glue_->OpenContext());
   ASSERT_GT(glue_->format_context()->nb_streams, 0u);
 
-  AVCodecContext* context = glue_->format_context()->streams[0]->codec;
-  ASSERT_EQ(avcodec_open2(
-      context, avcodec_find_decoder(context->codec_id), NULL), 0);
+  // Pick the audio stream (1) so this works when the ffmpeg video decoders are
+  // disabled.
+  AVCodecContext* context = glue_->format_context()->streams[1]->codec;
+  ASSERT_EQ(0, avcodec_open2(
+      context, avcodec_find_decoder(context->codec_id), NULL));
 }
 
 }  // namespace media

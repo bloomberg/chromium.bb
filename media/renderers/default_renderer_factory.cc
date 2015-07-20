@@ -16,10 +16,12 @@
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
+#if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
 #include "media/filters/ffmpeg_video_decoder.h"
 #endif
+#endif
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 #include "media/filters/opus_audio_decoder.h"
 #endif
 
@@ -55,7 +57,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       new FFmpegAudioDecoder(media_task_runner, media_log_));
 #endif
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));
 #endif
 
@@ -79,7 +81,7 @@ scoped_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
   video_decoders.push_back(new VpxVideoDecoder(media_task_runner));
 #endif
 
-#if !defined(MEDIA_DISABLE_FFMPEG)
+#if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
   video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner));
 #endif
 

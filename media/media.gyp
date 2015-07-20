@@ -12,14 +12,6 @@
     # detection of ABI mismatches and prevents silent errors.
     'linux_link_pulseaudio%': 0,
     'conditions': [
-      ['OS=="android" or OS=="ios"', {
-        # Android and iOS don't use ffmpeg or libvpx.
-        'media_use_ffmpeg%': 0,
-        'media_use_libvpx%': 0,
-      }, {  # 'OS!="android" and OS!="ios"'
-        'media_use_ffmpeg%': 1,
-        'media_use_libvpx%': 1,
-      }],
       # Enable ALSA and Pulse for runtime selection.
       ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and (embedded!=1 or (chromecast==1 and target_arch!="arm"))', {
         # ALSA is always needed for Web MIDI even if the cras is enabled.
@@ -45,6 +37,7 @@
   },
   'includes': [
     'media_cdm.gypi',
+    'media_variables.gypi',
   ],
   'targets': [
     {
@@ -65,6 +58,9 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../url/url.gyp:url_lib',
         'shared_memory_support',
+      ],
+      'export_dependent_settings': [
+        '../third_party/opus/opus.gyp:opus',
       ],
       'defines': [
         'MEDIA_IMPLEMENTATION',
@@ -260,7 +256,7 @@
         'base/cdm_factory.cc',
         'base/cdm_factory.h',
         'base/cdm_initialized_promise.cc',
-        'base/cdm_initialized_promise.h',        
+        'base/cdm_initialized_promise.h',
         'base/cdm_key_information.cc',
         'base/cdm_key_information.h',
         'base/cdm_promise.cc',
@@ -706,16 +702,37 @@
             'player_android',
             'video_capture_android_jni_headers',
           ],
-          'sources': [
-            'base/media.cc',
-            'base/media.h',
-          ],
           'sources!': [
-            'filters/opus_audio_decoder.cc',
-            'filters/opus_audio_decoder.h',
+            'base/audio_video_metadata_extractor.cc',
+            'base/audio_video_metadata_extractor.h',
+            'base/media_file_checker.cc',
+            'base/media_file_checker.h',
+            'filters/ffmpeg_video_decoder.cc',
+            'filters/ffmpeg_video_decoder.h',
           ],
           'defines': [
             'DISABLE_USER_INPUT_MONITOR',
+          ],
+          'conditions': [
+            ['media_use_ffmpeg == 1', {
+              'defines': [
+                # On Android, FFmpeg is built without video decoders. We only
+                # support hardware video decoding.
+                'ENABLE_MEDIA_PIPELINE_ON_ANDROID',
+                'DISABLE_FFMPEG_VIDEO_DECODERS',
+              ],
+              'direct_dependent_settings': {
+                'defines': [
+                  'ENABLE_MEDIA_PIPELINE_ON_ANDROID',
+                  'DISABLE_FFMPEG_VIDEO_DECODERS',
+                ],
+              },
+            }, {  # media_use_ffmpeg == 0
+              'sources!': [
+                'filters/opus_audio_decoder.cc',
+                'filters/opus_audio_decoder.h',
+              ],
+            }],
           ],
         }],
         # For VaapiVideoEncodeAccelerator.
@@ -1264,19 +1281,25 @@
           'dependencies': [
             '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
           ],
-        }, {  # media_use_ffmpeg== 0
+        }, {  # media_use_ffmpeg==0
           'sources!': [
-            'base/audio_video_metadata_extractor_unittest.cc',
-            'base/container_names_unittest.cc',
-            'base/media_file_checker_unittest.cc',
             'ffmpeg/ffmpeg_common_unittest.cc',
             'filters/audio_decoder_unittest.cc',
-            'filters/audio_file_reader_unittest.cc',
-            'filters/blocking_url_protocol_unittest.cc',
             'filters/ffmpeg_aac_bitstream_converter_unittest.cc',
             'filters/ffmpeg_demuxer_unittest.cc',
             'filters/ffmpeg_glue_unittest.cc',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc',
+          ],
+        }],
+        # Even if FFmpeg is enabled on Android we don't want these.
+        # TODO(watk): Refactor tests that could be made to run on Android.
+        ['media_use_ffmpeg==0 or OS=="android"', {
+          'sources!': [
+            'base/audio_video_metadata_extractor_unittest.cc',
+            'base/container_names_unittest.cc',
+            'base/media_file_checker_unittest.cc',
+            'filters/audio_file_reader_unittest.cc',
+            'filters/blocking_url_protocol_unittest.cc',
             'filters/ffmpeg_video_decoder_unittest.cc',
             'filters/in_memory_url_protocol_unittest.cc',
             'test/pipeline_integration_test.cc',

@@ -417,11 +417,19 @@ TEST_P(FFmpegAudioDecoderBehavioralTest, InitializeWithBadConfig) {
   InitializeDecoderWithResult(decoder_config, false);
 }
 
+#if defined(OPUS_FIXED_POINT)
+const DecodedBufferExpectations kSfxOpusExpectations[] = {
+    {0, 13500, "-2.70,-1.41,-0.78,-1.27,-2.56,-3.73,"},
+    {13500, 20000, "5.48,5.93,6.05,5.83,5.54,5.46,"},
+    {33500, 20000, "-3.44,-3.34,-3.57,-4.11,-4.74,-5.13,"},
+};
+#else
 const DecodedBufferExpectations kSfxOpusExpectations[] = {
     {0, 13500, "-2.70,-1.41,-0.78,-1.27,-2.56,-3.73,"},
     {13500, 20000, "5.48,5.93,6.04,5.83,5.54,5.45,"},
     {33500, 20000, "-3.45,-3.35,-3.57,-4.12,-4.74,-5.14,"},
 };
+#endif
 
 const DecodedBufferExpectations kBearOpusExpectations[] = {
     {500, 3500, "-0.26,0.87,1.36,0.84,-0.30,-1.22,"},

@@ -495,7 +495,7 @@ CommonNavigationParams MakeCommonNavigationParams(
                                 ui_timestamp, report_type, GURL(), GURL());
 }
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) || defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 media::Context3D GetSharedMainThreadContext3D() {
   cc::ContextProvider* provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
@@ -2012,7 +2012,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   if (!web_stream.isNull())
     return CreateWebMediaPlayerForMediaStream(client);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
   return CreateAndroidWebMediaPlayer(client, encrypted_client,
                                      GetMediaPermission(), initial_cdm);
 #else
@@ -2047,7 +2047,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   return new media::WebMediaPlayerImpl(
       frame, client, encrypted_client, weak_factory_.GetWeakPtr(),
       media_renderer_factory.Pass(), GetCdmFactory(), params);
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(
