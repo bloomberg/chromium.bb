@@ -1472,6 +1472,10 @@
     'chrome_browser_ui_media_router_sources': [
       'browser/ui/toolbar/media_router_action.cc',
       'browser/ui/toolbar/media_router_action.h',
+      'browser/ui/toolbar/media_router_action_platform_delegate.cc',
+      'browser/ui/toolbar/media_router_action_platform_delegate.h',
+      'browser/ui/views/toolbar/media_router_action_platform_delegate_views.cc',
+      'browser/ui/views/toolbar/media_router_action_platform_delegate_views.h',
       'browser/ui/webui/media_router/media_cast_mode.cc',
       'browser/ui/webui/media_router/media_cast_mode.h',
       'browser/ui/webui/media_router/media_router_dialog_controller.cc',

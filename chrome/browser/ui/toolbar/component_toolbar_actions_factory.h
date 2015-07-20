@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 
+class Browser;
 class Profile;
 class ToolbarActionViewController;
 
@@ -24,10 +25,10 @@ class ComponentToolbarActionsFactory {
   // Returns a collection of controllers for Chrome Actions. Declared virtual
   // for testing.
   virtual ScopedVector<ToolbarActionViewController>
-      GetComponentToolbarActions();
+      GetComponentToolbarActions(Browser* browser);
 
   // Returns the number of component actions.
-  int GetNumComponentActions();
+  int GetNumComponentActions(Browser* browser);
 
   // Sets the factory to use for testing purposes.
   // Ownership remains with the caller.

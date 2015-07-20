@@ -1037,7 +1037,7 @@ void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
   if (!extensions::ExtensionToolbarModel::Get(browser_->profile())->
           all_icons_visible() ||
       ComponentToolbarActionsFactory::GetInstance()->
-          GetNumComponentActions() > 0) {
+          GetNumComponentActions(browser_) > 0) {
 #if defined(OS_MACOSX)
     // There's a bug in AppKit menus, where if a menu item with a custom view
     // (like the extensions overflow menu) is the first menu item, it is not

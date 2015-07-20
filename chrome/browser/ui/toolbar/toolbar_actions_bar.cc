@@ -269,7 +269,7 @@ size_t ToolbarActionsBar::GetIconCount() const {
 
     int num_component_actions =
         ComponentToolbarActionsFactory::GetInstance()->
-            GetNumComponentActions();
+            GetNumComponentActions(browser_);
     size_t num_total_actions = num_extension_actions + num_component_actions;
 
     DCHECK_LE(visible_icons, num_total_actions);
@@ -342,7 +342,7 @@ void ToolbarActionsBar::CreateActions() {
 
       ScopedVector<ToolbarActionViewController> component_actions =
           ComponentToolbarActionsFactory::GetInstance()->
-              GetComponentToolbarActions();
+              GetComponentToolbarActions(browser_);
       DCHECK(component_actions.empty() ||
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
       toolbar_actions_.insert(toolbar_actions_.end(),

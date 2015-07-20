@@ -7,6 +7,9 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 
+class Browser;
+class MediaRouterActionPlatformDelegate;
+
 namespace media_router {
 class MediaRouterDialogController;
 }  // namespace media_router
@@ -15,7 +18,7 @@ class MediaRouterDialogController;
 // the toolbar.
 class MediaRouterAction : public ToolbarActionViewController {
  public:
-  MediaRouterAction();
+  explicit MediaRouterAction(Browser* browser);
   ~MediaRouterAction() override;
 
   // ToolbarActionViewController implementation.
@@ -52,6 +55,9 @@ class MediaRouterAction : public ToolbarActionViewController {
   gfx::Image media_router_idle_icon_;
 
   ToolbarActionViewDelegate* delegate_;
+
+  // The delegate to handle platform-specific implementations.
+  scoped_ptr<MediaRouterActionPlatformDelegate> platform_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAction);
 };

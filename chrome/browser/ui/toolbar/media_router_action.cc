@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/toolbar/media_router_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
 #include "chrome/grit/generated_resources.h"
@@ -15,12 +16,13 @@
 
 using media_router::MediaRouterDialogController;
 
-MediaRouterAction::MediaRouterAction()
+MediaRouterAction::MediaRouterAction(Browser* browser)
     : id_("media_router_action"),
       name_(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_TITLE)),
       media_router_idle_icon_(ui::ResourceBundle::GetSharedInstance().
           GetImageNamed(IDR_MEDIA_ROUTER_IDLE_ICON)),
-      delegate_(nullptr) {
+      delegate_(nullptr),
+      platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)) {
 }
 
 MediaRouterAction::~MediaRouterAction() {
@@ -87,6 +89,8 @@ bool MediaRouterAction::CanDrag() const {
 
 bool MediaRouterAction::ExecuteAction(bool by_user) {
   GetMediaRouterDialogController()->ShowMediaRouterDialog();
+  if (platform_delegate_)
+    platform_delegate_->CloseOverflowMenuIfOpen();
   return true;
 }
 

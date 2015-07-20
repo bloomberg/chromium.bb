@@ -30,7 +30,7 @@ ComponentToolbarActionsFactory* ComponentToolbarActionsFactory::GetInstance() {
 }
 
 ScopedVector<ToolbarActionViewController>
-ComponentToolbarActionsFactory::GetComponentToolbarActions() {
+ComponentToolbarActionsFactory::GetComponentToolbarActions(Browser* browser) {
   ScopedVector<ToolbarActionViewController> component_actions;
 
   // This is currently behind the extension-action-redesign flag, as it is
@@ -48,16 +48,16 @@ ComponentToolbarActionsFactory::GetComponentToolbarActions() {
 #if defined(ENABLE_MEDIA_ROUTER)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableMediaRouter)) {
-    component_actions.push_back(new MediaRouterAction());
+    component_actions.push_back(new MediaRouterAction(browser));
   }
 #endif
 
   return component_actions.Pass();
 }
 
-int ComponentToolbarActionsFactory::GetNumComponentActions() {
+int ComponentToolbarActionsFactory::GetNumComponentActions(Browser* browser) {
   if (num_component_actions_ == -1)
-    num_component_actions_ = GetComponentToolbarActions().size();
+    num_component_actions_ = GetComponentToolbarActions(browser).size();
 
   return num_component_actions_;
 }

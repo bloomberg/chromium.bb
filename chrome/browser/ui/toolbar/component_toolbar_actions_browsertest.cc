@@ -20,12 +20,12 @@ const char kMockId[] = "mock_action";
 class MockComponentToolbarActionsFactory
     : public ComponentToolbarActionsFactory {
  public:
-  MockComponentToolbarActionsFactory();
+  explicit MockComponentToolbarActionsFactory(Browser* browser);
   virtual ~MockComponentToolbarActionsFactory();
 
   // ComponentToolbarActionsFactory:
-  ScopedVector<ToolbarActionViewController> GetComponentToolbarActions()
-      override;
+  ScopedVector<ToolbarActionViewController>
+      GetComponentToolbarActions(Browser* browser) override;
 
   const std::vector<std::string> action_ids() const {
     return action_ids_;
@@ -38,11 +38,12 @@ class MockComponentToolbarActionsFactory
   DISALLOW_COPY_AND_ASSIGN(MockComponentToolbarActionsFactory);
 };
 
-MockComponentToolbarActionsFactory::MockComponentToolbarActionsFactory() {
+MockComponentToolbarActionsFactory::MockComponentToolbarActionsFactory(
+    Browser* browser) {
   ComponentToolbarActionsFactory::SetTestingFactory(this);
 
   ScopedVector<ToolbarActionViewController> actions =
-      GetComponentToolbarActions();
+      GetComponentToolbarActions(browser);
   for (auto it = actions.begin(); it != actions.end(); ++it) {
     action_ids_.push_back((*it)->GetId());
   }
@@ -53,7 +54,8 @@ MockComponentToolbarActionsFactory::~MockComponentToolbarActionsFactory() {
 }
 
 ScopedVector<ToolbarActionViewController>
-MockComponentToolbarActionsFactory::GetComponentToolbarActions() {
+MockComponentToolbarActionsFactory::GetComponentToolbarActions(
+    Browser* browser) {
   ScopedVector<ToolbarActionViewController> component_actions;
   TestToolbarActionViewController* action =
       new TestToolbarActionViewController(kMockId);
@@ -72,7 +74,8 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
         extensions::FeatureSwitch::extension_action_redesign(), true));
-    mock_actions_factory_.reset(new MockComponentToolbarActionsFactory());
+    mock_actions_factory_.reset(new MockComponentToolbarActionsFactory(
+        browser()));
   }
 
   MockComponentToolbarActionsFactory* mock_factory() {
