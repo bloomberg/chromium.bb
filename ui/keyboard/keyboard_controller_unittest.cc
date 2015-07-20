@@ -274,7 +274,6 @@ TEST_F(KeyboardControllerTest, KeyboardSize) {
   ASSERT_EQ(gfx::Rect(), initial_bounds);
   VerifyKeyboardWindowSize(container, keyboard);
 
-  gfx::Rect new_bounds(0, 0, 50, 50);
 
   // In FULL_WIDTH mode, attempt to change window width or move window up from
   // the bottom are ignored. Changing window height is supported.
@@ -283,6 +282,10 @@ TEST_F(KeyboardControllerTest, KeyboardSize) {
                             screen_bounds.width(),
                             50);
 
+  // The x position of new bounds may not be 0 if shelf is on the left side of
+  // screen. In FULL_WIDTH mode, the virtual keyboard should always align with
+  // the left edge of screen. See http://crbug.com/510595.
+  gfx::Rect new_bounds(10, 0, 50, 50);
   keyboard->SetBounds(new_bounds);
   ASSERT_EQ(expected_bounds, container->bounds());
   VerifyKeyboardWindowSize(container, keyboard);

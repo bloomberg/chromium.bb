@@ -49,6 +49,10 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
     const gfx::Rect& window_bounds =
         controller_->GetContainerWindow()->GetRootWindow()->bounds();
     new_bounds.set_y(window_bounds.height() - new_bounds.height());
+    // If shelf is positioned on the left side of screen, x is not 0. In
+    // FULL_WIDTH mode, the virtual keyboard should always align with the left
+    // edge of the screen. So manually set x to 0 here.
+    new_bounds.set_x(0);
     new_bounds.set_width(window_bounds.width());
   }
   // Keyboard bounds should only be reset when it actually changes. Otherwise
