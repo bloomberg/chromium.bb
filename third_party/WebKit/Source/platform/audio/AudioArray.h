@@ -55,8 +55,7 @@ public:
     {
         // Although n is a size_t, its true limit is max unsigned because we use unsigned in zeroRange()
         // and copyToRange(). Also check for integer overflow.
-        if (n > std::numeric_limits<unsigned>::max() / sizeof(T))
-            CRASH();
+        RELEASE_ASSERT(n <= std::numeric_limits<unsigned>::max() / sizeof(T));
 
         unsigned initialSize = sizeof(T) * n;
 
@@ -77,12 +76,11 @@ public:
             static size_t extraAllocationBytes = 0;
 
             // Again, check for integer overflow.
-            if (initialSize + extraAllocationBytes < initialSize)
-                CRASH();
+            RELEASE_ASSERT(initialSize + extraAllocationBytes >= initialSize);
 
             T* allocation = static_cast<T*>(fastMalloc(initialSize + extraAllocationBytes));
-            if (!allocation)
-                CRASH();
+            RELEASE_ASSERT(allocation);
+
             T* alignedData = alignedAddress(allocation, alignment);
 
             if (alignedData == allocation || extraAllocationBytes == alignment) {
