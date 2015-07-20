@@ -53,9 +53,8 @@ static bool rgbPictureImport(const unsigned char* pixels, bool premultiplied, We
 
     // Write the RGB pixels to an rgb data buffer, alpha premultiplied, then import the rgb data.
 
-    Vector<unsigned char> rgb;
     size_t pixelCount = picture->height * picture->width;
-    rgb.reserveInitialCapacity(pixelCount * 3);
+    Vector<unsigned char> rgb(pixelCount * 3);
 
     for (unsigned char* data = rgb.data(); pixelCount-- > 0; pixels += 4) {
         unsigned char alpha = pixels[3];

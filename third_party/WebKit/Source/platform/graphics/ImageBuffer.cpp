@@ -326,8 +326,7 @@ void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source,
     canvas()->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
-template <typename T>
-static bool encodeImage(T& source, const String& mimeType, const double* quality, Vector<char>* output)
+static bool encodeImage(const ImageDataBuffer& source, const String& mimeType, const double* quality, Vector<char>* output)
 {
     Vector<unsigned char>* encodedImage = reinterpret_cast<Vector<unsigned char>*>(output);
 
@@ -350,17 +349,6 @@ static bool encodeImage(T& source, const String& mimeType, const double* quality
     }
 
     return true;
-}
-
-String ImageBuffer::toDataURL(const String& mimeType, const double* quality) const
-{
-    ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
-
-    Vector<char> encodedImage;
-    if (!isSurfaceValid() || !encodeImage(m_surface->bitmap(), mimeType, quality, &encodedImage))
-        return "data:,";
-
-    return "data:" + mimeType + ";base64," + base64Encode(encodedImage);
 }
 
 String ImageDataBuffer::toDataURL(const String& mimeType, const double* quality) const
