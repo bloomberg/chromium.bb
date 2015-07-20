@@ -29,7 +29,7 @@ set errorlevel=
 
 :: Initialize/update virtualenv.
 cd /d "%DEPOT_TOOLS_DIR%."
-python -u bootstrap\bootstrap.py --deps_file bootstrap\deps.pyl --quiet ENV
+call python.bat -u bootstrap\bootstrap.py --deps_file bootstrap\deps.pyl --quiet ENV
 if errorlevel 1 goto :EOF
 
 :: Shall skip automatic update?
