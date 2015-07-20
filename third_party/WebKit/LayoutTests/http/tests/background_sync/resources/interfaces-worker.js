@@ -30,6 +30,7 @@ test(function() {
     // exposed in the prototype chain. https://crbug.com/43394
 
     assert_own_property(SyncRegistration.prototype, 'unregister');
+    assert_own_property(SyncRegistration.prototype, 'tag');
 
 }, 'SyncRegistration should be exposed and have the expected interface.');
 
@@ -40,6 +41,7 @@ test(function() {
     // exposed in the prototype chain. https://crbug.com/43394
 
     assert_own_property(PeriodicSyncRegistration.prototype, 'unregister');
+    assert_own_property(PeriodicSyncRegistration.prototype, 'tag');
 
 }, 'PeriodicSyncRegistration should be exposed and have the expected interface.');
 

@@ -7,6 +7,6 @@
     GarbageCollected,
     RuntimeEnabled=BackgroundSync,
 ] interface SyncRegistration {
-    [RuntimeEnabled=BackgroundSyncV2] readonly attribute DOMString tag;
+    readonly attribute DOMString tag;
     [CallWith=ScriptState] Promise<boolean> unregister();
 };
