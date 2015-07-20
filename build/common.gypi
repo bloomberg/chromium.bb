@@ -908,7 +908,7 @@
         # are using a custom toolchain and need to control -B in ldflags.
         # Do not use 32-bit gold on 32-bit hosts as it runs out address space
         # for component=static_library builds.
-        ['(OS=="linux" or OS=="android") and (target_arch=="x64" or target_arch=="arm")', {
+        ['(OS=="linux" or OS=="android") and (target_arch=="x64" or target_arch=="arm" or (target_arch=="ia32" and host_arch=="x64"))', {
           'linux_use_bundled_gold%': 1,
         }, {
           'linux_use_bundled_gold%': 0,
