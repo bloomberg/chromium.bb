@@ -5194,6 +5194,8 @@ lock(struct desktop_shell *shell)
 	wl_list_insert(&shell->compositor->cursor_layer.link,
 		       &shell->lock_layer.link);
 
+	weston_compositor_sleep(shell->compositor);
+
 	/* Remove the keyboard focus on all seats. This will be
 	 * restored to the workspace's saved state via
 	 * restore_focus_state when the compositor is unlocked */
