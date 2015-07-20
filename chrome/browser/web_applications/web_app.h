@@ -47,6 +47,7 @@ struct ShortcutInfo {
   // is still used to generate the app id (windows app id, not chrome app id).
   std::string extension_id;
   bool is_platform_app;
+  bool from_bookmark;
   base::string16 title;
   base::string16 description;
   base::FilePath extension_path;

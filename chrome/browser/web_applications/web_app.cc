@@ -214,6 +214,7 @@ scoped_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
   scoped_ptr<ShortcutInfo> shortcut_info(new ShortcutInfo);
   shortcut_info->extension_id = app->id();
   shortcut_info->is_platform_app = app->is_platform_app();
+  shortcut_info->from_bookmark = app->from_bookmark();
   shortcut_info->url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
   shortcut_info->title = base::UTF8ToUTF16(app->name());
   shortcut_info->description = base::UTF8ToUTF16(app->description());

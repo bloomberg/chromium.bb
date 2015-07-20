@@ -88,6 +88,8 @@ class WebAppShortcutCreator {
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, DeleteShortcuts);
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateIcon);
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateShortcuts);
+  FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest,
+                           UpdateBookmarkAppShortcut);
 
   // Returns the bundle identifier to use for this app bundle.
   std::string GetBundleIdentifier() const;

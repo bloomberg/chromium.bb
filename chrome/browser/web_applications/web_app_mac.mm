@@ -809,8 +809,17 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
   if (app_path.empty() || !base::PathExists(app_path))
     app_path = GetAppBundleById(GetBundleIdentifier());
 
-  if (!app_path.empty())
+  if (app_path.empty()) {
+    if (info_->from_bookmark) {
+      // The bookmark app shortcut has been deleted by the user. Restore it, as
+      // the Mac UI for bookmark apps creates the expectation that the app will
+      // be added to Applications.
+      app_path = GetApplicationsDirname();
+      paths.push_back(app_path);
+    }
+  } else {
     paths.push_back(app_path.DirName());
+  }
 
   size_t success_count = CreateShortcutsIn(paths);
   if (success_count == 0)
