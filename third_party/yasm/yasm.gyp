@@ -81,6 +81,8 @@
         'clang_warning_flags': [
           # yasm passes a `const elf_machine_sym*` through `void*`.
           '-Wno-incompatible-pointer-types',
+          # reg3264type in x86expr.c is unused.
+          '-Wno-unused-local-typedef',
         ],
       },
       'conditions': [

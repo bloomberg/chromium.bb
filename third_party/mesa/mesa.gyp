@@ -275,6 +275,8 @@
           '-Wno-tautological-constant-out-of-range-compare',
           '-Wno-absolute-value',  # Fires on st_atom_array.c, might be a bug
           '-Wno-mismatched-tags',  # Fixed upstream.
+          # mesa's STATIC_ASSERT() macro expands to an ununused typedef.
+          '-Wno-unused-local-typedef',
         ],
         'clang_warning_flags_unset': [
           # Don't warn about string->bool used in asserts.

@@ -135,7 +135,13 @@
             '../../third_party/icu/icu.gyp:icuuc',
           ],
           'variables': {
-            'clang_warning_flags': [ '-Wno-unused-value', ],
+            'clang_warning_flags': [
+              '-Wno-unused-value',
+              # Harfbuzz uses unused typedefs for its static asserts (and its
+              # static asserts are strange enough that they can't be replaced
+              # by static_assert).
+              '-Wno-unused-local-typedef',
+            ],
           },
           'conditions': [
             ['OS=="win"', {

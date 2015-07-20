@@ -125,6 +125,8 @@ config("mesa_internal_warnings") {
     cflags += [
       "-Wno-tautological-constant-out-of-range-compare",
       "-Wno-mismatched-tags",  # Fixed upstream.
+      # mesa's STATIC_ASSERT() macro expands to an ununused typedef.
+      "-Wno-unused-local-typedef",
     ]
   }
   if (is_win) {

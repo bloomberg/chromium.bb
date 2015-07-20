@@ -28,8 +28,6 @@ class FontCache {
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION("90127 FontCache::PreCacheFont"));
 
-    typedef std::map<base::string16, FontCache::CacheElement> FontNameToElement;
-
     base::AutoLock lock(mutex_);
 
     // Fetch the font into memory.

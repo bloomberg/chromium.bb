@@ -253,6 +253,16 @@ if (current_toolchain == host_toolchain) {
       "//build/config/compiler:no_incompatible_pointer_warnings",
     ]
 
+    config("yasm_warnings") {
+      if (is_clang) {
+        cflags = [
+          # reg3264type in x86expr.c is unused.
+          "-Wno-unused-local-typedef",
+        ]
+      }
+    }
+    configs += [ ":yasm_warnings" ]
+
     # Yasm generates a bunch of .c files which its source file #include.
     # Add the |target_gen_dir| into the include path so it can find them.
     # Ideally, these generated .c files would be placed into a separate

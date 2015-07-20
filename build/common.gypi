@@ -5739,7 +5739,6 @@
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
                   '-Wno-unused-function',  # http://crbug.com/505316
                   '-Wno-unused-value',  # http://crbug.com/505318
-                  '-Wno-unused-local-typedef',  # http://crbug.com/411648
                 ],
               },
             }],

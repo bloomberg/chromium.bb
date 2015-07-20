@@ -144,19 +144,30 @@ if (use_system_harfbuzz) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    config("harfbuzz_warnings") {
+      cflags = []
+      if (is_clang) {
+        cflags += [
+          "-Wno-unused-value",
+          # Harfbuzz uses unused typedefs for its static asserts (and its
+          # static asserts are strange enough that they can't be replaced
+          # by static_assert).
+          "-Wno-unused-local-typedef",
+        ]
+      }
+      if (is_win) {
+        cflags += [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
+      }
+    }
+    configs += [ ":harfbuzz_warnings" ]
+
     public_configs = [ ":harfbuzz-ng_config" ]
 
     deps = [
       "//third_party/icu:icuuc",
     ]
 
-    cflags = []
-    if (is_clang) {
-      cflags += [ "-Wno-unused-value" ]
-    }
-    if (is_win) {
-      cflags += [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
-    }
     if (is_mac) {
       sources += [
         "src/hb-coretext.cc",
