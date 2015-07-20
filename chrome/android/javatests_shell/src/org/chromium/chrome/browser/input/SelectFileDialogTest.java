@@ -57,6 +57,11 @@ public class SelectFileDialogTest extends ChromeShellTestBase {
             lastCallback = callback;
             return 1;
         }
+
+        @Override
+        public boolean canResolveActivity(Intent intent) {
+            return true;
+        }
     }
 
     private class IntentSentCriteria implements Criteria {
