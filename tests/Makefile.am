@@ -1,4 +1,4 @@
-SUBDIRS = modeprint proptest modetest
+SUBDIRS = modeprint proptest modetest vbltest
 
 if HAVE_LIBKMS
 SUBDIRS += kmstest
@@ -14,10 +14,6 @@ endif
 
 if HAVE_TEGRA
 SUBDIRS += tegra
-endif
-
-if HAVE_LIBUDEV
-SUBDIRS += vbltest
 endif
 
 AM_CFLAGS = \
