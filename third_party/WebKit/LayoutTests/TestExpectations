@@ -17,8 +17,6 @@ crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/510683 [ Mac ] media/video-played-reset.html [ Pass Failure ]
 
-crbug.com/511021 [ Mac ] http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
-
 # In root-layer-scrolls, the scrollbars make the scroll offsets difficult to compute.
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/keyboard-scroll-page-scale.html [ Failure ]
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
