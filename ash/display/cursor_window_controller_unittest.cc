@@ -103,7 +103,7 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
   EXPECT_EQ(secondary_display_id, GetCursorDisplayId());
   EXPECT_EQ(ui::kCursorNull, GetCursorType());
   hot_point = GetCursorHotPoint();
-  EXPECT_EQ("8,9", hot_point.ToString());
+  EXPECT_EQ("7,7", hot_point.ToString());
   cursor_bounds = GetCursorWindow()->GetBoundsInScreen();
   EXPECT_EQ(220, cursor_bounds.x() + hot_point.x());
   EXPECT_EQ(50, cursor_bounds.y() + hot_point.y());

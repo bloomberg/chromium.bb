@@ -191,7 +191,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
   ui::test::EventGenerator generator(root);
   generator.MoveMouseToInHost(10, 20);
 
-  EXPECT_EQ("8,9", test_api.GetCursorHotPoint().ToString());
+  EXPECT_EQ("7,7", test_api.GetCursorHotPoint().ToString());
   EXPECT_EQ("10,20",
             test_api.GetCursorHotPointLocationInRootWindow().ToString());
 
@@ -250,8 +250,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorMoveOnEnter) {
   // Check mirrored cursor's location.
   test::MirrorWindowTestApi test_api;
   gfx::Point hot_point = test_api.GetCursorHotPoint();
-  // Rotated hot point must be (25-9, 8).
-  EXPECT_EQ("16,8", test_api.GetCursorHotPoint().ToString());
+  // Rotated hot point must be (25-7, 7).
+  EXPECT_EQ("18,7", test_api.GetCursorHotPoint().ToString());
   // New coordinates are not (200,200) because (200,200) is not the center of
   // the display.
   EXPECT_EQ("199,200",

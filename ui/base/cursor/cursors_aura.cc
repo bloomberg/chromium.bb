@@ -34,8 +34,8 @@ struct CursorSet {
 };
 
 const CursorData kNormalCursors[] = {
-  {ui::kCursorNull, IDR_AURA_CURSOR_PTR, {4, 4}, {8, 9}},
-  {ui::kCursorPointer, IDR_AURA_CURSOR_PTR, {4, 4}, {8, 9}},
+  {ui::kCursorNull, IDR_AURA_CURSOR_PTR, {4, 4}, {7, 7}},
+  {ui::kCursorPointer, IDR_AURA_CURSOR_PTR, {4, 4}, {7, 7}},
   {ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
   {ui::kCursorNotAllowed, IDR_AURA_CURSOR_NO_DROP, {9, 9}, {18, 18}},
   {ui::kCursorCopy, IDR_AURA_CURSOR_COPY, {9, 9}, {18, 18}},
