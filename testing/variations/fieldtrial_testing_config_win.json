@@ -39,6 +39,11 @@
             "group_name": "Default"
         }
     ],
+    "InstanceID": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "NewProfileManagement": [
         {
             "group_name": "Enabled"
