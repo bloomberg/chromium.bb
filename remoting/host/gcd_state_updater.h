@@ -50,7 +50,7 @@ class GcdStateUpdater : public SignalStrategy::Listener {
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
-  void OnPatchStateStatus(GcdRestClient::Status status);
+  void OnPatchStateResult(GcdRestClient::Result result);
   void MaybeSendStateUpdate();
 
   base::Closure on_update_successful_callback_;
@@ -59,7 +59,6 @@ class GcdStateUpdater : public SignalStrategy::Listener {
   scoped_ptr<GcdRestClient> gcd_rest_client_;
   BackoffTimer timer_;
   base::ThreadChecker thread_checker_;
-  bool has_pending_state_request_ = false;
   std::string pending_request_jid_;
 
   DISALLOW_COPY_AND_ASSIGN(GcdStateUpdater);

@@ -69,26 +69,24 @@ bool GcdStateUpdater::OnSignalStrategyIncomingStanza(
   return false;
 }
 
-void GcdStateUpdater::OnPatchStateStatus(GcdRestClient::Status status) {
-  has_pending_state_request_ = false;
-
+void GcdStateUpdater::OnPatchStateResult(GcdRestClient::Result result) {
   if (!timer_.IsRunning()) {
     return;
   }
 
-  if (status == GcdRestClient::NETWORK_ERROR ||
+  if (result == GcdRestClient::NETWORK_ERROR ||
       pending_request_jid_ != signal_strategy_->GetLocalJid()) {
     // Continue exponential backoff.
     return;
   }
 
   timer_.Stop();
-  if (status == GcdRestClient::SUCCESS) {
+  if (result == GcdRestClient::SUCCESS) {
     if (!on_update_successful_callback_.is_null()) {
       on_unknown_host_id_error_.Reset();
       base::ResetAndReturn(&on_update_successful_callback_).Run();
     }
-  } else if (status == GcdRestClient::NO_SUCH_HOST) {
+  } else if (result == GcdRestClient::NO_SUCH_HOST) {
     if (!on_unknown_host_id_error_.is_null()) {
       on_update_successful_callback_.Reset();
       base::ResetAndReturn(&on_unknown_host_id_error_).Run();
@@ -106,11 +104,9 @@ void GcdStateUpdater::MaybeSendStateUpdate() {
   // This avoids having multiple outstanding requests, which would be
   // a problem since there's no guarantee that the reqests will
   // complete in order.
-  if (has_pending_state_request_) {
+  if (gcd_rest_client_->HasPendingRequest()) {
     return;
   }
-
-  has_pending_state_request_ = true;
 
   // Construct an update to the remote state.
   scoped_ptr<base::DictionaryValue> patch(new base::DictionaryValue);
@@ -123,7 +119,7 @@ void GcdStateUpdater::MaybeSendStateUpdate() {
   // Send the update to GCD.
   gcd_rest_client_->PatchState(
       patch.Pass(),
-      base::Bind(&GcdStateUpdater::OnPatchStateStatus, base::Unretained(this)));
+      base::Bind(&GcdStateUpdater::OnPatchStateResult, base::Unretained(this)));
 }
 
 }  // namespace remoting

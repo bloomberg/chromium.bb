@@ -20,12 +20,9 @@ class GcdRestClientTest : public testing::Test {
                               "<fake_user_email>",
                               "<fake_access_token>") {}
 
-  void OnRequestComplete(GcdRestClient::Status status) {
+  void OnRequestComplete(GcdRestClient::Result result) {
     ++counter_;
-    last_status_ = status;
-    if (delete_client_) {
-      client_.reset();
-    }
+    last_result_ = result;
   }
 
   scoped_ptr<base::DictionaryValue> MakePatchDetails(int id) {
@@ -47,9 +44,8 @@ class GcdRestClientTest : public testing::Test {
   net::TestURLFetcherFactory url_fetcher_factory_;
   FakeOAuthTokenGetter default_token_getter_;
   scoped_ptr<GcdRestClient> client_;
-  bool delete_client_ = false;
   int counter_ = 0;
-  GcdRestClient::Status last_status_ = GcdRestClient::OTHER_ERROR;
+  GcdRestClient::Result last_result_ = GcdRestClient::OTHER_ERROR;
 
  private:
   base::MessageLoop message_loop_;
@@ -65,7 +61,7 @@ TEST_F(GcdRestClientTest, NetworkErrorGettingToken) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, counter_);
-  EXPECT_EQ(GcdRestClient::NETWORK_ERROR, last_status_);
+  EXPECT_EQ(GcdRestClient::NETWORK_ERROR, last_result_);
 }
 
 TEST_F(GcdRestClientTest, AuthErrorGettingToken) {
@@ -78,7 +74,7 @@ TEST_F(GcdRestClientTest, AuthErrorGettingToken) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, counter_);
-  EXPECT_EQ(GcdRestClient::OTHER_ERROR, last_status_);
+  EXPECT_EQ(GcdRestClient::OTHER_ERROR, last_result_);
 }
 
 TEST_F(GcdRestClientTest, NetworkErrorOnPost) {
@@ -95,7 +91,7 @@ TEST_F(GcdRestClientTest, NetworkErrorOnPost) {
   fetcher->set_response_code(0);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, counter_);
-  EXPECT_EQ(GcdRestClient::NETWORK_ERROR, last_status_);
+  EXPECT_EQ(GcdRestClient::NETWORK_ERROR, last_result_);
 }
 
 TEST_F(GcdRestClientTest, OtherErrorOnPost) {
@@ -112,7 +108,7 @@ TEST_F(GcdRestClientTest, OtherErrorOnPost) {
   fetcher->set_response_code(500);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, counter_);
-  EXPECT_EQ(GcdRestClient::OTHER_ERROR, last_status_);
+  EXPECT_EQ(GcdRestClient::OTHER_ERROR, last_result_);
 }
 
 TEST_F(GcdRestClientTest, NoSuchHost) {
@@ -129,7 +125,7 @@ TEST_F(GcdRestClientTest, NoSuchHost) {
   fetcher->set_response_code(404);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, counter_);
-  EXPECT_EQ(GcdRestClient::NO_SUCH_HOST, last_status_);
+  EXPECT_EQ(GcdRestClient::NO_SUCH_HOST, last_result_);
 }
 
 TEST_F(GcdRestClientTest, Succeed) {
@@ -153,68 +149,7 @@ TEST_F(GcdRestClientTest, Succeed) {
   fetcher->set_response_code(200);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, counter_);
-  EXPECT_EQ(GcdRestClient::SUCCESS, last_status_);
-}
-
-TEST_F(GcdRestClientTest, SucceedTwice) {
-  CreateClient();
-
-  client_->PatchState(MakePatchDetails(0).Pass(),
-                      base::Bind(&GcdRestClientTest::OnRequestComplete,
-                                 base::Unretained(this)));
-  net::TestURLFetcher* fetcher0 = url_fetcher_factory_.GetFetcherByID(0);
-  client_->PatchState(MakePatchDetails(1).Pass(),
-                      base::Bind(&GcdRestClientTest::OnRequestComplete,
-                                 base::Unretained(this)));
-  net::TestURLFetcher* fetcher1 = url_fetcher_factory_.GetFetcherByID(0);
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(
-      "{\"patches\":[{\"patch\":{\"id\":0},\"timeMs\":0.0}],"
-      "\"requestTimeMs\":0.0}",
-      fetcher0->upload_data());
-  fetcher0->set_response_code(200);
-  fetcher0->delegate()->OnURLFetchComplete(fetcher0);
-  EXPECT_EQ(GcdRestClient::SUCCESS, last_status_);
-  EXPECT_EQ(1, counter_);
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(
-      "{\"patches\":[{\"patch\":{\"id\":1},\"timeMs\":0.0}],"
-      "\"requestTimeMs\":0.0}",
-      fetcher1->upload_data());
-  fetcher1->set_response_code(200);
-  fetcher1->delegate()->OnURLFetchComplete(fetcher1);
-  EXPECT_EQ(GcdRestClient::SUCCESS, last_status_);
-  EXPECT_EQ(2, counter_);
-}
-
-TEST_F(GcdRestClientTest, SucceedAndDelete) {
-  CreateClient();
-
-  client_->PatchState(MakePatchDetails(0).Pass(),
-                      base::Bind(&GcdRestClientTest::OnRequestComplete,
-                                 base::Unretained(this)));
-  net::TestURLFetcher* fetcher0 = url_fetcher_factory_.GetFetcherByID(0);
-  client_->PatchState(MakePatchDetails(1).Pass(),
-                      base::Bind(&GcdRestClientTest::OnRequestComplete,
-                                 base::Unretained(this)));
-  delete_client_ = true;
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(
-      "{\"patches\":[{\"patch\":{\"id\":0},\"timeMs\":0.0}],"
-      "\"requestTimeMs\":0.0}",
-      fetcher0->upload_data());
-  fetcher0->set_response_code(200);
-  fetcher0->delegate()->OnURLFetchComplete(fetcher0);
-  EXPECT_EQ(GcdRestClient::SUCCESS, last_status_);
-  EXPECT_EQ(1, counter_);
-
-  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GcdRestClient::SUCCESS, last_result_);
 }
 
 }  // namespace remoting

@@ -10,10 +10,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_fetcher_factory.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/host/oauth_token_getter.h"
 
@@ -27,17 +25,16 @@ namespace remoting {
 class GcdRestClient : public net::URLFetcherDelegate {
  public:
   // Result of a GCD call.
-  enum Status {
+  enum Result {
     SUCCESS,
     NETWORK_ERROR,
     NO_SUCH_HOST,
     OTHER_ERROR,
   };
 
-  typedef base::Callback<void(Status status)> PatchStateCallback;
+  typedef base::Callback<void(Result result)> ResultCallback;
 
-  // Note: |token_getter|, |url_fetcher_factory|, and |clock| must
-  // outlive this object.
+  // Note: |token_getter| must outlive this object.
   GcdRestClient(const std::string& gcd_base_url,
                 const std::string& gcd_device_id,
                 const scoped_refptr<net::URLRequestContextGetter>&
@@ -46,22 +43,23 @@ class GcdRestClient : public net::URLFetcherDelegate {
 
   ~GcdRestClient() override;
 
+  // Tests whether is object is currently running a request.  Only one
+  // request at a time may be pending.
+  bool HasPendingRequest() { return url_fetcher_; }
+
   // Sends a 'patchState' request to the GCD API.  Constructs and
   // sends an appropriate JSON message M where |patch_details| becomes
   // the value of M.patches[0].patch.
   void PatchState(scoped_ptr<base::DictionaryValue> patch_details,
-                  const GcdRestClient::PatchStateCallback& callback);
+                  const GcdRestClient::ResultCallback& callback);
 
   void SetClockForTest(scoped_ptr<base::Clock> clock) { clock_ = clock.Pass(); }
 
  private:
-  struct PatchStateRequest;
-
-  void StartNextRequest();
   void OnTokenReceived(OAuthTokenGetter::Status status,
                        const std::string& user_email,
                        const std::string& access_token);
-  void FinishCurrentRequest(Status result);
+  void FinishCurrentRequest(Result result);
 
   // URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -71,13 +69,8 @@ class GcdRestClient : public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   OAuthTokenGetter* token_getter_;
   scoped_ptr<base::Clock> clock_;
-  scoped_ptr<PatchStateRequest> current_request_;
-
-  // Ideally this queue would contain instances of scoped_ptr, but the
-  // Mac C++ compiler doesn't like that.
-  std::queue<PatchStateRequest*> pending_requests_;
-
-  base::WeakPtrFactory<GcdRestClient> weak_factory_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
+  ResultCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GcdRestClient);
 };

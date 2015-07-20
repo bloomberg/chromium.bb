@@ -5,6 +5,7 @@
 #include "remoting/host/gcd_rest_client.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -15,13 +16,6 @@
 
 namespace remoting {
 
-// Only 'patchState' requests are supported at the moment, but other
-// types of requests may be added in the future.
-struct GcdRestClient::PatchStateRequest {
-  GcdRestClient::PatchStateCallback callback;
-  scoped_ptr<net::URLFetcher> url_fetcher;
-};
-
 GcdRestClient::GcdRestClient(const std::string& gcd_base_url,
                              const std::string& gcd_device_id,
                              const scoped_refptr<net::URLRequestContextGetter>&
@@ -31,20 +25,17 @@ GcdRestClient::GcdRestClient(const std::string& gcd_base_url,
       gcd_device_id_(gcd_device_id),
       url_request_context_getter_(url_request_context_getter),
       token_getter_(token_getter),
-      clock_(new base::DefaultClock),
-      weak_factory_(this) {
+      clock_(new base::DefaultClock) {
 }
 
 GcdRestClient::~GcdRestClient() {
-  while (!pending_requests_.empty()) {
-    delete pending_requests_.front();
-    pending_requests_.pop();
-  }
 }
 
 void GcdRestClient::PatchState(
     scoped_ptr<base::DictionaryValue> patch_details,
-    const GcdRestClient::PatchStateCallback& callback) {
+    const GcdRestClient::ResultCallback& callback) {
+  DCHECK(!HasPendingRequest());
+
   // Construct a status update message in the format GCD expects.  The
   // message looks like this, where "..." is filled in from
   // |patch_details|:
@@ -82,28 +73,15 @@ void GcdRestClient::PatchState(
   std::string url =
       gcd_base_url_ + "/devices/" + gcd_device_id_ + "/patchState";
 
-  // Enqueue an HTTP request to issue once an auth token is available.
-  scoped_ptr<PatchStateRequest> request(new PatchStateRequest);
-  request->callback = callback;
-  request->url_fetcher =
+  // Prepare an HTTP request to issue once an auth token is available.
+  callback_ = callback;
+  url_fetcher_ =
       net::URLFetcher::Create(GURL(url), net::URLFetcher::POST, this);
-  request->url_fetcher->SetUploadData("application/json", patch_string);
+  url_fetcher_->SetUploadData("application/json", patch_string);
   if (url_request_context_getter_) {
-    request->url_fetcher->SetRequestContext(url_request_context_getter_.get());
+    url_fetcher_->SetRequestContext(url_request_context_getter_.get());
   }
 
-  if (current_request_) {
-    // New request will start when the current request finishes.
-    DCHECK(pending_requests_.empty());
-    pending_requests_.push(request.release());
-  } else {
-    current_request_ = request.Pass();
-    StartNextRequest();
-  }
-}
-
-void GcdRestClient::StartNextRequest() {
-  DCHECK(current_request_);
   token_getter_->CallWithToken(
       base::Bind(&GcdRestClient::OnTokenReceived, base::Unretained(this)));
 }
@@ -111,10 +89,11 @@ void GcdRestClient::StartNextRequest() {
 void GcdRestClient::OnTokenReceived(OAuthTokenGetter::Status status,
                                     const std::string& user_email,
                                     const std::string& access_token) {
-  DCHECK(current_request_);
+  DCHECK(HasPendingRequest());
+
   if (status != OAuthTokenGetter::SUCCESS) {
     LOG(ERROR) << "Error getting OAuth token for GCD request: "
-               << current_request_->url_fetcher->GetOriginalURL();
+               << url_fetcher_->GetOriginalURL();
     if (status == OAuthTokenGetter::NETWORK_ERROR) {
       FinishCurrentRequest(NETWORK_ERROR);
     } else {
@@ -123,34 +102,22 @@ void GcdRestClient::OnTokenReceived(OAuthTokenGetter::Status status,
     return;
   }
 
-  current_request_->url_fetcher->SetExtraRequestHeaders(
+  url_fetcher_->SetExtraRequestHeaders(
       "Authorization: Bearer " + access_token);
-  current_request_->url_fetcher->Start();
+  url_fetcher_->Start();
 }
 
-void GcdRestClient::FinishCurrentRequest(Status result) {
-  DCHECK(current_request_);
-  scoped_ptr<PatchStateRequest> request = current_request_.Pass();
-  if (!pending_requests_.empty()) {
-    current_request_.reset(pending_requests_.front());
-    pending_requests_.pop();
-
-    // This object may be destroyed by the call to request->callback
-    // below, so instead of calling StartNextRequest() at the end of
-    // this method, schedule a call using a weak pointer.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&GcdRestClient::StartNextRequest,
-                              weak_factory_.GetWeakPtr()));
-  }
-
-  request->callback.Run(result);
+void GcdRestClient::FinishCurrentRequest(Result result) {
+  DCHECK(HasPendingRequest());
+  url_fetcher_.reset();
+  base::ResetAndReturn(&callback_).Run(result);
 }
 
 void GcdRestClient::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(current_request_);
+  DCHECK(HasPendingRequest());
 
-  const GURL& request_url = current_request_->url_fetcher->GetOriginalURL();
-  Status status = OTHER_ERROR;
+  const GURL& request_url = url_fetcher_->GetOriginalURL();
+  Result status = OTHER_ERROR;
   int response = source->GetResponseCode();
   if (response >= 200 && response < 300) {
     DLOG(INFO) << "GCD request succeeded:" << request_url;
