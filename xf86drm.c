@@ -64,6 +64,16 @@
 #include "xf86drm.h"
 #include "libdrm_macros.h"
 
+#ifdef __OpenBSD__
+#define DRM_PRIMARY_MINOR_NAME	"drm"
+#define DRM_CONTROL_MINOR_NAME	"drmC"
+#define DRM_RENDER_MINOR_NAME	"drmR"
+#else
+#define DRM_PRIMARY_MINOR_NAME	"card"
+#define DRM_CONTROL_MINOR_NAME	"controlD"
+#define DRM_RENDER_MINOR_NAME	"renderD"
+#endif
+
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 #define DRM_MAJOR 145
 #endif
@@ -525,11 +535,11 @@ static const char *drmGetMinorName(int type)
 {
     switch (type) {
     case DRM_NODE_PRIMARY:
-        return "card";
+        return DRM_PRIMARY_MINOR_NAME;
     case DRM_NODE_CONTROL:
-        return "controlD";
+        return DRM_CONTROL_MINOR_NAME;
     case DRM_NODE_RENDER:
-        return "renderD";
+        return DRM_RENDER_MINOR_NAME;
     default:
         return NULL;
     }
