@@ -2202,8 +2202,11 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   // sent before setting |is_detaching_| to true.
   is_detaching_ = true;
 
-  if (render_widget_)
+  // Clean up the associated RenderWidget for the frame, if there is one.
+  if (render_widget_) {
     render_widget_->UnregisterRenderFrame(this);
+    render_widget_->CloseForFrame();
+  }
 
   // We need to clean up subframes by removing them from the map and deleting
   // the RenderFrameImpl.  In contrast, the main frame is owned by its

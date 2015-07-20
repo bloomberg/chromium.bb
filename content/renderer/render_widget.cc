@@ -575,6 +575,13 @@ RenderWidget* RenderWidget::CreateForFrame(
 }
 
 // static
+blink::WebWidget* RenderWidget::CreateWebFrameWidget(
+    RenderWidget* render_widget,
+    blink::WebLocalFrame* frame) {
+  return blink::WebFrameWidget::create(render_widget, frame);
+}
+
+// static
 blink::WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   switch (render_widget->popup_type_) {
     case blink::WebPopupTypeNone:  // Nothing to create.
@@ -587,11 +594,12 @@ blink::WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   return NULL;
 }
 
-// static
-blink::WebWidget* RenderWidget::CreateWebFrameWidget(
-    RenderWidget* render_widget,
-    blink::WebLocalFrame* frame) {
-  return blink::WebFrameWidget::create(render_widget, frame);
+void RenderWidget::CloseForFrame() {
+  // Close() must be called synchronously, since Blink objects are already in
+  // the process of being torn down. Deferring Close() to the message loop like
+  // the normal case means that Close() will end up getting called when various
+  // pointers, etc. are already nulled out or freed.
+  CloseInternal(true);
 }
 
 bool RenderWidget::Init(int32 opener_id,
@@ -848,28 +856,7 @@ void RenderWidget::SetWindowRectSynchronously(
 }
 
 void RenderWidget::OnClose() {
-  DCHECK(content::RenderThread::Get());
-  if (closing_)
-    return;
-  NotifyOnClose();
-  closing_ = true;
-
-  // Browser correspondence is no longer needed at this point.
-  if (routing_id_ != MSG_ROUTING_NONE) {
-    RenderThread::Get()->RemoveRoute(routing_id_);
-    SetHidden(false);
-    if (RenderThreadImpl::current())
-      RenderThreadImpl::current()->WidgetDestroyed();
-  }
-
-  // If there is a Send call on the stack, then it could be dangerous to close
-  // now.  Post a task that only gets invoked when there are no nested message
-  // loops.
-  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
-      FROM_HERE, base::Bind(&RenderWidget::Close, this));
-
-  // Balances the AddRef taken when we called AddRoute.
-  Release();
+  CloseInternal(false);
 }
 
 // Got a response from the browser after the renderer decided to create a new
@@ -1559,6 +1546,35 @@ void RenderWidget::DoDeferredClose() {
 
 void RenderWidget::NotifyOnClose() {
   FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_, WidgetWillClose());
+}
+
+void RenderWidget::CloseInternal(bool close_synchronously) {
+  DCHECK(content::RenderThread::Get());
+  if (closing_)
+    return;
+  NotifyOnClose();
+  closing_ = true;
+
+  // Browser correspondence is no longer needed at this point.
+  if (routing_id_ != MSG_ROUTING_NONE) {
+    RenderThread::Get()->RemoveRoute(routing_id_);
+    SetHidden(false);
+    if (RenderThreadImpl::current())
+      RenderThreadImpl::current()->WidgetDestroyed();
+  }
+
+  if (close_synchronously) {
+    Close();
+  } else {
+    // If there is a Send call on the stack, then it could be dangerous to close
+    // now.  Post a task that only gets invoked when there are no nested message
+    // loops.
+    base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
+        FROM_HERE, base::Bind(&RenderWidget::Close, this));
+  }
+
+  // Balances the AddRef taken when we called AddRoute.
+  Release();
 }
 
 void RenderWidget::closeWidgetSoon() {

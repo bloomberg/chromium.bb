@@ -113,11 +113,8 @@ class CONTENT_EXPORT RenderWidget
                                       CompositorDependencies* compositor_deps,
                                       blink::WebLocalFrame* frame);
 
-  static blink::WebWidget* CreateWebFrameWidget(RenderWidget* render_widget,
-                                                blink::WebLocalFrame* frame);
-
-  // Creates a WebWidget based on the popup type.
-  static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
+  // Closes a RenderWidget that was created by |CreateForFrame|.
+  void CloseForFrame();
 
   int32 routing_id() const { return routing_id_; }
   int32 surface_id() const { return surface_id_; }
@@ -234,9 +231,6 @@ class CONTENT_EXPORT RenderWidget
   void QueueSyntheticGesture(
       scoped_ptr<SyntheticGestureParams> gesture_params,
       const SyntheticGestureCompletionCallback& callback);
-
-  // Close the underlying WebWidget.
-  virtual void Close();
 
   // Deliveres |message| together with compositor state change updates. The
   // exact behavior depends on |policy|.
@@ -371,6 +365,12 @@ class CONTENT_EXPORT RenderWidget
 
   ~RenderWidget() override;
 
+  static blink::WebWidget* CreateWebFrameWidget(RenderWidget* render_widget,
+                                                blink::WebLocalFrame* frame);
+
+  // Creates a WebWidget based on the popup type.
+  static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
+
   // Initializes this view with the given opener.  CompleteInit must be called
   // later.
   bool Init(int32 opener_id, CompositorDependencies* compositor_deps);
@@ -396,8 +396,11 @@ class CONTENT_EXPORT RenderWidget
 
   void FlushPendingInputEventAck();
   void DoDeferredClose();
-  void DoDeferredSetWindowRect(const blink::WebRect& pos);
   void NotifyOnClose();
+  void CloseInternal(bool close_synchronously);
+
+  // Close the underlying WebWidget.
+  virtual void Close();
 
   // Resizes the render widget.
   void Resize(const gfx::Size& new_size,
