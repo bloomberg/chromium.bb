@@ -1270,7 +1270,7 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	if (!config.rdp_key && (!config.server_cert || !config.server_key)) {
 		weston_log("the RDP compositor requires keys and an optional certificate for RDP or TLS security ("
 				"--rdp4-key or --rdp-tls-cert/--rdp-tls-key)\n");
-		return NULL;
+		return -1;
 	}
 
 	b = rdp_backend_create(compositor, &config, argc, argv, wconfig);
