@@ -55,6 +55,8 @@ class DevToolsNetworkController {
       Interceptors;
   Interceptors interceptors_;
 
+  base::WeakPtrFactory<DevToolsNetworkController> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkController);
 };
 

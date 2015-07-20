@@ -14,7 +14,8 @@ using content::BrowserThread;
 
 DevToolsNetworkController::DevToolsNetworkController()
     : default_interceptor_(new DevToolsNetworkInterceptor()),
-      appcache_interceptor_(new DevToolsNetworkInterceptor()) {
+      appcache_interceptor_(new DevToolsNetworkInterceptor()),
+      weak_ptr_factory_(this) {
 }
 
 DevToolsNetworkController::~DevToolsNetworkController() {
@@ -52,7 +53,7 @@ void DevToolsNetworkController::SetNetworkState(
       FROM_HERE,
       base::Bind(
           &DevToolsNetworkController::SetNetworkStateOnIO,
-          base::Unretained(this),
+          weak_ptr_factory_.GetWeakPtr(),
           client_id,
           base::Passed(&conditions)));
 }
