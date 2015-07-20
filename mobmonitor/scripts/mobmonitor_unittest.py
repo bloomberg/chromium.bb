@@ -7,8 +7,10 @@
 from __future__ import print_function
 
 import json
+import os
 
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.mobmonitor.checkfile import manager
 from chromite.mobmonitor.scripts import mobmonitor
 
@@ -39,19 +41,27 @@ class MockCheckFileManager(object):
     return self.service_statuses[0]
 
 
-class MobMonitorRootTest(cros_test_lib.MockTestCase):
+class MobMonitorRootTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for the MobMonitorRoot."""
+
+  STATICDIR = 'static'
+
+  def setUp(self):
+    """Setup directories expected by the Mob* Monitor."""
+    self.mobmondir = self.tempdir
+    self.staticdir = os.path.join(self.mobmondir, self.STATICDIR)
+    osutils.SafeMakedirs(self.staticdir)
 
   def testGetServiceList(self):
     """Test the GetServiceList RPC."""
     cfm = MockCheckFileManager()
-    root = mobmonitor.MobMonitorRoot(cfm)
+    root = mobmonitor.MobMonitorRoot(cfm, staticdir=self.staticdir)
     self.assertEqual(cfm.GetServiceList(), json.loads(root.GetServiceList()))
 
   def testGetStatus(self):
     """Test the GetStatus RPC."""
     cfm = MockCheckFileManager()
-    root = mobmonitor.MobMonitorRoot(cfm)
+    root = mobmonitor.MobMonitorRoot(cfm, staticdir=self.staticdir)
 
     # Test the result for a single service.
     status = cfm.service_statuses[0]
@@ -73,7 +83,7 @@ class MobMonitorRootTest(cros_test_lib.MockTestCase):
   def testRepairService(self):
     """Test the RepairService RPC."""
     cfm = MockCheckFileManager()
-    root = mobmonitor.MobMonitorRoot(cfm)
+    root = mobmonitor.MobMonitorRoot(cfm, staticdir=self.staticdir)
 
     status = cfm.service_statuses[0]
     expect = {'service': status.service, 'health': status.health,

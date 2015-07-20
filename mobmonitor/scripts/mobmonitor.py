@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import cherrypy
 import json
+import os
 import sys
 
 from chromite.lib import remote_access
@@ -16,16 +17,23 @@ from chromite.lib import commandline
 from chromite.mobmonitor.checkfile import manager
 
 
+STATICDIR = '/etc/mobmonitor/static'
+
+
 class MobMonitorRoot(object):
   """The central object supporting the Mob* Monitor web interface."""
 
-  def __init__(self, checkfile_manager):
+  def __init__(self, checkfile_manager, staticdir=STATICDIR):
+    if not os.path.exists(staticdir):
+      raise IOError('Static directory does not exist: %s' % staticdir)
+
+    self.staticdir = staticdir
     self.checkfile_manager = checkfile_manager
 
   @cherrypy.expose
   def index(self):
     """Presents a welcome message."""
-    return 'Welcome to the Mob* Monitor!'
+    return open(os.path.join(self.staticdir, 'templates', 'index.html'))
 
   @cherrypy.expose
   def GetServiceList(self):
@@ -87,6 +95,8 @@ def ParseArguments(argv):
                       help='The Mob* Monitor checkfile directory.')
   parser.add_argument('-p', '--port', type=int, default=9991,
                       help='The Mob* Monitor port.')
+  parser.add_argument('-s', '--staticdir', default=STATICDIR,
+                      help='Mob* monitor web ui static content directory')
 
   return parser.parse_args(argv)
 
@@ -95,18 +105,37 @@ def main(argv):
   options = ParseArguments(argv)
   options.Freeze()
 
-  # Start the Mob* Monitor web interface.
-  cherrypy.config.update({'server.socket_port':
-                          remote_access.NormalizePort(options.port)})
+  # Configure global cherrypy parameters.
+  cherrypy.config.update(
+      {'server.socket_host': '0.0.0.0',
+       'server.socket_port': remote_access.NormalizePort(options.port)
+      })
+
+  mobmon_appconfig = {
+      '/':
+          {'tools.staticdir.root': options.staticdir
+          },
+      '/static':
+          {'tools.staticdir.on': True,
+           'tools.staticdir.dir': ''
+          },
+      '/static/css':
+          {'tools.staticdir.dir': 'css'
+          },
+      '/static/js':
+          {'tools.staticdir.dir': 'js'
+          }
+  }
 
   # Setup the mobmonitor
   checkfile_manager = manager.CheckFileManager(checkdir=options.checkdir)
-  mobmonitor = MobMonitorRoot(checkfile_manager)
+  mobmonitor = MobMonitorRoot(checkfile_manager, staticdir=options.staticdir)
 
   # Start the checkfile collection and execution background task.
   checkfile_manager.StartCollectionExecution()
 
-  cherrypy.quickstart(mobmonitor)
+  # Start the Mob* Monitor.
+  cherrypy.quickstart(mobmonitor, config=mobmon_appconfig)
 
 
 if __name__ == '__main__':

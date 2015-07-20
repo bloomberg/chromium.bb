@@ -1,0 +1,16 @@
+<div id="actionRepairDialog" title="Setup Repair Actions">
+  <label for="actionlist">Actions</label>
+  <input list="actionlist" class="actionlist-dropdown">
+  <datalist id="actionlist">
+    {{#each actions}}
+      <option value={{this}}>
+    {{/each}}
+  </datalist>
+  <label for="args">Arguments</label>
+  <input type="text" name="args" id="args" value="" class="input-text">
+  <label for="kwargs">Keyword Arguments</label>
+  <input type="text" name="kwargs" id="kwargs" value="" class="input-text">
+  <label for="stagedActions">Actions to Execute</label>
+  <textarea readonly name="stagedActions" id="stagedActions" class="actiondisplay">
+  </textarea>
+</div>

@@ -1,0 +1,36 @@
+<div id={{serviceId}} class="health-container">
+  <div class="health-container-header">
+    <div class="header-service-name">{{service}}</div>
+    <div class="header-service-status">
+      {{#if healthchecks.length}}
+        {{#if health}}
+          <button class="header-service-status-button color-quasi-healthy">Healthy</button>
+        {{else}}
+          <button class="header-service-status-button color-unhealthy">Unhealthy</button>
+        {{/if}}
+      {{else}}
+        <button class="header-service-status-button color-healthy">Healthy</button>
+      {{/if}}
+    </div>
+  </div>
+  {{#if healthchecks.length}}
+    <div class="health-container-content">
+      <table class="healthcheck-table">
+        <tr>
+          <td class="bold">Health Check Name</td>
+          <td class="bold">Health</td>
+          <td class="bold">Description</td>
+          <td class="bold">Actions</td>
+        </tr>
+        {{#each healthchecks}}
+          <tr>
+            <td>{{name}}</td>
+            <td>{{health}}</td>
+            <td>{{description}}</td>
+            <td>{{actions}}</td>
+          </tr>
+        {{/each}}
+      </table>
+    </div>
+  {{/if}}
+</div>

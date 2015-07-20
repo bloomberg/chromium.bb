@@ -1,0 +1,126 @@
+/* General Style Settings */
+body {
+  background-color: #788999;
+  margin: 0;
+  padding: 0;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td {
+  border: 1px solid #999;
+  padding: 5px;
+  text-align: left;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.site-header {
+  background-color: #20262c;
+  padding-top: 50px;
+  padding-right: 0px;
+  padding-left: 0px;
+  padding-bottom: 50px;
+  margin-bottom: 50px;
+}
+
+.site-header-title {
+  max-width: 1000px;
+  width: 90%;
+  margin: 0px auto;
+  margin-top: 0px;
+  margin-right: auto;
+  margin-bottom: 0px;
+  margin-left: auto;
+  text-align: center;
+  font-size: 32pt;
+  font-weight: bold;
+  color: #ACD6FF;
+}
+
+/* Health Display Style Settings */
+.health-display {
+  max-width: 1000px;
+  width: 90%;
+  margin: 0px auto;
+  margin-top: 0px;
+  margin-right: auto;
+  margin-bottom: 0px;
+  margin-left: auto;
+}
+
+.health-container {
+  border: 1px solid black;
+  background-color: #FFF;
+}
+
+.health-container-header {
+  background-color: #FFFAAA;
+
+  float: left;
+  width: 100%;
+}
+
+.header-service-name {
+  float: left;
+  width: 80%;
+}
+
+.header-service-status {
+  float: left;
+}
+
+.header-service-status-button {
+}
+
+.health-container-content {
+  background-color: #FFF;
+  padding: 10px;
+}
+
+.healthcheck-table {
+  margin: auto;
+  border: 1px solid black;
+}
+
+.healthcheck {
+  background-color: grey;
+}
+
+.color-healthy {
+  color: green;
+}
+
+.color-unhealthy {
+  color: red;
+}
+
+.color-quasi-healthy {
+  color: orange;
+}
+
+/* Action Repair Style Settings */
+.actionlist-dropdown {
+  width:95%;
+}
+
+.input-text {
+  margin-bottom: 10px;
+  width: 95%;
+}
+
+.actiondisplay {
+  width: 95%;
+  height: 150px;
+  resize: none;
+}
+
+fieldset {
+  padding: 0;
+  border: 0;
+  margin-top: 10px;
+}
