@@ -88,6 +88,10 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // not loading right now.
   void ReloadGaia(bool force_reload);
 
+  // Turns offline idle detection on or off. Idle detection should only be on if
+  // we're using the offline login page but the device is online.
+  void MonitorOfflineIdle(bool is_online);
+
   // Decides whether an auth extension should be pre-loaded. If it should,
   // pre-loads it.
   void MaybePreloadAuthExtension();

@@ -729,6 +729,10 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
     return;
   }
 
+  // Use the online login page if the user has not used the machine for awhile.
+  if (offline_login_active_)
+    gaia_screen_handler_->MonitorOfflineIdle(is_online);
+
   // Reload frame if network state is changed from {!ONLINE} -> ONLINE state.
   if (reason == NetworkError::ERROR_REASON_NETWORK_STATE_CHANGED &&
       from_not_online_to_online_transition) {

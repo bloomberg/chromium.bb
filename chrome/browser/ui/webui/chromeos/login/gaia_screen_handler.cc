@@ -370,6 +370,10 @@ void GaiaScreenHandler::ReloadGaia(bool force_reload) {
   CallJS("doReload");
 }
 
+void GaiaScreenHandler::MonitorOfflineIdle(bool is_online) {
+  CallJS("monitorOfflineIdle", is_online);
+}
+
 void GaiaScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("signinScreenTitle", IDS_SIGNIN_SCREEN_TITLE_TAB_PROMPT);
