@@ -23,8 +23,7 @@
       },
       {
         "args": [
-          "--enable-browser-side-navigation",
-          "--gtest_filter=-NavigationControllerTest.CopyRestoredStateAndNavigate:RenderFrameHostManagerTest.CancelPendingProperlyDeletesOrSwaps:RenderFrameHostManagerTest.PageDoesBackAndReload:RenderViewHostTest.ResetUnloadOnReload:ResourceDispatcherHostTest.TransferNavigationHtml:ResourceDispatcherHostTest.TransferNavigationText:ResourceDispatcherHostTest.TransferNavigationWithProcessCrash:ResourceDispatcherHostTest.TransferNavigationWithTwoRedirects:ResourceDispatcherHostTest.TransferTwoNavigationsHtml:WebContentsImplTest.CrossSiteNavigationBackPreempted:WebContentsImplTest.CrossSiteNotPreemptedDuringBeforeUnload:WebContentsImplTest.NoEarlyStop:WebContentsImplTest.ShowInterstitialCrashRendererThenGoBack:WebContentsImplTest.ShowInterstitialFromBrowserNewNavigationProceed"
+          "--enable-browser-side-navigation"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
