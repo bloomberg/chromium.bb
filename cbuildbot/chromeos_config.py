@@ -619,6 +619,7 @@ _waterfall_config_map = {
         'rambi-d-release-group',
         'rambi-e-release-group',
         'storm-release-group',
+        'strago-release-group',
         'veyron-b-release-group',
         'veyron-c-release-group',
         'veyron-d-release-group',
@@ -2491,6 +2492,7 @@ def GetConfig():
       'strago', 'strago', (
           'cyan',
       ),
+      important=False,
   )
 
   # oak-based boards

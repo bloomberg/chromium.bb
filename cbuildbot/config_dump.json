@@ -19171,7 +19171,6 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: strago, cyan)",
-        "important": true,
         "name": "strago-release-group"
     },
     "strago-tot-chrome-pfq-informational": {
