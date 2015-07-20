@@ -5,6 +5,7 @@
 #include "media/capture/video/android/video_capture_device_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/strings/string_number_conversions.h"
 #include "jni/VideoCapture_jni.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
@@ -171,9 +172,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(JNIEnv* env,
 void VideoCaptureDeviceAndroid::OnError(JNIEnv* env,
                                         jobject obj,
                                         jstring message) {
-  const char* native_string = env->GetStringUTFChars(message, JNI_FALSE);
-  SetErrorState(native_string);
-  env->ReleaseStringUTFChars(message, native_string);
+  SetErrorState(base::android::ConvertJavaStringToUTF8(env, message));
 }
 
 VideoCapturePixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
