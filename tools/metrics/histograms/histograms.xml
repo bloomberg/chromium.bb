@@ -3424,6 +3424,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.PlatformVerification.ExpiryStatus"
+    enum="ChromeOSPlatformVerificationExpiryStatus">
+  <owner>dkrahn@chromium.org</owner>
+  <summary>
+    The result of a certificate expiry check during a platform verification
+    attempt for content protection on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.PlatformVerification.Result"
     enum="ChromeOSPlatformVerificationResult">
   <owner>dkrahn@chromium.org</owner>
@@ -51967,6 +51976,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="No memory pressure"/>
   <int value="1" label="Medium memory pressure"/>
   <int value="2" label="High memory pressure"/>
+</enum>
+
+<enum name="ChromeOSPlatformVerificationExpiryStatus" type="int">
+  <summary>
+    Possible results of a platform verification expiry check. See
+    chrome/browser/chromeos/attestation/platform_verification.cc.
+  </summary>
+  <int value="0" label="Ok"/>
+  <int value="1" label="Expiring Soon"/>
+  <int value="2" label="Expired"/>
+  <int value="3" label="Invalid PEM Chain"/>
+  <int value="4" label="Invalid X.509"/>
 </enum>
 
 <enum name="ChromeOSPlatformVerificationResult" type="int">

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ATTESTATION_PLATFORM_VERIFICATION_FLOW_H_
 #define CHROME_BROWSER_CHROMEOS_ATTESTATION_PLATFORM_VERIFICATION_FLOW_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -66,6 +67,17 @@ class PlatformVerificationFlow
     USER_REJECTED,          // The user explicitly rejected the operation.
     POLICY_REJECTED,        // The operation is not allowed by policy/settings.
     TIMEOUT,                // The operation timed out.
+    RESULT_MAX
+  };
+
+  // These values are reported to UMA. DO NOT CHANGE THE EXISTING VALUES!
+  enum ExpiryStatus {
+    EXPIRY_STATUS_OK,
+    EXPIRY_STATUS_EXPIRING_SOON,
+    EXPIRY_STATUS_EXPIRED,
+    EXPIRY_STATUS_INVALID_PEM_CHAIN,
+    EXPIRY_STATUS_INVALID_X509,
+    EXPIRY_STATUS_MAX
   };
 
   // An interface which allows settings and UI to be abstracted for testing
@@ -176,16 +188,16 @@ class PlatformVerificationFlow
   // completes.  The arguments to ChallengePlatformKey are in |context|.
   // |user_id| identifies the user for which the certificate was requested.
   // |operation_success| is true iff the certificate request operation
-  // succeeded.  |certificate| holds the certificate for the platform key on
-  // success.  If the certificate request was successful, this method invokes a
-  // request to sign the challenge.  If the operation timed out prior to this
+  // succeeded.  |certificate_chain| holds the certificate for the platform key
+  // on success.  If the certificate request was successful, this method invokes
+  // a request to sign the challenge.  If the operation timed out prior to this
   // method being called, this method does nothing - notably, the callback is
   // not invoked.
   void OnCertificateReady(const ChallengeContext& context,
                           const std::string& user_id,
                           scoped_ptr<base::Timer> timer,
                           bool operation_success,
-                          const std::string& certificate);
+                          const std::string& certificate_chain);
 
   // A callback run after a constant delay to handle timeouts for lengthy
   // certificate requests.  |context.callback| will be invoked with a TIMEOUT
@@ -193,21 +205,33 @@ class PlatformVerificationFlow
   void OnCertificateTimeout(const ChallengeContext& context);
 
   // A callback called when a challenge signing request has completed.  The
-  // |certificate| is the platform certificate for the key which signed the
-  // |challenge|.  The arguments to ChallengePlatformKey are in |context|.
-  // |operation_success| is true iff the challenge signing operation was
-  // successful.  If it was successful, |response_data| holds the challenge
-  // response and the method will invoke |context.callback|.
+  // |certificate_chain| is the platform certificate chain for the key which
+  // signed the |challenge|.  The arguments to ChallengePlatformKey are in
+  // |context|. |user_id| identifies the user for which the certificate was
+  // requested. |is_expiring_soon| will be set iff a certificate in the
+  // |certificate_chain| is expiring soon. |operation_success| is true iff the
+  // challenge signing operation was successful.  If it was successful,
+  // |response_data| holds the challenge response and the method will invoke
+  // |context.callback|.
   void OnChallengeReady(const ChallengeContext& context,
-                        const std::string& certificate,
+                        const std::string& user_id,
+                        const std::string& certificate_chain,
+                        bool is_expiring_soon,
                         bool operation_success,
                         const std::string& response_data);
 
   // Checks whether attestation for content protection is allowed by policy.
   bool IsAttestationAllowedByPolicy();
 
-  // Returns true iff |certificate| is an expired X.509 certificate.
-  bool IsExpired(const std::string& certificate);
+  // Checks if |certificate_chain| is a PEM certificate chain that contains a
+  // certificate this is expired or expiring soon. Returns the expiry status.
+  ExpiryStatus CheckExpiry(const std::string& certificate_chain);
+
+  // An AttestationFlow::CertificateCallback that handles renewal completion.
+  // |old_certificate_chain| contains the chain that has been replaced.
+  void RenewCertificateCallback(const std::string& old_certificate_chain,
+                                bool operation_success,
+                                const std::string& certificate_chain);
 
   AttestationFlow* attestation_flow_;
   scoped_ptr<AttestationFlow> default_attestation_flow_;
@@ -216,6 +240,7 @@ class PlatformVerificationFlow
   Delegate* delegate_;
   scoped_ptr<Delegate> default_delegate_;
   base::TimeDelta timeout_delay_;
+  std::set<std::string> renewals_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVerificationFlow);
 };

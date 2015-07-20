@@ -32,16 +32,21 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
 
 namespace {
+
+using chromeos::attestation::PlatformVerificationFlow;
 
 const int kTimeoutInSeconds = 8;
 const char kAttestationResultHistogram[] =
     "ChromeOS.PlatformVerification.Result";
 const char kAttestationAvailableHistogram[] =
     "ChromeOS.PlatformVerification.Available";
-const int kAttestationResultHistogramMax = 10;
+const char kAttestationExpiryHistogram[] =
+    "ChromeOS.PlatformVerification.ExpiryStatus";
+const int kOpportunisticRenewalThresholdInDays = 30;
 
 // A callback method to handle DBus errors.
 void DBusCallback(const base::Callback<void(bool)>& on_success,
@@ -58,13 +63,19 @@ void DBusCallback(const base::Callback<void(bool)>& on_success,
 
 // A helper to call a ChallengeCallback with an error result.
 void ReportError(
-    const chromeos::attestation::PlatformVerificationFlow::ChallengeCallback&
-        callback,
+    const PlatformVerificationFlow::ChallengeCallback& callback,
     chromeos::attestation::PlatformVerificationFlow::Result error) {
   UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, error,
-                            kAttestationResultHistogramMax);
+                            PlatformVerificationFlow::RESULT_MAX);
   callback.Run(error, std::string(), std::string(), std::string());
 }
+
+// A helper to report expiry status to UMA.
+void ReportExpiryStatus(PlatformVerificationFlow::ExpiryStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(kAttestationExpiryHistogram, status,
+                            PlatformVerificationFlow::EXPIRY_STATUS_MAX);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -270,7 +281,7 @@ void PlatformVerificationFlow::OnCertificateReady(
     const std::string& user_id,
     scoped_ptr<base::Timer> timer,
     bool operation_success,
-    const std::string& certificate) {
+    const std::string& certificate_chain) {
   // Log failure before checking the timer so all failures are logged, even if
   // they took too long.
   if (!operation_success) {
@@ -286,15 +297,16 @@ void PlatformVerificationFlow::OnCertificateReady(
     ReportError(context.callback, PLATFORM_NOT_VERIFIED);
     return;
   }
-  if (IsExpired(certificate)) {
+  ExpiryStatus expiry_status = CheckExpiry(certificate_chain);
+  ReportExpiryStatus(expiry_status);
+  if (expiry_status == EXPIRY_STATUS_EXPIRED) {
     GetCertificate(context, user_id, true /* Force a new key */);
     return;
   }
-  cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback = base::Bind(
-      &PlatformVerificationFlow::OnChallengeReady,
-      this,
-      context,
-      certificate);
+  bool is_expiring_soon = (expiry_status == EXPIRY_STATUS_EXPIRING_SOON);
+  cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback =
+      base::Bind(&PlatformVerificationFlow::OnChallengeReady, this, context,
+                 user_id, certificate_chain, is_expiring_soon);
   std::string key_name = kContentProtectionKeyPrefix;
   key_name += context.service_id;
   async_caller_->TpmAttestationSignSimpleChallenge(KEY_USER,
@@ -312,7 +324,9 @@ void PlatformVerificationFlow::OnCertificateTimeout(
 
 void PlatformVerificationFlow::OnChallengeReady(
     const ChallengeContext& context,
-    const std::string& certificate,
+    const std::string& user_id,
+    const std::string& certificate_chain,
+    bool is_expiring_soon,
     bool operation_success,
     const std::string& response_data) {
   if (!operation_success) {
@@ -327,12 +341,20 @@ void PlatformVerificationFlow::OnChallengeReady(
     return;
   }
   VLOG(1) << "Platform verification successful.";
-  UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, SUCCESS,
-                            kAttestationResultHistogramMax);
-  context.callback.Run(SUCCESS,
-                       signed_data_pb.data(),
-                       signed_data_pb.signature(),
-                       certificate);
+  UMA_HISTOGRAM_ENUMERATION(kAttestationResultHistogram, SUCCESS, RESULT_MAX);
+  context.callback.Run(SUCCESS, signed_data_pb.data(),
+                       signed_data_pb.signature(), certificate_chain);
+  if (is_expiring_soon && renewals_in_progress_.count(certificate_chain) == 0) {
+    renewals_in_progress_.insert(certificate_chain);
+    // Fire off a certificate request so next time we'll have a new one.
+    AttestationFlow::CertificateCallback renew_callback =
+        base::Bind(&PlatformVerificationFlow::RenewCertificateCallback, this,
+                   certificate_chain);
+    attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
+                                      user_id, context.service_id,
+                                      true,  // force_new_key
+                                      renew_callback);
+  }
 }
 
 bool PlatformVerificationFlow::IsAttestationAllowedByPolicy() {
@@ -352,15 +374,62 @@ bool PlatformVerificationFlow::IsAttestationAllowedByPolicy() {
   return true;
 }
 
-bool PlatformVerificationFlow::IsExpired(const std::string& certificate) {
-  scoped_refptr<net::X509Certificate> x509(
-      net::X509Certificate::CreateFromBytes(certificate.data(),
-                                            certificate.length()));
-  if (!x509.get() || x509->valid_expiry().is_null()) {
-    LOG(WARNING) << "Failed to parse certificate, cannot check expiry.";
-    return false;
+PlatformVerificationFlow::ExpiryStatus PlatformVerificationFlow::CheckExpiry(
+    const std::string& certificate_chain) {
+  bool is_expiring_soon = false;
+  bool invalid_certificate_found = false;
+  int num_certificates = 0;
+  net::PEMTokenizer pem_tokenizer(certificate_chain, {"CERTIFICATE"});
+  while (pem_tokenizer.GetNext()) {
+    ++num_certificates;
+    scoped_refptr<net::X509Certificate> x509 =
+        net::X509Certificate::CreateFromBytes(pem_tokenizer.data().data(),
+                                              pem_tokenizer.data().length());
+    if (!x509.get() || x509->valid_expiry().is_null()) {
+      // This logic intentionally fails open. In theory this should not happen
+      // but in practice parsing X.509 can be brittle and there are a lot of
+      // factors including which underlying module is parsing the certificate,
+      // whether that module performs more checks than just ASN.1/DER format,
+      // and the server module that generated the certificate(s). Renewal is
+      // expensive so we only renew certificates with good evidence that they
+      // have expired or will soon expire; if we don't know, we don't renew.
+      LOG(WARNING) << "Failed to parse certificate, cannot check expiry.";
+      invalid_certificate_found = true;
+      continue;
+    }
+    if (base::Time::Now() > x509->valid_expiry()) {
+      return EXPIRY_STATUS_EXPIRED;
+    }
+    base::TimeDelta threshold =
+        base::TimeDelta::FromDays(kOpportunisticRenewalThresholdInDays);
+    if (x509->valid_expiry() - base::Time::Now() < threshold) {
+      is_expiring_soon = true;
+    }
   }
-  return (base::Time::Now() > x509->valid_expiry());
+  if (is_expiring_soon) {
+    return EXPIRY_STATUS_EXPIRING_SOON;
+  }
+  if (invalid_certificate_found) {
+    return EXPIRY_STATUS_INVALID_X509;
+  }
+  if (num_certificates == 0) {
+    LOG(WARNING) << "Failed to parse certificate chain, cannot check expiry.";
+    return EXPIRY_STATUS_INVALID_PEM_CHAIN;
+  }
+  return EXPIRY_STATUS_OK;
+}
+
+void PlatformVerificationFlow::RenewCertificateCallback(
+    const std::string& old_certificate_chain,
+    bool operation_success,
+    const std::string& certificate_chain) {
+  renewals_in_progress_.erase(old_certificate_chain);
+  if (!operation_success) {
+    LOG(WARNING) << "PlatformVerificationFlow: Failed to renew platform "
+                    "certificate.";
+    return;
+  }
+  VLOG(1) << "Certificate successfully renewed.";
 }
 
 }  // namespace attestation

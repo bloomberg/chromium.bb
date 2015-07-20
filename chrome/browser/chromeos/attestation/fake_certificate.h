@@ -17,8 +17,12 @@ namespace attestation {
 // be (or have been) valid from sometime before the current time or expiry,
 // whichever is first.  This is designed for use in unit tests and runs quickly.
 // Returns true on success.
-bool GetFakeCertificate(const base::TimeDelta& expiry,
-                        std::string* certificate);
+bool GetFakeCertificateDER(const base::TimeDelta& expiry,
+                           std::string* certificate);
+
+// Similar to GetFakeCertificateDER but returns a PEM-encoded certificate.
+bool GetFakeCertificatePEM(const base::TimeDelta& expiry,
+                           std::string* certificate);
 
 }  // namespace attestation
 }  // namespace chromeos

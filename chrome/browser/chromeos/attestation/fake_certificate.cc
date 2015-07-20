@@ -49,25 +49,33 @@ const uint8 kTestKeyData[] = {
 
 }  // namespace
 
-bool GetFakeCertificate(const base::TimeDelta& expiry,
-                        std::string* certificate) {
+bool GetFakeCertificateDER(const base::TimeDelta& expiry,
+                           std::string* certificate) {
   base::Time valid_start = base::Time::Now() - base::TimeDelta::FromDays(1);
   base::Time valid_expiry = base::Time::Now() + expiry;
-  if (valid_expiry <= valid_start)
+  if (valid_expiry <= valid_start) {
     valid_start = valid_expiry - base::TimeDelta::FromDays(1);
+  }
   scoped_ptr<crypto::RSAPrivateKey> test_key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(
           std::vector<uint8>(&kTestKeyData[0],
                              &kTestKeyData[arraysize(kTestKeyData)])));
-  if (!test_key.get())
+  if (!test_key.get()) {
     return false;
-  return net::x509_util::CreateSelfSignedCert(test_key.get(),
-                                              net::x509_util::DIGEST_SHA256,
-                                              "CN=subject",
-                                              12345,
-                                              valid_start,
-                                              valid_expiry,
-                                              certificate);
+  }
+  return net::x509_util::CreateSelfSignedCert(
+      test_key.get(), net::x509_util::DIGEST_SHA256, "CN=subject", 12345,
+      valid_start, valid_expiry, certificate);
+}
+
+bool GetFakeCertificatePEM(const base::TimeDelta& expiry,
+                           std::string* certificate) {
+  std::string certificate_der;
+  if (!GetFakeCertificateDER(expiry, &certificate_der)) {
+    return false;
+  }
+  return net::X509Certificate::GetPEMEncodedFromDER(certificate_der,
+                                                    certificate);
 }
 
 }  // namespace attestation
