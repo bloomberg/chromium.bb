@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.android_webview.test.util.VideoSurfaceViewUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
@@ -90,22 +89,14 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_INSIDE_DIV_TEST_URL);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testOnShowAndHideCustomViewWithCallback_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_TEST_URL);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testOnShowAndHideCustomViewWithCallback_videoInsideDiv() throws Throwable {
         doTestOnShowAndHideCustomViewWithCallback(VIDEO_INSIDE_DIV_TEST_URL);
     }
@@ -119,22 +110,14 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         });
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testOnShowAndHideCustomViewWithJavascript_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_TEST_URL);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testOnShowAndHideCustomViewWithJavascript_videoInsideDiv()
             throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_INSIDE_DIV_TEST_URL);
@@ -149,22 +132,14 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         });
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testOnShowAndHideCustomViewWithBackKey_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_TEST_URL);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testOnShowAndHideCustomViewWithBackKey_videoInsideDiv()
             throws Throwable {
         doTestOnShowAndHideCustomViewWithBackKey(VIDEO_INSIDE_DIV_TEST_URL);
@@ -189,12 +164,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertWaitForIsEmbedded();
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testExitFullscreenEndsIfAppInvokesCallbackFromOnHideCustomView() throws Throwable {
         mContentsClient.setOnHideCustomViewRunnable(new Runnable() {
             @Override
@@ -415,12 +386,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertKeepScreenOnActive(mTestContainerView, false);
     }
 
-    /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testPowerSaveBlockerIsTransferredToEmbedded()
             throws Throwable {
         // Enter fullscreen.

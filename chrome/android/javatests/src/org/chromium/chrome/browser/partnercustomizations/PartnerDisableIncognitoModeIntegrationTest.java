@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.widget.PopupMenu;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -147,12 +146,8 @@ public class PartnerDisableIncognitoModeIntegrationTest extends
         assertIncognitoMenuItemEnabled(true);
     }
 
-    /*
     @MediumTest
     @Feature({"DisableIncognitoMode"})
-    crbug.com/511688
-    */
-    @DisabledTest
     public void testEnabledParentalControlsClosesIncognitoTabs() throws InterruptedException {
         setParentalControlsEnabled(false);
         startMainActivityOnBlankPage();
