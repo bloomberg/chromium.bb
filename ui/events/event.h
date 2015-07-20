@@ -621,7 +621,9 @@ class EVENTS_EXPORT ExtendedKeyEventData {
 //    if the mapped key generates a character that has an associated VKEY_
 //    code, then key_code_ is that code; if not, then key_code_ is the unmapped
 //    VKEY_ code. For example, US, Greek, Cyrillic, Japanese, etc. all use
-//    VKEY_Q for the key beside Tab, while French uses VKEY_A.
+//    VKEY_Q for the key beside Tab, while French uses VKEY_A. The stored
+//    key_code_ is non-located (e.g. VKEY_SHIFT rather than VKEY_LSHIFT,
+//    VKEY_1 rather than VKEY_NUMPAD1).
 //
 // For a character event,
 // -- is_char_ is true.

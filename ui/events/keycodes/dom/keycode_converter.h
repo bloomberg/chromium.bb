@@ -58,8 +58,9 @@ class KeycodeConverter {
   static const char* DomCodeToCodeString(DomCode dom_code);
 
   // Return the DomKeyLocation of a DomCode. The DomKeyLocation distinguishes
-  // keys with the same meaning, and therefore the same DomKey or KeyboardCode
-  // (VKEY), and corresponds to the DOM UI Events |KeyboardEvent.location|.
+  // keys with the same meaning, and therefore the same DomKey or non-located
+  // KeyboardCode (VKEY), and corresponds to the DOM UI Events
+  // |KeyboardEvent.location|.
   static DomKeyLocation DomCodeToLocation(DomCode dom_code);
 
   // Convert a UI Events |key| string value into a DomKey.

@@ -140,22 +140,6 @@ bool IsModifierDomCode(DomCode code) {
          (code == DomCode::OS_LEFT) || (code == DomCode::OS_RIGHT);
 }
 
-// Returns the Windows-based VKEY value corresponding to a DOM Level 3 |code|,
-// assuming a base US English layout. The returned VKEY is located
-// (e.g. VKEY_LSHIFT).
-KeyboardCode DomCodeToUsLayoutKeyboardCode(DomCode dom_code) {
-  const DomCodeToKeyboardCodeEntry* end =
-      kDomCodeToKeyboardCodeMap + arraysize(kDomCodeToKeyboardCodeMap);
-  const DomCodeToKeyboardCodeEntry* found =
-      std::lower_bound(kDomCodeToKeyboardCodeMap, end, dom_code,
-                       [](const DomCodeToKeyboardCodeEntry& a, DomCode b) {
-    return static_cast<int>(a.dom_code) < static_cast<int>(b);
-  });
-  if ((found != end) && (found->dom_code == dom_code))
-    return found->key_code;
-  return VKEY_UNKNOWN;
-}
-
 }  // anonymous namespace
 
 base::char16 GetCharacterFromKeyCode(KeyboardCode key_code, int flags) {
@@ -549,6 +533,20 @@ DomCode UsLayoutKeyboardCodeToDomCode(KeyboardCode key_code) {
       return it.dom_code;
   }
   return DomCode::NONE;
+}
+
+KeyboardCode DomCodeToUsLayoutKeyboardCode(DomCode dom_code) {
+  const DomCodeToKeyboardCodeEntry* end =
+      kDomCodeToKeyboardCodeMap + arraysize(kDomCodeToKeyboardCodeMap);
+  const DomCodeToKeyboardCodeEntry* found = std::lower_bound(
+      kDomCodeToKeyboardCodeMap, end, dom_code,
+      [](const DomCodeToKeyboardCodeEntry& a, DomCode b) {
+        return static_cast<int>(a.dom_code) < static_cast<int>(b);
+      });
+  if ((found != end) && (found->dom_code == dom_code))
+    return found->key_code;
+
+  return VKEY_UNKNOWN;
 }
 
 }  // namespace ui

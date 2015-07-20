@@ -42,8 +42,8 @@ EVENTS_BASE_EXPORT bool GetMeaningFromKeyCode(KeyboardCode key_code,
 
 // Helper function to map a physical key state (dom_code and flags)
 // to a meaning (dom_key and character, together corresponding to the
-// DOM keyboard event |key| value), along with a corresponding Windows-based
-// key_code.
+// DOM keyboard event |key| value), along with a corresponding non-located
+// Windows-based key_code.
 //
 // This follows a US keyboard layout, so it should only be used when there
 // is no other better way to obtain the meaning (e.g. actual keyboard layout).
@@ -84,7 +84,10 @@ NonPrintableDomKeyToKeyboardCode(DomKey dom_key);
 // Most modifier keys have two kinds of KeyboardCode: located (e.g.
 // VKEY_LSHIFT and VKEY_RSHIFT), that indentify one of two specific
 // physical keys, and non-located (e.g. VKEY_SHIFT) that identify
-// only the operation.
+// only the operation. Similarly digit keys have a number-pad variant
+// (e.g. VKEY_NUMPAD1 on the number pad vs VKEY_1 on the main keyboard),
+// except that in this case the main keyboard code doubles as the
+// non-located value.
 EVENTS_BASE_EXPORT KeyboardCode
 LocatedToNonLocatedKeyboardCode(KeyboardCode key_code);
 
@@ -97,6 +100,11 @@ NonLocatedToLocatedKeyboardCode(KeyboardCode key_code, DomCode dom_code);
 // determined from a physical scan code, for example when a key event was
 // generated synthetically by JavaScript with only a VKEY value supplied.
 EVENTS_BASE_EXPORT DomCode UsLayoutKeyboardCodeToDomCode(KeyboardCode key_code);
+
+// Returns the Windows-based VKEY value corresponding to a DOM Level 3 |code|,
+// assuming a base US English layout. The returned VKEY is located
+// (e.g. VKEY_LSHIFT).
+EVENTS_BASE_EXPORT KeyboardCode DomCodeToUsLayoutKeyboardCode(DomCode dom_code);
 
 }  // namespace ui
 

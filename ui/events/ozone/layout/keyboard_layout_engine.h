@@ -52,7 +52,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT KeyboardLayoutEngine {
   // the function must not use their initial values.
   //
   // Returns true if it can determine the DOM meaning (i.e. ui::DomKey and
-  // character) and the corresponding legacy KeyboardCode from the given
+  // character) and the corresponding (non-located) KeyboardCode from the given
   // physical state (ui::DomCode and ui::EventFlags), OR if it can determine
   // that there is no meaning in the current layout (e.g. the key is unbound).
   // In the latter case, the function sets *dom_key to UNIDENTIFIED, *character
