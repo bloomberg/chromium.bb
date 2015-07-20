@@ -1090,8 +1090,6 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 	peerCtx = (RdpPeerContext *) client->context;
 	peerCtx->rdpBackend = b;
 
-	client->Initialize(client);
-
 	settings = client->settings;
 	/* configure security settings */
 	if (b->rdp_key)
@@ -1104,6 +1102,8 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 	}
 	settings->NlaSecurity = FALSE;
 
+	client->Initialize(client);
+
 	settings->OsMajorType = OSMAJORTYPE_UNIX;
 	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
 	settings->ColorDepth = 32;
@@ -1112,6 +1112,7 @@ rdp_peer_init(freerdp_peer *client, struct rdp_backend *b)
 	settings->NSCodec = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
 	settings->SurfaceFrameMarkerEnabled = TRUE;
+
 
 	client->Capabilities = xf_peer_capabilities;
 	client->PostConnect = xf_peer_post_connect;
