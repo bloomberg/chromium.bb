@@ -2373,7 +2373,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case content::SANDBOX_TYPE_GPU:
       return base::string16();
     case content::SANDBOX_TYPE_PPAPI:
-      return base::string16();
+      return sid + L"129201925";
 #if !defined(DISABLE_NACL)
     case PROCESS_TYPE_NACL_LOADER:
       return base::string16();

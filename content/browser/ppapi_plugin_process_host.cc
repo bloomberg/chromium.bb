@@ -66,6 +66,12 @@ class PpapiPluginSandboxedProcessLauncherDelegate
                              sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
                              L"\\\\.\\pipe\\chrome.*");
     *success = (result == sandbox::SBOX_ALL_OK);
+
+    const base::string16& sid =
+        GetContentClient()->browser()->GetAppContainerSidForSandboxType(
+            GetSandboxType());
+    if (!sid.empty())
+      AddAppContainerPolicy(policy, sid.c_str());
   }
 
 #elif defined(OS_POSIX)
