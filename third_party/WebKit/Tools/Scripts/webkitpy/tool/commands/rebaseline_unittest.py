@@ -1079,7 +1079,6 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 
             self.assertEqual(self.tool.executive.calls, [
                 self.SVN_REMOTE_CMD,
-                ['git', 'rev-parse', '--symbolic-full-name', 'HEAD'],
                 [
                     ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-chocolate.html'],
                     ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'png', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-strawberry.html'],
@@ -1167,7 +1166,6 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
             self.assertEqual(self.tool.executive.calls, [
                 self.SVN_REMOTE_CMD,
-                ['git', 'rev-parse', '--symbolic-full-name', 'HEAD'],
                 [
                     ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK SnowLeopard', '--test', 'fast/dom/prototype-taco.html'],
                 ],
@@ -1229,7 +1227,6 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             self.command.execute(MockOptions(optimize=True, verbose=False, results_directory=False), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
                 self.SVN_REMOTE_CMD,
-                ['git', 'rev-parse', '--symbolic-full-name', 'HEAD'],
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
@@ -1293,7 +1290,6 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             self.assertEqual(self.tool.executive.calls, [
                 self.SVN_REMOTE_CMD,
                 ['git', 'auto-svn'],
-                ['git', 'rev-parse', '--symbolic-full-name', 'HEAD'],
                 [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],

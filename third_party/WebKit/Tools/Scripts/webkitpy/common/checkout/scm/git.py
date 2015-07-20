@@ -134,7 +134,9 @@ class Git(SCM):
         return ref.replace('refs/heads/', '')
 
     def current_branch(self):
-        return self._branch_from_ref(self._run_git(['symbolic-ref', '-q', 'HEAD']).strip())
+        ref = self._run_git(['rev-parse', '--symbolic-full-name', 'HEAD']).strip()
+        # Return an empty string if HEAD is detached.
+        return self._branch_from_ref('' if ref == 'HEAD' else ref)
 
     def _upstream_branch(self):
         current_branch = self.current_branch()

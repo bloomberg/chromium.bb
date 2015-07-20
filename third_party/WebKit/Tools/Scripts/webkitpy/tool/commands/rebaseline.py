@@ -57,6 +57,14 @@ def _baseline_name(fs, test_name, suffix):
     return fs.splitext(test_name)[0] + TestResultWriter.FILENAME_SUFFIX_EXPECTED + "." + suffix
 
 
+def _get_branch_name_or_ref(tool):
+    branch_name = tool.scm().current_branch()
+    if not branch_name:
+        # If HEAD is detached use commit SHA instead.
+        return tool.executive.run_command(['git', 'rev-parse', 'HEAD']).strip()
+    return branch_name
+
+
 class AbstractRebaseliningCommand(AbstractDeclarativeCommand):
     # not overriding execute() - pylint: disable=W0223
 
@@ -834,6 +842,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         test_prefix_list, lines_to_remove = self.get_test_prefix_list(tests)
 
         did_finish = False
+        old_branch_name_or_ref = ''
         try:
             # Setup git-svn for dcommit if necessary.
             if tool.executive.run_command(
@@ -842,11 +851,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 tool.executive.run_command(['git', 'auto-svn'])
 
             # Save the current branch name and checkout a clean branch for the patch.
-            old_branch_name = tool.executive.run_command(
-                ["git", "rev-parse", "--symbolic-full-name", "HEAD"])
-            if old_branch_name == "HEAD":
-                # If HEAD is detached use commit SHA instead.
-                old_branch_name = tool.executive.run_command(["git", "rev-parse", "HEAD"])
+            old_branch_name_or_ref = _get_branch_name_or_ref(tool)
             tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
             tool.scm().create_clean_branch(self.AUTO_REBASELINE_BRANCH_NAME)
 
@@ -881,7 +886,8 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                     self._run_git_cl_command(options, ['set_close'])
 
             tool.scm().ensure_cleanly_tracking_remote_master()
-            tool.scm().checkout_branch(old_branch_name)
+            if old_branch_name_or_ref:
+                tool.scm().checkout_branch(old_branch_name_or_ref)
             tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
 
 
@@ -942,8 +948,9 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
         self._log_queue = Queue.Queue(256)
         log_thread = threading.Thread(name='LogToServer', target=self._log_to_server_thread)
         log_thread.start()
+        old_branch_name_or_ref = ''
         try:
-            old_branch_name = self._tool.scm().current_branch()
+            old_branch_name_or_ref = _get_branch_name_or_ref(self._tool)
             self._run_logged_command(['git', 'pull'])
             rebaseline_command = [self._tool.filesystem.join(self._tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline']
             if self._verbose:
@@ -953,7 +960,8 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
             self._log_queue.put(self.QUIT_LOG)
             traceback.print_exc(file=sys.stderr)
             # Sometimes git crashes and leaves us on a detached head.
-            self._tool.scm().checkout_branch(old_branch_name)
+            if old_branch_name_or_ref:
+                self._tool.scm().checkout_branch(old_branch_name_or_ref)
         else:
             self._log_queue.put(self.QUIT_LOG)
         log_thread.join()
