@@ -243,7 +243,13 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 // MediaStream that has been created based on a MediaStream created with
 // getUserMedia. When video is flowing, the VideoTrack is removed and an
 // AudioTrack is added instead.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallAndModifyStream) {
+#if defined(OS_ANDROID)
+// Fails on Android: https://code.google.com/p/webrtc/issues/detail?id=4857.
+#define MAYBE_CallAndModifyStream DISABLED_CallAndModifyStream
+#else
+#define MAYBE_CallAndModifyStream CallAndModifyStream
+#endif
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, MAYBE_CallAndModifyStream) {
   MakeTypicalPeerConnectionCall(
       "callWithNewVideoMediaStreamLaterSwitchToAudio();");
 }
