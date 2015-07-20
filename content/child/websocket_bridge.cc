@@ -17,7 +17,7 @@
 #include "content/common/websocket_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/WebSerializedOrigin.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSocketHandle.h"
 #include "third_party/WebKit/public/platform/WebSocketHandleClient.h"
 #include "third_party/WebKit/public/platform/WebSocketHandshakeRequestInfo.h"
@@ -28,7 +28,7 @@
 #include "url/deprecated_serialized_origin.h"
 #include "url/gurl.h"
 
-using blink::WebSerializedOrigin;
+using blink::WebSecurityOrigin;
 using blink::WebSocketHandle;
 using blink::WebSocketHandleClient;
 using blink::WebString;
@@ -203,11 +203,10 @@ void WebSocketBridge::DidStartClosingHandshake() {
   // |this| can be deleted here.
 }
 
-void WebSocketBridge::connect(
-    const WebURL& url,
-    const WebVector<WebString>& protocols,
-    const WebSerializedOrigin& origin,
-    WebSocketHandleClient* client) {
+void WebSocketBridge::connect(const WebURL& url,
+                              const WebVector<WebString>& protocols,
+                              const WebSecurityOrigin& origin,
+                              WebSocketHandleClient* client) {
   DCHECK_EQ(kInvalidChannelId, channel_id_);
   WebSocketDispatcher* dispatcher =
       ChildThreadImpl::current()->websocket_dispatcher();
@@ -217,7 +216,7 @@ void WebSocketBridge::connect(
   std::vector<std::string> protocols_to_pass;
   for (size_t i = 0; i < protocols.size(); ++i)
     protocols_to_pass.push_back(protocols[i].utf8());
-  url::DeprecatedSerializedOrigin origin_to_pass(origin);
+  url::DeprecatedSerializedOrigin origin_to_pass(origin.toString().utf8());
 
   DVLOG(1) << "Bridge#" << channel_id_ << " Connect(" << url << ", ("
            << base::JoinString(protocols_to_pass, ", ") << "), "

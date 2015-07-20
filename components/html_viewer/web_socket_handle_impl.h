@@ -33,7 +33,7 @@ class WebSocketHandleImpl : public blink::WebSocketHandle {
   // blink::WebSocketHandle methods:
   virtual void connect(const blink::WebURL& url,
                        const blink::WebVector<blink::WebString>& protocols,
-                       const blink::WebSerializedOrigin& origin,
+                       const blink::WebSecurityOrigin& origin,
                        blink::WebSocketHandleClient*);
   virtual void send(bool fin, MessageType, const char* data, size_t size);
   virtual void flowControl(int64_t quota);

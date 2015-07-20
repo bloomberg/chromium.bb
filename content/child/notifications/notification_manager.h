@@ -41,11 +41,11 @@ class NotificationManager : public blink::WebNotificationManager,
   void OnWorkerRunLoopStopped() override;
 
   // blink::WebNotificationManager implementation.
-  virtual void show(const blink::WebSerializedOrigin& origin,
+  virtual void show(const blink::WebSecurityOrigin& origin,
                     const blink::WebNotificationData& notification_data,
                     blink::WebNotificationDelegate* delegate);
   virtual void showPersistent(
-      const blink::WebSerializedOrigin& origin,
+      const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebNotificationShowCallbacks* callbacks);
@@ -54,13 +54,12 @@ class NotificationManager : public blink::WebNotificationManager,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebNotificationGetCallbacks* callbacks);
   virtual void close(blink::WebNotificationDelegate* delegate);
-  virtual void closePersistent(
-      const blink::WebSerializedOrigin& origin,
-      int64_t persistent_notification_id);
+  virtual void closePersistent(const blink::WebSecurityOrigin& origin,
+                               int64_t persistent_notification_id);
   virtual void notifyDelegateDestroyed(
       blink::WebNotificationDelegate* delegate);
   virtual blink::WebNotificationPermission checkPermission(
-      const blink::WebSerializedOrigin& origin);
+      const blink::WebSecurityOrigin& origin);
 
   // Called by the NotificationDispatcher.
   bool OnMessageReceived(const IPC::Message& message);
@@ -85,7 +84,7 @@ class NotificationManager : public blink::WebNotificationManager,
   // owned by Blink, will be used to feed back events associated with the
   // notification to the JavaScript object.
   void DisplayPageNotification(
-      const blink::WebSerializedOrigin& origin,
+      const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
       blink::WebNotificationDelegate* delegate,
       const SkBitmap& icon);
@@ -95,7 +94,7 @@ class NotificationManager : public blink::WebNotificationManager,
   // be used to inform the Promise pending in Blink that the notification has
   // been send to the browser process to be displayed.
   void DisplayPersistentNotification(
-      const blink::WebSerializedOrigin& origin,
+      const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
       int64 service_worker_registration_id,
       scoped_ptr<blink::WebNotificationShowCallbacks> callbacks,

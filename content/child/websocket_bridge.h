@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace blink {
-class WebSerializedOrigin;
+class WebSecurityOrigin;
 class WebString;
 class WebURL;
 }  // namespace blink
@@ -33,7 +33,7 @@ class WebSocketBridge : public blink::WebSocketHandle {
   // WebSocketHandle functions.
   void connect(const blink::WebURL& url,
                const blink::WebVector<blink::WebString>& protocols,
-               const blink::WebSerializedOrigin& origin,
+               const blink::WebSecurityOrigin& origin,
                blink::WebSocketHandleClient* client) override;
   void send(bool fin,
             WebSocketHandle::MessageType type,

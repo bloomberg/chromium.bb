@@ -23,7 +23,6 @@ class SingleThreadTaskRunner;
 namespace blink {
 struct WebNotificationData;
 class WebNotificationDelegate;
-class WebSerializedOrigin;
 }
 
 namespace content {

@@ -9,7 +9,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/child/notifications/notification_image_loader.h"
 #include "content/child/notifications/notification_manager.h"
-#include "third_party/WebKit/public/platform/WebSerializedOrigin.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

@@ -81,7 +81,7 @@ void WebNotificationManagerImpl::notifyDelegateDestroyed(
 }
 
 blink::WebNotificationPermission WebNotificationManagerImpl::checkPermission(
-      const blink::WebSecurityOrigin&) {
+    const blink::WebSecurityOrigin&) {
   NOTIMPLEMENTED();
   return blink::WebNotificationPermission();
 }
