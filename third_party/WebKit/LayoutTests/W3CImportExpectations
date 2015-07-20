@@ -404,9 +404,9 @@ imported/csswg-test/css-writing-modes-3/text-orientation-013.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-orientation-015.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-orientation-sideways-002.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-orientation-sideways-left-001.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/inline-block-alignment-new-007.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/inline-block-alignment-new-010.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/inline-block-alignment-new-011.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/inline-block-alignment-007.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/inline-block-alignment-010.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/inline-block-alignment-011.xht [ Skip ]
 
 
 # CSS Writing Modes Level 3: Following tests require part of text-combine-upright we do not plan to support.
