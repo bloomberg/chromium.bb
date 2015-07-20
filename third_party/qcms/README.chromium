@@ -87,6 +87,8 @@ The following changes have been made since qcms was imported:
    - https://bugzilla.mozilla.org/show_bug.cgi?id=764181
  - Drop SSE1 code as Chromium mandates SSE2 as a minimum requirement
    - https://code.google.com/p/chromium/issues/detail?id=506856
+ - Apply Fix potential leaks in qcms_transform_create
+   - https://bugzilla.mozilla.org/show_bug.cgi?id=1168480
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
