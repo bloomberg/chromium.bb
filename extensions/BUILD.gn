@@ -171,7 +171,6 @@ test("extensions_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/leveldatabase",
-    "//third_party/libxml",
     "//third_party/mojo/src/mojo/edk/js",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings",

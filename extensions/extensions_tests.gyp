@@ -28,7 +28,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/mojo/mojo_edk.gyp:mojo_js_lib',
         '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
