@@ -14,9 +14,9 @@
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
+#include "chrome/service/service_ipc_server.h"
 
 class ServiceProcessPrefs;
-class ServiceIPCServer;
 class ServiceURLRequestContextGetter;
 class ServiceProcessState;
 
@@ -32,7 +32,8 @@ class NetworkChangeNotifier;
 // process can live independently of the browser process.
 // ServiceProcess Design Notes
 // https://sites.google.com/a/chromium.org/dev/developers/design-documents/service-processes
-class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
+class ServiceProcess : public ServiceIPCServer::Client,
+                       public cloud_print::CloudPrintProxy::Client {
  public:
   ServiceProcess();
   ~ServiceProcess() override;
@@ -67,18 +68,13 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
     return &shutdown_event_;
   }
 
-  // Shutdown the service process. This is likely triggered by a IPC message.
+  // Shuts down the service process.
   void Shutdown();
 
-  void SetUpdateAvailable() {
-    update_available_ = true;
-  }
-  bool update_available() const { return update_available_; }
-
-  // Called by the IPC server when a client disconnects. A return value of
-  // true indicates that the IPC server should continue listening for new
-  // connections.
-  bool HandleClientDisconnect();
+  // ServiceIPCServer::Client implementation.
+  void OnShutdown() override;
+  void OnUpdateAvailable() override;
+  bool OnIPCClientDisconnect() override;
 
   cloud_print::CloudPrintProxy* GetCloudPrintProxy();
 
@@ -94,7 +90,7 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
   // Schedule a call to ShutdownIfNeeded.
   void ScheduleShutdownCheck();
 
-  // Shuts down the process if no services are enabled and no clients are
+  // Shuts down the process if no services are enabled and no IPC client is
   // connected.
   void ShutdownIfNeeded();
 

@@ -25,8 +25,26 @@ class WaitableEvent;
 // This class handles IPC commands for the service process.
 class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
  public:
-  ServiceIPCServer(const IPC::ChannelHandle& handle,
-                   base::WaitableEvent* shutdown_event);
+  class Client {
+   public:
+    virtual ~Client() {}
+
+    // Called when the service process must shut down.
+    virtual void OnShutdown() = 0;
+
+    // Called when a product update is available.
+    virtual void OnUpdateAvailable() = 0;
+
+    // Called when the IPC channel is closed. A return value of true indicates
+    // that the IPC server should continue listening for new connections.
+    virtual bool OnIPCClientDisconnect() = 0;
+  };
+
+  ServiceIPCServer(
+      Client* client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const IPC::ChannelHandle& handle,
+      base::WaitableEvent* shutdown_event);
   ~ServiceIPCServer() override;
 
   bool Init();
@@ -34,7 +52,7 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
 
-  bool is_client_connected() const { return client_connected_; }
+  bool is_ipc_client_connected() const { return ipc_client_connected_; }
 
  private:
   friend class MockServiceIPCServer;
@@ -61,12 +79,14 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   // Helper method to create the sync channel.
   void CreateChannel();
 
+  Client* client_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   IPC::ChannelHandle channel_handle_;
   scoped_ptr<IPC::SyncChannel> channel_;
   base::WaitableEvent* shutdown_event_;
 
-  // Indicates whether a client is currently connected to the channel.
-  bool client_connected_;
+  // Indicates whether an IPC client is currently connected to the channel.
+  bool ipc_client_connected_;
 
   // Calculates histograms deltas.
   scoped_ptr<base::HistogramDeltaSerialization> histogram_delta_serializer_;

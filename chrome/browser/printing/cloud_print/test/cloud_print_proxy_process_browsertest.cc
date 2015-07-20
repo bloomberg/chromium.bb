@@ -120,9 +120,12 @@ class MockServiceIPCServer : public ServiceIPCServer {
  public:
   static std::string EnabledUserId();
 
-  MockServiceIPCServer(const IPC::ChannelHandle& handle,
-                       base::WaitableEvent* shutdown_event)
-      : ServiceIPCServer(handle, shutdown_event),
+  MockServiceIPCServer(
+      ServiceIPCServer::Client* client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const IPC::ChannelHandle& handle,
+      base::WaitableEvent* shutdown_event)
+      : ServiceIPCServer(client, io_task_runner, handle, shutdown_event),
         enabled_(true) { }
 
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
@@ -241,7 +244,9 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   // lifetime.
   EXPECT_TRUE(service_process.Initialize(&main_message_loop, state));
 
-  MockServiceIPCServer server(state->GetServiceProcessChannel(),
+  MockServiceIPCServer server(&service_process,
+                              service_process.io_task_runner(),
+                              state->GetServiceProcessChannel(),
                               service_process.GetShutdownEventForTesting());
 
   // Here is where the expectations/mock responses need to be set up.

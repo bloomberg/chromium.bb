@@ -30,7 +30,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/net/service_url_request_context_getter.h"
-#include "chrome/service/service_ipc_server.h"
 #include "chrome/service/service_process_prefs.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
@@ -113,10 +112,10 @@ void PrepareRestartOnCrashEnviroment(
 }  // namespace
 
 ServiceProcess::ServiceProcess()
-  : shutdown_event_(true /* manual_reset */, false /* initially_signaled */),
-    main_message_loop_(NULL),
-    enabled_services_(0),
-    update_available_(false) {
+    : shutdown_event_(true /* manual_reset */, false /* initially_signaled */),
+      main_message_loop_(NULL),
+      enabled_services_(0),
+      update_available_(false) {
   DCHECK(!g_service_process);
   g_service_process = this;
 }
@@ -190,6 +189,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
 
   VLOG(1) << "Starting Service Process IPC Server";
   ipc_server_.reset(new ServiceIPCServer(
+      this /* client */,
+      io_task_runner(),
       service_process_state_->GetServiceProcessChannel(),
       &shutdown_event_));
   ipc_server_->Init();
@@ -261,11 +262,19 @@ void ServiceProcess::Terminate() {
                                               base::MessageLoop::QuitClosure());
 }
 
-bool ServiceProcess::HandleClientDisconnect() {
+void ServiceProcess::OnShutdown() {
+  Shutdown();
+}
+
+void ServiceProcess::OnUpdateAvailable() {
+  update_available_ = true;
+}
+
+bool ServiceProcess::OnIPCClientDisconnect() {
   // If there are no enabled services or if there is an update available
   // we want to shutdown right away. Else we want to keep listening for
   // new connections.
-  if (!enabled_services_ || update_available()) {
+  if (!enabled_services_ || update_available_) {
     Shutdown();
     return false;
   }
@@ -338,8 +347,8 @@ void ServiceProcess::ScheduleShutdownCheck() {
 
 void ServiceProcess::ShutdownIfNeeded() {
   if (0 == enabled_services_) {
-    if (ipc_server_->is_client_connected()) {
-      // If there is a client connected, we need to try again later.
+    if (ipc_server_->is_ipc_client_connected()) {
+      // If there is an IPC client connected, we need to try again later.
       // Note that there is still a timing window here because a client may
       // decide to connect at this point.
       // TODO(sanjeevr): Fix this timing window.
