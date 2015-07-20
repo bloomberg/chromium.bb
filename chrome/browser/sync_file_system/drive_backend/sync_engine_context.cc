@@ -9,11 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
+#include "components/drive/drive_uploader.h"
+#include "components/drive/service/drive_service_interface.h"
 
 namespace sync_file_system {
 namespace drive_backend {

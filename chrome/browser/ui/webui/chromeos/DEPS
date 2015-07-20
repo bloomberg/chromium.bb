@@ -3,3 +3,9 @@ include_rules = [
   "+components/user_manager",
   "+media/audio/sounds",
 ]
+
+specific_include_rules = {
+  "drive_internals_ui\.cc": [
+    "+components/drive"
+  ],
+}

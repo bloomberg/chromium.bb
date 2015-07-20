@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/drive/drive_service_interface.h"
+#include "components/drive/service/drive_service_interface.h"
 
 namespace sync_file_system {
 namespace drive_backend {

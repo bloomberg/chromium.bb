@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/drive/event_logger.h"
+#include "components/drive/event_logger.h"
 
 namespace sync_file_system {
 namespace util {

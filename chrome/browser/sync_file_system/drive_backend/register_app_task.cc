@@ -6,8 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "chrome/browser/drive/drive_api_util.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/folder_creator.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -15,6 +13,8 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "components/drive/drive_api_util.h"
+#include "components/drive/service/drive_service_interface.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace sync_file_system {

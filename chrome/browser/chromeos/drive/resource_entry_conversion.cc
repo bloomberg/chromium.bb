@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_core_util.h"
-#include "chrome/browser/drive/drive_api_util.h"
+#include "components/drive/drive_api_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

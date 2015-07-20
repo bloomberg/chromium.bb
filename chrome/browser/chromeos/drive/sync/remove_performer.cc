@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
-#include "chrome/browser/drive/drive_api_util.h"
+#include "components/drive/drive_api_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

@@ -1,3 +1,4 @@
-This directory contains utility code for accessing Google Drive, shared by
-SyncFileSystem (chrome/browser/sync_file_system) and Google Drive integration
-on Chrome OS (chrome/browser/chromeos/drive).
+This directory contains left-behind, browser-dependent parts of
+components/drive/service.  These parts should probably be moved
+somewhere else - chrome/browser/chromeos/drive is one possible
+destination, but it is ChromeOS-specific.  See crbug.com/257943.

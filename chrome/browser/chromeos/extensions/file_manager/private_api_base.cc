@@ -6,7 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/drive/event_logger.h"
+#include "components/drive/event_logger.h"
 
 namespace extensions {
 namespace {

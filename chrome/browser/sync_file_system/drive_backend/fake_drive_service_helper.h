@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
-#include "chrome/browser/drive/drive_uploader.h"
-#include "chrome/browser/drive/fake_drive_service.h"
+#include "components/drive/drive_uploader.h"
+#include "components/drive/service/fake_drive_service.h"
 
 namespace base {
 class FilePath;

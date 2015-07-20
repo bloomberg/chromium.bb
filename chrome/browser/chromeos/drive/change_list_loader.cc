@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
-#include "chrome/browser/drive/event_logger.h"
+#include "components/drive/event_logger.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "url/gurl.h"
 

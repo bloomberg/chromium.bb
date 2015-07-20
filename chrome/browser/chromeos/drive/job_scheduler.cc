@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive_pref_names.h"
-#include "chrome/browser/drive/event_logger.h"
+#include "components/drive/event_logger.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

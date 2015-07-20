@@ -22,10 +22,10 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "components/drive/service/drive_service_interface.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 

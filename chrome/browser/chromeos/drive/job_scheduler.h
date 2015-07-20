@@ -14,8 +14,8 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/job_queue.h"
-#include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/drive/drive_uploader.h"
+#include "components/drive/drive_uploader.h"
+#include "components/drive/service/drive_service_interface.h"
 #include "net/base/network_change_notifier.h"
 
 class PrefService;

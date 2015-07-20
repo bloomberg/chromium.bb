@@ -9,7 +9,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
-#include "chrome/browser/drive/fake_drive_service.h"
+#include "components/drive/service/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"

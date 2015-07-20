@@ -353,6 +353,7 @@ source_set("browser") {
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",
+      "//components/drive:drive",
       "//components/proximity_auth/ble",
       "//components/proximity_auth/cryptauth",
       "//extensions/components/javascript_dialog_extensions_client",
@@ -1147,12 +1148,6 @@ source_set("test_support") {
 
   if (enable_extensions) {
     sources += [
-      "drive/dummy_drive_service.cc",
-      "drive/dummy_drive_service.h",
-      "drive/fake_drive_service.cc",
-      "drive/fake_drive_service.h",
-      "drive/test_util.cc",
-      "drive/test_util.h",
       "extensions/api/messaging/native_messaging_test_util.cc",
       "extensions/api/messaging/native_messaging_test_util.h",
       "extensions/extension_notification_observer.cc",
@@ -1176,7 +1171,10 @@ source_set("test_support") {
       "media_galleries/media_galleries_test_util.cc",
       "media_galleries/media_galleries_test_util.h",
     ]
-    deps += [ "//components/storage_monitor:test_support" ]
+    deps += [
+      "//components/drive:test_support",
+      "//components/storage_monitor:test_support",
+    ]
   }
 
   if (enable_mdns) {

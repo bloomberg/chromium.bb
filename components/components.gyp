@@ -94,6 +94,7 @@
         'cdm.gypi',
         'devtools_discovery.gypi',
         'devtools_http_handler.gypi',
+        'drive.gypi',
         'message_port.gypi',
         'navigation_interception.gypi',
         'power.gypi',

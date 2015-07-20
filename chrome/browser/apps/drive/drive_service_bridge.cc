@@ -7,14 +7,14 @@
 #include <string>
 
 #include "base/logging.h"
-#include "chrome/browser/drive/drive_api_service.h"
-#include "chrome/browser/drive/drive_app_registry.h"
-#include "chrome/browser/drive/drive_notification_manager.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
-#include "chrome/browser/drive/drive_notification_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/drive/drive_app_registry.h"
+#include "components/drive/drive_notification_manager.h"
+#include "components/drive/drive_notification_observer.h"
+#include "components/drive/service/drive_api_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"

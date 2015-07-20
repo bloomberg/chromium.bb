@@ -1,20 +1,5 @@
 include_rules = [
-  "-chrome",
-  "-content",
-  "+chrome/browser/drive",
-  "+components/invalidation",
+  "+components/keyed_service",
+  "+components/drive",
 ]
 
-# The following dependencies should be removed to componentize this
-# directory. crbug.com/257943
-specific_include_rules = {
-  "drive_notification_manager_factory\.cc": [
-    "!chrome/browser/invalidation/profile_invalidation_provider_factory.h",
-    "!chrome/browser/profiles/profile.h",
-    "!chrome/browser/sync/profile_sync_service.h",
-    "!chrome/browser/sync/profile_sync_service_factory.h",
-  ],
-  "drive_uploader\.cc": [
-    "!content/public/browser/power_save_blocker.h",
-  ],
-}

@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/drive/drive_app_registry.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/common/web_application_info.h"
+#include "components/drive/drive_app_registry.h"
 
 class Profile;
 

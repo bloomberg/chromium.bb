@@ -82,6 +82,14 @@ per-file domain_reliability.gypi=mmenke@chromium.org
 per-file domain_reliability.gypi=szym@chromium.org
 per-file domain_reliability.gypi=ttuttle@chromium.org
 
+per-file drive.gypi=fukino@chromium.org
+per-file drive.gypi=hashimoto@chromium.org
+per-file drive.gypi=hidehiko@chromium.org
+per-file drive.gypi=hirono@chromium.org
+per-file drive.gypi=kinaba@chromium.org
+per-file drive.gypi=mtomasz@chromium.org
+per-file drive.gypi=yoshiki@chromium.org
+
 per-file enhanced_bookmarks*=kkimlabs@chromium.org
 per-file enhanced_bookmarks*=noyau@chromium.org
 per-file enhanced_bookmarks*=sky@chromium.org

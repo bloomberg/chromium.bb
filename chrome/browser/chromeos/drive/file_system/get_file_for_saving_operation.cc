@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/drive/event_logger.h"
+#include "components/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace drive {

@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/drive/drive_app_registry_observer.h"
+#include "components/drive/drive_app_registry_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace drive {
