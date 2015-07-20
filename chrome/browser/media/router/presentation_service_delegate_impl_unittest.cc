@@ -125,21 +125,18 @@ TEST_F(PresentationServiceDelegateImplTest, SetDefaultPresentationUrl) {
 
   std::string presentation_url1("http://foo");
   delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id,
-                                            presentation_url1,
-                                            "defaultPresentationId");
+                                            presentation_url1);
   EXPECT_TRUE(delegate_impl_->default_source().Equals(
       MediaSourceForPresentationUrl(presentation_url1)));
 
   // Remove default presentation URL.
-  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "",
-                                            "");
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "");
   EXPECT_TRUE(delegate_impl_->default_source().Empty());
 
   // Set to a new default presentation URL
   std::string presentation_url2("https://youtube.com");
   delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id,
-                                            presentation_url2,
-                                            "defaultPresentationId");
+                                            presentation_url2);
   EXPECT_TRUE(delegate_impl_->default_source().Equals(
       MediaSourceForPresentationUrl(presentation_url2)));
 }
@@ -162,8 +159,8 @@ TEST_F(PresentationServiceDelegateImplTest, DefaultMediaSourceObserver) {
   EXPECT_CALL(observer2, OnDefaultMediaSourceChanged(
                              Equals(MediaSourceForPresentationUrl(url1)),
                              GURL("http://www.google.com"))).Times(1);
-  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, url1,
-                                            "defaultPresentationId");
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id,
+                                            routing_id, url1);
 
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer2));
@@ -173,16 +170,15 @@ TEST_F(PresentationServiceDelegateImplTest, DefaultMediaSourceObserver) {
   EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(
                              Equals(MediaSourceForPresentationUrl(url2)),
                              GURL("http://www.google.com"))).Times(1);
-  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, url2,
-                                            "defaultPresentationId");
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id,
+                                            routing_id, url2);
 
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
   // Remove default presentation URL.
   EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(
                              Equals(MediaSource()),
                              GURL("http://www.google.com"))).Times(1);
-  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "",
-                                            "");
+  delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "");
 }
 
 TEST_F(PresentationServiceDelegateImplTest, Reset) {

@@ -352,8 +352,7 @@ void PresentationServiceImpl::RunAndEraseJoinSessionMojoCallback(
 }
 
 void PresentationServiceImpl::SetDefaultPresentationURL(
-    const mojo::String& default_presentation_url,
-    const mojo::String& default_presentation_id) {
+    const mojo::String& default_presentation_url) {
   DVLOG(2) << "SetDefaultPresentationURL";
   if (!delegate_)
     return;
@@ -361,25 +360,18 @@ void PresentationServiceImpl::SetDefaultPresentationURL(
   const std::string& old_default_url = default_presentation_url_;
   const std::string& new_default_url = default_presentation_url.get();
 
-  // Don't call delegate if nothing changed.
-  if (old_default_url == new_default_url &&
-      default_presentation_id_ == default_presentation_id) {
+  if (old_default_url == new_default_url)
     return;
-  }
 
-  if (old_default_url != new_default_url) {
-    // If DPU changed, replace screen availability listeners if any.
-    if (screen_availability_listener_.get())
-      ResetScreenAvailabilityListener(new_default_url);
-  }
+  // Replace screen availability listeners if any.
+  if (screen_availability_listener_.get())
+    ResetScreenAvailabilityListener(new_default_url);
 
   delegate_->SetDefaultPresentationUrl(
       render_process_id_,
       render_frame_id_,
-      default_presentation_url,
-      default_presentation_id);
+      default_presentation_url);
   default_presentation_url_ = default_presentation_url;
-  default_presentation_id_ = default_presentation_id;
 }
 
 
@@ -531,7 +523,6 @@ void PresentationServiceImpl::Reset() {
     delegate_->Reset(render_process_id_, render_frame_id_);
 
   default_presentation_url_.clear();
-  default_presentation_id_.clear();
 
   screen_availability_listener_.reset();
 

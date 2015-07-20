@@ -95,15 +95,14 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_process_id,
       int render_frame_id) = 0;
 
-  // Sets the default presentation URL and ID for frame given by
-  // |render_process_id| and |render_frame_id|.
+  // Sets the default presentation URL for frame given by |render_process_id|
+  // and |render_frame_id|.
   // If |default_presentation_url| is empty, the default presentation URL will
   // be cleared.
   virtual void SetDefaultPresentationUrl(
       int render_process_id,
       int render_frame_id,
-      const std::string& default_presentation_url,
-      const std::string& default_presentation_id) = 0;
+      const std::string& default_presentation_url) = 0;
 
   // Starts a new presentation session. The presentation id of the session will
   // be the default presentation ID if any or a generated one otherwise.

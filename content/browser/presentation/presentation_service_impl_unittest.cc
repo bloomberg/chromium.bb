@@ -82,12 +82,11 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
       void(
           int render_process_id,
           int routing_id));
-  MOCK_METHOD4(SetDefaultPresentationUrl,
+  MOCK_METHOD3(SetDefaultPresentationUrl,
       void(
           int render_process_id,
           int routing_id,
-          const std::string& default_presentation_url,
-          const std::string& default_presentation_id));
+          const std::string& default_presentation_url));
   MOCK_METHOD5(StartSession,
       void(
           int render_process_id,
@@ -228,7 +227,6 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
   void ExpectCleanState() {
     EXPECT_TRUE(service_impl_->default_presentation_url_.empty());
-    EXPECT_TRUE(service_impl_->default_presentation_id_.empty());
     EXPECT_FALSE(service_impl_->screen_availability_listener_.get());
     EXPECT_FALSE(service_impl_->default_session_start_context_.get());
     EXPECT_FALSE(service_impl_->on_session_messages_callback_.get());
@@ -418,11 +416,10 @@ TEST_F(PresentationServiceImplTest, DelegateFails) {
 
 TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
   std::string url1("http://fooUrl");
-  std::string dpu_id("dpuId");
   EXPECT_CALL(mock_delegate_,
-      SetDefaultPresentationUrl(_, _, Eq(url1), Eq(dpu_id)))
+      SetDefaultPresentationUrl(_, _, Eq(url1)))
       .Times(1);
-  service_impl_->SetDefaultPresentationURL(url1, dpu_id);
+  service_impl_->SetDefaultPresentationURL(url1);
   EXPECT_EQ(url1, service_impl_->default_presentation_url_);
 
   // Now there should be a listener for DPU = |url1|.
@@ -443,9 +440,9 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
       RemoveScreenAvailabilityListener(_, _, _))
       .Times(1);
   EXPECT_CALL(mock_delegate_,
-      SetDefaultPresentationUrl(_, _, Eq(url2), Eq(dpu_id)))
+      SetDefaultPresentationUrl(_, _, Eq(url2)))
       .Times(1);
-  service_impl_->SetDefaultPresentationURL(url2, dpu_id);
+  service_impl_->SetDefaultPresentationURL(url2);
   EXPECT_EQ(url2, service_impl_->default_presentation_url_);
 
   listener = service_impl_->screen_availability_listener_.get();
@@ -454,16 +451,15 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
 }
 
 TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrl) {
-  std::string dpu_id("dpuId");
   EXPECT_CALL(mock_delegate_,
-      SetDefaultPresentationUrl(_, _, Eq(kPresentationUrl), Eq(dpu_id)))
+      SetDefaultPresentationUrl(_, _, Eq(kPresentationUrl)))
       .Times(1);
-  service_impl_->SetDefaultPresentationURL(kPresentationUrl, dpu_id);
+  service_impl_->SetDefaultPresentationURL(kPresentationUrl);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
   EXPECT_EQ(kPresentationUrl, service_impl_->default_presentation_url_);
 
   // Same URL as before; no-ops.
-  service_impl_->SetDefaultPresentationURL(kPresentationUrl, dpu_id);
+  service_impl_->SetDefaultPresentationURL(kPresentationUrl);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_delegate_));
   EXPECT_EQ(kPresentationUrl, service_impl_->default_presentation_url_);
 }

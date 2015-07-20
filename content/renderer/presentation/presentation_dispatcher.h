@@ -64,6 +64,7 @@ class CONTENT_EXPORT PresentationDispatcher
       blink::WebPresentationAvailabilityCallbacks* callbacks);
   virtual void startListening(blink::WebPresentationAvailabilityObserver*);
   virtual void stopListening(blink::WebPresentationAvailabilityObserver*);
+  virtual void setDefaultPresentationUrl(const blink::WebString& url);
 
   // RenderFrameObserver implementation.
   void DidChangeDefaultPresentation() override;

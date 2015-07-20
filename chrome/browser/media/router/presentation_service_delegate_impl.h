@@ -73,8 +73,7 @@ class PresentationServiceDelegateImpl
   void SetDefaultPresentationUrl(
       int render_process_id,
       int render_frame_id,
-      const std::string& default_presentation_url,
-      const std::string& default_presentation_id) override;
+      const std::string& default_presentation_url) override;
   void StartSession(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_url,

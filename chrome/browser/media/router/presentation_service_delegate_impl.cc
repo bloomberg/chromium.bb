@@ -79,8 +79,6 @@ class PresentationFrame {
       content::PresentationScreenAvailabilityListener* listener);
   bool HasScreenAvailabilityListenerForTest(
       const MediaSource::Id& source_id) const;
-  void SetDefaultPresentationInfo(const std::string& default_presentation_url,
-                                  const std::string& default_presentation_id);
   std::string GetDefaultPresentationId() const;
   void ListenForSessionStateChange(
       const content::SessionStateChangedCallback& state_changed_cb);
@@ -100,13 +98,17 @@ class PresentationFrame {
     delegate_observer_ = observer;
   }
 
+  void set_default_presentation_url(const std::string& url) {
+    default_presentation_url_ = url;
+  }
+
  private:
   MediaSource GetMediaSourceFromListener(
       content::PresentationScreenAvailabilityListener* listener) const;
   MediaRouteIdToPresentationSessionMapping route_id_to_presentation_;
   base::SmallMap<std::map<std::string, MediaRoute::Id>>
       presentation_id_to_route_id_;
-  scoped_ptr<content::PresentationSessionInfo> default_presentation_info_;
+  std::string default_presentation_url_;
   scoped_ptr<PresentationMediaSinksObserver> sinks_observer_;
   scoped_ptr<PresentationSessionStateObserver> session_state_observer_;
 
@@ -198,26 +200,9 @@ void PresentationFrame::Reset() {
   route_id_to_presentation_.Clear();
   presentation_id_to_route_id_.clear();
   sinks_observer_.reset();
-  default_presentation_info_.reset();
+  default_presentation_url_.clear();
   if (session_state_observer_)
     session_state_observer_->Reset();
-}
-
-void PresentationFrame::SetDefaultPresentationInfo(
-    const std::string& default_presentation_url,
-    const std::string& default_presentation_id) {
-  if (default_presentation_url.empty() && default_presentation_id.empty()) {
-    default_presentation_info_.reset();
-  } else {
-    default_presentation_info_.reset(new content::PresentationSessionInfo(
-        default_presentation_url, default_presentation_id));
-  }
-}
-
-std::string PresentationFrame::GetDefaultPresentationId() const {
-  return default_presentation_info_
-             ? default_presentation_info_->presentation_id
-             : "";
 }
 
 void PresentationFrame::ListenForSessionStateChange(
@@ -250,9 +235,8 @@ class PresentationFrameManager {
   bool RemoveScreenAvailabilityListener(
       const RenderFrameHostId& render_frame_host_id,
       content::PresentationScreenAvailabilityListener* listener);
-  void SetDefaultPresentationInfo(const RenderFrameHostId& render_frame_host_id,
-                                  const std::string& default_presentation_url,
-                                  const std::string& default_presentation_id);
+  void SetDefaultPresentationUrl(const RenderFrameHostId& render_frame_host_id,
+                                  const std::string& default_presentation_url);
   void ListenForSessionStateChange(
       const RenderFrameHostId& render_frame_host_id,
       const content::SessionStateChangedCallback& state_changed_cb);
@@ -264,10 +248,6 @@ class PresentationFrameManager {
       const RenderFrameHostId& render_frame_host_id,
       const MediaSource::Id& source_id) const;
   void SetMediaRouterForTest(MediaRouter* router);
-  // Returns default presentation ID, or empty string if no default
-  // presentation ID is set in the frame.
-  std::string GetDefaultPresentationId(
-      const RenderFrameHostId& render_frame_host_id) const;
 
   void OnPresentationSessionStarted(
       const RenderFrameHostId& render_frame_host_id,
@@ -369,13 +349,11 @@ bool PresentationFrameManager::HasScreenAvailabilityListenerForTest(
          presentation_frame->HasScreenAvailabilityListenerForTest(source_id);
 }
 
-void PresentationFrameManager::SetDefaultPresentationInfo(
+void PresentationFrameManager::SetDefaultPresentationUrl(
     const RenderFrameHostId& render_frame_host_id,
-    const std::string& default_presentation_url,
-    const std::string& default_presentation_id) {
+    const std::string& default_presentation_url) {
   auto presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
-  presentation_frame->SetDefaultPresentationInfo(default_presentation_url,
-                                                 default_presentation_id);
+  presentation_frame->set_default_presentation_url(default_presentation_url);
 }
 
 void PresentationFrameManager::ListenForSessionStateChange(
@@ -384,13 +362,6 @@ void PresentationFrameManager::ListenForSessionStateChange(
   PresentationFrame* presentation_frame =
       GetOrAddPresentationFrame(render_frame_host_id);
   presentation_frame->ListenForSessionStateChange(state_changed_cb);
-}
-
-std::string PresentationFrameManager::GetDefaultPresentationId(
-    const RenderFrameHostId& render_frame_host_id) const {
-  auto presentation_frame = presentation_frames_.get(render_frame_host_id);
-  return presentation_frame ? presentation_frame->GetDefaultPresentationId()
-                            : "";
 }
 
 void PresentationFrameManager::AddDelegateObserver(
@@ -497,11 +468,10 @@ void PresentationServiceDelegateImpl::Reset(int render_process_id,
 void PresentationServiceDelegateImpl::SetDefaultPresentationUrl(
     int render_process_id,
     int render_frame_id,
-    const std::string& default_presentation_url,
-    const std::string& default_presentation_id) {
+    const std::string& default_presentation_url) {
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
-  frame_manager_->SetDefaultPresentationInfo(
-      render_frame_host_id, default_presentation_url, default_presentation_id);
+  frame_manager_->SetDefaultPresentationUrl(render_frame_host_id,
+                                            default_presentation_url);
   if (IsMainFrame(render_process_id, render_frame_id)) {
     // This is the main frame, which means tab-level default presentation
     // might have been updated.
@@ -588,13 +558,7 @@ void PresentationServiceDelegateImpl::StartSession(
     return;
   }
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
-
-  // TODO(mlamouri,avayvod): don't use the default presentation id provided by
-  // the frame when we implement the new default presentation model.
-  std::string presentation_id =
-      frame_manager_->GetDefaultPresentationId(render_frame_host_id);
-  if (presentation_id.empty())
-    presentation_id = base::GenerateGUID();
+  const std::string presentation_id = base::GenerateGUID();
 
   scoped_ptr<CreatePresentationSessionRequest> context(
       new CreatePresentationSessionRequest(

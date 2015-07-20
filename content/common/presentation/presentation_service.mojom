@@ -43,11 +43,8 @@ struct SessionMessage {
 };
 
 interface PresentationService {
-  // Called when the frame sets or changes the default presentation URL or
-  // presentation ID.
-  SetDefaultPresentationURL(
-      string default_presentation_url,
-      string? default_presentation_id);
+  // Called when the frame sets or changes the default presentation URL.
+  SetDefaultPresentationURL(string url);
 
   // Sets the PresentationServiceClient.
   SetClient(PresentationServiceClient client);

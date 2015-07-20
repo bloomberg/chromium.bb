@@ -169,9 +169,7 @@ class CONTENT_EXPORT PresentationServiceImpl
       PresentationServiceDelegate* delegate);
 
   // PresentationService implementation.
-  void SetDefaultPresentationURL(
-      const mojo::String& presentation_url,
-      const mojo::String& presentation_id) override;
+  void SetDefaultPresentationURL(const mojo::String& url) override;
   void SetClient(presentation::PresentationServiceClientPtr client) override;
   void ListenForScreenAvailability() override;
   void StopListeningForScreenAvailability() override;
@@ -276,7 +274,6 @@ class CONTENT_EXPORT PresentationServiceImpl
   presentation::PresentationServiceClientPtr client_;
 
   std::string default_presentation_url_;
-  std::string default_presentation_id_;
 
   scoped_ptr<ScreenAvailabilityListenerImpl> screen_availability_listener_;
 

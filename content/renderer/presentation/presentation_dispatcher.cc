@@ -317,12 +317,19 @@ void PresentationDispatcher::stopListening(
     UpdateListeningState();
 }
 
+void PresentationDispatcher::setDefaultPresentationUrl(
+    const blink::WebString& url)
+{
+    ConnectToPresentationServiceIfNeeded();
+    presentation_service_->SetDefaultPresentationURL(url.utf8());
+}
+
+// TODO(mlamouri): remove this, see https://crbug.com/510964
 void PresentationDispatcher::DidChangeDefaultPresentation() {
   GURL presentation_url(GetPresentationURLFromFrame(render_frame()));
 
   ConnectToPresentationServiceIfNeeded();
-  presentation_service_->SetDefaultPresentationURL(
-      presentation_url.spec(), mojo::String());
+  presentation_service_->SetDefaultPresentationURL(presentation_url.spec());
 }
 
 void PresentationDispatcher::DidCommitProvisionalLoad(
