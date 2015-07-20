@@ -13,6 +13,7 @@
 #include <dxgi1_2.h>
 #include <mfapi.h>
 #include <mferror.h>
+#include <ntverp.h>
 #include <wmcodecdsp.h>
 
 #include "base/base_paths_win.h"
@@ -90,9 +91,13 @@ const CLSID MEDIASUBTYPE_VP90 = {
 
 // The CLSID of the video processor media foundation transform which we use for
 // texture color conversion in DX11.
+// Defined in mfidl.h in the Windows 10 SDK. ntverp.h provides VER_PRODUCTBUILD
+// to detect which SDK we are compiling with.
+#if VER_PRODUCTBUILD < 10011  // VER_PRODUCTBUILD for 10.0.10158.0 SDK.
 DEFINE_GUID(CLSID_VideoProcessorMFT,
             0x88753b26, 0x5b24, 0x49bd, 0xb2, 0xe7, 0xc, 0x44, 0x5c, 0x78,
             0xc9, 0x82);
+#endif
 
 // MF_XVP_PLAYBACK_MODE
 // Data type: UINT32 (treat as BOOL)
