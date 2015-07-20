@@ -47343,6 +47343,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="V8.MemoryHeapCommitted" units="KB">
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    The committed memory used by V8 in KB averaged over time, logged before each
+    GC.
+  </summary>
+</histogram>
+
 <histogram name="V8.MemoryHeapFractionCellSpace" units="percent">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
@@ -47452,6 +47460,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hpayer@chromium.org</owner>
   <summary>
     The total size of live memory used by V8 after each GC in KB.
+  </summary>
+</histogram>
+
+<histogram name="V8.MemoryHeapUsed" units="KB">
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    The live memory used by V8 in KB averaged over time, logged before each GC.
   </summary>
 </histogram>
 
