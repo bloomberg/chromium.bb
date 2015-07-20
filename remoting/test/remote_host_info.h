@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "remoting/test/connection_setup_info.h"
+
 namespace remoting {
 namespace test {
 
@@ -26,6 +28,11 @@ struct RemoteHostInfo {
 
   // Sets the |remote_host_status| based on the caller supplied string.
   void SetRemoteHostStatusFromString(const std::string& status_string);
+
+  // Generates connection information to establish a chromoting connection.
+  ConnectionSetupInfo GenerateConnectionSetupInfo(
+      const std::string& access_token,
+      const std::string& user_name) const;
 
   // Data used to establish a connection with a remote host.
   RemoteHostStatus remote_host_status;

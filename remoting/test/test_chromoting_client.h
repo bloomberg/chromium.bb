@@ -15,7 +15,6 @@
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/test/remote_connection_observer.h"
-#include "remoting/test/remote_host_info.h"
 
 namespace remoting {
 
@@ -27,9 +26,11 @@ namespace protocol {
 class ClipboardStub;
 class HostStub;
 class InputStub;
-}
+}  // namespace protocol
 
 namespace test {
+
+struct ConnectionSetupInfo;
 
 // Manages a chromoting connection to a remote host.  Destroying a
 // TestChromotingClient object with an active connection will close it.
@@ -45,10 +46,8 @@ class TestChromotingClient : public ClientUserInterface,
   explicit TestChromotingClient(scoped_ptr<VideoRenderer> video_renderer);
   ~TestChromotingClient() override;
 
-  // Starts a chromoting connection with the specified remote host.
-  void StartConnection(const std::string& user_name,
-                       const std::string& access_token,
-                       const RemoteHostInfo& remote_host_info);
+  // Starts a Chromoting connection using the specified connection setup info.
+  void StartConnection(const ConnectionSetupInfo& connection_setup_info);
 
   // Ends the current remote connection and updates the connection state.
   void EndConnection();

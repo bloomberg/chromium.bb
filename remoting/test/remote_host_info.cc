@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/protocol/authentication_method.h"
 #include "remoting/test/remote_host_info.h"
 
 #include "base/logging.h"
+
+namespace {
+const char kAppRemotingCapabilities[] =
+    "rateLimitResizeRequests desktopShape sendInitialResolution googleDrive";
+const char kFakeHostPublicKey[] = "FAKE_HOST_PUBLIC_KEY";
+}
 
 namespace remoting {
 namespace test {
@@ -17,7 +24,7 @@ RemoteHostInfo::~RemoteHostInfo() {
 }
 
 bool RemoteHostInfo::IsReadyForConnection() const {
-  return (remote_host_status == kRemoteHostStatusReady);
+  return remote_host_status == kRemoteHostStatusReady;
 }
 
 void RemoteHostInfo::SetRemoteHostStatusFromString(
@@ -30,6 +37,25 @@ void RemoteHostInfo::SetRemoteHostStatusFromString(
     LOG(WARNING) << "Unknown status passed in: " << status_string;
     remote_host_status = kRemoteHostStatusUnknown;
   }
+}
+
+ConnectionSetupInfo RemoteHostInfo::GenerateConnectionSetupInfo(
+    const std::string& access_token,
+    const std::string& user_name) const {
+  ConnectionSetupInfo connection_setup_info;
+  connection_setup_info.access_token = access_token;
+  connection_setup_info.authorization_code = authorization_code;
+  connection_setup_info.capabilities = kAppRemotingCapabilities;
+  connection_setup_info.host_id = host_id;
+  connection_setup_info.host_jid = host_jid;
+  connection_setup_info.public_key = kFakeHostPublicKey;
+  connection_setup_info.shared_secret = shared_secret;
+  connection_setup_info.user_name = user_name;
+
+  connection_setup_info.auth_methods.push_back(
+      protocol::AuthenticationMethod::ThirdParty());
+
+  return connection_setup_info;
 }
 
 }  // namespace test

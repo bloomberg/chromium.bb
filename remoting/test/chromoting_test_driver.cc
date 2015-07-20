@@ -20,10 +20,12 @@
 #include "remoting/test/host_info.h"
 #include "remoting/test/host_list_fetcher.h"
 #include "remoting/test/refresh_token_store.h"
+#include "remoting/test/test_chromoting_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace switches {
 const char kAuthCodeSwitchName[] = "authcode";
+const char kPinSwitchName[] = "pin";
 const char kHelpSwitchName[] = "help";
 const char kHostNameSwitchName[] = "hostname";
 const char kLoggingLevelSwitchName[] = "verbosity";
@@ -37,6 +39,8 @@ const char kChromotingAuthScopeValues[] =
     "https://www.googleapis.com/auth/chromoting "
     "https://www.googleapis.com/auth/googletalk "
     "https://www.googleapis.com/auth/userinfo.email";
+
+const unsigned int kConnectionTimeoutSeconds = 10;
 
 std::string GetAuthorizationCodeUri() {
   // Replace space characters with a '+' sign when formatting.
@@ -76,9 +80,11 @@ void PrintUsage() {
          switches::kHelpSwitchName);
   printf("  %s: Path to a JSON file containing username/refresh_token KVPs\n",
          switches::kRefreshTokenPathSwitchName);
+  printf("  %s: Used to authenticate a chromoting connection with the host\n",
+         switches::kPinSwitchName);
   printf("  %s: Specifies the optional logging level of the tool (0-3)."
          " [default: off]\n",
-      switches::kLoggingLevelSwitchName);
+         switches::kLoggingLevelSwitchName);
 }
 
 void PrintAuthCodeInfo() {
@@ -205,9 +211,8 @@ int main(int argc, char* argv[]) {
 
   // The username is used to run the tests and determines which refresh token to
   // select in the refresh token file.
-  std::string username =
+  const std::string username =
       command_line->GetSwitchValueASCII(switches::kUserNameSwitchName);
-
   if (username.empty()) {
     LOG(ERROR) << "No username passed in, can't authenticate or run tests!";
     return -1;
@@ -219,19 +224,21 @@ int main(int argc, char* argv[]) {
   std::string auth_code =
       command_line->GetSwitchValueASCII(switches::kAuthCodeSwitchName);
 
-  base::FilePath refresh_token_path =
+  const base::FilePath refresh_token_path =
      command_line->GetSwitchValuePath(switches::kRefreshTokenPathSwitchName);
 
   // The hostname determines which host to initiate a session with from the list
   // returned from the directory service.
-  std::string hostname =
+  const std::string hostname =
       command_line->GetSwitchValueASCII(switches::kHostNameSwitchName);
-
   if (hostname.empty()) {
-    LOG(ERROR) << "No hostname passed in, connect to host requires hostname!";
+    LOG(ERROR) << "No hostname passed in, finding the host requires hostname!";
     return -1;
   }
   VLOG(1) << "Chromoting tests will connect to: " << hostname;
+
+  const std::string pin =
+      command_line->GetSwitchValueASCII(switches::kPinSwitchName);
 
   // TODO(TonyChun): Move this logic into a shared environment class.
   scoped_ptr<remoting::test::RefreshTokenStore> refresh_token_store =
@@ -273,7 +280,6 @@ int main(int argc, char* argv[]) {
 
   run_loop->Run();
 
-  // RunLoop to handle callback from directory service.
   run_loop.reset(new base::RunLoop());
 
   std::vector<remoting::test::HostInfo> hostlist;
@@ -285,6 +291,30 @@ int main(int argc, char* argv[]) {
   hostlist_fetcher.RetrieveHostlist(access_token, hostlist_request_callback);
 
   run_loop->Run();
+
+  run_loop.reset(new base::RunLoop());
+
+  remoting::test::TestChromotingClient test_chromoting_client;
+
+  // Check if requested host is online and ready to receive connections.
+  auto it = std::find_if(hostlist.begin(), hostlist.end(),
+                        [&hostname](const remoting::test::HostInfo& host_info) {
+                          return host_info.host_name == hostname &&
+                                 host_info.IsReadyForConnection();
+                        });
+  if (it != hostlist.end()) {
+    // Host is online and ready, initiate a remote session.
+    base::Timer timer(true, false);
+    timer.Start(FROM_HERE,
+                base::TimeDelta::FromSeconds(kConnectionTimeoutSeconds),
+                run_loop->QuitClosure());
+    test_chromoting_client.StartConnection(
+        it->GenerateConnectionSetupInfo(access_token, username, pin));
+    run_loop->Run();
+    test_chromoting_client.EndConnection();
+  } else {
+    LOG(ERROR) << "Requested host not found or not ready to connect";
+  }
 
   return 0;
 }

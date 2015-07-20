@@ -12,6 +12,8 @@ source_set("test_support") {
     "app_remoting_report_issue_request.h",
     "app_remoting_service_urls.cc",
     "app_remoting_service_urls.h",
+    "connection_setup_info.cc",
+    "connection_setup_info.h",
     "fake_access_token_fetcher.cc",
     "fake_access_token_fetcher.h",
     "fake_app_remoting_report_issue_request.cc",

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/protocol/authentication_method.h"
 #include "remoting/test/host_info.h"
 
 #include "base/logging.h"
@@ -68,6 +69,37 @@ bool HostInfo::ParseHostInfo(const base::DictionaryValue& host_info) {
   host_info.GetString("hostOfflineReason", &offline_reason);
 
   return true;
+}
+
+bool HostInfo::IsReadyForConnection() const {
+  return !host_jid.empty() && status == kHostStatusOnline;
+}
+
+ConnectionSetupInfo HostInfo::GenerateConnectionSetupInfo(
+    const std::string& access_token,
+    const std::string& user_name,
+    const std::string& pin) const {
+  ConnectionSetupInfo connection_setup_info;
+  connection_setup_info.access_token = access_token;
+  connection_setup_info.host_id = host_id;
+  connection_setup_info.host_jid = host_jid;
+  connection_setup_info.host_name = host_name;
+  connection_setup_info.pin = pin;
+  connection_setup_info.public_key = public_key;
+  connection_setup_info.user_name = user_name;
+
+  connection_setup_info.auth_methods.push_back(
+      protocol::AuthenticationMethod::Spake2Pair());
+  connection_setup_info.auth_methods.push_back(
+      protocol::AuthenticationMethod::Spake2(
+          protocol::AuthenticationMethod::HashFunction::NONE));
+  connection_setup_info.auth_methods.push_back(
+      protocol::AuthenticationMethod::Spake2(
+          protocol::AuthenticationMethod::HashFunction::HMAC_SHA256));
+  connection_setup_info.auth_methods.push_back(
+      protocol::AuthenticationMethod::ThirdParty());
+
+  return connection_setup_info;
 }
 
 }  // namespace test

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/values.h"
+#include "remoting/test/connection_setup_info.h"
 
 namespace remoting {
 namespace test {
@@ -23,6 +24,15 @@ struct HostInfo {
   ~HostInfo();
 
   bool ParseHostInfo(const base::DictionaryValue& host_info);
+
+  // Returns true if the chromoting host is ready to accept connections.
+  bool IsReadyForConnection() const;
+
+  // Generates connection information to establish a chromoting connection.
+  ConnectionSetupInfo GenerateConnectionSetupInfo(
+      const std::string& access_token,
+      const std::string& user_name,
+      const std::string& pin) const;
 
   std::string host_id;
   std::string host_jid;

@@ -56,6 +56,8 @@
         'test/app_remoting_report_issue_request.h',
         'test/app_remoting_service_urls.cc',
         'test/app_remoting_service_urls.h',
+        'test/connection_setup_info.cc',
+        'test/connection_setup_info.h',
         'test/fake_access_token_fetcher.cc',
         'test/fake_access_token_fetcher.h',
         'test/fake_app_remoting_report_issue_request.cc',
@@ -106,8 +108,9 @@
       'target_name': 'chromoting_test_driver',
       'type': '<(gtest_target_type)',
       'dependencies': [
-        'remoting_test_support',
+        '../remoting/proto/chromotocol.gyp:chromotocol_proto_lib',
         '../testing/gtest.gyp:gtest',
+        'remoting_test_support',
       ],
       'sources': [
         'test/chromoting_test_driver.cc',

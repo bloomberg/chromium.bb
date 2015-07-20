@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "remoting/protocol/fake_connection_to_host.h"
+#include "remoting/test/connection_setup_info.h"
 #include "remoting/test/test_chromoting_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,7 +41,7 @@ class TestChromotingClientTest : public ::testing::Test,
   protocol::ErrorCode error_code_;
 
   // Used for simulating different conditions for the TestChromotingClient.
-  RemoteHostInfo remote_host_info_;
+  ConnectionSetupInfo connection_setup_info_;
   FakeConnectionToHost* fake_connection_to_host_;
 
   scoped_ptr<TestChromotingClient> test_chromoting_client_;
@@ -77,7 +78,10 @@ void TestChromotingClientTest::SetUp() {
   test_chromoting_client_->SetConnectionToHostForTests(
       make_scoped_ptr(fake_connection_to_host_));
 
-  remote_host_info_.remote_host_status = kRemoteHostStatusReady;
+  connection_setup_info_.access_token = kAccessToken;
+  connection_setup_info_.user_name = kTestUserName;
+  connection_setup_info_.auth_methods.push_back(
+      protocol::AuthenticationMethod::ThirdParty());
 }
 
 void TestChromotingClientTest::TearDown() {
@@ -112,8 +116,7 @@ void TestChromotingClientTest::ConnectionReady(bool ready) {
 }
 
 TEST_F(TestChromotingClientTest, StartConnectionAndDisconnect) {
-  test_chromoting_client_->StartConnection(kTestUserName, kAccessToken,
-                                           remote_host_info_);
+  test_chromoting_client_->StartConnection(connection_setup_info_);
   EXPECT_EQ(protocol::ConnectionToHost::State::CONNECTING, connection_state_);
   EXPECT_EQ(protocol::OK, error_code_);
   EXPECT_FALSE(is_connected_to_host_);
@@ -146,8 +149,7 @@ TEST_F(TestChromotingClientTest, StartConnectionAndDisconnect) {
 
 TEST_F(TestChromotingClientTest,
        StartConnectionThenFailWithAuthenticationError) {
-  test_chromoting_client_->StartConnection(kTestUserName, kAccessToken,
-                                           remote_host_info_);
+  test_chromoting_client_->StartConnection(connection_setup_info_);
   EXPECT_EQ(protocol::ConnectionToHost::State::CONNECTING, connection_state_);
   EXPECT_EQ(protocol::OK, error_code_);
   EXPECT_FALSE(is_connected_to_host_);
@@ -167,8 +169,7 @@ TEST_F(TestChromotingClientTest,
 }
 
 TEST_F(TestChromotingClientTest, StartConnectionThenFailWithUnknownError) {
-  test_chromoting_client_->StartConnection(kTestUserName, kAccessToken,
-                                           remote_host_info_);
+  test_chromoting_client_->StartConnection(connection_setup_info_);
   EXPECT_EQ(protocol::ConnectionToHost::State::CONNECTING, connection_state_);
   EXPECT_EQ(protocol::OK, error_code_);
   EXPECT_FALSE(is_connected_to_host_);
