@@ -15,6 +15,7 @@
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/frame_tree_manager.h"
+#include "components/html_viewer/geolocation_client_impl.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/media_factory.h"
 #include "components/html_viewer/touch_handler.h"
@@ -465,6 +466,12 @@ void Frame::didNavigateWithinPage(blink::WebLocalFrame* frame,
                                   blink::WebHistoryCommitType commit_type) {
   frame_tree_manager_->OnFrameDidNavigateLocally(
       this, history_item.urlString().utf8());
+}
+
+blink::WebGeolocationClient* Frame::geolocationClient() {
+  if (!geolocation_client_impl_)
+    geolocation_client_impl_.reset(new GeolocationClientImpl);
+  return geolocation_client_impl_.get();
 }
 
 blink::WebEncryptedMediaClient* Frame::encryptedMediaClient() {

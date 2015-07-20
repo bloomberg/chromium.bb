@@ -30,6 +30,7 @@ class View;
 namespace html_viewer {
 
 class FrameTreeManager;
+class GeolocationClientImpl;
 class TouchHandler;
 class WebLayerImpl;
 class WebLayerTreeViewImpl;
@@ -158,6 +159,7 @@ class Frame : public blink::WebFrameClient,
   virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      const blink::WebHistoryItem& history_item,
                                      blink::WebHistoryCommitType commit_type);
+  virtual blink::WebGeolocationClient* geolocationClient();
   virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
   virtual void didStartLoading(bool to_different_document);
   virtual void didStopLoading();
@@ -185,6 +187,7 @@ class Frame : public blink::WebFrameClient,
   std::vector<Frame*> children_;
   blink::WebFrame* web_frame_;
   blink::WebWidget* web_widget_;
+  scoped_ptr<GeolocationClientImpl> geolocation_client_impl_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_ptr<TouchHandler> touch_handler_;
 
