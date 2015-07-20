@@ -6,11 +6,8 @@
 #define CHROME_INSTALLER_MINI_INSTALLER_MINI_STRING_H_
 
 #ifndef COMPILE_ASSERT
-// COMPILE_ASSERT macro borrowed from basictypes.h
-template <bool>
-struct CompileAssert {};
-#define COMPILE_ASSERT(expr, msg) \
-    typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1]
+// COMPILE_ASSERT macro borrowed from macros.h
+#define COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
 #endif
 
 namespace mini_installer {
