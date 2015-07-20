@@ -523,32 +523,34 @@ void HttpServerPropertiesManager::AddToSpdySettingsMap(
   spdy_settings_map->Put(server, settings_map);
 }
 
-AlternativeServiceInfo HttpServerPropertiesManager::ParseAlternativeServiceDict(
+bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
     const base::DictionaryValue& alternative_service_dict,
-    const std::string& server_str) {
+    const std::string& server_str,
+    AlternativeServiceInfo* alternative_service_info) {
   // Protocol is mandatory.
   std::string protocol_str;
   if (!alternative_service_dict.GetStringWithoutPathExpansion(kProtocolKey,
                                                               &protocol_str)) {
     DVLOG(1) << "Malformed alternative service protocol string for server: "
              << server_str;
-    return AlternativeServiceInfo();
+    return false;
   }
   AlternateProtocol protocol = AlternateProtocolFromString(protocol_str);
   if (!IsAlternateProtocolValid(protocol)) {
     DVLOG(1) << "Invalid alternative service protocol string for server: "
              << server_str;
-    return AlternativeServiceInfo();
+    return false;
   }
+  alternative_service_info->alternative_service.protocol = protocol;
 
   // Host is optional, defaults to "".
-  std::string host;
+  alternative_service_info->alternative_service.host.clear();
   if (alternative_service_dict.HasKey(kHostKey) &&
-      !alternative_service_dict.GetStringWithoutPathExpansion(kHostKey,
-                                                              &host)) {
+      !alternative_service_dict.GetStringWithoutPathExpansion(
+          kHostKey, &(alternative_service_info->alternative_service.host))) {
     DVLOG(1) << "Malformed alternative service host string for server: "
              << server_str;
-    return AlternativeServiceInfo();
+    return false;
   }
 
   // Port is mandatory.
@@ -556,21 +558,22 @@ AlternativeServiceInfo HttpServerPropertiesManager::ParseAlternativeServiceDict(
   if (!alternative_service_dict.GetInteger(kPortKey, &port) ||
       !IsPortValid(port)) {
     DVLOG(1) << "Malformed alternative service port for server: " << server_str;
-    return AlternativeServiceInfo();
+    return false;
   }
+  alternative_service_info->alternative_service.port =
+      static_cast<uint32>(port);
 
   // Probability is optional, defaults to 1.0.
-  double probability = 1.0;
+  alternative_service_info->probability = 1.0;
   if (alternative_service_dict.HasKey(kProbabilityKey) &&
-      !alternative_service_dict.GetDoubleWithoutPathExpansion(kProbabilityKey,
-                                                              &probability)) {
+      !alternative_service_dict.GetDoubleWithoutPathExpansion(
+          kProbabilityKey, &(alternative_service_info->probability))) {
     DVLOG(1) << "Malformed alternative service probability for server: "
              << server_str;
-    return AlternativeServiceInfo();
+    return false;
   }
 
-  return AlternativeServiceInfo(protocol, host, static_cast<uint16>(port),
-                                probability);
+  return true;
 }
 
 bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
@@ -590,11 +593,10 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
       if (!alternative_service_list_item->GetAsDictionary(
               &alternative_service_dict))
         return false;
-      AlternativeServiceInfo alternative_service_info =
-          ParseAlternativeServiceDict(*alternative_service_dict,
-                                      server.ToString());
-      if (alternative_service_info.alternative_service.protocol ==
-          UNINITIALIZED_ALTERNATE_PROTOCOL) {
+      AlternativeServiceInfo alternative_service_info;
+      if (!ParseAlternativeServiceDict(*alternative_service_dict,
+                                       server.ToString(),
+                                       &alternative_service_info)) {
         return false;
       }
       alternative_service_info_vector.push_back(alternative_service_info);
@@ -607,11 +609,10 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
             kAlternateProtocolKey, &alternative_service_dict)) {
       return true;
     }
-    AlternativeServiceInfo alternative_service_info =
-        ParseAlternativeServiceDict(*alternative_service_dict,
-                                    server.ToString());
-    if (alternative_service_info.alternative_service.protocol ==
-        UNINITIALIZED_ALTERNATE_PROTOCOL) {
+    AlternativeServiceInfo alternative_service_info;
+    if (!ParseAlternativeServiceDict(*alternative_service_dict,
+                                     server.ToString(),
+                                     &alternative_service_info)) {
       return false;
     }
     alternative_service_info_vector.push_back(alternative_service_info);
