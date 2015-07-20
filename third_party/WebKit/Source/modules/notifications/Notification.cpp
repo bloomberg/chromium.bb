@@ -47,6 +47,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
@@ -191,7 +192,7 @@ void Notification::show()
     Vector<char> emptyDataWireBytes;
 
     WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_vibrate, m_silent, emptyDataWireBytes);
-    notificationManager()->show(*origin, notificationData, this);
+    notificationManager()->show(WebSecurityOrigin(origin), notificationData, this);
 
     m_state = NotificationStateShowing;
 }
@@ -213,7 +214,7 @@ void Notification::close()
         SecurityOrigin* origin = executionContext()->securityOrigin();
         ASSERT(origin);
 
-        notificationManager()->closePersistent(*origin, m_persistentId);
+        notificationManager()->closePersistent(WebSecurityOrigin(origin), m_persistentId);
     }
 }
 
@@ -282,7 +283,7 @@ WebNotificationPermission Notification::checkPermission(ExecutionContext* contex
     SecurityOrigin* origin = context->securityOrigin();
     ASSERT(origin);
 
-    return notificationManager()->checkPermission(*origin);
+    return notificationManager()->checkPermission(WebSecurityOrigin(origin));
 }
 
 void Notification::requestPermission(ExecutionContext* context, NotificationPermissionCallback* callback)

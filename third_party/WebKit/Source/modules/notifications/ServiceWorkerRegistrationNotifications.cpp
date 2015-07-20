@@ -20,6 +20,7 @@
 #include "modules/vibration/NavigatorVibration.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
 #include "wtf/PassOwnPtr.h"
@@ -95,7 +96,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     WebNotificationManager* notificationManager = Platform::current()->notificationManager();
     ASSERT(notificationManager);
 
-    notificationManager->showPersistent(*origin, notification, serviceWorkerRegistration.webRegistration(), callbacks);
+    notificationManager->showPersistent(WebSecurityOrigin(origin), notification, serviceWorkerRegistration.webRegistration(), callbacks);
     return promise;
 }
 

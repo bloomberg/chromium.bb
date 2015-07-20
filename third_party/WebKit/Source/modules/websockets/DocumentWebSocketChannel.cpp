@@ -50,6 +50,7 @@
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSocketHandshakeRequestInfo.h"
 #include "public/platform/WebSocketHandshakeResponseInfo.h"
 #include "public/platform/WebString.h"
@@ -160,7 +161,7 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
 
     if (executionContext()->isDocument() && document()->frame())
         document()->frame()->loader().client()->dispatchWillOpenWebSocket(m_handle.get());
-    m_handle->connect(url, webProtocols, *executionContext()->securityOrigin(), this);
+    m_handle->connect(url, webProtocols, WebSecurityOrigin(executionContext()->securityOrigin()), this);
 
     flowControlIfNecessary();
     if (m_identifier) {
