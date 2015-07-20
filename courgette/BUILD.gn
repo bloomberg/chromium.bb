@@ -101,6 +101,7 @@ test("courgette_unittests") {
     "encode_decode_unittest.cc",
     "encoded_program_unittest.cc",
     "ensemble_unittest.cc",
+    "memory_allocator_unittest.cc",
     "streams_unittest.cc",
     "third_party/paged_array_unittest.cc",
     "typedrva_unittest.cc",

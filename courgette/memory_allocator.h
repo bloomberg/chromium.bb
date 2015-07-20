@@ -365,6 +365,10 @@ class NoThrowBuffer {
     if (!size)
       return true;
 
+    // Disallow source range from overlapping with buffer_, since in this case
+    // reallocation would cause use-after-free.
+    DCHECK(data + size <= buffer_ || data >= buffer_ + alloc_size_);
+
     if ((alloc_size_ - size_) < size) {
       const size_t max_size = alloc_.max_size();
       size_t new_size = alloc_size_ ? alloc_size_ : kStartSize;
@@ -416,25 +420,25 @@ class NoThrowBuffer {
   const T* begin() const {
     if (!size_)
       return NULL;
-    return &buffer_[0];
+    return buffer_;
   }
 
   T* begin() {
     if (!size_)
       return NULL;
-    return &buffer_[0];
+    return buffer_;
   }
 
   const T* end() const {
     if (!size_)
       return NULL;
-    return &buffer_[size_ - 1];
+    return buffer_ + size_;
   }
 
   T* end() {
     if (!size_)
       return NULL;
-    return &buffer_[size_ - 1];
+    return buffer_ + size_;
   }
 
   const T& operator[](size_t index) const {

@@ -105,6 +105,7 @@
         'encoded_program_unittest.cc',
         'encode_decode_unittest.cc',
         'ensemble_unittest.cc',
+        'memory_allocator_unittest.cc',
         'streams_unittest.cc',
         'typedrva_unittest.cc',
         'versioning_unittest.cc',
