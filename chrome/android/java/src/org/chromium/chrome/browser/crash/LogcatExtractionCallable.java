@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -53,6 +54,38 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
     @VisibleForTesting
     protected static final String URL_ELISION = "HTTP://WEBADDRESS.ELIDED";
 
+    private static final String GOOD_IRI_CHAR =
+            "a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF";
+
+    private static final Pattern IP_ADDRESS = Pattern.compile(
+            "((25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])\\.(25[0-5]|2[0-4]"
+            + "[0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1]"
+            + "[0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}"
+            + "|[1-9][0-9]|[0-9]))");
+
+    private static final String IRI =
+            "[" + GOOD_IRI_CHAR + "]([" + GOOD_IRI_CHAR + "\\-]{0,61}["
+            + GOOD_IRI_CHAR + "]){0,1}";
+
+    private static final String GOOD_GTLD_CHAR =
+            "a-zA-Z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF";
+    private static final String GTLD = "[" + GOOD_GTLD_CHAR + "]{2,63}";
+    private static final String HOST_NAME = "(" + IRI + "\\.)+" + GTLD;
+
+    private static final Pattern DOMAIN_NAME =
+            Pattern.compile("(" + HOST_NAME + "|" + IP_ADDRESS + ")");
+
+    private static final Pattern WEB_URL = Pattern.compile(
+            "((?:(http|https|Http|Https|rtsp|Rtsp):"
+            + "\\/\\/(?:(?:[a-zA-Z0-9\\$\\-\\_\\.\\+\\!\\*\\'\\(\\)"
+            + "\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,64}(?:\\:(?:[a-zA-Z0-9\\$\\-\\_"
+            + "\\.\\+\\!\\*\\'\\(\\)\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,25})?\\@)?)?"
+            + "(?:" + DOMAIN_NAME + ")"
+            + "(?:\\:\\d{1,5})?)"
+            + "(\\/(?:(?:[" + GOOD_IRI_CHAR + "\\;\\/\\?\\:\\@\\&\\=\\#\\~"
+            + "\\-\\.\\+\\!\\*\\'\\(\\)\\,\\_])|(?:\\%[a-fA-F0-9]{2}))*)?"
+            + "(?:\\b|$)");
+
     @VisibleForTesting
     protected static final String IP_ELISION = "1.2.3.4";
 
@@ -72,6 +105,10 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
             Pattern.compile("\\[\\w*:CONSOLE.*\\].*");
 
     private static final Pattern MINIDUMP_EXTENSION = Pattern.compile("\\.dmp");
+
+    private static final String[] CHROME_NAMESPACE = new String[] {
+            "org.chromium.", "com.google."
+    };
 
     private final Context mContext;
     private final String[] mMinidumpFilenames;
@@ -258,7 +295,30 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
      */
     @VisibleForTesting
     protected static String elideUrl(String original) {
-        return Patterns.WEB_URL.matcher(original).replaceAll(URL_ELISION);
+        StringBuffer buffer = new StringBuffer(original);
+        Matcher matcher = WEB_URL.matcher(buffer);
+        int start = 0;
+        while (matcher.find(start)) {
+            start = matcher.start();
+            int end = matcher.end();
+            String url = buffer.substring(start, end);
+            if (!likelyToBeChromeNamespace(url)) {
+                buffer.replace(start, end, URL_ELISION);
+                end = start + URL_ELISION.length();
+                matcher = WEB_URL.matcher(buffer);
+            }
+            start = end;
+        }
+        return buffer.toString();
+    }
+
+    public static boolean likelyToBeChromeNamespace(String url) {
+        for (String ns : CHROME_NAMESPACE) {
+            if (url.startsWith(ns)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

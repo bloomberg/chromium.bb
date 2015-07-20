@@ -19,9 +19,44 @@ public class LogcatExtractionCallableTest extends CrashTestCase {
     }
 
     @SmallTest
-    public void testElideUr() {
+    public void testElideUrl() {
         String original = "file bugs at crbug.com";
         String expected = "file bugs at HTTP://WEBADDRESS.ELIDED";
+        assertEquals(expected, LogcatExtractionCallable.elideUrl(original));
+    }
+
+    @SmallTest
+    public void testElideUrl2() {
+        String original =
+                "exception at org.chromium.chrome.browser.crash.LogcatExtractionCallableTest";
+        assertEquals(original, LogcatExtractionCallable.elideUrl(original));
+    }
+
+    @SmallTest
+    public void testElideUrl3() {
+        String original = "file bugs at crbug.com or code.google.com";
+        String expected = "file bugs at HTTP://WEBADDRESS.ELIDED or HTTP://WEBADDRESS.ELIDED";
+        assertEquals(expected, LogcatExtractionCallable.elideUrl(original));
+    }
+
+    @SmallTest
+    public void testElideUrl4() {
+        String original = "test shorturl.com !!!";
+        String expected = "test HTTP://WEBADDRESS.ELIDED !!!";
+        assertEquals(expected, LogcatExtractionCallable.elideUrl(original));
+    }
+
+    @SmallTest
+    public void testElideUrl5() {
+        String original = "test just.the.perfect.len.url !!!";
+        String expected = "test HTTP://WEBADDRESS.ELIDED !!!";
+        assertEquals(expected, LogcatExtractionCallable.elideUrl(original));
+    }
+
+    @SmallTest
+    public void testElideUrl6() {
+        String original = "test a.very.very.very.very.very.long.url !!!";
+        String expected = "test HTTP://WEBADDRESS.ELIDED !!!";
         assertEquals(expected, LogcatExtractionCallable.elideUrl(original));
     }
 
