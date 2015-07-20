@@ -771,7 +771,7 @@ component("base") {
         "$root_out_dir/msvcr120${vcrt_suffix}.dll",
       ]
       if (is_asan) {
-        data += [ "//third_party/llvm-build/Release+Asserts/lib/clang/3.7.0/lib/windows/clang_rt.asan_dynamic-i386.dll" ]
+        data += [ "//third_party/llvm-build/Release+Asserts/lib/clang/3.8.0/lib/windows/clang_rt.asan_dynamic-i386.dll" ]
       }
     }
 
