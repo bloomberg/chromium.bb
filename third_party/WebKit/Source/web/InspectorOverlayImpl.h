@@ -86,10 +86,10 @@ public:
     void setLayoutEditor(PassOwnPtrWillBeRawPtr<LayoutEditor>) override;
 
     bool handleInputEvent(const WebInputEvent&);
-    void invalidate();
+    void layout();
 private:
     explicit InspectorOverlayImpl(WebViewImpl*);
-
+    class InspectorOverlayChromeClient;
     // InspectorOverlayHost::DebuggerListener implementation.
     void overlayResumed() override;
     void overlaySteppedOver() override;
@@ -109,6 +109,8 @@ private:
     void evaluateInOverlay(const String& method, const String& argument);
     void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
     void onTimer(Timer<InspectorOverlayImpl>*);
+    void rebuildOverlayPage();
+    void invalidate();
 
     WebViewImpl* m_webViewImpl;
     String m_pausedInDebuggerMessage;
@@ -126,7 +128,8 @@ private:
     bool m_omitTooltip;
     Timer<InspectorOverlayImpl> m_timer;
     int m_suspendCount;
-    bool m_updating;
+    bool m_inLayout;
+    bool m_needsUpdate;
     RawPtrWillBeMember<InspectorOverlay::Listener> m_listener;
     OwnPtrWillBeMember<LayoutEditor> m_layoutEditor;
 };

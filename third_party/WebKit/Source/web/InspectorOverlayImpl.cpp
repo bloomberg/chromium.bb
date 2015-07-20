@@ -63,33 +63,6 @@ namespace blink {
 
 namespace {
 
-class InspectorOverlayChromeClient final: public EmptyChromeClient {
-public:
-    InspectorOverlayChromeClient(ChromeClient& client, InspectorOverlayImpl* overlay)
-        : m_client(client)
-        , m_overlay(overlay)
-    { }
-
-    void setCursor(const Cursor& cursor) override
-    {
-        m_client.setCursor(cursor);
-    }
-
-    void setToolTip(const String& tooltip, TextDirection direction) override
-    {
-        m_client.setToolTip(tooltip, direction);
-    }
-
-    void invalidateRect(const IntRect&) override
-    {
-        m_overlay->invalidate();
-    }
-
-private:
-    ChromeClient& m_client;
-    InspectorOverlayImpl* m_overlay;
-};
-
 class InspectorOverlayStub : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayStub>, public InspectorOverlay {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayStub);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayStub);
@@ -119,6 +92,42 @@ DEFINE_TRACE(InspectorOverlayStub)
 
 } // anonymous namespace
 
+class InspectorOverlayImpl::InspectorOverlayChromeClient final: public EmptyChromeClient {
+public:
+    InspectorOverlayChromeClient(ChromeClient& client, InspectorOverlayImpl& overlay)
+        : m_client(client)
+        , m_overlay(overlay)
+    { }
+
+    void setCursor(const Cursor& cursor) override
+    {
+        m_client.setCursor(cursor);
+    }
+
+    void setToolTip(const String& tooltip, TextDirection direction) override
+    {
+        m_client.setToolTip(tooltip, direction);
+    }
+
+    void invalidateRect(const IntRect&) override
+    {
+        m_overlay.invalidate();
+    }
+
+    void scheduleAnimation() override
+    {
+        if (m_overlay.m_inLayout)
+            return;
+
+        m_client.scheduleAnimation();
+    }
+
+private:
+    ChromeClient& m_client;
+    InspectorOverlayImpl& m_overlay;
+};
+
+
 // static
 PassOwnPtrWillBeRawPtr<InspectorOverlay> InspectorOverlayImpl::createEmpty()
 {
@@ -134,7 +143,8 @@ InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
     , m_omitTooltip(false)
     , m_timer(this, &InspectorOverlayImpl::onTimer)
     , m_suspendCount(0)
-    , m_updating(false)
+    , m_inLayout(false)
+    , m_needsUpdate(false)
 {
     m_overlayHost->setDebuggerListener(this);
 }
@@ -168,12 +178,20 @@ void InspectorOverlayImpl::paintPageOverlay(WebGraphicsContext* context, const W
 
 void InspectorOverlayImpl::invalidate()
 {
-    // Don't invalidate during an update, because that will lead to Document::scheduleLayoutTreeUpdate
-    // being called within Document::updateLayoutTree which violates document lifecycle expectations.
-    if (m_updating)
+    m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
+}
+
+void InspectorOverlayImpl::layout()
+{
+    if (isEmpty())
         return;
 
-    m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
+    TemporaryChange<bool> scoped(m_inLayout, true);
+    if (m_needsUpdate) {
+        m_needsUpdate = false;
+        rebuildOverlayPage();
+    }
+    overlayMainFrame()->view()->updateAllLifecyclePhases();
 }
 
 bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
@@ -269,13 +287,16 @@ bool InspectorOverlayImpl::isEmpty()
 
 void InspectorOverlayImpl::update()
 {
-    TemporaryChange<bool> scoped(m_updating, true);
-
     if (isEmpty()) {
         m_webViewImpl->removePageOverlay(this);
         return;
     }
+    m_needsUpdate = true;
+    m_webViewImpl->page()->chromeClient().scheduleAnimation();
+}
 
+void InspectorOverlayImpl::rebuildOverlayPage()
+{
     FrameView* view = m_webViewImpl->mainFrameImpl()->frameView();
     if (!view)
         return;
@@ -290,10 +311,6 @@ void InspectorOverlayImpl::update()
     if (!m_inspectModeEnabled)
         drawPausedInDebuggerMessage();
     drawViewSize();
-
-    toLocalFrame(overlayPage()->mainFrame())->view()->updateAllLifecyclePhases();
-
-    m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
 }
 
 static PassRefPtr<JSONObject> buildObjectForSize(const IntSize& size)
@@ -356,7 +373,7 @@ Page* InspectorOverlayImpl::overlayPage()
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     ASSERT(!m_overlayChromeClient);
-    m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_webViewImpl->page()->chromeClient(), this));
+    m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_webViewImpl->page()->chromeClient(), *this));
     pageClients.chromeClient = m_overlayChromeClient.get();
     m_overlayPage = adoptPtrWillBeNoop(new Page(pageClients));
 

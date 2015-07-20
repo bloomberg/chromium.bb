@@ -1901,7 +1901,8 @@ void WebViewImpl::layout()
 
     PageWidgetDelegate::layout(*m_page, *mainFrameImpl()->frame());
     updateLayerTreeBackgroundColor();
-
+    if (m_inspectorOverlay)
+        m_inspectorOverlay->layout();
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->updateGeometry();
 }
