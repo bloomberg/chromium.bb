@@ -38,6 +38,7 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
 class MemoryDumpManagerTest : public testing::Test {
  public:
   void SetUp() override {
+    last_callback_success_ = false;
     message_loop_.reset(new MessageLoop());
     mdm_.reset(new MemoryDumpManager());
     MemoryDumpManager::SetInstanceForTesting(mdm_.get());
@@ -57,6 +58,7 @@ class MemoryDumpManagerTest : public testing::Test {
                            Closure closure,
                            uint64 dump_guid,
                            bool success) {
+    last_callback_success_ = success;
     task_runner->PostTask(FROM_HERE, closure);
   }
 
@@ -71,6 +73,7 @@ class MemoryDumpManagerTest : public testing::Test {
   void DisableTracing() { TraceLog::GetInstance()->SetDisabled(); }
 
   scoped_ptr<MemoryDumpManager> mdm_;
+  bool last_callback_success_;
 
  private:
   scoped_ptr<MessageLoop> message_loop_;
@@ -239,6 +242,7 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
   EnableTracing(kTraceCategory);
 
   while (!threads.empty()) {
+    last_callback_success_ = false;
     {
       RunLoop run_loop;
       MemoryDumpCallback callback =
@@ -249,6 +253,7 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
       // the RequestGlobalDump callback is invoked.
       run_loop.Run();
     }
+    EXPECT_TRUE(last_callback_success_);
 
     // Unregister a MDP and destroy one thread at each iteration to check the
     // live unregistration logic. The unregistration needs to happen on the same
@@ -354,6 +359,26 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileDumping) {
   }
 
   DisableTracing();
+}
+
+// Ensures that a NACK callback is invoked if RequestGlobalDump is called when
+// tracing is not enabled.
+TEST_F(MemoryDumpManagerTest, CallbackCalledOnFailure) {
+  MockDumpProvider mdp1;
+
+  mdm_->RegisterDumpProvider(&mdp1);
+  EXPECT_CALL(mdp1, OnMemoryDump(_)).Times(0);
+
+  last_callback_success_ = true;
+  {
+    RunLoop run_loop;
+    MemoryDumpCallback callback =
+        Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
+             MessageLoop::current()->task_runner(), run_loop.QuitClosure());
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED, callback);
+    run_loop.Run();
+  }
+  EXPECT_FALSE(last_callback_success_);
 }
 
 }  // namespace trace_event

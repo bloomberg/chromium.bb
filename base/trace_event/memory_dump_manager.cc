@@ -181,8 +181,11 @@ void MemoryDumpManager::RequestGlobalDump(
     MemoryDumpType dump_type,
     const MemoryDumpCallback& callback) {
   // Bail out immediately if tracing is not enabled at all.
-  if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_)))
+  if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_))) {
+    if (!callback.is_null())
+      callback.Run(0u /* guid */, false /* success */);
     return;
+  }
 
   const uint64 guid =
       TraceLog::GetInstance()->MangleEventId(g_next_guid.GetNext());
