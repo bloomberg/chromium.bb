@@ -6,6 +6,10 @@
   -webkit-margin-end: 40px;
 }
 
+#titleDiv {
+  margin-bottom: 10px;
+}
+
 #networkIcon {
   height: 32px;
   width: 32px;
@@ -27,15 +31,29 @@
 }
 
 #infoDiv {
-  margin: 10px 0 0 45px;
+  margin-left: 10px;
 }
 
 #infoDiv cr-checkbox {
-  margin-bottom: 10px;
+  margin-left: 5px;
+}
+
+#infoDiv span {
+  margin: 0 0 8px 5px;
+}
+
+#advancedDiv cr-button {
+  --paper-button: {
+    text-align: start;
+  };
 }
 
 #proxyDiv {
   max-width: 500px;
+}
+
+cr-checkbox {
+  margin-bottom: 10px;
 }
 
 cr-collapse {

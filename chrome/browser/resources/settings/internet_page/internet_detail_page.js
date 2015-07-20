@@ -102,6 +102,23 @@ Polymer({
       value: false,
       observer: 'autoConnectChanged_'
     },
+
+    /**
+     * The network preferred state.
+     */
+    preferNetwork: {
+      type: Boolean,
+      value: false,
+      observer: 'preferNetworkChanged_'
+    },
+
+    /**
+     * The network IP Address.
+     */
+    IPAddress: {
+      type: String,
+      value: ''
+    },
   },
 
   /**
@@ -151,13 +168,21 @@ Polymer({
   networkStateChanged_: function() {
     if (!this.networkState)
       return;
-    console.debug('DetailPage.networkStateChanged:');
-    console.debug(this.networkState);
+
     // Update autoConnect if it has changed. Default value is false.
     var autoConnect =
         CrOnc.getActiveTypeValue(this.networkState, 'AutoConnect') || false;
     if (autoConnect != this.autoConnect)
       this.autoConnect = autoConnect;
+
+    // Update preferNetwork if it has changed. Default value is false.
+    var preferNetwork = this.networkState.Priority > 0;
+    if (preferNetwork != this.preferNetwork)
+      this.preferNetwork = preferNetwork;
+
+    // Set the IPAddress property to the IPV4 Address.
+    var ipv4 = CrOnc.getIPConfigForType(this.networkState, CrOnc.IPType.IPV4);
+    this.IPAddress = (ipv4 && ipv4.IPAddress) || '';
   },
 
   /**
@@ -166,9 +191,20 @@ Polymer({
   autoConnectChanged_: function() {
     if (!this.networkState || !this.guid)
       return;
-    var onc = { Type: this.networkState.Type };
+    var onc = {Type: this.networkState.Type};
     CrOnc.setTypeProperty(onc, 'AutoConnect', this.autoConnect);
     this.setNetworkProperties_(onc);
+  },
+
+  /**
+   * Polymer preferNetwork changed method.
+   */
+  preferNetworkChanged_: function() {
+    if (!this.networkState || !this.guid)
+      return;
+    var priority = this.preferNetwork ? 1 : 0;
+    this.setNetworkProperties_(
+        {Type: this.networkState.Type, Priority: priority});
   },
 
   /**
@@ -198,7 +234,6 @@ Polymer({
    * @private
    */
   getPropertiesCallback_: function(state) {
-    console.debug('DetailPage.getPropertiesCallback:');
     this.networkState = state;
   },
 
@@ -208,12 +243,8 @@ Polymer({
    * @private
    */
   setNetworkProperties_: function(onc) {
-    console.debug('DetailPage.networkingPrivate.setProperties:');
-    console.debug(onc);
     chrome.networkingPrivate.setProperties(this.guid, onc, function() {
       if (chrome.runtime.lastError) {
-        console.debug('networkingPrivate.setProperties error:');
-        console.debug(chrome.runtime.lastError);
         // An error typically indicates invalid input; request the properties
         // to update any invalid fields.
         this.getNetworkDetails_();
@@ -296,19 +327,17 @@ Polymer({
 
   /**
    * Event triggered when the IP Config or NameServers element changes.
-   * @param {!{detail: { field: string,
-   *                     value: string|CrOnc.IPConfigProperties}}} event
-   *     The network-ip-config or network-nameservers changed event.
+   * @param {!{detail: {field: string,
+   *                    value: string|CrOnc.IPConfigProperties}}} event
+   *     The network-ip-config or network-nameservers change event.
    * @private
    */
-  onIPConfigChanged_: function(event) {
+  onIPConfigChange_: function(event) {
     if (!this.networkState)
       return;
 
     var field = event.detail.field;
     var value = event.detail.value;
-    console.debug('DetailPage.IPConfigChanged: ' + field);
-    console.debug(value);
 
     // Set just the IP Config properties that need to change.
     var onc = {};
@@ -345,7 +374,7 @@ Polymer({
       onc.StaticIPConfig = onc.StaticIPConfig || {};
       onc.StaticIPConfig.NameServers = value;
     } else {
-      console.error('Unexpected changed field: ' + field);
+      console.error('Unexpected change field: ' + field);
       return;
     }
     // setValidStaticIPConfig will fill in any other properties from
@@ -357,19 +386,26 @@ Polymer({
 
   /**
    * Event triggered when the Proxy configuration element changes.
-   * @param {!{detail: { field: string, value: CrOnc.ProxySettings}}} event
-   *     The network-proxy changed event.
+   * @param {!{detail: {field: string, value: CrOnc.ProxySettings}}} event
+   *     The network-proxy change event.
    * @private
    */
-  onProxyChanged_: function(event) {
+  onProxyChange_: function(event) {
     var field = event.detail.field;
     var value = event.detail.value;
-    console.debug('DetailPage.ProxyChanged: ' + field);
-    console.debug(value);
     if (field != 'ProxySettings')
       return;
-    var onc = { ProxySettings: value };
-    this.setNetworkProperties_(onc);
+    this.setNetworkProperties_({ProxySettings: value});
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} True if the shared message should be shown.
+   * @private
+   */
+  showShared_: function(state) {
+    return state &&
+           (state.Source == 'Device' || state.Source == 'DevicePolicy');
   },
 
   /**
@@ -383,6 +419,15 @@ Polymer({
 
   /**
    * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @return {boolean} True if the prefer network checkbox should be shown.
+   * @private
+   */
+  showPreferNetwork_: function(state) {
+    return state && state.Type != 'Ethernet';
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {!Array<string>} The fields to display in the info section.
    * @private
    */
@@ -390,13 +435,25 @@ Polymer({
     /** @type {!Array<string>} */ var fields = [];
     if (!state)
       return fields;
+
     if (state.Type == 'Cellular') {
-      fields = fields.concat([
-        'Cellular.ActivationState',
-        'Cellular.RoamingState',
-        'RestrictedConnectivity',
-        'Cellular.ServingOperator.Name',
-      ]);
+      fields.push('Cellular.ActivationState',
+                  'Cellular.RoamingState',
+                  'RestrictedConnectivity',
+                  'Cellular.ServingOperator.Name');
+    }
+    if (state.Type == 'VPN') {
+      fields.push('VPN.Host', 'VPN.Type');
+      if (state.VPN.Type == 'OpenVPN')
+        fields.push('VPN.OpenVPN.Username');
+      else if (state.VPN.Type == 'L2TP-IPsec')
+        fields.push('VPN.L2TP.Username');
+      // TODO(stevenjb): ThirdPartyVPN
+    }
+    if (state.Type == 'WiFi')
+      fields.push('RestrictedConnectivity');
+    if (state.Type == 'WiMAX') {
+      fields.push('RestrictedConnectivity', 'WiMAX.EAP.Identity');
     }
     return fields;
   },
@@ -412,23 +469,20 @@ Polymer({
       return fields;
     fields.push('MacAddress');
     if (state.Type == 'Cellular') {
-      fields = fields.concat([
-        'Cellular.Carrier',
-        'Cellular.Family',
-        'Cellular.NetworkTechnology',
-        'Cellular.ServingOperator.Code'
-      ]);
+      fields.push('Cellular.Carrier',
+                  'Cellular.Family',
+                  'Cellular.NetworkTechnology',
+                  'Cellular.ServingOperator.Code');
     }
-
     if (state.Type == 'WiFi') {
-      fields = fields.concat([
-        'WiFi.SSID',
-        'WiFi.BSSID',
-        'WiFi.Security',
-        'WiFi.SignalStrength',
-        'WiFi.Frequency'
-      ]);
+      fields.push('WiFi.SSID',
+                  'WiFi.BSSID',
+                  'WiFi.Security',
+                  'WiFi.SignalStrength',
+                  'WiFi.Frequency');
     }
+    if (state.Type == 'WiMAX')
+      fields.push('WiFi.SignalStrength');
     return fields;
   },
 
@@ -442,23 +496,21 @@ Polymer({
     if (!state)
       return fields;
     if (state.Type == 'Cellular') {
-      fields = fields.concat([
-        'Cellular.HomeProvider.Name',
-        'Cellular.HomeProvider.Country',
-        'Cellular.HomeProvider.Code',
-        'Cellular.Manufacturer',
-        'Cellular.ModelID',
-        'Cellular.FirmwareRevision',
-        'Cellular.HardwareRevision',
-        'Cellular.ESN',
-        'Cellular.ICCID',
-        'Cellular.IMEI',
-        'Cellular.IMSI',
-        'Cellular.MDN',
-        'Cellular.MEID',
-        'Cellular.MIN',
-        'Cellular.PRLVersion',
-      ]);
+      fields.push('Cellular.HomeProvider.Name',
+                  'Cellular.HomeProvider.Country',
+                  'Cellular.HomeProvider.Code',
+                  'Cellular.Manufacturer',
+                  'Cellular.ModelID',
+                  'Cellular.FirmwareRevision',
+                  'Cellular.HardwareRevision',
+                  'Cellular.ESN',
+                  'Cellular.ICCID',
+                  'Cellular.IMEI',
+                  'Cellular.IMSI',
+                  'Cellular.MDN',
+                  'Cellular.MEID',
+                  'Cellular.MIN',
+                  'Cellular.PRLVersion');
     }
     return fields;
   },

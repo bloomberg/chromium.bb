@@ -106,11 +106,10 @@ Polymer({
   automaticChanged_: function() {
     if (this.automatic === undefined || this.ipConfig === undefined)
       return;
-    console.debug('IP.automaticChanged: ' + this.automatic);
     if (this.automatic || !this.savedStaticIp_) {
       // Save the static IP configuration when switching to automatic.
       this.savedStaticIp_ = this.ipConfig.ipv4;
-      this.fire('changed', {
+      this.fire('ip-change', {
         field: 'IPAddressConfigType',
         value: this.automatic ? 'DHCP' : 'Static'
       });
@@ -122,7 +121,7 @@ Polymer({
         RoutingPrefix: this.savedStaticIp_.RoutingPrefix,
         Type: this.savedStaticIp_.Type
       };
-      this.fire('changed', {
+      this.fire('ip-change', {
         field: 'StaticIPConfig',
         value: this.getIPConfigProperties_(ipconfig)
       });
@@ -188,18 +187,17 @@ Polymer({
   /**
    * Event triggered when the network property list changes.
    * @param {!{detail: { field: string, value: string}}} event The
-   *     network-property-list changed event.
+   *     network-property-list change event.
    * @private
    */
-  onIPChanged_: function(event) {
+  onIPChange_: function(event) {
     event.stopPropagation();
 
     var field = event.detail.field;
     var value = event.detail.value;
-    console.debug('IP.onIPChanged: ' + field + ' -> ' + value);
     // Note: |field| includes the 'ipv4.' prefix.
     this.set('ipConfig.' + field, value);
-    this.fire('changed', {
+    this.fire('ip-change', {
       field: 'StaticIPConfig',
       value: this.getIPConfigProperties_(this.ipConfig.ipv4)
     });

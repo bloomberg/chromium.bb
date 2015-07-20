@@ -39,7 +39,7 @@ Polymer({
      *   'String' - A text input will be displayed.
      *   TODO(stevenjb): Support types with custom validation, e.g. IPAddress.
      *   TODO(stevenjb): Support 'Number'.
-     * When a field changes, the 'changed' event will be fired with
+     * When a field changes, the 'property-change' event will be fired with
      * the field name and the new value provided in the event detail.
      */
     editFieldTypes: {
@@ -49,19 +49,19 @@ Polymer({
   },
 
   /**
-   * Event triggered when an input field changes. Fires a 'changed' event with
-   * the field (property) name set to the target id, and the value set to the
-   * target input value.
-   * @param {Event} event The input changed event.
+   * Event triggered when an input field changes. Fires a 'property-change'
+   * event with the field (property) name set to the target id, and the value
+   * set to the target input value.
+   * @param {Event} event The input change event.
    * @private
    */
-  onValueChanged_: function(event) {
+  onValueChange_: function(event) {
     var field = event.target.id;
     var curValue = CrOnc.getActiveValue(this.networkState, field);
     var newValue = event.target.value;
     if (newValue == curValue)
       return;
-    this.fire('changed', { field: field, value: newValue });
+    this.fire('property-change', { field: field, value: newValue });
   },
 
   /**

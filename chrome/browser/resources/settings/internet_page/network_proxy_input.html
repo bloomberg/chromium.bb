@@ -8,11 +8,11 @@
     <div id="outer" class="layout horizontal">
       <span class="flex">[[label]]</span>
       <cr-input no-label-float id="url" disabled="[[!editable]]"
-          value="{{value.Host}}" on-blur="onValueChanged_">
+          value="{{value.Host}}" on-blur="onValueChange_">
       </cr-input>
       <span>Port</span>
       <cr-input no-label-float id="port" disabled="[[!editable]]"
-         value="{{value.Port}}" on-blur="onValueChanged_">
+         value="{{value.Port}}" on-blur="onValueChange_">
       </cr-input>
     </div>
   </template>

@@ -5,7 +5,7 @@
 span {
   @apply(--paper-font-subhead);
   @apply(--paper-input-container-input);
-  margin: 0 0 10px 5px;
+  margin: 0 0 5px 5px;
 }
 
 span.fill {
@@ -16,5 +16,5 @@ span.fill {
 }
 
 paper-input-container {
-  margin: -8px 0 2px 5px;
+  margin: -8px 0 -3px 5px;
 }

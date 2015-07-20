@@ -136,18 +136,18 @@ Polymer({
 
   /**
    * Event triggered when the selected type changes. Updates nameservers and
-   * sends the changed value if necessary.
-   * @param {Event} event The select node changed event.
+   * sends the change value if necessary.
+   * @param {Event} event The select node change event.
    * @private
    */
-  onTypeChanged_: function(event) {
+  onTypeChange_: function(event) {
     if (this.nameserversType == 'custom')
       this.savedNameservers_ = this.nameservers;
     var type = this.nameserverTypeNames_[event.target.selectedIndex];
     this.nameserversType = type;
     if (type == 'custom') {
       if (this.savedNameservers_.length == 0)
-        return;  // Don't change nameservers until onValueChanged_().
+        return;  // Don't change nameservers until onValueChange_().
       // Restore the saved nameservers and send them.
       this.nameservers = this.savedNameservers_;
     }
@@ -158,7 +158,7 @@ Polymer({
    * Event triggered when a nameserver value changes.
    * @private
    */
-  onValueChanged_: function() {
+  onValueChange_: function() {
     if (this.nameserversType != 'custom') {
       // If a user inputs Google nameservers in the custom nameservers fields,
       // |nameserversType| will change to 'google' so don't send the values.
@@ -173,7 +173,6 @@ Polymer({
    */
   sendNameServers_: function() {
     var type = this.nameserversType;
-    console.debug('NameServers.sendNameServers: ' + type);
 
     var nameservers;
     if (type == 'custom') {
@@ -184,19 +183,19 @@ Polymer({
         if (nameserver)
           nameservers.push(nameserver);
       }
-      this.fire('changed', {
+      this.fire('nameservers-change', {
         field: 'NameServers',
         value: nameservers
       });
     } else if (type == 'google') {
       nameservers = this.GoogleNameservers;
-      this.fire('changed', {
+      this.fire('nameservers-change', {
         field: 'NameServers',
         value: nameservers
       });
     } else {
       // automatic
-      this.fire('changed', {
+      this.fire('nameservers-change', {
         field: 'NameServersConfigType',
         value: 'DHCP'
       });

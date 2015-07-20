@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview Polymer element for displaying and editing a single
- * network proxy value. When the URL or port changes, a 'changed' event is
+ * network proxy value. When the URL or port changes, a 'proxy-change' event is
  * fired with the combined url and port values passed as a single string,
  * url:port.
  */
@@ -34,7 +34,7 @@ Polymer({
      */
     value: {
       type: Object,
-      value: function() { return { Host: '', Port: 80 }; },
+      value: function() { return {Host: '', Port: 80}; },
       notify: true
     },
   },
@@ -43,11 +43,11 @@ Polymer({
    * Event triggered when an input value changes.
    * @private
    */
-  onValueChanged_: function() {
+  onValueChange_: function() {
     var port = parseInt(this.value.Port);
     if (isNaN(port))
       port = 80;
     this.value.Port = port;
-    this.fire('changed', { value: this.value });
+    this.fire('proxy-change', {value: this.value});
   }
 });

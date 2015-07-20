@@ -106,7 +106,6 @@ Polymer({
    * Polymer networkState changed method.
    */
   networkStateChanged_: function() {
-    console.debug('NetworkProxy.networkStateChanged_');
     if (!this.networkState)
       return;
 
@@ -156,13 +155,13 @@ Polymer({
    * Polymer useSameProxy changed method.
    */
   useSameProxyChanged_: function() {
-    this.sendProxyChanged_();
+    this.sendProxyChange_();
   },
 
   /**
-   * Called when the proxy is changed in the UI.
+   * Called when the proxy changes in the UI.
    */
-  sendProxyChanged_: function() {
+  sendProxyChange_: function() {
     if (this.proxy.Type == CrOnc.ProxySettingsType.MANUAL) {
       if (this.useSameProxy) {
         var defaultProxy = this.proxy.Manual.HTTPProxy;
@@ -174,7 +173,7 @@ Polymer({
       this.savedManual_ = this.proxy.Manual;
       this.savedExcludeDomains_ = this.proxy.ExcludeDomains;
     }
-    this.fire('changed', {
+    this.fire('proxy-change', {
       field: 'ProxySettings',
       value: this.proxy
     });
@@ -182,28 +181,25 @@ Polymer({
 
   /**
    * Event triggered when the selected proxy type changes.
-   * @param {Event} event The select node changed event.
+   * @param {Event} event The select node change event.
    * @private
    */
   onTypeChange_: function(event) {
     var type = this.proxyTypes_[event.target.selectedIndex];
-    console.debug('Proxy type changed: ' + type);
     this.set('proxy.Type', type);
     if (type != CrOnc.ProxySettingsType.MANUAL ||
         this.savedManual_) {
-      this.sendProxyChanged_();
+      this.sendProxyChange_();
     }
   },
 
   /**
    * Event triggered when a proxy value changes.
-   * @param {Event} event The proxy value changed event.
+   * @param {Event} event The proxy value change event.
    * @private
    */
-  onProxyInputChanged_: function(event) {
-    console.debug('Proxy input changed');
-    console.debug(this.proxy);
-    this.sendProxyChanged_();
+  onProxyInputChange_: function(event) {
+    this.sendProxyChange_();
   },
 
   /**
@@ -218,17 +214,16 @@ Polymer({
     this.push('proxy.ExcludeDomains', value);
     // Clear input.
     this.$.proxyExclusion.value = '';
-    this.sendProxyChanged_();
+    this.sendProxyChange_();
   },
 
   /**
-   * Event triggered when the proxy exclusion list has changed.
-   * @param {Event} event The remove proxy exclusions changed event.
+   * Event triggered when the proxy exclusion list changes.
+   * @param {Event} event The remove proxy exclusions change event.
    * @private
    */
-  onProxyExclusionsChanged_: function(event) {
-    console.debug('onRemoveProxyExclusion');
-    this.sendProxyChanged_();
+  onProxyExclusionsChange_: function(event) {
+    this.sendProxyChange_();
   },
 
   /**

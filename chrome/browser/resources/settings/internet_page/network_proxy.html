@@ -24,7 +24,7 @@
           class="layout horizontal">
         <span>Autoconfiguration URL:</span>
         <cr-input no-label-float class="flex" value="{{proxy.PAC}}"
-            on-blur="onProxyInputChanged_">
+            on-blur="onProxyInputChange_">
         </cr-input>
       </div>
 
@@ -41,31 +41,31 @@
         <div hidden$="[[!useSameProxy]]" class="layout vertical">
           <network-proxy-input editable="[[editable]]"
               value="{{proxy.Manual.HTTPProxy}}"
-              label="Proxy" on-changed="onProxyInputChanged_">
+              label="Proxy" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
         </div>
         <div hidden$="[[useSameProxy]]" class="layout vertical">
           <network-proxy-input editable="[[editable]]"
               value="{{proxy.Manual.HTTPProxy}}"
-              label="HTTP Proxy" on-changed="onProxyInputChanged_">
+              label="HTTP Proxy" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
           <network-proxy-input editable="[[editable]]"
               value="{{proxy.Manual.SecureHTTPProxy}}"
-              label="Secure HTTP Proxy" on-changed="onProxyInputChanged_">
+              label="Secure HTTP Proxy" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
           <network-proxy-input editable="[[editable]]"
               value="{{proxy.Manual.FTPProxy}}"
-              label="FTP Proxy" on-changed="onProxyInputChanged_">
+              label="FTP Proxy" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
           <network-proxy-input editable="[[editable]]"
               value="{{proxy.Manual.SOCKS}}"
-              label="SOCKS host" on-changed="onProxyInputChanged_">
+              label="SOCKS host" on-proxy-change="onProxyInputChange_">
           </network-proxy-input>
         </div>
 
         <span>Do not use the proxy settings for these hosts and domains:</span>
         <network-proxy-exclusions exclusions="{{proxy.ExcludeDomains}}"
-             on-changed="onProxyExclusionsChanged_">
+             on-proxy-change="onProxyExclusionsChange_">
         </network-proxy-exclusions>
         <div class="layout horizontal baseline">
           <cr-input id="proxyExclusion" class="flex" no-label-float>

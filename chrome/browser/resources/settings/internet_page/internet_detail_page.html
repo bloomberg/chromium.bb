@@ -16,6 +16,7 @@
   <template>
     <paper-material class="layout vertical">
       <div id="outerDiv" class="layout vertical">
+        <!-- Title section: Icon + name + connection state. -->
         <div id="titleDiv" class="layout horizontal">
           <div class="layout center horizontal flex">
             <cr-network-icon id="networkIcon" network-state="[[networkState]]">
@@ -26,85 +27,115 @@
           </div>
         </div>
 
+        <!-- Info and properties common to all networks. -->
         <div id="infoDiv" class="layout vertical">
-          <cr-checkbox id="autoconnect" checked="{{autoConnect}}"
+          <span hidden$="[[!showShared_(networkState)]]">
+            This network is shared with other users.
+          </span>
+          <cr-checkbox checked="{{preferNetwork}}"
+              hidden$="[[!showPreferNetwork_(networkState)]]">
+            Prefer this network
+          </cr-checkbox>
+          <cr-checkbox checked="{{autoConnect}}"
               hidden$="[[!showAutoConnect_(networkState)]]">
             Automatically connect to this network
           </cr-checkbox>
 
+          <!-- Properties to always show if present. -->
+          <div class="layout horizontal" hidden$="[[!IPAddress]]">
+            <span>IP Address:</span>
+            <span>[[IPAddress]]</span>
+          </div>
           <network-property-list
               fields="[[getInfoFields_(networkState)]]"
               network-state="[[networkState]]">
           </network-property-list>
+        </div>
 
-          <div class="layout vertical"
-              hidden$="[[!hasNetworkSection_(networkState)]]">
-            <network-ip-config editable
-                network-state="[[networkState]]"
-                on-changed="onIPConfigChanged_">
-            </network-ip-config>
-            <network-nameservers editable
-                network-state="[[networkState]]"
-                on-changed="onIPConfigChanged_">
-            </network-nameservers>
-          </div>
-
-          <div class="layout horizontal center">
-            <cr-button toggles active="{{advancedExpanded}}"
-                hidden$="[[!hasAdvancedOrDeviceFields_(networkState)]]">
-              Advanced
-            </cr-button>
-            <span class="flex"></span>
-            <cr-button hidden$="[[!canDisconnect_(networkState)]]"
-                on-click="onDisconnectClicked_">
-              Disconnect
-            </cr-button>
-            <cr-button hidden$="[[!canConnect_(networkState)]]"
-                on-click="onConnectClicked_">
-              Connect
-            </cr-button>
-          </div>
-
-          <div id="advancedDiv" class="layout vertical"
+        <!-- Button row: Advanced + Disconnect | Connect. -->
+        <div class="layout horizontal center">
+          <cr-button toggles active="{{advancedExpanded}}"
               hidden$="[[!hasAdvancedOrDeviceFields_(networkState)]]">
-            <cr-collapse opened="[[advancedExpanded]]">
+            Advanced
+          </cr-button>
+          <span class="flex"></span>
+          <cr-button hidden$="[[!canDisconnect_(networkState)]]"
+              on-click="onDisconnectClicked_">
+            Disconnect
+          </cr-button>
+          <cr-button hidden$="[[!canConnect_(networkState)]]"
+              on-click="onConnectClicked_">
+            Connect
+          </cr-button>
+        </div>
+
+        <!-- Advanced section -->
+        <div id="advancedDiv" class="layout vertical"
+            hidden$="[[!hasAdvancedOrDeviceFields_(networkState)]]">
+          <cr-collapse opened="[[advancedExpanded]]">
+            <!-- Advanced properties -->
+            <div id="advancedInfoDiv" class="layout vertical">
               <network-property-list
                   fields="[[getAdvancedFields_(networkState)]]"
                   network-state="[[networkState]]">
               </network-property-list>
+            </div>
 
-              <div class="layout vertical"
-                  hidden$="[[!hasNetworkSection_(networkState)]]">
-                <cr-button toggles active="{{proxyExpanded}}">
-                  Proxy
-                </cr-button>
-                <cr-collapse opened="[[proxyExpanded]]">
-                  <div id="proxyDiv" class="layout vertical flex">
-                    <network-proxy editable
-                        network-state="[[networkState]]"
-                        on-changed="onProxyChanged_">
-                    </network-proxy>
-                  </div>
-                </cr-collapse>
-              </div>
+            <!-- Address and nameservers -->
+            <div id="addressDiv" class="layout vertical"
+                hidden$="[[!hasNetworkSection_(networkState)]]">
+              <cr-button toggles active="{{addressExpanded}}">
+                Network
+              </cr-button>
+              <cr-collapse opened="[[addressExpanded]]">
+                <div class="layout vertical flex">
+                  <network-ip-config editable
+                      network-state="[[networkState]]"
+                      on-ip-change="onIPConfigChange_">
+                  </network-ip-config>
+                  <network-nameservers editable
+                      network-state="[[networkState]]"
+                      on-nameservers-change="onIPConfigChange_">
+                  </network-nameservers>
+                </div>
+              </cr-collapse>
+            </div>
 
-              <div class="layout vertical"
-                  hidden$="[[!hasDeviceFields_(networkState)]]">
-                <cr-button toggles active="{{deviceExpanded}}">
-                  Device
-                </cr-button>
-                <cr-collapse opened="[[deviceExpanded]]">
-                  <network-property-list
-                      fields="[[getDeviceFields_(networkState)]]"
-                      network-state="[[networkState]]">
-                  </network-property-list>
-                </cr-collapse>
-              </div>
-            </cr-collapse>
-          </div>
+            <!-- Proxy -->
+            <div class="layout vertical"
+                hidden$="[[!hasNetworkSection_(networkState)]]">
+              <cr-button toggles active="{{proxyExpanded}}">
+                Proxy
+              </cr-button>
+              <cr-collapse opened="[[proxyExpanded]]">
+                <div id="proxyDiv" class="layout vertical flex">
+                  <network-proxy editable
+                      network-state="[[networkState]]"
+                      on-proxy-change="onProxyChange_">
+                  </network-proxy>
+                </div>
+              </cr-collapse>
+            </div>
+
+            <!-- Device properties -->
+            <div class="layout vertical"
+                hidden$="[[!hasDeviceFields_(networkState)]]">
+              <cr-button toggles active="{{deviceExpanded}}">
+                Device
+              </cr-button>
+              <cr-collapse opened="[[deviceExpanded]]">
+                <network-property-list
+                    fields="[[getDeviceFields_(networkState)]]"
+                    network-state="[[networkState]]">
+                </network-property-list>
+                <!-- TODO(stevenjb): Cellular APN -->
+                <!-- TODO(stevenjb): Cellular SIM -->
+              </cr-collapse>
+            </div>
+          </cr-collapse>
         </div>
       </div>
-    </paper-shadow>
+    </paper-material>
   </template>
   <script src="internet_detail_page.js"></script>
 </dom-module>

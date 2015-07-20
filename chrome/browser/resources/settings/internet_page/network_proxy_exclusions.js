@@ -31,8 +31,7 @@ Polymer({
   removeItem_: function(event) {
     var index = event.model.index;
     this.splice('exclusions', index, 1);
-    console.debug('network-proxy-exclusions: removed: ' + index);
-    this.fire('changed');
+    this.fire('proxy-change');
   }
 });
 })();
