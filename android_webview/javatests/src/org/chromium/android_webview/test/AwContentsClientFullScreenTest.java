@@ -119,8 +119,12 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         });
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testOnShowAndHideCustomViewWithJavascript_video() throws Throwable {
         doTestOnShowAndHideCustomViewWithJavascript(VIDEO_TEST_URL);
     }
@@ -185,8 +189,12 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
         assertWaitForIsEmbedded();
     }
 
+    /*
     @MediumTest
     @Feature({"AndroidWebView"})
+    crbug.com/511688
+    */
+    @DisabledTest
     public void testExitFullscreenEndsIfAppInvokesCallbackFromOnHideCustomView() throws Throwable {
         mContentsClient.setOnHideCustomViewRunnable(new Runnable() {
             @Override
