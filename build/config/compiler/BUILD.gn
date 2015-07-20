@@ -143,6 +143,11 @@ config("compiler") {
         ]
       }
     }
+
+    if (is_syzyasan) {
+      # SyzyAsan needs /PROFILE turned on to produce appropriate pdbs.
+      ldflags += [ "/PROFILE" ]
+    }
   } else {
     # Common GCC compiler flags setup.
     # --------------------------------

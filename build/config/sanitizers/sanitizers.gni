@@ -17,4 +17,9 @@ declare_args() {
   # standard system libraries. Set this flag to download prebuilt binaries from
   # GCS.
   use_prebuilt_instrumented_libraries = false
+
+  # Enable building with SyzyAsan which can find certain types of memory
+  # errors. Only works on Windows. See
+  # https://code.google.com/p/sawbuck/wiki/SyzyASanHowTo
+  is_syzyasan = false
 }

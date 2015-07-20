@@ -91,6 +91,7 @@
             ['syzyasan==1 and buildtype=="Official"', {
               'targets': [
               {
+                # GN version: //chrome/tools/build/win/syzygy:chrome_child_dll_syzygy_copy
                 'target_name': 'chrome_child_dll_syzygy_copy',
                 'type': 'none',
                 'inputs': [

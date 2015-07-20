@@ -6,6 +6,7 @@ import("//build/config/allocator.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
 
@@ -274,6 +275,13 @@ config("feature_flags") {
   }
   if (enable_webvr) {
     defines += [ "ENABLE_WEBVR" ]
+  }
+  if (is_syzyasan) {
+    defines += [
+      "SYZYASAN",
+      "MEMORY_TOOL_REPLACES_ALLOCATOR",
+      "MEMORY_SANITIZER_INITIAL_SIZE",
+    ]
   }
 }
 

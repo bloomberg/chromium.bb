@@ -200,6 +200,10 @@ group("both_gn_and_gyp") {
     deps += [ "//gin:gin_v8_snapshot_fingerprint" ]
   }
 
+  if (is_win) {
+    deps += [ "//chrome/tools/build/win/syzygy:chrome_dll_syzygy" ]
+  }
+
   if (is_android) {
     deps += [
       "//base/android/linker:chromium_android_linker",
