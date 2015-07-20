@@ -1241,6 +1241,7 @@ qcms_transform* qcms_transform_create(
 		qcms_intent intent)
 {
 	bool precache = false;
+	int i, j;
 
         qcms_transform *transform = transform_alloc();
         if (!transform) {
@@ -1344,6 +1345,17 @@ qcms_transform* qcms_transform_create(
 			return NULL;
 		}
 		result = matrix_multiply(out_matrix, in_matrix);
+
+		/* check for NaN values in the matrix and bail if we find any
+		   see also https://bugzilla.mozilla.org/show_bug.cgi?id=1170316 */
+		for (i = 0 ; i < 3 ; ++i) {
+			for (j = 0 ; j < 3 ; ++j) {
+				if (result.m[i][j] != result.m[i][j]) {
+					qcms_transform_release(transform);
+					return NULL;
+				}
+			}
+		}
 
 		/* store the results in column major mode
 		 * this makes doing the multiplication with sse easier */
