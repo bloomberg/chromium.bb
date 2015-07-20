@@ -9,6 +9,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/worker_pool.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/message_pump_mojo.h"
@@ -70,6 +71,13 @@ MojoResult ApplicationRunner::Run(MojoHandle application_request_handle,
     loop.reset();
     delegate_.reset();
   }
+
+  // By default the worker pool continues running until all tasks are done or
+  // the process is shut down. However, because the application could be
+  // unloaded before process shutdown, we have to wait for the worker pool to
+  // shut down cleanly.
+  base::WorkerPool::ShutDownCleanly();
+
   return MOJO_RESULT_OK;
 }
 

@@ -70,4 +70,10 @@ bool WorkerPool::RunsTasksOnCurrentThread() {
   return g_worker_pool_running_on_this_thread.Get().Get();
 }
 
+// static
+void WorkerPool::ShutDownCleanly() {
+  // TODO(yzshen): implement it.
+  NOTIMPLEMENTED();
+}
+
 }  // namespace base

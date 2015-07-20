@@ -5,12 +5,12 @@
 // The thread pool used in the POSIX implementation of WorkerPool dynamically
 // adds threads as necessary to handle all tasks.  It keeps old threads around
 // for a period of time to allow them to be reused.  After this waiting period,
-// the threads exit.  This thread pool uses non-joinable threads, therefore
-// worker threads are not joined during process shutdown.  This means that
-// potentially long running tasks (such as DNS lookup) do not block process
-// shutdown, but also means that process shutdown may "leak" objects.  Note that
-// although PosixDynamicThreadPool spawns the worker threads and manages the
-// task queue, it does not own the worker threads.  The worker threads ask the
+// the threads exit.  Unless blocking termination is requested, worker threads
+// are not joined during process shutdown.  This means that potentially long
+// running tasks (such as DNS lookup) do not block process shutdown, but also
+// means that process shutdown may "leak" objects.  Note that although
+// PosixDynamicThreadPool spawns the worker threads and manages the task queue,
+// it does not own the worker threads.  The worker threads ask the
 // PosixDynamicThreadPool for work and eventually clean themselves up.  The
 // worker threads all maintain scoped_refptrs to the PosixDynamicThreadPool
 // instance, which prevents PosixDynamicThreadPool from disappearing before all
@@ -26,6 +26,7 @@
 
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -36,6 +37,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "base/tracked_objects.h"
 
 class Task;
@@ -48,34 +50,44 @@ class BASE_EXPORT PosixDynamicThreadPool
   class PosixDynamicThreadPoolPeer;
 
   // All worker threads will share the same |name_prefix|.  They will exit after
-  // |idle_seconds_before_exit|.
+  // |idle_time_before_exit|.
   PosixDynamicThreadPool(const std::string& name_prefix,
-                         int idle_seconds_before_exit);
+                         TimeDelta idle_time_before_exit);
 
   // Indicates that the thread pool is going away.  Stops handing out tasks to
-  // worker threads.  Wakes up all the idle threads to let them exit.
-  void Terminate();
+  // worker threads.  Wakes up all the idle threads to let them exit.  If
+  // |blocking| is set to true, the call returns after all worker threads have
+  // quit.
+  // The second and subsequent calls to this method are ignored, regardless of
+  // the value of |blocking|.
+  void Terminate(bool blocking);
 
   // Adds |task| to the thread pool.
   void PostTask(const tracked_objects::Location& from_here,
                 const Closure& task);
 
-  // Worker thread method to wait for up to |idle_seconds_before_exit| for more
-  // work from the thread pool.  Returns NULL if no work is available.
+  // Worker thread method to wait for up to |idle_time_before_exit| for more
+  // work from the thread pool.  Returns an empty task if no work is available.
   PendingTask WaitForTask();
+
+  // Marks |worker| as dead and enqueues a cleanup task to join dead worker
+  // threads. Unlike tasks enqueued by PostTask(), cleanup tasks never cause new
+  // worker threads to be created.
+  void NotifyWorkerIsGoingAway(PlatformThreadHandle worker);
 
  private:
   friend class RefCountedThreadSafe<PosixDynamicThreadPool>;
-  friend class PosixDynamicThreadPoolPeer;
 
   ~PosixDynamicThreadPool();
 
   // Adds pending_task to the thread pool.  This function will clear
   // |pending_task->task|.
-  void AddTask(PendingTask* pending_task);
+  void AddTaskNoLock(PendingTask* pending_task);
+
+  void CleanUpThreads();
 
   const std::string name_prefix_;
-  const int idle_seconds_before_exit_;
+  const TimeDelta idle_time_before_exit_;
 
   Lock lock_;  // Protects all the variables below.
 
@@ -83,12 +95,20 @@ class BASE_EXPORT PosixDynamicThreadPool
   // Also used for Broadcast()'ing to worker threads to let them know the pool
   // is being deleted and they can exit.
   ConditionVariable pending_tasks_available_cv_;
-  int num_idle_threads_;
-  TaskQueue pending_tasks_;
+  size_t num_idle_threads_;
+  bool has_pending_cleanup_task_;
+  std::queue<PendingTask> pending_tasks_;
   bool terminated_;
-  // Only used for tests to ensure correct thread ordering.  It will always be
+
+  std::vector<PlatformThreadHandle> threads_to_cleanup_;
+  std::vector<PlatformThreadHandle> worker_threads_;
+
+  // Signaled when idle thread count or living thread count is changed. Please
+  // note that it won't be signaled when Terminate() is called.
+  //
+  // Only used for tests to ensure correct thread ordering. It will always be
   // NULL in non-test code.
-  scoped_ptr<ConditionVariable> num_idle_threads_cv_;
+  scoped_ptr<ConditionVariable> num_threads_cv_;
 
   DISALLOW_COPY_AND_ASSIGN(PosixDynamicThreadPool);
 };
