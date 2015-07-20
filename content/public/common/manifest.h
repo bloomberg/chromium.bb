@@ -112,6 +112,13 @@ struct CONTENT_EXPORT Manifest {
   // or there is a parsing failure.
   bool prefer_related_applications;
 
+  // This is a 64 bit integer because we need to represent an error state. The
+  // color itself should only be 32 bits long if the value is not
+  // kInvalidOrMissingThemeColor and can be safely cast to SkColor if is valid.
+  // Set to kInvalidOrMissingThemeColor if parsing failed or field is not
+  // present.
+  int64_t theme_color;
+
   // This is a proprietary extension of the web Manifest, double-check that it
   // is okay to use this entry.
   // Null if parsing failed or the field was not present.
@@ -121,6 +128,9 @@ struct CONTENT_EXPORT Manifest {
   // IPC. The renderer process should truncate the strings before sending the
   // Manifest and the browser process must do the same when receiving it.
   static const size_t kMaxIPCStringLength;
+
+  // Constant representing an invalid theme color. Set to -1.
+  static const int64_t kInvalidOrMissingThemeColor;
 };
 
 } // namespace content

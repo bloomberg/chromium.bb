@@ -7,6 +7,7 @@
 namespace content {
 
 const double Manifest::Icon::kDefaultDensity = 1;
+const int64_t Manifest::kInvalidOrMissingThemeColor = -1;
 const size_t Manifest::kMaxIPCStringLength = 4 * 1024;
 
 Manifest::Icon::Icon()
@@ -25,7 +26,8 @@ Manifest::RelatedApplication::~RelatedApplication() {
 Manifest::Manifest()
     : display(DISPLAY_MODE_UNSPECIFIED),
       orientation(blink::WebScreenOrientationLockDefault),
-      prefer_related_applications(false) {
+      prefer_related_applications(false),
+      theme_color(Manifest::kInvalidOrMissingThemeColor) {
 }
 
 Manifest::~Manifest() {
@@ -40,6 +42,7 @@ bool Manifest::IsEmpty() const {
          icons.empty() &&
          related_applications.empty() &&
          !prefer_related_applications &&
+         theme_color == Manifest::kInvalidOrMissingThemeColor &&
          gcm_sender_id.is_null();
 }
 

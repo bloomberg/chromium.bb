@@ -13,6 +13,9 @@
 #include "base/values.h"
 #include "content/public/common/manifest.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
+#include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebCSSParser.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -129,6 +132,7 @@ void ManifestParser::Parse() {
   manifest_.related_applications = ParseRelatedApplications(*dictionary);
   manifest_.prefer_related_applications =
       ParsePreferRelatedApplications(*dictionary);
+  manifest_.theme_color = ParseThemeColor(*dictionary);
   manifest_.gcm_sender_id = ParseGCMSenderID(*dictionary);
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
@@ -405,6 +409,25 @@ ManifestParser::ParseRelatedApplications(
 bool ManifestParser::ParsePreferRelatedApplications(
     const base::DictionaryValue& dictionary) {
   return ParseBoolean(dictionary, "prefer_related_applications", false);
+}
+
+int64_t ManifestParser::ParseThemeColor(
+    const base::DictionaryValue& dictionary) {
+  base::NullableString16 theme_color = ParseString(
+      dictionary, "theme_color", Trim);
+  if (theme_color.is_null())
+    return Manifest::kInvalidOrMissingThemeColor;
+
+  blink::WebColor color;
+  if (!blink::WebCSSParser::parseColor(&color, theme_color.string())) {
+      errors_.push_back(GetErrorPrefix() +
+                        "property 'theme_color' ignored, '" +
+                        base::UTF16ToUTF8(theme_color.string()) +
+                        "' is not a valid color.");
+      return Manifest::kInvalidOrMissingThemeColor;
+  }
+
+  return static_cast<int64_t>(color);
 }
 
 base::NullableString16 ManifestParser::ParseGCMSenderID(

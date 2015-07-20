@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_
 #define CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_
 
+#include <stdint.h>
+
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
@@ -154,6 +156,12 @@ class CONTENT_EXPORT ManifestParser {
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-prefer_related_applications-member
   // returns true iff the field could be parsed as the boolean true.
   bool ParsePreferRelatedApplications(const base::DictionaryValue& dictionary);
+
+  // Parses the 'theme_color' field of the manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-theme_color-member
+  // Returns the parsed theme color if any,
+  // Manifest::kInvalidOrMissingThemeColor if the parsing failed.
+  int64_t ParseThemeColor(const base::DictionaryValue& dictionary);
 
   // Parses the 'gcm_sender_id' field of the manifest.
   // This is a proprietary extension of the Web Manifest specification.

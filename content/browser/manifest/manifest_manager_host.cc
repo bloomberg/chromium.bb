@@ -136,6 +136,11 @@ void ManifestManagerHost::OnRequestManifestResponse(
                                    0, Manifest::kMaxIPCStringLength),
                                related_application.id.is_null());
   }
+  // theme_color is a 32 bit unsigned integer with a 64 bit integer simply
+  // being used to encode an error occuring. Therefore, any value outside the
+  // range of an unsigned 32 bit integer is invalid.
+  if (manifest.theme_color < 0 || manifest.theme_color > 0xFFFFFFFF)
+    manifest.theme_color = Manifest::kInvalidOrMissingThemeColor;
 
   callback->Run(manifest);
   callbacks->Remove(request_id);
