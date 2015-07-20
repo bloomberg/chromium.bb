@@ -74,6 +74,8 @@
   #define ELF_ARCH  EM_ARM
 #elif defined(__mips__)
   #define ELF_ARCH  EM_MIPS
+#elif defined(__aarch64__)
+  #define ELF_ARCH  EM_AARCH64
 #endif
 
 #if defined(__arm__)
@@ -136,14 +138,14 @@ typedef struct elf_timeval {    /* Time value with microsecond resolution    */
   long tv_usec;                 /* Microseconds                              */
 } elf_timeval;
 
-typedef struct elf_siginfo {    /* Information about signal (unused)         */
+typedef struct _elf_siginfo {   /* Information about signal (unused)         */
   int32_t si_signo;             /* Signal number                             */
   int32_t si_code;              /* Extra code                                */
   int32_t si_errno;             /* Errno                                     */
-} elf_siginfo;
+} _elf_siginfo;
 
 typedef struct prstatus {       /* Information about thread; includes CPU reg*/
-  elf_siginfo    pr_info;       /* Info associated with signal               */
+  _elf_siginfo   pr_info;       /* Info associated with signal               */
   uint16_t       pr_cursig;     /* Current signal                            */
   unsigned long  pr_sigpend;    /* Set of pending signals                    */
   unsigned long  pr_sighold;    /* Set of held signals                       */
@@ -213,15 +215,18 @@ struct CrashedProcess {
     pid_t tid;
 #if defined(__mips__)
     mcontext_t mcontext;
-#else  // __mips__
+#else
     user_regs_struct regs;
+#endif
 #if defined(__i386__) || defined(__x86_64__)
     user_fpregs_struct fpregs;
-#endif  // __i386__ || __x86_64__
+#endif
 #if defined(__i386__)
     user_fpxregs_struct fpxregs;
-#endif  // __i386__
-#endif  // __mips__
+#endif
+#if defined(__aarch64__)
+    user_fpsimd_struct fpregs;
+#endif
     uintptr_t stack_addr;
     const uint8_t* stack;
     size_t stack_length;
@@ -371,6 +376,22 @@ ParseThreadRegisters(CrashedProcess::Thread* thread,
   thread->regs.uregs[16] = rawregs->cpsr;
   thread->regs.uregs[17] = 0;  // what is ORIG_r0 exactly?
 }
+#elif defined(__aarch64__)
+static void
+ParseThreadRegisters(CrashedProcess::Thread* thread,
+                     const MinidumpMemoryRange& range) {
+  const MDRawContextARM64* rawregs = range.GetData<MDRawContextARM64>(0);
+
+  for (int i = 0; i < 31; ++i)
+    thread->regs.regs[i] = rawregs->iregs[i];
+  thread->regs.sp = rawregs->iregs[MD_CONTEXT_ARM64_REG_SP];
+  thread->regs.pc = rawregs->iregs[MD_CONTEXT_ARM64_REG_PC];
+  thread->regs.pstate = rawregs->cpsr;
+
+  memcpy(thread->fpregs.vregs, rawregs->float_save.regs, 8 * 32);
+  thread->fpregs.fpsr = rawregs->float_save.fpsr;
+  thread->fpregs.fpcr = rawregs->float_save.fpcr;
+}
 #elif defined(__mips__)
 static void
 ParseThreadRegisters(CrashedProcess::Thread* thread,
@@ -464,6 +485,12 @@ ParseSystemInfo(CrashedProcess* crashinfo, const MinidumpMemoryRange& range,
   if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM) {
     fprintf(stderr,
             "This version of minidump-2-core only supports ARM (32bit).\n");
+    _exit(1);
+  }
+#elif defined(__aarch64__)
+  if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM64) {
+    fprintf(stderr,
+            "This version of minidump-2-core only supports ARM (64bit).\n");
     _exit(1);
   }
 #elif defined(__mips__)
