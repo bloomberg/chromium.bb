@@ -529,7 +529,7 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
 void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
 {
     String content;
-    if (m_cssAgent->getEditedStyleSheet(url, &content)) {
+    if (m_debuggerAgent->getEditedScript(url, &content) || m_cssAgent->getEditedStyleSheet(url, &content)) {
         callback->sendSuccess(content, false);
         return;
     }

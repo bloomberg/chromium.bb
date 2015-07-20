@@ -10,6 +10,8 @@ frontend: {"id":<number>,"method":"Worker.setAutoconnectToWorkers","params":{"va
 --> WebInspector.targetManager.resumeAllTargets();
 frontend: {"id":<number>,"method":"Debugger.enable"}
 frontend: {"id":<number>,"method":"Page.setOverlayMessage"}
+frontend: {"id":<number>,"method":"Debugger.setPauseOnExceptions","params":{"state":"none"}}
+frontend: {"id":<number>,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":4}}
 frontend: {"id":<number>,"method":"DOM.enable"}
 frontend: {"id":<number>,"method":"CSS.enable"}
 frontend: {"id":<number>,"method":"Worker.setAutoconnectToWorkers","params":{"value":true}}

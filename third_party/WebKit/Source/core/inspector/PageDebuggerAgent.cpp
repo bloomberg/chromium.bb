@@ -175,6 +175,11 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     reset();
 }
 
+void PageDebuggerAgent::didCommitLoadForLocalFrame(LocalFrame*)
+{
+    resetModifiedSources();
+}
+
 void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
     InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
