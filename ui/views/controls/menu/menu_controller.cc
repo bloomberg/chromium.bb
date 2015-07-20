@@ -1104,7 +1104,14 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       if (hot_view) {
         hot_view->ShowContextMenu(hot_view->GetKeyboardContextMenuLocation(),
                                   ui::MENU_SOURCE_KEYBOARD);
-      } else if (pending_state_.item->enabled()) {
+      } else if (pending_state_.item->enabled() &&
+                 pending_state_.item->GetRootMenuItem() !=
+                     pending_state_.item) {
+        // Show the context menu for the given menu item. We don't try to show
+        // the menu for the (boundless) root menu item. This can happen, e.g.,
+        // when the user hits the APPS key after opening the menu, when no item
+        // is selected, but showing a context menu for an implicitly-selected
+        // and invisible item doesn't make sense.
         ShowContextMenu(pending_state_.item,
                         pending_state_.item->GetKeyboardContextMenuLocation(),
                         ui::MENU_SOURCE_KEYBOARD);
