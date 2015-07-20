@@ -168,6 +168,12 @@ public abstract class ChromeSwitches {
      */
     public static final String ENABLE_ANDROID_SPELLCHECKER = "enable-android-spellchecker";
 
+    /**
+     * Disable speculative TCP/IP preconnection.
+     * Native switch - switches::kDisablePreconnect
+     */
+    public static final String DISABLE_PRECONNECT = "disable-preconnect";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

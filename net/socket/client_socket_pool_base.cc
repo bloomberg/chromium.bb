@@ -27,7 +27,13 @@ namespace {
 
 // Indicate whether we should enable idle socket cleanup timer. When timer is
 // disabled, sockets are closed next time a socket request is made.
+// Keep this enabled for windows as long as we support Windows XP, see the note
+// in kCleanupInterval below.
+#if defined(OS_WIN)
 bool g_cleanup_timer_enabled = true;
+#else
+bool g_cleanup_timer_enabled = false;
+#endif
 
 // The timeout value, in seconds, used to clean up idle sockets that can't be
 // reused.
