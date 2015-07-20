@@ -77,12 +77,6 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
       |   |  three.cc
       |   |
       |   +-- .git
-      |   |
-      |   +-- include
-      |       |
-      |       +-- a
-      |       |
-      |       +-- b
       |
       +-- out
           |
@@ -96,8 +90,6 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
     os.makedirs(self.chrome_root)
     os.makedirs(os.path.join(self.chrome_root, '.git'))
     os.makedirs(self.out_dir)
-    os.makedirs(os.path.join(self.chrome_root, 'include', 'a'))
-    os.makedirs(os.path.join(self.chrome_root, 'include', 'b'))
 
     CreateFile(os.path.join(self.test_root, '.gclient'))
     CreateFile(os.path.join(self.chrome_root, 'DEPS'))
@@ -109,14 +101,6 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
     CreateFile(os.path.join(self.out_dir, 'build.ninja'),
                copy_from=os.path.join(self.test_data_path,
                                       'fake_build_ninja.txt'))
-
-    # This is a fake clang++ like script that spits out some directories that
-    # will be interpreted to be system include paths.
-    CreateFile(os.path.join(self.chrome_root, 'fake-clang++'),
-               copy_from=os.path.join(self.test_data_path,
-                                      'fake-clang++.sh'),
-               format_with={'chrome_root': self.chrome_root},
-               make_executable=True)
 
   def NormalizeString(self, string):
     return string.replace(self.out_dir, '[OUT]').\
@@ -166,16 +150,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         self.out_dir, os.path.join(self.chrome_root, 'unknown.cpp'))
     self.assertEquals(command_line, None)
 
-  def testSystemIncludeDirectoryFlags(self):
-    flags = self.ycm_extra_conf.SystemIncludeDirectoryFlags(
-        os.path.join(self.chrome_root, 'fake-clang++'), [])
-    flags = self.NormalizeStringsInList(flags)
-    self.assertEquals(
-        flags,
-        ['-isystem', '[SRC]/include/a', '-isystem', '[SRC]/include/b'])
-
   def testGetClangOptionsForKnownCppFile(self):
-    clang_options, sys_includes = \
+    clang_options = \
         self.ycm_extra_conf.GetClangOptionsFromNinjaForFilename(
             self.chrome_root, os.path.join(self.chrome_root, 'one.cpp'))
     self.assertEquals(self.NormalizeStringsInList(clang_options), [
@@ -183,10 +159,6 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
         '-I[OUT]/tag-one'
-        ])
-    self.assertEquals(self.NormalizeStringsInList(sys_includes), [
-        '-isystem', '[SRC]/include/a',
-        '-isystem', '[SRC]/include/b'
         ])
 
   def testGetFlagsForFileForKnownCppFile(self):
@@ -203,9 +175,7 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
-        '-I[OUT]/tag-one',
-        '-isystem', '[SRC]/include/a',
-        '-isystem', '[SRC]/include/b'
+        '-I[OUT]/tag-one'
         ])
 
   def testGetFlagsForFileForUnknownCppFile(self):
@@ -222,9 +192,7 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
-        '-I[OUT]/tag-default',
-        '-isystem', '[SRC]/include/a',
-        '-isystem', '[SRC]/include/b'
+        '-I[OUT]/tag-default'
         ])
 
   def testGetFlagsForFileForUnknownHeaderFile(self):
@@ -241,9 +209,7 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
-        '-I[OUT]/tag-default',
-        '-isystem', '[SRC]/include/a',
-        '-isystem', '[SRC]/include/b'
+        '-I[OUT]/tag-default'
         ])
 
   def testGetFlagsForFileForKnownHeaderFileWithAssociatedCppFile(self):
@@ -260,9 +226,7 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
-        '-I[OUT]/tag-three',
-        '-isystem', '[SRC]/include/a',
-        '-isystem', '[SRC]/include/b'
+        '-I[OUT]/tag-three'
         ])
 
   def testSourceFileWithNonClangOutputs(self):
@@ -292,9 +256,7 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
-        '-I[OUT]/tag-four',
-        '-isystem', '[SRC]/include/a',
-        '-isystem', '[SRC]/include/b'
+        '-I[OUT]/tag-four'
         ])
 
   def testSourceFileWithOnlyNonClangOutputs(self):
@@ -311,9 +273,7 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
-        '-I[OUT]/tag-default',
-        '-isystem', '[SRC]/include/a',
-        '-isystem', '[SRC]/include/b'
+        '-I[OUT]/tag-default'
         ])
 
 if __name__ == '__main__':

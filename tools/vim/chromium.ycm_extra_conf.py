@@ -55,18 +55,6 @@ import shlex
 import subprocess
 import sys
 
-# A dictionary mapping Clang binary path to a list of Clang command line
-# arguments that specify the system include paths. It is used as a cache of the
-# system include options since these options aren't expected to change per
-# source file for the same clang binary. SystemIncludeDirectoryFlags() updates
-# this map each time it runs a Clang binary to determine system include paths.
-#
-# Entries look like:
-#   '/home/username/my-llvm/bin/clang++': ['-isystem',
-#        '/home/username/my-llvm/include', '-isystem', '/usr/include']
-_clang_system_include_map = {}
-
-
 # Flags from YCM's default config.
 _default_flags = [
   '-DUSE_CLANG_COMPLETER',
@@ -74,72 +62,6 @@ _default_flags = [
   '-x',
   'c++',
 ]
-
-
-def FallbackSystemIncludeDirectoryFlags():
-  """Returns a best guess list of system include directory flags for Clang.
-
-  If Ninja doesn't give us a build step that specifies a Clang invocation or if
-  something goes wrong while determining the system include paths, then this
-  function can be used to determine some set of values that's better than
-  nothing.
-
-  Returns:
-    (List of Strings) Compiler flags that specify the system include paths.
-  """
-  if _clang_system_include_map:
-    return _clang_system_include_map.itervalues().next()
-  return []
-
-
-def SystemIncludeDirectoryFlags(clang_binary, clang_flags):
-  """Determines compile flags for specifying system include directories.
-
-  Use as a workaround for https://github.com/Valloric/YouCompleteMe/issues/303
-
-  Caches the results of determining the system include directories in
-  _clang_system_include_map.  Subsequent calls to SystemIncludeDirectoryFlags()
-  uses the cached results for the same binary even if |clang_flags| differ.
-
-  Args:
-    clang_binary: (String) Path to clang binary.
-    clang_flags: (List of Strings) List of additional flags to clang. It may
-      affect the choice of system include directories if -stdlib= is specified.
-      _default_flags are always included in the list of flags passed to clang.
-
-  Returns:
-    (List of Strings) Compile flags to append.
-  """
-
-  if clang_binary in _clang_system_include_map:
-    return _clang_system_include_map[clang_binary]
-
-  all_clang_flags = [] + _default_flags
-  all_clang_flags += [flag for flag in clang_flags
-                if flag.startswith('-std=') or flag.startswith('-stdlib=')]
-  all_clang_flags += ['-v', '-E', '-']
-  try:
-    with open(os.devnull, 'rb') as DEVNULL:
-      output = subprocess.check_output([clang_binary] + all_clang_flags,
-                                       stdin=DEVNULL, stderr=subprocess.STDOUT)
-  except:
-    # Even though we couldn't figure out the flags for the given binary, if we
-    # have results from another one, we'll use that. This logic assumes that the
-    # list of default system directories for one binary can be used with
-    # another.
-    return FallbackSystemIncludeDirectoryFlags()
-  includes_regex = r'#include <\.\.\.> search starts here:\s*' \
-                   r'(.*?)End of search list\.'
-  includes = re.search(includes_regex, output.decode(), re.DOTALL).group(1)
-  system_include_flags = []
-  for path in includes.splitlines():
-    path = path.strip()
-    if os.path.isdir(path):
-      system_include_flags.append('-isystem')
-      system_include_flags.append(path)
-  if system_include_flags:
-    _clang_system_include_map[clang_binary] = system_include_flags
-  return system_include_flags
 
 
 def PathExists(*args):
@@ -311,27 +233,6 @@ def GetClangCommandLineFromNinjaForSource(out_dir, filename):
   return None
 
 
-def GetNormalizedClangCommand(command, out_dir):
-  """Gets the normalized Clang binary path if |command| is a Clang command.
-
-  Args:
-    command: (String) Clang command.
-    out_dir: (String) Absolute path the ninja build directory.
-
-  Returns:
-    (String or None)
-      None : if command is not a clang command.
-      Absolute path to clang binary : if |command| is an absolute or relative
-          path to clang. If relative, it is assumed to be relative to |out_dir|.
-      |command|: if command is a name of a binary.
-  """
-  if command.endswith('clang++') or command.endswith('clang'):
-    if os.path.basename(command) == command:
-      return command
-    return os.path.normpath(os.path.join(out_dir, command))
-  return None
-
-
 def GetClangOptionsFromCommandLine(clang_commandline, out_dir,
                                    additional_flags):
   """Extracts relevant command line options from |clang_commandline|
@@ -343,13 +244,10 @@ def GetClangOptionsFromCommandLine(clang_commandline, out_dir,
     additional_flags: (List of String) Additional flags to return.
 
   Returns:
-    ((List of Strings), (List of Strings)) The first item in the tuple is a list
-    of command line flags for this source file. The second item in the tuple is
-    a list of command line flags that define the system include paths. Either or
-    both can be empty.
+    (List of Strings) The list of command line flags for this source file. Can
+    be empty.
   """
-  chrome_flags = [] + additional_flags
-  system_include_flags = []
+  clang_flags = [] + additional_flags
 
   # Parse flags that are important for YCM's purposes.
   clang_tokens = shlex.split(clang_commandline)
@@ -358,35 +256,20 @@ def GetClangOptionsFromCommandLine(clang_commandline, out_dir,
       # Relative paths need to be resolved, because they're relative to the
       # output dir, not the source.
       if flag[2] == '/':
-        chrome_flags.append(flag)
+        clang_flags.append(flag)
       else:
         abs_path = os.path.normpath(os.path.join(out_dir, flag[2:]))
-        chrome_flags.append('-I' + abs_path)
+        clang_flags.append('-I' + abs_path)
     elif flag.startswith('-std'):
-      chrome_flags.append(flag)
+      clang_flags.append(flag)
     elif flag.startswith('-') and flag[1] in 'DWFfmO':
       if flag == '-Wno-deprecated-register' or flag == '-Wno-header-guard':
         # These flags causes libclang (3.3) to crash. Remove it until things
         # are fixed.
         continue
-      chrome_flags.append(flag)
+      clang_flags.append(flag)
 
-  # Assume that the command for invoking clang++ looks like one of the
-  # following:
-  #   1) /path/to/clang/clang++ arguments
-  #   2) /some/wrapper /path/to/clang++ arguments
-  #
-  # We'll look at the first two tokens on the command line to see if they look
-  # like Clang commands, and if so use it to determine the system include
-  # directory flags.
-  for command in clang_tokens[0:2]:
-    normalized_command = GetNormalizedClangCommand(command, out_dir)
-    if normalized_command:
-      system_include_flags += SystemIncludeDirectoryFlags(normalized_command,
-                                                          chrome_flags)
-      break
-
-  return (chrome_flags, system_include_flags)
+  return clang_flags
 
 
 def GetClangOptionsFromNinjaForFilename(chrome_root, filename):
@@ -403,13 +286,11 @@ def GetClangOptionsFromNinjaForFilename(chrome_root, filename):
     filename: (String) Absolute path to source file being edited.
 
   Returns:
-    ((List of Strings), (List of Strings)) The first item in the tuple is a list
-    of command line flags for this source file. The second item in the tuple is
-    a list of command line flags that define the system include paths. Either or
-    both can be empty.
+    (List of Strings) The list of command line flags for this source file. Can
+    be empty.
   """
   if not chrome_root:
-    return ([],[])
+    return []
 
   # Generally, everyone benefits from including Chromium's src/, because all of
   # Chromium's includes are relative to that.
@@ -453,18 +334,14 @@ def FlagsForFile(filename):
   """
   abs_filename = os.path.abspath(filename)
   chrome_root = FindChromeSrcFromFilename(abs_filename)
-  (chrome_flags, system_include_flags) = GetClangOptionsFromNinjaForFilename(
-      chrome_root, abs_filename)
+  clang_flags = GetClangOptionsFromNinjaForFilename(chrome_root, abs_filename)
 
-  # If either chrome_flags or system_include_flags could not be determined, then
-  # assume that was due to a transient failure. Preventing YCM from caching the
-  # flags allows us to try to determine the flags again.
-  should_cache_flags_for_file = \
-      bool(chrome_flags) and bool(system_include_flags)
+  # If clang_flags could not be determined, then assume that was due to a
+  # transient failure. Preventing YCM from caching the flags allows us to try to
+  # determine the flags again.
+  should_cache_flags_for_file = bool(clang_flags)
 
-  if not system_include_flags:
-    system_include_flags = FallbackSystemIncludeDirectoryFlags()
-  final_flags = _default_flags + chrome_flags + system_include_flags
+  final_flags = _default_flags + clang_flags
 
   return {
     'flags': final_flags,
