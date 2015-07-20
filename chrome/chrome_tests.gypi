@@ -412,8 +412,6 @@
       'browser/task_management/providers/web_contents/background_contents_tag_browsertest.cc',
       'browser/task_management/providers/web_contents/devtools_tag_browsertest.cc',
       'browser/task_management/providers/web_contents/tab_contents_tag_browsertest.cc',
-      'browser/task_management/task_management_browsertest_util.cc',
-      'browser/task_management/task_management_browsertest_util.h',
       'browser/task_manager/task_manager_browsertest.cc',
       'browser/task_manager/task_manager_browsertest_util.cc',
       'browser/task_manager/task_manager_browsertest_util.h',

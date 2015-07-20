@@ -20,6 +20,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/task_management/web_contents_tags.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/native_panel.h"
@@ -534,8 +535,12 @@ void Panel::Initialize(const GURL& url,
   panel_host_->Init(url);
   content::WebContents* web_contents = GetWebContents();
   // The contents might be NULL for most of our tests.
-  if (web_contents)
+  if (web_contents) {
     native_panel_->AttachWebContents(web_contents);
+
+    // Make the panel show up in the task manager.
+    task_management::WebContentsTags::CreateForPanel(web_contents, this);
+  }
 
   // Close when the extension is unloaded or the browser is exiting.
   extension_registry_->AddObserver(this);

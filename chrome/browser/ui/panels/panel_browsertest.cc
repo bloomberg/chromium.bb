@@ -12,6 +12,7 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_management/task_management_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/app_modal_dialog.h"
@@ -41,6 +43,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 
@@ -1779,3 +1782,92 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionApiTest,
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(RunExtensionTest("panels/focus_change_on_minimize")) << message_;
 }
+
+#if defined(ENABLE_TASK_MANAGER)
+
+namespace {
+
+base::string16 GetExpectedPrefix() {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_EXTENSION_PREFIX,
+                                    base::string16());
+}
+
+const std::vector<task_management::WebContentsTag*>& GetTrackedTags() {
+  return task_management::WebContentsTagsManager::GetInstance()->
+      tracked_tags();
+}
+
+// Tests that the task manager tags are recorded correctly as a result of
+// creating panels.
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, TaskManagementTagsBasic) {
+  // Browser tests start with a single tab.
+  EXPECT_EQ(1U, GetTrackedTags().size());
+
+  // Create a bunch of panels.
+  gfx::Rect bounds(300, 200, 250, 200);
+  CreatePanelParams params("PanelTest1", bounds, SHOW_AS_ACTIVE);
+  params.url = GURL("about:blank");
+  CreatePanelWithParams(params);
+  EXPECT_EQ(2U, GetTrackedTags().size());
+
+  params.name = std::string("PanelTest2_Detached");
+  params.wait_for_fully_created = false;
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  CreatePanelWithParams(params);
+  EXPECT_EQ(3U, GetTrackedTags().size());
+
+  params.name = std::string("PanelTest3_Docked");
+  params.create_mode = PanelManager::CREATE_AS_DOCKED;
+  CreatePanelWithParams(params);
+  EXPECT_EQ(4U, GetTrackedTags().size());
+
+  params.name = std::string("PanelTest3_Inactive");
+  params.show_flag = SHOW_AS_INACTIVE;
+  CreatePanelWithParams(params);
+  EXPECT_EQ(5U, GetTrackedTags().size());
+
+  // Close all panels and make sure the tags are removed.
+  PanelManager::GetInstance()->CloseAll();
+  EXPECT_EQ(1U, GetTrackedTags().size());
+}
+
+// Tests that the task manager sees the PanelTasks as a result of creating
+// panels, and removes the PanelTasks as a result of closing panels.
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, TaskManagementTasksProvided) {
+  task_management::MockWebContentsTaskManager task_manager;
+  // Browser tests start with a single tab.
+  EXPECT_EQ(1U, GetTrackedTags().size());
+
+  // Create a single panel.
+  gfx::Rect bounds(300, 200, 250, 200);
+  CreatePanelParams params("PanelTest1", bounds, SHOW_AS_ACTIVE);
+  params.url = GURL("about:blank");
+  CreatePanelWithParams(params);
+  EXPECT_EQ(2U, GetTrackedTags().size());
+
+  task_manager.StartObserving();
+
+  // The pre-existing tab and panel are provided.
+  EXPECT_EQ(2U, task_manager.tasks().size());
+
+  // Create one more panel.
+  params.name = std::string("PanelTest2");
+  CreatePanelWithParams(params);
+  EXPECT_EQ(3U, GetTrackedTags().size());
+  ASSERT_EQ(3U, task_manager.tasks().size());
+
+  const task_management::Task* task = task_manager.tasks().back();
+  EXPECT_EQ(task_management::Task::EXTENSION, task->GetType());
+  const base::string16 title = task->title();
+  const base::string16 expected_prefix = GetExpectedPrefix();
+  EXPECT_TRUE(base::StartsWith(title,
+                               expected_prefix,
+                               base::CompareCase::INSENSITIVE_ASCII));
+
+  PanelManager::GetInstance()->CloseAll();
+  EXPECT_EQ(1U, task_manager.tasks().size());
+}
+
+}  // namespace
+
+#endif  // defined(ENABLE_TASK_MANAGER)

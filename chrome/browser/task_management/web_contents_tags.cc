@@ -6,10 +6,15 @@
 
 #include "chrome/browser/task_management/providers/web_contents/background_contents_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/devtools_tag.h"
+#include "chrome/browser/task_management/providers/web_contents/panel_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/prerender_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/tab_contents_tag.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/ui/panels/panel.h"
+#endif
 
 namespace task_management {
 
@@ -24,7 +29,7 @@ void TagWebContents(content::WebContents* contents,
                     void* tag_key) {
   DCHECK(contents);
   DCHECK(tag);
-  CHECK(WebContentsTag::FromWebContents(contents) == nullptr);
+  DCHECK(WebContentsTag::FromWebContents(contents) == nullptr);
   contents->SetUserData(tag_key, tag);
   WebContentsTagsManager::GetInstance()->AddTag(tag);
 }
@@ -79,6 +84,21 @@ void WebContentsTags::CreateForTabContents(content::WebContents* web_contents) {
                    WebContentsTag::kTagKey);
   }
 #endif  // defined(ENABLE_TASK_MANAGER)
+}
+
+// static
+void WebContentsTags::CreateForPanel(content::WebContents* web_contents,
+                                     Panel* panel) {
+#if defined(ENABLE_TASK_MANAGER) && defined(ENABLE_EXTENSIONS)
+  DCHECK(panel);
+  DCHECK_EQ(web_contents, panel->GetWebContents());
+
+  if (!WebContentsTag::FromWebContents(web_contents)) {
+    TagWebContents(web_contents,
+                   new PanelTag(web_contents, panel),
+                   WebContentsTag::kTagKey);
+  }
+#endif  // defined(ENABLE_TASK_MANAGER) && defined(ENABLE_EXTENSIONS)
 }
 
 // static
