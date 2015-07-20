@@ -579,6 +579,7 @@
           'generated_files': [
             '<@(_compiled_inputs)',
             '<(sas_dll_path)/sas.dll',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/CREDITS.txt',
             '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_assistance.json',
             '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
             'resources/chromoting.ico',
@@ -587,6 +588,7 @@
           'generated_files_dst': [
             '<@(_compiled_inputs_dst)',
             'files/sas.dll',
+            'files/CREDITS.txt',
             'files/com.google.chrome.remote_assistance.json',
             'files/com.google.chrome.remote_desktop.json',
             'files/chromoting.ico',

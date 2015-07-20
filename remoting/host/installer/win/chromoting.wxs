@@ -163,6 +163,13 @@
               Vital="yes"/>
       </Component>
 
+      <Component Id="credits" Guid="*">
+        <File Id="CREDITS.txt"
+              DiskId="1"
+              Name="CREDITS.txt"
+              Vital="yes"/>
+      </Component>
+
       <Component Id="remoting_core" Guid="*">
         <File Id="$(var.CoreBinary)"
               DiskId="1"
@@ -593,6 +600,7 @@
     <UIRef Id="WixUI_ErrorProgressText" />
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
+      <ComponentRef Id="credits"/>
       <ComponentRef Id="delete_debug_log"/>
       <ComponentRef Id="delete_usagestats"/>
       <?if $(var.OfficialBuild) != 0 ?>
