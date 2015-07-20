@@ -114,9 +114,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewTest, LoadAPICall) {
              skeleton_app_two->id());
 }
 
+#if defined(MEMORY_SANITIZER)
+// Flaky under MemorySanitizer: https://crbug.com/512092
+#define MAYBE_QueuedLoadAPICall DISABLED_QueuedLoadAPICall
+#else
+#define MAYBE_QueuedLoadAPICall QueuedLoadAPICall
+#endif
 // Tests that verify that <extensionview> can queue up multiple calls to the
 // load function.
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest, QueuedLoadAPICall) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, MAYBE_QueuedLoadAPICall) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   const extensions::Extension* skeleton_app_two =
