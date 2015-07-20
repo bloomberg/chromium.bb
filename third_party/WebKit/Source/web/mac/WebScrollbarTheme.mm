@@ -47,13 +47,37 @@ void WebScrollbarTheme::updateScrollbars(
     float initialButtonDelay, float autoscrollButtonDelay,
     ScrollerStyle preferredScrollerStyle, bool redraw)
 {
+    // This is necessary to do until the main browser thread begins to call updateScrollbarsWithNSDefaults method.
+    static bool animation_initialized = false;
+    static bool animation_enabled = true;
+    if (!animation_initialized) {
+        // Check setting for OS X 10.8+.
+        id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"NSScrollAnimationEnabled"];
+        // Check setting for OS X < 10.8.
+        if (!value)
+            value = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollAnimationEnabled"];
+        if (value)
+            animation_enabled = [value boolValue];
+        animation_initialized = true;
+    }
+    NSString* scrollbar_variant = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollBarVariant"];
+    updateScrollbarsWithNSDefaults(initialButtonDelay, autoscrollButtonDelay,
+                                  preferredScrollerStyle, redraw, animation_enabled,
+                                  scrollbar_variant ? [scrollbar_variant UTF8String] : "");
+}
+
+void WebScrollbarTheme::updateScrollbarsWithNSDefaults(
+    float initialButtonDelay, float autoscrollButtonDelay,
+    ScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, const std::string& buttonPlacement)
+{
     ScrollbarTheme* theme = ScrollbarTheme::theme();
     if (theme->isMockTheme())
         return;
 
     static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
         initialButtonDelay, autoscrollButtonDelay,
-        static_cast<NSScrollerStyle>(preferredScrollerStyle), redraw);
+        static_cast<NSScrollerStyle>(preferredScrollerStyle),
+        redraw, scrollAnimationEnabled, buttonPlacement);
 }
 
 } // namespace blink

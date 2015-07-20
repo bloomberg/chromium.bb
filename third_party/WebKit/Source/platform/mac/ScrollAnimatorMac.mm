@@ -688,28 +688,14 @@ ScrollAnimatorMac::~ScrollAnimatorMac()
     }
 }
 
-static bool scrollAnimationEnabledForSystem()
-{
-    static bool initialized = false;
-    static bool enabled = true;
-    if (!initialized) {
-        // Check setting for OS X 10.8+.
-        id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"NSScrollAnimationEnabled"];
-        // Check setting for OS X < 10.8.
-        if (!value)
-            value = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollAnimationEnabled"];
-        if (value)
-            enabled = [value boolValue];
-        initialized = true;
-    }
-    return enabled;
-}
-
 ScrollResultOneDimensional ScrollAnimatorMac::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
 {
+    bool scrollAnimationEnabledForSystem = static_cast<ScrollbarThemeMacCommon*>(
+                                               ScrollbarTheme::theme())
+                                               ->scrollAnimationEnabledForSystem();
     m_haveScrolledSincePageLoad = true;
 
-    if (!scrollAnimationEnabledForSystem() || !m_scrollableArea->scrollAnimatorEnabled())
+    if (!scrollAnimationEnabledForSystem || !m_scrollableArea->scrollAnimatorEnabled())
         return ScrollAnimator::userScroll(orientation, granularity, step, delta);
 
     if (granularity == ScrollByPixel || granularity == ScrollByPrecisePixel)

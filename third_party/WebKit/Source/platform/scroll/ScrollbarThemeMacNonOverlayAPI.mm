@@ -58,18 +58,16 @@ static int cOuterButtonOverlap = 2;
 
 static ScrollbarButtonsPlacement gButtonPlacement = ScrollbarButtonsDoubleEnd;
 
-void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement()
+void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement(const std::string& buttonPlacement)
 {
-    NSString *buttonPlacement = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleScrollBarVariant"];
-    if ([buttonPlacement isEqualToString:@"Single"])
+    if (buttonPlacement == "Single")
         gButtonPlacement = ScrollbarButtonsSingle;
-    else if ([buttonPlacement isEqualToString:@"DoubleMin"])
+    else if (buttonPlacement == "DoubleMin")
         gButtonPlacement = ScrollbarButtonsDoubleStart;
-    else if ([buttonPlacement isEqualToString:@"DoubleBoth"])
+    else if (buttonPlacement == "DoubleBoth")
         gButtonPlacement = ScrollbarButtonsDoubleBoth;
-    else {
+    else
         gButtonPlacement = ScrollbarButtonsDoubleEnd;
-    }
 }
 
 // Override ScrollbarThemeMacCommon::paint() to add support for the following:

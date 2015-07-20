@@ -48,7 +48,7 @@ protected:
     IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
     IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
 
-    void updateButtonPlacement() override;
+    void updateButtonPlacement(const std::string& buttonPlacement) override;
 
     bool hasButtons(ScrollbarThemeClient*) override;
     bool hasThumb(ScrollbarThemeClient*) override;

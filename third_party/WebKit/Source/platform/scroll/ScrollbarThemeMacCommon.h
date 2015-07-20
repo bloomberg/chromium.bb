@@ -41,7 +41,7 @@ public:
 
     void registerScrollbar(ScrollbarThemeClient*) override;
     void unregisterScrollbar(ScrollbarThemeClient*) override;
-    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw);
+    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, const std::string& buttonPlacement);
 
     bool supportsControlTints() const override { return true; }
 
@@ -54,13 +54,15 @@ public:
 
     static bool isOverlayAPIAvailable();
 
+    static bool scrollAnimationEnabledForSystem();
+
 protected:
     int maxOverlapBetweenPages() override { return 40; }
 
     bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) override;
     int scrollbarPartToHIPressedState(ScrollbarPart);
 
-    virtual void updateButtonPlacement() { }
+    virtual void updateButtonPlacement(const std::string& buttonPlacement) {}
 
     void paintGivenTickmarks(SkCanvas*, ScrollbarThemeClient*, const IntRect&, const Vector<IntRect>&);
 

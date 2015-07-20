@@ -67,6 +67,7 @@ static ScrollbarSet& scrollbarSet()
 static float gInitialButtonDelay = 0.5f;
 static float gAutoscrollButtonDelay = 0.05f;
 static NSScrollerStyle gPreferredScrollerStyle = NSScrollerStyleLegacy;
+static bool gScrollAnimationEnabledForSystem = false;
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
@@ -162,11 +163,12 @@ ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()
 {
 }
 
-void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw)
+void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, bool scrollAnimationEnabled, const std::string& buttonPlacement)
 {
-    updateButtonPlacement();
+    updateButtonPlacement(buttonPlacement);
     gInitialButtonDelay = initialButtonDelay;
     gAutoscrollButtonDelay = autoscrollButtonDelay;
+    gScrollAnimationEnabledForSystem = scrollAnimationEnabled;
     bool sendScrollerStyleNotification = gPreferredScrollerStyle != preferredScrollerStyle;
     gPreferredScrollerStyle = preferredScrollerStyle;
     if (redraw && !scrollbarSet().isEmpty()) {
@@ -182,6 +184,11 @@ void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float
                           object:nil
                         userInfo:@{ @"NSScrollerStyle" : @(gPreferredScrollerStyle) }];
     }
+}
+
+bool ScrollbarThemeMacCommon::scrollAnimationEnabledForSystem()
+{
+    return gScrollAnimationEnabledForSystem;
 }
 
 double ScrollbarThemeMacCommon::initialAutoscrollTimerDelay()
