@@ -263,7 +263,7 @@ BuildAndInstallQemu() {
   if [ -z "${DEBIAN_I386_SYSROOT:-}" ]; then
     echo "Please set \$DEBIAN_I386_SYSROOT to the location of a debian/stable"
     echo "32-bit sysroot"
-    echo "e.g. <chrome>/chrome/installer/linux/debian_wheezy_i386-sysroot"
+    echo "e.g. <chrome>/build/linux/debian_wheezy_i386-sysroot"
     echo "Which itself is setup by chrome's install-debian.wheezy.sysroot.py"
     exit 1
   fi
@@ -313,7 +313,7 @@ BuildAndInstallQemu() {
     --disable-sdl
 
   SubBanner "Make"
-  env -i PATH=/usr/bin/:/bin make MAKE_OPTS=${MAKE_OPTS}
+  env -i PATH=/usr/bin/:/bin make ${MAKE_OPTS}
 
   SubBanner "Install ${INSTALL_ROOT}"
   cp arm-linux-user/qemu-arm ${INSTALL_ROOT}
