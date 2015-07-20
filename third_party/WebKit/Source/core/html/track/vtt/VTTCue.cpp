@@ -145,22 +145,18 @@ static void setInlineStylePropertyIfNotEmpty(Element& element,
         element.setInlineStyleProperty(propertyID, value);
 }
 
-VTTCueBox::VTTCueBox(Document& document, VTTCue* cue)
+VTTCueBox::VTTCueBox(Document& document)
     : HTMLDivElement(document)
-    , m_cue(cue)
+    , m_snapToLinesPosition(std::numeric_limits<float>::quiet_NaN())
 {
     setShadowPseudoId(AtomicString("-webkit-media-text-track-display", AtomicString::ConstructFromLiteral));
 }
 
 void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters)
 {
-    // FIXME: Apply all the initial CSS positioning properties. http://wkb.ug/79916
-    if (!m_cue->regionId().isEmpty()) {
-        setInlineStyleProperty(CSSPropertyPosition, CSSValueRelative);
-        return;
-    }
+    // http://dev.w3.org/html5/webvtt/#applying-css-properties-to-webvtt-node-objects
 
-    // 3.5.1 On the (root) List of WebVTT Node Objects:
+    // Initialize the (root) list of WebVTT Node Objects with the following CSS settings:
 
     // the 'position' property must be set to 'absolute'
     setInlineStyleProperty(CSSPropertyPosition, CSSValueAbsolute);
@@ -183,7 +179,7 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
     setInlineStyleProperty(CSSPropertyLeft, position.x(), CSSPrimitiveValue::CSS_PERCENTAGE);
 
     // the 'width' property must be set to width, and the 'height' property  must be set to height
-    if (m_cue->vertical() == horizontalKeyword()) {
+    if (displayParameters.writingMode == CSSValueHorizontalTb) {
         setInlineStyleProperty(CSSPropertyWidth, displayParameters.size, CSSPrimitiveValue::CSS_PERCENTAGE);
         setInlineStyleProperty(CSSPropertyHeight, CSSValueAuto);
     } else {
@@ -195,9 +191,12 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
     // be set to the value in the second cell of the row of the table below
     // whose first cell is the value of the corresponding cue's text track cue
     // alignment:
-    setInlineStyleProperty(CSSPropertyTextAlign, displayAlignmentMap[m_cue->cueAlignment()]);
+    setInlineStyleProperty(CSSPropertyTextAlign, displayParameters.textAlign);
 
-    if (!m_cue->snapToLines()) {
+    // TODO(philipj): The position adjustment for non-snap-to-lines cues has
+    // been removed from the spec:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=19178
+    if (std::isnan(displayParameters.snapToLinesPosition)) {
         // 10.13.1 Set up x and y:
         // Note: x and y are set through the CSS left and top above.
 
@@ -213,17 +212,21 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
 
         setInlineStyleProperty(CSSPropertyWhiteSpace, CSSValuePre);
     }
+
+    // The snap-to-lines position is propagated to LayoutVTTCue.
+    m_snapToLinesPosition = displayParameters.snapToLinesPosition;
 }
 
-LayoutObject* VTTCueBox::createLayoutObject(const ComputedStyle&)
+LayoutObject* VTTCueBox::createLayoutObject(const ComputedStyle& style)
 {
-    return new LayoutVTTCue(this);
-}
+    // If WebVTT Regions are used, the regular WebVTT layout algorithm is no
+    // longer necessary, since cues having the region parameter set do not have
+    // any positioning parameters. Also, in this case, the regions themselves
+    // have positioning information.
+    if (style.position() == RelativePosition)
+        return HTMLDivElement::createLayoutObject(style);
 
-DEFINE_TRACE(VTTCueBox)
-{
-    visitor->trace(m_cue);
-    HTMLDivElement::trace(visitor);
+    return new LayoutVTTCue(this, m_snapToLinesPosition);
 }
 
 VTTCue::VTTCue(Document& document, double startTime, double endTime, const String& text)
@@ -245,15 +248,6 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
 
 VTTCue::~VTTCue()
 {
-    // Using oilpan, if m_displayTree is in the document it will strongly keep
-    // the cue alive. Thus, if the cue is dead, either m_displayTree is not in
-    // the document or the entire document is dead too.
-#if !ENABLE(OILPAN)
-    // FIXME: This is scary, we should make the life cycle smarter so the destructor
-    // doesn't need to do DOM mutations.
-    if (m_displayTree)
-        m_displayTree->remove(ASSERT_NO_EXCEPTION);
-#endif
 }
 
 #ifndef NDEBUG
@@ -645,18 +639,25 @@ VTTCue::CueAlignment VTTCue::calculateComputedCueAlignment() const
 VTTDisplayParameters::VTTDisplayParameters()
     : size(std::numeric_limits<float>::quiet_NaN())
     , direction(CSSValueNone)
-    , writingMode(CSSValueNone) { }
+    , textAlign(CSSValueNone)
+    , writingMode(CSSValueNone)
+    , snapToLinesPosition(std::numeric_limits<float>::quiet_NaN()) { }
 
 VTTDisplayParameters VTTCue::calculateDisplayParameters() const
 {
     // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings
 
     VTTDisplayParameters displayParameters;
+
     // Steps 1 and 2.
     displayParameters.direction = determineTextDirection(m_vttNodeTree.get());
 
     if (displayParameters.direction == CSSValueRtl)
         UseCounter::count(document(), UseCounter::VTTCueRenderRtl);
+
+    // Note: The 'text-align' property is also determined here so that
+    // VTTCueBox::applyCSSProperties need not have access to a VTTCue.
+    displayParameters.textAlign = displayAlignmentMap[cueAlignment()];
 
     // 3. If the text track cue writing direction is horizontal, then let
     // block-flow be 'tb'. Otherwise, if the text track cue writing direction is
@@ -747,6 +748,11 @@ VTTDisplayParameters VTTCue::calculateDisplayParameters() const
 
     // Step 9 not implemented (margin == 0).
 
+    // The snap-to-lines position is propagated to LayoutVTTCue.
+    displayParameters.snapToLinesPosition = m_snapToLines
+        ? computedLinePosition
+        : std::numeric_limits<float>::quiet_NaN();
+
     ASSERT(std::isfinite(displayParameters.size));
     ASSERT(displayParameters.direction != CSSValueNone);
     ASSERT(displayParameters.writingMode != CSSValueNone);
@@ -800,7 +806,7 @@ PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
     ASSERT(track() && track()->isRendered() && isActive());
 
     if (!m_displayTree) {
-        m_displayTree = VTTCueBox::create(document(), this);
+        m_displayTree = VTTCueBox::create(document());
         m_displayTree->appendChild(m_cueBackgroundBox);
     }
 
@@ -819,8 +825,15 @@ PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
     m_cueBackgroundBox->removeChildren();
     m_vttNodeTree->cloneChildNodes(m_cueBackgroundBox.get());
 
-    VTTDisplayParameters displayParameters = calculateDisplayParameters();
-    m_displayTree->applyCSSProperties(displayParameters);
+    // TODO(philipj): The region identifier may be non-empty without there being
+    // a corresponding region, in which case this VTTCueBox will be added
+    // directly to the text track container in updateDisplay().
+    if (regionId().isEmpty()) {
+        VTTDisplayParameters displayParameters = calculateDisplayParameters();
+        m_displayTree->applyCSSProperties(displayParameters);
+    } else {
+        m_displayTree->setInlineStyleProperty(CSSPropertyPosition, CSSValueRelative);
+    }
 
     // Apply user override settings for text tracks
     applyUserOverrideCSSProperties();

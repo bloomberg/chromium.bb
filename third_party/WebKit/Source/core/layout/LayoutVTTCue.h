@@ -31,12 +31,15 @@
 
 namespace blink {
 
-class VTTCue;
 class VTTCueBox;
 
 class LayoutVTTCue final : public LayoutBlockFlow {
 public:
-    explicit LayoutVTTCue(VTTCueBox*);
+    LayoutVTTCue(ContainerNode*, float snapToLinesPosition);
+
+    // The computed line position for snap-to-lines layout, and NaN for
+    // non-snap-to-lines layout where no adjustment should take place.
+    float snapToLinesPosition() { return m_snapToLinesPosition; }
 
 private:
     void layout() override;
@@ -44,9 +47,7 @@ private:
     void adjustForTopAndBottomMarginBorderAndPadding();
     void repositionCueSnapToLinesNotSet();
 
-    // VTTCue is kept alive by VTTCueBox.
-    GC_PLUGIN_IGNORE("http://crbug.com/509911")
-    VTTCue* m_cue;
+    float m_snapToLinesPosition;
 };
 
 } // namespace blink

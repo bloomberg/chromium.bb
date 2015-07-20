@@ -27,25 +27,23 @@
 #include "core/layout/LayoutVTTCue.h"
 
 #include "core/html/shadow/MediaControls.h"
-#include "core/html/track/vtt/VTTCue.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutState.h"
 
 namespace blink {
 
-LayoutVTTCue::LayoutVTTCue(VTTCueBox* element)
-    : LayoutBlockFlow(element)
-    , m_cue(element->getCue())
+LayoutVTTCue::LayoutVTTCue(ContainerNode* node, float snapToLinesPosition)
+    : LayoutBlockFlow(node)
+    , m_snapToLinesPosition(snapToLinesPosition)
 {
 }
 
 class SnapToLinesLayouter {
     STACK_ALLOCATED();
 public:
-    SnapToLinesLayouter(LayoutVTTCue& cueBox, const IntRect& controlsRect, float linePosition)
+    SnapToLinesLayouter(LayoutVTTCue& cueBox, const IntRect& controlsRect)
         : m_cueBox(cueBox)
         , m_controlsRect(controlsRect)
-        , m_linePosition(linePosition)
     {
     }
 
@@ -67,7 +65,6 @@ private:
     LayoutPoint m_specifiedPosition;
     LayoutVTTCue& m_cueBox;
     IntRect m_controlsRect;
-    float m_linePosition;
 };
 
 InlineFlowBox* SnapToLinesLayouter::findFirstLineBox() const
@@ -79,9 +76,11 @@ InlineFlowBox* SnapToLinesLayouter::findFirstLineBox() const
 
 LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& step) const
 {
+    ASSERT(std::isfinite(m_cueBox.snapToLinesPosition()));
+
     // 6. Let line position be the text track cue computed line position.
     // 7. Round line position to an integer by adding 0.5 and then flooring it.
-    LayoutUnit linePosition = floorf(m_linePosition + 0.5f);
+    LayoutUnit linePosition = floorf(m_cueBox.snapToLinesPosition() + 0.5f);
 
     WritingMode writingMode = m_cueBox.style()->writingMode();
     // 8. Vertical Growing Left: Add one to line position then negate it.
@@ -313,13 +312,6 @@ void LayoutVTTCue::layout()
 {
     LayoutBlockFlow::layout();
 
-    // If WebVTT Regions are used, the regular WebVTT layout algorithm is no
-    // longer necessary, since cues having the region parameter set do not have
-    // any positioning parameters. Also, in this case, the regions themselves
-    // have positioning information.
-    if (!m_cue->regionId().isEmpty())
-        return;
-
     ASSERT(firstChild());
 
     LayoutState state(*this, locationOffset());
@@ -338,8 +330,8 @@ void LayoutVTTCue::layout()
     }
 
     // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
-    if (m_cue->snapToLines()) {
-        SnapToLinesLayouter(*this, controlsRect, m_cue->calculateComputedLinePosition()).layout();
+    if (!std::isnan(m_snapToLinesPosition)) {
+        SnapToLinesLayouter(*this, controlsRect).layout();
 
         adjustForTopAndBottomMarginBorderAndPadding();
     } else {

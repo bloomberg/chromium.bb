@@ -47,27 +47,29 @@ struct VTTDisplayParameters {
     FloatPoint position;
     float size;
     CSSValueID direction;
+    CSSValueID textAlign;
     CSSValueID writingMode;
+    float snapToLinesPosition;
 };
 
 class VTTCueBox final : public HTMLDivElement {
 public:
-    static PassRefPtrWillBeRawPtr<VTTCueBox> create(Document& document, VTTCue* cue)
+    static PassRefPtrWillBeRawPtr<VTTCueBox> create(Document& document)
     {
-        return adoptRefWillBeNoop(new VTTCueBox(document, cue));
+        return adoptRefWillBeNoop(new VTTCueBox(document));
     }
 
-    VTTCue* getCue() const { return m_cue; }
     void applyCSSProperties(const VTTDisplayParameters&);
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
-    VTTCueBox(Document&, VTTCue*);
+    explicit VTTCueBox(Document&);
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    RawPtrWillBeMember<VTTCue> m_cue;
+    // The computed line position for snap-to-lines layout, and NaN for
+    // non-snap-to-lines layout where no adjustment should take place.
+    // This is set in applyCSSProperties and propagated to LayoutVTTCue.
+    float m_snapToLinesPosition;
 };
 
 class VTTCue final : public TextTrackCue {
