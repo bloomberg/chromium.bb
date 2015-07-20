@@ -762,8 +762,11 @@ blah /* hey! */
   100% { height: 500px; }
 }
 
-#rule { /* ${TemplateExpressions} should be ignored. */
+#id { /* ${TemplateExpressions} should be ignored. */
   rule: ${someValue};
+  --css-mixin: {
+    color: red;
+  };
 }
 
 #rule {

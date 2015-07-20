@@ -163,9 +163,9 @@ class CSSChecker(object):
 
     def one_rule_per_line(line):
       one_rule_reg = re.compile(r"""
-          [\w-](?<!data):  # a rule: but no data URIs
-          (?!//)[^;]+;     # value; ignoring colons in protocols://
-          \s*[^ }]\s*      # any non-space after the end colon
+          [\w-](?<!data):     # a rule: but no data URIs
+          (?!//)[^;]+(?<!});  # value; ignoring colons in protocols:// and };
+          \s*[^ }]\s*         # any non-space after the end colon
           """,
           re.VERBOSE)
       return one_rule_reg.search(line)
