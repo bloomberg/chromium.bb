@@ -5346,7 +5346,7 @@ void GLES2Implementation::FreeAllAsyncUploadBuffers() {
 
   // Synchronously free rest of the unmanaged async upload buffers.
   if (!detached_async_upload_memory_.empty()) {
-    WaitAllAsyncTexImage2DCHROMIUM();
+    WaitAllAsyncTexImage2DCHROMIUMHelper();
     WaitForCmd();
     PollAsyncUploads();
   }
@@ -5476,11 +5476,15 @@ void GLES2Implementation::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
   CheckGLError();
 }
 
+void GLES2Implementation::WaitAllAsyncTexImage2DCHROMIUMHelper() {
+  helper_->WaitAllAsyncTexImage2DCHROMIUM();
+}
+
 void GLES2Implementation::WaitAllAsyncTexImage2DCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix()
       << "] glWaitAllAsyncTexImage2DCHROMIUM()");
-  helper_->WaitAllAsyncTexImage2DCHROMIUM();
+  WaitAllAsyncTexImage2DCHROMIUMHelper();
   CheckGLError();
 }
 
