@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_TOOLS_FINDER_FINDER_H__
-#define SANDBOX_TOOLS_FINDER_FINDER_H__
+#ifndef SANDBOX_TOOLS_FINDER_FINDER_H_
+#define SANDBOX_TOOLS_FINDER_FINDER_H_
 
+#include "base/win/scoped_handle.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/tools/finder/ntundoc.h"
 
@@ -132,7 +133,7 @@ class Finder {
   // Output file for the results.
   FILE * file_output_;
   // Handle to the restricted token.
-  HANDLE token_handle_;
+  base::win::ScopedHandle token_handle_;
   // Stats containing the number of operations performed on the different
   // objects.
   int filesystem_stats_[SIZE_STATS];
@@ -140,4 +141,4 @@ class Finder {
   int kernel_object_stats_[SIZE_STATS];
 };
 
-#endif  // SANDBOX_TOOLS_FINDER_FINDER_H__
+#endif  // SANDBOX_TOOLS_FINDER_FINDER_H_

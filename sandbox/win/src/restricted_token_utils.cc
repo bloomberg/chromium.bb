@@ -19,13 +19,10 @@
 
 namespace sandbox {
 
-DWORD CreateRestrictedToken(HANDLE *token_handle,
-                            TokenLevel security_level,
+DWORD CreateRestrictedToken(TokenLevel security_level,
                             IntegrityLevel integrity_level,
-                            TokenType token_type) {
-  if (!token_handle)
-    return ERROR_BAD_ARGUMENTS;
-
+                            TokenType token_type,
+                            base::win::ScopedHandle* token) {
   RestrictedToken restricted_token;
   restricted_token.Init(NULL);  // Initialized with the current process token
 
@@ -123,12 +120,11 @@ DWORD CreateRestrictedToken(HANDLE *token_handle,
 
   switch (token_type) {
     case PRIMARY: {
-      err_code = restricted_token.GetRestrictedTokenHandle(token_handle);
+      err_code = restricted_token.GetRestrictedToken(token);
       break;
     }
     case IMPERSONATION: {
-      err_code = restricted_token.GetRestrictedTokenHandleForImpersonation(
-          token_handle);
+      err_code = restricted_token.GetRestrictedTokenForImpersonation(token);
       break;
     }
     default: {
@@ -159,27 +155,20 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
   }
 
   // Create the primary (restricted) token for the process
-  HANDLE primary_token_handle = NULL;
-  err_code = CreateRestrictedToken(&primary_token_handle,
-                                   primary_level,
-                                   INTEGRITY_LEVEL_LAST,
-                                   PRIMARY);
-  if (ERROR_SUCCESS != err_code) {
+  base::win::ScopedHandle primary_token;
+  err_code = CreateRestrictedToken(primary_level, INTEGRITY_LEVEL_LAST,
+                                   PRIMARY, &primary_token);
+  if (ERROR_SUCCESS != err_code)
     return err_code;
-  }
-  base::win::ScopedHandle primary_token(primary_token_handle);
+
 
   // Create the impersonation token (restricted) to be able to start the
   // process.
-  HANDLE impersonation_token_handle;
-  err_code = CreateRestrictedToken(&impersonation_token_handle,
-                                   impersonation_level,
-                                   INTEGRITY_LEVEL_LAST,
-                                   IMPERSONATION);
-  if (ERROR_SUCCESS != err_code) {
+  base::win::ScopedHandle impersonation_token;
+  err_code = CreateRestrictedToken(impersonation_level, INTEGRITY_LEVEL_LAST,
+                                   IMPERSONATION, &impersonation_token);
+  if (ERROR_SUCCESS != err_code)
     return err_code;
-  }
-  base::win::ScopedHandle impersonation_token(impersonation_token_handle);
 
   // Start the process
   STARTUPINFO startup_info = {0};

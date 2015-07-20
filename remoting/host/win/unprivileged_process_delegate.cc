@@ -100,11 +100,9 @@ bool CreateRestrictedToken(ScopedHandle* token_out) {
   }
 
   // Return the resulting token.
-  if (restricted_token.GetRestrictedTokenHandle(&temp_handle) ==
-      ERROR_SUCCESS) {
-    token_out->Set(temp_handle);
+  if (restricted_token.GetRestrictedToken(token_out) ==  ERROR_SUCCESS)
     return true;
-  }
+
   return false;
 }
 
