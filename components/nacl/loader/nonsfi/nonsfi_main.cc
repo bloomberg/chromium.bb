@@ -11,7 +11,7 @@
 
 #if defined(OS_NACL_NONSFI)
 #include "native_client/src/public/nonsfi/elf_loader.h"
-#include "ppapi/nacl_irt/irt_interfaces.h"
+#include "ppapi/nacl_irt/irt_ppapi.h"
 #else
 #include "base/memory/scoped_ptr.h"
 #include "components/nacl/loader/nonsfi/elf_loader.h"

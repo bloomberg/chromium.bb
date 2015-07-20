@@ -7,4 +7,7 @@
 
 extern "C" int irt_ppapi_start(const struct PP_StartFunctions* funcs);
 
+size_t chrome_irt_query(const char* interface_ident,
+                        void* table, size_t tablesize);
+
 #endif  // PPAPI_NACL_IRT_IRT_PPAPI_H_
