@@ -6,7 +6,7 @@ import unittest
 import test_expectations
 
 from telemetry import story
-from telemetry.core import system_info
+from telemetry.internal.platform import system_info
 from telemetry.page import page as page_module
 
 VENDOR_NVIDIA = 0x10DE

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import unittest
 
-from telemetry.core import system_info
+from telemetry.internal.platform import system_info
 from telemetry.page import page as page_module
 from telemetry.story import story_set
 
