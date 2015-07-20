@@ -147,6 +147,12 @@ blah /* hey! */
   rule: value;
 }
 
+.mixed-in {
+  --css-mixin: {
+    color: red;
+  };  /* This should be ignored. */
+}
+
 .this.is { /* allowed */
   rule: value;
 }""", """
@@ -183,6 +189,12 @@ blah /* hey! */
   rule: ${someValue};
   --css-mixin: {
     color: red;
+  };
+}
+
+.paper-wrapper {
+  --paper-thinger: {
+    background: blue;
   };
 }
 
@@ -281,7 +293,14 @@ div {
   background: url(chrome://resources/BLAH);
   rule: value; /* rule: value; */
   rule: value; rule: value;
-}""", """
+}
+
+.remix {
+  --dj: {
+    spin: that;
+  };
+}
+""", """
 - One rule per line (what not to do: color: red; margin: 0;).
     rule: value; rule: value;""")
 

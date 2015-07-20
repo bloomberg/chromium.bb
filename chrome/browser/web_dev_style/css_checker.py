@@ -101,6 +101,8 @@ class CSSChecker(object):
       class_name = m.group(1)
       return class_name.lower() != class_name or '_' in class_name
 
+    end_mixin_reg = re.compile(r'\s*};\s*$')
+
     def close_brace_on_new_line(line):
       # Ignore single frames in a @keyframe, i.e. 0% { margin: 50px; }
       frame_reg = re.compile(r"""
@@ -111,7 +113,7 @@ class CSSChecker(object):
           """,
           re.VERBOSE)
       return ('}' in line and re.search(r'[^ }]', line) and
-              not frame_reg.match(line))
+              not frame_reg.match(line) and not end_mixin_reg.match(line))
 
     def colons_have_space_after(line):
       colon_space_reg = re.compile(r"""
@@ -163,12 +165,12 @@ class CSSChecker(object):
 
     def one_rule_per_line(line):
       one_rule_reg = re.compile(r"""
-          [\w-](?<!data):     # a rule: but no data URIs
-          (?!//)[^;]+(?<!});  # value; ignoring colons in protocols:// and };
-          \s*[^ }]\s*         # any non-space after the end colon
+          [\w-](?<!data):  # a rule: but no data URIs
+          (?!//)[^;]+;     # value; ignoring colons in protocols:// and };
+          \s*[^ }]\s*      # any non-space after the end colon
           """,
           re.VERBOSE)
-      return one_rule_reg.search(line)
+      return one_rule_reg.search(line) and not end_mixin_reg.match(line)
 
     def pseudo_elements_double_colon(contents):
       pseudo_elements = ['after',
