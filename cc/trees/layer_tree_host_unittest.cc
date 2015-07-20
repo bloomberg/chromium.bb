@@ -272,35 +272,6 @@ class LayerTreeHostTestReadyToDrawNonEmpty
 // single threaded mode.
 SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawNonEmpty);
 
-// This tests that we get the ready to draw signal eventually even if we become
-// invisible and then become visible again.
-class LayerTreeHostTestReadyToDrawVisibility
-    : public LayerTreeHostTestReadyToDrawNonEmpty {
- public:
-  LayerTreeHostTestReadyToDrawVisibility()
-      : LayerTreeHostTestReadyToDrawNonEmpty(), did_commit_(false) {}
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(did_commit_);
-    did_commit_ = true;
-    PostSetVisibleToMainThread(false);
-  }
-
-  void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
-                               bool visible) override {
-    if (!visible) {
-      EXPECT_TRUE(did_commit_);
-      EXPECT_FALSE(did_notify_ready_to_draw_);
-      PostSetVisibleToMainThread(true);
-    }
-  }
-
- protected:
-  bool did_commit_;
-};
-
-SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawVisibility);
-
 class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
  public:
   scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {

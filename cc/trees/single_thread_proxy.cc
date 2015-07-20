@@ -123,14 +123,7 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
 void SingleThreadProxy::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "SingleThreadProxy::SetVisible", "visible", visible);
   DebugScopedSetImplThread impl(this);
-
-  bool was_visible = layer_tree_host_impl_->visible();
   layer_tree_host_impl_->SetVisible(visible);
-
-  // Call PrepareTiles in case we're waiting for ready to draw.
-  if (!was_visible && visible)
-    layer_tree_host_impl_->PrepareTiles();
-
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
   // Changing visibility could change ShouldComposite().
