@@ -1587,7 +1587,7 @@ TEST_F(DisplayManagerTest, ConfigureUnifiedTwice) {
   RunAllPendingInMessageLoop();
 }
 
-TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
+TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
   test::DisplayManagerTestApi::EnableUnifiedDesktopForTest();
@@ -1603,7 +1603,7 @@ TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
   EXPECT_EQ("1150x500", display.size().ToString());
   display_manager()->SetDisplayRotation(display.id(), gfx::Display::ROTATE_90,
                                         gfx::Display::ROTATION_SOURCE_ACTIVE);
-  EXPECT_EQ("500x1150", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
   display_manager()->SetDisplayRotation(display.id(), gfx::Display::ROTATE_0,
                                         gfx::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());

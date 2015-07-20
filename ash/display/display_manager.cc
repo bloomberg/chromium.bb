@@ -336,6 +336,9 @@ void DisplayManager::SetOverscanInsets(int64 display_id,
 void DisplayManager::SetDisplayRotation(int64 display_id,
                                         gfx::Display::Rotation rotation,
                                         gfx::Display::RotationSource source) {
+  if (IsInUnifiedMode())
+    return;
+
   DisplayInfoList display_info_list;
   bool is_active = false;
   for (const auto& display : active_display_list_) {
@@ -465,6 +468,10 @@ void DisplayManager::RegisterDisplayProperty(
     ui::ColorCalibrationProfile color_profile) {
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] = DisplayInfo(display_id, std::string(), false);
+
+  // Do not allow rotation in unified desktop mode.
+  if (display_id == kUnifiedDisplayId)
+    rotation = gfx::Display::ROTATE_0;
 
   display_info_[display_id].SetRotation(rotation,
                                         gfx::Display::ROTATION_SOURCE_USER);

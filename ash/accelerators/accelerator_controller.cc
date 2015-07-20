@@ -258,6 +258,9 @@ gfx::Display::Rotation GetNextRotation(gfx::Display::Rotation current) {
 
 // Rotates the screen.
 void HandleRotateScreen() {
+  if (Shell::GetInstance()->display_manager()->IsInUnifiedMode())
+    return;
+
   base::RecordAction(UserMetricsAction("Accel_Rotate_Window"));
   gfx::Point point = Shell::GetScreen()->GetCursorScreenPoint();
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(point);

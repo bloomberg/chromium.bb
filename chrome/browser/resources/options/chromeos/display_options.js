@@ -693,7 +693,8 @@ cr.define('options', function() {
           display.isInternal;
 
       var orientation = $('display-options-orientation-selection');
-      orientation.disabled = false;
+      orientation.disabled = this.unifiedDesktopEnabled_;
+
       var orientationOptions = orientation.getElementsByTagName('option');
       orientationOptions[display.orientation].selected = true;
 
@@ -1000,7 +1001,7 @@ cr.define('options', function() {
 
       // Focus to the first display next to the primary one when |displays| list
       // is updated.
-      if (mirroring || unifiedDesktopEnabled) {
+      if (mirroring) {
         this.focusedIndex_ = null;
       } else if (this.mirroring_ != mirroring ||
                  this.unifiedDesktopEnabled_ != unifiedDesktopEnabled ||
