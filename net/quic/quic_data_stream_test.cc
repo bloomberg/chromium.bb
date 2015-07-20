@@ -19,10 +19,7 @@
 using base::StringPiece;
 using std::min;
 using std::string;
-using testing::AnyNumber;
-using testing::InSequence;
 using testing::Return;
-using testing::SaveArg;
 using testing::StrictMock;
 using testing::_;
 

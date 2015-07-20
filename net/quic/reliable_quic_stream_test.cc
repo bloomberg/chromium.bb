@@ -28,7 +28,6 @@ using testing::CreateFunctor;
 using testing::InSequence;
 using testing::Invoke;
 using testing::Return;
-using testing::SaveArg;
 using testing::StrictMock;
 using testing::WithArgs;
 using testing::_;

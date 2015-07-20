@@ -21,7 +21,9 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
     QuicConnectionStats* stats,
     QuicPacketCount initial_congestion_window) {
   const QuicPacketCount max_congestion_window =
-      (kDefaultSocketReceiveBuffer * kUsableRecieveBufferFraction) /
+      (kDefaultSocketReceiveBuffer * (FLAGS_quic_use_conservative_receive_buffer
+                                          ? kConservativeReceiveBufferFraction
+                                          : kUsableRecieveBufferFraction)) /
       kDefaultTCPMSS;
   switch (congestion_control_type) {
     case kCubic:

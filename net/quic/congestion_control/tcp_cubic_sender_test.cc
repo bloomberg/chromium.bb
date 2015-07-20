@@ -65,7 +65,7 @@ class TcpCubicSenderTest : public ::testing::Test {
  protected:
   TcpCubicSenderTest()
       : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
-        sender_(new TcpCubicSenderPeer(&clock_, true, kMaxResumptionCwnd)),
+        sender_(new TcpCubicSenderPeer(&clock_, true, kMaxCongestionWindow)),
         sequence_number_(1),
         acked_sequence_number_(0),
         bytes_in_flight_(0) {
@@ -372,7 +372,7 @@ TEST_F(TcpCubicSenderTest, SlowStartBurstPacketLossPRR) {
 
 TEST_F(TcpCubicSenderTest, RTOCongestionWindow) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(kMaxResumptionCwnd, sender_->slowstart_threshold());
+  EXPECT_EQ(kMaxCongestionWindow, sender_->slowstart_threshold());
 
   // Expect the window to decrease to the minimum once the RTO fires
   // and slow start threshold to be set to 1/2 of the CWND.
@@ -668,34 +668,28 @@ TEST_F(TcpCubicSenderTest, BandwidthResumption) {
       kBandwidthEstimateBytesPerSecond);
   cached_network_params.set_min_rtt_ms(1000);
 
-  // Ensure that an old estimate is not used for bandwidth resumption.
-  cached_network_params.set_timestamp(clock_.WallNow().ToUNIXSeconds() -
-                                      (kNumSecondsPerHour + 1));
-  EXPECT_FALSE(sender_->ResumeConnectionState(cached_network_params, false));
-  EXPECT_EQ(10u, sender_->congestion_window());
-
-  // If the estimate is new enough, make sure it is used.
+  // Make sure that a bandwidth estimate results in a changed CWND.
   cached_network_params.set_timestamp(clock_.WallNow().ToUNIXSeconds() -
                                       (kNumSecondsPerHour - 1));
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
+  sender_->ResumeConnectionState(cached_network_params, false);
   EXPECT_EQ(kNumberOfPackets, sender_->congestion_window());
 
   // Resumed CWND is limited to be in a sensible range.
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
-      (kMaxResumptionCwnd + 1) * kMaxPacketSize);
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
-  EXPECT_EQ(kMaxResumptionCwnd, sender_->congestion_window());
+      (kMaxCongestionWindow + 1) * kMaxPacketSize);
+  sender_->ResumeConnectionState(cached_network_params, false);
+  EXPECT_EQ(kMaxCongestionWindow, sender_->congestion_window());
 
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
       (kMinCongestionWindowForBandwidthResumption - 1) * kMaxPacketSize);
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, false));
+  sender_->ResumeConnectionState(cached_network_params, false);
   EXPECT_EQ(kMinCongestionWindowForBandwidthResumption,
             sender_->congestion_window());
 
   // Resume to the max value.
   cached_network_params.set_max_bandwidth_estimate_bytes_per_second(
       (kMinCongestionWindowForBandwidthResumption + 10) * kDefaultTCPMSS);
-  EXPECT_TRUE(sender_->ResumeConnectionState(cached_network_params, true));
+  sender_->ResumeConnectionState(cached_network_params, true);
   EXPECT_EQ((kMinCongestionWindowForBandwidthResumption + 10) * kDefaultTCPMSS,
             sender_->GetCongestionWindow());
 }

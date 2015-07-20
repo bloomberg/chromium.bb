@@ -1577,6 +1577,8 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNewRTOFromOptionsAtClient) {
 }
 
 TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_use_conservative_receive_buffer,
+                              false);
   EXPECT_EQ(kDefaultSocketReceiveBuffer,
             QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));
 
@@ -1599,6 +1601,47 @@ TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
   for (QuicPacketSequenceNumber i = 1; i <= 16; ++i) {
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _)).WillOnce(Return(
         QuicTime::Delta::Zero()));
+    EXPECT_EQ(QuicTime::Delta::Zero(),
+              manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i, 1024,
+                                               HAS_RETRANSMITTABLE_DATA))
+        .WillOnce(Return(true));
+    SerializedPacket packet(CreatePacket(i, true));
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), 1024, NOT_RETRANSMISSION,
+                          HAS_RETRANSMITTABLE_DATA);
+  }
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+      .WillOnce(Return(QuicTime::Delta::Infinite()));
+  EXPECT_EQ(QuicTime::Delta::Infinite(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+}
+
+TEST_F(QuicSentPacketManagerTest,
+       NegotiateConservativeReceiveWindowFromOptions) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_use_conservative_receive_buffer,
+                              true);
+  EXPECT_EQ(kDefaultSocketReceiveBuffer,
+            QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));
+
+  // Try to set a size below the minimum and ensure it gets set to the min.
+  QuicConfig client_config;
+  QuicConfigPeer::SetReceivedSocketReceiveBuffer(&client_config, 1024);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*send_algorithm_,
+              SetMaxCongestionWindow(kMinSocketReceiveBuffer * 0.6));
+  EXPECT_CALL(*send_algorithm_, PacingRate())
+      .WillRepeatedly(Return(QuicBandwidth::Zero()));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
+  EXPECT_CALL(*network_change_visitor_, OnRttChange());
+  manager_.SetFromConfig(client_config);
+
+  EXPECT_EQ(kMinSocketReceiveBuffer,
+            QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));
+
+  // Ensure the smaller send window only allows 16 packets to be sent.
+  for (QuicPacketSequenceNumber i = 1; i <= 16; ++i) {
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
+        .WillOnce(Return(QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
               manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), i,

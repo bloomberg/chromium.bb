@@ -296,8 +296,7 @@ class NET_EXPORT_PRIVATE QuicConnection
       const CachedNetworkParameters& cached_network_params);
 
   // Called by the Session when the client has provided CachedNetworkParameters.
-  // Returns true if this changes the initial connection state.
-  virtual bool ResumeConnectionState(
+  virtual void ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params,
       bool max_bandwidth_resumption);
 

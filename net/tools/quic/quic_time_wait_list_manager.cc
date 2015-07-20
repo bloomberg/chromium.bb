@@ -48,7 +48,6 @@ class ConnectionIdCleanUpAlarm : public QuicAlarm::Delegate {
   DISALLOW_COPY_AND_ASSIGN(ConnectionIdCleanUpAlarm);
 };
 
-
 // This class stores pending public reset packets to be sent to clients.
 // server_address - server address on which a packet what was received for
 //                  a connection_id in time wait state.
@@ -84,7 +83,14 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicConnectionHelperInterface* helper,
     const QuicVersionVector& supported_versions)
     : time_wait_period_(
-          QuicTime::Delta::FromSeconds(FLAGS_quic_time_wait_list_seconds)),
+          // If FLAGS_increase_time_wait_list is not set and
+          // FLAGS_quic_time_wait_list_seconds has the new default value (200),
+          // replace it with the old default value (5).
+          !FLAGS_increase_time_wait_list &&
+                  FLAGS_quic_time_wait_list_seconds == 200
+              ? QuicTime::Delta::FromSeconds(5)
+              : QuicTime::Delta::FromSeconds(
+                    FLAGS_quic_time_wait_list_seconds)),
       connection_id_clean_up_alarm_(
           helper->CreateAlarm(new ConnectionIdCleanUpAlarm(this))),
       clock_(helper->GetClock()),
@@ -120,8 +126,15 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     connection_id_map_.erase(it);
   }
   TrimTimeWaitListIfNeeded();
-  DCHECK_LT(num_connections(),
-            static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
+  DCHECK_LT(
+      num_connections(),
+      // If FLAGS_increase_time_wait_list is not set and
+      // FLAGS_quic_time_wait_list_max_connections has the new default
+      // value (600000), replace it with the old default value (50000).
+      !FLAGS_increase_time_wait_list &&
+              FLAGS_quic_time_wait_list_max_connections == 600000
+          ? static_cast<size_t>(50000)
+          : static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
   ConnectionIdData data(num_packets, version, clock_->ApproximateNow(),
                         close_packet, connection_rejected_statelessly);
   connection_id_map_.insert(std::make_pair(connection_id, data));
@@ -262,8 +275,8 @@ void QuicTimeWaitListManager::SetConnectionIdCleanUpAlarm() {
         connection_id_map_.begin()->second.time_added;
     QuicTime now = clock_->ApproximateNow();
     if (now.Subtract(oldest_connection_id) < time_wait_period_) {
-      next_alarm_interval = oldest_connection_id.Add(time_wait_period_)
-                                                .Subtract(now);
+      next_alarm_interval =
+          oldest_connection_id.Add(time_wait_period_).Subtract(now);
     } else {
       LOG(ERROR) << "ConnectionId lingered for longer than time_wait_period_";
     }
@@ -309,8 +322,16 @@ void QuicTimeWaitListManager::TrimTimeWaitListIfNeeded() {
   if (FLAGS_quic_time_wait_list_max_connections < 0) {
     return;
   }
-  while (num_connections() >=
-         static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections)) {
+  size_t temp_max_connections =
+      static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections);
+  // If FLAGS_increase_time_wait_list is not set and
+  // FLAGS_quic_time_wait_list_max_connections has the new default value
+  // (600000), replace it with the old default value (50000).
+  if (!FLAGS_increase_time_wait_list &&
+      FLAGS_quic_time_wait_list_max_connections == 600000) {
+    temp_max_connections = static_cast<size_t>(50000);
+  }
+  while (num_connections() >= temp_max_connections) {
     MaybeExpireOldestConnection(QuicTime::Infinite());
   }
 }

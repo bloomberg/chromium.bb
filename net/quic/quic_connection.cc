@@ -386,14 +386,14 @@ void QuicConnection::OnSendConnectionState(
   }
 }
 
-bool QuicConnection::ResumeConnectionState(
+void QuicConnection::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params,
     bool max_bandwidth_resumption) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnResumeConnectionState(cached_network_params);
   }
-  return sent_packet_manager_.ResumeConnectionState(cached_network_params,
-                                                    max_bandwidth_resumption);
+  sent_packet_manager_.ResumeConnectionState(cached_network_params,
+                                             max_bandwidth_resumption);
 }
 
 void QuicConnection::SetNumOpenStreams(size_t num_streams) {
@@ -2311,15 +2311,12 @@ QuicConnection::ScopedRetransmissionScheduler::ScopedRetransmissionScheduler(
     QuicConnection* connection)
     : connection_(connection),
       already_delayed_(connection_->delay_setting_retransmission_alarm_) {
-  if (!FLAGS_quic_delay_retransmission_alarm) {
-    return;
-  }
   connection_->delay_setting_retransmission_alarm_ = true;
 }
 
 QuicConnection::ScopedRetransmissionScheduler::
     ~ScopedRetransmissionScheduler() {
-  if (!FLAGS_quic_delay_retransmission_alarm || already_delayed_) {
+  if (already_delayed_) {
     return;
   }
   connection_->delay_setting_retransmission_alarm_ = false;

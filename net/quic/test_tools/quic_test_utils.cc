@@ -26,7 +26,6 @@ using base::StringPiece;
 using std::max;
 using std::min;
 using std::string;
-using testing::AnyNumber;
 using testing::Invoke;
 using testing::_;
 

@@ -74,8 +74,8 @@ const uint32 kMinimumFlowControlSendWindow = 16 * 1024;  // 16 KB
 // Minimum size of the CWND, in packets, when doing bandwidth resumption.
 const QuicPacketCount kMinCongestionWindowForBandwidthResumption = 10;
 
-// Maximum size of the CWND, in packets, for bandwidth resumption.
-const QuicPacketCount kMaxResumptionCwnd = 200;
+// Maximum size of the CWND, in packets.
+const QuicPacketCount kMaxCongestionWindow = 200;
 
 // Maximum number of tracked packets.
 const QuicPacketCount kMaxTrackedPackets = 5000;
@@ -89,6 +89,10 @@ const QuicByteCount kMinSocketReceiveBuffer = 16 * 1024;
 // Fraction of the receive buffer that can be used for encrypted bytes.
 // Allows a 5% overhead for IP and UDP framing, as well as ack only packets.
 static const float kUsableRecieveBufferFraction = 0.95f;
+// Fraction of the receive buffer that can be used, based on conservative
+// estimates and testing on Linux.
+// An alternative to kUsableRecieveBufferFraction.
+static const float kConservativeReceiveBufferFraction = 0.6f;
 
 // Don't allow a client to suggest an RTT shorter than 10ms.
 const uint32 kMinInitialRoundTripTimeUs = 10 * kNumMicrosPerMilli;

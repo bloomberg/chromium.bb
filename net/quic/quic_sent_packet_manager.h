@@ -103,8 +103,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   virtual void SetFromConfig(const QuicConfig& config);
 
   // Pass the CachedNetworkParameters to the send algorithm.
-  // Returns true if this changes the initial connection state.
-  bool ResumeConnectionState(
+  void ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params,
       bool max_bandwidth_resumption);
 

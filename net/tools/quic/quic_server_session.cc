@@ -61,8 +61,15 @@ void QuicServerSession::OnConfigNegotiated() {
       last_bandwidth_resumption || max_bandwidth_resumption;
   if (cached_network_params != nullptr && bandwidth_resumption_enabled_ &&
       cached_network_params->serving_region() == serving_region_) {
-    connection()->ResumeConnectionState(*cached_network_params,
-                                        max_bandwidth_resumption);
+    int64 seconds_since_estimate =
+        connection()->clock()->WallNow().ToUNIXSeconds() -
+        cached_network_params->timestamp();
+    bool estimate_within_last_hour =
+        seconds_since_estimate <= kNumSecondsPerHour;
+    if (estimate_within_last_hour) {
+      connection()->ResumeConnectionState(*cached_network_params,
+                                          max_bandwidth_resumption);
+    }
   }
 
   if (FLAGS_enable_quic_fec &&

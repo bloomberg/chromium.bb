@@ -114,8 +114,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   // Called by the Session when we get a bandwidth estimate from the client.
   // Uses the max bandwidth in the params if |max_bandwidth_resumption| is true.
-  // Returns true if initial connection state is changed as a result.
-  virtual bool ResumeConnectionState(
+  virtual void ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params,
       bool max_bandwidth_resumption) = 0;
 };

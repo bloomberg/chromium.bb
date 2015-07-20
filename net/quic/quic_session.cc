@@ -419,9 +419,22 @@ void QuicSession::OnConfigNegotiated() {
         max(max_streams + kMaxStreamsMinimumIncrement,
             static_cast<uint32>(max_streams * kMaxStreamsMultiplier));
 
-    if (config_.HasReceivedConnectionOptions() &&
-        ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {
-      EnableAutoTuneReceiveWindow();
+    if (config_.HasReceivedConnectionOptions()) {
+      if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {
+        EnableAutoTuneReceiveWindow();
+      }
+      // The following variations change the initial receive flow control window
+      // size for streams.  For simplicity reasons, do not try to effect
+      // existing streams but only future ones.
+      if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW5)) {
+        config_.SetInitialStreamFlowControlWindowToSend(32 * 1024);
+      }
+      if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW6)) {
+        config_.SetInitialStreamFlowControlWindowToSend(64 * 1024);
+      }
+      if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kIFW7)) {
+        config_.SetInitialStreamFlowControlWindowToSend(128 * 1024);
+      }
     }
   }
   set_max_open_streams(max_streams);

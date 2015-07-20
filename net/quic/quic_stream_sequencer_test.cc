@@ -66,6 +66,30 @@ class QuicStreamSequencerTest : public ::testing::Test {
         stream_(&session_, 1),
         sequencer_(new QuicStreamSequencer(&stream_)) {}
 
+  bool VerifyReadableRegions(const char** expected, size_t num_expected) {
+    iovec iovecs[5];
+    size_t num_iovecs =
+        sequencer_->GetReadableRegions(iovecs, arraysize(iovecs));
+    return VerifyIovecs(iovecs, num_iovecs, expected, num_expected);
+  }
+
+  bool VerifyIovecs(iovec* iovecs,
+                    size_t num_iovecs,
+                    const char** expected,
+                    size_t num_expected) {
+    if (num_expected != num_iovecs) {
+      LOG(ERROR) << "Incorrect number of iovecs.  Expected: " << num_expected
+                 << " Actual: " << num_iovecs;
+      return false;
+    }
+    for (size_t i = 0; i < num_expected; ++i) {
+      if (!VerifyIovec(iovecs[i], expected[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   bool VerifyIovec(const iovec& iovec, StringPiece expected) {
     if (iovec.iov_len != expected.length()) {
       LOG(ERROR) << "Invalid length: " << iovec.iov_len
@@ -407,6 +431,78 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
   }
   EXPECT_EQ(0, strcmp(kPayload, output_.data()));
   EXPECT_EQ(0, strcmp(kPayload, peeked_.data()));
+}
+
+// Same as above, just using a different method for reading.
+TEST_F(QuicStreamSequencerTest, MarkConsumed) {
+  InSequence s;
+  EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(0));
+
+  OnFrame(0, "abc");
+  OnFrame(3, "def");
+  OnFrame(6, "ghi");
+
+  // abcdefghi buffered.
+  EXPECT_EQ(9u, sequencer_->num_bytes_buffered());
+
+  // Peek into the data.
+  const char* expected[] = {"abc", "def", "ghi"};
+  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
+
+  // Consume 1 byte.
+  sequencer_->MarkConsumed(1);
+  // Verify data.
+  const char* expected2[] = {"bc", "def", "ghi"};
+  ASSERT_TRUE(VerifyReadableRegions(expected2, arraysize(expected2)));
+  EXPECT_EQ(8u, sequencer_->num_bytes_buffered());
+
+  // Consume 2 bytes.
+  sequencer_->MarkConsumed(2);
+  // Verify data.
+  const char* expected3[] = {"def", "ghi"};
+  ASSERT_TRUE(VerifyReadableRegions(expected3, arraysize(expected3)));
+  EXPECT_EQ(6u, sequencer_->num_bytes_buffered());
+
+  // Consume 5 bytes.
+  sequencer_->MarkConsumed(5);
+  // Verify data.
+  const char* expected4[] = {"i"};
+  ASSERT_TRUE(VerifyReadableRegions(expected4, arraysize(expected4)));
+  EXPECT_EQ(1u, sequencer_->num_bytes_buffered());
+}
+
+TEST_F(QuicStreamSequencerTest, MarkConsumedError) {
+  EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(0));
+
+  OnFrame(0, "abc");
+  OnFrame(9, "jklmnopqrstuvwxyz");
+
+  // Peek into the data.  Only the first chunk should be readable because of the
+  // missing data.
+  const char* expected[] = {"abc"};
+  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
+
+  // Now, attempt to mark consumed more data than was readable and expect the
+  // stream to be closed.
+  EXPECT_CALL(stream_, Reset(QUIC_ERROR_PROCESSING_STREAM));
+  EXPECT_DFATAL(sequencer_->MarkConsumed(4),
+                "Invalid argument to MarkConsumed.  num_bytes_consumed_: 3 "
+                "end_offset: 4 offset: 9 length: 17");
+}
+
+TEST_F(QuicStreamSequencerTest, MarkConsumedWithMissingPacket) {
+  InSequence s;
+  EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(0));
+
+  OnFrame(0, "abc");
+  OnFrame(3, "def");
+  // Missing packet: 6, ghi.
+  OnFrame(9, "jkl");
+
+  const char* expected[] = {"abc", "def"};
+  ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
+
+  sequencer_->MarkConsumed(6);
 }
 
 TEST_F(QuicStreamSequencerTest, FrameOverlapsBufferedData) {

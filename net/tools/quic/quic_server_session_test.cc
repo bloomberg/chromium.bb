@@ -402,8 +402,8 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
 
 TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
   // Test that if a client provides a CachedNetworkParameters with the same
-  // serving region as the current server, that this data is passed down to the
-  // send algorithm.
+  // serving region as the current server, and which was made within an hour of
+  // now, that this data is passed down to the send algorithm.
 
   // Client has sent kBWRE connection option to trigger bandwidth resumption.
   QuicTagVector copt;
@@ -412,6 +412,10 @@ TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
 
   const string kTestServingRegion = "a serving region";
   session_->set_serving_region(kTestServingRegion);
+
+  // Set the time to be one hour + one second from the 0 baseline.
+  connection_->AdvanceTime(
+      QuicTime::Delta::FromSeconds(kNumSecondsPerHour + 1));
 
   QuicCryptoServerStream* crypto_stream =
       static_cast<QuicCryptoServerStream*>(
@@ -430,8 +434,16 @@ TEST_P(QuicServerSessionTest, BandwidthResumptionExperiment) {
   EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);
   session_->OnConfigNegotiated();
 
-  // Same serving region results in CachedNetworkParameters being stored.
+  // Same serving region, but timestamp is too old, should have no effect.
   cached_network_params.set_serving_region(kTestServingRegion);
+  cached_network_params.set_timestamp(0);
+  crypto_stream->set_previous_cached_network_params(cached_network_params);
+  EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);
+  session_->OnConfigNegotiated();
+
+  // Same serving region, and timestamp is recent: estimate is stored.
+  cached_network_params.set_timestamp(
+      connection_->clock()->WallNow().ToUNIXSeconds());
   crypto_stream->set_previous_cached_network_params(cached_network_params);
   EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(1);
   session_->OnConfigNegotiated();

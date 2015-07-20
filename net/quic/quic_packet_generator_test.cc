@@ -25,7 +25,6 @@ using std::string;
 using std::vector;
 using testing::InSequence;
 using testing::Return;
-using testing::SaveArg;
 using testing::StrictMock;
 using testing::_;
 
