@@ -78,6 +78,16 @@ remoting.DesktopRemoting.prototype.signInFailed_ = function(error) {
 remoting.DesktopRemoting.prototype.initApplication_ = function() {
   remoting.initElementEventHandlers();
 
+  if (remoting.platformIsWindows()) {
+    document.body.classList.add('os-windows');
+  } else if (remoting.platformIsMac()) {
+    document.body.classList.add('os-mac');
+  } else if (remoting.platformIsChromeOS()) {
+    document.body.classList.add('os-chromeos');
+  } else if (remoting.platformIsLinux()) {
+    document.body.classList.add('os-linux');
+  }
+
   if (base.isAppsV2()) {
     remoting.windowFrame = new remoting.WindowFrame(
         document.getElementById('title-bar'), this.disconnect_.bind(this));

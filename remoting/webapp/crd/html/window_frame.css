@@ -144,6 +144,7 @@ body:not(.connected) .connected-only {
  *   any desktop.
  * - The window border is removed.
  * - The full-screen button is removed.
+ * - On Mac, the minimize button is removed.
  */
 
 html.apps-v2 body.fullscreen #scroller {
@@ -197,5 +198,9 @@ body.fullscreen .title-bar.preview {
 }
 
 body.fullscreen .window-fullscreen {
+  display: none;
+}
+
+body.fullscreen.os-mac .window-minimize {
   display: none;
 }
