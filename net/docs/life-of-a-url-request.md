@@ -103,8 +103,8 @@ work.
 
 Summary:
 
-* ResourceDispatcher creates an IPCResourceLoaderBridge.
-* The IPCResourceLoaderBridge asks ResourceDispatcher to start the request.
+* A user (e.g. the WebURLLoaderImpl for Blink) asks ResourceDispatcher to start
+the request.
 * ResourceDispatcher sends an IPC to the ResourceDispatcherHost in the
 browser process.
 
@@ -117,8 +117,8 @@ processes are the ones that layout webpages and run HTML.
 Each child process has at most one ResourceDispatcher, which is responsible for
 all URL request-related communication with the browser process. When something
 in another process needs to issue a resource request, it calls into the
-ResourceDispatcher, which returns an IPCResourceLoaderBridge to the caller.
-The caller uses the bridge to start a request. When started, the
+ResourceDispatcher to start a request. A RequestPeer is passed in to receive
+messages related to the request. When started, the
 ResourceDispatcher assigns the request a per-renderer ID, and then sends the
 ID, along with all information needed to issue the request, to the
 ResourceDispatcherHost in the browser process.
@@ -243,9 +243,8 @@ they make their way to the AsyncResourceHandler. The AsyncResourceHandler uses
 the renderer process ID ("child ID") to figure out which process the request
 was associated with, and then sends the headers along with the request ID to
 that process's ResourceDispatcher. The ResourceDispatcher uses the ID to
-figure out which IPCResourceLoaderBridge the headers should be sent to, which
-sends them on to whatever created the IPCResourceLoaderBridge in the first
-place.
+figure out which RequestPeer the headers should be sent to, which
+sends them on to the RequestPeer.
 
 ### Response body is read
 
