@@ -265,9 +265,7 @@ ExecutionContext* MediaSource::executionContext() const
 
 DEFINE_TRACE(MediaSource)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_asyncEventQueue);
-#endif
     visitor->trace(m_attachedElement);
     visitor->trace(m_sourceBuffers);
     visitor->trace(m_activeSourceBuffers);

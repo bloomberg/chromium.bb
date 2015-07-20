@@ -96,9 +96,7 @@ DEFINE_TRACE(IDBDatabase)
 {
     visitor->trace(m_versionChangeTransaction);
     visitor->trace(m_transactions);
-#if ENABLE(OILPAN)
     visitor->trace(m_enqueuedEvents);
-#endif
     visitor->trace(m_databaseCallbacks);
     RefCountedGarbageCollectedEventTargetWithInlineData<IDBDatabase>::trace(visitor);
     ActiveDOMObject::trace(visitor);

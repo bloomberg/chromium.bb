@@ -334,10 +334,8 @@ Database* InspectorDatabaseAgent::databaseForId(const String& databaseId)
 
 DEFINE_TRACE(InspectorDatabaseAgent)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_page);
     visitor->trace(m_resources);
-#endif
     InspectorBaseAgent::trace(visitor);
 }
 

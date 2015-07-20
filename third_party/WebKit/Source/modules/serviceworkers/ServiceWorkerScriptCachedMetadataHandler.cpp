@@ -25,9 +25,7 @@ ServiceWorkerScriptCachedMetadataHandler::~ServiceWorkerScriptCachedMetadataHand
 
 DEFINE_TRACE(ServiceWorkerScriptCachedMetadataHandler)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_workerGlobalScope);
-#endif
     CachedMetadataHandler::trace(visitor);
 }
 

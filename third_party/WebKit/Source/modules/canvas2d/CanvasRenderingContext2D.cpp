@@ -216,10 +216,8 @@ void CanvasRenderingContext2D::didSetSurfaceSize()
 
 DEFINE_TRACE(CanvasRenderingContext2D)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_stateStack);
     visitor->trace(m_hitRegionManager);
-#endif
     CanvasRenderingContext::trace(visitor);
 }
 

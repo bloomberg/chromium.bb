@@ -87,9 +87,7 @@ DEFINE_TRACE(IDBRequest)
     visitor->trace(m_source);
     visitor->trace(m_result);
     visitor->trace(m_error);
-#if ENABLE(OILPAN)
     visitor->trace(m_enqueuedEvents);
-#endif
     visitor->trace(m_pendingCursor);
     visitor->trace(m_cursorKey);
     visitor->trace(m_cursorPrimaryKey);

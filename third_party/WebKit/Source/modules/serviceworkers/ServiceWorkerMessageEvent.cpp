@@ -79,9 +79,7 @@ DEFINE_TRACE(ServiceWorkerMessageEvent)
 {
     visitor->trace(m_sourceAsServiceWorker);
     visitor->trace(m_sourceAsMessagePort);
-#if ENABLE(OILPAN)
     visitor->trace(m_ports);
-#endif
     Event::trace(visitor);
 }
 

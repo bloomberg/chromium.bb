@@ -836,9 +836,7 @@ DEFINE_TRACE(RTCPeerConnection)
     visitor->trace(m_localStreams);
     visitor->trace(m_remoteStreams);
     visitor->trace(m_dataChannels);
-#if ENABLE(OILPAN)
     visitor->trace(m_scheduledEvents);
-#endif
     RefCountedGarbageCollectedEventTargetWithInlineData<RTCPeerConnection>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

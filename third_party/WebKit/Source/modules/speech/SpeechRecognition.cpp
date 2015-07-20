@@ -205,9 +205,7 @@ DEFINE_TRACE(SpeechRecognition)
 {
     visitor->trace(m_grammars);
     visitor->trace(m_audioTrack);
-#if ENABLE(OILPAN)
     visitor->trace(m_controller);
-#endif
     visitor->trace(m_finalResults);
     RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>::trace(visitor);
     PageLifecycleObserver::trace(visitor);

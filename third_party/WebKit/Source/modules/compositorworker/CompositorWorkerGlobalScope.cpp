@@ -34,9 +34,7 @@ CompositorWorkerGlobalScope::~CompositorWorkerGlobalScope()
 
 DEFINE_TRACE(CompositorWorkerGlobalScope)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_callbackCollection);
-#endif
     WorkerGlobalScope::trace(visitor);
 }
 
