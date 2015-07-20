@@ -59,7 +59,7 @@ void TracingHandler::SetClient(scoped_ptr<Client> client) {
 }
 
 void TracingHandler::Detached() {
-  if (did_initiate_recording_)
+  if (IsRecording())
     DisableRecording(true);
 }
 
@@ -83,7 +83,7 @@ Response TracingHandler::Start(DevToolsCommandId command_id,
                                const std::string* categories,
                                const std::string* options,
                                const double* buffer_usage_reporting_interval) {
-  if (TracingController::GetInstance()->IsRecording())
+  if (IsRecording())
     return Response::InternalError("Tracing is already started");
 
   did_initiate_recording_ = true;
@@ -112,7 +112,7 @@ Response TracingHandler::Start(DevToolsCommandId command_id,
 }
 
 Response TracingHandler::End(DevToolsCommandId command_id) {
-  if (!did_initiate_recording_)
+  if (!IsRecording())
     return Response::InternalError("Tracing is not started");
 
   DisableRecording(false);
@@ -176,6 +176,10 @@ void TracingHandler::DisableRecording(bool abort) {
   TracingController::GetInstance()->DisableRecording(
       abort ? nullptr : new DevToolsTraceSinkProxy(weak_factory_.GetWeakPtr()));
   did_initiate_recording_ = false;
+}
+
+bool TracingHandler::IsRecording() const {
+  return TracingController::GetInstance()->IsRecording();
 }
 
 }  // namespace tracing

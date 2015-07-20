@@ -55,6 +55,8 @@ class TracingHandler {
 
   void DisableRecording(bool abort);
 
+  bool IsRecording() const;
+
   scoped_ptr<base::Timer> buffer_usage_poll_timer_;
   Target target_;
 
