@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -97,6 +98,7 @@ class SystemMessageHandler extends Handler {
         }
 
         static class LollipopMr1MessageWrapperImpl implements MessageWrapperImpl {
+            @SuppressLint("NewApi")
             @Override
             public void setAsynchronous(Message msg, boolean async) {
                 msg.setAsynchronous(async);
