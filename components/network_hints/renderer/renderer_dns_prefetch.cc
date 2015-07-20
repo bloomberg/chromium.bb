@@ -40,6 +40,7 @@ void RendererDnsPrefetch::Reset() {
 
 // Push names into queue quickly!
 void RendererDnsPrefetch::Resolve(const char* name, size_t length) {
+  DCHECK(content::RenderThread::Get());
   if (!length)
     return;  // Don't store empty strings in buffer.
   if (is_numeric_ip(name, length))
@@ -53,7 +54,7 @@ void RendererDnsPrefetch::Resolve(const char* name, size_t length) {
       if (0 != old_size)
         return;  // Overkill safety net: Don't send too many InvokeLater's.
       weak_factory_.InvalidateWeakPtrs();
-      RenderThread::Get()->GetTaskRunner()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&RendererDnsPrefetch::SubmitHostnames,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(10));
@@ -70,6 +71,7 @@ void RendererDnsPrefetch::Resolve(const char* name, size_t length) {
 // Extract data from the Queue, and then send it off the the Browser process
 // to be resolved.
 void RendererDnsPrefetch::SubmitHostnames() {
+  DCHECK(content::RenderThread::Get());
   // Get all names out of the C_string_queue (into our map)
   ExtractBufferedNames();
   // TBD: IT could be that we should only extract about as many names as we are
@@ -88,7 +90,7 @@ void RendererDnsPrefetch::SubmitHostnames() {
   DnsPrefetchNames(kMaxDnsHostnamesPerRequest);
   if (new_name_count_ > 0 || 0 < c_string_queue_.Size()) {
     weak_factory_.InvalidateWeakPtrs();
-    RenderThread::Get()->GetTaskRunner()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&RendererDnsPrefetch::SubmitHostnames,
                               weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(10));

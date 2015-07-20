@@ -154,7 +154,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // RenderThread implementation:
   bool Send(IPC::Message* msg) override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   IPC::SyncChannel* GetChannel() override;
   std::string GetLocale() override;
   IPC::SyncMessageFilter* GetSyncMessageFilter() override;

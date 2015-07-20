@@ -965,6 +965,7 @@ void PageLoadHistograms::ClosePage() {
 }
 
 void PageLoadHistograms::DidUpdateLayout() {
+  DCHECK(content::RenderThread::Get());
   // Normally, PageLoadHistograms dumps all histograms in the FrameWillClose or
   // ClosePage callbacks, which happen as a page is being torn down. However,
   // renderers that are killed by fast shutdown (for example, renderers closed
@@ -1000,7 +1001,7 @@ void PageLoadHistograms::DidUpdateLayout() {
   // blink will not record firstLayout during those layouts, so firstLayout may
   // not be populated during the layout associated with the first
   // DidUpdateLayout callback.
-  content::RenderThread::Get()->GetTaskRunner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&PageLoadHistograms::MaybeDumpFirstLayoutHistograms,
                  weak_factory_.GetWeakPtr()));

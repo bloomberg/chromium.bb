@@ -224,7 +224,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       script_url_(script_url),
       worker_devtools_agent_route_id_(worker_devtools_agent_route_id),
       sender_(ChildThreadImpl::current()->thread_safe_sender()),
-      main_thread_task_runner_(RenderThreadImpl::current()->GetTaskRunner()),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       proxy_(nullptr) {
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerContextClient::StartingWorkerContext",

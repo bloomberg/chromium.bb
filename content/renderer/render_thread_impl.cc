@@ -1022,10 +1022,6 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
   return rv;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> RenderThreadImpl::GetTaskRunner() {
-  return GetRendererScheduler()->DefaultTaskRunner();
-}
-
 IPC::SyncChannel* RenderThreadImpl::GetChannel() {
   return channel();
 }

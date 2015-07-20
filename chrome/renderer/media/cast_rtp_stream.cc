@@ -576,12 +576,13 @@ bool CastRtpStream::IsAudio() const {
 }
 
 void CastRtpStream::DidEncounterError(const std::string& message) {
+  DCHECK(content::RenderThread::Get());
   DVLOG(1) << "CastRtpStream::DidEncounterError(" << message << ") = "
            << (IsAudio() ? "audio" : "video");
   // Save the WeakPtr first because the error callback might delete this object.
   base::WeakPtr<CastRtpStream> ptr = weak_factory_.GetWeakPtr();
   error_callback_.Run(message);
-  content::RenderThread::Get()->GetTaskRunner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&CastRtpStream::Stop, ptr));
 }

@@ -49,7 +49,6 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   RenderThread();
   ~RenderThread() override;
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
   virtual IPC::SyncChannel* GetChannel() = 0;
   virtual std::string GetLocale() = 0;
   virtual IPC::SyncMessageFilter* GetSyncMessageFilter() = 0;

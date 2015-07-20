@@ -53,8 +53,7 @@ CastSession::~CastSession() {
 void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
                              const AudioFrameInputAvailableCallback& callback,
                              const ErrorCallback& error_callback) {
-  DCHECK(content::RenderThread::Get()
-             ->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(content::RenderThread::Get());
 
   io_task_runner_->PostTask(
       FROM_HERE,
@@ -68,8 +67,7 @@ void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
 void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
                              const VideoFrameInputAvailableCallback& callback,
                              const ErrorCallback& error_callback) {
-  DCHECK(content::RenderThread::Get()
-             ->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(content::RenderThread::Get());
 
   io_task_runner_->PostTask(
       FROM_HERE,

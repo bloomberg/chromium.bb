@@ -135,6 +135,7 @@ void ScriptInjectionManager::RFOHelper::DidCreateDocumentElement() {
 }
 
 void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
+  DCHECK(content::RenderThread::Get());
   manager_->StartInjectScripts(render_frame(), UserScript::DOCUMENT_END);
   // We try to run idle in two places: here and DidFinishLoad.
   // DidFinishDocumentLoad() corresponds to completing the document's load,
@@ -143,7 +144,7 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
   // particularly slow subresource, so we set a delayed task from here - but if
   // we finish everything before that point (i.e., DidFinishLoad() is
   // triggered), then there's no reason to keep waiting.
-  content::RenderThread::Get()->GetTaskRunner()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
                  weak_factory_.GetWeakPtr()),
@@ -151,8 +152,9 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
 }
 
 void ScriptInjectionManager::RFOHelper::DidFinishLoad() {
+  DCHECK(content::RenderThread::Get());
   // Ensure that we don't block any UI progress by running scripts.
-  content::RenderThread::Get()->GetTaskRunner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
                  weak_factory_.GetWeakPtr()));

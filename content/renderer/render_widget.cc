@@ -848,6 +848,7 @@ void RenderWidget::SetWindowRectSynchronously(
 }
 
 void RenderWidget::OnClose() {
+  DCHECK(content::RenderThread::Get());
   if (closing_)
     return;
   NotifyOnClose();
@@ -864,7 +865,7 @@ void RenderWidget::OnClose() {
   // If there is a Send call on the stack, then it could be dangerous to close
   // now.  Post a task that only gets invoked when there are no nested message
   // loops.
-  RenderThread::Get()->GetTaskRunner()->PostNonNestableTask(
+  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
       FROM_HERE, base::Bind(&RenderWidget::Close, this));
 
   // Balances the AddRef taken when we called AddRoute.
@@ -1561,6 +1562,7 @@ void RenderWidget::NotifyOnClose() {
 }
 
 void RenderWidget::closeWidgetSoon() {
+  DCHECK(content::RenderThread::Get());
   if (is_swapped_out_) {
     // This widget is currently swapped out, and the active widget is in a
     // different process.  Have the browser route the close request to the
@@ -1577,7 +1579,7 @@ void RenderWidget::closeWidgetSoon() {
   // could be closed before the JS finishes executing.  So instead, post a
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close message can be sent.
-  RenderThread::Get()->GetTaskRunner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RenderWidget::DoDeferredClose, this));
 }
 
