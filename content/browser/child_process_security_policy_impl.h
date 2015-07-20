@@ -126,13 +126,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // request the URL.
   bool CanRequestURL(int child_id, const GURL& url);
 
-  // Returns true if the process is permitted to load pages from
-  // the given origin in main frames or subframes.
-  // Only might return false if --site-per-process flag is used.
-  bool CanLoadPage(int child_id,
-                   const GURL& url,
-                   ResourceType resource_type);
-
   // Explicit permissions checks for FileSystemURL specified files.
   bool CanReadFileSystemFile(int child_id, const storage::FileSystemURL& url);
   bool CanWriteFileSystemFile(int child_id, const storage::FileSystemURL& url);

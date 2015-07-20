@@ -336,19 +336,6 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
 
   progress_timer_.Stop();
 
-  // The CanLoadPage check should take place after any server redirects have
-  // finished, at the point in time that we know a page will commit in the
-  // renderer process.
-  ResourceRequestInfoImpl* info = GetRequestInfo();
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanLoadPage(info->GetChildID(),
-                           request_->url(),
-                           info->GetResourceType())) {
-    Cancel();
-    return;
-  }
-
   if (!request_->status().is_success()) {
     ResponseCompleted();
     return;
@@ -357,6 +344,7 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   // We want to send a final upload progress message prior to sending the
   // response complete message even if we're waiting for an ack to to a
   // previous upload progress message.
+  ResourceRequestInfoImpl* info = GetRequestInfo();
   if (info->is_upload_progress_enabled()) {
     waiting_for_upload_progress_ack_ = false;
     ReportUploadProgress();

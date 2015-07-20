@@ -214,17 +214,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return false;
   }
 
-  bool CanLoadPage(const GURL& gurl) {
-    if (origin_lock_.is_empty())
-      return true;
-
-    // TODO(creis): We must pass the valid browser_context to convert hosted
-    // apps URLs.  Currently, hosted apps cannot be loaded in this mode.
-    // See http://crbug.com/160576.
-    GURL site_gurl = SiteInstanceImpl::GetSiteForURL(NULL, gurl);
-    return origin_lock_ == site_gurl;
-  }
-
   bool CanAccessDataForOrigin(const GURL& gurl) {
     if (origin_lock_.is_empty())
       return true;
@@ -559,21 +548,6 @@ void ChildProcessSecurityPolicyImpl::RevokeReadRawCookies(int child_id) {
     return;
 
   state->second->RevokeReadRawCookies();
-}
-
-bool ChildProcessSecurityPolicyImpl::CanLoadPage(int child_id,
-                                                 const GURL& url,
-                                                 ResourceType resource_type) {
-  // If --site-per-process flag is passed, we should enforce
-  // stronger security restrictions on page navigation.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess) &&
-      IsResourceTypeFrame(resource_type)) {
-    // TODO(nasko): Do the proper check for site-per-process, once
-    // out-of-process iframes is ready to go.
-    return true;
-  }
-  return true;
 }
 
 bool ChildProcessSecurityPolicyImpl::CanRequestURL(
