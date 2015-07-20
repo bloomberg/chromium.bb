@@ -400,6 +400,22 @@ bool BrowserMediaPlayerManager::RequestPlay(int player_id) {
   return succeeded;
 }
 
+void BrowserMediaPlayerManager::OnSuspend(int player_id) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  DCHECK(player);
+
+  player->Pause(true);
+  Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(), player_id));
+}
+
+void BrowserMediaPlayerManager::OnResume(int player_id) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  DCHECK(player);
+
+  player->Start();
+  Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(), player_id));
+}
+
 #if defined(VIDEO_HOLE)
 void BrowserMediaPlayerManager::AttachExternalVideoSurface(int player_id,
                                                            jobject surface) {
@@ -422,22 +438,6 @@ void BrowserMediaPlayerManager::OnFrameInfoUpdated() {
 
   if (external_video_surface_container_)
     external_video_surface_container_->OnFrameInfoUpdated();
-}
-
-void BrowserMediaPlayerManager::OnSuspend(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  DCHECK(player);
-
-  player->Pause(true);
-  Send(new MediaPlayerMsg_DidMediaPlayerPause(RoutingID(), player_id));
-}
-
-void BrowserMediaPlayerManager::OnResume(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  DCHECK(player);
-
-  player->Start();
-  Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(), player_id));
 }
 
 void BrowserMediaPlayerManager::OnNotifyExternalSurface(
