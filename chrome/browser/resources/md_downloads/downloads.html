@@ -3,45 +3,13 @@
 <head>
   <meta charset="utf-8">
   <title i18n-content="title"></title>
-
-  <link rel="import" href="chrome://resources/html/action_link.html">
   <link rel="import" href="chrome://resources/html/polymer_config.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
-
   <link rel="import" href="chrome://downloads/manager.html">
-
-  <link rel="stylesheet" href="chrome://resources/css/roboto.css">
-  <link rel="stylesheet" href="chrome://downloads/downloads.css">
 </head>
 <body class="fullbleed">
-
-  <paper-toolbar id="downloads-toolbar">
-    <h1 class="flex-auto" i18n-content="title"></h1>
-    <paper-icon-button icon="search" id="search-button"></paper-icon-button>
-    <paper-input id="search-term" class="flex-none"
-        i18n-values="label:searchButton" no-label-float hidden></paper-input>
-    <paper-icon-button icon="clear" id="clear-search"
-        hidden></paper-icon-button>
-  </paper-toolbar>
-
-  <div class="main">
-    <div class="summary" id="downloads-summary">
-      <span id="downloads-summary-text"></span>
-      <span id="downloads-actions">
-        <a is="action-link" id="open-downloads-folder"
-            i18n-content="openDownloadsFolder"></a>
-        <a is="action-link" id="clear-all" i18n-content="clearAll" hidden></a>
-      </span>
-    </div>
-    <div id="downloads-display"></div>
-    <div id="no-downloads-or-results"></div>
-  </div>
-
+  <downloads-manager></downloads-manager>
   <command id="clear-all-command" shortcut="Alt-U+0043"><!-- Alt+C -->
 <if expr="is_macosx">
   <command id="undo-command" shortcut="Meta-U+005A"><!-- Command+Z -->
@@ -49,10 +17,8 @@
 <if expr="not is_macosx">
   <command id="undo-command" shortcut="Ctrl-U+005A"><!-- Ctrl+Z -->
 </if>
-
   <link rel="import" href="chrome://resources/html/load_time_data.html">
   <link rel="import" href="chrome://downloads/strings.html">
-  <link rel="import" href="chrome://resources/html/i18n_template.html"></script>
-
+  <link rel="import" href="chrome://resources/html/i18n_template.html">
 </body>
 </html>

@@ -97,12 +97,22 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS);
 
   if (switches::MdDownloadsEnabled()) {
-    source->AddResourcePath("downloads.css", IDR_MD_DOWNLOADS_DOWNLOADS_CSS);
+    source->AddResourcePath("action_service.html",
+                            IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
+    source->AddResourcePath("action_service.js",
+                            IDR_MD_DOWNLOADS_ACTION_SERVICE_JS);
+    source->AddResourcePath("item_view.css", IDR_MD_DOWNLOADS_ITEM_VIEW_CSS);
     source->AddResourcePath("item_view.html", IDR_MD_DOWNLOADS_ITEM_VIEW_HTML);
     source->AddResourcePath("item_view.js", IDR_MD_DOWNLOADS_ITEM_VIEW_JS);
+    source->AddResourcePath("manager.css", IDR_MD_DOWNLOADS_MANAGER_CSS);
     source->AddResourcePath("manager.html", IDR_MD_DOWNLOADS_MANAGER_HTML);
     source->AddResourcePath("manager.js", IDR_MD_DOWNLOADS_MANAGER_JS);
+    source->AddResourcePath("shared_style.css",
+                            IDR_MD_DOWNLOADS_SHARED_STYLE_CSS);
     source->AddResourcePath("strings.html", IDR_MD_DOWNLOADS_STRINGS_HTML);
+    source->AddResourcePath("toolbar.css", IDR_MD_DOWNLOADS_TOOLBAR_CSS);
+    source->AddResourcePath("toolbar.html", IDR_MD_DOWNLOADS_TOOLBAR_HTML);
+    source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
     source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
   } else {
     source->AddResourcePath("item_view.js", IDR_DOWNLOADS_ITEM_VIEW_JS);

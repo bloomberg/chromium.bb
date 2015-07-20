@@ -1,0 +1,35 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/html/cr.html">
+
+<dom-module id="downloads-toolbar">
+  <template>
+    <paper-toolbar>
+      <h1 i18n-content="title" id="title"></h1>
+      <div id="actions">
+        <cr-button id="clear-all" i18n-content="clearAll"
+            on-click="onClearAllClick_"
+            hidden$="[[!canClearAll]]"></cr-button>
+        <cr-button id="open-downloads-folder"
+            i18n-content="openDownloadsFolder"
+            on-click="onOpenDownloadsFolderClick_"></cr-button>
+      </div>
+      <div id="search">
+        <paper-icon-button icon="search" id="search-button"
+            on-click="toggleShowingSearch_"></paper-icon-button>
+        <cr-input id="search-term" i18n-values="label:searchButton"
+            hidden$="[[!showingSearch_]]" no-label-float></paper-input>
+        <paper-icon-button icon="clear" id="clear-search"
+            on-click="toggleShowingSearch_"
+            hidden$="[[!showingSearch_]]"></paper-icon-button>
+      </div>
+    </paper-toolbar>
+  </template>
+  <link rel="import" type="css" href="chrome://downloads/shared_style.css">
+  <link rel="import" type="css" href="chrome://downloads/toolbar.css">
+  <script src="chrome://downloads/toolbar.js"></script>
+</dom-module>

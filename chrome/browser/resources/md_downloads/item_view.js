@@ -4,33 +4,27 @@
 
 cr.define('downloads', function() {
   var ItemView = Polymer({
-    is: 'item-view',
+    is: 'downloads-item-view',
 
-    /** @param {!downloads.ThrottledIconLoader} iconLoader */
-    factoryImpl: function(iconLoader) {
+    /**
+     * @param {!downloads.ThrottledIconLoader} iconLoader
+     * @param {!downloads.ActionService} actionService
+     */
+    factoryImpl: function(iconLoader, actionService) {
       /** @private {!downloads.ThrottledIconLoader} */
       this.iconLoader_ = iconLoader;
+
+      /** @private {!downloads.ActionService} */
+      this.actionService_ = actionService;
     },
 
     properties: {
       hideDate: {type: Boolean, value: false},
-      isDangerous: {type: Boolean, value: false},
-      // Only use |isMalware| if |isDangerous| is true.
-      isMalware: Boolean,
-    },
 
-    ready: function() {
-      this.$.safe.ondragstart = this.onSafeDragstart_.bind(this);
-      this.$['file-link'].onclick = this.onFileLinkClick_.bind(this);
-      this.$.show.onclick = this.onShowClick_.bind(this);
-      this.$.pause.onclick = this.onPauseClick_.bind(this);
-      this.$.resume.onclick = this.onResumeClick_.bind(this);
-      this.$['safe-remove'].onclick = this.onSafeRemoveClick_.bind(this);
-      this.$.cancel.onclick = this.onCancelClick_.bind(this);
-      this.$.restore.onclick = this.onRestoreClick_.bind(this);
-      this.$.save.onclick = this.onSaveClick_.bind(this);
-      this.$['dangerous-remove'].onclick = this.onDangerRemoveClick_.bind(this);
-      this.$.discard.onclick = this.onDiscardClick_.bind(this);
+      isDangerous_: {type: Boolean, value: false},
+
+      /** Only set when |isDangerous| is true. */
+      isMalware_: Boolean,
     },
 
     /** @param {!downloads.Data} data */
@@ -57,7 +51,7 @@ cr.define('downloads', function() {
         var iconUrl = 'chrome://theme/' + idr;
         this.iconLoader_.loadScaledIcon(this.$['dangerous-icon'], iconUrl);
 
-        this.isMalware =
+        this.isMalware_ =
             dangerType == downloads.DangerType.DANGEROUS_CONTENT ||
             dangerType == downloads.DangerType.DANGEROUS_HOST ||
             dangerType == downloads.DangerType.DANGEROUS_URL ||
@@ -181,13 +175,23 @@ cr.define('downloads', function() {
       return '';
     },
 
+    /** @private */
+    onCancelClick_: function() {
+      this.actionService_.cancel(this.id_);
+    },
+
+    /** @private */
+    onDangerousRemoveOrDiscardClick_: function() {
+      this.actionService_.discardDangerous(this.id_);
+    },
+
     /**
      * @private
      * @param {Event} e
      */
-    onSafeDragstart_: function(e) {
+    onDragStart_: function(e) {
       e.preventDefault();
-      chrome.send('drag', [this.id_]);
+      this.actionService_.drag(this.id_);
     },
 
     /**
@@ -196,52 +200,32 @@ cr.define('downloads', function() {
      */
     onFileLinkClick_: function(e) {
       e.preventDefault();
-      chrome.send('openFile', [this.id_]);
-    },
-
-    /** @private */
-    onShowClick_: function() {
-      chrome.send('show', [this.id_]);
+      this.actionService_.openFile(this.id_);
     },
 
     /** @private */
     onPauseClick_: function() {
-      chrome.send('pause', [this.id_]);
+      this.actionService_.pause(this.id_);
+    },
+
+    /** @private */
+    onRemoveClick_: function() {
+      this.actionService_.remove(this.id_);
+    },
+
+    /** @private */
+    onRestoreOrSaveClick_: function() {
+      this.actionService_.saveDangerous(this.id_);
     },
 
     /** @private */
     onResumeClick_: function() {
-      chrome.send('resume', [this.id_]);
+      this.actionService_.resume(this.id_);
     },
 
     /** @private */
-    onSafeRemoveClick_: function() {
-      chrome.send('remove', [this.id_]);
-    },
-
-    /** @private */
-    onCancelClick_: function() {
-      chrome.send('cancel', [this.id_]);
-    },
-
-    /** @private */
-    onRestoreClick_: function() {
-      this.onSaveClick_();
-    },
-
-    /** @private */
-    onSaveClick_: function() {
-      chrome.send('saveDangerous', [this.id_]);
-    },
-
-    /** @private */
-    onDangerRemoveClick_: function() {
-      this.onDiscardClick_();
-    },
-
-    /** @private */
-    onDiscardClick_: function() {
-      chrome.send('discardDangerous', [this.id_]);
+    onShowClick_: function() {
+      this.actionService_.show(this.id_);
     },
   });
 
