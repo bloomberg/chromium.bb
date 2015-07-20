@@ -302,8 +302,8 @@ static gfx::Rect CalculateQuadSpaceDamageRect(
     const gfx::Transform& quad_to_target_transform,
     const gfx::Transform& target_to_root_transform,
     const gfx::Rect& root_damage_rect) {
-  gfx::Transform quad_to_root_transform(quad_to_target_transform,
-                                        target_to_root_transform);
+  gfx::Transform quad_to_root_transform(target_to_root_transform,
+                                        quad_to_target_transform);
   gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
   bool inverse_valid = quad_to_root_transform.GetInverse(&inverse_transform);
   DCHECK(inverse_valid);
@@ -347,8 +347,8 @@ void SurfaceAggregator::CopyQuadsToPass(
 
       if (ignore_undamaged) {
         gfx::Transform quad_to_target_transform(
-            quad->shared_quad_state->quad_to_target_transform,
-            target_transform);
+            target_transform,
+            quad->shared_quad_state->quad_to_target_transform);
         damage_rect_in_quad_space = CalculateQuadSpaceDamageRect(
             quad_to_target_transform, dest_pass->transform_to_root_target,
             root_damage_rect_);
@@ -516,8 +516,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(SurfaceId surface_id) {
         const SurfaceDrawQuad* surface_quad =
             SurfaceDrawQuad::MaterialCast(quad);
         gfx::Transform target_to_surface_transform(
-            surface_quad->shared_quad_state->quad_to_target_transform,
-            render_pass->transform_to_root_target);
+            render_pass->transform_to_root_target,
+            surface_quad->shared_quad_state->quad_to_target_transform);
         child_surfaces.push_back(std::make_pair(surface_quad->surface_id,
                                                 target_to_surface_transform));
       }
