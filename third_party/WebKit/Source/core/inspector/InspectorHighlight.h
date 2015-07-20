@@ -17,9 +17,11 @@ namespace blink {
 class Color;
 class JSONValue;
 
-struct InspectorHighlightConfig {
+struct CORE_EXPORT InspectorHighlightConfig {
     WTF_MAKE_FAST_ALLOCATED(InspectorHighlightConfig);
 public:
+    InspectorHighlightConfig();
+
     Color content;
     Color contentOutline;
     Color padding;

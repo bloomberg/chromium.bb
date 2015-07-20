@@ -277,6 +277,14 @@ InspectorHighlight::InspectorHighlight()
 {
 }
 
+InspectorHighlightConfig::InspectorHighlightConfig()
+    : showInfo(false)
+    , showRulers(false)
+    , showExtensionLines(false)
+    , showLayoutEditor(false)
+{
+}
+
 InspectorHighlight::InspectorHighlight(Node* node, const InspectorHighlightConfig& highlightConfig, bool appendElementInfo)
     : m_highlightPaths(JSONArray::create())
     , m_showRulers(highlightConfig.showRulers)
