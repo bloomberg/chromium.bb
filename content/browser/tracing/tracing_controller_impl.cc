@@ -803,6 +803,8 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
   // OnBrowserProcessMemoryDumpDone().
   pending_memory_dump_ack_count_ = trace_message_filters_.size() + 1;
   pending_memory_dump_filters_.clear();
+  pending_memory_dump_guid_ = args.dump_guid;
+  pending_memory_dump_callback_ = callback;
   failed_memory_dump_count_ = 0;
 
   MemoryDumpManagerDelegate::CreateProcessDump(
@@ -810,14 +812,9 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
                        base::Unretained(this)));
 
   // If there are no child processes we are just done.
-  if (pending_memory_dump_ack_count_ == 1) {
-    if (!callback.is_null())
-      callback.Run(args.dump_guid, true /* success */);
+  if (pending_memory_dump_ack_count_ == 1)
     return;
-  }
 
-  pending_memory_dump_guid_ = args.dump_guid;
-  pending_memory_dump_callback_ = callback;
   pending_memory_dump_filters_ = trace_message_filters_;
 
   for (const scoped_refptr<TraceMessageFilter>& tmf : trace_message_filters_)
