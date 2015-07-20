@@ -14,8 +14,6 @@ static_library("browser") {
     "account_reconcilor.h",
     "account_tracker_service.cc",
     "account_tracker_service.h",
-    "child_account_info_fetcher.cc",
-    "child_account_info_fetcher.h",
     "device_activity_fetcher.cc",
     "device_activity_fetcher.h",
     "gaia_cookie_manager_service.cc",

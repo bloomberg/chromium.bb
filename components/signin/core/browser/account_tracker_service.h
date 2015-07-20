@@ -42,11 +42,6 @@ class AccountTrackerService : public KeyedService,
   // Value representing no picture URL associated with an account.
   static const char kNoPictureURLFound[];
 
-  // TODO(knn): Move to ChildAccountInfoFetcher once deprecated service flags
-  // have been migrated from preferences.
-  // Child account service flag name.
-  static const char kChildAccountServiceFlag[];
-
   // Information about a specific account.
   struct AccountInfo {
     AccountInfo();
@@ -60,7 +55,7 @@ class AccountTrackerService : public KeyedService,
     std::string hosted_domain;
     std::string locale;
     std::string picture_url;
-    bool is_child_account;
+    std::vector<std::string> service_flags;
 
     bool IsValid() const;
   };
@@ -123,10 +118,10 @@ class AccountTrackerService : public KeyedService,
 
  protected:
   // Available to be called in tests.
-  void SetAccountStateFromUserInfo(const std::string& account_id,
-                                   const base::DictionaryValue* user_info);
-  void SetIsChildAccount(const std::string& account_id,
-                         const bool& is_child_account);
+  void SetAccountStateFromUserInfo(
+      const std::string& account_id,
+      const base::DictionaryValue* user_info,
+      const std::vector<std::string>* service_flags);
 
  private:
   friend class AccountFetcherService;

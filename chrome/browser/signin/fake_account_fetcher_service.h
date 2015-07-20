@@ -35,7 +35,6 @@ class FakeAccountFetcherService : public AccountFetcherService {
 
  private:
   void StartFetchingUserInfo(const std::string& account_id) override;
-  void StartFetchingChildInfo(const std::string& account_id) override;
   void SendRefreshTokenAnnotationRequest(
       const std::string& account_id) override;
 

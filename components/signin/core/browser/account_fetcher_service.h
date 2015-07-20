@@ -16,7 +16,6 @@
 
 class AccountInfoFetcher;
 class AccountTrackerService;
-class ChildAccountInfoFetcher;
 class OAuth2TokenService;
 class RefreshTokenAnnotationRequest;
 class SigninClient;
@@ -54,25 +53,13 @@ class AccountFetcherService : public KeyedService,
 
  private:
   friend class AccountInfoFetcher;
-  friend class ChildAccountInfoFetcher;
 
   void RefreshAllAccountInfo(bool only_fetch_if_invalid);
   void RefreshAllAccountsAndScheduleNext();
   void ScheduleNextRefresh();
 
-  // Called on all account state changes. Decides whether to fetch new child
-  // status information or reset old values that aren't valid now.
-  void UpdateChildInfo();
-
   // Virtual so that tests can override the network fetching behaviour.
-  // Further the two fetches are managed by a different refresh logic and
-  // thus, can not be combined.
   virtual void StartFetchingUserInfo(const std::string& account_id);
-  virtual void StartFetchingChildInfo(const std::string& account_id);
-
-  // If there is more than one account in a profile, we forcibly reset the
-  // child status for an account to be false.
-  void ResetChildInfo();
 
   // Refreshes the AccountInfo associated with |account_id|.
   void RefreshAccountInfo(const std::string& account_id,
@@ -82,13 +69,11 @@ class AccountFetcherService : public KeyedService,
   virtual void SendRefreshTokenAnnotationRequest(const std::string& account_id);
   void RefreshTokenAnnotationRequestDone(const std::string& account_id);
 
-  // Called by AccountInfoFetcher.
+  // These methods are called by fetchers.
   void OnUserInfoFetchSuccess(const std::string& account_id,
-                              scoped_ptr<base::DictionaryValue> user_info);
+                              const base::DictionaryValue* user_info,
+                              const std::vector<std::string>* service_flags);
   void OnUserInfoFetchFailure(const std::string& account_id);
-
-  // Called by ChildAccountInfoFetcher.
-  void SetIsChildAccount(const std::string& account_id, bool is_child_account);
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
@@ -103,9 +88,6 @@ class AccountFetcherService : public KeyedService,
   base::Time last_updated_;
   base::OneShotTimer<AccountFetcherService> timer_;
   bool shutdown_called_;
-
-  std::string child_request_account_id_;
-  scoped_ptr<ChildAccountInfoFetcher> child_info_request_;
 
   // Holds references to account info fetchers keyed by account_id.
   base::ScopedPtrHashMap<std::string, scoped_ptr<AccountInfoFetcher>>

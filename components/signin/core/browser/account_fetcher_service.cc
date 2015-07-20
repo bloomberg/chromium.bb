@@ -11,7 +11,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/signin/core/browser/account_info_fetcher.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/child_account_info_fetcher.h"
 #include "components/signin/core/browser/refresh_token_annotation_request.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_switches.h"
@@ -44,8 +43,7 @@ AccountFetcherService::AccountFetcherService()
       token_service_(nullptr),
       signin_client_(nullptr),
       network_fetches_enabled_(false),
-      shutdown_called_(false),
-      child_info_request_(nullptr) {}
+      shutdown_called_(false) {}
 
 AccountFetcherService::~AccountFetcherService() {
   DCHECK(shutdown_called_);
@@ -104,25 +102,6 @@ void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
   }
 }
 
-// Child account status is refreshed through invalidations which are only
-// available for the primary account. Finding the primary account requires a
-// dependency on signin_manager which we get around by only allowing a single
-// account. This is possible since we only support a single account to be a
-// child anyway.
-void AccountFetcherService::UpdateChildInfo() {
-  DCHECK(CalledOnValidThread());
-  std::vector<std::string> accounts = token_service_->GetAccounts();
-  if (accounts.size() == 1) {
-    if (accounts[0] == child_request_account_id_)
-      return;
-    if (child_info_request_)
-      ResetChildInfo();
-    StartFetchingChildInfo(accounts[0]);
-  } else {
-    ResetChildInfo();
-  }
-}
-
 void AccountFetcherService::RefreshAllAccountsAndScheduleNext() {
   DCHECK(network_fetches_enabled_);
   RefreshAllAccountInfo(false);
@@ -146,7 +125,6 @@ void AccountFetcherService::ScheduleNextRefresh() {
   }
 }
 
-// Starts fetching user information. This is called periodically to refresh.
 void AccountFetcherService::StartFetchingUserInfo(
     const std::string& account_id) {
   DCHECK(CalledOnValidThread());
@@ -163,22 +141,6 @@ void AccountFetcherService::StartFetchingUserInfo(
     user_info_requests_.set(account_id, fetcher.Pass());
     user_info_requests_.get(account_id)->Start();
   }
-}
-
-// Starts fetching whether this is a child account. Handles refresh internally.
-void AccountFetcherService::StartFetchingChildInfo(
-    const std::string& account_id) {
-  child_request_account_id_ = account_id;
-  child_info_request_.reset(new ChildAccountInfoFetcher(
-      token_service_, signin_client_->GetURLRequestContext(), this,
-      child_request_account_id_));
-}
-
-void AccountFetcherService::ResetChildInfo() {
-  if (!child_request_account_id_.empty())
-    SetIsChildAccount(child_request_account_id_, false);
-  child_request_account_id_.clear();
-  child_info_request_.reset();
 }
 
 void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
@@ -248,17 +210,11 @@ void AccountFetcherService::RefreshTokenAnnotationRequestDone(
 
 void AccountFetcherService::OnUserInfoFetchSuccess(
     const std::string& account_id,
-    scoped_ptr<base::DictionaryValue> user_info) {
-  account_tracker_service_->SetAccountStateFromUserInfo(account_id,
-                                                        user_info.get());
+    const base::DictionaryValue* user_info,
+    const std::vector<std::string>* service_flags) {
+  account_tracker_service_->SetAccountStateFromUserInfo(
+      account_id, user_info, service_flags);
   user_info_requests_.erase(account_id);
-}
-
-void AccountFetcherService::SetIsChildAccount(const std::string& account_id,
-                                              bool is_child_account) {
-  if (account_id != child_request_account_id_)
-    return;
-  account_tracker_service_->SetIsChildAccount(account_id, is_child_account);
 }
 
 void AccountFetcherService::OnUserInfoFetchFailure(
@@ -274,7 +230,7 @@ void AccountFetcherService::OnRefreshTokenAvailable(
   // (such as fetching the signin token "handle" in order to look for password
   // changes) once everything is initialized and the refresh token is present.
   signin_client_->DoFinalInit();
-  UpdateChildInfo();
+
   RefreshAccountInfo(account_id, true);
 }
 
@@ -287,10 +243,6 @@ void AccountFetcherService::OnRefreshTokenRevoked(
 
   DVLOG(1) << "REVOKED " << account_id;
   user_info_requests_.erase(account_id);
-  if (account_id == child_request_account_id_) {
-    child_info_request_.reset();
-    child_request_account_id_.clear();
-  }
   account_tracker_service_->StopTrackingAccount(account_id);
 }
 
@@ -298,6 +250,4 @@ void AccountFetcherService::OnRefreshTokensLoaded() {
   // OnRefreshTokenAvailable has been called for all accounts by this point.
   // Maybe remove this after further investigation.
   RefreshAllAccountInfo(true);
-
-  UpdateChildInfo();
 }

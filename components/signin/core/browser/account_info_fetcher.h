@@ -14,12 +14,14 @@ class URLRequestContextGetter;
 }
 
 class AccountFetcherService;
+class GaiaAuthFetcher;
 
 // An account information fetcher that gets an OAuth token of appropriate
 // scope and uses it to fetch account infromation. This does not handle
 // refreshing the information and is meant to be used in a one shot fashion.
 class AccountInfoFetcher : public OAuth2TokenService::Consumer,
-                           public gaia::GaiaOAuthClient::Delegate {
+                           public gaia::GaiaOAuthClient::Delegate,
+                           public GaiaAuthConsumer {
  public:
   AccountInfoFetcher(OAuth2TokenService* token_service,
                      net::URLRequestContextGetter* request_context_getter,
@@ -29,8 +31,8 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
 
   const std::string& account_id() { return account_id_; }
 
-  // Start fetching the account information.
   void Start();
+  void SendSuccessIfDoneFetching();
 
   // OAuth2TokenService::Consumer implementation.
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -45,6 +47,12 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
+  // Overridden from GaiaAuthConsumer:
+  void OnClientLoginSuccess(const ClientLoginResult& result) override;
+  void OnClientLoginFailure(const GoogleServiceAuthError& error) override;
+  void OnGetUserInfoSuccess(const UserInfoMap& data) override;
+  void OnGetUserInfoFailure(const GoogleServiceAuthError& error) override;
+
  private:
   OAuth2TokenService* token_service_;
   net::URLRequestContextGetter* request_context_getter_;
@@ -53,6 +61,10 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
 
   scoped_ptr<OAuth2TokenService::Request> login_token_request_;
   scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
+
+  scoped_ptr<base::DictionaryValue> fetched_user_info_;
+  scoped_ptr<std::vector<std::string>> fetched_service_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountInfoFetcher);
 };

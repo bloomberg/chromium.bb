@@ -57,8 +57,6 @@
         'signin/core/browser/account_reconcilor.h',
         'signin/core/browser/account_tracker_service.cc',
         'signin/core/browser/account_tracker_service.h',
-        'signin/core/browser/child_account_info_fetcher.cc',
-        'signin/core/browser/child_account_info_fetcher.h',
         'signin/core/browser/device_activity_fetcher.cc',
         'signin/core/browser/device_activity_fetcher.h',
         'signin/core/browser/gaia_cookie_manager_service.cc',
