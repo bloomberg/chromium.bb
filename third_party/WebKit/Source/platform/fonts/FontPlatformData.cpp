@@ -289,7 +289,7 @@ bool FontPlatformData::hasSpaceInLigaturesOrKerning(
 {
     const HarfBuzzFace* hbFace = harfBuzzFace();
     if (!hbFace)
-        return true;
+        return false;
 
     hb_face_t* face = hbFace->face();
     ASSERT(face);
@@ -301,11 +301,11 @@ bool FontPlatformData::hasSpaceInLigaturesOrKerning(
     // will be rendering using a fallback font, which grantees that it cannot
     // affect the shape of the preceding word.
     if (!hb_font_get_glyph(font.get(), spaceCharacter, 0, &space))
-        return true;
+        return false;
 
     if (!hb_ot_layout_has_substitution(face)
         && !hb_ot_layout_has_positioning(face)) {
-        return true;
+        return false;
     }
 
     bool foundSpaceInTable = false;

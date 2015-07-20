@@ -789,6 +789,20 @@ crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnl
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
+Bug(eae) [ Mac ] virtual/antialiasedtext/fast/text/complex-preferred-logical-widths.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] fast/text/complex-preferred-logical-widths.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-br.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] fast/text/emphasis.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] fast/css/text-rendering.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] fast/lists/009-vertical.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] fast/writing-mode/vertical-lr-replaced-selection.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-p.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] fast/lists/003-vertical.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-right.html [ NeedsRebaseline ]
+Bug(eae) [ Mac ] virtual/antialiasedtext/fast/text/emphasis.html [ NeedsManualRebaseline ]
+Bug(eae) [ Mac ] fast/writing-mode/vertical-rl-replaced-selection.html [ NeedsRebaseline ]
+
 crbug.com/508398 [ Android ] editing/caret/caret-color.html [ ImageOnlyFailure Pass ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
@@ -3543,7 +3557,7 @@ crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/complex-text-opa
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/drawBidiText.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/emoticons.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/emphasis-complex.html [ Failure ]
-crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/emphasis.html [ Failure ]
+#crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/emphasis.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/international/001.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/international/002.html [ Failure ]
 crbug.com/509025 [ Yosemite ] virtual/antialiasedtext/fast/text/international/003.html [ Failure ]
