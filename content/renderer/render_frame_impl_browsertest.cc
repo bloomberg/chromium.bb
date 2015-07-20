@@ -42,8 +42,6 @@ class RenderFrameImplTest : public RenderViewTest {
     widget_params.surface_id = kSubframeSurfaceId;
     widget_params.hidden = false;
 
-    compositor_deps_.reset(new FakeCompositorDependencies);
-
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kSitePerProcess);
 
@@ -55,8 +53,8 @@ class RenderFrameImplTest : public RenderViewTest {
 
     RenderFrameImpl::CreateFrame(kSubframeRouteId, kFrameProxyRouteId,
                                  MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-                                 FrameReplicationState(),
-                                 compositor_deps_.get(), widget_params);
+                                 FrameReplicationState(), &compositor_deps_,
+                                 widget_params);
 
     frame_ = RenderFrameImpl::FromRoutingID(kSubframeRouteId);
     EXPECT_TRUE(frame_->is_subframe_);
@@ -71,30 +69,20 @@ class RenderFrameImplTest : public RenderViewTest {
      RenderViewTest::TearDown();
   }
 
-  // Loads the given HTML into the frame as a data: URL and blocks until
-  // the navigation is committed.
-  void LoadHTMLInFrame(const char* html) {
-    std::string url_str = "data:text/html;charset=utf-8,";
-    url_str.append(html);
-    GURL url(url_str);
-    frame_->GetWebFrame()->loadRequest(blink::WebURLRequest(url));
-    // The load actually happens asynchronously, so we pump messages to process
-    // the pending continuation.
-    FrameLoadWaiter(frame_).Wait();
-  }
-
   RenderFrameImpl* frame() { return frame_; }
 
-  content::RenderWidget* FrameWidget() { return frame_->render_widget_.get(); }
+  content::RenderWidget* frame_widget() const {
+    return frame_->render_widget_.get();
+  }
 
  private:
   RenderFrameImpl* frame_;
-  scoped_ptr<CompositorDependencies> compositor_deps_;
+  FakeCompositorDependencies compositor_deps_;
 };
 
 class RenderFrameTestObserver : public RenderFrameObserver {
  public:
-  RenderFrameTestObserver(RenderFrame* render_frame)
+  explicit RenderFrameTestObserver(RenderFrame* render_frame)
       : RenderFrameObserver(render_frame), visible_(false) {}
 
   ~RenderFrameTestObserver() override {}
@@ -122,8 +110,8 @@ class RenderFrameTestObserver : public RenderFrameObserver {
 // Verify that a frame with a RenderFrameProxy as a parent has its own
 // RenderWidget.
 TEST_F(RenderFrameImplTest, MAYBE_SubframeWidget) {
-  EXPECT_TRUE(FrameWidget());
-  EXPECT_NE(FrameWidget(), (content::RenderWidget*)view_);
+  EXPECT_TRUE(frame_widget());
+  EXPECT_NE(frame_widget(), (content::RenderWidget*)view_);
 }
 
 // Verify a subframe RenderWidget properly processes its viewport being
@@ -139,21 +127,20 @@ TEST_F(RenderFrameImplTest, MAYBE_FrameResize) {
   resize_params.resizer_rect = gfx::Rect();
   resize_params.is_fullscreen_granted = false;
 
-  scoped_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, resize_params));
-  FrameWidget()->OnMessageReceived(*resize_message);
+  ViewMsg_Resize resize_message(0, resize_params);
+  frame_widget()->OnMessageReceived(resize_message);
 
-  EXPECT_EQ(FrameWidget()->webwidget()->size(), blink::WebSize(size));
+  EXPECT_EQ(frame_widget()->webwidget()->size(), blink::WebSize(size));
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.
 TEST_F(RenderFrameImplTest, MAYBE_FrameWasShown) {
   RenderFrameTestObserver observer(frame());
 
-  scoped_ptr<IPC::Message> was_shown_message(
-      new ViewMsg_WasShown(0, true, ui::LatencyInfo()));
-  FrameWidget()->OnMessageReceived(*was_shown_message);
+  ViewMsg_WasShown was_shown_message(0, true, ui::LatencyInfo());
+  frame_widget()->OnMessageReceived(was_shown_message);
 
-  EXPECT_FALSE(FrameWidget()->is_hidden());
+  EXPECT_FALSE(frame_widget()->is_hidden());
   EXPECT_TRUE(observer.visible());
 }
 
