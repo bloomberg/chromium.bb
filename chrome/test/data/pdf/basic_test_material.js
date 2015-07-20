@@ -60,10 +60,7 @@ var tests = [
    * Test that changes to window height bubble down to dropdowns correctly.
    */
   function testUiManagerResizeDropdown() {
-    var mockWindow = {
-      addEventListener: function(name, listener) {},  // Pass.
-      innerHeight: 1080
-    };
+    var mockWindow = new MockWindow(1920, 1080);
     var mockZoomToolbar = {
       clientHeight: 400
     };
@@ -74,8 +71,7 @@ var tests = [
 
     chrome.test.assertTrue(bookmarksDropdown.lowerBound == 680);
 
-    mockWindow.innerHeight = 480;
-    uiManager.resizeDropdowns_();
+    mockWindow.setSize(1920, 480);
     chrome.test.assertTrue(bookmarksDropdown.lowerBound == 80);
 
     chrome.test.succeed();

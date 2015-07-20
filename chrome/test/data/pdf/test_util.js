@@ -92,3 +92,27 @@ function MockDocumentDimensions(width, height) {
     this.pageDimensions = [];
   };
 }
+
+function importHTML(src) {
+  var link = document.createElement('link');
+  var promise = new Promise(function(resolve, reject) {
+    link.onload = resolve;
+    link.onerror = reject;
+  });
+  link.rel = 'import';
+  link.href = src;
+  document.head.appendChild(link);
+  return promise;
+}
+
+/**
+ * Import iron-test-helpers into the test document.
+ * @example
+ *   importTestHelpers().then(function() {
+ *     chrome.test.runTests(...);
+ *   })
+ */
+function importTestHelpers() {
+  return importHTML('chrome://resources/polymer/v1_0/iron-test-helpers/' +
+      'iron-test-helpers.html');
+}

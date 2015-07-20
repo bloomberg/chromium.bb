@@ -102,9 +102,9 @@
      * @private
      */
     playAnimation_: function(isEntry) {
-      this._animation = isEntry ? this.animateEntry_() : this.animateExit_();
-      this._animation.onfinish = function() {
-        this._animation = null;
+      this.animation_ = isEntry ? this.animateEntry_() : this.animateExit_();
+      this.animation_.onfinish = function() {
+        this.animation_ = null;
         if (!this.dropdownOpen)
           this.$.dropdown.style.display = 'none';
       }.bind(this);
@@ -113,6 +113,9 @@
     animateEntry_: function() {
       var maxHeight = this.$.dropdown.getBoundingClientRect().height -
           DROPDOWN_OUTER_PADDING;
+
+      if (maxHeight < 0)
+        maxHeight = 0;
 
       var fade = new KeyframeEffect(this.$.dropdown, [
             {opacity: 0},
