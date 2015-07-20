@@ -29,7 +29,7 @@ public class AndroidHandler {
 
     // Bootstrap native and java libraries are packaged with the MojoShell APK as assets.
     private static final String BOOTSTRAP_JAVA_LIBRARY = "bootstrap_java.dex.jar";
-    private static final String BOOTSTRAP_NATIVE_LIBRARY = "libbootstrap.cr.so";
+    private static final String BOOTSTRAP_NATIVE_LIBRARY = "libbootstrap.so";
     // Name of the bootstrapping runnable shipped in the packaged Java library.
     private static final String BOOTSTRAP_CLASS = "org.chromium.mojo.shell.Bootstrap";
 
