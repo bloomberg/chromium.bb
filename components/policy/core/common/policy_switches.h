@@ -16,10 +16,6 @@ POLICY_EXPORT extern const char kDeviceManagementUrl[];
 POLICY_EXPORT extern const char kDisableComponentCloudPolicy[];
 POLICY_EXPORT extern const char kDisablePolicyKeyVerification[];
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-POLICY_EXPORT extern const char kFakeCloudPolicyType[];
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
 }  // namespace switches
 }  // namespace policy
 

@@ -108,7 +108,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
       : request_context_(new TestURLRequestContextGetter(loop_.task_runner())),
         cache_(nullptr),
         client_(nullptr),
-        core_(GetChromeUserPolicyType(),
+        core_(dm_protocol::kChromeUserPolicyType,
               std::string(),
               &store_,
               loop_.task_runner()) {}

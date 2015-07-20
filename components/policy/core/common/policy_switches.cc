@@ -19,13 +19,5 @@ const char kDisableComponentCloudPolicy[]   = "disable-component-cloud-policy";
 // produce verification signatures.
 const char kDisablePolicyKeyVerification[]  = "disable-policy-key-verification";
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// Registers for cloud policy using the BROWSER client type instead of the
-// ANDROID_BROWSER or IOS_BROWSER types.
-// This allows skipping the server whitelist.
-// TODO(joaodasilva): remove this. http://crbug.com/248527
-const char kFakeCloudPolicyType[]           = "fake-cloud-policy-type";
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
 }  // namespace switches
 }  // namespace policy

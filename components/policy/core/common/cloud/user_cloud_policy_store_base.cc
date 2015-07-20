@@ -30,7 +30,7 @@ scoped_ptr<UserCloudPolicyValidator> UserCloudPolicyStoreBase::CreateValidator(
   // Configure the validator.
   UserCloudPolicyValidator* validator =
       UserCloudPolicyValidator::Create(policy.Pass(), background_task_runner_);
-  validator->ValidatePolicyType(GetChromeUserPolicyType());
+  validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
   validator->ValidateAgainstCurrentPolicy(
       policy_.get(),
       timestamp_option,

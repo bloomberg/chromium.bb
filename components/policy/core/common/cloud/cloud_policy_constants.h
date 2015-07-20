@@ -135,12 +135,6 @@ enum DeviceMode {
                                           // launch a kiosk webapp.
 };
 
-// Returns the Chrome user policy type to use. This allows overridding the
-// default user policy type on Android and iOS for testing purposes.
-// TODO(joaodasilva): remove this once the server is ready.
-// http://crbug.com/248527
-POLICY_EXPORT const char* GetChromeUserPolicyType();
-
 // An enum that indicates if a device that has a local owner, is enterprise-
 // managed, or is consumer-managed. This is a copy of ManagementMode in
 // PolicyData. See device_management_backend.proto for the explanation of each
