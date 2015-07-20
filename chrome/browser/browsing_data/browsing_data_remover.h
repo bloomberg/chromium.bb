@@ -79,6 +79,7 @@ class BrowsingDataRemover
     // REMOVE_NOCHECKS intentionally does not check if the Profile's prohibited
     // from deleting history or downloads.
     REMOVE_NOCHECKS = 1 << 16,
+    REMOVE_WEBRTC_IDENTITY = 1 << 17,
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
     // protected-web origin.
@@ -93,7 +94,8 @@ class BrowsingDataRemover
                        REMOVE_SERVICE_WORKERS |
                        REMOVE_WEBSQL |
                        REMOVE_CHANNEL_IDS |
-                       REMOVE_SITE_USAGE_DATA,
+                       REMOVE_SITE_USAGE_DATA |
+                       REMOVE_WEBRTC_IDENTITY,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it

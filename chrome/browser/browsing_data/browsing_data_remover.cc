@@ -656,6 +656,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 #endif
   }
 
+  if (remove_mask & REMOVE_WEBRTC_IDENTITY) {
+    storage_partition_remove_mask |=
+        content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
+  }
+
   if (storage_partition_remove_mask) {
     waiting_for_clear_storage_partition_data_ = true;
 

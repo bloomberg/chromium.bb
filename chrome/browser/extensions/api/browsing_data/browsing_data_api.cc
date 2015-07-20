@@ -72,8 +72,10 @@ int MaskForKey(const char* key) {
     return BrowsingDataRemover::REMOVE_APPCACHE;
   if (strcmp(key, extension_browsing_data_api_constants::kCacheKey) == 0)
     return BrowsingDataRemover::REMOVE_CACHE;
-  if (strcmp(key, extension_browsing_data_api_constants::kCookiesKey) == 0)
-    return BrowsingDataRemover::REMOVE_COOKIES;
+  if (strcmp(key, extension_browsing_data_api_constants::kCookiesKey) == 0) {
+    return BrowsingDataRemover::REMOVE_COOKIES |
+        BrowsingDataRemover::REMOVE_WEBRTC_IDENTITY;
+  }
   if (strcmp(key, extension_browsing_data_api_constants::kDownloadsKey) == 0)
     return BrowsingDataRemover::REMOVE_DOWNLOADS;
   if (strcmp(key, extension_browsing_data_api_constants::kFileSystemsKey) == 0)
@@ -391,7 +393,8 @@ int BrowsingDataRemoveCacheFunction::GetRemovalMask() {
 
 int BrowsingDataRemoveCookiesFunction::GetRemovalMask() {
   return BrowsingDataRemover::REMOVE_COOKIES |
-         BrowsingDataRemover::REMOVE_CHANNEL_IDS;
+         BrowsingDataRemover::REMOVE_CHANNEL_IDS |
+         BrowsingDataRemover::REMOVE_WEBRTC_IDENTITY;
 }
 
 int BrowsingDataRemoveDownloadsFunction::GetRemovalMask() {
