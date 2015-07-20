@@ -512,6 +512,23 @@ public class CronetUrlRequestTest extends CronetTestBase {
     }
 
     /**
+     * Tests that an SSL cert error will be reported via {@link UrlRequest#onFailed}.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testMockSSLCertificateError() throws Exception {
+        TestUrlRequestListener listener = startAndWaitForComplete(
+                MockUrlRequestJobFactory.getMockUrlForSSLCertificateError());
+        assertNull(listener.mResponseInfo);
+        assertNotNull(listener.mError);
+        assertTrue(listener.mOnErrorCalled);
+        assertEquals(-201, listener.mError.netError());
+        assertEquals("Exception in CronetUrlRequest: net::ERR_CERT_DATE_INVALID",
+                listener.mError.getMessage());
+        assertEquals(listener.mResponseStep, ResponseStep.NOTHING);
+    }
+
+    /**
      * Checks that the buffer is updated correctly, when starting at an offset.
      */
     @SmallTest

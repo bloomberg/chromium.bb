@@ -7,14 +7,17 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "jni/MockUrlRequestJobFactory_jni.h"
+#include "net/test/url_request/ssl_certificate_error_job.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
+#include "url/gurl.h"
 
 namespace cronet {
 
 void AddUrlInterceptors(JNIEnv* env, jclass jcaller) {
   net::URLRequestMockDataJob::AddUrlHandler();
   net::URLRequestFailedJob::AddUrlHandler();
+  net::SSLCertificateErrorJob::AddUrlHandler();
 }
 
 jstring GetMockUrlWithFailure(JNIEnv* jenv,
@@ -34,6 +37,11 @@ jstring GetMockUrlForData(JNIEnv* jenv,
   std::string data(base::android::ConvertJavaStringToUTF8(jenv, jdata));
   GURL url(net::URLRequestMockDataJob::GetMockHttpUrl(data,
                                                       jdata_repeat_count));
+  return base::android::ConvertUTF8ToJavaString(jenv, url.spec()).Release();
+}
+
+jstring GetMockUrlForSSLCertificateError(JNIEnv* jenv, jclass jcaller) {
+  GURL url(net::SSLCertificateErrorJob::GetMockUrl());
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec()).Release();
 }
 

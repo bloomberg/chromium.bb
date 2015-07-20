@@ -15,9 +15,11 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 
@@ -269,6 +271,19 @@ void CronetURLRequestAdapter::OnReceivedRedirect(
       ConvertUTF8ToJavaString(env, redirect_info.new_url.spec()).obj(),
       redirect_info.status_code);
   *defer_redirect = true;
+}
+
+void CronetURLRequestAdapter::OnSSLCertificateError(
+    net::URLRequest* request,
+    const net::SSLInfo& ssl_info,
+    bool fatal) {
+  DCHECK(context_->IsOnNetworkThread());
+  request->Cancel();
+  int net_error = net::MapCertStatusToNetError(ssl_info.cert_status);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  cronet::Java_CronetUrlRequest_onError(
+      env, owner_.obj(), net_error,
+      ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj());
 }
 
 void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
