@@ -1427,6 +1427,17 @@
         }, # target_name: chromoting_swarm_tests
       ]
     }],
+    ['archive_media_router_tests==1', {
+      'targets': [
+        {
+          'target_name': 'media_router_swarming_tests',
+          'type': 'none',
+          'dependencies': [
+            '../chrome/test/media_router/e2e_tests.gyp:media_router_e2e_tests_run',
+          ],
+        }, # target_name: media_router_swarming_tests
+      ]
+    }],
     ['OS=="mac" and toolkit_views==1', {
       'targets': [
         {

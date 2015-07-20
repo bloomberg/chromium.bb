@@ -2463,6 +2463,9 @@
 
      # Whether to allow building of chromoting related isolates.
     'archive_chromoting_tests%': 0,
+
+    # Whether to allow building of Media Router related isolates.
+    'archive_media_router_tests%': 0,
   },
   'target_defaults': {
     'variables': {

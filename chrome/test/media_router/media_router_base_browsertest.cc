@@ -55,6 +55,7 @@ void MediaRouterBaseBrowserTest::SetUpOnMainThread() {
   process_manager->AddObserver(this);
   InstallAndEnableMRExtension();
   extension_load_event_.Wait();
+  ExtensionBrowserTest::SetUpOnMainThread();
 }
 
 void MediaRouterBaseBrowserTest::TearDownOnMainThread() {
@@ -63,6 +64,7 @@ void MediaRouterBaseBrowserTest::TearDownOnMainThread() {
       extensions::ProcessManager::Get(browser()->profile());
   DCHECK(process_manager);
   process_manager->RemoveObserver(this);
+  ExtensionBrowserTest::TearDownOnMainThread();
 }
 
 void MediaRouterBaseBrowserTest::InstallAndEnableMRExtension() {

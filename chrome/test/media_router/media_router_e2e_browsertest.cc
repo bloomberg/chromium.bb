@@ -36,8 +36,10 @@ namespace {
 const char kReceiver[] = "receiver";
 // URL to launch Castv2Player_Staging app on Chromecast
 const char kCastAppPresentationUrl[] =
-    "https://google.com/cast#__castAppId__=BE6E4473";
+    "https://google.com/cast#__castAppId__=BE6E4473/"
+    "__castClientId__=143692175507258981";
 }  // namespace
+
 
 namespace media_router {
 
