@@ -148,7 +148,6 @@ public:
     void didCallFunction();
     void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
     void didEvaluateScript();
-    bool getEditedScript(const String& url, String* content);
 
     class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
     public:
@@ -205,7 +204,6 @@ protected:
 
     void didContinue() final;
     void reset();
-    void resetModifiedSources();
 
 private:
     bool checkEnabled(ErrorString*);
@@ -294,7 +292,6 @@ private:
     // This field must be destroyed before the listeners set above.
     OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
-    HashMap<String, String> m_editedScripts;
 
     using AsyncOperationIdToAsyncCallChain = WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain>>;
     AsyncOperationIdToAsyncCallChain m_asyncOperations;

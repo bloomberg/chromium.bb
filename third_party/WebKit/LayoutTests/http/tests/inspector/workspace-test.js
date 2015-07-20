@@ -8,6 +8,9 @@ InspectorTest.createWorkspace = function(ignoreEvents)
     InspectorTest.testFileSystemMapping._fileSystemMappingSetting = new InspectorTest.MockSetting({});
     InspectorTest.testFileSystemMapping._excludedFoldersSetting = new InspectorTest.MockSetting({});
 
+    // testNetworkMapping does not want to know about original page resources, so we don't populate it at start.
+    InspectorTest.override(WebInspector.NetworkProject.prototype, "_populate", function() {});
+
     InspectorTest.testTargetManager = new WebInspector.TargetManager();
     InspectorTest.testWorkspace = new WebInspector.Workspace(InspectorTest.testFileSystemMapping);
     InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);

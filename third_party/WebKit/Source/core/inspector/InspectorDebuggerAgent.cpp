@@ -627,10 +627,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuil
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it == m_scripts.end())
         return;
-    String url = it->value.url();
-    if (url.isEmpty())
-        return;
-    m_editedScripts.set(url, newContent);
+    it->value.setSource(newContent);
 }
 
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
@@ -667,10 +664,6 @@ void InspectorDebuggerAgent::getScriptSource(ErrorString* error, const String& s
         *error = "No script for id: " + scriptId;
         return;
     }
-
-    String url = it->value.url();
-    if (!url.isEmpty() && getEditedScript(url, scriptSource))
-        return;
     *scriptSource = it->value.source();
 }
 
@@ -1458,14 +1451,6 @@ void InspectorDebuggerAgent::changeJavaScriptRecursionLevel(int step)
     }
 }
 
-bool InspectorDebuggerAgent::getEditedScript(const String& url, String* content)
-{
-    if (!m_editedScripts.contains(url))
-        return false;
-    *content = m_editedScripts.get(url);
-    return true;
-}
-
 PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
 {
     if (!m_pausedScriptState || m_currentCallStack.IsEmpty())
@@ -1759,11 +1744,6 @@ void InspectorDebuggerAgent::reset()
     promiseTracker().clear();
     if (frontend())
         frontend()->globalObjectCleared();
-}
-
-void InspectorDebuggerAgent::resetModifiedSources()
-{
-    m_editedScripts.clear();
 }
 
 DEFINE_TRACE(InspectorDebuggerAgent)
