@@ -17,27 +17,27 @@ CONSOLE MESSAGE: line 39: Error valid stack #3
 CONSOLE MESSAGE: line 20: ReferenceError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:41:1
+    at console-log-linkify-stack-in-errors.html:41:8
 CONSOLE MESSAGE: line 20: EvalError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:42:1
+    at console-log-linkify-stack-in-errors.html:42:8
 CONSOLE MESSAGE: line 20: SyntaxError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:43:1
+    at console-log-linkify-stack-in-errors.html:43:8
 CONSOLE MESSAGE: line 20: RangeError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:44:1
+    at console-log-linkify-stack-in-errors.html:44:8
 CONSOLE MESSAGE: line 20: TypeError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:45:1
+    at console-log-linkify-stack-in-errors.html:45:8
 CONSOLE MESSAGE: line 20: URIError: valid stack
     at stack2 (console-log-linkify-stack-in-errors.html:20:21)
     at stack1 (console-log-linkify-stack-in-errors.html:22:5)
-    at console-log-linkify-stack-in-errors.html:46:1
+    at console-log-linkify-stack-in-errors.html:46:8
 CONSOLE MESSAGE: line 48: Error broken stack
     at function_name(foob.js foob.js:30:1)
  at foob.js:40:70
