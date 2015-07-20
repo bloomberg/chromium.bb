@@ -5,6 +5,7 @@
 #include "ios/public/test/test_chrome_browser_provider.h"
 
 #include "base/logging.h"
+#include "ios/public/test/fake_search_provider.h"
 #include "ios/public/test/fake_string_provider.h"
 
 namespace {
@@ -14,7 +15,8 @@ const char kUIScheme[] = "uischeme";
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : string_provider_(new FakeStringProvider) {
+    : string_provider_(new FakeStringProvider),
+      search_provider_(new FakeSearchProvider) {
 }
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {
@@ -33,6 +35,10 @@ StringProvider* TestChromeBrowserProvider::GetStringProvider() {
 
 const char* TestChromeBrowserProvider::GetChromeUIScheme() {
   return kUIScheme;
+}
+
+SearchProvider* TestChromeBrowserProvider::GetSearchProvider() {
+  return search_provider_.get();
 }
 
 }  // namespace ios

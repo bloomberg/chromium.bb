@@ -12,6 +12,8 @@
       'sources': [
         # TODO(droger): Move most of these files to
         # //ios/chrome/ios_chrome_tests.gyp, see http://crbug.com/437333
+        'public/test/fake_search_provider.cc',
+        'public/test/fake_search_provider.h',
         'public/test/fake_string_provider.cc',
         'public/test/fake_string_provider.h',
         'public/test/fake_sync_service_factory.cc',
