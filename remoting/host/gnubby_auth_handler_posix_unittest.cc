@@ -48,7 +48,7 @@ const unsigned char kRequestData[] = {
 
 class TestClientStub : public protocol::ClientStub {
  public:
-  TestClientStub() {}
+  TestClientStub() : loop_(new base::RunLoop) {}
   ~TestClientStub() override {}
 
   // protocol::ClientStub implementation.
@@ -59,7 +59,7 @@ class TestClientStub : public protocol::ClientStub {
 
   void DeliverHostMessage(const protocol::ExtensionMessage& message) override {
     message_ = message;
-    loop_.Quit();
+    loop_->Quit();
   }
 
   // protocol::ClipboardStub implementation.
@@ -68,7 +68,10 @@ class TestClientStub : public protocol::ClientStub {
   // protocol::CursorShapeStub implementation.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override {}
 
-  void WaitForDeliverHostMessage() { loop_.Run(); }
+  void WaitForDeliverHostMessage() {
+    loop_->Run();
+    loop_.reset(new base::RunLoop);
+  }
 
   void CheckHostDataMessage(int id, const std::string& data) {
     std::string connection_id = base::StringPrintf("\"connectionId\":%d", id);
@@ -83,7 +86,7 @@ class TestClientStub : public protocol::ClientStub {
 
  private:
   protocol::ExtensionMessage message_;
-  base::RunLoop loop_;
+  scoped_ptr<base::RunLoop> loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientStub);
 };
@@ -96,6 +99,41 @@ class GnubbyAuthHandlerPosixTest : public testing::Test {
     auth_handler_posix_.reset(new GnubbyAuthHandlerPosix(&client_stub_));
     auth_handler_ = auth_handler_posix_.get();
     auth_handler_->SetGnubbySocketName(socket_path_);
+  }
+
+  void WriteRequestData(net::UnixDomainClientSocket* client_socket) {
+    int request_len = sizeof(kRequestData);
+    scoped_refptr<net::DrainableIOBuffer> request_buffer(
+        new net::DrainableIOBuffer(
+            new net::WrappedIOBuffer(
+                reinterpret_cast<const char*>(kRequestData)),
+            request_len));
+    net::TestCompletionCallback write_callback;
+    int bytes_written = 0;
+    while (bytes_written < request_len) {
+      int write_result = client_socket->Write(request_buffer.get(),
+                                              request_buffer->BytesRemaining(),
+                                              write_callback.callback());
+      write_result = write_callback.GetResult(write_result);
+      ASSERT_GT(write_result, 0);
+      bytes_written += write_result;
+      ASSERT_LE(bytes_written, request_len);
+      request_buffer->DidConsume(write_result);
+    }
+    ASSERT_EQ(request_len, bytes_written);
+  }
+
+  void WaitForAndVerifyHostMessage() {
+    client_stub_.WaitForDeliverHostMessage();
+    base::ListValue expected_data;
+    // Skip first four bytes.
+    for (size_t i = 4; i < sizeof(kRequestData); ++i) {
+      expected_data.AppendInteger(kRequestData[i]);
+    }
+
+    std::string expected_data_json;
+    base::JSONWriter::Write(expected_data, &expected_data_json);
+    client_stub_.CheckHostDataMessage(1, expected_data_json);
   }
 
  protected:
@@ -119,45 +157,48 @@ TEST_F(GnubbyAuthHandlerPosixTest, HostDataMessageDelivered) {
   client_stub_.CheckHostDataMessage(42, "[116,101,115,116,95,109,115,103]");
 }
 
-TEST_F(GnubbyAuthHandlerPosixTest, DidReadAndClose) {
-  std::string message_json = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
-
+TEST_F(GnubbyAuthHandlerPosixTest, NotClosedAfterRequest) {
   ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+
+  const char message_json[] = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
   auth_handler_->DeliverClientMessage(message_json);
+
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
+
   int rv = client_socket.Connect(connect_callback.callback());
   ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
-  int request_len = sizeof(kRequestData);
-  scoped_refptr<net::DrainableIOBuffer> request_buffer(
-      new net::DrainableIOBuffer(
-          new net::WrappedIOBuffer(reinterpret_cast<const char*>(kRequestData)),
-          request_len));
-  net::TestCompletionCallback write_callback;
-  int bytes_written = 0;
-  while (bytes_written < request_len) {
-    int write_result = client_socket.Write(request_buffer.get(),
-                                           request_buffer->BytesRemaining(),
-                                           write_callback.callback());
-    write_result = write_callback.GetResult(write_result);
-    ASSERT_GT(write_result, 0);
-    bytes_written += write_result;
-    ASSERT_LE(bytes_written, request_len);
-    request_buffer->DidConsume(write_result);
-  }
-  ASSERT_EQ(request_len, bytes_written);
 
-  client_stub_.WaitForDeliverHostMessage();
-  base::ListValue expected_data;
-  // Skip first four bytes.
-  for (size_t i = 4; i < sizeof(kRequestData); ++i) {
-    expected_data.AppendInteger(kRequestData[i]);
-  }
+  // Write the request and verify the response.
+  WriteRequestData(&client_socket);
+  WaitForAndVerifyHostMessage();
 
-  std::string expected_data_json;
-  base::JSONWriter::Write(expected_data, &expected_data_json);
-  client_stub_.CheckHostDataMessage(1, expected_data_json);
+  // Verify that completing a request/response cycle didn't close the socket.
+  ASSERT_EQ(1u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+}
+
+TEST_F(GnubbyAuthHandlerPosixTest, HandleTwoRequests) {
   ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+
+  const char message_json[] = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
+  auth_handler_->DeliverClientMessage(message_json);
+
+  net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
+  net::TestCompletionCallback connect_callback;
+
+  int rv = client_socket.Connect(connect_callback.callback());
+  ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
+
+  // Write the request and verify the response.
+  WriteRequestData(&client_socket);
+  WaitForAndVerifyHostMessage();
+
+  // Repeat the request/response cycle.
+  WriteRequestData(&client_socket);
+  WaitForAndVerifyHostMessage();
+
+  // Verify that completing two request/response cycles didn't close the socket.
+  ASSERT_EQ(1u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 }
 
 TEST_F(GnubbyAuthHandlerPosixTest, DidReadTimeout) {

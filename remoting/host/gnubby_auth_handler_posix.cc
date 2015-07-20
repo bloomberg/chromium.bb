@@ -231,14 +231,9 @@ void GnubbyAuthHandlerPosix::OnReadComplete(int connection_id) {
     return;
   }
   ProcessGnubbyRequest(connection_id, request_data);
-  Close(iter);
-}
-
-void GnubbyAuthHandlerPosix::Close(const ActiveSockets::iterator& iter) {
-  DCHECK(CalledOnValidThread());
-
-  delete iter->second;
-  active_sockets_.erase(iter);
+  iter->second->StartReadingRequest(
+      base::Bind(&GnubbyAuthHandlerPosix::OnReadComplete,
+                 base::Unretained(this), connection_id));
 }
 
 void GnubbyAuthHandlerPosix::CreateAuthorizationSocket() {
@@ -284,7 +279,8 @@ GnubbyAuthHandlerPosix::GetSocketForMessage(base::DictionaryValue* message) {
 void GnubbyAuthHandlerPosix::SendErrorAndCloseActiveSocket(
     const ActiveSockets::iterator& iter) {
   iter->second->SendSshError();
-  Close(iter);
+  delete iter->second;
+  active_sockets_.erase(iter);
 }
 
 void GnubbyAuthHandlerPosix::RequestTimedOut(int connection_id) {

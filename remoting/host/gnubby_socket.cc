@@ -4,6 +4,7 @@
 
 #include "remoting/host/gnubby_socket.h"
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "net/base/io_buffer.h"
@@ -72,6 +73,7 @@ void GnubbySocket::SendSshError() {
 void GnubbySocket::StartReadingRequest(
     const base::Closure& request_received_callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(request_received_callback_.is_null());
 
   request_received_callback_ = request_received_callback;
   DoRead();
@@ -82,7 +84,7 @@ void GnubbySocket::OnDataWritten(int result) {
   DCHECK(write_buffer_);
 
   if (result < 0) {
-    LOG(ERROR) << "Error in sending response.";
+    LOG(ERROR) << "Error sending response: " << result;
     return;
   }
   ResetTimer();
@@ -105,23 +107,26 @@ void GnubbySocket::DoWrite() {
     OnDataWritten(result);
 }
 
-void GnubbySocket::OnDataRead(int bytes_read) {
+void GnubbySocket::OnDataRead(int result) {
   DCHECK(CalledOnValidThread());
 
-  if (bytes_read < 0) {
-    LOG(ERROR) << "Error in reading request.";
+  if (result <= 0) {
+    if (result < 0)
+      LOG(ERROR) << "Error reading request: " << result;
     read_completed_ = true;
-    request_received_callback_.Run();
+    base::ResetAndReturn(&request_received_callback_).Run();
     return;
   }
+
   ResetTimer();
   request_data_.insert(request_data_.end(), read_buffer_->data(),
-                       read_buffer_->data() + bytes_read);
+                       read_buffer_->data() + result);
   if (IsRequestComplete()) {
     read_completed_ = true;
-    request_received_callback_.Run();
+    base::ResetAndReturn(&request_received_callback_).Run();
     return;
   }
+
   DoRead();
 }
 

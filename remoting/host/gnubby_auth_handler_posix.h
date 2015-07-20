@@ -58,9 +58,6 @@ class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
   // Called when a GnubbySocket has done reading.
   void OnReadComplete(int connection_id);
 
-  // Removes a GnubbySocket from |active_sockets_| and deletes it.
-  void Close(const ActiveSockets::iterator& iter);
-
   // Create socket for authorization.
   void CreateAuthorizationSocket();
 
@@ -70,7 +67,7 @@ class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
   // Gets an active socket iterator for the connection id in |message|.
   ActiveSockets::iterator GetSocketForMessage(base::DictionaryValue* message);
 
-  // Send an error and close an active socket.
+  // Send an error and closes an active socket.
   void SendErrorAndCloseActiveSocket(const ActiveSockets::iterator& iter);
 
   // A request timed out.
