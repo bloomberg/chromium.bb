@@ -72,9 +72,13 @@
 #define DRM_MAJOR 34
 #endif
 
-# ifdef __OpenBSD__
-#  define DRM_MAJOR 81
-# endif
+#ifdef __OpenBSD__
+#ifdef __i386__
+#define DRM_MAJOR 88
+#else
+#define DRM_MAJOR 87
+#endif
+#endif /* __OpenBSD__ */
 
 #ifndef DRM_MAJOR
 #define DRM_MAJOR 226		/* Linux */
