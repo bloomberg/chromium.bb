@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gin/per_isolate_data.h"
+
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "gin/per_isolate_data.h"
 #include "gin/public/gin_embedders.h"
 
 using v8::ArrayBuffer;
@@ -108,6 +109,11 @@ NamedPropertyInterceptor* PerIsolateData::GetNamedPropertyInterceptor(
     return it->second;
   else
     return NULL;
+}
+
+void PerIsolateData::EnableIdleTasks(
+    scoped_ptr<V8IdleTaskRunner> idle_task_runner) {
+  idle_task_runner_ = idle_task_runner.Pass();
 }
 
 }  // namespace gin

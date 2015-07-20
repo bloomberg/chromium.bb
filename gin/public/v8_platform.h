@@ -26,6 +26,9 @@ class GIN_EXPORT V8Platform : public NON_EXPORTED_BASE(v8::Platform) {
   void CallDelayedOnForegroundThread(v8::Isolate* isolate,
                                      v8::Task* task,
                                      double delay_in_seconds) override;
+  void CallIdleOnForegroundThread(v8::Isolate* isolate,
+                                  v8::IdleTask* task) override;
+  bool IdleTasksEnabled(v8::Isolate* isolate) override;
   double MonotonicallyIncreasingTime() override;
 
  private:

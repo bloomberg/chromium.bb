@@ -46,6 +46,7 @@ component("gin") {
     "public/debug.h",
     "public/gin_embedders.h",
     "public/isolate_holder.h",
+    "public/v8_idle_task_runner.h",
     "public/v8_platform.h",
     "public/wrapper_info.h",
     "run_microtasks_observer.cc",

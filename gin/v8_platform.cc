@@ -46,6 +46,16 @@ void V8Platform::CallDelayedOnForegroundThread(v8::Isolate* isolate,
       base::TimeDelta::FromSecondsD(delay_in_seconds));
 }
 
+void V8Platform::CallIdleOnForegroundThread(v8::Isolate* isolate,
+                                            v8::IdleTask* task) {
+  DCHECK(PerIsolateData::From(isolate)->idle_task_runner());
+  PerIsolateData::From(isolate)->idle_task_runner()->PostIdleTask(task);
+}
+
+bool V8Platform::IdleTasksEnabled(v8::Isolate* isolate) {
+  return PerIsolateData::From(isolate)->idle_task_runner() != nullptr;
+}
+
 double V8Platform::MonotonicallyIncreasingTime() {
   return base::TimeTicks::Now().ToInternalValue() /
       static_cast<double>(base::Time::kMicrosecondsPerSecond);

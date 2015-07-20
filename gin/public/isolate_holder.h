@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "gin/gin_export.h"
+#include "gin/public/v8_idle_task_runner.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -65,6 +66,8 @@ class GIN_EXPORT IsolateHolder {
 
   // This method returns if v8::Locker is needed to access isolate.
   AccessMode access_mode() const { return access_mode_; }
+
+  void EnableIdleTasks(scoped_ptr<V8IdleTaskRunner> idle_task_runner);
 
   // This method returns V8IsolateMemoryDumpProvider of this isolate, used for
   // testing.

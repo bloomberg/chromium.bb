@@ -92,4 +92,10 @@ void IsolateHolder::RemoveRunMicrotasksObserver() {
   task_observer_.reset();
 }
 
+void IsolateHolder::EnableIdleTasks(
+    scoped_ptr<V8IdleTaskRunner> idle_task_runner) {
+  DCHECK(isolate_data_.get());
+  isolate_data_->EnableIdleTasks(idle_task_runner.Pass());
+}
+
 }  // namespace gin
