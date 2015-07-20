@@ -274,6 +274,10 @@ void OomPriorityManager::RecordDiscardStatistics() {
 }
 
 void OomPriorityManager::RecordRecentTabDiscard() {
+  // If we are shutting down, do not do anything.
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If we change the interval we need to change the histogram name.
   UMA_HISTOGRAM_BOOLEAN("Tabs.Discard.DiscardInLastMinute",
@@ -344,6 +348,10 @@ bool OomPriorityManager::CompareTabStats(TabStats first, TabStats second) {
 // if needed (if we detect that the machine was asleep) and will fire the stats
 // updating on ChromeOS via the delegate.
 void OomPriorityManager::UpdateTimerCallback() {
+  // If we shutting down, do not do anything.
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   if (BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH)->empty() &&
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty())
     return;
@@ -437,6 +445,10 @@ void OomPriorityManager::AddTabStats(BrowserList* browser_list,
 
 void OomPriorityManager::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // If we are shutting down, do not do anything.
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   // For the moment we only do something when we reach a critical state.
   if (memory_pressure_level ==
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {

@@ -1739,11 +1739,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Android specific MessageLoop
   NOTREACHED();
 #else
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  // TODO(georgesak): Check if this is really needed and remove if possible.
-  g_browser_process->GetOomPriorityManager()->Stop();
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
-
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
   metrics::MetricsService::SetExecutionPhase(
