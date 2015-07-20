@@ -52,8 +52,8 @@ class TestRenderWidget : public RenderWidget {
 class RenderWidgetCompositorTest : public testing::Test {
  public:
   RenderWidgetCompositorTest()
-      : render_widget_(make_scoped_refptr(new TestRenderWidget())),
-        compositor_deps_(make_scoped_ptr(new FakeCompositorDependencies)),
+      : render_widget_(new TestRenderWidget()),
+        compositor_deps_(new FakeCompositorDependencies),
         render_widget_compositor_(
             RenderWidgetCompositor::Create(render_widget_.get(),
                                            compositor_deps_.get())) {}
@@ -234,8 +234,8 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
 class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
  public:
   RenderWidgetCompositorOutputSurfaceTest()
-      : render_widget_(make_scoped_refptr(new RenderWidgetOutputSurface)),
-        compositor_deps_(make_scoped_ptr(new FakeCompositorDependencies)) {
+      : render_widget_(new RenderWidgetOutputSurface),
+        compositor_deps_(new FakeCompositorDependencies) {
     render_widget_compositor_.reset(new RenderWidgetCompositorOutputSurface(
         render_widget_.get(), compositor_deps_.get()));
     render_widget_compositor_->Initialize();
