@@ -33,7 +33,6 @@ message VideoPacketFormat {
   optional int32 y_dpi = 9;
 }
 
-// TODO(hclam): Remove this message once we can obtain dirty rects from libvpx.
 message Rect {
   optional int32 x = 1;
   optional int32 y = 2;
@@ -59,9 +58,12 @@ message VideoPacket {
   // starting to capture this video frame.
   optional int64 latest_event_timestamp = 9;
 
+  // Provides the new shape for this frame, iff |use_desktop_shape| is true.
   repeated Rect desktop_shape_rects = 10;
 
-  // True when |desktop_shape_rects| should be used.
+  // True when |desktop_shape_rects| should be used, false to indicate that
+  // the frame is un-shaped. If the shape has not changed since the preceding
+  // frame then this field should be omitted.
   optional bool use_desktop_shape = 11;
 
   // Optional frame timestamp. Used in tests to estimate frame latency.
