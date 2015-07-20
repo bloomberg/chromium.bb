@@ -21,7 +21,7 @@ public:
 };
 
 // These macros provide safe downcasts of NonInterpolableValue subclasses with debug assertions.
-// See CSSValueAnimationType for example usage.
+// See CSSValueInterpolationType.cpp for example usage.
 #define DECLARE_NON_INTERPOLABLE_VALUE_TYPE() \
     static Type staticType; \
     virtual Type type() const { return staticType; }

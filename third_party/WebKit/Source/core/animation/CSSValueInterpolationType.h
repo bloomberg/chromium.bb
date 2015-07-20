@@ -32,34 +32,6 @@ public:
     void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const final;
 };
 
-class DefaultNonInterpolableValue : public NonInterpolableValue {
-public:
-    ~DefaultNonInterpolableValue() override { }
-    static PassRefPtrWillBeRawPtr<DefaultNonInterpolableValue> create(PassRefPtrWillBeRawPtr<CSSValue> cssValue)
-    {
-        return adoptRefWillBeNoop(new DefaultNonInterpolableValue(cssValue));
-    }
-
-    CSSValue* cssValue() const { return m_cssValue.get(); }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        NonInterpolableValue::trace(visitor);
-        visitor->trace(m_cssValue);
-    }
-
-    DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
-
-private:
-    DefaultNonInterpolableValue(PassRefPtrWillBeRawPtr<CSSValue> cssValue)
-        : m_cssValue(cssValue)
-    { }
-
-    RefPtrWillBeMember<CSSValue> m_cssValue;
-};
-
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(DefaultNonInterpolableValue);
-
 } // namespace blink
 
 #endif // CSSValueInterpolationType_h
