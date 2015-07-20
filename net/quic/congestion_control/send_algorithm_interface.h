@@ -88,9 +88,6 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // Returns 0 when it does not have an estimate.
   virtual QuicBandwidth BandwidthEstimate() const = 0;
 
-  // Returns true if the current bandwidth estimate is reliable.
-  virtual bool HasReliableBandwidthEstimate() const = 0;
-
   // Get the send algorithm specific retransmission delay, called RTO in TCP,
   // Note 1: the caller is responsible for sanity checking this value.
   // Note 2: this will return zero if we don't have enough data for an estimate.

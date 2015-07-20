@@ -58,7 +58,6 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
       HasRetransmittableData has_retransmittable_data) const override;
   QuicBandwidth PacingRate() const override;
   QuicBandwidth BandwidthEstimate() const override;
-  bool HasReliableBandwidthEstimate() const override;
   QuicTime::Delta RetransmissionDelay() const override;
   QuicByteCount GetCongestionWindow() const override;
   bool InSlowStart() const override;

@@ -190,9 +190,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns the estimated bandwidth calculated by the congestion algorithm.
   QuicBandwidth BandwidthEstimate() const;
 
-  // Returns true if the current instantaneous bandwidth estimate is reliable.
-  bool HasReliableBandwidthEstimate() const;
-
   const QuicSustainedBandwidthRecorder& SustainedBandwidthRecorder() const;
 
   // Returns the size of the current congestion window in number of

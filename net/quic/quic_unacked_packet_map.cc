@@ -76,12 +76,7 @@ void QuicUnackedPacketMap::AddSentPacket(
 
 void QuicUnackedPacketMap::RemoveObsoletePackets() {
   while (!unacked_packets_.empty()) {
-    if (FLAGS_quic_use_is_useless_packet &&
-        !IsPacketUseless(least_unacked_, unacked_packets_.front())) {
-      break;
-    }
-    if (!FLAGS_quic_use_is_useless_packet &&
-        !IsPacketRemovable(least_unacked_, unacked_packets_.front())) {
+    if (!IsPacketUseless(least_unacked_, unacked_packets_.front())) {
       break;
     }
     PopLeastUnacked();
@@ -272,15 +267,6 @@ bool QuicUnackedPacketMap::IsPacketUseless(
     QuicPacketSequenceNumber sequence_number,
     const TransmissionInfo& info) const {
   return !IsPacketUsefulForMeasuringRtt(sequence_number, info) &&
-         !IsPacketUsefulForCongestionControl(info) &&
-         !IsPacketUsefulForRetransmittableData(info);
-}
-
-bool QuicUnackedPacketMap::IsPacketRemovable(
-    QuicPacketSequenceNumber sequence_number,
-    const TransmissionInfo& info) const {
-  return (!IsPacketUsefulForMeasuringRtt(sequence_number, info) ||
-          unacked_packets_.size() > 200) &&
          !IsPacketUsefulForCongestionControl(info) &&
          !IsPacketUsefulForRetransmittableData(info);
 }

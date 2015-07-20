@@ -254,38 +254,6 @@ bool QuicStreamSequencer::FrameOverlapsBufferedData(
   return false;
 }
 
-void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
-  DCHECK(!blocked_);
-  size_t end_offset = num_bytes_consumed_ + num_bytes_consumed;
-  while (!buffered_frames_.empty() && end_offset != num_bytes_consumed_) {
-    FrameList::iterator it = buffered_frames_.begin();
-    if (it->offset != num_bytes_consumed_) {
-      LOG(DFATAL) << "Invalid argument to MarkConsumed. "
-                  << " num_bytes_consumed_: " << num_bytes_consumed_
-                  << " end_offset: " << end_offset << " offset: " << it->offset
-                  << " length: " << it->segment.length();
-      stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
-      return;
-    }
-
-    if (it->offset + it->segment.length() <= end_offset) {
-      num_bytes_consumed_ += it->segment.length();
-      num_bytes_buffered_ -= it->segment.length();
-      // This chunk is entirely consumed.
-      buffered_frames_.erase(it);
-      continue;
-    }
-
-    // Partially consume this frame.
-    size_t delta = end_offset - it->offset;
-    RecordBytesConsumed(delta);
-    string new_data = it->segment.substr(delta);
-    buffered_frames_.erase(it);
-    buffered_frames_.push_front(FrameData(num_bytes_consumed_, new_data));
-    break;
-  }
-}
-
 bool QuicStreamSequencer::IsDuplicate(
     const QuicStreamFrame& frame,
     FrameList::const_iterator insertion_point) const {

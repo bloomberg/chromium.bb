@@ -48,10 +48,6 @@ bool FLAGS_quic_auto_tune_receive_window = true;
 // Enables sending of FEC packet only when FEC alarm goes off.
 bool FLAGS_quic_send_fec_packet_only_on_fec_alarm = true;
 
-// Change from using IsPacketRemovable to IsPacketUseless in
-// QuicUnackedPacketMap.
-bool FLAGS_quic_use_is_useless_packet = true;
-
 // Delay setting QUIC's retransmission alarm until an ack is fully
 // processed or a write is complete.
 bool FLAGS_quic_delay_retransmission_alarm = true;
@@ -62,3 +58,10 @@ bool FLAGS_quic_do_path_mtu_discovery = true;
 // Process QUIC frames as soon as they're parsed, instead of waiting for the
 // packet's parsing to complete.
 bool FLAGS_quic_process_frames_inline = true;
+
+// No longer call OnCanWrite when connection level flow control unblocks in
+// QuicSession.
+bool FLAGS_quic_dont_write_when_flow_unblocked = true;
+
+// If true, client IP migration is allowed in QUIC.
+bool FLAGS_quic_allow_ip_migration = true;

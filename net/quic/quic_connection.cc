@@ -1399,6 +1399,7 @@ void QuicConnection::CheckForAddressMigration(
     peer_port_changed_ = (peer_address.port() != peer_address_.port());
 
     // Store in case we want to migrate connection in ProcessValidatedPacket.
+    migrating_peer_ip_ = peer_address.address();
     migrating_peer_port_ = peer_address.port();
   }
 
@@ -1446,19 +1447,25 @@ void QuicConnection::WriteIfNotBlocked() {
 }
 
 bool QuicConnection::ProcessValidatedPacket() {
-  if (peer_ip_changed_ || self_ip_changed_ || self_port_changed_) {
+  if ((peer_ip_changed_ && !FLAGS_quic_allow_ip_migration) ||
+      self_ip_changed_ || self_port_changed_) {
     SendConnectionCloseWithDetails(
         QUIC_ERROR_MIGRATING_ADDRESS,
         "Neither IP address migration, nor self port migration are supported.");
     return false;
   }
 
-  // Peer port migration is supported, do it now if port has changed.
-  if (peer_port_changed_) {
-    DVLOG(1) << ENDPOINT << "Peer's port changed from "
-             << peer_address_.port() << " to " << migrating_peer_port_
-             << ", migrating connection.";
-    peer_address_ = IPEndPoint(peer_address_.address(), migrating_peer_port_);
+  // TODO(fayang): Use peer_address_changed_ instead of peer_ip_changed_ and
+  // peer_port_changed_ once FLAGS_quic_allow_ip_migration is deprecated.
+  if (peer_ip_changed_ || peer_port_changed_) {
+    IPEndPoint old_peer_address = peer_address_;
+    peer_address_ = IPEndPoint(
+        peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address(),
+        peer_port_changed_ ? migrating_peer_port_ : peer_address_.port());
+
+    DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
+             << old_peer_address.ToString() << " to "
+             << peer_address_.ToString() << ", migrating connection.";
   }
 
   time_of_last_received_packet_ = clock_->Now();

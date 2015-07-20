@@ -165,6 +165,10 @@ int main(int argc, char *argv[]) {
       std::cerr << "--initial_mtu must be an integer\n";
       return 1;
     }
+  } else {
+    // Default and initial maximum size in bytes of a QUIC packet, which is used
+    // to set connection's max_packet_length.
+    FLAGS_initial_mtu = net::kDefaultMaxPacketSize;
   }
 
   VLOG(1) << "server host: " << FLAGS_host << " port: " << FLAGS_port

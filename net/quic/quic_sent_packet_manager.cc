@@ -886,10 +886,6 @@ QuicBandwidth QuicSentPacketManager::BandwidthEstimate() const {
   return send_algorithm_->BandwidthEstimate();
 }
 
-bool QuicSentPacketManager::HasReliableBandwidthEstimate() const {
-  return send_algorithm_->HasReliableBandwidthEstimate();
-}
-
 const QuicSustainedBandwidthRecorder&
 QuicSentPacketManager::SustainedBandwidthRecorder() const {
   return sustained_bandwidth_recorder_;

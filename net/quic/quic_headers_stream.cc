@@ -25,7 +25,7 @@ class QuicHeadersStream::SpdyFramerVisitor
     : public SpdyFramerVisitorInterface,
       public SpdyFramerDebugVisitorInterface {
  public:
-  SpdyFramerVisitor(QuicHeadersStream* stream) : stream_(stream) {}
+  explicit SpdyFramerVisitor(QuicHeadersStream* stream) : stream_(stream) {}
 
   // SpdyFramerVisitorInterface implementation
   void OnSynStream(SpdyStreamId stream_id,

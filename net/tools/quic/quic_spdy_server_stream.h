@@ -42,7 +42,12 @@ class QuicSpdyServerStream : public QuicDataStream {
   // for the body.
   virtual void SendResponse();
 
+  void SendHeadersAndBody(const SpdyHeaderBlock& response_headers,
+                          base::StringPiece body);
+
   SpdyHeaderBlock* request_headers() { return &request_headers_; }
+
+  const std::string& body() { return body_; }
 
  private:
   friend class test::QuicSpdyServerStreamPeer;
@@ -54,9 +59,6 @@ class QuicSpdyServerStream : public QuicDataStream {
   // Sends a basic 500 response using SendHeaders for the headers and WriteData
   // for the body
   void SendErrorResponse();
-
-  void SendHeadersAndBody(const SpdyHeaderBlock& response_headers,
-                          base::StringPiece body);
 
   // Returns the key for |request_headers_| which identifies the host.
   const std::string GetHostKey();

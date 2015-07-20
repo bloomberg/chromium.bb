@@ -188,7 +188,6 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
       0,
       HAS_RETRANSMITTABLE_DATA).IsZero());
-  EXPECT_FALSE(sender_->HasReliableBandwidthEstimate());
   EXPECT_EQ(QuicBandwidth::Zero(), sender_->BandwidthEstimate());
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
@@ -202,7 +201,6 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
   }
   const QuicByteCount cwnd = sender_->GetCongestionWindow();
   EXPECT_EQ(kDefaultWindowTCP + kDefaultTCPMSS * 2 * kNumberOfAcks, cwnd);
-  EXPECT_FALSE(sender_->HasReliableBandwidthEstimate());
   EXPECT_EQ(QuicBandwidth::FromBytesAndTimeDelta(
                 cwnd, sender_->rtt_stats_.smoothed_rtt()),
             sender_->BandwidthEstimate());

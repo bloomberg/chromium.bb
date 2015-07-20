@@ -375,6 +375,15 @@ class NET_EXPORT_PRIVATE QuicConnection
   // If the socket is not blocked, writes queued packets.
   void WriteIfNotBlocked();
 
+  // Set the packet writer.
+  void SetQuicPacketWriter(QuicPacketWriter* writer, bool owns_writer) {
+    writer_ = writer;
+    owns_writer_ = owns_writer;
+  }
+
+  // Set self address.
+  void SetSelfAddress(IPEndPoint address) { self_address_ = address; }
+
   // The version of the protocol this connection is using.
   QuicVersion version() const { return framer_.version(); }
 
@@ -766,6 +775,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // client.
   IPEndPoint self_address_;
   IPEndPoint peer_address_;
+
+  // TODO(fayang): Use migrating_peer_address_ instead of migrating_peer_ip_
+  // and migrating_peer_port_ once FLAGS_quic_allow_ip_migration is deprecated.
+  // Used to store latest peer IP address for IP address migration.
+  IPAddressNumber migrating_peer_ip_;
   // Used to store latest peer port to possibly migrate to later.
   uint16 migrating_peer_port_;
 

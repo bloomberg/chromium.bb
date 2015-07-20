@@ -115,6 +115,9 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   // Returns true if there are any outstanding requests.
   bool WaitForEvents();
 
+  // Migrate to a new socket during an active connection.
+  bool MigrateSocket(const IPAddressNumber& new_host);
+
   // QuicPacketReader::Visitor
   void OnReadError(int result) override;
   bool OnPacket(const QuicEncryptedPacket& packet,

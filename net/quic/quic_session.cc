@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_flow_controller.h"
 #include "net/ssl/ssl_info.h"
 
@@ -211,7 +212,9 @@ void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
       // can write again.
       // TODO(ianswett): I suspect this can be delayed until the packet
       // processing is complete.
-      OnCanWrite();
+      if (!FLAGS_quic_dont_write_when_flow_unblocked) {
+        OnCanWrite();
+      }
     }
     return;
   }

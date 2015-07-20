@@ -126,6 +126,9 @@ class QuicClient : public EpollCallbackInterface,
   // Returns true if there are any outstanding requests.
   bool WaitForEvents();
 
+  // Migrate to a new socket during an active connection.
+  bool MigrateSocket(const IPAddressNumber& new_host);
+
   // From EpollCallbackInterface
   void OnRegistration(EpollServer* eps, int fd, int event_mask) override {}
   void OnModification(int fd, int event_mask) override {}

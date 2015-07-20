@@ -261,6 +261,28 @@ bool QuicSimpleClient::WaitForEvents() {
   return session_->num_active_requests() != 0;
 }
 
+bool QuicSimpleClient::MigrateSocket(const IPAddressNumber& new_host) {
+  if (!connected()) {
+    return false;
+  }
+
+  bind_to_address_ = new_host;
+  if (!CreateUDPSocket()) {
+    return false;
+  }
+
+  session_->connection()->SetSelfAddress(client_address_);
+
+  QuicPacketWriter* writer = CreateQuicPacketWriter();
+  DummyPacketWriterFactory factory(writer);
+  if (writer_.get() != writer) {
+    writer_.reset(writer);
+  }
+  session_->connection()->SetQuicPacketWriter(writer, false);
+
+  return true;
+}
+
 void QuicSimpleClient::OnClose(QuicDataStream* stream) {
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);

@@ -268,11 +268,6 @@ QuicBandwidth TcpCubicBytesSender::BandwidthEstimate() const {
   return QuicBandwidth::FromBytesAndTimeDelta(GetCongestionWindow(), srtt);
 }
 
-bool TcpCubicBytesSender::HasReliableBandwidthEstimate() const {
-  return !InSlowStart() && !InRecovery() &&
-         !rtt_stats_->smoothed_rtt().IsZero();
-}
-
 QuicTime::Delta TcpCubicBytesSender::RetransmissionDelay() const {
   if (rtt_stats_->smoothed_rtt().IsZero()) {
     return QuicTime::Delta::Zero();

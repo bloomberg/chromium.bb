@@ -148,10 +148,6 @@ QuicBandwidth PacingSender::BandwidthEstimate() const {
   return sender_->BandwidthEstimate();
 }
 
-bool PacingSender::HasReliableBandwidthEstimate() const {
-  return sender_->HasReliableBandwidthEstimate();
-}
-
 QuicTime::Delta PacingSender::RetransmissionDelay() const {
   return sender_->RetransmissionDelay();
 }

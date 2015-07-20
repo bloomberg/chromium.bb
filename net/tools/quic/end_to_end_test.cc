@@ -52,6 +52,7 @@
 using base::StringPiece;
 using base::WaitableEvent;
 using net::EpollServer;
+using net::IPAddressNumber;
 using net::test::ConstructEncryptedPacket;
 using net::test::GenerateBody;
 using net::test::MockQuicConnectionDebugVisitor;
@@ -200,7 +201,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
       : server_hostname_("example.com"),
         server_started_(false),
         strike_register_no_startup_period_(false) {
-    net::IPAddressNumber ip;
+    IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
 
@@ -1134,9 +1135,34 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
 };
 
 TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
+  // Allow client IP migration during an established QUIC connection.
+  ValueRestore<bool> old_flag(&FLAGS_quic_allow_ip_migration, true);
+
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+
+  // Store the client IP address which was used to send the first request.
+  IPAddressNumber old_host = client_->client()->client_address().address();
+
+  // Migrate socket to the new IP address.
+  IPAddressNumber new_host;
+  CHECK(net::ParseIPLiteralToNumber("127.0.0.2", &new_host));
+  EXPECT_NE(old_host, new_host);
+  ASSERT_TRUE(client_->client()->MigrateSocket(new_host));
+
+  // Send a request using the new socket.
+  EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
+  EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+}
+
+TEST_P(EndToEndTest, ConnectionMigrationClientIPChangedUnsupported) {
   // Tests that the client's IP can not change during an established QUIC
-  // connection. If it changes, the connection is closed by the server as we do
-  // not yet support IP migration.
+  // connection. If it changes, the connection is closed by the server as we
+  // do not yet support IP migration.
+  ValueRestore<bool> old_flag(&FLAGS_quic_allow_ip_migration, false);
+
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1146,8 +1172,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
 
   writer->set_writer(new QuicDefaultPacketWriter(client_->client()->fd()));
   QuicConnectionPeer::SetWriter(client_->client()->session()->connection(),
-                                writer,
-                                /* owns_writer= */ true);
+                                writer, /* owns_writer= */ true);
 
   client_->SendSynchronousRequest("/bar");
 

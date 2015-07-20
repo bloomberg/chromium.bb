@@ -316,6 +316,31 @@ bool QuicClient::WaitForEvents() {
   return session_->num_active_requests() != 0;
 }
 
+bool QuicClient::MigrateSocket(const IPAddressNumber& new_host) {
+  if (!connected()) {
+    return false;
+  }
+
+  CleanUpUDPSocket();
+
+  bind_to_address_ = new_host;
+  if (!CreateUDPSocket()) {
+    return false;
+  }
+
+  epoll_server_->RegisterFD(fd_, this, kEpollFlags);
+  session_->connection()->SetSelfAddress(client_address_);
+
+  QuicPacketWriter* writer = CreateQuicPacketWriter();
+  DummyPacketWriterFactory factory(writer);
+  if (writer_.get() != writer) {
+    writer_.reset(writer);
+  }
+  session_->connection()->SetQuicPacketWriter(writer, false);
+
+  return true;
+}
+
 void QuicClient::OnEvent(int fd, EpollEvent* event) {
   DCHECK_EQ(fd, fd_);
 

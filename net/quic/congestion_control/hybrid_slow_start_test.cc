@@ -16,7 +16,7 @@ class HybridSlowStartTest : public ::testing::Test {
      : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
        rtt_(QuicTime::Delta::FromMilliseconds(60)) {
   }
-  void SetUp() override { slow_start_.reset(new HybridSlowStart); }
+  void SetUp() override { slow_start_.reset(new HybridSlowStart()); }
   const QuicTime::Delta one_ms_;
   const QuicTime::Delta rtt_;
   scoped_ptr<HybridSlowStart> slow_start_;

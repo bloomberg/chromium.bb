@@ -158,11 +158,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   bool IsPacketUseless(QuicPacketSequenceNumber sequence_number,
                        const TransmissionInfo& info) const;
 
-  // Returns true if the packet is useless or it's only purpose is RTT
-  // measurement, and it's old enough that is unlikely to ever happen.
-  bool IsPacketRemovable(QuicPacketSequenceNumber sequence_number,
-                         const TransmissionInfo& info) const;
-
   // Removes the packet with lowest sequence number from the map.
   void PopLeastUnacked();
 
