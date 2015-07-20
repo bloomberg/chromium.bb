@@ -4,11 +4,8 @@
 
 #include "components/signin/core/browser/account_info_fetcher.h"
 
-#include "base/strings/string_split.h"
 #include "base/trace_event/trace_event.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/signin_client.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 AccountInfoFetcher::AccountInfoFetcher(
@@ -33,16 +30,8 @@ void AccountInfoFetcher::Start() {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
   scopes.insert(GaiaConstants::kGoogleUserInfoProfile);
-  scopes.insert(GaiaConstants::kOAuth1LoginScope);
   login_token_request_ =
       token_service_->StartRequest(account_id_, scopes, this);
-}
-
-void AccountInfoFetcher::SendSuccessIfDoneFetching() {
-  if (fetched_user_info_ && fetched_service_flags_) {
-    service_->OnUserInfoFetchSuccess(account_id_, fetched_user_info_.get(),
-                                     fetched_service_flags_.get());
-  }
 }
 
 void AccountInfoFetcher::OnGetTokenSuccess(
@@ -56,11 +45,6 @@ void AccountInfoFetcher::OnGetTokenSuccess(
   gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(request_context_getter_));
   const int kMaxRetries = 3;
   gaia_oauth_client_->GetUserInfo(access_token, kMaxRetries, this);
-
-  gaia_auth_fetcher_.reset(service_->signin_client_->CreateGaiaAuthFetcher(
-      this, GaiaConstants::kChromeSource, request_context_getter_));
-  gaia_auth_fetcher_->StartOAuthLogin(access_token,
-                                      GaiaConstants::kGaiaService);
 }
 
 void AccountInfoFetcher::OnGetTokenFailure(
@@ -79,35 +63,7 @@ void AccountInfoFetcher::OnGetUserInfoResponse(
   TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService", "AccountIdFetcher",
                                this, "OnGetUserInfoResponse", "account_id",
                                account_id_);
-  fetched_user_info_ = user_info.Pass();
-  SendSuccessIfDoneFetching();
-}
-
-void AccountInfoFetcher::OnClientLoginSuccess(const ClientLoginResult& result) {
-  gaia_auth_fetcher_->StartGetUserInfo(result.lsid);
-}
-
-void AccountInfoFetcher::OnClientLoginFailure(
-    const GoogleServiceAuthError& error) {
-  service_->OnUserInfoFetchFailure(account_id_);
-}
-
-void AccountInfoFetcher::OnGetUserInfoSuccess(const UserInfoMap& data) {
-  fetched_service_flags_.reset(new std::vector<std::string>);
-  UserInfoMap::const_iterator services_iter = data.find("allServices");
-  if (services_iter != data.end()) {
-    base::SplitString(services_iter->second, ',', fetched_service_flags_.get());
-    SendSuccessIfDoneFetching();
-  } else {
-    DLOG(WARNING) << "AccountInfoFetcher::OnGetUserInfoSuccess: "
-                  << "GetUserInfo response didn't include allServices field.";
-    service_->OnUserInfoFetchFailure(account_id_);
-  }
-}
-
-void AccountInfoFetcher::OnGetUserInfoFailure(
-    const GoogleServiceAuthError& error) {
-  service_->OnUserInfoFetchFailure(account_id_);
+  service_->OnUserInfoFetchSuccess(account_id_, user_info.Pass());
 }
 
 void AccountInfoFetcher::OnOAuthError() {

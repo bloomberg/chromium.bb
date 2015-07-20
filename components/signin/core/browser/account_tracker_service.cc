@@ -26,9 +26,25 @@ const char kAccountFullNamePath[] = "full_name";
 const char kAccountGivenNamePath[] = "given_name";
 const char kAccountLocalePath[] = "locale";
 const char kAccountPictureURLPath[] = "picture_url";
+const char kAccountChildAccountStatusPath[] = "is_child_account";
+
+// TODO(M48): Remove deprecated preference migration.
 const char kAccountServiceFlagsPath[] = "service_flags";
 
+void RemoveDeprecatedServiceFlags(PrefService* pref_service) {
+  ListPrefUpdate update(pref_service, AccountTrackerService::kAccountInfoPref);
+  for (size_t i = 0; i < update->GetSize(); ++i) {
+    base::DictionaryValue* dict = nullptr;
+    if (update->GetDictionary(i, &dict))
+      dict->RemoveWithoutPathExpansion(kAccountServiceFlagsPath, nullptr);
+  }
 }
+
+}  // namespace
+
+const char AccountTrackerService::kAccountInfoPref[] = "account_info";
+
+const char AccountTrackerService::kChildAccountServiceFlag[] = "uca";
 
 // This must be a string which can never be a valid domain.
 const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
@@ -45,11 +61,7 @@ bool AccountTrackerService::AccountInfo::IsValid() const {
          !locale.empty() && !picture_url.empty();
 }
 
-
-const char AccountTrackerService::kAccountInfoPref[] = "account_info";
-
-AccountTrackerService::AccountTrackerService()
-    : signin_client_(NULL) {}
+AccountTrackerService::AccountTrackerService() : signin_client_(nullptr) {}
 
 AccountTrackerService::~AccountTrackerService() {
 }
@@ -186,8 +198,7 @@ void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
 
 void AccountTrackerService::SetAccountStateFromUserInfo(
     const std::string& account_id,
-    const base::DictionaryValue* user_info,
-    const std::vector<std::string>* service_flags) {
+    const base::DictionaryValue* user_info) {
   DCHECK(ContainsKey(accounts_, account_id));
   AccountState& state = accounts_[account_id];
 
@@ -215,18 +226,29 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
     } else {
       state.info.picture_url = kNoPictureURLFound;
     }
-
-    state.info.service_flags = *service_flags;
-
-    NotifyAccountUpdated(state);
-    SaveToPrefs(state);
   }
+  if (state.info.IsValid())
+    NotifyAccountUpdated(state);
+  SaveToPrefs(state);
+}
+
+void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
+                                              const bool& is_child_account) {
+  DCHECK(ContainsKey(accounts_, account_id));
+  AccountState& state = accounts_[account_id];
+  if (state.info.is_child_account == is_child_account)
+    return;
+  state.info.is_child_account = is_child_account;
+  if (state.info.IsValid())
+    NotifyAccountUpdated(state);
+  SaveToPrefs(state);
 }
 
 void AccountTrackerService::LoadFromPrefs() {
   const base::ListValue* list =
       signin_client_->GetPrefs()->GetList(kAccountInfoPref);
   std::set<std::string> to_remove;
+  bool contains_deprecated_service_flags = false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     const base::DictionaryValue* dict;
     if (list->GetDictionary(i, &dict)) {
@@ -259,22 +281,32 @@ void AccountTrackerService::LoadFromPrefs() {
         if (dict->GetString(kAccountPictureURLPath, &value))
           state.info.picture_url = base::UTF16ToUTF8(value);
 
+        bool is_child_account = false;
+        // Migrate deprecated service flag preference.
         const base::ListValue* service_flags_list;
         if (dict->GetList(kAccountServiceFlagsPath, &service_flags_list)) {
-          std::string flag;
-          for(base::Value* flag: *service_flags_list) {
-            std::string flag_string;
-            if(flag->GetAsString(&flag_string)) {
-              state.info.service_flags.push_back(flag_string);
+          contains_deprecated_service_flags = true;
+          std::string flag_string;
+          for (base::Value* flag : *service_flags_list) {
+            if (flag->GetAsString(&flag_string) &&
+                flag_string == kChildAccountServiceFlag) {
+              is_child_account = true;
+              break;
             }
           }
+          state.info.is_child_account = is_child_account;
         }
+        if (dict->GetBoolean(kAccountChildAccountStatusPath, &is_child_account))
+          state.info.is_child_account = is_child_account;
 
         if (state.info.IsValid())
           NotifyAccountUpdated(state);
       }
     }
   }
+
+  if (contains_deprecated_service_flags)
+    RemoveDeprecatedServiceFlags(signin_client_->GetPrefs());
 
   // Remove any obsolete prefs.
   for (auto account_id : to_remove) {
@@ -288,10 +320,10 @@ void AccountTrackerService::SaveToPrefs(const AccountState& state) {
   if (!signin_client_->GetPrefs())
     return;
 
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   base::string16 account_id_16 = base::UTF8ToUTF16(state.info.account_id);
   ListPrefUpdate update(signin_client_->GetPrefs(), kAccountInfoPref);
-  for(size_t i = 0; i < update->GetSize(); ++i, dict = NULL) {
+  for (size_t i = 0; i < update->GetSize(); ++i, dict = nullptr) {
     if (update->GetDictionary(i, &dict)) {
       base::string16 value;
       if (dict->GetString(kAccountKeyPath, &value) && value == account_id_16)
@@ -312,12 +344,7 @@ void AccountTrackerService::SaveToPrefs(const AccountState& state) {
   dict->SetString(kAccountGivenNamePath, state.info.given_name);
   dict->SetString(kAccountLocalePath, state.info.locale);
   dict->SetString(kAccountPictureURLPath, state.info.picture_url);
-
-  scoped_ptr<base::ListValue> service_flags_list;
-  service_flags_list.reset(new base::ListValue);
-  service_flags_list->AppendStrings(state.info.service_flags);
-
-  dict->Set(kAccountServiceFlagsPath, service_flags_list.Pass());
+  dict->SetBoolean(kAccountChildAccountStatusPath, state.info.is_child_account);
 }
 
 void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
@@ -327,11 +354,11 @@ void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
   base::string16 account_id_16 = base::UTF8ToUTF16(state.info.account_id);
   ListPrefUpdate update(signin_client_->GetPrefs(), kAccountInfoPref);
   for(size_t i = 0; i < update->GetSize(); ++i) {
-    base::DictionaryValue* dict = NULL;
+    base::DictionaryValue* dict = nullptr;
     if (update->GetDictionary(i, &dict)) {
       base::string16 value;
       if (dict->GetString(kAccountKeyPath, &value) && value == account_id_16) {
-        update->Remove(i, NULL);
+        update->Remove(i, nullptr);
         break;
       }
     }

@@ -39,8 +39,6 @@
 
 const char kChildAccountDetectionFieldTrialName[] = "ChildAccountDetection";
 
-const char kIsChildAccountServiceFlagName[] = "uca";
-
 // Normally, re-check the family info once per day.
 const int kUpdateIntervalSeconds = 60 * 60 * 24;
 
@@ -226,10 +224,7 @@ void ChildAccountService::OnAccountUpdated(
     return;
   }
 
-  bool is_child_account =
-      std::find(info.service_flags.begin(), info.service_flags.end(),
-                kIsChildAccountServiceFlagName) != info.service_flags.end();
-  SetIsChildAccount(is_child_account);
+  SetIsChildAccount(info.is_child_account);
 }
 
 void ChildAccountService::OnGetFamilyMembersSuccess(
