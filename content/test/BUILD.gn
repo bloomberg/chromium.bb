@@ -44,6 +44,7 @@ source_set("test_support") {
     "//ui/events:gesture_detection",
     "//ui/gfx:test_support",
     "//ui/gl",
+    "//ui/gl:test_support",
     "//ui/resources",
     "//url",
   ]
@@ -317,6 +318,7 @@ if (!is_mac) {
       "//ui/gfx",
       "//ui/gfx/geometry",
       "//ui/gl",
+      "//ui/gl:test_support",
       "//ui/resources",
       "//ui/shell_dialogs",
       "//ui/snapshot",
@@ -487,6 +489,7 @@ test("content_unittests") {
       "//third_party/leveldatabase",
       "//third_party/libjingle",
       "//ui/gl",
+      "//ui/gl:test_support",
     ]
   }
 
@@ -669,6 +672,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
       "//ui/gl",
+      "//ui/gl:test_support",
       "//v8",
     ]
 
@@ -699,6 +703,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
       "//ui/gfx",
       "//ui/gfx/geometry",
       "//ui/gl",
+      "//ui/gl:test_support",
     ]
   }
 }

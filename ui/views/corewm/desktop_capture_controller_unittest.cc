@@ -14,7 +14,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -33,7 +33,7 @@ class DesktopCaptureControllerTest : public ViewsTestBase {
   ~DesktopCaptureControllerTest() override {}
 
   void SetUp() override {
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));

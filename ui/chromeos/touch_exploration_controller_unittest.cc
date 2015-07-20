@@ -17,7 +17,7 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace ui {
 
@@ -197,7 +197,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
   void SetUp() override {
     if (gfx::GetGLImplementation() == gfx::kGLImplementationNone)
-      gfx::GLSurface::InitializeOneOffForTests();
+      gfx::GLSurfaceTestSupport::InitializeOneOff();
     aura::test::AuraTestBase::SetUp();
     cursor_client_.reset(new aura::test::TestCursorClient(root_window()));
     root_window()->AddPreTargetHandler(&event_capturer_);

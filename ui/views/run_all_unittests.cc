@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 class ViewTestSuite : public base::TestSuite {
  public:
@@ -20,7 +20,7 @@ class ViewTestSuite : public base::TestSuite {
  protected:
   void Initialize() override {
     base::TestSuite::Initialize();
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
     ui::RegisterPathProvider();
 
     base::FilePath ui_test_pak_path;

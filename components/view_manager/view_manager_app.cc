@@ -19,6 +19,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 using mojo::ApplicationConnection;
 using mojo::ApplicationImpl;
@@ -44,7 +45,7 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
   if (!is_headless_) {
     event_source_ = ui::PlatformEventSource::CreateDefault();
     if (command_line->HasSwitch(mojo::kUseTestConfig))
-      gfx::GLSurface::InitializeOneOffForTests();
+      gfx::GLSurfaceTestSupport::InitializeOneOff();
     else
       gfx::GLSurface::InitializeOneOff();
   }

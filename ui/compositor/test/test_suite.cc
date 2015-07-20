@@ -9,7 +9,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/gfx_paths.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/win/dpi.h"
@@ -25,7 +25,7 @@ CompositorTestSuite::~CompositorTestSuite() {}
 
 void CompositorTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurface::InitializeOneOffForTests();
+  gfx::GLSurfaceTestSupport::InitializeOneOff();
 
   gfx::RegisterPathProvider();
 

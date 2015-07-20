@@ -280,6 +280,24 @@ source_set("gl_unittest_utils") {
   ]
 }
 
+source_set("test_support") {
+  sources = [
+    "test/gl_surface_test_support.cc",
+    "test/gl_surface_test_support.h",
+  ]
+
+  configs += [ "//third_party/khronos:khronos_headers" ]
+
+  deps = [
+    ":gl",
+  ]
+
+  if (use_x11) {
+    configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
+  }
+}
+
 test("gl_unittests") {
   sources = [
     "gl_api_unittest.cc",
@@ -299,6 +317,7 @@ test("gl_unittests") {
   deps = [
     ":gl",
     ":gl_unittest_utils",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//testing/gmock",

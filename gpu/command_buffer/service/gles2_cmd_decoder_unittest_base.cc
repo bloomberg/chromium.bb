@@ -23,7 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::_;
@@ -177,7 +177,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   Framebuffer::ClearFramebufferCompleteComboMap();
 
   gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-  gfx::GLSurface::InitializeOneOffWithMockBindingsForTests();
+  gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::MockGLInterface::SetGLInterface(gl_.get());
@@ -210,7 +210,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   context_->SetGLVersionString(normalized_init.gl_version.c_str());
 
   context_->GLContextStubWithExtensions::MakeCurrent(surface_.get());
-  gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_.get());
+  gfx::GLSurfaceTestSupport::InitializeDynamicMockBindings(context_.get());
 
   TestHelper::SetupContextGroupInitExpectations(
       gl_.get(),

@@ -414,6 +414,7 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl_test_support',
       ],
       'sources': [
         '<@(cc_tests_support_files)',

@@ -2237,6 +2237,7 @@
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
             '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
             '../v8/tools/gyp/v8.gyp:v8',
           ],
           # TODO(scr): Use this in browser_tests too.

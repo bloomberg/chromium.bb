@@ -688,6 +688,7 @@ source_set("test_support") {
     "//ui/gfx/geometry",
     "//ui/gfx:test_support",
     "//ui/gl",
+    "//ui/gl:test_support",
   ]
 
   if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
@@ -852,6 +853,7 @@ test("cc_unittests") {
     "//ui/gfx/geometry",
     "//ui/gfx:test_support",
     "//ui/gl",
+    "//ui/gl:test_support",
   ]
 }
 
@@ -892,6 +894,7 @@ test("cc_perftests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl:test_support",
   ]
 
   if (is_android) {

@@ -26,7 +26,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -194,7 +194,7 @@ class X11TopmostWindowFinderTest : public ViewsTestBase {
   }
 
   static void SetUpTestCase() {
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));

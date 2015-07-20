@@ -29,7 +29,7 @@
 
 #if !defined(OS_IOS)
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -149,7 +149,7 @@ void ChromeUnitTestSuite::InitializeProviders() {
   content::WebUIControllerFactory::RegisterFactory(
       ChromeWebUIControllerFactory::GetInstance());
 
-  gfx::GLSurface::InitializeOneOffForTests();
+  gfx::GLSurfaceTestSupport::InitializeOneOff();
 
   update_client::UpdateQueryParams::SetDelegate(
       ChromeUpdateQueryParamsDelegate::GetInstance());

@@ -15,7 +15,7 @@
 #include "extensions/test/test_extensions_client.h"
 #include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace {
 
@@ -65,7 +65,7 @@ ExtensionsTestSuite::~ExtensionsTestSuite() {}
 
 void ExtensionsTestSuite::Initialize() {
   content::ContentTestSuiteBase::Initialize();
-  gfx::GLSurface::InitializeOneOffForTests();
+  gfx::GLSurfaceTestSupport::InitializeOneOff();
 
   // Register the chrome-extension:// scheme via this circuitous path. Note
   // that this does not persistently set up a ContentClient; individual tests

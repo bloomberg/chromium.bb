@@ -18,7 +18,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"
@@ -274,7 +274,7 @@ class WidgetTestInteractive : public WidgetTest {
   ~WidgetTestInteractive() override {}
 
   void SetUp() override {
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
@@ -1142,7 +1142,7 @@ class WidgetCaptureTest : public ViewsTestBase {
   ~WidgetCaptureTest() override {}
 
   void SetUp() override {
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));

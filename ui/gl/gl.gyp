@@ -291,6 +291,29 @@
         'gpu_timing_fake.h',
       ],
     },
+    {
+      'target_name': 'gl_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../../third_party/khronos/khronos.gyp:khronos_headers',
+        'gl',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'sources': [
+        'test/gl_surface_test_support.cc',
+        'test/gl_surface_test_support.h',
+      ],
+      'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:x11',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
+          ],
+        }],
+      ],
+    },
   ],
   'conditions': [
     ['OS=="android"' , {

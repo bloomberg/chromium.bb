@@ -128,6 +128,7 @@ source_set("lib") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl:test_support",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
     "//ui/platform_window:platform_impls",

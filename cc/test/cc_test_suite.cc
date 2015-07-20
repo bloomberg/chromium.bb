@@ -7,7 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "cc/test/paths.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace cc {
 
@@ -18,7 +18,7 @@ CCTestSuite::~CCTestSuite() {}
 
 void CCTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurface::InitializeOneOffForTests();
+  gfx::GLSurfaceTestSupport::InitializeOneOff();
   CCPaths::RegisterPathProvider();
 
   message_loop_.reset(new base::MessageLoop);

@@ -9,7 +9,7 @@
 #include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace gpu {
 namespace gles2 {
@@ -26,14 +26,14 @@ void GpuServiceTest::SetUpWithGLVersion(const char* gl_version,
   testing::Test::SetUp();
 
   gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-  gfx::GLSurface::InitializeOneOffWithMockBindingsForTests();
+  gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
   gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
   ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
   context_ = new gfx::GLContextStubWithExtensions;
   context_->AddExtensionsString(gl_extensions);
   context_->SetGLVersionString(gl_version);
-  gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_.get());
+  gfx::GLSurfaceTestSupport::InitializeDynamicMockBindings(context_.get());
   ran_setup_ = true;
 }
 

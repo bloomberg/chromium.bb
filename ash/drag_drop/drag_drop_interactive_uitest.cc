@@ -15,7 +15,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -123,7 +123,7 @@ class DragDropTest : public test::AshTestBase {
   ~DragDropTest() override {}
 
   void SetUp() override {
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
 
     ui::RegisterPathProvider();
     ui::ResourceBundle::InitSharedInstanceWithLocale(

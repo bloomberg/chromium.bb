@@ -24,6 +24,7 @@
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/gl/gl.gyp:gl_test_support',
         '<(DEPTH)/ui/gl/gl.gyp:gl_unittest_utils',
       ],
       'conditions': [

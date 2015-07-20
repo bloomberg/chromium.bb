@@ -16,7 +16,7 @@
 #if defined(OS_MACOSX)
 #include "base/test/mock_chrome_application_mac.h"
 #else
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
 namespace {
@@ -30,7 +30,7 @@ class MessageCenterTestSuite : public base::TestSuite {
 #if defined(OS_MACOSX)
     mock_cr_app::RegisterMockCrApp();
 #else
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
 #endif
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();

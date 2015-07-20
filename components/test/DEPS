@@ -19,5 +19,5 @@ include_rules = [
   "+ui/base/resource/resource_bundle.h",
   "+ui/base/ui_base_paths.h",
   "+ui/gfx/android/gfx_jni_registrar.h",
-  "+ui/gl/gl_surface.h",  # To initialize GL for tests.
+  "+ui/gl/test/gl_surface_test_support.h",  # To initialize GL for tests.
 ]

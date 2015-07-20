@@ -17,7 +17,7 @@
 #include "url/url_util.h"
 
 #if !defined(OS_IOS)
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -44,7 +44,7 @@ class ComponentsTestSuite : public base::TestSuite {
     base::StatisticsRecorder::Initialize();
 
 #if !defined(OS_IOS)
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
 #endif
 #if defined(OS_ANDROID)
     // Register JNI bindings for android.

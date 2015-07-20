@@ -8,10 +8,10 @@
 #include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
-#include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_timing.h"
 #include "ui/gl/gpu_timing_fake.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace gfx {
 
@@ -38,7 +38,7 @@ class GPUTimingTest : public testing::Test {
   void SetupGLContext(const char* gl_version, const char* gl_extensions) {
     ASSERT_FALSE(setup_) << "Cannot setup GL context twice.";
     SetGLGetProcAddressProc(MockGLInterface::GetGLProcAddress);
-    GLSurface::InitializeOneOffWithMockBindingsForTests();
+    GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
     gl_.reset(new ::testing::StrictMock<MockGLInterface>());
     MockGLInterface::SetGLInterface(gl_.get());
 
@@ -46,7 +46,7 @@ class GPUTimingTest : public testing::Test {
     context_->AddExtensionsString(gl_extensions);
     context_->SetGLVersionString(gl_version);
     gpu_timing_fake_queries_.Reset();
-    GLSurface::InitializeDynamicMockBindingsForTests(context_.get());
+    GLSurfaceTestSupport::InitializeDynamicMockBindings(context_.get());
 
     setup_ = true;
   }

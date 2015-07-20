@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::Return;
@@ -26,7 +26,7 @@ class GPUInfoCollectorTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-    gfx::GLSurface::InitializeOneOffWithMockBindingsForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 #if defined(OS_WIN)

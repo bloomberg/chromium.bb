@@ -23,7 +23,7 @@
 #include "ui/compositor/reflector.h"
 #include "ui/compositor/test/in_process_context_provider.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace ui {
 namespace {
@@ -83,7 +83,7 @@ InProcessContextFactory::InProcessContextFactory(
       surface_manager_(surface_manager) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
-      << "gfx::GLSurface::InitializeOneOffForTests()";
+      << "gfx::GLSurfaceTestSupport::InitializeOneOff()";
 
   Layer::InitializeUILayerSettings();
 }

@@ -20,7 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace ash {
 namespace test {
@@ -58,7 +58,7 @@ class AcceleratorInteractiveUITest : public AshTestBase, public ShellObserver {
   AcceleratorInteractiveUITest() : is_in_overview_mode_(false) {}
 
   void SetUp() override {
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
 
     ui::RegisterPathProvider();
     ui::ResourceBundle::InitSharedInstanceWithLocale(

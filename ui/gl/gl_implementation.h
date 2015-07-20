@@ -36,7 +36,8 @@ struct GL_EXPORT GLWindowSystemBindingInfo {
   bool direct_rendering;
 };
 
-void GetAllowedGLImplementations(std::vector<GLImplementation>* impls);
+void GL_EXPORT
+GetAllowedGLImplementations(std::vector<GLImplementation>* impls);
 
 #if defined(OS_WIN)
 typedef void* (WINAPI *GLGetProcAddressProc)(const char* name);

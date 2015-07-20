@@ -1058,6 +1058,7 @@
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
           ],
         }],
         ['OS != "win"', {
@@ -1421,6 +1422,7 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
             '../ui/resources/ui_resources.gyp:ui_resources',
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
             '../ui/snapshot/snapshot.gyp:snapshot',
@@ -1554,6 +1556,7 @@
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gfx/gfx.gyp:gfx_test_support',
             '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
             '../v8/tools/gyp/v8.gyp:v8',
           ],
           'include_dirs': [
@@ -1596,6 +1599,7 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
           ],
           'include_dirs': [
             '..',
@@ -1627,6 +1631,7 @@
               '../ui/gfx/gfx.gyp:gfx_test_support',
               '../ui/gfx/gfx.gyp:gfx_geometry',
               '../ui/gl/gl.gyp:gl',
+              '../ui/gl/gl.gyp:gl_test_support',
               'content.gyp:content',
             ],
             'include_dirs': [
@@ -1740,6 +1745,7 @@
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gfx/gfx.gyp:gfx_test_support',
             '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
             'content.gyp:content',
           ],
           'sources': [
@@ -1775,6 +1781,7 @@
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl_test_support',
             'content.gyp:content',
           ],
           'sources': [

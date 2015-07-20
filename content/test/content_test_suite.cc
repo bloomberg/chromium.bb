@@ -28,7 +28,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "media/base/media.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -91,7 +91,7 @@ void ContentTestSuite::Initialize() {
   // to initialize GL, so don't do it here.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestChildProcess)) {
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
     gpu::ApplyGpuDriverBugWorkarounds(base::CommandLine::ForCurrentProcess());
   }
 #endif

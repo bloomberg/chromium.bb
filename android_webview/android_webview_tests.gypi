@@ -120,6 +120,7 @@
         '../testing/gtest.gyp:gtest',
         '../ui/base/ui_base.gyp:ui_base_jni_headers',
         '../ui/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl_test_support',
         'android_webview_common',
         'android_webview_unittests_jni',
       ],

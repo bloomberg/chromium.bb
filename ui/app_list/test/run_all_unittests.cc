@@ -18,7 +18,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
 namespace {
@@ -33,7 +33,7 @@ class AppListTestSuite : public base::TestSuite {
     mock_cr_app::RegisterMockCrApp();
 #endif
 #if defined(TOOLKIT_VIEWS)
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
 #endif
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();
