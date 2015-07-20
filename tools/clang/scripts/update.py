@@ -437,6 +437,23 @@ def UpdateClang(args):
     ApplyLocalPatches()
 
   cc, cxx = None, None
+  libstdcpp = None
+  if args.gcc_toolchain:  # This option is only used on Linux.
+    # Use the specified gcc installation for building.
+    cc = os.path.join(args.gcc_toolchain, 'bin', 'gcc')
+    cxx = os.path.join(args.gcc_toolchain, 'bin', 'g++')
+
+    if not os.access(cc, os.X_OK):
+      print 'Invalid --gcc-toolchain: "%s"' % args.gcc_toolchain
+      print '"%s" does not appear to be valid.' % cc
+      return 1
+
+    # Set LD_LIBRARY_PATH to make auxiliary targets (tablegen, bootstrap
+    # compiler, etc.) find the .so.
+    libstdcpp = subprocess.check_output(
+        [cxx, '-print-file-name=libstdc++.so.6']).rstrip()
+    os.environ['LD_LIBRARY_PATH'] = os.path.dirname(libstdcpp)
+
   cflags = cxxflags = ldflags = []
 
   # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
@@ -482,6 +499,10 @@ def UpdateClang(args):
     if args.run_tests:
       RunCommand(['ninja', 'check-all'], msvc_arch='x64')
     RunCommand(['ninja', 'install'], msvc_arch='x64')
+    if args.gcc_toolchain:
+      # Copy that gcc's stdlibc++.so.6 to the build dir, so the bootstrap
+      # compiler can start.
+      CopyFile(libstdcpp, os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'lib'))
 
     if sys.platform == 'win32':
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang-cl.exe')
@@ -493,6 +514,12 @@ def UpdateClang(args):
     else:
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
+
+    if args.gcc_toolchain:
+      # Tell the bootstrap compiler to use a specific gcc prefix to search
+      # for standard library headers and shared object files.
+      cflags = ['--gcc-toolchain=' + args.gcc_toolchain]
+      cxxflags = ['--gcc-toolchain=' + args.gcc_toolchain]
     print 'Building final compiler'
 
   if sys.platform == 'darwin':
@@ -580,6 +607,15 @@ def UpdateClang(args):
   os.chdir(LLVM_BUILD_DIR)
   RunCommand(['cmake'] + cmake_args + [LLVM_DIR],
              msvc_arch='x64', env=deployment_env)
+
+  if args.gcc_toolchain:
+    # Copy in the right stdlibc++.so.6 so clang can start.
+    if not os.path.exists(os.path.join(LLVM_BUILD_DIR, 'lib')):
+      os.mkdir(os.path.join(LLVM_BUILD_DIR, 'lib'))
+    libstdcpp = subprocess.check_output(
+        [cxx] + cxxflags + ['-print-file-name=libstdc++.so.6']).rstrip()
+    CopyFile(libstdcpp, os.path.join(LLVM_BUILD_DIR, 'lib'))
+
   RunCommand(['ninja'], msvc_arch='x64')
 
   if args.tools:
@@ -699,6 +735,9 @@ def main():
                       help="run only if the script thinks clang is needed")
   parser.add_argument('--force-local-build', action='store_true',
                       help="don't try to download prebuild binaries")
+  parser.add_argument('--gcc-toolchain', help='set the version for which gcc '
+                      'version be used for building; --gcc-toolchain=/opt/foo '
+                      'picks /opt/foo/bin/gcc')
   parser.add_argument('--print-revision', action='store_true',
                       help='print current clang revision and exit.')
   parser.add_argument('--print-clang-version', action='store_true',

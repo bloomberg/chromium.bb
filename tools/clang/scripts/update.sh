@@ -523,7 +523,7 @@ if [[ -n "${bootstrap}" ]]; then
 
   if [[ -n "${gcc_toolchain}" ]]; then
     # Tell the bootstrap compiler to use a specific gcc prefix to search
-    # for standard library headers and shared object file.
+    # for standard library headers and shared object files.
     CFLAGS="--gcc-toolchain=${gcc_toolchain}"
     CXXFLAGS="--gcc-toolchain=${gcc_toolchain}"
   fi
