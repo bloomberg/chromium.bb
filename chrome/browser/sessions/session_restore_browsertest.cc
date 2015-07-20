@@ -235,6 +235,8 @@ class SmartSessionRestoreSimpleTest : public SessionRestoreTest,
   }
 
  protected:
+  static const int kExpectedNumTabs;
+  static const char* const kUrls[];
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kForceFieldTrials, "IntelligentSessionRestore/TestGroup/");
@@ -269,6 +271,17 @@ class SmartSessionRestoreMRUTest : public SmartSessionRestoreSimpleTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(SmartSessionRestoreMRUTest);
 };
+
+// static
+const int SmartSessionRestoreSimpleTest::kExpectedNumTabs = 6;
+// static
+const char* const SmartSessionRestoreSimpleTest::kUrls[] = {
+    "http://google.com/1",
+    "http://google.com/2",
+    "http://google.com/3",
+    "http://google.com/4",
+    "http://google.com/5",
+    "http://google.com/6"};
 
 // Verifies that restored tabs have a root window. This is important
 // otherwise the wrong information is communicated to the renderer.
@@ -1343,10 +1356,8 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreSimpleTest, CorrectLoadingOrder) {
   ASSERT_EQ(SessionRestore::SMART_RESTORE_MODE_SIMPLE,
             SessionRestore::GetSmartRestoreMode());
 
-  const int num_tabs = 6;
-
   // Start observing the loading of tabs, to make sure the order is correct.
-  StartObserving(num_tabs);
+  StartObserving(kExpectedNumTabs);
 
   struct TabInfo {
     GURL url;
@@ -1354,7 +1365,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreSimpleTest, CorrectLoadingOrder) {
     int expected_load_order;
   };
 
-  TabInfo tab_info[num_tabs] = {
+  TabInfo tab_info[kExpectedNumTabs] = {
       // This will be the foreground tab and will always load first.
       {GURL("http://google.com/1"), false, 1},
       {GURL("http://google.com/2"), false, 3},
@@ -1368,9 +1379,9 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreSimpleTest, CorrectLoadingOrder) {
   // Set up the restore data.
   std::vector<const sessions::SessionWindow*> session;
   sessions::SessionWindow window;
-  sessions::SessionTab tab[num_tabs];
+  sessions::SessionTab tab[kExpectedNumTabs];
 
-  for (int i = 0; i < num_tabs; i++) {
+  for (int i = 0; i < kExpectedNumTabs; i++) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
             tab_info[i].url.spec(), tab_info[i].url.spec().c_str());
@@ -1390,11 +1401,11 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreSimpleTest, CorrectLoadingOrder) {
 
   ASSERT_EQ(1u, browsers.size());
   ASSERT_TRUE(browsers[0]);
-  ASSERT_EQ(num_tabs, browsers[0]->tab_strip_model()->count());
+  ASSERT_EQ(kExpectedNumTabs, browsers[0]->tab_strip_model()->count());
 
   WaitForAllTabsToStartLoading();
 
-  ASSERT_EQ(static_cast<size_t>(num_tabs), web_contents().size());
+  ASSERT_EQ(static_cast<size_t>(kExpectedNumTabs), web_contents().size());
 
   // Make sure that contents are loaded in the correct order, ie. each tab rank
   // is higher that its preceding one.
@@ -1412,32 +1423,20 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreSimpleTest, CorrectLoadingOrder) {
   window.tabs.clear();
 }
 
-// Disabled due to flaky timeouts; http://crbug.com/504885.
-IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest,
-                       DISABLED_CorrectLoadingOrder) {
-  const int num_tabs = 6;
-
+IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest, PRE_CorrectLoadingOrder) {
   Profile* profile = browser()->profile();
 
-  GURL urls[] = {GURL("http://google.com/1"),
-                 GURL("http://google.com/2"),
-                 GURL("http://google.com/3"),
-                 GURL("http://google.com/4"),
-                 GURL("http://google.com/5"),
-                 GURL("http://google.com/6")};
-
   int activation_order[] = {4, 2, 1, 5, 0, 3};
-  int activation_order2[] = {4, 2, 5, 0, 3, 1};
 
   // Replace the first tab and add the other tabs.
-  ui_test_utils::NavigateToURL(browser(), urls[0]);
-  for (int i = 1; i < num_tabs; i++) {
+  ui_test_utils::NavigateToURL(browser(), GURL(kUrls[0]));
+  for (int i = 1; i < kExpectedNumTabs; i++) {
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), urls[i], NEW_FOREGROUND_TAB,
+        browser(), GURL(kUrls[i]), NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   }
 
-  ASSERT_EQ(num_tabs, browser()->tab_strip_model()->count());
+  ASSERT_EQ(kExpectedNumTabs, browser()->tab_strip_model()->count());
 
   // Activate the tabs one by one following the random activation order.
   for (auto i : activation_order)
@@ -1447,7 +1446,7 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest,
   g_browser_process->AddRefModule();
   CloseBrowserSynchronously(browser());
 
-  StartObserving(num_tabs);
+  StartObserving(kExpectedNumTabs);
 
   // Create a new window, which should trigger session restore.
   ui_test_utils::BrowserAddedObserver window_observer;
@@ -1457,12 +1456,12 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest,
   WaitForAllTabsToStartLoading();
   g_browser_process->ReleaseModule();
 
-  ASSERT_EQ(static_cast<size_t>(num_tabs), web_contents().size());
+  ASSERT_EQ(static_cast<size_t>(kExpectedNumTabs), web_contents().size());
   // Test that we have observed the tabs being loaded in the inverse order of
   // their activation (MRU). Also validate that their last active time is in the
   // correct order.
   for (size_t i = 0; i < web_contents().size(); i++) {
-    GURL expected_url = urls[activation_order[num_tabs - i - 1]];
+    GURL expected_url = GURL(kUrls[activation_order[kExpectedNumTabs - i - 1]]);
     ASSERT_EQ(expected_url, web_contents()[i]->GetLastCommittedURL());
     if (i > 0) {
       ASSERT_GT(web_contents()[i - 1]->GetLastActiveTime(),
@@ -1470,33 +1469,41 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest,
     }
   }
 
-  // Activate the 2nd tab then close the browser and open it again, to trigger
-  // another session restore. The goal is to ensure that activation time is
-  // persisted between session restores.
-
+  // Activate the 2nd tab before the browser closes. This should be persisted in
+  // the following test.
   new_browser->tab_strip_model()->ActivateTabAt(1, true);
+}
 
-  // Close the browser.
+IN_PROC_BROWSER_TEST_F(SmartSessionRestoreMRUTest, CorrectLoadingOrder) {
+  int activation_order[] = {4, 2, 5, 0, 3, 1};
+  Profile* profile = browser()->profile();
+
+  // Close the browser that gets opened automatically so we can track the order
+  // of loading of the tabs.
   g_browser_process->AddRefModule();
-  CloseBrowserSynchronously(new_browser);
-
-  StartObserving(num_tabs);
+  CloseBrowserSynchronously(browser());
+  // We have an extra tab that is added when the test starts, which gets ignored
+  // later when we test for proper order.
+  StartObserving(kExpectedNumTabs + 1);
 
   // Create a new window, which should trigger session restore.
-  ui_test_utils::BrowserAddedObserver window_observer2;
+  ui_test_utils::BrowserAddedObserver window_observer;
   chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
-  Browser* new_browser2 = window_observer2.WaitForSingleNewBrowser();
-  ASSERT_TRUE(new_browser2 != NULL);
+  Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+  ASSERT_TRUE(new_browser != NULL);
   WaitForAllTabsToStartLoading();
   g_browser_process->ReleaseModule();
 
-  ASSERT_EQ(static_cast<size_t>(num_tabs), web_contents().size());
+  ASSERT_EQ(static_cast<size_t>(kExpectedNumTabs + 1), web_contents().size());
 
   // Test that we have observed the tabs being loaded in the inverse order of
   // their activation (MRU). Also validate that their last active time is in the
   // correct order.
-  for (size_t i = 0; i < web_contents().size(); i++) {
-    GURL expected_url = urls[activation_order2[num_tabs - i - 1]];
+  //
+  // Note that we ignore the first tab as it's an empty one that is added
+  // automatically at the start of the test.
+  for (size_t i = 1; i < web_contents().size(); i++) {
+    GURL expected_url = GURL(kUrls[activation_order[kExpectedNumTabs - i]]);
     ASSERT_EQ(expected_url, web_contents()[i]->GetLastCommittedURL());
     if (i > 0) {
       ASSERT_GT(web_contents()[i - 1]->GetLastActiveTime(),
