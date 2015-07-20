@@ -118,7 +118,7 @@ public:
     void runEndOfScopeTasks();
     void clearEndOfScopeTasks();
 
-    void setScriptDebugger(PassOwnPtrWillBeRawPtr<ScriptDebuggerBase>);
+    void setScriptDebugger(PassOwnPtr<ScriptDebuggerBase>);
 
 private:
     V8PerIsolateData();
@@ -154,11 +154,7 @@ private:
     bool m_performingMicrotaskCheckpoint;
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
-#if ENABLE(OILPAN)
-    CrossThreadPersistent<ScriptDebuggerBase> m_scriptDebugger;
-#else
     OwnPtr<ScriptDebuggerBase> m_scriptDebugger;
-#endif
 };
 
 } // namespace blink

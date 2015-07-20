@@ -122,7 +122,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(m_stateClient.get())))
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForWorker())
-    , m_workerThreadDebugger(WorkerThreadDebugger::create(workerGlobalScope))
+    , m_workerThreadDebugger(adoptPtr(new WorkerThreadDebugger(workerGlobalScope->thread())))
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner(v8::Isolate::GetCurrent())))
     , m_beforeInitlizedScope(adoptPtr(new InspectorTaskRunner::IgnoreInterruptsScope(m_inspectorTaskRunner.get())))
@@ -248,7 +248,6 @@ DEFINE_TRACE(WorkerInspectorController)
     visitor->trace(m_state);
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_injectedScriptManager);
-    visitor->trace(m_workerThreadDebugger);
     visitor->trace(m_backendDispatcher);
     visitor->trace(m_agents);
     visitor->trace(m_workerDebuggerAgent);

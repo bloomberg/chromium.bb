@@ -110,7 +110,7 @@ private:
     RawPtrWillBeMember<InspectorConsoleAgent> m_consoleAgent;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     OwnPtr<InspectCallback> m_inspectCallback;
-    RawPtrWillBeMember<V8Debugger> m_debugger;
+    V8Debugger* m_debugger;
     Vector<OwnPtr<InspectableObject> > m_inspectedObjects;
     OwnPtr<InspectableObject> m_defaultInspectableObject;
     OwnPtr<InjectedScriptHostClient> m_client;

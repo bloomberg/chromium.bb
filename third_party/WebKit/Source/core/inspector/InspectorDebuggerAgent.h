@@ -263,7 +263,7 @@ private:
     };
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    RawPtrWillBeMember<V8Debugger> m_debugger;
+    V8Debugger* m_debugger;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_pausedScriptState;
     v8::Global<v8::Object> m_currentCallStack;

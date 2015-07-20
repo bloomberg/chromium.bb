@@ -290,7 +290,7 @@ void V8PerIsolateData::clearEndOfScopeTasks()
     m_endOfScopeTasks.clear();
 }
 
-void V8PerIsolateData::setScriptDebugger(PassOwnPtrWillBeRawPtr<ScriptDebuggerBase> debugger)
+void V8PerIsolateData::setScriptDebugger(PassOwnPtr<ScriptDebuggerBase> debugger)
 {
     ASSERT(!m_scriptDebugger);
     m_scriptDebugger = debugger;

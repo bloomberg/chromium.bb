@@ -52,14 +52,14 @@ using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(MainThreadDebugger, pageAgent, injectedScriptManager, overlay));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(mainThreadDebugger, pageAgent, injectedScriptManager, overlay));
 }
 
-PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
-    : InspectorDebuggerAgent(injectedScriptManager, MainThreadDebugger->debugger())
-    , m_mainThreadDebugger(MainThreadDebugger)
+PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+    : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger())
+    , m_mainThreadDebugger(mainThreadDebugger)
     , m_pageAgent(pageAgent)
     , m_overlay(overlay)
 {
@@ -72,7 +72,6 @@ PageDebuggerAgent::~PageDebuggerAgent()
 
 DEFINE_TRACE(PageDebuggerAgent)
 {
-    visitor->trace(m_mainThreadDebugger);
     visitor->trace(m_pageAgent);
     visitor->trace(m_overlay);
     InspectorDebuggerAgent::trace(visitor);

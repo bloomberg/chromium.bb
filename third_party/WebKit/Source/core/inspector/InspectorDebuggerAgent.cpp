@@ -1750,7 +1750,6 @@ DEFINE_TRACE(InspectorDebuggerAgent)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_injectedScriptManager);
-    visitor->trace(m_debugger);
     visitor->trace(m_listener);
     visitor->trace(m_v8AsyncCallTracker);
     visitor->trace(m_promiseTracker);

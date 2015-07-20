@@ -35,8 +35,8 @@
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptDebugListener.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 
 #include <v8-debug.h>
 #include <v8.h>
@@ -46,27 +46,24 @@ namespace blink {
 class ScriptDebugListener;
 class JavaScriptCallFrame;
 
-class CORE_EXPORT V8Debugger : public NoBaseWillBeGarbageCollectedFinalized<V8Debugger> {
+class CORE_EXPORT V8Debugger {
     WTF_MAKE_NONCOPYABLE(V8Debugger);
 public:
-    class CORE_EXPORT Client : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT Client {
     public:
         virtual ~Client() { }
         virtual v8::Local<v8::Object> compileDebuggerScript() = 0;
         virtual ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
         virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
         virtual void quitMessageLoopOnPause() = 0;
-
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
-    static PassOwnPtrWillBeRawPtr<V8Debugger> create(v8::Isolate* isolate, Client* client)
+    static PassOwnPtr<V8Debugger> create(v8::Isolate* isolate, Client* client)
     {
-        return adoptPtrWillBeNoop(new V8Debugger(isolate, client));
+        return adoptPtr(new V8Debugger(isolate, client));
     }
 
     virtual ~V8Debugger();
-    DECLARE_VIRTUAL_TRACE();
 
     void enable();
     void disable();

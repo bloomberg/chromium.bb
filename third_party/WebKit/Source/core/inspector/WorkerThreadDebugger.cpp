@@ -34,7 +34,6 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/MessageQueue.h"
 #include <v8.h>
@@ -43,21 +42,15 @@ namespace blink {
 
 static const char* workerContextDebugId = "[worker]";
 
-WorkerThreadDebugger::WorkerThreadDebugger(WorkerGlobalScope* workerGlobalScope)
-    : ScriptDebuggerBase(v8::Isolate::GetCurrent(), V8Debugger::create(v8::Isolate::GetCurrent(), this))
+WorkerThreadDebugger::WorkerThreadDebugger(WorkerThread* workerThread)
+    : ScriptDebuggerBase(v8::Isolate::GetCurrent())
     , m_listener(nullptr)
-    , m_workerGlobalScope(workerGlobalScope)
+    , m_workerThread(workerThread)
 {
 }
 
 WorkerThreadDebugger::~WorkerThreadDebugger()
 {
-}
-
-DEFINE_TRACE(WorkerThreadDebugger)
-{
-    visitor->trace(m_workerGlobalScope);
-    ScriptDebuggerBase::trace(visitor);
 }
 
 void WorkerThreadDebugger::setContextDebugData(v8::Local<v8::Context> context)
@@ -93,12 +86,12 @@ ScriptDebugListener* WorkerThreadDebugger::getDebugListenerForContext(v8::Local<
 void WorkerThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context>)
 {
     MessageQueueWaitResult result;
-    m_workerGlobalScope->thread()->willEnterNestedLoop();
+    m_workerThread->willEnterNestedLoop();
     do {
-        result = m_workerGlobalScope->thread()->runDebuggerTask();
+        result = m_workerThread->runDebuggerTask();
     // Keep waiting until execution is resumed.
     } while (result == MessageQueueMessageReceived && debugger()->isPaused());
-    m_workerGlobalScope->thread()->didLeaveNestedLoop();
+    m_workerThread->didLeaveNestedLoop();
 
     // The listener may have been removed in the nested loop.
     if (m_listener)

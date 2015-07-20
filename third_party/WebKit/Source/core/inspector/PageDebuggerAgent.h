@@ -82,7 +82,7 @@ private:
     bool canExecuteScripts() const;
 
     PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
-    RawPtrWillBeMember<MainThreadDebugger> m_mainThreadDebugger;
+    MainThreadDebugger* m_mainThreadDebugger;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     HashMap<String, String> m_compiledScriptURLs;

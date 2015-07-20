@@ -69,10 +69,6 @@ V8Debugger::~V8Debugger()
 {
 }
 
-DEFINE_TRACE(V8Debugger)
-{
-}
-
 void V8Debugger::enable()
 {
     ASSERT(!enabled());

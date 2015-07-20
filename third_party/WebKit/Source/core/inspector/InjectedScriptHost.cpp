@@ -64,7 +64,6 @@ DEFINE_TRACE(InjectedScriptHost)
 {
     visitor->trace(m_consoleAgent);
     visitor->trace(m_debuggerAgent);
-    visitor->trace(m_debugger);
 }
 
 void InjectedScriptHost::disconnect()

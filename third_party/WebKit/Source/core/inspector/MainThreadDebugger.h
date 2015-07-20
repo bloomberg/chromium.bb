@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/ScriptDebuggerBase.h"
+#include "platform/heap/Handle.h"
 #include <v8.h>
 
 namespace WTF {
@@ -44,9 +45,8 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT MainThreadDebugger final : public NoBaseWillBeGarbageCollectedFinalized<MainThreadDebugger>, public ScriptDebuggerBase {
+class CORE_EXPORT MainThreadDebugger final : public ScriptDebuggerBase {
     WTF_MAKE_NONCOPYABLE(MainThreadDebugger);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MainThreadDebugger);
 public:
     class ClientMessageLoop {
     public:
@@ -55,9 +55,9 @@ public:
         virtual void quitNow() = 0;
     };
 
-    static PassOwnPtrWillBeRawPtr<MainThreadDebugger> create(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
+    static PassOwnPtr<MainThreadDebugger> create(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
     {
-        return adoptPtrWillBeNoop(new MainThreadDebugger(clientMessageLoop, isolate));
+        return adoptPtr(new MainThreadDebugger(clientMessageLoop, isolate));
     }
 
     ~MainThreadDebugger() override;
@@ -70,8 +70,6 @@ public:
     static void interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task>);
     InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     MainThreadDebugger(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
 
@@ -81,10 +79,10 @@ private:
 
     static WTF::Mutex& creationMutex();
 
-    using ListenersMap = WillBeHeapHashMap<RawPtrWillBeMember<LocalFrame>, ScriptDebugListener*>;
+    using ListenersMap = HashMap<int, ScriptDebugListener*>;
     ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
-    RawPtrWillBeMember<LocalFrame> m_pausedFrame;
+    RawPtrWillBePersistent<LocalFrame> m_pausedFrame;
     OwnPtr<InspectorTaskRunner> m_taskRunner;
 
     static MainThreadDebugger* s_instance;

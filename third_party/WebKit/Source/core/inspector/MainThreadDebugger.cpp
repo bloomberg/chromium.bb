@@ -54,9 +54,19 @@
 
 namespace blink {
 
-static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> context)
+namespace {
+
+LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> context)
 {
     return toLocalFrame(toFrameIfNotDetached(context));
+}
+
+int frameId(LocalFrame* frame)
+{
+    ASSERT(frame);
+    return WeakIdentifierMap<LocalFrame>::identifier(frame);
+}
+
 }
 
 // TODO(Oilpan): avoid keeping a raw reference separate from the
@@ -64,7 +74,7 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> con
 MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 
 MainThreadDebugger::MainThreadDebugger(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
-    : ScriptDebuggerBase(isolate, V8Debugger::create(isolate, this))
+    : ScriptDebuggerBase(isolate)
     , m_clientMessageLoop(clientMessageLoop)
     , m_pausedFrame(nullptr)
     , m_taskRunner(adoptPtr(new InspectorTaskRunner(isolate)))
@@ -87,15 +97,6 @@ Mutex& MainThreadDebugger::creationMutex()
     return mutex;
 }
 
-DEFINE_TRACE(MainThreadDebugger)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_pausedFrame);
-    visitor->trace(m_listenersMap);
-#endif
-    ScriptDebuggerBase::trace(visitor);
-}
-
 void MainThreadDebugger::initializeContext(v8::Local<v8::Context> context, int worldId)
 {
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
@@ -103,7 +104,7 @@ void MainThreadDebugger::initializeContext(v8::Local<v8::Context> context, int w
         return;
     LocalFrame* localFrameRoot = frame->localFrameRoot();
     String type = worldId == MainWorldId ? "page" : "injected";
-    String debugData = "[" + type + "," + String::number(WeakIdentifierMap<LocalFrame>::identifier(localFrameRoot)) + "]";
+    String debugData = "[" + type + "," + String::number(frameId(localFrameRoot)) + "]";
     V8Debugger::setContextDebugData(context, debugData);
 }
 
@@ -117,8 +118,9 @@ void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* 
 
     if (m_listenersMap.isEmpty())
         debugger()->enable();
-    m_listenersMap.set(localFrameRoot, listener);
-    String contextDataSubstring = "," + String::number(WeakIdentifierMap<LocalFrame>::identifier(localFrameRoot)) + "]";
+    int localFrameRootId = frameId(localFrameRoot);
+    m_listenersMap.set(localFrameRootId, listener);
+    String contextDataSubstring = "," + String::number(localFrameRootId) + "]";
     Vector<ScriptDebugListener::ParsedScript> compiledScripts;
     debugger()->getCompiledScripts(contextDataSubstring, compiledScripts);
     for (size_t i = 0; i < compiledScripts.size(); i++)
@@ -127,13 +129,14 @@ void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* 
 
 void MainThreadDebugger::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)
 {
-    if (!m_listenersMap.contains(localFrame))
+    int localFrameId = frameId(localFrame);
+    if (!m_listenersMap.contains(localFrameId))
         return;
 
     if (m_pausedFrame == localFrame)
         debugger()->continueProgram();
 
-    m_listenersMap.remove(localFrame);
+    m_listenersMap.remove(localFrameId);
 
     if (m_listenersMap.isEmpty())
         debugger()->disable();
@@ -158,7 +161,7 @@ ScriptDebugListener* MainThreadDebugger::getDebugListenerForContext(v8::Local<v8
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
     if (!frame)
         return 0;
-    return m_listenersMap.get(frame->localFrameRoot());
+    return m_listenersMap.get(frameId(frame->localFrameRoot()));
 }
 
 void MainThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context> context)
@@ -171,7 +174,7 @@ void MainThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context> context)
     m_clientMessageLoop->run(m_pausedFrame);
 
     // The listener may have been removed in the nested loop.
-    if (ScriptDebugListener* listener = m_listenersMap.get(m_pausedFrame))
+    if (ScriptDebugListener* listener = m_listenersMap.get(frameId(m_pausedFrame.get())))
         listener->didContinue();
 
     m_pausedFrame = 0;
