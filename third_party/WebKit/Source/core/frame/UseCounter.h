@@ -791,6 +791,7 @@ public:
         HTMLMediaElementPreloadMetadata = 893,
         HTMLMediaElementPreloadAuto = 894,
         HTMLMediaElementPreloadDefault = 895,
+        MixedContentBlockableAllowed = 896,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
