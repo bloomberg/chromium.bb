@@ -18,10 +18,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -83,14 +82,7 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
 
 void BookmarkModelFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // Don't sync this, as otherwise, due to a limitation in sync, it
-  // will cause a deadlock (see http://crbug.com/97955).  If we truly
-  // want to sync the expanded state of folders, it should be part of
-  // bookmark sync itself (i.e., a property of the sync folder nodes).
-  registry->RegisterListPref(bookmarks::prefs::kBookmarkEditorExpandedNodes,
-                             new base::ListValue);
-  registry->RegisterListPref(bookmarks::prefs::kManagedBookmarks);
-  registry->RegisterListPref(bookmarks::prefs::kSupervisedBookmarks);
+  bookmarks::RegisterProfilePrefs(registry);
 }
 
 content::BrowserContext* BookmarkModelFactory::GetBrowserContextToUse(
