@@ -212,48 +212,59 @@ bool LoginDatabase::Init() {
   db_.set_cache_size(32);
   db_.set_exclusive_locking();
   db_.set_restrict_to_user();
+  db_.set_histogram_tag("Passwords");
 
   if (!db_.Open(db_path_)) {
-    LOG(WARNING) << "Unable to open the password store database.";
+    LOG(ERROR) << "Unable to open the password store database.";
     return false;
   }
 
   sql::Transaction transaction(&db_);
-  transaction.Begin();
+  if (!transaction.Begin()) {
+    LOG(ERROR) << "Unable to start a transaction.";
+    db_.Close();
+    return false;
+  }
 
   // Check the database version.
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
                         kCompatibleVersionNumber)) {
+    LOG(ERROR) << "Unable to create the meta table.";
     db_.Close();
     return false;
   }
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
-    LOG(WARNING) << "Password store database is too new.";
+    LOG(ERROR) << "Password store database is too new, kCurrentVersionNumber="
+               << kCurrentVersionNumber << ", GetCompatibleVersionNumber="
+               << meta_table_.GetCompatibleVersionNumber();
     db_.Close();
     return false;
   }
 
   // Initialize the tables.
   if (!InitLoginsTable()) {
-    LOG(WARNING) << "Unable to initialize the logins table.";
+    LOG(ERROR) << "Unable to initialize the logins table.";
     db_.Close();
     return false;
   }
 
   if (!stats_table_.Init(&db_)) {
-    LOG(WARNING) << "Unable to initialize the stats table.";
+    LOG(ERROR) << "Unable to initialize the stats table.";
     db_.Close();
     return false;
   }
 
   // If the file on disk is an older database version, bring it up to date.
   if (!MigrateOldVersionsAsNeeded()) {
-    LOG(WARNING) << "Unable to migrate database";
+    LOG(ERROR) << "Unable to migrate database from "
+               << meta_table_.GetVersionNumber() << " to "
+               << kCurrentVersionNumber;
     db_.Close();
     return false;
   }
 
   if (!transaction.Commit()) {
+    LOG(ERROR) << "Unable to commit a transaction.";
     db_.Close();
     return false;
   }
