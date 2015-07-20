@@ -1011,9 +1011,6 @@ const char kMemoryPressureThresholdsMb[] = "memory-pressure-thresholds-mb";
 const char kTraceExportEventsToETW[] = "trace-export-events-to-etw";
 #endif
 
-// Enables the use of NPAPI plugins.
-const char kEnableNpapiForTesting[] = "enable-npapi-for-testing";
-
 // Don't dump stuff here, follow the same order as the header.
 
 }  // namespace switches

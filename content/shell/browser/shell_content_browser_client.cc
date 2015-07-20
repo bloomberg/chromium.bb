@@ -201,6 +201,14 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }
 
+bool ShellContentBrowserClient::IsNPAPIEnabled() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  return true;
+#else
+  return false;
+#endif
+}
+
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {

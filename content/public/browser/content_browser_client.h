@@ -562,6 +562,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // It's valid to return nullptr.
   virtual TracingDelegate* GetTracingDelegate();
 
+  // Returns true if NPAPI plugins are enabled.
+  virtual bool IsNPAPIEnabled();
+
   // Returns true if plugin referred to by the url can use
   // pp::FileIO::RequestOSFileHandle.
   virtual bool IsPluginAllowedToCallRequestOSFileHandle(

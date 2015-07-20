@@ -794,27 +794,20 @@ void PluginServiceImpl::GetInternalPlugins(
 }
 
 bool PluginServiceImpl::NPAPIPluginsSupported() {
-  static bool command_line_checked = false;
-
-  if (!command_line_checked) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    npapi_plugins_enabled_ =
-        command_line->HasSwitch(switches::kEnableNpapiForTesting);
+  npapi_plugins_enabled_ = GetContentClient()->browser()->IsNPAPIEnabled();
 #if defined(OS_WIN)
-    // NPAPI plugins don't play well with Win32k renderer lockdown.
-    if (npapi_plugins_enabled_)
-      DisableWin32kRendererLockdown();
+  // NPAPI plugins don't play well with Win32k renderer lockdown.
+  if (npapi_plugins_enabled_)
+    DisableWin32kRendererLockdown();
 #endif
-    NPAPIPluginStatus status =
-        npapi_plugins_enabled_ ? NPAPI_STATUS_ENABLED : NPAPI_STATUS_DISABLED;
+  NPAPIPluginStatus status =
+      npapi_plugins_enabled_ ? NPAPI_STATUS_ENABLED : NPAPI_STATUS_DISABLED;
 #else
-    NPAPIPluginStatus status = NPAPI_STATUS_UNSUPPORTED;
+  NPAPIPluginStatus status = NPAPI_STATUS_UNSUPPORTED;
 #endif
-    UMA_HISTOGRAM_ENUMERATION("Plugin.NPAPIStatus", status,
-        NPAPI_STATUS_ENUM_COUNT);
-  }
+  UMA_HISTOGRAM_ENUMERATION("Plugin.NPAPIStatus", status,
+                            NPAPI_STATUS_ENUM_COUNT);
 
   return npapi_plugins_enabled_;
 }
@@ -873,8 +866,8 @@ bool PluginServiceImpl::IsPluginWindow(HWND window) {
 bool PluginServiceImpl::PpapiDevChannelSupported(
     BrowserContext* browser_context,
     const GURL& document_url) {
-  return content::GetContentClient()->browser()->
-      IsPluginAllowedToUseDevChannelAPIs(browser_context, document_url);
+  return GetContentClient()->browser()->IsPluginAllowedToUseDevChannelAPIs(
+      browser_context, document_url);
 }
 
 }  // namespace content

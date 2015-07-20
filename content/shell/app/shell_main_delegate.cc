@@ -202,9 +202,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitchASCII(switches::kHostResolverRules,
                                    "MAP *.test 127.0.0.1");
 
-    // TODO(wfh): crbug.com/295137 Remove this when NPAPI is gone.
-    command_line.AppendSwitch(switches::kEnableNpapiForTesting);
-
     // Unless/until WebM files are added to the media layout tests, we need to
     // avoid removing MP4/H264/AAC so that layout tests can run on Android.
 #if !defined(OS_ANDROID)
