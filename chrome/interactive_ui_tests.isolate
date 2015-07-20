@@ -59,7 +59,6 @@
           '<(PRODUCT_DIR)/ui_test.pak',
           'test/data/',
         ],
-        'read_only': 1,
       },
     }],
     ['OS=="linux" or OS=="win"', {

@@ -12,7 +12,6 @@
           '<(PRODUCT_DIR)/nacl_helper_nonsfi_unittests',
           '<(PRODUCT_DIR)/nacl_helper_nonsfi_unittests_main',
         ],
-        'read_only': 1,
       },
     }],
   ],

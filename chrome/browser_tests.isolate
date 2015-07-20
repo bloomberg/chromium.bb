@@ -98,7 +98,6 @@
           'test/data/',
           'third_party/mock4js/',
         ],
-        'read_only': 1,
       },
     }],
     ['disable_nacl==0 and (OS=="linux" or OS=="mac" or OS=="win")', {
@@ -109,7 +108,6 @@
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib.nmf',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl.nmf',
         ],
-        'read_only': 1,
       },
     }],
     ['OS=="linux" or OS=="win"', {

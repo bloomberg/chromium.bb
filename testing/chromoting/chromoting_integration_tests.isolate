@@ -55,7 +55,6 @@
           '<(PRODUCT_DIR)/resources.pak',
           '../../remoting/tools/internal/test_accounts.json',
         ],
-        'read_only': 1,
       },
     }],
     ['OS=="linux" or OS=="win"', {

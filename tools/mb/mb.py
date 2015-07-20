@@ -373,7 +373,6 @@ class MetaBuildWrapper(object):
           'variables': {
             'command': command,
             'files': sorted(runtime_deps + extra_files),
-            'read_only': 1,
           }
         }) + '\n')
 
