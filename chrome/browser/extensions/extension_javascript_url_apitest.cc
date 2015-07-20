@@ -13,3 +13,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, JavaScriptURLPermissions) {
 
   ASSERT_TRUE(RunExtensionTest("tabs/javascript_url_permissions")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, JavasScriptEncodedURL) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  ASSERT_TRUE(RunExtensionTest("tabs/javascript_url_encoded")) << message_;
+}

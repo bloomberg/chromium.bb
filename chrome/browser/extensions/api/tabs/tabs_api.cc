@@ -85,6 +85,7 @@
 #include "extensions/common/message_bundle.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
+#include "net/base/escape.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1315,20 +1316,19 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
       return false;
     }
 
-    TabHelper::FromWebContents(web_contents_)->script_executor()->ExecuteScript(
-        HostID(HostID::EXTENSIONS, extension_id()),
-        ScriptExecutor::JAVASCRIPT,
-        url.GetContent(),
-        ScriptExecutor::TOP_FRAME,
-        ScriptExecutor::DONT_MATCH_ABOUT_BLANK,
-        UserScript::DOCUMENT_IDLE,
-        ScriptExecutor::MAIN_WORLD,
-        ScriptExecutor::DEFAULT_PROCESS,
-        GURL(),
-        GURL(),
-        user_gesture_,
-        ScriptExecutor::NO_RESULT,
-        base::Bind(&TabsUpdateFunction::OnExecuteCodeFinished, this));
+    TabHelper::FromWebContents(web_contents_)
+        ->script_executor()
+        ->ExecuteScript(
+            HostID(HostID::EXTENSIONS, extension_id()),
+            ScriptExecutor::JAVASCRIPT,
+            net::UnescapeURLComponent(url.GetContent(),
+                                      net::UnescapeRule::URL_SPECIAL_CHARS |
+                                          net::UnescapeRule::SPACES),
+            ScriptExecutor::TOP_FRAME, ScriptExecutor::DONT_MATCH_ABOUT_BLANK,
+            UserScript::DOCUMENT_IDLE, ScriptExecutor::MAIN_WORLD,
+            ScriptExecutor::DEFAULT_PROCESS, GURL(), GURL(), user_gesture_,
+            ScriptExecutor::NO_RESULT,
+            base::Bind(&TabsUpdateFunction::OnExecuteCodeFinished, this));
 
     *is_async = true;
     return true;
