@@ -192,7 +192,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set up alternative_services for www.google.com:80.
   base::DictionaryValue* alternative_service_dict0 = new base::DictionaryValue;
   alternative_service_dict0->SetInteger("port", 443);
-  alternative_service_dict0->SetString("protocol_str", "npn-spdy/3");
+  alternative_service_dict0->SetString("protocol_str", "npn-h2");
   base::DictionaryValue* alternative_service_dict1 = new base::DictionaryValue;
   alternative_service_dict1->SetInteger("port", 1234);
   alternative_service_dict1->SetString("protocol_str", "quic");
@@ -268,7 +268,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   AlternativeServiceMap::const_iterator map_it = map.begin();
   EXPECT_EQ("www.google.com", map_it->first.host());
   ASSERT_EQ(2u, map_it->second.size());
-  EXPECT_EQ(NPN_SPDY_3, map_it->second[0].alternative_service.protocol);
+  EXPECT_EQ(NPN_HTTP_2, map_it->second[0].alternative_service.protocol);
   EXPECT_TRUE(map_it->second[0].alternative_service.host.empty());
   EXPECT_EQ(443, map_it->second[0].alternative_service.port);
   EXPECT_EQ(QUIC, map_it->second[1].alternative_service.protocol);
@@ -308,7 +308,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
 
   // Set up alternative_service for www.google.com:65536.
   base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
-  alternative_service_dict->SetString("protocol_str", "npn-spdy/3");
+  alternative_service_dict->SetString("protocol_str", "npn-h2");
   alternative_service_dict->SetInteger("port", 80);
   base::ListValue* alternative_service_list = new base::ListValue;
   alternative_service_list->Append(alternative_service_dict);
@@ -361,7 +361,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
 
   // Set up alternative_service for www.google.com:80.
   base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
-  alternative_service_dict->SetString("protocol_str", "npn-spdy/3");
+  alternative_service_dict->SetString("protocol_str", "npn-h2");
   alternative_service_dict->SetInteger("port", 65536);
   base::ListValue* alternative_service_list = new base::ListValue;
   alternative_service_list->Append(alternative_service_dict);
