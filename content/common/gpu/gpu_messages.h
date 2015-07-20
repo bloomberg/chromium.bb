@@ -121,6 +121,14 @@ IPC_STRUCT_BEGIN(AcceleratedJpegDecoderMsg_Decode_Params)
   IPC_STRUCT_MEMBER(uint32, output_buffer_size)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(AcceleratedVideoEncoderMsg_Encode_Params)
+  IPC_STRUCT_MEMBER(int32_t, frame_id)
+  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, buffer_handle)
+  IPC_STRUCT_MEMBER(uint32_t, buffer_offset)
+  IPC_STRUCT_MEMBER(uint32_t, buffer_size)
+  IPC_STRUCT_MEMBER(bool, force_keyframe)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
   IPC_STRUCT_MEMBER(int32, id)
   IPC_STRUCT_MEMBER(std::string, message)
@@ -725,14 +733,10 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_ErrorNotification,
 // Accelerated Video Encoder Messages
 // These messages are sent from the Renderer process to GPU process.
 
-// Queue a input buffer to the encoder to encode. |frame_id| will be returned by
-// AcceleratedVideoEncoderHostMsg_NotifyInputDone.
-IPC_MESSAGE_ROUTED5(AcceleratedVideoEncoderMsg_Encode,
-                    int32 /* frame_id */,
-                    base::SharedMemoryHandle /* buffer_handle */,
-                    uint32 /* buffer_offset */,
-                    uint32 /* buffer_size */,
-                    bool /* force_keyframe */)
+// Queue a video frame to the encoder to encode. |frame_id| will be returned
+// by AcceleratedVideoEncoderHostMsg_NotifyInputDone.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderMsg_Encode,
+                    AcceleratedVideoEncoderMsg_Encode_Params)
 
 // Queue a buffer to the encoder for use in returning output.  |buffer_id| will
 // be returned by AcceleratedVideoEncoderHostMsg_BitstreamBufferReady.

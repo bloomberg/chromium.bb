@@ -17,19 +17,14 @@
 #include "media/video/video_encode_accelerator.h"
 
 namespace gfx {
-
 class Size;
-
 }  // namespace gfx
 
 namespace media {
-
 class VideoFrame;
-
 }  // namespace media
 
 namespace content {
-
 class GpuChannelHost;
 
 // This class is the renderer-side host for the VideoEncodeAccelerator in the
@@ -63,7 +58,7 @@ class GpuVideoEncodeAcceleratorHost
                                        uint32 framerate_num) override;
   void Destroy() override;
 
-  // CommandBufferProxyImpl::DeletionObserver implemetnation.
+  // CommandBufferProxyImpl::DeletionObserver implementation.
   void OnWillDeleteImpl() override;
 
  private:
