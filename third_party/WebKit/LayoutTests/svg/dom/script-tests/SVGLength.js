@@ -83,6 +83,12 @@ shouldBe("length.value", "2");
 shouldBe("length.valueInSpecifiedUnits", "2");
 shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
 
+shouldThrow("length.valueAsString = null");
+shouldBeEqualToString("length.valueAsString", "2px");
+shouldBe("length.value", "2");
+shouldBe("length.valueInSpecifiedUnits", "2");
+shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
+
 debug("");
 debug("Check setting invalid 'value' arguments");
 shouldThrow("length.value = NaN");

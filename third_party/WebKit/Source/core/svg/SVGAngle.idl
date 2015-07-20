@@ -22,7 +22,6 @@
 
 // http://www.w3.org/TR/SVG2/types.html#InterfaceSVGAngle
 
-// TODO(philipj): SVGAngle should have constructors. crbug.com/366541
 [
     ImplementedAs=SVGAngleTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
@@ -39,8 +38,7 @@
     readonly attribute unsigned short unitType;
     [RaisesException=Setter] attribute float value;
     [RaisesException=Setter] attribute float valueInSpecifiedUnits;
-    // TODO(philipj): valueAsString should not have [TreatNullAs=NullString].
-    [TreatNullAs=NullString, RaisesException=Setter] attribute DOMString valueAsString;
+    [RaisesException=Setter] attribute DOMString valueAsString;
 
     [RaisesException] void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits);
     [RaisesException] void convertToSpecifiedUnits(unsigned short unitType);

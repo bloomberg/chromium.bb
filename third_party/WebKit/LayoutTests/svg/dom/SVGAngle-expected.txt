@@ -120,6 +120,11 @@ PASS angle.valueAsString is "0"
 PASS angle.value is 0
 PASS angle.valueInSpecifiedUnits is 0
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
+PASS angle.valueAsString = null threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGAngle': The value provided ('null') is invalid..
+PASS angle.valueAsString is "0"
+PASS angle.value is 0
+PASS angle.valueInSpecifiedUnits is 0
+PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
 
 Check setting invalid 'valueInSpecifiedUnits' arguments
 PASS angle.valueInSpecifiedUnits = 'test' threw exception TypeError: Failed to set the 'valueInSpecifiedUnits' property on 'SVGAngle': The provided float value is non-finite..

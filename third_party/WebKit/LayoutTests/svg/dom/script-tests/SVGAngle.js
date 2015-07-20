@@ -145,6 +145,12 @@ shouldBe("angle.value", "0");
 shouldBe("angle.valueInSpecifiedUnits", "0");
 shouldBe("angle.unitType", "SVGAngle.SVG_ANGLETYPE_UNSPECIFIED");
 
+shouldThrow("angle.valueAsString = null");
+shouldBeEqualToString("angle.valueAsString", "0");
+shouldBe("angle.value", "0");
+shouldBe("angle.valueInSpecifiedUnits", "0");
+shouldBe("angle.unitType", "SVGAngle.SVG_ANGLETYPE_UNSPECIFIED");
+
 debug("");
 debug("Check setting invalid 'valueInSpecifiedUnits' arguments");
 shouldThrow("angle.valueInSpecifiedUnits = 'test'");

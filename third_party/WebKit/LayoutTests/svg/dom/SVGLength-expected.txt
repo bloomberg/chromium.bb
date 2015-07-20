@@ -72,6 +72,11 @@ PASS length.valueAsString is "2px"
 PASS length.value is 2
 PASS length.valueInSpecifiedUnits is 2
 PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
+PASS length.valueAsString = null threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGLength': The value provided ('null') is invalid..
+PASS length.valueAsString is "2px"
+PASS length.value is 2
+PASS length.valueInSpecifiedUnits is 2
+PASS length.unitType is SVGLength.SVG_LENGTHTYPE_PX
 
 Check setting invalid 'value' arguments
 PASS length.value = NaN threw exception TypeError: Failed to set the 'value' property on 'SVGLength': The provided float value is non-finite..
