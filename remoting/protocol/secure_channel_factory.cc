@@ -5,9 +5,9 @@
 #include "remoting/protocol/secure_channel_factory.h"
 
 #include "base/bind.h"
-#include "net/socket/stream_socket.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 
 namespace remoting {
 namespace protocol {
@@ -49,7 +49,7 @@ void SecureChannelFactory::CancelChannelCreation(
 void SecureChannelFactory::OnBaseChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback,
-    scoped_ptr<net::StreamSocket> socket) {
+    scoped_ptr<P2PStreamSocket> socket) {
   if (!socket) {
     callback.Run(nullptr);
     return;
@@ -68,7 +68,7 @@ void SecureChannelFactory::OnSecureChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback,
     int error,
-    scoped_ptr<net::StreamSocket> socket) {
+    scoped_ptr<P2PStreamSocket> socket) {
   DCHECK((socket && error == net::OK) || (!socket && error != net::OK));
 
   AuthenticatorMap::iterator it = channel_authenticators_.find(name);

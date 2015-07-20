@@ -19,7 +19,7 @@ class FakeChannelAuthenticator : public ChannelAuthenticator {
   ~FakeChannelAuthenticator() override;
 
   // ChannelAuthenticator interface.
-  void SecureAndAuthenticate(scoped_ptr<net::StreamSocket> socket,
+  void SecureAndAuthenticate(scoped_ptr<P2PStreamSocket> socket,
                              const DoneCallback& done_callback) override;
 
  private:
@@ -31,7 +31,7 @@ class FakeChannelAuthenticator : public ChannelAuthenticator {
   int result_;
   bool async_;
 
-  scoped_ptr<net::StreamSocket> socket_;
+  scoped_ptr<P2PStreamSocket> socket_;
   DoneCallback done_callback_;
 
   bool did_read_bytes_;

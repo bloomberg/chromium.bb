@@ -8,10 +8,11 @@
 #include <list>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
-#include "net/socket/socket.h"
 
 namespace net {
 class Socket;
@@ -19,105 +20,57 @@ class Socket;
 
 namespace remoting {
 
-// BufferedSocketWriter and BufferedDatagramWriter implement write data queue
-// for stream and datagram sockets. BufferedSocketWriterBase is a base class
-// that implements base functionality common for streams and datagrams.
-// These classes are particularly useful when data comes from a thread
-// that doesn't own the socket, as Write() can be called from any thread.
-// Whenever new data is written it is just put in the queue, and then written
-// on the thread that owns the socket. GetBufferChunks() and GetBufferSize()
-// can be used to throttle writes.
-
-class BufferedSocketWriterBase : public base::NonThreadSafe {
+// BufferedSocketWriter implement write data queue for stream sockets.
+class BufferedSocketWriter {
  public:
+  typedef base::Callback<int(const scoped_refptr<net::IOBuffer>& buf,
+                             int buf_len,
+                             const net::CompletionCallback& callback)>
+      WriteCallback;
   typedef base::Callback<void(int)> WriteFailedCallback;
 
-  BufferedSocketWriterBase();
-  virtual ~BufferedSocketWriterBase();
+  static scoped_ptr<BufferedSocketWriter> CreateForSocket(
+      net::Socket* socket,
+      const WriteFailedCallback& write_failed_callback);
 
-  // Initializes the writer. Must be called on the thread that will be used
-  // to access the socket in the future. |callback| will be called after each
-  // failed write. Caller retains ownership of |socket|.
-  // TODO(sergeyu): Change it so that it take ownership of |socket|.
-  void Init(net::Socket* socket, const WriteFailedCallback& callback);
+  BufferedSocketWriter();
+  virtual ~BufferedSocketWriter();
 
-  // Puts a new data chunk in the buffer. Returns false and doesn't enqueue
-  // the data if called before Init(). Can be called on any thread.
-  bool Write(scoped_refptr<net::IOBufferWithSize> buffer,
+  // Initializes the writer. |write_callback| is called to write data to the
+  // socket. |write_failed_callback| is called when write operation fails.
+  // Writing stops after the first failed write.
+  void Init(const WriteCallback& write_callback,
+            const WriteFailedCallback& write_failed_callback);
+
+  // Puts a new data chunk in the buffer. Returns false if writing has stopped
+  // because of an error.
+  bool Write(const scoped_refptr<net::IOBufferWithSize>& buffer,
              const base::Closure& done_task);
 
   // Returns true when there is data waiting to be written.
   bool has_data_pending() { return !queue_.empty(); }
 
-  // Stops writing and drops current buffers. Must be called on the
-  // network thread.
-  void Close();
-
- protected:
+ private:
   struct PendingPacket;
   typedef std::list<PendingPacket*> DataQueue;
 
-  DataQueue queue_;
+  // Returns true if the writer is closed due to an error.
+  bool is_closed();
 
-  // Removes element from the front of the queue and returns |done_task| for
-  // that element. Called from AdvanceBufferPosition() implementation, which
-  // then returns result of this function to its caller.
-  base::Closure PopQueue();
-
-  // Following three methods must be implemented in child classes.
-
-  // Returns next packet that needs to be written to the socket. Implementation
-  // must set |*buffer| to nullptr if there is nothing left in the queue.
-  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) = 0;
-
-  // Returns closure that must be executed or null closure if the last write
-  // didn't complete any messages.
-  virtual base::Closure AdvanceBufferPosition(int written) = 0;
-
-  // This method is called whenever there is an error writing to the socket.
-  virtual void OnError(int result) = 0;
-
- private:
   void DoWrite();
-  void HandleWriteResult(int result, bool* write_again);
+  void HandleWriteResult(int result);
   void OnWritten(int result);
 
-  // This method is called when an error is encountered.
-  void HandleError(int result);
+  base::ThreadChecker thread_checker_;
 
-  net::Socket* socket_;
+  WriteCallback write_callback_;
   WriteFailedCallback write_failed_callback_;
 
-  bool write_pending_;
+  DataQueue queue_;
 
-  bool closed_;
+  bool write_pending_ = false;
 
-  bool* destroyed_flag_;
-};
-
-class BufferedSocketWriter : public BufferedSocketWriterBase {
- public:
-  BufferedSocketWriter();
-  ~BufferedSocketWriter() override;
-
- protected:
-  void GetNextPacket(net::IOBuffer** buffer, int* size) override;
-  base::Closure AdvanceBufferPosition(int written) override;
-  void OnError(int result) override;
-
- private:
-  scoped_refptr<net::DrainableIOBuffer> current_buf_;
-};
-
-class BufferedDatagramWriter : public BufferedSocketWriterBase {
- public:
-  BufferedDatagramWriter();
-  ~BufferedDatagramWriter() override;
-
- protected:
-  void GetNextPacket(net::IOBuffer** buffer, int* size) override;
-  base::Closure AdvanceBufferPosition(int written) override;
-  void OnError(int result) override;
+  base::WeakPtrFactory<BufferedSocketWriter> weak_factory_;
 };
 
 }  // namespace remoting

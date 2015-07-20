@@ -262,8 +262,6 @@
         'host/resizing_host_observer_unittest.cc',
         'host/screen_resolution_unittest.cc',
         'host/server_log_entry_host_unittest.cc',
-        'host/setup/mock_oauth_client.cc',
-        'host/setup/mock_oauth_client.h',
         'host/setup/me2me_native_messaging_host.cc',
         'host/setup/me2me_native_messaging_host.h',
         'host/setup/me2me_native_messaging_host_unittest.cc',

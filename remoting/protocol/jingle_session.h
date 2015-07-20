@@ -22,11 +22,6 @@
 #include "remoting/protocol/transport.h"
 #include "remoting/signaling/iq_sender.h"
 
-namespace net {
-class Socket;
-class StreamSocket;
-}  // namespace net
-
 namespace remoting {
 namespace protocol {
 

@@ -161,6 +161,8 @@
       'protocol/negotiating_host_authenticator.cc',
       'protocol/negotiating_host_authenticator.h',
       'protocol/network_settings.h',
+      'protocol/p2p_datagram_socket.h',
+      'protocol/p2p_stream_socket.h',
       'protocol/pairing_authenticator_base.cc',
       'protocol/pairing_authenticator_base.h',
       'protocol/pairing_client_authenticator.cc',

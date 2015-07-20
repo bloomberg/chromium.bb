@@ -9,12 +9,10 @@
 
 #include "base/callback_forward.h"
 
-namespace net {
-class StreamSocket;
-}  // namespace net
-
 namespace remoting {
 namespace protocol {
+
+class P2PStreamSocket;
 
 // Interface for channel authentications that perform channel-level
 // authentication. Depending on implementation channel authenticators
@@ -22,7 +20,7 @@ namespace protocol {
 // should be used only once for one channel.
 class ChannelAuthenticator {
  public:
-  typedef base::Callback<void(int error, scoped_ptr<net::StreamSocket>)>
+  typedef base::Callback<void(int error, scoped_ptr<P2PStreamSocket>)>
       DoneCallback;
 
   virtual ~ChannelAuthenticator() {}
@@ -31,7 +29,7 @@ class ChannelAuthenticator {
   // authentication is finished. Callback may be invoked before this method
   // returns, and may delete the calling authenticator.
   virtual void SecureAndAuthenticate(
-      scoped_ptr<net::StreamSocket> socket,
+      scoped_ptr<P2PStreamSocket> socket,
       const DoneCallback& done_callback) = 0;
 };
 

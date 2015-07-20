@@ -362,9 +362,8 @@ void XmppSignalStrategy::Core::OnSocketConnected(int result) {
     return;
   }
 
-  writer_.reset(new BufferedSocketWriter());
-  writer_->Init(socket_.get(), base::Bind(&Core::OnNetworkError,
-                                          base::Unretained(this)));
+  writer_ = BufferedSocketWriter::CreateForSocket(
+      socket_.get(), base::Bind(&Core::OnNetworkError, base::Unretained(this)));
 
   XmppLoginHandler::TlsMode tls_mode;
   if (xmpp_server_config_.use_tls) {
@@ -406,9 +405,8 @@ void XmppSignalStrategy::Core::OnTlsConnected(int result) {
     return;
   }
 
-  writer_.reset(new BufferedSocketWriter());
-  writer_->Init(socket_.get(), base::Bind(&Core::OnNetworkError,
-                                          base::Unretained(this)));
+  writer_ = BufferedSocketWriter::CreateForSocket(
+      socket_.get(), base::Bind(&Core::OnNetworkError, base::Unretained(this)));
 
   login_handler_->OnTlsStarted();
 

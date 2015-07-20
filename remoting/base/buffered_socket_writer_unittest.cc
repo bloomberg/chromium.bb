@@ -18,7 +18,8 @@
 namespace remoting {
 
 namespace {
-const int kTestBufferSize = 10 * 1024; // 10k;
+
+const int kTestBufferSize = 10000;
 const size_t kWriteChunkSize = 1024U;
 
 class SocketDataProvider: public net::SocketDataProvider {
@@ -93,9 +94,9 @@ class BufferedSocketWriterTest : public testing::Test {
         net::MockConnect(net::SYNCHRONOUS, net::OK));
     EXPECT_EQ(net::OK, socket_->Connect(net::CompletionCallback()));
 
-    writer_.reset(new BufferedSocketWriter());
-    writer_->Init(socket_.get(), base::Bind(
-        &BufferedSocketWriterTest::OnWriteFailed, base::Unretained(this)));
+    writer_ = BufferedSocketWriter::CreateForSocket(
+        socket_.get(), base::Bind(&BufferedSocketWriterTest::OnWriteFailed,
+                                  base::Unretained(this)));
     test_buffer_ = new net::IOBufferWithSize(kTestBufferSize);
     test_buffer_2_ = new net::IOBufferWithSize(kTestBufferSize);
     for (int i = 0; i< kTestBufferSize; ++i) {
@@ -126,7 +127,7 @@ class BufferedSocketWriterTest : public testing::Test {
 
   void TestAppendInCallback() {
     writer_->Write(test_buffer_, base::Bind(
-        base::IgnoreResult(&BufferedSocketWriterBase::Write),
+        base::IgnoreResult(&BufferedSocketWriter::Write),
         base::Unretained(writer_.get()), test_buffer_2_,
         base::Closure()));
     base::RunLoop().RunUntilIdle();

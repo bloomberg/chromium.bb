@@ -18,6 +18,7 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_session.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -36,7 +37,7 @@ const char kTestSharedSecretBad[] = "0000-0000-0001";
 
 class MockChannelDoneCallback {
  public:
-  MOCK_METHOD2(OnDone, void(int error, net::StreamSocket* socket));
+  MOCK_METHOD2(OnDone, void(int error, P2PStreamSocket* socket));
 };
 
 ACTION_P(QuitThreadOnCounter, counter) {
@@ -115,7 +116,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
 
   void OnHostConnected(const std::string& ref_argument,
                        int error,
-                       scoped_ptr<net::StreamSocket> socket) {
+                       scoped_ptr<P2PStreamSocket> socket) {
     // Try deleting the authenticator and verify that this doesn't destroy
     // reference parameters.
     host_auth_.reset();
@@ -125,7 +126,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     host_socket_ = socket.Pass();
   }
 
-  void OnClientConnected(int error, scoped_ptr<net::StreamSocket> socket) {
+  void OnClientConnected(int error, scoped_ptr<P2PStreamSocket> socket) {
     client_auth_.reset();
     client_callback_.OnDone(error, socket.get());
     client_socket_ = socket.Pass();
@@ -141,8 +142,8 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
   scoped_ptr<ChannelAuthenticator> host_auth_;
   MockChannelDoneCallback client_callback_;
   MockChannelDoneCallback host_callback_;
-  scoped_ptr<net::StreamSocket> client_socket_;
-  scoped_ptr<net::StreamSocket> host_socket_;
+  scoped_ptr<P2PStreamSocket> client_socket_;
+  scoped_ptr<P2PStreamSocket> host_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(SslHmacChannelAuthenticatorTest);
 };

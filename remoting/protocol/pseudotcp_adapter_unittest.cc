@@ -13,6 +13,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "remoting/protocol/p2p_datagram_socket.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,7 +67,7 @@ class LeakyBucket : public RateLimiter {
   base::TimeTicks last_update_;
 };
 
-class FakeSocket : public net::Socket {
+class FakeSocket : public P2PDatagramSocket {
  public:
   FakeSocket()
       : rate_limiter_(NULL),
@@ -99,9 +101,8 @@ class FakeSocket : public net::Socket {
 
   void set_latency(int latency_ms) { latency_ms_ = latency_ms; };
 
-  // net::Socket interface.
-  int Read(net::IOBuffer* buf,
-           int buf_len,
+  // P2PDatagramSocket interface.
+  int Recv(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
            const net::CompletionCallback& callback) override {
     CHECK(read_callback_.is_null());
     CHECK(buf);
@@ -121,9 +122,8 @@ class FakeSocket : public net::Socket {
     }
   }
 
-  int Write(net::IOBuffer* buf,
-            int buf_len,
-            const net::CompletionCallback& callback) override {
+  int Send(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
+           const net::CompletionCallback& callback) override {
     DCHECK(buf);
     if (peer_socket_) {
       base::MessageLoop::current()->PostDelayedTask(
@@ -135,15 +135,6 @@ class FakeSocket : public net::Socket {
     }
 
     return buf_len;
-  }
-
-  int SetReceiveBufferSize(int32 size) override {
-    NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
-  }
-  int SetSendBufferSize(int32 size) override {
-    NOTIMPLEMENTED();
-    return net::ERR_NOT_IMPLEMENTED;
   }
 
  private:
@@ -161,8 +152,8 @@ class FakeSocket : public net::Socket {
 class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
  public:
   TCPChannelTester(base::MessageLoop* message_loop,
-                   net::Socket* client_socket,
-                   net::Socket* host_socket)
+                   P2PStreamSocket* client_socket,
+                   P2PStreamSocket* host_socket)
       : message_loop_(message_loop),
         host_socket_(host_socket),
         client_socket_(client_socket),
@@ -280,8 +271,8 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
   friend class base::RefCountedThreadSafe<TCPChannelTester>;
 
   base::MessageLoop* message_loop_;
-  net::Socket* host_socket_;
-  net::Socket* client_socket_;
+  P2PStreamSocket* host_socket_;
+  P2PStreamSocket* client_socket_;
   bool done_;
 
   scoped_refptr<net::DrainableIOBuffer> output_buffer_;

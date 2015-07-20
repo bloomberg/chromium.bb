@@ -17,20 +17,21 @@ namespace net {
 class DrainableIOBuffer;
 class GrowableIOBuffer;
 class IOBuffer;
-class Socket;
-class StreamSocket;
 }  // namespace net
 
 namespace remoting {
 namespace protocol {
+
+class P2PDatagramSocket;
+class P2PStreamSocket;
 
 // This class is used by unit tests to verify that a connection
 // between two sockets works properly, i.e. data is delivered from one
 // end to the other.
 class StreamConnectionTester {
  public:
-  StreamConnectionTester(net::StreamSocket* client_socket,
-                         net::StreamSocket* host_socket,
+  StreamConnectionTester(P2PStreamSocket* client_socket,
+                         P2PStreamSocket* host_socket,
                          int message_size,
                          int message_count);
   ~StreamConnectionTester();
@@ -51,8 +52,8 @@ class StreamConnectionTester {
 
  private:
   base::MessageLoop* message_loop_;
-  net::StreamSocket* host_socket_;
-  net::StreamSocket* client_socket_;
+  P2PStreamSocket* host_socket_;
+  P2PStreamSocket* client_socket_;
   int message_size_;
   int test_data_size_;
   bool done_;
@@ -66,8 +67,8 @@ class StreamConnectionTester {
 
 class DatagramConnectionTester {
  public:
-  DatagramConnectionTester(net::Socket* client_socket,
-                           net::Socket* host_socket,
+  DatagramConnectionTester(P2PDatagramSocket* client_socket,
+                           P2PDatagramSocket* host_socket,
                            int message_size,
                            int message_count,
                            int delay_ms);
@@ -86,8 +87,8 @@ class DatagramConnectionTester {
   void HandleReadResult(int result);
 
   base::MessageLoop* message_loop_;
-  net::Socket* host_socket_;
-  net::Socket* client_socket_;
+  P2PDatagramSocket* host_socket_;
+  P2PDatagramSocket* client_socket_;
   int message_size_;
   int message_count_;
   int delay_ms_;

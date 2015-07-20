@@ -15,6 +15,7 @@
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/fake_stream_socket.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
@@ -158,14 +159,14 @@ void AuthenticatorTestBase::RunChannelAuth(bool expected_fail) {
 
 void AuthenticatorTestBase::OnHostConnected(
     int error,
-    scoped_ptr<net::StreamSocket> socket) {
+    scoped_ptr<P2PStreamSocket> socket) {
   host_callback_.OnDone(error);
   host_socket_ = socket.Pass();
 }
 
 void AuthenticatorTestBase::OnClientConnected(
     int error,
-    scoped_ptr<net::StreamSocket> socket) {
+    scoped_ptr<P2PStreamSocket> socket) {
   client_callback_.OnDone(error);
   client_socket_ = socket.Pass();
 }

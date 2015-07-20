@@ -9,8 +9,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
@@ -29,7 +29,7 @@ FakeChannelAuthenticator::~FakeChannelAuthenticator() {
 }
 
 void FakeChannelAuthenticator::SecureAndAuthenticate(
-    scoped_ptr<net::StreamSocket> socket,
+    scoped_ptr<P2PStreamSocket> socket,
     const DoneCallback& done_callback) {
   socket_ = socket.Pass();
 

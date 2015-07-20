@@ -14,11 +14,12 @@
 
 namespace net {
 class IOBuffer;
-class Socket;
 }  // namespace net
 
 namespace remoting {
 namespace protocol {
+
+class P2PStreamSocket;
 
 // MessageReader reads data from the socket asynchronously and calls
 // callback for each message it receives. It stops calling the
@@ -44,7 +45,7 @@ class MessageReader : public base::NonThreadSafe {
   void SetMessageReceivedCallback(const MessageReceivedCallback& callback);
 
   // Starts reading from |socket|.
-  void StartReading(net::Socket* socket,
+  void StartReading(P2PStreamSocket* socket,
                     const ReadFailedCallback& read_failed_callback);
 
  private:
@@ -57,7 +58,7 @@ class MessageReader : public base::NonThreadSafe {
 
   ReadFailedCallback read_failed_callback_;
 
-  net::Socket* socket_;
+  P2PStreamSocket* socket_;
 
   // Set to true, when we have a socket read pending, and expecting
   // OnRead() to be called when new data is received.

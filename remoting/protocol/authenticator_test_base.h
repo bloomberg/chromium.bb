@@ -12,10 +12,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
-class StreamSocket;
-}  // namespace net
-
 namespace remoting {
 
 class RsaKeyPair;
@@ -25,6 +21,7 @@ namespace protocol {
 class Authenticator;
 class ChannelAuthenticator;
 class FakeStreamSocket;
+class P2PStreamSocket;
 
 class AuthenticatorTestBase : public testing::Test {
  public:
@@ -49,9 +46,9 @@ class AuthenticatorTestBase : public testing::Test {
   void RunChannelAuth(bool expected_fail);
 
   void OnHostConnected(int error,
-                       scoped_ptr<net::StreamSocket> socket);
+                       scoped_ptr<P2PStreamSocket> socket);
   void OnClientConnected(int error,
-                         scoped_ptr<net::StreamSocket> socket);
+                         scoped_ptr<P2PStreamSocket> socket);
 
   base::MessageLoop message_loop_;
 
@@ -66,8 +63,8 @@ class AuthenticatorTestBase : public testing::Test {
   scoped_ptr<ChannelAuthenticator> host_auth_;
   MockChannelDoneCallback client_callback_;
   MockChannelDoneCallback host_callback_;
-  scoped_ptr<net::StreamSocket> client_socket_;
-  scoped_ptr<net::StreamSocket> host_socket_;
+  scoped_ptr<P2PStreamSocket> client_socket_;
+  scoped_ptr<P2PStreamSocket> host_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorTestBase);
 };

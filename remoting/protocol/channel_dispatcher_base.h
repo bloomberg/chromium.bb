@@ -14,10 +14,6 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/message_reader.h"
 
-namespace net {
-class StreamSocket;
-}  // namespace net
-
 namespace remoting {
 namespace protocol {
 
@@ -66,13 +62,13 @@ class ChannelDispatcherBase {
   MessageReader* reader() { return &reader_; }
 
  private:
-  void OnChannelReady(scoped_ptr<net::StreamSocket> socket);
+  void OnChannelReady(scoped_ptr<P2PStreamSocket> socket);
   void OnReadWriteFailed(int error);
 
   std::string channel_name_;
   StreamChannelFactory* channel_factory_;
   EventHandler* event_handler_;
-  scoped_ptr<net::StreamSocket> channel_;
+  scoped_ptr<P2PStreamSocket> channel_;
 
   BufferedSocketWriter writer_;
   MessageReader reader_;

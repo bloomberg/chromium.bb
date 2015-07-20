@@ -11,19 +11,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 
-namespace net {
-class Socket;
-class StreamSocket;
-}  // namespace net
-
 namespace remoting {
 namespace protocol {
+
+class P2PStreamSocket;
 
 class StreamChannelFactory : public base::NonThreadSafe {
  public:
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
-  typedef base::Callback<void(scoped_ptr<net::StreamSocket>)>
+  typedef base::Callback<void(scoped_ptr<P2PStreamSocket>)>
       ChannelCreatedCallback;
 
   StreamChannelFactory() {}

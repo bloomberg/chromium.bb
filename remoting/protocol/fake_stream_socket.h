@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
-#include "net/socket/stream_socket.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"
 
 namespace base {
@@ -21,7 +21,7 @@ class SingleThreadTaskRunner;
 namespace remoting {
 namespace protocol {
 
-// FakeStreamSocket implement net::StreamSocket interface. All data written to
+// FakeStreamSocket implement P2PStreamSocket interface. All data written to
 // FakeStreamSocket is stored in a buffer returned by written_data(). Read()
 // reads data from another buffer that can be set with AppendInputData().
 // Pending reads are supported, so if there is a pending read AppendInputData()
@@ -31,7 +31,7 @@ namespace protocol {
 // PairWith() method, e.g.: a->PairWith(b). After this all data
 // written to |a| can be read from |b| and vice versa. Two connected
 // sockets |a| and |b| must be created and used on the same thread.
-class FakeStreamSocket : public net::StreamSocket {
+class FakeStreamSocket : public P2PStreamSocket {
  public:
   FakeStreamSocket();
   ~FakeStreamSocket() override;
@@ -68,40 +68,16 @@ class FakeStreamSocket : public net::StreamSocket {
 
   base::WeakPtr<FakeStreamSocket> GetWeakPtr();
 
-  // net::Socket implementation.
-  int Read(net::IOBuffer* buf,
-           int buf_len,
+  // P2PStreamSocket interface.
+  int Read(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
            const net::CompletionCallback& callback) override;
-  int Write(net::IOBuffer* buf,
-            int buf_len,
+  int Write(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
             const net::CompletionCallback& callback) override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
-
-  // net::StreamSocket interface.
-  int Connect(const net::CompletionCallback& callback) override;
-  void Disconnect() override;
-  bool IsConnected() const override;
-  bool IsConnectedAndIdle() const override;
-  int GetPeerAddress(net::IPEndPoint* address) const override;
-  int GetLocalAddress(net::IPEndPoint* address) const override;
-  const net::BoundNetLog& NetLog() const override;
-  void SetSubresourceSpeculation() override;
-  void SetOmniboxSpeculation() override;
-  bool WasEverUsed() const override;
-  bool UsingTCPFastOpen() const override;
-  bool WasNpnNegotiated() const override;
-  net::NextProto GetNegotiatedProtocol() const override;
-  bool GetSSLInfo(net::SSLInfo* ssl_info) override;
-  void GetConnectionAttempts(net::ConnectionAttempts* out) const override;
-  void ClearConnectionAttempts() override {}
-  void AddConnectionAttempts(const net::ConnectionAttempts& attempts) override {
-  }
 
  private:
-  void DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
+  void DoAsyncWrite(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
                     const net::CompletionCallback& callback);
-  void DoWrite(net::IOBuffer* buf, int buf_len);
+  void DoWrite(const scoped_refptr<net::IOBuffer>& buf, int buf_len);
 
   bool async_write_;
   bool write_pending_;
@@ -117,8 +93,6 @@ class FakeStreamSocket : public net::StreamSocket {
   std::string written_data_;
   std::string input_data_;
   int input_pos_;
-
-  net::BoundNetLog net_log_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<FakeStreamSocket> weak_factory_;

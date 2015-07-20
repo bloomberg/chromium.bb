@@ -57,7 +57,7 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   ~SslHmacChannelAuthenticator() override;
 
   // ChannelAuthenticator interface.
-  void SecureAndAuthenticate(scoped_ptr<net::StreamSocket> socket,
+  void SecureAndAuthenticate(scoped_ptr<P2PStreamSocket> socket,
                              const DoneCallback& done_callback) override;
 
  private:

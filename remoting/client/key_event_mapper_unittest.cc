@@ -4,6 +4,7 @@
 
 #include "remoting/client/key_event_mapper.h"
 
+#include "base/bind.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/test_event_matchers.h"

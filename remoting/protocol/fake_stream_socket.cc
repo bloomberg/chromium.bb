@@ -31,6 +31,11 @@ FakeStreamSocket::FakeStreamSocket()
 
 FakeStreamSocket::~FakeStreamSocket() {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+  if (peer_socket_) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&FakeStreamSocket::AppendReadError, peer_socket_,
+                              net::ERR_CONNECTION_CLOSED));
+  }
 }
 
 void FakeStreamSocket::AppendInputData(const std::string& data) {
@@ -70,7 +75,8 @@ base::WeakPtr<FakeStreamSocket> FakeStreamSocket::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-int FakeStreamSocket::Read(net::IOBuffer* buf, int buf_len,
+int FakeStreamSocket::Read(const scoped_refptr<net::IOBuffer>& buf,
+                           int buf_len,
                            const net::CompletionCallback& callback) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
 
@@ -92,8 +98,9 @@ int FakeStreamSocket::Read(net::IOBuffer* buf, int buf_len,
   }
 }
 
-int FakeStreamSocket::Write(net::IOBuffer* buf, int buf_len,
-                      const net::CompletionCallback& callback) {
+int FakeStreamSocket::Write(const scoped_refptr<net::IOBuffer>& buf,
+                            int buf_len,
+                            const net::CompletionCallback& callback) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   EXPECT_FALSE(write_pending_);
 
@@ -118,7 +125,7 @@ int FakeStreamSocket::Write(net::IOBuffer* buf, int buf_len,
   }
 }
 
-void FakeStreamSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf,
+void FakeStreamSocket::DoAsyncWrite(const scoped_refptr<net::IOBuffer>& buf,
                                     int buf_len,
                                     const net::CompletionCallback& callback) {
   write_pending_ = false;
@@ -134,120 +141,18 @@ void FakeStreamSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf,
   callback.Run(buf_len);
 }
 
-void FakeStreamSocket::DoWrite(net::IOBuffer* buf, int buf_len) {
+void FakeStreamSocket::DoWrite(const scoped_refptr<net::IOBuffer>& buf,
+                               int buf_len) {
   written_data_.insert(written_data_.end(),
                        buf->data(), buf->data() + buf_len);
 
-  if (peer_socket_.get()) {
+  if (peer_socket_) {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&FakeStreamSocket::AppendInputData,
                    peer_socket_,
                    std::string(buf->data(), buf->data() + buf_len)));
   }
-}
-
-int FakeStreamSocket::SetReceiveBufferSize(int32 size) {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
-}
-
-int FakeStreamSocket::SetSendBufferSize(int32 size) {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
-}
-
-int FakeStreamSocket::Connect(const net::CompletionCallback& callback) {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  return net::OK;
-}
-
-void FakeStreamSocket::Disconnect() {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-
-  if (peer_socket_.get()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeStreamSocket::AppendReadError,
-                   peer_socket_,
-                   net::ERR_CONNECTION_CLOSED));
-  }
-  peer_socket_.reset();
-}
-
-bool FakeStreamSocket::IsConnected() const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  return true;
-}
-
-bool FakeStreamSocket::IsConnectedAndIdle() const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-  return false;
-}
-
-int FakeStreamSocket::GetPeerAddress(net::IPEndPoint* address) const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  net::IPAddressNumber ip(net::kIPv4AddressSize);
-  *address = net::IPEndPoint(ip, 0);
-  return net::OK;
-}
-
-int FakeStreamSocket::GetLocalAddress(net::IPEndPoint* address) const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-  return net::ERR_NOT_IMPLEMENTED;
-}
-
-const net::BoundNetLog& FakeStreamSocket::NetLog() const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  return net_log_;
-}
-
-void FakeStreamSocket::SetSubresourceSpeculation() {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-}
-
-void FakeStreamSocket::SetOmniboxSpeculation() {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-}
-
-bool FakeStreamSocket::WasEverUsed() const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-  return true;
-}
-
-bool FakeStreamSocket::UsingTCPFastOpen() const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-  return true;
-}
-
-bool FakeStreamSocket::WasNpnNegotiated() const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  return false;
-}
-
-net::NextProto FakeStreamSocket::GetNegotiatedProtocol() const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  NOTIMPLEMENTED();
-  return net::kProtoUnknown;
-}
-
-bool FakeStreamSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  return false;
-}
-
-void FakeStreamSocket::GetConnectionAttempts(
-    net::ConnectionAttempts* out) const {
-  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
-  out->clear();
 }
 
 FakeStreamChannelFactory::FakeStreamChannelFactory()

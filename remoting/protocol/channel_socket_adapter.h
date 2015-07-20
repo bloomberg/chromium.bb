@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
-#include "net/socket/socket.h"
+#include "remoting/protocol/p2p_datagram_socket.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 #include "third_party/webrtc/base/sigslot.h"
 #include "third_party/webrtc/base/socketaddress.h"
@@ -20,10 +20,10 @@ class TransportChannel;
 namespace remoting {
 namespace protocol {
 
-// TransportChannelSocketAdapter implements net::Socket interface on
+// TransportChannelSocketAdapter implements P2PDatagramSocket interface on
 // top of libjingle's TransportChannel. It is used by LibjingleTransportFactory
-// to provide net::Socket interface for channels.
-class TransportChannelSocketAdapter : public net::Socket,
+// to provide P2PDatagramSocket interface for channels.
+class TransportChannelSocketAdapter : public P2PDatagramSocket,
                                       public sigslot::has_slots<> {
  public:
   // Doesn't take ownership of the |channel|. The |channel| must outlive
@@ -37,20 +37,15 @@ class TransportChannelSocketAdapter : public net::Socket,
   void SetOnDestroyedCallback(const base::Closure& callback);
 
   // Closes the stream. |error_code| specifies error code that will
-  // be returned by Read() and Write() after the stream is closed.
+  // be returned by Recv() and Send() after the stream is closed.
   // Must be called before the session and the channel are destroyed.
   void Close(int error_code);
 
-  // net::Socket interface.
-  int Read(net::IOBuffer* buf,
-           int buf_len,
+  // P2PDatagramSocket interface.
+  int Recv(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
            const net::CompletionCallback& callback) override;
-  int Write(net::IOBuffer* buf,
-            int buf_len,
-            const net::CompletionCallback& callback) override;
-
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
+  int Send(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
+           const net::CompletionCallback& callback) override;
 
  private:
   void OnNewPacket(cricket::TransportChannel* channel,

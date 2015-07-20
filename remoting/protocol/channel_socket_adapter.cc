@@ -39,9 +39,8 @@ void TransportChannelSocketAdapter::SetOnDestroyedCallback(
   destruction_callback_ = callback;
 }
 
-int TransportChannelSocketAdapter::Read(
-    net::IOBuffer* buf,
-    int buffer_size,
+int TransportChannelSocketAdapter::Recv(
+    const scoped_refptr<net::IOBuffer>& buf, int buffer_size,
     const net::CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buf);
@@ -60,9 +59,8 @@ int TransportChannelSocketAdapter::Read(
   return net::ERR_IO_PENDING;
 }
 
-int TransportChannelSocketAdapter::Write(
-    net::IOBuffer* buffer,
-    int buffer_size,
+int TransportChannelSocketAdapter::Send(
+    const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
     const net::CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buffer);
@@ -96,18 +94,6 @@ int TransportChannelSocketAdapter::Write(
   }
 
   return result;
-}
-
-int TransportChannelSocketAdapter::SetReceiveBufferSize(int32 size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return (channel_->SetOption(rtc::Socket::OPT_RCVBUF, size) == 0) ?
-      net::OK : net::ERR_SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR;
-}
-
-int TransportChannelSocketAdapter::SetSendBufferSize(int32 size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return (channel_->SetOption(rtc::Socket::OPT_SNDBUF, size) == 0) ?
-      net::OK : net::ERR_SOCKET_SET_SEND_BUFFER_SIZE_ERROR;
 }
 
 void TransportChannelSocketAdapter::Close(int error_code) {

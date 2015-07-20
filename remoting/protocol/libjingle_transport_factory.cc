@@ -236,7 +236,7 @@ void LibjingleTransport::DoStart() {
 }
 
 void LibjingleTransport::NotifyConnected() {
-  // Create net::Socket adapter for the P2PTransportChannel.
+  // Create P2PDatagramSocket adapter for the P2PTransportChannel.
   scoped_ptr<TransportChannelSocketAdapter> socket(
       new TransportChannelSocketAdapter(channel_.get()));
   socket->SetOnDestroyedCallback(base::Bind(

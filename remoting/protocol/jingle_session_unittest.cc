@@ -22,6 +22,7 @@
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/network_settings.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -87,7 +88,7 @@ class MockSessionEventHandler : public Session::EventHandler {
 
 class MockChannelCreatedCallback {
  public:
-  MOCK_METHOD1(OnDone, void(net::StreamSocket* socket));
+  MOCK_METHOD1(OnDone, void(P2PStreamSocket* socket));
 };
 
 }  // namespace
@@ -113,12 +114,12 @@ class JingleSessionTest : public testing::Test {
     host_session_.reset();
   }
 
-  void OnClientChannelCreated(scoped_ptr<net::StreamSocket> socket) {
+  void OnClientChannelCreated(scoped_ptr<P2PStreamSocket> socket) {
     client_channel_callback_.OnDone(socket.get());
     client_socket_ = socket.Pass();
   }
 
-  void OnHostChannelCreated(scoped_ptr<net::StreamSocket> socket) {
+  void OnHostChannelCreated(scoped_ptr<P2PStreamSocket> socket) {
     host_channel_callback_.OnDone(socket.get());
     host_socket_ = socket.Pass();
   }
@@ -309,8 +310,8 @@ class JingleSessionTest : public testing::Test {
   MockChannelCreatedCallback client_channel_callback_;
   MockChannelCreatedCallback host_channel_callback_;
 
-  scoped_ptr<net::StreamSocket> client_socket_;
-  scoped_ptr<net::StreamSocket> host_socket_;
+  scoped_ptr<P2PStreamSocket> client_socket_;
+  scoped_ptr<P2PStreamSocket> host_socket_;
 };
 
 

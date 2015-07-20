@@ -9,15 +9,14 @@
 // reliable stream connection and the other one for unreliable
 // datagram connection. The Transport interface itself doesn't provide
 // methods to send/receive data. Instead it creates an instance of
-// net::Socket or net::SocketStream which provides access to the data
-// channel. After a new transport is Initialize()'ed the Connect()
-// method must be called. Connect() starts asynchronous creation and
-// initialization of the connection socket that can be used later to
-// send and receive data. The socket is passed to the callback
-// specified in the Connect() call. The Transport object must exist
-// during the whole lifetime of the connection socket. Later deletion
-// of the connection socket causes teardown of the corresponding
-// Transport object.
+// P2PDatagramSocket which provides access to the data channel. After a
+// new transport is Initialize()'ed the Connect() method must be called.
+// Connect() starts asynchronous creation and initialization of the
+// connection socket that can be used later to send and receive data.
+// The socket is passed to the callback specified in the Connect() call.
+// The Transport object must exist during the whole lifetime of the
+// connection socket. Later deletion of the connection socket causes
+// teardown of the corresponding Transport object.
 
 #ifndef REMOTING_PROTOCOL_TRANSPORT_H_
 #define REMOTING_PROTOCOL_TRANSPORT_H_
@@ -34,15 +33,11 @@ namespace cricket {
 class Candidate;
 }  // namespace cricket
 
-namespace net {
-class Socket;
-class StreamSocket;
-}  // namespace net
-
 namespace remoting {
 namespace protocol {
 
 class ChannelAuthenticator;
+class P2PDatagramSocket;
 
 enum class TransportRole {
   SERVER,
@@ -98,7 +93,7 @@ class Transport : public base::NonThreadSafe {
     virtual void OnTransportDeleted(Transport* transport) = 0;
   };
 
-  typedef base::Callback<void(scoped_ptr<net::Socket>)> ConnectedCallback;
+  typedef base::Callback<void(scoped_ptr<P2PDatagramSocket>)> ConnectedCallback;
 
   Transport() {}
   virtual ~Transport() {}

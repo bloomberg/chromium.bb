@@ -11,51 +11,35 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/log/net_log.h"
-#include "net/socket/stream_socket.h"
+#include "remoting/protocol/p2p_stream_socket.h"
 #include "third_party/webrtc/p2p/base/pseudotcp.h"
 
 namespace remoting {
 namespace protocol {
 
-// PseudoTcpAdapter adapts a connectionless net::Socket to a connection-
-// oriented net::StreamSocket using PseudoTcp.  Because net::StreamSockets
-// can be deleted during callbacks, while PseudoTcp cannot, the core of the
-// PseudoTcpAdapter is reference counted, with a reference held by the
-// adapter, and an additional reference held on the stack during callbacks.
-class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
+class P2PDatagramSocket;
+
+// PseudoTcpAdapter adapts a P2PDatagramSocket to P2PStreamSocket using
+// PseudoTcp. Because P2PStreamSockets can be deleted during callbacks,
+// while PseudoTcp cannot, the core of the PseudoTcpAdapter is reference
+// counted, with a reference held by the adapter, and an additional reference
+// held on the stack during callbacks.
+class PseudoTcpAdapter : public P2PStreamSocket, base::NonThreadSafe {
  public:
-  explicit PseudoTcpAdapter(scoped_ptr<net::Socket> socket);
+  explicit PseudoTcpAdapter(scoped_ptr<P2PDatagramSocket> socket);
   ~PseudoTcpAdapter() override;
 
-  // net::Socket implementation.
-  int Read(net::IOBuffer* buffer,
-           int buffer_size,
+  // P2PStreamSocket implementation.
+  int Read(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
            const net::CompletionCallback& callback) override;
-  int Write(net::IOBuffer* buffer,
-            int buffer_size,
+  int Write(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
             const net::CompletionCallback& callback) override;
-  int SetReceiveBufferSize(int32 size) override;
-  int SetSendBufferSize(int32 size) override;
 
-  // net::StreamSocket implementation.
-  int Connect(const net::CompletionCallback& callback) override;
-  void Disconnect() override;
-  bool IsConnected() const override;
-  bool IsConnectedAndIdle() const override;
-  int GetPeerAddress(net::IPEndPoint* address) const override;
-  int GetLocalAddress(net::IPEndPoint* address) const override;
-  const net::BoundNetLog& NetLog() const override;
-  void SetSubresourceSpeculation() override;
-  void SetOmniboxSpeculation() override;
-  bool WasEverUsed() const override;
-  bool UsingTCPFastOpen() const override;
-  bool WasNpnNegotiated() const override;
-  net::NextProto GetNegotiatedProtocol() const override;
-  bool GetSSLInfo(net::SSLInfo* ssl_info) override;
-  void GetConnectionAttempts(net::ConnectionAttempts* out) const override;
-  void ClearConnectionAttempts() override {}
-  void AddConnectionAttempts(const net::ConnectionAttempts& attempts) override {
-  }
+  int Connect(const net::CompletionCallback& callback);
+
+  // Set receive and send buffer sizes.
+  int SetReceiveBufferSize(int32 size);
+  int SetSendBufferSize(int32 size);
 
   // Set the delay for sending ACK.
   void SetAckDelay(int delay_ms);
