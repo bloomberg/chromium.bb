@@ -502,15 +502,12 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
     // or missing, as is the case with chunked encoding.
     int64 received_content_length = request->received_response_content_length();
 
-    if (precache::PrecacheManager::IsPrecachingEnabled()) {
-      // Record precache metrics when a fetch is completed successfully, if
-      // precaching is enabled.
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&RecordPrecacheStatsOnUIThread, request->url(),
-                     base::Time::Now(), received_content_length,
-                     request->was_cached(), profile_));
-    }
+    // Record precache metrics when a fetch is completed successfully.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&RecordPrecacheStatsOnUIThread, request->url(),
+                   base::Time::Now(), received_content_length,
+                   request->was_cached(), profile_));
 #endif  // defined(OS_ANDROID)
     extensions_delegate_->OnCompleted(request, started);
   } else if (request->status().status() == net::URLRequestStatus::FAILED ||
