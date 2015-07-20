@@ -462,16 +462,16 @@ BuildAndInstallQemu() {
   local tmpdir="${TMP}/qemu-mips.nacl"
   local tarball="qemu-2.0.0.tar.bz2"
 
-  if [ -z "${DEBIAN_I386_SYSROOT:-}" ]; then
-    echo "Please set \$DEBIAN_I386_SYSROOT to the location of a debian/stable"
-    echo "32-bit sysroot"
-    echo "e.g. <chrome>/build/linux/debian_wheezy_i386-sysroot"
+  if [ -z "${DEBIAN_SYSROOT:-}" ]; then
+    echo "Please set \$DEBIAN_SYSROOT to the location of a debian/stable"
+    echo "sysroot."
+    echo "e.g. <chrome>/build/linux/debian_wheezy_amd64-sysroot"
     echo "Which itself is setup by chrome's install-debian.wheezy.sysroot.py"
     exit 1
   fi
 
-  if [ ! -d "${DEBIAN_I386_SYSROOT:-}" ]; then
-    echo "\$DEBIAN_I386_SYSROOT does not exist: $DEBIAN_I386_SYSROOT"
+  if [ ! -d "${DEBIAN_SYSROOT:-}" ]; then
+    echo "\$DEBIAN_SYSROOT does not exist: $DEBIAN_SYSROOT"
     exit 1
   fi
 
@@ -489,10 +489,10 @@ BuildAndInstallQemu() {
   cd qemu-2.0.0
 
   SubBanner "Configuring"
-  env -i CC=gcc-4.6 CXX=g++-4.6  PATH=/usr/bin/:/bin LIBS=-lrt \
+  env -i CC=gcc-4.6 CXX=g++-4.6  PATH=/usr/bin/:/bin \
     ./configure \
-    --extra-cflags="-m32 --sysroot=$DEBIAN_I386_SYSROOT" \
-    --extra-ldflags="-Wl,-rpath-link=$DEBIAN_I386_SYSROOT/lib/i386-linux-gnu" \
+    --extra-cflags="--sysroot=$DEBIAN_SYSROOT" \
+    --extra-ldflags="-Wl,-rpath-link=$DEBIAN_SYSROOT/lib/amd64-linux-gnu" \
     --disable-system \
     --enable-linux-user \
     --disable-bsd-user \
