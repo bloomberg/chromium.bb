@@ -1197,9 +1197,6 @@ const char kEnableDomDistillerButtonAnimation[] =
 // Enables chrome hosted mode for Android.
 const char kEnableHostedMode[] = "enable-hosted-mode";
 
-// Enables instant search clicks feature.
-const char kEnableInstantSearchClicks[] = "enable-instant-search-clicks";
-
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] =
     "enable-reader-mode-toolbar-icon";

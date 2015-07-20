@@ -26,7 +26,6 @@ public class DeviceClassManager {
     private boolean mEnableLayerDecorationCache;
     private boolean mEnableAccessibilityLayout;
     private boolean mEnableAnimations;
-    private boolean mEnableInstantSearchClicks;
     private boolean mEnablePrerendering;
     private boolean mEnableToolbarSwipe;
     private boolean mEnableToolbarSwipeInDocumentMode;
@@ -55,7 +54,6 @@ public class DeviceClassManager {
             mEnableAnimations = false;
             mEnablePrerendering = false;
             mEnableToolbarSwipe = false;
-            mEnableInstantSearchClicks = false;
             mDisableDomainReliability = true;
         } else {
             mEnableSnapshots = true;
@@ -64,7 +62,6 @@ public class DeviceClassManager {
             mEnableAnimations = true;
             mEnablePrerendering = true;
             mEnableToolbarSwipe = true;
-            mEnableInstantSearchClicks = true;
             mDisableDomainReliability = false;
         }
 
@@ -142,13 +139,6 @@ public class DeviceClassManager {
     public static boolean enableToolbarSwipe(boolean isDocumentMode) {
         return getInstance().mEnableToolbarSwipe
                 && !(isDocumentMode && !getInstance().mEnableToolbarSwipeInDocumentMode);
-    }
-
-    /**
-     * @return Whether or not instant search clicks is enabled.
-     */
-    public static boolean enableInstantSearchClicks() {
-        return getInstance().mEnableInstantSearchClicks;
     }
 
     /**

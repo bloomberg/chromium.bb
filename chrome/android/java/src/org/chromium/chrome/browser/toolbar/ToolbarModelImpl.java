@@ -10,7 +10,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.tab.BackgroundContentViewHelper;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.toolbar.ToolbarModel.ToolbarModelDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -38,12 +37,6 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
     public WebContents getActiveWebContents() {
         ChromeTab tab = getTab();
         if (tab == null) return null;
-        BackgroundContentViewHelper backgroundViewHelper = tab.getBackgroundContentViewHelper();
-        boolean hasPendingBackgroundPage =
-                backgroundViewHelper != null && backgroundViewHelper.hasPendingBackgroundPage();
-        if (hasPendingBackgroundPage) {
-            return backgroundViewHelper.getContentViewCore().getWebContents();
-        }
         return tab.getWebContents();
     }
 

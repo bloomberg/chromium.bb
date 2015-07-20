@@ -356,9 +356,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
                 if (!didStartLoad) return;
 
-                ChromeTab chromeTab = ChromeTab.fromTab(tab);
-                if (!chromeTab.getBackgroundContentViewHelper().isPageSwappingInProgress()
-                        && didFinishLoad) {
+                if (didFinishLoad) {
                     mLoadProgressSimulator.start();
                 }
             }

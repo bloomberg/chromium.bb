@@ -15176,16 +15176,6 @@ After you create a new supervised user, you can manage their settings at any tim
         If enabled, Settings will be shown in a dedicated window instead of as a browser tab.
       </message>
 
-      <!-- Instant search clicks experiment flags -->
-      <if expr="is_android">
-        <message name="IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_NAME" desc="Title for the flag to enable instant search clicks">
-          Prefetch search results
-        </message>
-        <message name="IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_DESCRIPTION" desc="Description to enable instant search clicks">
-          If enabled, prefetch previews for search results and swap them with original page when is downloaded and rendered.
-        </message>
-      </if>
-
       <!-- Mixed content issue workaround flags -->
       <message name="IDS_FLAGS_ALLOW_INSECURE_WEBSOCKET_FROM_HTTPS_ORIGIN_NAME" desc="Title for the flag to allow insecure WebSocket from https origin">
         Allow insecure WebSocket from https origin

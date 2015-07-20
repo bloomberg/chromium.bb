@@ -154,11 +154,6 @@ public class UrlBar extends VerticallyFixedEditText {
         void backKeyPressed();
 
         /**
-         * @return Whether original url is shown for preview page.
-         */
-        boolean showingOriginalUrlForPreview();
-
-        /**
          * @return Whether the light security theme should be used.
          */
         boolean shouldEmphasizeHttpsScheme();
@@ -437,20 +432,12 @@ public class UrlBar extends VerticallyFixedEditText {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        ChromeTab currentTab = mUrlBarDelegate.getCurrentTab();
-        if (currentTab != null
-                && currentTab.getBackgroundContentViewHelper() != null
-                && mUrlBarDelegate.showingOriginalUrlForPreview()) {
-            // When we are showing preview, we treat click on UrlBar as an event to force swapping
-            // of content views.
-            currentTab.getBackgroundContentViewHelper().forceSwappingContentViews();
-        }
-
         if (!mFocused) {
             mGestureDetector.onTouchEvent(event);
             return true;
         }
 
+        ChromeTab currentTab = mUrlBarDelegate.getCurrentTab();
         if (event.getAction() == MotionEvent.ACTION_DOWN && currentTab != null) {
             // Make sure to hide the current ContentView ActionBar.
             ContentViewCore viewCore = currentTab.getContentViewCore();
@@ -948,13 +935,6 @@ public class UrlBar extends VerticallyFixedEditText {
         }
 
         if (url.length() < 1) {
-            return;
-        }
-
-        if (mUrlBarDelegate.showingOriginalUrlForPreview()) {
-            // We will make the whole url as greyed out(Tailing url color). This is the UI
-            // treatment we show to indicate that we are showing original url for preview page.
-            OmniboxUrlEmphasizer.greyOutUrl(url, getResources(), mUseDarkColors);
             return;
         }
 

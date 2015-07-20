@@ -68,7 +68,6 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
-#include "chrome/browser/android/tab/background_content_view_helper.h"
 #include "chrome/browser/android/tab/thumbnail_tab_helper_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_state.h"
@@ -183,7 +182,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AutofillPopup",
      autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
     {"AutofillProfileBridge", autofill::RegisterAutofillProfileBridge},
-    {"BackgroundContentViewHelper", BackgroundContentViewHelper::Register},
     {"BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
     {"CertificateViewer", RegisterCertificateViewer},

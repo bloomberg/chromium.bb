@@ -89,7 +89,6 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
-import org.chromium.chrome.browser.tab.BackgroundContentViewHelper;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
@@ -234,10 +233,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private View mFocusedTabView;
     private int mFocusedTabImportantForAccessibilityState;
     private BrowserAccessibilityManager mFocusedTabAccessibilityManager;
-
-    // True if we are showing original url for preview page. This is will be true when there is a
-    // background page loaded in background content view.
-    private boolean mShowingOriginalUrlForPreview;
 
     private boolean mSuggestionModalShown;
     private boolean mUseDarkColors;
@@ -1175,14 +1170,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         return mQueryInTheOmnibox;
     }
 
-    /**
-     * @return Whether original url is shown for preview page.
-     */
-    @Override
-    public boolean showingOriginalUrlForPreview() {
-        return mShowingOriginalUrlForPreview;
-    }
-
     private int getSecurityLevel() {
         if (getCurrentTab() == null) return ConnectionSecurityLevel.NONE;
         return getCurrentTab().getSecurityLevel();
@@ -1217,9 +1204,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     @Override
     public void updateSecurityIcon(int securityLevel) {
-        if (showingOriginalUrlForPreview()) {
-            securityLevel = ConnectionSecurityLevel.NONE;
-        }
         if (mQueryInTheOmnibox) {
             if (securityLevel == ConnectionSecurityLevel.SECURE
                     || securityLevel == ConnectionSecurityLevel.EV_SECURE) {
@@ -1973,15 +1957,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             return;
         }
 
-        // Background view has similar case as snapshot.
-        BackgroundContentViewHelper backgroundViewHelper =
-                getCurrentTab().getBackgroundContentViewHelper();
-        boolean hasPendingBackgroundPage =
-                backgroundViewHelper != null && backgroundViewHelper.hasPendingBackgroundPage();
-        boolean isTransitioningFromPreviewPageToOriginal =
-                showingOriginalUrlForPreview() && !hasPendingBackgroundPage;
-        mShowingOriginalUrlForPreview = hasPendingBackgroundPage;
-
         boolean showingQuery = false;
         String displayText = mToolbarDataProvider.getText();
         int securityLevel = getSecurityLevel();
@@ -2013,7 +1988,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             }
         }
 
-        if (setUrlBarText(displayText, path, url) || isTransitioningFromPreviewPageToOriginal) {
+        if (setUrlBarText(displayText, path, url)) {
             mUrlBar.deEmphasizeUrl();
             emphasizeUrl();
         }

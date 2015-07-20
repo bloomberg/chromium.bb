@@ -199,11 +199,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
-    public boolean showingOriginalUrlForPreview() {
-        return false;
-    }
-
-    @Override
     public boolean shouldEmphasizeHttpsScheme() {
         int securityLevel = getSecurityLevel();
         if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
