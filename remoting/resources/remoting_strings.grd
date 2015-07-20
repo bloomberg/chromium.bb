@@ -721,7 +721,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         You are currently sharing this machine with another user. Do you want to continue sharing?
       </message>
       <message desc="Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share Now' quote should be copied verbatim from the corresponding translation." name="IDS_DESCRIPTION_CONNECT">
-        Ask the user whose computer you wish to access to click ‘Share Now’ and give you the access code.
+        Ask the user whose computer you wish to access to click “<ph name="SHARE">$1<ex>Share</ex></ph>” and give you the access code.
       </message>
       <message desc="Label for the 'yes' response to the dialog asking the user to confirm whether or not they want to disable remote access to a host." name="IDS_DISABLE_HOST">
         Disable
