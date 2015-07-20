@@ -30,7 +30,6 @@ class PageActionWithBadgeView : public views::View {
 
  private:
   // views::View:
-  void Layout() override;
   const char* GetClassName() const override;
 
   // The button this view contains.
