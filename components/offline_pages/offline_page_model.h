@@ -84,7 +84,7 @@ class OfflinePageModel : public KeyedService {
   // All blocking calls/disk access will happen on the provided |task_runner|.
   OfflinePageModel(
       scoped_ptr<OfflinePageMetadataStore> store,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModel() override;
 
   // KeyedService implementation.
@@ -146,7 +146,7 @@ class OfflinePageModel : public KeyedService {
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Pending archivers owned by this model.
   PendingArchivers pending_archivers_;

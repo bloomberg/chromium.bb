@@ -79,6 +79,7 @@ extern const base::FilePath::CharType kLocalStorePoolName[];
 extern const base::FilePath::CharType kLoginDataFileName[];
 extern const base::FilePath::CharType kMediaCacheDirname[];
 extern const base::FilePath::CharType kNetworkPersistentStateFilename[];
+extern const base::FilePath::CharType kOfflinePageMetadataDirname[];
 extern const base::FilePath::CharType kPreferencesFilename[];
 extern const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[];
 extern const base::FilePath::CharType kReadmeFilename[];

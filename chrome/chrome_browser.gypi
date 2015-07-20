@@ -1366,6 +1366,8 @@
       'browser/android/offline_pages/offline_page_bridge.h',
       'browser/android/offline_pages/offline_page_mhtml_archiver.cc',
       'browser/android/offline_pages/offline_page_mhtml_archiver.h',
+      'browser/android/offline_pages/offline_page_model_factory.cc',
+      'browser/android/offline_pages/offline_page_model_factory.h',
       'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.cc',
       'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.h',
     ],

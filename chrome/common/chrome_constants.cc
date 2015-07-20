@@ -159,6 +159,8 @@ const base::FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const base::FilePath::CharType kNetworkPersistentStateFilename[] =
     FPL("Network Persistent State");
+const base::FilePath::CharType kOfflinePageMetadataDirname[] =
+    FPL("Offline Pages");
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[] =
     FPL("Protected Preferences");

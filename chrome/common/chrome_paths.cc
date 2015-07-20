@@ -552,6 +552,13 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(kGCMStoreDirname);
       break;
 #endif  // !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+    case chrome::DIR_OFFLINE_PAGE_METADATA:
+      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(kOfflinePageMetadataDirname);
+      break;
+#endif  // defined(OS_ANDROID)
 
     default:
       return false;

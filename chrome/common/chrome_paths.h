@@ -121,6 +121,10 @@ enum {
   DIR_GLOBAL_GCM_STORE,         // Directory where the global GCM instance
                                 // stores its data.
 #endif
+#if defined(OS_ANDROID)
+  DIR_OFFLINE_PAGE_METADATA,    // Directory where offline page metadata is
+                                // stored.
+#endif
 
   // Valid only in development environment; TODO(darin): move these
   DIR_GEN_TEST_DATA,            // Directory where generated test data resides.

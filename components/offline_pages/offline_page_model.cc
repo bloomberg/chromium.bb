@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
 #include "url/gurl.h"
@@ -50,7 +51,7 @@ SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
 
 OfflinePageModel::OfflinePageModel(
     scoped_ptr<OfflinePageMetadataStore> store,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : store_(store.Pass()),
       task_runner_(task_runner),
       weak_ptr_factory_(this) {
@@ -187,7 +188,7 @@ void OfflinePageModel::OnLoadDoneForDeletion(
 void OfflinePageModel::DeleteArchiverFile(const base::FilePath& file_path,
                                           bool* success) {
   DCHECK(success);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   *success = base::DeleteFile(file_path, false);
 }
