@@ -34163,30 +34163,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer.DrawDuration" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The time it takes for the compositor to draw a frame.</summary>
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    Deprecated: Replaced by Scheduling.Renderer.DrawDuration. The time it takes
+    for the compositor to draw a frame.
+  </summary>
 </histogram>
 
 <histogram name="Renderer.DrawDurationOverestimate" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>brianderson@chromium.org</owner>
   <summary>
-    The amount by which the compositor's draw duration was overestimated in a
+    Deprecated: Replaced by Scheduling.Renderer.DrawDuration.Overestimate. The
+    amount by which the compositor's draw duration was overestimated in a
     particular frame (0 if the duration was perfectly predicted or
     underestimated).
   </summary>
 </histogram>
 
 <histogram name="Renderer.DrawDurationUnderestimate" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>brianderson@chromium.org</owner>
   <summary>
-    The amount by which the compositor's draw duration was underestimated in a
+    Deprecated: Replaced by Scheduling.Renderer.DrawDuration.Underestimate. The
+    amount by which the compositor's draw duration was underestimated in a
     particular frame (0 if the duration was perfectly predicted or
     overestimated).
   </summary>
 </histogram>
 
 <histogram name="Renderer.GpuLatency" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Measurement no longer taken.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
   <summary>
     The delay between the compositor submitting a command to the GPU and that
     command executing on the GPU. This delay is measured once per frame.
@@ -34194,7 +34202,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer.GpuLatencyOverestimate" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Measurement no longer taken.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
   <summary>
     The amount by which GPU latency was overestimated in a particular frame (0
     if the latency was perfectly predicted or underestimated).
@@ -34202,7 +34213,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer.GpuLatencyUnderestimate" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Measurement no longer taken.
+  </obsolete>
+  <owner>brianderson@chromium.org</owner>
   <summary>
     The amount by which GPU latency was underestimated in a particular frame (0
     if the latency was perfectly predicted or overestimated).
@@ -37321,6 +37335,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Logs the resource type of each resource request for which the off-domain
     inclusion analysis concluded in an inclusion whitelist hit.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.ActivateDuration">
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the compositor to activate the pending tree.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.BeginMainFrameToCommitDuration">
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the blink main thread to respond to the compositors
+    SendBeginMainFrame.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.CommitToReadyToActivateDuration">
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes for the compositor to rasterize pending tree content after
+    a commit before it is ready for activation.
+  </summary>
+</histogram>
+
+<histogram name="Scheduling.DrawDuration">
+  <owner>brianderson@chromium.org</owner>
+  <summary>How long it takes the compositor to draw a frame.</summary>
+</histogram>
+
+<histogram name="Scheduling.PrepareTilesDuration">
+  <owner>brianderson@chromium.org</owner>
+  <summary>
+    How long it takes the compositor to PreapreTiles, which determines what
+    rasterization work to do.
   </summary>
 </histogram>
 
@@ -71160,6 +71210,42 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="CloudPrint.UrlFetcherRequestTime"/>
   <affected-histogram name="CloudPrint.UrlFetcherRetries"/>
   <affected-histogram name="CloudPrint.UrlFetcherUploadSize"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CompositorTimingHistoryProcess" separator="."
+    ordering="prefix">
+  <suffix name="Browser"/>
+  <suffix name="Renderer"/>
+  <affected-histogram name="Scheduling.ActivateDuration"/>
+  <affected-histogram name="Scheduling.BeginMainFrameToCommitDuration"/>
+  <affected-histogram name="Scheduling.CommitToReadyToActivateDuration"/>
+  <affected-histogram name="Scheduling.DrawDuration"/>
+  <affected-histogram name="Scheduling.PrepareTilesDuration"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CompositorTimingHistorySubcategory" separator=".">
+  <suffix name="NotUsedForEstimate"
+      label="Samples that don't affect estimates. For example, because we are
+             coming out of idle."/>
+  <suffix name="Overestimate"
+      label="Tracks when the compositor's estimates were too high and by how
+             much."/>
+  <suffix name="Underestimate"
+      label="Tracks when the compositor's estimates were too low and by how
+             much."/>
+  <affected-histogram name="Scheduling.Browser.ActivateDuration"/>
+  <affected-histogram name="Scheduling.Browser.BeginMainFrameToCommitDuration"/>
+  <affected-histogram
+      name="Scheduling.Browser.CommitToReadyToActivateDuration"/>
+  <affected-histogram name="Scheduling.Browser.DrawDuration"/>
+  <affected-histogram name="Scheduling.Browser.PrepareTilesDuration"/>
+  <affected-histogram name="Scheduling.Renderer.ActivateDuration"/>
+  <affected-histogram
+      name="Scheduling.Renderer.BeginMainFrameToCommitDuration"/>
+  <affected-histogram
+      name="Scheduling.Renderer.CommitToReadyToActivateDuration"/>
+  <affected-histogram name="Scheduling.Renderer.DrawDuration"/>
+  <affected-histogram name="Scheduling.Renderer.PrepareTilesDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ConnCountImpact">

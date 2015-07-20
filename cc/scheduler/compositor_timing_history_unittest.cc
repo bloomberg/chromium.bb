@@ -16,7 +16,7 @@ class TestCompositorTimingHistory : public CompositorTimingHistory {
  public:
   TestCompositorTimingHistory(CompositorTimingHistoryTest* test,
                               RenderingStatsInstrumentation* rendering_stats)
-      : CompositorTimingHistory(rendering_stats), test_(test) {}
+      : CompositorTimingHistory(NULL_UMA, rendering_stats), test_(test) {}
 
  protected:
   base::TimeTicks Now() const override;

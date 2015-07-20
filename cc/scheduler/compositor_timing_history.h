@@ -5,6 +5,7 @@
 #ifndef CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
 #define CC_SCHEDULER_COMPOSITOR_TIMING_HISTORY_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/rolling_time_delta_history.h"
 
 namespace base {
@@ -19,7 +20,15 @@ class RenderingStatsInstrumentation;
 
 class CC_EXPORT CompositorTimingHistory {
  public:
-  explicit CompositorTimingHistory(
+  enum UMACategory {
+    RENDERER_UMA,
+    BROWSER_UMA,
+    NULL_UMA,
+  };
+  class UMAReporter;
+
+  CompositorTimingHistory(
+      UMACategory uma_category,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
   virtual ~CompositorTimingHistory();
 
@@ -45,10 +54,8 @@ class CC_EXPORT CompositorTimingHistory {
   void DidDraw();
 
  protected:
+  static scoped_ptr<UMAReporter> CreateUMAReporter(UMACategory category);
   virtual base::TimeTicks Now() const;
-
-  void AddDrawDurationUMA(base::TimeDelta draw_duration,
-                          base::TimeDelta draw_duration_estimate);
 
   bool enabled_;
 
@@ -64,6 +71,7 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks start_activate_time_;
   base::TimeTicks start_draw_time_;
 
+  scoped_ptr<UMAReporter> uma_reporter_;
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
  private:

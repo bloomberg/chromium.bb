@@ -1067,7 +1067,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
       layer_tree_host()->settings().ToSchedulerSettings());
 
   scoped_ptr<CompositorTimingHistory> compositor_timing_history(
-      new CompositorTimingHistory(impl().rendering_stats_instrumentation));
+      new CompositorTimingHistory(CompositorTimingHistory::RENDERER_UMA,
+                                  impl().rendering_stats_instrumentation));
 
   impl().scheduler = Scheduler::Create(
       this, scheduler_settings, impl().layer_tree_host_id,

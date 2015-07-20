@@ -15,7 +15,8 @@ SurfacesScheduler::SurfacesScheduler()
           cc::RenderingStatsInstrumentation::Create()) {
   cc::SchedulerSettings settings;
   scoped_ptr<cc::CompositorTimingHistory> compositor_timing_history(
-      new cc::CompositorTimingHistory(rendering_stats_instrumentation_.get()));
+      new cc::CompositorTimingHistory(cc::CompositorTimingHistory::NULL_UMA,
+                                      rendering_stats_instrumentation_.get()));
   scheduler_ = cc::Scheduler::Create(
       this, settings, 0, base::MessageLoop::current()->task_runner().get(),
       nullptr, compositor_timing_history.Pass());

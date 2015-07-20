@@ -66,6 +66,7 @@ SingleThreadProxy::SingleThreadProxy(
 
     scoped_ptr<CompositorTimingHistory> compositor_timing_history(
         new CompositorTimingHistory(
+            CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host->rendering_stats_instrumentation()));
 
     scheduler_on_impl_thread_ = Scheduler::Create(

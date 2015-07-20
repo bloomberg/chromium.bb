@@ -75,10 +75,10 @@ scoped_ptr<FakeCompositorTimingHistory> FakeCompositorTimingHistory::Create() {
 
 FakeCompositorTimingHistory::FakeCompositorTimingHistory(
     scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation)
-    : CompositorTimingHistory(rendering_stats_instrumentation.get()),
+    : CompositorTimingHistory(CompositorTimingHistory::NULL_UMA,
+                              rendering_stats_instrumentation.get()),
       rendering_stats_instrumentation_owned_(
-          rendering_stats_instrumentation.Pass()) {
-}
+          rendering_stats_instrumentation.Pass()) {}
 
 FakeCompositorTimingHistory::~FakeCompositorTimingHistory() {
 }
