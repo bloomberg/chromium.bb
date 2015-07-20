@@ -196,6 +196,8 @@ component("proxy") {
 
   if (is_nacl) {
     sources += [
+      "../nacl_irt/irt_interfaces.cc",
+      "../nacl_irt/irt_interfaces.h",
       "../nacl_irt/irt_ppapi.cc",
       "../nacl_irt/irt_ppapi.h",
       "../nacl_irt/irt_start.cc",

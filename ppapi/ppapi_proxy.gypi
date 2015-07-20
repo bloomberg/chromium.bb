@@ -253,6 +253,8 @@
         'target_conditions': [
           ['>(nacl_untrusted_build)==1', {
             'sources': [
+              'nacl_irt/irt_interfaces.cc',
+              'nacl_irt/irt_interfaces.h',
               'nacl_irt/irt_ppapi.cc',
               'nacl_irt/irt_ppapi.h',
               'nacl_irt/irt_start.cc',
