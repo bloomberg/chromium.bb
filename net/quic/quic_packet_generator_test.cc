@@ -1625,5 +1625,32 @@ TEST_P(QuicPacketGeneratorTest, GenerateMtuDiscoveryPacket_SurroundedByData) {
   CheckPacketHasSingleStreamFrame(4);
 }
 
+TEST_P(QuicPacketGeneratorTest, DontCrashOnInvalidStopWaiting) {
+  // Test added to ensure the generator does not crash when an invalid frame is
+  // added.  Because this is an indication of internal programming errors,
+  // DFATALs are expected.
+  // A 1 byte sequence number length can't encode a gap of 1000.
+  QuicPacketCreatorPeer::SetSequenceNumber(creator_, 1000);
+
+  delegate_.SetCanNotWrite();
+  generator_.SetShouldSendAck(true);
+  delegate_.SetCanWriteAnything();
+  generator_.StartBatchOperations();
+
+  // Set up frames to write into the creator when control frames are written.
+  EXPECT_CALL(delegate_, PopulateAckFrame(_));
+  EXPECT_CALL(delegate_, PopulateStopWaitingFrame(_));
+  // Generator should have queued control frames, and creator should be empty.
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+  EXPECT_FALSE(creator_->HasPendingFrames());
+
+  // This will not serialize any packets, because of the invalid frame.
+  EXPECT_CALL(delegate_,
+              CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false));
+  EXPECT_DFATAL(generator_.FinishBatchOperations(),
+                "sequence_number_length 1 is too small "
+                "for least_unacked_delta: 1001");
+}
+
 }  // namespace test
 }  // namespace net
