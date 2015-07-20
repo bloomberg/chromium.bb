@@ -86,10 +86,6 @@ void TrayNotificationView::SetIconImage(const gfx::ImageSkia& image) {
   SchedulePaint();
 }
 
-const gfx::ImageSkia& TrayNotificationView::GetIconImage() const {
-  return icon_->GetImage();
-}
-
 void TrayNotificationView::UpdateView(views::View* new_contents) {
   RemoveAllChildViews(true);
   InitView(new_contents);
