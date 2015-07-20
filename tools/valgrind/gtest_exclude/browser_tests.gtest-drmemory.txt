@@ -46,3 +46,6 @@ NaClBrowserTestGLibc.PPAPIPPBInstance
 NaClBrowserTestGLibc.PPAPIPPPInstance
 NaClBrowserTestGLibc.SimpleLoad
 NaClBrowserTestGLibc.SuccessfulLoadUMA
+
+# https://crbug.com/512140
+PluginPowerSaverBrowserTest.BackgroundTabPlugins
