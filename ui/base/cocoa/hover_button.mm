@@ -59,6 +59,12 @@
   [self checkImageState];
 }
 
+- (void)setAccessibilityTitle:(NSString*)accessibilityTitle {
+  NSCell* cell = [self cell];
+  [cell accessibilitySetOverrideValue:accessibilityTitle
+                         forAttribute:NSAccessibilityTitleAttribute];
+}
+
 - (void)setTrackingEnabled:(BOOL)enabled {
   if (enabled) {
     trackingArea_.reset(

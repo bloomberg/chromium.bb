@@ -7728,6 +7728,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>
+      <message name="IDS_ACCNAME_CLOSE_TAB" desc="The accessible name for the button that is used to close a specific tab.">
+        Close <ph name="TAB_NAME">$1<ex>Google Search</ex></ph>
+      </message>
       <if expr="is_ios">
         <message name="IDS_ACCNAME_CLEAR_TEXT" desc="The accessibility label for the clear text button in the location bar [Length: unlimited].">
           Clear Text

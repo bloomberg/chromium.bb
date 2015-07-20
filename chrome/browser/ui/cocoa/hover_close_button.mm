@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMKeyValueAnimation.h"
@@ -17,8 +18,8 @@ const CGFloat kFramesPerSecond = 16; // Determined experimentally to look good.
 const CGFloat kCloseAnimationDuration = 0.1;
 
 // Strings that are used for all close buttons. Set up in +initialize.
+NSString* gBasicAccessibilityTitle = nil;
 NSString* gTooltip = nil;
-NSString* gDescription = nil;
 
 // If this string is changed, the setter (currently setFadeOutValue:) must
 // be changed as well to match.
@@ -42,8 +43,10 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 
 + (void)initialize {
   // Grab some strings that are used by all close buttons.
-  if (!gDescription)
-    gDescription = [l10n_util::GetNSStringWithFixup(IDS_ACCNAME_CLOSE) copy];
+  if (!gBasicAccessibilityTitle) {
+    gBasicAccessibilityTitle = [l10n_util::GetNSStringWithFixup(
+        IDS_ACCNAME_CLOSE) copy];
+  }
   if (!gTooltip)
     gTooltip = [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_CLOSE_TAB) copy];
 }
@@ -182,10 +185,7 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 }
 
 - (void)commonInit {
-  // Set accessibility description.
-  NSCell* cell = [self cell];
-  [cell accessibilitySetOverrideValue:gDescription
-                         forAttribute:NSAccessibilityTitleAttribute];
+  [self setAccessibilityTitle:nil];
 
   // Add a tooltip. Using 'owner:self' means that
   // -view:stringForToolTip:point:userData: will be called to provide the
@@ -212,6 +212,18 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   }
 
   return nil;  // Do not show the tooltip.
+}
+
+- (void)setAccessibilityTitle:(NSString*)accessibilityTitle {
+  if (!accessibilityTitle) {
+    [super setAccessibilityTitle:gBasicAccessibilityTitle];
+    return;
+  }
+
+  NSString* extendedTitle = l10n_util::GetNSStringFWithFixup(
+      IDS_ACCNAME_CLOSE_TAB,
+      base::SysNSStringToUTF16(accessibilityTitle));
+  [super setAccessibilityTitle:extendedTitle];
 }
 
 @end

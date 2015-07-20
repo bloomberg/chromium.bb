@@ -450,6 +450,7 @@ ui::ThreePartImage& GetStrokeImage(bool active) {
     return;
 
   [titleView_ setStringValue:title];
+  [closeButton_ setAccessibilityTitle:title];
 
   base::string16 title16 = base::SysNSStringToUTF16(title);
   bool isRTL = base::i18n::GetFirstStrongCharacterDirection(title16) ==

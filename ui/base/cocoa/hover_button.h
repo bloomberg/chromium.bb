@@ -31,6 +31,9 @@ UI_BASE_EXPORT
 
 @property(nonatomic) HoverState hoverState;
 
+// Text that would be announced by screen readers.
+- (void)setAccessibilityTitle:(NSString*)accessibilityTitle;
+
 // Enables or disables the tracking for the button.
 - (void)setTrackingEnabled:(BOOL)enabled;
 
