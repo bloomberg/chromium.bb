@@ -25,9 +25,10 @@ class BrowserAccessibility;
 class BrowserAccessibilityManager;
 #if defined(OS_ANDROID)
 class BrowserAccessibilityManagerAndroid;
-#endif
-#if defined(OS_WIN)
+#elif defined(OS_WIN)
 class BrowserAccessibilityManagerWin;
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
+class BrowserAccessibilityManagerAuraLinux;
 #endif
 
 // For testing.
@@ -227,6 +228,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
 #if defined(OS_ANDROID)
   BrowserAccessibilityManagerAndroid* ToBrowserAccessibilityManagerAndroid();
+#endif
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
+  BrowserAccessibilityManagerAuraLinux*
+      ToBrowserAccessibilityManagerAuraLinux();
 #endif
 
   // Return the object that has focus, if it's a descandant of the

@@ -81,7 +81,7 @@ component("accessibility") {
     public_deps += [ "//third_party/iaccessible2" ]
   }
 
-  if (use_aura && !is_chromeos && is_linux && use_x11) {
+  if (use_atk) {
     sources += [
       "platform/atk_util_auralinux.cc",
       "platform/atk_util_auralinux.h",

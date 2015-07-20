@@ -27,6 +27,8 @@ namespace content {
 class BrowserAccessibilityManager;
 #if defined(OS_WIN)
 class BrowserAccessibilityWin;
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
+class BrowserAccessibilityAuraLinux;
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -182,6 +184,8 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
 #elif defined(OS_WIN)
   BrowserAccessibilityWin* ToBrowserAccessibilityWin();
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
+  BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux();
 #endif
 
   // Accessing accessibility attributes:

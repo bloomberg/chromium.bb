@@ -282,6 +282,20 @@ source_set("browser") {
     }
   }
 
+  if (use_atk) {
+    sources +=
+        rebase_path(content_browser_gypi_values.auralinux_browser_sources,
+                    ".",
+                    "//content")
+
+    configs += [
+      "//build/config/linux:atk",
+      "//build/config/linux:atk_warnings",
+      "//build/config/linux:gconf",
+      "//build/config/linux:glib",
+    ]
+  }
+
   if (is_linux && use_aura) {
     configs += [ "//build/config/linux:fontconfig" ]
   }

@@ -1587,6 +1587,13 @@
       'browser/android/java/jni_helper.cc',
       'browser/android/java/jni_helper.h',
     ],
+    'auralinux_browser_sources': [
+      'browser/accessibility/accessibility_tree_formatter_auralinux.cc',
+      'browser/accessibility/browser_accessibility_auralinux.cc',
+      'browser/accessibility/browser_accessibility_auralinux.h',
+      'browser/accessibility/browser_accessibility_manager_auralinux.cc',
+      'browser/accessibility/browser_accessibility_manager_auralinux.h',
+    ],
     'webrtc_browser_sources': [
       'browser/media/webrtc_internals.cc',
       'browser/media/webrtc_internals.h',
@@ -1924,6 +1931,22 @@
           },
         },
       },
+    }],
+    ['OS=="linux" and chromeos==0 and use_x11==1', {
+      'dependencies': [
+        '../build/linux/system.gyp:atk',
+        '../build/linux/system.gyp:gconf',
+        '../build/linux/system.gyp:glib',
+      ],
+      'variables': {
+        'clang_warning_flags': [
+          # glib uses the pre-c++11 typedef-as-static_assert hack.
+          '-Wno-unused-local-typedefs',
+        ],
+      },
+      'sources': [
+        '<@(auralinux_browser_sources)',
+      ],
     }],
     ['OS=="linux"', {
       'dependencies': [

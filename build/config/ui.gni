@@ -61,6 +61,9 @@ if (is_linux && use_glib) {
   use_pango = false
 }
 
+# Whether to use atk, the Accessibility ToolKit library
+use_atk = is_desktop_linux && use_x11
+
 use_ozone_evdev = use_ozone
 
 use_clipboard_aurax11 = is_linux && use_aura && use_x11
