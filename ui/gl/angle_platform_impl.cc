@@ -44,7 +44,7 @@ angle::Platform::TraceEventHandle ANGLEPlatformImpl::addTraceEvent(
       base::TraceTicks() + base::TimeDelta::FromSecondsD(timestamp);
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
-          phase, category_group_enabled, name, id,
+          phase, category_group_enabled, name, id, trace_event_internal::kNoId,
           base::PlatformThread::CurrentId(), timestamp_tt, num_args, arg_names,
           arg_types, arg_values, nullptr, flags);
   angle::Platform::TraceEventHandle result;

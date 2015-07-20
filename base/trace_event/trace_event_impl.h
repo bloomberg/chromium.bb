@@ -116,6 +116,7 @@ class BASE_EXPORT TraceEvent {
       const unsigned char* category_group_enabled,
       const char* name,
       unsigned long long id,
+      unsigned long long context_id,
       int num_args,
       const char** arg_names,
       const unsigned char* arg_types,
@@ -148,6 +149,7 @@ class BASE_EXPORT TraceEvent {
   TimeDelta duration() const { return duration_; }
   TimeDelta thread_duration() const { return thread_duration_; }
   unsigned long long id() const { return id_; }
+  unsigned long long context_id() const { return context_id_; }
   unsigned int flags() const { return flags_; }
 
   // Exposed for unittesting:
@@ -175,6 +177,8 @@ class BASE_EXPORT TraceEvent {
   // id_ can be used to store phase-specific data.
   unsigned long long id_;
   scoped_ptr<TraceEventMemoryOverhead> cached_memory_overhead_estimate_;
+  // context_id_ is used to store context information.
+  unsigned long long context_id_;
   TraceValue arg_values_[kTraceMaxNumArgs];
   const char* arg_names_[kTraceMaxNumArgs];
   scoped_refptr<ConvertableToTraceFormat> convertable_values_[kTraceMaxNumArgs];
@@ -454,11 +458,24 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const unsigned long long* arg_values,
       const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
       unsigned int flags);
+  TraceEventHandle AddTraceEventWithContextId(
+      char phase,
+      const unsigned char* category_group_enabled,
+      const char* name,
+      unsigned long long id,
+      unsigned long long context_id,
+      int num_args,
+      const char** arg_names,
+      const unsigned char* arg_types,
+      const unsigned long long* arg_values,
+      const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
+      unsigned int flags);
   TraceEventHandle AddTraceEventWithThreadIdAndTimestamp(
       char phase,
       const unsigned char* category_group_enabled,
       const char* name,
       unsigned long long id,
+      unsigned long long context_id,
       int thread_id,
       const TraceTicks& timestamp,
       int num_args,

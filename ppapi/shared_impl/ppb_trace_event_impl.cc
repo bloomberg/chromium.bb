@@ -78,6 +78,7 @@ void TraceEventImpl::AddTraceEventWithThreadIdAndTimestamp(
           static_cast<const unsigned char*>(category_enabled),
           name,
           id,
+          trace_event_internal::kNoId,
           thread_id,
           base::TraceTicks::FromInternalValue(timestamp),
           num_args,
