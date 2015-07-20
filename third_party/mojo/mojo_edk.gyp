@@ -110,7 +110,7 @@
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
         'mojo_system_impl',
-        'mojo_public.gyp:mojo_test_support',
+        'mojo_public.gyp:mojo_public_test_support',
         'mojo_test_support_impl',
       ],
       'sources': [
@@ -124,7 +124,7 @@
       'dependencies': [
         '../../base/base.gyp:test_support_base',
         'mojo_edk.gyp:mojo_system_impl',
-        'mojo_public.gyp:mojo_test_support',
+        'mojo_public.gyp:mojo_public_test_support',
         'mojo_test_support_impl',
       ],
       'sources': [
