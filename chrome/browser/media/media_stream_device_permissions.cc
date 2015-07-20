@@ -39,8 +39,7 @@ bool IsInKioskMode() {
 bool ShouldPersistContentSetting(ContentSetting setting,
                                  const GURL& origin,
                                  content::MediaStreamRequestType type) {
-  // When the request is from a file access (or some other invalid scheme) we
-  // don't persist it.
+  // When the request is from an invalid scheme we don't persist it.
   if (!ContentSettingsPattern::FromURLNoWildcard(origin).IsValid())
     return false;
 
@@ -55,10 +54,6 @@ bool ShouldPersistContentSetting(ContentSetting setting,
 
   // We persist requests from secure origins.
   if (origin.SchemeIsSecure())
-    return true;
-
-  // We persist requests from extensions.
-  if (origin.SchemeIs(extensions::kExtensionScheme))
     return true;
 
   return false;

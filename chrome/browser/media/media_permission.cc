@@ -9,6 +9,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/common/url_constants.h"
+#include "extensions/common/constants.h"
 
 MediaPermission::MediaPermission(ContentSettingsType content_type,
                                  content::MediaStreamRequestType request_type,
@@ -86,8 +88,12 @@ ContentSetting MediaPermission::GetStoredContentSetting() const {
   // the user's content setting. The problem is that pepper requests allow
   // insecure origins to be persisted. We should stop allowing this, do some
   // sort of migration and remove this check.
-  if (!ShouldPersistContentSetting(setting, origin_, request_type_))
+  if (!ShouldPersistContentSetting(setting, origin_, request_type_) &&
+      !origin_.SchemeIs(extensions::kExtensionScheme) &&
+      !origin_.SchemeIs(content::kChromeUIScheme) &&
+      !origin_.SchemeIs(content::kChromeDevToolsScheme)) {
     return CONTENT_SETTING_ASK;
+  }
 
   return setting;
 }

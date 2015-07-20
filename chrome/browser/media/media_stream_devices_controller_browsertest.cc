@@ -38,10 +38,10 @@ void NotifyTabSpecificContentSettings(
 
 }  // namespace
 
-class MediaStreamDevicesControllerTest : public WebRtcTestBase {
+class MediaStreamDevicesControllerTestBase : public WebRtcTestBase {
  public:
-  MediaStreamDevicesControllerTest()
-      : example_url_("https://www.example.com"),
+  explicit MediaStreamDevicesControllerTestBase(const GURL& url)
+      : example_url_(url),
         example_audio_id_("fake_audio_dev"),
         example_video_id_("fake_video_dev"),
         media_stream_result_(content::NUM_MEDIA_REQUEST_RESULTS) {}
@@ -181,6 +181,20 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
 
   content::MediaStreamDevices media_stream_devices_;
   content::MediaStreamRequestResult media_stream_result_;
+};
+
+class MediaStreamDevicesControllerTest
+    : public MediaStreamDevicesControllerTestBase {
+ public:
+  MediaStreamDevicesControllerTest()
+      : MediaStreamDevicesControllerTestBase(GURL("https://www.example.com")) {}
+};
+
+class MediaStreamDevicesControllerWebUITest
+    : public MediaStreamDevicesControllerTestBase {
+ public:
+  MediaStreamDevicesControllerWebUITest()
+      : MediaStreamDevicesControllerTestBase(GURL("chrome://test-page")) {}
 };
 
 // Request and allow microphone access.
@@ -622,4 +636,19 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
     ASSERT_TRUE(
         DevicesContains(test.ExpectMicAllowed(), test.ExpectCamAllowed()));
   }
+}
+
+// Request and allow camera access on WebUI pages without prompting.
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerWebUITest,
+                       RequestAndAllowCam) {
+  MediaStreamDevicesController controller(
+      GetWebContents(), CreateRequest(std::string(), example_video_id()),
+      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                 this));
+
+  ASSERT_FALSE(controller.IsAskingForAudio());
+  ASSERT_FALSE(controller.IsAskingForVideo());
+
+  ASSERT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
+  ASSERT_TRUE(DevicesContains(false, true));
 }
