@@ -44,7 +44,7 @@ _DEVICE_PROFILES = [
     'witness_file': '/sys/kernel/debug/bq24192/INPUT_SRC_CONT',
     'enable_command': (
         'echo 0x4A > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
-        'echo 1 > /sys/class/power_supply/usb/online &&'
+        'echo 1 > /sys/class/power_supply/usb/online && '
         'dumpsys battery reset'),
     'disable_command': (
         'echo 0xCA > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
@@ -349,7 +349,7 @@ class BatteryUtils(object):
       command = self._cache['profile']['disable_command']
 
     def set_and_verify_charging():
-      self._device.RunShellCommand(command, check_return=True)
+      self._device.RunShellCommand(command, check_return=True, as_root=True)
       return self.GetCharging() == enabled
 
     timeout_retry.WaitFor(set_and_verify_charging, wait_period=1)
