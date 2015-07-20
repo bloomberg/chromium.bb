@@ -50,7 +50,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
   // g_version_info must be initialized when this function is bound.
   DCHECK(gfx::g_version_info);
   if (gfx::g_version_info->is_es3) {
-    if (format == GL_RED_EXT) {
+    if (internal_format == GL_RED_EXT) {
+      // GL_EXT_texture_rg case in ES2.
       switch (type) {
         case GL_UNSIGNED_BYTE:
           gl_internal_format = GL_R8_EXT;
@@ -66,7 +67,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
           break;
       }
       return gl_internal_format;
-    } else if (format == GL_RG_EXT) {
+    } else if (internal_format == GL_RG_EXT) {
+      // GL_EXT_texture_rg case in ES2.
       switch (type) {
         case GL_UNSIGNED_BYTE:
           gl_internal_format = GL_RG8_EXT;
@@ -108,7 +110,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
     return gl_internal_format;
 
   if (type == GL_FLOAT) {
-    switch (format) {
+    switch (internal_format) {
+      // We need to map all the unsized internal formats from ES2 clients.
       case GL_RGBA:
         gl_internal_format = GL_RGBA32F_ARB;
         break;
@@ -125,11 +128,12 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
         gl_internal_format = GL_ALPHA32F_ARB;
         break;
       default:
-        NOTREACHED();
+        // We can't assert here because if the client context is ES3,
+        // all sized internal_format will reach here.
         break;
     }
   } else if (type == GL_HALF_FLOAT_OES) {
-    switch (format) {
+    switch (internal_format) {
       case GL_RGBA:
         gl_internal_format = GL_RGBA16F_ARB;
         break;
