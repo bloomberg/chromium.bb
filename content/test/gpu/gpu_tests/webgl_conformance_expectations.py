@@ -670,6 +670,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Windows only.
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
+    self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
+        ['win'], bug=1082) # angle bug ID
 
     # Mac only.
     self.Fail('conformance2/glsl3/array-as-return-value.html',
