@@ -29,7 +29,7 @@ namespace media {
 const int kTimeUpdateIntervalMs = 50;
 
 MojoRendererService::MojoRendererService(
-    CdmContextProvider* cdm_context_provider,
+    base::WeakPtr<CdmContextProvider> cdm_context_provider,
     RendererFactory* renderer_factory,
     const scoped_refptr<MediaLog>& media_log,
     mojo::InterfaceRequest<interfaces::MediaRenderer> request)

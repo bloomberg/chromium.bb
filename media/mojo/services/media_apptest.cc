@@ -13,6 +13,7 @@
 #include "media/cdm/key_system_names.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -61,8 +62,9 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
     mojo::ApplicationConnection* connection =
         application_impl()->ConnectToApplication(request.Pass());
 
-    connection->ConnectToService(&cdm_);
-    connection->ConnectToService(&media_renderer_);
+    connection->ConnectToService(&service_factory_);
+    service_factory_->CreateCdm(mojo::GetProxy(&cdm_));
+    service_factory_->CreateRenderer(mojo::GetProxy(&media_renderer_));
 
     run_loop_.reset(new base::RunLoop());
   }
@@ -106,6 +108,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
  protected:
   scoped_ptr<base::RunLoop> run_loop_;
 
+  interfaces::ServiceFactoryPtr service_factory_;
   interfaces::ContentDecryptionModulePtr cdm_;
   interfaces::MediaRendererPtr media_renderer_;
 

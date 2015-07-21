@@ -21,7 +21,7 @@ using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
 using SimpleMojoCdmPromise = MojoCdmPromise<>;
 
 MojoCdmService::MojoCdmService(
-    MojoCdmServiceContext* context,
+    base::WeakPtr<MojoCdmServiceContext> context,
     mojo::ServiceProvider* service_provider,
     CdmFactory* cdm_factory,
     mojo::InterfaceRequest<interfaces::ContentDecryptionModule> request)
@@ -36,7 +36,7 @@ MojoCdmService::MojoCdmService(
 }
 
 MojoCdmService::~MojoCdmService() {
-  if (cdm_id_ != CdmContext::kInvalidCdmId)
+  if (cdm_id_ != CdmContext::kInvalidCdmId && context_)
     context_->UnregisterCdm(cdm_id_);
 }
 
@@ -142,7 +142,7 @@ void MojoCdmService::OnCdmCreated(int cdm_id,
                                   const std::string& error_message) {
   // TODO(xhwang): This should not happen when KeySystemInfo is properly
   // populated. See http://crbug.com/469366
-  if (!cdm) {
+  if (!cdm || !context_) {
     promise->reject(MediaKeys::NOT_SUPPORTED_ERROR, 0, error_message);
     return;
   }

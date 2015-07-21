@@ -4,14 +4,16 @@
 
 #include "media/mojo/services/mojo_cdm_factory.h"
 
+#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm.h"
 #include "mojo/application/public/cpp/connect.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace media {
 
-MojoCdmFactory::MojoCdmFactory(mojo::ServiceProvider* service_provider)
-    : service_provider_(service_provider) {
-  DCHECK(service_provider_);
+MojoCdmFactory::MojoCdmFactory(interfaces::ServiceFactory* service_factory)
+    : service_factory_(service_factory) {
+  DCHECK(service_factory_);
 }
 
 MojoCdmFactory::~MojoCdmFactory() {
@@ -28,10 +30,10 @@ void MojoCdmFactory::Create(
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
   DVLOG(2) << __FUNCTION__ << ": " << key_system;
-  DCHECK(service_provider_);
+  DCHECK(service_factory_);
 
   interfaces::ContentDecryptionModulePtr cdm_ptr;
-  mojo::ConnectToService(service_provider_, &cdm_ptr);
+  service_factory_->CreateCdm(mojo::GetProxy(&cdm_ptr));
 
   MojoCdm::Create(key_system, security_origin, cdm_config, cdm_ptr.Pass(),
                   session_message_cb, session_closed_cb,

@@ -26,6 +26,7 @@
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
+#include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 
 namespace html_viewer {
@@ -83,7 +84,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 
   if (enable_mojo_media_renderer_) {
     media_renderer_factory.reset(
-        new media::MojoRendererFactory(GetMediaServiceProvider()));
+        new media::MojoRendererFactory(GetMediaServiceFactory()));
   } else {
     media_renderer_factory.reset(
         new media::DefaultRendererFactory(media_log,
@@ -113,15 +114,17 @@ blink::WebEncryptedMediaClient* MediaFactory::GetEncryptedMediaClient() {
   return web_encrypted_media_client_.get();
 }
 
-mojo::ServiceProvider* MediaFactory::GetMediaServiceProvider() {
-  if (!media_service_provider_) {
+media::interfaces::ServiceFactory* MediaFactory::GetMediaServiceFactory() {
+  if (!media_service_factory_) {
+    mojo::ServiceProviderPtr service_provider;
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:media");
-    shell_->ConnectToApplication(request.Pass(),
-                                 GetProxy(&media_service_provider_), nullptr);
+    shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
+                                 nullptr);
+    mojo::ConnectToService(service_provider.get(), &media_service_factory_);
   }
 
-  return media_service_provider_.get();
+  return media_service_factory_.get();
 }
 
 media::MediaPermission* MediaFactory::GetMediaPermission() {
@@ -137,7 +140,7 @@ media::MediaPermission* MediaFactory::GetMediaPermission() {
 media::CdmFactory* MediaFactory::GetCdmFactory() {
   if (!cdm_factory_) {
     if (enable_mojo_media_renderer_)
-      cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceProvider()));
+      cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceFactory()));
     else
       cdm_factory_.reset(new media::DefaultCdmFactory());
   }

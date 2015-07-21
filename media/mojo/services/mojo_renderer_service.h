@@ -16,6 +16,7 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/services/mojo_cdm_service_context.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
@@ -40,7 +41,7 @@ class MEDIA_EXPORT MojoRendererService
   // |cdm_context_provider| can be used to find the CdmContext to support
   // encrypted media. If null, encrypted media is not supported.
   MojoRendererService(
-      CdmContextProvider* cdm_context_provider,
+      base::WeakPtr<CdmContextProvider> cdm_context_provider,
       RendererFactory* renderer_factory,
       const scoped_refptr<MediaLog>& media_log,
       mojo::InterfaceRequest<interfaces::MediaRenderer> request);
@@ -102,7 +103,7 @@ class MEDIA_EXPORT MojoRendererService
 
   mojo::StrongBinding<interfaces::MediaRenderer> binding_;
 
-  CdmContextProvider* cdm_context_provider_;
+  base::WeakPtr<CdmContextProvider> cdm_context_provider_;
 
   State state_;
 

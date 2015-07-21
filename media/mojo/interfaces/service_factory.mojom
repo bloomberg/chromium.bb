@@ -1,0 +1,18 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module media.interfaces;
+
+import "media/mojo/interfaces/content_decryption_module.mojom";
+import "media/mojo/interfaces/media_renderer.mojom";
+
+// A factory interface to create media services. MediaRenderers can only access
+// ContentDecryptionModules created in the same factory.
+interface ServiceFactory {
+  // Creates a ContentDecryptionModule service.
+  CreateCdm(ContentDecryptionModule& cdm);
+
+  // Creates a MediaRenderer service.
+  CreateRenderer(MediaRenderer& renderer);
+};

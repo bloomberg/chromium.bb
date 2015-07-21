@@ -5,19 +5,24 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_CDM_SERVICE_CONTEXT_H_
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_SERVICE_CONTEXT_H_
 
-#include "base/containers/scoped_ptr_hash_map.h"
+#include <map>
+
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
-#include "media/mojo/services/mojo_cdm_service.h"
 
 namespace media {
+
+class MojoCdmService;
 
 // A class that creates, owns and manages all MojoCdmService instances.
 class MEDIA_EXPORT MojoCdmServiceContext : public CdmContextProvider {
  public:
   MojoCdmServiceContext();
   ~MojoCdmServiceContext() override;
+
+  base::WeakPtr<MojoCdmServiceContext> GetWeakPtr();
 
   // Registers The |cdm_service| with |cdm_id|.
   void RegisterCdm(int cdm_id, MojoCdmService* cdm_service);
@@ -35,6 +40,9 @@ class MEDIA_EXPORT MojoCdmServiceContext : public CdmContextProvider {
  private:
   // A map between CDM ID and MojoCdmService.
   std::map<int, MojoCdmService*> cdm_services_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MojoCdmServiceContext> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmServiceContext);
 };

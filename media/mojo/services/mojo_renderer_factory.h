@@ -10,16 +10,16 @@
 #include "media/mojo/interfaces/media_renderer.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
 
-namespace mojo {
-class ServiceProvider;
-}
-
 namespace media {
+
+namespace interfaces {
+class ServiceFactory;
+}
 
 // The default factory class for creating MojoRendererImpl.
 class MEDIA_EXPORT MojoRendererFactory : public RendererFactory {
  public:
-  explicit MojoRendererFactory(mojo::ServiceProvider* service_provider);
+  explicit MojoRendererFactory(interfaces::ServiceFactory* service_factory);
   ~MojoRendererFactory() final;
 
   scoped_ptr<Renderer> CreateRenderer(
@@ -28,7 +28,7 @@ class MEDIA_EXPORT MojoRendererFactory : public RendererFactory {
       VideoRendererSink* video_renderer_sink) final;
 
  private:
-  mojo::ServiceProvider* service_provider_;
+  interfaces::ServiceFactory* service_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererFactory);
 };

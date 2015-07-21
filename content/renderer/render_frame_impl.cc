@@ -182,6 +182,7 @@
 #if defined(ENABLE_MOJO_MEDIA)
 #include "media/mojo/services/mojo_cdm_factory.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
+#include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #else
@@ -2032,7 +2033,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
 #if defined(ENABLE_MOJO_MEDIA)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
-      new media::MojoRendererFactory(GetMediaServiceProvider()));
+      new media::MojoRendererFactory(GetMediaServiceFactory()));
 #else
   scoped_ptr<media::RendererFactory> media_renderer_factory =
       GetContentClient()->renderer()->CreateMediaRendererFactory(
@@ -4986,23 +4987,33 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 }
 
 #if defined(ENABLE_MOJO_MEDIA)
-mojo::ServiceProvider* RenderFrameImpl::GetMediaServiceProvider() {
-  if (!media_service_provider_) {
+media::interfaces::ServiceFactory* RenderFrameImpl::GetMediaServiceFactory() {
+  if (!media_service_factory_) {
     mojo::InterfacePtr<mojo::Shell> shell_ptr;
     GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&shell_ptr));
+
+    mojo::ServiceProviderPtr service_provider;
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:media");
-    shell_ptr->ConnectToApplication(
-        request.Pass(), GetProxy(&media_service_provider_), nullptr);
-    media_service_provider_.set_connection_error_handler(
-        base::Bind(&RenderFrameImpl::OnMediaServiceProviderConnectionError,
+    shell_ptr->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
+                                    nullptr);
+
+    mojo::ConnectToService(service_provider.get(), &media_service_factory_);
+
+    media_service_factory_.set_connection_error_handler(
+        base::Bind(&RenderFrameImpl::OnMediaServiceFactoryConnectionError,
                    base::Unretained(this)));
   }
-  return media_service_provider_.get();
+
+  return media_service_factory_.get();
 }
 
-void RenderFrameImpl::OnMediaServiceProviderConnectionError() {
-  media_service_provider_.reset();
+void RenderFrameImpl::OnMediaServiceFactoryConnectionError() {
+  // TODO(xhwang): Resetting |media_service_factory_| could cause access
+  // violation on the old |media_service_factory_| by outstanding
+  // media::CdmFactory or media::RendererFactory. Find a better way to handle
+  // this.
+  // media_service_factory_.reset();
 }
 #endif
 
@@ -5026,7 +5037,7 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
     DCHECK(frame_);
 
 #if defined(ENABLE_MOJO_MEDIA)
-    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceProvider()));
+    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaServiceFactory()));
 #else
     cdm_factory_.reset(new RenderCdmFactory(
 #if defined(ENABLE_PEPPER_CDMS)

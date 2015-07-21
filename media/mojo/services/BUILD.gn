@@ -144,6 +144,8 @@ source_set("application") {
   sources = [
     "mojo_media_application.cc",
     "mojo_media_application.h",
+    "service_factory_impl.cc",
+    "service_factory_impl.h",
   ]
 
   public_configs = [ ":enable_mojo_media_config" ]

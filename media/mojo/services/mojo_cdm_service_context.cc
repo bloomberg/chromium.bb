@@ -6,13 +6,17 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "media/mojo/services/mojo_cdm_service.h"
 
 namespace media {
 
-MojoCdmServiceContext::MojoCdmServiceContext() {
-}
+MojoCdmServiceContext::MojoCdmServiceContext() : weak_ptr_factory_(this) {}
 
 MojoCdmServiceContext::~MojoCdmServiceContext() {
+}
+
+base::WeakPtr<MojoCdmServiceContext> MojoCdmServiceContext::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void MojoCdmServiceContext::RegisterCdm(int cdm_id,

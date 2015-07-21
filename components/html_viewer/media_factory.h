@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/audio_hardware_config.h"
+#include "media/mojo/interfaces/service_factory.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 
 namespace base {
@@ -63,7 +64,7 @@ class MediaFactory {
   blink::WebEncryptedMediaClient* GetEncryptedMediaClient();
 
  private:
-  mojo::ServiceProvider* GetMediaServiceProvider();
+  media::interfaces::ServiceFactory* GetMediaServiceFactory();
   media::MediaPermission* GetMediaPermission();
   media::CdmFactory* GetCdmFactory();
 
@@ -83,7 +84,7 @@ class MediaFactory {
   mojo::Shell* shell_;
 
   // Lazily initialized objects.
-  mojo::ServiceProviderPtr media_service_provider_;
+  media::interfaces::ServiceFactoryPtr media_service_factory_;
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
   scoped_ptr<media::MediaPermission> media_permission_;
   scoped_ptr<media::CdmFactory> cdm_factory_;

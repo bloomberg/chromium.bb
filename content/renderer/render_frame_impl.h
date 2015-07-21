@@ -42,6 +42,10 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif
 
+#if defined(ENABLE_MOJO_MEDIA)
+#include "media/mojo/interfaces/service_factory.mojom.h"
+#endif
+
 class GURL;
 class TransportDIB;
 struct FrameMsg_NewFrame_WidgetParams;
@@ -817,10 +821,10 @@ class CONTENT_EXPORT RenderFrameImpl
   media::MediaPermission* GetMediaPermission();
 
 #if defined(ENABLE_MOJO_MEDIA)
-  mojo::ServiceProvider* GetMediaServiceProvider();
+  media::interfaces::ServiceFactory* GetMediaServiceFactory();
 
-  // Called when a connection error happened on |media_service_provider_|.
-  void OnMediaServiceProviderConnectionError();
+  // Called when a connection error happened on |media_service_factory_|.
+  void OnMediaServiceFactoryConnectionError();
 #endif
 
   media::CdmFactory* GetCdmFactory();
@@ -933,8 +937,8 @@ class CONTENT_EXPORT RenderFrameImpl
   MediaPermissionDispatcher* media_permission_dispatcher_;
 
 #if defined(ENABLE_MOJO_MEDIA)
-  // The media service provider attached to this frame, lazily initialized.
-  mojo::ServiceProviderPtr media_service_provider_;
+  // The media factory attached to this frame, lazily initialized.
+  media::interfaces::ServiceFactoryPtr media_service_factory_;
 #endif
 
   // MidiClient attached to this frame; lazily initialized.

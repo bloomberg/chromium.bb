@@ -5,12 +5,8 @@
 #include "media/mojo/services/mojo_media_application.h"
 
 #include "base/logging.h"
-#include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
-#include "media/base/renderer_factory.h"
-#include "media/mojo/services/mojo_cdm_service.h"
-#include "media/mojo/services/mojo_media_client.h"
-#include "media/mojo/services/mojo_renderer_service.h"
+#include "media/mojo/services/service_factory_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
@@ -45,38 +41,16 @@ void MojoMediaApplication::Initialize(mojo::ApplicationImpl* app) {
 
 bool MojoMediaApplication::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  connection->AddService<interfaces::ContentDecryptionModule>(this);
-  connection->AddService<interfaces::MediaRenderer>(this);
+  connection->AddService<interfaces::ServiceFactory>(this);
   return true;
 }
 
 void MojoMediaApplication::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<interfaces::ContentDecryptionModule> request) {
+    mojo::InterfaceRequest<interfaces::ServiceFactory> request) {
   // The created object is owned by the pipe.
-  new MojoCdmService(&cdm_service_context_, connection->GetServiceProvider(),
-                     GetCdmFactory(), request.Pass());
-}
-
-void MojoMediaApplication::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<interfaces::MediaRenderer> request) {
-  // The created object is owned by the pipe.
-  new MojoRendererService(&cdm_service_context_, GetRendererFactory(),
-                          media_log_, request.Pass());
-}
-
-RendererFactory* MojoMediaApplication::GetRendererFactory() {
-  if (!renderer_factory_)
-    renderer_factory_ =
-        MojoMediaClient::Get()->CreateRendererFactory(media_log_);
-  return renderer_factory_.get();
-}
-
-CdmFactory* MojoMediaApplication::GetCdmFactory() {
-  if (!cdm_factory_)
-    cdm_factory_ = MojoMediaClient::Get()->CreateCdmFactory();
-  return cdm_factory_.get();
+  new ServiceFactoryImpl(request.Pass(), connection->GetServiceProvider(),
+                         media_log_);
 }
 
 }  // namespace media

@@ -11,6 +11,7 @@ mojom("interfaces") {
     "demuxer_stream.mojom",
     "media_renderer.mojom",
     "media_types.mojom",
+    "service_factory.mojom",
   ]
 
   if (is_chromeos) {
