@@ -30,7 +30,8 @@ int64 FileEnumerator::FileInfo::GetSize() const {
   ULARGE_INTEGER size;
   size.HighPart = find_data_.nFileSizeHigh;
   size.LowPart = find_data_.nFileSizeLow;
-  DCHECK_LE(size.QuadPart, std::numeric_limits<int64>::max());
+  DCHECK_LE(size.QuadPart,
+            static_cast<ULONGLONG>(std::numeric_limits<int64>::max()));
   return static_cast<int64>(size.QuadPart);
 }
 

@@ -75,11 +75,9 @@ void GDIBitmapAllocFailure(BITMAPINFOHEADER* header, HANDLE shared_section) {
   base::debug::Alias(&heigth);
   base::debug::Alias(&shared_section);
 
-  int num_user_handles = GetGuiResources(GetCurrentProcess(),
-                                         GR_USEROBJECTS);
+  DWORD num_user_handles = GetGuiResources(GetCurrentProcess(), GR_USEROBJECTS);
 
-  int num_gdi_handles = GetGuiResources(GetCurrentProcess(),
-                                        GR_GDIOBJECTS);
+  DWORD num_gdi_handles = GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS);
   if (num_gdi_handles == 0) {
     DWORD get_gui_resources_error = GetLastError();
     base::debug::Alias(&get_gui_resources_error);

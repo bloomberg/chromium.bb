@@ -764,9 +764,6 @@
         'include_dirs': [
           '..',
         ],
-        'msvs_disabled_warnings': [
-          4018,
-        ],
         'target_conditions': [
           ['OS == "mac" or OS == "ios"', {
             'sources!': [

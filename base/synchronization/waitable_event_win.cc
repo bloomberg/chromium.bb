@@ -73,7 +73,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& max_time) {
 size_t WaitableEvent::WaitMany(WaitableEvent** events, size_t count) {
   base::ThreadRestrictions::AssertWaitAllowed();
   HANDLE handles[MAXIMUM_WAIT_OBJECTS];
-  CHECK_LE(count, MAXIMUM_WAIT_OBJECTS)
+  CHECK_LE(count, static_cast<size_t>(MAXIMUM_WAIT_OBJECTS))
       << "Can only wait on " << MAXIMUM_WAIT_OBJECTS << " with WaitMany";
 
   for (size_t i = 0; i < count; ++i)
