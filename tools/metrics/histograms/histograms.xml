@@ -55287,7 +55287,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="278" label="VPN_PROVIDER_ON_CONFIG_REMOVED"/>
   <int value="279" label="VPN_PROVIDER_ON_PACKET_RECEIVED"/>
   <int value="280" label="VPN_PROVIDER_ON_PLATFORM_MESSAGE"/>
-  <int value="281" label="VPN_PROVIDER_ON_UIEVENT"/>
+  <int value="281" label="VPN_PROVIDER_ON_UI_EVENT"/>
   <int value="282" label="WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY"/>
   <int value="283" label="WEB_NAVIGATION_ON_BEFORE_NAVIGATE"/>
   <int value="284" label="WEB_NAVIGATION_ON_COMMITTED"/>
