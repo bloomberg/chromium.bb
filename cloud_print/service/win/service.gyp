@@ -68,7 +68,7 @@
       'msvs_settings': {
         'VCManifestTool': {
           'AdditionalManifestFiles': [
-            '<(DEPTH)/build/win/common_controls.manifest',
+            'common-controls.manifest',
           ],
         },
         'VCLinkerTool': {

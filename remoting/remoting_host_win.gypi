@@ -240,7 +240,7 @@
         'VCManifestTool': {
           'EmbedManifest': 'true',
           'AdditionalManifestFiles': [
-            '<(DEPTH)/build/win/common_controls.manifest',
+            'host/win/common-controls.manifest',
           ],
         },
         'VCLinkerTool': {

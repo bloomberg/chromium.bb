@@ -203,20 +203,15 @@ template("test") {
         defines = invoker.defines
       }
 
+      # All shared libraries must have the sanitizer deps to properly link in
+      # asan mode (this target will be empty in other cases).
       if (defined(invoker.deps)) {
-        deps = invoker.deps
+        deps = invoker.deps + [ "//build/config/sanitizers:deps" ]
       } else {
-        deps = []
+        deps = [
+          "//build/config/sanitizers:deps",
+        ]
       }
-      deps += [
-        # All shared libraries must have the sanitizer deps to properly link in
-        # asan mode (this target will be empty in other cases).
-        "//build/config/sanitizers:deps",
-
-        # Give tests the default manifest on Windows (a no-op elsewhere).
-        "//build/win:default_exe_manifest",
-      ]
-
       if (defined(invoker.direct_dependent_configs)) {
         direct_dependent_configs = invoker.direct_dependent_configs
       }
