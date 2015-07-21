@@ -505,6 +505,7 @@
             'layout/api/LineLayoutBoxModel.h',
             'layout/api/LineLayoutInline.h',
             'layout/api/LineLayoutItem.h',
+            'layout/api/LineLayoutRubyRun.h',
             'layout/api/LineLayoutText.h',
             'layout/BidiRun.h',
             'layout/BidiRunForLine.cpp',

@@ -29,10 +29,9 @@
 
 #include "config.h"
 #include "core/layout/line/LineWidth.h"
-#include "core/layout/shapes/ShapeOutsideInfo.h"
 
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutRubyRun.h"
+#include "core/layout/api/LineLayoutRubyRun.h"
+#include "core/layout/shapes/ShapeOutsideInfo.h"
 
 namespace blink {
 
@@ -106,11 +105,11 @@ void LineWidth::commit()
     m_uncommittedWidth = 0;
 }
 
-void LineWidth::applyOverhang(LayoutRubyRun* rubyRun, LayoutObject* startLayoutObject, LayoutObject* endLayoutObject)
+void LineWidth::applyOverhang(LineLayoutRubyRun rubyRun, LineLayoutItem startLayoutItem, LineLayoutItem endLayoutItem)
 {
     int startOverhang;
     int endOverhang;
-    rubyRun->getOverhang(m_isFirstLine, startLayoutObject, endLayoutObject, startOverhang, endOverhang);
+    rubyRun.getOverhang(m_isFirstLine, startLayoutItem, endLayoutItem, startOverhang, endOverhang);
 
     startOverhang = std::min<int>(startOverhang, m_committedWidth);
     m_availableWidth += startOverhang;

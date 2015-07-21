@@ -36,8 +36,7 @@
 namespace blink {
 
 class FloatingObject;
-class LayoutObject;
-class LayoutRubyRun;
+class LineLayoutRubyRun;
 
 enum IndentTextOrNot { DoNotIndentText, IndentText };
 enum WhitespaceTreatment { ExcludeWhitespace, IncludeWhitespace };
@@ -64,7 +63,7 @@ public:
     void shrinkAvailableWidthForNewFloatIfNeeded(const FloatingObject&);
     void addUncommittedWidth(float delta) { m_uncommittedWidth += delta; }
     void commit();
-    void applyOverhang(LayoutRubyRun*, LayoutObject* startLayoutObject, LayoutObject* endLayoutObject);
+    void applyOverhang(LineLayoutRubyRun, LineLayoutItem startLayoutItem, LineLayoutItem endLayoutItem);
     void fitBelowFloats(bool isFirstLine = false);
     void setTrailingWhitespaceWidth(float width) { m_trailingWhitespaceWidth = width; }
 

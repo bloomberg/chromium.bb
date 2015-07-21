@@ -31,6 +31,7 @@
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/api/LineLayoutBox.h"
+#include "core/layout/api/LineLayoutRubyRun.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/LayoutTextInfo.h"
@@ -487,7 +488,7 @@ inline void BreakingContext::handleReplaced()
         m_width.addUncommittedWidth(replacedLogicalWidth.toFloat());
     }
     if (m_current.object().isRubyRun())
-        m_width.applyOverhang(toLayoutRubyRun(m_current.object()), m_lastObject, m_nextObject);
+        m_width.applyOverhang(LineLayoutRubyRun(m_current.object()), LineLayoutItem(m_lastObject), LineLayoutItem(m_nextObject));
     // Update prior line break context characters, using U+FFFD (OBJECT REPLACEMENT CHARACTER) for replaced element.
     m_layoutTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
 }
