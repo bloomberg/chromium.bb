@@ -162,7 +162,7 @@
           'cflags': [ '/w' ],
           # TODO(ldixon) : Remove this disabling of warnings by pushing a
           # fix upstream to usrsctp
-          'msvs_disabled_warnings': [ 4002, 4013, 4018, 4133, 4267, 4313, 4700 ],
+          'msvs_disabled_warnings': [ 4002, 4013, 4133, 4267, 4313, 4700 ],
         }, {  # OS != "win",
           'defines': [
             'NON_WINDOWS_DEFINE',
