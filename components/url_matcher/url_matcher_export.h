@@ -12,7 +12,7 @@
 #define URL_MATCHER_EXPORT __declspec(dllexport)
 #else
 #define URL_MATCHER_EXPORT __declspec(dllimport)
-#endif  // defined(BASE_PREFS_IMPLEMENTATION)
+#endif  // defined(URL_MATCHER_IMPLEMENTATION)
 
 #else  // defined(WIN32)
 #if defined(URL_MATCHER_IMPLEMENTATION)
