@@ -62,7 +62,7 @@ class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
     return session_restore.SessionRestore(cold=is_cold)
 
 # crbug.com/325479, crbug.com/381990, crbug.com/511273
-@benchmark.Disabled('android', 'linux', 'reference', 'mac')
+@benchmark.Disabled('android', 'linux', 'reference')
 class SessionRestoreColdTypical25(_SessionRestoreTypical25):
   """Test by clearing system cache and profile before repeats."""
   tag = 'cold'
@@ -74,7 +74,7 @@ class SessionRestoreColdTypical25(_SessionRestoreTypical25):
 
 
 # crbug.com/325479, crbug.com/381990, crbug.com/511273
-@benchmark.Disabled('android', 'linux', 'reference', 'xp', 'mac')
+@benchmark.Disabled('android', 'linux', 'reference', 'xp')
 class SessionRestoreWarmTypical25(_SessionRestoreTypical25):
   """Test without clearing system cache or profile before repeats.
 
