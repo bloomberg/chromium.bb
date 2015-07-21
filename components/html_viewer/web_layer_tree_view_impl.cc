@@ -72,6 +72,9 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 }
 
 WebLayerTreeViewImpl::~WebLayerTreeViewImpl() {
+  // Destroy the LayerTreeHost before anything else as doing so ensures we're
+  // not accessed on the compositor thread (we are the LayerTreeHostClient).
+  layer_tree_host_.reset();
 }
 
 void WebLayerTreeViewImpl::WillBeginMainFrame() {
