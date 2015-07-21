@@ -201,13 +201,13 @@ amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
 	return 0;
 
 error_cpu_map:
-	amdgpu_bo_cpu_unmap(bo);
+	amdgpu_bo_cpu_unmap(buf_handle);
 
 error_va_map:
-	amdgpu_bo_va_op(bo, 0, size, vmc_addr, 0, AMDGPU_VA_OP_UNMAP);
+	amdgpu_bo_va_op(buf_handle, 0, size, vmc_addr, 0, AMDGPU_VA_OP_UNMAP);
 
 error_va_alloc:
-	amdgpu_bo_free(bo);
+	amdgpu_bo_free(buf_handle);
 	return r;
 }
 
