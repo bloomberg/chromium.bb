@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_P(BrowserViewTestParam, BrowserRemembersDockedState) {
                      browser()->profile(), browser()->host_desktop_type())
                : Browser::CreateParams(browser()->profile(),
                                        browser()->host_desktop_type());
-  params.initial_show_state = ui::SHOW_STATE_NORMAL;
+  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   bool is_ash = browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH;
   // Default |browser()| is not used by this test.
   browser()->window()->Close();
@@ -84,11 +84,11 @@ IN_PROC_BROWSER_TEST_P(BrowserViewTestParam, BrowserRemembersDockedState) {
 
   // Saved placement should reflect docked state (for app windows only in Ash).
   gfx::Rect bounds;
-  ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
+  ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;
   const views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   widget->widget_delegate()->GetSavedWindowPlacement(widget, &bounds,
                                                      &show_state);
-  EXPECT_EQ(is_ash && test_app ? ui::SHOW_STATE_DOCKED : ui::SHOW_STATE_NORMAL,
+  EXPECT_EQ(is_ash && test_app ? ui::SHOW_STATE_DOCKED : ui::SHOW_STATE_DEFAULT,
             show_state);
   // Docking is only relevant on Ash desktop.
   if (!is_ash)

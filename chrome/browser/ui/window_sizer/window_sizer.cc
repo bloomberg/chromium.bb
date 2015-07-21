@@ -77,7 +77,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
         *show_state = ui::SHOW_STATE_MAXIMIZED;
       bool docked = false;
       wp_pref->GetBoolean("docked", &docked);
-      if (*show_state == ui::SHOW_STATE_NORMAL && docked &&
+      if (*show_state == ui::SHOW_STATE_DEFAULT && docked &&
           !browser_->is_type_tabbed() &&
           browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
         *show_state = ui::SHOW_STATE_DOCKED;
