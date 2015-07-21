@@ -11,6 +11,8 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import org.chromium.base.VisibleForTesting;
+
 import java.util.List;
 
 /**
@@ -131,6 +133,7 @@ public class InstallerDelegate implements Runnable {
      * Checks to see if the Runnable will continue scheduling itself.
      * @return True if the runnable is still being scheduled.
      */
+    @VisibleForTesting
     boolean isRunning() {
         return mIsRunning;
     }
@@ -140,6 +143,7 @@ public class InstallerDelegate implements Runnable {
      * @param msBetween How long to wait between executions of the Runnable.
      * @param msMax     How long to wait before giving up.
      */
+    @VisibleForTesting
     void setTimingForTests(long msBetween, long msMax) {
         mMsBetweenRuns = msBetween;
         mMsMaximumWaitingTime = msMax;
