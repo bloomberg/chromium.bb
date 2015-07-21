@@ -73,6 +73,9 @@ FillLayer::FillLayer(EFillLayerType type, bool useInitialValues)
     , m_blendModeSet(useInitialValues)
     , m_maskSourceTypeSet(useInitialValues)
     , m_type(type)
+    , m_thisOrNextLayersClipMax(0)
+    , m_thisOrNextLayersUseContentBox(0)
+    , m_thisOrNextLayersHaveLocalAttachment(0)
     , m_cachedPropertiesComputed(false)
 {
 }
@@ -108,6 +111,9 @@ FillLayer::FillLayer(const FillLayer& o)
     , m_blendModeSet(o.m_blendModeSet)
     , m_maskSourceTypeSet(o.m_maskSourceTypeSet)
     , m_type(o.m_type)
+    , m_thisOrNextLayersClipMax(0)
+    , m_thisOrNextLayersUseContentBox(0)
+    , m_thisOrNextLayersHaveLocalAttachment(0)
     , m_cachedPropertiesComputed(false)
 {
 }
@@ -155,6 +161,8 @@ FillLayer& FillLayer::operator=(const FillLayer& o)
     m_maskSourceTypeSet = o.m_maskSourceTypeSet;
 
     m_type = o.m_type;
+
+    m_cachedPropertiesComputed = false;
 
     return *this;
 }
