@@ -394,6 +394,49 @@ TEST_F(BookmarkUndoServiceTest, UndoRemoveFolderWithBookmarks) {
   EXPECT_EQ(node->url(), GURL("http://www.bar.com"));
 }
 
+TEST_F(BookmarkUndoServiceTest, UndoRemoveFolderWithSubfolders) {
+  BookmarkModel* model = GetModel();
+  BookmarkUndoService* undo_service = GetUndoService();
+
+  // Setup bookmarks in the Other Bookmarks with the following structure:
+  // folder
+  //    subfolder1
+  //    subfolder2
+  //        bar - http://www.bar.com
+  // This setup of multiple subfolders where the first subfolder has 0 children
+  // is designed specifically to ensure we do not crash in this scenario and
+  // that bookmarks are restored to the proper subfolder. See crbug.com/474123.
+  const BookmarkNode* parent = model->other_node();
+  const BookmarkNode* new_folder = model->AddFolder(
+      parent, 0, ASCIIToUTF16("folder"));
+  model->AddFolder(new_folder, 0, ASCIIToUTF16("subfolder1"));
+  const BookmarkNode* sub_folder2 = model->AddFolder(
+      new_folder, 1, ASCIIToUTF16("subfolder2"));
+  model->AddURL(sub_folder2, 0, ASCIIToUTF16("bar"),
+                GURL("http://www.bar.com"));
+
+  model->Remove(parent->GetChild(0));
+
+  // Test that the undo restores the subfolders and their contents.
+  undo_service->undo_manager()->Undo();
+
+  ASSERT_EQ(1, model->other_node()->child_count());
+  const BookmarkNode* restored_new_folder = model->other_node()->GetChild(0);
+  EXPECT_EQ(2, restored_new_folder->child_count());
+
+  const BookmarkNode* restored_sub_folder1 = restored_new_folder->GetChild(0);
+  EXPECT_EQ(ASCIIToUTF16("subfolder1"), restored_sub_folder1->GetTitle());
+  EXPECT_EQ(0, restored_sub_folder1->child_count());
+
+  const BookmarkNode* restored_sub_folder2 = restored_new_folder->GetChild(1);
+  EXPECT_EQ(ASCIIToUTF16("subfolder2"), restored_sub_folder2->GetTitle());
+  EXPECT_EQ(1, restored_sub_folder2->child_count());
+
+  const BookmarkNode* node = restored_sub_folder2->GetChild(0);
+  EXPECT_EQ(node->GetTitle(), ASCIIToUTF16("bar"));
+  EXPECT_EQ(node->url(), GURL("http://www.bar.com"));
+}
+
 TEST_F(BookmarkUndoServiceTest, TestUpperLimit) {
   BookmarkModel* model = GetModel();
   BookmarkUndoService* undo_service = GetUndoService();
