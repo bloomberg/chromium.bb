@@ -82,17 +82,6 @@ TestKeyedServiceProvider::GetBookmarkModelForBrowserState(
   return nullptr;
 }
 
-KeyedServiceBaseFactory*
-TestKeyedServiceProvider::GetProfileOAuth2TokenServiceFactory() {
-  return MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-ProfileOAuth2TokenService*
-TestKeyedServiceProvider::GetProfileOAuth2TokenServiceForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return nullptr;
-}
-
 KeyedServiceBaseFactory* TestKeyedServiceProvider::GetSigninManagerFactory() {
   return MissingServiceKeyedServiceFactory::GetInstance();
 }

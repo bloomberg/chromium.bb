@@ -20,9 +20,6 @@ class TestKeyedServiceProvider : public KeyedServiceProvider {
   KeyedServiceBaseFactory* GetBookmarkModelFactory() override;
   bookmarks::BookmarkModel* GetBookmarkModelForBrowserState(
       ChromeBrowserState* browser_state) override;
-  KeyedServiceBaseFactory* GetProfileOAuth2TokenServiceFactory() override;
-  ProfileOAuth2TokenService* GetProfileOAuth2TokenServiceForBrowserState(
-      ChromeBrowserState* browser_state) override;
   KeyedServiceBaseFactory* GetSigninManagerFactory() override;
   SigninManager* GetSigninManagerForBrowserState(
       ChromeBrowserState* browser_state) override;

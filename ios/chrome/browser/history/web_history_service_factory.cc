@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/sync_service.h"
+#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -53,7 +54,7 @@ WebHistoryServiceFactory::WebHistoryServiceFactory()
           BrowserStateDependencyManager::GetInstance()) {
   ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
   DependsOn(provider->GetSyncServiceFactory());
-  DependsOn(provider->GetProfileOAuth2TokenServiceFactory());
+  DependsOn(OAuth2TokenServiceFactory::GetInstance());
   DependsOn(provider->GetSigninManagerFactory());
 }
 
@@ -66,7 +67,7 @@ scoped_ptr<KeyedService> WebHistoryServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   ios::KeyedServiceProvider* provider = ios::GetKeyedServiceProvider();
   return make_scoped_ptr(new history::WebHistoryService(
-      provider->GetProfileOAuth2TokenServiceForBrowserState(browser_state),
+      OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       provider->GetSigninManagerForBrowserState(browser_state),
       browser_state->GetRequestContext()));
 }

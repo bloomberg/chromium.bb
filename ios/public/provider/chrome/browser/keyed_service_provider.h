@@ -11,7 +11,6 @@
 enum class ServiceAccessType;
 
 class KeyedServiceBaseFactory;
-class ProfileOAuth2TokenService;
 class SigninManager;
 
 namespace autofill {
@@ -52,15 +51,6 @@ class KeyedServiceProvider {
 
   // Returns an instance of bookmarks::BookmarkModel tied to |browser_state|.
   virtual bookmarks::BookmarkModel* GetBookmarkModelForBrowserState(
-      ChromeBrowserState* browser_state) = 0;
-
-  // Returns the ProfileOAuth2TokenService factory for dependencies.
-  virtual KeyedServiceBaseFactory* GetProfileOAuth2TokenServiceFactory() = 0;
-
-  // Returns an instance of ProfileOAuth2TokenService tied to
-  // |browser_state|.
-  virtual ProfileOAuth2TokenService*
-  GetProfileOAuth2TokenServiceForBrowserState(
       ChromeBrowserState* browser_state) = 0;
 
   // Returns the SigninManager factory for dependencies.

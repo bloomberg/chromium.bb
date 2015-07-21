@@ -78,6 +78,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../components/components.gyp:signin_ios_browser_test_support',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../ui/base/ui_base.gyp:ui_base',
@@ -91,6 +92,8 @@
         'browser/geolocation/test_location_manager.mm',
         'browser/net/mock_image_fetcher.h',
         'browser/net/mock_image_fetcher.mm',
+        'browser/signin/fake_oauth2_token_service_builder.cc',
+        'browser/signin/fake_oauth2_token_service_builder.h',
         'browser/sync/sync_setup_service_mock.cc',
         'browser/sync/sync_setup_service_mock.h',
         'test/ios_chrome_unit_test_suite.cc',
