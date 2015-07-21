@@ -71,8 +71,19 @@ String::String(JNIEnv* env, jstring str) {
   size_ = env->GetStringUTFLength(str);
   ptr_ = static_cast<char*>(::malloc(size_ + 1));
 
-  // Note: the result contains Java "modified UTF-8" bytes.
-  // Good enough for the linker though.
+  // Note: This runs before browser native code is loaded, and so cannot
+  // rely on anything from base/. This means that we must use
+  // GetStringUTFChars() and not base::android::ConvertJavaStringToUTF8().
+  //
+  // GetStringUTFChars() suffices because the only strings used here are
+  // paths to APK files or names of shared libraries, all of which are
+  // plain ASCII, defined and hard-coded by the Chromium Android build.
+  //
+  // For more: see
+  //   https://crbug.com/508876
+  //
+  // Note: GetStringUTFChars() returns Java UTF-8 bytes. This is good
+  // enough for the linker though.
   const char* bytes = env->GetStringUTFChars(str, NULL);
   ::memcpy(ptr_, bytes, size_);
   ptr_[size_] = '\0';
