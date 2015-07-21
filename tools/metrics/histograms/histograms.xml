@@ -68907,6 +68907,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="EXPIRED_RECENTLY: Cert expired within last 28 days.">
 
   </int>
+  <int value="13"
+      label="LIKELY_SAME_DOMAIN: Cert likely belongs to the same domain">
+    This case is recorded if the SSL error is CERT_COMMON_NAME_INVALID error and
+    the hostname in request URL has the same domain (effective TLD + 1 label) as
+    the common name or at least one of the subject alternative names in
+    certificate. This case is not recorded if the host name is not a known tld.
+  </int>
 </enum>
 
 <enum name="SSLErrorHandlerEvent" type="int">

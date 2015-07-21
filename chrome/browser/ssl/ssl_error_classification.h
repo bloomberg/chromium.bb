@@ -117,6 +117,11 @@ class SSLErrorClassification : public content::NotificationObserver {
   // fields.
   bool IsCertLikelyFromMultiTenantHosting() const;
 
+  // Returns true if the hostname in |request_url_| has the same domain
+  // (effective TLD + 1 label) as at least one of the subject
+  // alternative names in |cert_|.
+  bool IsCertLikelyFromSameDomain() const;
+
   static std::vector<Tokens> GetTokenizedDNSNames(
       const std::vector<std::string>& dns_names);
 

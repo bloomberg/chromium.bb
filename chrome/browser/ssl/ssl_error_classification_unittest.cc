@@ -59,6 +59,7 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
                                              host_name_tokens));
     EXPECT_FALSE(ssl_error.IsSubDomainOutsideWildcard(host_name_tokens));
     EXPECT_FALSE(ssl_error.IsCertLikelyFromMultiTenantHosting());
+    EXPECT_TRUE(ssl_error.IsCertLikelyFromSameDomain());
   }
 
   {
@@ -76,6 +77,7 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
                                              dns_name_tokens_google));
     EXPECT_FALSE(ssl_error.AnyNamesUnderName(dns_name_tokens_google,
                                              host_name_tokens));
+    EXPECT_TRUE(ssl_error.IsCertLikelyFromSameDomain());
   }
 
   {
@@ -93,6 +95,7 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
                                             dns_name_tokens_google));
     EXPECT_FALSE(ssl_error.AnyNamesUnderName(dns_name_tokens_google,
                                              host_name_tokens));
+    EXPECT_TRUE(ssl_error.IsCertLikelyFromSameDomain());
   }
 
   {
@@ -110,6 +113,7 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
                                               dns_name_tokens_google));
      EXPECT_FALSE(ssl_error.AnyNamesUnderName(dns_name_tokens_google,
                                               host_name_tokens));
+     EXPECT_FALSE(ssl_error.IsCertLikelyFromSameDomain());
   }
 
   {
@@ -127,6 +131,7 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
                                              dns_name_tokens_google));
     EXPECT_FALSE(ssl_error.AnyNamesUnderName(dns_name_tokens_google,
                                              host_name_tokens));
+    EXPECT_FALSE(ssl_error.IsCertLikelyFromSameDomain());
   }
 
   scoped_refptr<net::X509Certificate> webkit_cert(
@@ -155,6 +160,7 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
                                              host_name_tokens));
     EXPECT_TRUE(ssl_error.IsSubDomainOutsideWildcard(host_name_tokens));
     EXPECT_FALSE(ssl_error.IsCertLikelyFromMultiTenantHosting());
+    EXPECT_TRUE(ssl_error.IsCertLikelyFromSameDomain());
   }
 }
 
