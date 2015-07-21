@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
-#define CHROME_BROWSER_SIGNIN_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
 #include <string>
 #include <vector>
@@ -32,8 +32,7 @@
 // // ...or make them fail...
 // IssueErrorForScope(scopes, GoogleServiceAuthError(INVALID_GAIA_CREDENTIALS));
 //
-class FakeProfileOAuth2TokenService
-  : public ProfileOAuth2TokenService {
+class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
   struct PendingRequest {
     PendingRequest();
@@ -118,4 +117,4 @@ class FakeProfileOAuth2TokenService
   DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenService);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_H_

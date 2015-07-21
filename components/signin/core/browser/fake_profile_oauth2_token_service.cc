@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -10,11 +10,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 
-FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {
-}
+FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {}
 
-FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {
-}
+FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {}
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
     : FakeProfileOAuth2TokenService(
@@ -26,29 +24,21 @@ FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
       auto_post_fetch_response_on_message_loop_(false),
       weak_ptr_factory_(this) {}
 
-FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {
-}
+FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {}
 
 void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
     const std::string& account_id,
     const std::string& access_token,
     const base::Time& expiration) {
-  CompleteRequests(account_id,
-                   true,
-                   ScopeSet(),
-                   GoogleServiceAuthError::AuthErrorNone(),
-                   access_token,
+  CompleteRequests(account_id, true, ScopeSet(),
+                   GoogleServiceAuthError::AuthErrorNone(), access_token,
                    expiration);
 }
 
 void FakeProfileOAuth2TokenService::IssueErrorForAllPendingRequestsForAccount(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
-  CompleteRequests(account_id,
-                   true,
-                   ScopeSet(),
-                   error,
-                   std::string(),
+  CompleteRequests(account_id, true, ScopeSet(), error, std::string(),
                    base::Time());
 }
 
@@ -56,12 +46,8 @@ void FakeProfileOAuth2TokenService::IssueTokenForScope(
     const ScopeSet& scope,
     const std::string& access_token,
     const base::Time& expiration) {
-  CompleteRequests("",
-                   false,
-                   scope,
-                   GoogleServiceAuthError::AuthErrorNone(),
-                   access_token,
-                   expiration);
+  CompleteRequests("", false, scope, GoogleServiceAuthError::AuthErrorNone(),
+                   access_token, expiration);
 }
 
 void FakeProfileOAuth2TokenService::IssueErrorForScope(
@@ -78,11 +64,8 @@ void FakeProfileOAuth2TokenService::IssueErrorForAllPendingRequests(
 void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
     const std::string& access_token,
     const base::Time& expiration) {
-  CompleteRequests("",
-                   true,
-                   ScopeSet(),
-                   GoogleServiceAuthError::AuthErrorNone(),
-                   access_token,
+  CompleteRequests("", true, ScopeSet(),
+                   GoogleServiceAuthError::AuthErrorNone(), access_token,
                    expiration);
 }
 

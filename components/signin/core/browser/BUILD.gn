@@ -76,6 +76,8 @@ static_library("test_support") {
   sources = [
     "fake_auth_status_provider.cc",
     "fake_auth_status_provider.h",
+    "fake_profile_oauth2_token_service.cc",
+    "fake_profile_oauth2_token_service.h",
     "test_signin_client.cc",
     "test_signin_client.h",
   ]

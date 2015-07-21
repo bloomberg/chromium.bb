@@ -3,6 +3,7 @@ include_rules = [
   "+components/google/core",
   "+components/keyed_service/core",
   "+components/os_crypt",
+  "+components/pref_registry",
   "+components/webdata/common",
   "+crypto",
   "+google_apis/gaia",

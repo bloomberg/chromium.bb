@@ -8,9 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/common/signin_pref_names.h"
 
 AccountTrackerServiceFactory::AccountTrackerServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -36,9 +34,7 @@ AccountTrackerServiceFactory* AccountTrackerServiceFactory::GetInstance() {
 
 void AccountTrackerServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
-  registry->RegisterIntegerPref(prefs::kAccountIdMigrationState,
-                                AccountTrackerService::MIGRATION_NOT_STARTED);
+  AccountTrackerService::RegisterPrefs(registry);
 }
 
 KeyedService* AccountTrackerServiceFactory::BuildServiceInstanceFor(

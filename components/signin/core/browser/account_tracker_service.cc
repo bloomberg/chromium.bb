@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -52,6 +53,14 @@ AccountTrackerService::AccountTrackerService()
     : signin_client_(NULL) {}
 
 AccountTrackerService::~AccountTrackerService() {
+}
+
+// static
+void AccountTrackerService::RegisterPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
+  registry->RegisterIntegerPref(prefs::kAccountIdMigrationState,
+                                AccountTrackerService::MIGRATION_NOT_STARTED);
 }
 
 void AccountTrackerService::Initialize(SigninClient* signin_client) {

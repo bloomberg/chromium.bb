@@ -1020,8 +1020,6 @@ source_set("test_support") {
     "signin/fake_account_fetcher_service.h",
     "signin/fake_gaia_cookie_manager_service.cc",
     "signin/fake_gaia_cookie_manager_service.h",
-    "signin/fake_profile_oauth2_token_service.cc",
-    "signin/fake_profile_oauth2_token_service.h",
     "signin/fake_profile_oauth2_token_service_builder.cc",
     "signin/fake_profile_oauth2_token_service_builder.h",
     "signin/fake_signin_manager.cc",

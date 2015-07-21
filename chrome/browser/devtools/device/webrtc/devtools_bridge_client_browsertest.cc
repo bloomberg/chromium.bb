@@ -7,10 +7,10 @@
 #include "chrome/browser/devtools/device/webrtc/devtools_bridge_client.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace {

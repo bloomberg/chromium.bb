@@ -25,6 +25,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
 // information about Google Accounts.
 class AccountTrackerService : public KeyedService,
@@ -79,6 +83,9 @@ class AccountTrackerService : public KeyedService,
 
   AccountTrackerService();
   ~AccountTrackerService() override;
+
+  // Registers the preferences used by AccountTrackerService.
+  static void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // KeyedService implementation.
   void Shutdown() override;

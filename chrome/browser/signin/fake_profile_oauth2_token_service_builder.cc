@@ -4,7 +4,7 @@
 
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 
-#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 
 // TODO(blundell): Should these be namespaced?
 scoped_ptr<KeyedService> BuildFakeProfileOAuth2TokenService(
