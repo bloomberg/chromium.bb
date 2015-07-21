@@ -2143,6 +2143,24 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(Script
         return ScriptValue::createNull(scriptState);
     }
 
+    // translate attachment for default framebuffer (an internal fbo)
+    if (!framebufferBinding) {
+        switch (attachment) {
+        case GL_BACK:
+            attachment = GL_COLOR_ATTACHMENT0;
+            break;
+        case GL_DEPTH:
+            attachment = GL_DEPTH_ATTACHMENT;
+            break;
+        case GL_STENCIL:
+            attachment = GL_STENCIL_ATTACHMENT;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            break;
+        }
+    }
+
     switch (pname) {
     case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
         if (!attachmentObject) {
