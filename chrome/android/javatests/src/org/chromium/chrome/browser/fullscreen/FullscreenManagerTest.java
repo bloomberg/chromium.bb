@@ -329,8 +329,12 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         scrollTopControls(false);
     }
 
+    /*
+    Marked flaky on 2015-07-20: http://crbug.com/512299
     @LargeTest
     @Feature({"Fullscreen"})
+    */
+    @FlakyTest
     public void testTopControlsShownWhenInputIsFocused()
             throws InterruptedException, ExecutionException {
         startMainActivityWithURL(LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE);
