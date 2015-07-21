@@ -194,17 +194,8 @@ bool GURL::operator>(const GURL& other) const {
   return spec_ > other.spec_;
 }
 
-GURL GURL::Resolve(const std::string& relative) const {
-  return ResolveWithCharsetConverter(relative, NULL);
-}
-GURL GURL::Resolve(const base::string16& relative) const {
-  return ResolveWithCharsetConverter(relative, NULL);
-}
-
 // Note: code duplicated below (it's inconvenient to use a template here).
-GURL GURL::ResolveWithCharsetConverter(
-    const std::string& relative,
-    url::CharsetConverter* charset_converter) const {
+GURL GURL::Resolve(const std::string& relative) const {
   // Not allowed for invalid URLs.
   if (!is_valid_)
     return GURL();
@@ -219,7 +210,7 @@ GURL GURL::ResolveWithCharsetConverter(
   if (!url::ResolveRelative(spec_.data(), static_cast<int>(spec_.length()),
                             parsed_, relative.data(),
                             static_cast<int>(relative.length()),
-                            charset_converter, &output, &result.parsed_)) {
+                            nullptr, &output, &result.parsed_)) {
     // Error resolving, return an empty URL.
     return GURL();
   }
@@ -235,9 +226,7 @@ GURL GURL::ResolveWithCharsetConverter(
 }
 
 // Note: code duplicated above (it's inconvenient to use a template here).
-GURL GURL::ResolveWithCharsetConverter(
-    const base::string16& relative,
-    url::CharsetConverter* charset_converter) const {
+GURL GURL::Resolve(const base::string16& relative) const {
   // Not allowed for invalid URLs.
   if (!is_valid_)
     return GURL();
@@ -252,7 +241,7 @@ GURL GURL::ResolveWithCharsetConverter(
   if (!url::ResolveRelative(spec_.data(), static_cast<int>(spec_.length()),
                             parsed_, relative.data(),
                             static_cast<int>(relative.length()),
-                            charset_converter, &output, &result.parsed_)) {
+                            nullptr, &output, &result.parsed_)) {
     // Error resolving, return an empty URL.
     return GURL();
   }
