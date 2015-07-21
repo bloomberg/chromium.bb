@@ -5,7 +5,7 @@
 #ifndef UI_ACCELERATED_WIDGET_MAC_ACCELERATED_WIDGET_MAC_H_
 #define UI_ACCELERATED_WIDGET_MAC_ACCELERATED_WIDGET_MAC_H_
 
-#include <IOSurface/IOSurfaceAPI.h>
+#include <IOSurface/IOSurface.h>
 #include <vector>
 
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"

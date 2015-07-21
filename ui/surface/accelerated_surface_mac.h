@@ -6,7 +6,7 @@
 #define UI_SURFACE_ACCELERATED_SURFACE_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <IOSurface/IOSurfaceAPI.h>
+#include <IOSurface/IOSurface.h>
 
 #include "base/callback.h"
 #include "base/mac/scoped_cftyperef.h"

@@ -5,7 +5,7 @@
 #ifndef UI_GL_GL_IMAGE_IO_SURFACE_H_
 #define UI_GL_GL_IMAGE_IO_SURFACE_H_
 
-#include <IOSurface/IOSurfaceAPI.h>
+#include <IOSurface/IOSurface.h>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/threading/thread_checker.h"

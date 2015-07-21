@@ -10,7 +10,7 @@
 #include <vector>
 
 #import <Cocoa/Cocoa.h>
-#include <IOSurface/IOSurfaceAPI.h>
+#include <IOSurface/IOSurface.h>
 #include <QuartzCore/QuartzCore.h>
 
 #include "base/callback.h"

@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_MAC_IO_SURFACE_MANAGER_H_
 #define CONTENT_COMMON_MAC_IO_SURFACE_MANAGER_H_
 
-#include <IOSurface/IOSurfaceAPI.h>
+#include <IOSurface/IOSurface.h>
 
 #include "content/common/content_export.h"
 

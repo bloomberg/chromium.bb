@@ -35,7 +35,7 @@
 #include "ui/surface/transport_dib.h"
 
 #if defined(OS_MACOSX)
-#include <IOSurface/IOSurfaceAPI.h>
+#include <IOSurface/IOSurface.h>
 #include "base/mac/scoped_cftyperef.h"
 #include "content/common/mac/font_loader.h"
 #endif
