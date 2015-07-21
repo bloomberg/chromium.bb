@@ -382,7 +382,6 @@
         ['enable_rlz==1', {
           'dependencies': [
             '../../components/components.gyp:rlz',
-            'ios_chrome_browser_rlz',
           ],
         }],
       ],
@@ -424,26 +423,5 @@
         ],
       },
     },
-  ],
-  'conditions': [
-    ['enable_rlz_support==1', {
-      'targets': [
-        {
-          'target_name': 'ios_chrome_browser_rlz',
-          'type': 'static_library',
-          'sources': [
-            'browser/rlz/rlz_tracker_delegate_impl.cc',
-            'browser/rlz/rlz_tracker_delegate_impl.h',
-          ],
-          'dependencies': [
-            '../../components/components.gyp:google_core_browser',
-            '../../components/components.gyp:omnibox_browser',
-            '../../components/components.gyp:rlz',
-            '../../components/components.gyp:search_engines',
-            '../../rlz/rlz.gyp:rlz_lib',
-          ],
-        },
-      ],
-    }],
   ],
 }
