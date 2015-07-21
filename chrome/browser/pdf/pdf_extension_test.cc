@@ -10,6 +10,8 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/pdf/pdf_extension_test_util.h"
+#include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -20,9 +22,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
-#include "grit/component_extension_resources.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/base/resource/resource_bundle.h"
 
 const int kNumberLoadTestParts = 10;
 
@@ -110,22 +110,7 @@ class PDFExtensionTest : public ExtensionApiTest,
     ui_test_utils::NavigateToURL(browser(), url);
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    std::string scripting_api_js =
-        ResourceBundle::GetSharedInstance()
-            .GetRawDataResource(IDR_PDF_PDF_SCRIPTING_API_JS)
-            .as_string();
-    CHECK(content::ExecuteScript(web_contents, scripting_api_js));
-
-    bool load_success = false;
-    CHECK(content::ExecuteScriptAndExtractBool(
-        web_contents,
-        "var scriptingAPI = new PDFScriptingAPI(window, "
-        "    document.getElementsByTagName('embed')[0]);"
-        "scriptingAPI.setLoadCallback(function(success) {"
-        "  window.domAutomationController.send(success);"
-        "});",
-        &load_success));
-    return load_success;
+    return pdf_extension_test_util::EnsurePDFHasLoaded(web_contents);
   }
 
   // Load all the PDFs contained in chrome/test/data/<dir_name>. This only runs

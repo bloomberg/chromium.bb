@@ -823,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
   TestHelper("testNewWindowOpenerDestroyedWhileUnattached",
              "web_view/newwindow",
              NEEDS_TEST_SERVER);
-  ASSERT_EQ(2, GetGuestViewManager()->num_guests_created());
+  ASSERT_EQ(2u, GetGuestViewManager()->num_guests_created());
 
   // We have two guests in this test, one is the intial one, the other
   // is the newwindow one.

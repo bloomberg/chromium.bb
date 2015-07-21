@@ -25,6 +25,7 @@ class TestGuestViewManager : public GuestViewManager {
   void WaitForLastGuestDeleted();
 
   content::WebContents* WaitForSingleGuestCreated();
+  void WaitForNumGuestsCreated(size_t count);
 
   void WaitForSingleViewGarbageCollected();
 
@@ -56,7 +57,7 @@ class TestGuestViewManager : public GuestViewManager {
 
   // Returns the number of guests that have been created since the creation of
   // this GuestViewManager.
-  int num_guests_created() const { return num_guests_created_; }
+  size_t num_guests_created() const { return num_guests_created_; }
 
   // Returns the number of GuestViews that have been garbage collected in
   // JavaScript since the creation of this GuestViewManager.
@@ -66,6 +67,11 @@ class TestGuestViewManager : public GuestViewManager {
 
   // Returns the last guest instance ID removed from the manager.
   int last_instance_id_removed() const { return last_instance_id_removed_; }
+
+  // Returns the list of guests WebContentses that were created by this
+  // manager.
+  void GetGuestWebContentsList(
+      std::vector<content::WebContents*>* guest_web_contents_list);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, AddRemove);
@@ -78,16 +84,16 @@ class TestGuestViewManager : public GuestViewManager {
   void ViewGarbageCollected(int embedder_process_id,
                             int view_instance_id) override;
 
-  void WaitForGuestCreated();
-
   void WaitForViewGarbageCollected();
 
   using GuestViewManager::last_instance_id_removed_;
   using GuestViewManager::removed_instance_ids_;
 
   int num_embedder_processes_destroyed_;
-  int num_guests_created_;
+  size_t num_guests_created_;
+  size_t expected_num_guests_created_;
   int num_views_garbage_collected_;
+  bool waiting_for_guests_created_;
 
   std::vector<linked_ptr<content::WebContentsDestroyedWatcher>>
       guest_web_contents_watchers_;

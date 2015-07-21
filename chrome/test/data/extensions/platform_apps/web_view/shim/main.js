@@ -2722,6 +2722,17 @@ function testFocusWhileFocused() {
   document.body.appendChild(webview);
 }
 
+function testPDFInWebview() {
+  var webview = document.createElement('webview');
+  var pdfUrl = 'test.pdf';
+  // partition 'foobar' has access to local resource |pdfUrl|.
+  webview.partition = 'foobar';
+  webview.onloadstop = embedder.test.succeed;
+  webview.onloadabort = embedder.test.fail;
+  webview.setAttribute('src', pdfUrl);
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testAllowTransparencyAttribute': testAllowTransparencyAttribute,
   'testAutosizeHeight': testAutosizeHeight,
@@ -2822,7 +2833,8 @@ embedder.test.testList = {
   'testPlugin': testPlugin,
   'testGarbageCollect': testGarbageCollect,
   'testCloseNewWindowCleanup': testCloseNewWindowCleanup,
-  'testFocusWhileFocused': testFocusWhileFocused
+  'testFocusWhileFocused': testFocusWhileFocused,
+  'testPDFInWebview': testPDFInWebview
 };
 
 onload = function() {
