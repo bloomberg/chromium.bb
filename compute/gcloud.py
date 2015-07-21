@@ -37,7 +37,7 @@ class GCContext(object):
   GCLOUD_BASE_COMMAND = 'gcloud'
   GCLOUD_COMPUTE_COMMAND = 'compute'
 
-  def __init__(self, project, zone=None, quiet=False):
+  def __init__(self, project, zone=None, quiet=False, dry_run=False):
     """Initializes GCContext.
 
     Args:
@@ -45,10 +45,12 @@ class GCContext(object):
       zone: The default zone to operate on when zone is not given for a
             zone-specific command.
       quiet: If set True, skip any user prompts and use the default value.
+      dry_run: If True, don't actually interact with the GCE project.
     """
     self.project = project
     self.zone = zone
     self.quiet = quiet
+    self.dry_run = dry_run
 
   @classmethod
   def _GetBaseComputeCommand(cls):
@@ -71,6 +73,11 @@ class GCContext(object):
     zone = kwargs.pop('zone', None)
     if zone:
       cmd += ['--zone', zone]
+
+    if self.dry_run:
+      logging.debug('%s: Would have run: %s',
+                    self.__class__.__name__, cmd)
+      return
 
     try:
       return cros_build_lib.RunCommand(cmd, **kwargs)
@@ -121,6 +128,8 @@ class GCContext(object):
       instance: Name of the instance.
       src: The source path (a local path or user:instance@path).
       dest: The destination path (a local path or user:instance@path).
+      ssh_key_file: File containing private key for SSH.
+      user: User to SSH as.
       kwargs: See DoCommand.
     """
     command = ['copy-files']
@@ -139,7 +148,9 @@ class GCContext(object):
 
     Args:
       instance: Name of the instance.
+      user: User to SSH as.
       cmd: Command to run on |instance|.
+      ssh_key_file: File containing private key for SSH.
     """
     ssh_cmd = ['ssh']
     if user:
