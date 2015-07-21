@@ -52,34 +52,22 @@ public class CronetSampleTest extends
     }
 
     /**
-     * Starts the CronetSample activity and loads the given URL. The URL can be
-     * null, in which case will default to
-     * CronetSampleActivity.DEFAULT_SHELL_URL.
+     * Starts the CronetSample activity and loads the given URL.
      */
     protected CronetSampleActivity launchCronetSampleWithUrl(String url) {
-        return launchCronetSampleWithUrlAndCommandLineArgs(url, null);
-    }
-
-    /**
-     * Starts the CronetSample activity appending the provided command line
-     * arguments and loads the given URL. The URL can be null, in which case
-     * will default to CronetSampleActivity.DEFAULT_SHELL_URL.
-     */
-    protected CronetSampleActivity launchCronetSampleWithUrlAndCommandLineArgs(
-            String url, String[] commandLineArgs) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (url != null)
-            intent.setData(Uri.parse(url));
+        intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(
                 getInstrumentation().getTargetContext(),
                 CronetSampleActivity.class));
-        if (commandLineArgs != null) {
-            intent.putExtra(CronetSampleActivity.COMMAND_LINE_ARGS_KEY,
-                    commandLineArgs);
-        }
         setActivityIntent(intent);
+        try {
+            waitForActiveShellToBeDoneLoading();
+        } catch (Throwable e) {
+            fail("Active shell has failed to load.");
+        }
         return getActivity();
     }
 

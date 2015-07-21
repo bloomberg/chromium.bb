@@ -7,104 +7,164 @@ package org.chromium.cronet_sample_apk;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import org.chromium.net.HttpUrlRequest;
-import org.chromium.net.HttpUrlRequestFactory;
-import org.chromium.net.HttpUrlRequestFactoryConfig;
-import org.chromium.net.HttpUrlRequestListener;
+import org.chromium.base.Log;
+import org.chromium.net.CronetUrlRequestContext;
+import org.chromium.net.ExtendedResponseInfo;
+import org.chromium.net.ResponseInfo;
+import org.chromium.net.UploadDataProvider;
+import org.chromium.net.UploadDataSink;
+import org.chromium.net.UrlRequest;
+import org.chromium.net.UrlRequestContextConfig;
+import org.chromium.net.UrlRequestException;
+import org.chromium.net.UrlRequestListener;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.HashMap;
+import java.nio.channels.WritableByteChannel;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Activity for managing the Cronet Sample.
  */
 public class CronetSampleActivity extends Activity {
-    private static final String TAG = "CronetSampleActivity";
+    private static final String TAG = "cr.CronetSample";
 
-    public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
+    private CronetUrlRequestContext mRequestContext;
 
-    public static final String POST_DATA_KEY = "postData";
-    public static final String CONFIG_KEY = "config";
+    private String mUrl;
+    private boolean mLoading = false;
+    private int mHttpStatusCode = 0;
+    private TextView mResultText;
+    private TextView mReceiveDataText;
 
-    HttpUrlRequestFactory mRequestFactory;
+    class SimpleUrlRequestListener implements UrlRequestListener {
+        private ByteArrayOutputStream mBytesReceived = new ByteArrayOutputStream();
+        private WritableByteChannel mReceiveChannel = Channels.newChannel(mBytesReceived);
 
-    String mUrl;
-
-    boolean mLoading = false;
-
-    int mHttpStatusCode = 0;
-
-    class SampleHttpUrlRequestListener implements HttpUrlRequestListener {
-        public SampleHttpUrlRequestListener() {
+        @Override
+        public void onReceivedRedirect(
+                UrlRequest request, ResponseInfo info, String newLocationUrl) {
+            Log.i(TAG, "****** onReceivedRedirect ******");
+            request.followRedirect();
         }
 
         @Override
-        public void onResponseStarted(HttpUrlRequest request) {
-            Log.i(TAG, "****** Response Started, content length is "
-                    + request.getContentLength());
-            Log.i(TAG, "*** Headers Are *** " + request.getAllHeaders());
+        public void onResponseStarted(UrlRequest request, ResponseInfo info) {
+            Log.i(TAG, "****** Response Started ******");
+            Log.i(TAG, "*** Headers Are *** " + info.getAllHeaders());
+
+            request.read(ByteBuffer.allocateDirect(32 * 1024));
         }
 
         @Override
-        public void onRequestComplete(HttpUrlRequest request) {
-            Log.i(TAG, "****** Request Complete, status code is "
-                    + getHttpStatusCode());
-            Intent intent = new Intent(getApplicationContext(),
-                    CronetSampleActivity.class);
-            startActivity(intent);
-            final String url = request.getUrl();
-            final CharSequence text = "Completed " + request.getUrl() + " ("
-                    + request.getHttpStatusCode() + ")";
-            mHttpStatusCode = request.getHttpStatusCode();
+        public void onReadCompleted(UrlRequest request, ResponseInfo info, ByteBuffer byteBuffer) {
+            Log.i(TAG, "****** onReadCompleted ******" + byteBuffer);
+
+            try {
+                mReceiveChannel.write(byteBuffer);
+            } catch (IOException e) {
+                Log.i(TAG, "IOException during ByteBuffer read. Details: ", e);
+            }
+            byteBuffer.position(0);
+            request.read(byteBuffer);
+        }
+
+        @Override
+        public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
+            ResponseInfo responseInfo = info.getResponseInfo();
+            mHttpStatusCode = responseInfo.getHttpStatusCode();
+            Log.i(TAG, "****** Request Completed, status code is " + mHttpStatusCode
+                            + ", total received bytes is " + info.getTotalReceivedBytes());
+
+            final String receivedData = mBytesReceived.toString();
+            final String url = responseInfo.getUrl();
+            final String text = "Completed " + url + " (" + mHttpStatusCode + ")";
             CronetSampleActivity.this.runOnUiThread(new Runnable() {
                 public void run() {
                     mLoading = false;
-                    Toast toast = Toast.makeText(getApplicationContext(), text,
-                            Toast.LENGTH_SHORT);
-                    toast.show();
+                    mResultText.setText(text);
+                    mReceiveDataText.setText(receivedData);
+                    promptForURL(url);
+                }
+            });
+        }
+
+        @Override
+        public void onFailed(UrlRequest request, ResponseInfo info, UrlRequestException error) {
+            Log.i(TAG, "****** onFailed, error is: " + error.getMessage());
+
+            final String url = mUrl;
+            final String text = "Failed " + mUrl + " (" + error.getMessage() + ")";
+            CronetSampleActivity.this.runOnUiThread(new Runnable() {
+                public void run() {
+                    mLoading = false;
+                    mResultText.setText(text);
                     promptForURL(url);
                 }
             });
         }
     }
 
+    static class SimpleUploadDataProvider implements UploadDataProvider {
+        private byte[] mUploadData;
+        private int mOffset;
+
+        SimpleUploadDataProvider(byte[] uploadData) {
+            mUploadData = uploadData;
+            mOffset = 0;
+        }
+
+        @Override
+        public long getLength() {
+            return mUploadData.length;
+        }
+
+        @Override
+        public void read(final UploadDataSink uploadDataSink, final ByteBuffer byteBuffer)
+                throws IOException {
+            if (byteBuffer.remaining() >= mUploadData.length - mOffset) {
+                byteBuffer.put(mUploadData, mOffset, mUploadData.length - mOffset);
+                mOffset = mUploadData.length;
+            } else {
+                int length = byteBuffer.remaining();
+                byteBuffer.put(mUploadData, mOffset, length);
+                mOffset += length;
+            }
+            uploadDataSink.onReadSucceeded(false);
+        }
+
+        @Override
+        public void rewind(final UploadDataSink uploadDataSink) throws IOException {
+            mOffset = 0;
+            uploadDataSink.onRewindSucceeded();
+        }
+    }
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mResultText = (TextView) findViewById(R.id.resultView);
+        mReceiveDataText = (TextView) findViewById(R.id.dataView);
 
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY,
-                               100 * 1024)
-              .enableSPDY(true)
-              .enableQUIC(true);
+        UrlRequestContextConfig myConfig = new UrlRequestContextConfig();
+        myConfig.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY, 100 * 1024)
+                .enableSPDY(true)
+                .enableQUIC(true);
 
-        // Override config if it is passed from the launcher.
-        String configString = getCommandLineArg(CONFIG_KEY);
-        if (configString != null) {
-            try {
-                Log.i(TAG, "Using Config: " + configString);
-                config = new HttpUrlRequestFactoryConfig(configString);
-            } catch (org.json.JSONException e) {
-                Log.e(TAG, "Invalid Config.", e);
-                finish();
-                return;
-            }
-        }
+        mRequestContext = new CronetUrlRequestContext(this, myConfig);
 
-        mRequestFactory = HttpUrlRequestFactory.createFactory(this, config);
-
-        String appUrl = getUrlFromIntent(getIntent());
+        String appUrl = (getIntent() != null ? getIntent().getDataString() : null);
         if (appUrl == null) {
             promptForURL("https://");
         } else {
@@ -116,86 +176,77 @@ public class CronetSampleActivity extends Activity {
         Log.i(TAG, "No URL provided via intent, prompting user...");
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Enter a URL");
-        alert.setMessage("Enter a URL");
-        final EditText input = new EditText(this);
-        input.setText(url);
-        alert.setView(input);
+        LayoutInflater inflater = getLayoutInflater();
+        View alertView = inflater.inflate(R.layout.dialog_url, null);
+        final EditText urlInput = (EditText) alertView.findViewById(R.id.urlText);
+        urlInput.setText(url);
+        final EditText postInput = (EditText) alertView.findViewById(R.id.postText);
+        alert.setView(alertView);
+
         alert.setPositiveButton("Load", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int button) {
-                String url = input.getText().toString();
-                startWithURL(url);
+                String url = urlInput.getText().toString();
+                String postData = postInput.getText().toString();
+                startWithURL(url, postData);
             }
         });
         alert.show();
     }
 
-    private static String getUrlFromIntent(Intent intent) {
-        return intent != null ? intent.getDataString() : null;
-    }
-
-    private String getCommandLineArg(String key) {
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        Log.i(TAG, "Cronet extras: " + extras);
-        if (extras != null) {
-            String[] commandLine = extras.getStringArray(COMMAND_LINE_ARGS_KEY);
-            if (commandLine != null) {
-                for (int i = 0; i < commandLine.length; ++i) {
-                    Log.i(TAG,
-                            "Cronet commandLine[" + i + "]=" + commandLine[i]);
-                    if (commandLine[i].equals(key)) {
-                        return commandLine[++i];
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private void applyCommandLineToHttpUrlRequest(HttpUrlRequest request) {
-        String postData = getCommandLineArg(POST_DATA_KEY);
-        if (postData != null) {
-            InputStream dataStream = new ByteArrayInputStream(
-                    postData.getBytes());
-            ReadableByteChannel dataChannel = Channels.newChannel(dataStream);
-            request.setUploadChannel("text/plain", dataChannel,
-                    postData.length());
+    private void applyPostDataToUrlRequest(UrlRequest request, Executor executor, String postData) {
+        if (postData != null && postData.length() > 0) {
+            UploadDataProvider uploadDataProvider =
+                    new SimpleUploadDataProvider(postData.getBytes());
             request.setHttpMethod("POST");
+            request.addHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.setUploadDataProvider(uploadDataProvider, executor);
         }
     }
 
-    public void startWithURL(String url) {
+    private void startWithURL(String url) {
+        startWithURL(url, null);
+    }
+
+    private void startWithURL(String url, String postData) {
         Log.i(TAG, "Cronet started: " + url);
         mUrl = url;
-        mLoading = true;
+        mLoading = false;
 
-        HashMap<String, String> headers = new HashMap<String, String>();
-        HttpUrlRequestListener listener = new SampleHttpUrlRequestListener();
-        HttpUrlRequest request = mRequestFactory.createRequest(
-                url, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
-        applyCommandLineToHttpUrlRequest(request);
+        Executor executor = Executors.newSingleThreadExecutor();
+        UrlRequestListener listener = new SimpleUrlRequestListener();
+        UrlRequest request = mRequestContext.createRequest(url, listener, executor);
+        applyPostDataToUrlRequest(request, executor, postData);
         request.start();
     }
 
+    /**
+     * This method is used in testing.
+     */
     public String getUrl() {
         return mUrl;
     }
 
+    /**
+     * This method is used in testing.
+     */
     public boolean isLoading() {
         return mLoading;
     }
 
+    /**
+     * This method is used in testing.
+     */
     public int getHttpStatusCode() {
         return mHttpStatusCode;
     }
 
-    public void startNetLog() {
-        mRequestFactory.startNetLogToFile(
+    private void startNetLog() {
+        mRequestContext.startNetLogToFile(
                 Environment.getExternalStorageDirectory().getPath() + "/cronet_sample_netlog.json",
                 false);
     }
 
-    public void stopNetLog() {
-        mRequestFactory.stopNetLog();
+    private void stopNetLog() {
+        mRequestContext.stopNetLog();
     }
 }

@@ -7,4 +7,6 @@
  -->
 
 <resources>
+    <string name="urlText">Enter a URL</string>
+    <string name="postText">Enter post data (leave it blank for GET request)</string>
 </resources>

@@ -321,7 +321,6 @@
           'variables': {
             'apk_name': 'CronetSampleTest',
             'java_in_dir': 'cronet/android/sample/javatests',
-            'resource_dir': 'cronet/android/sample/res',
             'is_test_apk': 1,
           },
           'includes': [ '../build/java_apk.gypi' ],
