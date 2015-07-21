@@ -485,17 +485,15 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, PRE_RulesPersistence) {
 // Reloads the extension from PRE_RulesPersistence and checks that the rules
 // continue to work as expected after being persisted and reloaded.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesPersistence) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  const base::FilePath path = test_data_dir_.
-      AppendASCII("declarative_content").AppendASCII("persistence");
-  const Extension* extension =
-      GetExtensionByPath(registry->enabled_extensions(), path);
+  ExtensionTestMessageListener ready("second run ready", false);
+  ExtensionTestMessageListener ready_split("second run ready (split)", false);
+  ASSERT_TRUE(ready.WaitUntilSatisfied());
 
-  if (!extension) {
-    ExtensionTestMessageListener ready("second run ready", false);
-    ASSERT_TRUE(ready.WaitUntilSatisfied());
-    extension = GetExtensionByPath(registry->enabled_extensions(), path);
-  }
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  const Extension* extension =
+      GetExtensionByPath(registry->enabled_extensions(),
+                         test_data_dir_.AppendASCII("declarative_content")
+                         .AppendASCII("persistence"));
 
   // Check non-incognito browser.
   content::WebContents* const tab =
@@ -515,7 +513,6 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesPersistence) {
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 
   // Check incognito browser.
-  ExtensionTestMessageListener ready_split("second run ready (split)", false);
   Browser* incognito_browser = CreateIncognitoBrowser();
   ASSERT_TRUE(ready_split.WaitUntilSatisfied());
   content::WebContents* const incognito_tab =
