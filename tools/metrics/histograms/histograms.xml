@@ -42582,6 +42582,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Stability.MobileSessionShutdownType"
+    enum="MobileSessionShutdownType">
+  <owner>lpromero@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    Type of the shutdown. This histogram is recorded at startup and logs a
+    sample for the previous session. A clean shutdown is one where the app
+    enters the background before being killed. Other shutdowns are all some sort
+    of crash. The absence of a crash log indicates that the app was killed by
+    the OS, normally due to memory pressure. If memory pressure is extremely
+    high, the app may not have had a chance to response to a memory warning
+    before being killed. For first launch after upgrade, the crash reports may
+    be discarded before this histogram is written to so it's not possible to
+    determine if there's a valid crash log present or not.
+  </summary>
+</histogram>
+
 <histogram name="Stars.Goog_Related" units="percent">
   <owner>yefim@chromium.org</owner>
   <summary>
@@ -62442,6 +62459,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Accept default account"/>
   <int value="3" label="Accept another account"/>
   <int value="4" label="No thanks"/>
+</enum>
+
+<enum name="MobileSessionShutdownType" type="int">
+  <int value="0" label="Shutdown in background"/>
+  <int value="1" label="Shutdown in foreground; no log; no memory warning"/>
+  <int value="2" label="Shutdown in foreground; with log; no memory warning"/>
+  <int value="3" label="Shutdown in foreground; no log; with memory warning"/>
+  <int value="4" label="Shutdown in foreground; with log; with memory warning"/>
+  <int value="5" label="First launch after upgrade"/>
 </enum>
 
 <enum name="ModuleIndex" type="int">
