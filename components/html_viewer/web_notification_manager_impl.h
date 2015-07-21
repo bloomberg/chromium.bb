@@ -9,7 +9,6 @@
 
 namespace blink {
 class WebSecurityOrigin;
-class WebSerializedOrigin;
 }
 
 namespace html_viewer {
@@ -25,14 +24,7 @@ class WebNotificationManagerImpl : public blink::WebNotificationManager {
   virtual void show(const blink::WebSecurityOrigin&,
                     const blink::WebNotificationData&,
                     blink::WebNotificationDelegate*);
-  virtual void show(const blink::WebSerializedOrigin&,
-                    const blink::WebNotificationData&,
-                    blink::WebNotificationDelegate*);
   virtual void showPersistent(const blink::WebSecurityOrigin&,
-                              const blink::WebNotificationData&,
-                              blink::WebServiceWorkerRegistration*,
-                              blink::WebNotificationShowCallbacks*);
-  virtual void showPersistent(const blink::WebSerializedOrigin&,
                               const blink::WebNotificationData&,
                               blink::WebServiceWorkerRegistration*,
                               blink::WebNotificationShowCallbacks*);
@@ -42,19 +34,12 @@ class WebNotificationManagerImpl : public blink::WebNotificationManager {
   virtual void close(blink::WebNotificationDelegate*);
   virtual void closePersistent(const blink::WebSecurityOrigin&,
                                int64_t persistentNotificationId);
-  virtual void closePersistent(const blink::WebSerializedOrigin&,
-                               int64_t persistentNotificationId);
   virtual void closePersistent(
       const blink::WebSecurityOrigin&,
-      const blink::WebString& persistentNotificationId);
-  virtual void closePersistent(
-      const blink::WebSerializedOrigin&,
       const blink::WebString& persistentNotificationId);
   virtual void notifyDelegateDestroyed(blink::WebNotificationDelegate*);
   virtual blink::WebNotificationPermission checkPermission(
       const blink::WebSecurityOrigin&);
-  virtual blink::WebNotificationPermission checkPermission(
-      const blink::WebSerializedOrigin&);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebNotificationManagerImpl);

@@ -18,22 +18,8 @@ void WebNotificationManagerImpl::show(const blink::WebSecurityOrigin&,
   NOTIMPLEMENTED();
 }
 
-void WebNotificationManagerImpl::show(const blink::WebSerializedOrigin&,
-                                      const blink::WebNotificationData&,
-                                      blink::WebNotificationDelegate*) {
-  NOTIMPLEMENTED();
-}
-
 void WebNotificationManagerImpl::showPersistent(
     const blink::WebSecurityOrigin&,
-    const blink::WebNotificationData&,
-    blink::WebServiceWorkerRegistration*,
-    blink::WebNotificationShowCallbacks*) {
-  NOTIMPLEMENTED();
-}
-
-void WebNotificationManagerImpl::showPersistent(
-    const blink::WebSerializedOrigin&,
     const blink::WebNotificationData&,
     blink::WebServiceWorkerRegistration*,
     blink::WebNotificationShowCallbacks*) {
@@ -58,19 +44,7 @@ void WebNotificationManagerImpl::closePersistent(
 }
 
 void WebNotificationManagerImpl::closePersistent(
-    const blink::WebSerializedOrigin&,
-    int64_t persistentNotificationId) {
-  NOTIMPLEMENTED();
-}
-
-void WebNotificationManagerImpl::closePersistent(
     const blink::WebSecurityOrigin&,
-    const blink::WebString& persistentNotificationId) {
-  NOTIMPLEMENTED();
-}
-
-void WebNotificationManagerImpl::closePersistent(
-    const blink::WebSerializedOrigin&,
     const blink::WebString& persistentNotificationId) {
   NOTIMPLEMENTED();
 }
@@ -82,12 +56,6 @@ void WebNotificationManagerImpl::notifyDelegateDestroyed(
 
 blink::WebNotificationPermission WebNotificationManagerImpl::checkPermission(
     const blink::WebSecurityOrigin&) {
-  NOTIMPLEMENTED();
-  return blink::WebNotificationPermission();
-}
-
-blink::WebNotificationPermission WebNotificationManagerImpl::checkPermission(
-      const blink::WebSerializedOrigin&) {
   NOTIMPLEMENTED();
   return blink::WebNotificationPermission();
 }
