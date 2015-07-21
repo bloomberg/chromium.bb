@@ -3,7 +3,7 @@
   -- Use of this source code is governed by a BSD-style license that can be
   -- found in the LICENSE file.
   -->
-<html>
+<html i18n-values="dir:textdirection">
 <head>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="../file_manager/foreground/css/list.css">
@@ -12,7 +12,8 @@
   <link rel="stylesheet" href="../file_manager/foreground/css/share_dialog.css">
   <link rel="stylesheet" href="css/gallery.css">
 
-  <script src="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/polymer_config.js"></script>
+  <script src="chrome://resources/js/polymer_config.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
 
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
@@ -30,7 +31,9 @@
 </head>
 <body>
   <div class="gallery">
-    <div id="content" class="content"></div>
+    <div id="content" class="content">
+      <div class="thumbnail-view"></div>
+    </div>
     <div id="top-toolbar" class="toolbar top tool dimmable">
       <div class="filename-spacer"></div>
       <div class="button-spacer">
@@ -38,7 +41,7 @@
         <paper-button class="button print" i18n-values="title:GALLERY_PRINT" disabled></paper-button>
         <paper-button class="button delete" i18n-values="title:GALLERY_DELETE"></paper-button>
         <paper-button class="button slide-mode" i18n-values="title:GALLERY_SLIDE"></paper-button>
-        <paper-button class="button mosaic-mode" i18n-values="title:GALLERY_MOSAIC"></paper-button>
+        <paper-button class="button thumbnail-mode" i18n-values="title:GALLERY_THUMBNAIL"></paper-button>
         <paper-button class="button slideshow" i18n-values="title:GALLERY_SLIDESHOW"></paper-button>
         <paper-button class="button share" i18n-values="title:GALLERY_SHARE"></paper-button>
       </div>

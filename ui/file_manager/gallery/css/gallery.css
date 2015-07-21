@@ -612,7 +612,7 @@ files-toggle-ripple::shadow .ripple.activated {
       url(../images/200/slide_view.png) 2x);
 }
 
-.gallery > .toolbar paper-button.mosaic-mode {
+.gallery > .toolbar paper-button.thumbnail-mode {
   background-image: -webkit-image-set(
       url(../images/100/mosaic_view.png) 1x,
       url(../images/200/mosaic_view.png) 2x);
@@ -635,9 +635,9 @@ files-toggle-ripple::shadow .ripple.activated {
   pointer-events: none;
 }
 
-.gallery:not([editing])[mode='slide'] > .toolbar paper-button.slide-mode,
-.gallery:not([editing])[mode='mosaic'] > .toolbar paper-button.mosaic-mode,
-.gallery[editing][mode='slide'] > .toolbar paper-button.mosaic-mode,
+.gallery:not([editing])[mode='slide'] > .toolbar .button.slide-mode,
+.gallery:not([editing])[mode='thumbnail'] > .toolbar .button.thumbnail-mode,
+.gallery[editing][mode='slide'] > .toolbar .button.thumbnail-mode,
 .gallery > .toolbar paper-button[disabled] {
   display: none;
 }
@@ -1341,4 +1341,95 @@ paper-slider::shadow paper-progress::shadow #progressContainer {
 
 .debug-me .load-target-file-entry::before {
   background-color: rgba(0, 0, 255, 0.3);
+}
+
+/**
+ * Thumbnail view.
+ */
+.thumbnail-view {
+  display: block;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.thumbnail-view ul {
+  -webkit-padding-end: 4px;
+  -webkit-padding-start: 0;
+  margin: 0;
+  padding-top: 52px; /* Toolbar height (48px) + Margin (4px) */
+  padding-bottom: 0;
+}
+
+.thumbnail-view .thumbnail {
+  -webkit-margin-start: 4px;
+  display: block;
+  margin-bottom: 4px;
+  position: relative;
+}
+
+html[dir='ltr'] .thumbnail-view .thumbnail {
+  float: left;
+}
+
+html[dir='rtl'] .thumbnail-view .thumbnail {
+  float: right;
+}
+
+.thumbnail-view::-webkit-scrollbar {
+  width: 0;
+}
+
+.thumbnail-view .scrollbar {
+  bottom: 4px;
+  position: absolute;
+  top: 52px; /* Toolbar height (48px) + Margin (4px) */
+  width: 8px;
+}
+
+html[dir='ltr'] .thumbnail-view .scrollbar {
+  right: 0;
+}
+
+html[dir='rtl'] .thumbnail-view .scrollbar {
+  left: 0;
+}
+
+.thumbnail-view .scrollbar .thumb {
+  -webkit-margin-end: 4px;
+  background-color: white;
+  border-radius: 2px;
+  opacity: 0.4;
+  width: 4px;
+}
+
+.thumbnail-view .thumbnail > .frame {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.thumbnail-view .thumbnail > .frame.image {
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.thumbnail-view .thumbnail.selected > .frame.selection {
+  border: solid 2px rgb(27, 168, 243);
+}
+
+.thumbnail-view .thumbnail.transparent {
+  opacity: 0;
+}
+
+.thumbnail-view .animation-thumbnail {
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: none;
+  position: absolute;
+}
+
+.thumbnail-view .animation-thumbnail.animating {
+  display: block;
 }

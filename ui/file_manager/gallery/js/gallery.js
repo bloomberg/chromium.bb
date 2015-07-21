@@ -56,7 +56,7 @@ function Gallery(volumeManager) {
   this.selectionModel_ = new cr.ui.ListSelectionModel();
 
   /**
-   * @type {(SlideMode|MosaicMode)}
+   * @type {(SlideMode|ThumbnailMode)}
    * @private
    */
   this.currentMode_ = null;
@@ -106,17 +106,17 @@ function Gallery(volumeManager) {
   slideModeButton.addEventListener(
       'click', this.onSlideModeButtonClicked_.bind(this));
 
-  var mosaicModeButton = queryRequiredElement(
-      this.topToolbar_, '.button.mosaic-mode');
-  mosaicModeButton.addEventListener(
-      'click', this.onMosaicModeButtonClicked_.bind(this));
+  var thumbnailModeButton = queryRequiredElement(
+      this.topToolbar_, '.button.thumbnail-mode');
+  thumbnailModeButton.addEventListener(
+      'click', this.onThumbnailModeButtonClicked_.bind(this));
 
-  this.mosaicMode_ = new MosaicMode(content,
-                                    this.errorBanner_,
-                                    this.dataModel_,
-                                    this.selectionModel_,
-                                    this.volumeManager_,
-                                    this.toggleMode_.bind(this, undefined));
+  this.thumbnailMode_ = new ThumbnailMode(
+      assertInstanceof(document.querySelector('.thumbnail-view'), HTMLElement),
+      this.dataModel_,
+      this.selectionModel_,
+      this.changeCurrentMode_.bind(this, this.slideMode_));
+  this.thumbnailMode_.hide();
 
   this.slideMode_ = new SlideMode(this.container_,
                                   content,
@@ -201,7 +201,7 @@ Gallery.MOSAIC_BACKGROUND_INIT_DELAY = 1000;
  * @type {!Array<string>}
  */
 Gallery.PREFETCH_PROPERTY_NAMES =
-    ['imageWidth', 'imageHeight', 'size', 'present'];
+    ['imageWidth', 'imageHeight', 'imageRotation', 'size', 'present'];
 
 /**
  * Closes gallery when a volume containing the selected item is unmounted.
@@ -319,32 +319,26 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
         chunkItem.setMetadataItem(metadataLists[0][index]);
         chunkItem.setThumbnailMetadataItem(metadataLists[1][index]);
 
-        if (!firstChunk || self.initialized_) {
-          var event = new Event('content');
-          event.item = chunkItem;
-          event.oldEntry = chunkItem.getEntry();
-          event.thumbnailChanged = true;
-          self.dataModel_.dispatchEvent(event);
-        }
+        var event = new Event('content');
+        event.item = chunkItem;
+        event.oldEntry = chunkItem.getEntry();
+        event.thumbnailChanged = true;
+        self.dataModel_.dispatchEvent(event);
       });
 
       // Init modes after the first chunk is loaded.
       if (firstChunk && !self.initialized_) {
         // Determine the initial mode.
-        var shouldShowMosaic = selectedEntries.length > 1 ||
+        var shouldShowThumbnail = selectedEntries.length > 1 ||
             (self.context_.pageState &&
-             self.context_.pageState.gallery === 'mosaic');
+             self.context_.pageState.gallery === 'thumbnail');
         self.setCurrentMode_(
-            shouldShowMosaic ? self.mosaicMode_ : self.slideMode_);
-
-        // Init mosaic mode.
-        var mosaic = self.mosaicMode_.getMosaic();
-        mosaic.init();
+            shouldShowThumbnail ? self.thumbnailMode_ : self.slideMode_);
 
         // Do the initialization for each mode.
-        if (shouldShowMosaic) {
-          mosaic.show();
+        if (shouldShowThumbnail) {
           self.inactivityWatcher_.check();  // Show the toolbar.
+          self.thumbnailMode_.show();
           cr.dispatchSimpleEvent(self, 'loaded');
         } else {
           self.slideMode_.enter(
@@ -388,14 +382,14 @@ Gallery.prototype.onUserAction_ = function() {
 
 /**
  * Sets the current mode, update the UI.
- * @param {!(SlideMode|MosaicMode)} mode Current mode.
+ * @param {!(SlideMode|ThumbnailMode)} mode Current mode.
  * @private
  *
  * TODO(yawano): Since this method is confusing with changeCurrentMode_. Rename
  *     or remove this method.
  */
 Gallery.prototype.setCurrentMode_ = function(mode) {
-  if (mode !== this.slideMode_ && mode !== this.mosaicMode_)
+  if (mode !== this.slideMode_ && mode !== this.thumbnailMode_)
     console.error('Invalid Gallery mode');
 
   this.currentMode_ = mode;
@@ -417,17 +411,17 @@ Gallery.prototype.onSlideModeButtonClicked_ = function(event) {
 };
 
 /**
- * Handles click event of MosaicModeButton.
+ * Handles click event of ThumbnailModeButton.
  * @param {!Event} event An event.
  * @private
  */
-Gallery.prototype.onMosaicModeButtonClicked_ = function(event) {
-  this.changeCurrentMode_(this.mosaicMode_, event);
+Gallery.prototype.onThumbnailModeButtonClicked_ = function(event) {
+  this.changeCurrentMode_(this.thumbnailMode_, event);
 };
 
 /**
  * Change current mode.
- * @param {!(SlideMode|MosaicMode)} mode Target mode.
+ * @param {!(SlideMode|ThumbnailMode)} mode Target mode.
  * @param {Event=} opt_event Event that caused this call.
  * @private
  */
@@ -449,32 +443,35 @@ Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
       fulfill();
     }.bind(this);
 
-    var tileIndex = Math.max(0, this.selectionModel_.selectedIndex);
+    var thumbnailIndex = Math.max(0, this.selectionModel_.selectedIndex);
+    var thumbnailRect = ImageRect.createFromBounds(
+        this.thumbnailMode_.getThumbnailRect(thumbnailIndex));
 
-    var mosaic = this.mosaicMode_.getMosaic();
-    var tileRect = mosaic.getTileRect(tileIndex);
-
-    if (mode === this.mosaicMode_) {
-      this.setCurrentMode_(this.mosaicMode_);
-      mosaic.transform(
-          tileRect, this.slideMode_.getSelectedImageRect(), true /* instant */);
+    if (mode === this.thumbnailMode_) {
+      this.setCurrentMode_(this.thumbnailMode_);
       this.slideMode_.leave(
-          tileRect,
+          thumbnailRect,
           function() {
-            // Animate back to normal position.
-            mosaic.transform(null, null);
-            mosaic.show();
+            // Show thumbnail mode and perform animation.
+            this.thumbnailMode_.show();
+            var fromRect = this.slideMode_.getSelectedImageRect();
+            if (fromRect) {
+              this.thumbnailMode_.performEnterAnimation(
+                  thumbnailIndex, fromRect);
+            }
+
             onModeChanged();
           }.bind(this));
       this.bottomToolbar_.hidden = true;
     } else {
+      // TODO(yawano): Make animation smooth. With this implementation,
+      //     animation starts after the image is fully loaded.
       this.setCurrentMode_(this.slideMode_);
       this.slideMode_.enter(
-          tileRect,
+          thumbnailRect,
           function() {
             // Animate to zoomed position.
-            mosaic.transform(tileRect, this.slideMode_.getSelectedImageRect());
-            mosaic.hide();
+            this.thumbnailMode_.hide();
           }.bind(this),
           onModeChanged);
       this.bottomToolbar_.hidden = false;
@@ -490,7 +487,7 @@ Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
  */
 Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
   var targetMode = this.currentMode_ === this.slideMode_ ?
-      this.mosaicMode_ : this.slideMode_;
+      this.thumbnailMode_ : this.slideMode_;
 
   this.changeCurrentMode_(targetMode, opt_event).then(function() {
     if (opt_callback)
@@ -735,7 +732,10 @@ Gallery.prototype.updateSelectionAndState_ = function() {
   util.updateAppState(
       null,  // Keep the current directory.
       selectedEntryURL,  // Update the selection.
-      {gallery: (this.currentMode_ === this.mosaicMode_ ? 'mosaic' : 'slide')});
+      {
+        gallery: (this.currentMode_ === this.thumbnailMode_ ?
+                  'thumbnail' : 'slide')
+      });
 };
 
 /**
@@ -839,19 +839,6 @@ Gallery.prototype.onShareButtonClick_ = function() {
 Gallery.prototype.updateThumbnails_ = function() {
   if (this.currentMode_ === this.slideMode_)
     this.slideMode_.updateThumbnails();
-
-  if (this.mosaicMode_) {
-    var mosaic = this.mosaicMode_.getMosaic();
-    if (mosaic.isInitialized())
-      mosaic.reload();
-  }
-};
-
-/**
- * Enters the debug mode.
- */
-Gallery.prototype.debugMe = function() {
-  this.mosaicMode_.debugMe();
 };
 
 /**
@@ -906,12 +893,3 @@ var initializePromise =
 
 // Loads entries.
 initializePromise.then(reload);
-
-/**
- * Enteres the debug mode.
- */
-window.debugMe = function() {
-  initializePromise.then(function() {
-    gallery.debugMe();
-  });
-};

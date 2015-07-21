@@ -72,12 +72,12 @@ function openMultipleImages(testVolumeName, volumeType) {
   return launchedPromise.then(function(args) {
     var appId = args.appId;
     var rootElementPromise =
-        gallery.waitForElement(appId, '.gallery[mode="mosaic"]');
+        gallery.waitForElement(appId, '.gallery[mode="thumbnail"]');
     var tilesPromise = repeatUntil(function() {
       return gallery.callRemoteTestUtil(
           'queryAllElements',
           appId,
-          ['.mosaic-tile']
+          ['.thumbnail-view .thumbnail']
       ).then(function(tiles) {
         if (tiles.length !== 2)
           return pending('The number of tiles is expected 2, but is %d',

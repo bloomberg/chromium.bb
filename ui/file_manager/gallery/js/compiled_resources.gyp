@@ -101,9 +101,9 @@
           './gallery_data_model.js',
           './gallery_item.js',
           './gallery_util.js',
-          './mosaic_mode.js',
           './ribbon.js',
           './slide_mode.js',
+          './thumbnail_mode.js',
         ],
         'externs': [
           '<(EXTERNS_DIR)/chrome_send.js',

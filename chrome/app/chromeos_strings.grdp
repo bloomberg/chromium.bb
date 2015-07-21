@@ -267,8 +267,8 @@ Press any key to continue exploring.
     <ph name="COUNT">$1<ex>3</ex></ph> items selected
   </message>
 
-  <message name="IDS_FILE_BROWSER_GALLERY_MOSAIC" desc="In the Gallery, the title on the button that switches to the mosaic view.">
-    Mosaic view
+  <message name="IDS_FILE_BROWSER_GALLERY_THUMBNAIL" desc="In the Gallery, the title on the button that switches to the thumbnail view.">
+    Thumbnail view
   </message>
   <message name="IDS_FILE_BROWSER_GALLERY_SLIDE" desc="In the Gallery, the title on the button that switches to the slide view.">
     Slide view
