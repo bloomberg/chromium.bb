@@ -1,0 +1,32 @@
+<html>
+<body>
+</body>
+<script>
+var NUM_CANVASES = 30;
+var CANVAS_WIDTH = 300;
+var CANVAS_HEIGHT = 50;
+
+var contexts = [];
+for (var i = 0; i < NUM_CANVASES; ++i) {
+    var c = document.createElement("canvas");
+    c.setAttribute("width", CANVAS_WIDTH);
+    c.setAttribute("height", CANVAS_HEIGHT);
+    document.body.appendChild(c);
+    var ctx = c.getContext("2d");
+    contexts.push(ctx);
+}
+
+function clearAll()
+{
+    for (var i in contexts) {
+        contexts[i].clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+}
+
+clearAll();
+window.setInterval(function() {
+    clearAll();
+}, 1000);
+
+</script>
+</html>
