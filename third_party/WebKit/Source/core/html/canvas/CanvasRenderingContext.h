@@ -106,6 +106,7 @@ public:
     virtual void setShouldAntialias(bool) { }
     virtual unsigned hitRegionsCount() const { return 0; }
     virtual void setFont(const String&) { }
+    virtual void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) { }
 
     // WebGL-specific interface
     virtual bool is3d() const { return false; }

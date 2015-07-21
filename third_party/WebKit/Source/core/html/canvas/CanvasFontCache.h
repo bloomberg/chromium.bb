@@ -39,8 +39,8 @@ public:
     bool getFontUsingDefaultStyle(const String&, Font&);
 
     // TaskObserver implementation
-    virtual void didProcessTask();
-    virtual void willProcessTask() { }
+    void didProcessTask() override;
+    void willProcessTask() override { }
 
     // For testing
     bool isInCache(const String&);

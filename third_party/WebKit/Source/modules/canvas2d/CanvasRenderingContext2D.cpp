@@ -66,6 +66,7 @@
 #include "platform/graphics/StrokeData.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiTextRun.h"
+#include "public/platform/Platform.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "wtf/ArrayBufferContents.h"
@@ -127,6 +128,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
     , m_dispatchContextLostEventTimer(this, &CanvasRenderingContext2D::dispatchContextLostEvent)
     , m_dispatchContextRestoredEventTimer(this, &CanvasRenderingContext2D::dispatchContextRestoredEvent)
     , m_tryRestoreContextEventTimer(this, &CanvasRenderingContext2D::tryRestoreContextEvent)
+    , m_pruneLocalFontCacheScheduled(false)
 {
     if (document.settings() && document.settings()->antialiasedClips2dCanvasEnabled())
         m_clipAntialiasing = AntiAliased;
@@ -146,6 +148,9 @@ void CanvasRenderingContext2D::unwindStateStack()
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D()
 {
+    if (m_pruneLocalFontCacheScheduled) {
+        Platform::current()->currentThread()->removeTaskObserver(this);
+    }
 }
 
 void CanvasRenderingContext2D::validateStateStack()
@@ -1703,11 +1708,17 @@ String CanvasRenderingContext2D::font() const
 
 void CanvasRenderingContext2D::setFont(const String& newFont)
 {
-    if (newFont == state().unparsedFont() && state().hasRealizedFont())
-        return;
-
     // The style resolution required for rendering text is not available in frame-less documents.
     if (!canvas()->document().frame())
+        return;
+
+    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
+
+    // The following early exit is dependent on the cache not being empty
+    // because an empty cache may indicate that a style change has occured
+    // which would require that the font be re-resolved. This check has to
+    // come after the layout tree update to flush pending style changes.
+    if (newFont == state().unparsedFont() && state().hasRealizedFont() && m_fontsResolvedUsingCurrentStyle.size() > 0)
         return;
 
     CanvasFontCache* canvasFontCache = canvas()->document().canvasFontCache();
@@ -1715,20 +1726,32 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
     // relative to the canvas.
     RefPtr<ComputedStyle> fontStyle;
-    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
     const ComputedStyle* computedStyle = canvas()->ensureComputedStyle();
     if (computedStyle) {
-        MutableStylePropertySet* parsedStyle = canvasFontCache->parseFont(newFont);
-        if (!parsedStyle)
-            return;
-        fontStyle = ComputedStyle::create();
-        FontDescription elementFontDescription(computedStyle->fontDescription());
-        // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
-        elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
-        fontStyle->setFontDescription(elementFontDescription);
-        fontStyle->font().update(fontStyle->font().fontSelector());
-        canvas()->document().ensureStyleResolver().computeFont(fontStyle.get(), *parsedStyle);
-        modifiableState().setFont(fontStyle->font(), canvas()->document().styleEngine().fontSelector());
+        HashMap<String, Font>::iterator i = m_fontsResolvedUsingCurrentStyle.find(newFont);
+        if (i != m_fontsResolvedUsingCurrentStyle.end()) {
+            ASSERT(m_fontLRUList.contains(newFont));
+            m_fontLRUList.remove(newFont);
+            m_fontLRUList.add(newFont);
+            modifiableState().setFont(i->value, canvas()->document().styleEngine().fontSelector());
+        } else {
+            MutableStylePropertySet* parsedStyle = canvasFontCache->parseFont(newFont);
+            if (!parsedStyle)
+                return;
+            fontStyle = ComputedStyle::create();
+            FontDescription elementFontDescription(computedStyle->fontDescription());
+            // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
+            elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
+            fontStyle->setFontDescription(elementFontDescription);
+            fontStyle->font().update(fontStyle->font().fontSelector());
+            canvas()->document().ensureStyleResolver().computeFont(fontStyle.get(), *parsedStyle);
+            m_fontsResolvedUsingCurrentStyle.add(newFont, fontStyle->font());
+            ASSERT(!m_fontLRUList.contains(newFont));
+            m_fontLRUList.add(newFont);
+            pruneLocalFontCache(canvasFontCache->hardMaxFonts()); // hard limit
+            schedulePruneLocalFontCacheIfNeeded(); // soft limit
+            modifiableState().setFont(fontStyle->font(), canvas()->document().styleEngine().fontSelector());
+        }
     } else {
         Font resolvedFont;
         if (!canvasFontCache->getFontUsingDefaultStyle(newFont, resolvedFont))
@@ -1739,6 +1762,42 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     // The parse succeeded.
     String newFontSafeCopy(newFont); // Create a string copy since newFont can be deleted inside realizeSaves.
     modifiableState().setUnparsedFont(newFontSafeCopy);
+}
+
+void CanvasRenderingContext2D::schedulePruneLocalFontCacheIfNeeded()
+{
+    if (m_pruneLocalFontCacheScheduled)
+        return;
+    m_pruneLocalFontCacheScheduled = true;
+    Platform::current()->currentThread()->addTaskObserver(this);
+}
+
+void CanvasRenderingContext2D::didProcessTask()
+{
+    pruneLocalFontCache(canvas()->document().canvasFontCache()->maxFonts());
+    m_pruneLocalFontCacheScheduled = false;
+    Platform::current()->currentThread()->removeTaskObserver(this);
+}
+
+void CanvasRenderingContext2D::pruneLocalFontCache(size_t targetSize)
+{
+    if (targetSize == 0) {
+        // Short cut: LRU does not matter when evicting everything
+        m_fontLRUList.clear();
+        m_fontsResolvedUsingCurrentStyle.clear();
+        return;
+    }
+    while (m_fontLRUList.size() > targetSize) {
+        m_fontsResolvedUsingCurrentStyle.remove(m_fontLRUList.first());
+        m_fontLRUList.removeFirst();
+    }
+}
+
+void CanvasRenderingContext2D::styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
+{
+    if (oldStyle && oldStyle->font() == newStyle.font())
+        return;
+    pruneLocalFontCache(0);
 }
 
 String CanvasRenderingContext2D::textAlign() const
@@ -2013,6 +2072,9 @@ void CanvasRenderingContext2D::setIsHidden(bool hidden)
 {
     if (canvas()->hasImageBuffer())
         canvas()->buffer()->setIsHidden(hidden);
+    if (hidden) {
+        pruneLocalFontCache(0);
+    }
 }
 
 bool CanvasRenderingContext2D::isTransformInvertible() const

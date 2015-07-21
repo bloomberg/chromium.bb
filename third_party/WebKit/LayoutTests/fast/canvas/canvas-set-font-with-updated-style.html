@@ -13,6 +13,12 @@ function drawCanvasText(id, text)
 {
     var canvasElement = document.getElementById(id);
     var context = canvasElement.getContext('2d');
+
+    // Pre-draw pass to add the font to the font cache. This way, the test also
+    // verifies that the style change correctly invalidates the font resolution cache.
+    context.font = '1em Calibri';
+    context.fillText(text, 0, 100);
+
     canvasElement.style.fontSize = '64px';
     context.font = '1em Calibri';
     context.fillText(text, 0, 100);

@@ -98,4 +98,10 @@ CompositingReasons LayoutHTMLCanvas::additionalCompositingReasons() const
     return CompositingReasonNone;
 }
 
+void LayoutHTMLCanvas::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
+{
+    LayoutReplaced::styleDidChange(diff, oldStyle);
+    toHTMLCanvasElement(node())->styleDidChange(oldStyle, styleRef());
+}
+
 } // namespace blink

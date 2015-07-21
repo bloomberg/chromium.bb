@@ -174,6 +174,8 @@ public:
     static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
     void updateExternallyAllocatedMemory() const;
 
+    void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
+
 protected:
     void didMoveToNewDocument(Document& oldDocument) override;
 

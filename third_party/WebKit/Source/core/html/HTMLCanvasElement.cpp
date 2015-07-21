@@ -826,6 +826,12 @@ void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
     }
 }
 
+void HTMLCanvasElement::styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
+{
+    if (m_context)
+        m_context->styleDidChange(oldStyle, newStyle);
+}
+
 void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument)
 {
     setObservedDocument(document());

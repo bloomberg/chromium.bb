@@ -36,6 +36,7 @@
 #include "modules/canvas2d/CanvasPathMethods.h"
 #include "modules/canvas2d/CanvasRenderingContext2DState.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -60,7 +61,7 @@ class TextMetrics;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
 
-class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods {
+class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods, public WebThread::TaskObserver {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class Factory : public CanvasRenderingContextFactory {
@@ -217,6 +218,12 @@ public:
 
     void restoreCanvasMatrixClipStack() override;
 
+    // TaskObserver implementation
+    void didProcessTask() override;
+    void willProcessTask() override { }
+
+    void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) override;
+
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 
@@ -239,6 +246,9 @@ private:
 
     void unwindStateStack();
     void realizeSaves();
+
+    void pruneLocalFontCache(size_t targetSize);
+    void schedulePruneLocalFontCacheIfNeeded();
 
     bool shouldDrawImageAntialiased(const FloatRect& destRect) const;
 
@@ -302,6 +312,10 @@ private:
     Timer<CanvasRenderingContext2D> m_dispatchContextLostEventTimer;
     Timer<CanvasRenderingContext2D> m_dispatchContextRestoredEventTimer;
     Timer<CanvasRenderingContext2D> m_tryRestoreContextEventTimer;
+
+    HashMap<String, Font> m_fontsResolvedUsingCurrentStyle;
+    bool m_pruneLocalFontCacheScheduled;
+    ListHashSet<String> m_fontLRUList;
 };
 
 DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context, context->is2d(), context.is2d());

@@ -42,6 +42,8 @@ public:
 
     void canvasSizeChanged();
 
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+
     const char* name() const override { return "LayoutHTMLCanvas"; }
 
 private:

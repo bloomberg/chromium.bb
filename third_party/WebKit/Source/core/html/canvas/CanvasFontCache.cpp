@@ -150,6 +150,7 @@ void CanvasFontCache::pruneAll()
 {
     m_fetchedFonts.clear();
     m_fontLRUList.clear();
+    m_fontsResolvedUsingDefaultStyle.clear();
 }
 
 DEFINE_TRACE(CanvasFontCache)
