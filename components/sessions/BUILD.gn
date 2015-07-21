@@ -22,6 +22,10 @@ if (!is_ios) {
 
     configs += [ ":implementation" ]
 
+    public_deps = [
+      ":shared",
+    ]
+
     deps = [
       ":shared",
       "//base",
@@ -38,6 +42,10 @@ if (!is_ios) {
       "ios/ios_serialized_navigation_builder.h",
       "ios/ios_serialized_navigation_driver.cc",
       "ios/ios_serialized_navigation_driver.h",
+    ]
+
+    public_deps = [
+      ":shared",
     ]
 
     deps = [

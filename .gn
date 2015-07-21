@@ -36,6 +36,8 @@ check_targets = [
   "//components/app_modal/*",
   "//components/autofill/*",
   "//components/bookmarks/*",
+  "//components/google/*",
+  "//components/omnibox/*",
   "//components/os_crypt/*",
   "//components/pref_registry/*",
   "//components/undo/*",

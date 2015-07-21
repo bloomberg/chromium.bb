@@ -84,6 +84,7 @@ source_set("browser") {
     ":in_memory_url_index_cache_proto",
     "//base",
     "//base:i18n",
+    "//base:prefs",
     "//components/bookmarks/browser",
     "//components/keyed_service/core",
     "//components/pref_registry",
@@ -91,6 +92,7 @@ source_set("browser") {
     "//components/resources",
     "//components/search",
     "//components/search_engines",
+    "//components/sessions",
     "//components/strings",
     "//components/url_fixer",
     "//components/variations",
@@ -122,6 +124,8 @@ static_library("test_support") {
     ":browser",
     "//base",
     "//components/metrics/proto",
+    "//components/search_engines",
+    "//net",
     "//testing/gmock",
   ]
 }
@@ -144,7 +148,12 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":test_support",
+    "//base",
+    "//components/search",
+    "//components/search_engines",
+    "//components/variations",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
 }
