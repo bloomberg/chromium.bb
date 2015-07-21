@@ -141,6 +141,17 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
       handled = true;
     }
 
+    // These are handled by GpuJpegDecodeAccelerator and
+    // GpuVideoDecodeAccelerator.
+    // TODO(kcwu) Modify GpuChannel::AddFilter to handle additional filters by
+    // GpuChannelMessageFilter instead of by IPC::SyncChannel directly. Then we
+    // don't need to exclude them one by one here.
+    if (message.type() == AcceleratedJpegDecoderMsg_Decode::ID ||
+        message.type() == AcceleratedJpegDecoderMsg_Destroy::ID ||
+        message.type() == AcceleratedVideoDecoderMsg_Decode::ID) {
+      return false;
+    }
+
     // All other messages get processed by the GpuChannel.
     messages_forwarded_to_channel_++;
     if (preempting_flag_.get())
