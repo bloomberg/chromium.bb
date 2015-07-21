@@ -1,6 +1,7 @@
 jbauman@chromium.org
 nduca@chromium.org
 dsinclair@chromium.org
+simonhatch@chromium.org
 
 # Changes to IPC messages require a security review to avoid introducing
 # new sandbox escapes.
