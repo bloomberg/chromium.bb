@@ -2451,4 +2451,54 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
                                      captured_nigori_state, CUSTOM_PASSPHRASE);
 }
 
+// Verify that the client can gracefully handle a nigori node that is missing
+// the keystore migration time field.
+TEST_F(SyncEncryptionHandlerImplTest, MissingKeystoreMigrationTime) {
+  EXPECT_CALL(*observer(),
+              OnCryptographerStateChanged(_)).Times(AnyNumber());
+  EXPECT_CALL(*observer(),
+              OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(),
+              OnEncryptedTypesChanged(_, false));
+  encryption_handler()->Init();
+  Mock::VerifyAndClearExpectations(observer());
+
+  // Now simulate downloading a nigori node that that is missing the keystore
+  // migration time. It should be interpreted properly, and the passphrase type
+  // should switch to keystore passphrase.
+  EXPECT_CALL(*observer(),
+              OnCryptographerStateChanged(_)).Times(AnyNumber());
+  EXPECT_CALL(*observer(),
+              OnPassphraseRequired(_, _));
+  EXPECT_CALL(*observer(),
+              OnPassphraseTypeChanged(KEYSTORE_PASSPHRASE, _));
+  {
+    sync_pb::NigoriSpecifics nigori = BuildMigratedNigori(
+        KEYSTORE_PASSPHRASE,
+        1,
+        kKeystoreKey,
+        kKeystoreKey);
+    nigori.clear_keystore_migration_time();
+    // Update the encryption handler.
+    WriteTransaction trans(FROM_HERE, user_share());
+    encryption_handler()->ApplyNigoriUpdate(
+        nigori,
+        trans.GetWrappedTrans());
+  }
+  Mock::VerifyAndClearExpectations(observer());
+
+  // Now provide the keystore key to fully initialize the cryptographer.
+  EXPECT_CALL(*observer(),
+              OnCryptographerStateChanged(_)).Times(AnyNumber());
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  {
+    ReadTransaction trans(FROM_HERE, user_share());
+    encryption_handler()->SetKeystoreKeys(BuildEncryptionKeyProto(
+                                              kRawKeystoreKey),
+                                          trans.GetWrappedTrans());
+
+  }
+}
+
 }  // namespace syncer

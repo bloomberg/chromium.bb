@@ -70,14 +70,11 @@ enum NigoriMigrationState {
 // The new passphrase state is sufficient to determine whether a nigori node
 // is migrated to support keystore encryption. In addition though, we also
 // want to verify the conditions for proper keystore encryption functionality.
-// 1. Passphrase state is set.
-// 2. Migration time is set.
-// 3. Frozen keybag is true
-// 4. If passphrase state is keystore, keystore_decryptor_token is set.
+// 1. Passphrase type is set.
+// 2. Frozen keybag is true
+// 3. If passphrase state is keystore, keystore_decryptor_token is set.
 bool IsNigoriMigratedToKeystore(const sync_pb::NigoriSpecifics& nigori) {
   if (!nigori.has_passphrase_type())
-    return false;
-  if (!nigori.has_keystore_migration_time())
     return false;
   if (!nigori.keybag_is_frozen())
     return false;
@@ -87,8 +84,6 @@ bool IsNigoriMigratedToKeystore(const sync_pb::NigoriSpecifics& nigori) {
   if (nigori.passphrase_type() ==
           sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE &&
       nigori.keystore_decryptor_token().blob().empty())
-    return false;
-  if (!nigori.has_keystore_migration_time())
     return false;
   return true;
 }
@@ -896,7 +891,6 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   }
   bool is_nigori_migrated = IsNigoriMigratedToKeystore(nigori);
   if (is_nigori_migrated) {
-    DCHECK(nigori.has_keystore_migration_time());
     migration_time_ = ProtoTimeToTime(nigori.keystore_migration_time());
     PassphraseType nigori_passphrase_type =
         ProtoPassphraseTypeToEnum(nigori.passphrase_type());
