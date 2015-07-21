@@ -1451,6 +1451,8 @@ RenderThreadImpl::GetGpuFactories() {
     bool parsed_image_texture_target =
         base::StringToUint(image_texture_target_string, &image_texture_target);
     DCHECK(parsed_image_texture_target);
+    CHECK(gpu_channel_host.get()) << "Have gpu_va_context_provider but no "
+                                     "gpu_channel_host. See crbug.com/495185.";
     gpu_factories = RendererGpuVideoAcceleratorFactories::Create(
         gpu_channel_host.get(), media_task_runner, gpu_va_context_provider_,
         image_texture_target, enable_video_accelerator);

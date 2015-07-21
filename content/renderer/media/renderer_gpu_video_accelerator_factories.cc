@@ -59,6 +59,7 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
       gpu_memory_buffer_manager_(
           ChildThreadImpl::current()->gpu_memory_buffer_manager()),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
+  DCHECK(gpu_channel_host_.get());
 }
 
 RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
