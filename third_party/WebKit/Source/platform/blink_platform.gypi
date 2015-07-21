@@ -1001,8 +1001,12 @@
       'weborigin/SecurityOriginTest.cpp',
       'weborigin/SecurityPolicyTest.cpp',
     ],
-    # NOTE: these are legacy unit tests, do not add more!
+    # NOTE: These are legacy unit tests and tests that require a Platform
+    # object. Do not add more unless the test requires a Platform object.
+    # These tests are a part of the web:webkit_unit_tests binary.
     'platform_web_unittest_files': [
+      'fonts/FontPlatformDataTest.cpp',
+      'fonts/TestFontSelector.h',
       'graphics/BitmapImageTest.cpp',
       'graphics/Canvas2DLayerBridgeTest.cpp',
       'graphics/Canvas2DLayerManagerTest.cpp',
