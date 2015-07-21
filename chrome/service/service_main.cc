@@ -42,6 +42,5 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   } else {
     LOG(ERROR) << "Service process failed to initialize";
   }
-  service_process.Teardown();
   return 0;
 }
