@@ -50,4 +50,12 @@ public class ContextualSearchPanelFeatures {
     public static boolean isCloseButtonAvailable() {
         return FeatureUtilities.getCustomTabVisible();
     }
+
+    /**
+     * @return {@code true} Whether the close animation should run when the the panel is closed
+     *                      due the panel being promoted to a tab.
+     */
+    public static boolean shouldAnimatePanelCloseOnPromoteToTab() {
+        return FeatureUtilities.getCustomTabVisible();
+    }
 }

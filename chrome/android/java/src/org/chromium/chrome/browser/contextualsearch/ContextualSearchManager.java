@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelFeatures;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -1064,7 +1065,11 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
             // NOTE(pedrosimonetti): The Panel should be closed after being promoted to a Tab
             // to prevent Chrome-Android from animating the creation of the new Tab.
-            mSearchPanelDelegate.closePanel(StateChangeReason.TAB_PROMOTION, false);
+            if (ContextualSearchPanelFeatures.shouldAnimatePanelCloseOnPromoteToTab()) {
+                mSearchPanelDelegate.closePanel(StateChangeReason.TAB_PROMOTION, true);
+            } else {
+                mSearchPanelDelegate.closePanel(StateChangeReason.TAB_PROMOTION, false);
+            }
 
             // Focus the Omnibox.
             if (shouldFocusOmnibox) {

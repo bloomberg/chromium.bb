@@ -77,6 +77,11 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
      */
     private final LayoutUpdateHost mUpdateHost;
 
+    /**
+     * Whether the panel's close animation is running.
+     */
+    private boolean mIsAnimatingPanelClosing;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -134,10 +139,13 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
 
     @Override
     protected void closePanel(StateChangeReason reason, boolean animate) {
-        if (animate) {
-            animatePanelToState(PanelState.CLOSED, reason);
-        } else {
-            resizePanelToState(PanelState.CLOSED, reason);
+        if (!mIsAnimatingPanelClosing) {
+            if (animate) {
+                mIsAnimatingPanelClosing = true;
+                animatePanelToState(PanelState.CLOSED, reason);
+            } else {
+                resizePanelToState(PanelState.CLOSED, reason);
+            }
         }
     }
 
@@ -382,6 +390,10 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
         if (mIsAnimatingPromoAcceptance) {
             mIsAnimatingPromoAcceptance = false;
             setPreferenceState(true);
+        }
+
+        if (mIsAnimatingPanelClosing) {
+            mIsAnimatingPanelClosing = false;
         }
 
         // If animating to a particular PanelState, and after completing
