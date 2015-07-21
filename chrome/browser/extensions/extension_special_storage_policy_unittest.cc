@@ -342,6 +342,25 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 }
 
+TEST_F(ExtensionSpecialStoragePolicyTest, IsStorageDurableTest) {
+  TestingProfile profile;
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(&profile).get();
+  policy_ = new ExtensionSpecialStoragePolicy(cookie_settings);
+  const GURL kHttpUrl("http://foo.com");
+
+  EXPECT_FALSE(policy_->IsStorageDurable(kHttpUrl));
+
+  HostContentSettingsMap* content_settings_map =
+      profile.GetHostContentSettingsMap();
+  content_settings_map->SetContentSetting(
+      ContentSettingsPattern::FromString("foo.com"),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+      std::string(), CONTENT_SETTING_ALLOW);
+
+  EXPECT_TRUE(policy_->IsStorageDurable(kHttpUrl));
+}
+
 TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {
   PolicyChangeObserver observer;
   policy_->AddObserver(&observer);

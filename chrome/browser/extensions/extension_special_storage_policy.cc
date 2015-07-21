@@ -136,6 +136,10 @@ bool ExtensionSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {
   return isolated_extensions_.Contains(origin);
 }
 
+bool ExtensionSpecialStoragePolicy::IsStorageDurable(const GURL& origin) {
+  return cookie_settings_->IsStorageDurable(origin);
+}
+
 bool ExtensionSpecialStoragePolicy::NeedsProtection(
     const extensions::Extension* extension) {
   return extension->is_hosted_app() && !extension->from_bookmark();

@@ -41,6 +41,7 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   bool CanQueryDiskSize(const GURL& origin) override;
   bool HasIsolatedStorage(const GURL& origin) override;
   bool HasSessionOnlyOrigins() override;
+  bool IsStorageDurable(const GURL& origin) override;
 
   // Methods used by the ExtensionService to populate this class.
   void GrantRightsForExtension(const extensions::Extension* extension,

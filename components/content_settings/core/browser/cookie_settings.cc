@@ -75,6 +75,7 @@ bool CookieSettings::IsCookieSessionOnly(const GURL& origin) const {
 
 void CookieSettings::GetCookieSettings(
     ContentSettingsForOneType* settings) const {
+  // TODO(dgrogan): Why is this returning a value in a void function?
   return host_content_settings_map_->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), settings);
 }
@@ -111,6 +112,17 @@ void CookieSettings::ResetCookieSetting(
   host_content_settings_map_->SetContentSetting(
       primary_pattern, secondary_pattern, CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(), CONTENT_SETTING_DEFAULT);
+}
+
+bool CookieSettings::IsStorageDurable(const GURL& origin) const {
+  // TODO(dgrogan): DCHECK somewhere that secondary doesn't get set for DURABLE.
+  // TODO(dgrogan): Should "resource_identifier" be something other than
+  // std::string()?
+  ContentSetting setting = host_content_settings_map_->GetContentSetting(
+      origin /*primary*/, origin /*secondary*/,
+      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+      std::string() /*resource_identifier*/);
+  return setting == CONTENT_SETTING_ALLOW;
 }
 
 void CookieSettings::ShutdownOnUIThread() {

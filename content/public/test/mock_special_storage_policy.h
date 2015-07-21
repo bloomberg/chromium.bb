@@ -25,6 +25,7 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   bool CanQueryDiskSize(const GURL& origin) override;
   bool HasIsolatedStorage(const GURL& origin) override;
   bool HasSessionOnlyOrigins() override;
+  bool IsStorageDurable(const GURL& origin) override;
 
   void AddProtected(const GURL& origin) {
     protected_.insert(origin);
@@ -58,6 +59,10 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
     all_unlimited_ = all_unlimited;
   }
 
+  void AddDurable(const GURL& origin) {
+    durable_.insert(origin);
+  }
+
   void Reset() {
     protected_.clear();
     unlimited_.clear();
@@ -89,6 +94,7 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   std::set<GURL> session_only_;
   std::set<GURL> can_query_disk_size_;
   std::set<GURL> isolated_;
+  std::set<GURL> durable_;
   std::set<std::string> file_handlers_;
 
   bool all_unlimited_;

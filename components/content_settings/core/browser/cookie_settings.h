@@ -90,6 +90,8 @@ class CookieSettings : public RefcountedKeyedService {
   void ResetCookieSetting(const ContentSettingsPattern& primary_pattern,
                           const ContentSettingsPattern& secondary_pattern);
 
+  bool IsStorageDurable(const GURL& origin) const;
+
   // Detaches the |CookieSettings| from |PrefService|. This methods needs to be
   // called before destroying the service. Afterwards, only const methods can be
   // called.

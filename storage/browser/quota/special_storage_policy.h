@@ -45,8 +45,11 @@ class STORAGE_EXPORT SpecialStoragePolicy
   // Protected storage is not subject to removal by the browsing data remover.
   virtual bool IsStorageProtected(const GURL& origin) = 0;
 
-  // Unlimited storage is not subject to 'quotas'.
+  // Unlimited storage is not subject to quota or storage pressure eviction.
   virtual bool IsStorageUnlimited(const GURL& origin) = 0;
+
+  // Durable storage is not subject to storage pressure eviction.
+  virtual bool IsStorageDurable(const GURL& origin) = 0;
 
   // Some origins (e.g. installed apps) have access to the size of the remaining
   // disk capacity.

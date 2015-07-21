@@ -38,6 +38,10 @@ bool MockSpecialStoragePolicy::HasSessionOnlyOrigins() {
   return !session_only_.empty();
 }
 
+bool MockSpecialStoragePolicy::IsStorageDurable(const GURL& origin) {
+  return ContainsKey(durable_, origin);
+}
+
 MockSpecialStoragePolicy::~MockSpecialStoragePolicy() {}
 
 }  // namespace content

@@ -168,6 +168,12 @@ class QuotaDatabaseTest : public testing::Test {
         kStorageTypeTemporary, exceptions, policy.get(), &origin));
     EXPECT_EQ(kOrigin2.spec(), origin.spec());
 
+    // Test that durable origins are excluded from eviction.
+    policy->AddDurable(kOrigin2);
+    EXPECT_TRUE(db.GetLRUOrigin(
+        kStorageTypeTemporary, exceptions, policy.get(), &origin));
+    EXPECT_EQ(kOrigin3.spec(), origin.spec());
+
     exceptions.insert(kOrigin1);
     EXPECT_TRUE(db.GetLRUOrigin(kStorageTypeTemporary, exceptions,
                                 NULL, &origin));

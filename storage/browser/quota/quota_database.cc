@@ -343,7 +343,8 @@ bool QuotaDatabase::GetLRUOrigin(
     if (exceptions.find(url) != exceptions.end())
       continue;
     if (special_storage_policy &&
-        special_storage_policy->IsStorageUnlimited(url))
+        (special_storage_policy->IsStorageDurable(url) ||
+         special_storage_policy->IsStorageUnlimited(url)))
       continue;
     *origin = url;
     return true;
