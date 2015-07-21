@@ -49,7 +49,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
             gfx::Size(256 * 50, 256 * 50));
     picture_layer_tiling_ = PictureLayerTiling::Create(
         PENDING_TREE, 1.f, pile, &picture_layer_tiling_client_,
-        defaults.max_tiles_for_interest_area,
+        defaults.tiling_interest_area_padding,
         defaults.skewport_target_time_in_seconds,
         defaults.skewport_extrapolation_limit_in_content_pixels);
     picture_layer_tiling_->CreateAllTilesForTesting();

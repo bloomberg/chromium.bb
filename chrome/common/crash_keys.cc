@@ -335,7 +335,6 @@ static bool IsBoringSwitch(const std::string& flag) {
     "enterprise-enrollment-modulus-limit",
     "login-profile",
     "login-user",
-    "max-tiles-for-interest-area",
     "max-unused-resource-memory-usage-percentage",
     "termination-message-file",
     "use-cras",

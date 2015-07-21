@@ -4752,7 +4752,7 @@ TEST_F(PictureLayerImplTest, ScrollPastLiveTilesRectAndBack) {
       gfx::Transform(),              // transform
       gfx::Rect(),                   // clip
       gfx::Rect(),                   // viewport
-      gfx::Rect(0, 1000, 100, 100),  // viewport_rect_for_tile_priority
+      gfx::Rect(0, 5000, 100, 100),  // viewport_rect_for_tile_priority
       gfx::Transform(),              // transform_for_tile_priority
       false);
 

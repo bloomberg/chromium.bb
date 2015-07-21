@@ -38,11 +38,11 @@ scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float contents_scale,
     scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
-    size_t max_tiles_for_interest_area,
+    size_t tiling_interest_area_padding,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels) {
   return make_scoped_ptr(new PictureLayerTiling(
-      tree, contents_scale, raster_source, client, max_tiles_for_interest_area,
+      tree, contents_scale, raster_source, client, tiling_interest_area_padding,
       skewport_target_time_in_seconds,
       skewport_extrapolation_limit_in_content_pixels));
 }
@@ -52,10 +52,10 @@ PictureLayerTiling::PictureLayerTiling(
     float contents_scale,
     scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
-    size_t max_tiles_for_interest_area,
+    size_t tiling_interest_area_padding,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels)
-    : max_tiles_for_interest_area_(max_tiles_for_interest_area),
+    : tiling_interest_area_padding_(tiling_interest_area_padding),
       skewport_target_time_in_seconds_(skewport_target_time_in_seconds),
       skewport_extrapolation_limit_in_content_pixels_(
           skewport_extrapolation_limit_in_content_pixels),
@@ -626,22 +626,24 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
 
   // Calculate the eventually/live tiles rect.
   gfx::Size tile_size = tiling_data_.max_texture_size();
-  int64 eventually_rect_area =
-      max_tiles_for_interest_area_ * tile_size.width() * tile_size.height();
 
-  gfx::Rect eventually_rect =
-      ExpandRectEquallyToAreaBoundedBy(visible_rect_in_content_space,
-                                       eventually_rect_area,
-                                       gfx::Rect(tiling_size()),
-                                       &expansion_cache_);
+  float content_to_screen_scale = ideal_contents_scale / contents_scale_;
+  int pad_in_content_space =
+      static_cast<int>(tiling_interest_area_padding_ / content_to_screen_scale);
+  gfx::Rect eventually_rect = visible_rect_in_content_space;
+  // If the visible rect is empty, keep the eventually rect as empty.
+  if (!eventually_rect.IsEmpty()) {
+    eventually_rect.Inset(-pad_in_content_space, -pad_in_content_space);
+    eventually_rect =
+        tiling_data_.ExpandRectIgnoringBordersToTileBounds(eventually_rect);
+  }
 
-  DCHECK(eventually_rect.IsEmpty() ||
-         gfx::Rect(tiling_size()).Contains(eventually_rect))
+  DCHECK_IMPLIES(!eventually_rect.IsEmpty(),
+                 gfx::Rect(tiling_size()).Contains(eventually_rect))
       << "tiling_size: " << tiling_size().ToString()
       << " eventually_rect: " << eventually_rect.ToString();
 
   // Calculate the soon border rect.
-  float content_to_screen_scale = ideal_contents_scale / contents_scale_;
   gfx::Rect soon_border_rect = visible_rect_in_content_space;
   float border = CalculateSoonBorderDistance(visible_rect_in_content_space,
                                              content_to_screen_scale);
@@ -964,157 +966,6 @@ size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {
     amount += tile->GPUMemoryUsageInBytes();
   }
   return amount;
-}
-
-PictureLayerTiling::RectExpansionCache::RectExpansionCache()
-  : previous_target(0) {
-}
-
-namespace {
-
-// This struct represents an event at which the expending rect intersects
-// one of its boundaries.  4 intersection events will occur during expansion.
-struct EdgeEvent {
-  enum { BOTTOM, TOP, LEFT, RIGHT } edge;
-  int* num_edges;
-  int distance;
-};
-
-// Compute the delta to expand from edges to cover target_area.
-int ComputeExpansionDelta(int num_x_edges, int num_y_edges,
-                          int width, int height,
-                          int64 target_area) {
-  // Compute coefficients for the quadratic equation:
-  //   a*x^2 + b*x + c = 0
-  int a = num_y_edges * num_x_edges;
-  int b = num_y_edges * width + num_x_edges * height;
-  int64 c = static_cast<int64>(width) * height - target_area;
-
-  // Compute the delta for our edges using the quadratic equation.
-  int delta =
-      (a == 0) ? -c / b : (-b + static_cast<int>(std::sqrt(
-                                    static_cast<int64>(b) * b - 4.0 * a * c))) /
-                              (2 * a);
-  return std::max(0, delta);
-}
-
-}  // namespace
-
-gfx::Rect PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
-    const gfx::Rect& starting_rect,
-    int64 target_area,
-    const gfx::Rect& bounding_rect,
-    RectExpansionCache* cache) {
-  if (starting_rect.IsEmpty())
-    return starting_rect;
-
-  if (cache &&
-      cache->previous_start == starting_rect &&
-      cache->previous_bounds == bounding_rect &&
-      cache->previous_target == target_area)
-    return cache->previous_result;
-
-  if (cache) {
-    cache->previous_start = starting_rect;
-    cache->previous_bounds = bounding_rect;
-    cache->previous_target = target_area;
-  }
-
-  DCHECK(!bounding_rect.IsEmpty());
-  DCHECK_GT(target_area, 0);
-
-  // Expand the starting rect to cover target_area, if it is smaller than it.
-  int delta = ComputeExpansionDelta(
-      2, 2, starting_rect.width(), starting_rect.height(), target_area);
-  gfx::Rect expanded_starting_rect = starting_rect;
-  if (delta > 0)
-    expanded_starting_rect.Inset(-delta, -delta);
-
-  gfx::Rect rect = IntersectRects(expanded_starting_rect, bounding_rect);
-  if (rect.IsEmpty()) {
-    // The starting_rect and bounding_rect are far away.
-    if (cache)
-      cache->previous_result = rect;
-    return rect;
-  }
-  if (delta >= 0 && rect == expanded_starting_rect) {
-    // The starting rect already covers the entire bounding_rect and isn't too
-    // large for the target_area.
-    if (cache)
-      cache->previous_result = rect;
-    return rect;
-  }
-
-  // Continue to expand/shrink rect to let it cover target_area.
-
-  // These values will be updated by the loop and uses as the output.
-  int origin_x = rect.x();
-  int origin_y = rect.y();
-  int width = rect.width();
-  int height = rect.height();
-
-  // In the beginning we will consider 2 edges in each dimension.
-  int num_y_edges = 2;
-  int num_x_edges = 2;
-
-  // Create an event list.
-  EdgeEvent events[] = {
-    { EdgeEvent::BOTTOM, &num_y_edges, rect.y() - bounding_rect.y() },
-    { EdgeEvent::TOP, &num_y_edges, bounding_rect.bottom() - rect.bottom() },
-    { EdgeEvent::LEFT, &num_x_edges, rect.x() - bounding_rect.x() },
-    { EdgeEvent::RIGHT, &num_x_edges, bounding_rect.right() - rect.right() }
-  };
-
-  // Sort the events by distance (closest first).
-  if (events[0].distance > events[1].distance) std::swap(events[0], events[1]);
-  if (events[2].distance > events[3].distance) std::swap(events[2], events[3]);
-  if (events[0].distance > events[2].distance) std::swap(events[0], events[2]);
-  if (events[1].distance > events[3].distance) std::swap(events[1], events[3]);
-  if (events[1].distance > events[2].distance) std::swap(events[1], events[2]);
-
-  for (int event_index = 0; event_index < 4; event_index++) {
-    const EdgeEvent& event = events[event_index];
-
-    int delta = ComputeExpansionDelta(
-        num_x_edges, num_y_edges, width, height, target_area);
-
-    // Clamp delta to our event distance.
-    if (delta > event.distance)
-      delta = event.distance;
-
-    // Adjust the edge count for this kind of edge.
-    --*event.num_edges;
-
-    // Apply the delta to the edges and edge events.
-    for (int i = event_index; i < 4; i++) {
-      switch (events[i].edge) {
-        case EdgeEvent::BOTTOM:
-            origin_y -= delta;
-            height += delta;
-            break;
-        case EdgeEvent::TOP:
-            height += delta;
-            break;
-        case EdgeEvent::LEFT:
-            origin_x -= delta;
-            width += delta;
-            break;
-        case EdgeEvent::RIGHT:
-            width += delta;
-            break;
-      }
-      events[i].distance -= delta;
-    }
-
-    // If our delta is less then our event distance, we're done.
-    if (delta < event.distance)
-      break;
-  }
-
-  gfx::Rect result(origin_x, origin_y, width, height);
-  if (cache)
-    cache->previous_result = result;
-  return result;
 }
 
 }  // namespace cc
