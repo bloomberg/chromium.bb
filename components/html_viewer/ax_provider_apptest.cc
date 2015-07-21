@@ -61,10 +61,6 @@ class TestFrameTreeServer : public mandoline::FrameTreeServer {
 using AXProviderTest = ViewManagerTestBase;
 
 TEST_F(AXProviderTest, HelloWorld) {
-  // TODO(msw|sky): Fix flaky timeouts without oopifs; http://crbug.com/504917
-  if (!EnableOOPIFs())
-    return;
-
   // Start a test server for net/data/test.html access.
   net::SpawnedTestServer server(
       net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,
