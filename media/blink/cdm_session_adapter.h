@@ -110,6 +110,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   // Callback for CreateCdm().
   void OnCdmCreated(const std::string& key_system,
+                    base::TimeTicks start_time,
                     blink::WebContentDecryptionModuleResult result,
                     scoped_ptr<MediaKeys> cdm,
                     const std::string& error_message);
@@ -134,12 +135,18 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   WebContentDecryptionModuleSessionImpl* GetSession(
       const std::string& session_id);
 
+  void ReportTimeToCreateCdmUMA(base::TimeDelta cdm_creation_time) const;
+
   scoped_ptr<MediaKeys> cdm_;
 
   SessionMap sessions_;
 
   std::string key_system_;
   std::string key_system_uma_prefix_;
+
+  // A unique ID to trace CdmSessionAdapter::CreateCdm() call and the matching
+  // OnCdmCreated() call.
+  uint32 trace_id_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_;

@@ -15943,6 +15943,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>cancelKeyRequest result using the Clear Key key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.ClearKey.CreateCdmTime" units="milliseconds">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The time it takes to create the CDM instance for Clear Key key system.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.ClearKey.generateKeyRequest"
     enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
@@ -16009,6 +16016,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>cancelKeyRequest result using an unknown key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.Unknown.CreateCdmTime" units="milliseconds">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The time it takes to create the CDM instance for an unknown key system.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.Unknown.generateKeyRequest" enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
   <summary>generateKeyRequest result using an unknown key system.</summary>
@@ -16045,6 +16059,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Media.EME.Widevine.cancelKeyRequest" enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
   <summary>cancelKeyRequest result using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.CreateCdmTime" units="milliseconds">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The time it takes to create the CDM instance for the Widevine key system.
+  </summary>
 </histogram>
 
 <histogram name="Media.EME.Widevine.generateKeyRequest"
