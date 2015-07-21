@@ -200,7 +200,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1152528166145813711">Seleccioneu...</translation>
 <translation id="2235518894410572517">Compartiu aquest ordinador perquè un altre usuari el vegi i el controli.</translation>
 <translation id="6939719207673461467">Mostra o amaga el teclat</translation>
-<translation id="1023096696228309145">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a Comparteix ara i que us doni el codi d'accés.</translation>
 <translation id="4240294130679914010">Programa de desinstal·lació de Chromoting Host</translation>
 <translation id="8712909229180978490">No puc veure els meus fitxers desats en línia a Google Drive.</translation>
 <translation id="80739703311984697">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a Chromoting per accedir a aquesta adreça:</translation>
@@ -241,6 +240,8 @@ remot de Chrome</translation>
 <translation id="2921543551052660690">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN"/>inicieu la sessió a Chromium<ph name="LINK_END"/> amb el compte en qüestió i torneu a instal·lar Chromoting.</translation>
 <translation id="7319983568955948908">Deixa de compartir</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Tots els drets reservats.</translation>
+<translation id="2998137343848432918">• S'ha afegit la pantalla Crèdits.
+• S'ha esmenat un problema en canviar a pantalla completa amb el teclat visible.</translation>
 <translation id="6640610550128933069">darrera vegada en línia: <ph name="DATE"/></translation>
 <translation id="6668065415969892472">S'ha actualitzat el vostre PIN.</translation>
 <translation id="4513946894732546136">Comentaris</translation>

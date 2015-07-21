@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">यह परिवर्तन लागू करने के लिए कृपया सभी Google Chrome विंडो बंद करें और इसे पुन: लॉन्‍च करें.</translation>
 <translation id="1619887657840448962">Chrome को अधिक सुरक्षित बनाने के लिए, हमने निम्न एक्सटेंशन को अक्षम कर दिया है जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> में सूचीबद्ध नहीं है और आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="225614027745146050">आपका स्वागत है</translation>
+<translation id="8811903091068364646">&amp;डेस्कटॉप पर Chrome पुनः लॉन्च करें</translation>
 <translation id="3398288718845740432">Chrome मेनू में छिपाएं</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
 <translation id="3149510190863420837">Chrome ऐप्स </translation>
@@ -251,6 +252,7 @@
 <translation id="3037838751736561277">Google Chrome पृष्ठभूमि मोड में है.</translation>
 <translation id="2084710999043359739">Chrome में जोड़ें</translation>
 <translation id="4692614041509923516">आपका कंप्यूटर Microsoft Windows के किसी पुराने वर्शन को चला रहा है जो इस वेबसाइट के सुरक्षा प्रमाणपत्र को संसाधित नहीं कर सकता. इस समस्या के कारण, Google Chrome यह नहीं बता सकता कि प्रमाणपत्र <ph name="SITE"/> से आया है या आपके नेटवर्क पर मौजूद किसी व्यक्ति की ओर से जो <ph name="SITE"/> होने का दावा कर रहा है. कृपया अपने कंप्यूटर को नवीनतम Windows वर्शन में अपडेट करें.</translation>
+<translation id="5931853610562009806">Mac पर, पासवर्ड आपके कीचेन पर सहेजे जा सकते हैं और उन्हें इस OS X खाते को साझा करने वाले अन्य Chrome उपयोगकर्ताओं द्वारा ऐक्सेस या समन्‍वयित किया जा सकता है.</translation>
 <translation id="3360895254066713204">Chrome सहायक</translation>
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
 <translation id="7592736734348559088">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका क्‍योंकि आपके खाते के प्रवेश विवरण पुराने हैं.</translation>
@@ -262,6 +264,7 @@
 <translation id="1001534784610492198">इंस्टॉलर संग्रह अनुपयोगी या अमान्य है. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
 <translation id="2246246234298806438">अंतर्निहित PDF व्‍यूअर गुम होने पर Google Chrome प्रिंट पूर्वावलोकन नहीं दिखा सकता.</translation>
 <translation id="5132929315877954718">Google Chrome के लिए बेहतरीन ऐप्स ,गेम, एक्सटेंशन और थीम खोजें.</translation>
+<translation id="7784335114585804598">&amp;Windows 8 मोड में Chrome को पुनः लॉन्च करें</translation>
 <translation id="6626317981028933585">खेद है, आपकी Mozilla Firefox सेटिंग उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग को Google Chrome पर आयात करने के लिए, अपने कार्य सहेजें और सभी Firefox विंडो बंद करें. इसके बाद जारी रखें पर क्लिक करें.</translation>
 <translation id="8274359292107649245">डेस्कटॉप पर Chrome खोलें</translation>
 <translation id="7242029209006116544">आप प्रबंधित खाते से प्रवेश कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME"/> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE"/></translation>

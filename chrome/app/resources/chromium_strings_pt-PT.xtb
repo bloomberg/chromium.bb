@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">A instalação falhou devido a um erro não especificado. Se o Chromium estiver em execução, feche-o e tente de novo.</translation>
 <translation id="1396446129537741364">O Chromium está a tentar mostrar palavras-passe.</translation>
 <translation id="2097986737970966220">Abrir o Chromium no ambiente de trabalho</translation>
+<translation id="108122890477367602">&amp;Reiniciar o Chromium no modo Windows 8</translation>
 <translation id="8987477933582888019">Navegador de Internet</translation>
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
 <translation id="2886012850691518054">Opcional: ajude a melhorar o Chromium enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
@@ -240,7 +241,9 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="1708666629004767631">Está disponível uma versão nova e mais segura do Chromium.</translation>
 <translation id="1644918877723739397">O Chromium armazena esta informação nas <ph name="SAVED_PASSWORD_LINK"/> e lembra-a da próxima vez que precisar.</translation>
 <translation id="378917192836375108">O Chromium permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
+<translation id="8605166112420372522">&amp;Reiniciar o Chromium no ambiente de trabalho</translation>
 <translation id="1461885241643463646">Ativa os fluxos de início de sessão do Chromium baseados em iframe. Este sinalizador substitui o --enable-web-based-signin.</translation>
+<translation id="390894725198123737">No Mac, as palavras-passe podem ser guardadas no Keychain e podem ser sincronizadas ou acedidas por outros utilizadores do Chromium que partilhem esta conta OS X.</translation>
 <translation id="608189560609172163">O Chromium não conseguiu sincronizar os dados devido a um erro de início de sessão.</translation>
 <translation id="4888717733111232871">Regra de importação para o Chromium permitir o tráfego mDNS.</translation>
 <translation id="151962892725702025">O SO Chromium não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>

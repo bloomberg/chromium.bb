@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
 <translation id="5548285847212963613">Tiện ích &quot;<ph name="EXTENSION_NAME"/>&quot; có thể giúp kết nối với mạng này.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> và <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Giắc cắm micrô</translation>
 <translation id="30155388420722288">Nút tràn</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Độ phân giải <ph name="DISPLAY_NAME"/> đã được chuyển thành <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Khay trạng thái</translation>
-<translation id="2248649616066688669">Bạn có thể tiếp tục sử dụng Chromebook của mình khi thiết bị này được kết nối với màn hình bên ngoài, ngay cả khi nắp của Chromebook đóng.</translation>
 <translation id="2946640296642327832">Bật bluetooth</translation>
 <translation id="6459472438155181876">Đang mở rộng màn hình tới <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Di động</translation>
@@ -104,7 +104,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="2208323208084708176">Chế độ màn hình đồng nhất</translation>
 <translation id="2825619548187458965">Giá</translation>
-<translation id="2614835198358683673">Chromebook của bạn có thể không sạc khi đang bật. Hãy xem xét sử dụng bộ sạc chính thức.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
@@ -150,7 +149,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
 <translation id="882279321799040148">Nhấp để xem</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebook có thể không sạc khi đang bật.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> không hỗ trợ <ph name="SPECIFIED_RESOLUTION"/>. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Bật dữ liệu di động</translation>
 <translation id="68610848741840742">ChromeVox (Phản hồi bằng giọng nói)</translation>

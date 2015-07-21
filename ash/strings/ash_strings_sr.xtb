@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Тастатура на екрану је онемогућена</translation>
 <translation id="5548285847212963613">Додатак „<ph name="EXTENSION_NAME"/>“ може да помогне у повезивању са овом мрежом.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> и <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Утикач за микрофон</translation>
 <translation id="30155388420722288">Дугме за додатне опције</translation>
 <translation id="7904094684485781019">Администратор за овај налог је забранио вишеструко пријављивање.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google диск</translation>
 <translation id="3683428399328702079">Резолуција <ph name="DISPLAY_NAME"/> је промењена у <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Палета статуса</translation>
-<translation id="2248649616066688669">Можете да наставите да користите Chromebook док је повезан са спољним екраном чак и ако је поклопац затворен.</translation>
 <translation id="2946640296642327832">Омогући Bluetooth</translation>
 <translation id="6459472438155181876">Проширивање екрана у <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Мобилни уређај</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
 <translation id="2208323208084708176">Режим спојених радних површина</translation>
 <translation id="2825619548187458965">Полица</translation>
-<translation id="2614835198358683673">Chromebook се можда неће пунити док је укључен. Размислите о коришћењу оригиналног пуњача.</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Сви доступни корисници су већ додати у ову сесију.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">Лупа екрана</translation>
 <translation id="882279321799040148">Кликните за приказ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebook се можда неће пунити док је укључен.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> не подржава <ph name="SPECIFIED_RESOLUTION"/>. Резолуција је промењена на <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Омогући податке за мобилне уређаје</translation>
 <translation id="68610848741840742">ChromeVox (говорне повратне информације)</translation>

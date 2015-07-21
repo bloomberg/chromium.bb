@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
 <translation id="1396446129537741364">Chromium prøver å vise passord.</translation>
 <translation id="2097986737970966220">Åpne Chromium på skrivebordet</translation>
+<translation id="108122890477367602">&amp;Start Chromium på nytt i Windows 8-modus</translation>
 <translation id="8987477933582888019">Nettleser</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
@@ -240,7 +241,9 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
 <translation id="1644918877723739397">Chromium lagrer dette i <ph name="SAVED_PASSWORD_LINK"/> og husker det neste gang du trenger det.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
+<translation id="8605166112420372522">&amp;Start Chromium på nytt på skrivebordet</translation>
 <translation id="1461885241643463646">Slår på iframe-baserte påloggingsprosesser for Chromium. Dette flagget overstyrer --enable-web-based-signin.</translation>
+<translation id="390894725198123737">På Mac kan det hende at passord blir lagret i nøkkelringen. Andre Chromium-brukere som deler denne OS X-kontoen, har i så fall adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dataene dine på grunn av en feil under påloggingen.</translation>
 <translation id="4888717733111232871">Regel om innkommende trafikk for Chromium for å tillate mDNS-trafikk.</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>

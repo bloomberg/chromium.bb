@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">অন-স্ক্রীন কীবোর্ড অক্ষম করা রয়েছে</translation>
 <translation id="5548285847212963613">&quot;<ph name="EXTENSION_NAME"/>&quot; এক্সটেনশানটি এই নেটওয়ার্কের সাথে সংযোগ স্থাপন করতে সাহায্য করতে পারে৷</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> এবং <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">মাইক জ্যাক</translation>
 <translation id="30155388420722288">ওভারফ্লো বোতাম</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের প্রশাসক একাধিক সাইন ইন অননুমোদিত করেছেন৷</translation>
 <translation id="8673028979667498656">২৭০°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> এর রেসুলিউশান বদল  করে <ph name="RESOLUTION"/> করা হয়েছে</translation>
 <translation id="2297568595583585744">স্থিতি ট্রে</translation>
-<translation id="2248649616066688669">Chromebook এর সঙ্গে একটি বহিস্থিত প্রদর্শন সংযুক্ত থাকাকালীন আপনি এটি ব্যবহার করা চালিয়ে যেতে পারেন এমনকি যখন এটির লিড বন্ধ থাকে তখনো।</translation>
 <translation id="2946640296642327832">ব্লুটুথ সক্ষম করুন</translation>
 <translation id="6459472438155181876">স্ক্রীন <ph name="DISPLAY_NAME"/> তে প্রসারিত হচ্ছে</translation>
 <translation id="8206859287963243715">সেলুলার</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
 <translation id="2208323208084708176">একীভূত ডেস্কটপ মোড</translation>
 <translation id="2825619548187458965">শেল্ফ</translation>
-<translation id="2614835198358683673">চালু থাকার সময় আপনার Chromebook চার্জ নাও হতে পারে৷ এটির নিজস্ব চার্জার ব্যবহার করার কথা বিবেচনা করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">সমস্ত উপলব্ধ ব্যবহারকারীকে ইতিমধ্যেই এই সেশনে যোগ করা হয়েছে৷</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
 <translation id="882279321799040148">দেখার জন্য ক্লিক করুন</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">চালু থাকার সময় আপনার Chromebook চার্জ নাও হতে পারে৷</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>, <ph name="SPECIFIED_RESOLUTION"/> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION"/> এ পরিবর্তিত হয়েছে</translation>
 <translation id="1602076796624386989">মোবাইল ডেটা সক্রিয় করুন</translation>
 <translation id="68610848741840742">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>

@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Instalacija nije uspjela zbog nepoznate pogreške. Ako je Chromium trenutačno otvoren, zatvorite ga i pokušajte ponovo.</translation>
 <translation id="1396446129537741364">Chromium pokušava prikazati zaporke.</translation>
 <translation id="2097986737970966220">Otvori Chromium na radnoj površini</translation>
+<translation id="108122890477367602">&amp;Ponovo pokreni Chromium u načinu Windows 8</translation>
 <translation id="8987477933582888019">Web-preglednik</translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
 <translation id="2886012850691518054">Dodatno: pomognite nam da poboljšamo Chromium automatskim slanjem statistike o upotrebi i izvješća o padu programa Googleu.</translation>
@@ -241,7 +242,9 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="1708666629004767631">Dostupna je nova, sigurnija verzija preglednika Chromium.</translation>
 <translation id="1644918877723739397">Chromium će spremiti tu zaporku u vaše <ph name="SAVED_PASSWORD_LINK"/> i zapamtiti je za sljedeći put.</translation>
 <translation id="378917192836375108">Chromium omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
+<translation id="8605166112420372522">&amp;Ponovo pokreni Chromium na radnoj površini</translation>
 <translation id="1461885241643463646">Omogućuje postupke prijave na Chromium na temelju iframea. Ta oznaka premošćuje omogućivanje prijave na temelju weba.</translation>
+<translation id="390894725198123737">Na Mac računalima zaporke se mogu spremati u vaš Keychain, a drugi korisnici Chromiuma koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="608189560609172163">Chromium nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
 <translation id="4888717733111232871">Ulazno pravilo kako bi Chromium dopustio mDNS promet.</translation>
 <translation id="151962892725702025">OS Chromium nije mogao sinkronizirati vaše podatke jer sinkronizacija nije dostupna za vašu domenu.</translation>

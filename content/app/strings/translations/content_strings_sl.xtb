@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="sl">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sl">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Drugo ...</translation>
 <translation id="248395913932153421">Dan</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">To je kazalo, ki omogoča iskanje. Vnesite ključne besede za iskanje:</translation>
 <translation id="1930711995431081526">stanje</translation>
 <translation id="658823671542763450">prehod v celozaslonski način</translation>
+<translation id="8851136666856101339">glavn</translation>
 <translation id="7720026100085573005">preostali čas</translation>
-<translation id="370665806235115550">Nalagam ...</translation>
 <translation id="2723001399770238859">zvok</translation>
 <translation id="6845533974506654842">pritisni</translation>
 <translation id="8244226242650769279">slikovni zemljevid</translation>
@@ -54,7 +52,7 @@
 <translation id="2674318244760992338">noga</translation>
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="8115662671911883373">začetek predvajanja podnapisov</translation>
-<translation id="7364796246159120393">Izberi datoteko</translation>
+<translation id="7364796246159120393">Izberite datoteko</translation>
 <translation id="2761667185364618470">Potrdite to polje, če želite nadaljevati.</translation>
 <translation id="8534579021159131403">Minute</translation>
 <translation id="819205353528511139">predvajanje filma v celozaslonskem načinu</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (srednja stopnja)</translation>
 <translation id="1637811476055996098">Izberi datoteke</translation>
 <translation id="49969490063480558">Vnesite nekaj po znaku »<ph name="ATSIGN"/>«. Naslov »<ph name="INVALIDADDRESS"/>« je nepopoln.</translation>
+<translation id="1342835525016946179">člnk</translation>
 <translation id="5476505524087279545">počisti izbor</translation>
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2507943997699731163">Izpolnite to polje</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Drugo ...</translation>
 <translation id="383465348367842624">Del pred »<ph name="ATSIGN"/>« ne sme vsebovati znaka »<ph name="INVALIDCHARACTER"/>«.</translation>
 <translation id="5468998798572797635">izhod iz celozaslonskega načina</translation>
-<translation id="5919473608089529604">Vtičnika ni bilo mogoče naložiti.</translation>
 <translation id="5546461542133609677">vklop zvoka</translation>
 <translation id="6663448176199120256">Zadnja iskanja</translation>
 <translation id="1020833440720551630">izklop zvoka za zvočni posnetek</translation>
-<translation id="2597378329261239068">Dokument je zaščiten z geslom. Vnesite geslo.</translation>
 <translation id="5466621249238537318">Izberite eno ali več datotek.</translation>
 <translation id="9132465097189459683">Drugo ...</translation>
 <translation id="10623998915015855">preklopni gumb</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Skrajšajte to besedilo na <ph name="MAX_CHARACTERS"/> znakov ali manj (trenutno uporabljate <ph name="CURRENT_LENGTH"/> znakov).</translation>
 <translation id="6101327004457443354">vklop zvoka za zvočni posnetek</translation>
 <translation id="1822429046913737220">Dopoldne/popoldne</translation>
-<translation id="1639239467298939599">Nalaganje</translation>
 <translation id="2908441821576996758">Vnesite seznam e-poštnih naslovov, ločenih z vejicami</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Vnesite veljavno vrednost. Najbližja veljavna vrednost je <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Neveljavna vrednost.</translation>
+<translation id="9108370397979208512">matematika</translation>
 <translation id="1842960171412779397">izberi</translation>
 <translation id="7673697353781729403">Ure</translation>
 <translation id="4664250907885839816">Del po »<ph name="ATSIGN"/>« ne sme vsebovati znaka »<ph name="INVALIDCHARACTER"/>«.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Počisti</translation>
 <translation id="7888071071722539607">V e-poštnem naslovu mora biti znak »<ph name="ATSIGN"/>«. V naslovu »<ph name="INVALIDADDRESS"/>« manjka »<ph name="ATSIGN"/>«.</translation>
 <translation id="1088086359088493902">Sekunde</translation>
-<translation id="3934680773876859118">Dokumenta PDF ni bilo mogoče naložiti</translation>
 <translation id="3632707345189162177">preostale sekunde filma</translation>
 <translation id="6359256949422175976">sličica časovnega krmilnika za predvajanje filma</translation>
 <translation id="8597182159515967513">naslov</translation>

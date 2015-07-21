@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">屏幕键盘已停用</translation>
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME"/>”可帮助连接到此网络。</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">麦克风插孔</translation>
 <translation id="30155388420722288">溢出按钮</translation>
 <translation id="7904094684485781019">此帐户的管理员已停用多帐户登录。</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/>的分辨率已改为<ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">状态栏</translation>
-<translation id="2248649616066688669">Chromebook连接到外接显示器时，即使合上盖子，也可继续使用。</translation>
 <translation id="2946640296642327832">启用蓝牙</translation>
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">蜂窝网络设备</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="2208323208084708176">统一桌面模式</translation>
 <translation id="2825619548187458965">文件架</translation>
-<translation id="2614835198358683673">您的 Chromebook 在开启期间可能无法充电。建议您使用产品原装的充电器。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="882279321799040148">点击即可查看</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">您的 Chromebook 在处于打开状态时可能无法充电。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>不支持<ph name="SPECIFIED_RESOLUTION"/>。分辨率已改为<ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">启用移动数据</translation>
 <translation id="68610848741840742">ChromeVox（语音反馈）</translation>

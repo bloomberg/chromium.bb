@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ml">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ml">
 <translation id="4763480195061959176">വീഡിയോ</translation>
 <translation id="5843503607508392247">മറ്റുള്ളവ...</translation>
 <translation id="248395913932153421">ദിവസം</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">ഇത് തിരയാവുന്ന സൂചികയാണ്. തിരയല്‍ കീവേഡുകള്‍ നല്‍കുക:</translation>
 <translation id="1930711995431081526">നില</translation>
 <translation id="658823671542763450">പൂർണ്ണ സ്‌ക്രീനിലേക്ക് പോവുക</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">അവശേഷിക്കുന്ന സമയം</translation>
-<translation id="370665806235115550">ലോഡ്ചെയ്യുന്നു...</translation>
 <translation id="2723001399770238859">ഓഡിയോ</translation>
 <translation id="6845533974506654842">അമര്‍ത്തുക</translation>
 <translation id="8244226242650769279">ഇമേജ് മാപ്പ്</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (മീഡിയം ഗ്രേഡ്)</translation>
 <translation id="1637811476055996098">ഫയലുകൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN"/>' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS"/>' അപൂർണ്ണമാണ്.</translation>
+<translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="5476505524087279545">അണ്‍ചെക്ക് ചെയ്യുക</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
 <translation id="2507943997699731163">ദയവായി ഈ ഫീല്‍ഡ് പൂരിപ്പിക്കുക.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">മറ്റുള്ളവ...</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN"/>' എന്നതിനുശേഷം വരുന്ന ഒരു ഭാഗത്തിൽ '<ph name="INVALIDCHARACTER"/>' ചിഹ്നം ഉണ്ടാകരുത്.</translation>
 <translation id="5468998798572797635">പൂർണ്ണ സ്‌ക്രീനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
-<translation id="5919473608089529604">പ്ലഗ്-ഇൻ ലോഡുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="5546461542133609677">ശബ്‌ദമുള്ളതാക്കുക</translation>
 <translation id="6663448176199120256">സമീപകാല തിരയലുകള്‍</translation>
 <translation id="1020833440720551630">ഓഡിയോ ട്രാക്ക് നിശബ്‌ദമാക്കുക</translation>
-<translation id="2597378329261239068">ഈ പ്രമാണം പാസ്‌വേഡ് പരിരക്ഷിതമാണ്.  ദയവായി ഒരു പാസ്‌വേഡ് നല്‍‌കുക.</translation>
 <translation id="5466621249238537318">ഒന്നോ അതില്‍ക്കൂടുതലോ ഫയലുകള്‍ ദയവായി തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="9132465097189459683">മറ്റുള്ളവ...</translation>
 <translation id="10623998915015855">ടോഗിൾ ബട്ടൺ</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">ഈ വാചകത്തെ <ph name="MAX_CHARACTERS"/> അല്ലെങ്കില്‍ അതില്‍‌ക്കുറവ് പ്രതീകങ്ങളായി ദയവായി കുറയ്ക്കുക (നിങ്ങള്‍ നിലവില്‍ <ph name="CURRENT_LENGTH"/> പ്രതീകങ്ങള്‍ ഉപയോഗിക്കുകയാണ്).</translation>
 <translation id="6101327004457443354">ഓഡിയോ ട്രാക്ക് ശബ്‌ദമുള്ളതാക്കുക</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
 <translation id="2908441821576996758">ഇമെയില്‍ വിലാസങ്ങളുടെ കോമയാല്‍ വേര്‍തിരിച്ച ഒരു പട്ടിക ദയവായി നല്‍കുക.</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
 <translation id="1921819250265091946">തീയതി</translation>
 <translation id="2613802280814924224">സാധുവായ ഒരു മൂല്യം നൽകുക. ഏറ്റവുമടുത്ത സാധുവായ മൂല്യം <ph name="VALID_VALUE"/> ആണ്.</translation>
 <translation id="835897206747267392">അസാധുവായ മൂല്യം.</translation>
+<translation id="9108370397979208512">മാത്ത്</translation>
 <translation id="1842960171412779397">തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="7673697353781729403">മണിക്കൂര്‍‌</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN"/>' എന്നതിനുശേഷം വരുന്ന ഭാഗത്തിൽ '<ph name="INVALIDCHARACTER"/>' ചിഹ്നം ഉണ്ടാകരുത്.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">മായ്‌ക്കുക</translation>
 <translation id="7888071071722539607">ഇമെയിൽ വിലാസത്തിൽ '<ph name="ATSIGN"/>' ഉൾപ്പെടുത്തുക. '<ph name="INVALIDADDRESS"/>' എന്നതിൽ ഒരു '<ph name="ATSIGN"/>' കാണുന്നില്ല.</translation>
 <translation id="1088086359088493902">സെക്കൻഡ്</translation>
-<translation id="3934680773876859118">PDF പ്രമാണം ലോഡുചെയ്യുന്നത് പരാജയപ്പെട്ടു</translation>
 <translation id="3632707345189162177">മൂവിയുടെ അവശേഷിക്കുന്ന നിമിഷങ്ങളുടെ എണ്ണം</translation>
 <translation id="6359256949422175976">മൂവി ടൈം സ്‌ക്രബ്ബർ തമ്പ്</translation>
 <translation id="8597182159515967513">തലക്കെട്ട്</translation>

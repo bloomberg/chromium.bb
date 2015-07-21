@@ -86,6 +86,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5037239767309817516">Stäng alla fönster i Google Chrome och starta om så att ändringen genomförs.</translation>
 <translation id="1619887657840448962">Vi har gjort Chromium säkrare genom att inaktivera följande tillägg som inte anges i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="225614027745146050">Välkommen</translation>
+<translation id="8811903091068364646">&amp;Starta om Chrome på skrivbordet</translation>
 <translation id="3398288718845740432">Dölj i Chrome-menyn</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="3149510190863420837">Chrome-appar</translation>
@@ -257,6 +258,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3037838751736561277">Google Chrome körs i bakgrundsläge.</translation>
 <translation id="2084710999043359739">Lägg till i Chrome</translation>
 <translation id="4692614041509923516">En gammal version av Microsoft Windows som inte kan behandla webbplatsens säkerhetscertifikat körs på datorn. På grund av detta kan inte Chrome avgöra om certifikatet kommer från <ph name="SITE"/> eller från någon i ditt nätverk som utger sig för att vara <ph name="SITE"/>. Uppdatera datorn till en nyare version av Windows.</translation>
+<translation id="5931853610562009806">På Mac kan lösenord sparas i nyckelringen. Andra Chrome-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Den här versionen av Chrome är inaktuell</translation>
 <translation id="7592736734348559088">Google Chrome kunde inte synkronisera data eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
@@ -268,6 +270,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Google Chrome igen.</translation>
 <translation id="2246246234298806438">Förhandsgranskningen av utskriften kan inte visas i Google Chrome eftersom den inbyggda PDF-läsaren saknas.</translation>
 <translation id="5132929315877954718">Upptäck fantastiska program, spel, tillägg och teman för Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Starta om Chrome i Windows 8-läge</translation>
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="8274359292107649245">Öppna Chrome på datorn</translation>
 <translation id="7242029209006116544">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME"/>. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chrome-uppgifter separata. <ph name="LEARN_MORE"/></translation>

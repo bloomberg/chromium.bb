@@ -30,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> ጥራት ወደ <ph name="RESOLUTION"/> ተለውጧል</translation>
 <translation id="2297568595583585744">የሁኔታ መሳቢያ</translation>
-<translation id="2248649616066688669">ወደ ውጫዊ ማሳያ ተገናኝቶ ሳለ የእርስዎን Chromebook መጠቀምዎን መቀጠል ይችላሉ፣ ተዘግቶ ቢሆንም እንኳ።</translation>
 <translation id="2946640296642327832">ብሉቱዝን ያንቁ</translation>
 <translation id="6459472438155181876">ማያ ገጽ ወደ <ph name="DISPLAY_NAME"/> በመቀጠል ላይ</translation>
 <translation id="8206859287963243715">ሴሉላር</translation>
@@ -105,7 +104,6 @@
 <translation id="1747827819627189109">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ነቅቷል</translation>
 <translation id="2208323208084708176">የተዋሃደ የዴስክቶፕ ሁነታ</translation>
 <translation id="2825619548187458965">መደርደሪያ</translation>
-<translation id="2614835198358683673">የእርስዎ Chromebook በርቶ ሳለ ባትሪ ላይሞላ ይችላል። ዋናውን ባትሪ መሙያ መጠቀሙን ያስቡበት።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">ሁሉም የሚገኙ ተጤቃሚዎች አስቀድመው ወደዚህ ክፍለ-ጊዜ ታክለዋል።</translation>
@@ -151,7 +149,6 @@
 <translation id="3473479545200714844">የማያ ገጽ ማጉያ</translation>
 <translation id="882279321799040148">ለማየት ጠቅ ያድርጉ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">የእርስዎ Chromebook በርቶ ሳለ ባትሪ ላይሞላ ይችላል።</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> <ph name="SPECIFIED_RESOLUTION"/>ን አይደግፍም። ጥራቱ ወደ <ph name="FALLBACK_RESOLUTION"/> ተቀይሯል</translation>
 <translation id="1602076796624386989">የተንቀሳቃሽ ስልክ ውሂብን ያንቁ</translation>
 <translation id="68610848741840742">ChromeVox (የቃል ግብረመልስ)</translation>

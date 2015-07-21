@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que essa alteração entre em vigor.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativamos a extensão a seguir, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> e pode ter sido adicionada sem seu conhecimento.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
+<translation id="8811903091068364646">&amp;Reiniciar o Google Chrome na área de trabalho</translation>
 <translation id="3398288718845740432">Esconder no menu do Google Chrome</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="3149510190863420837">Aplicativos do Google Chrome</translation>
@@ -250,6 +251,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="3037838751736561277">O Google Chrome está em modo de segundo plano.</translation>
 <translation id="2084710999043359739">Adicionar ao Google Chrome</translation>
 <translation id="4692614041509923516">Seu computador está executando uma versão antiga do Microsoft Windows que não consegue processar o certificado de segurança deste website. Devido a esse problema, o Google Chrome não consegue identificar se o certificado veio de <ph name="SITE"/> ou de alguma pessoa da sua rede fingindo ser <ph name="SITE"/>. Atualize seu computador para uma versão mais recente do Windows.</translation>
+<translation id="5931853610562009806">No Mac, as senhas podem ser salvas no seu Keychain e acessadas ou sincronizadas por outros usuários do Google Chrome que compartilhem essa conta OS X.</translation>
 <translation id="3360895254066713204">Auxiliar do Google Chrome</translation>
 <translation id="1877026089748256423">O Google Chrome está desatualizado</translation>
 <translation id="7592736734348559088">O Google Chrome não pôde sincronizar seus dados, pois os detalhes de login da sua conta estão desatualizados.</translation>
@@ -261,6 +263,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="1001534784610492198">O arquivo do instalador está corrompido ou é inválido. Baixe o Google Chrome novamente.</translation>
 <translation id="2246246234298806438">O Google Chrome não consegue mostrar a visualização de impressão quando não há visualizador de PDF integrado.</translation>
 <translation id="5132929315877954718">Descubra ótimos aplicativos, jogos, extensões e temas para o Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Reiniciar o Google Chrome em modo Windows 8</translation>
 <translation id="6626317981028933585">Infelizmente, suas configurações do Mozilla Firefox não ficarão disponíveis enquanto esse navegador estiver sendo executado. Para importar essas configurações para o Google Chrome, salve o seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em &quot;Continuar&quot;.</translation>
 <translation id="8274359292107649245">Abrir o Google Chrome na área de trabalho</translation>
 <translation id="7242029209006116544">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME"/>. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Google Chrome separados. <ph name="LEARN_MORE"/></translation>

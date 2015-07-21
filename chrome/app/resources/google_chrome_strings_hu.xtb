@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Ahhoz, hogy a módosítás hatályba lépjen, zárja be az összes Google Chrome ablakot, és indítsa újra az alkalmazást.</translation>
 <translation id="1619887657840448962">A Chrome biztonságosabbá tétele érdekében kikapcsoltuk a következő bővítményt, amely nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> szolgáltatásból származik, és előfordulhat, hogy az Ön tudta nélkül lett telepítve.</translation>
 <translation id="225614027745146050">Üdvözöljük</translation>
+<translation id="8811903091068364646">Chrome új&amp;raindítása az asztalon</translation>
 <translation id="3398288718845740432">Elrejtés a Chrome-menüben</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="3149510190863420837">Chrome-alkalmazások</translation>
@@ -246,6 +247,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="3037838751736561277">A Google Chrome háttérmódban van.</translation>
 <translation id="2084710999043359739">Hozzáadás a Chrome-hoz</translation>
 <translation id="4692614041509923516">Számítógépe a Microsoft Windows régebbi változatát futtatja, amely nem tudja feldolgozni a webhely biztonsági tanúsítványát. A hiba miatt a Google Chrome nem tudja eldönteni, hogy a tanúsítvány a(z) <ph name="SITE"/> webhelytől származik, vagy valakitől az Ön hálózatán, aki a(z) <ph name="SITE"/> webhelynek adja ki magát. Frissítse számítógépén a Windows rendszert egy újabb verzióra.</translation>
+<translation id="5931853610562009806">Mac típusú számítógépen a rendszer a Keychain alkalmazásba mentheti a jelszavakat, amelyek hozzáférhetők vagy szinkronizálhatók lesznek azon Chrome-felhasználók számára, akik ugyanezzel az OS X-fiókkal rendelkeznek.</translation>
 <translation id="3360895254066713204">Chrome segéd</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
 <translation id="7592736734348559088">A Google Chrome nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
@@ -257,6 +259,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW"/
 <translation id="1001534784610492198">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
 <translation id="2246246234298806438">A Google Chrome nem tudja megjeleníteni a nyomtatási előnézetet, ha nincs beépített PDF-megjelenítő.</translation>
 <translation id="5132929315877954718">Fedezzen fel nagyszerű alkalmazásokat, játékokat, bővítményeket és témákat a Google Chrome-hoz.</translation>
+<translation id="7784335114585804598">Chrome új&amp;raindítása Windows 8 módban</translation>
 <translation id="6626317981028933585">Sajnos a Mozilla Firefox beállításai nem érhetők el, amikor a böngésző fut. Ahhoz, hogy importálhassa ezeket a beállításokat a Google Chrome-ba, mentse el, amin dolgozik, majd zárja be az összes Firefox ablakot. Ezután kattintson a &quot;Folytatás&quot; gombra.</translation>
 <translation id="8274359292107649245">A Chrome megnyitása az asztalon</translation>
 <translation id="7242029209006116544">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chrome-adatainak külön tárolásához. <ph name="LEARN_MORE"/></translation>

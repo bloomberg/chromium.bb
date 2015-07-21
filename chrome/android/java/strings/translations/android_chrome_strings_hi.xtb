@@ -42,11 +42,14 @@
 <translation id="326254929494722411">आपने अभी तक इस डिवाइस पर कोई Google खाता सेट नहीं किया है</translation>
 <translation id="8143660160623733249">फ़ोल्डर का नाम</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>
+<translation id="4720023427747327413"><ph name="PRODUCT_NAME"/> में खोलें</translation>
 <translation id="5676636989614905379"><ph name="SCREEN_NAME"/> पर वीडियो नहीं चलाया जा सकता.</translation>
 <translation id="5275558766013849309">टैब, हाल ही के ऐप्‍स के साथ रहेंगे.</translation>
 <translation id="8069239273282989646">संपीड़न के बाद</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="4761374747761474835">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग प्राप्त करने के लिए कोई खाता चुनें.</translation>
+<translation id="1359381790106966506">अनुमतियां अपडेट करें</translation>
+<translation id="6060567974409584397">टैब पर वापस लौटने के लिए स्पर्श करें</translation>
 <translation id="4803910478683254032">आयात करना विफल रहा</translation>
 <translation id="3485544713029068372">पासवर्ड के लिए Smart Lock</translation>
 <translation id="6999892069268112724">Google खाते की पुष्‍टि करें</translation>
@@ -74,9 +77,11 @@
 <translation id="2354750644801399986">‘नज़र ना रखें’</translation>
 <translation id="2351097562818989364">आपकी अनुवाद सेटिंग रीसेट कर दी गई हैं.</translation>
 <translation id="4307992518367153382">आधारभूत बातें</translation>
+<translation id="8007176423574883786">इस डिवाइस के लिए बंद कर दिया गया है</translation>
 <translation id="119944043368869598">सभी साफ़ करें</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>
 <translation id="6458785801851713928">आपके डोमेन के लिए समन्‍वयन उपलब्‍ध नहीं है.</translation>
+<translation id="7788788617745289808">Chrome को कैमरा ऐक्सेस की आवश्यकता है ताकि कैमरे को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="7765158879357617694">ले जाएं</translation>
 <translation id="2731700343119398978">कृपया प्रतीक्षा करें...</translation>
 <translation id="6846298663435243399">लोड हो रहा है...</translation>
@@ -101,6 +106,7 @@
 <translation id="4532845899244822526">फ़ोल्डर चुनें</translation>
 <translation id="4684427112815847243">सब कुछ समन्‍वयित करें</translation>
 <translation id="563535393368633106">एक्‍सेस करने से पहले पूछें (अनुशंसित)</translation>
+<translation id="145097072038377568">Android सेटिंग में बंद कर दिया गया है</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>
 <translation id="983192555821071799">सभी टैब बंद करें</translation>
 <translation id="1966710179511230534">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
@@ -117,6 +123,7 @@
 <translation id="1091134514807961917">आपने निम्‍नलिखित Google खाते में प्रवेश किया हुआ है.</translation>
 <translation id="7019652137705190998">निजी रूप से ब्राउज़ करने या अस्थायी रूप से प्रवेश करने के लिए गुप्त मोड में जाएं</translation>
 <translation id="932327136139879170">मुख्यपृष्ठ</translation>
+<translation id="1061441684050139317">Chrome को माइक्रोफ़ोन ऐक्सेस की आवश्यकता है ताक‍ि माइक्रोफ़ोन को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="963967414714199900">पिछली बार समन्वयित: बस अभी</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, वेब ऐप. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">फ़ाइल प्रतिस्‍थापित करें</translation>
@@ -130,6 +137,7 @@
 <translation id="4256782883801055595">ओपन सोर्स लाइसेंस</translation>
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
 <translation id="8218346974737627104">प्रवेश की दुबारा पूछें</translation>
+<translation id="6675018499747166670">ऑडियो चल रहा है. <ph name="URL_OF_THE_CURRENT_TAB"/> पर वापस लौटने के लिए स्पर्श करें</translation>
 <translation id="5832934273103296195">विस्तारित - संक्षिप्त करने के लिए क्लिक करें</translation>
 <translation id="8457451314607652708">बुकमार्क आयात करें</translation>
 <translation id="6612856669344839356">बुकमार्क सहेजें</translation>
@@ -201,6 +209,7 @@
 <translation id="3184369589781594823">Android ब्राउज़र से सभी स्थानीय बुकमार्क आयात करें?</translation>
 <translation id="8562452229998620586">सहेजे गए पासवर्ड यहां दिखाई देंगे.</translation>
 <translation id="238909021488141516">सामग्री डाउनलोड करते समय कोई त्रुटि हुई.</translation>
+<translation id="6012342843556706400">Chrome को स्थान ऐक्सेस की आवश्यकता है ताकि स्थान को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
 <translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
@@ -209,8 +218,11 @@
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
 <translation id="5771382037724542929">क्या आप वर्तमान <ph name="FILE_NAME"/> को <ph name="DIRECTORY_NAME"/> में बदलना चाहते हैं?</translation>
 <translation id="8627706565932943526">समन्वयन त्रुटि</translation>
+<translation id="5881438603132347856">“<ph name="MEDIA_TITLE"/>” चल रहा है</translation>
+<translation id="423410644998903704">Chrome को अनुमति ऐक्सेस की आवश्यकता है ताकि अनुमति को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="2904413602477443379">कोई फ़ोल्डर चुनें</translation>
+<translation id="194341124344773587"><ph name="BEGIN_LINK"/>Android सेटिंग<ph name="END_LINK"/> में Chrome के लिए अनुमति चालू करें.</translation>
 <translation id="7053983685419859001">अवरोधित करें</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दिखाएं</translation>
@@ -274,6 +286,7 @@
 <translation id="971774202801778802">URL बुकमार्क करें</translation>
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="10614374240317010">कभी नहीं सहेजा गया</translation>
+<translation id="4792242903050551833">“<ph name="MEDIA_TITLE"/>” को रोका गया</translation>
 <translation id="1312168552565502328">कुकी, साइट डेटा</translation>
 <translation id="2903493209154104877">पते</translation>
 <translation id="3661699943263275414">तृतीय-पक्ष वेबसाइटें कुकी डेटा को सहेज सकती हैं और पढ़ सकती हैं</translation>
@@ -284,6 +297,7 @@
 <translation id="7366340029385295517"><ph name="SCREEN_NAME"/> पर कास्ट किया जा रहा है</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="1197267115302279827">बुकमार्क ले जाएं</translation>
+<translation id="3190152372525844641"><ph name="BEGIN_LINK"/>Android सेटिंग<ph name="END_LINK"/> में Chrome के लिए अनुमतियां चालू करें.</translation>
 <translation id="583891442612896534">Chrome डेटा संपीड़न के लिए Google के सर्वर तक नहीं पहुंच पा रहा है. आपकी डेटा की बचत सीमित हो सकती हैं.</translation>
 <translation id="4827948050554950725">क्रेडिट कार्ड जोड़ें</translation>
 <translation id="2316129865977710310">जी रहने दें</translation>
@@ -439,6 +453,7 @@
 <translation id="7963646190083259054">विक्रेता:</translation>
 <translation id="9065203028668620118">संपादित करें</translation>
 <translation id="4881695831933465202">खोलें</translation>
+<translation id="5345083863238459644">स्थान ऐक्सेस को भी <ph name="BEGIN_LINK"/>इस डिवाइस के लिए बंद कर दिया गया है<ph name="END_LINK"/>.</translation>
 <translation id="6512448926095770873">इस पृष्ठ से जाएं</translation>
 <translation id="3414952576877147120">आकार:</translation>
 <translation id="945632385593298557">अपना माइक्रोफ़ोन एक्सेस करें</translation>
@@ -503,6 +518,7 @@
 <translation id="497421865427891073">आगे जाएं</translation>
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="2646820313617290661">आपके अभिभावक इन सेटिंग को प्रबंधित करने में आपकी सहायता करते हैं.</translation>
+<translation id="1423209968422390786">स्थान ऐक्सेस को <ph name="BEGIN_LINK"/>इस डिवाइस के लिए बंद कर दिया गया है<ph name="END_LINK"/>.</translation>
 <translation id="2433507940547922241">प्रकटन</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="6177390657002841081">डेटा बचतकर्ता चालू करना</translation>
@@ -519,6 +535,7 @@
 <translation id="6612358246767739896">सुरक्षित सामग्री</translation>
 <translation id="1742134235943978220"><ph name="TARGET_LANGUAGE"/> में अनुवाद किया गया.</translation>
 <translation id="5327248766486351172">नाम</translation>
+<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL"/>, स्थानीय खोज परिणाम दिखाने के लिए आपके स्थान का उपयोग करता है</translation>
 <translation id="6738867403308150051">डाउनलोड हो रहे हैं...</translation>
 <translation id="393697183122708255">कोई सक्षम बोलकर खोजें उपलब्‍ध नहीं</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE"/>” समाप्‍त</translation>
@@ -527,6 +544,7 @@
 <translation id="6965382102122355670">ठीक</translation>
 <translation id="2038563949887743358">अनुरोध डेस्कटॉप साइट चालू करें</translation>
 <translation id="4440256989292146959">कम से अधिक ब्राउज़ करें</translation>
+<translation id="2126426811489709554">Chrome के द्वारा संचालित</translation>
 <translation id="4023950129927433024">यदि‍ आप अपना पासफ्रेज़ भूल गए हैं, तो रूकें और  <ph name="BEGIN_LINK"/>Google डैशबोर्ड<ph name="END_LINK"/> के द्वारा समन्‍वयन रीसेट करें.</translation>
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>
 <translation id="1178581264944972037">पॉज़ करें</translation>

@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">ઓન-સ્ક્રીન કીબોર્ડ અક્ષમ કર્યું</translation>
 <translation id="5548285847212963613">વિસ્તાર &quot;<ph name="EXTENSION_NAME"/>&quot; આ નેટવર્ક સાથે કનેક્ટ કરવામાં મદદ કરી શકે છે.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> અને <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">માઇક જેક</translation>
 <translation id="30155388420722288">ઓવરફ્લો બટન</translation>
 <translation id="7904094684485781019">આ એકાઉન્ટ માટે વ્યસ્થાપકે બહુવિધ સાઇન-ઇનને નામંજૂર કર્યું છે.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google ડ્રાઇવ</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> ને <ph name="RESOLUTION"/> પર બદલવામાં આવ્યું હતું</translation>
 <translation id="2297568595583585744">સ્થિતિ ટ્રે</translation>
-<translation id="2248649616066688669">તમે કોઈ બાહ્ય પ્રદર્શનથી તમારી Chromebook કનેક્ટ હોય ત્યારે ઉપયોગમાં લેવાનું ચાલુ રાખી શકો છો પછી ભલેને તેનું ઢાંકણું બંધ હોય.</translation>
 <translation id="2946640296642327832">Bluetooth સક્ષમ કરો</translation>
 <translation id="6459472438155181876">સ્ક્રીનને <ph name="DISPLAY_NAME"/> પર વિસ્તૃત કરી રહ્યાં છે</translation>
 <translation id="8206859287963243715">સેલ્યુલર</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="2208323208084708176">એકીકૃત ડેસ્કટૉપ મોડ</translation>
 <translation id="2825619548187458965">શેલ્ફ</translation>
-<translation id="2614835198358683673">જ્યારે તમારી Chromebook ચાલુ હોય ત્યારે તેને ચાર્જ કરી શકાશે નહીં. અધિકૃત ચાર્જરનો ઉપયોગ કરવાનું વિચારો.</translation>
 <translation id="4430019312045809116">વૉલ્યૂમ</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">બધા ઉપલબ્ધ વપરાશકર્તાઓ પહેલેથી જ આ સત્ર પર ઉમેરવામાં આવ્યા છે.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">સ્ક્રીન બૃહદદર્શક</translation>
 <translation id="882279321799040148">જોવા માટે ક્લિક કરો</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">જ્યારે તમારી Chromebook ચાલુ હોય ત્યારે તે ચાર્જ કરી શકાતી નથી.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>, <ph name="SPECIFIED_RESOLUTION"/> ને સમર્થન આપતું નથી. રિઝોલ્યુશન <ph name="FALLBACK_RESOLUTION"/> પર બદલાયું હતું</translation>
 <translation id="1602076796624386989">મોબાઇલ ડેટા સક્ષમ કરો</translation>
 <translation id="68610848741840742">ChromeVox (બોલાયેલ પ્રતિસાદ)</translation>

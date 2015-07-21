@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ca">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="5843503607508392247">Altres...</translation>
 <translation id="248395913932153421">Dia</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">És un índex on es poden realitzar cerques. Introdueix els termes de cerca:</translation>
 <translation id="1930711995431081526">estat</translation>
 <translation id="658823671542763450">visualitza en pantalla completa</translation>
+<translation id="8851136666856101339">principal</translation>
 <translation id="7720026100085573005">temps restant</translation>
-<translation id="370665806235115550">S'està carregant...</translation>
 <translation id="2723001399770238859">àudio</translation>
 <translation id="6845533974506654842">prem</translation>
 <translation id="8244226242650769279">mapa d'imatges</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Mitjà)</translation>
 <translation id="1637811476055996098">Trieu els fitxers</translation>
 <translation id="49969490063480558">Introduïu un domini precedit per &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; no és una adreça electrònica completa.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">desmarca</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2507943997699731163">Empleneu aquest camp.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Altres...</translation>
 <translation id="383465348367842624">Un nom d'usuari seguit de &quot;<ph name="ATSIGN"/>&quot; no pot contenir el símbol &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">surt de la pantalla completa</translation>
-<translation id="5919473608089529604">No s'ha pogut carregar el connector.</translation>
 <translation id="5546461542133609677">activa el so</translation>
 <translation id="6663448176199120256">Cerques recents</translation>
 <translation id="1020833440720551630">silencia la pista d'àudio</translation>
-<translation id="2597378329261239068">Aquest document està protegit mitjançant contrasenya. Introduïu una contrasenya.</translation>
 <translation id="5466621249238537318">Seleccioneu un o diversos fitxers.</translation>
 <translation id="9132465097189459683">Altres...</translation>
 <translation id="10623998915015855">botó de commutació</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Escurceu aquest text a un màxim de <ph name="MAX_CHARACTERS"/> caràcters (ara n'esteu utilitzant <ph name="CURRENT_LENGTH"/>).</translation>
 <translation id="6101327004457443354">activa el so de la pista d'àudio</translation>
 <translation id="1822429046913737220">a. m./p. m.</translation>
-<translation id="1639239467298939599">S'està carregant</translation>
 <translation id="2908441821576996758">Introduïu una llista d'adreces electròniques separades per comes.</translation>
 <translation id="5939518447894949180">Restableix</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Introduïu un valor vàlid. El valor vàlid més proper és <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Valor no vàlid.</translation>
+<translation id="9108370397979208512">matemàtiques</translation>
 <translation id="1842960171412779397">selecciona</translation>
 <translation id="7673697353781729403">Hores</translation>
 <translation id="4664250907885839816">Un domini precedit per &quot;<ph name="ATSIGN"/>&quot; no pot contenir el símbol &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="7888071071722539607">Incloeu el símbol &quot;<ph name="ATSIGN"/>&quot; a l'adreça electrònica. Al camp &quot;<ph name="INVALIDADDRESS"/>&quot; falta el símbol &quot;<ph name="ATSIGN"/>&quot;.</translation>
 <translation id="1088086359088493902">Segons</translation>
-<translation id="3934680773876859118">No es pot carregar el document en format PDF</translation>
 <translation id="3632707345189162177">nombre de segons restants de la pel·lícula</translation>
 <translation id="6359256949422175976">miniatura de la barra de moment de la pel·lícula</translation>
 <translation id="8597182159515967513">Encapçalament</translation>

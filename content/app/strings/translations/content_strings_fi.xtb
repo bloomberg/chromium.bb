@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Muu...</translation>
 <translation id="248395913932153421">Päivä</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Tämä on haettavissa oleva hakemisto. Anna hakusanat:</translation>
 <translation id="1930711995431081526">tila</translation>
 <translation id="658823671542763450">siirry koko näytön tilaan</translation>
+<translation id="8851136666856101339">pää</translation>
 <translation id="7720026100085573005">jäljellä oleva aika</translation>
-<translation id="370665806235115550">Ladataan...</translation>
 <translation id="2723001399770238859">ääni</translation>
 <translation id="6845533974506654842">paina</translation>
 <translation id="8244226242650769279">kuvakartta</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (keskitaso)</translation>
 <translation id="1637811476055996098">Valitse tiedostot</translation>
 <translation id="49969490063480558">Lisää <ph name="ATSIGN"/>-osaa seuraava osa. <ph name="INVALIDADDRESS"/> on puutteellinen.</translation>
+<translation id="1342835525016946179">artikkeli</translation>
 <translation id="5476505524087279545">poista valinta</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2507943997699731163">Täytä tämä kenttä.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Muu...</translation>
 <translation id="383465348367842624"><ph name="ATSIGN"/>-osaa ennen tulevassa osassa ei pitäisi olla merkkiä <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="5468998798572797635">poistu koko näytön tilasta</translation>
-<translation id="5919473608089529604">Laajennuksen lataaminen epäonnistui.</translation>
 <translation id="5546461542133609677">peruuta mykistys</translation>
 <translation id="6663448176199120256">Viimeisimmät haut</translation>
 <translation id="1020833440720551630">mykistä ääniraita</translation>
-<translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Anna salasana.</translation>
 <translation id="5466621249238537318">Valitse vähintään yksi tiedosto.</translation>
 <translation id="9132465097189459683">Muu...</translation>
 <translation id="10623998915015855">vaihtopainike</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Lyhennä tämä teksti alle <ph name="MAX_CHARACTERS"/> merkkiin (tällä hetkellä käytössä <ph name="CURRENT_LENGTH"/> merkkiä).</translation>
 <translation id="6101327004457443354">peruuta ääniraidan mykistys</translation>
 <translation id="1822429046913737220">AP/IP</translation>
-<translation id="1639239467298939599">Ladataan</translation>
 <translation id="2908441821576996758">Anna pilkuilla erotettu sähköpostiosoitteiden luettelo.</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="1921819250265091946">pp</translation>
 <translation id="2613802280814924224">Syötä kelvollinen arvo. Lähin kelvollinen arvo on <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Virheellinen arvo.</translation>
+<translation id="9108370397979208512">matematiikka</translation>
 <translation id="1842960171412779397">Valitse</translation>
 <translation id="7673697353781729403">Tuntia</translation>
 <translation id="4664250907885839816"><ph name="ATSIGN"/>-osan jälkeen tulevassa osassa ei pitäisi olla merkkiä <ph name="INVALIDCHARACTER"/>.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="7888071071722539607">Sähköpostiosoitteeseen kuuluu <ph name="ATSIGN"/>-osa. Osoitteesta <ph name="INVALIDADDRESS"/> puuttuu <ph name="ATSIGN"/>.</translation>
 <translation id="1088086359088493902">Sekuntia</translation>
-<translation id="3934680773876859118">PDF-asiakirjan lataaminen epäonnistui</translation>
 <translation id="3632707345189162177">elokuvan jäljellä oleva aika sekunteina</translation>
 <translation id="6359256949422175976">elokuvan ajan säätimen pikkukuva</translation>
 <translation id="8597182159515967513">otsikko</translation>

@@ -86,6 +86,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5037239767309817516">Zaprite vsa okna brskalnika Google Chrome in ga znova zaženite, da uveljavite spremembe.</translation>
 <translation id="1619887657840448962">Zaradi večje varnosti smo v Chromu onemogočili to razširitev, ki ni navedena tukaj in je bila morda dodana brez vaše vednosti: <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>.</translation>
 <translation id="225614027745146050">Pozdravljeni</translation>
+<translation id="8811903091068364646">&amp;Vnovični zagon Chroma na namizju</translation>
 <translation id="3398288718845740432">Skrij v meniju Chroma</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="3149510190863420837">Aplikacije za Chrome</translation>
@@ -256,6 +257,7 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="3037838751736561277">Google Chrome se izvaja v ozadju.</translation>
 <translation id="2084710999043359739">Dodaj v Chrome</translation>
 <translation id="4692614041509923516">Vaš računalnik uporablja staro različico sistema Microsoft Windows, ki ne more obdelati varnostnega potrdila tega spletnega mesta. Zaradi te težave Google Chrome ne more ugotoviti, ali je prišlo potrdilo s spletnega mesta <ph name="SITE"/> ali od nekoga v vašem omrežju, ki se izdaja za spletno mesto <ph name="SITE"/>. Posodobite sistem Microsoft Windows v računalniku na novejšo različico.</translation>
+<translation id="5931853610562009806">V računalnikih Mac so gesla morda shranjena v orodju Keychain, pri čemer lahko do njih dostopajo ali jih sinhronizirajo drugi uporabniki Chroma, s katerimi si delite ta račun v sistemu OS X.</translation>
 <translation id="3360895254066713204">Pomočnik za Chrome</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
 <translation id="7592736734348559088">Google Chrome ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
@@ -267,6 +269,7 @@ Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali upora
 <translation id="1001534784610492198">Arhiv namestitvenega programa je poškodovan ali neveljaven. Ponovno prenesite program Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome ne more odpreti predogleda tiskanja, če ni vgrajenega pregledovalnika datotek PDF.</translation>
 <translation id="5132929315877954718">Odkrijte zanimive aplikacije, igre, razširitve in teme za Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Vnovični zagon Chroma v načinu sistema Windows 8</translation>
 <translation id="6626317981028933585">Žal nastavitve brskalnika Mozilla Firefox niso na voljo, medtem ko ga uporabljate. Če želite te nastavitve uvoziti v Google Chrome, shranite delo in zaprite vsa okna brskalnika Firefox. Nato kliknite »Naprej«.</translation>
 <translation id="8274359292107649245">Odpri Chrome na namizju</translation>
 <translation id="7242029209006116544">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Google Chromu. Vaši podatki v Chromu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME"/>. Te podatke boste lahko izbrisali z nadzorno ploščo za Google Račune, vendar jih ne boste mogli povezati z drugim računom. Če želite, lahko ustvarite nov profil, da bodo obstoječi podatki v Chromu ostali ločeni. <ph name="LEARN_MORE"/></translation>

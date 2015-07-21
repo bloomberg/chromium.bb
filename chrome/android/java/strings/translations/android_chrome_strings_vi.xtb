@@ -42,11 +42,14 @@
 <translation id="326254929494722411">Bạn chưa thiết lập tài khoản Google trên thiết bị này</translation>
 <translation id="8143660160623733249">Tên thư mục</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
+<translation id="4720023427747327413">Mở trong <ph name="PRODUCT_NAME"/></translation>
 <translation id="5676636989614905379">Không thể phát video trên <ph name="SCREEN_NAME"/>.</translation>
 <translation id="5275558766013849309">Tab sẽ hoạt động cùng với các ứng dụng gần đây.</translation>
 <translation id="8069239273282989646">Sau khi nén</translation>
 <translation id="1644574205037202324">Lịch sử</translation>
 <translation id="4761374747761474835">Chọn tài khoản để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
+<translation id="1359381790106966506">Cập nhật quyền</translation>
+<translation id="6060567974409584397">Chạm để quay lại tab</translation>
 <translation id="4803910478683254032">Nhập không thành công</translation>
 <translation id="3485544713029068372">Smart Lock cho Mật khẩu</translation>
 <translation id="6999892069268112724">Xác nhận Tài khoản Google</translation>
@@ -74,9 +77,11 @@
 <translation id="2354750644801399986">'Không theo dõi'</translation>
 <translation id="2351097562818989364">Đã đặt lại cài đặt dịch của bạn.</translation>
 <translation id="4307992518367153382">Cơ bản</translation>
+<translation id="8007176423574883786">Tắt cho thiết bị này</translation>
 <translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="7665369617277396874">Thêm tài khoản</translation>
 <translation id="6458785801851713928">Dịch vụ đồng bộ hóa không khả dụng cho miền của bạn.</translation>
+<translation id="7788788617745289808">Chrome cần quyền truy cập máy ảnh để chia sẻ máy ảnh với trang web này.</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="2731700343119398978">Vui lòng chờ...</translation>
 <translation id="6846298663435243399">Đang tải…</translation>
@@ -101,6 +106,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4532845899244822526">Chọn thư mục</translation>
 <translation id="4684427112815847243">Đồng bộ hóa tất cả</translation>
 <translation id="563535393368633106">Hỏi trước khi truy cập (được đề xuất)</translation>
+<translation id="145097072038377568">Tắt trong Cài đặt Android</translation>
 <translation id="666981079809192359">Thông báo bảo mật của Chrome</translation>
 <translation id="983192555821071799">Đóng tất cả các tab</translation>
 <translation id="1966710179511230534">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
@@ -117,6 +123,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="1091134514807961917">Bạn đã đăng nhập vào tài khoản Google sau đây.</translation>
 <translation id="7019652137705190998">Chuyển sang chế độ ẩn danh để duyệt web ở chế độ riêng tư hoặc đăng nhập tạm thời</translation>
 <translation id="932327136139879170">Trang chủ</translation>
+<translation id="1061441684050139317">Chrome cần quyền truy cập micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="963967414714199900">Đồng bộ hóa lần cuối: vừa xong</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, ứng dụng web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Thay thế tệp</translation>
@@ -130,6 +137,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
 <translation id="8218346974737627104">Xác nhận đăng nhập</translation>
+<translation id="6675018499747166670">Âm thanh đang phát. Chạm để quay lại <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="5832934273103296195">Đã mở rộng - Nhấp để thu gọn</translation>
 <translation id="8457451314607652708">Nhập dấu trang</translation>
 <translation id="6612856669344839356">Lưu dấu trang</translation>
@@ -201,6 +209,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="3184369589781594823">Nhập tất cả dấu trang cục bộ từ trình duyệt Android?</translation>
 <translation id="8562452229998620586">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="238909021488141516">Đã xảy ra lỗi khi tải xuống nội dung.</translation>
+<translation id="6012342843556706400">Chrome cần quyền truy cập vị trí để chia sẻ vị trí với trang web này.</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
 <translation id="473775607612524610">Cập nhật</translation>
@@ -209,8 +218,11 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
 <translation id="5771382037724542929">Bạn có muốn thay thế <ph name="FILE_NAME"/> hiện tại trong <ph name="DIRECTORY_NAME"/> không?</translation>
 <translation id="8627706565932943526">Lỗi đồng bộ hóa</translation>
+<translation id="5881438603132347856">Đang phát “<ph name="MEDIA_TITLE"/>”</translation>
+<translation id="423410644998903704">Chrome cần quyền truy cập quyền để chia sẻ quyền với trang web này.</translation>
 <translation id="1807246157184219062">Sáng</translation>
 <translation id="2904413602477443379">Chọn thư mục</translation>
+<translation id="194341124344773587">Bật quyền cho Chrome trong <ph name="BEGIN_LINK"/>Cài đặt Android<ph name="END_LINK"/>.</translation>
 <translation id="7053983685419859001">Chặn</translation>
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
 <translation id="8413126021676339697">Hiển thị toàn bộ lịch sử</translation>
@@ -274,6 +286,7 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="971774202801778802">URL dấu trang</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="10614374240317010">Không bao giờ được lưu</translation>
+<translation id="4792242903050551833">Đã tạm dừng “<ph name="MEDIA_TITLE"/>”</translation>
 <translation id="1312168552565502328">Cookie, dữ liệu trang web</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
 <translation id="3661699943263275414">Các trang web của bên thứ ba có thể lưu và đọc dữ liệu cookie</translation>
@@ -284,6 +297,7 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="7366340029385295517">Đang truyền tới <ph name="SCREEN_NAME"/></translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="1197267115302279827">Di chuyển dấu trang</translation>
+<translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK"/>Cài đặt Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome không thể kết nối với máy chủ của Google để nén dữ liệu. Các khoản tiết kiệm đối với dữ liệu của bạn có thể bị giới hạn.</translation>
 <translation id="4827948050554950725">Thêm thẻ tín dụng</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
@@ -439,6 +453,7 @@ Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
 <translation id="9065203028668620118">Chỉnh sửa</translation>
 <translation id="4881695831933465202">Mở</translation>
+<translation id="5345083863238459644">Truy cập vị trí cũng đã được <ph name="BEGIN_LINK"/>tắt cho thiết bị này<ph name="END_LINK"/>.</translation>
 <translation id="6512448926095770873">Rời khỏi Trang này</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
 <translation id="945632385593298557">Truy cập micrô của bạn</translation>
@@ -503,6 +518,7 @@ Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy
 <translation id="497421865427891073">Đi về phía trước</translation>
 <translation id="4084682180776658562">Dấu trang</translation>
 <translation id="2646820313617290661">Cha mẹ của bạn giúp quản lý những cài đặt này.</translation>
+<translation id="1423209968422390786">Truy cập vị trí đã được <ph name="BEGIN_LINK"/>tắt cho thiết bị này<ph name="END_LINK"/>.</translation>
 <translation id="2433507940547922241">Hình thức</translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6177390657002841081">Bật Trình tiết kiệm dữ liệu</translation>
@@ -519,6 +535,7 @@ Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="1742134235943978220">Đã được dịch sang <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5327248766486351172">Tên</translation>
+<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL"/> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
 <translation id="6738867403308150051">Đang tải xuống...</translation>
 <translation id="393697183122708255">Không có tìm kiếm bằng giọng nói đã bật</translation>
 <translation id="3809549525127675114">Đã phát xong “<ph name="VIDEO_TITLE"/>”</translation>
@@ -527,6 +544,7 @@ Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy
 <translation id="6965382102122355670">OK</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
 <translation id="4440256989292146959">Duyệt nhiều hơn với ít chi phí hơn</translation>
+<translation id="2126426811489709554">Được hỗ trợ bởi Chrome</translation>
 <translation id="4023950129927433024">Nếu bạn đã quên cụm mật khẩu của mình, hãy dừng lại và đặt lại Đồng bộ hóa qua <ph name="BEGIN_LINK"/>Trang tổng quan của Google<ph name="END_LINK"/>.</translation>
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>

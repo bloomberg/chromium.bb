@@ -200,7 +200,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="1152528166145813711">Välj …</translation>
 <translation id="2235518894410572517">Dela den här datorn så att en annan användare kan visa och styra den.</translation>
 <translation id="6939719207673461467">Visa/dölj tangentbordet.</translation>
-<translation id="1023096696228309145">Be användaren vars dator du vill få tillgång till att klicka på länken Dela nu och ge dig åtkomstkoden.</translation>
 <translation id="4240294130679914010">Chromoting Host Uninstaller</translation>
 <translation id="8712909229180978490">Jag ser inte mina sparade filer online på Google Drive.</translation>
 <translation id="80739703311984697">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chromoting ytterligare behörigheter att komma åt den här adressen:</translation>
@@ -241,6 +240,8 @@ Desktop Host</translation>
 <translation id="2921543551052660690">Du har tidigare loggat in som <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Om du vill kunna ansluta till de datorer som sparats i det kontot <ph name="LINK_BEGIN"/>loggar du in i Chromium<ph name="LINK_END"/> med det kontot och installerar om Chromoting.</translation>
 <translation id="7319983568955948908">Sluta dela</translation>
 <translation id="6681800064886881394">Upphovsrätt 2013 Google Inc. Med ensamrätt.</translation>
+<translation id="2998137343848432918">• Saldoskärm tillagd.
+• Korrigering av problem när fullskärmsläget aktiveras med tangentbordet synligt.</translation>
 <translation id="6640610550128933069">senast online den <ph name="DATE"/></translation>
 <translation id="6668065415969892472">PIN-koden har uppdaterats.</translation>
 <translation id="4513946894732546136">Feedback</translation>

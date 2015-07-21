@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Экранная клавиатура отключена</translation>
 <translation id="5548285847212963613">Подключиться к этой сети можно с помощью расширения &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Микрофонный разъем</translation>
 <translation id="30155388420722288">Кнопка переполнения</translation>
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/>: установлено разрешение <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Строка состояния</translation>
-<translation id="2248649616066688669">Если Chromebook подключен к внешнему монитору, можно закрыть его и продолжать работу.</translation>
 <translation id="2946640296642327832">Включить Bluetooth</translation>
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Сотовый</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="2208323208084708176">Унифицированный режим рабочего стола</translation>
 <translation id="2825619548187458965">Полка</translation>
-<translation id="2614835198358683673">Возможны проблемы при зарядке Chromebook. Рекомендуем использовать комплектное зарядное устройство.</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="882279321799040148">Посмотреть</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Возможны проблемы при зарядке Chromebook.</translation>
 <translation id="7561014039265304140">Дисплей <ph name="DISPLAY_NAME"/> не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION"/>. Будет использовано разрешение <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="1602076796624386989">Включить мобильную передачу данных</translation>
 <translation id="68610848741840742">ChromeVox (голосовое сопровождение)</translation>

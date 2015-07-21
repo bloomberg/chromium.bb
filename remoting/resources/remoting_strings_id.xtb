@@ -200,7 +200,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="1152528166145813711">Pilih…</translation>
 <translation id="2235518894410572517">Membagi komputer ini agar pengguna lain dapat melihat dan mengontrol.</translation>
 <translation id="6939719207673461467">Tunjukkan/sembunyikan keyboard.</translation>
-<translation id="1023096696228309145">Mintalah kepada pengguna yang ingin Anda akses komputernya agar mengeklik 'Bagikan Sekarang' dan memberikan kode aksesnya kepada Anda.</translation>
 <translation id="4240294130679914010">Pencopot Pemasangan Host Chromoting</translation>
 <translation id="8712909229180978490">Saya tidak dapat melihat file saya yang tersimpan secara online di Google Drive.</translation>
 <translation id="80739703311984697">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chromoting untuk mengakses alamat ini:</translation>
@@ -241,6 +240,8 @@ Desktop Jarak Jauh</translation>
 <translation id="2921543551052660690">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN"/>masuk ke Chromium<ph name="LINK_END"/> dengan akun tersebut dan pasang kembali Chromoting.</translation>
 <translation id="7319983568955948908">Hentikan Berbagi</translation>
 <translation id="6681800064886881394">Hak cipta 2013 Google Inc. Semua Hak Dilindungi Undang-Undang.</translation>
+<translation id="2998137343848432918">• Penambahan layar Kredit.
+• Perbaikan masalah saat menggunakan layar penuh dengan keyboard yang terlihat.</translation>
 <translation id="6640610550128933069">online terakhir tanggal <ph name="DATE"/></translation>
 <translation id="6668065415969892472">PIN Anda telah diperbarui.</translation>
 <translation id="4513946894732546136">Masukan</translation>

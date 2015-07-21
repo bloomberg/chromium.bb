@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Chromium ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="1396446129537741364">Chromium กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="2097986737970966220">เปิด Chromium บนเดสก์ท็อป</translation>
+<translation id="108122890477367602">เปิดใ&amp;ช้ Chromium ในโหมด Windows 8 อีกครั้ง</translation>
 <translation id="8987477933582888019">เว็บเบราว์เซอร์</translation>
 <translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและคุณลักษณะใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
 <translation id="2886012850691518054">ตัวเลือก: ช่วยปรับปรุง Chromium ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
@@ -243,7 +244,9 @@
 <translation id="1708666629004767631">Chromium รุ่นใหม่ที่ปลอดภัยกว่าเดิมพร้อมให้ใช้งานแล้ว</translation>
 <translation id="1644918877723739397">Chromium จะเก็บข้อมูลนี้ไว้ใน <ph name="SAVED_PASSWORD_LINK"/> และจดจำไว้สำหรับครั้งถัดไปที่คุณต้องการใช้</translation>
 <translation id="378917192836375108">Chromium ช่วยให้คุณสามารถคลิกหมายเลขโทรศัพท์บนเว็บและโทรออกด้วย Skype ได้!</translation>
+<translation id="8605166112420372522">เปิดใช้ Chromium บนเ&amp;ดสก์ท็อปอีกครั้ง</translation>
 <translation id="1461885241643463646">เปิดใช้ขั้นตอนการลงชื่อเข้าใช้ Chromium แบบ iframe การตั้งค่าสถานะนี้จะลบล้าง --enable-web-based-signin</translation>
+<translation id="390894725198123737">สำหรับ Mac ระบบจะบันทึกรหัสผ่านไว้ใน Keychain และผู้ใช้ Chromium คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
 <translation id="608189560609172163">Chromium ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="4888717733111232871">กฎขาเข้าสำหรับ Chromium เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="151962892725702025">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากการซิงค์ไม่พร้อมให้บริการสำหรับโดเมนของคุณ</translation>

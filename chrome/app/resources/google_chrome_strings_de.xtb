@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Schließen Sie alle Google Chrome-Fenster und starten Sie die App neu, damit diese Änderung wirksam wird.</translation>
 <translation id="1619887657840448962">Um Chrome sicherer zu machen, haben wir die folgende Erweiterung deaktiviert. Sie ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
 <translation id="225614027745146050">Willkommen</translation>
+<translation id="8811903091068364646">Chrome auf dem Desktop neu sta&amp;rten</translation>
 <translation id="3398288718845740432">Im Chrome-Menü ausblenden</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="3149510190863420837">Chrome-Apps</translation>
@@ -229,6 +230,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="3037838751736561277">Google Chrome wird im Hintergrundmodus ausgeführt.</translation>
 <translation id="2084710999043359739">Zu Chrome hinzufügen</translation>
 <translation id="4692614041509923516">Auf Ihrem Computer wird eine alte Version von Microsoft Windows ausgeführt, die das Sicherheitszertifikat dieser Website nicht verarbeiten kann. Google Chrome kann daher nicht feststellen, ob das Zertifikat von <ph name="SITE"/> oder von jemandem aus Ihrem Netzwerk stammt, der sich als <ph name="SITE"/> ausgibt. Bitte installieren Sie eine neuere Version von Windows auf Ihrem Computer.</translation>
+<translation id="5931853610562009806">Auf einem Mac können Passwörter in Ihrem Schlüsselbund gespeichert und von anderen Chrome-Nutzern über dieses OS X-Konto abgerufen oder synchronisiert werden.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome ist veraltet.</translation>
 <translation id="7592736734348559088">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos nicht mehr aktuell sind.</translation>
@@ -240,6 +242,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="1001534784610492198">Das Installationsarchiv ist beschädigt oder ungültig. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="2246246234298806438">Google Chrome kann ohne den integrierten PDF-Viewer keine Druckvorschau anzeigen.</translation>
 <translation id="5132929315877954718">Entdecken Sie tolle Apps, Spiele, Erweiterungen und Designs für Google Chrome.</translation>
+<translation id="7784335114585804598">Chrome im Windows 8-Modus neu sta&amp;rten</translation>
 <translation id="6626317981028933585">Leider sind Ihre Mozilla Firefox-Einstellungen nicht verfügbar, wenn dieser Browser ausgeführt wird. Um diese Einstellungen in Google Chrome zu importieren, speichern Sie Ihre Arbeit und schließen Sie alle Firefox-Fenster. Klicken Sie anschließend auf &quot;Weiter&quot;.</translation>
 <translation id="8274359292107649245">Chrome auf dem Desktop öffnen</translation>
 <translation id="7242029209006116544">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME"/> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. Wenn Sie Ihre bestehenden Chrome-Daten getrennt verwenden möchten, können Sie ein neues Profil erstellen. <ph name="LEARN_MORE"/></translation>

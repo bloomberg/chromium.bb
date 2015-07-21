@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Chiudi tutte le finestre di Google Chrome e riavvialo per rendere effettiva la modifica.</translation>
 <translation id="1619887657840448962">Per rendere Chrome più sicuro, abbiamo disattivato la seguente estensione non presente nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> che potrebbe essere stata aggiunta a tua insaputa.</translation>
 <translation id="225614027745146050">Benvenuto</translation>
+<translation id="8811903091068364646">&amp;Riavvia Chrome sul desktop</translation>
 <translation id="3398288718845740432">Nascondi in menu Chrome</translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="3149510190863420837">Applicazioni Chrome</translation>
@@ -240,6 +241,7 @@ Se il problema non si risolve, dovresti riattivare questa opzione per ottenere p
 <translation id="3037838751736561277">Google Chrome è in modalità background.</translation>
 <translation id="2084710999043359739">Aggiungi a Chrome</translation>
 <translation id="4692614041509923516">Sul computer è installata una vecchia versione di Microsoft Windows che non è in grado di elaborare il certificato di sicurezza del sito web. Per questo problema, Google Chrome non riesce a capire se il certificato proviene da <ph name="SITE"/> o da qualcuno sulla tua rete che si spaccia per il sito <ph name="SITE"/>. Aggiorna il computer a una versione più recente di Windows.</translation>
+<translation id="5931853610562009806">Su Mac, le password possono essere salvate in Accesso Portachiavi e sono accessibili o sincronizzate da parte di altri utenti Chrome che utilizzano lo stesso account OS X.</translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>
 <translation id="1877026089748256423">Chrome non è aggiornato</translation>
 <translation id="7592736734348559088">Impossibile sincronizzare i dati in Google Chrome perché i dati di accesso dell'account sono obsoleti.</translation>
@@ -251,6 +253,7 @@ Se il problema non si risolve, dovresti riattivare questa opzione per ottenere p
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>
 <translation id="2246246234298806438">Impossibile visualizzare l'anteprima di stampa in Google Chrome senza il visualizzatore PDF integrato.</translation>
 <translation id="5132929315877954718">Scopri applicazioni, giochi, estensioni e temi straordinari per Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Riavvia Chrome in modalità Windows 8</translation>
 <translation id="6626317981028933585">Le impostazioni di Mozilla Firefox non sono disponibili finché il browser è in esecuzione. Per importare queste impostazioni in Google Chrome, salva i tuoi file e chiudi tutte le finestre di Firefox, quindi fai clic su Continua.</translation>
 <translation id="8274359292107649245">Apri Chrome su desktop</translation>
 <translation id="7242029209006116544">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Google Chrome. I tuoi dati di Chrome, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME"/>. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. Se preferisci puoi creare un nuovo profilo per mantenere separati i dati di Chrome esistenti. <ph name="LEARN_MORE"/></translation>

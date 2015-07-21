@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Bu değişikliğin geçerli olması için, lütfen tüm Google Chrome pencerelerini kapatın ve Google Chrome'u yeniden başlatın.</translation>
 <translation id="1619887657840448962">Chrome'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek aşağıdaki uzantıyı devre dışı bıraktık.</translation>
 <translation id="225614027745146050">Hoş Geldiniz</translation>
+<translation id="8811903091068364646">&amp;Chrome'u masaüstünde yeniden başlat</translation>
 <translation id="3398288718845740432">Chrome Menüsünde Gizle</translation>
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="3149510190863420837">Chrome Uygulamaları</translation>
@@ -245,6 +246,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="3037838751736561277">Google Chrome arka plan modunda.</translation>
 <translation id="2084710999043359739">Chrome'a ekle</translation>
 <translation id="4692614041509923516">Bilgisayarınız, bu web sitesinin güvenlik sertifikasını işleyemeyen eski bir Microsoft Windows sürümünü çalıştırıyor. Bu sorundan dolayı Google Chrome, sertifikanın <ph name="SITE"/> sitesinden mi, yoksa ağınızdaki <ph name="SITE"/> gibi görünen başka bir kişiden mi gönderildiğini bildiremiyor. Lütfen bilgisayarınızı daha yeni bir Windows sürümüne güncelleyin.</translation>
+<translation id="5931853610562009806">Mac bilgisayarlarda şifreler Keychain uygulamanızda saklanabilir ve bu OS X hesabını paylaşan diğer Chrome kullanıcıları bu şifrelere erişilebilir veya şifreleri senkronize edilebilir.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome sürümü eski</translation>
 <translation id="7592736734348559088">Hesap oturum açma ayrıntılarınız güncel olmadığından Google Chrome, verilerinizi senkronize edemedi.</translation>
@@ -256,6 +258,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="1001534784610492198">Yükleyici arşivi bozuk veya geçersiz. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="2246246234298806438">Google Chrome, dahili PDF görüntüleyici yokken baskı önizlemeyi gösteremez.</translation>
 <translation id="5132929315877954718">Google Chrome'a özgü harika uygulamaları, oyunları, uzantıları ve temaları keşfedin.</translation>
+<translation id="7784335114585804598">&amp;Chrome'u Windows 8 modunda yeniden başlat</translation>
 <translation id="6626317981028933585">Maalesef, Mozilla Firefox çalışırken ona ait ayarlarınız kullanılamaz. Bu ayarları Google Chrome'a aktarmak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Ardından Devam Et'i tıklayın.</translation>
 <translation id="8274359292107649245">Chrome'u masaüstünde aç</translation>
 <translation id="7242029209006116544">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chrome verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz.<ph name="LEARN_MORE"/></translation>

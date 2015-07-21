@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Zamknij wszystkie okna przeglądarki Google Chrome i uruchom ją ponownie, aby zastosować zmiany.</translation>
 <translation id="1619887657840448962">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy to rozszerzenie. Nie jest ono dostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> i mogło zostać dodane bez Twojej wiedzy.</translation>
 <translation id="225614027745146050">Witamy</translation>
+<translation id="8811903091068364646">U&amp;ruchom Chrome ponownie na pulpicie</translation>
 <translation id="3398288718845740432">Ukryj w menu Chrome</translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
@@ -250,6 +251,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="3037838751736561277">Google Chrome jest w trybie działania w tle</translation>
 <translation id="2084710999043359739">Dodaj do Chrome</translation>
 <translation id="4692614041509923516">Twój komputer ma starą wersję Microsoft Windows, która nie potrafi przetworzyć certyfikatu bezpieczeństwa tej witryny. Przez ten problem Google Chrome nie może ustalić, czy ten certyfikat pochodzi z <ph name="SITE"/> czy od kogoś w Twojej sieci podszywającego się pod <ph name="SITE"/>. Zaktualizuj Windows na komputerze do nowszej wersji.</translation>
+<translation id="5931853610562009806">Na Macach hasła można zapisywać w pęku kluczy. Inni użytkownicy Chrome dzielący to konto OS X mogą z nich korzystać i je synchronizować.</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
 <translation id="7592736734348559088">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
@@ -261,6 +263,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="1001534784610492198">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Google Chrome ponownie.</translation>
 <translation id="2246246234298806438">Google Chrome nie może pokazać podglądu wydruku, gdy nie ma wbudowanej przeglądarki PDF.</translation>
 <translation id="5132929315877954718">Odkryj znakomite aplikacje, gry, rozszerzenia i motywy do przeglądarki Google Chrome.</translation>
+<translation id="7784335114585804598">U&amp;ruchom Chrome ponownie w trybie Windows 8</translation>
 <translation id="6626317981028933585">Niestety ustawienia przeglądarki Firefox są niedostępne, gdy aplikacja jest uruchomiona. Aby importować ustawienia do Google Chrome, zapisz bieżącą pracę i zamknij wszystkie okna Firefoxa. Następnie kliknij przycisk Kontynuj.</translation>
 <translation id="8274359292107649245">Otwórz Chrome na pulpicie</translation>
 <translation id="7242029209006116544">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Google Chrome. Twoje dane Chrome, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME"/>. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. Możesz też utworzyć nowy profil, by przechowywać swoje dotychczasowe dane Chrome osobno. <ph name="LEARN_MORE"/></translation>

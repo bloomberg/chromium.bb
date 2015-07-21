@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="sr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
 <translation id="4763480195061959176">видео</translation>
 <translation id="5843503607508392247">Друго...</translation>
 <translation id="248395913932153421">Дан</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Ово је индекс који може да се претражује. Унесите кључне речи за претрагу:</translation>
 <translation id="1930711995431081526">статус</translation>
 <translation id="658823671542763450">пређите на режим целог екрана</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">преостало време</translation>
-<translation id="370665806235115550">Учитавање...</translation>
 <translation id="2723001399770238859">аудио</translation>
 <translation id="6845533974506654842">притисни</translation>
 <translation id="8244226242650769279">мапа слике</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (средњи степен)</translation>
 <translation id="1637811476055996098">Избор датотека</translation>
 <translation id="49969490063480558">Унесите неки део после „<ph name="ATSIGN"/>“. Адреса „<ph name="INVALIDADDRESS"/>“ је непотпуна.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">опозови избор</translation>
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2507943997699731163">Попуните ово поље.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Друго...</translation>
 <translation id="383465348367842624">Део пре „<ph name="ATSIGN"/>“ не треба да садржи симбол „<ph name="INVALIDCHARACTER"/>“.</translation>
 <translation id="5468998798572797635">изађите из режима целог екрана</translation>
-<translation id="5919473608089529604">Није могуће учитати додатну компоненту.</translation>
 <translation id="5546461542133609677">укључите звук</translation>
 <translation id="6663448176199120256">Недавне претраге</translation>
 <translation id="1020833440720551630">искључите звук аудио снимка</translation>
-<translation id="2597378329261239068">Овај документ је заштићен лозинком. Унесите лозинку.</translation>
 <translation id="5466621249238537318">Изаберите једну или више датотека.</translation>
 <translation id="9132465097189459683">Друго...</translation>
 <translation id="10623998915015855">дугме за укључивање/искључивање</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Скратите овај текст на <ph name="MAX_CHARACTERS"/> знак(ов)а или мање (тренутно користите <ph name="CURRENT_LENGTH"/> знак(ов)а).</translation>
 <translation id="6101327004457443354">укључите звук аудио снимка</translation>
 <translation id="1822429046913737220">пре подне/по подне</translation>
-<translation id="1639239467298939599">Учитавање</translation>
 <translation id="2908441821576996758">Унесите листу имејл адреса раздвојених зарезима.</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="2613802280814924224">Унесите важећу вредност. Најближа важећа вредност је <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Неважећа вредност.</translation>
+<translation id="9108370397979208512">математички</translation>
 <translation id="1842960171412779397">изабери</translation>
 <translation id="7673697353781729403">Сати</translation>
 <translation id="4664250907885839816">Део после „<ph name="ATSIGN"/>“ не треба да садржи симбол „<ph name="INVALIDCHARACTER"/>“.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Обриши</translation>
 <translation id="7888071071722539607">Уврстите „<ph name="ATSIGN"/>“ у имејл адресу. У адреси е-поште „<ph name="INVALIDADDRESS"/>“ недостаје „<ph name="ATSIGN"/>“.</translation>
 <translation id="1088086359088493902">Секунде</translation>
-<translation id="3934680773876859118">Учитавање PDF документа није успело</translation>
 <translation id="3632707345189162177">број преосталих секунди филма</translation>
 <translation id="6359256949422175976">клизач за трајање филма</translation>
 <translation id="8597182159515967513">наслов</translation>

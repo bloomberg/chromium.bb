@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">ஆன்ஸ்க்ரீன் விசைப்பலகை முடக்கப்பட்டது</translation>
 <translation id="5548285847212963613">இந்த நெட்வொர்க்குடன் இணைய, &quot;<ph name="EXTENSION_NAME"/>&quot; நீட்டிப்பு உதவும்.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> மற்றும் <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">மைக் ஜேக்</translation>
 <translation id="30155388420722288">மிகைப்படுத்தி பொத்தான்</translation>
 <translation id="7904094684485781019">இந்தக் கணக்கிற்கான நிர்வாகி பல உள்நுழைவுகளை அனுமதிக்கவில்லை.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google இயக்ககம்</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> தெளிவுத்திறன் <ph name="RESOLUTION"/> க்கு மாற்றப்பட்டது</translation>
 <translation id="2297568595583585744">நிலைத் தட்டு</translation>
-<translation id="2248649616066688669">வெளிப்புற காட்சியுடன் இணைக்கப்பட்டிருக்கும்போது, மூடியை மூடி வைத்தும் உங்கள் Chromebook ஐத் தொடர்ந்து பயன்படுத்தலாம்.</translation>
 <translation id="2946640296642327832">புளூடூத்தை இயக்கு</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> க்கு திரை விரிவாக்கப்படுகிறது</translation>
 <translation id="8206859287963243715">செல்லுலர்</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">ஆன்ஸ்க்ரீன் விசைப்பலகை இயக்கப்பட்டது</translation>
 <translation id="2208323208084708176">ஒன்றிணைந்த டெஸ்க்டாப் பயன்முறை</translation>
 <translation id="2825619548187458965">அடுக்கு</translation>
-<translation id="2614835198358683673">உங்கள் Chromebook இயக்கத்தில் இருக்கும்போது சார்ஜ் செய்ய முடியாது. அதிகாரப்பூர்வ சார்ஜரைப் பயன்படுத்தவும்.</translation>
 <translation id="4430019312045809116">அளவு</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">எல்லா பயனர்களும் ஏற்கனவே இந்த அமர்வில் சேர்க்கப்பட்டுள்ளனர்.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
 <translation id="882279321799040148">காண கிளிக் செய்க</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">உங்கள் Chromebook இயக்கத்தில் இருக்கும்போது சார்ஜ் செய்ய முடியாது.</translation>
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION"/> ஐ <ph name="DISPLAY_NAME"/> ஆதரிக்கவில்லை. <ph name="FALLBACK_RESOLUTION"/> க்குத் தெளிவு மாற்றப்பட்டது</translation>
 <translation id="1602076796624386989">மொபைல் தரவை இயக்கு</translation>
 <translation id="68610848741840742">ChromeVox (பேச்சுவடிவ கருத்து)</translation>

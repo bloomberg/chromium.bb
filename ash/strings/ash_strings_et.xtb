@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Ekraanil kuvatav klaviatuur on keelatud</translation>
 <translation id="5548285847212963613">Laiendus „<ph name="EXTENSION_NAME"/>” aitab selle võrguga ühenduse loomisel.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ja <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofoni pistikupesa</translation>
 <translation id="30155388420722288">Ülevoolunupp</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Ekraani <ph name="DISPLAY_NAME"/> eraldusvõimeks määrati <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Olekusalv</translation>
-<translation id="2248649616066688669">Kui Chromebook on ühendatud välise ekraaniga, saate jätkata Chromebooki kasutamist isegi siis, kui selle kaas on suletud.</translation>
 <translation id="2946640296642327832">Luba Bluetooth</translation>
 <translation id="6459472438155181876">Ekraani laiendamine seadmesse <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobiil</translation>
@@ -104,7 +104,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="1747827819627189109">Ekraanil kuvatav klaviatuur on lubatud</translation>
 <translation id="2208323208084708176">Ühendatud töölaua režiim</translation>
 <translation id="2825619548187458965">Riiul</translation>
-<translation id="2614835198358683673">Teie Chromebooki ei pruugita laadida, kui see on sisse lülitatud. Kaaluge ametliku laadija kasutamist.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Kõik saadaval kasutajad on sellesse seanssi juba lisatud.</translation>
@@ -150,7 +149,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
 <translation id="882279321799040148">Vaatamiseks klõpsake</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Teie Chromebooki ei pruugita laadida, kui see on sisse lülitatud.</translation>
 <translation id="7561014039265304140">Üksus <ph name="DISPLAY_NAME"/> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION"/>. Eraldusvõime muudeti tagasi väärtusele <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Luba mobiilne andmeside</translation>
 <translation id="68610848741840742">ChromeVox (kõnena esitatud tagasiside)</translation>

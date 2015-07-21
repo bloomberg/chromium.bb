@@ -200,7 +200,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="1152528166145813711">Valige ...</translation>
 <translation id="2235518894410572517">Jagage seda arvutit teise kasutajaga, nii et ta näeb ja saab arvutit juhtida.</translation>
 <translation id="6939719207673461467">Kuva/peida klaviatuur.</translation>
-<translation id="1023096696228309145">Paluge kasutajal, kelle arvutisse soovite juurde pääseda, klõpsata valikul „Jaga nüüd” ja anda teile seejärel pääsukood.</translation>
 <translation id="4240294130679914010">Chromootimise hosti desinstaller</translation>
 <translation id="8712909229180978490">Ma ei näe võrgus oma salvestatud faile Google Drive'is.</translation>
 <translation id="80739703311984697">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma chromootimisele täiendavad load juurdepääsuks sellele aadressile:</translation>
@@ -241,6 +240,8 @@ Desktopi host</translation>
 <translation id="2921543551052660690">Olete varem sisse loginud kasutajana <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Sellel kontol oma arvutitele juurdepääsemiseks <ph name="LINK_BEGIN"/>logige Chromiumi sisse<ph name="LINK_END"/> selle kontoga ja installige chromootimine uuesti.</translation>
 <translation id="7319983568955948908">Lõpeta jagamine</translation>
 <translation id="6681800064886881394">Autoriõigus 2013 Google Inc. Kõik õigused kaitstud.</translation>
+<translation id="2998137343848432918">• Lisati osaliste ekraan.
+• Parandati probleem, mille puhul täisekraanirežiimis oli klaviatuur nähtaval.</translation>
 <translation id="6640610550128933069">viimati oli veebis <ph name="DATE"/></translation>
 <translation id="6668065415969892472">Teie PIN-kood on värskendatud.</translation>
 <translation id="4513946894732546136">Tagasiside</translation>

@@ -82,6 +82,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5037239767309817516">為了讓這項變更生效，請關閉所有 Google Chrome 視窗，並重新啟動瀏覽器。</translation>
 <translation id="1619887657840448962">為了讓 Chrome 的安全性更有保障，我們停用了以下這個未列在「<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>」中的擴充功能 (它可能是在您不知情的情況下加入瀏覽器)。</translation>
 <translation id="225614027745146050">歡迎使用</translation>
+<translation id="8811903091068364646">以桌面模式重新啟動 Chrome(&amp;R)</translation>
 <translation id="3398288718845740432">在 Chrome 選單中隱藏</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
@@ -250,6 +251,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="3037838751736561277">Google Chrome 正在背景模式中執行。</translation>
 <translation id="2084710999043359739">加到 Chrome</translation>
 <translation id="4692614041509923516">您的電腦所執行的 Microsoft Windows 版本過舊，無法處理這個網站的安全性憑證。因此，Google Chrome 無法辨識這是 <ph name="SITE"/> 網站的憑證，還是某人在您的網路上偽裝成 <ph name="SITE"/> 網站所發送。請更新您電腦的 Windows 版本。</translation>
+<translation id="5931853610562009806">在 Mac 上，密碼會儲存在您的 Keychain 中，因此其他共用這個 OS X 帳戶的 Chrome 使用者都能存取或同步處理這些密碼。</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
 <translation id="7592736734348559088">您的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理您的資料。</translation>
@@ -261,6 +263,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載 Google Chrome。</translation>
 <translation id="2246246234298806438">缺乏內建的 PDF 檢視器時，Google Chrome 無法顯示列印預覽。</translation>
 <translation id="5132929315877954718">幫您的 Google Chrome 物色各種實用有趣的應用程式、遊戲、擴充功能和主題。</translation>
+<translation id="7784335114585804598">以 Windows 8 模式重新啟動 Chrome(&amp;R)</translation>
 <translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要將這些設定匯入到 Google Chrome，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>
 <translation id="8274359292107649245">以電腦模式開啟 Chrome</translation>
 <translation id="7242029209006116544">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，您可以選擇建立新的設定檔。<ph name="LEARN_MORE"/></translation>

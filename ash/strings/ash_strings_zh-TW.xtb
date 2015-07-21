@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">螢幕小鍵盤已停用</translation>
 <translation id="5548285847212963613">「<ph name="EXTENSION_NAME"/>」擴充功能可協助連線至這個網路。</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘</translation>
+<translation id="1343000272198685031">麥克風插孔</translation>
 <translation id="30155388420722288">溢位按鈕</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
 <translation id="8673028979667498656">270 度</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> 的解析度已變更為 <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">狀態匣</translation>
-<translation id="2248649616066688669">連接外埠顯示器之後，您可以繼續使用 Chromebook (即使將上蓋闔上)。</translation>
 <translation id="2946640296642327832">啟用藍牙</translation>
 <translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME"/> 畫面</translation>
 <translation id="8206859287963243715">手機</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
 <translation id="2208323208084708176">整合桌面模式</translation>
 <translation id="2825619548187458965">檔案櫃</translation>
-<translation id="2614835198358683673">您的 Chromebook 可能無法在開機時充電。建議您使用官方提供的充電器。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">畫面放大鏡</translation>
 <translation id="882279321799040148">按這裡瀏覽</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">您的 Chromebook 可能無法在開啟時充電。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> 不支援 <ph name="SPECIFIED_RESOLUTION"/>，解析度已變更為 <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">啟用行動數據</translation>
 <translation id="68610848741840742">ChromeVox (互動朗讀)</translation>

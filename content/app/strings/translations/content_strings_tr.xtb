@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="tr">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Diğer...</translation>
 <translation id="248395913932153421">Gün</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Bu dizinde arama yapılabilir. Arama anahtar kelimeleri girin:</translation>
 <translation id="1930711995431081526">durum</translation>
 <translation id="658823671542763450">tam ekrana geç</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">kalan süre</translation>
-<translation id="370665806235115550">Yükleniyor...</translation>
 <translation id="2723001399770238859">ses</translation>
 <translation id="6845533974506654842">bas</translation>
 <translation id="8244226242650769279">resim haritası</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Orta Düzey)</translation>
 <translation id="1637811476055996098">Dosyaları Seç</translation>
 <translation id="49969490063480558">Lütfen başına &quot;<ph name="ATSIGN"/>&quot; ekleyin. &quot;<ph name="INVALIDADDRESS"/>&quot; eksik.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">işareti kaldır</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2507943997699731163">Lütfen bu alanı doldurun.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Diğer...</translation>
 <translation id="383465348367842624">Başında &quot;<ph name="ATSIGN"/>&quot; bulunan kısımda &quot;<ph name="INVALIDCHARACTER"/>&quot; simgesi bulunmamalıdır.</translation>
 <translation id="5468998798572797635">tam ekrandan çık</translation>
-<translation id="5919473608089529604">Eklenti yüklenemedi.</translation>
 <translation id="5546461542133609677">sesi aç</translation>
 <translation id="6663448176199120256">Son Aramalar</translation>
 <translation id="1020833440720551630">ses kanalını kapat</translation>
-<translation id="2597378329261239068">Doküman şifre korumalı. Lütfen şifreyi girin.</translation>
 <translation id="5466621249238537318">Lütfen bir veya daha fazla dosya seçin.</translation>
 <translation id="9132465097189459683">Diğer...</translation>
 <translation id="10623998915015855">geçiş düğmesi</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Lütfen bu metni <ph name="MAX_CHARACTERS"/> veya daha az karakter olacak şekilde kısaltın (şu anda <ph name="CURRENT_LENGTH"/> karakter kullanıyorsunuz).</translation>
 <translation id="6101327004457443354">ses kanalını aç</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">Yükleniyor</translation>
 <translation id="2908441821576996758">Lütfen e-posta adreslerinin virgülle ayrılmış listesini girin.</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="1921819250265091946">gg</translation>
 <translation id="2613802280814924224">Lütfen geçerli bir değer girin. En yakın geçerli değer şudur: <ph name="VALID_VALUE"/></translation>
 <translation id="835897206747267392">Geçersiz değer.</translation>
+<translation id="9108370397979208512">math</translation>
 <translation id="1842960171412779397">seç</translation>
 <translation id="7673697353781729403">Saat</translation>
 <translation id="4664250907885839816">Başında &quot;<ph name="ATSIGN"/>&quot; bulunan kısımda &quot;<ph name="INVALIDCHARACTER"/>&quot; simgesi bulunmamalıdır.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="7888071071722539607">Lütfen e-posta adresine bir &quot;<ph name="ATSIGN"/>&quot; işareti ekleyin. &quot;<ph name="INVALIDADDRESS"/>&quot; adresinde &quot;<ph name="ATSIGN"/>&quot; eksik.</translation>
 <translation id="1088086359088493902">Saniye</translation>
-<translation id="3934680773876859118">PDF dokümanı yüklenemedi</translation>
 <translation id="3632707345189162177">saniye olarak filmin kalan süresi</translation>
 <translation id="6359256949422175976">film süresi göstergesinin küçük resmi</translation>
 <translation id="8597182159515967513">başlık</translation>

@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Pemasangan gagal karena kesalahan yang tidak diketahui. Jika Chromium sedang berjalan, tutup, lalu ulang kembali.</translation>
 <translation id="1396446129537741364">Chromium mencoba menampilkan sandi.</translation>
 <translation id="2097986737970966220">Buka Chromium di desktop</translation>
+<translation id="108122890477367602">&amp;Luncurkan ulang Chromium dalam mode Windows 8</translation>
 <translation id="8987477933582888019">Browser Web</translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
 <translation id="2886012850691518054">Opsional: Bantu menjadikan Chrome lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google.</translation>
@@ -243,7 +244,9 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="1708666629004767631">Tersedia versi Chromium yang baru dan lebih aman.</translation>
 <translation id="1644918877723739397">Chromium akan menyimpan ini di <ph name="SAVED_PASSWORD_LINK"/> Anda dan mengingatnya saat Anda membutuhkannya lagi.</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
+<translation id="8605166112420372522">&amp;Luncurkan ulang Chromium di desktop</translation>
 <translation id="1461885241643463646">Memungkinkan alur masuk Chromium berbasis iframe. Tanda ini menggantikan --memungkinkan masuk berbasis web.</translation>
+<translation id="390894725198123737">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chromium lain yang membagikan akun OS X ini.</translation>
 <translation id="608189560609172163">Chromium tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
 <translation id="4888717733111232871">Inbound rule untuk Chromium guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="151962892725702025">Chromium OS tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>

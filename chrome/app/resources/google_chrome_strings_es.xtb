@@ -86,6 +86,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5037239767309817516">Cierra todas las ventanas de Google Chrome y reinicia el navegador para que se aplique el cambio.</translation>
 <translation id="1619887657840448962">Para aumentar la seguridad de Chrome, hemos inhabilitado la siguiente extensión que no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> y que puede haberse añadido sin tu conocimiento.</translation>
 <translation id="225614027745146050">Te damos la bienvenida</translation>
+<translation id="8811903091068364646">&amp;Reiniciar Chrome en el escritorio</translation>
 <translation id="3398288718845740432">Ocultar en el menú de Chrome</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
@@ -254,6 +255,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano.</translation>
 <translation id="2084710999043359739">Añadir a Chrome</translation>
 <translation id="4692614041509923516">Tu ordenador utiliza una versión antigua de Microsoft Windows que no puede procesar el certificado de seguridad de este sitio web. Debido a este problema, Google Chrome no puede saber si el certificado procede de <ph name="SITE"/> o de un atacante de tu red que quiera hacerse pasar por <ph name="SITE"/>. Instala una versión más reciente de Windows en el ordenador.</translation>
+<translation id="5931853610562009806">En los ordenadores Mac, las contraseñas se pueden guardar en el llavero, y otros usuarios de Chrome que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
 <translation id="3360895254066713204">Ayudante de Chrome</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
 <translation id="7592736734348559088">Google Chrome no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
@@ -265,6 +267,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="1001534784610492198">El archivo de instalación está dañado o no es válido. Vuelve a descargar Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDF integrado.</translation>
 <translation id="5132929315877954718">Descubre formidables aplicaciones, juegos, extensiones y temas para Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Reiniciar Chrome en modo Windows 8</translation>
 <translation id="6626317981028933585">Tu configuración de Mozilla Firefox no está disponible mientras el navegador se está ejecutando. Para importar esta configuración en Google Chrome, guarda los cambios y cierra todas las ventanas de Firefox. A continuación, haz clic en Continuar.</translation>
 <translation id="8274359292107649245">Abrir Chrome en el escritorio</translation>
 <translation id="7242029209006116544">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Google Chrome. Tus datos de Chrome como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME"/>. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociar estos datos a otra cuenta. De forma opcional, puedes crear un nuevo perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE"/></translation>

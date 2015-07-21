@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5548285847212963613">ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು &quot;<ph name="EXTENSION_NAME"/>&quot; ವಿಸ್ತರಣೆಯು ಸಹಾಯ ಮಾಡಬಹುದು.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ಮತ್ತು <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">ಮೈಕ್ ಜ್ಯಾಕ್</translation>
 <translation id="30155388420722288">ಅತ್ಯಧಿಕ ಬಟನ್</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google ಡ್ರೈವ್‌‌</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> ರೆಸಲ್ಯೂಷನ್ ಅನ್ನು <ph name="RESOLUTION"/> ಗೆ ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="2297568595583585744">ಸ್ಥಿತಿ ಟ್ರೆ</translation>
-<translation id="2248649616066688669">ನಿಮ್ಮ Chromebook ಅನ್ನು ಬಾಹ್ಯ ಪ್ರದರ್ಶನಕ್ಕೆ ಸಂಪರ್ಕಗೊಳಿಸಿರುವಾಗ, ಅದರ ಮುಚ್ಚಳ ಮುಚ್ಚಿದ್ದರೂ ಅದನ್ನು ನೀವು ಬಳಸುತ್ತಲೇ ಇರಬಹುದು.</translation>
 <translation id="2946640296642327832">bluetooth ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> ಗೆ ಪರದೆಯನ್ನು ವಿಸ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8206859287963243715">ಸೆಲ್ಯುಲಾರ್</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2208323208084708176">ಏಕೀಕೃತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಮೋಡ್</translation>
 <translation id="2825619548187458965">ಶೆಲ್ಫ್</translation>
-<translation id="2614835198358683673">ನಿಮ್ಮ Chromebook ಆನ್ ಆಗಿರುವಾಗ ಅದು ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಿ.</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">ಈ ಸೆಷನ್‌ಗೆ ಎಲ್ಲಾ ಲಭ್ಯವಿರುವ ಬಳಕೆದಾರರನ್ನು ಈಗಾಗಲೇ ಸೇರಿಸಲಾಗಿದೆ.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">ಪರದೆ ವರ್ಧಕ</translation>
 <translation id="882279321799040148">ವೀಕ್ಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">ನಿಮ್ಮ Chromebook ಆನ್ ಆಗಿರುವಾಗ ಅದು ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ.</translation>
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION"/> ಅನ್ನು <ph name="DISPLAY_NAME"/> ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ರೆಸಲ್ಯೂಶನ್‌ ಅನ್ನು <ph name="FALLBACK_RESOLUTION"/> ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="1602076796624386989">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="68610848741840742">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ)</translation>

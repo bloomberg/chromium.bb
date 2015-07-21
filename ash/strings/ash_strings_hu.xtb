@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
 <translation id="5548285847212963613">A(z) „<ph name="EXTENSION_NAME"/>” bővítmény segíthet a hálózathoz való csatlakozásban.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> és <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofon jack csatlakozója</translation>
 <translation id="30155388420722288">Túlcsordulás gomb</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> felbontása erre módosult: <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Állapottálca</translation>
-<translation id="2248649616066688669">Amennyiben Chromebookjához külső kijelzőt csatlakoztat, akkor is tovább használhatja eszközét, ha annak fedele le van hajtva.</translation>
 <translation id="2946640296642327832">Bluetooth engedélyezése</translation>
 <translation id="6459472438155181876">Képernyő kiterjesztése erre: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -104,7 +104,6 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="2208323208084708176">Egységes asztali mód</translation>
 <translation id="2825619548187458965">Polc</translation>
-<translation id="2614835198358683673">Előfordulhat, hogy a Chromebook nem töltődik, amíg be van kapcsolva. Vegye fontolóra a gyári töltő használatát.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Minden elérhető felhasználót hozzáadott a munkamenethez.</translation>
@@ -150,7 +149,6 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="3473479545200714844">Képernyőnagyító</translation>
 <translation id="882279321799040148">Kattintson a megtekintéshez</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Előfordulhat, hogy a Chromebook nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="7561014039265304140">A(z) <ph name="DISPLAY_NAME"/> nem támogatja a következő felbontást: <ph name="SPECIFIED_RESOLUTION"/>. A felbontás megváltozott erre: <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Mobiladatok engedélyezése</translation>
 <translation id="68610848741840742">ChromeVox (beszélt visszajelzés)</translation>

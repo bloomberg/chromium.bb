@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Skjermtastaturet er deaktivert</translation>
 <translation id="5548285847212963613">Utvidelsen «<ph name="EXTENSION_NAME"/>» kan hjelpe deg med å koble deg til dette nettverket.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> og <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofonkontakt</translation>
 <translation id="30155388420722288">Overflyt-knappen</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="3683428399328702079">Oppløsningen for <ph name="DISPLAY_NAME"/> ble endret til <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Status-felt</translation>
-<translation id="2248649616066688669">Du kan fortsette å bruke Chromebooken din mens den er tilkoblet en ekstern skjerm, selv når du lukker lokket.</translation>
 <translation id="2946640296642327832">Aktivér Bluetooth</translation>
 <translation id="6459472438155181876">Utvider skjermen til <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -105,7 +105,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="2208323208084708176">Enhetlig skrivebordsmodus</translation>
 <translation id="2825619548187458965">Hylle</translation>
-<translation id="2614835198358683673">Chromebook kan ikke lades mens den er slått på. Vurder å bruke den offisielle laderen.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Alle tilgjengelige brukere er allerede lagt til i denne økten.</translation>
@@ -151,7 +150,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
 <translation id="882279321799040148">Klikk for å se den</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebook lades kanskje ikke mens den er slått på.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> støtter ikke <ph name="SPECIFIED_RESOLUTION"/>. Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Aktiver mobildata</translation>
 <translation id="68610848741840742">ChromeVox (muntlig tilbakemelding)</translation>

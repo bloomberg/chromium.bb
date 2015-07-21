@@ -44,6 +44,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4285930937574705105">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Chromium om det är igång och försök sedan igen.</translation>
 <translation id="1396446129537741364">Chromium försöker visa lösenord.</translation>
 <translation id="2097986737970966220">Öppna Chromium på skrivbordet</translation>
+<translation id="108122890477367602">&amp;Starta om Chromium i Windows 8-läge</translation>
 <translation id="8987477933582888019">Webbläsare</translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="2886012850691518054">Valfritt: Hjälp till att göra Chromium bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google.</translation>
@@ -244,7 +245,9 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>
 <translation id="1644918877723739397">Chromium sparar detta i <ph name="SAVED_PASSWORD_LINK"/> och kommer ihåg det nästa gång du behöver det.</translation>
 <translation id="378917192836375108">I Chromium kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
+<translation id="8605166112420372522">&amp;Starta om Chromium på skrivbordet</translation>
 <translation id="1461885241643463646">Aktiverar iframe-baserade inloggningsflöden i Chromium. Den här flaggan åsidosätter --enable-web-based-signin.</translation>
+<translation id="390894725198123737">På Mac kan lösenord sparas på nyckelringen. Andra Chromium-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
 <translation id="608189560609172163">Chromium kunde inte synkronisera data på grund av ett fel vid inloggningen.</translation>
 <translation id="4888717733111232871">Regel som tillåter inkommande mDNS-trafik för Chromium.</translation>
 <translation id="151962892725702025">Det gick inte att synkronisera data med Chromium eftersom synkronisering inte är tillgängligt för domänen.</translation>

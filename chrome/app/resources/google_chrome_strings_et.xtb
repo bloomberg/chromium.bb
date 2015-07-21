@@ -82,6 +82,7 @@
 <translation id="5037239767309817516">Muudatuse rakendamiseks sulgege kõik Google Chrome'i aknad ja taaskäivitage Chrome.</translation>
 <translation id="1619887657840448962">Chrome'i turvalisemaks muutmiseks keelasime järgmise laienduse, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> ja mis võidi lisada teie teadmata.</translation>
 <translation id="225614027745146050">Tere tulemast</translation>
+<translation id="8811903091068364646">&amp;Käivitage Chrome uuesti töölaual</translation>
 <translation id="3398288718845740432">Chrome'i menüüs peitmine</translation>
 <translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="3149510190863420837">Chrome'i rakendused</translation>
@@ -253,6 +254,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="3037838751736561277">Google Chrome on taustarežiimis.</translation>
 <translation id="2084710999043359739">Chrome'i lisamine</translation>
 <translation id="4692614041509923516">Teie arvuti käitab Microsoft Windowsi vana versiooni, mis ei suuda töödelda selle veebisaidi turvasertifikaati. Seetõttu ei saa Google Chrome tuvastada, kas sertifikaat pärineb saidilt <ph name="SITE"/> või kelleltki võrgus, kes teeskleb saiti <ph name="SITE"/>. Viige arvuti üle uuemale Windowsi versioonile.</translation>
+<translation id="5931853610562009806">Macis võidakse paroolid salvestada rakendusse Keychain ja teised Chrome'i kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ning sünkroonida.</translation>
 <translation id="3360895254066713204">Chrome'i abistaja</translation>
 <translation id="1877026089748256423">Chrome on aegunud</translation>
 <translation id="7592736734348559088">Google Chrome ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
@@ -264,6 +266,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="1001534784610492198">Installija arhiiv on rikutud või kehtetu. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="2246246234298806438">Google Chrome ei saa kuvada printimise eelvaadet, kui sisseehitatud PDF-vaatur puudub.</translation>
 <translation id="5132929315877954718">Avastage Google Chrome'i jaoks suurepäraseid rakendusi, mänge, laiendusi ja teemasid.</translation>
+<translation id="7784335114585804598">&amp;Käivitage Chrome uuesti Windows 8 režiimis</translation>
 <translation id="6626317981028933585">Kahjuks pole teie Mozilla Firefoxi seaded saadaval samal ajal kui brauser töötab. Nende seadete Google Chrome'i importimiseks salvestage oma töö ja sulgege kõik Firefoxi aknad. Siis klõpsake Jätka.</translation>
 <translation id="8274359292107649245">Ava Chrome töölaual</translation>
 <translation id="7242029209006116544">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME"/>. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE"/></translation>

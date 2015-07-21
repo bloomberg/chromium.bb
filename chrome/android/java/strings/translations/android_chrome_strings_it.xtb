@@ -42,11 +42,14 @@
 <translation id="326254929494722411">Non hai ancora configurato un account Google sul dispositivo</translation>
 <translation id="8143660160623733249">Nome cartella</translation>
 <translation id="8820817407110198400">Segnalibri</translation>
+<translation id="4720023427747327413">Apri in <ph name="PRODUCT_NAME"/></translation>
 <translation id="5676636989614905379">Impossibile riprodurre il video su <ph name="SCREEN_NAME"/>.</translation>
 <translation id="5275558766013849309">Le schede saranno insieme alle app recenti.</translation>
 <translation id="8069239273282989646">Dopo la compressione</translation>
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="4761374747761474835">Seleziona un account per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
+<translation id="1359381790106966506">Aggiorna autorizzazioni</translation>
+<translation id="6060567974409584397">Tocca per tornare alla scheda</translation>
 <translation id="4803910478683254032">Importazione non riuscita</translation>
 <translation id="3485544713029068372">Smart Lock per password</translation>
 <translation id="6999892069268112724">Conferma account Google</translation>
@@ -74,9 +77,11 @@
 <translation id="2354750644801399986">&quot;Non tenere traccia&quot;</translation>
 <translation id="2351097562818989364">Le impostazioni di traduzione sono state reimpostate.</translation>
 <translation id="4307992518367153382">Impostazioni di base</translation>
+<translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
 <translation id="6458785801851713928">Il servizio di sincronizzazione non è disponibile per il tuo dominio.</translation>
+<translation id="7788788617745289808">Chrome deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="7765158879357617694">Sposta</translation>
 <translation id="2731700343119398978">Attendi...</translation>
 <translation id="6846298663435243399">Caricamento in corso…</translation>
@@ -101,6 +106,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="4532845899244822526">Scegli cartella</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>
 <translation id="563535393368633106">Chiedi prima di accedere (opzione consigliata)</translation>
+<translation id="145097072038377568">Disattivata in Impostazioni Android</translation>
 <translation id="666981079809192359">Informativa sulla privacy di Chrome</translation>
 <translation id="983192555821071799">Chiudi tutte le schede</translation>
 <translation id="1966710179511230534">Aggiorna i dati di accesso.</translation>
@@ -117,6 +123,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="1091134514807961917">Hai eseguito l'accesso al seguente account Google.</translation>
 <translation id="7019652137705190998">Attiva la modalità in incognito per navigare in privato o accedere temporaneamente</translation>
 <translation id="932327136139879170">Home page</translation>
+<translation id="1061441684050139317">Chrome deve avere accesso al microfono per condividerla con questo sito.</translation>
 <translation id="963967414714199900">Ultima sincronizzazione: adesso</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, app web. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Sostituisci file</translation>
@@ -130,6 +137,7 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="4256782883801055595">Licenze open source</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8218346974737627104">Conferma accesso</translation>
+<translation id="6675018499747166670">Audio in riproduzione. Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="5832934273103296195">Visualizzazione espansa. Fai clic per comprimere</translation>
 <translation id="8457451314607652708">Importa Preferiti</translation>
 <translation id="6612856669344839356">Salva Preferito</translation>
@@ -201,6 +209,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="3184369589781594823">Importare tutti i Preferiti locali dal browser Android?</translation>
 <translation id="8562452229998620586">Le password salvate verranno visualizzate qui.</translation>
 <translation id="238909021488141516">Si è verificato un errore durante il download dei contenuti.</translation>
+<translation id="6012342843556706400">Chrome deve avere accesso alla posizione per condividerla con questo sito.</translation>
 <translation id="8730621377337864115">Fine</translation>
 <translation id="4170011742729630528">Il servizio non è disponibile, riprova più tardi.</translation>
 <translation id="473775607612524610">Aggiorna</translation>
@@ -209,8 +218,11 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6600954340915313787">Copiata in Chrome</translation>
 <translation id="5771382037724542929">Vuoi sostituire il file <ph name="FILE_NAME"/> esistente in <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Errore di sincronizzazione</translation>
+<translation id="5881438603132347856">&quot;<ph name="MEDIA_TITLE"/>&quot; in riproduzione</translation>
+<translation id="423410644998903704">Chrome deve avere accesso alle autorizzazioni per condividerle con questo sito.</translation>
 <translation id="1807246157184219062">Chiaro</translation>
 <translation id="2904413602477443379">Scegli una cartella</translation>
+<translation id="194341124344773587">Abilita l'autorizzazione per Chrome in <ph name="BEGIN_LINK"/>Impostazioni Android<ph name="END_LINK"/>.</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="8374821112118309944">Aggiorna TalkBack a una versione più recente.</translation>
 <translation id="8413126021676339697">Mostra cronologia completa</translation>
@@ -274,6 +286,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="971774202801778802">Aggiungi l'URL ai segnalibri</translation>
 <translation id="1620510694547887537">Videocamera</translation>
 <translation id="10614374240317010">Mai salvate</translation>
+<translation id="4792242903050551833">&quot;<ph name="MEDIA_TITLE"/>&quot; in pausa</translation>
 <translation id="1312168552565502328">Cookie, dati dei siti</translation>
 <translation id="2903493209154104877">Indirizzi</translation>
 <translation id="3661699943263275414">I siti web di terze parti possono salvare e leggere i dati dei cookie</translation>
@@ -284,6 +297,7 @@ Per uscire premi il pulsante Indietro.</translation>
 <translation id="7366340029385295517">Trasmissione su <ph name="SCREEN_NAME"/> in corso</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="1197267115302279827">Sposta i Preferiti</translation>
+<translation id="3190152372525844641">Abilita le autorizzazioni per Chrome in <ph name="BEGIN_LINK"/>Impostazioni Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome non riesce a contattare i server di Google per la compressione dei dati. I salvataggi di dati potrebbero essere limitati.</translation>
 <translation id="4827948050554950725">Aggiungi carta di credito</translation>
 <translation id="2316129865977710310">No, grazie</translation>
@@ -439,6 +453,7 @@ Le statistiche sull'utilizzo includono informazioni quali preferenze, clic sui p
 <translation id="7963646190083259054">Fornitore:</translation>
 <translation id="9065203028668620118">Modifica</translation>
 <translation id="4881695831933465202">Apri</translation>
+<translation id="5345083863238459644">L'accesso alla posizione è stato <ph name="BEGIN_LINK"/>disattivato anche per il dispositivo<ph name="END_LINK"/>.</translation>
 <translation id="6512448926095770873">Esci dalla pagina</translation>
 <translation id="3414952576877147120">Dimensioni:</translation>
 <translation id="945632385593298557">Accesso al microfono</translation>
@@ -503,6 +518,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="497421865427891073">Avanti</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="2646820313617290661">I tuoi genitori ti aiutano a gestire queste impostazioni.</translation>
+<translation id="1423209968422390786">L'accesso alla posizione è stato <ph name="BEGIN_LINK"/>disattivato per il dispositivo<ph name="END_LINK"/>.</translation>
 <translation id="2433507940547922241">Aspetto</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6177390657002841081">Attiva Risparmio dati</translation>
@@ -519,6 +535,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="6612358246767739896">Contenuti protetti</translation>
 <translation id="1742134235943978220">Tradotto in <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL"/> utilizza la tua posizione per mostrare i risultati della ricerca locale.</translation>
 <translation id="6738867403308150051">Download in corso…</translation>
 <translation id="393697183122708255">Nessuna ricerca vocale attiva disponib.</translation>
 <translation id="3809549525127675114">&quot;<ph name="VIDEO_TITLE"/>&quot; terminato</translation>
@@ -527,6 +544,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="6965382102122355670">OK</translation>
 <translation id="2038563949887743358">Attiva Richiedi sito desktop</translation>
 <translation id="4440256989292146959">Naviga di più e consuma meno dati</translation>
+<translation id="2126426811489709554">Con tecnologia Chrome</translation>
 <translation id="4023950129927433024">Se hai dimenticato la passphrase, interrompi e reimposta la sincronizzazione tramite <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/>.</translation>
 <translation id="7437998757836447326">Esci da Chrome</translation>
 <translation id="1178581264944972037">Pausa</translation>

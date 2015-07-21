@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
 <translation id="5548285847212963613">S připojení k této síti může pomoci rozšíření <ph name="EXTENSION_NAME"/>.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> a <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Konektor mikrofonu</translation>
 <translation id="30155388420722288">Tlačítko přetečení</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Disk Google</translation>
 <translation id="3683428399328702079">Rozlišení displeje <ph name="DISPLAY_NAME"/> bylo změněno na <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Stavový panel</translation>
-<translation id="2248649616066688669">Pokud je Chromebook připojen k externí obrazovce, můžete ho používat i po zavření víka.</translation>
 <translation id="2946640296642327832">Zapnout Bluetooth</translation>
 <translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -102,7 +102,6 @@
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
 <translation id="2208323208084708176">Jednotný režim klasické plochy</translation>
 <translation id="2825619548187458965">Polička</translation>
-<translation id="2614835198358683673">Když bude Chromebook zapnutý, možná se nebude nabíjet. Doporučujeme použít oficiální nabíječku.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Do této relace již byli přidáni všichni dostupní uživatelé.</translation>
@@ -148,7 +147,6 @@
 <translation id="3473479545200714844">Lupa obrazovky</translation>
 <translation id="882279321799040148">Kliknutím jej zobrazíte</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Když bude Chromebook zapnutý, možná se nebude nabíjet.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> rozlišení <ph name="SPECIFIED_RESOLUTION"/> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="1602076796624386989">Povolit mobilní datové připojení</translation>
 <translation id="68610848741840742">ChromeVox (hlasová odezva)</translation>

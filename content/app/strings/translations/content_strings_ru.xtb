@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ru">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ru">
 <translation id="4763480195061959176">видео</translation>
 <translation id="5843503607508392247">Другое…</translation>
 <translation id="248395913932153421">День</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Это индекс с возможностью поиска. Введите ключевые слова для поиска:</translation>
 <translation id="1930711995431081526">статус</translation>
 <translation id="658823671542763450">полноэкранный режим</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">оставшееся время</translation>
-<translation id="370665806235115550">Загрузка...</translation>
 <translation id="2723001399770238859">аудио</translation>
 <translation id="6845533974506654842">нажать</translation>
 <translation id="8244226242650769279">графическая карта</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Средний размер)</translation>
 <translation id="1637811476055996098">Выбрать файлы</translation>
 <translation id="49969490063480558">Введите часть адреса после символа &quot;<ph name="ATSIGN"/>&quot;. Адрес &quot;<ph name="INVALIDADDRESS"/>&quot; неполный.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">снять галочку</translation>
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2507943997699731163">Заполните это поле.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Другое…</translation>
 <translation id="383465348367842624">Часть адреса до символа &quot;<ph name="ATSIGN"/>&quot; не должна содержать символ &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">выход из полноэкранного режима</translation>
-<translation id="5919473608089529604">Не удалось загрузить плагин.</translation>
 <translation id="5546461542133609677">включение звука</translation>
 <translation id="6663448176199120256">Недавние поиски</translation>
 <translation id="1020833440720551630">отключение звуковой дорожки</translation>
-<translation id="2597378329261239068">Документ защищен паролем. Введите пароль.</translation>
 <translation id="5466621249238537318">Выберите один или несколько файлов.</translation>
 <translation id="9132465097189459683">Другое…</translation>
 <translation id="10623998915015855">кнопка-переключатель</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Длина текста не должна превышать <ph name="MAX_CHARACTERS"/> симв. (сейчас <ph name="CURRENT_LENGTH"/> симв.).</translation>
 <translation id="6101327004457443354">включение звуковой дорожки</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">Загрузка</translation>
 <translation id="2908441821576996758">Введите адреса электронной почты через запятую.</translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="2613802280814924224">Введите допустимое значение. Ближайшее допустимое значение: <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Недопустимые данные.</translation>
+<translation id="9108370397979208512">math</translation>
 <translation id="1842960171412779397">выбрать</translation>
 <translation id="7673697353781729403">Часы</translation>
 <translation id="4664250907885839816">Часть адреса после символа &quot;<ph name="ATSIGN"/>&quot; не должна содержать символ &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Очистить</translation>
 <translation id="7888071071722539607">Адрес электронной почты должен содержать символ &quot;<ph name="ATSIGN"/>&quot;. В адресе &quot;<ph name="INVALIDADDRESS"/>&quot; отсутствует символ &quot;<ph name="ATSIGN"/>&quot;.</translation>
 <translation id="1088086359088493902">Секунды</translation>
-<translation id="3934680773876859118">Не удалось загрузить документ PDF</translation>
 <translation id="3632707345189162177">оставшееся время в секундах</translation>
 <translation id="6359256949422175976">бегунок полосы прокрутки</translation>
 <translation id="8597182159515967513">заголовок</translation>

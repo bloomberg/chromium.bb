@@ -445,7 +445,6 @@
 <translation id="3587482841069643663">All</translation>
 <translation id="6698381487523150993">Created:</translation>
 <translation id="4684748086689879921">Skip Import</translation>
-<translation id="6912686727854004322">To make this happen, you'll need to enable Voice &amp; Audio Activity and train your Chromebook in the following steps.</translation>
 <translation id="8191230140820435481">Manage your apps, extensions, and themes</translation>
 <translation id="2163418719022613650">Do not use the slimming paint display lists for drawing. Note the enable-slimming-paint flag takes precedence over this flag if both are present.</translation>
 <translation id="8279107132611114222">Your request to access this site has been sent to <ph name="NAME"/>.</translation>
@@ -562,7 +561,6 @@
 <translation id="7428061718435085649">Use left and right Shift keys to select 2nd and 3rd candidates</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="2630681426381349926">Connect to Wi-Fi to begin</translation>
-<translation id="7591494541411132320">To make this happen, you'll need to train your Chromebook in the following step.</translation>
 <translation id="1764226536771329714">beta</translation>
 <translation id="5191625995327478163">&amp;Language Settings...</translation>
 <translation id="769569204874261517"><ph name="USER_DISPLAY_NAME"/> (already on this device)</translation>
@@ -1371,7 +1369,6 @@ Calculating remaining time</translation>
 <translation id="5323213332664049067">Latin American</translation>
 <translation id="3778152852029592020">Download was cancelled.</translation>
 <translation id="8235613855873080297">Disable Encrypted Media Extensions.</translation>
-<translation id="2148227560636747235">Cast this tab</translation>
 <translation id="3507421388498836150">Current Permissions for &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7831368056091621108">to get this extension, your history, and other Chrome settings on all your devices.</translation>
 <translation id="5469868506864199649">Italian</translation>
@@ -1416,7 +1413,6 @@ Calculating remaining time</translation>
 <translation id="2801702994096586034">Server 3</translation>
 <translation id="1598604884989842103">Enable TouchView maximising UI for testing</translation>
 <translation id="155138250499894874">&quot;<ph name="BUNDLE_NAME"/>&quot; adds these extensions:</translation>
-<translation id="6687839925582416859">Cast desktop or window</translation>
 <translation id="4580526846085481512">Are you sure that you want to delete these $1 items?</translation>
 <translation id="5292890015345653304">Insert an SD card or USB memory stick</translation>
 <translation id="3345634697982520715">Enable embedded extension options.</translation>
@@ -1562,7 +1558,6 @@ Calculating remaining time</translation>
 <translation id="5451646087589576080">View Frame &amp;Info</translation>
 <translation id="5050209346295804497">Disable gesture requirement for media playback.</translation>
 <translation id="5880247576487732437">Token Present</translation>
-<translation id="6305340419723954242">Select cast mode</translation>
 <translation id="3704162925118123524">The network that you are using may require you to visit its log-in page.</translation>
 <translation id="7157063064925785854">By clicking Continue you agree to the <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/> and <ph name="LEGAL_DOC_LINK_TEXT_4"/>.</translation>
 <translation id="3368922792935385530">Connected</translation>
@@ -1681,7 +1676,6 @@ Calculating remaining time</translation>
     <ph name="MARKUP_2"/>unpin files that you no longer need to access offline<ph name="MARKUP_3"/>
     <ph name="MARKUP_4"/>delete files from your Downloads folder<ph name="MARKUP_5"/></translation>
 <translation id="4737715515457435632">Please connect to a network</translation>
-<translation id="6913830198853875055">If enabled, prefetch previews for search results and swap them with original page when downloaded and rendered.</translation>
 <translation id="3759371141211657149">Manage handler settings...</translation>
 <translation id="8856844195561710094">Failed to stop Bluetooth device discovery.</translation>
 <translation id="2246340272688122454">Downloading recovery image...</translation>
@@ -2416,7 +2410,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
 <translation id="1601560923496285236">Apply</translation>
 <translation id="2390045462562521613">Forget this network</translation>
-<translation id="5076531908107520937">Cast this tab (optimised for audio) to...</translation>
 <translation id="3796648294839530037">Favourite Networks:</translation>
 <translation id="3348038390189153836">Removable device detected</translation>
 <translation id="1663298465081438178">Hassle-free goodness.</translation>
@@ -2538,7 +2531,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="8759753423332885148">Learn more.</translation>
 <translation id="4011708746171704399">Enable animated transitions in the first-run tutorial.</translation>
 <translation id="304826556400666995">Unmute Tabs</translation>
-<translation id="4314564217497012208">Cast this tab to...</translation>
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
 <translation id="2932883381142163287">Report abuse</translation>
 <translation id="9111102763498581341">Unlock</translation>
@@ -2836,7 +2828,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="6702639462873609204">&amp;Edit...</translation>
 <translation id="9148126808321036104">Sign in again</translation>
 <translation id="2282146716419988068">GPU Process</translation>
-<translation id="3113334552982755865">If disabled, raster threads won't write to GPU memory.</translation>
 <translation id="4690246192099372265">Swedish</translation>
 <translation id="1682548588986054654">New Incognito Window</translation>
 <translation id="6833901631330113163">South European</translation>
@@ -3825,6 +3816,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="4619415398457343772">AA Compromise</translation>
 <translation id="7450732239874446337">Network IO suspended.</translation>
 <translation id="6107079717483424262">Recognize your voice when you say &quot;OK Google&quot;</translation>
+<translation id="4003393903129308792">Enable one-copy rasteriser</translation>
 <translation id="5178667623289523808">Find Previous</translation>
 <translation id="1510785804673676069">If you are using a proxy server, check your proxy settings or
     contact your network administrator to check that the proxy
@@ -4182,6 +4174,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8684255857039823328">Password saved. Access your passwords from any device at <ph name="MANAGEMENT_LINK"/>.</translation>
 <translation id="3031557471081358569">Select items to be imported:</translation>
+<translation id="6728144975495880845">If enabled, raster threads write to GPU memory.</translation>
 <translation id="1368832886055348810">Left to Right</translation>
 <translation id="8689102680909215706">The extension &quot;<ph name="EXTENSION_NAME"/>&quot; was installed remotely.</translation>
 <translation id="133014027510889724">Enable performance monitoring</translation>
@@ -4194,7 +4187,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="6401445054534215853">Shelf item 1</translation>
 <translation id="6113134669445407638">Disable Delay Agnostic AEC in WebRTC. Use if reported system delays are very trusted, or if others experience echo from your machine.</translation>
 <translation id="2365626167708453863">Choose an account from your Google Smart Lock</translation>
-<translation id="232562464593865424">Let's train your Chromebook</translation>
 <translation id="2351520734632194850"><ph name="MHZ"/> MHz</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="5771816112378578655">Setup in progress...</translation>
@@ -4394,6 +4386,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="884923133447025588">No revocation mechanism found.</translation>
 <translation id="8830796635868321089">The update check failed using the current proxy settings. Please adjust your <ph name="PROXY_SETTINGS_LINK_START"/>proxy settings<ph name="PROXY_SETTINGS_LINK_END"/>.</translation>
 <translation id="7801746894267596941">Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase, you will need to</translation>
+<translation id="5967271952920681214">https://passwords.google.com/?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="9218350802691534808">Enable show-on-first-paint for apps.</translation>
 <translation id="5771849619911534867">Device scan stopped.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -4575,7 +4568,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="8941248009481596111">Your connection to this site is private.</translation>
 <translation id="131461803491198646">Home network, not roaming</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
-<translation id="1830259362126610548">Cast this tab (optimised for audio)</translation>
 <translation id="3660127367837350905">Google Payments is protecting your card</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="3613422051106148727">&amp;Open in new tab</translation>
@@ -4846,7 +4838,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="5868927042224783176">Disallow for reauth</translation>
 <translation id="3355936511340229503">Connection error</translation>
 <translation id="736108944194701898">Mouse speed:</translation>
-<translation id="8371937549687734176">Cast desktop or window to...</translation>
 <translation id="4350711002179453268">Unable to make a secure connection to the server. This may be a problem with the server or it may be requiring a client authentication certificate that you don't have.</translation>
 <translation id="4731422630970790516">Shelf item 3</translation>
 <translation id="750509436279396091">Open downloads folder</translation>
@@ -5027,7 +5018,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="3340978935015468852">settings</translation>
 <translation id="3930208863636674029">Cache parsing data.</translation>
-<translation id="4562982562425894419">Your Chromebook can now:</translation>
 <translation id="3581912141526548234">Enforce (try to get hashes, and enforce them if successful)</translation>
 <translation id="1974371662733320303">Memory discarding strategy to use</translation>
 <translation id="3991936620356087075">You have entered the incorrect PIN Unlocking Key too many times. Your SIM card is permanently disabled.</translation>
@@ -5535,7 +5525,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6793649375377511437">Google Copresence Info</translation>
 <translation id="4335713051520279344">This computer will reset in 1 second.
 Press any key to continue exploring.</translation>
-<translation id="7233715388668391168">Enable/Disable gesture typing for the virtual keyboard.</translation>
 <translation id="6264485186158353794">Back to safety</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="5130080518784460891">Eten</translation>
@@ -5656,7 +5645,6 @@ Press any key to continue exploring.</translation>
 <translation id="3943857333388298514">Paste</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="5075306601479391924">Disable user gesture requirement for playing media elements. Activating this will allow autoplay to work.</translation>
-<translation id="4872789845503416415">To help your Chromebook respond to you and for reliable and easy access to voice search, you need to teach Google the sound of your voice.</translation>
 <translation id="4377363674125277448">There was a problem with server's certificate.</translation>
 <translation id="9112748030372401671">Change your wallpaper</translation>
 <translation id="8938356204940892126">I give up</translation>
@@ -5920,7 +5908,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="2817109084437064140">Import and Bind to Device...</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="2813137708069460534">Metrics related to the network usage of <ph name="SHORT_PRODUCT_NAME"/></translation>
-<translation id="2491341326828824053">Disable one-copy rasteriser</translation>
 <translation id="7775325654940954648">Something went wrong while displaying this web page. Closing the apps and tabs that you don’t need may help by making more memory available.</translation>
 <translation id="7250799832286185545">Years</translation>
 <translation id="5849869942539715694">Pack extension...</translation>

@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Chromium در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="1396446129537741364">‏Chromium می‌خواهد گذرواژه‌ها را نشان دهد.</translation>
 <translation id="2097986737970966220">‏باز کردن Chromium در میزکار</translation>
+<translation id="108122890477367602">‏راه‌اندازی مجدد Chromium در حالت Windows 8‏ (‎&amp;R)</translation>
 <translation id="8987477933582888019">مرورگر وب</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
@@ -241,7 +242,9 @@
 <translation id="1708666629004767631">‏نسخه جدید و امن‌تری از Chromium موجود است.</translation>
 <translation id="1644918877723739397">‏Chromium این مورد را در <ph name="SAVED_PASSWORD_LINK"/> شما ذخیره می‌کند و دفعه بعد که به آن نیاز داشتید، آن را به خاطر دارد.</translation>
 <translation id="378917192836375108">‏Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
+<translation id="8605166112420372522">‏راه‌اندازی مجدد Chromium در حالت دسک‌تاپ (‎&amp;R)</translation>
 <translation id="1461885241643463646">‏جریان‌های ورود به سیستم Chromium مبتنی بر iframe را فعال می‌کند. این پرچم --فعال کردن ورود-به-سیستم-مبتنی-بر-وب را لغو می‌کند.</translation>
+<translation id="390894725198123737">‏در Mac ممکن است گذرواژه‌ها در Keychain شما ذخیره شوند و سایر کاربران Chromium که این حساب OS X را دارند به آن دسترسی داشته باشند یا بتوانند همگام‌سازی کنند.</translation>
 <translation id="608189560609172163">‏به دلیل وجود خطا در ورود به سیستم، Chromium قادر به همگام‌سازی داده‌های شما نبود.</translation>
 <translation id="4888717733111232871">‏قانون ترافیک ورودی برای Chromium جهت اجازه به ترافیک mDNS.</translation>
 <translation id="151962892725702025">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>

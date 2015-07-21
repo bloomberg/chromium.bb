@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Klawiatura ekranowa wyłączona</translation>
 <translation id="5548285847212963613">Rozszerzenie „<ph name="EXTENSION_NAME"/>” może ułatwić połączenie z tą siecią.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Gniazdo mikrofonu</translation>
 <translation id="30155388420722288">Przycisk akcji</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Dysk Google</translation>
 <translation id="3683428399328702079">Rozdzielczość wyświetlacza <ph name="DISPLAY_NAME"/> została zmieniona na <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Zasobnik stanu</translation>
-<translation id="2248649616066688669">Z Chromebooka możesz nadal korzystać po podłączeniu do zewnętrznego wyświetlacza, nawet z zamkniętą pokrywą.</translation>
 <translation id="2946640296642327832">Włącz Bluetooth</translation>
 <translation id="6459472438155181876">Rozszerzanie ekranu na <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Komórka</translation>
@@ -104,7 +104,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="2208323208084708176">Tryb ujednoliconego pulpitu</translation>
 <translation id="2825619548187458965">Półka</translation>
-<translation id="2614835198358683673">Włączony Chromebook może nie być ładowany. Zalecamy użycie oryginalnej ładowarki.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Wszyscy dostępni użytkownicy zostali już dodani do tej sesji.</translation>
@@ -150,7 +149,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="882279321799040148">Kliknij, by wyświetlić</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Włączonego Chromebooka nie można ładować.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> nie obsługuje <ph name="SPECIFIED_RESOLUTION"/>. Zmieniono rozdzielczość na <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Włącz komórkową transmisję danych</translation>
 <translation id="68610848741840742">ChromeVox (potwierdzenia głosowe)</translation>

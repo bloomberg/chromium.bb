@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="vi">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="vi">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Khác...</translation>
 <translation id="248395913932153421">Ngày</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Đây là chỉ mục có thể tìm kiếm. Nhập từ khóa tìm kiếm vào:</translation>
 <translation id="1930711995431081526">trạng thái</translation>
 <translation id="658823671542763450">vào chế độ toàn màn hình</translation>
+<translation id="8851136666856101339">chính</translation>
 <translation id="7720026100085573005">thời gian còn lại</translation>
-<translation id="370665806235115550">Đang tải...</translation>
 <translation id="2723001399770238859">âm thanh</translation>
 <translation id="6845533974506654842">nhấn</translation>
 <translation id="8244226242650769279">bản đồ hình ảnh</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Loại Trung bình)</translation>
 <translation id="1637811476055996098">Chọn tệp</translation>
 <translation id="49969490063480558">Vui lòng nhập phần đứng sau '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' không hoàn chỉnh.</translation>
+<translation id="1342835525016946179">bài viết</translation>
 <translation id="5476505524087279545">bỏ chọn</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2507943997699731163">Vui lòng điền vào trường này.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Khác...</translation>
 <translation id="383465348367842624">Phần đứng trước '<ph name="ATSIGN"/>' không được chứa biểu tượng '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="5468998798572797635">thoát khỏi chế độ toàn màn hình</translation>
-<translation id="5919473608089529604">Không thể tải plugin.</translation>
 <translation id="5546461542133609677">bật tiếng</translation>
 <translation id="6663448176199120256">Tìm kiếm Gần đây</translation>
 <translation id="1020833440720551630">tắt tiếng bản âm thanh</translation>
-<translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
 <translation id="5466621249238537318">Vui lòng chọn một hoặc nhiều tệp.</translation>
 <translation id="9132465097189459683">Khác...</translation>
 <translation id="10623998915015855">nút chuyển đổi</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Hãy cắt ngắn văn bản này thành <ph name="MAX_CHARACTERS"/> ký tự hoặc ít hơn (bạn hiện đang sử dụng <ph name="CURRENT_LENGTH"/> ký tự).</translation>
 <translation id="6101327004457443354">bật tiếng bản âm thanh</translation>
 <translation id="1822429046913737220">SA/CH</translation>
-<translation id="1639239467298939599">Đang tải</translation>
 <translation id="2908441821576996758">Vui lòng nhập danh sách địa chỉ email được phân cách bằng dấu phẩy.</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Vui lòng nhập giá trị hợp lệ. Giá trị hợp lệ gần nhất là <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Giá trị không hợp lệ.</translation>
+<translation id="9108370397979208512">toán học</translation>
 <translation id="1842960171412779397">chọn</translation>
 <translation id="7673697353781729403">Giờ</translation>
 <translation id="4664250907885839816">Phần đứng sau '<ph name="ATSIGN"/>' không được chứa biểu tượng '<ph name="INVALIDCHARACTER"/>'.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="7888071071722539607">Vui lòng bao gồm '<ph name="ATSIGN"/>' trong địa chỉ email. '<ph name="INVALIDADDRESS"/>' bị thiếu '<ph name="ATSIGN"/>'.</translation>
 <translation id="1088086359088493902">Giây</translation>
-<translation id="3934680773876859118">Không thể tải tài liệu PDF</translation>
 <translation id="3632707345189162177">số giây còn lại của phim</translation>
 <translation id="6359256949422175976">núm trình kiểm soát thời gian phim</translation>
 <translation id="8597182159515967513">đầu đề</translation>

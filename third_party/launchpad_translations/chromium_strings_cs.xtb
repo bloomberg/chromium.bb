@@ -37,6 +37,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4285930937574705105">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je prohlížeč Chromium právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="1396446129537741364">Chromium se pokouší zobrazit hesla.</translation>
 <translation id="2097986737970966220">Spustit Chromium na ploše</translation>
+<translation id="108122890477367602">&amp;Spustit Chromium znovu v režimu Windows 8</translation>
 <translation id="8987477933582888019">Webový prohlížeč</translation>
 <translation id="4050175100176540509">V nejnovější verzi jsou k dispozici důležitá vylepšení zabezpečení a nové funkce.</translation>
 <translation id="2886012850691518054">Volitelné: Pomozte Chromium zlepšit – posílejte automaticky společnosti Google statistiky využití a zprávy o selhání aplikace.</translation>
@@ -234,7 +235,9 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="1708666629004767631">K dispozici je nová, bezpečnější verze prohlížeče Chromium.</translation>
 <translation id="1644918877723739397">Prohlížeč Chromium toto heslo uloží mezi <ph name="SAVED_PASSWORD_LINK"/> a zapamatuje si jej pro příští použití.</translation>
 <translation id="378917192836375108">Chromium umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
+<translation id="8605166112420372522">&amp;Spustit Chromium znovu na klasické ploše</translation>
 <translation id="1461885241643463646">Aktivuje v prohlížeči Chromium procesy přihlášení založené na rámcích iframe. Tento příznak přepíše příznak --enable-web-based-signin.</translation>
+<translation id="390894725198123737">V počítačích Mac se hesla mohou ukládat do úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chromium, kteří sdílejí tento účet systému OS X.</translation>
 <translation id="608189560609172163">Přihlížeč Chromium vaše data nemohl synchronizovat, protože při přihlašování došlo k chybě.</translation>
 <translation id="4888717733111232871">Pravidlo příchozího provozu pro prohlížeč Chromium, které povolí provoz mDNS.</translation>
 <translation id="151962892725702025">Chromium OS nemůže synchronizovat data, protože Synchronizace ve vaší doméně není k dispozici.</translation>

@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Harap tutup semua jendela Google Chrome dan luncurkan kembali agar perubahan ini berlaku.</translation>
 <translation id="1619887657840448962">Agar Chrome lebih aman, kami menonaktifkan ekstensi berikut yang tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
 <translation id="225614027745146050">Selamat Datang</translation>
+<translation id="8811903091068364646">&amp;Luncurkan ulang Chrome di desktop</translation>
 <translation id="3398288718845740432">Sembunyikan di Menu Chrome</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="3149510190863420837">Aplikasi Chrome</translation>
@@ -249,6 +250,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="3037838751736561277">Google Chrome berjalan di mode latar belakang.</translation>
 <translation id="2084710999043359739">Tambah ke Chrome</translation>
 <translation id="4692614041509923516">Komputer Anda sedang menjalankan versi lama Microsoft Windows yang tidak dapat memproses sertifikat keamanan situs web ini. Karena masalah ini, Google Chrome tidak mengerti apakah sertifikat ini berasal dari <ph name="SITE"/> atau dari seseorang di jaringan Anda yang berpura-pura menjadi <ph name="SITE"/>. Perbarui komputer Anda ke versi Windows yang lebih baru.</translation>
+<translation id="5931853610562009806">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chrome lain yang membagikan akun OS X ini.</translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
@@ -260,6 +262,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="1001534784610492198">Arsip instalatur rusak atau tidak valid. Unduh kembali Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome tidak dapat menampilkan pratinjau cetak jika penampil PDF default hilang.</translation>
 <translation id="5132929315877954718">Temukan aplikasi, game, ekstensi, dan tema yang hebat untuk Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Luncurkan ulang Chrome dalam mode Windows 8</translation>
 <translation id="6626317981028933585">Sayangnya, setelan Mozilla Firefox tidak tersedia sewaktu browser berjalan. Untuk mengimpor setelan ke Google Chrome, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
 <translation id="8274359292107649245">Buka Chrome di desktop</translation>
 <translation id="7242029209006116544">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Google Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME"/>. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. Anda dapat membuat profil baru secara opsional untuk menjaga agar data Chrome Anda tetap terpisah. <ph name="LEARN_MORE"/></translation>

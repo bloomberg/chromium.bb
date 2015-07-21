@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">ปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="5548285847212963613">ส่วนขยาย &quot;<ph name="EXTENSION_NAME"/>&quot; สามารถช่วยในการเชื่อมต่อเครือข่ายนี้</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> กับ <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">ช่องเสียบไมโครโฟน</translation>
 <translation id="30155388420722288">ปุ่มแบบโอเวอร์โฟลว์</translation>
 <translation id="7904094684485781019">ผู้ดูแลระบบของบัญชีนี้ไม่อนุญาตการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
 <translation id="3683428399328702079">ความละเอียดของ <ph name="DISPLAY_NAME"/> เปลี่ยนเป็น <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">ถาดสถานะ</translation>
-<translation id="2248649616066688669">คุณสามารถใช้ Chromebook ต่อไปในขณะที่เชื่อมต่อกับจอแสดงผลภายนอก แม้ฝาจะปิดอยู่ก็ตาม</translation>
 <translation id="2946640296642327832">เปิดใช้งานบลูทูธ</translation>
 <translation id="6459472438155181876">ขยายหน้าจอไปยัง <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">เปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="2208323208084708176">โหมดเดสก์ท็อปแบบรวม</translation>
 <translation id="2825619548187458965">ชั้นวาง</translation>
-<translation id="2614835198358683673">Chromebook ของคุณอาจไม่ได้ชาร์จในขณะที่เปิดอยู่ ลองใช้ที่ชาร์จมาตรฐาน</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
 <translation id="882279321799040148">คลิกเพื่อดู</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebook อาจไม่ชาร์จขณะที่เปิดอยู่</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ไม่สนับสนุน <ph name="SPECIFIED_RESOLUTION"/> ความละเอียดเปลี่ยนเป็น <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">เปิดใช้งานข้อมูลมือถือ</translation>
 <translation id="68610848741840742">ChromeVox (การตอบสนองด้วยเสียง)</translation>

@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
 <translation id="1396446129537741364">Chromium đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="2097986737970966220">Mở Chromium trên máy tính để bàn</translation>
+<translation id="108122890477367602">&amp;Khởi chạy lại Chromium ở chế độ Windows 8</translation>
 <translation id="8987477933582888019">Trình duyệt web</translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
@@ -242,7 +243,9 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
 <translation id="1644918877723739397">Chromium sẽ lưu trữ mật khẩu này trong <ph name="SAVED_PASSWORD_LINK"/> và ghi nhớ mật khẩu này vào lần sau bạn cần đến.</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
+<translation id="8605166112420372522">&amp;Khởi chạy lại Chromium trên máy tính để bàn</translation>
 <translation id="1461885241643463646">Bật luồng đăng nhập Chromium dựa trên iframe. Cờ này ghi đè --enable-web-based-signin.</translation>
+<translation id="390894725198123737">Trên máy Mac, mật khẩu có thể được lưu vào Keychain và được truy cập hoặc đồng bộ hóa bởi những người dùng Chromium khác dùng chung tài khoản OS X này.</translation>
 <translation id="608189560609172163">Chromium không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
 <translation id="4888717733111232871">Quy tắc kết nối để Chromium cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="151962892725702025">Chromium OS không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng với miền của bạn.</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fa">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fa">
 <translation id="4763480195061959176">ویدیو</translation>
 <translation id="5843503607508392247">موارد دیگر...</translation>
 <translation id="248395913932153421">روز</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">این نمایه قابل جستجو است. کلمات کلیدی جستجو را وارد کنید:</translation>
 <translation id="1930711995431081526">وضعیت</translation>
 <translation id="658823671542763450">رفتن به حالت تمام صفحه</translation>
+<translation id="8851136666856101339">اصلی</translation>
 <translation id="7720026100085573005">زمان باقی‌مانده</translation>
-<translation id="370665806235115550">در حال بارگیری...</translation>
 <translation id="2723001399770238859">صدا</translation>
 <translation id="6845533974506654842">فشار دادن</translation>
 <translation id="8244226242650769279">نقشه تصویر</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (درجه متوسط)</translation>
 <translation id="1637811476055996098">انتخاب فایل‌ها</translation>
 <translation id="49969490063480558">لطفاً قسمت بعد از «<ph name="ATSIGN"/>» را وارد کنید. «<ph name="INVALIDADDRESS"/>» ناقص است.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">برداشتن علامت</translation>
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2507943997699731163">لطفاً این قسمت را تکمیل کنید.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">موارد دیگر...</translation>
 <translation id="383465348367842624">قسمت قبل از «<ph name="ATSIGN"/>» نباید حاوی نماد «<ph name="INVALIDCHARACTER"/>» باشد.</translation>
 <translation id="5468998798572797635">خروج از حالت تمام صفحه</translation>
-<translation id="5919473608089529604">افزونه بارگیری نشد.</translation>
 <translation id="5546461542133609677">صدادارکردن</translation>
 <translation id="6663448176199120256">جستجوهای جدید</translation>
 <translation id="1020833440720551630">بیصداکردن تراک صوتی</translation>
-<translation id="2597378329261239068">این سند توسط رمز ورود محافظت می‌شود.  لطفاً یک رمز ورود وارد کنید.</translation>
 <translation id="5466621249238537318">لطفاً یک یا چند فایل را انتخاب کنید.</translation>
 <translation id="9132465097189459683">موارد دیگر...</translation>
 <translation id="10623998915015855">دکمه تغییر حالت</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">لطفاً این متن را به اندازه <ph name="MAX_CHARACTERS"/> نویسه یا کمتر کوتاه کنید (شما در حال حاضر از <ph name="CURRENT_LENGTH"/> نویسه استفاده می‌کنید).</translation>
 <translation id="6101327004457443354">صدادارکردن تراک صوتی</translation>
 <translation id="1822429046913737220">ق.ظ/ب.ظ</translation>
-<translation id="1639239467298939599">بارگیری</translation>
 <translation id="2908441821576996758">لطفاً لیستی از آدرس‌های ایمیل که با کاما از هم جدا شده‌اند را وارد کنید.</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">لطفاً یک مقدار معتبر وارد کنید. نزدیک‌ترین مقدار معتبر <ph name="VALID_VALUE"/> است.</translation>
 <translation id="835897206747267392">مقدار نامعتبر.</translation>
+<translation id="9108370397979208512">حساب</translation>
 <translation id="1842960171412779397">انتخاب</translation>
 <translation id="7673697353781729403">ساعت</translation>
 <translation id="4664250907885839816">قسمت بعد از «<ph name="ATSIGN"/>» نباید حاوی نماد «<ph name="INVALIDCHARACTER"/>» باشد.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="7888071071722539607">لطفاً نماد «<ph name="ATSIGN"/>» را به آدرس ایمیل اضافه کنید. «<ph name="INVALIDADDRESS"/>» در «<ph name="ATSIGN"/>» موجود نیست.</translation>
 <translation id="1088086359088493902">ثانیه</translation>
-<translation id="3934680773876859118">‏بارگیری سند PDF انجام نشد</translation>
 <translation id="3632707345189162177">مقدار ثانیه‌های باقیمانده فیلم</translation>
 <translation id="6359256949422175976">نشانگر حذف‌کننده زمان فیلم</translation>
 <translation id="8597182159515967513">عنوان</translation>

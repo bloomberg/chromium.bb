@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
 <translation id="5548285847212963613">Die Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; kann die Verbindung mit diesem Netzwerk unterstützen.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> und <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofonanschluss</translation>
 <translation id="30155388420722288">Überlaufschaltfläche</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Auflösung von <ph name="DISPLAY_NAME"/> wurde zu <ph name="RESOLUTION"/> geändert.</translation>
 <translation id="2297568595583585744">Statusleiste</translation>
-<translation id="2248649616066688669">Wenn Ihr Chromebook mit einem externen Bildschirm verbunden ist, können Sie es weiterhin verwenden – sogar, wenn es zugeklappt ist.</translation>
 <translation id="2946640296642327832">Bluetooth aktivieren</translation>
 <translation id="6459472438155181876">Bildschirm wird auf <ph name="DISPLAY_NAME"/> erweitert...</translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -104,7 +104,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="2208323208084708176">Unified Desktop-Modus</translation>
 <translation id="2825619548187458965">Ablage</translation>
-<translation id="2614835198358683673">Ihr Chromebook kann möglicherweise nicht geladen werden, während es eingeschaltet ist. Wir empfehlen die Verwendung des Originalladegeräts.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Alle verfügbaren Nutzer wurden bereits zur Sitzung hinzugefügt.</translation>
@@ -150,7 +149,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="3473479545200714844">Lupe</translation>
 <translation id="882279321799040148">Zum Anzeigen klicken</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Das Chromebook wird möglicherweise nicht geladen, während es eingeschaltet ist.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> unterstützt <ph name="SPECIFIED_RESOLUTION"/> nicht. Die Auflösung wurde auf <ph name="FALLBACK_RESOLUTION"/> zurückgesetzt.</translation>
 <translation id="1602076796624386989">Mobilfunk aktivieren</translation>
 <translation id="68610848741840742">ChromeVox (gesprochenes Feedback)</translation>

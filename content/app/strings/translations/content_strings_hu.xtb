@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="hu">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hu">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Más...</translation>
 <translation id="248395913932153421">nap</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Ez egy kereshető index. Írjon be keresési kulcsszavakat:</translation>
 <translation id="1930711995431081526">állapot</translation>
 <translation id="658823671542763450">teljes képernyős nézet</translation>
+<translation id="8851136666856101339">fő</translation>
 <translation id="7720026100085573005">hátralévő idő</translation>
-<translation id="370665806235115550">Betöltés…</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="6845533974506654842">Gomb lenyomása</translation>
 <translation id="8244226242650769279">interaktív kép</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Közepes)</translation>
 <translation id="1637811476055996098">Fájlok kiválasztása</translation>
 <translation id="49969490063480558">Kérjük, adja meg a „<ph name="ATSIGN"/>” utáni részt is. A(z) „<ph name="INVALIDADDRESS"/>” cím nem teljes.</translation>
+<translation id="1342835525016946179">cikk</translation>
 <translation id="5476505524087279545">Megjelölés eltávolítása</translation>
 <translation id="2148716181193084225">Ma</translation>
 <translation id="2507943997699731163">Kérjük, töltse ki ezt a mezőt.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Más...</translation>
 <translation id="383465348367842624">A „<ph name="ATSIGN"/>” előtti rész nem tartalmazhat „<ph name="INVALIDCHARACTER"/>” karaktert.</translation>
 <translation id="5468998798572797635">kilépés a teljes képernyős nézetből</translation>
-<translation id="5919473608089529604">Nem sikerült betölteni a plug-int.</translation>
 <translation id="5546461542133609677">némítás feloldása</translation>
 <translation id="6663448176199120256">Friss keresések</translation>
 <translation id="1020833440720551630">hangsáv némítása</translation>
-<translation id="2597378329261239068">Ez a dokumentum jelszóval védett. Kérjük, adja meg a jelszót.</translation>
 <translation id="5466621249238537318">Kérjük, válasszon ki egy vagy több fájlt.</translation>
 <translation id="9132465097189459683">Más...</translation>
 <translation id="10623998915015855">átkapcsológomb</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Kérjük, rövidítse le a szöveget legfeljebb <ph name="MAX_CHARACTERS"/> karakterre (jelenleg <ph name="CURRENT_LENGTH"/> karaktert használ).</translation>
 <translation id="6101327004457443354">hangsáv némításának feloldása</translation>
 <translation id="1822429046913737220">de./du.</translation>
-<translation id="1639239467298939599">Betöltés</translation>
 <translation id="2908441821576996758">Kérjük, adjon meg egy vesszőkkel elválasztott e-mail címlistát.</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="1921819250265091946">nn</translation>
 <translation id="2613802280814924224">Kérjük, érvényes értéket adjon meg. A legközelebbi érvényes érték <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Érvénytelen érték.</translation>
+<translation id="9108370397979208512">matematika</translation>
 <translation id="1842960171412779397">Kiválasztás</translation>
 <translation id="7673697353781729403">Óra</translation>
 <translation id="4664250907885839816">A „<ph name="ATSIGN"/>” utáni rész nem tartalmazhat „<ph name="INVALIDCHARACTER"/>” karaktert.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="7888071071722539607">Kérjük, írjon egy „<ph name="ATSIGN"/>” karaktert az e-mail címbe. A(z) „<ph name="INVALIDADDRESS"/>” címből hiányzik a „<ph name="ATSIGN"/>” jel.</translation>
 <translation id="1088086359088493902">Másodperc</translation>
-<translation id="3934680773876859118">PDF dokumentum betöltése sikertelen</translation>
 <translation id="3632707345189162177">a filmből hátralévő másodpercek</translation>
 <translation id="6359256949422175976">a filmidővezérlő indexképe</translation>
 <translation id="8597182159515967513">fejléc</translation>

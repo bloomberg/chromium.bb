@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
 <translation id="5548285847212963613">拡張機能「<ph name="EXTENSION_NAME"/>」はこのネットワークへの接続をサポートします。</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">マイク差込口</translation>
 <translation id="30155388420722288">オーバーフロー ボタン</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> の解像度を <ph name="RESOLUTION"/> に変更しました</translation>
 <translation id="2297568595583585744">ステータス トレイ</translation>
-<translation id="2248649616066688669">外部ディスプレイに接続している間は、本体を閉じた状態でも Chromebook を使用できます。</translation>
 <translation id="2946640296642327832">Bluetooth を有効にする</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> へ画面を拡張しています</translation>
 <translation id="8206859287963243715">携帯電話</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
 <translation id="2825619548187458965">シェルフ</translation>
-<translation id="2614835198358683673">この充電器がオンになっている間は、Chromebook が充電されない可能性があります。正規の充電器の使用をご検討ください。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">画面拡大鏡</translation>
 <translation id="882279321799040148">クリックして表示</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">このメッセージが表示されているときは、Chromebook が充電されない可能性があります。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> は <ph name="SPECIFIED_RESOLUTION"/> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION"/> に変更されました</translation>
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="68610848741840742">ChromeVox（音声フィードバック）</translation>

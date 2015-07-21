@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="en-GB">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Other...</translation>
 <translation id="248395913932153421">Day</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">This is a searchable index. Enter search keywords:</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="658823671542763450">enter full screen</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">remaining time</translation>
-<translation id="370665806235115550">Loading...</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="6845533974506654842">press</translation>
 <translation id="8244226242650769279">image map</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Medium Grade)</translation>
 <translation id="1637811476055996098">Choose Files</translation>
 <translation id="49969490063480558">Please enter a part following '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' is incomplete.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">untick</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2507943997699731163">Please fill in this field.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Other...</translation>
 <translation id="383465348367842624">A part followed by '<ph name="ATSIGN"/>' should not contain the symbol '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="5468998798572797635">exit full screen</translation>
-<translation id="5919473608089529604">Couldn't load plug-in.</translation>
 <translation id="5546461542133609677">un-mute</translation>
 <translation id="6663448176199120256">Recent Searches</translation>
 <translation id="1020833440720551630">mute audio track</translation>
-<translation id="2597378329261239068">This document is password-protected.  Please enter a password.</translation>
 <translation id="5466621249238537318">Please select one or more files.</translation>
 <translation id="9132465097189459683">Other...</translation>
 <translation id="10623998915015855">toggle button</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Please shorten this text to <ph name="MAX_CHARACTERS"/> characters or less (you are currently using <ph name="CURRENT_LENGTH"/> characters).</translation>
 <translation id="6101327004457443354">un-mute audio track</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">Loading</translation>
 <translation id="2908441821576996758">Please enter a comma-separated list of email addresses.</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Please enter a valid value. The nearest valid value is <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Invalid value.</translation>
+<translation id="9108370397979208512">math</translation>
 <translation id="1842960171412779397">select</translation>
 <translation id="7673697353781729403">Hours</translation>
 <translation id="4664250907885839816">A part following '<ph name="ATSIGN"/>' should not contain the symbol '<ph name="INVALIDCHARACTER"/>'.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Clear</translation>
 <translation id="7888071071722539607">Please include an '<ph name="ATSIGN"/>' in the email address. '<ph name="INVALIDADDRESS"/>' is missing an '<ph name="ATSIGN"/>'.</translation>
 <translation id="1088086359088493902">Seconds</translation>
-<translation id="3934680773876859118">Failed to load PDF document</translation>
 <translation id="3632707345189162177">number of seconds of film remaining</translation>
 <translation id="6359256949422175976">film time scrubber thumb</translation>
 <translation id="8597182159515967513">heading</translation>

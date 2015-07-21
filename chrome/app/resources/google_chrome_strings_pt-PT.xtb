@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração tenha efeito.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativámos a seguinte extensão, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, e é possível que tenha sido adicionada sem o seu conhecimento.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
+<translation id="8811903091068364646">&amp;Reiniciar o Chrome no ambiente de trabalho</translation>
 <translation id="3398288718845740432">Ocultar no menu do Chrome</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="3149510190863420837">Aplicações do Chrome</translation>
@@ -245,6 +246,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3037838751736561277">O Google Chrome está no modo em segundo plano.</translation>
 <translation id="2084710999043359739">Adicionar ao Chrome</translation>
 <translation id="4692614041509923516">O computador está a executar uma versão antiga do Microsoft Windows que não consegue processar o certificado de segurança deste Website. Dado este problema, o Google Chrome não consegue determinar se o certificado é proveniente de <ph name="SITE"/> ou de alguém na sua rede a fazer-se passar por <ph name="SITE"/>. Atualize o computador para uma versão mais recente do Windows.</translation>
+<translation id="5931853610562009806">No Mac, as palavras-passe podem ser guardadas no Keychain e podem ser sincronizadas ou acedidas por outros utilizadores do Chrome que partilhem esta conta do OS X.</translation>
 <translation id="3360895254066713204">Ajudante do Chrome</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
 <translation id="7592736734348559088">O Google Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
@@ -256,6 +258,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="1001534784610492198">O arquivo do programa de instalação está corrompido ou é inválido. Transfira de novo o Google Chrome.</translation>
 <translation id="2246246234298806438">O Google Chrome não pode mostrar a pré-visualização de impressão quando o visualizador de PDF incorporado está em falta.</translation>
 <translation id="5132929315877954718">Descubra fantásticas aplicações, jogos, extensões e temas para o Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Reiniciar o Chrome no modo Windows 8</translation>
 <translation id="6626317981028933585">Infelizmente, as suas definições do Mozilla Firefox não estão disponíveis enquanto esse browser estiver aberto. Para importar essas definições para o Google Chrome, guarde o seu trabalho e feche todas as janelas do Firefox. De seguida clique em Continuar.</translation>
 <translation id="8274359292107649245">Abrir o Chrome no ambiente de trabalho</translation>
 <translation id="7242029209006116544">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chrome em separado. <ph name="LEARN_MORE"/></translation>

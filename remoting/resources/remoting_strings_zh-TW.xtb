@@ -200,7 +200,6 @@
 <translation id="1152528166145813711">選取…</translation>
 <translation id="2235518894410572517">共用這台電腦，開放給其他使用者瀏覽及操作。</translation>
 <translation id="6939719207673461467">顯示/隱藏鍵盤。</translation>
-<translation id="1023096696228309145">請與您要連線的電腦所屬使用者聯絡，要求對方按一下 [立即共用]，並告知您存取碼。</translation>
 <translation id="4240294130679914010">Chromoting 主機解除安裝程式</translation>
 <translation id="8712909229180978490">我已儲存的檔案未顯示在線上 Google 雲端硬碟中。</translation>
 <translation id="80739703311984697">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chromoting 能夠存取這個位址：</translation>
@@ -241,6 +240,8 @@
 <translation id="2921543551052660690">您先前曾以<ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) 身分登入。如要透過該帳戶存取您的電腦，請使用該帳戶<ph name="LINK_BEGIN"/>登入 Chromium<ph name="LINK_END"/>，並重新安裝 Chromoting。</translation>
 <translation id="7319983568955948908">停止共用</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. 保留所有權利。</translation>
+<translation id="2998137343848432918">• 新增「製作人員名單」畫面。
+• 修正無法在鍵盤顯示時開啟全螢幕的問題。</translation>
 <translation id="6640610550128933069">上次上線時間：<ph name="DATE"/></translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="4513946894732546136">意見回饋</translation>

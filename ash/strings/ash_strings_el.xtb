@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Το πληκτρολόγιο οθόνης είναι απενεργοποιημένο</translation>
 <translation id="5548285847212963613">Η επέκταση &quot;<ph name="EXTENSION_NAME"/>&quot; μπορεί να διευκολύνει τη σύνδεση σε αυτό το δίκτυο.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> και <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mic Jack</translation>
 <translation id="30155388420722288">Κουμπί επιπρόσθετης ροής</translation>
 <translation id="7904094684485781019">Ο διαχειριστής αυτού του λογαριασμού δεν έχει επιτρέψει τις πολλαπλές συνδέσεις.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Η ανάλυση <ph name="DISPLAY_NAME"/> άλλαξε σε <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Δίσκος κατάστασης</translation>
-<translation id="2248649616066688669">Μπορείτε να συνεχίσετε να χρησιμοποιείτε το Chromebook σας, ενώ είναι συνδεδεμένο σε μια εξωτερική οθόνη, ακόμα και αν το καπάκι είναι κλειστό.</translation>
 <translation id="2946640296642327832">Ενεργοποίηση Bluetooth</translation>
 <translation id="6459472438155181876">Επέκταση οθόνης σε <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Κινητό</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">Το πληκτρολόγιο οθόνης είναι ενεργοποιημένο</translation>
 <translation id="2208323208084708176">Ενιαία λειτουργία επιφάνειας εργασίας.</translation>
 <translation id="2825619548187458965">Ράφι</translation>
-<translation id="2614835198358683673">Το Chromebook ενδέχεται να μη φορτίζει ενώ είναι ενεργοποιημένο. Χρησιμοποιήστε τον αυθεντικό φορτιστή.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Όλοι οι διαθέσιμοι χρήστες έχουν ήδη προστεθεί σε αυτήν την περίοδο σύνδεσης.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">Μεγεθυντής οθόνης</translation>
 <translation id="882279321799040148">Κάντε κλικ για προβολή</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Το Chromebook σας ενδέχεται να μη φορτίζει όταν είναι ενεργοποιημένο.</translation>
 <translation id="7561014039265304140">Το <ph name="DISPLAY_NAME"/> δεν υποστηρίζει το <ph name="SPECIFIED_RESOLUTION"/>. Η ανάλυση άλλαξε σε <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Ενεργοποίηση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="68610848741840742">ChromeVox (προφορικά σχόλια)</translation>

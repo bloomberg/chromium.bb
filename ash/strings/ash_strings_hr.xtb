@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Tipkovnica na zaslonu onemogućena je</translation>
 <translation id="5548285847212963613">Proširenje &quot;<ph name="EXTENSION_NAME"/>&quot; može pomoći pri povezivanju s tom mrežom.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Utičnica mikrofona</translation>
 <translation id="30155388420722288">Gumb padajućeg izbornika</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google disk</translation>
 <translation id="3683428399328702079">Razlučivost zaslona <ph name="DISPLAY_NAME"/> promijenjena je na <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Ladica statusa</translation>
-<translation id="2248649616066688669">Možete nastaviti upotrebljavati svoj Chromebook dok je povezan s vanjskim zaslonom, čak i ako je poklopac zatvoren.</translation>
 <translation id="2946640296642327832">Omogući Bluetooth</translation>
 <translation id="6459472438155181876">Proširivanje zaslona na zaslon <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobitel</translation>
@@ -104,7 +104,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="2208323208084708176">Način jedinstvene radne površine</translation>
 <translation id="2825619548187458965">Polica</translation>
-<translation id="2614835198358683673">Chromebook se možda neće puniti dok je uključen. Savjetujemo upotrebu službenog punjača.</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Svi dostupni korisnici već su dodani ovoj sesiji.</translation>
@@ -150,7 +149,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="3473479545200714844">Povećalo</translation>
 <translation id="882279321799040148">Kliknite za prikaz</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebook se možda neće puniti dok je uključen.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ne podržava razlučivost <ph name="SPECIFIED_RESOLUTION"/>. Razlučivost je promijenjena u <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Omogući mobilne podatke</translation>
 <translation id="68610848741840742">ChromeVox (govorne povratne informacije)</translation>

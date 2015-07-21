@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Ekrano klaviatūra išjungta</translation>
 <translation id="5548285847212963613">Galite prisijungti prie šio tinklo naudodami plėtinį „<ph name="EXTENSION_NAME"/>“.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofono jungtis</translation>
 <translation id="30155388420722288">Perpildymo mygtukas</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> skyra pakeista į <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Būsenos dėklas</translation>
-<translation id="2248649616066688669">Galite toliau naudoti „Chromebook“, kai jis prijungtas prie išorinio ekrano, net uždarę dangtį.</translation>
 <translation id="2946640296642327832">Įgalinti „Bluetooth“</translation>
 <translation id="6459472438155181876">Ekranas išplečiamas į <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobilusis</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">Ekrano klaviatūra įgalinta</translation>
 <translation id="2208323208084708176">Vieno darbalaukio režimas</translation>
 <translation id="2825619548187458965">Lentyna</translation>
-<translation id="2614835198358683673">„Chromebook“ gali nebūti įkraunamas, kai jis įjungtas. Apsvarstykite galimybę naudoti originalų įkroviklį.</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Prie šio seanso jau pridėti visi galimi naudotojai.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
 <translation id="882279321799040148">Jei norite peržiūrėti, spustelėkite</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">„Chromebook“ gali būti neįkraunamas, kai jis įjungtas.</translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME"/>“ nepalaiko <ph name="SPECIFIED_RESOLUTION"/>. Skyra pakeista į <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Įgalinti duomenis mobiliesiems</translation>
 <translation id="68610848741840742">„ChromeVox“ (žodiniai atsiliepimai)</translation>

@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">この変更を反映するには、すべての Google Chrome ウィンドウを閉じてからもう一度起動してください。</translation>
 <translation id="1619887657840448962">Chrome をより安全にご利用いただくために、<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>で提供していない次の拡張機能を無効にしました。これは知らないうちに追加された可能性があります。</translation>
 <translation id="225614027745146050">ようこそ</translation>
+<translation id="8811903091068364646">Chrome をデスクトップで再起動(&amp;R)</translation>
 <translation id="3398288718845740432">Chrome メニューで非表示</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
@@ -247,6 +248,7 @@
 <translation id="3037838751736561277">Google Chrome はバックグラウンド モードです。</translation>
 <translation id="2084710999043359739">Chrome に追加</translation>
 <translation id="4692614041509923516">ご使用のパソコンは、このウェブサイトのセキュリティ証明書を処理できない旧バージョンの Microsoft Windows を実行しています。このため Google Chrome では、証明書が <ph name="SITE"/> から発行されたものか、それとも <ph name="SITE"/> になりすましたネットワーク上の別のユーザーによって発行されたものかを判別することができません。パソコンを新しいバージョンの Windows に更新してください。</translation>
+<translation id="5931853610562009806">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chrome ユーザーからアクセスされたり同期されたりする可能性があります。</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
@@ -258,6 +260,7 @@
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>
 <translation id="2246246234298806438">Google Chrome では、組み込みの PDF ビューアがない場合、印刷プレビューを表示できません。</translation>
 <translation id="5132929315877954718">Google Chrome のすばらしいアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
+<translation id="7784335114585804598">Chrome を Windows 8 モードで再起動(&amp;R)</translation>
 <translation id="6626317981028933585">Mozilla Firefox の設定を Google Chrome にインポートするには、まず Firefox のウィンドウをすべて閉じてください。その後 [続行] をクリックしてください。</translation>
 <translation id="8274359292107649245">デスクトップで Chrome を開く</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE"/></translation>

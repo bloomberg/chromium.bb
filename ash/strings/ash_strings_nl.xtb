@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Schermtoetsenbord uitgeschakeld</translation>
 <translation id="5548285847212963613">Met de extensie '<ph name="EXTENSION_NAME"/>' kun je verbinding maken met dit netwerk.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> en <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Microfoonaansluiting</translation>
 <translation id="30155388420722288">Overloopknop</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">De resolutie van <ph name="DISPLAY_NAME"/> is gewijzigd in <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Statussysteemvak</translation>
-<translation id="2248649616066688669">Je kunt je Chromebook blijven gebruiken wanneer deze is aangesloten op een extern beeldscherm, zelfs wanneer het scherm van je Chromebook is dichtgeklapt.</translation>
 <translation id="2946640296642327832">Bluetooth inschakelen</translation>
 <translation id="6459472438155181876">Scherm uitbreiden naar <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobiel</translation>
@@ -104,7 +104,6 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="1747827819627189109">Schermtoetsenbord ingeschakeld</translation>
 <translation id="2208323208084708176">Samengestelde desktopmodus</translation>
 <translation id="2825619548187458965">Plank</translation>
-<translation id="2614835198358683673">Je Chromebook wordt mogelijk niet opgeladen wanneer deze is ingeschakeld. Overweeg het gebruik van een officiële lader.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Alle beschikbare gebruikers zijn al aan deze sessie toegevoegd.</translation>
@@ -150,7 +149,6 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="3473479545200714844">Vergrootglas</translation>
 <translation id="882279321799040148">Klik om te bekijken</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Je Chromebook wordt mogelijk niet opgeladen wanneer deze is ingeschakeld.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ondersteunt <ph name="SPECIFIED_RESOLUTION"/> niet. De resolutie is gewijzigd in <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Mobiele gegevens inschakelen</translation>
 <translation id="68610848741840742">ChromeVox (gesproken feedback)</translation>

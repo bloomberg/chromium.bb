@@ -40,6 +40,7 @@
 <translation id="4285930937574705105">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Chromium şu anda çalışır durumdaysa kapatıp yeniden deneyin.</translation>
 <translation id="1396446129537741364">Chromium, şifreleri göstermeye çalışıyor.</translation>
 <translation id="2097986737970966220">Chromium'u masaüstünde aç</translation>
+<translation id="108122890477367602">&amp;Chromium'u Windows 8 modunda yeniden başlat</translation>
 <translation id="8987477933582888019">Web Tarayıcı</translation>
 <translation id="4050175100176540509">Son sürümde güvenlikle ilgili önemli iyileştirmeler ve yeni özellikler mevcuttur.</translation>
 <translation id="2886012850691518054">İsteğe Bağlı: Kullanıcı istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak göndererek Chromium'u iyileştirmemize yardımcı olun.</translation>
@@ -236,7 +237,9 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
 <translation id="1644918877723739397">Chromium bunu <ph name="SAVED_PASSWORD_LINK"/> bölümünüze kaydeder ve tekrar ihtiyacınız olduğunda hatırlar.</translation>
 <translation id="378917192836375108">Chromium Web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
+<translation id="8605166112420372522">&amp;Chromium'u masaüstünde yeniden başlat</translation>
 <translation id="1461885241643463646">iframe tabanlı Chromium oturum açma akışını etkinleştirir. Bu bayrak web tabanlı oturum açma özelliğini geçersiz kılar.</translation>
+<translation id="390894725198123737">Mac bilgisayarlarda şifreler Keychain uygulamanızda saklanabilir ve bu OS X hesabını paylaşan diğer Chromium kullanıcıları bu şifrelere erişilebilir veya şifreleri senkronize edilebilir.</translation>
 <translation id="608189560609172163">Oturum açma sırasındaki bir hata nedeniyle Chromium, verilerinizi senkronize edemedi.</translation>
 <translation id="4888717733111232871">Chromium'un mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="151962892725702025">Senkronizasyon alan adınızda kullanılamadığından Chromium OS, verilerinizi senkronize edemedi.</translation>

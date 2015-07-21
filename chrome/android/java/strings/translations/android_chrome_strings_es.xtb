@@ -42,11 +42,14 @@
 <translation id="326254929494722411">Cuenta de Google aún no configurada en este dispositivo</translation>
 <translation id="8143660160623733249">Nombre de carpeta</translation>
 <translation id="8820817407110198400">Marcadores</translation>
+<translation id="4720023427747327413">Abrir en <ph name="PRODUCT_NAME"/></translation>
 <translation id="5676636989614905379">No se puede reproducir el vídeo en <ph name="SCREEN_NAME"/>.</translation>
 <translation id="5275558766013849309">Las pestañas aparecerán junto a aplicaciones recientes.</translation>
 <translation id="8069239273282989646">Después de comprimir</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="4761374747761474835">Selecciona una cuenta para ver tus marcadores, tu historial, tus contraseñas y otras opciones en todos tus dispositivos.</translation>
+<translation id="1359381790106966506">Actualizar permisos</translation>
+<translation id="6060567974409584397">Toca para volver a la pestaña</translation>
 <translation id="4803910478683254032">Error al importar</translation>
 <translation id="3485544713029068372">Smart Lock para contraseñas</translation>
 <translation id="6999892069268112724">Confirmar cuenta de Google</translation>
@@ -74,9 +77,11 @@
 <translation id="2354750644801399986">No realizar seguimiento</translation>
 <translation id="2351097562818989364">Se han restablecido tus ajustes de traducción.</translation>
 <translation id="4307992518367153382">Básica</translation>
+<translation id="8007176423574883786">Desactivada para este dispositivo</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="7665369617277396874">Añadir cuenta</translation>
 <translation id="6458785801851713928">La función de sincronización no está disponible para tu dominio.</translation>
+<translation id="7788788617745289808">Chrome necesita acceder a la cámara para compartirla con este sitio web.</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="2731700343119398978">Espera...</translation>
 <translation id="6846298663435243399">Cargando…</translation>
@@ -101,6 +106,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="4532845899244822526">Seleccionar carpeta</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
 <translation id="563535393368633106">Preguntar antes de acceder (recomendado)</translation>
+<translation id="145097072038377568">Ajustes de Android desactivados</translation>
 <translation id="666981079809192359">Aviso de privacidad de Chrome</translation>
 <translation id="983192555821071799">Cerrar todas las pestañas</translation>
 <translation id="1966710179511230534">Actualiza tus datos de inicio de sesión.</translation>
@@ -117,6 +123,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="1091134514807961917">Has iniciado sesión en la siguiente cuenta de Google.</translation>
 <translation id="7019652137705190998">Accede en modo incógnito para navegar de forma privada o inicia sesión temporalmente</translation>
 <translation id="932327136139879170">Página principal</translation>
+<translation id="1061441684050139317">Chrome necesita acceder al micrófono para compartirlo con este sitio web.</translation>
 <translation id="963967414714199900">Última sincronización: ahora</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, una aplicación web disponible en <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">Sustituir archivo</translation>
@@ -130,6 +137,7 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="4256782883801055595">Licencias de código abierto</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>
 <translation id="8218346974737627104">Confirmar inicio de sesión</translation>
+<translation id="6675018499747166670">Se está reproduciendo audio. Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="5832934273103296195">Vista expandida (hacer clic para contraerla)</translation>
 <translation id="8457451314607652708">Importar marcadores</translation>
 <translation id="6612856669344839356">Guardar marcador</translation>
@@ -201,6 +209,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="3184369589781594823">¿Importar todos los marcadores locales del navegador de Android?</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
 <translation id="238909021488141516">Se ha producido un error al descargar el contenido.</translation>
+<translation id="6012342843556706400">Chrome necesita acceder a la información de ubicación para compartirla con este sitio web.</translation>
 <translation id="8730621377337864115">Listo</translation>
 <translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
 <translation id="473775607612524610">Actualizar</translation>
@@ -209,8 +218,11 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="6600954340915313787">Copiada a Chrome</translation>
 <translation id="5771382037724542929">¿Quieres sustituir el archivo <ph name="FILE_NAME"/> de <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Error de sincronización</translation>
+<translation id="5881438603132347856">Reproduciendo “<ph name="MEDIA_TITLE"/>”</translation>
+<translation id="423410644998903704">Chrome necesita acceder a los permisos para compartirlos con este sitio web.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="2904413602477443379">Seleccionar una carpeta</translation>
+<translation id="194341124344773587">Activa el permiso para Chrome en los <ph name="BEGIN_LINK"/>ajustes de Android<ph name="END_LINK"/>.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
@@ -274,6 +286,7 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="971774202801778802">Añadir URL a marcadores</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="10614374240317010">Contraseñas que nunca se guardan</translation>
+<translation id="4792242903050551833">“<ph name="MEDIA_TITLE"/>” en pausa</translation>
 <translation id="1312168552565502328">Cookies y datos de sitios</translation>
 <translation id="2903493209154104877">Direcciones</translation>
 <translation id="3661699943263275414">Los sitios web externos pueden guardar y leer datos de cookies</translation>
@@ -284,6 +297,7 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="7366340029385295517">Enviando contenido a <ph name="SCREEN_NAME"/></translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
+<translation id="3190152372525844641">Activa los permisos para Chrome en los <ph name="BEGIN_LINK"/>ajustes de Android<ph name="END_LINK"/>.</translation>
 <translation id="583891442612896534">Chrome no puede acceder a los servidores de Google para comprimir los datos. El ahorro de datos puede estar limitado.</translation>
 <translation id="4827948050554950725">Añadir tarjeta de crédito</translation>
 <translation id="2316129865977710310">No, gracias</translation>
@@ -439,6 +453,7 @@ Las estadísticas de uso incluyen información sobre preferencias, clics en boto
 <translation id="7963646190083259054">Proveedor:</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="5345083863238459644">El acceso a la ubicación también está <ph name="BEGIN_LINK"/>desactivado en este dispositivo<ph name="END_LINK"/>.</translation>
 <translation id="6512448926095770873">Abandonar esta página</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
 <translation id="945632385593298557">Acceder al micrófono</translation>
@@ -503,6 +518,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="2646820313617290661">Tus padres ayudan a administrar estas opciones.</translation>
+<translation id="1423209968422390786">El acceso a la ubicación está <ph name="BEGIN_LINK"/>desactivado en este dispositivo<ph name="END_LINK"/>.</translation>
 <translation id="2433507940547922241">Aspecto</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6177390657002841081">Activar el Economizador de datos</translation>
@@ -519,6 +535,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="1742134235943978220">Se ha traducido al <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="5327248766486351172">Nombre</translation>
+<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL"/> utiliza tu ubicación para mostrar resultados de búsqueda locales</translation>
 <translation id="6738867403308150051">Descargando…</translation>
 <translation id="393697183122708255">La búsqueda por voz no está disponible</translation>
 <translation id="3809549525127675114">&quot;<ph name="VIDEO_TITLE"/>&quot; ha finalizado</translation>
@@ -527,6 +544,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="2038563949887743358">Activar opción para solicitar sitio de escritorio</translation>
 <translation id="4440256989292146959">Navega más por menos</translation>
+<translation id="2126426811489709554">Con la tecnología de Chrome</translation>
 <translation id="4023950129927433024">Si has olvidado tu frase de contraseña, detén y reinicia la sincronización a través del <ph name="BEGIN_LINK"/>panel de control de Google<ph name="END_LINK"/>.</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>
 <translation id="1178581264944972037">Detener</translation>

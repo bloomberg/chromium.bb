@@ -36,6 +36,7 @@ Se il problema non si risolve, dovresti riselezionare questa opzione per ottener
 <translation id="4285930937574705105">Installazione non riuscita a causa di un errore imprecisato. Se Chromium è in esecuzione, chiudilo e riprova.</translation>
 <translation id="1396446129537741364">Chromium sta cercando di visualizzare le password.</translation>
 <translation id="2097986737970966220">Apri Chromium sul desktop</translation>
+<translation id="108122890477367602">&amp;Riavvia Chromium in modalità Windows 8</translation>
 <translation id="8987477933582888019">Browser web</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
 <translation id="2886012850691518054">Facoltativo: aiutaci a migliorare Chromium inviando automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
@@ -234,7 +235,9 @@ Se il problema non si risolve, dovresti riattivare questa opzione per ottenere p
 <translation id="1708666629004767631">È disponibile una nuova versione più sicura di Chromium.</translation>
 <translation id="1644918877723739397">Chromium memorizzerà questa password nelle tue <ph name="SAVED_PASSWORD_LINK"/> e la ricorderà la prossima volta che ti servirà.</translation>
 <translation id="378917192836375108">Chromium ti consente di fare clic su un numero di telefono sul Web e di chiamarlo con Skype.</translation>
+<translation id="8605166112420372522">&amp;Riavvia Chromium sul desktop</translation>
 <translation id="1461885241643463646">Consente di attivare i flussi di accesso a Chromium basati su iframe. Questo flag sostituisce --enable-web-based-signin.</translation>
+<translation id="390894725198123737">Su Mac, le password possono essere salvate in Accesso Portachiavi e sono accessibili o sincronizzate da parte di altri utenti Chromium che utilizzano lo stesso account OS X.</translation>
 <translation id="608189560609172163">Impossibile sincronizzare i dati in Chromium a causa di un errore durante l'accesso.</translation>
 <translation id="4888717733111232871">Regola inbound per consentire il traffico mDNS in Chromium.</translation>
 <translation id="151962892725702025">Impossibile sincronizzare i dati in Chromium OS perché la sincronizzazione non è disponibile per il tuo dominio.</translation>

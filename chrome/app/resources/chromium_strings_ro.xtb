@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Chromium rulează în acest moment, închideți-l și încercați din nou.</translation>
 <translation id="1396446129537741364">Chromium încearcă să afișeze parolele.</translation>
 <translation id="2097986737970966220">Deschide Chromium pe desktop</translation>
+<translation id="108122890477367602">&amp;Repornește Chromium în modul Windows 8</translation>
 <translation id="8987477933582888019">Browser web</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="2886012850691518054">Opțional: contribuie la îmbunătățirea Chromium prin trimiterea automată de statistici privind utilizarea și rapoarte de blocare la Google.</translation>
@@ -242,7 +243,9 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="1708666629004767631">Chromium este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="1644918877723739397">Chromium o va stoca în <ph name="SAVED_PASSWORD_LINK"/> și o va reține pentru data următoare când ai nevoie.</translation>
 <translation id="378917192836375108">Chromium vă permite să faceți clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
+<translation id="8605166112420372522">&amp;Repornește Chromium pe desktop</translation>
 <translation id="1461885241643463646">Activează fluxurile de conectare la Chromium bazate pe iframe. Acest marcaj înlocuiește --enable-web-based-signin.</translation>
+<translation id="390894725198123737">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chromium care folosesc același cont de OS X.</translation>
 <translation id="608189560609172163">Chromium nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="4888717733111232871">Regula de intrare pentru Chromium pentru a permite traficul mDNS.</translation>
 <translation id="151962892725702025">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>

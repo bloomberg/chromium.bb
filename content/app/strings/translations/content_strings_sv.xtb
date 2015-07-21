@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="sv">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Annat ...</translation>
 <translation id="248395913932153421">Dag</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Det här är ett sökbart index. Skriv sökord:</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="658823671542763450">visa i helskärm</translation>
+<translation id="8851136666856101339">huvud</translation>
 <translation id="7720026100085573005">återstående tid</translation>
-<translation id="370665806235115550">Laddar...</translation>
 <translation id="2723001399770238859">ljud</translation>
 <translation id="6845533974506654842">tryck</translation>
 <translation id="8244226242650769279">bildkarta</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (medel)</translation>
 <translation id="1637811476055996098">Välj filer</translation>
 <translation id="49969490063480558">Ange en del följt av <ph name="ATSIGN"/>. <ph name="INVALIDADDRESS"/> är ofullständig.</translation>
+<translation id="1342835525016946179">artikel</translation>
 <translation id="5476505524087279545">kryssa av</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2507943997699731163">Fyll i det här fältet.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Annat ...</translation>
 <translation id="383465348367842624">En del följt av <ph name="ATSIGN"/> får inte innehålla symbolen <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="5468998798572797635">avsluta helskärmsläge</translation>
-<translation id="5919473608089529604">Det gick inte att läsa in plugin-programmet.</translation>
 <translation id="5546461542133609677">visa</translation>
 <translation id="6663448176199120256">Senaste sökningar</translation>
 <translation id="1020833440720551630">stäng av ljudspår</translation>
-<translation id="2597378329261239068">Dokumentet är lösenordsskyddat. Ange ett lösenord.</translation>
 <translation id="5466621249238537318">Välj en eller flera filer.</translation>
 <translation id="9132465097189459683">Annat ...</translation>
 <translation id="10623998915015855">växlingsknapp</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Förkorta texten till <ph name="MAX_CHARACTERS"/> tecken eller mindre (nu är texten <ph name="CURRENT_LENGTH"/> tecken).</translation>
 <translation id="6101327004457443354">spela upp ljudspåret</translation>
 <translation id="1822429046913737220">FM/EM</translation>
-<translation id="1639239467298939599">Läser in</translation>
 <translation id="2908441821576996758">Ange en kommaavgränsad lista med e-postadresser.</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Ange ett giltigt värde. Det närmast giltiga värdet är <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Ogiltigt värde.</translation>
+<translation id="9108370397979208512">matte</translation>
 <translation id="1842960171412779397">välj</translation>
 <translation id="7673697353781729403">Timmar</translation>
 <translation id="4664250907885839816">En del efter <ph name="ATSIGN"/> får inte innehålla symbolen <ph name="INVALIDCHARACTER"/>.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="7888071071722539607">Inkludera ett <ph name="ATSIGN"/> i e-postadressen. <ph name="INVALIDADDRESS"/> saknar ett <ph name="ATSIGN"/>.</translation>
 <translation id="1088086359088493902">Sekunder</translation>
-<translation id="3934680773876859118">Det gick inte att läsa in PDF-dokumentet</translation>
 <translation id="3632707345189162177">antal sekunder kvar av filmen</translation>
 <translation id="6359256949422175976">miniatyr för filmtidsreglage</translation>
 <translation id="8597182159515967513">rubrik</translation>

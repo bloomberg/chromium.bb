@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
 <translation id="1396446129537741364">Chromium 即將顯示密碼。</translation>
 <translation id="2097986737970966220">以桌面模式開啟 Chrome</translation>
+<translation id="108122890477367602">以 Windows 8 模式重新啟動 Chromium(&amp;R)</translation>
 <translation id="8987477933582888019">網路瀏覽器</translation>
 <translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
 <translation id="2886012850691518054">選用：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
@@ -242,7 +243,9 @@
 <translation id="1708666629004767631">新版 Chromium 現已推出，安全更上一層樓。</translation>
 <translation id="1644918877723739397">Chromium 會將此密碼儲存在您的「<ph name="SAVED_PASSWORD_LINK"/>」中，讓您在下次需要使用時套用。</translation>
 <translation id="378917192836375108">透過 Chromium，您只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
+<translation id="8605166112420372522">以桌面模式重新啟動 Chromium(&amp;R)</translation>
 <translation id="1461885241643463646">啟用 iframe 型 Chromium 登入流程。這個標記會覆寫 --enable-web-based-signin。</translation>
+<translation id="390894725198123737">在 Mac 上，密碼會儲存在您的 Keychain 中，因此其他共用這個 OS X 帳戶的 Chromium 使用者都能存取或同步處理這些密碼。</translation>
 <translation id="608189560609172163">登入時發生錯誤，因此 Chromium 無法同步處理您的資料。</translation>
 <translation id="4888717733111232871">允許 mDNS 流量的 Chromium 輸入規則。</translation>
 <translation id="151962892725702025">您的網域無法使用「同步功能」，因此 Chromium 作業系統無法同步處理您的資料。</translation>

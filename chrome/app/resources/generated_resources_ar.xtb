@@ -443,7 +443,6 @@
 <translation id="3587482841069643663">الكل</translation>
 <translation id="6698381487523150993">تاريخ الإنشاء:</translation>
 <translation id="4684748086689879921">إلغاء الاستيراد</translation>
-<translation id="6912686727854004322">‏لتحقيق ذلك، ستحتاج إلى تمكين الصوت ونشاط الإعدادات الصوتية وتدريب جهاز Chromebook في الخطوات التالية.</translation>
 <translation id="8191230140820435481">إدارة التطبيقات والإضافات والمظاهر</translation>
 <translation id="2163418719022613650">‏لا تستخدم قوائم عرض &quot;slimming paint&quot; للرسم. لاحظ أن وضع علامة على تمكين &quot;slimming paint&quot; له الأولوية عن وضع هذه العلامة في حالة تواجد كليهما.</translation>
 <translation id="8279107132611114222">تمّ إرسال طلبك لدخول الموقع إلى <ph name="NAME"/>.</translation>
@@ -558,7 +557,6 @@
 <translation id="7428061718435085649">‏استخدام مفتاحي Shift الأيمن والأيسر لتحديد الطريقتين الثانية والثالثة المرشحتين للإدخال</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="2630681426381349926">‏الاتصال بشبكة Wi-Fi للبدء</translation>
-<translation id="7591494541411132320">‏لجعل هذا يحدث، ستحتاج لتدريب جهاز Chromebook في الخطوة التالية.</translation>
 <translation id="1764226536771329714">تجريبي</translation>
 <translation id="5191625995327478163">إ&amp;عدادات اللغة...</translation>
 <translation id="769569204874261517"><ph name="USER_DISPLAY_NAME"/> (على هذا الجهاز فعلاً)</translation>
@@ -1356,7 +1354,6 @@
 <translation id="5323213332664049067">أمريكا اللاتينية</translation>
 <translation id="3778152852029592020">تم إلغاء التنزيل.</translation>
 <translation id="8235613855873080297">تعطيل إضافات الوسائط المشفرة.</translation>
-<translation id="2148227560636747235">إرسال علامة التبويب هذه</translation>
 <translation id="3507421388498836150">الأذونات الحالية لـ &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7831368056091621108">‏للحصول على هذه الإضافة والسجل وإعدادات Chrome الأخرى على كل أجهزتك.</translation>
 <translation id="5469868506864199649">الإيطالية</translation>
@@ -1401,7 +1398,6 @@
 <translation id="2801702994096586034">Server 3</translation>
 <translation id="1598604884989842103">‏تمكين واجهة مستخدم الحد الأقصى في TouchView للاختبار</translation>
 <translation id="155138250499894874">يضيف <ph name="BUNDLE_NAME"/> هذه الإضافات:</translation>
-<translation id="6687839925582416859">إرسال سطح المكتب أو النافذة</translation>
 <translation id="4580526846085481512">هل تريد بالتأكيد حذف عناصر $1؟</translation>
 <translation id="5292890015345653304">‏إدخال بطاقة SD أو رقاقة ذاكرة USB</translation>
 <translation id="3345634697982520715">تمكين خيارات الإضافات المضمنة.</translation>
@@ -1547,7 +1543,6 @@
 <translation id="5451646087589576080">عرض &amp;معلومات الإطار</translation>
 <translation id="5050209346295804497">تعطيل متطلبات الإيماءات لتشغيل الوسائط.</translation>
 <translation id="5880247576487732437">الرمز المميز جاهز للاستخدام</translation>
-<translation id="6305340419723954242">تحديد وضع الإرسال</translation>
 <translation id="3704162925118123524">قد تتطلب الشبكة التي تستخدمها زيارة صفحة تسجيل الدخول.</translation>
 <translation id="7157063064925785854">يُعد النقر على &quot;متابعة&quot; بمثابة موافقة منك على <ph name="LEGAL_DOC_LINK_TEXT_1"/>، و<ph name="LEGAL_DOC_LINK_TEXT_2"/>، و<ph name="LEGAL_DOC_LINK_TEXT_3"/>، و<ph name="LEGAL_DOC_LINK_TEXT_4"/>.</translation>
 <translation id="3368922792935385530">متصل</translation>
@@ -1666,7 +1661,6 @@
     <ph name="MARKUP_2"/>احرص على إزالة الملفات التي لم تعد بحاجة إلى الدخول إليها في وضع عدم الاتصال<ph name="MARKUP_3"/>
     <ph name="MARKUP_4"/>احذف الملفات من مجلد التنزيلات<ph name="MARKUP_5"/></translation>
 <translation id="4737715515457435632">يُرجى الاتصال بشبكة.</translation>
-<translation id="6913830198853875055">في حالة التمكين، يمكنك إجراء جلب مسبق لمعاينات نتائج البحث وتبديلها بالصفحة الأصلية عند تنزيلها وعرضها.</translation>
 <translation id="3759371141211657149">إدارة إعدادات المعالج...</translation>
 <translation id="8856844195561710094">أخفق إيقاف اكتشاف جهاز بلوتوث.</translation>
 <translation id="2246340272688122454">جارٍ تنزيل صورة الاستعادة...</translation>
@@ -2395,7 +2389,6 @@
 <translation id="1783075131180517613">الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="1601560923496285236">تطبيق</translation>
 <translation id="2390045462562521613">عدم تسجيل هذه الشبكة</translation>
-<translation id="5076531908107520937">إرسال علامة التبويب هذه (المحسّنة للصوت) إلى...</translation>
 <translation id="3796648294839530037">الشبكات المفضلة:</translation>
 <translation id="3348038390189153836">تم اكتشاف جهاز قابل للإزالة</translation>
 <translation id="1663298465081438178">الاستمتاع براحة البال.</translation>
@@ -2517,7 +2510,6 @@
 <translation id="8759753423332885148">معرفة المزيد.</translation>
 <translation id="4011708746171704399">تمكين عمليات النقل المتحركة في أول برنامج تعليمي يتم تشغيله.</translation>
 <translation id="304826556400666995">إلغاء تجاهل علامات التبويب</translation>
-<translation id="4314564217497012208">إرسال علامة التبويب هذه إلى...</translation>
 <translation id="2674170444375937751">هل تريد بالتأكيد حذف هذه الصفحات من السجل؟</translation>
 <translation id="2932883381142163287">الإبلاغ عن إساءة الاستخدام</translation>
 <translation id="9111102763498581341">إلغاء التأمين</translation>
@@ -2820,7 +2812,6 @@
 <translation id="6702639462873609204">تعد&amp;يل...</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
 <translation id="2282146716419988068">‏معالجة وحدة معالجة الرسومات (GPU)</translation>
-<translation id="3113334552982755865">في حالة التعطيل، لن تكتب السلاسل النقطية في ذاكرة وحدة معالجة الرسومات.</translation>
 <translation id="4690246192099372265">السويدية</translation>
 <translation id="1682548588986054654">نافذة جديدة للتصفح المتخفي</translation>
 <translation id="6833901631330113163">جنوب أوروبا</translation>
@@ -3800,6 +3791,7 @@
 <translation id="4619415398457343772">‏التسوية AA</translation>
 <translation id="7450732239874446337">إدخال/إخراج الشبكة معلق.</translation>
 <translation id="6107079717483424262">‏التعرف على صوتك عندما تقول &quot;Ok Google&quot;</translation>
+<translation id="4003393903129308792">تمكين نسخة واحدة لبرنامج التقييم</translation>
 <translation id="5178667623289523808">البحث عن السابق</translation>
 <translation id="1510785804673676069">إذا كنت تستخدم خادمًا وكيلاً، فراجع إعدادات الخادم الوكيل أو
         اتصل بمشرف الشبكة للتحقق من أن الخادم الوكيل
@@ -4156,6 +4148,7 @@
 <translation id="8050038245906040378">‏التوقيع بالرمز التجاري لـ Microsoft</translation>
 <translation id="8684255857039823328">تم حفظ كلمة المرور. يمكنك الوصول إلى كلمات المرور من أي جهاز في <ph name="MANAGEMENT_LINK"/></translation>
 <translation id="3031557471081358569">اختيار العناصر المراد استيرادها:</translation>
+<translation id="6728144975495880845">‏إذا تم تمكينه، تكتب السلاسل النقطية في ذاكرة وحدة معالجة الرسومات (GPU).</translation>
 <translation id="1368832886055348810">من اليسار لليمين</translation>
 <translation id="8689102680909215706">تم تثبيت الإضافة &quot;<ph name="EXTENSION_NAME"/>&quot;عن بُعد.</translation>
 <translation id="133014027510889724">تمكين مراقبة الأداء</translation>
@@ -4168,7 +4161,6 @@
 <translation id="6401445054534215853">بند الرف 1</translation>
 <translation id="6113134669445407638">‏تعطيل Delay Agnostic AEC في WebRTC. تُستخدم إذا كانت تأخيرات النظام المُبلغ عنها موثوقًا بها للغاية، أو إذا واجه الآخرون صدى من جهازك.</translation>
 <translation id="2365626167708453863">‏اختيار حساب من Smart Lock من Google</translation>
-<translation id="232562464593865424">‏دعنا ندرب جهاز Chromebook</translation>
 <translation id="2351520734632194850"><ph name="MHZ"/> ميغا هرتز</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
 <translation id="5771816112378578655">الإعداد قيد التقديم...</translation>
@@ -4545,7 +4537,6 @@
 <translation id="8941248009481596111">إن اتصالك بهذا الموقع له خصوصية.</translation>
 <translation id="131461803491198646">الشبكة الرئيسية، بلا تجوال</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/>‏ - <ph name="FULL_DATE"/></translation>
-<translation id="1830259362126610548">إرسال علامة التبويب هذه (المحسّنة للصوت)</translation>
 <translation id="3660127367837350905">‏تحمي Google Payments بطاقتك</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="3613422051106148727">&amp;فتح في علامة تبويب جديدة</translation>
@@ -4816,7 +4807,6 @@
 <translation id="5868927042224783176">عدم السماح بإعادة المصادقة</translation>
 <translation id="3355936511340229503">خطأ الاتصال</translation>
 <translation id="736108944194701898">سرعة الماوس:</translation>
-<translation id="8371937549687734176">إرسال سطح المكتب أو النافذة إلى...</translation>
 <translation id="4350711002179453268">تعذر إنشاء اتصال آمن بالخادم. قد تكون المشكلة في الخادم أو قد يتطلب الاتصال شهادة مصادقة للعميل ليست لديك.</translation>
 <translation id="4731422630970790516">بند الرف 3</translation>
 <translation id="750509436279396091">فتح مجلد التنزيلات</translation>
@@ -4998,7 +4988,6 @@
 <translation id="7587108133605326224">البلطيقيّة</translation>
 <translation id="3340978935015468852">الإعدادات</translation>
 <translation id="3930208863636674029">بيانات تحليل ذاكرة التخزين المؤقت.</translation>
-<translation id="4562982562425894419">‏يمكن لجهاز Chromebook الآن:</translation>
 <translation id="3581912141526548234">الفرض (محاولة الحصول على علامات تجزئة، وفرضها في حالة نجاحها)</translation>
 <translation id="1974371662733320303">إستراتيجية تجاهل الذاكرة للاستخدام</translation>
 <translation id="3991936620356087075">‏لقد أدخلت مفتاحًا غير صحيح لإلغاء تأمين رقم التعريف الشخصي عدد مرات أكثر من المسموح بها. وقد تم تعطيل شريحة SIM نهائيًا.</translation>
@@ -5502,7 +5491,6 @@
 <translation id="6793649375377511437">‏معلومات Google Copresence</translation>
 <translation id="4335713051520279344">ستتم إعادة تعيين هذا الكمبيوتر في خلال ثانية واحدة.
 اضغط على أي مفتاح لمتابعة الاستكشاف.</translation>
-<translation id="7233715388668391168">تمكين/تعطيل الكتابة بالإيماءات للوحة المفاتيح الظاهرية.</translation>
 <translation id="6264485186158353794">الرجوع إلى وضع الأمان</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="5130080518784460891">Eten</translation>
@@ -5623,7 +5611,6 @@
 <translation id="3943857333388298514">لصق</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="5075306601479391924">تعطيل متطلبات إيماءات المستخدم لتشغيل عناصر الوسائط. سيتيح تنشيط ذلك تمكين التشغيل التلقائي.</translation>
-<translation id="4872789845503416415">‏للمساعدة في استجابة جهاز Chromebook لك، ولدخول موثوق وسهل إلى البحث الصوتي، تحتاج إلى تعليم Google لنبرة صوتك.</translation>
 <translation id="4377363674125277448">هناك مشكلة مع شهادة الخادم.</translation>
 <translation id="9112748030372401671">تغيير الخلفية</translation>
 <translation id="8938356204940892126">توقفت</translation>
@@ -5887,7 +5874,6 @@
 <translation id="2817109084437064140">استيراد شهادات وربط الجهاز بها...</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="2813137708069460534">المقاييس المتعلقة باستخدام الشبكة لـ <ph name="SHORT_PRODUCT_NAME"/></translation>
-<translation id="2491341326828824053">تعطيل نسخة واحدة من برنامج التقييم</translation>
 <translation id="7775325654940954648">حدث خطأ أثناء عرض صفحة الويب هذه. قد يساعد إغلاق التطبيقات وعلامات التبويب التي لا تحتاجها وذلك من خلال توفير سعة أكبر للذاكرة.</translation>
 <translation id="7250799832286185545">سنوات</translation>
 <translation id="5849869942539715694">إنشاء حزمة للإضافة...</translation>

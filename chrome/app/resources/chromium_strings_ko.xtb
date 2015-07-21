@@ -43,6 +43,7 @@
 <translation id="4285930937574705105">확인되지 않은 오류로 설치에 실패했습니다. Chromium이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="1396446129537741364">Chromium이 비밀번호를 표시하려고 합니다.</translation>
 <translation id="2097986737970966220">데스크톱에서 Chromium 열기</translation>
+<translation id="108122890477367602">Windows 8 모드에서 Chromium 다시 실행(&amp;R)</translation>
 <translation id="8987477933582888019">웹브라우저</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="2886012850691518054">선택사항: 사용 통계 및 오류 보고서가 Google로 자동 전송되도록 선택하시면 Chromium을 개선하는 데 도움이 됩니다.</translation>
@@ -241,7 +242,9 @@
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="1644918877723739397">Chromium은 <ph name="SAVED_PASSWORD_LINK"/>에 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
+<translation id="8605166112420372522">데스크톱 모드에서 Chromium 다시 실행(&amp;R)</translation>
 <translation id="1461885241643463646">iframe 기반 Chromium 로그인 절차를 사용합니다(이 플래그는 웹 기반 로그인 사용보다 우선함).</translation>
+<translation id="390894725198123737">Mac에서는 비밀번호가 키체인에 저장되어 이 OS X 계정을 공유하는 다른 Chromium 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="608189560609172163">로그인 중 오류가 발생하여 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="4888717733111232871">Chromium이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="151962892725702025">내 도메인에서 동기화를 사용할 수 없으므로 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>

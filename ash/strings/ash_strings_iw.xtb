@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">המקלדת שמופיעה במסך מושבתת</translation>
 <translation id="5548285847212963613">התוסף &quot;<ph name="EXTENSION_NAME"/>&quot; יכול לעזור בהתחברות אל הרשת הזו.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ו-<ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">שקע מיקרופון</translation>
 <translation id="30155388420722288">לחצן גלישה</translation>
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">הרזולוציה של <ph name="DISPLAY_NAME"/> שונתה ל-<ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">מגש סטטוס</translation>
-<translation id="2248649616066688669">‏תוכל להמשיך להשתמש ב-Chromebook בזמן שהוא מחובר לצג חיצוני, גם אם המכסה סגור.</translation>
 <translation id="2946640296642327832">‏הפעל Bluetooth</translation>
 <translation id="6459472438155181876">מרחיב את המסך אל <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">סלולארי</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
 <translation id="2208323208084708176">מצב שולחן עבודה מאוחד</translation>
 <translation id="2825619548187458965">מדף</translation>
-<translation id="2614835198358683673">‏ייתכן שה-Chromebook שלך לא ייטען בזמן שהוא מופעל. מומלץ להשתמש במטען הראשי.</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">כל המשתמשים הזמינים כבר נוספו לפעילות זו באתר.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
 <translation id="882279321799040148">לחץ להצגה</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">‏ייתכן שמכשיר Chromebook שלך לא ייטען בזמן שהוא מופעל.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> אינו תומך ב-<ph name="SPECIFIED_RESOLUTION"/>. הרזולוציה שונתה ל-<ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">הפעל נתונים לנייד</translation>
 <translation id="68610848741840742">‏ChromeVox (משוב קולי)</translation>

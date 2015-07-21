@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="am">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="am">
 <translation id="4763480195061959176">ቪዲዮ</translation>
 <translation id="5843503607508392247">ሌላ...</translation>
 <translation id="248395913932153421">ቀን</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">ይህ ሊፈለግ የሚችል መረጃ ጠቋሚ ነው። የፍለጋ ቁልፍ ቃላት አስገባ፦</translation>
 <translation id="1930711995431081526">ሁኔታ</translation>
 <translation id="658823671542763450">ወደ ሙሉ ገጽ ዕይታ ግባ</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">ቀሪ ጊዜ</translation>
-<translation id="370665806235115550">በመጫን ላይ...</translation>
 <translation id="2723001399770238859">ድምጽ</translation>
 <translation id="6845533974506654842">ተጫን</translation>
 <translation id="8244226242650769279">የምስል ካርታ</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024(መካከለኛ ደረጃ)</translation>
 <translation id="1637811476055996098">ፋይሎችን ይምረጡ</translation>
 <translation id="49969490063480558">እባክዎ ከ«<ph name="ATSIGN"/>» በኋላ አንድ ክፍል ያስገቡ። «<ph name="INVALIDADDRESS"/>» ያልተሟላ ነው።</translation>
+<translation id="1342835525016946179">ጽሑፍ</translation>
 <translation id="5476505524087279545">አታመልክት</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2507943997699731163">እባክዎ ይህን መስክ ይሙሉት።</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">ሌላ...</translation>
 <translation id="383465348367842624">ከ«<ph name="ATSIGN"/>» በፊት የሚመጣ ክፍል የ«<ph name="INVALIDCHARACTER"/>» ምልክት መያዝ የለበትም።</translation>
 <translation id="5468998798572797635">ከሙሉ ማያ ገጽ ውጣ</translation>
-<translation id="5919473608089529604">ተሰኪ መጫን አልተቻለም።</translation>
 <translation id="5546461542133609677">ድምፅ-ከልን አንሳ</translation>
 <translation id="6663448176199120256">የቅርብ ጊዜ ፍለጋዎችን</translation>
 <translation id="1020833440720551630">የድምጽ ትራክ ላይ ድምጸ-ከል አድርግ</translation>
-<translation id="2597378329261239068">ይህ ሰነድ በይለፍ ቃል የተጠበቀ ነው። እባክዎ የይለፍ ቃል ያስገቡ።</translation>
 <translation id="5466621249238537318">እባክዎ አንድ ወይም ተጨማሪ ፋይሎችን ይምረጡ።</translation>
 <translation id="9132465097189459683">ሌላ...</translation>
 <translation id="10623998915015855">የማቀያየሪያ አዝራር</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">እባክዎ ይህ ጽሑፍ ወደ <ph name="MAX_CHARACTERS"/> ወይም ከዚያ በታች ቁምፊዎች ያሳጥሩት (በአሁኑ ጊዜ <ph name="CURRENT_LENGTH"/> ቁምፊዎችን እየተጠቀሙ ነዎት)።</translation>
 <translation id="6101327004457443354">የድምጹ ትራክ ድምጸ-ከል አንሳ</translation>
 <translation id="1822429046913737220">ጥዋት/ከሰዓት</translation>
-<translation id="1639239467298939599">በመጫን ላይ</translation>
 <translation id="2908441821576996758">እባክዎ በኮማ የተለዩ የኢሜይል አድራሻዎች ዝርዝር ያስገቡ።</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
 <translation id="1921819250265091946">ቀቀ</translation>
 <translation id="2613802280814924224">እባክዎ የሚሰራ ዋጋ ያስገቡ። የሚቀርበው ዋጋ <ph name="VALID_VALUE"/> ነው።</translation>
 <translation id="835897206747267392">ልክ ያልሆነ እሴት።</translation>
+<translation id="9108370397979208512">ሒሳብ</translation>
 <translation id="1842960171412779397">ምረጥ</translation>
 <translation id="7673697353781729403">ሰዓቶች</translation>
 <translation id="4664250907885839816">ከ«<ph name="ATSIGN"/>» በኋላ የሚመጣ ክፍል የ«<ph name="INVALIDCHARACTER"/>» ምልክት መያዝ የለበትም።</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">አጽዳ</translation>
 <translation id="7888071071722539607">እባክዎ በኢሜይል አድራሻው ውስጥ «<ph name="ATSIGN"/>» ያካትቱ። «<ph name="INVALIDADDRESS"/>» ውስጥ «<ph name="ATSIGN"/>» ይጎድላል።</translation>
 <translation id="1088086359088493902">ሰኮንዶች</translation>
-<translation id="3934680773876859118">የፒ ዲ ኤፍ ሰነድ መጫን አልተሳካም</translation>
 <translation id="3632707345189162177">የፊልሙ ቀሪ ሰከንዶች</translation>
 <translation id="6359256949422175976">የፊልም ሰዓት አንፏቃቂ አውራ ጣት</translation>
 <translation id="8597182159515967513">ርዕስ</translation>

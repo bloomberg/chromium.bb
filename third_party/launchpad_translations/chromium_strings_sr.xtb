@@ -44,6 +44,7 @@
 <translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="1396446129537741364">Chromium покушава да прикаже лозинке.</translation>
 <translation id="2097986737970966220">Отвори Chromium на рачунару</translation>
+<translation id="108122890477367602">&amp;Поново покрени Chromium у Windows 8 режиму</translation>
 <translation id="8987477933582888019">Веб-прегледач</translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
@@ -243,7 +244,9 @@
 <translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
 <translation id="1644918877723739397">Chromium ће сачувати ове податке у услузи <ph name="SAVED_PASSWORD_LINK"/> и сетиће их се када вам следећи пут буду потребни.</translation>
 <translation id="378917192836375108">Chromium вам омогућава да кликнете на број телефона на вебу и да га позовете помоћу Skype-а!</translation>
+<translation id="8605166112420372522">&amp;Поново покрени Chromium на рачунару</translation>
 <translation id="1461885241643463646">Омогућава токове пријављивања у Chromium засноване на iframe-у. Ово обележје замењује обележје --enable-web-based-signin.</translation>
+<translation id="390894725198123737">На Mac-у лозинке могу да се чувају у Keychain и други корисници Chromium-а који деле овај ОС X налог могу да им приступају или да их синхронизују.</translation>
 <translation id="608189560609172163">Chromium не може да синхронизује податке због грешке при пријављивању.</translation>
 <translation id="4888717733111232871">Правило за долазни саобраћај за Chromium да би се омогућио mDNS саобраћај.</translation>
 <translation id="151962892725702025">Chromium ОС не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>

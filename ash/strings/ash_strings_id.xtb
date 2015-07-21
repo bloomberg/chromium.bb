@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
 <translation id="5548285847212963613">Ekstensi &quot;<ph name="EXTENSION_NAME"/>&quot; dapat membantu menyambungkan ke jaringan ini.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> dan <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Colokan Mikrofon</translation>
 <translation id="30155388420722288">Tombol Luapan</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> resolusi diubah menjadi <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Baki status</translation>
-<translation id="2248649616066688669">Anda dapat tetap menggunakan Chromebook saat perangkat tersambung ke layar eksternal, bahkan dengan penutup yang tertutup.</translation>
 <translation id="2946640296642327832">Aktifkan Bluetooth</translation>
 <translation id="6459472438155181876">Memperpanjang layar ke <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Seluler</translation>
@@ -104,7 +104,6 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="1747827819627189109">Keyboard di layar diaktifkan</translation>
 <translation id="2208323208084708176">Mode desktop terpadu</translation>
 <translation id="2825619548187458965">Rak</translation>
-<translation id="2614835198358683673">Chromebook Anda mungkin tidak mengisi daya saat sedang menyala. Pertimbangkan untuk menggunakan pengisi daya resmi.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Semua pengguna yang tersedia telah ditambahkan ke sesi ini.</translation>
@@ -150,7 +149,6 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
 <translation id="882279321799040148">Klik untuk melihat</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebook Anda mungkin tidak mengisi daya ketika sedang dinyalakan.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> tidak mendukung <ph name="SPECIFIED_RESOLUTION"/>. Resolusi diubah menjadi <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Aktifkan data seluler</translation>
 <translation id="68610848741840742">ChromeVox (Masukan lisan)</translation>

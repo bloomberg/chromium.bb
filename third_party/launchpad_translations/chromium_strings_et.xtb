@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Installimine ebaõnnestus tundmatu vea tõttu. Kui Chromium praegu töötab, siis sulgege see ja proovige uuesti.</translation>
 <translation id="1396446129537741364">Chromium püüab paroole kuvada.</translation>
 <translation id="2097986737970966220">Ava Chromium töölaual</translation>
+<translation id="108122890477367602">&amp;Käivitage Chromium uuesti Windows 8 režiimis</translation>
 <translation id="8987477933582888019">Veebibrauser</translation>
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="2886012850691518054">Valikuline: aidake muuta Chromiumi paremaks, saates Google'ile automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>
@@ -243,7 +244,9 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="1708666629004767631">Saadaval on Chromiumi uus, turvalisem versioon.</translation>
 <translation id="1644918877723739397">Chromium salvestab selle asukohta <ph name="SAVED_PASSWORD_LINK"/> ja peab seda meeles, kui seda järgmine kord vajate.</translation>
 <translation id="378917192836375108">Chromium võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i kaudu helistada!</translation>
+<translation id="8605166112420372522">&amp;Käivitage Chromium uuesti töölaual</translation>
 <translation id="1461885241643463646">Lubab iframe'il põhinevad Chromiumi sisselogimisvood. See märgistus alistab käsu --enable-web-based-signin.</translation>
+<translation id="390894725198123737">Macis võidakse paroolid salvestada rakendusse Keychain ja teised Chromiumi kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ning sünkroonida.</translation>
 <translation id="608189560609172163">Chromium ei saanud sisselogimisvea tõttu teie andmeid sünkroonida.</translation>
 <translation id="4888717733111232871">Sissetuleku reegel Chromiumile mDNS-liikluse lubamiseks.</translation>
 <translation id="151962892725702025">Chromium OS ei saanud teie andmeid sünkroonida, sest teie domeenil pole sünkroonimine saadaval.</translation>

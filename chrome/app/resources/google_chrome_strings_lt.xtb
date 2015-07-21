@@ -86,6 +86,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5037239767309817516">Uždarykite visus „Google Chrome“ langus ir paleiskite iš naujo, kad įsigaliotų šis pakeitimas.</translation>
 <translation id="1619887657840448962">Kad „Chrome“ būtų saugesnė, išjungėme toliau nurodytą plėtinį, kuris nepateiktas <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> sąraše ir tikriausiai buvo pridėtas be jūsų žinios.</translation>
 <translation id="225614027745146050">Sveiki</translation>
+<translation id="8811903091068364646">&amp;Iš naujo paleisti „Chrome“ darbalaukyje</translation>
 <translation id="3398288718845740432">Paslėpti „Chrome“ meniu elementą</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="3149510190863420837">„Chrome“ programos</translation>
@@ -259,6 +260,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="3037838751736561277">„Google Chrome“ veikia fono režimu.</translation>
 <translation id="2084710999043359739">Pridėti į „Chrome“</translation>
 <translation id="4692614041509923516">Kompiuteryje veikia sena „Microsoft Windows“ versija, kurią naudojant negalima apdoroti šio svetainės saugos sertifikato. Dėl šios problemos „Google Chrome“ negali nustatyti, ar sertifikatas gautas iš <ph name="SITE"/> ar iš kažko, kas jūsų tinkle apsimeta esantis <ph name="SITE"/>. Atnaujinkite kompiuterį į naujesnę „Windows“ versiją.</translation>
+<translation id="5931853610562009806">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chrome“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
 <translation id="3360895254066713204">„Chrome“ pagalbos priemonė</translation>
 <translation id="1877026089748256423">„Chrome“ versija yra pasenusi</translation>
 <translation id="7592736734348559088">„Google Chrome“ negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
@@ -270,6 +272,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="1001534784610492198">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="2246246234298806438">„Google Chrome“ negali rodyti spaudinio peržiūros, kai nėra integruotos PDF žiūryklės.</translation>
 <translation id="5132929315877954718">Suraskite puikių „Google Chrome“ programų, žaidimų, plėtinių ir temų.</translation>
+<translation id="7784335114585804598">&amp;Iš naujo paleisti „Chrome“ „Windows 8“ režimu</translation>
 <translation id="6626317981028933585">Deja, „Mozilla Firefox“ nustatymai negalimi tol, kol ši naršyklė nebus paleista. Norėdami importuoti šiuos nustatymus į „Google Chrome“, išsaugokite savo darbą ir uždarykite visus „Firefox“ langus. Spustelėkite Tęsti.</translation>
 <translation id="8274359292107649245">Atidaryti „Chrome“ darbalaukio režimu</translation>
 <translation id="7242029209006116544">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME"/>. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. Galite pasirinktinai sukurti naują profilį, kad esami „Chrome“ duomenys būtų saugomi atskirai. <ph name="LEARN_MORE"/></translation>

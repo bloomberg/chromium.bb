@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="5548285847212963613">ഈ നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റുചെയ്യാൻ &quot;<ph name="EXTENSION_NAME"/>&quot; വിപുലീകരണത്തിന് സഹായിക്കാനാകും.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/>, <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mic Jack</translation>
 <translation id="30155388420722288">ഓവർഫ്ലോ ബട്ടൺ</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google ഡ്രൈവ്</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> മിഴിവ് <ph name="RESOLUTION"/> എന്നതിലേയ്‌ക്ക് മാറ്റി</translation>
 <translation id="2297568595583585744">സ്റ്റാറ്റസ് ട്രേ</translation>
-<translation id="2248649616066688669">നിങ്ങളുടെ Chromebook ഒരു ബാഹ്യ ഡിസ്‌പ്ലേയിൽ കണക്‌റ്റുചെയ്തിരിക്കുമ്പോൾ, ലിഡ് അടച്ചിരിക്കുകയാണെങ്കിൽപ്പോലും നിങ്ങൾക്ക് Chromebook ഉപയോഗിക്കുന്നത് തുടരാം.</translation>
 <translation id="2946640296642327832">Bluetooth പ്രാപ്‌തമാക്കുക</translation>
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME"/> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
 <translation id="8206859287963243715">സെല്ലുലാര്‍‌</translation>
@@ -103,7 +103,6 @@
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="2208323208084708176">ഏകീകൃത ഡെസ്‌ക്‌ടോപ്പ് മോഡ്</translation>
 <translation id="2825619548187458965">ഷെൽഫ്</translation>
-<translation id="2614835198358683673">ഓണായിരിക്കുമ്പോൾ നിങ്ങളുടെ Chromebook ചാർജ് ചെയ്യാനിടയില്ല. ഔദ്യോഗിക ചാർജ്ജർ ഉപയോഗിക്കുന്നത് പരിഗണിക്കുക.</translation>
 <translation id="4430019312045809116">അളവ്</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">ലഭ്യമായ എല്ലാ ഉപയോക്താക്കളേയും ഈ സെഷനിൽ ഇതിനകം ചേർത്തു.</translation>
@@ -149,7 +148,6 @@
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="882279321799040148">കാണുന്നതിന് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">നിങ്ങളുടെ Chromebook ഓണായിരിക്കുമ്പോൾ ചാർജ്ജുചെയ്യാനിടയില്ല.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>, <ph name="SPECIFIED_RESOLUTION"/> എന്നതിനെ പിന്തുണയ്‌ക്കുന്നില്ല. റസലൂഷൻ <ph name="FALLBACK_RESOLUTION"/> എന്നതിലേക്ക് മാറ്റി.</translation>
 <translation id="1602076796624386989">മൊബൈൽ ഡാറ്റ പ്രാപ്‌തമാക്കുക</translation>
 <translation id="68610848741840742">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്)</translation>

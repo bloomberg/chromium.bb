@@ -200,7 +200,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="1152528166145813711">Selecionar...</translation>
 <translation id="2235518894410572517">Partilhar este computador para que outro utilizador o possa ver e controlar.</translation>
 <translation id="6939719207673461467">Mostrar/ocultar teclado.</translation>
-<translation id="1023096696228309145">Solicite ao utilizador a cujo computador pretende aceder que clique em &quot;Partilhar Agora&quot; e que indique o código de acesso.</translation>
 <translation id="4240294130679914010">Desinstalador do Anfitrião do Chromoting</translation>
 <translation id="8712909229180978490">Não consigo ver os ficheiros guardados online no Google Drive.</translation>
 <translation id="80739703311984697">O anfitrião remoto requer que efetue a autenticação num Website de terceiros. Para continuar, necessita de conceder permissões adicionais ao Chromoting para aceder a este endereço:</translation>
@@ -241,6 +240,8 @@ Remoto do Chrome</translation>
 <translation id="2921543551052660690">Iniciou sessão anteriormente como <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Para aceder aos computadores nessa conta, <ph name="LINK_BEGIN"/>inicie sessão no Chromium<ph name="LINK_END"/> com essa conta e reinstale o Chromoting.</translation>
 <translation id="7319983568955948908">Terminar Partilha</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Todos os Direitos Reservados.</translation>
+<translation id="2998137343848432918">• Adição do ecrã Créditos.
+• Correção de um problema ao abrir o modo de ecrã inteiro com o teclado visível.</translation>
 <translation id="6640610550128933069">online pela última vez a <ph name="DATE"/></translation>
 <translation id="6668065415969892472">O seu PIN foi atualizado.</translation>
 <translation id="4513946894732546136">Comentários</translation>

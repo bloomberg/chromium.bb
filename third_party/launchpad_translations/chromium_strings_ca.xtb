@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">S'ha produït un error no especificat durant la instal·lació. Si Chromium s'està executant en aquests moments, tanqueu-lo i torneu-ho a provar.</translation>
 <translation id="1396446129537741364">Chromium està provant de mostrar les contrasenyes.</translation>
 <translation id="2097986737970966220">Obre Chromium a l'escriptori</translation>
+<translation id="108122890477367602">&amp;Reinicia Chromium en mode Windows 8</translation>
 <translation id="8987477933582888019">Navegador web</translation>
 <translation id="4050175100176540509">La versió més recent incorpora millores de seguretat i funcions noves importants.</translation>
 <translation id="2886012850691518054">Opcional: ajudeu a millorar Chromium enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
@@ -241,7 +242,9 @@
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
 <translation id="1644918877723739397">Chromium desarà la contrasenya a <ph name="SAVED_PASSWORD_LINK"/> i la recordarà la propera vegada que la necessiteu.</translation>
 <translation id="378917192836375108">Chromium us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
+<translation id="8605166112420372522">&amp;Reinicia Chromium a l'escriptori</translation>
 <translation id="1461885241643463646">Activa els fluxos d'inici de sessió de Chromium basats en iframe. Aquesta marca substitueix l'activació de l'inici de sessió basat en web.</translation>
+<translation id="390894725198123737">En un Mac, és possible que les contrasenyes es desin a Keychain i que altres usuaris de Chromium que comparteixin aquest compte d'OS X puguin accedir-hi i sincronitzar-les.</translation>
 <translation id="608189560609172163">Chromium no ha pogut sincronitzar les dades a causa d'un error amb l'inici de sessió.</translation>
 <translation id="4888717733111232871">Regla d'entrada de Chromium per permetre el trànsit de mDNS.</translation>
 <translation id="151962892725702025">Chromium OS no ha pogut sincronitzar les vostres dades perquè la sincronització no està disponible per al vostre domini.</translation>

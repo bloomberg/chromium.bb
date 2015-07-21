@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Dokunmatik klavye devre dışı</translation>
 <translation id="5548285847212963613">&quot;<ph name="EXTENSION_NAME"/>&quot; uzantısı bu ağa bağlanmaya yardımcı olabilir.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ve <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofon Jakı</translation>
 <translation id="30155388420722288">Taşma Düğmesi</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> çözünürlüğü <ph name="RESOLUTION"/> olarak değiştirildi</translation>
 <translation id="2297568595583585744">Durum tepsisi</translation>
-<translation id="2248649616066688669">Chromebook'unuz harici bir ekrana bağlıyken, kapağı kapalı olsa da cihazınızı kullanmaya devam edebilirsiniz.</translation>
 <translation id="2946640296642327832">Bluetooth'u etkinleştir</translation>
 <translation id="6459472438155181876">Ekran şuraya genişletiliyor: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cep telefonu</translation>
@@ -104,7 +104,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
 <translation id="2208323208084708176">Birleştirilmiş masaüstü modu</translation>
 <translation id="2825619548187458965">Raf</translation>
-<translation id="2614835198358683673">Chromebook'unuz açıkken şarj edilemeyebilir. Orijinal şarj cihazını kullanmayı düşünün.</translation>
 <translation id="4430019312045809116">Ses</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Mevcut tüm kullanıcılar zaten bu oturuma eklenmiş.</translation>
@@ -150,7 +149,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3473479545200714844">Ekran büyüteci</translation>
 <translation id="882279321799040148">Görüntülemek için tıklayın</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebook'unuz açıkken şarj olmayabilir.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>, <ph name="SPECIFIED_RESOLUTION"/> çözünürlüğünü desteklemiyor. Çözünürlük <ph name="FALLBACK_RESOLUTION"/> olarak değiştirildi</translation>
 <translation id="1602076796624386989">Mobil verileri etkinleştir</translation>
 <translation id="68610848741840742">ChromeVox (Sesli geri bildirim)</translation>

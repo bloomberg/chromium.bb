@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Tanqueu totes les finestres de Google Chrome i torneu a iniciar el programa perquè aquest canvi tingui efecte.</translation>
 <translation id="1619887657840448962">Per tal que Chrome sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="225614027745146050">Benvingut</translation>
+<translation id="8811903091068364646">&amp;Reinicia Chrome a l'escriptori</translation>
 <translation id="3398288718845740432">Amaga al menú de Chrome</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="3149510190863420837">Aplicacions de Chrome</translation>
@@ -247,6 +248,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="3037838751736561277">Google Chrome està en mode de segon pla.</translation>
 <translation id="2084710999043359739">Afegeix a Chrome</translation>
 <translation id="4692614041509923516">El vostre ordinador funciona amb una versió antiga de Microsoft Windows que no pot processar el certificat de seguretat d'aquest lloc web. A causa d'aquest problema, Google Chrome no pot saber si el certificat prové del lloc <ph name="SITE"/> o d'algú de la vostra xarxa que es fa passar per <ph name="SITE"/>. Feu l'actualització de l'ordinador a una versió més recent de Windows.</translation>
+<translation id="5931853610562009806">En un Mac, és possible que les contrasenyes es desin a Keychain i que altres usuaris de Chrome que comparteixin aquest compte d'OS X puguin accedir-hi i sincronitzar-les.</translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
 <translation id="1877026089748256423">Chrome no està actualitzat</translation>
 <translation id="7592736734348559088">Google Chrome no ha pogut sincronitzar les dades perquè els detalls d'inici de sessió del compte no estan actualitzats.</translation>
@@ -258,6 +260,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="1001534784610492198">El fitxer d'instal·lació està malmès o no és vàlid. Torna a baixar Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome no pot mostrar la previsualització d'impressió perquè falta el lector de PDF incorporat.</translation>
 <translation id="5132929315877954718">Descobriu aplicacions, jocs, extensions i temes genials per a Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Reinicia Chrome en mode Windows 8</translation>
 <translation id="6626317981028933585">Lamentablement, la vostra configuració de Mozilla Firefox no estarà disponible mentre aquest navegador s'estigui executant. Per importar aquesta configuració a Google Chrome, deseu la feina que hagueu fet i tanqueu totes les finestres de Firefox. Seguidament, feu clic a &quot;Continua&quot;.</translation>
 <translation id="8274359292107649245">Obre Chrome a l'escriptori</translation>
 <translation id="7242029209006116544">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME"/>. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chrome a part. <ph name="LEARN_MORE"/></translation>

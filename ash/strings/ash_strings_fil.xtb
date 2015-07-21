@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Naka-disable ang on-screen na keyboard</translation>
 <translation id="5548285847212963613">Maaaring makatulong na makakonekta sa network na ito ang extension na &quot;<ph name="EXTENSION_NAME"/>.&quot;</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> at <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Jack ng Mikropono</translation>
 <translation id="30155388420722288">Button na Overflow</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Ginawang <ph name="RESOLUTION"/> ang resolution ng <ph name="DISPLAY_NAME"/></translation>
 <translation id="2297568595583585744">Tray ng katayuan</translation>
-<translation id="2248649616066688669">Maaari mong patuloy na gamitin ang iyong Chromebook habang nakakonekta ito sa isang external na display, kahit na nakasara ang lid.</translation>
 <translation id="2946640296642327832">Paganahin ang Bluetooth</translation>
 <translation id="6459472438155181876">Pinapalawak ang screen sa <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cellular</translation>
@@ -104,7 +104,6 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="1747827819627189109">Naka-enable ang on-screen na keyboard</translation>
 <translation id="2208323208084708176">Unified desktop mode</translation>
 <translation id="2825619548187458965">Shelf</translation>
-<translation id="2614835198358683673">Maaaring hindi mag-charge ang iyong Chromebook habang naka-on ito. Pag-isipang gamitin ang opisyal na charger.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Naidagdag na ang lahat ng available na user sa session na ito.</translation>
@@ -150,7 +149,6 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="882279321799040148">I-click upang tingnan</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Maaaring hindi mag-charge ang iyong Chromebook habang naka-on ito.</translation>
 <translation id="7561014039265304140">Hindi sinusuportahan ng <ph name="DISPLAY_NAME"/> ang <ph name="SPECIFIED_RESOLUTION"/>. Ang resolution ay ginawang <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Paganahin ang mobile data</translation>
 <translation id="68610848741840742">ChromeVox (pasalitang feedback)</translation>

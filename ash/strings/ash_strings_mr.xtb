@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">ऑन-स्क्रीन कीबोर्ड अक्षम</translation>
 <translation id="5548285847212963613">या नेटवर्कवर कनेक्ट करण्यात &quot;<ph name="EXTENSION_NAME"/>&quot; विस्तार मदत करू शकतो.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> आणि <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">माइक जॅक</translation>
 <translation id="30155388420722288">ओव्हरफ्लो बटण</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> रिजोल्यूशन <ph name="RESOLUTION"/> वर बदलले होते</translation>
 <translation id="2297568595583585744">स्थिती ट्रे</translation>
-<translation id="2248649616066688669">आपण Chromebook बाह्य प्रदर्शनाशी कनेक्ट केलेले असताना आणि बंद असलेल्या लीडसह देखील वापरणे सुरु ठेवू शकता.</translation>
 <translation id="2946640296642327832">Bluetooth सक्षम करा</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> मध्ये स्क्रीन विस्तृत करत आहे</translation>
 <translation id="8206859287963243715">सेल्यूलर</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="2208323208084708176">एकीकृत डेस्कटॉप मोड</translation>
 <translation id="2825619548187458965">शेल्फ</translation>
-<translation id="2614835198358683673">आपले Chromebook चालू असताना ते चार्ज होऊ शकत नाही. अधिकृत चार्जर वापरण्याचा विचार करा.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">सर्व उपलब्‍ध वापरकर्ते आधीपासून या सत्रावर जोडले गेले आहेत.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
 <translation id="882279321799040148">पाहण्यासाठी क्लिक करा</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">आपले Chromebook चालू असताना ते शुल्क आकारु शकत नाही.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> <ph name="SPECIFIED_RESOLUTION"/> ला समर्थन देत नाही. रिजोल्यूशन <ph name="FALLBACK_RESOLUTION"/> मध्ये बदलले</translation>
 <translation id="1602076796624386989">मोबाइल डेटा सक्षम करा</translation>
 <translation id="68610848741840742">ChromeVox (बोललेला अभिप्राय)</translation>

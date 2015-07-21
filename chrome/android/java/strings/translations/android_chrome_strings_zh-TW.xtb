@@ -42,11 +42,14 @@
 <translation id="326254929494722411">您尚未在這個裝置上設定 Google 帳戶</translation>
 <translation id="8143660160623733249">資料夾名稱</translation>
 <translation id="8820817407110198400">書籤</translation>
+<translation id="4720023427747327413">在 <ph name="PRODUCT_NAME"/> 中開啟</translation>
 <translation id="5676636989614905379">無法透過 <ph name="SCREEN_NAME"/> 播放影片。</translation>
 <translation id="5275558766013849309">分頁和最近使用的應用程式將會並列顯示。</translation>
 <translation id="8069239273282989646">壓縮後大小</translation>
 <translation id="1644574205037202324">歷史紀錄</translation>
 <translation id="4761374747761474835">選取帳戶後，即可從任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定。</translation>
+<translation id="1359381790106966506">更新權限</translation>
+<translation id="6060567974409584397">輕觸即可返回這個分頁</translation>
 <translation id="4803910478683254032">匯入失敗</translation>
 <translation id="3485544713029068372">密碼專用 Smart Lock</translation>
 <translation id="6999892069268112724">確認 Google 帳戶</translation>
@@ -74,9 +77,11 @@
 <translation id="2354750644801399986">「不追蹤」</translation>
 <translation id="2351097562818989364">您的翻譯設定已重設。</translation>
 <translation id="4307992518367153382">基本選項</translation>
+<translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
 <translation id="6458785801851713928">您的網域無法進行同步處理</translation>
+<translation id="7788788617745289808">Chrome 需要存取攝影機，才能與這個網站分享。</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="2731700343119398978">請稍候...</translation>
 <translation id="6846298663435243399">載入中…</translation>
@@ -101,6 +106,7 @@
 <translation id="4532845899244822526">選擇資料夾</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
 <translation id="563535393368633106">存取前詢問我 (建議)</translation>
+<translation id="145097072038377568">已在 Android 設定中關閉</translation>
 <translation id="666981079809192359">Chrome 隱私權聲明</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>
 <translation id="1966710179511230534">請更新您的登入詳細資料。</translation>
@@ -117,6 +123,7 @@
 <translation id="1091134514807961917">您已登入下列 Google 帳戶。</translation>
 <translation id="7019652137705190998">您可以使用無痕模式進入私密瀏覽狀態或暫時登入</translation>
 <translation id="932327136139879170">首頁</translation>
+<translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>
 <translation id="963967414714199900">上次同步處理時間：剛剛完成</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>，網路應用程式。<ph name="APP_URL"/></translation>
 <translation id="200669432486043882">取代檔案</translation>
@@ -130,6 +137,7 @@
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8218346974737627104">確認登入</translation>
+<translation id="6675018499747166670">正在播放音訊。輕觸即可返回 <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="5832934273103296195">已展開 - 按一下即可收合</translation>
 <translation id="8457451314607652708">匯入書籤</translation>
 <translation id="6612856669344839356">儲存書籤</translation>
@@ -201,6 +209,7 @@
 <translation id="3184369589781594823">要從 Android 瀏覽器匯入所有本機書籤嗎？</translation>
 <translation id="8562452229998620586">已儲存的密碼會顯示在這裡。</translation>
 <translation id="238909021488141516">下載這項內容時發生錯誤。</translation>
+<translation id="6012342843556706400">Chrome 需要存取位置資訊，才能與這個網站分享。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="473775607612524610">更新</translation>
@@ -209,8 +218,11 @@
 <translation id="6600954340915313787">已複製到 Chrome</translation>
 <translation id="5771382037724542929">您要取代「<ph name="DIRECTORY_NAME"/>」目錄中現有的 <ph name="FILE_NAME"/> 嗎？</translation>
 <translation id="8627706565932943526">同步處理發生錯誤</translation>
+<translation id="5881438603132347856">正在播放「<ph name="MEDIA_TITLE"/>」</translation>
+<translation id="423410644998903704">Chrome 需要存取權限，才能與這個網站分享。</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="2904413602477443379">選擇資料夾</translation>
+<translation id="194341124344773587">請在 <ph name="BEGIN_LINK"/>Android 設定<ph name="END_LINK"/>中為 Chrome 啟用這項權限。</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
@@ -274,6 +286,7 @@
 <translation id="971774202801778802">書籤網址</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="10614374240317010">永不儲存</translation>
+<translation id="4792242903050551833">已暫停播放「<ph name="MEDIA_TITLE"/>」</translation>
 <translation id="1312168552565502328">Cookie、網站資料</translation>
 <translation id="2903493209154104877">地址</translation>
 <translation id="3661699943263275414">第三方網站可以儲存及讀取 Cookie 資料</translation>
@@ -284,6 +297,7 @@
 <translation id="7366340029385295517">正在投放到 <ph name="SCREEN_NAME"/></translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="1197267115302279827">移動書籤</translation>
+<translation id="3190152372525844641">請在 <ph name="BEGIN_LINK"/>Android 設定<ph name="END_LINK"/>中為 Chrome 啟用這些權限。</translation>
 <translation id="583891442612896534">Chrome 無法連上 Google 的伺服器進行資料壓縮，這可能會導致您無法節省某些數據流量。</translation>
 <translation id="4827948050554950725">新增信用卡</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
@@ -439,6 +453,7 @@
 <translation id="7963646190083259054">供應商：</translation>
 <translation id="9065203028668620118">編輯</translation>
 <translation id="4881695831933465202">開啟</translation>
+<translation id="5345083863238459644">這個裝置的<ph name="BEGIN_LINK"/>位置資訊存取功能也已關閉<ph name="END_LINK"/>。</translation>
 <translation id="6512448926095770873">離開此頁</translation>
 <translation id="3414952576877147120">空間大小：</translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
@@ -503,6 +518,7 @@
 <translation id="497421865427891073">往前</translation>
 <translation id="4084682180776658562">書籤</translation>
 <translation id="2646820313617290661">您的家長會協助管理這些設定。</translation>
+<translation id="1423209968422390786">這個裝置的<ph name="BEGIN_LINK"/>位置資訊存取功能已關閉<ph name="END_LINK"/>。</translation>
 <translation id="2433507940547922241">外觀</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6177390657002841081">開啟 Data Saver</translation>
@@ -519,6 +535,7 @@
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="1742134235943978220">已翻譯成<ph name="TARGET_LANGUAGE"/>。</translation>
 <translation id="5327248766486351172">名稱</translation>
+<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL"/> 會使用您的位置資訊來顯示當地搜尋結果</translation>
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="393697183122708255">沒有可用的語音搜尋功能</translation>
 <translation id="3809549525127675114">「<ph name="VIDEO_TITLE"/>」已結束</translation>
@@ -527,6 +544,7 @@
 <translation id="6965382102122355670">確定</translation>
 <translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
 <translation id="4440256989292146959">在節省數據用量的情況下瀏覽更多網頁</translation>
+<translation id="2126426811489709554">技術提供：Chrome</translation>
 <translation id="4023950129927433024">如果您忘記通關密語，請透過 <ph name="BEGIN_LINK"/>Google 資訊主頁<ph name="END_LINK"/>停止並重設同步功能。</translation>
 <translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="1178581264944972037">暫停</translation>

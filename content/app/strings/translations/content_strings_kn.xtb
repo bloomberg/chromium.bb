@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="kn">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="kn">
 <translation id="4763480195061959176">ವೀಡಿಯೊ</translation>
 <translation id="5843503607508392247">ಇತರೆ...</translation>
 <translation id="248395913932153421">ದಿನ</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">ಇದು ಹುಡುಕಾಡಬಹುದಾದ ಸೂಚಿಕೆ ಹುಡುಕಾಟ ಕೀವರ್ಡ್‌ಗಳನ್ನು ನಮೂದಿಸಿ:</translation>
 <translation id="1930711995431081526">ಸ್ಥಿತಿ</translation>
 <translation id="658823671542763450">ಪೂರ್ಣ ಪರದೆ ನಮೂದಿಸು</translation>
+<translation id="8851136666856101339">ಮುಖ್ಯ</translation>
 <translation id="7720026100085573005">ಉಳಿದಿರುವ ಸಮಯ</translation>
-<translation id="370665806235115550">ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2723001399770238859">ಆಡಿಯೋ</translation>
 <translation id="6845533974506654842">ಒತ್ತಿ</translation>
 <translation id="8244226242650769279">ಇಮೇಜ್ ನಕ್ಷೆ</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (ಮದ್ಯಮ ಶ್ರೇಣಿ)</translation>
 <translation id="1637811476055996098">ಫೈಲ್‌ಗಳನ್ನು ಆರಿಸಿ</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN"/>' ನಂತರದ ಒಂದು ಭಾಗವನ್ನು ನಮೂದಿಸಿ. '<ph name="INVALIDADDRESS"/>' ಅಪೂರ್ಣವಾಗಿದೆ.</translation>
+<translation id="1342835525016946179">ಲೇಖನ</translation>
 <translation id="5476505524087279545">ಪರೀಕ್ಷಿಸಬೇಡಿ</translation>
 <translation id="2148716181193084225">ಇಂದು</translation>
 <translation id="2507943997699731163">ದಯವಿಟ್ಟು ಈ ಕ್ಷೇತ್ರವನ್ನು ಭರ್ತಿ ಮಾಡಿ.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">ಇತರೆ...</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN"/>' ನಂತರದ ಭಾಗವು '<ph name="INVALIDCHARACTER"/>' ಚಿಹ್ನೆಯನ್ನು ಒಳಗೊಂಡಿರಬಾರದು.</translation>
 <translation id="5468998798572797635">ಪೂರ್ಣಪರದೆಯಿಂದ ನಿರ್ಗಮಿಸು</translation>
-<translation id="5919473608089529604">ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="5546461542133609677">ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡು</translation>
 <translation id="6663448176199120256">ಇತ್ತೀಚಿನ ಹುಡುಕಾಟಗಳು</translation>
 <translation id="1020833440720551630">ಆಡಿಯೋ ಟ್ರ್ಯಾಕ್ ಮ್ಯೂಟ್ ಮಾಡು</translation>
-<translation id="2597378329261239068">ಈ ಡಾಕ್ಯುಮೆಂಟ್‌ ಅನ್ನು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ರಕ್ಷಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="5466621249238537318">ದಯವಿಟ್ಟು ಒಂದು ಅಥವಾ ಹೆಚ್ಚು ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="9132465097189459683">ಇತರೆ...</translation>
 <translation id="10623998915015855">ಟಾಗಲ್ ಬಟನ್</translation>
@@ -83,15 +80,15 @@
 <translation id="6692633176391053278">ಸ್ಟೀಪರ್</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT"/> ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8541249477527128034">ಮಾಧ್ಯಮ ನಿಯಂತ್ರಣ</translation>
-<translation id="2226276347425096477">ದಯವಿಟ್ಟು ಈ ಪಠ್ಯವನ್ನು <ph name="MAX_CHARACTERS"/> ಅಕ್ಷರಗಳಿಗೆ ಅಥವಾ ಅದಕ್ಕಿಂತಲೂ ಕಡಿಮೆಗೆ ಸೀಮಿತಗೊಳಿಸಿ (ನೀವು ಪ್ರಸ್ತುತವಾಗಿ <ph name="CURRENT_LENGTH"/> ಅಕ್ಷರಗಳನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ).</translation>
+<translation id="2226276347425096477">ದಯವಿಟ್ಟು ಈ ಪಠ್ಯವನ್ನು <ph name="MAX_CHARACTERS"/> ಅಕ್ಷರಗಳಿಗೆ ಅಥವಾ ಅದಕ್ಕಿಂತಲೂ ಕಡಿಮೆಗೆ ಸೀಮಿತಗೊಳಿಸಿ (ನೀವು ಪ್ರಸ್ತುತ <ph name="CURRENT_LENGTH"/> ಅಕ್ಷರಗಳನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ).</translation>
 <translation id="6101327004457443354">ಆಡಿಯೋ ಟ್ರ್ಯಾಕ್ ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡು</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">ಲೋಡ್ ಆಗುತ್ತಿದೆ</translation>
 <translation id="2908441821576996758">ದಯವಿಟ್ಟು ಅಲ್ಪ ವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಿದ ಇಮೇಲ್ ವಿಳಾಸಗಳ ಪಟ್ಟಿಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
 <translation id="1921819250265091946">ದಿದಿ</translation>
 <translation id="2613802280814924224">ಮಾನ್ಯ ಮೌಲ್ಯವನ್ನು ನಮೂದಿಸಿ. ಹತ್ತಿರದ ಮಾನ್ಯ ಮೌಲ್ಯವು <ph name="VALID_VALUE"/> ಆಗಿದೆ.</translation>
 <translation id="835897206747267392">ಅಮಾನ್ಯ ಮೌಲ್ಯ.</translation>
+<translation id="9108370397979208512">ಮ್ಯಾಥ್</translation>
 <translation id="1842960171412779397">ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="7673697353781729403">ಗಂಟೆಗಳು</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN"/>' ನಂತರದ ಭಾಗವು '<ph name="INVALIDCHARACTER"/>' ಚಿಹ್ನೆಯನ್ನು ಒಳಗೊಂಡಿರಬಾರದು.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="7888071071722539607">ಇಮೇಲ್ ವಿಳಾಸದಲ್ಲಿ ಒಂದು '<ph name="ATSIGN"/>' ಅನ್ನು ಸೇರಿಸಿ. '<ph name="ATSIGN"/>' ನಲ್ಲಿ '<ph name="INVALIDADDRESS"/>' ಕಾಣೆಯಾಗಿದೆ.</translation>
 <translation id="1088086359088493902">ಸೆಕೆಂಡುಗಳು</translation>
-<translation id="3934680773876859118">PDF ಡಾಕ್ಯುಮೆಂಟ್ ಅನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="3632707345189162177">ಚಲನಚಿತ್ರ ಬಾಕಿ ಉಳಿದಿರುವ ಸೆಕುಂಡುಗಳ ಸಂಖ್ಯೆ</translation>
 <translation id="6359256949422175976">ಚಲನಚಿತ್ರ ಸಮಯ ಸ್ಕ್ರಬ್ಬರ್ ಥಂಬ್</translation>
 <translation id="8597182159515967513">ಶೀರ್ಷಿಕೆ</translation>

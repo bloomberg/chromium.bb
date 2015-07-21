@@ -43,6 +43,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4285930937574705105">Échec de l'installation suite à une erreur non spécifiée. Si Chromium est en cours d'exécution, veuillez le fermer, puis réessayer.</translation>
 <translation id="1396446129537741364">Tentative d'affichage des mots de passe dans Chromium</translation>
 <translation id="2097986737970966220">Ouvrir Chromium sur le bureau</translation>
+<translation id="108122890477367602">&amp;Relancer Chromium en mode Windows 8</translation>
 <translation id="8987477933582888019">Navigateur Web</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="2886012850691518054">Facultatif : aidez-nous à améliorer Chromium en envoyant automatiquement des statistiques d'utilisation et des rapports d'erreur à Google.</translation>
@@ -243,7 +244,9 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est disponible.</translation>
 <translation id="1644918877723739397">Chromium stockera ce mot de passe dans vos <ph name="SAVED_PASSWORD_LINK"/> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
+<translation id="8605166112420372522">&amp;Relancer Chromium sur le bureau</translation>
 <translation id="1461885241643463646">Activer les processus de connexion Chromium basés sur iFrame. Cet indicateur remplace &quot;--enable-web-based-signin&quot;.</translation>
+<translation id="390894725198123737">Sur Mac, les mots de passe peuvent être enregistrés dans votre trousseau. D'autres utilisateurs de Chromium partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="608189560609172163">Impossible de synchroniser vos données dans Chromium, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="4888717733111232871">Règle de trafic entrant pour Chromium autorisant le trafic mDNS</translation>
 <translation id="151962892725702025">Impossible de synchroniser vos données dans Chromium OS, car la synchronisation n'est pas disponible pour votre domaine.</translation>

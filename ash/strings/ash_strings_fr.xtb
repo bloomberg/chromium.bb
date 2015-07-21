@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
 <translation id="5548285847212963613">L'extension &quot;<ph name="EXTENSION_NAME"/>&quot; peut aider à se connecter à ce réseau.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> et <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Connecteur micro</translation>
 <translation id="30155388420722288">Bouton de dépassement de capacité</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">La résolution de l'écran &quot;<ph name="DISPLAY_NAME"/>&quot; est désormais définie sur <ph name="RESOLUTION"/>.</translation>
 <translation id="2297568595583585744">Barre d'état</translation>
-<translation id="2248649616066688669">Vous pouvez continuer à utiliser votre Chromebook, même fermé, tant qu'il est connecté à un écran externe.</translation>
 <translation id="2946640296642327832">Activer le Bluetooth</translation>
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobile</translation>
@@ -104,7 +104,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="2208323208084708176">Mode bureau unifié</translation>
 <translation id="2825619548187458965">Étagère</translation>
-<translation id="2614835198358683673">Votre Chromebook risque de ne pas charger lorsqu'il est allumé. Utilisez plutôt le chargeur officiel.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Tous les utilisateurs disponibles ont déjà été ajoutés à cette session.</translation>
@@ -150,7 +149,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="3473479545200714844">Loupe</translation>
 <translation id="882279321799040148">Cliquer ici pour afficher la capture d'écran</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Votre Chromebook risque de ne pas se charger lorsqu'il est allumé.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION"/>. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="1602076796624386989">Activer les données mobiles</translation>
 <translation id="68610848741840742">ChromeVox (commentaires audio)</translation>

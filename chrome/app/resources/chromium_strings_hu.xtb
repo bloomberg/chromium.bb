@@ -41,6 +41,7 @@
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="1396446129537741364">A Chromium megpróbálja megjeleníteni a jelszavakat.</translation>
 <translation id="2097986737970966220">A Chromium megnyitása az asztalon</translation>
+<translation id="108122890477367602">Chromium új&amp;raindítása Windows 8 módban</translation>
 <translation id="8987477933582888019">Webböngésző</translation>
 <translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
 <translation id="2886012850691518054">Opcionális: Segítsen a Chromium fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak.</translation>
@@ -237,7 +238,9 @@
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
 <translation id="1644918877723739397">A Chromium tárolja ezt a(z) <ph name="SAVED_PASSWORD_LINK"/> között, és emlékezni fog, amikor legközelebb szükség lesz rá.</translation>
 <translation id="378917192836375108">A Chromium egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-on!</translation>
+<translation id="8605166112420372522">Chromium új&amp;raindítása az asztalon</translation>
 <translation id="1461885241643463646">Engedélyezi az iframe-alapú Chromium bejelentkezési folyamatokat. Ez a jelölő felülírja az --enable-web-based-signin beállítást.</translation>
+<translation id="390894725198123737">Mac típusú számítógépen a rendszer a Keychain alkalmazásba mentheti a jelszavakat, amelyek hozzáférhetők vagy szinkronizálhatók lesznek azon Chromium-felhasználók számára, akik ugyanezzel az OS X-fiókkal rendelkeznek.</translation>
 <translation id="608189560609172163">A Chromium egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
 <translation id="4888717733111232871">Bejövő szabály a Chromiumhoz az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="151962892725702025">A Chromium OS nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>

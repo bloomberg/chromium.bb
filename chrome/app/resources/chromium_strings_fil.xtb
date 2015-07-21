@@ -44,6 +44,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4285930937574705105">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Chromium, pakisara ito at subukang muli.</translation>
 <translation id="1396446129537741364">Sinusubukan ng Chromium na magpakita ng mga password.</translation>
 <translation id="2097986737970966220">Buksan ang Chromium sa desktop</translation>
+<translation id="108122890477367602">&amp;Muling ilunsad ang Chromium sa Windows 8 mode</translation>
 <translation id="8987477933582888019">Web Browser</translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
 <translation id="2886012850691518054">Opsyonal: Tumulong na pahusayin ang Chromium sa pamamagitan ng awtomatikong pagpapadala sa Google ng mga istatistika ng paggamit at mga ulat ng pag-crash.</translation>
@@ -245,7 +246,9 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="1708666629004767631">May available na bago at mas ligtas na bersyon ng Chromium.</translation>
 <translation id="1644918877723739397">Iiimbak ito ng Chromium gamit ang <ph name="SAVED_PASSWORD_LINK"/> at tatandaan ito sa susunod na pagkakataong kailanganin mo ito.</translation>
 <translation id="378917192836375108">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
+<translation id="8605166112420372522">&amp;Muling ilunsad ang Chromium sa desktop</translation>
 <translation id="1461885241643463646">Ine-enable ang mga daloy ng pag-sign in sa Chromium na batay sa iframe. Ino-override ng flag na ito ang --i-enable-ang-web-based-na-pag-signin.</translation>
+<translation id="390894725198123737">Sa Mac, maaaring ma-save ang mga password sa iyong Keychain at ma-access o ma-sync ng ibang mga user ng Chromium na nagbabahagi ng OS X account na ito.</translation>
 <translation id="608189560609172163">Hindi mai-sync ng Chromium ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
 <translation id="4888717733111232871">Inbound na panuntunan para sa Chromium upang payagan ang trapiko ng mDNS.</translation>
 <translation id="151962892725702025">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>

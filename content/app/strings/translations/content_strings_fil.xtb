@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="fil">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fil">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Iba pa...</translation>
 <translation id="248395913932153421">Araw</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Isa itong paghahanap ng index. Ipasok ang paghahanap sa mga keyword:</translation>
 <translation id="1930711995431081526">katayuan</translation>
 <translation id="658823671542763450">mag-full screen</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">natitirang oras</translation>
-<translation id="370665806235115550">Kumakarga...</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="6845533974506654842">pindutin</translation>
 <translation id="8244226242650769279">mapa ng imahe</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Katamtamang Grado)</translation>
 <translation id="1637811476055996098">Pumili ng Mga File</translation>
 <translation id="49969490063480558">Mangyaring maglagay ng isang bahagi pagkatapos ng '<ph name="ATSIGN"/>.' Hindi kumpleto ang '<ph name="INVALIDADDRESS"/>.'</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">i-uncheck</translation>
 <translation id="2148716181193084225">Ngayon</translation>
 <translation id="2507943997699731163">Pakipunan ang field na ito.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Iba pa...</translation>
 <translation id="383465348367842624">Hindi dapat naglalaman ng simbolong '<ph name="INVALIDCHARACTER"/>' ang bahagi bago ang '<ph name="ATSIGN"/>.'</translation>
 <translation id="5468998798572797635">lumabas sa full screen</translation>
-<translation id="5919473608089529604">Hindi ma-load ang plug-in.</translation>
 <translation id="5546461542133609677">i-unmute</translation>
 <translation id="6663448176199120256">Kasalukuyang Mga Paghahanap</translation>
 <translation id="1020833440720551630">i-mute ang audio track</translation>
-<translation id="2597378329261239068">Protektado ng password ang dokumentong ito.  Mangyaring magpasok ng password.</translation>
 <translation id="5466621249238537318">Mangyaring pumili ng isa o higit pang mga file.</translation>
 <translation id="9132465097189459683">Iba pa...</translation>
 <translation id="10623998915015855">button sa pag-toggle</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Mangyaring paikliin ang tekstong ito ng <ph name="MAX_CHARACTERS"/> (na) character o mas mababa (kasalukuyan kang gumagamit ng <ph name="CURRENT_LENGTH"/> (na) character).</translation>
 <translation id="6101327004457443354">i-unmute ang audio track</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">Naglo-load</translation>
 <translation id="2908441821576996758">Mangyaring magpasok ng listahan ng email address na pinaghihiwalay ng kuwit.</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Mangyaring maglagay ng isang wastong value. Ang pinakamalapit na wastong value ay <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Di-wastong halaga.</translation>
+<translation id="9108370397979208512">math</translation>
 <translation id="1842960171412779397">piliin</translation>
 <translation id="7673697353781729403">Oras</translation>
 <translation id="4664250907885839816">Hindi dapat naglalaman ng simbolong '<ph name="INVALIDCHARACTER"/>' ang bahagi pagkatapos ng '<ph name="ATSIGN"/>.'</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="7888071071722539607">Mangyaring magsama ng '<ph name="ATSIGN"/>' sa email address. Kulang ng '<ph name="ATSIGN"/>' ang '<ph name="INVALIDADDRESS"/>.'</translation>
 <translation id="1088086359088493902">Segundo</translation>
-<translation id="3934680773876859118">Nabigong i-load ang dokumentong PDF</translation>
 <translation id="3632707345189162177">bilang ng segundong natitira sa pelikula</translation>
 <translation id="6359256949422175976">thumb ng scrubber ng oras ng pelikula</translation>
 <translation id="8597182159515967513">heading</translation>

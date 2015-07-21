@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Luk alle vinduer i Google Chrome, og genstart, så denne ændring kan træde i kraft.</translation>
 <translation id="1619887657840448962">For at gøre Chrome mere sikker har vi deaktiveret følgende udvidelse, som ikke er anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> og muligvis er blevet tilføjet, uden at du vidste det.</translation>
 <translation id="225614027745146050">Velkommen</translation>
+<translation id="8811903091068364646">Gensta&amp;rt Chrome på skrivebordet</translation>
 <translation id="3398288718845740432">Skjul i Chrome-menuen</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
@@ -248,6 +249,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3037838751736561277">Google Chrome kører i baggrunden.</translation>
 <translation id="2084710999043359739">Føj til Chrome</translation>
 <translation id="4692614041509923516">Din computer kører en gammel version af Microsoft Windows, som ikke kan behandle sikkerhedscertifikatet på dette website. Som følge af dette problem kan Google ikke afgøre, om certifikatet kom fra <ph name="SITE"/> eller fra en anden bruger på dit netværk, som udgav sig for at være <ph name="SITE"/>. Opdater din computer til en nyere version af Windows.</translation>
+<translation id="5931853610562009806">På Mac kan adgangskoder blive gemt i din Keychain, og andre Chrome-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
 <translation id="1877026089748256423">Chrome er forældet</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
@@ -259,6 +261,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="1001534784610492198">Installationsarkivet er beskadiget eller ugyldigt. Download Google Chrome igen.</translation>
 <translation id="2246246234298806438">Google Chrome kan ikke vise udskrifter, når den indbyggede PDF-fremviser mangler.</translation>
 <translation id="5132929315877954718">Find fantastiske apps, spil, udvidelser og temaer til Google Chrome.</translation>
+<translation id="7784335114585804598">Gensta&amp;rt Chrome i Windows 8-tilstand</translation>
 <translation id="6626317981028933585">Desværre er dine Mozilla Firefox-indstillinger ikke tilgængelige, mens browseren kører. Gem dit arbejde og luk alle Firefox-vinduer for at importere disse indstillinger til Google Chrome. Klik derefter på Fortsæt.</translation>
 <translation id="8274359292107649245">Åbn Chrome på skrivebordet</translation>
 <translation id="7242029209006116544">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Google Chrome. Dine Chrome-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME"/>. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. Du kan eventuelt oprette en ny profil for at holde dine eksisterende Chrome-data adskilt. <ph name="LEARN_MORE"/></translation>

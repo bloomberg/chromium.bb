@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
 <translation id="5548285847212963613">La extensión &quot;<ph name="EXTENSION_NAME"/>&quot; puede permitir conectarse a esta red.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> y <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Clavija para micrófono</translation>
 <translation id="30155388420722288">Botón de flujo excesivo</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Se ha modificado la resolución de <ph name="DISPLAY_NAME"/> a <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Bandeja de estado</translation>
-<translation id="2248649616066688669">Puedes seguir usando tu Chromebook mientras esté conectado a una pantalla externa, incluso con la tapa cerrada.</translation>
 <translation id="2946640296642327832">Habilitar Bluetooth</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Móvil</translation>
@@ -104,7 +104,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
 <translation id="2825619548187458965">Estantería</translation>
-<translation id="2614835198358683673">Es posible que tu Chromebook no se cargue mientras esté activado. Te recomendamos que utilices el cargador oficial.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se han añadido a esta sesión.</translation>
@@ -150,7 +149,6 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="882279321799040148">Haz clic para verla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Es posible que el Chromebook no se cargue mientras esté encendido.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> no admite una resolución de <ph name="SPECIFIED_RESOLUTION"/>. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Habilitar datos móviles</translation>
 <translation id="68610848741840742">ChromeVox (mensajes de voz)</translation>

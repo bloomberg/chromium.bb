@@ -82,6 +82,7 @@
 <translation id="5037239767309817516">Hãy đóng tất cả các cửa sổ Google Chrome và chạy lại Google Chrome để thay đổi này có hiệu lực.</translation>
 <translation id="1619887657840448962">Để làm cho Chrome an toàn hơn, chúng tôi đã vô hiệu hóa tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="225614027745146050">Chào mừng</translation>
+<translation id="8811903091068364646">&amp;Khởi chạy lại Chrome trên máy tính để bàn</translation>
 <translation id="3398288718845740432">Ẩn trong menu Chrome</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="3149510190863420837">Ứng dụng Chrome</translation>
@@ -253,6 +254,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="3037838751736561277">Google Chrome đang chạy trong nền.</translation>
 <translation id="2084710999043359739">Thêm vào Chrome</translation>
 <translation id="4692614041509923516">Máy tính của bạn đang chạy phiên bản Microsoft Windows cũ. Phiên bản này không thể xử lý chứng chỉ bảo mật của trang web này. Do sự cố này, Google Chrome không thể biết chứng chỉ đến từ <ph name="SITE"/> hay từ ai đó trên mạng của bạn giả làm <ph name="SITE"/>. Vui lòng cập nhật máy tính của bạn lên phiên bản Windows mới hơn.</translation>
+<translation id="5931853610562009806">Trên máy Mac, mật khẩu có thể được lưu vào Keychain và được truy cập hoặc đồng bộ hóa bởi những người dùng Chrome khác dùng chung tài khoản OS X này.</translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>
 <translation id="1877026089748256423">Chrome đã lỗi thời</translation>
 <translation id="7592736734348559088">Google Chrome không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>
@@ -264,6 +266,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome không thể hiển thị xem trước bản in khi thiếu trình xem PDF được cài sẵn.</translation>
 <translation id="5132929315877954718">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Khởi chạy lại Chrome ở chế độ Windows 8</translation>
 <translation id="6626317981028933585">Thật đáng tiếc, cài đặt Mozilla Firefox của bạn không có sẵn khi trình duyệt đang chạy. Để nhập những cài đặt đó vào Google Chrome, hãy lưu công việc của bạn và đóng tất cả cửa sổ Firefox. Sau đó, nhấp Tiếp tục.</translation>
 <translation id="8274359292107649245">Mở Chrome trên máy tính để bàn</translation>
 <translation id="7242029209006116544">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME"/>. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. Bạn có thể tùy chọn tạo một cấu hình mới để giữ cho dữ liệu Chrome hiện có của bạn riêng biệt. <ph name="LEARN_MORE"/></translation>

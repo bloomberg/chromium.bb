@@ -35,6 +35,7 @@
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
 <translation id="2097986737970966220">以桌面模式打开 Chromium</translation>
+<translation id="108122890477367602">以 Windows 8 模式重新启动 Chromium(&amp;R)</translation>
 <translation id="8987477933582888019">网络浏览器</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
@@ -214,7 +215,9 @@
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
 <translation id="1644918877723739397">Chromium 会将此密码存储在您的<ph name="SAVED_PASSWORD_LINK"/>中，并会在您下次需要时自动填充此密码。</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
+<translation id="8605166112420372522">以桌面模式重新启动 Chromium(&amp;R)</translation>
 <translation id="1461885241643463646">启用基于 iframe 的 Chromium 登录流程。此项会覆盖 --enable-web-based-signin。</translation>
+<translation id="390894725198123737">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐户的其他 Chromium 用户都能够访问或同步处理这些密码。</translation>
 <translation id="608189560609172163">由于在登录时出现错误，Chromium无法同步您的数据。</translation>
 <translation id="4888717733111232871">Chromium的入站规则，允许mDNS流量。</translation>
 <translation id="151962892725702025">由于您的网域停用了同步功能，Chromium操作系统无法同步您的数据。</translation>

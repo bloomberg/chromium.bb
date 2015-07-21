@@ -200,7 +200,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="1152528166145813711">Válasszon…</translation>
 <translation id="2235518894410572517">E számítógép megosztása úgy, hogy azt egy másik felhasználó láthassa és irányíthassa.</translation>
 <translation id="6939719207673461467">Billentyűzet megjelenítése/elrejtése.</translation>
-<translation id="1023096696228309145">Kérje meg azt a felhasználót, akinek a számítógépét használni szeretné, hogy kattintson a „Megosztás most” feliratra, és adja meg Önnek a hozzáférési kódot.</translation>
 <translation id="4240294130679914010">Chromoting gazdagép eltávolítóprogramja</translation>
 <translation id="8712909229180978490">Nem látom a mentett fájlokat online, a Google Drive-on.</translation>
 <translation id="80739703311984697">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chromoting szolgáltatásnak a cím eléréséhez:</translation>
@@ -241,6 +240,8 @@ gazdagép</translation>
 <translation id="2921543551052660690">Korábban <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) felhasználóként jelentkezett be. A fiók számítógépeinek eléréséhez <ph name="LINK_BEGIN"/>jelentkezzen be a Chromiumba<ph name="LINK_END"/> az adott fiókkal, majd telepítse újra a Chromotingot.</translation>
 <translation id="7319983568955948908">Megosztás leállítása</translation>
 <translation id="6681800064886881394">Copyright 2013 – Google Inc. Minden jog fenntartva.</translation>
+<translation id="2998137343848432918">• „Készítők” képernyő hozzáadva.
+• Javítva egy teljes képernyőre váltáskor jelentkező probléma, ha a billentyűzet látható.</translation>
 <translation id="6640610550128933069">utoljára ekkor volt online: <ph name="DATE"/></translation>
 <translation id="6668065415969892472">A PIN kód frissült.</translation>
 <translation id="4513946894732546136">Visszajelzés</translation>

@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Tastatură pe ecran dezactivată</translation>
 <translation id="5548285847212963613">Extensia „<ph name="EXTENSION_NAME"/>” te poate ajuta să te conectezi la această rețea.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mufă pentru microfon</translation>
 <translation id="30155388420722288">Butonul Overflow</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Rezoluția <ph name="DISPLAY_NAME"/> a fost modificată la <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Bara de stare</translation>
-<translation id="2248649616066688669">Puteți folosi în continuare Chromebookul când este conectat la un afișaj extern, chiar și cu ecranul închis.</translation>
 <translation id="2946640296642327832">Activați Bluetooth</translation>
 <translation id="6459472438155181876">Se extinde ecranul pe <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Celular</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
 <translation id="2208323208084708176">Modul Desktop unificat</translation>
 <translation id="2825619548187458965">Raft</translation>
-<translation id="2614835198358683673">Este posibil ca laptopul Chromebook să nu se încarce în timp ce este pornit. Se recomandă să utilizați încărcătorul original.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Toți utilizatorii disponibili au fost deja adăugați la această sesiune.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">Lupă de ecran</translation>
 <translation id="882279321799040148">Dați clic pentru afișare</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebookul nu se poate încărca dacă este pornit.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> nu acceptă <ph name="SPECIFIED_RESOLUTION"/>. Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Activați datele mobile</translation>
 <translation id="68610848741840742">ChromeVox (feedback rostit)</translation>

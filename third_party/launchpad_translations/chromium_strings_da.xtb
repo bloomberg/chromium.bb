@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Chromium kører, skal du lukke programmet og prøve igen.</translation>
 <translation id="1396446129537741364">Chromium forsøger at vise adgangskoder.</translation>
 <translation id="2097986737970966220">Åbn Chromium på skrivebordet</translation>
+<translation id="108122890477367602">Gensta&amp;rt Chromium i Windows 8-tilstand</translation>
 <translation id="8987477933582888019">Webbrowser</translation>
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
 <translation id="2886012850691518054">Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende forbrugsstatistik og nedbrudsrapporter til Google.</translation>
@@ -242,7 +243,9 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="1708666629004767631">Der findes en ny og mere sikker version af Chromium.</translation>
 <translation id="1644918877723739397">Chromium gemmer denne i <ph name="SAVED_PASSWORD_LINK"/> og husker den, næste gang du skal bruge den.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
+<translation id="8605166112420372522">Gensta&amp;rt Chromium på skrivebordet</translation>
 <translation id="1461885241643463646">Aktiverer iframebaserede loginflows i Chromium. Dette flag tilsidesætter --enable-web-based-signin.</translation>
+<translation id="390894725198123737">På Mac kan adgangskoder blive gemt i din Keychain, og andre Chromium-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dine data på grund af en loginfejl.</translation>
 <translation id="4888717733111232871">Indgående regel for Chromium om at tillade mDNS-trafik.</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængeligt på dit domæne.</translation>

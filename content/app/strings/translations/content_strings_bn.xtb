@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="bn">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bn">
 <translation id="4763480195061959176">ভিডিও</translation>
 <translation id="5843503607508392247">অন্যান্য...</translation>
 <translation id="248395913932153421">দিন</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">এটি অনুসন্ধানযোগ্য সূচি৷ অনুসন্ধানের মূলশব্দ প্রবেশ করান:</translation>
 <translation id="1930711995431081526">স্থিতি</translation>
 <translation id="658823671542763450">পূর্ণ স্ক্রীনে প্রবেশ করুন</translation>
+<translation id="8851136666856101339">প্রধান</translation>
 <translation id="7720026100085573005">অবশিষ্ট সময়</translation>
-<translation id="370665806235115550">লোড হচ্ছে...</translation>
 <translation id="2723001399770238859">অডিও</translation>
 <translation id="6845533974506654842">টিপুন</translation>
 <translation id="8244226242650769279">ছবি মানচিত্র</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (মধ্যম গ্রেড)</translation>
 <translation id="1637811476055996098">ফাইল চয়ন করুন</translation>
 <translation id="49969490063480558">দয়া করে '<ph name="ATSIGN"/>' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS"/>' অসম্পূর্ণ৷</translation>
+<translation id="1342835525016946179">নিবন্ধ</translation>
 <translation id="5476505524087279545">আনচেক</translation>
 <translation id="2148716181193084225">আজ</translation>
 <translation id="2507943997699731163">দয়া করে এই ক্ষেত্রটি পূরণ করুন৷</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">অন্যান্য...</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN"/>' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER"/>' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="5468998798572797635">পূর্ণ স্ক্রীন বন্ধ করুন</translation>
-<translation id="5919473608089529604">প্লাগ-ইন লোড করা যায়নি৷</translation>
 <translation id="5546461542133609677">সশব্দ</translation>
 <translation id="6663448176199120256">সাম্প্রতিক অনুসন্ধানগুলি</translation>
 <translation id="1020833440720551630">অডিও ট্র্যাক নিঃশব্দ করুন</translation>
-<translation id="2597378329261239068">এই দস্তাবেজটি পাসওয়ার্ড সুরক্ষিত৷  দয়া করে একটি পাসওয়ার্ড লিখুন৷</translation>
 <translation id="5466621249238537318">দয়া করে এক বা একাধিক ফাইল নির্বাচন করুন৷</translation>
 <translation id="9132465097189459683">অন্যান্য...</translation>
 <translation id="10623998915015855">টগল বোতাম</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">দয়া করে এই পাঠ্যটি <ph name="MAX_CHARACTERS"/>টি অক্ষর বা তার কমে (আপনি বর্তমানে <ph name="CURRENT_LENGTH"/>টি অক্ষর ব্যবহার করছেন) সংক্ষিপ্ত করুন৷</translation>
 <translation id="6101327004457443354">অডিও ট্র্যাক সশব্দ করুন</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">লোড হচ্ছে</translation>
 <translation id="2908441821576996758">দয়া করে ইমেল ঠিকানাগুলির একটি কমা দিয়ে আলাদা করা মান প্রবেশ করান৷</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">দয়া করে একটি বৈধ মান লিখুন৷ কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE"/>৷</translation>
 <translation id="835897206747267392">অকার্যকর মান৷</translation>
+<translation id="9108370397979208512">গণিত</translation>
 <translation id="1842960171412779397">নির্বাচন করুন</translation>
 <translation id="7673697353781729403">ঘন্টা</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN"/>' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER"/>' চিহ্ন থাকা উচিত নয়৷</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="7888071071722539607">ইমেল ঠিনাকাটিতে দয়া করে একটি '<ph name="ATSIGN"/>' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS"/>' এ একটি '<ph name="ATSIGN"/>' অনুপস্থিত৷</translation>
 <translation id="1088086359088493902">সেকেন্ড</translation>
-<translation id="3934680773876859118">PDF  দস্তাবেজ লোড হতে ব্যর্থ</translation>
 <translation id="3632707345189162177">চলচ্চিত্রের অবশিষ্ট সেকেন্ড</translation>
 <translation id="6359256949422175976">চলচ্চিত্রের সময় স্ক্রাবার থাম্ব</translation>
 <translation id="8597182159515967513">শিরোনামা</translation>

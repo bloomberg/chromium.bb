@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="lv">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Cits...</translation>
 <translation id="248395913932153421">Diena</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Šis ir indekss ar meklēšanas iespējām. Ievadīt meklēšanas atslēgvārdus:</translation>
 <translation id="1930711995431081526">statuss</translation>
 <translation id="658823671542763450">atvērt pilnekrāna režīmā</translation>
+<translation id="8851136666856101339">galvenais</translation>
 <translation id="7720026100085573005">atlikušais laiks</translation>
-<translation id="370665806235115550">Notiek ielāde...</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="6845533974506654842">nospiest</translation>
 <translation id="8244226242650769279">attēlu karte</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Vidēja Atzīme)</translation>
 <translation id="1637811476055996098">Izvēlēties failus</translation>
 <translation id="49969490063480558">Lūdzu, ievadiet daļu, kas atrodas aiz zīmes <ph name="ATSIGN"/>. “<ph name="INVALIDADDRESS"/>” ir nepilna adrese.</translation>
+<translation id="1342835525016946179">raksts</translation>
 <translation id="5476505524087279545">neprbaudt</translation>
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2507943997699731163">Aizpildiet šo lauku.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Cits...</translation>
 <translation id="383465348367842624">Daļā, kas atrodas pirms zīmes <ph name="ATSIGN"/>, nedrīkst būt ietverts simbols <ph name="INVALIDCHARACTER"/>.</translation>
 <translation id="5468998798572797635">iziet no pilnekrāna režīma</translation>
-<translation id="5919473608089529604">Nevarēja ielādēt spraudni.</translation>
 <translation id="5546461542133609677">rādīt</translation>
 <translation id="6663448176199120256">Neseni meklējumi</translation>
 <translation id="1020833440720551630">izslēgt audio ieraksta skaņu</translation>
-<translation id="2597378329261239068">Šis dokuments ir aizsargāts ar paroli. Lūdzu, ievadiet paroli.</translation>
 <translation id="5466621249238537318">Lūdzu, atlasiet vienu vai vairākus failus.</translation>
 <translation id="9132465097189459683">Cits...</translation>
 <translation id="10623998915015855">pārslēgšanas poga</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Lūdzu, saīsiniet šo tekstu līdz <ph name="MAX_CHARACTERS"/> vai mazāk zīmēm (pašreiz tas ietver <ph name="CURRENT_LENGTH"/> rakstzīmes).</translation>
 <translation id="6101327004457443354">ieslēgt audio ieraksta skaņu</translation>
 <translation id="1822429046913737220">priekšpusdienā/pēcpusdienā</translation>
-<translation id="1639239467298939599">Notiek ielāde</translation>
 <translation id="2908441821576996758">Lūdzu, ievadiet ar komatu atdalītu e-pasta adrešu sarakstu.</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Lūdzu, ievadiet derīgu vērtību. Tuvākā derīgā vērtība ir <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Nederīga vērtība.</translation>
+<translation id="9108370397979208512">matemātiska izteiksme</translation>
 <translation id="1842960171412779397">Atlasiet</translation>
 <translation id="7673697353781729403">Stundas</translation>
 <translation id="4664250907885839816">Daļā, kas atrodas aiz zīmes <ph name="ATSIGN"/>, nedrīkst būt ietverts simbols <ph name="INVALIDCHARACTER"/>.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="7888071071722539607">E-pasta adresē ietveriet zīmi <ph name="ATSIGN"/>. Adresē “<ph name="INVALIDADDRESS"/>” trūkst zīmes <ph name="ATSIGN"/>.</translation>
 <translation id="1088086359088493902">Sekundes</translation>
-<translation id="3934680773876859118">Neizdevās ielādēt PDF dokumentu</translation>
 <translation id="3632707345189162177">atlikušais filmas laiks sekundēs</translation>
 <translation id="6359256949422175976">filmas laika skalas slīdņa sīktēls</translation>
 <translation id="8597182159515967513">Virsraksts</translation>

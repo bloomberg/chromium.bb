@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Asennus epäonnistui tuntemattoman virheen takia. Jos Chromium on tällä hetkellä käynnissä, sulje se ja yritä uudelleen.</translation>
 <translation id="1396446129537741364">Chromium yrittää näyttää salasanat.</translation>
 <translation id="2097986737970966220">Avaa Chromium työpöydällä</translation>
+<translation id="108122890477367602">Käynnistä Ch&amp;romium uudelleen Windows 8 -tilassa</translation>
 <translation id="8987477933582888019">Selain</translation>
 <translation id="4050175100176540509">Uusimmassa versiossa on käytettävissä tärkeitä turvallisuusparannuksia ja uusia ominaisuuksia.</translation>
 <translation id="2886012850691518054">Valinnainen: Lähetä Googlelle automaattisesti käyttötilastoja ja virheraportteja Chromiumin kehittämiseksi.</translation>
@@ -241,7 +242,9 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="1708666629004767631">Chromiumista on saatavilla uusi, turvallisempi versio.</translation>
 <translation id="1644918877723739397">Chromium tallentaa salasanan <ph name="SAVED_PASSWORD_LINK"/> -ominaisuudella ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
+<translation id="8605166112420372522">Käynnistä Ch&amp;romium uudelleen työpöydällä</translation>
 <translation id="1461885241643463646">Ota käyttöön iframe-pohjaiset Chromiumin kirjautumistyönkulut. Tämä merkintä ohittaa verkkopohjaisen kirjautumisen käyttöönoton.</translation>
+<translation id="390894725198123737">Macilla salasanat voidaan tallentaa Avainnippuusi, ja muut Chromium-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
 <translation id="608189560609172163">Chromium ei voinut synkronoida tietoja kirjautumisvirheen vuoksi.</translation>
 <translation id="4888717733111232871">Chromiumin saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
 <translation id="151962892725702025">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>

@@ -85,6 +85,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5037239767309817516">Fermez toutes les fenêtres et relancez Google Chrome afin que cette modification soit prise en compte.</translation>
 <translation id="1619887657840448962">Afin de rendre Chromium plus sûr, nous avons désactivé l'extension suivante qui n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> et qui a pu être ajoutée à votre insu.</translation>
 <translation id="225614027745146050">Bienvenue</translation>
+<translation id="8811903091068364646">&amp;Relancer Chrome sur le bureau</translation>
 <translation id="3398288718845740432">Masquer dans le menu Chrome</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
@@ -257,6 +258,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3037838751736561277">Google Chrome est exécuté en mode arrière-plan.</translation>
 <translation id="2084710999043359739">Ajouter à Chrome</translation>
 <translation id="4692614041509923516">La version de Microsoft Windows installée sur votre ordinateur ne permet pas d'analyser le certificat de sécurité de ce site Web. Par conséquent, il est impossible de déterminer dans Google Chrome si le certificat provient du site <ph name="SITE"/> ou d'un membre de votre réseau se faisant passer pour le site <ph name="SITE"/>. Veuillez installer une version de Windows plus récente.</translation>
+<translation id="5931853610562009806">Sur Mac, les mots de passe peuvent être enregistrés dans votre trousseau. D'autres utilisateurs de Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="3360895254066713204">Aide de Chrome</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
 <translation id="7592736734348559088">Impossible de synchroniser vos données dans Google Chrome, car les informations de connexion de votre compte ne sont plus à jour.</translation>
@@ -268,6 +270,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="1001534784610492198">L'archive du programme d'installation est corrompue ou incorrecte. Veuillez télécharger de nouveau Google Chrome.</translation>
 <translation id="2246246234298806438">Impossible d'afficher l'aperçu d'impression dans Google Chrome, car la visionneuse de documents PDF intégrée est absente.</translation>
 <translation id="5132929315877954718">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Relancer Chrome en mode Windows 8</translation>
 <translation id="6626317981028933585">Vos paramètres Mozilla Firefox ne sont pas disponibles pendant l'utilisation de ce navigateur. Pour importer ces paramètres vers Google Chrome, enregistrez votre travail et fermez toutes les fenêtres Firefox. Ensuite, cliquez pour continuer.</translation>
 <translation id="8274359292107649245">Ouvrir Google Chrome sur le Bureau</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME"/>. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE"/></translation>

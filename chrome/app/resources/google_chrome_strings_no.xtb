@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">For at endringen skal tre i kraft, må du lukke alle vinduer og starte Google Chrome på nytt.</translation>
 <translation id="1619887657840448962">For å gjøre Chrome tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, og som kan ha blitt lagt til uten at du vet det.</translation>
 <translation id="225614027745146050">Velkommen</translation>
+<translation id="8811903091068364646">&amp;Start Chrome på nytt på skrivebordet</translation>
 <translation id="3398288718845740432">Skjul i Chrome-menyen</translation>
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="3149510190863420837">Chrome-apper</translation>
@@ -245,6 +246,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="3037838751736561277">Google Chrome er i bakgrunnsmodus.</translation>
 <translation id="2084710999043359739">Legg til i Chrome</translation>
 <translation id="4692614041509923516">Datamaskinen din kjører en gammel versjon av Microsoft Windows som ikke kan behandle dette nettstedets sikkerhetssertifikat. På grunn av dette problemet kan ikke Google Chrome vite om sertifikatet kom fra <ph name="SITE"/> eller fra noen på nettverket ditt som utgir seg for å være <ph name="SITE"/>. Oppdater datamaskinen din til en nyere versjon av Windows.</translation>
+<translation id="5931853610562009806">På Mac kan det hende at passord blir lagret i nøkkelringen. Andre Chrome-brukere som deler denne OS X-kontoen, har i så fall adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="3360895254066713204">Chrome-hjelper</translation>
 <translation id="1877026089748256423">Chrome er utdatert</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dataene dine. Dette skyldes at påloggingsopplysningene for kontoen din er foreldede.</translation>
@@ -256,6 +258,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="1001534784610492198">Installasjonsarkivet er ødelagt. Last ned Google Chrome på nytt.</translation>
 <translation id="2246246234298806438">Google Chrome kan ikke vise forhåndsvisningen av utskrift når det innebygde PDF-visningsprogrammet mangler.</translation>
 <translation id="5132929315877954718">Oppdag flotte apper, spill, utvidelser og temaer for Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Start Chrome på nytt i Windows 8-modus</translation>
 <translation id="6626317981028933585">Mozilla Firefox-innstillingene er dessverre ikke tilgjengelige når nettleseren kjører. Hvis du vil importere disse innstillingene til Google Chrome, kan du lagre arbeidet ditt og lukke alle Firefox-vinduer. Deretter klikker du Fortsett.</translation>
 <translation id="8274359292107649245">Åpne Chrome fra skrivebordet</translation>
 <translation id="7242029209006116544">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME"/>. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chrome-dataene dine atskilte. <ph name="LEARN_MORE"/></translation>

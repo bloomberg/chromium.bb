@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
 <translation id="5548285847212963613">L'estensione &quot;<ph name="EXTENSION_NAME"/>&quot; può essere utile per il collegamento a questa rete.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> e <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Jack per microfono</translation>
 <translation id="30155388420722288">Pulsante Overflow</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">La risoluzione di <ph name="DISPLAY_NAME"/> è stata modificata in: <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Barra di stato</translation>
-<translation id="2248649616066688669">Puoi continuare a utilizzare il Chromebook mentre è collegato a un monitor esterno, anche con il coperchio chiuso.</translation>
 <translation id="2946640296642327832">Attiva Bluetooth</translation>
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cellulare</translation>
@@ -104,7 +104,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="2208323208084708176">Modalità desktop unificato</translation>
 <translation id="2825619548187458965">Shelf</translation>
-<translation id="2614835198358683673">Il Chromebook potrebbe non ricaricarsi mentre è accesso. Prova a utilizzare il caricabatterie ufficiale.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">A questa sessione sono già stati aggiunti tutti gli utenti disponibili.</translation>
@@ -150,7 +149,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
 <translation id="882279321799040148">Fai clic per visualizzare</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Il Chromebook potrebbe non ricaricarsi mentre è acceso.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> non supporta <ph name="SPECIFIED_RESOLUTION"/>. La risoluzione è stata modificata in <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Attiva dati mobili</translation>
 <translation id="68610848741840742">ChromeVox (lettura vocale)</translation>

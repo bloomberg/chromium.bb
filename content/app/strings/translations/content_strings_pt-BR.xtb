@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="pt-BR">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-BR">
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="5843503607508392247">Outras...</translation>
 <translation id="248395913932153421">Dia</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Este é um índice pesquisável. Insira palavras-chave de pesquisa:</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="658823671542763450">entrar no modo tela cheia</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">tempo restante</translation>
-<translation id="370665806235115550">Carregando...</translation>
 <translation id="2723001399770238859">áudio</translation>
 <translation id="6845533974506654842">pressione</translation>
 <translation id="8244226242650769279">mapa de imagens</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Nível médio)</translation>
 <translation id="1637811476055996098">Escolher arquivos</translation>
 <translation id="49969490063480558">Insira uma parte depois de &quot;<ph name="ATSIGN"/>&quot;. &quot;<ph name="INVALIDADDRESS"/>&quot; está incompleto.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">desmarcar</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2507943997699731163">Preencha este campo.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Outras...</translation>
 <translation id="383465348367842624">Uma parte seguida por &quot;<ph name="ATSIGN"/>&quot; não deve conter o símbolo &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">sair do modo tela cheia</translation>
-<translation id="5919473608089529604">Não foi possível carregar o plug-in.</translation>
 <translation id="5546461542133609677">ativar som</translation>
 <translation id="6663448176199120256">Pesquisas recentes</translation>
 <translation id="1020833440720551630">desativar som da faixa de áudio</translation>
-<translation id="2597378329261239068">Este documento está protegido por senha.  Digite a senha.</translation>
 <translation id="5466621249238537318">Selecione um ou mais arquivos.</translation>
 <translation id="9132465097189459683">Outras...</translation>
 <translation id="10623998915015855">botão &quot;alternar&quot;</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Reduza este texto para <ph name="MAX_CHARACTERS"/> caracteres ou menos (você está usando <ph name="CURRENT_LENGTH"/> caracteres).</translation>
 <translation id="6101327004457443354">ativar som da faixa de áudio</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">Carregando</translation>
 <translation id="2908441821576996758">Insira uma lista de endereços de e-mail separados por vírgula.</translation>
 <translation id="5939518447894949180">Redefinir</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Insira um valor válido. O valor válido mais próximo é <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Valor inválido.</translation>
+<translation id="9108370397979208512">matemática</translation>
 <translation id="1842960171412779397">selecione</translation>
 <translation id="7673697353781729403">Horas</translation>
 <translation id="4664250907885839816">A parte depois de &quot;<ph name="ATSIGN"/>&quot; não deve conter o símbolo &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="7888071071722539607">Inclua um &quot;<ph name="ATSIGN"/>&quot; no endereço de e-mail. &quot;<ph name="INVALIDADDRESS"/>&quot; está com um &quot;<ph name="ATSIGN"/>&quot; faltando.</translation>
 <translation id="1088086359088493902">Segundos</translation>
-<translation id="3934680773876859118">Falha ao carregar o documento PDF</translation>
 <translation id="3632707345189162177">segundos restantes do filme</translation>
 <translation id="6359256949422175976">miniatura da barra de progressão do filme</translation>
 <translation id="8597182159515967513">cabeçalho</translation>

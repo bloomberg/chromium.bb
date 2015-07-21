@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Ekrāna tastatūra atspējota</translation>
 <translation id="5548285847212963613">Paplašinājums “<ph name="EXTENSION_NAME"/>” var palīdzēt pievienoties šim tīklam.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> un <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofona ligzda</translation>
 <translation id="30155388420722288">Pārpildes poga</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google disks</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> izšķirtspēja tika mainīta uz <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Statusa tekne</translation>
-<translation id="2248649616066688669">Varat turpināt izmantot Chromebook datoru, kamēr tas ir pievienots ārējam displejam, pat ja datora displejs ir aizvērts.</translation>
 <translation id="2946640296642327832">Iespējot Bluetooth</translation>
 <translation id="6459472438155181876">Paplašina ekrānu uz: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobilais tālrunis</translation>
@@ -104,7 +104,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
 <translation id="2208323208084708176">Vienots darbvirsmas režīms</translation>
 <translation id="2825619548187458965">Plaukts</translation>
-<translation id="2614835198358683673">Jūsu Chromebook dators, iespējams, netiks uzlādēts, kamēr tas ir ieslēgts. Ieteicams izmantot oriģinālo lādētāju.</translation>
 <translation id="4430019312045809116">Skaļums</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Visi pieejamie lietotāji jau ir pievienoti šai sesijai.</translation>
@@ -150,7 +149,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="3473479545200714844">Ekrāna lupa</translation>
 <translation id="882279321799040148">Noklikšķiniet, lai skatītu.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Jūsu Chromebook dators, iespējams, netiks uzlādēts, kamēr tas ir ieslēgts.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> neatbalsta šādu izšķirtspēju: <ph name="SPECIFIED_RESOLUTION"/>. Izšķirtspēja tika mainīta uz <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="1602076796624386989">Iespējot mobilo datu pārraidi</translation>
 <translation id="68610848741840742">ChromeVox (balss komentāri)</translation>

@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="te">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="te">
 <translation id="4763480195061959176">వీడియో</translation>
 <translation id="5843503607508392247">ఇతర...</translation>
 <translation id="248395913932153421">రోజు</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">ఇది ఒక శోధించగల సూచిక. శోధన కీవర్డ్‌లను ఎంటర్ చెయ్యండి:</translation>
 <translation id="1930711995431081526">స్థితి</translation>
 <translation id="658823671542763450">పూర్తి స్క్రీన్‌లోకి ప్రవేశించు</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">మిగిలి ఉన్న సమయం</translation>
-<translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="2723001399770238859">ఆడియో</translation>
 <translation id="6845533974506654842">నొక్కండి</translation>
 <translation id="8244226242650769279">చిత్రం మ్యాప్‌</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (మధ్యస్థ గ్రేడ్)</translation>
 <translation id="1637811476055996098">ఫైల్‌లను ఎంచుకోండి</translation>
 <translation id="49969490063480558">దయచేసి '<ph name="ATSIGN"/>'కి తర్వాత ఉన్న భాగాన్ని నమోదు చేయండి. '<ph name="INVALIDADDRESS"/>' అసంపూర్ణంగా ఉంది.</translation>
+<translation id="1342835525016946179">కథనం</translation>
 <translation id="5476505524087279545">ఎంపిక  చెయ్యబడలేదు</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2507943997699731163">దయచేసి ఈ ఫీల్డ్‌ని పూర్తి చెయ్యండి.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">ఇతర...</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN"/>'కి ముందు ఉన్న భాగంలో '<ph name="INVALIDCHARACTER"/>' చిహ్నం ఉండకూడదు.</translation>
 <translation id="5468998798572797635">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
-<translation id="5919473608089529604">ప్లగిన్‌ని లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="5546461542133609677">అన్‌మ్యూట్ చేయి</translation>
 <translation id="6663448176199120256">ఇటీవల శోధనలు</translation>
 <translation id="1020833440720551630">ఆడియో ట్రాక్‌ను మ్యూట్ చేయి</translation>
-<translation id="2597378329261239068">ఈ పత్రం అనుమతి పదంచే రక్షించబడింది. దయచేసి అనుమతి పదాన్ని నమోదు చేయండి.</translation>
 <translation id="5466621249238537318">దయచేసి ఒకటి లేదా మరిన్ని ఫైళ్ళను ఎంచుకోండి.</translation>
 <translation id="9132465097189459683">ఇతర...</translation>
 <translation id="10623998915015855">టోగుల్ బటన్</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">దయచేసి ఈ వచనాన్ని <ph name="MAX_CHARACTERS"/> అక్షరాలకు లేదా అంతకంటే తక్కువ (మీరు ప్రస్తుతం <ph name="CURRENT_LENGTH"/> అక్షరాలను ఉపయోగిస్తున్నారు)కు తగ్గించండి.</translation>
 <translation id="6101327004457443354">ఆడియో ట్రాక్‌ను అన్‌మ్యూట్ చేయి</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
 <translation id="2908441821576996758">దయచేసి కామాతో వేరు చేసిన ఇమెయిల్ చిరునామాల జాబితాను ఎంటర్ చెయ్యండి.</translation>
-<translation id="5939518447894949180">తిరిగి అమర్చండి</translation>
+<translation id="5939518447894949180">రీసెట్ చేయి</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. <ph name="VALID_VALUE"/> అనేది సమీప చెల్లుబాటు విలువ.</translation>
 <translation id="835897206747267392">చెల్లని విలువ.</translation>
+<translation id="9108370397979208512">math</translation>
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
 <translation id="7673697353781729403">గంటలు</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN"/>'కి తర్వాత ఉన్న భాగంలో '<ph name="INVALIDCHARACTER"/>' చిహ్నం ఉండకూడదు.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="7888071071722539607">దయచేసి ఇమెయిల్ చిరునామాలో '<ph name="ATSIGN"/>'ని చేర్చండి. '<ph name="INVALIDADDRESS"/>'లో '<ph name="ATSIGN"/>' లేదు.</translation>
 <translation id="1088086359088493902">సెకన్లు</translation>
-<translation id="3934680773876859118">PDF పత్రాన్ని లోడ్ చెయ్యడానికి విఫలమైంది</translation>
 <translation id="3632707345189162177">చలనచిత్రంలో మిగిలి ఉన్న సెకన్లు</translation>
 <translation id="6359256949422175976">చలనచిత్ర సమయ స్క్రబ్బర్ సూక్ష్మచిత్రం</translation>
 <translation id="8597182159515967513">శీర్షిక</translation>

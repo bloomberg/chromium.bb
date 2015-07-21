@@ -86,6 +86,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5037239767309817516">변경사항을 적용하려면 모든 Chrome 창을 닫은 다음 다시 시작하시기 바랍니다.</translation>
 <translation id="1619887657840448962">Google에서는 Chrome의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자가 모르게 추가되었을 수 있는 다음 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="225614027745146050">환영합니다.</translation>
+<translation id="8811903091068364646">데스크톱 모드에서 Chrome 다시 시작(&amp;R)</translation>
 <translation id="3398288718845740432">Chrome 메뉴에서 숨기기</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="3149510190863420837">Chrome 앱</translation>
@@ -253,6 +254,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3037838751736561277">Chrome이 백그라운드 모드로 실행 중입니다.</translation>
 <translation id="2084710999043359739">Chrome에 추가</translation>
 <translation id="4692614041509923516">컴퓨터에서 이 웹사이트의 보안 인증서를 처리할 수 없는 이전 버전의 Microsoft Windows를 실행 중입니다. 이 문제로 인해 <ph name="SITE"/>에서 제공한 인증서인지 <ph name="SITE"/>(으)로 위장한 네트워크의 사용자가 제공한 인증서인지 Chrome에서 확인할 수 없습니다. 컴퓨터를 최신 버전의 Windows로 업데이트하시기 바랍니다.</translation>
+<translation id="5931853610562009806">Mac에서는 비밀번호가 키체인에 저장되어 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="3360895254066713204">Chrome 도우미</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
 <translation id="7592736734348559088">계정의 로그인 세부정보가 오래되어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
@@ -264,6 +266,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="1001534784610492198">설치 프로그램 보관 파일이 손상되었거나 올바르지 않습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="2246246234298806438">기본 제공되는 PDF 뷰어가 없는 경우 Chrome에서 인쇄 미리보기를 표시할 수 없습니다.</translation>
 <translation id="5132929315877954718">Chrome에 사용할 유용한 애플리케이션, 게임, 확장 프로그램 및 테마를 찾아보세요.</translation>
+<translation id="7784335114585804598">Windows 8 모드에서 Chrome 다시 실행(&amp;R)</translation>
 <translation id="6626317981028933585">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Chrome으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
 <translation id="8274359292107649245">데스크톱에서 Chrome 열기</translation>
 <translation id="7242029209006116544">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME"/> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chrome 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE"/></translation>

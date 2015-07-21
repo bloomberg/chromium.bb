@@ -30,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">تم تغيير درجة دقة <ph name="DISPLAY_NAME"/> إلى <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">علبة الحالة</translation>
-<translation id="2248649616066688669">‏يمكنك متابعة استخدام جهاز Chromebook أثناء اتصاله بشاشة خارجية، حتى مع غلق الغطاء.</translation>
 <translation id="2946640296642327832">تمكين البلوتوث</translation>
 <translation id="6459472438155181876">تمديد الشاشة إلى <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">خلوي</translation>
@@ -105,7 +104,6 @@
 <translation id="1747827819627189109">تم تمكين لوحة المفاتيح على الشاشة</translation>
 <translation id="2208323208084708176">وضع سطح المكتب الموحد</translation>
 <translation id="2825619548187458965">الرف</translation>
-<translation id="2614835198358683673">‏قد لا يستجيب جهاز Chromebook لعملية الشحن وهو قيد التشغيل. مع مراعاة استخدام الشاحن المخصص للجهاز.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">تمت إضافة كل المستخدمين المتوفرين لهذه الجلسة.</translation>
@@ -151,7 +149,6 @@
 <translation id="3473479545200714844">مكبّر الشاشة</translation>
 <translation id="882279321799040148">انقر للعرض</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">‏قد يتعذر شحن جهاز Chromebook أثناء تشغيله.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> غير متوافق مع <ph name="SPECIFIED_RESOLUTION"/>. تم تغيير الدقة إلى <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">تمكين بيانات الجوال</translation>
 <translation id="68610848741840742">‏ChromeVox (التعليق المنطوق)</translation>

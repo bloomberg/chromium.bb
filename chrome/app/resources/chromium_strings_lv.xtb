@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
 <translation id="1396446129537741364">Chromium mēģina rādīt paroles.</translation>
 <translation id="2097986737970966220">Atvērt pārlūku Chromium darbvirsmā</translation>
+<translation id="108122890477367602">&amp;Restartēt Chromium Windows 8 režīmā</translation>
 <translation id="8987477933582888019">Tīmekļa pārlūks</translation>
 <translation id="4050175100176540509">Jaunākajā versijā ir pieejami svarīgi drošības uzlabojumi un jaunas funkcijas.</translation>
 <translation id="2886012850691518054">Izvēles: palīdziet uzlabot Chromium, automātiski nosūtot lietojuma statistiku un avārijas pārskatus uzņēmumam Google.</translation>
@@ -242,7 +243,9 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="1708666629004767631">Ir pieejama jauna un drošāka Chromium versija.</translation>
 <translation id="1644918877723739397">Chromium saglabās šo paroli jūsu sarakstā “<ph name="SAVED_PASSWORD_LINK"/>” un atcerēsies to nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="378917192836375108">Chromium ļauj jums noklikšķināt uz tālruņa numura un zvanīt uz to pakalpojumā Skype!</translation>
+<translation id="8605166112420372522">&amp;Restartēt Chromium darbvirsmā</translation>
 <translation id="1461885241643463646">Tiek iespējotas uz iFrame balstītās Chromium pierakstīšanās plūsmas. Šī atzīme ignorē opciju “--enable-web-based-signin”.</translation>
+<translation id="390894725198123737">Operētājsistēmā Mac paroles var tikt saglabātas sistēmā Keychain, un citi Chromium lietotāji, kuri koplieto šo OS X kontu, var piekļūt tām un sinhronizēt tās.</translation>
 <translation id="608189560609172163">Chromium nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
 <translation id="4888717733111232871">Ienākošo savienojumu kārtula pārlūkam Chromium, lai atļautu mDNS datplūsmu.</translation>
 <translation id="151962892725702025">Chromium OS nevarēja sinhronizēt jūsu datus, jo jūsu domēnā nav pieejama sinhronizācija.</translation>

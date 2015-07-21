@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Teclado na tela desativado</translation>
 <translation id="5548285847212963613">A extensão &quot;<ph name="EXTENSION_NAME"/>&quot; pode ajudar na conexão com esta rede.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> e <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Entrada para microfone</translation>
 <translation id="30155388420722288">Botão de estouro</translation>
 <translation id="7904094684485781019">O administrador desta conta bloqueou o login múltiplo.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">A resolução de <ph name="DISPLAY_NAME"/> foi alterada para <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Bandeja de status</translation>
-<translation id="2248649616066688669">Você pode continuar usando o Chromebook enquanto estiver conectado a uma tela externa, mesmo com a tampa fechada.</translation>
 <translation id="2946640296642327832">Ativar Bluetooth</translation>
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Celular</translation>
@@ -104,7 +104,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="1747827819627189109">Teclado na tela ativado</translation>
 <translation id="2208323208084708176">Modo de área de trabalho unificada.</translation>
 <translation id="2825619548187458965">Estante</translation>
-<translation id="2614835198358683673">Seu Chromebook pode não carregar enquanto estiver ligado. Considere usar o carregador oficial.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
@@ -150,7 +149,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="882279321799040148">Clique para visualizar</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Seu Chromebook não pode ser carregado enquanto está ligado.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> não suporta <ph name="SPECIFIED_RESOLUTION"/>. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Ativar dados móveis</translation>
 <translation id="68610848741840742">ChromeVox (feedback falado)</translation>

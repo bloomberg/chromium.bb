@@ -42,11 +42,14 @@
 <translation id="326254929494722411">‏هنوز در این دستگاه یک حساب Google تنظیم نکرده‌اید</translation>
 <translation id="8143660160623733249">نام پوشه</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
+<translation id="4720023427747327413">بازکردن در <ph name="PRODUCT_NAME"/></translation>
 <translation id="5676636989614905379">ویدیو در <ph name="SCREEN_NAME"/> پخش نمی‌شود.</translation>
 <translation id="5275558766013849309">زبانه‌ها و برنامه‌های اخیر در یک‌جا قرار می‌گیرند.</translation>
 <translation id="8069239273282989646">بعد از فشرده‌سازی</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="4761374747761474835">یک حساب انتخاب کنید تا نشانک‌ها، سابقه و گذرواژه‌ها و سایر تنظیماتتان را در همه دستگاه‌هایتان، دریافت کنید.</translation>
+<translation id="1359381790106966506">مجوزهای به‌روزرسانی</translation>
+<translation id="6060567974409584397">برای برگشت به برگه، لمس کنید</translation>
 <translation id="4803910478683254032">وارد نشد</translation>
 <translation id="3485544713029068372">‏Smart Lock برای گذرواژه‌ها</translation>
 <translation id="6999892069268112724">‏تأیید حساب Google</translation>
@@ -74,9 +77,11 @@
 <translation id="2354750644801399986">«ردیابی نشود»</translation>
 <translation id="2351097562818989364">تنظیمات ترجمه شما بازنشانی شده است.</translation>
 <translation id="4307992518367153382">موارد اصلی</translation>
+<translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="119944043368869598">پاک کردن همه</translation>
 <translation id="7665369617277396874">افزودن حساب</translation>
 <translation id="6458785801851713928">همگام‌سازی برای دامنه شما در دسترس نیست.</translation>
+<translation id="7788788617745289808">‏Chrome باید به دوربین دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="2731700343119398978">لطفاً صبر کنید...</translation>
 <translation id="6846298663435243399">در حال بارگیری…</translation>
@@ -99,6 +104,7 @@
 <translation id="4532845899244822526">انتخاب پوشه</translation>
 <translation id="4684427112815847243">همگام‌سازی همه</translation>
 <translation id="563535393368633106">قبل از دسترسی سؤال شود (توصیه می‌شود)</translation>
+<translation id="145097072038377568">‏در تنظیمات Android مسدود شد</translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
 <translation id="983192555821071799">بستن همه برگه‌ها</translation>
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستمتان را به‌روز کنید.</translation>
@@ -115,6 +121,7 @@
 <translation id="1091134514807961917">‏وارد حساب Google زیر شده‌اید.</translation>
 <translation id="7019652137705190998">به حالت ناشناس بروید تا به صورت خصوصی مرور کنید یا موقتاً وارد سیستم شوید</translation>
 <translation id="932327136139879170">منزل</translation>
+<translation id="1061441684050139317">‏Chrome باید به میکروفون دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="963967414714199900">آخرین همگام‌سازی: هم‌اکنون</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>، برنامه وب. <ph name="APP_URL"/></translation>
 <translation id="200669432486043882">جایگزینی فایل</translation>
@@ -128,6 +135,7 @@
 <translation id="4256782883801055595">مجوزهای منبع آزاد</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
 <translation id="8218346974737627104">تأیید ورود به سیستم</translation>
+<translation id="6675018499747166670">صدا درحال پخش است. لمس کنید تا به <ph name="URL_OF_THE_CURRENT_TAB"/> برگردید.</translation>
 <translation id="5832934273103296195">بزرگ‌شده - برای کوچک کردن کلیک کنید</translation>
 <translation id="8457451314607652708">وارد کردن نشانک‌ها</translation>
 <translation id="6612856669344839356">ذخیره نشانک</translation>
@@ -198,6 +206,7 @@
 <translation id="3184369589781594823">‏همه نشانک‌های محلی را از مرورگر Android وارد می‌کنید؟</translation>
 <translation id="8562452229998620586">گذرواژه‌های ذخیره شده در اینجا ظاهر می‌شود.</translation>
 <translation id="238909021488141516">هنگام دانلود محتوا خطایی روی داد.</translation>
+<translation id="6012342843556706400">‏Chrome باید به موقعیت مکانی دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="8730621377337864115">انجام شد</translation>
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
@@ -206,8 +215,11 @@
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
 <translation id="5771382037724542929">آیا می‌خواهید <ph name="FILE_NAME"/> موجود در <ph name="DIRECTORY_NAME"/> را جایگرین کنید؟</translation>
 <translation id="8627706565932943526">خطای همگام‌سازی</translation>
+<translation id="5881438603132347856">درحال پخش «<ph name="MEDIA_TITLE"/>»</translation>
+<translation id="423410644998903704">‏Chrome باید به مجوزها دسترسی داشته باشد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
 <translation id="1807246157184219062">روشن</translation>
 <translation id="2904413602477443379">یک پوشه انتخاب کنید</translation>
+<translation id="194341124344773587">‏مجوز Chrome را در <ph name="BEGIN_LINK"/>تنظیمات Android <ph name="END_LINK"/> روشن کنید.</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
 <translation id="8413126021676339697">نمایش کل سابقه</translation>
@@ -271,6 +283,7 @@
 <translation id="971774202801778802">نشانی اینترنتی نشانک</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
+<translation id="4792242903050551833">«<ph name="MEDIA_TITLE"/>» موقتاً متوقف شد</translation>
 <translation id="1312168552565502328">کوکی‌ها، داده‌های سایت</translation>
 <translation id="2903493209154104877">آدرس‌ها</translation>
 <translation id="3661699943263275414">وب‌سایت‌های طرف ثالث می‌توانند داده‌های کوکی را ذخیره کنند و بخوانند</translation>
@@ -281,6 +294,7 @@
 <translation id="7366340029385295517">درحال فرستادن به <ph name="SCREEN_NAME"/></translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="1197267115302279827">انتقال نشانک‌ها</translation>
+<translation id="3190152372525844641">‏مجوزهای Chrome را در <ph name="BEGIN_LINK"/>تنظیمات Android <ph name="END_LINK"/> روشن کنید.</translation>
 <translation id="583891442612896534">‏Chrome نمی‌تواند برای فشرده کردن داده‌ها به سرورهای Google دسترسی پیدا کند. ممکن است صرفه‌جویی در مصرف داده محدود شود.</translation>
 <translation id="4827948050554950725">افزودن کارت اعتباری</translation>
 <translation id="2316129865977710310">خیر، سپاسگزارم</translation>
@@ -436,6 +450,7 @@
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
 <translation id="9065203028668620118">ویرایش</translation>
 <translation id="4881695831933465202">باز کردن</translation>
+<translation id="5345083863238459644">دسترسی به موقعیت مکانی نیز <ph name="BEGIN_LINK"/>برای این دستگاه خاموش است<ph name="END_LINK"/>.</translation>
 <translation id="6512448926095770873">ترک کردن این صفحه</translation>
 <translation id="3414952576877147120">اندازه:</translation>
 <translation id="945632385593298557">دسترسی به میکروفن</translation>
@@ -500,6 +515,7 @@
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="4084682180776658562">نشانک</translation>
 <translation id="2646820313617290661">والدین شما در مدیریت این تنظیمات کمک می‌کنند.</translation>
+<translation id="1423209968422390786">دسترسی به موقعیت مکانی <ph name="BEGIN_LINK"/>برای این دستگاه خاموش است<ph name="END_LINK"/>.</translation>
 <translation id="2433507940547922241">شکل ظاهری</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6177390657002841081">روشن کردن «صرفه‌جویی در مصرف داده»</translation>
@@ -516,6 +532,7 @@
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="1742134235943978220">به <ph name="TARGET_LANGUAGE"/> ترجمه شد.</translation>
 <translation id="5327248766486351172">نام</translation>
+<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL"/> از موقعیت مکانی شما برای نمایش نتایج جستجوی محلی استفاده می‌کند</translation>
 <translation id="6738867403308150051">در حال دانلود…</translation>
 <translation id="393697183122708255">هیچ جستجوی فعال صوتی در دسترس نیست</translation>
 <translation id="3809549525127675114">«<ph name="VIDEO_TITLE"/>» به پایان رسید</translation>
@@ -524,6 +541,7 @@
 <translation id="6965382102122355670">تأیید</translation>
 <translation id="2038563949887743358">روشن کردن درخواست سایت رایانه‌ای</translation>
 <translation id="4440256989292146959">مرور بیشتر با مصرف داده کمتر</translation>
+<translation id="2126426811489709554">‏ارائه توسط Chrome</translation>
 <translation id="4023950129927433024">‏اگر عبارت عبورتان را فراموش کرده‌اید، همگام‌سازی را در <ph name="BEGIN_LINK"/>داشبورد Google<ph name="END_LINK"/> متوقف کرده و بازنشانی کنید.</translation>
 <translation id="7437998757836447326">‏خروج از سیستم Chrome</translation>
 <translation id="1178581264944972037">توقف موقت</translation>

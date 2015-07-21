@@ -86,6 +86,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5037239767309817516">Aby se změna projevila, zavřete prosím všechna okna aplikace Google Chrome a spusťte ji znovu.</translation>
 <translation id="1619887657840448962">Aby byl prohlížeč Chrome bezpečnější, deaktivovali jsme následující rozšíření, které není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="225614027745146050">Vítejte</translation>
+<translation id="8811903091068364646">&amp;Spustit Chrome znovu na klasické ploše</translation>
 <translation id="3398288718845740432">Skrýt v nabídce Chrome</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="3149510190863420837">Aplikace Chrome</translation>
@@ -246,6 +247,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="3037838751736561277">Google Chrome je v režimu na pozadí.</translation>
 <translation id="2084710999043359739">Přidat do prohlížeče Chrome</translation>
 <translation id="4692614041509923516">Váš počítač používá starou verzi operačního systému Microsoft Windows, která bezpečnostní certifikát tohoto webu neumí zpracovat. Kvůli tomuto problému Google Chrome nedokáže určit, zda certifikát pochází z webu <ph name="SITE"/>, nebo od někoho ve vaší síti, kdo se za web <ph name="SITE"/> vydává. Aktualizujte prosím operační systém počítače na nejnovější verzi systému Windows.</translation>
+<translation id="5931853610562009806">V počítačích Mac se hesla mohou ukládat do úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chrome, kteří sdílejí tento účet systému OS X.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome je zastaralý</translation>
 <translation id="7592736734348559088">Google Chrome vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
@@ -257,6 +259,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="1001534784610492198">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Google Chrome ještě jednou.</translation>
 <translation id="2246246234298806438">Pokud chybí integrovaný program k zobrazení souborů PDF, nemůže Google Chrome zobrazit náhled tisku.</translation>
 <translation id="5132929315877954718">Objevte skvělé aplikace, hry, rozšíření a motivy prohlížeče Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Spustit Chrome znovu v režimu Windows 8</translation>
 <translation id="6626317981028933585">Vaše nastavení prohlížeče Mozilla Firefox je bohužel nedostupné, je-li tento prohlížeč spuštěný. Chcete-li toto nastavení importovat do Google Chrome, uložte si práci a zavřete všechna okna prohlížeče Firefox. Poté klikněte na tlačítko Pokračovat.</translation>
 <translation id="8274359292107649245">Spustit Chrome na klasické ploše</translation>
 <translation id="7242029209006116544">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME"/>. Tyto údaje budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci přidružit k jinému účtu. Pokud chcete uchovat existující údaje Chrome odděleně, můžete vytvořit nový profil. <ph name="LEARN_MORE"/></translation>

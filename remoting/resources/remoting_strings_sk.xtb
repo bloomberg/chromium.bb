@@ -200,7 +200,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1152528166145813711">Vyberte…</translation>
 <translation id="2235518894410572517">Zdieľať tento počítač, aby ho mohol iný používateľ zobraziť a ovládať.</translation>
 <translation id="6939719207673461467">Zobraziť/skryť klávesnicu</translation>
-<translation id="1023096696228309145">Požiadajte používateľa, ku ktorého počítaču chcete pristupovať, aby klikol na možnosť Zdieľať tento počítač a poskytol vám prístupový kód.</translation>
 <translation id="4240294130679914010">Nástroj na odinštalovanie hostiteľa funkcie Chromoting</translation>
 <translation id="8712909229180978490">Nevidím svoje uložené súbory online na Disku Google.</translation>
 <translation id="80739703311984697">Vzdialený hostiteľ od vás vyžaduje overenie na webových stránkach tretej strany. Ak chcete pokračovať, musíte funkcii Chromoting udeliť dodatočné oprávnenie na prístup k tejto adrese:</translation>
@@ -241,6 +240,8 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="2921543551052660690">Predtým ste sa prihlásili ako používateľ <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Ak chcete získať prístup k počítačom v danom účte, musíte sa <ph name="LINK_BEGIN"/>prihlásiť do prehliadača Chromium<ph name="LINK_END"/> pomocou daného účtu a znova nainštalovať funkciu Chromoting.</translation>
 <translation id="7319983568955948908">Prestať zdieľať</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všetky práva vyhradené.</translation>
+<translation id="2998137343848432918">• Pridaná obrazovka Kredity
+• Opravený problém pri prepnutí do režimu celej obrazovky s viditeľnou klávesnicou</translation>
 <translation id="6640610550128933069">naposledy online <ph name="DATE"/></translation>
 <translation id="6668065415969892472">Váš kód PIN bol aktualizovaný.</translation>
 <translation id="4513946894732546136">Spätná väzba</translation>

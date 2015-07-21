@@ -42,6 +42,7 @@
 <translation id="4285930937574705105">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Falls Chromium derzeit ausgeführt wird, schließen Sie es bitte und versuchen Sie es erneut.</translation>
 <translation id="1396446129537741364">Chromium versucht, Passwörter anzuzeigen.</translation>
 <translation id="2097986737970966220">Chromium auf dem Desktop öffnen</translation>
+<translation id="108122890477367602">Chromium im Windows 8-Modus neu sta&amp;rten</translation>
 <translation id="8987477933582888019">Webbrowser</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="2886012850691518054">Optional: Unterstützen Sie Google bei der Verbesserung von Chromium durch automatisches Senden von Nutzungsstatistiken und Absturzberichten.</translation>
@@ -223,7 +224,9 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="1708666629004767631">Es gibt eine neue, sicherere Version von Chromium.</translation>
 <translation id="1644918877723739397">Chromium speichert dies in <ph name="SAVED_PASSWORD_LINK"/>, damit es bei Bedarf verfügbar ist.</translation>
 <translation id="378917192836375108">In Chromium können Sie auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
+<translation id="8605166112420372522">Chromium auf dem Desktop neu sta&amp;rten</translation>
 <translation id="1461885241643463646">Aktiviert Iframe-basierte Anmeldevorgänge für Chromium. Diese Option überschreibt die Option &quot;enable-web-based-signin&quot;.</translation>
+<translation id="390894725198123737">Auf einem Mac können Passwörter in Ihrem Schlüsselbund gespeichert und von anderen Chromium-Nutzern über dieses OS X-Konto abgerufen oder synchronisiert werden.</translation>
 <translation id="608189560609172163">Chromium konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
 <translation id="4888717733111232871">Eingangsregel für die Zulassung von mDNS-Verkehr in Chromium</translation>
 <translation id="151962892725702025">Chromium OS konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht verfügbar ist.</translation>

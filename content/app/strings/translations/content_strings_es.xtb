@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="es">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es">
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="5843503607508392247">Otra...</translation>
 <translation id="248395913932153421">Día</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Se trata de un índice que admite búsquedas. Introduce las palabras clave de búsqueda:</translation>
 <translation id="1930711995431081526">estado</translation>
 <translation id="658823671542763450">activar pantalla completa</translation>
+<translation id="8851136666856101339">principal</translation>
 <translation id="7720026100085573005">tiempo restante</translation>
-<translation id="370665806235115550">Cargando...</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="6845533974506654842">pulsar</translation>
 <translation id="8244226242650769279">mapa de imágenes</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Mediano)</translation>
 <translation id="1637811476055996098">Elegir archivos</translation>
 <translation id="49969490063480558">Introduce texto detrás del signo &quot;<ph name="ATSIGN"/>&quot;. La dirección &quot;<ph name="INVALIDADDRESS"/>&quot; está incompleta.</translation>
+<translation id="1342835525016946179">artículo</translation>
 <translation id="5476505524087279545">desmarcar</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2507943997699731163">Completa este campo</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Otra...</translation>
 <translation id="383465348367842624">El texto seguido del signo &quot;<ph name="ATSIGN"/>&quot; no debe incluir el símbolo &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">salir de pantalla completa</translation>
-<translation id="5919473608089529604">No se ha podido cargar el complemento.</translation>
 <translation id="5546461542133609677">activar sonido</translation>
 <translation id="6663448176199120256">Búsquedas recientes</translation>
 <translation id="1020833440720551630">silenciar pista de audio</translation>
-<translation id="2597378329261239068">Este documento está protegido por contraseña. Introduce una contraseña.</translation>
 <translation id="5466621249238537318">Selecciona uno o varios archivos</translation>
 <translation id="9132465097189459683">Otra...</translation>
 <translation id="10623998915015855">botón de activación</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Reduce la longitud de este texto a <ph name="MAX_CHARACTERS"/> caracteres o menos (actualmente, el texto tiene <ph name="CURRENT_LENGTH"/> caracteres)</translation>
 <translation id="6101327004457443354">activar sonido de la pista de audio</translation>
 <translation id="1822429046913737220">A.M./P.M.</translation>
-<translation id="1639239467298939599">Cargando</translation>
 <translation id="2908441821576996758">Introduce una lista de direcciones de correo electrónico separada por comas</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="2613802280814924224">Introduce un valor válido. El valor válido más aproximado es <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Valor no válido</translation>
+<translation id="9108370397979208512">expresión matemática</translation>
 <translation id="1842960171412779397">seleccionar</translation>
 <translation id="7673697353781729403">Horas</translation>
 <translation id="4664250907885839816">El texto detrás del signo &quot;<ph name="ATSIGN"/>&quot; no debe incluir el símbolo &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="7888071071722539607">Incluye un signo &quot;<ph name="ATSIGN"/>&quot; en la dirección de correo electrónico. La dirección &quot;<ph name="INVALIDADDRESS"/>&quot; no incluye el signo &quot;<ph name="ATSIGN"/>&quot;.</translation>
 <translation id="1088086359088493902">Segundos</translation>
-<translation id="3934680773876859118">Se ha producido un error al cargar el documento PDF.</translation>
 <translation id="3632707345189162177">número de segundos restantes de la película</translation>
 <translation id="6359256949422175976">miniatura del control deslizante de duración de la película</translation>
 <translation id="8597182159515967513">cabecera</translation>

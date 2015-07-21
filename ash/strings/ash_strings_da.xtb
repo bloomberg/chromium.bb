@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
 <translation id="5548285847212963613">Udvidelsen &quot;<ph name="EXTENSION_NAME"/>&quot; kan hjælpe med at oprette forbindelse til dette netværk.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> og <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Stik til mikrofon</translation>
 <translation id="30155388420722288">Knappen Overflow</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drev</translation>
 <translation id="3683428399328702079">Opløsningen for <ph name="DISPLAY_NAME"/> er ændret til <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Statusbakke</translation>
-<translation id="2248649616066688669">Du kan fortsætte med at bruge din Chromebook, mens den er sluttet til en ekstern skærm, også selvom låget er klappet ned.</translation>
 <translation id="2946640296642327832">Aktivér Bluetooth</translation>
 <translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -104,7 +104,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
 <translation id="2825619548187458965">Hylde</translation>
-<translation id="2614835198358683673">Din Chromebook oplades muligvis ikke, når den er tændt. Anvend eventuelt den officielle oplader.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
@@ -150,7 +149,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
 <translation id="882279321799040148">Klik for at se det</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Din Chromebook oplades muligvis ikke, når den er tændt.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> understøtter ikke <ph name="SPECIFIED_RESOLUTION"/>. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
 <translation id="68610848741840742">ChromeVox (talefeedback)</translation>

@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Ruutunäppäimistö poistettiin käytöstä</translation>
 <translation id="5548285847212963613">Laajennus <ph name="EXTENSION_NAME"/> voi auttaa muodostamaan yhteyden tähän verkkoon.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofoniliitäntä</translation>
 <translation id="30155388420722288">Overflow-painike</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Ruudun <ph name="DISPLAY_NAME"/> tarkkuudeksi vaihdettiin <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Tila-alue</translation>
-<translation id="2248649616066688669">Voit käyttää Chromebookia sen ollessa yhdistettynä ulkoiseen näyttöön, vaikka laitteen kansi olisi kiinni.</translation>
 <translation id="2946640296642327832">Ota Bluetooth käyttöön</translation>
 <translation id="6459472438155181876">Ruutua laajennetaan: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Matkapuhelin</translation>
@@ -104,7 +104,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
 <translation id="2208323208084708176">Yhtenäisen työpöydän tila</translation>
 <translation id="2825619548187458965">Hylly</translation>
-<translation id="2614835198358683673">Chromebookisi ei välttämättä lataudu sen ollessa päällä. Harkitse virallisen laturin käyttämistä.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Kaikki käytettävissä olevat käyttäjät on jo lisätty tähän istuntoon.</translation>
@@ -150,7 +149,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="882279321799040148">Näytä klikkaamalla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Chromebook ei välttämättä lataudu sen ollessa päällä.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ei tue resoluutiota <ph name="SPECIFIED_RESOLUTION"/>. Resoluutioksi valittiin <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
 <translation id="68610848741840742">ChromeVox (äänipalaute)</translation>

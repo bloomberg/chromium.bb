@@ -44,6 +44,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4285930937574705105">La instalación ha fallado debido a un error no especificado. Si Chromium se está ejecutando, ciérralo y vuelve a intentarlo.</translation>
 <translation id="1396446129537741364">Chromium está intentando mostrar contraseñas.</translation>
 <translation id="2097986737970966220">Abrir Chromium en modo de escritorio</translation>
+<translation id="108122890477367602">&amp;Reiniciar Chromium en modo Windows 8</translation>
 <translation id="8987477933582888019">Navegador web</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="2886012850691518054">Opcional: ayudar a mejorar Chromium enviando automáticamente a Google estadísticas de uso e informes de errores</translation>
@@ -243,7 +244,9 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
 <translation id="1644918877723739397">Chromium almacenará esta contraseña en tus <ph name="SAVED_PASSWORD_LINK"/> y la recordará la próxima vez que la necesites.</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
+<translation id="8605166112420372522">&amp;Reiniciar Chromium en el escritorio</translation>
 <translation id="1461885241643463646">Habilita flujos de inicio de sesión en Chromium basados en marco flotante. Esta opción anula la habilitación de inicio de sesión basado en Web.</translation>
+<translation id="390894725198123737">En los ordenadores Mac, las contraseñas se pueden guardar en el llavero, y otros usuarios de Chromium que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
 <translation id="608189560609172163">Chromium no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="4888717733111232871">Regla entrante para que Chromium permita tráfico mDNS.</translation>
 <translation id="151962892725702025">Chromium OS no ha podido sincronizar los datos porque la función de sincronización no está disponible para tu dominio.</translation>

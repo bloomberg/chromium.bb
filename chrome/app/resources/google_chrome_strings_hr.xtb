@@ -80,6 +80,7 @@
 <translation id="5037239767309817516">Zatvorite sve prozore preglednika Google Chrome i ponovo ga pokrenite kako bi ova promjena stupila na snagu.</translation>
 <translation id="1619887657840448962">Kako bismo Chrome učinili sigurnijim, onemogućili smo sljedeće proširenje koje nije navedeno na stranici <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> i možda je dodano bez vašeg znanja.</translation>
 <translation id="225614027745146050">Dobro došli</translation>
+<translation id="8811903091068364646">&amp;Ponovo pokreni Chrome na radnoj površini</translation>
 <translation id="3398288718845740432">Sakrij u izborniku Chromea</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="3149510190863420837">Aplikacije sustava Chrome</translation>
@@ -246,6 +247,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="3037838751736561277">Google Chrome radi u pozadini.</translation>
 <translation id="2084710999043359739">Dodajte u Chrome</translation>
 <translation id="4692614041509923516">Vaše računalo ima staru verziju Microsoft Windowsa koja ne može obraditi sigurnosni certifikat ove web-lokacije. Zbog tog problema Google Chrome ne može odrediti je li certifikat s domene <ph name="SITE"/> ili od nekog u vašoj mreži tko se pretvara da je <ph name="SITE"/>. Ažurirajte Windows na računalu na noviju verziju.</translation>
+<translation id="5931853610562009806">Na Mac računalima zaporke se mogu spremati u vaš Keychain, a drugi korisnici Chromea koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Chrome je zastario</translation>
 <translation id="7592736734348559088">Google Chrome nije mogao sinkronizirati vaše podatke jer su vaši podaci za prijavu na račun zastarjeli.</translation>
@@ -257,6 +259,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="1001534784610492198">Arhiva programa za instalaciju je oštećena ili nevažeća. Ponovno preuzmite program Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome ne može prikazati pregled ispisa ako nema ugrađeni preglednik PDF-a.</translation>
 <translation id="5132929315877954718">Otkrijte sjajne aplikacije, igre, proširenja i teme za Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Ponovo pokreni Chrome u načinu Windows 8</translation>
 <translation id="6626317981028933585">Na žalost postavke vašeg preglednika Mozilla Firefox nisu dostupne dok je preglednik otvoren. Da biste te postavke unijeli u Google Chrome, spremite svoj posao i zatvorite sve prozore preglednika Firefox. Zatim kliknite &quot;Nastavak&quot;.</translation>
 <translation id="8274359292107649245">Otvori Chrome na radnoj površini</translation>
 <translation id="7242029209006116544">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME"/>. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. Ako želite, možete izraditi novi profil kako biste zadržali postojeće podatke u sustavu Chrome zasebno. <ph name="LEARN_MORE"/></translation>

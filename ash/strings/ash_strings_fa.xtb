@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">صفحه‌کلید روی صفحه غیرفعال شد</translation>
 <translation id="5548285847212963613">افزونه «<ph name="EXTENSION_NAME"/>» می‌تواند در اتصال به این شبکه به شما کمک کند.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> و <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">فیش میکروفون</translation>
 <translation id="30155388420722288">دکمه سرریز</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
 <translation id="8673028979667498656">‎۲۷۰°‎</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">وضوح <ph name="DISPLAY_NAME"/> به <ph name="RESOLUTION"/> تغییر یافت</translation>
 <translation id="2297568595583585744">سینی وضعیت</translation>
-<translation id="2248649616066688669">‏وقتی دستگاه Chromebook شما به یک نمایشگر خارجی متصل است می‌توانید همچنان از آن استفاده کنید، حتی با در بسته.</translation>
 <translation id="2946640296642327832">فعال کردن بلوتوث</translation>
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">سلولی</translation>
@@ -102,7 +102,6 @@
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="2208323208084708176">حالت میزکار یکپارچه</translation>
 <translation id="2825619548187458965">قفسه</translation>
-<translation id="2614835198358683673">‏وقتی Chromebook روشن است ممکن است شارژ نشود. از شارژر مخصوص دستگاه استفاده کنید.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">تمام کاربران موجود قبلاً به این جلسه اضافه شده‌اند.</translation>
@@ -148,7 +147,6 @@
 <translation id="3473479545200714844">ذره‌بین صفحه</translation>
 <translation id="882279321799040148">برای مشاهده کلیک کنید</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">‏ممکن است Chromebook شما هنگام روشن بودن شارژ نشود.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>،‏ <ph name="SPECIFIED_RESOLUTION"/> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION"/> تغییر کرد</translation>
 <translation id="1602076796624386989">فعال کردن اطلاعات تلفن همراه</translation>
 <translation id="68610848741840742">‏ChromeVox (بازخورد گفتاری)</translation>

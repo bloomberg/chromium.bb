@@ -84,6 +84,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5037239767309817516">Táto zmena sa prejaví po zavretí všetkých okien prehliadača Google Chrome a jeho opätovnom spustení.</translation>
 <translation id="1619887657840448962">Z dôvodu zvýšenia bezpečnosti prehliadača Chrome sme zakázali nasledujúce rozšírenie, ktoré nie je uvedené v službe <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> a mohlo byť pridané bez vášho vedomia.</translation>
 <translation id="225614027745146050">Vitajte</translation>
+<translation id="8811903091068364646">&amp;Spustiť Chrome v režime pracovnej plochy</translation>
 <translation id="3398288718845740432">Skryť v Ponuke Chrome</translation>
 <translation id="7473891865547856676">Nie, ďakujem</translation>
 <translation id="3149510190863420837">Aplikácie Chrome</translation>
@@ -253,6 +254,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="3037838751736561277">Google Chrome je v režime na pozadí.</translation>
 <translation id="2084710999043359739">Pridať do prehliadača Chrome</translation>
 <translation id="4692614041509923516">Váš počítač používa starú verziu operačného systému Microsoft Windows, ktorá bezpečnostný certifikát tohto webu nedokáže spracovať. Pre tento problém nedokáže Google Chrome určiť, či certifikát pochádza z webu <ph name="SITE"/> alebo od inej osoby vo vašej sieti, ktorá sa za web <ph name="SITE"/> vydáva. Aktualizujte operačný systém počítača na najnovšiu verziu systému Windows.</translation>
+<translation id="5931853610562009806">Na počítačoch Mac sa heslá môžu ukladať do aplikácie Keychain. Ostatní používatelia prehliadača Chrome, ktorí zdieľajú tento účet systému OS X, k nim môžu pristupovať a môžu ich synchronizovať.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1877026089748256423">Prehliadač Chrome je zastaraný</translation>
 <translation id="7592736734348559088">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
@@ -264,6 +266,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="1001534784610492198">Archív inštalácie je poškodený alebo neplatný. Stiahnite prehliadač Google Chrome znova.</translation>
 <translation id="2246246234298806438">Ak vstavaný zobrazovač súborov PDF chýba, prehliadač Google Chrome nemôže zobraziť ukážku pred tlačou.</translation>
 <translation id="5132929315877954718">Objavte skvelé aplikácie, hry, rozšírenia a motívy pre prehliadač Google Chrome.</translation>
+<translation id="7784335114585804598">&amp;Spustiť Chrome v režime Windows 8</translation>
 <translation id="6626317981028933585">Ľutujeme, nastavenia prehľadávača Mozilla Firefox nie sú k dispozícii, kým je tento prehľadávač otvorený. Ak chcete importovať tieto nastavenia do prehľadávača Google Chrome, uložte svoju prácu a zatvorte všetky okná prehľadávača Firefox. Potom kliknite na tlačidlo Pokračovať.</translation>
 <translation id="8274359292107649245">Otvoriť prehliadač Chrome na počítači</translation>
 <translation id="7242029209006116544">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom prehliadača Chrome. Vaše údaje prehliadača Chrome, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME"/>. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. Ak chcete, aby boli existujúce údaje prehliadača Chrome oddelené, môžete vytvoriť nový profil. <ph name="LEARN_MORE"/></translation>

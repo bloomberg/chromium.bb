@@ -41,6 +41,7 @@
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
 <translation id="1396446129537741364">Chromium はパスワードを表示しようとしています。</translation>
 <translation id="2097986737970966220">デスクトップで Chromium を開く</translation>
+<translation id="108122890477367602">Chromium を Windows 8 モードで再起動(&amp;R)</translation>
 <translation id="8987477933582888019">ウェブブラウザ</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
 <translation id="2886012850691518054">オプション: 使用状況データと障害レポートを Google に自動送信して Chromium の機能向上に役立てる。</translation>
@@ -241,7 +242,9 @@
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
 <translation id="1644918877723739397">Chromium ではこのパスワードが <ph name="SAVED_PASSWORD_LINK"/>に保存され、次回の入力時に使用されます。</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
+<translation id="8605166112420372522">Chromium をデスクトップで再起動(&amp;R)</translation>
 <translation id="1461885241643463646">iframe を使った Chromium ログインフローを有効にします。このフラグの設定は --enable-web-based-signin よりも優先されます。</translation>
+<translation id="390894725198123737">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chromium ユーザーからアクセスされたり同期されたりする可能性があります。</translation>
 <translation id="608189560609172163">ログイン時にエラーが発生したため、Chromium はデータを同期できませんでした。</translation>
 <translation id="4888717733111232871">mDNS トラフィックを許可する Chromium のインバウンド ルールです。</translation>
 <translation id="151962892725702025">お使いのドメインでは同期を利用できないため、Chromium OS はデータを同期できませんでした。</translation>

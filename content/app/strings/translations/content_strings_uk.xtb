@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="uk">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="uk">
 <translation id="4763480195061959176">відео</translation>
 <translation id="5843503607508392247">Інші...</translation>
 <translation id="248395913932153421">День</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Цей доступний для пошуку індекс. Введіть ключові слова пошуку:</translation>
 <translation id="1930711995431081526">статус</translation>
 <translation id="658823671542763450">увійти в повноекранний режим</translation>
+<translation id="8851136666856101339">головний</translation>
 <translation id="7720026100085573005">залишилось часу</translation>
-<translation id="370665806235115550">Завантаження...</translation>
 <translation id="2723001399770238859">аудіо</translation>
 <translation id="6845533974506654842">натиснути</translation>
 <translation id="8244226242650769279">мапа зображення</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Середній рівень)</translation>
 <translation id="1637811476055996098">Вибрати файли</translation>
 <translation id="49969490063480558">Введіть частину електронної адреси після знака &quot;<ph name="ATSIGN"/>&quot;. Електронна адреса &quot;<ph name="INVALIDADDRESS"/>&quot; неповна.</translation>
+<translation id="1342835525016946179">стаття</translation>
 <translation id="5476505524087279545">зняти прапорець</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
 <translation id="2507943997699731163">Заповніть це поле.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Інші...</translation>
 <translation id="383465348367842624">Частина перед знаком &quot;<ph name="ATSIGN"/>&quot; не може містити символ &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="5468998798572797635">вийти з повноекранного режиму</translation>
-<translation id="5919473608089529604">Не вдалося завантажити плагін.</translation>
 <translation id="5546461542133609677">увімкнути звук</translation>
 <translation id="6663448176199120256">Останні пошуки</translation>
 <translation id="1020833440720551630">вимкнути звукову доріжку</translation>
-<translation id="2597378329261239068">Цей документ захищено паролем. Введіть пароль.</translation>
 <translation id="5466621249238537318">Виберіть один або декілька файлів.</translation>
 <translation id="9132465097189459683">Інші...</translation>
 <translation id="10623998915015855">перемикач</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Скоротіть текст до такої кількості символів або менше: <ph name="MAX_CHARACTERS"/> (наразі використано символів: <ph name="CURRENT_LENGTH"/>).</translation>
 <translation id="6101327004457443354">увімкнути звукову доріжку</translation>
 <translation id="1822429046913737220">д.п./п.п.</translation>
-<translation id="1639239467298939599">Завантаження</translation>
 <translation id="2908441821576996758">Введіть список електронних адрес, розділених комою.</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="2613802280814924224">Введіть дійсне значення. Найближче дійсне значення: <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
+<translation id="9108370397979208512">математика</translation>
 <translation id="1842960171412779397">вибрати</translation>
 <translation id="7673697353781729403">Години</translation>
 <translation id="4664250907885839816">Частина після знака &quot;<ph name="ATSIGN"/>&quot; не може містити символ &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="7888071071722539607">Електронна адреса має містити знак &quot;<ph name="ATSIGN"/>&quot;. В електронній адресі &quot;<ph name="INVALIDADDRESS"/>&quot; знака &quot;<ph name="ATSIGN"/>&quot; немає.</translation>
 <translation id="1088086359088493902">Секунди</translation>
-<translation id="3934680773876859118">Не вдалося завантажити документ PDF</translation>
 <translation id="3632707345189162177">кількість секунд до кінця фільму</translation>
 <translation id="6359256949422175976">ескіз на повзунку перебігу фільму</translation>
 <translation id="8597182159515967513">заголовок</translation>

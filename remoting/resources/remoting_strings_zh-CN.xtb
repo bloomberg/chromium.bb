@@ -200,7 +200,6 @@
 <translation id="1152528166145813711">请选择…</translation>
 <translation id="2235518894410572517">共享此计算机以供其他用户查看和控制。</translation>
 <translation id="6939719207673461467">显示/隐藏键盘。</translation>
-<translation id="1023096696228309145">如果您想要访问某台计算机，请让该计算机的用户点击“立即共享”，然后告诉您访问代码。</translation>
 <translation id="4240294130679914010">Chrome 远程访问主机卸载程序</translation>
 <translation id="8712909229180978490">我无法在 Google 云端硬盘中在线查看自己保存的文件。</translation>
 <translation id="80739703311984697">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
@@ -241,6 +240,8 @@
 <translation id="2921543551052660690">您之前曾使用 <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) 登录。要访问该帐户名下的计算机，请使用该帐户<ph name="LINK_BEGIN"/>登录 Chromium<ph name="LINK_END"/>，然后重新安装 Chrome 远程访问。</translation>
 <translation id="7319983568955948908">停止共享</translation>
 <translation id="6681800064886881394">版权所有2013 Google Inc。保留所有权利。</translation>
+<translation id="2998137343848432918">• 添加了“鸣谢”屏幕。
+• 解决了一个在显示键盘的情况下进入全屏模式时会出现的问题。</translation>
 <translation id="6640610550128933069">上次联网日期：<ph name="DATE"/></translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="4513946894732546136">反馈</translation>

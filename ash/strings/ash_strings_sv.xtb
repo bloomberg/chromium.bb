@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Skärmen på tangentbordet har inaktiverats</translation>
 <translation id="5548285847212963613">Tillägget <ph name="EXTENSION_NAME"/> kan hjälpa till med att ansluta till nätverket.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> och <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Mikrofonuttag</translation>
 <translation id="30155388420722288">Överflödsknapp</translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079">Upplösningen för <ph name="DISPLAY_NAME"/> ändrades till <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Statusfält</translation>
-<translation id="2248649616066688669">Du kan fortsätta att använda Chromebook medan den är ansluten till en extern skärm, t.o.m. när locket är stängt.</translation>
 <translation id="2946640296642327832">Aktivera Bluetooth</translation>
 <translation id="6459472438155181876">Utökar skärmen till <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">Skärmen på tangentbordet har aktiverats</translation>
 <translation id="2208323208084708176">Enhetligt skrivbordsläge</translation>
 <translation id="2825619548187458965">Hylla</translation>
-<translation id="2614835198358683673">Din Chromebook kanske inte laddas medan den är på. Överväg att använda den officiella laddaren.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">Skärmförstorare</translation>
 <translation id="882279321799040148">Klicka för att visa</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Din Chromebook kanske inte laddas medan den är på.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> har inte stöd för <ph name="SPECIFIED_RESOLUTION"/>. Upplösningen ändrades till <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Aktivera mobildata</translation>
 <translation id="68610848741840742">ChromeVox (talad feedback)</translation>

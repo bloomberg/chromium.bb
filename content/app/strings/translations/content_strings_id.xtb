@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="id">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Lainnya...</translation>
 <translation id="248395913932153421">Hari</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">Terdapat indeks yang dapat dicari. Masukkan kata kunci penelusuran:</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="658823671542763450">masuk layar penuh</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">sisa waktu</translation>
-<translation id="370665806235115550">Membuka...</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="6845533974506654842">tekan</translation>
 <translation id="8244226242650769279">gambar peta</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024 (Tingkat Menengah)</translation>
 <translation id="1637811476055996098">Pilih File</translation>
 <translation id="49969490063480558">Masukkan bagian setelah '<ph name="ATSIGN"/>'. '<ph name="INVALIDADDRESS"/>' tidak lengkap.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">batalkan centang</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2507943997699731163">Harap isi bidang ini.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">Lainnya...</translation>
 <translation id="383465348367842624">Bagian sebelum '<ph name="ATSIGN"/>' tidak boleh berisi simbol '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="5468998798572797635">keluar dari tampilan layar penuh</translation>
-<translation id="5919473608089529604">Tidak dapat memuat plugin.</translation>
 <translation id="5546461542133609677">suarakan</translation>
 <translation id="6663448176199120256">Penelusuran Barusan</translation>
 <translation id="1020833440720551630">bisukan trek audio</translation>
-<translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
 <translation id="5466621249238537318">Pilih salah satu atau beberapa file.</translation>
 <translation id="9132465097189459683">Lainnya...</translation>
 <translation id="10623998915015855">tombol beralih</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">Pendekkan teks ini menjadi <ph name="MAX_CHARACTERS"/> karakter atau kurang (saat ini Anda menggunakan <ph name="CURRENT_LENGTH"/> karakter).</translation>
 <translation id="6101327004457443354">suarakan trek audio</translation>
 <translation id="1822429046913737220">AM/PM</translation>
-<translation id="1639239467298939599">Memuat</translation>
 <translation id="2908441821576996758">Masukkan daftar alamat email yang dipisahkan dengan koma.</translation>
-<translation id="5939518447894949180">Atur ulang</translation>
+<translation id="5939518447894949180">Setel ulang</translation>
 <translation id="1921819250265091946">hh</translation>
 <translation id="2613802280814924224">Masukkan nilai yang valid. Nilai valid terdekatnya adalah <ph name="VALID_VALUE"/>.</translation>
 <translation id="835897206747267392">Nilai tidak valid.</translation>
+<translation id="9108370397979208512">math</translation>
 <translation id="1842960171412779397">pilih</translation>
 <translation id="7673697353781729403">Jam</translation>
 <translation id="4664250907885839816">Bagian setelah '<ph name="ATSIGN"/>' tidak boleh berisi simbol '<ph name="INVALIDCHARACTER"/>'.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="7888071071722539607">Sertakan '<ph name="ATSIGN"/>' pada alamat email. '<ph name="INVALIDADDRESS"/>' tidak memiliki '<ph name="ATSIGN"/>'.</translation>
 <translation id="1088086359088493902">Detik</translation>
-<translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
 <translation id="3632707345189162177">sisa waktu film dalam detik</translation>
 <translation id="6359256949422175976">jempol scrubber waktu film</translation>
 <translation id="8597182159515967513">kepala</translation>

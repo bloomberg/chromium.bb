@@ -1,6 +1,4 @@
-<?xml version="1.0" ?>
-<!DOCTYPE translationbundle>
-<translationbundle lang="ko">
+<?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ko">
 <translation id="4763480195061959176">동영상</translation>
 <translation id="5843503607508392247">다른 시간...</translation>
 <translation id="248395913932153421">일</translation>
@@ -26,8 +24,8 @@
 <translation id="8141602879876242471">이것은 검색 색인합니다. 검색 키워드 입력:</translation>
 <translation id="1930711995431081526">상태</translation>
 <translation id="658823671542763450">전체화면 열기</translation>
+<translation id="8851136666856101339">main</translation>
 <translation id="7720026100085573005">남은 시간</translation>
-<translation id="370665806235115550">로드 중...</translation>
 <translation id="2723001399770238859">오디오</translation>
 <translation id="6845533974506654842">누르기</translation>
 <translation id="8244226242650769279">이미지 지도</translation>
@@ -63,6 +61,7 @@
 <translation id="2846343701378493991">1024(중간 등급)</translation>
 <translation id="1637811476055996098">파일 선택</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN"/>' 뒷 부분을 입력해 주세요. '<ph name="INVALIDADDRESS"/>'(이)가 완전하지 않습니다.</translation>
+<translation id="1342835525016946179">article</translation>
 <translation id="5476505524087279545">선택취소</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2507943997699731163">이 입력란을 작성하세요.</translation>
@@ -70,11 +69,9 @@
 <translation id="739024184232394898">다른 주...</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN"/>' 앞 부분에 '<ph name="INVALIDCHARACTER"/>' 기호가 포함되면 안됩니다.</translation>
 <translation id="5468998798572797635">전체화면 닫기</translation>
-<translation id="5919473608089529604">플러그인을 로드할 수 없습니다.</translation>
 <translation id="5546461542133609677">음소거 해제</translation>
 <translation id="6663448176199120256">최근 수행된 검색</translation>
 <translation id="1020833440720551630">오디오 트랙 음소거</translation>
-<translation id="2597378329261239068">문서가 비밀번호로 보호되고 있습니다. 비밀번호를 입력하세요.</translation>
 <translation id="5466621249238537318">파일을 한 개 이상 선택하세요.</translation>
 <translation id="9132465097189459683">다른 달...</translation>
 <translation id="10623998915015855">전환 버튼</translation>
@@ -86,12 +83,12 @@
 <translation id="2226276347425096477">이 텍스트를 <ph name="MAX_CHARACTERS"/>자 이하로 줄이세요(현재 <ph name="CURRENT_LENGTH"/>자 사용 중).</translation>
 <translation id="6101327004457443354">오디오 트랙 음소거 해제</translation>
 <translation id="1822429046913737220">오전/오후</translation>
-<translation id="1639239467298939599">로드 중</translation>
 <translation id="2908441821576996758">이메일 주소를 쉼표로 구분하여 입력하세요.</translation>
 <translation id="5939518447894949180">재설정</translation>
 <translation id="1921819250265091946">일</translation>
 <translation id="2613802280814924224">유효한 값을 입력해 주세요. 가장 근접한 유효 값은 <ph name="VALID_VALUE"/>입니다.</translation>
 <translation id="835897206747267392">값이 잘못되었습니다.</translation>
+<translation id="9108370397979208512">math</translation>
 <translation id="1842960171412779397">선택</translation>
 <translation id="7673697353781729403">시간</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN"/>' 다음 부분에 '<ph name="INVALIDCHARACTER"/>' 기호가 포함되면 안됩니다.</translation>
@@ -105,7 +102,6 @@
 <translation id="6643016212128521049">삭제</translation>
 <translation id="7888071071722539607">이메일 주소에 '<ph name="ATSIGN"/>'를 포함해 주세요. '<ph name="INVALIDADDRESS"/>'에 '<ph name="ATSIGN"/>'가 없습니다.</translation>
 <translation id="1088086359088493902">초</translation>
-<translation id="3934680773876859118">PDF 문서를 로드하지 못했습니다.</translation>
 <translation id="3632707345189162177">영화 남은 시간(초)</translation>
 <translation id="6359256949422175976">영화 시간 스크러버 썸</translation>
 <translation id="8597182159515967513">항목</translation>

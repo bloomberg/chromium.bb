@@ -454,6 +454,7 @@ Las estadísticas de uso incluyen información, como las preferencias, los clics
 <translation id="7963646190083259054">Proveedor:</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="5345083863238459644">El acceso a la ubicación también se <ph name="BEGIN_LINK"/>desactivó para este dispositivo<ph name="END_LINK"/>.</translation>
 <translation id="6512448926095770873">Abandonar esta página</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
 <translation id="945632385593298557">Acceso al micrófono</translation>
@@ -518,6 +519,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="2646820313617290661">Tus padres ayudan a administrar esta configuración.</translation>
+<translation id="1423209968422390786">El acceso a la ubicación se <ph name="BEGIN_LINK"/>desactivó para este dispositivo<ph name="END_LINK"/>.</translation>
 <translation id="2433507940547922241">Diseño</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6177390657002841081">Activar la extensión Reducir datos</translation>

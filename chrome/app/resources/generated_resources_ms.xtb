@@ -445,7 +445,6 @@
 <translation id="3587482841069643663">Semua</translation>
 <translation id="6698381487523150993">Dicipta:</translation>
 <translation id="4684748086689879921">Langkau Import</translation>
-<translation id="6912686727854004322">Untuk membolehkan perkara ini, anda perlu mendayakan Aktiviti Suara &amp; Audio dan melatih Chromebook anda dalam langkah berikut.</translation>
 <translation id="8191230140820435481">Uruskan apl, sambungan dan tema anda</translation>
 <translation id="2163418719022613650">Jangan gunakan senarai paparan cat pengecil untuk lukisan. Sila ambil perhatian bahawa bendera dayakan cat pengecil diberikan keutamaan berbanding bendera ini jika kedua-duanya hadir.</translation>
 <translation id="8279107132611114222">Permintaan anda untuk mengakses tapak web ini telah dihantar kepada <ph name="NAME"/>.</translation>
@@ -562,7 +561,6 @@
 <translation id="7428061718435085649">Gunakan kekunci Anjak ke kiri dan kanan untuk memilih calon kedua dan ketiga</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="2630681426381349926">Sambung ke Wi-Fi untuk bermula</translation>
-<translation id="7591494541411132320">Untuk membolehkan perkara ini, anda perlu melatih Chromebook anda dalam langkah berikut.</translation>
 <translation id="1764226536771329714">beta</translation>
 <translation id="5191625995327478163">&amp;tetapan Bahasa...</translation>
 <translation id="769569204874261517"><ph name="USER_DISPLAY_NAME"/> (telah ada pada peranti ini)</translation>
@@ -1372,7 +1370,6 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="5323213332664049067">Bahasa Amerika Latin</translation>
 <translation id="3778152852029592020">Muat turun telah dibatalkan.</translation>
 <translation id="8235613855873080297">Lumpuhkan Sambungan Media yang Disulitkan.</translation>
-<translation id="2148227560636747235">Hantar tab ini</translation>
 <translation id="3507421388498836150">Kebenaran Semasa untuk &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7831368056091621108">untuk mendapatkan sambungan ini, sejarah anda dan tetapan Chrome lain pada semua peranti anda.</translation>
 <translation id="5469868506864199649">Bahasa Itali</translation>
@@ -1417,7 +1414,6 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="2801702994096586034">Pelayan 3</translation>
 <translation id="1598604884989842103">Dayakan Touchview memaksimumkan UI untuk ujian</translation>
 <translation id="155138250499894874">&quot;<ph name="BUNDLE_NAME"/>&quot; menambahkan sambungan ini:</translation>
-<translation id="6687839925582416859">Hantar desktop atau tetingkap</translation>
 <translation id="4580526846085481512">Adakah anda pasti anda mahu memadamkan item $1?</translation>
 <translation id="5292890015345653304">Masukkan kad SD atau batang memori USB</translation>
 <translation id="3345634697982520715">Dayakan pilihan pelanjutan terbenam.</translation>
@@ -1563,7 +1559,6 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="5451646087589576080">Lihat Maklumat &amp;Bingkai</translation>
 <translation id="5050209346295804497">Lumpuhkan keperluan gerak isyarat untuk main semula media.</translation>
 <translation id="5880247576487732437">Token Ada</translation>
-<translation id="6305340419723954242">Pilih mod hantar</translation>
 <translation id="3704162925118123524">Rangkaian yang anda gunakan mungkin memerlukan anda untuk melawat halaman log masuknya.</translation>
 <translation id="7157063064925785854">Apabila Teruskan diklik, bermakna anda bersetuju menerima <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/> dan <ph name="LEGAL_DOC_LINK_TEXT_4"/>.</translation>
 <translation id="3368922792935385530">Disambungkan</translation>
@@ -1682,7 +1677,6 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
     <ph name="MARKUP_2"/>buka pin fail yang anda tidak perlu untuk akses di luar talian lagi<ph name="MARKUP_3"/>
     <ph name="MARKUP_4"/>padamkan fail dari folder Muat turun anda<ph name="MARKUP_5"/></translation>
 <translation id="4737715515457435632">Sila sambung ke rangkaian</translation>
-<translation id="6913830198853875055">Jika didayakan, praambil pratonton untuk hasil carian dan tukarkannya dengan halaman asal apabila dimuat turun dan dipaparkan.</translation>
 <translation id="3759371141211657149">Uruskan tetapan pengendali...</translation>
 <translation id="8856844195561710094">Gagal untuk menghentikan penemuan peranti Bluetooth.</translation>
 <translation id="2246340272688122454">Memuat turun imej pemulihan...</translation>
@@ -2424,7 +2418,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="1783075131180517613">Sila kemas kini frasa laluan segerak anda.</translation>
 <translation id="1601560923496285236">Gunakan</translation>
 <translation id="2390045462562521613">Lupakan rangkaian ini</translation>
-<translation id="5076531908107520937">Hantar tab ini (dioptimumkan untuk audio) ke...</translation>
 <translation id="3796648294839530037">Rangkaian Kegemaran:</translation>
 <translation id="3348038390189153836">Peranti boleh tanggal dikesan</translation>
 <translation id="1663298465081438178">Manfaat yang mudah.</translation>
@@ -2546,7 +2539,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="8759753423332885148">Ketahui lebih lanjut.</translation>
 <translation id="4011708746171704399">Dayakan peralihan animasi dalam tutorial kali pertama dikendalikan.</translation>
 <translation id="304826556400666995">Nyahredam Beberapa Tab</translation>
-<translation id="4314564217497012208">Pancarkan tab ini ke...</translation>
 <translation id="2674170444375937751">Adakah anda pasti anda mahu memadamkan halaman ini daripada sejarah anda?</translation>
 <translation id="2932883381142163287">Laporkan penyalahgunaan</translation>
 <translation id="9111102763498581341">Buka kunci</translation>
@@ -2850,7 +2842,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="6702639462873609204">&amp;Edit...</translation>
 <translation id="9148126808321036104">Log masuk semula</translation>
 <translation id="2282146716419988068">Proses GPU</translation>
-<translation id="3113334552982755865">Jika dilumpuhkan, urutan raster tidak akan menulis pada memori GPU.</translation>
 <translation id="4690246192099372265">Sweden</translation>
 <translation id="1682548588986054654">Tetingkap Inkognito Baharu</translation>
 <translation id="6833901631330113163">Eropah Selatan</translation>
@@ -3846,6 +3837,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="4619415398457343772">AA Terjejas</translation>
 <translation id="7450732239874446337">Rangkaian IO digantung.</translation>
 <translation id="6107079717483424262">Mengecam suara anda apabila anda menyebut &quot;Ok Google&quot;</translation>
+<translation id="4003393903129308792">Dayakan rasterizer satu salinan.</translation>
 <translation id="5178667623289523808">Cari Sebelumnya</translation>
 <translation id="1510785804673676069">Jika anda menggunakan pelayan proksi, semak tetapan proksi anda atau
         hubungi pentadbir rangkaian anda untuk memastikan pelayan proksi
@@ -4202,6 +4194,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="8050038245906040378">Menandatangani Kod Komersial Microsoft</translation>
 <translation id="8684255857039823328">Kata laluan disimpan. Akses kata laluan anda daripada sebarang peranti di <ph name="MANAGEMENT_LINK"/>.</translation>
 <translation id="3031557471081358569">Pilih item untuk mengimport:</translation>
+<translation id="6728144975495880845">Jika didayakan, benang raster menulis pada memori GPU.</translation>
 <translation id="1368832886055348810">Kiri ke Kanan</translation>
 <translation id="8689102680909215706">Pelanjutan &quot;<ph name="EXTENSION_NAME"/>&quot; telah dipasang secara jauh.</translation>
 <translation id="133014027510889724">Dayakan pemantauan prestasi</translation>
@@ -4214,7 +4207,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="6401445054534215853">Item rak 1</translation>
 <translation id="6113134669445407638">Lumpuhkan Delay Agnostic AEC dalam WebRTC. Gunakan jika kelengahan sistem yang dilaporkan adalah amat dipercayai atau jika yang lain mengalami gema daripada mesin anda.</translation>
 <translation id="2365626167708453863">Pilih akaun daripada Google Smart Lock anda</translation>
-<translation id="232562464593865424">Mari latih Chromebook anda</translation>
 <translation id="2351520734632194850"><ph name="MHZ"/> MHz</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
 <translation id="5771816112378578655">Penyediaan sedang dijalankan...</translation>
@@ -4414,6 +4406,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="884923133447025588">Tiada mekanisme pembatalan dijumpai.</translation>
 <translation id="8830796635868321089">Semakan kemas kini yang menggunakan tetapan proksi semasa gagal. Sila laraskan <ph name="PROXY_SETTINGS_LINK_START"/>tetapan proksi<ph name="PROXY_SETTINGS_LINK_END"/> anda.</translation>
 <translation id="7801746894267596941">Hanya orang yang mempunyai frasa laluan anda boleh membaca data penyulitan anda. Frasa laluan tidak dihantar kepada atau disimpan oleh Google. Jika anda terlupa frasa laluan anda, anda perlu</translation>
+<translation id="5967271952920681214">https://passwords.google.com/?hl=<ph name="GRITLANGCODE_1"/></translation>
 <translation id="9218350802691534808">Dayakan papar pada cat pertama untuk apl.</translation>
 <translation id="5771849619911534867">Pengimbasan peranti terhenti.</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -4595,7 +4588,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="8941248009481596111">Sambungan anda ke tapak ini berciri peribadi.</translation>
 <translation id="131461803491198646">Rangkaian utama, bukan perayauan</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
-<translation id="1830259362126610548">Hantar tab ini (dioptimumkan untuk audio)</translation>
 <translation id="3660127367837350905">Google Payments melindungi kad anda</translation>
 <translation id="1285320974508926690">Jangan sekali-kali menterjemahkan tapak ini</translation>
 <translation id="3613422051106148727">&amp;Buka dalam tab baharu</translation>
@@ -4864,7 +4856,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="5868927042224783176">Tidak mengizinkan untuk membenarkan semula</translation>
 <translation id="3355936511340229503">Ralat sambungan</translation>
 <translation id="736108944194701898">Kelajuan tetikus:</translation>
-<translation id="8371937549687734176">Hantar desktop atau tetingkap ke...</translation>
 <translation id="4350711002179453268">Tidak dapat membuat sambungan selamat ke pelayan. Ini mungkin adalah masalah dengan pelayan, atau ia memerlukan sijil pengesahan klien yang anda tidak miliki.</translation>
 <translation id="4731422630970790516">Item rak 3</translation>
 <translation id="750509436279396091">Buka folder muat turun</translation>
@@ -5046,7 +5037,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7587108133605326224">Baltik</translation>
 <translation id="3340978935015468852">tetapan</translation>
 <translation id="3930208863636674029">Data penghurai cache.</translation>
-<translation id="4562982562425894419">Kini Chromebook anda boleh:</translation>
 <translation id="3581912141526548234">Kuat kuasakan (cuba mendapatkan cincangan dan menguatkuasakannya jika berjaya)</translation>
 <translation id="1974371662733320303">Strategi pelupusan memori untuk digunakan</translation>
 <translation id="3991936620356087075">Anda telah banyak kali memasukkan Kunci Buka PIN yang salah. Kad SIM anda dilumpuhkan selama-lamanya.</translation>
@@ -5553,7 +5543,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="6793649375377511437">Maklumat Google Copresence</translation>
 <translation id="4335713051520279344">Komputer ini akan ditetapkan semula dalam 1 saat.
 Tekan sebarang kekunci untuk terus meneroka.</translation>
-<translation id="7233715388668391168">Dayakan/Lumpuhkan taipan gerak isyarat untuk papan kekunci maya.</translation>
 <translation id="6264485186158353794">Kembali ke keselamatan</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="5130080518784460891">Eten</translation>
@@ -5674,7 +5663,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="3943857333388298514">Tampal</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="5075306601479391924">Lumpuhkan keperluan gerak isyarat pengguna untuk memainkan unsur media. Mengaktifkan ciri ini akan membolehkan auto main berfungsi.</translation>
-<translation id="4872789845503416415">Untuk membantu Chromebook anda bertindak balas kepada anda dan untuk akses yang dipercayai dan mudah kepada carian suara, anda perlu mengajar Google bunyi suara anda.</translation>
 <translation id="4377363674125277448">Berlaku masalah dengan sijil pelayan.</translation>
 <translation id="9112748030372401671">Tukar kertas dinding anda</translation>
 <translation id="8938356204940892126">Saya mengalah</translation>
@@ -5938,7 +5926,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="2817109084437064140">Import dan Ikat kepada Peranti...</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="2813137708069460534">Metrik yang berkaitan untuk penggunaan rangkaian <ph name="SHORT_PRODUCT_NAME"/></translation>
-<translation id="2491341326828824053">Lumpuhkan rasterizer satu salinan</translation>
 <translation id="7775325654940954648">Berlaku masalah semasa memaparkan halaman web ini. Tindakan menutup apl dan tab yang tidak diperlukan mungkin boleh membantu dengan menjadikan lebih banyak memori tersedia.</translation>
 <translation id="7250799832286185545">Tahun</translation>
 <translation id="5849869942539715694">Sambungan pek...</translation>

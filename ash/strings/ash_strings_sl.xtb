@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Zaslonska tipkovnica onemogočena</translation>
 <translation id="5548285847212963613">Razširitev »<ph name="EXTENSION_NAME"/>« lahko pomaga vzpostavi povezavo s tem omrežjem.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> in <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Vtič za mikrofon</translation>
 <translation id="30155388420722288">Gumb za presežek</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> – ločljivost je bila spremenjena na: <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Pladenj stanja</translation>
-<translation id="2248649616066688669">Če je Chromebook priključen na zunanji zaslon, ga lahko uporabljate, tudi če je pokrov zaprt.</translation>
 <translation id="2946640296642327832">Omogoči Bluetooth</translation>
 <translation id="6459472438155181876">Razširitev zaslon na <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Prenosni</translation>
@@ -104,7 +104,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="1747827819627189109">Zaslonska tipkovnica omogočena</translation>
 <translation id="2208323208084708176">Način enotnega namizja</translation>
 <translation id="2825619548187458965">Polica</translation>
-<translation id="2614835198358683673">Vaš Chromebook se ne more polniti, ko je vklopljen. Priporočamo uporabo uradnega polnilnika.</translation>
 <translation id="4430019312045809116">Glasnost</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Vsi razpoložljivi uporabniki so že bili dodani tej seji.</translation>
@@ -150,7 +149,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="882279321799040148">Kliknite za prikaz</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Vaš Chromebook se morda ne polni, ko je vklopljen.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ne podpira ločljivosti <ph name="SPECIFIED_RESOLUTION"/>. Spremenjena je bila na <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Omogoči mobilno podatkovno povezavo</translation>
 <translation id="68610848741840742">ChromeVox (izgovorjava povratnih informacij)</translation>

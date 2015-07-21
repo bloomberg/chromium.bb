@@ -4,6 +4,7 @@
 <translation id="1270290102613614947">Екранната клавиатура е деактивирана</translation>
 <translation id="5548285847212963613">Разширението <ph name="EXTENSION_NAME"/> може да помогне за свързването с тази мрежа.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> и <ph name="MINUTE"/></translation>
+<translation id="1343000272198685031">Жак за микрофон</translation>
 <translation id="30155388420722288">Бутон „Препълване“</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="8673028979667498656">270°</translation>
@@ -29,7 +30,6 @@
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="3683428399328702079">Променихте разделителната способност на „<ph name="DISPLAY_NAME"/>“ на <ph name="RESOLUTION"/></translation>
 <translation id="2297568595583585744">Област на състоянието</translation>
-<translation id="2248649616066688669">Можете да продължите да използвате Chromebook, докато е свързан с външен дисплей, дори и със затворен капак.</translation>
 <translation id="2946640296642327832">Активиране на Bluetooth</translation>
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME"/>“</translation>
 <translation id="8206859287963243715">Клетъчно</translation>
@@ -104,7 +104,6 @@
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="2208323208084708176">Режим на обединен работен плот</translation>
 <translation id="2825619548187458965">Лавица</translation>
-<translation id="2614835198358683673">Възможно е вашият Chromebook да не се зарежда, докато е включен. Помислете за използване на официалното зарядно устройство.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Всички налични потребители вече са добавени към тази сесия.</translation>
@@ -150,7 +149,6 @@
 <translation id="3473479545200714844">Екранна лупа</translation>
 <translation id="882279321799040148">Кликнете, за да прегледате</translation>
 <translation id="5011233892417813670">Chromebook</translation>
-<translation id="1753067873202720523">Вашият Chromebook може да не се зарежда, докато е включен.</translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME"/>“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION"/>. Тя бе променена на <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Активиране на мобилните данни</translation>
 <translation id="68610848741840742">ChromeVox (обратна връзка с говор)</translation>
