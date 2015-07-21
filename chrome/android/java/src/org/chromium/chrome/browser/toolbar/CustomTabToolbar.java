@@ -462,10 +462,14 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             mLocationBarFrameLayout.setLayoutParams(urlLayoutParams);
         }
 
-        // Set left margin of mTitleUrlContainer here to make sure the security icon is always
+        // Update left margin of mTitleUrlContainer here to make sure the security icon is always
         // placed left of the urlbar.
         LayoutParams lp = (LayoutParams) mTitleUrlContainer.getLayoutParams();
-        lp.leftMargin = mSecurityButton.getMeasuredWidth();
+        if (mSecurityButton.getVisibility() == View.GONE) {
+            lp.leftMargin = 0;
+        } else {
+            lp.leftMargin = mSecurityButton.getMeasuredWidth();
+        }
         mTitleUrlContainer.setLayoutParams(lp);
     }
 
