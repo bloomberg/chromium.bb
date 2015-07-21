@@ -127,7 +127,10 @@ def GetGypBuiltLib(tcname, arch):
   else:
     lib_suffix = ''
 
-  tcdir = 'tc_' + GetToolchainLibc(tcname)
+  if tcname == 'arm_bionic':
+    tcdir = 'tc_newlib'
+  else:
+    tcdir = 'tc_' + GetToolchainLibc(tcname)
 
   if tcname == 'pnacl':
     if arch is None:
