@@ -295,7 +295,7 @@ bool ComputePBKDF2Block(HCRYPTHASH hash,
     if (!ok || size != hash_size)
       return false;
 
-    for (int i = 0; i < hash_size; ++i)
+    for (DWORD i = 0; i < hash_size; ++i)
       output_buf[i] ^= hash_value[i];
   }
 

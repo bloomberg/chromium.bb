@@ -94,7 +94,6 @@
         [ 'OS == "win"', {
           'msvs_disabled_warnings': [
             4267,  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-            4018,
           ],
         }],
         [ 'use_openssl==1', {
@@ -260,9 +259,6 @@
           'defines': [
            'CRYPTO_IMPLEMENTATION',
            '<@(nacl_win64_defines)',
-          ],
-          'msvs_disabled_warnings': [
-            4018,
           ],
           'configurations': {
             'Common_Base': {
