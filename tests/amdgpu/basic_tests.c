@@ -515,7 +515,7 @@ static void amdgpu_command_submission_sdma_write_linear(void)
 		r = amdgpu_bo_alloc_and_map(device_handle,
 					    sdma_write_length * sizeof(uint32_t),
 					    4096, AMDGPU_GEM_DOMAIN_GTT,
-					    gtt_flags[loop], &bo, &bo_cpu,
+					    gtt_flags[loop], &bo, (void**)&bo_cpu,
 					    &bo_mc, &va_handle);
 		CU_ASSERT_EQUAL(r, 0);
 
@@ -600,7 +600,7 @@ static void amdgpu_command_submission_sdma_const_fill(void)
 		r = amdgpu_bo_alloc_and_map(device_handle,
 					    sdma_write_length, 4096,
 					    AMDGPU_GEM_DOMAIN_GTT,
-					    gtt_flags[loop], &bo, &bo_cpu,
+					    gtt_flags[loop], &bo, (void**)&bo_cpu,
 					    &bo_mc, &va_handle);
 		CU_ASSERT_EQUAL(r, 0);
 
@@ -685,8 +685,9 @@ static void amdgpu_command_submission_sdma_copy_linear(void)
 			r = amdgpu_bo_alloc_and_map(device_handle,
 						    sdma_write_length, 4096,
 						    AMDGPU_GEM_DOMAIN_GTT,
-						    gtt_flags[loop1], &bo1, &bo1_cpu,
-						    &bo1_mc, &bo1_va_handle);
+						    gtt_flags[loop1], &bo1,
+						    (void**)&bo1_cpu, &bo1_mc,
+						    &bo1_va_handle);
 			CU_ASSERT_EQUAL(r, 0);
 
 			/* set bo1 */
@@ -696,8 +697,9 @@ static void amdgpu_command_submission_sdma_copy_linear(void)
 			r = amdgpu_bo_alloc_and_map(device_handle,
 						    sdma_write_length, 4096,
 						    AMDGPU_GEM_DOMAIN_GTT,
-						    gtt_flags[loop2], &bo2, &bo2_cpu,
-						    &bo2_mc, &bo2_va_handle);
+						    gtt_flags[loop2], &bo2,
+						    (void**)&bo2_cpu, &bo2_mc,
+						    &bo2_va_handle);
 			CU_ASSERT_EQUAL(r, 0);
 
 			/* clear bo2 */
