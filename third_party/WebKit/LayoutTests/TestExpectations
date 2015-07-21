@@ -952,10 +952,6 @@ crbug.com/356834 fast/repaint/shift-relative-positioned-container-with-image-add
 
 crbug.com/306249 media/W3C/video/networkState/networkState_during_progress.html [ Pass Failure ]
 
-# Failing on Linux MSAN.
-crbug.com/511473 [ Linux ] virtual/sharedarraybuffer/fast/workers/shared-worker-constructor.html [ Crash Pass ]
-crbug.com/511473 [ Linux ] virtual/sharedarraybuffer/fast/workers/worker-constructor.html [ Crash Pass ]
-
 crbug.com/345649 fast/repaint/delete-into-nested-block.html [ Pass Failure ]
 crbug.com/345648 fast/repaint/selection-gap-overflow-scroll.html [ Pass Failure ]
 crbug.com/345646 fast/repaint/selection-after-remove.html [ Pass Failure ]
