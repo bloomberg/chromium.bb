@@ -1254,6 +1254,10 @@ class CONTENT_EXPORT WebContentsImpl
   // different process from its parent page.
   bool is_subframe_;
 
+  // When a new tab is created asynchronously, stores the OpenURLParams needed
+  // to continue loading the page once the tab is ready.
+  scoped_ptr<OpenURLParams> delayed_open_url_params_;
+
   // Whether overscroll should be unconditionally disabled.
   bool force_disable_overscroll_content_;
 
