@@ -463,11 +463,8 @@ SerializedPacket QuicPacketCreator::SerializePacket(
     packet.reset(framer_->BuildDataPacket(header, queued_frames_,
                                           large_buffer.get(), packet_size_));
   }
-  if (packet == nullptr) {
-    LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
-                << " frames.";
-    return NoPacket();
-  }
+  LOG_IF(DFATAL, packet == nullptr) << "Failed to serialize "
+                                    << queued_frames_.size() << " frames.";
 
   OnBuiltFecProtectedPayload(header, packet->FecProtectedData());
 
