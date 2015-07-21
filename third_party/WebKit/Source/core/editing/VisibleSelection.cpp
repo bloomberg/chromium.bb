@@ -1138,7 +1138,8 @@ EphemeralRangeInComposedTree VisibleSelection::InComposedTree::asRange(const Vis
     return EphemeralRangeInComposedTree(selectionStart(selection), selectionEnd(selection));
 }
 
-bool VisibleSelection::InDOMTree::equalSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
+template <typename Strategy>
+static bool equalSelectionsAlgorithm(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
     if (selection1.affinity() != selection2.affinity() || selection1.isDirectional() != selection2.isDirectional())
         return false;
@@ -1146,13 +1147,20 @@ bool VisibleSelection::InDOMTree::equalSelections(const VisibleSelection& select
     if (selection1.isNone())
         return selection2.isNone();
 
-    return selection1.start() == selection2.start() && selection1.end() == selection2.end() && selection1.affinity() == selection2.affinity()
-        && selection1.isDirectional() == selection2.isDirectional() && selection1.base() == selection2.base() && selection1.extent() == selection2.extent();
+    return Strategy::selectionStart(selection1) == Strategy::selectionStart(selection2)
+        && Strategy::selectionEnd(selection1) == Strategy::selectionEnd(selection2)
+        && Strategy::selectionBase(selection1) == Strategy::selectionBase(selection2)
+        && Strategy::selectionExtent(selection1) == Strategy::selectionExtent(selection2);
 }
 
-bool VisibleSelection::InComposedTree::equalSelections(const VisibleSelection& a, const VisibleSelection& b)
+bool VisibleSelection::InDOMTree::equalSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
 {
-    return a.startInComposedTree() == b.startInComposedTree() && a.endInComposedTree() == b.endInComposedTree() && a.affinity() == b.affinity() && a.isBaseFirst() == b.isBaseFirst() && a.isDirectional() == b.isDirectional();
+    return equalSelectionsAlgorithm<InDOMTree>(selection1, selection2);
+}
+
+bool VisibleSelection::InComposedTree::equalSelections(const VisibleSelection& selection1, const VisibleSelection& selection2)
+{
+    return equalSelectionsAlgorithm<InComposedTree>(selection1, selection2);
 }
 
 #ifndef NDEBUG
