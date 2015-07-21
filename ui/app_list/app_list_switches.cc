@@ -130,7 +130,7 @@ bool IsDriveSearchInChromeLauncherEnabled() {
           kDisableDriveSearchInChromeLauncher))
     return false;
 
-  return false;
+  return true;
 #else
   return false;
 #endif
