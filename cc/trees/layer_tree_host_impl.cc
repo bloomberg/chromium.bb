@@ -2093,6 +2093,9 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     scoped_ptr<ResourcePool>* resource_pool,
     scoped_ptr<ResourcePool>* staging_resource_pool) {
   DCHECK(GetTaskRunner());
+  // TODO(vmpstr): Make this a DCHECK (or remove) when crbug.com/419086 is
+  // resolved.
+  CHECK(resource_provider_);
 
   // Pass the single-threaded synchronous task graph runner to the worker pool
   // if we're in synchronous single-threaded mode.
