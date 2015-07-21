@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
+#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/input_method.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/views/cocoa/bridged_content_view.h"
@@ -273,13 +274,78 @@ TEST_F(BridgedNativeWidgetTest, GetInputMethodShouldNotReturnNull) {
 }
 
 // A simpler test harness for testing initialization flows.
-typedef BridgedNativeWidgetTestBase BridgedNativeWidgetInitTest;
+class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
+ public:
+  BridgedNativeWidgetInitTest() {}
+
+  // Prepares a new |window_| and |widget_| for a call to PerformInit().
+  void CreateNewWidgetToInit(NSUInteger style_mask) {
+    window_.reset(
+        [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
+                                    styleMask:style_mask
+                                      backing:NSBackingStoreBuffered
+                                        defer:NO]);
+    [window_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
+    widget_.reset(new Widget);
+    native_widget_mac_ = new MockNativeWidgetMac(widget_.get());
+    init_params_.native_widget = native_widget_mac_;
+  }
+
+  void PerformInit() {
+    widget_->Init(init_params_);
+    bridge()->Init(window_, init_params_);
+  }
+
+ protected:
+  base::scoped_nsobject<NSWindow> window_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetInitTest);
+};
 
 // Test that BridgedNativeWidget remains sane if Init() is never called.
 TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
   EXPECT_FALSE(bridge()->ns_view());
   EXPECT_FALSE(bridge()->ns_window());
   bridge().reset();
+}
+
+// Tests the shadow type given in InitParams.
+TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
+  // Verify Widget::InitParam defaults and arguments added from SetUp().
+  EXPECT_EQ(Widget::InitParams::TYPE_WINDOW_FRAMELESS, init_params_.type);
+  EXPECT_EQ(Widget::InitParams::OPAQUE_WINDOW, init_params_.opacity);
+  EXPECT_EQ(Widget::InitParams::SHADOW_TYPE_DEFAULT, init_params_.shadow_type);
+
+  CreateNewWidgetToInit(NSBorderlessWindowMask);
+  EXPECT_FALSE([window_ hasShadow]);  // Default for NSBorderlessWindowMask.
+  PerformInit();
+
+  // Borderless is 0, so isn't really a mask. Check that nothing is set.
+  EXPECT_EQ(NSBorderlessWindowMask, [window_ styleMask]);
+  EXPECT_TRUE([window_ hasShadow]);  // SHADOW_TYPE_DEFAULT means a shadow.
+
+  CreateNewWidgetToInit(NSBorderlessWindowMask);
+  init_params_.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+  PerformInit();
+  EXPECT_FALSE([window_ hasShadow]);  // Preserves lack of shadow.
+
+  // Default for Widget::InitParams::TYPE_WINDOW.
+  NSUInteger kBorderedMask =
+      NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask |
+      NSResizableWindowMask | NSTexturedBackgroundWindowMask;
+  CreateNewWidgetToInit(kBorderedMask);
+  EXPECT_TRUE([window_ hasShadow]);  // Default for non-borderless.
+  PerformInit();
+  EXPECT_FALSE([window_ hasShadow]);  // SHADOW_TYPE_NONE removes shadow.
+
+  init_params_.shadow_type = Widget::InitParams::SHADOW_TYPE_DEFAULT;
+  CreateNewWidgetToInit(kBorderedMask);
+  PerformInit();
+  EXPECT_TRUE([window_ hasShadow]);  // Preserves shadow.
+
+  window_.reset();
+  widget_.reset();
 }
 
 // Test getting complete string using text input protocol.

@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/run_loop.h"
@@ -13,11 +14,15 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #import "testing/gtest_mac.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#import "ui/base/cocoa/window_size_constants.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/native_cursor.h"
@@ -39,8 +44,66 @@
 - (BOOL)_isTitleHidden;
 @end
 
+// Test NSWindow that provides hooks via method overrides to verify behavior.
+@interface NativeWidetMacTestWindow : NativeWidgetMacNSWindow {
+ @private
+  int invalidateShadowCount_;
+}
+@property(readonly, nonatomic) int invalidateShadowCount;
+@end
+
 namespace views {
 namespace test {
+
+// BridgedNativeWidget friend to access private members.
+class BridgedNativeWidgetTestApi {
+ public:
+  explicit BridgedNativeWidgetTestApi(NSWindow* window) {
+    bridge_ = NativeWidgetMac::GetBridgeForNativeWindow(window);
+  }
+
+  // Simulate a frame swap from the compositor. Assumes scale factor of 1.0f.
+  void SimulateFrameSwap(const gfx::Size& size) {
+    const float kScaleFactor = 1.0f;
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(size.width(), size.height());
+    SkCanvas canvas(bitmap);
+    bridge_->compositor_widget_->GotSoftwareFrame(kScaleFactor, &canvas);
+    std::vector<ui::LatencyInfo> latency_info;
+    bridge_->AcceleratedWidgetSwapCompleted(latency_info);
+  }
+
+ private:
+  BridgedNativeWidget* bridge_;
+
+  DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTestApi);
+};
+
+// Custom native_widget to create a NativeWidgetMacTestWindow.
+class TestWindowNativeWidgetMac : public NativeWidgetMac {
+ public:
+  explicit TestWindowNativeWidgetMac(Widget* delegate)
+      : NativeWidgetMac(delegate) {}
+
+ protected:
+  // NativeWidgetMac:
+  gfx::NativeWindow CreateNSWindow(const Widget::InitParams& params) override {
+    NSUInteger style_mask = NSBorderlessWindowMask;
+    if (params.type == Widget::InitParams::TYPE_WINDOW) {
+      style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
+                   NSClosableWindowMask | NSMiniaturizableWindowMask |
+                   NSResizableWindowMask;
+    }
+    return [[[NativeWidetMacTestWindow alloc]
+        initWithContentRect:ui::kWindowSizeDeterminedLater
+                  styleMask:style_mask
+                    backing:NSBackingStoreBuffered
+                      defer:NO] autorelease];
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWindowNativeWidgetMac);
+};
 
 // Tests for parts of NativeWidgetMac not covered by BridgedNativeWidget, which
 // need access to Cocoa APIs.
@@ -61,6 +124,19 @@ class NativeWidgetMacTest : public WidgetTest {
     [native_parent_ setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
     [native_parent_ makeKeyAndOrderFront:nil];
     return native_parent_;
+  }
+
+  // Create a Widget backed by the NativeWidetMacTestWindow NSWindow subclass.
+  Widget* CreateWidgetWithTestWindow(Widget::InitParams params,
+                                     NativeWidetMacTestWindow** window) {
+    Widget* widget = new Widget;
+    params.native_widget = new TestWindowNativeWidgetMac(widget);
+    widget->Init(params);
+    widget->Show();
+    *window = base::mac::ObjCCastStrict<NativeWidetMacTestWindow>(
+        widget->GetNativeWindow());
+    EXPECT_TRUE(*window);
+    return widget;
   }
 
  private:
@@ -796,6 +872,47 @@ TEST_F(NativeWidgetMacTest, DoesHideTitle) {
   widget->CloseNow();
 }
 
+// Test calls to invalidate the shadow when composited frames arrive.
+TEST_F(NativeWidgetMacTest, InvalidateShadow) {
+  NativeWidetMacTestWindow* window;
+  const gfx::Rect rect(0, 0, 100, 200);
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  init_params.bounds = rect;
+  Widget* widget = CreateWidgetWithTestWindow(init_params, &window);
+
+  // Simulate the initial paint.
+  BridgedNativeWidgetTestApi(window).SimulateFrameSwap(rect.size());
+
+  // Default is an opaque window, so shadow doesn't need to be invalidated.
+  EXPECT_EQ(0, [window invalidateShadowCount]);
+  widget->CloseNow();
+
+  init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  widget = CreateWidgetWithTestWindow(init_params, &window);
+  BridgedNativeWidgetTestApi test_api(window);
+
+  // First paint on a translucent window needs to invalidate the shadow. Once.
+  EXPECT_EQ(0, [window invalidateShadowCount]);
+  test_api.SimulateFrameSwap(rect.size());
+  EXPECT_EQ(1, [window invalidateShadowCount]);
+  test_api.SimulateFrameSwap(rect.size());
+  EXPECT_EQ(1, [window invalidateShadowCount]);
+
+  // Resizing the window also needs to trigger a shadow invalidation.
+  [window setContentSize:NSMakeSize(123, 456)];
+  // A "late" frame swap at the old size should do nothing.
+  test_api.SimulateFrameSwap(rect.size());
+  EXPECT_EQ(1, [window invalidateShadowCount]);
+
+  test_api.SimulateFrameSwap(gfx::Size(123, 456));
+  EXPECT_EQ(2, [window invalidateShadowCount]);
+  test_api.SimulateFrameSwap(gfx::Size(123, 456));
+  EXPECT_EQ(2, [window invalidateShadowCount]);
+
+  widget->CloseNow();
+}
+
 }  // namespace test
 }  // namespace views
 
@@ -803,4 +920,15 @@ TEST_F(NativeWidgetMacTest, DoesHideTitle) {
 - (void)setWindowStateForEnd {
   views::test::ScopedSwizzleWaiter::GetMethodAndMarkCalled()(self, _cmd);
 }
+@end
+
+@implementation NativeWidetMacTestWindow
+
+@synthesize invalidateShadowCount = invalidateShadowCount_;
+
+- (void)invalidateShadow {
+  ++invalidateShadowCount_;
+  [super invalidateShadow];
+}
+
 @end

@@ -75,10 +75,14 @@ void BubbleExample::CreateExampleView(View* container) {
   container->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 0, 0, 10));
   no_shadow_ = new LabelButton(this, ASCIIToUTF16("No Shadow"));
   container->AddChildView(no_shadow_);
+  no_shadow_opaque_ = new LabelButton(this, ASCIIToUTF16("Opaque Border"));
+  container->AddChildView(no_shadow_opaque_);
   big_shadow_ = new LabelButton(this, ASCIIToUTF16("Big Shadow"));
   container->AddChildView(big_shadow_);
   small_shadow_ = new LabelButton(this, ASCIIToUTF16("Small Shadow"));
   container->AddChildView(small_shadow_);
+  no_assets_ = new LabelButton(this, ASCIIToUTF16("No Assets"));
+  container->AddChildView(no_assets_);
   align_to_edge_ = new LabelButton(this, ASCIIToUTF16("Align To Edge"));
   container->AddChildView(align_to_edge_);
   persistent_ = new LabelButton(this, ASCIIToUTF16("Persistent"));
@@ -100,10 +104,14 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
 
   if (sender == no_shadow_)
     bubble->set_shadow(BubbleBorder::NO_SHADOW);
+  else if (sender == no_shadow_opaque_)
+    bubble->set_shadow(BubbleBorder::NO_SHADOW_OPAQUE_BORDER);
   else if (sender == big_shadow_)
     bubble->set_shadow(BubbleBorder::BIG_SHADOW);
   else if (sender == small_shadow_)
     bubble->set_shadow(BubbleBorder::SMALL_SHADOW);
+  else if (sender == no_assets_)
+    bubble->set_shadow(BubbleBorder::NO_ASSETS);
 
   if (sender == persistent_)
     bubble->set_close_on_deactivate(false);

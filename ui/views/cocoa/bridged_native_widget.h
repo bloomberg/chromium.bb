@@ -27,6 +27,9 @@ class InputMethod;
 }
 
 namespace views {
+namespace test {
+class BridgedNativeWidgetTestApi;
+}
 
 class CocoaMouseCapture;
 class NativeWidgetMac;
@@ -172,6 +175,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
 
  private:
+  friend class test::BridgedNativeWidgetTestApi;
+
   // Closes all child windows. BridgedNativeWidget children will be destroyed.
   void RemoveOrDestroyChildren();
 
@@ -270,6 +275,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   // If true, the window is either visible, or wants to be visible but is
   // currently hidden due to having a hidden parent.
   bool wants_to_be_visible_;
+
+  // If true, the window has been made visible or changed shape and the window
+  // shadow needs to be invalidated when a frame is received for the new shape.
+  bool invalidate_shadow_on_frame_swap_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidget);
 };

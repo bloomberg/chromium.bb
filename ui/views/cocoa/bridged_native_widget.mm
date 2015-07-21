@@ -44,6 +44,30 @@
 }
 @end
 
+// This class overrides NSAnimation methods to invalidate the shadow for each
+// frame. It is required because the show animation uses CGSSetWindowWarp()
+// which is touchy about the consistency of the points it is given. The show
+// animation includes a translate, which fails to apply properly to the window
+// shadow, when that shadow is derived from a layer-hosting view. So invalidate
+// it. This invalidation is only needed to cater for the translate. It is not
+// required if CGSSetWindowWarp() is used in a way that keeps the center point
+// of the window stationary (e.g. a scale). It's also not required for the hide
+// animation: in that case, the shadow is never invalidated so retains the
+// shadow calculated before a translate is applied.
+@interface ModalShowAnimationWithLayer : ConstrainedWindowAnimationShow
+@end
+
+@implementation ModalShowAnimationWithLayer
+- (void)stopAnimation {
+  [super stopAnimation];
+  [window_ invalidateShadow];
+}
+- (void)setCurrentProgress:(NSAnimationProgress)progress {
+  [super setCurrentProgress:progress];
+  [window_ invalidateShadow];
+}
+@end
+
 namespace {
 
 int kWindowPropertiesKey;
@@ -269,6 +293,19 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
     }
   }
 
+  // OSX likes to put shadows on most things. However, frameless windows (with
+  // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
+  // SHADOW_TYPE_DROP is used for Menus, which get the same shadow style on Mac.
+  switch (params.shadow_type) {
+    case Widget::InitParams::SHADOW_TYPE_NONE:
+      [window_ setHasShadow:NO];
+      break;
+    case Widget::InitParams::SHADOW_TYPE_DEFAULT:
+    case Widget::InitParams::SHADOW_TYPE_DROP:
+      [window_ setHasShadow:YES];
+      break;
+  }  // No default case, to pick up new types.
+
   // Set a meaningful initial bounds. Note that except for frameless widgets
   // with no WidgetDelegate, the bounds will be set again by Widget after
   // initializing the non-client view. In the former case, if bounds were not
@@ -424,7 +461,7 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
   // the window appear.
   if (native_widget_mac_->GetWidget()->IsModal()) {
     base::scoped_nsobject<NSAnimation> show_animation(
-        [[ConstrainedWindowAnimationShow alloc] initWithWindow:window_]);
+        [[ModalShowAnimationWithLayer alloc] initWithWindow:window_]);
     // The default mode is blocking, which would block the UI thread for the
     // duration of the animation, but would keep it smooth. The window also
     // hasn't yet received a frame from the compositor at this stage, so it is
@@ -824,6 +861,15 @@ bool BridgedNativeWidget::AcceleratedWidgetShouldIgnoreBackpressure() const {
 
 void BridgedNativeWidget::AcceleratedWidgetSwapCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
+  // Ignore frames arriving "late" for an old size. A frame at the new size
+  // should arrive soon.
+  if (!compositor_widget_->HasFrameOfSize(GetClientAreaSize()))
+    return;
+
+  if (invalidate_shadow_on_frame_swap_) {
+    invalidate_shadow_on_frame_swap_ = false;
+    [window_ invalidateShadow];
+  }
 }
 
 void BridgedNativeWidget::AcceleratedWidgetHitError() {
@@ -1007,6 +1053,11 @@ void BridgedNativeWidget::UpdateLayerProperties() {
   float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
   compositor_->SetScaleAndSize(scale_factor,
                                ConvertSizeToPixel(scale_factor, size_in_dip));
+
+  // For a translucent window, the shadow calculation needs to be carried out
+  // after the frame from the compositor arrives.
+  if (![window_ isOpaque])
+    invalidate_shadow_on_frame_swap_ = true;
 }
 
 NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {

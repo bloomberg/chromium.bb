@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -410,6 +411,35 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     gfx::Point origin = border.GetBounds(kAnchor, kContentSize).origin();
     EXPECT_EQ(cases[i].expected_x, origin.x());
     EXPECT_EQ(cases[i].expected_y, origin.y());
+  }
+}
+
+// Ensure all the shadow types pass some size validation and paint sanely.
+TEST_F(BubbleBorderTest, ShadowTypes) {
+  const gfx::Rect rect(0, 0, 320, 200);
+  View paint_view;
+  paint_view.SetBoundsRect(rect);
+
+  for (int i = 0; i < BubbleBorder::SHADOW_COUNT; ++i) {
+    BubbleBorder::Shadow shadow = static_cast<BubbleBorder::Shadow>(i);
+    SCOPED_TRACE(testing::Message() << "BubbleBorder::Shadow: " << shadow);
+    gfx::Canvas canvas(gfx::Size(640, 480), 1.0f, false);
+    BubbleBorder border(BubbleBorder::TOP_LEFT, shadow, SK_ColorWHITE);
+    internal::BorderImages* border_images = border.GetImagesForTest();
+
+    // Arrow assets should always be at least as big as the drawn arrow.
+    EXPECT_GE(border_images->arrow_thickness,
+              border_images->arrow_interior_thickness);
+    EXPECT_GE(border_images->arrow_width,
+              2 * border_images->arrow_interior_thickness);
+
+    // Border assets should always be at least as thick as the hittable border.
+    EXPECT_GE(border_images->border_thickness,
+              border_images->border_interior_thickness);
+
+    // For a TOP_LEFT arrow, the x-offset always matches the border thickness.
+    EXPECT_EQ(border.GetArrowRect(rect).x(), border_images->border_thickness);
+    border.Paint(paint_view, &canvas);
   }
 }
 

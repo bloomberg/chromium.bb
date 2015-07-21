@@ -270,6 +270,7 @@ test("views_unittests") {
       "controls/native/native_view_host_unittest.cc",
       "widget/window_reorderer_unittest.cc",
     ]
+    deps += [ "//ui/accelerated_widget_mac" ]
   }
 }
 

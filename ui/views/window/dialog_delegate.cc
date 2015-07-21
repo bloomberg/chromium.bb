@@ -61,8 +61,11 @@ Widget* DialogDelegate::CreateDialogWidgetWithBounds(WidgetDelegate* delegate,
   if (!dialog || dialog->UseNewStyleForThisDialog()) {
     params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
     params.remove_standard_frame = true;
-    // The bubble frame includes its own shadow; remove any native shadowing.
+#if !defined(OS_MACOSX)
+    // Except on Mac, the bubble frame includes its own shadow; remove any
+    // native shadowing. On Mac, the window server provides the shadow.
     params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+#endif
   }
   params.context = context;
   params.parent = parent;
@@ -189,8 +192,14 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
 // static
 NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(gfx::Insets());
-  scoped_ptr<BubbleBorder> border(new BubbleBorder(
-      BubbleBorder::FLOAT, BubbleBorder::SMALL_SHADOW, SK_ColorRED));
+#if defined(OS_MACOSX)
+  // On Mac, dialogs have no border stroke and use a shadow provided by the OS.
+  const BubbleBorder::Shadow kShadow = BubbleBorder::NO_ASSETS;
+#else
+  const BubbleBorder::Shadow kShadow = BubbleBorder::SMALL_SHADOW;
+#endif
+  scoped_ptr<BubbleBorder> border(
+      new BubbleBorder(BubbleBorder::FLOAT, kShadow, SK_ColorRED));
   border->set_use_theme_background_color(true);
   frame->SetBubbleBorder(border.Pass());
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();

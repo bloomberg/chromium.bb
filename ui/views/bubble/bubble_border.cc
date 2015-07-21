@@ -25,19 +25,25 @@ BorderImages::BorderImages(const int border_image_ids[],
                            int border_interior_thickness,
                            int arrow_interior_thickness,
                            int corner_radius)
-    : border_painter(Painter::CreateImageGridPainter(border_image_ids)),
-      border_thickness(0),
+    : border_thickness(border_interior_thickness),
       border_interior_thickness(border_interior_thickness),
-      arrow_thickness(0),
+      arrow_thickness(arrow_interior_thickness),
       arrow_interior_thickness(arrow_interior_thickness),
+      arrow_width(2 * arrow_interior_thickness),
       corner_radius(corner_radius) {
+  if (!border_image_ids)
+    return;
+
+  border_painter.reset(Painter::CreateImageGridPainter(border_image_ids));
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   border_thickness = rb.GetImageSkiaNamed(border_image_ids[0])->width();
+
   if (arrow_image_ids[0] != 0) {
     left_arrow = *rb.GetImageSkiaNamed(arrow_image_ids[0]);
     top_arrow = *rb.GetImageSkiaNamed(arrow_image_ids[1]);
     right_arrow = *rb.GetImageSkiaNamed(arrow_image_ids[2]);
     bottom_arrow = *rb.GetImageSkiaNamed(arrow_image_ids[3]);
+    arrow_width = top_arrow.width();
     arrow_thickness = top_arrow.height();
   }
 }
@@ -112,6 +118,9 @@ BorderImages* GetBorderImages(BubbleBorder::Shadow shadow) {
       break;
     case BubbleBorder::SMALL_SHADOW:
       set = new BorderImages(kSmallShadowImages, kSmallShadowArrows, 5, 6, 2);
+      break;
+    case BubbleBorder::NO_ASSETS:
+      set = new BorderImages(nullptr, nullptr, 17, 8, 2);
       break;
     case BubbleBorder::SHADOW_COUNT:
       NOTREACHED();
@@ -195,7 +204,7 @@ int BubbleBorder::GetArrowOffset(const gfx::Size& border_size) const {
     return edge_length / 2;
 
   // Calculate the minimum offset to not overlap arrow and corner images.
-  const int min = images_->border_thickness + (images_->top_arrow.width() / 2);
+  const int min = images_->border_thickness + (images_->arrow_width / 2);
   // Ensure the returned value will not cause image overlap, if possible.
   return std::max(min, std::min(arrow_offset_, edge_length - min));
 }
@@ -205,7 +214,12 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   bounds.Inset(-GetBorderThickness(), -GetBorderThickness());
   const gfx::Rect arrow_bounds = GetArrowRect(view.GetLocalBounds());
   if (arrow_bounds.IsEmpty()) {
-    Painter::PaintPainterAt(canvas, images_->border_painter.get(), bounds);
+    if (images_->border_painter)
+      Painter::PaintPainterAt(canvas, images_->border_painter.get(), bounds);
+    return;
+  }
+  if (!images_->border_painter) {
+    DrawArrow(canvas, arrow_bounds);
     return;
   }
 
@@ -248,7 +262,7 @@ gfx::Size BubbleBorder::GetSizeForContentsSize(
 
   // Ensure the bubble is large enough to not overlap border and arrow images.
   const int min = 2 * images_->border_thickness;
-  const int min_with_arrow_width = min + images_->top_arrow.width();
+  const int min_with_arrow_width = min + images_->arrow_width;
   const int min_with_arrow_thickness = images_->border_thickness +
       std::max(images_->arrow_thickness + images_->border_interior_thickness,
                images_->border_thickness);
@@ -279,7 +293,7 @@ gfx::Rect BubbleBorder::GetArrowRect(const gfx::Rect& bounds) const {
 
   gfx::Point origin;
   int offset = GetArrowOffset(bounds.size());
-  const int half_length = images_->top_arrow.width() / 2;
+  const int half_length = images_->arrow_width / 2;
   const gfx::Insets insets = GetInsets();
 
   if (is_arrow_on_horizontal(arrow_)) {
@@ -299,7 +313,17 @@ gfx::Rect BubbleBorder::GetArrowRect(const gfx::Rect& bounds) const {
     else
       origin.set_x(bounds.width() - insets.right());
   }
-  return gfx::Rect(origin, GetArrowImage()->size());
+
+  if (shadow_ != NO_ASSETS)
+    return gfx::Rect(origin, GetArrowImage()->size());
+
+  // With no assets, return the size enclosing the path filled in DrawArrow().
+  DCHECK_EQ(2 * images_->arrow_interior_thickness, images_->arrow_width);
+  int width = images_->arrow_width;
+  int height = images_->arrow_interior_thickness;
+  if (!is_arrow_on_horizontal(arrow_))
+    std::swap(width, height);
+  return gfx::Rect(origin, gfx::Size(width, height));
 }
 
 void BubbleBorder::DrawArrow(gfx::Canvas* canvas,

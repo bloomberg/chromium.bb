@@ -38,11 +38,18 @@ struct BorderImages {
 
   // The thickness of border and arrow images and their interior areas.
   // Thickness is the width of left/right and the height of top/bottom images.
-  // The interior is measured without including stroke or shadow pixels.
+  // The interior is measured without including stroke or shadow pixels. The tip
+  // of the arrow is |arrow_interior_thickness| from the border and the base is
+  // always twice that; drawn in the background color.
   int border_thickness;
   int border_interior_thickness;
   int arrow_thickness;
   int arrow_interior_thickness;
+
+  // Width of an arrow (on the horizontal), including any shadows. Defaults to
+  // the width of the |top_arrow| asset.
+  int arrow_width;
+
   // The corner radius of the bubble's rounded-rect interior area.
   int corner_radius;
 };
@@ -87,6 +94,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     NO_SHADOW_OPAQUE_BORDER,
     BIG_SHADOW,
     SMALL_SHADOW,
+    NO_ASSETS,
     SHADOW_COUNT,
   };
 
@@ -203,6 +211,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, GetSizeForContentsSizeTest);
   FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, GetBoundsOriginTest);
+  FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, ShadowTypes);
 
   // The border and arrow stroke size used in image assets, in pixels.
   static const int kStroke;

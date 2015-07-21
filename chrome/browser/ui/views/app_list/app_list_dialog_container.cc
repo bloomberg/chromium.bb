@@ -30,8 +30,11 @@ namespace {
 
 #if defined(OS_MACOSX)
 const ui::ModalType kModalType = ui::MODAL_TYPE_CHILD;
+const views::BubbleBorder::Shadow kShadowType = views::BubbleBorder::NO_ASSETS;
 #else
 const ui::ModalType kModalType = ui::MODAL_TYPE_WINDOW;
+const views::BubbleBorder::Shadow kShadowType =
+    views::BubbleBorder::SMALL_SHADOW;
 #endif
 
 // The background for App List dialogs, which appears as a rounded rectangle
@@ -210,10 +213,8 @@ class NativeDialogContainer : public BaseDialogContainer {
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     FullSizeBubbleFrameView* frame = new FullSizeBubbleFrameView();
-    scoped_ptr<views::BubbleBorder> border(
-        new views::BubbleBorder(views::BubbleBorder::FLOAT,
-                                views::BubbleBorder::SMALL_SHADOW,
-                                SK_ColorRED));
+    scoped_ptr<views::BubbleBorder> border(new views::BubbleBorder(
+        views::BubbleBorder::FLOAT, kShadowType, SK_ColorRED));
     border->set_use_theme_background_color(true);
     frame->SetBubbleBorder(border.Pass());
     return frame;

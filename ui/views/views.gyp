@@ -893,7 +893,10 @@
             'bubble/bubble_window_targeter_unittest.cc',
             'controls/native/native_view_host_unittest.cc',
             'widget/window_reorderer_unittest.cc',
-          ]
+          ],
+          'dependencies': [
+            '../accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',
+          ],
         }],
       ],
     },  # target_name: views_unittests
