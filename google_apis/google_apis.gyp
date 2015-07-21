@@ -207,4 +207,23 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'google_apis_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'google_apis_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'google_apis_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }
