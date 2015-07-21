@@ -17,9 +17,7 @@ namespace password_manager {
 //
 // NOTE: Do not remove or reorder elements in this list. Add new entries at the
 // end. Items may be renamed but do not change the values. We rely on the enum
-// values in histograms. Also update histograms.xml with any new values by
-// running:
-//    python tools/metrics/histograms/update_bad_message_reasons.py
+// values in histograms.
 enum class BadMessageReason {
   CPMD_BAD_ORIGIN_FORMS_PARSED = 1,
   CPMD_BAD_ORIGIN_FORMS_RENDERED = 2,
@@ -30,7 +28,9 @@ enum class BadMessageReason {
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ContentPasswordManagerDriver becomes CPMD) plus a unique
-  // description of the reason.
+  // description of the reason. After making changes, you MUST update
+  // histograms.xml by running:
+  // "python tools/metrics/histograms/update_bad_message_reasons.py"
   BAD_MESSAGE_MAX
 };
 
