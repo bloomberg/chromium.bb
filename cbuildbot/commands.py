@@ -1972,7 +1972,7 @@ def BuildGceTarball(archive_dir, image_dir, image):
   """
   with osutils.TempDir() as tempdir:
     temp_disk_raw = os.path.join(tempdir, 'disk.raw')
-    output = constants.IMAGE_BIN_TO_GCE_TAR[image]
+    output = constants.ImageBinToGceTar(image)
     output_file = os.path.join(archive_dir, output)
     os.symlink(os.path.join(image_dir, image), temp_disk_raw)
 
