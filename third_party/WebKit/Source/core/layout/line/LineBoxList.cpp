@@ -152,7 +152,7 @@ bool LineBoxList::rangeIntersectsRect(LineLayoutBoxModel layoutObject, LayoutUni
 {
     LineLayoutBox block;
     if (layoutObject.isBox())
-        block = layoutObject;
+        block = LineLayoutBox(layoutObject);
     else
         block = layoutObject.containingBlock();
     LayoutUnit physicalStart = block.flipForWritingMode(logicalTop);

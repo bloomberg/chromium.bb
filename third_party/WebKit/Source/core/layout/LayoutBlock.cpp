@@ -1053,7 +1053,8 @@ void LayoutBlock::simplifiedNormalFlowLayout()
 {
     if (childrenInline()) {
         ListHashSet<RootInlineBox*> lineBoxes;
-        for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
+        ASSERT_WITH_SECURITY_IMPLICATION(isLayoutBlockFlow());
+        for (InlineWalker walker(toLayoutBlockFlow(this)); !walker.atEnd(); walker.advance()) {
             LayoutObject* o = walker.current();
             if (!o->isOutOfFlowPositioned() && (o->isReplaced() || o->isFloating())) {
                 o->layoutIfNeeded();
@@ -2790,7 +2791,8 @@ bool LayoutBlock::recalcChildOverflowAfterStyleChange()
 
     if (childrenInline()) {
         ListHashSet<RootInlineBox*> lineBoxes;
-        for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
+        ASSERT_WITH_SECURITY_IMPLICATION(isLayoutBlockFlow());
+        for (InlineWalker walker(toLayoutBlockFlow(this)); !walker.atEnd(); walker.advance()) {
             LayoutObject* layoutObject = walker.current();
             if (recalcNormalFlowChildOverflowIfNeeded(layoutObject)) {
                 childrenOverflowChanged = true;

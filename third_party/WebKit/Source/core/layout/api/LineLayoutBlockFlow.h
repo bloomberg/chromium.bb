@@ -24,7 +24,7 @@ public:
     {
     }
 
-    LineLayoutBlockFlow(const LineLayoutItem& item)
+    explicit LineLayoutBlockFlow(const LineLayoutItem& item)
         : LineLayoutBox(item)
     {
         ASSERT(!item || item.isLayoutBlockFlow());

@@ -22,7 +22,7 @@ public:
     {
     }
 
-    LineLayoutInline(const LineLayoutItem& item)
+    explicit LineLayoutInline(const LineLayoutItem& item)
         : LineLayoutItem(item)
     {
         ASSERT(!item || item.isLayoutInline());

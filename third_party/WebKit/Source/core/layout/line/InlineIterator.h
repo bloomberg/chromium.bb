@@ -339,8 +339,8 @@ inline void InlineIterator::fastIncrementInTextNode()
 // it shouldn't use functions called bidiFirst and bidiNext.
 class InlineWalker {
 public:
-    InlineWalker(LayoutBlock* root)
-        : m_root(LineLayoutItem(root))
+    InlineWalker(LayoutBlockFlow* root)
+        : m_root(LineLayoutBlockFlow(root))
         , m_current(nullptr)
         , m_atEndOfInline(false)
     {

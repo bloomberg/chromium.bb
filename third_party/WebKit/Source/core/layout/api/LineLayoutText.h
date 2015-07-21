@@ -19,7 +19,7 @@ class LineLayoutText : public LineLayoutItem {
 public:
     explicit LineLayoutText(LayoutText* layoutObject) : LineLayoutItem(layoutObject) { }
 
-    LineLayoutText(const LineLayoutItem& item)
+    explicit LineLayoutText(const LineLayoutItem& item)
         : LineLayoutItem(item)
     {
         ASSERT(!item || item.isText());

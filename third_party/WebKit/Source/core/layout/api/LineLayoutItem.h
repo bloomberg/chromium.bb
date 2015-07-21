@@ -23,8 +23,6 @@ public:
     {
     }
 
-    LineLayoutItem(const LineLayoutItem& item) : m_layoutObject(item.m_layoutObject) { }
-
     LineLayoutItem(std::nullptr_t)
         : m_layoutObject(0)
     {

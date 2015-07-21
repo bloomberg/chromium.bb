@@ -20,7 +20,7 @@ public:
     {
     }
 
-    LineLayoutBoxModel(const LineLayoutItem& item)
+    explicit LineLayoutBoxModel(const LineLayoutItem& item)
         : LineLayoutItem(item)
     {
         ASSERT(!item || item.isBoxModelObject());
