@@ -14,7 +14,7 @@ class FrameTreeDelegate;
 class FrameUserData;
 
 // FrameTree manages the set of Frames that comprise a single url. FrameTree
-// owns the root Frame and each Frames owns its children. Frames are
+// owns the root Frame and each Frame owns its children. Frames are
 // automatically deleted and removed from the tree if the corresponding view is
 // deleted. This happens if the creator of the view deletes it (say an iframe is
 // destroyed).
@@ -49,6 +49,7 @@ class FrameTree {
 
   void LoadingStateChanged();
   void ProgressChanged();
+  void FrameNameChanged(Frame* frame);
 
   mojo::View* view_;
 

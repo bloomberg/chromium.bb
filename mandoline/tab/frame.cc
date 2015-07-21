@@ -31,6 +31,9 @@ FrameDataPtr FrameToFrameData(const Frame* frame) {
   frame_data->frame_id = frame->view()->id();
   frame_data->parent_id =
       frame->parent() ? frame->parent()->view()->id() : kNoParentId;
+  frame_data->name = frame->name();
+  // TODO(sky): implement me.
+  frame_data->origin = std::string();
   return frame_data.Pass();
 }
 
@@ -175,6 +178,15 @@ void Frame::NotifyRemoved(const Frame* source, const Frame* removed_node) {
     child->NotifyRemoved(source, removed_node);
 }
 
+void Frame::NotifyFrameNameChanged(const Frame* source) {
+  if (this != source) {
+    frame_tree_client_->OnFrameNameChanged(source->view_->id(), source->name_);
+  }
+
+  for (Frame* child : children_)
+    child->NotifyFrameNameChanged(source);
+}
+
 void Frame::OnViewDestroying(mojo::View* view) {
   if (parent_)
     parent_->Remove(this);
@@ -229,6 +241,14 @@ void Frame::ProgressChanged(double progress) {
   DCHECK(loading_);
   progress_ = progress;
   tree_->ProgressChanged();
+}
+
+void Frame::SetFrameName(const mojo::String& name) {
+  if (name_ == name)
+    return;
+
+  name_ = name;
+  tree_->FrameNameChanged(this);
 }
 
 }  // namespace mandoline

@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_HTML_VIEWER_TEST_HTML_VIEWER_IMPL_H_
 #define COMPONENTS_HTML_VIEWER_TEST_HTML_VIEWER_IMPL_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace html_viewer {
@@ -18,16 +20,23 @@ namespace html_viewer {
 // Caller must ensure that |web_frame| outlives TestHTMLViewerImpl.
 class TestHTMLViewerImpl : public TestHTMLViewer {
  public:
-  TestHTMLViewerImpl(blink::WebFrame* web_frame,
+  TestHTMLViewerImpl(blink::WebLocalFrame* web_frame,
                      mojo::InterfaceRequest<TestHTMLViewer> request);
   ~TestHTMLViewerImpl() override;
 
  private:
+  class ExecutionCallbackImpl;
+
+  void CallbackCompleted(ExecutionCallbackImpl* callback_impl);
+
   // TestHTMLViewer:
   void GetContentAsText(const GetContentAsTextCallback& callback) override;
+  void ExecuteScript(const mojo::String& script,
+                     const ExecuteScriptCallback& callback) override;
 
-  blink::WebFrame* web_frame_;
+  blink::WebLocalFrame* web_frame_;
   mojo::Binding<TestHTMLViewer> binding_;
+  std::set<ExecutionCallbackImpl*> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHTMLViewerImpl);
 };

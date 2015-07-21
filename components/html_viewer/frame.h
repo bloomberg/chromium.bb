@@ -56,7 +56,9 @@ class Frame : public blink::WebFrameClient,
 
   explicit Frame(const CreateParams& params);
 
-  void Init(mojo::View* local_view);
+  void Init(mojo::View* local_view,
+            const blink::WebString& remote_frame_name,
+            const blink::WebString& remote_origin);
 
   // Closes and deletes this Frame.
   void Close();
@@ -90,6 +92,9 @@ class Frame : public blink::WebFrameClient,
   friend class FrameTreeManager;
 
   virtual ~Frame();
+
+  // Sets the name of the remote frame. Does nothing if this is a local frame.
+  void SetRemoteFrameName(const mojo::String& name);
 
   // Returns true if the Frame is local, false if remote.
   bool IsLocal() const;
@@ -164,6 +169,8 @@ class Frame : public blink::WebFrameClient,
   virtual void didStartLoading(bool to_different_document);
   virtual void didStopLoading();
   virtual void didChangeLoadProgress(double load_progress);
+  virtual void didChangeName(blink::WebLocalFrame* frame,
+                             const blink::WebString& name);
 
   // blink::WebRemoteFrameClient:
   virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);

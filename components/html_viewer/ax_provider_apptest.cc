@@ -50,6 +50,7 @@ class TestFrameTreeServer : public mandoline::FrameTreeServer {
   void LoadingStarted() override {}
   void LoadingStopped() override {}
   void ProgressChanged(double progress) override {}
+  void SetFrameName(const mojo::String& name) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFrameTreeServer);
@@ -95,6 +96,7 @@ TEST_F(AXProviderTest, HelloWorld) {
     array[0] = mandoline::FrameData::New().Pass();
     array[0]->frame_id = embed_view->id();
     array[0]->parent_id = 0u;
+    array[0]->origin = "origin";
 
     mandoline::FrameTreeClientPtr frame_tree_client;
     connection->ConnectToService(&frame_tree_client);

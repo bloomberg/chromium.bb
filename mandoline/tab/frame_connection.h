@@ -38,6 +38,7 @@ class FrameConnection : public FrameUserData {
 
  private:
   FrameTreeClientPtr frame_tree_client_;
+
   // TODO(sky): needs to be destroyed when connection lost.
   mojo::ApplicationConnection* application_connection_;
 

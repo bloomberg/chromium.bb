@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/html_viewer/ax_provider_impl.h"
+#include "components/html_viewer/blink_basic_type_converters.h"
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/frame_tree_manager.h"
@@ -95,9 +96,14 @@ Frame::Frame(const Frame::CreateParams& params)
     parent_->children_.push_back(this);
 }
 
-void Frame::Init(mojo::View* local_view) {
-  // TODO(sky): need to plumb through scope, name and other args correctly for
-  // frame creation.
+void Frame::Init(mojo::View* local_view,
+                 const blink::WebString& remote_frame_name,
+                 const blink::WebString& remote_origin) {
+  if (local_view->id() == id_)
+    SetView(local_view);
+
+  // TODO(sky): need to plumb through scope and other args correctly for frame
+  // creation.
   if (!parent_) {
     CreateWebWidget();
     // This is the root of the tree (aka the main frame).
@@ -124,9 +130,6 @@ void Frame::Init(mojo::View* local_view) {
       local_web_frame->swap(remote_web_frame);
       // local_web_frame->close();
       web_frame_ = remote_web_frame;
-      // TODO(sky): This needs to come from FrameTreeData.
-      remote_web_frame->setReplicatedOrigin(
-          blink::WebSecurityOrigin::createFromString(""));
     }
   } else if (id_ == local_view->id()) {
     // Frame represents the local frame.
@@ -149,8 +152,17 @@ void Frame::Init(mojo::View* local_view) {
     web_frame_ = remote_web_frame;
   } else {
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createRemoteChild(
-        blink::WebTreeScopeType::Document, "", blink::WebSandboxFlags::None,
-        this);
+        blink::WebTreeScopeType::Document, remote_frame_name,
+        blink::WebSandboxFlags::None, this);
+  }
+
+  if (!IsLocal()) {
+    blink::WebRemoteFrame* remote_web_frame = web_frame_->toWebRemoteFrame();
+    if (remote_web_frame) {
+      remote_web_frame->setReplicatedName(remote_frame_name);
+      remote_web_frame->setReplicatedOrigin(
+          blink::WebSecurityOrigin::createFromString(remote_origin));
+    }
   }
 }
 
@@ -197,6 +209,15 @@ Frame::~Frame() {
     view_->RemoveObserver(this);
     view_->Destroy();
   }
+}
+
+void Frame::SetRemoteFrameName(const mojo::String& name) {
+  if (IsLocal())
+    return;
+
+  blink::WebRemoteFrame* remote_frame = web_frame_->toWebRemoteFrame();
+  if (remote_frame)
+    remote_frame->setReplicatedName(name.To<blink::WebString>());
 }
 
 bool Frame::IsLocal() const {
@@ -488,6 +509,11 @@ void Frame::didStopLoading() {
 
 void Frame::didChangeLoadProgress(double load_progress) {
   frame_tree_manager_->ProgressChanged(load_progress);
+}
+
+void Frame::didChangeName(blink::WebLocalFrame* frame,
+                          const blink::WebString& name) {
+  frame_tree_manager_->OnFrameDidChangeName(this, name);
 }
 
 void Frame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {

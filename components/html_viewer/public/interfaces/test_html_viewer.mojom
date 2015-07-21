@@ -6,4 +6,7 @@ module html_viewer;
 
 interface TestHTMLViewer {
   GetContentAsText() => (string contents);
+
+  // Executes the specified script. The results is a JSON encoded string.
+  ExecuteScript(string script) => (string? result);
 };

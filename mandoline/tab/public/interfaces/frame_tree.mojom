@@ -23,6 +23,12 @@ struct FrameData {
   // 0 if the frame has no parent (its the root).
   uint32 parent_id;
   uint32 frame_id;
+
+  string? name;
+  // TODO(sky): this is not being propagated correctly. It needs to be updated
+  // along with deciding if we want to keep NavigatorHost.
+  string origin;
+  uint32 sandbox_flags;
 };
 
 struct MessageEvent {
@@ -44,6 +50,8 @@ interface FrameTreeServer {
   // Called when the progress for this frame changes. Will only be called while
   // a load is in progress.
   ProgressChanged(double progress);
+
+  SetFrameName(string? name);
 };
 
 interface FrameTreeClient {
@@ -57,4 +65,8 @@ interface FrameTreeClient {
   // Called when a frame is removed from the tree. This is not called on the
   // originator of the change.
   OnFrameRemoved(uint32 frame_id);
+
+  // Called when the name of a frame changes. This is not called on the
+  // originator of the change.
+  OnFrameNameChanged(uint32 frame_id, string name);
 };

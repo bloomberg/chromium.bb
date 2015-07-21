@@ -22,6 +22,10 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   application_connection_ = app->ConnectToApplication(request.Pass());
   application_connection_->ConnectToService(view_manage_client);
   application_connection_->ConnectToService(&frame_tree_client_);
+  frame_tree_client_.set_connection_error_handler([]() {
+    // TODO(sky): implement this.
+    NOTIMPLEMENTED();
+  });
 }
 
 }  // namespace mandoline

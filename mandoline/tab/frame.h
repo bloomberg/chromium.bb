@@ -62,6 +62,10 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   FrameUserData* user_data() { return user_data_.get(); }
 
+  const std::vector<Frame*>& children() { return children_; }
+
+  const mojo::String& name() const { return name_; }
+
   // Returns true if this Frame or any child Frame is loading.
   bool IsLoading() const;
 
@@ -82,6 +86,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   // Notifies the client and all descendants as appropriate.
   void NotifyAdded(const Frame* source, const Frame* added_node);
   void NotifyRemoved(const Frame* source, const Frame* removed_node);
+  void NotifyFrameNameChanged(const Frame* source);
 
   // mojo::ViewObserver:
   void OnViewDestroying(mojo::View* view) override;
@@ -94,6 +99,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   void LoadingStarted() override;
   void LoadingStopped() override;
   void ProgressChanged(double progress) override;
+  void SetFrameName(const mojo::String& name) override;
 
   FrameTree* const tree_;
   mojo::View* view_;
@@ -106,6 +112,8 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   bool loading_;
   double progress_;
+
+  mojo::String name_;
 
   mojo::Binding<FrameTreeServer> frame_tree_server_binding_;
 

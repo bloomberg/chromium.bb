@@ -50,6 +50,7 @@ class DocumentResourceWaiter : public mandoline::FrameTreeClient {
                  mojo::Array<mandoline::FrameDataPtr> frame_data) override;
   void OnFrameAdded(mandoline::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t frame_id) override;
+  void OnFrameNameChanged(uint32_t frame_id, const mojo::String& name) override;
 
   GlobalState* global_state_;
   HTMLDocumentOOPIF* document_;

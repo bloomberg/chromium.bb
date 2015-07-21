@@ -166,6 +166,8 @@ class TestFrameTreeClient : public FrameTreeClient {
     adds_.push_back(frame.Pass());
   }
   void OnFrameRemoved(uint32_t frame_id) override {}
+  void OnFrameNameChanged(uint32_t frame_id,
+                          const mojo::String& name) override {}
 
  private:
   int connect_count_;

@@ -18,6 +18,7 @@ class WebFrame;
 class WebFrameClient;
 class WebLocalFrame;
 class WebRemoteFrameClient;
+class WebString;
 class WebView;
 }
 
@@ -75,9 +76,6 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
  private:
   friend class Frame;
 
-  // Recursively calls Init() on |frame| and it's children.
-  void InitFrames(mojo::View* local_view, Frame* frame);
-
   // Returns the navigation policy for the specified frame.
   blink::WebNavigationPolicy DecidePolicyForNavigation(
       Frame* frame,
@@ -92,11 +90,15 @@ class FrameTreeManager : public mandoline::FrameTreeClient {
   // Invoked when a Frame is destroye.
   void OnFrameDestroyed(Frame* frame);
 
+  // Invoked when the name of a frame changes.
+  void OnFrameDidChangeName(Frame* frame, const blink::WebString& name);
+
   // mandoline::FrameTreeClient:
   void OnConnect(mandoline::FrameTreeServerPtr server,
                  mojo::Array<mandoline::FrameDataPtr> frame_data) override;
   void OnFrameAdded(mandoline::FrameDataPtr frame_data) override;
   void OnFrameRemoved(uint32_t frame_id) override;
+  void OnFrameNameChanged(uint32_t frame_id, const mojo::String& name) override;
 
   GlobalState* global_state_;
 

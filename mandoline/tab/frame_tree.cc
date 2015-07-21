@@ -73,4 +73,8 @@ void FrameTree::ProgressChanged() {
     delegate_->ProgressChanged(progress_);
 }
 
+void FrameTree::FrameNameChanged(Frame* frame) {
+  root_.NotifyFrameNameChanged(frame);
+}
+
 }  // namespace mandoline

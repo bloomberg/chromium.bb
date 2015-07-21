@@ -8,7 +8,6 @@
 #include "components/html_viewer/global_state.h"
 #include "mojo/application/public/cpp/application_connection.h"
 
-
 namespace html_viewer {
 
 HTMLViewer::HTMLViewer() : app_(nullptr) {

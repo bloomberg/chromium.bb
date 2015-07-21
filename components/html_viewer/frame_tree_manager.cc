@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "components/html_viewer/blink_basic_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/frame.h"
 #include "components/html_viewer/frame_tree_manager_delegate.h"
@@ -55,7 +56,9 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
 // Creates a Frame per FrameData element in |frame_data|.
 Frame* BuildFrameTree(FrameTreeManager* frame_tree_manager,
-                      const mojo::Array<mandoline::FrameDataPtr>& frame_data) {
+                      const mojo::Array<mandoline::FrameDataPtr>& frame_data,
+                      uint32_t local_frame_id,
+                      mojo::View* local_view) {
   std::vector<Frame*> parents;
   Frame* root = nullptr;
   Frame* last_frame = nullptr;
@@ -75,6 +78,9 @@ Frame* BuildFrameTree(FrameTreeManager* frame_tree_manager,
     else
       DCHECK(frame->parent());
     last_frame = frame;
+
+    frame->Init(local_view, frame_data[i]->name.To<blink::WebString>(),
+                frame_data[i]->origin.To<blink::WebString>());
   }
   return root;
 }
@@ -103,12 +109,9 @@ FrameTreeManager::~FrameTreeManager() {
 
 void FrameTreeManager::Init(mojo::View* local_view,
                             mojo::Array<mandoline::FrameDataPtr> frame_data) {
-  root_ = BuildFrameTree(this, frame_data);
-  CHECK(root_);
+  root_ = BuildFrameTree(this, frame_data, local_frame_id_, local_view);
   Frame* local_frame = root_->FindFrame(local_frame_id_);
   CHECK(local_frame);
-  local_frame->SetView(local_view);
-  InitFrames(local_view, root_);
   local_frame->UpdateFocus();
 }
 
@@ -122,13 +125,6 @@ blink::WebLocalFrame* FrameTreeManager::GetLocalWebFrame() {
 
 blink::WebView* FrameTreeManager::GetWebView() {
   return root_->web_view();
-}
-
-void FrameTreeManager::InitFrames(mojo::View* local_view, Frame* frame) {
-  frame->Init(local_view);
-
-  for (Frame* child_frame : frame->children())
-    InitFrames(local_view, child_frame);
 }
 
 blink::WebNavigationPolicy FrameTreeManager::DecidePolicyForNavigation(
@@ -173,6 +169,17 @@ void FrameTreeManager::OnFrameDestroyed(Frame* frame) {
   }
 }
 
+void FrameTreeManager::OnFrameDidChangeName(Frame* frame,
+                                            const blink::WebString& name) {
+  if (frame != GetLocalFrame())
+    return;
+
+  mojo::String mojo_name;
+  if (!name.isNull())
+    mojo_name = name.utf8();
+  server_->SetFrameName(mojo_name);
+}
+
 void FrameTreeManager::OnConnect(
     mandoline::FrameTreeServerPtr server,
     mojo::Array<mandoline::FrameDataPtr> frame_data) {
@@ -199,6 +206,13 @@ void FrameTreeManager::OnFrameAdded(mandoline::FrameDataPtr frame_data) {
 
 void FrameTreeManager::OnFrameRemoved(uint32_t frame_id) {
   NOTIMPLEMENTED();
+}
+
+void FrameTreeManager::OnFrameNameChanged(uint32_t frame_id,
+                                          const mojo::String& name) {
+  Frame* frame = root_->FindFrame(frame_id);
+  if (frame)
+    frame->SetRemoteFrameName(name);
 }
 
 }  // namespace mojo
