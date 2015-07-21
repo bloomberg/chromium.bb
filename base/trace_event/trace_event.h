@@ -1452,7 +1452,7 @@ AddTraceEventWithThreadIdAndTimestamp(
   convertable_values[1] = arg2_val;
 
   return TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
-      phase, category_group_enabled, name, id, thread_id, context_id,
+      phase, category_group_enabled, name, id, context_id, thread_id,
       timestamp, num_args, arg_names, arg_types, arg_values,
       convertable_values, flags);
 }
