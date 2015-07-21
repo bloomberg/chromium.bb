@@ -22,7 +22,7 @@ TestStorageMonitorWin::TestStorageMonitorWin(
 TestStorageMonitorWin::~TestStorageMonitorWin() {
 }
 
-void TestStorageMonitorWin::InjectDeviceChange(UINT event_type, DWORD data) {
+void TestStorageMonitorWin::InjectDeviceChange(UINT event_type, LPARAM data) {
   OnDeviceChange(event_type, data);
 }
 

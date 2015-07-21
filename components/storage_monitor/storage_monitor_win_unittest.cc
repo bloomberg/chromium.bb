@@ -165,7 +165,7 @@ void StorageMonitorWinTest::DoMassStorageDeviceAttachedTest(
       expect_attach_calls++;
   }
   monitor_->InjectDeviceChange(DBT_DEVICEARRIVAL,
-                               reinterpret_cast<DWORD>(&volume_broadcast));
+                               reinterpret_cast<LPARAM>(&volume_broadcast));
 
   RunUntilIdle();
   volume_mount_watcher_->FlushWorkerPoolForTesting();
@@ -195,7 +195,7 @@ void StorageMonitorWinTest::DoMassStorageDevicesDetachedTest(
       ++expect_detach_calls;
   }
   monitor_->InjectDeviceChange(DBT_DEVICEREMOVECOMPLETE,
-                               reinterpret_cast<DWORD>(&volume_broadcast));
+                               reinterpret_cast<LPARAM>(&volume_broadcast));
   RunUntilIdle();
   EXPECT_EQ(pre_attach_calls, observer_.attach_calls());
   EXPECT_EQ(expect_detach_calls, observer_.detach_calls());
@@ -241,7 +241,7 @@ void StorageMonitorWinTest::DoMTPDeviceTest(const base::string16& pnp_device_id,
 
   monitor_->InjectDeviceChange(
       test_attach ? DBT_DEVICEARRIVAL : DBT_DEVICEREMOVECOMPLETE,
-      reinterpret_cast<DWORD>(dev_interface_broadcast.get()));
+      reinterpret_cast<LPARAM>(dev_interface_broadcast.get()));
 
   RunUntilIdle();
   EXPECT_EQ(expect_attach_calls, observer_.attach_calls());
@@ -416,7 +416,7 @@ TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
   volume_broadcast.dbcv_flags = 0x0;
   volume_broadcast.dbcv_unitmask = 0x100;  // I: drive
   monitor_->InjectDeviceChange(DBT_DEVICEARRIVAL,
-                               reinterpret_cast<DWORD>(&volume_broadcast));
+                               reinterpret_cast<LPARAM>(&volume_broadcast));
 
   EXPECT_EQ(0u, volume_mount_watcher_->devices_checked().size());
 
@@ -424,7 +424,7 @@ TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
   // event, so there'll be pending calls in the UI thread to finish the
   // device check notification, blocking the duplicate device injection.
   monitor_->InjectDeviceChange(DBT_DEVICEARRIVAL,
-                               reinterpret_cast<DWORD>(&volume_broadcast));
+                               reinterpret_cast<LPARAM>(&volume_broadcast));
 
   EXPECT_EQ(0u, volume_mount_watcher_->devices_checked().size());
   volume_mount_watcher_->ReleaseDeviceCheck();
@@ -443,7 +443,7 @@ TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
 
   // We'll receive a duplicate check now that the first check has fully cleared.
   monitor_->InjectDeviceChange(DBT_DEVICEARRIVAL,
-                               reinterpret_cast<DWORD>(&volume_broadcast));
+                               reinterpret_cast<LPARAM>(&volume_broadcast));
   volume_mount_watcher_->FlushWorkerPoolForTesting();
   volume_mount_watcher_->ReleaseDeviceCheck();
   RunUntilIdle();

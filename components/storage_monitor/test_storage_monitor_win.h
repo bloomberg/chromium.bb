@@ -26,7 +26,7 @@ class TestStorageMonitorWin: public StorageMonitorWin {
 
   ~TestStorageMonitorWin() override;
 
-  void InjectDeviceChange(UINT event_type, DWORD data);
+  void InjectDeviceChange(UINT event_type, LPARAM data);
 
   VolumeMountWatcherWin* volume_mount_watcher();
 
