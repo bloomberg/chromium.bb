@@ -183,6 +183,11 @@ void AutoscrollController::handleMouseReleaseForPanScrolling(LocalFrame* frame, 
     case AutoscrollForPanCanStop:
         stopAutoscroll();
         break;
+    case AutoscrollForDragAndDrop:
+    case AutoscrollForSelection:
+    case NoAutoscroll:
+        // Nothing to do.
+        break;
     }
 }
 
