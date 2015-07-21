@@ -826,7 +826,7 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodRestartWaitsIfNotMaxDeadline) {
 
   // Once the pending task is run the new idle period should start.
   clock_->Advance(pending_task_delay - idle_task_duration);
-  RunUntilIdle();
+
   // Since the idle period tried to start before the pending task ran we have to
   // wait for the idle helper to retry starting the long idle period.
   clock_->Advance(retry_enable_long_idle_period_delay());

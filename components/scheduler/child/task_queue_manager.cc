@@ -688,7 +688,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
     // already pending, so it is safe to call it in a loop.
     MaybePostDoWorkOnMainRunner();
 
-    if (ProcessTaskFromWorkQueue(queue_index, i > 0, &previous_task))
+    if (ProcessTaskFromWorkQueue(queue_index, &previous_task))
       return;  // The TaskQueueManager got deleted, we must bail out.
 
     bool should_trigger_wakeup = Queue(queue_index)->wakeup_policy() ==
@@ -712,8 +712,7 @@ void TaskQueueManager::DidQueueTask(const base::PendingTask& pending_task) {
 
 bool TaskQueueManager::ProcessTaskFromWorkQueue(
     size_t queue_index,
-    bool has_previous_task,
-    base::PendingTask* previous_task) {
+    base::PendingTask* out_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
   internal::TaskQueueImpl* queue = Queue(queue_index);
@@ -725,18 +724,10 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
     main_task_runner_->PostNonNestableTask(pending_task.posted_from,
                                            pending_task.task);
   } else {
-    // Suppress "will" task observer notifications for the first and "did"
-    // notifications for the last task in the batch to avoid duplicate
-    // notifications.
-    if (has_previous_task) {
-      FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                        DidProcessTask(*previous_task));
-      FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                        WillProcessTask(pending_task));
-    }
-
     TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
                          pending_task);
+    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                      WillProcessTask(pending_task));
     task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
 
     // Detect if the TaskQueueManager just got deleted.  If this happens we must
@@ -744,8 +735,11 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
     if (protect->HasOneRef())
       return true;
 
+    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                      DidProcessTask(pending_task));
+
     pending_task.task.Reset();
-    *previous_task = pending_task;
+    *out_task = pending_task;
   }
   return false;
 }
@@ -777,14 +771,12 @@ void TaskQueueManager::SetWorkBatchSize(int work_batch_size) {
 void TaskQueueManager::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  main_task_runner_->AddTaskObserver(task_observer);
   task_observers_.AddObserver(task_observer);
 }
 
 void TaskQueueManager::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  main_task_runner_->RemoveTaskObserver(task_observer);
   task_observers_.RemoveObserver(task_observer);
 }
 

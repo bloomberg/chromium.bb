@@ -23,9 +23,6 @@ class NestableTaskRunnerForTest : public NestableSingleThreadTaskRunner {
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
-  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
-  void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override;
 
  protected:
   ~NestableTaskRunnerForTest() override;
@@ -34,15 +31,8 @@ class NestableTaskRunnerForTest : public NestableSingleThreadTaskRunner {
   NestableTaskRunnerForTest(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  void WrapTask(const base::PendingTask* wrapped_task);
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool is_nested_;
-
-  base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
-
-  base::WeakPtr<NestableTaskRunnerForTest> weak_nestable_task_runner_ptr_;
-  base::WeakPtrFactory<NestableTaskRunnerForTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NestableTaskRunnerForTest);
 };

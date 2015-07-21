@@ -17,45 +17,24 @@ scoped_refptr<NestableTaskRunnerForTest> NestableTaskRunnerForTest::Create(
 
 NestableTaskRunnerForTest::NestableTaskRunnerForTest(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner), is_nested_(false), weak_factory_(this) {
-  weak_nestable_task_runner_ptr_ = weak_factory_.GetWeakPtr();
+    : task_runner_(task_runner), is_nested_(false) {
 }
 
 NestableTaskRunnerForTest::~NestableTaskRunnerForTest() {
-}
-
-void NestableTaskRunnerForTest::WrapTask(
-    const base::PendingTask* wrapped_task) {
-  scoped_refptr<NestableTaskRunnerForTest> protect(this);
-  FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                    DidProcessTask(*wrapped_task));
-  wrapped_task->task.Run();
-  FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                    WillProcessTask(*wrapped_task));
 }
 
 bool NestableTaskRunnerForTest::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  base::PendingTask* wrapped_task = new base::PendingTask(from_here, task);
-  return task_runner_->PostDelayedTask(
-      from_here,
-      base::Bind(&NestableTaskRunnerForTest::WrapTask,
-                 weak_nestable_task_runner_ptr_, base::Owned(wrapped_task)),
-      delay);
+  return task_runner_->PostDelayedTask(from_here, task, delay);
 }
 
 bool NestableTaskRunnerForTest::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  base::PendingTask* wrapped_task = new base::PendingTask(from_here, task);
-  return task_runner_->PostNonNestableDelayedTask(
-      from_here,
-      base::Bind(&NestableTaskRunnerForTest::WrapTask,
-                 weak_nestable_task_runner_ptr_, base::Owned(wrapped_task)),
-      delay);
+  return task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
 }
 
 bool NestableTaskRunnerForTest::RunsTasksOnCurrentThread() const {
@@ -64,16 +43,6 @@ bool NestableTaskRunnerForTest::RunsTasksOnCurrentThread() const {
 
 bool NestableTaskRunnerForTest::IsNested() const {
   return false;
-}
-
-void NestableTaskRunnerForTest::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
-  task_observers_.AddObserver(task_observer);
-}
-
-void NestableTaskRunnerForTest::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
-  task_observers_.RemoveObserver(task_observer);
 }
 
 }  // namespace scheduler

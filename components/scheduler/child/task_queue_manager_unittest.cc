@@ -1002,10 +1002,8 @@ TEST_F(TaskQueueManagerTest, TaskObserverAdding) {
   runner->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
   runner->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
 
-  // Two pairs of callbacks for the tasks above plus another one for the
-  // DoWork() posted by the task queue manager.
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(3);
-  EXPECT_CALL(observer, DidProcessTask(_)).Times(3);
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(2);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(2);
   message_loop_->RunUntilIdle();
 }
 

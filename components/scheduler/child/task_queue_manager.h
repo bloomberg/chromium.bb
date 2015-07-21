@@ -203,13 +203,12 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   bool SelectWorkQueueToService(size_t* out_queue_index);
 
   // Runs a single nestable task from the work queue designated by
-  // |queue_index|. If |has_previous_task| is true, |previous_task| should
-  // contain the previous task in this work batch. Non-nestable task are
-  // reposted on the run loop. The queue must not be empty.
-  // Returns true if the TaskQueueManager got deleted, and false otherwise.
+  // |queue_index|. On exit, |out_task| will contain the task which was
+  // executed. Non-nestable task are reposted on the run loop. The queue must
+  // not be empty. Returns true if the TaskQueueManager got deleted, and false
+  // otherwise.
   bool ProcessTaskFromWorkQueue(size_t queue_index,
-                                bool has_previous_task,
-                                base::PendingTask* previous_task);
+                                base::PendingTask* out_task);
 
   bool RunsTasksOnCurrentThread() const;
   bool PostDelayedTask(const tracked_objects::Location& from_here,

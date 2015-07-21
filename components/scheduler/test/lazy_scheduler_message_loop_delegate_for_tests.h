@@ -34,9 +34,6 @@ class LazySchedulerMessageLoopDelegateForTests
                                   base::TimeDelta delay) override;
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
-  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
-  void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override;
 
  private:
   LazySchedulerMessageLoopDelegateForTests();
@@ -47,10 +44,6 @@ class LazySchedulerMessageLoopDelegateForTests
 
   mutable base::MessageLoop* message_loop_;
   base::PlatformThreadId thread_id_;
-
-  // Task observers which have not yet been registered to a message loop. Not
-  // owned.
-  mutable base::hash_set<base::MessageLoop::TaskObserver*> pending_observers_;
 
   // A task runner which hasn't yet been overridden in the message loop.
   mutable scoped_refptr<base::SingleThreadTaskRunner> pending_task_runner_;

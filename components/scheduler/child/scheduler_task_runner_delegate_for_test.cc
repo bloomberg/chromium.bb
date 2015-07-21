@@ -55,14 +55,4 @@ bool SchedulerTaskRunnerDelegateForTest::IsNested() const {
   return task_runner_->IsNested();
 }
 
-void SchedulerTaskRunnerDelegateForTest::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
-  task_runner_->AddTaskObserver(task_observer);
-}
-
-void SchedulerTaskRunnerDelegateForTest::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
-  task_runner_->RemoveTaskObserver(task_observer);
-}
-
 }  // namespace scheduler

@@ -33,10 +33,6 @@ base::MessageLoop* LazySchedulerMessageLoopDelegateForTests::EnsureMessageLoop()
   message_loop_ = base::MessageLoop::current();
   DCHECK(message_loop_);
   original_task_runner_ = message_loop_->task_runner();
-  for (auto& observer : pending_observers_) {
-    message_loop_->AddTaskObserver(observer);
-  }
-  pending_observers_.clear();
   if (pending_task_runner_)
     message_loop_->SetTaskRunner(pending_task_runner_.Pass());
   return message_loop_;
@@ -84,24 +80,6 @@ bool LazySchedulerMessageLoopDelegateForTests::RunsTasksOnCurrentThread()
 
 bool LazySchedulerMessageLoopDelegateForTests::IsNested() const {
   return EnsureMessageLoop()->IsNested();
-}
-
-void LazySchedulerMessageLoopDelegateForTests::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
-  if (!HasMessageLoop()) {
-    pending_observers_.insert(task_observer);
-    return;
-  }
-  EnsureMessageLoop()->AddTaskObserver(task_observer);
-}
-
-void LazySchedulerMessageLoopDelegateForTests::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
-  if (!HasMessageLoop()) {
-    pending_observers_.erase(task_observer);
-    return;
-  }
-  EnsureMessageLoop()->RemoveTaskObserver(task_observer);
 }
 
 }  // namespace scheduler

@@ -21,12 +21,6 @@ class SCHEDULER_EXPORT NestableSingleThreadTaskRunner
   // a nested task).
   virtual bool IsNested() const = 0;
 
-  // Adds and removes MessageLoop::TaskObservers to the task runner.
-  virtual void AddTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) = 0;
-  virtual void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) = 0;
-
  protected:
   ~NestableSingleThreadTaskRunner() override {}
 
