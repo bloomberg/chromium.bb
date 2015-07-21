@@ -18,6 +18,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -109,15 +110,13 @@ void CronetDataReductionProxy::Init(bool enable,
   url_request_context_getter_ =
       new net::TrivialURLRequestContextGetter(
           context, task_runner_);
-  scoped_ptr<data_reduction_proxy::DataReductionProxyCompressionStats>
-      compression_stats(
-          new data_reduction_proxy::DataReductionProxyCompressionStats(
-              prefs_.get(), task_runner_, base::TimeDelta()));
   scoped_ptr<data_reduction_proxy::DataReductionProxyService>
       data_reduction_proxy_service(
           new data_reduction_proxy::DataReductionProxyService(
-              compression_stats.Pass(), settings_.get(), prefs_.get(),
-              url_request_context_getter_.get(), task_runner_));
+              settings_.get(), prefs_.get(),
+              url_request_context_getter_.get(),
+              make_scoped_ptr(new data_reduction_proxy::DataStore()),
+              task_runner_, task_runner_, task_runner_, base::TimeDelta()));
   io_data_->SetDataReductionProxyService(
       data_reduction_proxy_service->GetWeakPtr());
   settings_->InitDataReductionProxySettings(
