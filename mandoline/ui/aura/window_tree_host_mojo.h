@@ -23,6 +23,7 @@ class Shell;
 
 namespace mandoline {
 
+class InputMethodMandoline;
 class SurfaceContextFactory;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
@@ -60,6 +61,8 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   mojo::View* view_;
 
   gfx::Rect bounds_;
+
+  scoped_ptr<InputMethodMandoline> input_method_;
 
   scoped_ptr<SurfaceContextFactory> context_factory_;
 
