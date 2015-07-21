@@ -191,7 +191,7 @@ void CompositingLayerAssigner::updateSquashingAssignment(DeprecatedPaintLayer* l
         ASSERT(squashingState.hasMostRecentMapping);
 
         bool changedSquashingLayer =
-            squashingState.mostRecentMapping->updateSquashingLayerAssignment(layer, squashingState.mostRecentMapping->owningLayer(), squashingState.nextSquashedLayerIndex);
+            squashingState.mostRecentMapping->updateSquashingLayerAssignment(layer, squashingState.nextSquashedLayerIndex);
         if (!changedSquashingLayer)
             return;
 

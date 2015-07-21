@@ -160,7 +160,6 @@ DeprecatedPaintLayer::~DeprecatedPaintLayer()
 
     if (groupedMapping()) {
         DisableCompositingQueryAsserts disabler;
-        groupedMapping()->removeLayerFromSquashingGraphicsLayer(this);
         setGroupedMapping(0, InvalidateLayerAndRemoveFromMapping);
     }
 
@@ -2321,6 +2320,7 @@ void DeprecatedPaintLayer::setGroupedMapping(CompositedDeprecatedPaintLayerMappi
         m_groupedMapping->removeLayerFromSquashingGraphicsLayer(this);
     }
     m_groupedMapping = groupedMapping;
+    ASSERT(!m_groupedMapping || m_groupedMapping->verifyLayerInSquashingVector(this));
     if (options == InvalidateLayerAndRemoveFromMapping && m_groupedMapping)
         m_groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 }
