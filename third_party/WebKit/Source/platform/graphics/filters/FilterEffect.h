@@ -156,6 +156,8 @@ protected:
     void addAbsolutePaintRect(const FloatRect& absolutePaintRect);
 
 private:
+    bool hasConnectedInput() const;
+
     FilterEffectVector m_inputEffects;
 
     IntRect m_absolutePaintRect;

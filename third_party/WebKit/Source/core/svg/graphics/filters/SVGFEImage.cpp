@@ -197,11 +197,6 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
     FloatRect srcRect = FloatRect(FloatPoint(), m_image->size());
     FloatRect dstRect = filterPrimitiveSubregion();
 
-    // FIXME: CSS image filters currently do not seem to set filter primitive
-    // subregion correctly if unspecified. So default to srcRect size if so.
-    if (dstRect.isEmpty())
-        dstRect = srcRect;
-
     m_preserveAspectRatio->transformRect(dstRect, srcRect);
 
     SkBitmap bitmap;

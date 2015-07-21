@@ -81,10 +81,11 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
         FilterOperation* filterOperation = operations.operations().at(i).get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
-            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(zoom);
-            effect = ReferenceFilterBuilder::build(referenceFilter.get(), element, previousEffect.get(), toReferenceFilterOperation(*filterOperation));
-            referenceFilter->setLastEffect(effect);
-            m_referenceFilters.append(referenceFilter);
+            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilterBuilder::build(zoom, element, previousEffect.get(), toReferenceFilterOperation(*filterOperation));
+            if (referenceFilter) {
+                effect = referenceFilter->lastEffect();
+                m_referenceFilters.append(referenceFilter);
+            }
             break;
         }
         case FilterOperation::GRAYSCALE: {

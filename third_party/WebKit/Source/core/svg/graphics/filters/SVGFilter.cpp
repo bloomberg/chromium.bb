@@ -28,7 +28,6 @@ namespace blink {
 SVGFilter::SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
     : Filter(targetBoundingBox, filterRegion, 1.0f)
     , m_absoluteSourceDrawingRegion(absoluteSourceDrawingRegion)
-    , m_targetBoundingBox(targetBoundingBox)
     , m_effectBBoxMode(effectBBoxMode)
 {
 }
@@ -36,14 +35,14 @@ SVGFilter::SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect
 float SVGFilter::applyHorizontalScale(float value) const
 {
     if (m_effectBBoxMode)
-        value *= m_targetBoundingBox.width();
+        value *= targetBoundingBox().width();
     return Filter::applyHorizontalScale(value);
 }
 
 float SVGFilter::applyVerticalScale(float value) const
 {
     if (m_effectBBoxMode)
-        value *= m_targetBoundingBox.height();
+        value *= targetBoundingBox().height();
     return Filter::applyVerticalScale(value);
 }
 
@@ -51,9 +50,9 @@ FloatPoint3D SVGFilter::resolve3dPoint(const FloatPoint3D& point) const
 {
     if (!m_effectBBoxMode)
         return point;
-    return FloatPoint3D(point.x() * m_targetBoundingBox.width() + m_targetBoundingBox.x(),
-        point.y() * m_targetBoundingBox.height() + m_targetBoundingBox.y(),
-        point.z() * sqrtf(m_targetBoundingBox.size().diagonalLengthSquared() / 2));
+    return FloatPoint3D(point.x() * targetBoundingBox().width() + targetBoundingBox().x(),
+        point.y() * targetBoundingBox().height() + targetBoundingBox().y(),
+        point.z() * sqrtf(targetBoundingBox().size().diagonalLengthSquared() / 2));
 }
 
 PassRefPtrWillBeRawPtr<SVGFilter> SVGFilter::create(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)

@@ -2578,9 +2578,7 @@ FilterOperations DeprecatedPaintLayer::computeFilterOperations(const ComputedSty
                 continue;
             ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
-            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(style.effectiveZoom());
-            referenceFilter->setLastEffect(ReferenceFilterBuilder::build(referenceFilter.get(), toElement(enclosingElement()), referenceFilter->sourceGraphic(),
-                referenceOperation));
+            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilterBuilder::build(style.effectiveZoom(), toElement(enclosingElement()), nullptr, referenceOperation);
             referenceOperation.setFilter(referenceFilter.release());
         }
     }

@@ -190,10 +190,24 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaI
     return createImageFilter(builder);
 }
 
+bool FilterEffect::hasConnectedInput() const
+{
+    for (unsigned i = 0; i < m_inputEffects.size(); i++) {
+        if (m_inputEffects[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
 SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) const
 {
     FloatRect rect;
     uint32_t flags = 0;
+    if (!hasConnectedInput() && !filter()->filterRegion().isEmpty()) {
+        rect = filter()->filterRegion();
+        flags = SkImageFilter::CropRect::kHasAll_CropEdge;
+    }
     FloatRect boundaries = effectBoundaries();
     boundaries.move(cropOffset);
     if (hasX()) {

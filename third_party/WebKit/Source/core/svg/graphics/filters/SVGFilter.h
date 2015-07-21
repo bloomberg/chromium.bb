@@ -41,13 +41,11 @@ public:
     FloatPoint3D resolve3dPoint(const FloatPoint3D&) const override;
 
     IntRect sourceImageRect() const override { return m_absoluteSourceDrawingRegion; }
-    FloatRect targetBoundingBox() const { return m_targetBoundingBox; }
 
 private:
     SVGFilter(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode);
 
     IntRect m_absoluteSourceDrawingRegion;
-    FloatRect m_targetBoundingBox;
     bool m_effectBBoxMode;
 };
 

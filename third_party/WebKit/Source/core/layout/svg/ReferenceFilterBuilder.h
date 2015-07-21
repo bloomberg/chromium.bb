@@ -32,17 +32,16 @@
 #define ReferenceFilterBuilder_h
 
 #include "core/fetch/DocumentResourceReference.h"
-#include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class Element;
-class Filter;
 class FilterEffect;
 class FilterOperation;
 class ReferenceFilterOperation;
+class ReferenceFilter;
 
 class ReferenceFilterBuilder {
 public:
@@ -50,7 +49,7 @@ public:
     static void setDocumentResourceReference(const FilterOperation*, PassOwnPtr<DocumentResourceReference>);
     static void clearDocumentResourceReference(const FilterOperation*);
 
-    static PassRefPtrWillBeRawPtr<FilterEffect> build(Filter*, Element*, FilterEffect*, const ReferenceFilterOperation&);
+    static PassRefPtrWillBeRawPtr<ReferenceFilter> build(float zoom, Element*, FilterEffect* previousEffect, const ReferenceFilterOperation&);
 
 private:
     static HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>* documentResourceReferences;
