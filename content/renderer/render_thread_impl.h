@@ -85,6 +85,7 @@ class AecDumpMessageFilter;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
+class BluetoothMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
 class CompositorForwardingMessageFilter;
@@ -577,6 +578,8 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<IPC::MessageFilter> input_event_filter_;
   scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<CompositorForwardingMessageFilter> compositor_message_filter_;
+
+  scoped_refptr<BluetoothMessageFilter> bluetooth_message_filter_;
 
   scoped_refptr<cc_blink::ContextProviderWebContext>
       shared_main_thread_contexts_;

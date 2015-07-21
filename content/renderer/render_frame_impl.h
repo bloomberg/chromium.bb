@@ -541,6 +541,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                        const blink::WebString& title);
   virtual void unregisterProtocolHandler(const blink::WebString& scheme,
                                          const blink::WebURL& url);
+  virtual blink::WebBluetooth* bluetooth();
 
 #if defined(ENABLE_WEBVR)
   blink::WebVRClient* webVRClient() override;
@@ -996,6 +997,8 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_ptr<PermissionDispatcher> permission_client_;
 
   scoped_ptr<blink::WebAppBannerClient> app_banner_client_;
+
+  scoped_ptr<blink::WebBluetooth> bluetooth_;
 
 #if defined(ENABLE_WEBVR)
   // The VR dispatcher attached to the frame, lazily initialized.

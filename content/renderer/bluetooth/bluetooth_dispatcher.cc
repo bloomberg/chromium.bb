@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/bluetooth/bluetooth_dispatcher.h"
+#include "content/renderer/bluetooth/bluetooth_dispatcher.h"
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"

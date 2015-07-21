@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/bluetooth/web_bluetooth_impl.h"
+#include "content/renderer/bluetooth/web_bluetooth_impl.h"
 
-#include "content/child/bluetooth/bluetooth_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/renderer/bluetooth/bluetooth_dispatcher.h"
 
 namespace content {
 

@@ -39,7 +39,6 @@ class NotificationDispatcher;
 class PermissionDispatcher;
 class PushDispatcher;
 class ThreadSafeSender;
-class WebBluetoothImpl;
 class WebCryptoImpl;
 class WebGeofencingProviderImpl;
 class WebMemoryDumpProviderAdapter;
@@ -167,7 +166,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual void didStopWorkerRunLoop();
   virtual blink::WebCrypto* crypto();
   virtual blink::WebGeofencingProvider* geofencingProvider();
-  virtual blink::WebBluetooth* bluetooth();
   virtual blink::WebNotificationManager* notificationManager();
   virtual blink::WebPushProvider* pushProvider();
   virtual blink::WebServicePortProvider* createServicePortProvider(
@@ -192,7 +190,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
   scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;
-  scoped_ptr<WebBluetoothImpl> bluetooth_;
   base::ScopedPtrHashMap<blink::WebMemoryDumpProvider*,
                          scoped_ptr<WebMemoryDumpProviderAdapter>>
       memory_dump_providers_;
