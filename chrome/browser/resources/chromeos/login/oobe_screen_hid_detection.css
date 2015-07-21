@@ -50,8 +50,7 @@
   display: inline;
 }
 
-#hid-detection .label,
-#hid-keyboard-pincode {
+#hid-detection .label {
   display: none;
 }
 
@@ -94,6 +93,3 @@
   visibility: visible;
 }
 
-.pairing .show-pincode #hid-keyboard-pincode {
-  display: block;
-}

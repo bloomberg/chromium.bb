@@ -128,3 +128,58 @@ TEST_F('OobeWebUITest', 'DISABLED_OobeUserImage', function() {
 TEST_F('OobeWebUITest', 'DISABLED_OobeAccountPicker', function() {
   Oobe.getInstance().showScreen({'id':'account-picker'});
 });
+
+
+TEST_F('OobeWebUITest', 'HIDDetectionScreenTest', function() {
+  function getPincodeSymbol(i) {
+    return $('hid-keyboard-pincode-sym-' + (i + 1));
+  }
+
+  function getDisplayedPincode() {
+    var pincode = '';
+    for (var i = 0; i < 6; ++i)
+      pincode += getPincodeSymbol(i).textContent;
+    return pincode;
+  }
+
+  login.HIDDetectionScreen.contextChanged({
+    'keyboard-state': 'searching',
+    'mouse-state': 'searching'
+  });
+  Oobe.showScreen({'id': 'hid-detection'});
+  expectTrue($('hid-keyboard-pincode').hidden);
+
+  login.HIDDetectionScreen.contextChanged({
+    'keyboard-state': 'pairing',
+    'keyboard-pincode': '013188'
+  });
+  expectFalse($('hid-keyboard-pincode').hidden);
+  expectEquals('013188', getDisplayedPincode());
+
+  login.HIDDetectionScreen.contextChanged({
+    'num-keys-entered-expected': true,
+    'num-keys-entered-pincode': 3
+  });
+  expectFalse($('hid-keyboard-pincode').hidden);
+  expectEquals('013188', getDisplayedPincode());
+  [
+    { 'key-typed': true },
+    { 'key-typed': true },
+    { 'key-typed': true },
+    { 'key-next': true },
+    { 'key-untyped': true },
+    { 'key-untyped': true },
+    { 'key-untyped': true }  // Enter key symbol.
+  ].forEach(function(expectedClasses, i) {
+    var symbol = getPincodeSymbol(i);
+    ['key-typed', 'key-untyped', 'key-next'].forEach(function(className) {
+      expectEquals(!!expectedClasses[className],
+                   symbol.classList.contains(className));
+    });
+  });
+
+  login.HIDDetectionScreen.contextChanged({
+    'keyboard-state': 'connected'
+  });
+  expectTrue($('hid-keyboard-pincode').hidden);
+});

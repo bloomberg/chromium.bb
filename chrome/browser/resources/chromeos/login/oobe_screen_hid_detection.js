@@ -17,6 +17,8 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
   var CONTEXT_KEY_KEYBOARD_LABEL = 'keyboard-device-label';
   var CONTEXT_KEY_CONTINUE_BUTTON_ENABLED = 'continue-button-enabled';
 
+  var PINCODE_LENGTH = 6;
+
   return {
 
   /**
@@ -71,6 +73,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       this.context.addObserver(
         CONTEXT_KEY_KEYBOARD_STATE,
         function(stateId) {
+          self.updatePincodeKeysState_();
           if (stateId === undefined)
             return;
           self.setDeviceBlockState_('hid-keyboard-block', stateId);
@@ -80,50 +83,18 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
           } else if (stateId == self.CONNECTION.PAIRING) {
             $('hid-keyboard-label-pairing').textContent = self.context.get(
                 CONTEXT_KEY_KEYBOARD_LABEL, '');
-          } else if (stateId == self.CONNECTION.CONNECTED) {
           }
         }
       );
       this.context.addObserver(
         CONTEXT_KEY_KEYBOARD_PINCODE,
-        function(pincode) {
-          self.setPincodeKeysState_();
-          if (!pincode) {
-            $('hid-keyboard-pincode').classList.remove('show-pincode');
-            return;
-          }
-          if (self.context.get(CONTEXT_KEY_KEYBOARD_STATE, '') !=
-              self.CONNECTION.PAIRING) {
-            return;
-          }
-          $('hid-keyboard-pincode').classList.add('show-pincode');
-          for (var i = 0, len = pincode.length; i < len; i++) {
-            var pincodeSymbol = $('hid-keyboard-pincode-sym-' + (i + 1));
-            pincodeSymbol.textContent = pincode[i];
-          }
-          announceAccessibleMessage(
-            self.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '') + ' ' + pincode +
-            ' ' + loadTimeData.getString('hidDetectionBTEnterKey'));
-        }
-      );
+        this.updatePincodeKeysState_.bind(this));
       this.context.addObserver(
         CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED,
-        function(entered_part_expected) {
-          if (self.context.get(CONTEXT_KEY_KEYBOARD_STATE, '') != 'pairing')
-            return;
-          self.setPincodeKeysState_();
-        }
-      );
+        this.updatePincodeKeysState_.bind(this));
       this.context.addObserver(
         CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE,
-        function(entered_part) {
-          if (self.context.get(CONTEXT_KEY_KEYBOARD_STATE, '') !=
-              self.CONNECTION.PAIRING) {
-            return;
-          }
-          self.setPincodeKeysState_();
-        }
-      );
+        this.updatePincodeKeysState_.bind(this));
       this.context.addObserver(
         CONTEXT_KEY_CONTINUE_BUTTON_ENABLED,
         function(enabled) {
@@ -186,20 +157,43 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     },
 
     /**
-     * Sets state for pincode key elements.
+     * Updates state for pincode key elements based on context state.
      */
-    setPincodeKeysState_: function() {
+    updatePincodeKeysState_: function() {
+      var pincodeKeys = $('hid-keyboard-pincode');
+      var pincode = this.context.get(CONTEXT_KEY_KEYBOARD_PINCODE, '');
+      var state = this.context.get(CONTEXT_KEY_KEYBOARD_STATE, '');
+
+      if (!pincode || state !== this.CONNECTION.PAIRING) {
+        pincodeKeys.hidden = true;
+        return;
+      }
+
+      if (pincodeKeys.hidden) {
+        pincodeKeys.hidden = false;
+        announceAccessibleMessage(
+            this.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '') + ' ' + pincode +
+            ' ' + loadTimeData.getString('hidDetectionBTEnterKey'));
+      }
+
       var entered = this.context.get(
           CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE, 0);
+
       // whether the functionality of getting num of entered keys is available.
       var expected = this.context.get(
           CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED, false);
-      var pincodeLength = 7; // including enter-key
-      for (var i = 0; i < pincodeLength; i++) {
+
+      if (pincode.length != PINCODE_LENGTH)
+        console.error('Wrong pincode length');
+
+      // Pincode keys plus Enter key.
+      for (var i = 0; i < (PINCODE_LENGTH + 1); i++) {
         var pincodeSymbol = $('hid-keyboard-pincode-sym-' + (i + 1));
         pincodeSymbol.classList.toggle('key-typed', i < entered && expected);
         pincodeSymbol.classList.toggle('key-untyped', i > entered && expected);
         pincodeSymbol.classList.toggle('key-next', i == entered && expected);
+        if (i < PINCODE_LENGTH)
+          pincodeSymbol.textContent = pincode[i] ? pincode[i] : '';
       }
     },
 
