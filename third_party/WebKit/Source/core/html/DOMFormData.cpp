@@ -129,9 +129,9 @@ void DOMFormData::get(const String& name, FormDataEntryValue& result)
         ASSERT(entry.isNone());
 }
 
-Vector<FormDataEntryValue> DOMFormData::getAll(const String& name)
+HeapVector<FormDataEntryValue> DOMFormData::getAll(const String& name)
 {
-    Vector<FormDataEntryValue> results;
+    HeapVector<FormDataEntryValue> results;
     HeapVector<FormDataList::Entry> entries = FormDataList::getAll(name);
     for (const FormDataList::Entry& entry : entries) {
         ASSERT(entry.name() == name);

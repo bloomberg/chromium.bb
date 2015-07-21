@@ -374,6 +374,7 @@ private:
 
 #define ALLOW_ONLY_INLINE_ALLOCATION()                                              \
     public:                                                                         \
+        using IsAllowOnlyInlineAllocation = int;                                    \
         void* operator new(size_t, NotNullTag, void* location) { return location; } \
         void* operator new(size_t, void* location) { return location; }             \
     private:                                                                        \

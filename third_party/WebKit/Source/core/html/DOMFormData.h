@@ -69,7 +69,7 @@ public:
     void append(const String& name, const String& value);
     void append(ExecutionContext*, const String& name, Blob*, const String& filename = String());
     void get(const String& name, FormDataEntryValue& result);
-    Vector<FormDataEntryValue> getAll(const String& name);
+    HeapVector<FormDataEntryValue> getAll(const String& name);
     void set(const String& name, const String& value);
     void set(const String& name, Blob*, const String& filename = String());
 

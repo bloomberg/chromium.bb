@@ -496,7 +496,7 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, const Request* reque
 
 ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const HeapVector<Member<Request>>& requests, ExceptionState& exceptionState)
 {
-    Vector<RequestInfo> requestInfos;
+    HeapVector<RequestInfo> requestInfos;
     requestInfos.resize(requests.size());
     Vector<ScriptPromise> promises;
     promises.resize(requests.size());
