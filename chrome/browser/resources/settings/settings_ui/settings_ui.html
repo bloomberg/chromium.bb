@@ -1,16 +1,17 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://md-settings/settings_drawer/settings_drawer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://md-settings/settings_main/settings_main.html">
+<link rel="import" href="chrome://md-settings/settings_menu/settings_menu.html">
 
 <dom-module id="cr-settings-ui">
   <link rel="import" type="css" href="settings_ui.css">
   <template>
     <paper-drawer-panel drawer-width="280px">
-      <cr-settings-drawer drawer id="drawer" pages="[[pages]]"
-          selected-id="{{selectedPageId}}">
-      </cr-settings-drawer>
+      <cr-settings-menu drawer class="flex" selected-id="{{selectedPageId}}"
+          pages="[[pages]]">
+      </cr-settings-menu>
       <cr-settings-main main pages="{{pages}}" prefs="{{prefs}}"
           selected-page-id="{{selectedPageId}}">
         <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>

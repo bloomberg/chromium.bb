@@ -60,6 +60,11 @@
     Enable on-screen keyboard
   </message>
 
+  <!-- Advanced Page -->
+  <message name="IDS_SETTINGS_ADVANCED_PAGE_TITLE" desc="Name of the settings page which displays advanced preferences.">
+    Advanced
+  </message>
+
   <!-- Appearance Page -->
   <message name="IDS_SETTINGS_APPEARANCE_PAGE_TITLE" desc="Name of the settings page which displays appearance preferences.">
     Appearance
@@ -84,6 +89,11 @@
   </message>
   <message name="IDS_SETTINGS_CHANGE_HOME_PAGE" desc="Label of the control to change the home page.">
     Change
+  </message>
+
+  <!-- Basic Page -->
+  <message name="IDS_SETTINGS_BASIC_PAGE_TITLE" desc="Name of the settings page which displays advanced preferences.">
+    Basic
   </message>
 
   <!-- Downloads Page -->

@@ -2,18 +2,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
 <link rel="import" href="chrome://md-settings/routes.html">
-<link rel="import" href="chrome://md-settings/settings_page/settings_page_header.html">
-<link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
-<link rel="import" href="chrome://md-settings/appearance_page/appearance_page.html">
-<link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
-<link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
-<link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
-<link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
-<link rel="import" href="chrome://md-settings/search_page/search_page.html">
-<link rel="import" href="chrome://md-settings/sync_page/sync_page.html">
-<link rel="import" href="chrome://md-settings/users_page/users_page.html">
-<link rel="import" href="chrome://md-settings/internet_page/internet_page.html">
+<link rel="import" href="chrome://md-settings/advanced_page/advanced_page.html">
+<link rel="import" href="chrome://md-settings/basic_page/basic_page.html">
 <link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_page_header.html">
 
 <dom-module id="cr-settings-main">
   <link rel="import" type="css" href="settings_main.css">
@@ -25,32 +18,18 @@
       <more-route-selector selected-params="{{params}}">
         <iron-pages id="pageContainer" selected-item="{{selectedPage}}"
             on-iron-select="onIronSelect_" attr-for-selected="PAGE_ID">
+          <cr-settings-basic-page prefs="{{prefs}}" route="basic">
+          </cr-settings-basic-page>
+          <cr-settings-advanced-page prefs="{{prefs}}" route="advanced">
+          </cr-settings-advanced-page>
 <if expr="chromeos">
-          <cr-settings-internet-page route="internet">
-          </cr-settings-internet-page>
           <cr-settings-internet-detail-page route="internet-detail"
               subpage="true" guid="[[params.guid]]"
               selected-page="[[selectedPage]]">
           </cr-settings-internet-detail-page>
 </if>
-          <cr-settings-a11y-page prefs="{{prefs}}" route="a11y">
-          </cr-settings-a11y-page>
-          <cr-settings-appearance-page prefs="{{prefs}}" route="appearance">
-          </cr-settings-appearance-page>
-<if expr="chromeos">
-          <cr-settings-date-time-page prefs="{{prefs}}" route="dateTime">
-          </cr-settings-date-time-page>
-</if>
-          <cr-settings-privacy-page prefs="{{prefs}}" route="privacy">
-          </cr-settings-privacy-page>
-          <cr-settings-downloads-page prefs="{{prefs}}" route="downloads">
-          </cr-settings-downloads-page>
-          <cr-settings-search-page route="search"></cr-settings-search-page>
           <cr-settings-search-engines-page route="search-engines">
           </cr-settings-search-engines-page>
-          <cr-settings-sync-page route="sync"></cr-settings-sync-page>
-          <cr-settings-users-page prefs="{{prefs}}" route="users">
-          </cr-settings-users-page>
         </iron-pages>
       </more-route-selector>
     </div>

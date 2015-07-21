@@ -262,6 +262,11 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
 namespace settings {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("basicPageTitle",
+                                  IDS_SETTINGS_BASIC_PAGE_TITLE);
+  html_source->AddLocalizedString("advancedPageTitle",
+                                  IDS_SETTINGS_ADVANCED_PAGE_TITLE);
+
   AddA11yStrings(html_source);
   AddAppearanceStrings(html_source);
   AddCommonStrings(html_source);
