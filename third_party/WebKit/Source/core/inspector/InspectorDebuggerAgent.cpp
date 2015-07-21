@@ -51,7 +51,7 @@
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/V8AsyncCallTracker.h"
-#include "core/inspector/V8Debugger.h"
+#include "core/inspector/v8/V8Debugger.h"
 #include "platform/JSONValues.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -537,37 +537,37 @@ bool InspectorDebuggerAgent::isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr
     return isBlackboxed;
 }
 
-ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptionPause()
+V8DebuggerListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptionPause()
 {
     if (m_steppingFromFramework)
-        return ScriptDebugListener::NoSkip;
+        return V8DebuggerListener::NoSkip;
     if (isTopCallFrameBlackboxed())
-        return ScriptDebugListener::Continue;
-    return ScriptDebugListener::NoSkip;
+        return V8DebuggerListener::Continue;
+    return V8DebuggerListener::NoSkip;
 }
 
-ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPause()
+V8DebuggerListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPause()
 {
     if (m_steppingFromFramework)
-        return ScriptDebugListener::NoSkip;
+        return V8DebuggerListener::NoSkip;
 
     if (m_skipNextDebuggerStepOut) {
         m_skipNextDebuggerStepOut = false;
         if (m_scheduledDebuggerStep == StepOut)
-            return ScriptDebugListener::StepOut;
+            return V8DebuggerListener::StepOut;
     }
 
     if (!isTopCallFrameBlackboxed())
-        return ScriptDebugListener::NoSkip;
+        return V8DebuggerListener::NoSkip;
 
     if (m_skippedStepFrameCount >= maxSkipStepFrameCount)
-        return ScriptDebugListener::StepOut;
+        return V8DebuggerListener::StepOut;
 
     if (!m_skippedStepFrameCount)
         m_recursionLevelForStepFrame = 1;
 
     ++m_skippedStepFrameCount;
-    return ScriptDebugListener::StepFrame;
+    return V8DebuggerListener::StepFrame;
 }
 
 PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
@@ -1542,7 +1542,7 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script, Compi
     return ContentSearchUtils::findSourceMapURL(script.source(), ContentSearchUtils::JavaScriptMagicComment);
 }
 
-// ScriptDebugListener functions
+// V8DebuggerListener functions
 
 void InspectorDebuggerAgent::didParseSource(const ParsedScript& parsedScript)
 {
@@ -1591,30 +1591,30 @@ void InspectorDebuggerAgent::didParseSource(const ParsedScript& parsedScript)
     }
 }
 
-ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(v8::Local<v8::Context> context, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> v8exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection)
+V8DebuggerListener::SkipPauseRequest InspectorDebuggerAgent::didPause(v8::Local<v8::Context> context, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> v8exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection)
 {
     ScriptState* scriptState = ScriptState::from(context);
     ScriptValue exception(scriptState, v8exception);
 
-    ScriptDebugListener::SkipPauseRequest result;
+    V8DebuggerListener::SkipPauseRequest result;
     if (m_skipAllPauses)
-        result = ScriptDebugListener::Continue;
+        result = V8DebuggerListener::Continue;
     else if (!hitBreakpoints.isEmpty())
-        result = ScriptDebugListener::NoSkip; // Don't skip explicit breakpoints even if set in frameworks.
+        result = V8DebuggerListener::NoSkip; // Don't skip explicit breakpoints even if set in frameworks.
     else if (!exception.isEmpty())
         result = shouldSkipExceptionPause();
     else if (m_scheduledDebuggerStep != NoStep || m_javaScriptPauseScheduled || m_pausingOnNativeEvent)
         result = shouldSkipStepPause();
     else
-        result = ScriptDebugListener::NoSkip;
+        result = V8DebuggerListener::NoSkip;
 
     m_skipNextDebuggerStepOut = false;
-    if (result != ScriptDebugListener::NoSkip)
+    if (result != V8DebuggerListener::NoSkip)
         return result;
 
     // Skip pauses inside V8 internal scripts and on syntax errors.
     if (callFrames.IsEmpty())
-        return ScriptDebugListener::Continue;
+        return V8DebuggerListener::Continue;
 
     ASSERT(scriptState);
     ASSERT(!m_pausedScriptState);

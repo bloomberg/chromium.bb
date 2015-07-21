@@ -32,8 +32,8 @@
 #include "core/inspector/WorkerThreadDebugger.h"
 
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/inspector/ScriptDebugListener.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
+#include "core/inspector/v8/V8DebuggerListener.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/MessageQueue.h"
 #include <v8.h>
@@ -58,18 +58,18 @@ void WorkerThreadDebugger::setContextDebugData(v8::Local<v8::Context> context)
     V8Debugger::setContextDebugData(context, workerContextDebugId);
 }
 
-void WorkerThreadDebugger::addListener(ScriptDebugListener* listener)
+void WorkerThreadDebugger::addListener(V8DebuggerListener* listener)
 {
     ASSERT(!m_listener);
     debugger()->enable();
     m_listener = listener;
-    Vector<ScriptDebugListener::ParsedScript> compiledScripts;
+    Vector<V8DebuggerListener::ParsedScript> compiledScripts;
     debugger()->getCompiledScripts(workerContextDebugId, compiledScripts);
     for (size_t i = 0; i < compiledScripts.size(); i++)
         listener->didParseSource(compiledScripts[i]);
 }
 
-void WorkerThreadDebugger::removeListener(ScriptDebugListener* listener)
+void WorkerThreadDebugger::removeListener(V8DebuggerListener* listener)
 {
     ASSERT(m_listener == listener);
     debugger()->continueProgram();
@@ -77,7 +77,7 @@ void WorkerThreadDebugger::removeListener(ScriptDebugListener* listener)
     debugger()->disable();
 }
 
-ScriptDebugListener* WorkerThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context>)
+V8DebuggerListener* WorkerThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context>)
 {
     // There is only one worker context in isolate.
     return m_listener;

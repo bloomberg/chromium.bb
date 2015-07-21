@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8Debugger_h
-#define V8Debugger_h
+#ifndef V8DebuggerImpl_h
+#define V8DebuggerImpl_h
 
 #include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
-#include "core/inspector/ScriptBreakpoint.h"
-#include "core/inspector/ScriptDebugListener.h"
+#include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8DebuggerListener.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -43,84 +43,63 @@
 
 namespace blink {
 
-class ScriptDebugListener;
+class V8DebuggerListener;
 class JavaScriptCallFrame;
 
-class CORE_EXPORT V8Debugger {
-    WTF_MAKE_NONCOPYABLE(V8Debugger);
+class CORE_EXPORT V8DebuggerImpl : public V8Debugger {
+    WTF_MAKE_NONCOPYABLE(V8DebuggerImpl);
 public:
-    class CORE_EXPORT Client {
-    public:
-        virtual ~Client() { }
-        virtual v8::Local<v8::Object> compileDebuggerScript() = 0;
-        virtual ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
-        virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
-        virtual void quitMessageLoopOnPause() = 0;
-    };
+    V8DebuggerImpl(v8::Isolate*, V8DebuggerClient*);
+    ~V8DebuggerImpl() override;
 
-    static PassOwnPtr<V8Debugger> create(v8::Isolate* isolate, Client* client)
-    {
-        return adoptPtr(new V8Debugger(isolate, client));
-    }
+    void enable() override;
+    void disable() override;
+    bool enabled() const override;
 
-    virtual ~V8Debugger();
-
-    void enable();
-    void disable();
-    bool enabled() const;
-
-    static void setContextDebugData(v8::Local<v8::Context>, const String& contextDebugData);
     // Each script inherits debug data from v8::Context where it has been compiled.
     // Only scripts whose debug data contains |contextDebugDataSubstring| substring will be reported.
     // Passing empty string will result in reporting all scripts.
-    void getCompiledScripts(const String& contextDebugDataSubstring, Vector<ScriptDebugListener::ParsedScript>&);
+    void getCompiledScripts(const String& contextDebugDataSubstring, Vector<V8DebuggerListener::ParsedScript>&) override;
 
-    String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
-    void removeBreakpoint(const String& breakpointId);
-    void setBreakpointsActivated(bool);
+    String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation) override;
+    void removeBreakpoint(const String& breakpointId) override;
+    void setBreakpointsActivated(bool) override;
 
-    enum PauseOnExceptionsState {
-        DontPauseOnExceptions,
-        PauseOnAllExceptions,
-        PauseOnUncaughtExceptions
-    };
-    PauseOnExceptionsState pauseOnExceptionsState();
-    void setPauseOnExceptionsState(PauseOnExceptionsState);
+    PauseOnExceptionsState pauseOnExceptionsState() override;
+    void setPauseOnExceptionsState(PauseOnExceptionsState) override;
 
-    void setPauseOnNextStatement(bool);
-    bool pausingOnNextStatement();
-    bool canBreakProgram();
-    void breakProgram();
-    void continueProgram();
-    void stepIntoStatement();
-    void stepOverStatement();
-    void stepOutOfFunction();
-    void clearStepping();
+    void setPauseOnNextStatement(bool) override;
+    bool pausingOnNextStatement() override;
+    bool canBreakProgram() override;
+    void breakProgram() override;
+    void continueProgram() override;
+    void stepIntoStatement() override;
+    void stepOverStatement() override;
+    void stepOutOfFunction() override;
+    void clearStepping() override;
 
-    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, RefPtr<JSONObject>* result);
-    v8::Local<v8::Object> currentCallFrames();
-    v8::Local<v8::Object> currentCallFramesForAsyncStack();
-    PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
-    int frameCount();
+    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, v8::Global<v8::Object>* newCallFrames, RefPtr<JSONObject>* result) override;
+    v8::Local<v8::Object> currentCallFrames() override;
+    v8::Local<v8::Object> currentCallFramesForAsyncStack() override;
+    PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index) override;
+    int frameCount() override;
 
-    bool isPaused();
+    bool isPaused() override;
 
-    v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>);
-    v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&);
-    v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&);
-    v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue);
+    v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>) override;
+    v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&) override;
+    v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&) override;
+    v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue) override;
 
-    v8::Isolate* isolate() const { return m_isolate; }
+    v8::Isolate* isolate() const override { return m_isolate; }
 
 private:
-    V8Debugger(v8::Isolate*, Client*);
-
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Context> debuggerContext() const;
     void clearBreakpoints();
 
-    ScriptDebugListener::ParsedScript createParsedScript(v8::Local<v8::Object> sourceObject, CompileResult);
+    V8DebuggerListener::ParsedScript createParsedScript(v8::Local<v8::Object> sourceObject, CompileResult);
 
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     void handleProgramBreak(v8::Local<v8::Context> pausedContext, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
@@ -137,11 +116,11 @@ private:
     };
     v8::Local<v8::Object> currentCallFramesInner(ScopeInfoDetails);
     PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
-    void handleV8AsyncTaskEvent(ScriptDebugListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
-    void handleV8PromiseEvent(ScriptDebugListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    void handleV8AsyncTaskEvent(V8DebuggerListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
+    void handleV8PromiseEvent(V8DebuggerListener*, v8::Local<v8::Context>, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
     v8::Isolate* m_isolate;
-    Client* m_client;
+    V8DebuggerClient* m_client;
     bool m_breakpointsActivated;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::UniquePersistent<v8::Object> m_debuggerScript;
@@ -155,4 +134,4 @@ private:
 } // namespace blink
 
 
-#endif // V8Debugger_h
+#endif // V8DebuggerImpl_h

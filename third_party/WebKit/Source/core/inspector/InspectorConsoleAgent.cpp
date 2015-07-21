@@ -36,7 +36,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
-#include "core/inspector/V8Debugger.h"
+#include "core/inspector/v8/V8Debugger.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

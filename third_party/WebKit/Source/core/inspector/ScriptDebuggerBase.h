@@ -6,11 +6,12 @@
 #define ScriptDebuggerBase_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/V8Debugger.h"
+#include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8DebuggerClient.h"
 
 namespace blink {
 
-class CORE_EXPORT ScriptDebuggerBase : public V8Debugger::Client {
+class CORE_EXPORT ScriptDebuggerBase : public V8DebuggerClient {
     WTF_MAKE_NONCOPYABLE(ScriptDebuggerBase);
 public:
     ScriptDebuggerBase(v8::Isolate*);

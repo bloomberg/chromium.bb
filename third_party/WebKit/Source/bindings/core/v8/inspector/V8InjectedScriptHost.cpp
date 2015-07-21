@@ -24,7 +24,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/JavaScriptCallFrame.h"
-#include "core/inspector/V8Debugger.h"
+#include "core/inspector/v8/V8Debugger.h"
 #include "platform/JSONValues.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"

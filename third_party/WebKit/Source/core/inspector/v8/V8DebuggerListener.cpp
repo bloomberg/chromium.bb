@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/inspector/ScriptDebugListener.h"
+#include "core/inspector/v8/V8DebuggerListener.h"
 
 namespace {
 static const unsigned kBlackboxUnknown = 0;
@@ -11,7 +11,7 @@ static const unsigned kBlackboxUnknown = 0;
 
 namespace blink {
 
-ScriptDebugListener::Script::Script()
+V8DebuggerListener::Script::Script()
     : m_startLine(0)
     , m_startColumn(0)
     , m_endLine(0)
@@ -22,12 +22,12 @@ ScriptDebugListener::Script::Script()
 {
 }
 
-String ScriptDebugListener::Script::sourceURL() const
+String V8DebuggerListener::Script::sourceURL() const
 {
     return m_sourceURL.isEmpty() ? m_url : m_sourceURL;
 }
 
-bool ScriptDebugListener::Script::getBlackboxedState(unsigned blackboxGeneration, bool* isBlackboxed) const
+bool V8DebuggerListener::Script::getBlackboxedState(unsigned blackboxGeneration, bool* isBlackboxed) const
 {
     if (m_blackboxGeneration == kBlackboxUnknown || m_blackboxGeneration != blackboxGeneration)
         return false;
@@ -35,70 +35,70 @@ bool ScriptDebugListener::Script::getBlackboxedState(unsigned blackboxGeneration
     return true;
 }
 
-void ScriptDebugListener::Script::setBlackboxedState(unsigned blackboxGeneration, bool isBlackboxed)
+void V8DebuggerListener::Script::setBlackboxedState(unsigned blackboxGeneration, bool isBlackboxed)
 {
     ASSERT(blackboxGeneration);
     m_isBlackboxedURL = isBlackboxed;
     m_blackboxGeneration = blackboxGeneration;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setURL(const String& url)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setURL(const String& url)
 {
     m_url = url;
     m_blackboxGeneration = kBlackboxUnknown;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setSourceURL(const String& sourceURL)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setSourceURL(const String& sourceURL)
 {
     m_sourceURL = sourceURL;
     m_blackboxGeneration = kBlackboxUnknown;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setSourceMappingURL(const String& sourceMappingURL)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setSourceMappingURL(const String& sourceMappingURL)
 {
     m_sourceMappingURL = sourceMappingURL;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setSource(const String& source)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setSource(const String& source)
 {
     m_source = source;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setStartLine(int startLine)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setStartLine(int startLine)
 {
     m_startLine = startLine;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setStartColumn(int startColumn)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setStartColumn(int startColumn)
 {
     m_startColumn = startColumn;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setEndLine(int endLine)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setEndLine(int endLine)
 {
     m_endLine = endLine;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setEndColumn(int endColumn)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setEndColumn(int endColumn)
 {
     m_endColumn = endColumn;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setIsContentScript(bool isContentScript)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setIsContentScript(bool isContentScript)
 {
     m_isContentScript = isContentScript;
     return *this;
 }
 
-ScriptDebugListener::Script& ScriptDebugListener::Script::setIsInternalScript(bool isInternalScript)
+V8DebuggerListener::Script& V8DebuggerListener::Script::setIsInternalScript(bool isInternalScript)
 {
     m_isInternalScript = isInternalScript;
     return *this;

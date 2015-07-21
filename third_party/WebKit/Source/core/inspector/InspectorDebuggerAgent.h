@@ -37,7 +37,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/PromiseTracker.h"
 #include "core/inspector/ScriptBreakpoint.h"
-#include "core/inspector/ScriptDebugListener.h"
+#include "core/inspector/v8/V8DebuggerListener.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -65,7 +65,7 @@ typedef String ErrorString;
 
 class CORE_EXPORT InspectorDebuggerAgent
     : public InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>
-    , public ScriptDebugListener
+    , public V8DebuggerListener
     , public InspectorBackendDispatcher::DebuggerCommandHandler
     , public PromiseTracker::Listener {
     WTF_MAKE_NONCOPYABLE(InspectorDebuggerAgent);

@@ -27,8 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptDebugListener_h
-#define ScriptDebugListener_h
+#ifndef V8DebuggerListener_h
+#define V8DebuggerListener_h
 
 #include "core/CoreExport.h"
 #include "wtf/Forward.h"
@@ -38,11 +38,9 @@
 
 namespace blink {
 
-class ExecutionContext;
-
 enum CompileResult { CompileSuccess, CompileError };
 
-class CORE_EXPORT ScriptDebugListener {
+class CORE_EXPORT V8DebuggerListener {
 public:
     class Script {
     public:
@@ -104,7 +102,7 @@ public:
         CompileResult compileResult;
     };
 
-    virtual ~ScriptDebugListener() { }
+    virtual ~V8DebuggerListener() { }
 
     virtual void didParseSource(const ParsedScript&) = 0;
     virtual SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) = 0;
@@ -118,4 +116,4 @@ public:
 } // namespace blink
 
 
-#endif // ScriptDebugListener_h
+#endif // V8DebuggerListener_h

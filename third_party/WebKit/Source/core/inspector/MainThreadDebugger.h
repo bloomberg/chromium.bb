@@ -63,8 +63,8 @@ public:
     ~MainThreadDebugger() override;
 
     static void initializeContext(v8::Local<v8::Context>, int worldId);
-    void addListener(ScriptDebugListener*, LocalFrame*);
-    void removeListener(ScriptDebugListener*, LocalFrame*);
+    void addListener(V8DebuggerListener*, LocalFrame*);
+    void removeListener(V8DebuggerListener*, LocalFrame*);
 
     static MainThreadDebugger* instance();
     static void interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task>);
@@ -73,13 +73,13 @@ public:
 private:
     MainThreadDebugger(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
 
-    ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
+    V8DebuggerListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
     void runMessageLoopOnPause(v8::Local<v8::Context>) override;
     void quitMessageLoopOnPause() override;
 
     static WTF::Mutex& creationMutex();
 
-    using ListenersMap = HashMap<int, ScriptDebugListener*>;
+    using ListenersMap = HashMap<int, V8DebuggerListener*>;
     ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     RawPtrWillBePersistent<LocalFrame> m_pausedFrame;

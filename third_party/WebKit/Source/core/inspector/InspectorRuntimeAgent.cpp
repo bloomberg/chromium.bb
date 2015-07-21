@@ -36,7 +36,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/RemoteObjectId.h"
-#include "core/inspector/V8Debugger.h"
+#include "core/inspector/v8/V8Debugger.h"
 #include "platform/JSONValues.h"
 
 using blink::TypeBuilder::Runtime::ExecutionContextDescription;

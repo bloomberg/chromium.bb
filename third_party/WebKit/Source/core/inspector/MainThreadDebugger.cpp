@@ -43,7 +43,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/ScriptDebugListener.h"
+#include "core/inspector/v8/V8DebuggerListener.h"
 #include "core/page/Page.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -108,7 +108,7 @@ void MainThreadDebugger::initializeContext(v8::Local<v8::Context> context, int w
     V8Debugger::setContextDebugData(context, debugData);
 }
 
-void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot)
+void MainThreadDebugger::addListener(V8DebuggerListener* listener, LocalFrame* localFrameRoot)
 {
     ASSERT(localFrameRoot == localFrameRoot->localFrameRoot());
 
@@ -121,13 +121,13 @@ void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* 
     int localFrameRootId = frameId(localFrameRoot);
     m_listenersMap.set(localFrameRootId, listener);
     String contextDataSubstring = "," + String::number(localFrameRootId) + "]";
-    Vector<ScriptDebugListener::ParsedScript> compiledScripts;
+    Vector<V8DebuggerListener::ParsedScript> compiledScripts;
     debugger()->getCompiledScripts(contextDataSubstring, compiledScripts);
     for (size_t i = 0; i < compiledScripts.size(); i++)
         listener->didParseSource(compiledScripts[i]);
 }
 
-void MainThreadDebugger::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)
+void MainThreadDebugger::removeListener(V8DebuggerListener* listener, LocalFrame* localFrame)
 {
     int localFrameId = frameId(localFrame);
     if (!m_listenersMap.contains(localFrameId))
@@ -155,7 +155,7 @@ void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunne
         s_instance->m_taskRunner->interruptAndRun(task);
 }
 
-ScriptDebugListener* MainThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context> context)
+V8DebuggerListener* MainThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context> context)
 {
     v8::HandleScope scope(context->GetIsolate());
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
@@ -174,7 +174,7 @@ void MainThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context> context)
     m_clientMessageLoop->run(m_pausedFrame);
 
     // The listener may have been removed in the nested loop.
-    if (ScriptDebugListener* listener = m_listenersMap.get(frameId(m_pausedFrame.get())))
+    if (V8DebuggerListener* listener = m_listenersMap.get(frameId(m_pausedFrame.get())))
         listener->didContinue();
 
     m_pausedFrame = 0;

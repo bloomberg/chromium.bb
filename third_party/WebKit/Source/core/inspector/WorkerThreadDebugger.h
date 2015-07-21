@@ -47,16 +47,16 @@ public:
     ~WorkerThreadDebugger() override;
 
     static void setContextDebugData(v8::Local<v8::Context>);
-    void addListener(ScriptDebugListener*);
-    void removeListener(ScriptDebugListener*);
+    void addListener(V8DebuggerListener*);
+    void removeListener(V8DebuggerListener*);
 
 private:
 
-    ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>);
+    V8DebuggerListener* getDebugListenerForContext(v8::Local<v8::Context>);
     void runMessageLoopOnPause(v8::Local<v8::Context>);
     void quitMessageLoopOnPause();
 
-    ScriptDebugListener* m_listener;
+    V8DebuggerListener* m_listener;
     WorkerThread* m_workerThread;
 };
 
