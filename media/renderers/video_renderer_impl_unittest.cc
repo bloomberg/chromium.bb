@@ -46,7 +46,8 @@ MATCHER_P(HasTimestamp, ms, "") {
   return arg->timestamp().InMilliseconds() == ms;
 }
 
-class VideoRendererImplTest : public testing::TestWithParam<bool> {
+class VideoRendererImplTest
+    : public testing::TestWithParam<bool /* new_video_renderer */> {
  public:
   VideoRendererImplTest()
       : tick_clock_(new base::SimpleTestTickClock()),
@@ -487,28 +488,29 @@ TEST_P(VideoRendererImplTest, StartPlayingFrom_RightAfter) {
 }
 
 TEST_P(VideoRendererImplTest, StartPlayingFrom_LowDelay) {
-  // In low-delay mode only one frame is required to finish preroll.
+  // In low-delay mode only one frame is required to finish preroll. But frames
+  // prior to the start time will not be used.
   InitializeWithLowDelay(true);
-  QueueFrames("0");
+  QueueFrames("0 10");
 
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(10)));
   // Expect some amount of have enough/nothing due to only requiring one frame.
-  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH))
       .Times(AnyNumber());
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(AnyNumber());
-  StartPlayingFrom(0);
+  StartPlayingFrom(10);
 
-  QueueFrames("10");
+  QueueFrames("20");
   SatisfyPendingRead();
 
   renderer_->OnTimeStateChanged(true);
   time_source_.StartTicking();
 
   WaitableMessageLoopEvent event;
-  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(10)))
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(20)))
       .WillOnce(RunClosure(event.GetClosure()));
-  AdvanceTimeInMs(10);
+  AdvanceTimeInMs(20);
   event.RunAndWait();
 
   Destroy();

@@ -490,6 +490,16 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
       return;
     }
 
+    // In low delay mode, don't accumulate frames that's earlier than the start
+    // time. Otherwise we could declare HAVE_ENOUGH_DATA and start playback
+    // prematurely.
+    if (low_delay_ &&
+        !frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM) &&
+        frame->timestamp() < start_timestamp_) {
+      AttemptRead_Locked();
+      return;
+    }
+
     if (frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM)) {
       DCHECK(!received_end_of_stream_);
       received_end_of_stream_ = true;
