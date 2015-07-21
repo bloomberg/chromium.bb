@@ -15,6 +15,18 @@ PASS event.sourceDevice.firesTouchEvents is false
 click
 PASS event.sourceDevice is non-null.
 PASS event.sourceDevice.firesTouchEvents is false
+mousedown
+PASS event.sourceDevice is non-null.
+PASS event.sourceDevice.firesTouchEvents is false
+mouseup
+PASS event.sourceDevice is non-null.
+PASS event.sourceDevice.firesTouchEvents is false
+click
+PASS event.sourceDevice is non-null.
+PASS event.sourceDevice.firesTouchEvents is false
+dblclick
+PASS event.sourceDevice is non-null.
+PASS event.sourceDevice.firesTouchEvents is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

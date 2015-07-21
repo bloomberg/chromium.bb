@@ -150,7 +150,7 @@ void MouseEvent::initMouseEventInternal(ScriptState* scriptState, const AtomicSt
     if (scriptState && scriptState->world().isIsolatedWorld())
         UIEventWithKeyState::didCreateEventInIsolatedWorld(ctrlKey, altKey, shiftKey, metaKey);
 
-    initUIEvent(type, canBubble, cancelable, view, detail);
+    initUIEventInternal(type, canBubble, cancelable, view, detail, sourceDevice);
 
     m_screenLocation = IntPoint(screenX, screenY);
     m_ctrlKey = ctrlKey;

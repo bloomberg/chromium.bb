@@ -10,11 +10,13 @@ function mouseHandler(event) {
 }
 
 if (window.eventSender) {
-    for (var evt of ['mousemove', 'mousedown', 'mouseup', 'click']) {
+    for (var evt of ['mousemove', 'mousedown', 'mouseup', 'click', 'dblclick']) {
         document.addEventListener(evt, mouseHandler);
     }
      
     eventSender.mouseMoveTo(1,1);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
     eventSender.mouseDown();
     eventSender.mouseUp();
     

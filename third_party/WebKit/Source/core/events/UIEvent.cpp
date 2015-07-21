@@ -55,6 +55,11 @@ UIEvent::~UIEvent()
 
 void UIEvent::initUIEvent(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<AbstractView> viewArg, int detailArg)
 {
+    initUIEventInternal(typeArg, canBubbleArg, cancelableArg, viewArg, detailArg, nullptr);
+}
+
+void UIEvent::initUIEventInternal(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<AbstractView> viewArg, int detailArg, InputDevice* sourceDeviceArg)
+{
     if (dispatched())
         return;
 
@@ -62,7 +67,7 @@ void UIEvent::initUIEvent(const AtomicString& typeArg, bool canBubbleArg, bool c
 
     m_view = viewArg;
     m_detail = detailArg;
-    m_sourceDevice = nullptr;
+    m_sourceDevice = sourceDeviceArg;
 }
 
 bool UIEvent::isUIEvent() const

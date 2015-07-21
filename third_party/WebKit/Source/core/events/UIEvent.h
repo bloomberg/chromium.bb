@@ -54,6 +54,7 @@ public:
     ~UIEvent() override;
 
     void initUIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int detail);
+    void initUIEventInternal(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>, int detail, InputDevice* sourceDevice);
 
     AbstractView* view() const { return m_view.get(); }
     int detail() const { return m_detail; }
