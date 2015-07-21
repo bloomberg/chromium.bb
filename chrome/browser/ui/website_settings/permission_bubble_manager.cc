@@ -241,6 +241,9 @@ void PermissionBubbleManager::RequireUserGesture(bool required) {
 void PermissionBubbleManager::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  if (details.is_in_page)
+    return;
+
   main_frame_has_fully_loaded_ = false;
 }
 

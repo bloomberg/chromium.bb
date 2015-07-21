@@ -122,4 +122,28 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, NavTwiceWithHash) {
   EXPECT_EQ(2, bubble_view()->requests_count());
 }
 
+// Bubble requests should be shown after in-page navigation.
+IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, InPageNavigation) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      embedded_test_server()->GetURL("/empty.html"),
+      1);
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      embedded_test_server()->GetURL("/empty.html#0"),
+      1);
+
+  // Request 'geolocation' permission.
+  ExecuteScriptAndGetValue(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      "navigator.geolocation.getCurrentPosition(function(){});");
+  WaitForPermissionBubble();
+
+  EXPECT_EQ(1, bubble_view()->show_count());
+  EXPECT_EQ(1, bubble_view()->requests_count());
+}
+
 }  // anonymous namespace
