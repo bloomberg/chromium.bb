@@ -194,17 +194,6 @@ public:
         completionEvent->wait();
     }
 
-    void postWakeUpTask(long long waitMs)
-    {
-        WebScheduler* scheduler = m_workerThread->backingThread().platformThread().scheduler();
-
-        // The idle task will get posted on an after wake up queue, so we need another task
-        // posted at the right time to wake the system up.  We don't know the right delay here
-        // since the thread can take a variable length of time to be responsive, however this
-        // isn't a problem when posting a delayed task from within a task on the worker thread.
-        scheduler->postLoadingTask(FROM_HERE, new PostDelayedWakeupTask(scheduler, waitMs));
-    }
-
 protected:
     void expectWorkerLifetimeReportingCalls()
     {
@@ -237,28 +226,6 @@ TEST_F(WorkerThreadTest, StartAndStopImmediately)
     start();
     m_workerThread->terminateAndWait();
 }
-
-TEST_F(WorkerThreadTest, GcOccursWhileIdle)
-{
-    OwnPtr<WebWaitableEvent> gcDone = adoptPtr(Platform::current()->createWaitableEvent());
-
-    ON_CALL(*m_workerThread, doIdleGc(_)).WillByDefault(Invoke(
-        [&gcDone](double)
-        {
-            gcDone->signal();
-            return false;
-        }));
-
-    EXPECT_CALL(*m_workerThread, doIdleGc(_)).Times(testing::AtLeast(1));
-
-    expectWorkerLifetimeReportingCalls();
-    start();
-    waitForInit();
-    postWakeUpTask(500ul);
-
-    gcDone->wait();
-    m_workerThread->terminateAndWait();
-};
 
 class RepeatingTask : public WebThread::Task {
 public:
