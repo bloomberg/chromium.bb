@@ -39,6 +39,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "child/idle_helper_unittest.cc",
     "child/nestable_task_runner_for_test.cc",
     "child/nestable_task_runner_for_test.h",
     "child/prioritizing_task_queue_selector_unittest.cc",
