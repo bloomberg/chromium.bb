@@ -274,6 +274,8 @@
         'browser/signin/gaia_auth_fetcher_ios.h',
         'browser/signin/gaia_auth_fetcher_ios.mm',
         'browser/signin/gaia_auth_fetcher_ios_private.h',
+        'browser/signin/signin_client_factory.cc',
+        'browser/signin/signin_client_factory.h',
         'browser/signin/signin_client_impl.cc',
         'browser/signin/signin_client_impl.h',
         'browser/signin/signin_error_controller_factory.cc',
