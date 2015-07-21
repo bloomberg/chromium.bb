@@ -14,8 +14,6 @@
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 
-class GURL;
-
 namespace net {
 
 const int64 kMaxHSTSAgeSecs = 86400 * 365;  // 1 year
@@ -43,7 +41,6 @@ bool NET_EXPORT_PRIVATE ParseHSTSHeader(const std::string& value,
 //     "max-age" "=" delta-seconds ";"
 //     "pin-" algo "=" base64 [ ";" ... ]
 //     [ ";" "includeSubdomains" ]
-//     [ ";" "report-uri" "=" uri-reference ]
 //
 // For this function to return true, the key hashes specified by the HPKP
 // header must pass two additional checks. There MUST be at least one key
@@ -55,8 +52,7 @@ bool NET_EXPORT_PRIVATE ParseHPKPHeader(const std::string& value,
                                         const HashValueVector& chain_hashes,
                                         base::TimeDelta* max_age,
                                         bool* include_subdomains,
-                                        HashValueVector* hashes,
-                                        GURL* report_uri);
+                                        HashValueVector* hashes);
 
 }  // namespace net
 

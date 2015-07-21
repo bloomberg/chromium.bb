@@ -833,7 +833,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
 
   transport_security_state->AddHSTS(domain, expiry, sts_include_subdomains);
   transport_security_state->AddHPKP(domain, expiry, pkp_include_subdomains,
-                                    hashes, GURL());
+                                    hashes);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(

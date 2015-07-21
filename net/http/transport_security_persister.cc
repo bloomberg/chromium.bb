@@ -77,7 +77,6 @@ const char kPinningOnly[] = "pinning-only";
 const char kCreated[] = "created";
 const char kStsObserved[] = "sts_observed";
 const char kPkpObserved[] = "pkp_observed";
-const char kReportUri[] = "report-uri";
 
 std::string LoadState(const base::FilePath& path) {
   std::string result;
@@ -193,8 +192,6 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
       serialized->Set(kDynamicSPKIHashes,
                       SPKIHashesToListValue(pkp_state.spki_hashes));
     }
-
-    serialized->SetString(kReportUri, pkp_state.report_uri.spec());
   }
 
   base::JSONWriter::WriteWithOptions(
@@ -284,13 +281,6 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
 
     sts_state.expiry = base::Time::FromDoubleT(expiry);
     pkp_state.expiry = base::Time::FromDoubleT(dynamic_spki_hashes_expiry);
-
-    // Don't fail if this key is not present.
-    std::string report_uri_str;
-    parsed->GetString(kReportUri, &report_uri_str);
-    GURL report_uri(report_uri_str);
-    if (report_uri.is_valid())
-      pkp_state.report_uri = report_uri;
 
     double sts_observed;
     double pkp_observed;

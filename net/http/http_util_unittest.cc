@@ -1092,48 +1092,6 @@ TEST(HttpUtilTest, NameValuePairsIterator) {
       &parser, false, true, std::string(), std::string()));
 }
 
-TEST(HttpUtilTest, NameValuePairsIteratorOptionalValues) {
-  std::string data = "alpha=1; beta;cappa ;  delta; e    ; f=1";
-  // Test that the default parser requires values.
-  HttpUtil::NameValuePairsIterator default_parser(data.begin(), data.end(),
-                                                  ';');
-  EXPECT_TRUE(default_parser.valid());
-  ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&default_parser, true, true, "alpha", "1"));
-  ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(&default_parser, false, false,
-                                                 std::string(), std::string()));
-
-  HttpUtil::NameValuePairsIterator values_required_parser(
-      data.begin(), data.end(), ';',
-      HttpUtil::NameValuePairsIterator::VALUES_NOT_OPTIONAL);
-  EXPECT_TRUE(values_required_parser.valid());
-  ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(&values_required_parser, true,
-                                                 true, "alpha", "1"));
-  ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(
-      &values_required_parser, false, false, std::string(), std::string()));
-
-  HttpUtil::NameValuePairsIterator parser(
-      data.begin(), data.end(), ';',
-      HttpUtil::NameValuePairsIterator::VALUES_OPTIONAL);
-  EXPECT_TRUE(parser.valid());
-
-  ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser, true, true, "alpha", "1"));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser, true, true, "beta", std::string()));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser, true, true, "cappa", std::string()));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser, true, true, "delta", std::string()));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser, true, true, "e", std::string()));
-  ASSERT_NO_FATAL_FAILURE(
-      CheckNextNameValuePair(&parser, true, true, "f", "1"));
-  ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(&parser, false, true,
-                                                 std::string(), std::string()));
-  EXPECT_TRUE(parser.valid());
-}
-
 TEST(HttpUtilTest, NameValuePairsIteratorIllegalInputs) {
   ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair("alpha=1", "; beta"));
   ASSERT_NO_FATAL_FAILURE(CheckInvalidNameValuePair(std::string(), "beta"));
