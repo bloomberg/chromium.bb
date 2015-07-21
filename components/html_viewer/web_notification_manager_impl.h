@@ -9,6 +9,7 @@
 
 namespace blink {
 class WebSecurityOrigin;
+class WebSerializedOrigin;
 }
 
 namespace html_viewer {
