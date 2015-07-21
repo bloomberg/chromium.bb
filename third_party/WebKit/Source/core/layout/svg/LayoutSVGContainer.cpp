@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGContainer.h"
 
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
@@ -174,8 +175,10 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoin
 
     for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
         if (child->nodeAtFloatPoint(result, localPoint, hitTestAction)) {
-            updateHitTestResult(result, roundedLayoutPoint(localPoint));
-            return true;
+            const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
+            updateHitTestResult(result, localLayoutPoint);
+            if (!result.addNodeToListBasedTestResult(child->node(), localLayoutPoint))
+                return true;
         }
     }
 
@@ -183,8 +186,10 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoin
     if (style()->pointerEvents() == PE_BOUNDINGBOX) {
         ASSERT(isObjectBoundingBoxValid());
         if (objectBoundingBox().contains(localPoint)) {
-            updateHitTestResult(result, roundedLayoutPoint(localPoint));
-            return true;
+            const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
+            updateHitTestResult(result, localLayoutPoint);
+            if (!result.addNodeToListBasedTestResult(element(), localLayoutPoint))
+                return true;
         }
     }
     // 16.4: "If there are no graphics elements whose relevant graphics content is under the pointer (i.e., there is no target element), the event is not dispatched."
