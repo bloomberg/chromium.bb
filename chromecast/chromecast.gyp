@@ -60,6 +60,8 @@
       'sources': [
         'base/cast_paths.cc',
         'base/cast_paths.h',
+        'base/chromecast_config_android.cc',
+        'base/chromecast_config_android.h',
         'base/chromecast_switches.cc',
         'base/chromecast_switches.h',
         'base/error_codes.cc',
@@ -75,6 +77,13 @@
         'base/process_utils.h',
         'base/serializers.cc',
         'base/serializers.h'
+      ],
+      'conditions': [
+        ['OS=="android"', {
+          'dependencies': [
+            'cast_jni_headers',
+          ],
+        }],
       ],
     },  # end of target 'cast_base'
     {
@@ -118,13 +127,27 @@
       'type': '<(component)',
       'dependencies': [
         'cast_crash',
+        '../breakpad/breakpad.gyp:breakpad_client',
         '../components/components.gyp:crash_component',
         '../content/content.gyp:content_common',
       ],
+      'include_dirs': [
+        '../breakpad/src',
+      ],
       'sources' : [
-        # TODO(slan): Move android crash_client here as well.
+        'app/android/crash_handler.cc',
+        'app/android/crash_handler.h',
+        'app/android/cast_crash_reporter_client_android.cc',
+        'app/android/cast_crash_reporter_client_android.h',
         'app/linux/cast_crash_reporter_client.cc',
         'app/linux/cast_crash_reporter_client.h',
+      ],
+      'conditions': [
+        ['OS=="android"', {
+          'dependencies': [
+            'cast_jni_headers',
+          ],
+        }],
       ],
     },  # end of target 'cast_crash_client'
     {
@@ -259,6 +282,10 @@
       'sources': [
         'app/cast_main_delegate.cc',
         'app/cast_main_delegate.h',
+        'browser/android/cast_window_android.cc',
+        'browser/android/cast_window_android.h',
+        'browser/android/cast_window_manager.cc',
+        'browser/android/cast_window_manager.h',
         'browser/cast_browser_context.cc',
         'browser/cast_browser_context.h',
         'browser/cast_browser_main_parts.cc',
@@ -337,16 +364,13 @@
             'browser/devtools/remote_debugging_server_simple.cc',
             'browser/metrics/platform_metrics_providers_simple.cc',
             'browser/pref_service_helper_simple.cc',
+            'browser/service/cast_service_android.cc',
+            'browser/service/cast_service_android.h',
             'common/platform_client_auth_simple.cc',
             'renderer/cast_content_renderer_client_simple.cc',
           ],
           'conditions': [
-            ['OS=="android"', {
-              'sources': [
-                'browser/service/cast_service_android.cc',
-                'browser/service/cast_service_android.h',
-              ],
-            }, {
+            ['OS!="android"', {
               'sources': [
                 'browser/media/cast_browser_cdm_factory_simple.cc',
                 'browser/service/cast_service_simple.cc',
@@ -372,6 +396,7 @@
         ['OS=="android"', {
           'dependencies': [
             '../components/components.gyp:cdm_browser',
+            'cast_jni_headers',
           ],
         }],
       ],
@@ -387,8 +412,15 @@
         'base/cast_sys_info_util.h',
         'base/cast_sys_info_dummy.cc',
         'base/cast_sys_info_dummy.h',
+        'base/cast_sys_info_android.cc',
+        'base/cast_sys_info_android.h',
       ],
       'conditions': [
+        ['OS=="android"', {
+          'dependencies': [
+            'cast_jni_headers',
+          ],
+        }],
         ['chromecast_branding!="Chrome" and OS!="android"', {
           'sources': [
             'base/cast_sys_info_util_simple.cc',
@@ -468,17 +500,12 @@
             'cast_shell_pak',
             'cast_version_header',
             '../base/base.gyp:base',
-            '../breakpad/breakpad.gyp:breakpad_client',
             '../components/components.gyp:breakpad_host',
-            '../components/components.gyp:crash_component',
             '../components/components.gyp:external_video_surface',
             '../content/content.gyp:content',
             '../skia/skia.gyp:skia',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gl/gl.gyp:gl',
-          ],
-          'include_dirs': [
-            '../breakpad/src',
           ],
           'sources': [
             'android/cast_jni_registrar.cc',
@@ -486,19 +513,7 @@
             'android/cast_metrics_helper_android.cc',
             'android/cast_metrics_helper_android.h',
             'android/platform_jni_loader.h',
-            'app/android/cast_crash_reporter_client_android.cc',
-            'app/android/cast_crash_reporter_client_android.h',
             'app/android/cast_jni_loader.cc',
-            'app/android/crash_handler.cc',
-            'app/android/crash_handler.h',
-            'base/cast_sys_info_android.cc',
-            'base/cast_sys_info_android.h',
-            'base/chromecast_config_android.cc',
-            'base/chromecast_config_android.h',
-            'browser/android/cast_window_android.cc',
-            'browser/android/cast_window_android.h',
-            'browser/android/cast_window_manager.cc',
-            'browser/android/cast_window_manager.h',
           ],
           'conditions': [
             ['chromecast_branding=="Chrome"', {
