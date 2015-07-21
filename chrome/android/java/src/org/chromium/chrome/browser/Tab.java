@@ -359,7 +359,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public void onOpenImageUrl(String url, Referrer referrer) {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setTransitionType(PageTransition.AUTO_BOOKMARK);
+            loadUrlParams.setTransitionType(PageTransition.LINK);
             loadUrlParams.setReferrer(referrer);
             loadUrl(loadUrlParams);
         }
