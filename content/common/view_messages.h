@@ -769,11 +769,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_EnumerateDirectoryResponse,
                     int /* request_id */,
                     std::vector<base::FilePath> /* files_in_directory */)
 
-// When a renderer sends a ViewHostMsg_Focus to the browser process,
-// the browser has the option of sending a ViewMsg_CantFocus back to
-// the renderer.
-IPC_MESSAGE_ROUTED0(ViewMsg_CantFocus)
-
 // Tells the renderer to suppress any further modal dialogs until it receives a
 // corresponding ViewMsg_SwapOut message.  This ensures that no
 // PageGroupLoadDeferrer is on the stack for SwapOut.

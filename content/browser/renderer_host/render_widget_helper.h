@@ -27,7 +27,6 @@ class TimeDelta;
 }
 
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewMsg_SwapOut_Params;
 
 namespace content {
 class GpuProcessHost;

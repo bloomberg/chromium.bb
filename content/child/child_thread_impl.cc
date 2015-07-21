@@ -60,10 +60,6 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 
-#if defined(OS_ANDROID)
-#include "base/thread_task_runner_handle.h"
-#endif
-
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
@@ -138,8 +134,8 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
     // On POSIX, at least, one can install an unload handler which loops
     // forever and leave behind a renderer process which eats 100% CPU forever.
     //
-    // This is because the terminate signals (ViewMsg_ShouldClose and the error
-    // from the IPC sender) are routed to the main message loop but never
+    // This is because the terminate signals (FrameMsg_BeforeUnload and the
+    // error from the IPC sender) are routed to the main message loop but never
     // processed (because that message loop is stuck in V8).
     //
     // One could make the browser SIGKILL the renderers, but that leaves open a

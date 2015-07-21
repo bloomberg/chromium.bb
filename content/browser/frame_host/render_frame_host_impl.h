@@ -668,7 +668,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
 
-  // Set to true when there is a pending FrameMsg_ShouldClose message.  This
+  // Set to true when there is a pending FrameMsg_BeforeUnload message.  This
   // ensures we don't spam the renderer with multiple beforeunload requests.
   // When either this value or IsWaitingForUnloadACK is true, the value of
   // unload_ack_is_for_cross_site_transition_ indicates whether this is for a

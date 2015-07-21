@@ -371,7 +371,7 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetDocumentCookie,
 IPC_MESSAGE_ROUTED0(PrintHostMsg_DidShowPrintDialog)
 
 // Sends back to the browser the rendered "printed page" that was requested by
-// a ViewMsg_PrintPage message or from scripted printing. The memory handle in
+// a PrintMsg_PrintPages message or from scripted printing. The memory handle in
 // this message is already valid in the browser process.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPrintPage,
                     PrintHostMsg_DidPrintPage_Params /* page content */)
@@ -391,7 +391,7 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PrintHostMsg_UpdatePrintSettings,
 // It's the renderer that controls the printing process when it is generated
 // by javascript. This step is about showing UI to the user to select the
 // final print settings. The output parameter is the same as
-// ViewMsg_PrintPages which is executed implicitly.
+// PrintMsg_PrintPages which is executed implicitly.
 IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_ScriptedPrint,
                            PrintHostMsg_ScriptedPrint_Params,
                            PrintMsg_PrintPages_Params
@@ -403,10 +403,10 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_ScriptedPrint,
 IPC_SYNC_MESSAGE_CONTROL1_2(PrintHostMsg_AllocateTempFileForPrinting,
                             int /* render_view_id */,
                             base::FileDescriptor /* temp file fd */,
-                            int /* fd in browser*/) // Used only by Chrome OS.
+                            int /* fd in browser*/)  // Used only by Chrome OS.
 IPC_MESSAGE_CONTROL2(PrintHostMsg_TempFileForPrintingWritten,
                      int /* render_view_id */,
-                     int /* fd in browser */) // Used only by Chrome OS.
+                     int /* fd in browser */)  // Used only by Chrome OS.
 #endif
 
 // Asks the browser to do print preview.

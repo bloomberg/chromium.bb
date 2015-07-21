@@ -53,8 +53,8 @@ bool PrerenderHelper::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PrerenderHelper, message)
     IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
   IPC_END_MESSAGE_MAP()
-  // Return false on ViewMsg_SetIsPrerendering so other observers can see the
-  // message.
+  // Return false on PrerenderMsg_SetIsPrerendering so other observers can see
+  // the message.
   return false;
 }
 

@@ -18,7 +18,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
-struct ViewMsg_SwapOut_Params;
 
 namespace base {
 class TimeDelta;
