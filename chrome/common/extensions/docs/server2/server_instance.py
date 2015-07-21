@@ -4,6 +4,7 @@
 
 from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
+from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
 from content_providers import ContentProviders
 from document_renderer import DocumentRenderer
@@ -120,6 +121,6 @@ class ServerInstance(object):
     return ServerInstance(
         object_store_creator,
         CompiledFileSystem.Factory(object_store_creator),
-        TestBranchUtility.CreateWithCannedData(),
+        BranchUtility.Create(object_store_creator),
         host_file_system_provider,
         CloudStorageFileSystemProvider(object_store_creator))
