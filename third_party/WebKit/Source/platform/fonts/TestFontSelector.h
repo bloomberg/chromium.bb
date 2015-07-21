@@ -43,14 +43,14 @@ namespace blink {
 
 class TestFontSelector : public FontSelector {
 public:
-    static PassRefPtr<TestFontSelector> create(const String& path)
+    static PassRefPtrWillBeRawPtr<TestFontSelector> create(const String& path)
     {
         WebUnitTestSupport* unitTestSupport = Platform::current()->
             unitTestSupport();
         RefPtr<SharedBuffer> fontBuffer = static_cast<PassRefPtr<SharedBuffer>>(
             unitTestSupport->readFromFile(path));
         String otsParseMessage;
-        return adoptRef(new TestFontSelector(FontCustomPlatformData::create(
+        return adoptRefWillBeNoop(new TestFontSelector(FontCustomPlatformData::create(
             fontBuffer.get(), otsParseMessage)));
     }
 
