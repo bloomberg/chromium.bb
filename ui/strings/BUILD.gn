@@ -73,6 +73,18 @@ grit("ui_strings") {
     "ui_strings_zh-CN.pak",
     "ui_strings_zh-TW.pak",
   ]
+
+  if (is_ios) {
+    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
+    outputs -= [
+      "ui_strings_pt-BR.pak",
+      "ui_strings_es-419.pak",
+    ]
+    outputs += [
+      "ui_strings_pt.pak",
+      "ui_strings_es-MX.pak",
+    ]
+  }
 }
 
 grit("app_locale_settings") {
@@ -135,4 +147,16 @@ grit("app_locale_settings") {
     "app_locale_settings_zh-CN.pak",
     "app_locale_settings_zh-TW.pak",
   ]
+
+  if (is_ios) {
+    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
+    outputs -= [
+      "app_locale_settings_pt-BR.pak",
+      "app_locale_settings_es-419.pak",
+    ]
+    outputs += [
+      "app_locale_settings_pt.pak",
+      "app_locale_settings_es-MX.pak",
+    ]
+  }
 }
