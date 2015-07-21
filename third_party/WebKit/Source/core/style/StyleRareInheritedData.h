@@ -137,6 +137,8 @@ public:
 
     unsigned m_selfOrAncestorHasDirAutoAttribute : 1;
 
+    unsigned m_respectImageOrientation : 1;
+
     AtomicString hyphenationString;
     short hyphenationLimitBefore;
     short hyphenationLimitAfter;

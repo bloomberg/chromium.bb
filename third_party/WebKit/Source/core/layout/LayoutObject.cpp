@@ -2265,10 +2265,22 @@ bool LayoutObject::isRooted() const
 
 RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation() const
 {
-    // Respect the image's orientation if it's being used as a full-page image or it's
-    // an <img> and the setting to respect it everywhere is set.
-    return document().isImageDocument()
-        || (document().settings() && document().settings()->shouldRespectImageOrientation() && isHTMLImageElement(node())) ? RespectImageOrientation : DoNotRespectImageOrientation;
+    // Respect the image's orientation if it's being used as a full-page image or
+    // it's an <img> and the setting to respect it everywhere is set or the <img>
+    // has image-orientation: from-image style. FIXME: crbug.com/498233
+    if (document().isImageDocument())
+        return RespectImageOrientation;
+
+    if (!isHTMLImageElement(node()))
+        return DoNotRespectImageOrientation;
+
+    if (document().settings() && document().settings()->shouldRespectImageOrientation())
+        return RespectImageOrientation;
+
+    if (style() && style()->respectImageOrientation() == RespectImageOrientation)
+        return RespectImageOrientation;
+
+    return DoNotRespectImageOrientation;
 }
 
 LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const

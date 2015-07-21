@@ -76,6 +76,7 @@ Geofencing status=experimental
 GeometryInterfaces status=test
 GlobalCacheStorage status=stable
 ImageColorProfiles
+ImageOrientation status=test
 ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
 InputDevice status=experimental

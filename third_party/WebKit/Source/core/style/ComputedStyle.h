@@ -891,6 +891,8 @@ public:
 
     TabSize tabSize() const { return rareInheritedData->m_tabSize; }
 
+    RespectImageOrientationEnum respectImageOrientation() const { return static_cast<RespectImageOrientationEnum>(rareInheritedData->m_respectImageOrientation); }
+
     // End CSS3 Getters
 
     // Apple-specific property getter methods
@@ -1377,6 +1379,8 @@ public:
 
     void setTabSize(TabSize size) { SET_VAR(rareInheritedData, m_tabSize, size); }
 
+    void setRespectImageOrientation(RespectImageOrientationEnum v) { SET_VAR(rareInheritedData, m_respectImageOrientation, v); }
+
     // End CSS3 Setters
 
     void setWrapFlow(WrapFlow wrapFlow) { SET_VAR(rareNonInheritedData, m_wrapFlow, wrapFlow); }
@@ -1686,6 +1690,7 @@ public:
     static RubyPosition initialRubyPosition() { return RubyPositionBefore; }
     static LineBoxContain initialLineBoxContain() { return LineBoxContainBlock | LineBoxContainInline | LineBoxContainReplaced; }
     static ImageOrientationEnum initialImageOrientation() { return OriginTopLeft; }
+    static RespectImageOrientationEnum initialRespectImageOrientation() { return DoNotRespectImageOrientation; }
     static EImageRendering initialImageRendering() { return ImageRenderingAuto; }
     static ImageResolutionSource initialImageResolutionSource() { return ImageResolutionSpecified; }
     static ImageResolutionSnap initialImageResolutionSnap() { return ImageResolutionNoSnap; }

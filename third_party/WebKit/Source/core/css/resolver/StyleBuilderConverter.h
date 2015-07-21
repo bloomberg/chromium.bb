@@ -103,6 +103,7 @@ public:
     static PassRefPtr<TranslateTransformOperation> convertTranslate(StyleResolverState&, CSSValue*);
     static PassRefPtr<RotateTransformOperation> convertRotate(StyleResolverState&, CSSValue*);
     static PassRefPtr<ScaleTransformOperation> convertScale(StyleResolverState&, CSSValue*);
+    static RespectImageOrientationEnum convertImageOrientation(StyleResolverState&, CSSValue*);
 };
 
 template <typename T>

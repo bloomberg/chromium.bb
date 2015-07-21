@@ -57,6 +57,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -1853,7 +1854,13 @@ bool CompositedDeprecatedPaintLayerMapping::isDirectlyCompositedImage() const
             return false;
 
         Image* image = cachedImage->imageForLayoutObject(imageLayoutObject);
-        return image->isBitmapImage();
+        if (!image->isBitmapImage())
+            return false;
+
+        // FIXME: We should be able to handle bitmap images using direct compositing
+        // no matter what image-orientation value. See crbug.com/502267
+        if (imageLayoutObject->style()->respectImageOrientation() != RespectImageOrientation)
+            return true;
     }
 
     return false;

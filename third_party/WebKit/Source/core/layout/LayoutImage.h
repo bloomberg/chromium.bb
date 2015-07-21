@@ -85,6 +85,8 @@ protected:
 
     void willBeDestroyed() override;
 
+    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+
 private:
     bool isImage() const override { return true; }
 

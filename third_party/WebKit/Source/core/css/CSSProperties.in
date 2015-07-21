@@ -195,6 +195,7 @@ grid-template-columns runtime_flag=CSSGridLayout, custom_all
 grid-template-rows runtime_flag=CSSGridLayout, custom_all
 height interpolable, initial=initialSize, converter=convertLengthSizing
 image-rendering inherited
+image-orientation runtime_flag=ImageOrientation, inherited, name_for_methods=RespectImageOrientation, converter=convertImageOrientation
 isolation runtime_flag=CSSCompositing
 justify-content initial=initialContentAlignment, converter=convertContentAlignmentData
 justify-items runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData

@@ -978,4 +978,11 @@ PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(StyleRes
     return ScaleTransformOperation::create(sx, sy, sz, TransformOperation::Scale3D);
 }
 
+RespectImageOrientationEnum StyleBuilderConverter::convertImageOrientation(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    return primitiveValue->getValueID() == CSSValueFromImage ? RespectImageOrientation : DoNotRespectImageOrientation;
+}
+
+
 } // namespace blink

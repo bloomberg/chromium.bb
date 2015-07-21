@@ -1671,6 +1671,7 @@ crbug.com/501769 http/tests/serviceworker/stashed-ports.html [ Pass Failure Time
 
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/xmlviewer/dumpAsText/svg.xml [ Failure ]
+
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
@@ -3584,3 +3585,7 @@ Bug(epertoso) fast/events/window-onerror-11.html [ NeedsManualRebaseline ]
 Bug(epertoso) fast/events/window-onerror-12.html [ NeedsManualRebaseline ]
 Bug(epertoso) virtual/pointerevent/fast/events/window-onerror-11.html [ NeedsManualRebaseline ]
 Bug(epertoso) virtual/pointerevent/fast/events/window-onerror-12.html [ NeedsManualRebaseline ]
+
+crbug.com/158753 fast/css/image-orientation/image-orientation.html [ NeedsRebaseline ]
+crbug.com/158753 fast/css/image-orientation/image-orientation-from-image.html [ NeedsRebaseline ]
+crbug.com/158753 fast/css/image-orientation/image-orientation-from-image-composited.html [ NeedsRebaseline ]

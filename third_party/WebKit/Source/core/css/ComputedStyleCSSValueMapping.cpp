@@ -1752,6 +1752,10 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(style.hyphenationString(), CSSPrimitiveValue::CSS_STRING);
     case CSSPropertyImageRendering:
         return CSSPrimitiveValue::create(style.imageRendering());
+    case CSSPropertyImageOrientation:
+        if (style.respectImageOrientation() == RespectImageOrientation)
+            return cssValuePool().createValue(CSSValueFromImage);
+        return cssValuePool().createValue(0, CSSPrimitiveValue::CSS_DEG);
     case CSSPropertyIsolation:
         return cssValuePool().createValue(style.isolation());
     case CSSPropertyJustifyItems:

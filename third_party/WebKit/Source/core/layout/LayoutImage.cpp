@@ -78,6 +78,15 @@ void LayoutImage::willBeDestroyed()
     LayoutReplaced::willBeDestroyed();
 }
 
+void LayoutImage::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
+{
+    LayoutReplaced::styleDidChange(diff, oldStyle);
+
+    RespectImageOrientationEnum oldOrientation = oldStyle ? oldStyle->respectImageOrientation() : ComputedStyle::initialRespectImageOrientation();
+    if (style() && style()->respectImageOrientation() != oldOrientation)
+        intrinsicSizeChanged();
+}
+
 void LayoutImage::setImageResource(PassOwnPtr<LayoutImageResource> imageResource)
 {
     ASSERT(!m_imageResource);

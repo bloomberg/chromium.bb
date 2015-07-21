@@ -645,6 +645,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         }
         break;
     }
+    case CSSPropertyImageOrientation:
+        if (RuntimeEnabledFeatures::imageOrientationEnabled())
+            validPrimitive = value->id == CSSValueFromImage || (value->unit != CSSPrimitiveValue::CSS_NUMBER && validUnit(value, FAngle) && value->fValue == 0);
+        break;
 
     case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundAttachment:
