@@ -31,11 +31,12 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(const AtomicString& name, con
 
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(const AtomicString& name, const BeforeInstallPromptEventInit& init)
     : Event(name, false, true)
-    , m_platforms(init.platforms())
     , m_requestId(-1)
     , m_client(nullptr)
     , m_redispatched(false)
 {
+    if (init.hasPlatforms())
+        m_platforms = init.platforms();
 }
 
 BeforeInstallPromptEvent::~BeforeInstallPromptEvent()
