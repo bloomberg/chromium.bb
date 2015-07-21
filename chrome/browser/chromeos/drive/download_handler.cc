@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "components/drive/drive.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

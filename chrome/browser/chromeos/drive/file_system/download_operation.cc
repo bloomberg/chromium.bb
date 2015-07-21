@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "components/drive/drive.pb.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
 namespace drive {

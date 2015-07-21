@@ -5,13 +5,13 @@
 #include "chrome/browser/chromeos/drive/sync/remove_performer.h"
 
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
+#include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 

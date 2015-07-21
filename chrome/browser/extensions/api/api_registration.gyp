@@ -32,7 +32,7 @@
       'conditions': [
         ['chromeos==1', {
           'dependencies': [
-            '<(DEPTH)/chrome/chrome.gyp:drive_proto',
+            '<(DEPTH)/components/components.gyp:drive_proto',
           ],
         }],
       ],

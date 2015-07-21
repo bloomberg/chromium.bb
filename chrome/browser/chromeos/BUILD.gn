@@ -41,9 +41,9 @@ source_set("chromeos") {
     # TODO(tbarzic): Cleanup this list.
     ":attestation_proto",
     ":device_policy_proto",
-    ":drive_proto",
     "//ash",
     "//ash:ash_with_content",
+    "//components/drive",
     "//components/login",
     "//components/session_manager/core",
     "//components/user_manager",
@@ -174,8 +174,8 @@ source_set("unit_tests") {
   deps = [
     ":attestation_proto",
     ":device_policy_proto",
-    ":drive_proto",
     "//ash/resources",
+    "//components/drive",
     "//components/policy",
     "//components/invalidation/public",
     "//crypto:platform",
@@ -187,12 +187,6 @@ source_set("unit_tests") {
     "//third_party/leveldatabase",
     "//third_party/mojo/src/mojo/public/cpp/system:system",
     "//ui/chromeos/resources",
-  ]
-}
-
-proto_library("drive_proto") {
-  sources = [
-    "drive/drive.proto",
   ]
 }
 

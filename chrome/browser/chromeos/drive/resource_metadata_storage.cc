@@ -16,7 +16,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

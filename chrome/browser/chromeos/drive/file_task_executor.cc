@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "components/drive/drive.pb.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_url.h"

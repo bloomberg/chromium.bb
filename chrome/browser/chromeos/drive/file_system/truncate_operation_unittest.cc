@@ -7,9 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "components/drive/drive.pb.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

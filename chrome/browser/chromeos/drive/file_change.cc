@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "components/drive/drive.pb.h"
 
 namespace drive {
 

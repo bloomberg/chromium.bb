@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "components/drive/drive.pb.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_api_requests.h"
 

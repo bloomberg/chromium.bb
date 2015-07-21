@@ -9,7 +9,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
 #include "chrome/browser/chromeos/drive/sync/remove_performer.h"
+#include "components/drive/drive.pb.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

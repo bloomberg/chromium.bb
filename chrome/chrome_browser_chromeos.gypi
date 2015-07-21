@@ -1141,7 +1141,6 @@
         'common_net',
         'debugger',
         'device_policy_proto',
-        'drive_proto',
         'encrypted_cert_logger_proto',
         'installer_util',
         'safe_browsing_chunk_proto',
@@ -1157,6 +1156,7 @@
         '../chromeos/chromeos.gyp:power_manager_proto',
         '../chromeos/ime/input_method.gyp:gencode',
         '../components/components.gyp:cloud_policy_proto',
+        '../components/components.gyp:drive',
         '../components/components.gyp:login',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:ownership',
@@ -1306,18 +1306,6 @@
           ],
         }],
       ],
-    },
-    {
-      # GN version: //chrome/browser/chromeos:drive_proto
-      # Protobuf compiler / generator for the Drive protocol buffer.
-      'target_name': 'drive_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/chromeos/drive/drive.proto' ],
-      'variables': {
-        'proto_in_dir': 'browser/chromeos/drive',
-        'proto_out_dir': 'chrome/browser/chromeos/drive',
-      },
-      'includes': [ '../build/protoc.gypi' ]
     },
     {
       # GN version: //chrome/browser/chromeos:device_policy_proto

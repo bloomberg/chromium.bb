@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/protobuf/proto_library.gni")
+
 source_set("drive") {
   sources = [
     "drive_api_util.cc",
@@ -35,6 +37,16 @@ source_set("drive") {
     "//storage/browser:browser",
 
     "//third_party/re2:re2",
+  ]
+  public_deps = [
+    ":proto",
+  ]
+}
+
+proto_library("proto") {
+  visibility = [ ":drive" ]
+  sources = [
+    "drive.proto",
   ]
 }
 

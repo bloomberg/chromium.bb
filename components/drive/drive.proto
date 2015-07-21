@@ -125,8 +125,8 @@ message ResourceEntry {
 
   // Used to remember whether this entry is edited locally or not.
   enum EditState {
-    CLEAN = 0;  // No local edit.
-    DIRTY = 1;  // Edited locally.
+    CLEAN = 0;    // No local edit.
+    DIRTY = 1;    // Edited locally.
     SYNCING = 2;  // Local change is being synced to the server.
   }
 

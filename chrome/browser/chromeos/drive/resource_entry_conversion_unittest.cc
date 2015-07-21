@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"

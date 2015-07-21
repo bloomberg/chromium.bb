@@ -12,10 +12,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
+#include "components/drive/drive.pb.h"
 
 namespace drive {
 namespace internal {

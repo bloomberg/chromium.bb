@@ -12,6 +12,7 @@
         '..',
       ],
       'dependencies': [
+        'drive_proto',
         '../base/base.gyp:base',
         '../components/components.gyp:invalidation_public',
 
@@ -46,6 +47,19 @@
         'drive/service/drive_service_interface.cc',
         'drive/service/drive_service_interface.h',
       ],
+    },
+
+    {
+      # GN version: //components/drive:proto
+      # Protobuf compiler / generator for the Drive protocol buffer.
+      'target_name': 'drive_proto',
+      'type': 'static_library',
+      'sources': [ 'drive/drive.proto' ],
+      'variables': {
+        'proto_in_dir': 'drive',
+        'proto_out_dir': 'components/drive',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
 
     {
