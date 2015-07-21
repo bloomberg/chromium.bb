@@ -177,7 +177,7 @@ class RestrictedToken {
   // The list of sids to mark as Deny Only in the restricted token.
   std::vector<Sid> sids_for_deny_only_;
   // The token to restrict. Can only be set in a constructor.
-  HANDLE effective_token_;
+  base::win::ScopedHandle effective_token_;
   // The token integrity level. Only valid on Vista.
   IntegrityLevel integrity_level_;
   // Tells if the object is initialized or not (if Init() has been called)
