@@ -62,7 +62,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   GpuMemoryTrackingGroup* CreateTrackingGroup(
       base::ProcessId pid, gpu::gles2::MemoryTracker* memory_tracker);
 
-  uint64 GetClientMemoryUsage(const GpuMemoryManagerClient* client) const;
+  uint64 GetTrackerMemoryUsage(gpu::gles2::MemoryTracker* tracker) const;
   uint64 GetMaximumClientAllocation() const {
     return client_hard_limit_bytes_;
   }

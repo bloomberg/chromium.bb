@@ -1149,10 +1149,6 @@ void GpuCommandBufferStub::MarkContextLost() {
   command_buffer_->SetParseError(gpu::error::kLostContext);
 }
 
-uint64 GpuCommandBufferStub::GetMemoryUsage() const {
-  return GetMemoryManager()->GetClientMemoryUsage(this);
-}
-
 void GpuCommandBufferStub::SendSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result) {

@@ -148,8 +148,6 @@ class GpuCommandBufferStub
 
   const gpu::gles2::FeatureInfo* GetFeatureInfo() const;
 
-  uint64 GetMemoryUsage() const;
-
   void SendSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result);

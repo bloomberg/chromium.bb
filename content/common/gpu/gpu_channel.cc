@@ -844,11 +844,20 @@ void GpuChannel::RemoveFilter(IPC::MessageFilter* filter) {
 }
 
 uint64 GpuChannel::GetMemoryUsage() {
-  uint64 size = 0;
+  // Collect the unique memory trackers in use by the |stubs_|.
+  std::set<gpu::gles2::MemoryTracker*> unique_memory_trackers;
   for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
        !it.IsAtEnd(); it.Advance()) {
-    size += it.GetCurrentValue()->GetMemoryUsage();
+    unique_memory_trackers.insert(it.GetCurrentValue()->GetMemoryTracker());
   }
+
+  // Sum the memory usage for all unique memory trackers.
+  uint64 size = 0;
+  for (auto* tracker : unique_memory_trackers) {
+    size += gpu_channel_manager()->gpu_memory_manager()->GetTrackerMemoryUsage(
+        tracker);
+  }
+
   return size;
 }
 
