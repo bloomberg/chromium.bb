@@ -3583,6 +3583,7 @@ interface PermissionStatus
 interface Permissions
     method constructor
     method query
+    method revoke
 interface Plugin
     getter description
     getter filename

@@ -3,25 +3,25 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/permissions/PermissionQueryCallback.h"
+#include "modules/permissions/PermissionCallback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/permissions/PermissionStatus.h"
 
 namespace blink {
 
-PermissionQueryCallback::PermissionQueryCallback(PassRefPtr<ScriptPromiseResolver> resolver, WebPermissionType permissionType)
+PermissionCallback::PermissionCallback(PassRefPtr<ScriptPromiseResolver> resolver, WebPermissionType permissionType)
     : m_resolver(resolver)
     , m_permissionType(permissionType)
 {
     ASSERT(m_resolver);
 }
 
-PermissionQueryCallback::~PermissionQueryCallback()
+PermissionCallback::~PermissionCallback()
 {
 }
 
-void PermissionQueryCallback::onSuccess(WebPermissionStatus* permissionStatus)
+void PermissionCallback::onSuccess(WebPermissionStatus* permissionStatus)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
         PermissionStatus::dispose(permissionStatus);
@@ -30,7 +30,7 @@ void PermissionQueryCallback::onSuccess(WebPermissionStatus* permissionStatus)
     m_resolver->resolve(PermissionStatus::take(m_resolver.get(), permissionStatus, m_permissionType));
 }
 
-void PermissionQueryCallback::onError()
+void PermissionCallback::onError()
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
         return;

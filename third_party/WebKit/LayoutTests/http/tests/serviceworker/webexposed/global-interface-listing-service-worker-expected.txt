@@ -755,6 +755,7 @@ interface PermissionStatus
 interface Permissions
     method constructor
     method query
+    method revoke
 interface Promise
     method catch
     method chain

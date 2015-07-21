@@ -11,7 +11,9 @@
 
 namespace blink {
 
+// WebPermissionQueryCallback is kept for backward compatibility
 using WebPermissionQueryCallback = WebCallbacks<WebPermissionStatus, void>;
+using WebPermissionCallback = WebPermissionQueryCallback;
 
 class WebPermissionObserver;
 class WebURL;
@@ -21,7 +23,10 @@ class WebURL;
 class WebPermissionClient {
 public:
     // Query the permission status of a given origin for a specific permission.
-    virtual void queryPermission(WebPermissionType, const WebURL&, WebPermissionQueryCallback*) { }
+    virtual void queryPermission(WebPermissionType, const WebURL&, WebPermissionCallback*) { }
+
+    // Revoke a specific permission for a given origin.
+    virtual void revokePermission(WebPermissionType, const WebURL&, WebPermissionCallback*) { }
 
     // Listen for permission changes for a given origin and inform the observer
     // when they happen. The observer is not owned by the WebPermissionClient.

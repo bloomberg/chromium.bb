@@ -26,6 +26,7 @@ public:
     static WebPermissionClient* getClient(ExecutionContext*);
 
     ScriptPromise query(ScriptState*, const ScriptValue&);
+    ScriptPromise revoke(ScriptState*, const ScriptValue&);
 };
 
 } // namespace blink

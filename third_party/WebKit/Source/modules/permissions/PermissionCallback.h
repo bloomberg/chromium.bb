@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PermissionQueryCallback_h
-#define PermissionQueryCallback_h
+#ifndef PermissionCallback_h
+#define PermissionCallback_h
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCallbacks.h"
@@ -17,15 +17,15 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-// PermissionQueryCallback is an implementation of WebPermissionQueryCallbacks
+// PermissionQueryCallback is an implementation of WebPermissionCallbacks
 // that will resolve the underlying promise depending on the result passed to
 // the callback. It takes a WebPermissionType in its constructor and will pass
 // it to the PermissionStatus.
-class PermissionQueryCallback final
+class PermissionCallback final
     : public WebCallbacks<WebPermissionStatus, void> {
 public:
-    explicit PermissionQueryCallback(PassRefPtr<ScriptPromiseResolver>, WebPermissionType);
-    ~PermissionQueryCallback() override;
+    PermissionCallback(PassRefPtr<ScriptPromiseResolver>, WebPermissionType);
+    ~PermissionCallback() override;
 
     void onSuccess(WebPermissionStatus*) override;
     void onError() override;
@@ -34,9 +34,9 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
     WebPermissionType m_permissionType;
 
-    WTF_MAKE_NONCOPYABLE(PermissionQueryCallback);
+    WTF_MAKE_NONCOPYABLE(PermissionCallback);
 };
 
 } // namespace blink
 
-#endif // PermissionQueryCallback_h
+#endif // PermissionCallback_h
