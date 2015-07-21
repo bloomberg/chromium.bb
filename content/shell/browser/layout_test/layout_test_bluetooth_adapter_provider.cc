@@ -91,9 +91,8 @@ namespace content {
 scoped_refptr<BluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     const std::string& fake_adapter_name) {
-  if (fake_adapter_name == "EmptyAdapter")
-    return GetEmptyAdapter();
-  else if (fake_adapter_name == "SingleEmptyDeviceAdapter")
+  // Old Adapters
+  if (fake_adapter_name == "SingleEmptyDeviceAdapter")
     return GetSingleEmptyDeviceAdapter();
   else if (fake_adapter_name == "ConnectableDeviceAdapter")
     return GetConnectableDeviceAdapter();
@@ -103,6 +102,13 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetScanFilterCheckingAdapter();
   else if (fake_adapter_name == "MultiDeviceAdapter")
     return GetMultiDeviceAdapter();
+  // New adapters
+  else if (fake_adapter_name == "BaseAdapter")
+    return GetBaseAdapter();
+  else if (fake_adapter_name == "EmptyAdapter")
+    return GetEmptyAdapter();
+  else if (fake_adapter_name == "FailStartDiscoveryAdapter")
+    return GetFailStartDiscoveryAdapter();
   else if (fake_adapter_name == "")
     return NULL;
 
@@ -112,13 +118,9 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
 
 // static
 scoped_refptr<NiceMock<MockBluetoothAdapter>>
-LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
+LayoutTestBluetoothAdapterProvider::GetBaseAdapter() {
   scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(
       new NiceMock<MockBluetoothAdapter>());
-
-  ON_CALL(*adapter, StartDiscoverySessionWithFilterRaw(_, _, _))
-      .WillByDefault(RunCallbackWithResult<1 /* success_callback */>(
-          []() { return GetDiscoverySession(); }));
 
   // Using Invoke allows the adapter returned from this method to be futher
   // modified and have devices added to it. The call to ::GetDevices will
@@ -133,6 +135,43 @@ LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
 
   return adapter.Pass();
 }
+
+// static
+scoped_refptr<NiceMock<MockBluetoothAdapter>>
+LayoutTestBluetoothAdapterProvider::GetFailStartDiscoveryAdapter() {
+  scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(GetBaseAdapter());
+
+  ON_CALL(*adapter, StartDiscoverySessionWithFilterRaw(_, _, _))
+      .WillByDefault(RunCallback<2 /* error_callback */>());
+
+  return adapter.Pass();
+}
+
+// static
+scoped_refptr<NiceMock<MockBluetoothAdapter>>
+LayoutTestBluetoothAdapterProvider::GetEmptyAdapter() {
+  scoped_refptr<NiceMock<MockBluetoothAdapter>> adapter(GetBaseAdapter());
+
+  ON_CALL(*adapter, StartDiscoverySessionWithFilterRaw(_, _, _))
+      .WillByDefault(RunCallbackWithResult<1 /* success_callback */>(
+          []() { return GetDiscoverySession(); }));
+
+  return adapter.Pass();
+}
+
+// static
+scoped_ptr<NiceMock<MockBluetoothDiscoverySession>>
+LayoutTestBluetoothAdapterProvider::GetDiscoverySession() {
+  scoped_ptr<NiceMock<MockBluetoothDiscoverySession>> discovery_session(
+      new NiceMock<MockBluetoothDiscoverySession>());
+
+  ON_CALL(*discovery_session, Stop(_, _))
+      .WillByDefault(RunCallback<0 /* success_callback */>());
+
+  return discovery_session.Pass();
+}
+
+// The functions after this haven't been updated to the new design yet.
 
 // static
 scoped_refptr<NiceMock<MockBluetoothAdapter>>
@@ -225,18 +264,6 @@ LayoutTestBluetoothAdapterProvider::GetUnconnectableDeviceAdapter() {
   adapter->AddMockDevice(GetUnconnectableDevice(adapter.get()));
 
   return adapter.Pass();
-}
-
-// static
-scoped_ptr<NiceMock<MockBluetoothDiscoverySession>>
-LayoutTestBluetoothAdapterProvider::GetDiscoverySession() {
-  scoped_ptr<NiceMock<MockBluetoothDiscoverySession>> discovery_session(
-      new NiceMock<MockBluetoothDiscoverySession>());
-
-  ON_CALL(*discovery_session, Stop(_, _))
-      .WillByDefault(RunCallback<0 /* success_callback */>());
-
-  return discovery_session.Pass();
 }
 
 // static
