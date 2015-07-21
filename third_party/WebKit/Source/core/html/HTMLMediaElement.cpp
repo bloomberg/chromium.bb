@@ -3154,7 +3154,7 @@ void HTMLMediaElement::enterFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::enterFullscreen(%p)", this);
 
-    Fullscreen::from(document()).requestFullscreen(*this, Fullscreen::PrefixedVideoRequest);
+    Fullscreen::from(document()).requestFullscreen(*this, Fullscreen::PrefixedRequest);
 }
 
 void HTMLMediaElement::exitFullscreen()

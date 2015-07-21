@@ -1,10 +1,6 @@
 CONSOLE WARNING: 'HTMLVideoElement.webkitEnterFullScreen()' is deprecated. Please use 'Element.requestFullscreen()' instead.
-CONSOLE WARNING: Entering fullscreen in an <iframe> with no allowfullscreen attribute is deprecated and will stop working in M46, around October 2015. Please use the allowfullscreen attribute.
-Test for bug 61461: Handle entering full screen security restrictions
+HTMLVideoElement.webkitEnterFullScreen() in an iframe requires the allowfullscreen attribute
 
-To test manually, click the video "full screen" button - the page should enter full screen mode.
-
-EVENT(webkitfullscreenchange)
-TEST(document.getElementById('frame').contentDocument.width==document.width) OK
+EVENT(webkitfullscreenerror)
 END OF TEST
 

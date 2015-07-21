@@ -76,12 +76,8 @@ static bool fullscreenElementReady(const Element& element, Fullscreen::RequestTy
         return false;
 
     // |element|'s node document's fullscreen enabled flag is set.
-    if (!fullscreenIsAllowedForAllOwners(element.document())) {
-        if (requestType == Fullscreen::PrefixedVideoRequest)
-            UseCounter::countDeprecation(element.document(), UseCounter::VideoFullscreenAllowedExemption);
-        else
-            return false;
-    }
+    if (!fullscreenIsAllowedForAllOwners(element.document()))
+        return false;
 
     // |element|'s node document's fullscreen element stack is either empty or its top element is an
     // inclusive ancestor of |element|.

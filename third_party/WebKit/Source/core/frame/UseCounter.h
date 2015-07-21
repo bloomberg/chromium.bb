@@ -414,7 +414,6 @@ public:
         MapElement = 482,
         MeterElement = 483,
         ProgressElement = 484,
-        VideoFullscreenAllowedExemption = 485,
         PrefixedHTMLElementDropzone = 490,
         WheelEventWheelDeltaX = 491,
         WheelEventWheelDeltaY = 492,

@@ -60,9 +60,11 @@ public:
     static bool isActiveFullScreenElement(const Element&);
 
     enum RequestType {
-        UnprefixedRequest, // Element.requestFullscreen()
-        PrefixedRequest, // Element.webkitRequestFullscreen() and webkitRequestFullScreen()
-        PrefixedVideoRequest, // HTMLVideoElement.webkitEnterFullscreen() and webkitEnterFullScreen()
+        // Element.requestFullscreen()
+        UnprefixedRequest,
+        // Element.webkitRequestFullscreen()/webkitRequestFullScreen() and
+        // HTMLVideoElement.webkitEnterFullscreen()/webkitEnterFullScreen()
+        PrefixedRequest,
     };
 
     void requestFullscreen(Element&, RequestType);
