@@ -1517,6 +1517,7 @@ putCompChar (widechar character)
 {
 /*Insert the dots equivalent of a character into the output buffer */
   TranslationTableOffset offset = (findCharOrDots
+  widechar d;
 				   (character, 0))->definitionRule;
   if (offset)
     {
@@ -1524,10 +1525,8 @@ putCompChar (widechar character)
 	& table->ruleArea[offset];
       if (rule->dotslen)
 	return for_updatePositions (&rule->charsdots[1], 1, rule->dotslen, 0);
-      {
-	widechar d = getDotsForChar (character);
+	d = getDotsForChar (character);
 	return for_updatePositions (&d, 1, 1, 0);
-      }
     }
   return undefinedCharacter (character);
 }
