@@ -27,12 +27,31 @@ public class WebappInfo {
     private String mId;
     private Bitmap mIcon;
     private Uri mUri;
-    private String mTitle;
+    private String mName;
+    private String mShortName;
     private int mOrientation;
     private int mSource;
 
     public static WebappInfo createEmpty() {
         return new WebappInfo();
+    }
+
+    private static String titleFromIntent(Intent intent) {
+        // The reference to title has been kept for reasons of backward compatibility. For intents
+        // and shortcuts which were created before we utilized the concept of name and shortName,
+        // we set the name and shortName to be the title.
+        String title = intent.getStringExtra(ShortcutHelper.EXTRA_TITLE);
+        return title == null ? "" : title;
+    }
+
+    public static String nameFromIntent(Intent intent) {
+        String name = intent.getStringExtra(ShortcutHelper.EXTRA_NAME);
+        return name == null ? titleFromIntent(intent) : name;
+    }
+
+    public static String shortNameFromIntent(Intent intent) {
+        String shortName = intent.getStringExtra(ShortcutHelper.EXTRA_SHORT_NAME);
+        return shortName == null ? titleFromIntent(intent) : shortName;
     }
 
     /**
@@ -42,13 +61,16 @@ public class WebappInfo {
     public static WebappInfo create(Intent intent) {
         String id = intent.getStringExtra(ShortcutHelper.EXTRA_ID);
         String icon = intent.getStringExtra(ShortcutHelper.EXTRA_ICON);
-        String title = intent.getStringExtra(ShortcutHelper.EXTRA_TITLE);
         String url = intent.getStringExtra(ShortcutHelper.EXTRA_URL);
         int orientation = intent.getIntExtra(
                 ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
         int source = intent.getIntExtra(
                 ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
-        return create(id, url, icon, title, orientation, source);
+
+        String name = nameFromIntent(intent);
+        String shortName = shortNameFromIntent(intent);
+
+        return create(id, url, icon, name, shortName, orientation, source);
     }
 
     /**
@@ -56,12 +78,13 @@ public class WebappInfo {
      * @param id ID for the webapp.
      * @param url URL for the webapp.
      * @param icon Icon to show for the webapp.
-     * @param title Title of the webapp.
+     * @param name Name of the webapp.
+     * @param shortName The short name of the webapp.
      * @param orientation Orientation of the webapp.
      * @param source Source where the webapp was added from.
      */
-    public static WebappInfo create(String id, String url, String icon, String title,
-            int orientation, int source) {
+    public static WebappInfo create(String id, String url, String icon, String name,
+            String shortName, int orientation, int source) {
         if (id == null || url == null) {
             Log.e("WebappInfo", "Data passed in was incomplete: " + id + ", " + url);
             return null;
@@ -74,13 +97,15 @@ public class WebappInfo {
         }
 
         Uri uri = Uri.parse(url);
-        return new WebappInfo(id, uri, favicon, title, orientation, source);
+        return new WebappInfo(id, uri, favicon, name, shortName, orientation, source);
     }
 
-    private WebappInfo(String id, Uri uri, Bitmap icon, String title, int orientation, int source) {
+    private WebappInfo(String id, Uri uri, Bitmap icon, String name,
+            String shortName, int orientation, int source) {
         mIcon = icon;
         mId = id;
-        mTitle = title;
+        mName = name;
+        mShortName = shortName;
         mUri = uri;
         mOrientation = orientation;
         mSource = source;
@@ -100,7 +125,8 @@ public class WebappInfo {
         outState.putString(ShortcutHelper.EXTRA_ID, mId);
         outState.putString(ShortcutHelper.EXTRA_URL, mUri.toString());
         outState.putParcelable(ShortcutHelper.EXTRA_ICON, mIcon);
-        outState.putString(ShortcutHelper.EXTRA_TITLE, mTitle);
+        outState.putString(ShortcutHelper.EXTRA_NAME, mName);
+        outState.putString(ShortcutHelper.EXTRA_SHORT_NAME, mShortName);
         outState.putInt(ShortcutHelper.EXTRA_ORIENTATION, mOrientation);
         outState.putInt(ShortcutHelper.EXTRA_SOURCE, mSource);
     }
@@ -114,7 +140,8 @@ public class WebappInfo {
         mIcon = newInfo.mIcon;
         mId = newInfo.mId;
         mUri = newInfo.mUri;
-        mTitle = newInfo.mTitle;
+        mName = newInfo.mName;
+        mShortName = newInfo.mShortName;
         mOrientation = newInfo.mOrientation;
         mSource = newInfo.mSource;
     }
@@ -135,8 +162,12 @@ public class WebappInfo {
         return mIcon;
     }
 
-    public String title() {
-        return mTitle;
+    public String name() {
+        return mName;
+    }
+
+    public String shortName() {
+        return mShortName;
     }
 
     public int orientation() {

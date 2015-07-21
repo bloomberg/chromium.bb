@@ -65,8 +65,10 @@ void ShortcutDataFetcher::OnDidGetWebApplicationInfo(
   web_app_info.description =
       web_app_info.description.substr(0, chrome::kMaxMetaTagAttributeLength);
 
-  shortcut_info_.title = web_app_info.title.empty() ? web_contents()->GetTitle()
-                                                    : web_app_info.title;
+  // Simply set the user-editable title to be the page's title
+  shortcut_info_.user_title = web_app_info.title.empty()
+                                    ? web_contents()->GetTitle()
+                                    : web_app_info.title;
 
   if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE ||
       web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
@@ -121,7 +123,7 @@ void ShortcutDataFetcher::OnDidGetManifest(const content::Manifest& manifest) {
     FetchFavicon();
   }
 
-  weak_observer_->OnTitleAvailable(shortcut_info_.title);
+  weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 
   // Kick off a timeout for downloading the icon.  If an icon isn't set within
   // the timeout, fall back to using a dynamically-generated launcher icon.

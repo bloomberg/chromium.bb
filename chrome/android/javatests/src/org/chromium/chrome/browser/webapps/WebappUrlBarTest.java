@@ -23,7 +23,7 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, WEBAPP_URL, null, null,
+        WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, WEBAPP_URL, null, null, null,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN);
         getActivity().getWebappInfo().copy(mockInfo);
         mUrlBar = getActivity().getUrlBarForTests();

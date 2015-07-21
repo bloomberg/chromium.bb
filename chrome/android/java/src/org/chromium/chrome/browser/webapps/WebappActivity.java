@@ -258,8 +258,8 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     private void updateTaskDescription() {
-        String title = mWebappInfo.title() == null
-                ? getActivityTab().getTitle() : mWebappInfo.title();
+        String title = mWebappInfo.shortName() == null
+                ? getActivityTab().getTitle() : mWebappInfo.shortName();
         Bitmap icon = mWebappInfo.icon() == null
                 ? getActivityTab().getFavicon() : mWebappInfo.icon();
         int color = mBrandColor == null
@@ -326,11 +326,12 @@ public class WebappActivity extends FullScreenActivity {
      * @param id ID of the webapp.
      * @param url URL for the webapp.
      * @param icon Base64 encoded Bitmap representing the webapp.
-     * @param title String to show in Recents.
+     * @param name String to show on the splash screen.
+     * @param shortName String to show on the recents menu
      * @param orientation Default orientation for the activity.
      */
     public static void launchInstance(Context context, String id, String url, String icon,
-            String title, int orientation, int source) {
+            String name, String shortName, int orientation, int source) {
         String activityName = WebappActivity.class.getName();
         if (!FeatureUtilities.isDocumentModeEligible(context)) {
             // Specifically assign the app to a particular WebappActivity instance.
@@ -344,7 +345,8 @@ public class WebappActivity extends FullScreenActivity {
         webappIntent.putExtra(ShortcutHelper.EXTRA_ICON, icon);
         webappIntent.putExtra(ShortcutHelper.EXTRA_ID, id);
         webappIntent.putExtra(ShortcutHelper.EXTRA_URL, url);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_TITLE, title);
+        webappIntent.putExtra(ShortcutHelper.EXTRA_NAME, name);
+        webappIntent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
         webappIntent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation);
         webappIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, source);
 

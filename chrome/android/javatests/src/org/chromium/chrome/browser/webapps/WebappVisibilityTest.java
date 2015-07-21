@@ -19,7 +19,7 @@ public class WebappVisibilityTest extends WebappActivityTestBase {
     @Feature({"Webapps"})
     public void testShouldShowTopControls() {
         final String webappUrl = "http://originalwebsite.com";
-        WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, webappUrl,
+        WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, webappUrl, null,
                 null, null, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN);
         getActivity().getWebappInfo().copy(mockInfo);
 

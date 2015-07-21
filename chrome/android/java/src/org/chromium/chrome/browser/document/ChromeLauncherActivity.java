@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.WebappActivity;
+import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ScreenOrientationValues;
@@ -767,12 +768,14 @@ public class ChromeLauncherActivity extends Activity
     private Intent launchWebapp(Intent intent) {
         String webappId = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
         String webappUrl = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-        String webappTitle = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_TITLE);
         String webappIcon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
         int webappOrientation = IntentUtils.safeGetIntExtra(intent,
                 ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
         int webappSource = IntentUtils.safeGetIntExtra(intent,
                 ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
+
+        String webappName = WebappInfo.nameFromIntent(intent);
+        String webappShortName = WebappInfo.shortNameFromIntent(intent);
 
         if (webappId != null && webappUrl != null) {
             String webappMacString = IntentUtils.safeGetStringExtra(
@@ -786,8 +789,8 @@ public class ChromeLauncherActivity extends Activity
                             webappUrl, webappSource);
                 }
 
-                WebappActivity.launchInstance(this, webappId,
-                        webappUrl, webappIcon, webappTitle, webappOrientation, webappSource);
+                WebappActivity.launchInstance(this, webappId, webappUrl,
+                        webappIcon, webappName, webappShortName, webappOrientation, webappSource);
             } else {
                 Log.e(TAG, "Shortcut (" + webappUrl + ") opened in Chrome.");
 

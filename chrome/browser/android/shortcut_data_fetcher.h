@@ -38,7 +38,7 @@ class ShortcutDataFetcher
   class Observer {
    public:
     // Called when the title of the page is available.
-    virtual void OnTitleAvailable(const base::string16& title) = 0;
+    virtual void OnUserTitleAvailable(const base::string16& title) = 0;
 
     // Converts the icon into one that can be used on the Android Home screen.
     virtual SkBitmap FinalizeLauncherIcon(const SkBitmap& icon,

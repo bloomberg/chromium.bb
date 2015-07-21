@@ -46,7 +46,7 @@ class ShortcutHelper : public ShortcutDataFetcher::Observer {
                                                   const SkBitmap& icon_bitmap);
 
   // ShortcutDataFetcher::Observer
-  void OnTitleAvailable(const base::string16& title) override;
+  void OnUserTitleAvailable(const base::string16& user_title) override;
   void OnDataAvailable(const ShortcutInfo& info, const SkBitmap& icon) override;
   SkBitmap FinalizeLauncherIcon(const SkBitmap& icon, const GURL& url) override;
 

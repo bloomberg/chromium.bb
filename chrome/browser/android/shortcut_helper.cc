@@ -43,13 +43,13 @@ ShortcutHelper::~ShortcutHelper() {
   data_fetcher_ = nullptr;
 }
 
-void ShortcutHelper::OnTitleAvailable(const base::string16& title) {
+void ShortcutHelper::OnUserTitleAvailable(const base::string16& user_title) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_title =
-      base::android::ConvertUTF16ToJavaString(env, title);
-  Java_ShortcutHelper_onTitleAvailable(env,
-                                       java_ref_.obj(),
-                                       j_title.obj());
+  ScopedJavaLocalRef<jstring> j_user_title =
+      base::android::ConvertUTF16ToJavaString(env, user_title);
+  Java_ShortcutHelper_onUserTitleAvailable(env,
+                                           java_ref_.obj(),
+                                           j_user_title.obj());
 }
 
 void ShortcutHelper::OnDataAvailable(const ShortcutInfo& info,
@@ -100,12 +100,15 @@ SkBitmap ShortcutHelper::FinalizeLauncherIcon(const SkBitmap& bitmap,
   return gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(ref.obj()));
 }
 
-void ShortcutHelper::AddShortcut(JNIEnv* env, jobject obj, jstring jtitle) {
+void ShortcutHelper::AddShortcut(JNIEnv* env,
+                                 jobject obj,
+                                 jstring j_user_title) {
   add_shortcut_pending_ = true;
 
-  base::string16 title = base::android::ConvertJavaStringToUTF16(env, jtitle);
-  if (!title.empty())
-    data_fetcher_->shortcut_info().title = title;
+  base::string16 user_title =
+      base::android::ConvertJavaStringToUTF16(env, j_user_title);
+  if (!user_title.empty())
+    data_fetcher_->shortcut_info().user_title = user_title;
 
   if (data_fetcher_->is_ready()) {
     // If the fetcher isn't ready yet, the shortcut will be added when it is
@@ -145,8 +148,12 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_url =
       base::android::ConvertUTF8ToJavaString(env, info.url.spec());
-  ScopedJavaLocalRef<jstring> java_title =
-      base::android::ConvertUTF16ToJavaString(env, info.title);
+  ScopedJavaLocalRef<jstring> java_user_title =
+      base::android::ConvertUTF16ToJavaString(env, info.user_title);
+  ScopedJavaLocalRef<jstring> java_name =
+      base::android::ConvertUTF16ToJavaString(env, info.name);
+  ScopedJavaLocalRef<jstring> java_short_name =
+      base::android::ConvertUTF16ToJavaString(env, info.short_name);
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (icon_bitmap.getSize())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
@@ -155,7 +162,9 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       env,
       base::android::GetApplicationContext(),
       java_url.obj(),
-      java_title.obj(),
+      java_user_title.obj(),
+      java_name.obj(),
+      java_short_name.obj(),
       java_bitmap.obj(),
       info.display == content::Manifest::DISPLAY_MODE_STANDALONE,
       info.orientation,

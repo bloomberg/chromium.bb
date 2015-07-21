@@ -85,7 +85,7 @@ public class AddToHomescreenDialog {
         // operation.
         shortcutHelper.initialize(new ShortcutHelper.ShortcutHelperObserver() {
             @Override
-            public void onTitleAvailable(String title) {
+            public void onUserTitleAvailable(String title) {
                 input.setEnabled(true);
                 input.setText(title);
             }

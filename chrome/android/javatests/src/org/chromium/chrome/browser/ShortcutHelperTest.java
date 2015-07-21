@@ -184,7 +184,7 @@ public class ShortcutHelperTest extends ChromeActivityTestCaseBase<ChromeActivit
                 // Calling initialize() isn't strictly required but it is testing this code path.
                 helper.initialize(new ShortcutHelper.ShortcutHelperObserver() {
                     @Override
-                    public void onTitleAvailable(String t) {
+                    public void onUserTitleAvailable(String t) {
                     }
 
                     @Override

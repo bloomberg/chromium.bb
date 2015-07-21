@@ -17,11 +17,21 @@ ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
       source(SOURCE_ADD_TO_HOMESCREEN) {
 }
 
+ShortcutInfo::~ShortcutInfo() {
+}
+
 void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   if (!manifest.short_name.is_null())
-    title = manifest.short_name.string();
-  else if (!manifest.name.is_null())
-    title = manifest.name.string();
+    short_name = manifest.short_name.string();
+  if (!manifest.name.is_null())
+    name = manifest.name.string();
+  if (manifest.short_name.is_null() != manifest.name.is_null()) {
+    if (manifest.short_name.is_null())
+      short_name = name;
+    name = short_name;
+  }
+  if (!short_name.empty())
+    user_title = short_name;
 
   // Set the url based on the manifest value, if any.
   if (manifest.start_url.is_valid())

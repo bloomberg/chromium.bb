@@ -29,6 +29,7 @@ struct ShortcutInfo {
 
   ShortcutInfo();
   explicit ShortcutInfo(const GURL& shortcut_url);
+  ~ShortcutInfo();
 
   // Updates the info based on the given |manifest|.
   void UpdateFromManifest(const content::Manifest& manifest);
@@ -37,7 +38,9 @@ struct ShortcutInfo {
   void UpdateSource(const Source source);
 
   GURL url;
-  base::string16 title;
+  base::string16 user_title;
+  base::string16 name;
+  base::string16 short_name;
   content::Manifest::DisplayMode display;
   blink::WebScreenOrientationLockType orientation;
   Source source;
