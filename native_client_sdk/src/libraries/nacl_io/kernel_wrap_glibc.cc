@@ -3,14 +3,10 @@
 // found in the LICENSE file.
 
 #include <sys/types.h>  // Include something that will define __GLIBC__.
+#include "nacl_io/kernel_wrap.h" // IRT_EXT is turned on in this header.
 
-// The entire file is wrapped in this #if. We do this so this .cc file can be
-// compiled, even on a non-glibc build.
-// The ARM glibc toolchain uses a different IRT hooks mechanism and is not
-// yet supported by nacl_io.
-#if defined(__native_client__) && defined(__GLIBC__) && !defined(__arm__)
-
-#include "nacl_io/kernel_wrap.h"
+#if !defined(NACL_IO_IRT_EXT) && defined(__native_client__) && \
+    defined(__GLIBC__)
 
 #include <alloca.h>
 #include <assert.h>

@@ -19,6 +19,12 @@
 #include "nacl_io/osutime.h"
 #include "sdk_util/macros.h"
 
+// Curently enable NaCl IO IRT Extension when using arm glibc (which
+// only supports this method interception).
+#if defined(__native_client__) && defined(__GLIBC__) && defined(__arm__)
+# define NACL_IO_IRT_EXT 1
+#endif
+
 #if defined(__GLIBC__)
 #include <sys/cdefs.h>
 #define NOTHROW __THROW

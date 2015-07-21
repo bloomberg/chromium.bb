@@ -4,10 +4,14 @@
 
 #include <sys/types.h>  // Include something that will define __BIONIC__.
 
+#include "nacl_io/kernel_wrap.h" // IRT_EXT is turned on in this header.
+
 // The entire file is wrapped in this #if. We do this so this .cc file can be
 // compiled, even on a non-bionic build.
 
-#if defined(__native_client__) && defined(__BIONIC__)
+#if !defined(NACL_IO_IRT_EXT) && defined(__native_client__) && \
+    defined(__BIONIC__)
+
 #include <alloca.h>
 #include <assert.h>
 #include <dirent.h>
@@ -18,7 +22,6 @@
 #include <sys/time.h>
 
 #include "nacl_io/kernel_intercept.h"
-#include "nacl_io/kernel_wrap.h"
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/osmman.h"
 
