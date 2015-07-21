@@ -9,12 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,12 +32,16 @@ namespace bookmark_api_helpers {
 class ExtensionBookmarksTest : public testing::Test {
  public:
   ExtensionBookmarksTest()
-      : client_(NULL), model_(NULL), node_(NULL), node2_(NULL), folder_(NULL) {}
+      : managed_(NULL),
+        model_(NULL),
+        node_(NULL),
+        node2_(NULL),
+        folder_(NULL) {}
 
   void SetUp() override {
     profile_.CreateBookmarkModel(false);
     model_ = BookmarkModelFactory::GetForProfile(&profile_);
-    client_ = ChromeBookmarkClientFactory::GetForProfile(&profile_);
+    managed_ = ManagedBookmarkServiceFactory::GetForProfile(&profile_);
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 
     node_ = model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Digg"),
@@ -60,7 +64,7 @@ class ExtensionBookmarksTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  ChromeBookmarkClient* client_;
+  bookmarks::ManagedBookmarkService* managed_;
   BookmarkModel* model_;
   const BookmarkNode* node_;
   const BookmarkNode* node2_;
@@ -69,7 +73,7 @@ class ExtensionBookmarksTest : public testing::Test {
 
 TEST_F(ExtensionBookmarksTest, GetFullTreeFromRoot) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(client_,
+      GetBookmarkTreeNode(managed_,
                           model_->other_node(),
                           true,    // Recurse.
                           false));  // Not only folders.
@@ -78,7 +82,7 @@ TEST_F(ExtensionBookmarksTest, GetFullTreeFromRoot) {
 
 TEST_F(ExtensionBookmarksTest, GetFoldersOnlyFromRoot) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(client_,
+      GetBookmarkTreeNode(managed_,
                           model_->other_node(),
                           true,   // Recurse.
                           true));  // Only folders.
@@ -87,7 +91,7 @@ TEST_F(ExtensionBookmarksTest, GetFoldersOnlyFromRoot) {
 
 TEST_F(ExtensionBookmarksTest, GetSubtree) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(client_,
+      GetBookmarkTreeNode(managed_,
                           folder_,
                           true,    // Recurse.
                           false));  // Not only folders.
@@ -99,7 +103,7 @@ TEST_F(ExtensionBookmarksTest, GetSubtree) {
 
 TEST_F(ExtensionBookmarksTest, GetSubtreeFoldersOnly) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(client_,
+      GetBookmarkTreeNode(managed_,
                           folder_,
                           true,   // Recurse.
                           true));  // Only folders.
@@ -111,7 +115,7 @@ TEST_F(ExtensionBookmarksTest, GetSubtreeFoldersOnly) {
 
 TEST_F(ExtensionBookmarksTest, GetModifiableNode) {
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(client_,
+      GetBookmarkTreeNode(managed_,
                           node_,
                           false,    // Recurse.
                           false));  // Only folders.
@@ -124,12 +128,12 @@ TEST_F(ExtensionBookmarksTest, GetModifiableNode) {
 
 TEST_F(ExtensionBookmarksTest, GetManagedNode) {
   const BookmarkNode* managed_bookmark =
-      model_->AddURL(client_->managed_node(),
+      model_->AddURL(managed_->managed_node(),
                      0,
                      base::ASCIIToUTF16("Chromium"),
                      GURL("http://www.chromium.org/"));
   scoped_ptr<BookmarkTreeNode> tree(
-      GetBookmarkTreeNode(client_,
+      GetBookmarkTreeNode(managed_,
                           managed_bookmark,
                           false,    // Recurse.
                           false));  // Only folders.
@@ -142,39 +146,39 @@ TEST_F(ExtensionBookmarksTest, GetManagedNode) {
 TEST_F(ExtensionBookmarksTest, RemoveNodeInvalidId) {
   int64 invalid_id = model_->next_node_id();
   std::string error;
-  EXPECT_FALSE(RemoveNode(model_, client_, invalid_id, true, &error));
+  EXPECT_FALSE(RemoveNode(model_, managed_, invalid_id, true, &error));
   EXPECT_EQ(keys::kNoNodeError, error);
 }
 
 TEST_F(ExtensionBookmarksTest, RemoveNodePermanent) {
   std::string error;
   EXPECT_FALSE(
-      RemoveNode(model_, client_, model_->other_node()->id(), true, &error));
+      RemoveNode(model_, managed_, model_->other_node()->id(), true, &error));
   EXPECT_EQ(keys::kModifySpecialError, error);
 }
 
 TEST_F(ExtensionBookmarksTest, RemoveNodeManaged) {
   const BookmarkNode* managed_bookmark =
-      model_->AddURL(client_->managed_node(),
+      model_->AddURL(managed_->managed_node(),
                      0,
                      base::ASCIIToUTF16("Chromium"),
                      GURL("http://www.chromium.org"));
   std::string error;
   EXPECT_FALSE(
-      RemoveNode(model_, client_, managed_bookmark->id(), true, &error));
+      RemoveNode(model_, managed_, managed_bookmark->id(), true, &error));
   EXPECT_EQ(keys::kModifyManagedError, error);
 }
 
 TEST_F(ExtensionBookmarksTest, RemoveNodeNotRecursive) {
   std::string error;
-  EXPECT_FALSE(RemoveNode(model_, client_, folder_->id(), false, &error));
+  EXPECT_FALSE(RemoveNode(model_, managed_, folder_->id(), false, &error));
   EXPECT_EQ(keys::kFolderNotEmptyError, error);
 }
 
 TEST_F(ExtensionBookmarksTest, RemoveNodeRecursive) {
   EXPECT_EQ(3, model_->other_node()->child_count());
   std::string error;
-  EXPECT_TRUE(RemoveNode(model_, client_, folder_->id(), true, &error));
+  EXPECT_TRUE(RemoveNode(model_, managed_, folder_->id(), true, &error));
   EXPECT_EQ(2, model_->other_node()->child_count());
 }
 

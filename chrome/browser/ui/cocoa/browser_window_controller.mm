@@ -17,8 +17,7 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
@@ -84,6 +83,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
@@ -1775,12 +1775,12 @@ using content::WebContents;
   if (!bookmarkBubbleController_) {
     BookmarkModel* model =
         BookmarkModelFactory::GetForProfile(browser_->profile());
-    ChromeBookmarkClient* client =
-        ChromeBookmarkClientFactory::GetForProfile(browser_->profile());
+    bookmarks::ManagedBookmarkService* managed =
+        ManagedBookmarkServiceFactory::GetForProfile(browser_->profile());
     const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);
     bookmarkBubbleController_ =
         [[BookmarkBubbleController alloc] initWithParentWindow:[self window]
-                                                        client:client
+                                                       managed:managed
                                                          model:model
                                                           node:node
                                              alreadyBookmarked:alreadyMarked];

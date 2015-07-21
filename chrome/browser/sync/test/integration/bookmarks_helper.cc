@@ -20,8 +20,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,6 +36,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -464,8 +464,9 @@ const BookmarkNode* GetSyncedBookmarksNode(int index) {
 }
 
 const BookmarkNode* GetManagedNode(int index) {
-  return ChromeBookmarkClientFactory::GetForProfile(
-      sync_datatype_helper::test()->GetProfile(index))->managed_node();
+  return ManagedBookmarkServiceFactory::GetForProfile(
+             sync_datatype_helper::test()->GetProfile(index))
+      ->managed_node();
 }
 
 BookmarkModel* GetVerifierBookmarkModel() {

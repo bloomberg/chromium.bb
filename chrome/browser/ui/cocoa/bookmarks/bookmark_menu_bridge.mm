@@ -8,8 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -18,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -76,11 +76,11 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
 
   // Add at most one separator for the bookmark bar and the managed and
   // supervised bookmarks folders.
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile_);
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile_);
   const BookmarkNode* barNode = model->bookmark_bar_node();
-  const BookmarkNode* managedNode = client->managed_node();
-  const BookmarkNode* supervisedNode = client->supervised_node();
+  const BookmarkNode* managedNode = managed->managed_node();
+  const BookmarkNode* supervisedNode = managed->supervised_node();
   if (!barNode->empty() || !managedNode->empty() || !supervisedNode->empty())
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
   if (!managedNode->empty()) {

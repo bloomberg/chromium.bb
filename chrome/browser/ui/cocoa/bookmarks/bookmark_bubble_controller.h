@@ -9,13 +9,13 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 
-class ChromeBookmarkClient;
 @class BookmarkBubbleController;
 @class BookmarkSyncPromoController;
 
 namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
+class ManagedBookmarkService;
 }
 
 // Controller for the bookmark bubble.  The bookmark bubble is a
@@ -24,9 +24,9 @@ class BookmarkNode;
 // the bookmark in various ways (name, folder, etc.)
 @interface BookmarkBubbleController : BaseBubbleController {
  @private
-  // |client_|, |model_| and |node_| are weak and owned by the current browser's
-  // profile.
-  ChromeBookmarkClient* client_;  // weak
+  // |managed_|, |model_| and |node_| are weak and owned by the current
+  // browser's profile.
+  bookmarks::ManagedBookmarkService* managedBookmarkService_;  // weak
   bookmarks::BookmarkModel* model_;  // weak
   const bookmarks::BookmarkNode* node_;  // weak
 
@@ -56,7 +56,7 @@ class BookmarkNode;
 // it desires it to be visible on the screen.  It is not shown by the
 // init routine.  Closing of the window happens implicitly on dealloc.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                    client:(ChromeBookmarkClient*)client
+                   managed:(bookmarks::ManagedBookmarkService*)managed
                      model:(bookmarks::BookmarkModel*)model
                       node:(const bookmarks::BookmarkNode*)node
          alreadyBookmarked:(BOOL)alreadyBookmarked;

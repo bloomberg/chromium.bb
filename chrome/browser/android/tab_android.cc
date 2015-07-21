@@ -14,8 +14,7 @@
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -51,6 +50,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/infobars/core/infobar_container.h"
@@ -770,8 +770,8 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
 
   // Get all the nodes for |url| and sort them by date added.
   std::vector<const bookmarks::BookmarkNode*> nodes;
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile);
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile);
   bookmarks::BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(profile);
   model->GetNodesByURL(url, &nodes);
@@ -779,7 +779,7 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
 
   // Return the first node matching the search criteria.
   for (size_t i = 0; i < nodes.size(); ++i) {
-    if (only_editable && !client->CanBeEditedByUser(nodes[i]))
+    if (only_editable && !managed->CanBeEditedByUser(nodes[i]))
       continue;
     return nodes[i]->id();
   }

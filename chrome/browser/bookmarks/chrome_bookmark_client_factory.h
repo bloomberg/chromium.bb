@@ -19,8 +19,8 @@ class Profile;
 class ChromeBookmarkClientFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ChromeBookmarkClient* GetForProfile(Profile* profile);
-
   static ChromeBookmarkClientFactory* GetInstance();
+  static TestingFactoryFunction GetDefaultFactory();
 
  private:
   friend struct DefaultSingletonTraits<ChromeBookmarkClientFactory>;

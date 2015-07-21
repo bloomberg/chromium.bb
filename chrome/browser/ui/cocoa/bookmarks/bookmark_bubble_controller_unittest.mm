@@ -9,8 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -20,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,11 +93,11 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
       controller_ = nil;
     }
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-    ChromeBookmarkClient* client =
-        ChromeBookmarkClientFactory::GetForProfile(profile());
+    bookmarks::ManagedBookmarkService* managed =
+        ManagedBookmarkServiceFactory::GetForProfile(profile());
     controller_ = [[BookmarkBubbleController alloc]
         initWithParentWindow:browser()->window()->GetNativeWindow()
-                      client:client
+                     managed:managed
                        model:model
                         node:node
            alreadyBookmarked:YES];
@@ -396,12 +396,12 @@ TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
 // them pressing escape. The bookmark should not be there.
 TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile());
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile());
   const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = [[BookmarkBubbleController alloc]
       initWithParentWindow:browser()->window()->GetNativeWindow()
-                    client:client
+                   managed:managed
                      model:model
                       node:node
          alreadyBookmarked:NO];  // The last param is the key difference.

@@ -6,7 +6,6 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
@@ -17,6 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -54,16 +54,16 @@ using bookmarks::BookmarkNode;
 }
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                    client:(ChromeBookmarkClient*)client
+                   managed:(bookmarks::ManagedBookmarkService*)managed
                      model:(BookmarkModel*)model
                       node:(const BookmarkNode*)node
          alreadyBookmarked:(BOOL)alreadyBookmarked {
-  DCHECK(client);
+  DCHECK(managed);
   DCHECK(node);
   if ((self = [super initWithWindowNibPath:@"BookmarkBubble"
                               parentWindow:parentWindow
                                 anchoredAt:NSZeroPoint])) {
-    client_ = client;
+    managedBookmarkService_ = managed;
     model_ = model;
     node_ = node;
     alreadyBookmarked_ = alreadyBookmarked;
@@ -107,8 +107,9 @@ using bookmarks::BookmarkNode;
 - (void)startPulsingBookmarkButton:(const BookmarkNode*)node  {
   while (node) {
     if ((node->parent() == model_->bookmark_bar_node()) ||
-        (node->parent() == client_->managed_node()) ||
-        (node->parent() == client_->supervised_node()) ||
+        (node->parent() ==
+         managedBookmarkService_->managed_node()) ||
+        (node->parent() == managedBookmarkService_->supervised_node()) ||
         (node == model_->other_node())) {
       pulsingBookmarkNode_ = node;
       bookmarkObserver_->StartObservingNode(pulsingBookmarkNode_);
@@ -380,7 +381,7 @@ using bookmarks::BookmarkNode;
   for (int i = 0; i < parent->child_count(); i++) {
     const BookmarkNode* child = parent->GetChild(i);
     if (child->is_folder() && child->IsVisible() &&
-        client_->CanBeEditedByUser(child)) {
+        managedBookmarkService_->CanBeEditedByUser(child)) {
       [self addFolderNodes:child
              toPopUpButton:button
                indentation:indentation];

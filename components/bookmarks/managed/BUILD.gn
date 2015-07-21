@@ -4,6 +4,8 @@
 
 source_set("managed") {
   sources = [
+    "managed_bookmark_service.cc",
+    "managed_bookmark_service.h",
     "managed_bookmarks_tracker.cc",
     "managed_bookmarks_tracker.h",
   ]
@@ -13,6 +15,7 @@ source_set("managed") {
     "//base:prefs",
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
+    "//components/keyed_service/core",
     "//components/strings",
     "//ui/base",
     "//url",

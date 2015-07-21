@@ -10,8 +10,8 @@
 #include "base/i18n/string_compare.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -23,6 +23,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/query_parser/query_parser.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/undo/bookmark_undo_service.h"
@@ -90,17 +91,16 @@ scoped_ptr<icu::Collator> GetICUCollator() {
 
 }  // namespace
 
-BookmarksBridge::BookmarksBridge(JNIEnv* env,
-                                 jobject obj,
-                                 jobject j_profile)
+BookmarksBridge::BookmarksBridge(JNIEnv* env, jobject obj, jobject j_profile)
     : weak_java_ref_(env, obj),
       bookmark_model_(NULL),
-      client_(NULL),
+      managed_bookmark_service_(NULL),
       partner_bookmarks_shim_(NULL) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   profile_ = ProfileAndroid::FromProfileAndroid(j_profile);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
-  client_ = ChromeBookmarkClientFactory::GetForProfile(profile_);
+  managed_bookmark_service_ =
+      ManagedBookmarkServiceFactory::GetForProfile(profile_);
 
   // Registers the notifications we are interested.
   bookmark_model_->AddObserver(this);
@@ -224,13 +224,13 @@ void BookmarksBridge::GetTopLevelFolderIDs(JNIEnv* env,
   std::vector<const BookmarkNode*> top_level_folders;
 
   if (get_special) {
-    if (client_->managed_node() &&
-        client_->managed_node()->child_count() > 0) {
-      top_level_folders.push_back(client_->managed_node());
+    if (managed_bookmark_service_->managed_node() &&
+        managed_bookmark_service_->managed_node()->child_count() > 0) {
+      top_level_folders.push_back(managed_bookmark_service_->managed_node());
     }
-    if (client_->supervised_node() &&
-        client_->supervised_node()->child_count() > 0) {
-      top_level_folders.push_back(client_->supervised_node());
+    if (managed_bookmark_service_->supervised_node() &&
+        managed_bookmark_service_->supervised_node()->child_count() > 0) {
+      top_level_folders.push_back(managed_bookmark_service_->supervised_node());
     }
     if (partner_bookmarks_shim_->HasPartnerBookmarks()
         && IsReachable(partner_bookmarks_shim_->GetPartnerBookmarksRoot())) {
@@ -325,8 +325,10 @@ void BookmarksBridge::GetAllFoldersWithDepths(JNIEnv* env,
     bookmarkList.clear();
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
-      if (child->is_folder() && client_->CanBeEditedByUser(child))
+      if (child->is_folder() &&
+          managed_bookmark_service_->CanBeEditedByUser(child)) {
         bookmarkList.push_back(node->GetChild(i));
+      }
     }
     std::stable_sort(bookmarkList.begin(),
                      bookmarkList.end(),
@@ -448,8 +450,10 @@ void BookmarksBridge::GetAllBookmarkIDsOrderedByCreationDate(
     for (int i = 0; i < (*folder_iter)->child_count(); ++i) {
       const BookmarkNode* child = (*folder_iter)->GetChild(i);
       if (!IsReachable(child) ||
-          bookmarks::IsDescendantOf(child, client_->managed_node()) ||
-          bookmarks::IsDescendantOf(child, client_->supervised_node())) {
+          bookmarks::IsDescendantOf(
+              child, managed_bookmark_service_->managed_node()) ||
+          bookmarks::IsDescendantOf(
+              child, managed_bookmark_service_->supervised_node())) {
         continue;
       }
 
@@ -773,8 +777,8 @@ const BookmarkNode* BookmarksBridge::GetFolderWithFallback(long folder_id,
   const BookmarkNode* folder = GetNodeByID(folder_id, type);
   if (!folder || folder->type() == BookmarkNode::URL ||
       !IsFolderAvailable(folder)) {
-    if (!client_->managed_node()->empty())
-      folder = client_->managed_node();
+    if (!managed_bookmark_service_->managed_node()->empty())
+      folder = managed_bookmark_service_->managed_node();
     else
       folder = bookmark_model_->mobile_node();
   }
@@ -790,11 +794,12 @@ bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
     return false;
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->IsEditable(node);
-  return client_->CanBeEditedByUser(node);
+  return managed_bookmark_service_->CanBeEditedByUser(node);
 }
 
 bool BookmarksBridge::IsManaged(const BookmarkNode* node) const {
-  return bookmarks::IsDescendantOf(node, client_->managed_node());
+  return bookmarks::IsDescendantOf(node,
+                                   managed_bookmark_service_->managed_node());
 }
 
 const BookmarkNode* BookmarksBridge::GetParentNode(const BookmarkNode* node) {
@@ -827,11 +832,11 @@ bool BookmarksBridge::IsFolderAvailable(
     const BookmarkNode* folder) const {
   // The managed bookmarks folder is not shown if there are no bookmarks
   // configured via policy.
-  if (folder == client_->managed_node() && folder->empty())
+  if (folder == managed_bookmark_service_->managed_node() && folder->empty())
     return false;
   // Similarly, the supervised bookmarks folder is not shown if there are no
   // bookmarks configured by the custodian.
-  if (folder == client_->supervised_node() && folder->empty())
+  if (folder == managed_bookmark_service_->supervised_node() && folder->empty())
     return false;
 
   SigninManager* signin = SigninManagerFactory::GetForProfile(

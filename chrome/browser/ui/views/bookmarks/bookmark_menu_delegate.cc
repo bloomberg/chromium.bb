@@ -8,8 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
@@ -76,12 +76,13 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
     // current node has children. If |node| is the bookmark bar then the
     // managed node is shown as its first child, if it's not empty.
     BookmarkModel* model = GetBookmarkModel();
-    ChromeBookmarkClient* client = GetChromeBookmarkClient();
+    bookmarks::ManagedBookmarkService* managed = GetManagedBookmarkService();
     bool show_forced_folders = show_options == SHOW_PERMANENT_FOLDERS &&
                                node == model->bookmark_bar_node();
-    bool show_managed = show_forced_folders && !client->managed_node()->empty();
+    bool show_managed =
+        show_forced_folders && !managed->managed_node()->empty();
     bool show_supervised =
-        show_forced_folders && !client->supervised_node()->empty();
+        show_forced_folders && !managed->supervised_node()->empty();
     bool has_children = (start_child_index < node->child_count()) ||
                         show_managed || show_supervised;
     int initial_count = parent->GetSubmenu() ?
@@ -110,8 +111,9 @@ BookmarkModel* BookmarkMenuDelegate::GetBookmarkModel() {
   return BookmarkModelFactory::GetForProfile(profile_);
 }
 
-ChromeBookmarkClient* BookmarkMenuDelegate::GetChromeBookmarkClient() {
-  return ChromeBookmarkClientFactory::GetForProfile(profile_);
+bookmarks::ManagedBookmarkService*
+BookmarkMenuDelegate::GetManagedBookmarkService() {
+  return ManagedBookmarkServiceFactory::GetForProfile(profile_);
 }
 
 void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
@@ -481,7 +483,7 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(
 void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
   // Don't add a separator for this menu.
   bool added_separator = true;
-  const BookmarkNode* node = GetChromeBookmarkClient()->managed_node();
+  const BookmarkNode* node = GetManagedBookmarkService()->managed_node();
   BuildMenuForPermanentNode(node, IDR_BOOKMARK_BAR_FOLDER_MANAGED, menu,
                             &added_separator);
 }
@@ -489,7 +491,7 @@ void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
 void BookmarkMenuDelegate::BuildMenuForSupervisedNode(MenuItemView* menu) {
   // Don't add a separator for this menu.
   bool added_separator = true;
-  const BookmarkNode* node = GetChromeBookmarkClient()->supervised_node();
+  const BookmarkNode* node = GetManagedBookmarkService()->supervised_node();
   BuildMenuForPermanentNode(node, IDR_BOOKMARK_BAR_FOLDER_SUPERVISED, menu,
                             &added_separator);
 }

@@ -20,8 +20,7 @@
 #include "chrome/browser/android/provider/bookmark_model_observer_task.h"
 #include "chrome/browser/android/provider/run_on_ui_thread_blocking.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/android/android_history_types.h"
 #include "components/history/core/browser/history_service.h"
@@ -58,6 +58,7 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+using bookmarks::ManagedBookmarkService;
 using content::BrowserThread;
 
 // After refactoring the following class hierarchy has been created in order
@@ -480,17 +481,19 @@ class CreateBookmarksFolderOnceTask : public BookmarkModelTask {
 // Creates a Java BookmarkNode object for a node given its id.
 class GetEditableBookmarkFoldersTask : public BookmarkModelTask {
  public:
-  GetEditableBookmarkFoldersTask(ChromeBookmarkClient* client,
-                                 BookmarkModel* model)
-      : BookmarkModelTask(model), client_(client) {}
+  GetEditableBookmarkFoldersTask(
+      ManagedBookmarkService* managed_bookmark_service,
+      BookmarkModel* model)
+      : BookmarkModelTask(model),
+        managed_bookmark_service_(managed_bookmark_service) {}
 
   void Run(ScopedJavaGlobalRef<jobject>* jroot) {
     RunOnUIThreadBlocking::Run(
         base::Bind(&GetEditableBookmarkFoldersTask::RunOnUIThread,
-                   client_, model(), jroot));
+                   managed_bookmark_service_, model(), jroot));
   }
 
-  static void RunOnUIThread(ChromeBookmarkClient* client,
+  static void RunOnUIThread(ManagedBookmarkService* managed,
                             BookmarkModel* model,
                             ScopedJavaGlobalRef<jobject>* jroot) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -500,12 +503,12 @@ class GetEditableBookmarkFoldersTask : public BookmarkModelTask {
 
     // The iterative approach is not possible because ScopedGlobalJavaRefs
     // cannot be copy-constructed, and therefore not used in STL containers.
-    ConvertFolderSubtree(client, AttachCurrentThread(), root,
+    ConvertFolderSubtree(managed, AttachCurrentThread(), root,
                          ScopedJavaLocalRef<jobject>(), jroot);
   }
 
  private:
-  static void ConvertFolderSubtree(ChromeBookmarkClient* client,
+  static void ConvertFolderSubtree(ManagedBookmarkService* managed,
                                    JNIEnv* env,
                                    const BookmarkNode* node,
                                    const JavaRef<jobject>& parent_folder,
@@ -520,9 +523,9 @@ class GetEditableBookmarkFoldersTask : public BookmarkModelTask {
 
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
-      if (child->is_folder() && client->CanBeEditedByUser(child)) {
+      if (child->is_folder() && managed->CanBeEditedByUser(child)) {
         ScopedJavaGlobalRef<jobject> jchild;
-        ConvertFolderSubtree(client, env, child, *jfolder, &jchild);
+        ConvertFolderSubtree(managed, env, child, *jfolder, &jchild);
 
         Java_BookmarkNode_addChild(env, jfolder->obj(), jchild.obj());
         if (ClearException(env)) {
@@ -533,7 +536,7 @@ class GetEditableBookmarkFoldersTask : public BookmarkModelTask {
     }
   }
 
-  ChromeBookmarkClient* client_;
+  ManagedBookmarkService* managed_bookmark_service_;
 
   DISALLOW_COPY_AND_ASSIGN(GetEditableBookmarkFoldersTask);
 };
@@ -1504,10 +1507,10 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::GetEditableBookmarkFolders(
     JNIEnv* env,
     jobject obj) {
   ScopedJavaGlobalRef<jobject> jroot;
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile_);
+  ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile_);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
-  GetEditableBookmarkFoldersTask task(client, model);
+  GetEditableBookmarkFoldersTask task(managed, model);
   task.Run(&jroot);
   return ScopedJavaLocalRef<jobject>(jroot);
 }

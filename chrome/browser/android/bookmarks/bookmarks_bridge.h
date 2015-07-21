@@ -12,11 +12,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
 
 namespace bookmarks {
+class BookmarkModel;
+class ManagedBookmarkService;
 class ScopedGroupBookmarkActions;
 }
 
@@ -212,7 +213,7 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
   Profile* profile_;
   JavaObjectWeakGlobalRef weak_java_ref_;
   bookmarks::BookmarkModel* bookmark_model_;  // weak
-  ChromeBookmarkClient* client_;   // weak
+  bookmarks::ManagedBookmarkService* managed_bookmark_service_;  // weak
   scoped_ptr<bookmarks::ScopedGroupBookmarkActions> grouped_bookmark_actions_;
 
   // Information about the Partner bookmarks (must check for IsLoaded()).

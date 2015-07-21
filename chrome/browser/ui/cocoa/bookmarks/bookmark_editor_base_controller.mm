@@ -11,8 +11,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
@@ -21,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -505,14 +505,14 @@ NSString* const kOkEnabledName = @"okEnabled";
 }
 
 - (NSMutableArray*)addChildFoldersFromNode:(const BookmarkNode*)node {
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile_);
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile_);
   NSMutableArray* childFolders = nil;
   int childCount = node->child_count();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* childNode = node->GetChild(i);
     if (childNode->is_folder() && childNode->IsVisible() &&
-        client->CanBeEditedByUser(childNode)) {
+        managed->CanBeEditedByUser(childNode)) {
       NSString* childName = base::SysUTF16ToNSString(childNode->GetTitle());
       NSMutableArray* children = [self addChildFoldersFromNode:childNode];
       BookmarkFolderInfo* folderInfo =

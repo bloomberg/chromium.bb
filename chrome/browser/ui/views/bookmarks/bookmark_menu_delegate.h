@@ -16,8 +16,11 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class Browser;
-class ChromeBookmarkClient;
 class Profile;
+
+namespace bookmarks {
+class ManagedBookmarkService;
+}
 
 namespace content {
 class PageNavigator;
@@ -74,7 +77,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   void SetActiveMenu(const bookmarks::BookmarkNode* node, int start_index);
 
   bookmarks::BookmarkModel* GetBookmarkModel();
-  ChromeBookmarkClient* GetChromeBookmarkClient();
+  bookmarks::ManagedBookmarkService* GetManagedBookmarkService();
 
   // Returns the menu.
   views::MenuItemView* menu() { return menu_; }

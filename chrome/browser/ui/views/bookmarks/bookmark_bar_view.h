@@ -33,11 +33,11 @@ class BookmarkBarViewTestHelper;
 class BookmarkContextMenu;
 class Browser;
 class BrowserView;
-class ChromeBookmarkClient;
 class Profile;
 
 namespace bookmarks {
 class BookmarkModel;
+class ManagedBookmarkService;
 }
 
 namespace content {
@@ -402,8 +402,8 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // view. This is owned by the Profile.
   bookmarks::BookmarkModel* model_;
 
-  // ChromeBookmarkClient. This is owned by the Profile.
-  ChromeBookmarkClient* client_;
+  // ManagedBookmarkService. This is owned by the Profile.
+  bookmarks::ManagedBookmarkService* managed_;
 
   // Used to manage showing a Menu, either for the most recently bookmarked
   // entries, or for the starred folder.

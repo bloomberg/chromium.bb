@@ -27,7 +27,6 @@
 @class BookmarkFolderTarget;
 @class BookmarkContextMenuCocoaController;
 class Browser;
-class ChromeBookmarkClient;
 class GURL;
 namespace ui {
 class ThemeProvider;
@@ -37,6 +36,7 @@ namespace bookmarks {
 
 class BookmarkModel;
 class BookmarkNode;
+class ManagedBookmarkService;
 
 // Magic numbers from Cole
 // TODO(jrg): create an objc-friendly version of bookmark_bar_constants.h?
@@ -175,7 +175,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   Browser* browser_;              // weak; owned by its window
   bookmarks::BookmarkModel* bookmarkModel_;  // weak; part of the profile owned
                                              // by the top-level Browser object.
-  ChromeBookmarkClient* bookmarkClient_;
+  bookmarks::ManagedBookmarkService* managedBookmarkService_;
 
   // Our initial view width, which is applied in awakeFromNib.
   CGFloat initialWidth_;

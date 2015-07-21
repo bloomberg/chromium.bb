@@ -18,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/chrome_fallback_icon_client_factory.h"
@@ -210,7 +211,7 @@ scoped_ptr<KeyedService> BuildInMemoryURLIndex(
 }
 
 scoped_ptr<KeyedService> BuildBookmarkModel(content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
   ChromeBookmarkClient* bookmark_client =
       ChromeBookmarkClientFactory::GetForProfile(profile);
   scoped_ptr<BookmarkModel> bookmark_model(new BookmarkModel(bookmark_client));
@@ -222,12 +223,6 @@ scoped_ptr<KeyedService> BuildBookmarkModel(content::BrowserContext* context) {
                        content::BrowserThread::GetMessageLoopProxyForThread(
                            content::BrowserThread::UI));
   return bookmark_model.Pass();
-}
-
-scoped_ptr<KeyedService> BuildChromeBookmarkClient(
-    content::BrowserContext* context) {
-  return make_scoped_ptr(
-      new ChromeBookmarkClient(static_cast<Profile*>(context)));
 }
 
 void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
@@ -592,8 +587,10 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
     base::DeleteFile(path, false);
   }
+  ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
+      this, ManagedBookmarkServiceFactory::GetDefaultFactory());
   ChromeBookmarkClientFactory::GetInstance()->SetTestingFactory(
-      this, BuildChromeBookmarkClient);
+      this, ChromeBookmarkClientFactory::GetDefaultFactory());
   // This creates the BookmarkModel.
   ignore_result(BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
       this, BuildBookmarkModel));

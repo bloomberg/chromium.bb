@@ -9,14 +9,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/user_prefs/user_prefs.h"
 
@@ -33,8 +33,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
   // Add managed bookmarks.
   Profile* profile = browser()->profile();
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile);
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile);
   bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   base::ListValue list;
@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
   node->Set("children", new base::ListValue());
   list.Append(node);
   profile->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
-  ASSERT_EQ(2, client->managed_node()->child_count());
+  ASSERT_EQ(2, managed->managed_node()->child_count());
 
   ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/standard"))
       << message_;

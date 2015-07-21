@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
@@ -54,12 +55,6 @@ class HistoryMock : public history::HistoryService {
  protected:
   ~HistoryMock() override {}
 };
-
-scoped_ptr<KeyedService> BuildChromeBookmarkClient(
-    content::BrowserContext* context) {
-  return make_scoped_ptr(
-      new ChromeBookmarkClient(static_cast<Profile*>(context)));
-}
 
 scoped_ptr<KeyedService> BuildBookmarkModelWithoutLoading(
     content::BrowserContext* context) {
@@ -114,8 +109,10 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
   };
 
   void CreateBookmarkModel(BookmarkLoadPolicy bookmark_load_policy) {
+    ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
+        &profile_, ManagedBookmarkServiceFactory::GetDefaultFactory());
     ChromeBookmarkClientFactory::GetInstance()->SetTestingFactory(
-        &profile_, BuildChromeBookmarkClient);
+        &profile_, ChromeBookmarkClientFactory::GetDefaultFactory());
     if (bookmark_load_policy == LOAD_MODEL) {
       bookmark_model_ = static_cast<BookmarkModel*>(
           BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(

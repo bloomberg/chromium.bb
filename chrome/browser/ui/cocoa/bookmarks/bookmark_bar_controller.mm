@@ -10,8 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -51,6 +50,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -259,8 +259,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     browser_ = browser;
     initialWidth_ = initialWidth;
     bookmarkModel_ = BookmarkModelFactory::GetForProfile(browser_->profile());
-    bookmarkClient_ =
-        ChromeBookmarkClientFactory::GetForProfile(browser_->profile());
+    managedBookmarkService_ =
+        ManagedBookmarkServiceFactory::GetForProfile(browser_->profile());
     buttons_.reset([[NSMutableArray alloc] init]);
     delegate_ = delegate;
     resizeDelegate_ = resizeDelegate;
@@ -600,13 +600,13 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!node)
     return defaultImage_;
 
-  if (node == bookmarkClient_->managed_node()) {
+  if (node == managedBookmarkService_->managed_node()) {
     // Most users never see this node, so the image is only loaded if needed.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     return rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
   }
 
-  if (node == bookmarkClient_->supervised_node()) {
+  if (node == managedBookmarkService_->supervised_node()) {
     // Most users never see this node, so the image is only loaded if needed.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     return rb.GetNativeImageNamed(
@@ -636,7 +636,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (BOOL)canEditBookmark:(const BookmarkNode*)node {
   // Don't allow edit/delete of the permanent nodes.
   if (node == nil || bookmarkModel_->is_permanent_node(node) ||
-      !bookmarkClient_->CanBeEditedByUser(node)) {
+      !managedBookmarkService_->CanBeEditedByUser(node)) {
     return NO;
   }
   return YES;
@@ -1297,7 +1297,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (managedBookmarksButton_.get()) {
     // The node's title might have changed if the user signed in or out.
     // Make sure it's up to date now.
-    const BookmarkNode* node = bookmarkClient_->managed_node();
+    const BookmarkNode* node = managedBookmarkService_->managed_node();
     NSString* title = base::SysUTF16ToNSString(node->GetTitle());
     NSCell* cell = [managedBookmarksButton_ cell];
     [cell setTitle:title];
@@ -1308,7 +1308,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return;
   }
 
-  NSCell* cell = [self cellForBookmarkNode:bookmarkClient_->managed_node()];
+  NSCell* cell =
+      [self cellForBookmarkNode:managedBookmarkService_->managed_node()];
   managedBookmarksButton_.reset([self createCustomBookmarkButtonForCell:cell]);
   [managedBookmarksButton_ setAction:@selector(openBookmarkFolderFromButton:)];
   view_id_util::SetID(managedBookmarksButton_.get(), VIEW_ID_MANAGED_BOOKMARKS);
@@ -1325,7 +1326,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return;
   }
 
-  NSCell* cell = [self cellForBookmarkNode:bookmarkClient_->supervised_node()];
+  NSCell* cell =
+      [self cellForBookmarkNode:managedBookmarkService_->supervised_node()];
   supervisedBookmarksButton_.reset(
       [self createCustomBookmarkButtonForCell:cell]);
   [supervisedBookmarksButton_
@@ -2089,9 +2091,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destIndex = [self indexForDragToPoint:point];
   }
 
-  if (!bookmarkClient_->CanBeEditedByUser(destParent))
+  if (!managedBookmarkService_->CanBeEditedByUser(destParent))
     return NO;
-  if (!bookmarkClient_->CanBeEditedByUser(sourceNode))
+  if (!managedBookmarkService_->CanBeEditedByUser(sourceNode))
     copy = YES;
 
   // Be sure we don't try and drop a folder into itself.
@@ -2808,7 +2810,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destIndex = [self indexForDragToPoint:point];
   }
 
-  if (!bookmarkClient_->CanBeEditedByUser(destParent))
+  if (!managedBookmarkService_->CanBeEditedByUser(destParent))
     return NO;
 
   // Don't add the bookmarks if the destination index shows an error.

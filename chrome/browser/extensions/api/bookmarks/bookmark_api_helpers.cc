@@ -9,11 +9,11 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/common/extensions/api/bookmarks.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -27,26 +27,25 @@ namespace bookmark_api_helpers {
 
 namespace {
 
-void AddNodeHelper(ChromeBookmarkClient* client,
+void AddNodeHelper(bookmarks::ManagedBookmarkService* managed,
                    const BookmarkNode* node,
-                   std::vector<linked_ptr<BookmarkTreeNode> >* nodes,
+                   std::vector<linked_ptr<BookmarkTreeNode>>* nodes,
                    bool recurse,
                    bool only_folders) {
   if (node->IsVisible()) {
-    linked_ptr<BookmarkTreeNode> new_node(GetBookmarkTreeNode(client,
-                                                              node,
-                                                              recurse,
-                                                              only_folders));
+    linked_ptr<BookmarkTreeNode> new_node(
+        GetBookmarkTreeNode(managed, node, recurse, only_folders));
     nodes->push_back(new_node);
   }
 }
 
 }  // namespace
 
-BookmarkTreeNode* GetBookmarkTreeNode(ChromeBookmarkClient* client,
-                                      const BookmarkNode* node,
-                                      bool recurse,
-                                      bool only_folders) {
+BookmarkTreeNode* GetBookmarkTreeNode(
+    bookmarks::ManagedBookmarkService* managed,
+    const BookmarkNode* node,
+    bool recurse,
+    bool only_folders) {
   BookmarkTreeNode* bookmark_tree_node = new BookmarkTreeNode;
 
   bookmark_tree_node->id = base::Int64ToString(node->id());
@@ -76,44 +75,44 @@ BookmarkTreeNode* GetBookmarkTreeNode(ChromeBookmarkClient* client,
         new double(floor(node->date_added().ToDoubleT() * 1000)));
   }
 
-  if (bookmarks::IsDescendantOf(node, client->managed_node()) ||
-      bookmarks::IsDescendantOf(node, client->supervised_node())) {
+  if (bookmarks::IsDescendantOf(node, managed->managed_node()) ||
+      bookmarks::IsDescendantOf(node, managed->supervised_node())) {
     bookmark_tree_node->unmodifiable =
         api::bookmarks::BOOKMARK_TREE_NODE_UNMODIFIABLE_MANAGED;
   }
 
   if (recurse && node->is_folder()) {
-    std::vector<linked_ptr<BookmarkTreeNode> > children;
+    std::vector<linked_ptr<BookmarkTreeNode>> children;
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
       if (child->IsVisible() && (!only_folders || child->is_folder())) {
         linked_ptr<BookmarkTreeNode> child_node(
-            GetBookmarkTreeNode(client, child, true, only_folders));
+            GetBookmarkTreeNode(managed, child, true, only_folders));
         children.push_back(child_node);
       }
     }
     bookmark_tree_node->children.reset(
-        new std::vector<linked_ptr<BookmarkTreeNode> >(children));
+        new std::vector<linked_ptr<BookmarkTreeNode>>(children));
   }
   return bookmark_tree_node;
 }
 
-void AddNode(ChromeBookmarkClient* client,
+void AddNode(bookmarks::ManagedBookmarkService* managed,
              const BookmarkNode* node,
-             std::vector<linked_ptr<BookmarkTreeNode> >* nodes,
+             std::vector<linked_ptr<BookmarkTreeNode>>* nodes,
              bool recurse) {
-  return AddNodeHelper(client, node, nodes, recurse, false);
+  return AddNodeHelper(managed, node, nodes, recurse, false);
 }
 
-void AddNodeFoldersOnly(ChromeBookmarkClient* client,
+void AddNodeFoldersOnly(bookmarks::ManagedBookmarkService* managed,
                         const BookmarkNode* node,
-                        std::vector<linked_ptr<BookmarkTreeNode> >* nodes,
+                        std::vector<linked_ptr<BookmarkTreeNode>>* nodes,
                         bool recurse) {
-  return AddNodeHelper(client, node, nodes, recurse, true);
+  return AddNodeHelper(managed, node, nodes, recurse, true);
 }
 
 bool RemoveNode(BookmarkModel* model,
-                ChromeBookmarkClient* client,
+                bookmarks::ManagedBookmarkService* managed,
                 int64 id,
                 bool recursive,
                 std::string* error) {
@@ -126,8 +125,8 @@ bool RemoveNode(BookmarkModel* model,
     *error = keys::kModifySpecialError;
     return false;
   }
-  if (bookmarks::IsDescendantOf(node, client->managed_node()) ||
-      bookmarks::IsDescendantOf(node, client->supervised_node())) {
+  if (bookmarks::IsDescendantOf(node, managed->managed_node()) ||
+      bookmarks::IsDescendantOf(node, managed->supervised_node())) {
     *error = keys::kModifyManagedError;
     return false;
   }

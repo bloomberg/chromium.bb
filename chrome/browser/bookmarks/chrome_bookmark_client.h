@@ -10,7 +10,6 @@
 
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/macros.h"
-#include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 
 class GURL;
@@ -24,25 +23,20 @@ namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
 class BookmarkPermanentNode;
-class ManagedBookmarksTracker;
+class ManagedBookmarkService;
 }
 
-class ChromeBookmarkClient : public bookmarks::BookmarkClient,
-                             public bookmarks::BaseBookmarkModelObserver {
+class ChromeBookmarkClient : public bookmarks::BookmarkClient {
  public:
-  explicit ChromeBookmarkClient(Profile* profile);
+  ChromeBookmarkClient(
+      Profile* profile,
+      bookmarks::ManagedBookmarkService* managed_bookmark_service);
   ~ChromeBookmarkClient() override;
 
   void Init(bookmarks::BookmarkModel* model);
 
   // KeyedService:
   void Shutdown() override;
-
-  // The top-level managed bookmarks folder, defined by an enterprise policy.
-  const bookmarks::BookmarkNode* managed_node() { return managed_node_; }
-  // The top-level supervised bookmarks folder, defined by the custodian of a
-  // supervised user.
-  const bookmarks::BookmarkNode* supervised_node() { return supervised_node_; }
 
   // bookmarks::BookmarkClient:
   bool PreferTouchIcon() override;
@@ -65,40 +59,12 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   bool CanBeEditedByUser(const bookmarks::BookmarkNode* node) override;
 
  private:
-  // bookmarks::BaseBookmarkModelObserver:
-  void BookmarkModelChanged() override;
-
-  // bookmarks::BookmarkModelObserver:
-  void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
-                           bool ids_reassigned) override;
-
-  // Helper for GetLoadExtraNodesCallback().
-  static bookmarks::BookmarkPermanentNodeList LoadExtraNodes(
-      scoped_ptr<bookmarks::BookmarkPermanentNode> managed_node,
-      scoped_ptr<base::ListValue> initial_managed_bookmarks,
-      scoped_ptr<bookmarks::BookmarkPermanentNode> supervised_node,
-      scoped_ptr<base::ListValue> initial_supervised_bookmarks,
-      int64* next_node_id);
-
-  // Returns the management domain that configured the managed bookmarks,
-  // or an empty string.
-  std::string GetManagedBookmarksDomain();
-
+  // Pointer to the associated Profile. Must outlive ChromeBookmarkClient.
   Profile* profile_;
 
-  // Pointer to the BookmarkModel. Will be non-NULL from the call to Init to
-  // the call to Shutdown. Must be valid for the whole interval.
-  bookmarks::BookmarkModel* model_;
-
-  // Managed bookmarks are defined by an enterprise policy.
-  scoped_ptr<bookmarks::ManagedBookmarksTracker> managed_bookmarks_tracker_;
-  // The top-level managed bookmarks folder.
-  bookmarks::BookmarkPermanentNode* managed_node_;
-
-  // Supervised bookmarks are defined by the custodian of a supervised user.
-  scoped_ptr<bookmarks::ManagedBookmarksTracker> supervised_bookmarks_tracker_;
-  // The top-level supervised bookmarks folder.
-  bookmarks::BookmarkPermanentNode* supervised_node_;
+  // Pointer to the ManagedBookmarkService responsible for bookmark policy. May
+  // be null during testing.
+  bookmarks::ManagedBookmarkService* managed_bookmark_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBookmarkClient);
 };

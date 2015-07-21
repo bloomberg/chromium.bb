@@ -7,8 +7,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_model_factory.h"
-#import "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#import "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#import "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #import "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -21,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
+#import "components/bookmarks/managed/managed_bookmark_service.h"
 #include "ui/base/theme_provider.h"
 
 using bookmarks::BookmarkModel;
@@ -1280,11 +1280,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destIndex += [[parentButton_ cell] startingChildIndex];
   }
 
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile_);
-  if (!client->CanBeEditedByUser(destParent))
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile_);
+  if (!managed->CanBeEditedByUser(destParent))
     return NO;
-  if (!client->CanBeEditedByUser(sourceNode))
+  if (!managed->CanBeEditedByUser(sourceNode))
     copy = YES;
 
   // Prevent cycles.
@@ -1852,9 +1852,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     destIndex += [[parentButton_ cell] startingChildIndex];
   }
 
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile_);
-  if (!client->CanBeEditedByUser(destParent))
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile_);
+  if (!managed->CanBeEditedByUser(destParent))
     return NO;
 
   // Create and add the new bookmark nodes.

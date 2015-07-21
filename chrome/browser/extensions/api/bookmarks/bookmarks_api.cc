@@ -21,8 +21,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
@@ -38,6 +37,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
@@ -53,6 +53,7 @@
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
+using bookmarks::ManagedBookmarkService;
 
 namespace extensions {
 
@@ -109,8 +110,8 @@ BookmarkModel* BookmarksFunction::GetBookmarkModel() {
   return BookmarkModelFactory::GetForProfile(GetProfile());
 }
 
-ChromeBookmarkClient* BookmarksFunction::GetChromeBookmarkClient() {
-  return ChromeBookmarkClientFactory::GetForProfile(GetProfile());
+ManagedBookmarkService* BookmarksFunction::GetManagedBookmarkService() {
+  return ManagedBookmarkServiceFactory::GetForProfile(GetProfile());
 }
 
 bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
@@ -210,9 +211,9 @@ bool BookmarksFunction::CanBeModified(const BookmarkNode* node) {
     error_ = keys::kModifySpecialError;
     return false;
   }
-  ChromeBookmarkClient* client = GetChromeBookmarkClient();
-  if (::bookmarks::IsDescendantOf(node, client->managed_node()) ||
-      ::bookmarks::IsDescendantOf(node, client->supervised_node())) {
+  ManagedBookmarkService* managed = GetManagedBookmarkService();
+  if (::bookmarks::IsDescendantOf(node, managed->managed_node()) ||
+      ::bookmarks::IsDescendantOf(node, managed->supervised_node())) {
     error_ = keys::kModifyManagedError;
     return false;
   }
@@ -243,7 +244,7 @@ void BookmarksFunction::RunAndSendResponse() {
 BookmarkEventRouter::BookmarkEventRouter(Profile* profile)
     : browser_context_(profile),
       model_(BookmarkModelFactory::GetForProfile(profile)),
-      client_(ChromeBookmarkClientFactory::GetForProfile(profile)) {
+      managed_(ManagedBookmarkServiceFactory::GetForProfile(profile)) {
   model_->AddObserver(this);
 }
 
@@ -296,7 +297,7 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                             int index) {
   const BookmarkNode* node = parent->GetChild(index);
   scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_api_helpers::GetBookmarkTreeNode(client_, node, false, false));
+      bookmark_api_helpers::GetBookmarkTreeNode(managed_, node, false, false));
   DispatchEvent(events::BOOKMARKS_ON_CREATED, bookmarks::OnCreated::kEventName,
                 bookmarks::OnCreated::Create(base::Int64ToString(node->id()),
                                              *tree_node));
@@ -418,7 +419,7 @@ bool BookmarksGetFunction::RunOnReady() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  ChromeBookmarkClient* client = GetChromeBookmarkClient();
+  ManagedBookmarkService* managed = GetManagedBookmarkService();
   if (params->id_or_id_list.as_strings) {
     std::vector<std::string>& ids = *params->id_or_id_list.as_strings;
     size_t count = ids.size();
@@ -427,14 +428,14 @@ bool BookmarksGetFunction::RunOnReady() {
       const BookmarkNode* node = GetBookmarkNodeFromId(ids[i]);
       if (!node)
         return false;
-      bookmark_api_helpers::AddNode(client, node, &nodes, false);
+      bookmark_api_helpers::AddNode(managed, node, &nodes, false);
     }
   } else {
     const BookmarkNode* node =
         GetBookmarkNodeFromId(*params->id_or_id_list.as_string);
     if (!node)
       return false;
-    bookmark_api_helpers::AddNode(client, node, &nodes, false);
+    bookmark_api_helpers::AddNode(managed, node, &nodes, false);
   }
 
   results_ = bookmarks::Get::Results::Create(nodes);
@@ -454,8 +455,8 @@ bool BookmarksGetChildrenFunction::RunOnReady() {
   int child_count = node->child_count();
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    bookmark_api_helpers::AddNode(
-        GetChromeBookmarkClient(), child, &nodes, false);
+    bookmark_api_helpers::AddNode(GetManagedBookmarkService(), child, &nodes,
+                                  false);
   }
 
   results_ = bookmarks::GetChildren::Results::Create(nodes);
@@ -479,8 +480,8 @@ bool BookmarksGetRecentFunction::RunOnReady() {
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();
   for (; i != nodes.end(); ++i) {
     const BookmarkNode* node = *i;
-    bookmark_api_helpers::AddNode(
-        GetChromeBookmarkClient(), node, &tree_nodes, false);
+    bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node,
+                                  &tree_nodes, false);
   }
 
   results_ = bookmarks::GetRecent::Results::Create(tree_nodes);
@@ -491,7 +492,8 @@ bool BookmarksGetTreeFunction::RunOnReady() {
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   const BookmarkNode* node =
       BookmarkModelFactory::GetForProfile(GetProfile())->root_node();
-  bookmark_api_helpers::AddNode(GetChromeBookmarkClient(), node, &nodes, true);
+  bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node, &nodes,
+                                true);
   results_ = bookmarks::GetTree::Results::Create(nodes);
   return true;
 }
@@ -506,7 +508,8 @@ bool BookmarksGetSubTreeFunction::RunOnReady() {
     return false;
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  bookmark_api_helpers::AddNode(GetChromeBookmarkClient(), node, &nodes, true);
+  bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node, &nodes,
+                                true);
   results_ = bookmarks::GetSubTree::Results::Create(nodes);
   return true;
 }
@@ -551,10 +554,10 @@ bool BookmarksSearchFunction::RunOnReady() {
   }
 
   std::vector<linked_ptr<BookmarkTreeNode> > tree_nodes;
-  ChromeBookmarkClient* client = GetChromeBookmarkClient();
+  ManagedBookmarkService* managed = GetManagedBookmarkService();
   for (std::vector<const BookmarkNode*>::iterator node_iter = nodes.begin();
        node_iter != nodes.end(); ++node_iter) {
-    bookmark_api_helpers::AddNode(client, *node_iter, &tree_nodes, false);
+    bookmark_api_helpers::AddNode(managed, *node_iter, &tree_nodes, false);
   }
 
   results_ = bookmarks::Search::Results::Create(tree_nodes);
@@ -593,8 +596,8 @@ bool BookmarksRemoveFunction::RunOnReady() {
     recursive = true;
 
   BookmarkModel* model = GetBookmarkModel();
-  ChromeBookmarkClient* client = GetChromeBookmarkClient();
-  if (!bookmark_api_helpers::RemoveNode(model, client, id, recursive, &error_))
+  ManagedBookmarkService* managed = GetManagedBookmarkService();
+  if (!bookmark_api_helpers::RemoveNode(model, managed, id, recursive, &error_))
     return false;
 
   return true;
@@ -614,7 +617,7 @@ bool BookmarksCreateFunction::RunOnReady() {
     return false;
 
   scoped_ptr<BookmarkTreeNode> ret(bookmark_api_helpers::GetBookmarkTreeNode(
-      GetChromeBookmarkClient(), node, false, false));
+      GetManagedBookmarkService(), node, false, false));
   results_ = bookmarks::Create::Results::Create(*ret);
 
   return true;
@@ -674,8 +677,8 @@ bool BookmarksMoveFunction::RunOnReady() {
   model->Move(node, parent, index);
 
   scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_api_helpers::GetBookmarkTreeNode(
-          GetChromeBookmarkClient(), node, false, false));
+      bookmark_api_helpers::GetBookmarkTreeNode(GetManagedBookmarkService(),
+                                                node, false, false));
   results_ = bookmarks::Move::Results::Create(*tree_node);
 
   return true;
@@ -730,8 +733,8 @@ bool BookmarksUpdateFunction::RunOnReady() {
     model->SetURL(node, url);
 
   scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_api_helpers::GetBookmarkTreeNode(
-          GetChromeBookmarkClient(), node, false, false));
+      bookmark_api_helpers::GetBookmarkTreeNode(GetManagedBookmarkService(),
+                                                node, false, false));
   results_ = bookmarks::Update::Results::Create(*tree_node);
   return true;
 }

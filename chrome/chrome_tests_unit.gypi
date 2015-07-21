@@ -37,7 +37,7 @@
       'browser/banners/app_banner_data_fetcher_unittest.cc',
       'browser/banners/app_banner_settings_helper_unittest.cc',
       'browser/bitmap_fetcher/bitmap_fetcher_service_unittest.cc',
-      'browser/bookmarks/chrome_bookmark_client_unittest.cc',
+      'browser/bookmarks/managed_bookmark_service_unittest.cc',
       'browser/browser_about_handler_unittest.cc',
       'browser/browser_process_impl_unittest.cc',
       'browser/browsing_data/browsing_data_appcache_helper_unittest.cc',

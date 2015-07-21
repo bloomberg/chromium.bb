@@ -5,14 +5,14 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 
 using bookmarks::BookmarkModel;
@@ -28,8 +28,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
   // can read them and can't modify them.
   Profile* profile = browser()->profile();
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-  ChromeBookmarkClient* client =
-      ChromeBookmarkClientFactory::GetForProfile(profile);
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile);
   bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   {
@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
     node->Set("children", new base::ListValue());
     list.Append(node);
     profile->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
-    ASSERT_EQ(2, client->managed_node()->child_count());
+    ASSERT_EQ(2, managed->managed_node()->child_count());
   }
 
   {
@@ -57,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Bookmarks) {
     node->Set("children", new base::ListValue());
     list.Append(node);
     profile->GetPrefs()->Set(bookmarks::prefs::kSupervisedBookmarks, list);
-    ASSERT_EQ(2, client->supervised_node()->child_count());
+    ASSERT_EQ(2, managed->supervised_node()->child_count());
   }
 
   ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
