@@ -450,9 +450,9 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
 
 void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
   bool main_thread_is_in_high_latency_mode =
-      state_machine_.MainThreadIsInHighLatencyMode();
+      state_machine_.main_thread_missed_last_deadline();
   TRACE_EVENT2("cc,benchmark", "Scheduler::BeginImplFrame", "args",
-               args.AsValue(), "main_thread_is_high_latency",
+               args.AsValue(), "main_thread_missed_last_deadline",
                main_thread_is_in_high_latency_mode);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "MainThreadLatency", main_thread_is_in_high_latency_mode);
@@ -754,7 +754,7 @@ void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {
 bool Scheduler::ShouldRecoverMainLatency(const BeginFrameArgs& args) const {
   DCHECK(!settings_.using_synchronous_renderer_compositor);
 
-  if (!state_machine_.MainThreadIsInHighLatencyMode())
+  if (!state_machine_.main_thread_missed_last_deadline())
     return false;
 
   // When prioritizing impl thread latency, we currently put the

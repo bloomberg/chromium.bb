@@ -47,6 +47,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       active_tree_needs_first_draw_(false),
       did_create_and_initialize_first_output_surface_(false),
       impl_latency_takes_priority_(false),
+      main_thread_missed_last_deadline_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
       continuous_painting_(false),
       children_need_begin_frames_(false),
@@ -55,8 +56,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_commit_had_no_updates_(false),
       wait_for_active_tree_ready_to_draw_(false),
       did_request_swap_in_last_frame_(false),
-      did_perform_swap_in_last_draw_(false) {
-}
+      did_perform_swap_in_last_draw_(false) {}
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
     OutputSurfaceState state) {
@@ -237,8 +237,8 @@ void SchedulerStateMachine::AsValueInto(
                     did_create_and_initialize_first_output_surface_);
   state->SetBoolean("impl_latency_takes_priority",
                     impl_latency_takes_priority_);
-  state->SetBoolean("main_thread_is_in_high_latency_mode",
-                    MainThreadIsInHighLatencyMode());
+  state->SetBoolean("main_thread_missed_last_deadline",
+                    main_thread_missed_last_deadline_);
   state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
                     skip_next_begin_main_frame_to_reduce_latency_);
   state->SetBoolean("continuous_painting", continuous_painting_);
@@ -883,6 +883,11 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
 
   skip_next_begin_main_frame_to_reduce_latency_ = false;
 
+  // If a new or undrawn active tree is pending after the deadline,
+  // then the main thread is in a high latency mode.
+  main_thread_missed_last_deadline_ =
+      CommitPending() || has_pending_tree_ || active_tree_needs_first_draw_;
+
   // If we're entering a state where we won't get BeginFrames set all the
   // funnels so that we don't perform any actions that we shouldn't.
   if (!BeginFrameNeeded())
@@ -947,45 +952,8 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   return false;
 }
 
-bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
-  // If a commit is pending before the previous commit has been drawn, we
-  // are definitely in a high latency mode.
-  if (CommitPending() && (active_tree_needs_first_draw_ || has_pending_tree_))
-    return true;
-
-  // If we just sent a BeginMainFrame and haven't hit the deadline yet, the main
-  // thread is in a low latency mode.
-  if (send_begin_main_frame_funnel_ &&
-      (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING ||
-       begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME))
-    return false;
-
-  // If there's a commit in progress it must either be from the previous frame
-  // or it started after the impl thread's deadline. In either case the main
-  // thread is in high latency mode.
-  if (CommitPending())
-    return true;
-
-  // Similarly, if there's a pending tree the main thread is in high latency
-  // mode, because either
-  //   it's from the previous frame
-  // or
-  //   we're currently drawing the active tree and the pending tree will thus
-  //   only be drawn in the next frame.
-  if (has_pending_tree_)
-    return true;
-
-  if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE) {
-    // Even if there's a new active tree to draw at the deadline or we've just
-    // swapped it, it may have been triggered by a previous BeginImplFrame, in
-    // which case the main thread is in a high latency mode.
-    return (active_tree_needs_first_draw_ || did_perform_swap_in_last_draw_) &&
-           !send_begin_main_frame_funnel_;
-  }
-
-  // If the active tree needs its first draw in any other state, we know the
-  // main thread is in a high latency mode.
-  return active_tree_needs_first_draw_;
+bool SchedulerStateMachine::main_thread_missed_last_deadline() const {
+  return main_thread_missed_last_deadline_;
 }
 
 bool SchedulerStateMachine::SwapThrottled() const {
@@ -993,7 +961,14 @@ bool SchedulerStateMachine::SwapThrottled() const {
 }
 
 void SchedulerStateMachine::SetVisible(bool visible) {
+  if (visible_ == visible)
+    return;
+
   visible_ = visible;
+
+  if (visible)
+    main_thread_missed_last_deadline_ = false;
+
   // TODO(sunnyps): Change the funnel to a bool to avoid hacks like this.
   prepare_tiles_funnel_ = 0;
 }
@@ -1157,6 +1132,7 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
   did_create_and_initialize_first_output_surface_ = true;
   pending_swaps_ = 0;
   swaps_with_current_output_surface_ = 0;
+  main_thread_missed_last_deadline_ = false;
 }
 
 void SchedulerStateMachine::NotifyBeginMainFrameStarted() {

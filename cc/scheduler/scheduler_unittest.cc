@@ -1331,11 +1331,11 @@ void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
     bool expect_send_begin_main_frame) {
   // Impl thread hits deadline before commit finishes.
   scheduler_->SetNeedsCommit();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
@@ -1344,16 +1344,16 @@ void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 5);
   EXPECT_ACTION("ScheduledActionCommit", client_, 3, 5);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 4, 5);
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
 
   client_->Reset();
   scheduler_->SetNeedsCommit();
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_EQ(expect_send_begin_main_frame,
-            scheduler_->MainThreadIsInHighLatencyMode());
+            scheduler_->MainThreadMissedLastDeadline());
   EXPECT_EQ(expect_send_begin_main_frame,
             client_->HasAction("ScheduledActionSendBeginMainFrame"));
 }
@@ -1451,7 +1451,7 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
   client_->Reset();
   scheduler_->SetNeedsCommit();
   scheduler_->SetNeedsRedraw();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   SendNextBeginFrame();
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 4);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 4);
@@ -1462,7 +1462,7 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 4);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 4);
@@ -1477,12 +1477,12 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
     client_->Reset();
     scheduler_->SetNeedsCommit();
     scheduler_->SetNeedsRedraw();
-    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
     SendNextBeginFrame();
     // Verify that we skip the BeginImplFrame
     EXPECT_NO_ACTION(client_);
     EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
     // Verify that we do not perform any actions after we are no longer
     // swap throttled.
@@ -1501,7 +1501,7 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
     // Verify that we start the next BeginImplFrame and continue normally
     // after having just skipped a BeginImplFrame.
     client_->Reset();
-    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
     SendNextBeginFrame();
     EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
     EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
@@ -1582,14 +1582,14 @@ TEST_F(SchedulerTest,
   // Draw and swap for first BeginFrame
   client_->Reset();
   scheduler_->SetNeedsRedraw();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   SendNextBeginFrame();
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 3);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 3);
   EXPECT_ACTION("ScheduledActionAnimate", client_, 2, 3);
 
   client_->Reset();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
 
@@ -1600,12 +1600,12 @@ TEST_F(SchedulerTest,
     // BeginImplFrame puts the impl thread in high latency mode.
     client_->Reset();
     scheduler_->SetNeedsRedraw();
-    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
     SendNextBeginFrame();
     // Verify that we skip the BeginImplFrame
     EXPECT_NO_ACTION(client_);
     EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
     // Verify that we do not perform any actions after we are no longer
     // swap throttled.
@@ -1616,7 +1616,7 @@ TEST_F(SchedulerTest,
     // Verify that we start the next BeginImplFrame and continue normally
     // after having just skipped a BeginImplFrame.
     client_->Reset();
-    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
     SendNextBeginFrame();
     EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
     EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
@@ -1638,7 +1638,7 @@ void SchedulerTest::ImplFrameIsNotSkippedAfterLateSwapAck() {
   // Draw and swap for first BeginFrame
   client_->Reset();
   scheduler_->SetNeedsCommit();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   SendNextBeginFrame();
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 3);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 3);
@@ -1648,7 +1648,7 @@ void SchedulerTest::ImplFrameIsNotSkippedAfterLateSwapAck() {
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 4);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 4);
@@ -1662,11 +1662,11 @@ void SchedulerTest::ImplFrameIsNotSkippedAfterLateSwapAck() {
     // puts the impl thread in high latency mode.
     client_->Reset();
     scheduler_->SetNeedsCommit();
-    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
     SendNextBeginFrame();
     EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
     EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-    EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+    EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
     client_->Reset();
     scheduler_->DidSwapBuffersComplete();
@@ -1747,18 +1747,18 @@ TEST_F(SchedulerTest,
   client_->SetAutomaticSwapAck(false);
 
   // Impl thread hits deadline before commit finishes to make
-  // MainThreadIsInHighLatencyMode true
+  // MainThreadMissedLastDeadline true
   client_->Reset();
   scheduler_->SetNeedsCommit();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
 
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 5);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 5);
@@ -1769,9 +1769,9 @@ TEST_F(SchedulerTest,
   // Draw and swap for first commit, start second commit.
   client_->Reset();
   scheduler_->SetNeedsCommit();
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
@@ -1788,10 +1788,9 @@ TEST_F(SchedulerTest,
   // to put the impl thread in a high latency mode.
   client_->Reset();
   scheduler_->SetNeedsCommit();
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
-  EXPECT_TRUE(scheduler_->SwapThrottled());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
 
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
@@ -1800,7 +1799,7 @@ TEST_F(SchedulerTest,
   // swap ack backpressure, not because of latency recovery.
   EXPECT_FALSE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
   EXPECT_FALSE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
 
   // Lower estimates so that the scheduler will attempt latency recovery.
   auto fast_duration = base::TimeDelta::FromMilliseconds(1);
@@ -1816,11 +1815,11 @@ TEST_F(SchedulerTest,
   EXPECT_TRUE(scheduler_->NeedsCommit());
   EXPECT_TRUE(scheduler_->SwapThrottled());
   SendNextBeginFrame();
-  EXPECT_TRUE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->DidSwapBuffersComplete();
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
 
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
   EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 2, 3);
@@ -1829,12 +1828,12 @@ TEST_F(SchedulerTest,
   client_->Reset();
   // Previous commit request is still outstanding.
   EXPECT_TRUE(scheduler_->NeedsCommit());
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   SendNextBeginFrame();
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->DidSwapBuffersComplete();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
   EXPECT_NO_ACTION(client_);
 
@@ -1842,16 +1841,16 @@ TEST_F(SchedulerTest,
   client_->Reset();
   // Previous commit request is still outstanding.
   EXPECT_TRUE(scheduler_->NeedsCommit());
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   SendNextBeginFrame();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
   scheduler_->NotifyReadyToActivate();
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->DidSwapBuffersComplete();
-  EXPECT_FALSE(scheduler_->MainThreadIsInHighLatencyMode());
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 6);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 6);
