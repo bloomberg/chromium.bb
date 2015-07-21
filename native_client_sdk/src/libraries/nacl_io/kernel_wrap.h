@@ -19,9 +19,17 @@
 #include "nacl_io/osutime.h"
 #include "sdk_util/macros.h"
 
-// Curently enable NaCl IO IRT Extension when using arm glibc (which
+#if defined(__native_client__) && defined(__GLIBC__)
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ == 9
+#define NACL_GLIBC_OLD
+#else
+#define NACL_GLIBC_NEW
+#endif
+#endif
+
+// Curently enable NaCl IO IRT Extension when using newer glibc (which
 // only supports this method interception).
-#if defined(__native_client__) && defined(__GLIBC__) && defined(__arm__)
+#if defined(NACL_GLIBC_NEW)
 # define NACL_IO_IRT_EXT 1
 #endif
 

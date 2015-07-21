@@ -510,15 +510,19 @@ def GetDefaultLibPath(config):
     # Core toolchain libraries
     'toolchain/%s_x86_glibc/x86_64-nacl/lib' % osname,
     'toolchain/%s_x86_glibc/x86_64-nacl/lib32' % osname,
+    'toolchain/%s_arm_glibc/arm-nacl/lib' % osname,
     # naclports installed libraries
     'toolchain/%s_x86_glibc/x86_64-nacl/usr/lib' % osname,
     'toolchain/%s_x86_glibc/i686-nacl/usr/lib' % osname,
+    'toolchain/%s_arm_glibc/arm-nacl/usr/lib' % osname,
     # SDK bundle libraries
     'lib/glibc_x86_32/%s' % config,
     'lib/glibc_x86_64/%s' % config,
+    'lib/glibc_arm/%s' % config,
     # naclports bundle libraries
     'ports/lib/glibc_x86_32/%s' % config,
     'ports/lib/glibc_x86_64/%s' % config,
+    'ports/lib/glibc_arm/%s' % config,
   ]
 
   # In some cases (e.g. ASAN, TSAN, STANDALONE) the name of the configuration
@@ -533,8 +537,10 @@ def GetDefaultLibPath(config):
     libpath += [
       'lib/glibc_x86_32/%s' % config_fallback,
       'lib/glibc_x86_64/%s' % config_fallback,
+      'lib/glibc_arm/%s' % config_fallback,
       'ports/lib/glibc_x86_32/%s' % config_fallback,
       'ports/lib/glibc_x86_64/%s' % config_fallback,
+      'ports/lib/glibc_arm/%s' % config_fallback,
     ]
 
   bionic_dir = 'toolchain/%s_arm_bionic' % osname

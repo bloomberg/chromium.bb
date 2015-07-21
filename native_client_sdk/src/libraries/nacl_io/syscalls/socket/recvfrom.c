@@ -5,11 +5,11 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
-#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+#if defined(PROVIDES_SOCKET_API) && !defined(NACL_GLIBC_OLD)
 
 ssize_t recvfrom(int fd, void* buf, size_t len, int flags,
                  struct sockaddr* addr, socklen_t* addrlen) {
   return ki_recvfrom(fd, buf, len, flags, addr, addrlen);
 }
 
-#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) */
+#endif  /* defined(PROVIDES_SOCKET_API) && !defined(NACL_GLIBC_OLD) */

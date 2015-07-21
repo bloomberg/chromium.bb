@@ -89,7 +89,7 @@ def _GetNeededDynamic(main_files, objdump, lib_path):
   examined = set()
   all_files, unexamined = GleanFromObjdump(main_files, None, objdump, lib_path)
   for arch in all_files.itervalues():
-    if unexamined:
+    if unexamined and arch != 'arm':
       unexamined.add((RUNNABLE_LD, arch))
 
   while unexamined:

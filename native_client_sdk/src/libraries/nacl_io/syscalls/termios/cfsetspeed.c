@@ -8,7 +8,7 @@
  * in this #if, so this file will be compiled on a non-bionic build.
  */
 
-#if !defined(__BIONIC__)
+#if !defined(__BIONIC__) && !(defined(__GLIBC__) && defined(__arm__))
 
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"

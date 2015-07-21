@@ -10,6 +10,10 @@
 // bionic has a slightly different signatute to glibc for getnameinfo
 int getnameinfo(const struct sockaddr* sa, socklen_t salen, char* host,
                 size_t hostlen, char* serv, size_t servlen, int flags) {
+#elif defined(NACL_GLIBC_NEW)
+int getnameinfo(const struct sockaddr* sa, socklen_t salen, char* host,
+                socklen_t hostlen, char* serv, socklen_t servlen,
+                int flags) {
 #else
 int getnameinfo(const struct sockaddr* sa, socklen_t salen, char* host,
                 socklen_t hostlen, char* serv, socklen_t servlen,

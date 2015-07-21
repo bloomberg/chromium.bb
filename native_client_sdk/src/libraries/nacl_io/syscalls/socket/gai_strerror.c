@@ -8,8 +8,8 @@
 
 #include <stdio.h>
 
-#if !defined(__GLIBC__)
-#if defined(__BIONIC__) || defined(__APPLE__)
+#if !defined(NACL_GLIBC_OLD)
+#if !defined(_NEWLIB_VERSION)
 const
 #endif
 char* gai_strerror(int errcode) {

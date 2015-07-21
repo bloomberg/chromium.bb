@@ -448,9 +448,6 @@ def GypNinjaInstall(pepperdir, toolchains):
   for tc in toolchains:
     if tc in ('host', 'clang-newlib'):
       continue
-    # TODO(sbc): remove this once untrusted.gypi can build arm glibc targets
-    elif tc == 'arm_glibc':
-      continue
     elif tc == 'pnacl':
       xarches = (None, 'ia32', 'x64', 'arm')
     elif tc in ('x86_glibc', 'x86_newlib'):

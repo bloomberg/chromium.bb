@@ -240,6 +240,7 @@
     {
       'FILES': [
         "bits/ioctls.h",
+        "rpc/netdb.h",
         "sys/mount.h",
       ],
       'DEST': 'include/glibc',
