@@ -72,6 +72,7 @@
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
+#include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/scoped_browser_locale.h"
@@ -1148,11 +1149,6 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
 #endif
   }
 
-  void InitializeExtensionSyncService() {
-    extension_sync_service_.reset(new ExtensionSyncService(
-        profile(), ExtensionPrefs::Get(browser_context()), service()));
-  }
-
   void InitializeEmptyExtensionServiceWithTestingPrefs() {
     ExtensionServiceTestBase::ExtensionServiceInitParams params =
         CreateDefaultInitParams();
@@ -1165,13 +1161,12 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
   }
 
   ExtensionSyncService* extension_sync_service() {
-    return extension_sync_service_.get();
+    return ExtensionSyncService::Get(profile());
   }
 
  protected:
   typedef extensions::ExtensionManagementPrefUpdater<TestingPrefServiceSyncable>
       ManagementPrefUpdater;
-  scoped_ptr<ExtensionSyncService> extension_sync_service_;
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
   UnloadedExtensionInfo::Reason unloaded_reason_;
@@ -5796,7 +5791,6 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
 
 TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledComponent) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
 
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
@@ -5823,7 +5817,6 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledComponent) {
 
 TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledNormal) {
   InitializeGoodInstalledExtensionService();
-  InitializeExtensionSyncService();
 
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
@@ -5846,7 +5839,6 @@ TEST_F(ExtensionServiceTest, DeferredSyncStartupPreInstalledNormal) {
 
 TEST_F(ExtensionServiceTest, DeferredSyncStartupOnInstall) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   service()->Init();
   ASSERT_TRUE(service()->is_ready());
 
@@ -5890,7 +5882,6 @@ TEST_F(ExtensionServiceTest, DisableExtensionFromSync) {
       source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
-  InitializeExtensionSyncService();
 
   // The user has enabled sync.
   ProfileSyncService* sync_service =
@@ -5907,30 +5898,34 @@ TEST_F(ExtensionServiceTest, DisableExtensionFromSync) {
   ASSERT_TRUE(extension);
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
 
+  // Sync starts up.
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      make_scoped_ptr(new syncer::FakeSyncChangeProcessor),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
   // Then sync data arrives telling us to disable |good0|.
   ExtensionSyncData disable_good_crx(*extension, false,
                                      Extension::DISABLE_USER_ACTION, false,
                                      false, ExtensionSyncData::BOOLEAN_UNSET);
-  syncer::SyncDataList sync_data;
-  sync_data.push_back(disable_good_crx.GetSyncData());
-  extension_sync_service()->MergeDataAndStartSyncing(
-      syncer::EXTENSIONS,
-      sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor>(
-          new syncer::FakeSyncChangeProcessor),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+  syncer::SyncChange sync_change(FROM_HERE,
+                                 syncer::SyncChange::ACTION_UPDATE,
+                                 disable_good_crx.GetSyncData());
+  syncer::SyncChangeList list(1, sync_change);
+  extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
   ASSERT_FALSE(service()->IsExtensionEnabled(good0));
 }
 
-TEST_F(ExtensionServiceTest, DontDisableExtensionWithPendingEnableFromSync) {
-  // Start the extensions service with one external extension already installed.
+TEST_F(ExtensionServiceTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
+  // Start the extension service with three extensions already installed.
   base::FilePath source_install_dir =
       data_dir().AppendASCII("good").AppendASCII("Extensions");
   base::FilePath pref_path =
       source_install_dir.DirName().Append(chrome::kPreferencesFilename);
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
-  InitializeExtensionSyncService();
 
   // The user has enabled sync.
   ProfileSyncService* sync_service =
@@ -5941,39 +5936,48 @@ TEST_F(ExtensionServiceTest, DontDisableExtensionWithPendingEnableFromSync) {
   ASSERT_TRUE(service()->is_ready());
   ASSERT_EQ(3u, loaded_.size());
 
-  const Extension* extension = service()->GetExtensionById(good0, true);
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
+  ASSERT_TRUE(service()->IsExtensionEnabled(good2));
 
-  // Disable extension before first sync data arrives.
+  // Disable and re-enable good0 before first sync data arrives.
   service()->DisableExtension(good0, Extension::DISABLE_USER_ACTION);
   ASSERT_FALSE(service()->IsExtensionEnabled(good0));
-
-  // Enable extension - this is now the most recent state.
   service()->EnableExtension(good0);
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
+  // Disable good2 before first sync data arrives (good1 is considered
+  // non-syncable because it has plugin permission).
+  service()->DisableExtension(good2, Extension::DISABLE_USER_ACTION);
+  ASSERT_FALSE(service()->IsExtensionEnabled(good2));
 
-  // Now sync data comes in that says to disable good0. This should be
-  // ignored.
-  ExtensionSyncData disable_good_crx(*extension, false,
-                                     Extension::DISABLE_USER_ACTION, false,
-                                     false, ExtensionSyncData::BOOLEAN_UNSET);
+  const Extension* extension0 = service()->GetExtensionById(good0, true);
+  const Extension* extension2 = service()->GetExtensionById(good2, true);
+  ASSERT_TRUE(extensions::sync_helper::IsSyncable(extension0));
+  ASSERT_TRUE(extensions::sync_helper::IsSyncable(extension2));
+
+  // Now sync data comes in that says to disable good0 and enable good2.
+  ExtensionSyncData disable_good0(*extension0, false,
+                                  Extension::DISABLE_USER_ACTION, false, false,
+                                  ExtensionSyncData::BOOLEAN_UNSET);
+  ExtensionSyncData enable_good2(*extension2, true, Extension::DISABLE_NONE,
+                                 false, false,
+                                 ExtensionSyncData::BOOLEAN_UNSET);
   syncer::SyncDataList sync_data;
-  sync_data.push_back(disable_good_crx.GetSyncData());
+  sync_data.push_back(disable_good0.GetSyncData());
+  sync_data.push_back(enable_good2.GetSyncData());
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
       sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor>(
-          new syncer::FakeSyncChangeProcessor),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+      make_scoped_ptr(new syncer::FakeSyncChangeProcessor),
+      make_scoped_ptr(new syncer::SyncErrorFactoryMock));
 
-  // The extension was enabled locally before the sync data arrived, so it
-  // should still be enabled now.
-  ASSERT_TRUE(service()->IsExtensionEnabled(good0));
+  // Both sync changes should be ignored, since the local state was changed
+  // before sync started, and so the local state is considered more recent.
+  EXPECT_TRUE(service()->IsExtensionEnabled(good0));
+  EXPECT_FALSE(service()->IsExtensionEnabled(good2));
 }
 
 TEST_F(ExtensionServiceTest, GetSyncData) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   const Extension* extension = service()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
@@ -6005,7 +6009,6 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
 
 TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
   const Extension* extension = service()->GetInstalledExtension(good_crx);
@@ -6039,7 +6042,6 @@ TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
 
 TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   const Extension* extension = service()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
@@ -6059,7 +6061,6 @@ TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
 
 TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   const Extension* extension = service()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
@@ -6130,7 +6131,6 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
 
 TEST_F(ExtensionServiceTest, SyncForUninstalledExternalExtension) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   InstallCRXWithLocation(
       data_dir().AppendASCII("good.crx"), Manifest::EXTERNAL_PREF, INSTALL_NEW);
   const Extension* extension = service()->GetInstalledExtension(good_crx);
@@ -6171,7 +6171,6 @@ TEST_F(ExtensionServiceTest, SyncForUninstalledExternalExtension) {
 
 TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   const Extension* app =
       PackAndInstallCRX(data_dir().AppendASCII("app"), INSTALL_NEW);
   ASSERT_TRUE(app);
@@ -6232,7 +6231,6 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
 // PackAndInstallCRX(). When we clean up a bit more, this should move out.
 TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   const size_t kAppCount = 3;
   const Extension* apps[kAppCount];
   apps[0] = PackAndInstallCRX(data_dir().AppendASCII("app1"), INSTALL_NEW);
@@ -6283,7 +6281,6 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
 
 TEST_F(ExtensionServiceTest, GetSyncDataList) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   InstallCRX(data_dir().AppendASCII("page_action.crx"), INSTALL_NEW);
   InstallCRX(data_dir().AppendASCII("theme.crx"), INSTALL_NEW);
@@ -6313,7 +6310,6 @@ TEST_F(ExtensionServiceTest, GetSyncDataList) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   syncer::FakeSyncChangeProcessor processor;
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
@@ -6354,7 +6350,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
 
   // Install the extension.
   base::FilePath extension_path = data_dir().AppendASCII("good.crx");
@@ -6402,7 +6397,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   syncer::FakeSyncChangeProcessor processor;
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
@@ -6515,7 +6509,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataNewExtension) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   syncer::FakeSyncChangeProcessor processor;
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
@@ -6596,7 +6589,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNewExtension) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
   InitializeExtensionServiceWithUpdater();
-  InitializeExtensionSyncService();
   syncer::FakeSyncChangeProcessor processor;
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
@@ -6634,7 +6626,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   InitializeExtensionServiceWithUpdater();
-  InitializeExtensionSyncService();
   syncer::FakeSyncChangeProcessor processor;
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
@@ -6704,7 +6695,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   InitializeExtensionServiceWithUpdater();
-  InitializeExtensionSyncService();
   syncer::FakeSyncChangeProcessor processor;
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
@@ -6746,7 +6736,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataEnableDisable) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
       syncer::SyncDataList(),
@@ -6844,7 +6833,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
       "http://localhost/autoupdate/updates.xml");
 
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
       syncer::SyncDataList(),
@@ -7132,7 +7120,6 @@ TEST_F(ExtensionServiceTest, SupervisedUser_UpdateWithPermissionIncrease) {
 TEST_F(ExtensionServiceTest,
        SupervisedUser_SyncUninstallByCustodianSkipsPolicy) {
   InitializeEmptyExtensionService();
-  InitializeExtensionSyncService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS,
       syncer::SyncDataList(),

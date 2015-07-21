@@ -192,6 +192,10 @@ const char kPrefDoNotSync[] = "do_not_sync";
 
 const char kCorruptedDisableCount[] = "extensions.corrupted_disable_count";
 
+// A boolean preference that indicates whether the extension has local changes
+// that need to be synced. Default value is false.
+const char kPrefNeedsSync[] = "needs_sync";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1850,6 +1854,16 @@ int ExtensionPrefs::GetCorruptedDisableCount() const {
 void ExtensionPrefs::IncrementCorruptedDisableCount() {
   int count = prefs_->GetInteger(kCorruptedDisableCount);
   prefs_->SetInteger(kCorruptedDisableCount, count + 1);
+}
+
+bool ExtensionPrefs::NeedsSync(const std::string& extension_id) const {
+  return ReadPrefAsBooleanAndReturn(extension_id, kPrefNeedsSync);
+}
+
+void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
+                                  bool needs_sync) {
+  UpdateExtensionPref(extension_id, kPrefNeedsSync,
+                      needs_sync ? new base::FundamentalValue(true) : nullptr);
 }
 
 ExtensionPrefs::ExtensionPrefs(

@@ -531,6 +531,12 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   int GetCorruptedDisableCount() const;
   void IncrementCorruptedDisableCount();
 
+  // Whether the extension with the given |id| needs to be synced. This is set
+  // when the state (such as enabled/disabled or allowed in incognito) is
+  // changed before Sync is ready.
+  bool NeedsSync(const std::string& extension_id) const;
+  void SetNeedsSync(const std::string& extension_id, bool needs_sync);
+
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsComponentExtension;     // Unit test.

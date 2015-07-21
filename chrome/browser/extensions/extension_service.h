@@ -405,11 +405,6 @@ class ExtensionService
 
   Profile* profile() { return profile_; }
 
-  void set_extension_sync_service(
-      ExtensionSyncService* extension_sync_service) {
-    extension_sync_service_ = extension_sync_service;
-  }
-
   // Note that this may return NULL if autoupdate is not turned on.
   extensions::ExtensionUpdater* updater() { return updater_.get(); }
 
@@ -618,9 +613,6 @@ class ExtensionService
 
   // Blacklist for the owning profile.
   extensions::Blacklist* blacklist_;
-
-  // The ExtensionSyncService that is used by this ExtensionService.
-  ExtensionSyncService* extension_sync_service_;
 
   // Sets of enabled/disabled/terminated/blacklisted extensions. Not owned.
   extensions::ExtensionRegistry* registry_;

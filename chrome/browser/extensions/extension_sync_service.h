@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/extensions/pending_enables.h"
 #include "chrome/browser/extensions/sync_bundle.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "sync/api/syncable_service.h"
 
+class ExtensionService;
 class Profile;
 
 namespace extensions {
@@ -43,10 +43,8 @@ class ExtensionSyncService : public syncer::SyncableService,
   // Convenience function to get the ExtensionSyncService for a BrowserContext.
   static ExtensionSyncService* Get(content::BrowserContext* context);
 
+  // Notifies Sync that the given |extension| has been uninstalled.
   void SyncUninstallExtension(const extensions::Extension& extension);
-
-  void SyncEnableExtension(const extensions::Extension& extension);
-  void SyncDisableExtension(const extensions::Extension& extension);
 
   void SyncOrderingChange(const std::string& extension_id);
 
@@ -66,44 +64,47 @@ class ExtensionSyncService : public syncer::SyncableService,
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  // Creates the ExtensionSyncData for the given app/extension.
-  extensions::ExtensionSyncData CreateSyncData(
-      const extensions::Extension& extension) const;
-
-  // Applies the change specified passed in by either ExtensionSyncData to the
-  // current system.
-  // Returns false if the changes were not completely applied and were added
-  // to the pending list to be tried again.
-  bool ApplySyncData(const extensions::ExtensionSyncData& extension_sync_data);
-
   // |flare| provides a StartSyncFlare to the SyncableService. See
   // sync_start_util for more. Public for testing.
   void SetSyncStartFlare(const syncer::SyncableService::StartSyncFlare& flare);
 
  private:
-  // Whether the given extension has been enabled before sync has started.
-  bool IsPendingEnable(const std::string& extension_id) const;
+  FRIEND_TEST_ALL_PREFIXES(TwoClientAppsSyncTest, UnexpectedLaunchType);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionDisabledGlobalErrorTest,
+                           HigherPermissionsFromSync);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionDisabledGlobalErrorTest, RemoteInstall);
+  friend class EphemeralAppBrowserTest;
 
   // Gets the SyncBundle for the given |type|.
   extensions::SyncBundle* GetSyncBundle(syncer::ModelType type);
   const extensions::SyncBundle* GetSyncBundle(syncer::ModelType type) const;
 
-  // Gets the PendingEnables for apps/extensions.
-  extensions::PendingEnables* GetPendingEnables(bool for_apps);
+  // Creates the ExtensionSyncData for the given app/extension.
+  extensions::ExtensionSyncData CreateSyncData(
+      const extensions::Extension& extension) const;
 
-  // Gets the ExtensionSyncData for all apps or extensions.
-  std::vector<extensions::ExtensionSyncData> GetSyncDataList(
-      syncer::ModelType type) const;
+  // Applies the given change coming in from the server to the local state.
+  // Returns false if the changes were not completely applied and were added
+  // to the pending list.
+  bool ApplySyncData(const extensions::ExtensionSyncData& extension_sync_data);
 
+  // Collects the ExtensionSyncData for all installed apps or extensions.
+  // If |include_everything| is true, includes all installed extensions,
+  // otherwise only those that have the NeedsSync pref set, i.e. which have
+  // local changes that need to be pushed.
+  std::vector<extensions::ExtensionSyncData> GetLocalSyncDataList(
+      syncer::ModelType type, bool include_everything) const;
+
+  // Helper for GetLocalSyncDataList.
   void FillSyncDataList(
       const extensions::ExtensionSet& extensions,
       syncer::ModelType type,
+      bool include_everything,
       std::vector<extensions::ExtensionSyncData>* sync_data_list) const;
 
   // Handles applying the extension specific values in |extension_sync_data| to
-  // the current system.
-  // Returns false if the changes were not completely applied and need to be
-  // tried again later.
+  // the local state.
+  // Returns false if the changes were not completely applied.
   bool ApplyExtensionSyncDataHelper(
       const extensions::ExtensionSyncData& extension_sync_data,
       syncer::ModelType type);
@@ -122,12 +123,6 @@ class ExtensionSyncService : public syncer::SyncableService,
 
   extensions::SyncBundle app_sync_bundle_;
   extensions::SyncBundle extension_sync_bundle_;
-
-  // Set of extensions/apps that have been enabled before sync has started.
-  // TODO(treib,kalman): This seems wrong. Why are enables special, as opposed
-  // to disables, or any other changes?
-  extensions::PendingEnables pending_app_enables_;
-  extensions::PendingEnables pending_extension_enables_;
 
   // Run()ning tells sync to try and start soon, because syncable changes
   // have started happening. It will cause sync to call us back

@@ -13,24 +13,12 @@
 
 namespace extensions {
 
-SyncBundle::SyncBundle(ExtensionSyncService* sync_service)
-    : sync_service_(sync_service) {}
-
+SyncBundle::SyncBundle() {}
 SyncBundle::~SyncBundle() {}
 
-void SyncBundle::MergeDataAndStartSyncing(
-    const syncer::SyncDataList& initial_sync_data,
+void SyncBundle::StartSyncing(
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor) {
   sync_processor_.reset(sync_processor.release());
-
-  for (const syncer::SyncData& sync_data : initial_sync_data) {
-    scoped_ptr<ExtensionSyncData> extension_sync_data(
-        ExtensionSyncData::CreateFromSyncData(sync_data));
-    if (extension_sync_data.get()) {
-      AddSyncedExtension(extension_sync_data->id());
-      sync_service_->ApplySyncData(*extension_sync_data);
-    }
-  }
 }
 
 void SyncBundle::Reset() {
@@ -41,17 +29,6 @@ void SyncBundle::Reset() {
 
 bool SyncBundle::IsSyncing() const {
   return sync_processor_ != nullptr;
-}
-
-bool SyncBundle::HasExtensionId(const std::string& id) const {
-  return synced_extensions_.find(id) != synced_extensions_.end();
-}
-
-bool SyncBundle::ShouldIncludeInLocalSyncDataList(
-    const Extension& extension) const {
-  // If there is pending data for this extension, then this version is out of
-  // date. We'll sync back the version we got from sync.
-  return IsSyncing() && !HasPendingExtensionId(extension.id());
 }
 
 void SyncBundle::PushSyncDataList(
@@ -71,6 +48,9 @@ void SyncBundle::PushSyncDataList(
 
 void SyncBundle::PushSyncDeletion(const std::string& extension_id,
                                   const syncer::SyncData& sync_data) {
+  if (!HasSyncedExtension(extension_id))
+    return;
+
   RemoveSyncedExtension(extension_id);
   PushSyncChanges(syncer::SyncChangeList(1,
       syncer::SyncChange(FROM_HERE,
@@ -78,26 +58,21 @@ void SyncBundle::PushSyncDeletion(const std::string& extension_id,
                          sync_data)));
 }
 
-void SyncBundle::PushSyncAddOrUpdate(const Extension& extension) {
-  syncer::SyncChangeList sync_change_list(
-      1,
-      CreateSyncChange(extension.id(),
-                       sync_service_->CreateSyncData(extension).GetSyncData()));
-  PushSyncChanges(sync_change_list);
-  MarkPendingExtensionSynced(extension.id());
+void SyncBundle::PushSyncAddOrUpdate(const std::string& extension_id,
+                                     const syncer::SyncData& sync_data) {
+  PushSyncChanges(syncer::SyncChangeList(
+      1, CreateSyncChange(extension_id, sync_data)));
+  AddSyncedExtension(extension_id);
+  // Now sync and local state agree. If we had any pending change from sync,
+  // clear it now.
+  pending_sync_data_.erase(extension_id);
 }
 
-void SyncBundle::ApplySyncChange(const syncer::SyncChange& sync_change) {
-  scoped_ptr<ExtensionSyncData> extension_sync_data(
-      ExtensionSyncData::CreateFromSyncChange(sync_change));
-  if (!extension_sync_data.get())
-    return;  // TODO(treib,kalman): Warning message?
-
-  if (extension_sync_data->uninstalled())
-    RemoveSyncedExtension(extension_sync_data->id());
+void SyncBundle::ApplySyncData(const ExtensionSyncData& extension_sync_data) {
+  if (extension_sync_data.uninstalled())
+    RemoveSyncedExtension(extension_sync_data.id());
   else
-    AddSyncedExtension(extension_sync_data->id());
-  sync_service_->ApplySyncData(*extension_sync_data);
+    AddSyncedExtension(extension_sync_data.id());
 }
 
 bool SyncBundle::HasPendingExtensionId(const std::string& id) const {
@@ -123,8 +98,8 @@ syncer::SyncChange SyncBundle::CreateSyncChange(
     const syncer::SyncData& sync_data) const {
   return syncer::SyncChange(
       FROM_HERE,
-      HasExtensionId(extension_id) ? syncer::SyncChange::ACTION_UPDATE
-                                   : syncer::SyncChange::ACTION_ADD,
+      HasSyncedExtension(extension_id) ? syncer::SyncChange::ACTION_UPDATE
+                                       : syncer::SyncChange::ACTION_ADD,
       sync_data);
 }
 
@@ -141,9 +116,8 @@ void SyncBundle::RemoveSyncedExtension(const std::string& id) {
   synced_extensions_.erase(id);
 }
 
-void SyncBundle::MarkPendingExtensionSynced(const std::string& id) {
-  pending_sync_data_.erase(id);
-  AddSyncedExtension(id);
+bool SyncBundle::HasSyncedExtension(const std::string& id) const {
+  return synced_extensions_.find(id) != synced_extensions_.end();
 }
 
 }  // namespace extensions

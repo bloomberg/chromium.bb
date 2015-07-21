@@ -779,8 +779,6 @@
       'browser/extensions/pack_extension_job.h',
       'browser/extensions/path_util.cc',
       'browser/extensions/path_util.h',
-      'browser/extensions/pending_enables.cc',
-      'browser/extensions/pending_enables.h',
       'browser/extensions/pending_extension_info.cc',
       'browser/extensions/pending_extension_info.h',
       'browser/extensions/pending_extension_manager.cc',
