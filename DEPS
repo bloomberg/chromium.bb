@@ -420,7 +420,7 @@ deps_os = {
      Var('chromium_git') + '/external/github.com/appurify/appurify-python.git' + '@' + 'ee7abd5c5ae3106f72b2a0b9d2cb55094688e867',
 
     'src/third_party/cardboard-java/src':
-     Var('chromium_git') + '/external/github.com/googlesamples/cardboard-java.git' + '@' + '08ad25a04f2801bd822c3f2cd28301b68d74aef6',
+     Var('chromium_git') + '/external/github.com/googlesamples/cardboard-java.git' + '@' + 'e36ee57e72bbd057ddb53b127954177b50e18df7',
 
     'src/third_party/errorprone/lib':
       Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '72560c97fb38e3eb93db2e85c29db7b72420fad8',
