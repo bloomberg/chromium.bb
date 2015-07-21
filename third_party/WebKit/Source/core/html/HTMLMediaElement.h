@@ -202,11 +202,7 @@ public:
     void honorUserPreferencesForAutomaticTextTrackSelection();
 
     bool textTracksAreReady() const;
-    enum VisibilityChangeAssumption {
-        AssumeNoVisibleChange,
-        AssumeVisibleChange
-    };
-    void configureTextTrackDisplay(VisibilityChangeAssumption);
+    void configureTextTrackDisplay();
     void updateTextTrackDisplay();
     double lastSeekTime() const { return m_lastSeekTime; }
     void textTrackReadyStateChanged(TextTrack*);
