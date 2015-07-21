@@ -137,6 +137,13 @@ RulesRegistryService* RulesRegistryService::Get(
   return BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(context);
 }
 
+// static
+RulesRegistryService* RulesRegistryService::GetIfExists(
+    content::BrowserContext* context) {
+  return BrowserContextKeyedAPIFactory<RulesRegistryService>::GetIfExists(
+      context);
+}
+
 void RulesRegistryService::RegisterRulesRegistry(
     scoped_refptr<RulesRegistry> rule_registry) {
   const std::string event_name(rule_registry->event_name());

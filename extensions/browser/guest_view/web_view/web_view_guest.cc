@@ -198,20 +198,11 @@ static base::LazyInstance<WebViewKeyToIDMap> web_view_key_to_id_map =
 }  // namespace
 
 // static
-void WebViewGuest::CleanUp(int embedder_process_id, int view_instance_id) {
-  GuestViewBase::CleanUp(embedder_process_id, view_instance_id);
-
-  auto rph = content::RenderProcessHost::FromID(embedder_process_id);
-  // TODO(paulmeyer): It should be impossible for rph to be nullptr here, but
-  // this check is needed here for now as there seems to be occasional crashes
-  // because of this (http//crbug.com/499438). This should be removed once the
-  // cause is discovered and fixed.
-  DCHECK(rph != nullptr)
-      << "Cannot find RenderProcessHost for embedder process ID# "
-      << embedder_process_id;
-  if (rph == nullptr)
-    return;
-  auto browser_context = rph->GetBrowserContext();
+void WebViewGuest::CleanUp(content::BrowserContext* browser_context,
+                           int embedder_process_id,
+                           int view_instance_id) {
+  GuestViewBase::CleanUp(browser_context, embedder_process_id,
+                         view_instance_id);
 
   // Clean up rules registries for the WebView.
   WebViewKey key(embedder_process_id, view_instance_id);
@@ -219,8 +210,10 @@ void WebViewGuest::CleanUp(int embedder_process_id, int view_instance_id) {
   if (it != web_view_key_to_id_map.Get().end()) {
     auto rules_registry_id = it->second;
     web_view_key_to_id_map.Get().erase(it);
-    RulesRegistryService::Get(browser_context)
-        ->RemoveRulesRegistriesByID(rules_registry_id);
+    RulesRegistryService* rrs =
+        RulesRegistryService::GetIfExists(browser_context);
+    if (rrs)
+      rrs->RemoveRulesRegistriesByID(rules_registry_id);
   }
 
   // Clean up web request event listeners for the WebView.

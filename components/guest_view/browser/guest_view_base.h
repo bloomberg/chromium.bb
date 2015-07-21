@@ -65,7 +65,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // potentially be created and destroyed in JavaScript before getting a
   // GuestViewBase instance. This method can be hidden by a CleanUp() method in
   // a derived class, in which case the derived method should call this one.
-  static void CleanUp(int embedder_process_id, int view_instance_id);
+  static void CleanUp(content::BrowserContext* browser_context,
+                      int embedder_process_id,
+                      int view_instance_id);
 
   static GuestViewBase* FromWebContents(
       const content::WebContents* web_contents);

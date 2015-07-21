@@ -61,8 +61,14 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<RulesRegistryService>*
       GetFactoryInstance();
 
-  // Convenience method to get the RulesRegistryService for a context.
+  // Convenience method to get the RulesRegistryService for a context. If a
+  // RulesRegistryService does not already exist for |context|, one will be
+  // created and returned.
   static RulesRegistryService* Get(content::BrowserContext* context);
+
+  // The same as Get(), except that if a RulesRegistryService does not already
+  // exist for |context|, nullptr is returned.
+  static RulesRegistryService* GetIfExists(content::BrowserContext* context);
 
   int GetNextRulesRegistryID();
 

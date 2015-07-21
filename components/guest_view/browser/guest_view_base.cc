@@ -76,11 +76,6 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
   void RenderProcessGone(base::TerminationStatus status) override {
     if (destroyed_)
       return;
-
-    GuestViewManager::FromBrowserContext(web_contents()->GetBrowserContext())
-        ->EmbedderWillBeDestroyed(
-            web_contents()->GetRenderProcessHost()->GetID());
-
     // If the embedder process is destroyed, then destroy the guest.
     Destroy();
   }
@@ -322,7 +317,9 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
 }
 
 // static
-void GuestViewBase::CleanUp(int embedder_process_id, int view_instance_id) {
+void GuestViewBase::CleanUp(content::BrowserContext* browser_context,
+                            int embedder_process_id,
+                            int view_instance_id) {
   // TODO(paulmeyer): Add in any general GuestView cleanup work here.
 }
 

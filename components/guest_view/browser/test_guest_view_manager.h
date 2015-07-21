@@ -80,7 +80,7 @@ class TestGuestViewManager : public GuestViewManager {
   void AddGuest(int guest_instance_id,
                 content::WebContents* guest_web_contents) override;
   void RemoveGuest(int guest_instance_id) override;
-  void EmbedderWillBeDestroyed(int embedder_process_id) override;
+  void EmbedderProcessDestroyed(int embedder_process_id) override;
   void ViewGarbageCollected(int embedder_process_id,
                             int view_instance_id) override;
 

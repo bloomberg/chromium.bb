@@ -42,7 +42,9 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
  public:
   // Clean up state when this GuestView is being destroyed. See
   // GuestViewBase::CleanUp().
-  static void CleanUp(int embedder_process_id, int view_instance_id);
+  static void CleanUp(content::BrowserContext* browser_context,
+                      int embedder_process_id,
+                      int view_instance_id);
 
   static GuestViewBase* Create(content::WebContents* owner_web_contents);
 

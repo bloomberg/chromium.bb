@@ -113,9 +113,9 @@ void TestGuestViewManager::RemoveGuest(int guest_instance_id) {
   GuestViewManager::RemoveGuest(guest_instance_id);
 }
 
-void TestGuestViewManager::EmbedderWillBeDestroyed(int embedder_process_id) {
+void TestGuestViewManager::EmbedderProcessDestroyed(int embedder_process_id) {
   ++num_embedder_processes_destroyed_;
-  GuestViewManager::EmbedderWillBeDestroyed(embedder_process_id);
+  GuestViewManager::EmbedderProcessDestroyed(embedder_process_id);
 }
 
 void TestGuestViewManager::ViewGarbageCollected(int embedder_process_id,

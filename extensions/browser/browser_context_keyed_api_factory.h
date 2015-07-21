@@ -76,6 +76,11 @@ class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
         T::GetFactoryInstance()->GetServiceForBrowserContext(context, true));
   }
 
+  static T* GetIfExists(content::BrowserContext* context) {
+    return static_cast<T*>(
+        T::GetFactoryInstance()->GetServiceForBrowserContext(context, false));
+  }
+
   // Declare dependencies on other factories.
   // By default, ExtensionSystemFactory is the only dependency; however,
   // specializations can override this. Declare your specialization in
