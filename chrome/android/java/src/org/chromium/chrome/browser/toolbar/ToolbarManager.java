@@ -107,7 +107,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * The minimum load progress that can be shown when a page is loading.  This is not 0 so that
      * it's obvious to the user that something is attempting to load.
      */
-    public static final int MINIMUM_LOAD_PROGRESS = 5;
+    public static final float MINIMUM_LOAD_PROGRESS = 0.05f;
 
     private final ToolbarLayout mToolbar;
     private final ToolbarControlContainer mControlContainer;
@@ -308,17 +308,32 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 updateButtonStatus();
-                updateTabLoadingState(true, true);
+                updateTabLoadingState(true);
+                mLoadProgressSimulator.cancel();
+
+                if (NativePageFactory.isNativePageUrl(url, tab.isIncognito())) {
+                    finishLoadProgress(false);
+                } else {
+                    mToolbar.startLoadProgress();
+                    setLoadProgress(0.0f);
+                }
             }
 
             @Override
             public void onPageLoadFinished(Tab tab) {
-                ToolbarManager.this.onPageLoadFinished();
+                Tab currentTab = mToolbarModel.getTab();
+                updateTabLoadingState(true);
+
+                // If we made some progress, fast-forward to complete, otherwise just dismiss any
+                // MINIMUM_LOAD_PROGRESS that had been set.
+                if (currentTab.getProgress() > MINIMUM_LOAD_PROGRESS) setLoadProgress(1.0f);
+                finishLoadProgress(true);
             }
 
             @Override
             public void onPageLoadFailed(Tab tab, int errorCode) {
-                ToolbarManager.this.onPageLoadFailed();
+                updateTabLoadingState(true);
+                finishLoadProgress(false);
             }
 
             @Override
@@ -330,7 +345,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             public void onUrlUpdated(Tab tab) {
                 // Update the SSL security state as a result of this notification as it will
                 // sometimes be the only update we receive.
-                updateTabLoadingState(false, true);
+                updateTabLoadingState(true);
 
                 // A URL update is a decent enough indicator that the toolbar widget is in
                 // a stable state to capture its bitmap for use in fullscreen.
@@ -339,12 +354,15 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
             @Override
             public void onCrash(Tab tab, boolean sadTabShown) {
-                onTabCrash();
+                updateTabLoadingState(false);
+                updateButtonStatus();
+                finishLoadProgress(false);
             }
 
             @Override
             public void onLoadProgressChanged(Tab tab, int progress) {
-                updateLoadProgress(progress);
+                // TODO(kkimlabs): Investigate using float progress all the way up to Blink.
+                setLoadProgress(progress / 100.0f);
             }
 
             @Override
@@ -473,7 +491,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
         };
 
-        mLoadProgressSimulator = new LoadProgressSimulator(this);
+        mLoadProgressSimulator = new LoadProgressSimulator(mToolbar);
     }
 
     /**
@@ -954,106 +972,75 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     private void updateCurrentTabDisplayStatus() {
-        Tab currentTab = mToolbarModel.getTab();
+        Tab tab = mToolbarModel.getTab();
         mLocationBar.setUrlToPageUrl();
-        if (currentTab == null) {
-            updateLoadProgressInternal(0);
-            updateButtonStatus();
+
+        updateTabLoadingState(true);
+
+        if (tab == null) {
+            finishLoadProgress(false);
             return;
         }
-        boolean isLoading = currentTab.isLoading();
-        updateTabLoadingState(isLoading, true);
 
-        if (currentTab.getProgress() == 100 || currentTab.isShowingInterstitialPage()) {
-            // We are switching to a tab that is fully loaded. Don't set the load progress to 1.0,
-            // that would cause the load progress bar to show briefly.
-            updateLoadProgressInternal(0);
-        } else {
-            updateLoadProgress(currentTab.getProgress());
-        }
-        updateButtonStatus();
-    }
+        mLoadProgressSimulator.cancel();
 
-    private void onTabCrash() {
-        updateTabLoadingState(false, false);
-        updateLoadProgressInternal(0);
-        updateButtonStatus();
-    }
-
-    private void onPageLoadFinished() {
-        Tab currentTab = mToolbarModel.getTab();
-        updateTabLoadingState(false, true);
-        int currentProgress = currentTab.getProgress();
-        if (currentProgress != 100) {
-            // If we made some progress, fast-forward to complete, otherwise just dismiss any
-            // MINIMUM_LOAD_PROGRESS that had been set.
-            if (currentProgress > MINIMUM_LOAD_PROGRESS) {
-                updateLoadProgress(100);
+        if (tab.isLoading()) {
+            if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
+                finishLoadProgress(false);
             } else {
-                updateLoadProgressInternal(0);
+                mToolbar.startLoadProgress();
+                setLoadProgress(tab.getProgress() / 100.0f);
             }
+        } else {
+            finishLoadProgress(false);
         }
-        updateButtonStatus();
     }
 
-    private void onPageLoadFailed() {
-        updateTabLoadingState(false, true);
-        updateButtonStatus();
-        updateLoadProgressInternal(0);
-    }
-
-    private void updateTabLoadingState(boolean isLoading, boolean updateUrl) {
-        Tab currentTab = mToolbarModel.getTab();
+    private void updateTabLoadingState(boolean updateUrl) {
         mLocationBar.updateLoadingState(updateUrl);
-        if (isLoading) updateLoadProgress(currentTab.getProgress());
         if (updateUrl) updateButtonStatus();
     }
 
-    private void updateLoadProgressInternal(int progress) {
-        if (progress == mToolbarModel.getLoadProgress()) return;
-        mToolbarModel.setLoadProgress(progress);
-        mToolbar.setLoadProgress(progress);
-        if (progress == 0) mLoadProgressSimulator.cancel();
+    private void setLoadProgress(float progress) {
+        // If it's a native page, progress bar is already hidden or being hidden, so don't update
+        // the value.
+        // TODO(kkimlabs): Investigate back/forward navigation with native page & web content and
+        //                 figure out the correct progress bar presentation.
+        Tab tab = mToolbarModel.getTab();
+        if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
+
+        mToolbar.setLoadProgress(Math.max(progress, MINIMUM_LOAD_PROGRESS));
     }
 
-    private void updateLoadProgress(int progress) {
+    private void finishLoadProgress(boolean delayed) {
         mLoadProgressSimulator.cancel();
-        progress = Math.max(progress, MINIMUM_LOAD_PROGRESS);
-        Tab tab = mToolbarModel.getTab();
-        if (tab != null
-                && NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
-            progress = 0;
-        }
-        updateLoadProgressInternal(progress);
-        if (progress == 100 || progress == 0) {
-            updateButtonStatus();
-        } else {
-            // Update the reload state regardless or whether or not the progress is 100.
-            updateReloadState(false);
-        }
+        mToolbar.finishLoadProgress(delayed);
     }
 
     private static class LoadProgressSimulator {
         private static final int MSG_ID_UPDATE_PROGRESS = 1;
 
-        private static final int PROGRESS_INCREMENT = 10;
+        private static final float PROGRESS_INCREMENT = 0.1f;
         private static final int PROGRESS_INCREMENT_DELAY_MS = 10;
 
-        private final ToolbarManager mToolbar;
+        private final ToolbarLayout mToolbar;
         private final Handler mHandler;
 
-        private int mProgress;
+        private float mProgress;
 
-        public LoadProgressSimulator(ToolbarManager toolbar) {
+        public LoadProgressSimulator(ToolbarLayout toolbar) {
             mToolbar = toolbar;
             mHandler = new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(Message msg) {
                     assert msg.what == MSG_ID_UPDATE_PROGRESS;
-                    mProgress = Math.min(100, mProgress += PROGRESS_INCREMENT);
-                    mToolbar.updateLoadProgressInternal(mProgress);
+                    mProgress = Math.min(1.0f, mProgress += PROGRESS_INCREMENT);
+                    mToolbar.setLoadProgress(mProgress);
 
-                    if (mProgress >= 100) return;
+                    if (mProgress == 1.0f) {
+                        mToolbar.finishLoadProgress(true);
+                        return;
+                    }
                     sendEmptyMessageDelayed(MSG_ID_UPDATE_PROGRESS, PROGRESS_INCREMENT_DELAY_MS);
                 }
             };
@@ -1063,7 +1050,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
          * Start simulating load progress from a baseline of 0.
          */
         public void start() {
-            mProgress = 0;
+            mProgress = 0.0f;
+            mToolbar.setLoadProgress(mProgress);
+            mToolbar.startLoadProgress();
             mHandler.sendEmptyMessage(MSG_ID_UPDATE_PROGRESS);
         }
 

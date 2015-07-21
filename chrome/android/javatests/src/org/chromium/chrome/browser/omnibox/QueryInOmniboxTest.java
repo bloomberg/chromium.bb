@@ -292,11 +292,6 @@ public class QueryInOmniboxTest extends ChromeActivityTestCaseBase<ChromeActivit
         }
 
         @Override
-        public int getLoadProgress() {
-            return mBaseProvider.getLoadProgress();
-        }
-
-        @Override
         public String getText() {
             return SEARCH_TERM;
         }

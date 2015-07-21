@@ -8,6 +8,7 @@
 
 <org.chromium.chrome.browser.toolbar.ToolbarPhone
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow" >
 
@@ -59,9 +60,8 @@
     </LinearLayout>
     <org.chromium.chrome.browser.widget.ToolbarProgressBar
         android:id="@+id/progress"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-        android:progressDrawable="@drawable/progress_bar"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:progress="0" />
+        chrome:progressBarColor="@color/progress_bar_foreground"
+        chrome:backgroundColor="@color/progress_bar_background" />
 </org.chromium.chrome.browser.toolbar.ToolbarPhone>

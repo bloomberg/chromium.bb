@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 
@@ -26,13 +25,6 @@ public interface ToolbarDataProvider {
      * @return Whether the toolbar is currently being displayed for incognito.
      */
     boolean isIncognito();
-
-    /**
-     * @return The load progress for the current tab (0 being no load progress, 100 being
-     *         fully loaded).
-     */
-    @VisibleForTesting
-    int getLoadProgress();
 
     /**
      * @return The chip text from the search URL.

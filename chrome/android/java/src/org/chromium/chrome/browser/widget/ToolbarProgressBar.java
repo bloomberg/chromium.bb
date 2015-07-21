@@ -4,14 +4,8 @@
 
 package org.chromium.chrome.browser.widget;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.util.AttributeSet;
-import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -19,168 +13,91 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 /**
  * Progress bar for use in the Toolbar view.
  */
-public class ToolbarProgressBar extends SmoothProgressBar {
-    private static final long PROGRESS_CLEARING_DELAY_MS = 200;
-    private static final int SHOW_HIDE_DURATION_MS = 100;
+public class ToolbarProgressBar extends ClipDrawableProgressBar {
+    private long mAlphaAnimationDurationMs = 130;
+    private long mHidingDelayMs = 100;
 
-    private final Runnable mClearLoadProgressRunnable;
-    private int mDesiredVisibility;
-    private Animator mShowAnimator;
-    private Animator mHideAnimator;
+    private boolean mIsStarted;
+    private float mTargetAlpha = 0.0f;
+    private final Runnable mHideRunnable = new Runnable() {
+        @Override
+        public void run() {
+            animateAlphaTo(0.0f);
+        }
+    };
 
     /**
      * Creates a toolbar progress bar.
+     *
      * @param context the application environment.
      * @param attrs the xml attributes that should be used to initialize this view.
      */
     public ToolbarProgressBar(Context context, AttributeSet attrs) {
         super(context, attrs);
-        // The base constructor will trigger a progress change and alter the expected
-        // visibility, so force a visibility change to reset the state.
-        setVisibility(VISIBLE);
-
-        mClearLoadProgressRunnable = new Runnable() {
-            @Override
-            public void run() {
-                setProgress(0);
-            }
-        };
-
-        // Hide the background portion of the system progress bar.
-        Drawable progressDrawable = getProgressDrawable();
-        if (progressDrawable instanceof LayerDrawable) {
-            Drawable progressBackgroundDrawable =
-                    ((LayerDrawable) progressDrawable)
-                            .findDrawableByLayerId(android.R.id.background);
-            if (progressBackgroundDrawable != null) {
-                progressBackgroundDrawable.setVisible(false, false);
-                progressBackgroundDrawable.setAlpha(0);
-            }
-        }
+        setAlpha(mTargetAlpha);
     }
 
-    @Override
-    public void setSecondaryProgress(int secondaryProgress) {
-        super.setSecondaryProgress(secondaryProgress);
-        setVisibilityForProgress();
+    /**
+     * Start showing progress bar animation.
+     */
+    public void start() {
+        mIsStarted = true;
+        removeCallbacks(mHideRunnable);
+        animateAlphaTo(1.0f);
     }
 
-    @Override
-    protected void setProgressInternal(int progress) {
-        super.setProgressInternal(progress);
+    /**
+     * Start hiding progress bar animation.
+     * @param delayed Whether a delayed fading out animation should be posted.
+     */
+    public void finish(boolean delayed) {
+        mIsStarted = false;
 
-        if (progress == getMax()) {
-            postDelayed(mClearLoadProgressRunnable, PROGRESS_CLEARING_DELAY_MS);
-        }
+        removeCallbacks(mHideRunnable);
 
-        setVisibilityForProgress();
-    }
-
-    @Override
-    public void setVisibility(int v) {
-        mDesiredVisibility = v;
-        setVisibilityForProgress();
-    }
-
-    private void setVisibilityForProgress() {
-        if (mDesiredVisibility != VISIBLE) {
-            super.setVisibility(mDesiredVisibility);
-            return;
-        }
-
-        int progress = Math.max(getProgress(), getSecondaryProgress());
-        super.setVisibility(progress == 0 ? INVISIBLE : VISIBLE);
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-
-        // Some versions of Android have a bug where they don't properly update the drawables with
-        // the correct bounds.  setProgressDrawable has been overridden to properly push the bounds
-        // but on rotation they weren't always being set.  Forcing a bounds update on size changes
-        // fixes the problem.
-        setProgressDrawable(getProgressDrawable());
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        buildAnimators();
-        setPivotY(getHeight());
-    }
-
-    @Override
-    public void setProgressDrawable(Drawable d) {
-        Drawable currentDrawable = getProgressDrawable();
-
-        super.setProgressDrawable(d);
-
-        if (currentDrawable != null && d instanceof LayerDrawable) {
-            LayerDrawable ld = (LayerDrawable) d;
-            for (int i = 0; i < ld.getNumberOfLayers(); i++) {
-                ld.getDrawable(i).setBounds(currentDrawable.getBounds());
-            }
+        if (delayed) {
+            postDelayed(mHideRunnable, mHidingDelayMs);
+        } else {
+            mTargetAlpha = 0.0f;
+            setAlpha(0.0f);
         }
     }
 
     /**
-     * @return Whether or not this progress bar has animations running for showing/hiding itself.
+     * Set alpha show&hide animation duration. This is for faster testing.
+     * @param alphaAnimationDurationMs Alpha animation duration in milliseconds.
      */
     @VisibleForTesting
-    boolean isAnimatingForShowOrHide() {
-        return (mShowAnimator != null && mShowAnimator.isStarted())
-                || (mHideAnimator != null && mHideAnimator.isStarted());
+    public void setAlphaAnimationDuration(long alphaAnimationDurationMs) {
+        mAlphaAnimationDurationMs = alphaAnimationDurationMs;
     }
 
-    private void buildAnimators() {
-        if (mShowAnimator != null && mShowAnimator.isRunning()) mShowAnimator.end();
-        if (mHideAnimator != null && mHideAnimator.isRunning()) mHideAnimator.end();
-
-        mShowAnimator = ObjectAnimator.ofFloat(this, View.SCALE_Y, 0.f, 1.f);
-        mShowAnimator.setDuration(SHOW_HIDE_DURATION_MS);
-        mShowAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
-        mShowAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                setSecondaryProgress(getMax());
-            }
-        });
-
-        mHideAnimator = ObjectAnimator.ofFloat(this, View.SCALE_Y, 1.f, 0.f);
-        mHideAnimator.setDuration(SHOW_HIDE_DURATION_MS);
-        mHideAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-        mHideAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                setSecondaryProgress(0);
-            }
-        });
+    /**
+     * Set hiding delay duration. This is for faster testing.
+     * @param hidngDelayMs Hiding delay duration in milliseconds.
+     */
+    @VisibleForTesting
+    public void setHidingDelay(long hidngDelayMs) {
+        mHidingDelayMs = hidngDelayMs;
     }
+
+    private void animateAlphaTo(float targetAlpha) {
+        mTargetAlpha = targetAlpha;
+        float alphaDiff = targetAlpha - getAlpha();
+        if (alphaDiff != 0.0f) {
+            animate().alpha(targetAlpha)
+                    .setDuration((long) Math.abs(alphaDiff * mAlphaAnimationDurationMs))
+                    .setInterpolator(alphaDiff > 0
+                            ? BakedBezierInterpolator.FADE_IN_CURVE
+                            : BakedBezierInterpolator.FADE_OUT_CURVE);
+        }
+    }
+
+    // ClipDrawableProgressBar implementation.
 
     @Override
-    public void setProgress(int progress) {
-        // If the show animator has started, the progress bar needs to be tracked as if it is
-        // currently showing.  This makes sure we trigger the proper hide animation and cancel the
-        // show animation if we show/hide the bar very fast.  See crbug.com/453360.
-        boolean isShowing =
-                getProgress() > 0 || (mShowAnimator != null && mShowAnimator.isStarted());
-        boolean willShow = progress > 0;
-
-        removeCallbacks(mClearLoadProgressRunnable);
+    public void setProgress(float progress) {
+        assert mIsStarted;
         super.setProgress(progress);
-
-        if (isShowing != willShow) {
-            if (mShowAnimator == null || mHideAnimator == null) buildAnimators();
-
-            if (mShowAnimator.isRunning()) mShowAnimator.end();
-            if (mHideAnimator.isRunning()) mHideAnimator.end();
-
-            if (willShow) {
-                mShowAnimator.start();
-            } else {
-                mHideAnimator.start();
-            }
-        }
     }
 }
