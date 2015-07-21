@@ -51,6 +51,10 @@ class MenuMessagePumpDispatcher;
 class MenuRunnerImpl;
 }
 
+namespace test {
+class MenuControllerTest;
+}
+
 // MenuController -------------------------------------------------------------
 
 // MenuController is used internally by the various menu classes to manage
@@ -183,7 +187,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   friend class internal::MenuEventDispatcher;
   friend class internal::MenuMessagePumpDispatcher;
   friend class internal::MenuRunnerImpl;
-  friend class MenuControllerTest;
+  friend class test::MenuControllerTest;
   friend class MenuHostRootView;
   friend class MenuItemView;
   friend class SubmenuView;
@@ -218,6 +222,15 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
     // Same as above and the accelerator causes the exit of the menu.
     ACCELERATOR_PROCESSED_EXIT
+  };
+
+  // Direction for IncrementSelection and FindInitialSelectableMenuItem.
+  enum SelectionIncrementDirectionType {
+    // Navigate the menu up.
+    INCREMENT_SELECTION_UP,
+
+    // Navigate the menu down.
+    INCREMENT_SELECTION_DOWN,
   };
 
   // Tracks selection information.
@@ -432,19 +445,23 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Returns the depth of the menu.
   static int MenuDepth(MenuItemView* item);
 
-  // Selects the next/previous menu item.
-  void IncrementSelection(int delta);
+  // Selects the next or previous (depending on |direction|) menu item.
+  void IncrementSelection(SelectionIncrementDirectionType direction);
 
-  // Returns the first selectable child menu item of |parent|. If there are no
-  // selectable menu items NULL is returned.
-  MenuItemView* FindFirstSelectableMenuItem(MenuItemView* parent);
+  // Returns the first (|direction| == NAVIGATE_SELECTION_DOWN) or the last
+  // (|direction| == INCREMENT_SELECTION_UP) selectable child menu item of
+  // |parent|. If there are no selectable items returns NULL.
+  MenuItemView* FindInitialSelectableMenuItem(
+      MenuItemView* parent,
+      SelectionIncrementDirectionType direction);
 
-  // Returns the next selectable child menu item of |parent| starting at |index|
-  // and incrementing index by |delta|. If there are no more selectable menu
-  // items NULL is returned.
-  MenuItemView* FindNextSelectableMenuItem(MenuItemView* parent,
-                                           int index,
-                                           int delta);
+  // Returns the next or previous selectable child menu item of |parent|
+  // starting at |index| and incrementing or decrementing index by 1 depending
+  // on |direction|. If there are no more selectable items NULL is returned.
+  MenuItemView* FindNextSelectableMenuItem(
+      MenuItemView* parent,
+      int index,
+      SelectionIncrementDirectionType direction);
 
   // If the selected item has a submenu and it isn't currently open, the
   // the selection is changed such that the menu opens immediately.

@@ -89,8 +89,6 @@ bool TitleMatchesMnemonic(MenuItemView* menu, base::char16 key) {
   return !lower_title.empty() && lower_title[0] == key;
 }
 
-}  // namespace
-
 // Returns the first descendant of |view| that is hot tracked.
 static CustomButton* GetFirstHotTrackedView(View* view) {
   if (!view)
@@ -156,6 +154,8 @@ static View* GetNextFocusableView(View* ancestor,
   } while (parent != ancestor);
   return NULL;
 }
+
+}  // namespace
 
 // MenuScrollTask --------------------------------------------------------------
 
@@ -1028,11 +1028,11 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
 
   switch (key_code) {
     case ui::VKEY_UP:
-      IncrementSelection(-1);
+      IncrementSelection(INCREMENT_SELECTION_UP);
       break;
 
     case ui::VKEY_DOWN:
-      IncrementSelection(1);
+      IncrementSelection(INCREMENT_SELECTION_DOWN);
       break;
 
     // Handling of VK_RIGHT and VK_LEFT is different depending on the UI
@@ -1903,7 +1903,8 @@ int MenuController::MenuDepth(MenuItemView* item) {
   return item ? (MenuDepth(item->GetParentMenuItem()) + 1) : 0;
 }
 
-void MenuController::IncrementSelection(int delta) {
+void MenuController::IncrementSelection(
+    SelectionIncrementDirectionType direction) {
   MenuItemView* item = pending_state_.item;
   DCHECK(item);
   if (pending_state_.submenu_open && item->HasSubmenu() &&
@@ -1911,7 +1912,7 @@ void MenuController::IncrementSelection(int delta) {
     // A menu is selected and open, but none of its children are selected,
     // select the first menu item that is visible and enabled.
     if (item->GetSubmenu()->GetMenuItemCount()) {
-      MenuItemView* to_select = FindFirstSelectableMenuItem(item);
+      MenuItemView* to_select = FindInitialSelectableMenuItem(item, direction);
       if (to_select)
         SetSelection(to_select, SELECTION_DEFAULT);
       return;
@@ -1922,14 +1923,16 @@ void MenuController::IncrementSelection(int delta) {
     CustomButton* button = GetFirstHotTrackedView(item);
     if (button) {
       button->SetHotTracked(false);
-      View* to_make_hot = GetNextFocusableView(item, button, delta == 1);
+      View* to_make_hot = GetNextFocusableView(
+          item, button, direction == INCREMENT_SELECTION_DOWN);
       CustomButton* button_hot = CustomButton::AsCustomButton(to_make_hot);
       if (button_hot) {
         button_hot->SetHotTracked(true);
         return;
       }
     } else {
-      View* to_make_hot = GetInitialFocusableView(item, delta == 1);
+      View* to_make_hot =
+          GetInitialFocusableView(item, direction == INCREMENT_SELECTION_DOWN);
       CustomButton* button_hot = CustomButton::AsCustomButton(to_make_hot);
       if (button_hot) {
         button_hot->SetHotTracked(true);
@@ -1945,11 +1948,12 @@ void MenuController::IncrementSelection(int delta) {
       for (int i = 0; i < parent_count; ++i) {
         if (parent->GetSubmenu()->GetMenuItemAt(i) == item) {
           MenuItemView* to_select =
-              FindNextSelectableMenuItem(parent, i, delta);
+              FindNextSelectableMenuItem(parent, i, direction);
           if (!to_select)
             break;
           SetSelection(to_select, SELECTION_DEFAULT);
-          View* to_make_hot = GetInitialFocusableView(to_select, delta == 1);
+          View* to_make_hot = GetInitialFocusableView(
+              to_select, direction == INCREMENT_SELECTION_DOWN);
           CustomButton* button_hot = CustomButton::AsCustomButton(to_make_hot);
           if (button_hot)
             button_hot->SetHotTracked(true);
@@ -1960,29 +1964,33 @@ void MenuController::IncrementSelection(int delta) {
   }
 }
 
-MenuItemView* MenuController::FindFirstSelectableMenuItem(
-    MenuItemView* parent) {
-  MenuItemView* child = parent->GetSubmenu()->GetMenuItemAt(0);
-  if (!child->visible() || !child->enabled())
-    child = FindNextSelectableMenuItem(parent, 0, 1);
-  return child;
+MenuItemView* MenuController::FindInitialSelectableMenuItem(
+    MenuItemView* parent,
+    SelectionIncrementDirectionType direction) {
+  return FindNextSelectableMenuItem(
+      parent, direction == INCREMENT_SELECTION_DOWN ? -1 : 0, direction);
 }
 
-MenuItemView* MenuController::FindNextSelectableMenuItem(MenuItemView* parent,
-                                                         int index,
-                                                         int delta) {
-  int start_index = index;
+MenuItemView* MenuController::FindNextSelectableMenuItem(
+    MenuItemView* parent,
+    int index,
+    SelectionIncrementDirectionType direction) {
   int parent_count = parent->GetSubmenu()->GetMenuItemCount();
+  int stop_index = (index + parent_count) % parent_count;
+  bool include_all_items =
+      (index == -1 && direction == INCREMENT_SELECTION_DOWN) ||
+      (index == 0 && direction == INCREMENT_SELECTION_UP);
+  int delta = direction == INCREMENT_SELECTION_UP ? -1 : 1;
   // Loop through the menu items skipping any invisible menus. The loop stops
   // when we wrap or find a visible and enabled child.
   do {
     index = (index + delta + parent_count) % parent_count;
-    if (index == start_index)
+    if (index == stop_index && !include_all_items)
       return NULL;
     MenuItemView* child = parent->GetSubmenu()->GetMenuItemAt(index);
     if (child->visible() && child->enabled())
       return child;
-  } while (index != start_index);
+  } while (index != stop_index);
   return NULL;
 }
 
@@ -1992,7 +2000,7 @@ void MenuController::OpenSubmenuChangeSelectionIfCan() {
     return;
   MenuItemView* to_select = NULL;
   if (item->GetSubmenu()->GetMenuItemCount() > 0)
-    to_select = FindFirstSelectableMenuItem(item);
+    to_select = FindInitialSelectableMenuItem(item, INCREMENT_SELECTION_DOWN);
   if (to_select) {
     SetSelection(to_select, SELECTION_UPDATE_IMMEDIATELY);
     return;

@@ -90,7 +90,7 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   base::string16 GetTextForRow(int row) override;
 
   // Returns true if the menu is showing.
-  bool IsShowing();
+  virtual bool IsShowing();
 
   // Shows the menu at the specified location. Coordinates are in screen
   // coordinates. max_width gives the max width the view should be.
