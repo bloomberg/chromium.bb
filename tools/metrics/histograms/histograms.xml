@@ -57919,6 +57919,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="874" label="V8Document_CreateTouch_Method"/>
   <int value="875" label="V8HTMLFrameElement_GetSVGDocument_Method"/>
   <int value="876" label="RequestFileSystemNonWebbyOrigin"/>
+  <int value="877" label="V8Console_Memory_AttributeGetter"/>
+  <int value="878" label="V8Console_Memory_AttributeSetter"/>
+  <int value="879" label="V8MemoryInfo_TotalJSHeapSize_AttributeGetter"/>
+  <int value="880" label="V8MemoryInfo_UsedJSHeapSize_AttributeGetter"/>
+  <int value="881" label="V8MemoryInfo_JSHeapSizeLimit_AttributeGetter"/>
+  <int value="882" label="V8Performance_Timing_AttributeGetter"/>
+  <int value="883" label="V8Performance_Navigation_AttributeGetter"/>
+  <int value="884" label="V8Performance_Memory_AttributeGetter"/>
+  <int value="885" label="V8SharedWorker_WorkerStart_AttributeGetter"/>
+  <int value="886" label="HTMLKeygenElement"/>
+  <int value="887" label="V8SVGElement_OffsetParent_AttributeGetter"/>
+  <int value="888" label="V8SVGElement_OffsetTop_AttributeGetter"/>
+  <int value="889" label="V8SVGElement_OffsetLeft_AttributeGetter"/>
+  <int value="890" label="V8SVGElement_OffsetWidth_AttributeGetter"/>
+  <int value="891" label="V8SVGElement_OffsetHeight_AttributeGetter"/>
+  <int value="892" label="HTMLMediaElementPreloadNone"/>
+  <int value="893" label="HTMLMediaElementPreloadMetadata"/>
+  <int value="894" label="HTMLMediaElementPreloadAuto"/>
+  <int value="895" label="HTMLMediaElementPreloadDefault"/>
+  <int value="896" label="MixedContentBlockableAllowed"/>
+  <int value="897" label="PseudoBeforeAfterForInputElement"/>
+  <int value="898" label="V8Permissions_Revoke_Method"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
