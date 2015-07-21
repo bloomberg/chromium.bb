@@ -82,8 +82,8 @@ private:
     using ListenersMap = HashMap<int, V8DebuggerListener*>;
     ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
+    RawPtrWillBePersistent<LocalFrame> m_pausedFrame;
     OwnPtr<InspectorTaskRunner> m_taskRunner;
-    int m_pausedFrameId;
 
     static MainThreadDebugger* s_instance;
 };

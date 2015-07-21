@@ -76,8 +76,8 @@ MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 MainThreadDebugger::MainThreadDebugger(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
     : ScriptDebuggerBase(isolate)
     , m_clientMessageLoop(clientMessageLoop)
+    , m_pausedFrame(nullptr)
     , m_taskRunner(adoptPtr(new InspectorTaskRunner(isolate)))
-    , m_pausedFrameId(-1)
 {
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
@@ -133,7 +133,7 @@ void MainThreadDebugger::removeListener(V8DebuggerListener* listener, LocalFrame
     if (!m_listenersMap.contains(localFrameId))
         return;
 
-    if (m_pausedFrameId == localFrameId)
+    if (m_pausedFrame == localFrame)
         debugger()->continueProgram();
 
     m_listenersMap.remove(localFrameId);
@@ -168,17 +168,16 @@ void MainThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context> context)
 {
     v8::HandleScope scope(context->GetIsolate());
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
-    LocalFrame* pausedFrame = frame->localFrameRoot();
-    m_pausedFrameId = frameId(pausedFrame);
+    m_pausedFrame = frame->localFrameRoot();
 
     // Wait for continue or step command.
-    m_clientMessageLoop->run(pausedFrame);
+    m_clientMessageLoop->run(m_pausedFrame);
 
     // The listener may have been removed in the nested loop.
-    if (V8DebuggerListener* listener = m_listenersMap.get(m_pausedFrameId))
+    if (V8DebuggerListener* listener = m_listenersMap.get(frameId(m_pausedFrame.get())))
         listener->didContinue();
 
-    m_pausedFrameId = -1;
+    m_pausedFrame = 0;
 }
 
 void MainThreadDebugger::quitMessageLoopOnPause()
