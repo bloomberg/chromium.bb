@@ -724,8 +724,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <!-- content area context menus. Android does not use it -->
       <if expr="not is_android">
         <if expr="is_macosx">
-            <message name="IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY" desc="The name of the 'Look Up in Dictionary' item in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
-              Look Up in Dictionary
+            <message name="IDS_CONTENT_CONTEXT_LOOK_UP" desc="The name of the 'Look Up “string”' item in the content area context menu. To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+              Look Up “<ph name="LOOKUP_STRING">$1<ex>orthogonal</ex></ph>”
             </message>
         </if>
         <if expr="not use_titlecase">
@@ -921,8 +921,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
             Select &amp;all
           </message>
-          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="The name of the Search the Web for 'string' command in the content area context menu">
-            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
+          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="The name of the Search the Web for “string” command in the content area context menu">
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for “<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>”
           </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="The name of the Search For Image command in the content area context menu">
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for this image
@@ -1141,8 +1141,8 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="In Title Case: The name of the Select All command in the content area context menu">
             Select &amp;All
           </message>
-          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="In Title Case: The name of the Search the Web for 'string' command in the content area context menu">
-            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
+          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="In Title Case: The name of the Search the Web for “string” command in the content area context menu">
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for “<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>”
           </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="In Title Case: The name of the Search For Image command in the content area context menu">
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for this Image

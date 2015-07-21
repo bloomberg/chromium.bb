@@ -281,12 +281,6 @@ WindowOpenDisposition ForceNewTabDispositionFromEventFlags(
   return disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition;
 }
 
-// Helper function to escape "&" as "&&".
-void EscapeAmpersands(base::string16* text) {
-  base::ReplaceChars(*text, base::ASCIIToUTF16("&"), base::ASCIIToUTF16("&&"),
-                     text);
-}
-
 // Returns the preference of the profile represented by the |context|.
 PrefService* GetPrefs(content::BrowserContext* context) {
   return user_prefs::UserPrefs::Get(context);
@@ -1871,6 +1865,11 @@ base::string16 RenderViewContextMenu::PrintableSelectionText() {
   return gfx::TruncateString(params_.selection_text,
                              kMaxSelectionTextLength,
                              gfx::WORD_BREAK);
+}
+
+void RenderViewContextMenu::EscapeAmpersands(base::string16* text) {
+  base::ReplaceChars(*text, base::ASCIIToUTF16("&"), base::ASCIIToUTF16("&&"),
+                     text);
 }
 
 // Controller functions --------------------------------------------------------

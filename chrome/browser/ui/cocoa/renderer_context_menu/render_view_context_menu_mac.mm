@@ -145,7 +145,7 @@ void RenderViewContextMenuMac::Show() {
 
 void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
-    case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
+    case IDC_CONTENT_CONTEXT_LOOK_UP:
       LookUpInDictionary();
       break;
 
@@ -198,7 +198,7 @@ bool RenderViewContextMenuMac::IsCommandIdChecked(int command_id) const {
 
 bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
-    case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
+    case IDC_CONTENT_CONTEXT_LOOK_UP:
       // This is OK because the menu is not shown when it isn't
       // appropriate.
       return true;
@@ -242,27 +242,34 @@ void RenderViewContextMenuMac::AppendPlatformEditableItems() {
 }
 
 void RenderViewContextMenuMac::InitToolkitMenu() {
-  bool has_selection = !params_.selection_text.empty();
+  if (params_.selection_text.empty())
+    return;
 
-  if (has_selection) {
+  if (params_.link_url.is_empty()) {
+    base::string16 printable_selection_text = PrintableSelectionText();
+    EscapeAmpersands(&printable_selection_text);
+    int index = 0;
+    menu_model_.InsertItemAt(
+        index++,
+        IDC_CONTENT_CONTEXT_LOOK_UP,
+        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP,
+                                   printable_selection_text));
+    menu_model_.InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
+  }
+
+  content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+  if (view && view->SupportsSpeech()) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    menu_model_.AddItemWithStringId(
-        IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY,
-        IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY);
-
-    content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
-    if (view && view->SupportsSpeech()) {
-      speech_submenu_model_.AddItemWithStringId(
-          IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING,
-          IDS_SPEECH_START_SPEAKING_MAC);
-      speech_submenu_model_.AddItemWithStringId(
-          IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING,
-          IDS_SPEECH_STOP_SPEAKING_MAC);
-      menu_model_.AddSubMenu(
-          IDC_CONTENT_CONTEXT_SPEECH_MENU,
-          l10n_util::GetStringUTF16(IDS_SPEECH_MAC),
-          &speech_submenu_model_);
-    }
+    speech_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING,
+        IDS_SPEECH_START_SPEAKING_MAC);
+    speech_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING,
+        IDS_SPEECH_STOP_SPEAKING_MAC);
+    menu_model_.AddSubMenu(
+        IDC_CONTENT_CONTEXT_SPEECH_MENU,
+        l10n_util::GetStringUTF16(IDS_SPEECH_MAC),
+        &speech_submenu_model_);
   }
 }
 
