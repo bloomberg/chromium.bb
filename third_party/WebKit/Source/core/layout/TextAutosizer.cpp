@@ -1109,7 +1109,7 @@ TextAutosizer::LayoutScope::LayoutScope(LayoutBlock* block)
     if (m_textAutosizer->shouldHandleLayout())
         m_textAutosizer->beginLayout(m_block);
     else
-        m_textAutosizer = 0;
+        m_textAutosizer = nullptr;
 }
 
 TextAutosizer::LayoutScope::~LayoutScope()
