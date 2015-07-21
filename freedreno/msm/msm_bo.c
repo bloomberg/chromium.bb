@@ -129,7 +129,6 @@ drm_private struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
 {
 	struct msm_bo *msm_bo;
 	struct fd_bo *bo;
-	unsigned i;
 
 	msm_bo = calloc(1, sizeof(*msm_bo));
 	if (!msm_bo)
@@ -138,9 +137,6 @@ drm_private struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
 	bo = &msm_bo->base;
 	bo->funcs = &funcs;
 	bo->fd = -1;
-
-	for (i = 0; i < ARRAY_SIZE(msm_bo->list); i++)
-		list_inithead(&msm_bo->list[i]);
 
 	return bo;
 }

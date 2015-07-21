@@ -39,8 +39,6 @@ struct msm_ringbuffer {
 	struct fd_ringbuffer base;
 	struct fd_bo *ring_bo;
 
-	struct list_head submit_list;
-
 	/* submit ioctl related tables: */
 	struct {
 		/* bo's table: */
@@ -56,10 +54,16 @@ struct msm_ringbuffer {
 		uint32_t nr_relocs, max_relocs;
 	} submit;
 
+	/* should have matching entries in submit.bos: */
+	struct fd_bo **bos;
+	uint32_t nr_bos, max_bos;
+
 	/* should have matching entries in submit.cmds: */
 	struct fd_ringbuffer **rings;
 	uint32_t nr_rings, max_rings;
 };
+
+static pthread_mutex_t idx_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static void *grow(void *ptr, uint32_t nr, uint32_t *max, uint32_t sz)
 {
@@ -83,27 +87,47 @@ static inline struct msm_ringbuffer * to_msm_ringbuffer(struct fd_ringbuffer *x)
 	return (struct msm_ringbuffer *)x;
 }
 
+static uint32_t append_bo(struct fd_ringbuffer *ring, struct fd_bo *bo)
+{
+	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
+	uint32_t idx;
+
+	idx = APPEND(&msm_ring->submit, bos);
+	idx = APPEND(msm_ring, bos);
+
+	msm_ring->submit.bos[idx].flags = 0;
+	msm_ring->submit.bos[idx].handle = bo->handle;
+	msm_ring->submit.bos[idx].presumed = to_msm_bo(bo)->presumed;
+
+	msm_ring->bos[idx] = fd_bo_ref(bo);
+
+	return idx;
+}
+
 /* add (if needed) bo, return idx: */
 static uint32_t bo2idx(struct fd_ringbuffer *ring, struct fd_bo *bo, uint32_t flags)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	struct msm_bo *msm_bo = to_msm_bo(bo);
-	int id = ring->pipe->id;
 	uint32_t idx;
-	if (!msm_bo->indexp1[id]) {
-		struct list_head *list = &msm_bo->list[id];
-		idx = APPEND(&msm_ring->submit, bos);
-		msm_ring->submit.bos[idx].flags = 0;
-		msm_ring->submit.bos[idx].handle = bo->handle;
-		msm_ring->submit.bos[idx].presumed = msm_bo->presumed;
-		msm_bo->indexp1[id] = idx + 1;
-
-		assert(LIST_IS_EMPTY(list));
-		fd_bo_ref(bo);
-		list_addtail(list, &msm_ring->submit_list);
+	pthread_mutex_lock(&idx_lock);
+	if (!msm_bo->current_ring) {
+		idx = append_bo(ring, bo);
+		msm_bo->current_ring = ring;
+		msm_bo->idx = idx;
+	} else if (msm_bo->current_ring == ring) {
+		idx = msm_bo->idx;
 	} else {
-		idx = msm_bo->indexp1[id] - 1;
+		/* slow-path: */
+		for (idx = 0; idx < msm_ring->nr_bos; idx++)
+			if (msm_ring->bos[idx] == bo)
+				break;
+		if (idx == msm_ring->nr_bos) {
+			/* not found */
+			idx = append_bo(ring, bo);
+		}
 	}
+	pthread_mutex_unlock(&idx_lock);
 	if (flags & FD_RELOC_READ)
 		msm_ring->submit.bos[idx].flags |= MSM_SUBMIT_BO_READ;
 	if (flags & FD_RELOC_WRITE)
@@ -193,6 +217,8 @@ static void flush_reset(struct fd_ringbuffer *ring)
 	msm_ring->submit.nr_relocs = 0;
 	msm_ring->submit.nr_cmds = 0;
 	msm_ring->submit.nr_bos = 0;
+	msm_ring->nr_rings = 0;
+	msm_ring->nr_bos = 0;
 }
 
 static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start)
@@ -202,9 +228,8 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 	struct drm_msm_gem_submit req = {
 			.pipe = to_msm_pipe(ring->pipe)->pipe,
 	};
-	struct msm_bo *msm_bo = NULL, *tmp;
 	uint32_t i, submit_offset, size;
-	int ret, id = ring->pipe->id;
+	int ret;
 
 	submit_offset = offset_bytes(last_start, ring->start);
 	size = offset_bytes(ring->cur, last_start);
@@ -242,10 +267,9 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		}
 	}
 
-	LIST_FOR_EACH_ENTRY_SAFE(msm_bo, tmp, &msm_ring->submit_list, list[id]) {
-		struct list_head *list = &msm_bo->list[id];
-		list_delinit(list);
-		msm_bo->indexp1[id] = 0;
+	for (i = 0; i < msm_ring->nr_bos; i++) {
+		struct msm_bo *msm_bo = to_msm_bo(msm_ring->bos[i]);
+		msm_bo->current_ring = NULL;
 		fd_bo_del(&msm_bo->base);
 	}
 
@@ -337,8 +361,6 @@ drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 
 	ring = &msm_ring->base;
 	ring->funcs = &funcs;
-
-	list_inithead(&msm_ring->submit_list);
 
 	msm_ring->ring_bo = fd_bo_new(pipe->dev, size, 0);
 	if (!msm_ring->ring_bo) {
