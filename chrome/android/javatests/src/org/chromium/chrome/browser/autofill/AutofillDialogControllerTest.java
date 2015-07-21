@@ -8,10 +8,11 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
-import org.chromium.base.CommandLine;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -23,8 +24,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Integration tests for the AutofillPopup.
  */
-public class AutofillDialogControllerTest extends ChromeShellTestBase {
-    private static final String SWITCH_REDUCE_SECURITY_FOR_TESTING = "reduce-security-for-testing";
+@CommandLineFlags.Add("reduce-security-for-testing")
+public class AutofillDialogControllerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final long DIALOG_CALLBACK_DELAY_MILLISECONDS = 50;
 
     private static final String TEST_NAME = "Joe Doe";
@@ -174,12 +175,13 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
         return UrlUtils.encodeHtmlDataUri(sb.toString());
     }
 
+    public AutofillDialogControllerTest() {
+        super(ChromeActivity.class);
+    }
+
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        clearAppData();
-        CommandLine.init(new String[]{});
-        CommandLine.getInstance().appendSwitch(SWITCH_REDUCE_SECURITY_FOR_TESTING);
+    public void startMainActivity() throws InterruptedException {
+        // Don't launch activity automatically.
     }
 
     @MediumTest
@@ -537,7 +539,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
 
         setUpAndRequestAutocomplete(url, requestFullBilling, requestShipping, requestPhoneNumbers);
 
-        final WebContents webContents = getActivity().getActiveContentViewCore().getWebContents();
+        final WebContents webContents = getActivity().getCurrentContentViewCore().getWebContents();
 
         assertEquals(actualId + " did not match",
                 expected, DOMUtils.getNodeValue(webContents, actualId));
@@ -554,7 +556,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
                 generatePage(requestFullBilling, requestShipping, requestPhoneNumbers),
                 requestFullBilling, requestShipping, requestPhoneNumbers);
 
-        final WebContents webContents = getActivity().getActiveContentViewCore().getWebContents();
+        final WebContents webContents = getActivity().getCurrentContentViewCore().getWebContents();
 
         assertEquals("billing name did not match",
                 TEST_NAME, DOMUtils.getNodeValue(webContents, "id-billing-name"));
@@ -668,11 +670,10 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
             final boolean requestPhoneNumbers,
             final boolean expectFailure)
             throws InterruptedException, TimeoutException {
-        launchChromeShellWithUrl(url);
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        startMainActivityWithURL(url);
 
-        final ContentViewCore viewCore = getActivity().getActiveContentViewCore();
-        final WebContents webContents = getActivity().getActiveContentViewCore().getWebContents();
+        final ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
+        final WebContents webContents = getActivity().getCurrentContentViewCore().getWebContents();
 
         AutofillDialogResult.ResultWallet result = new AutofillDialogResult.ResultWallet(
                 TEST_EMAIL, "Google Transaction ID",

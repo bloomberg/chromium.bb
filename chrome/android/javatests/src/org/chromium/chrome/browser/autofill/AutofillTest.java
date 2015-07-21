@@ -11,8 +11,8 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -30,23 +30,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests the Autofill's java code for creating the AutofillPopup object, opening and selecting
  * popups.
  */
-public class AutofillTest extends ChromeShellTestBase {
+public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private AutofillPopup mAutofillPopup;
     private WindowAndroid mWindowAndroid;
     private MockAutofillCallback mMockAutofillCallback;
 
+    public AutofillTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     @SuppressFBWarnings("URF_UNREAD_FIELD")
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        final ChromeShellActivity activity = launchChromeShellWithBlankPage();
-        assertNotNull(activity);
-        waitForActiveShellToBeDoneLoading();
 
+        final ChromeActivity activity = getActivity();
         mMockAutofillCallback = new MockAutofillCallback();
         final ViewAndroidDelegate viewDelegate =
-                activity.getActiveContentViewCore().getViewAndroidDelegate();
+                activity.getCurrentContentViewCore().getViewAndroidDelegate();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
