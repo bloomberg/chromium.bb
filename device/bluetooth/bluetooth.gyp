@@ -88,6 +88,8 @@
         'bluetooth_init_win.h',
         'bluetooth_l2cap_channel_mac.mm',
         'bluetooth_l2cap_channel_mac.h',
+        'bluetooth_low_energy_central_manager_delegate.mm',
+        'bluetooth_low_energy_central_manager_delegate.h',
         'bluetooth_low_energy_defs_win.cc',
         'bluetooth_low_energy_defs_win.h',
         'bluetooth_low_energy_device_mac.h',

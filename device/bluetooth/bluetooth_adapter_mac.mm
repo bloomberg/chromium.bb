@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_low_energy_central_manager_delegate.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -60,9 +61,20 @@ BluetoothAdapterMac::BluetoothAdapterMac()
       classic_discovery_manager_(
           BluetoothDiscoveryManagerMac::CreateClassic(this)),
       weak_ptr_factory_(this) {
-  if (IsLowEnergyAvailable())
+  if (IsLowEnergyAvailable()) {
     low_energy_discovery_manager_.reset(
         BluetoothLowEnergyDiscoveryManagerMac::Create(this));
+    low_energy_central_manager_delegate_.reset(
+        [[BluetoothLowEnergyCentralManagerDelegate alloc]
+            initWithDiscoveryManager:low_energy_discovery_manager_.get()
+                          andAdapter:this]);
+    Class aClass = NSClassFromString(@"CBCentralManager");
+    low_energy_central_manager_.reset([[aClass alloc]
+        initWithDelegate:low_energy_central_manager_delegate_.get()
+                   queue:dispatch_get_main_queue()]);
+    low_energy_discovery_manager_->SetCentralManager(
+        low_energy_central_manager_.get());
+  }
   DCHECK(classic_discovery_manager_.get());
 }
 
@@ -439,6 +451,9 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
                     DeviceChanged(this, device_reference));
 }
 
+// TODO(krstnmnlsn): Implement. crbug.com/511025
+void BluetoothAdapterMac::LowEnergyCentralManagerUpdatedState() {}
+
 void BluetoothAdapterMac::RemoveTimedOutDevices() {
   // Notify observers if any previously seen devices are no longer available,
   // i.e. if they are no longer paired, connected, nor recently discovered via
@@ -472,6 +487,16 @@ void BluetoothAdapterMac::AddPairedDevices() {
   for (IOBluetoothDevice* device in [IOBluetoothDevice pairedDevices]) {
     ClassicDeviceAdded(device);
   }
+}
+
+void BluetoothAdapterMac::SetCentralManagerForTesting(
+    CBCentralManager* central_manager) {
+  CHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
+  [central_manager performSelector:@selector(setDelegate:)
+                        withObject:low_energy_central_manager_delegate_];
+  low_energy_central_manager_.reset(central_manager);
+  low_energy_discovery_manager_->SetCentralManager(
+      low_energy_central_manager_.get());
 }
 
 }  // namespace device

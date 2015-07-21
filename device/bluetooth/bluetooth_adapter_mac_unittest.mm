@@ -113,8 +113,7 @@ class BluetoothAdapterMacTest : public testing::Test {
       return false;
     }
     mock_central_manager_ = [[MockCentralManager alloc] init];
-    adapter_mac_->low_energy_discovery_manager_->SetManagerForTesting(
-        mock_central_manager_);
+    adapter_mac_->SetCentralManagerForTesting(mock_central_manager_);
     return true;
   }
 
@@ -145,7 +144,7 @@ class BluetoothAdapterMacTest : public testing::Test {
   scoped_refptr<BluetoothAdapter> adapter_;
   BluetoothAdapterMac* adapter_mac_;
 
-  // Owned by |low_energy_discovery_manager_| on |adapter_mac_|.
+  // Owned by |adapter_mac_|.
   id mock_central_manager_ = NULL;
 
   int callback_count_;

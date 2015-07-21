@@ -32,9 +32,9 @@ class SequencedTaskRunner;
 
 }  // namespace base
 
-namespace device {
+@class BluetoothLowEnergyCentralManagerDelegate;
 
-class BluetoothAdapterMacTest;
+namespace device {
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
     : public BluetoothAdapter,
@@ -104,6 +104,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   const static NSTimeInterval kDiscoveryTimeoutSec;
 
   friend class BluetoothAdapterMacTest;
+  friend class BluetoothLowEnergyCentralManagerBridge;
 
   BluetoothAdapterMac();
   ~BluetoothAdapterMac() override;
@@ -136,6 +137,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
                               NSDictionary* advertisement_data,
                               int rssi) override;
 
+  // Updates |devices_| when there is a change to the CBCentralManager's state.
+  void LowEnergyCentralManagerUpdatedState();
+
   // Removes from |devices_| any previously paired, connected or seen devices
   // which are no longer present. Notifies observers.
   void RemoveTimedOutDevices();
@@ -143,6 +147,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // Updates |devices_| to include the currently paired devices and notifies
   // observers.
   void AddPairedDevices();
+
+  // Private method for testing. Resets |low_energy_central_manager_| to
+  // |central_manager| and sets |low_energy_central_manager_delegate_| as its
+  // delegate. Should be called only when CoreBluetooth is available.
+  void SetCentralManagerForTesting(CBCentralManager* central_manager);
 
   std::string address_;
   std::string name_;
@@ -156,6 +165,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // Discovery manager for Bluetooth Low Energy.
   scoped_ptr<BluetoothLowEnergyDiscoveryManagerMac>
       low_energy_discovery_manager_;
+
+  // Underlying CoreBluetooth CBCentralManager and its delegate.
+  base::scoped_nsobject<CBCentralManager> low_energy_central_manager_;
+  base::scoped_nsobject<BluetoothLowEnergyCentralManagerDelegate>
+      low_energy_central_manager_delegate_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
