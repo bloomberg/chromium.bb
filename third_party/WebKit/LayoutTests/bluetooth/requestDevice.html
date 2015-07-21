@@ -20,6 +20,17 @@ sequential_promise_test(function() {
 }, 'RequestDeviceOptions requires a |filters| member.');
 
 sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('FailStartDiscoveryAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(() => assert_unreached("The adapter failed to start a discovery \
+                                 session. Promise should have rejected.."),
+          error => {
+            assert_equals(error.name, 'NotFoundError');
+            assert_equals(error.message, 'Couldn\'t start discovery session.');
+          });
+}, 'Discovery session fails to start.');
+
+sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
   return requestDeviceWithKeyDown({
     filters: [{services: [generic_access.name]}]
