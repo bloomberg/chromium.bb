@@ -154,8 +154,11 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       EXPECT_TRUE(IsOSMavericksOrEarlier());
       EXPECT_FALSE(IsOSMavericksOrLater());
       EXPECT_FALSE(IsOSYosemite());
+      EXPECT_TRUE(IsOSYosemiteOrEarlier());
       EXPECT_FALSE(IsOSYosemiteOrLater());
-      EXPECT_FALSE(IsOSLaterThanYosemite_DontCallThis());
+      EXPECT_FALSE(IsOSElCapitan());
+      EXPECT_FALSE(IsOSElCapitanOrLater());
+      EXPECT_FALSE(IsOSLaterThanElCapitan_DontCallThis());
     } else if (minor == 7) {
       EXPECT_FALSE(IsOSSnowLeopard());
       EXPECT_TRUE(IsOSLion());
@@ -168,8 +171,11 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       EXPECT_TRUE(IsOSMavericksOrEarlier());
       EXPECT_FALSE(IsOSMavericksOrLater());
       EXPECT_FALSE(IsOSYosemite());
+      EXPECT_TRUE(IsOSYosemiteOrEarlier());
       EXPECT_FALSE(IsOSYosemiteOrLater());
-      EXPECT_FALSE(IsOSLaterThanYosemite_DontCallThis());
+      EXPECT_FALSE(IsOSElCapitan());
+      EXPECT_FALSE(IsOSElCapitanOrLater());
+      EXPECT_FALSE(IsOSLaterThanElCapitan_DontCallThis());
     } else if (minor == 8) {
       EXPECT_FALSE(IsOSSnowLeopard());
       EXPECT_FALSE(IsOSLion());
@@ -182,8 +188,11 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       EXPECT_TRUE(IsOSMavericksOrEarlier());
       EXPECT_FALSE(IsOSMavericksOrLater());
       EXPECT_FALSE(IsOSYosemite());
+      EXPECT_TRUE(IsOSYosemiteOrEarlier());
       EXPECT_FALSE(IsOSYosemiteOrLater());
-      EXPECT_FALSE(IsOSLaterThanYosemite_DontCallThis());
+      EXPECT_FALSE(IsOSElCapitan());
+      EXPECT_FALSE(IsOSElCapitanOrLater());
+      EXPECT_FALSE(IsOSLaterThanElCapitan_DontCallThis());
     } else if (minor == 9) {
       EXPECT_FALSE(IsOSSnowLeopard());
       EXPECT_FALSE(IsOSLion());
@@ -196,8 +205,11 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       EXPECT_TRUE(IsOSMavericksOrEarlier());
       EXPECT_TRUE(IsOSMavericksOrLater());
       EXPECT_FALSE(IsOSYosemite());
+      EXPECT_TRUE(IsOSYosemiteOrEarlier());
       EXPECT_FALSE(IsOSYosemiteOrLater());
-      EXPECT_FALSE(IsOSLaterThanYosemite_DontCallThis());
+      EXPECT_FALSE(IsOSElCapitan());
+      EXPECT_FALSE(IsOSElCapitanOrLater());
+      EXPECT_FALSE(IsOSLaterThanElCapitan_DontCallThis());
     } else if (minor == 10) {
       EXPECT_FALSE(IsOSSnowLeopard());
       EXPECT_FALSE(IsOSLion());
@@ -210,10 +222,30 @@ TEST_F(MacUtilTest, IsOSEllipsis) {
       EXPECT_FALSE(IsOSMavericksOrEarlier());
       EXPECT_TRUE(IsOSMavericksOrLater());
       EXPECT_TRUE(IsOSYosemite());
+      EXPECT_TRUE(IsOSYosemiteOrEarlier());
       EXPECT_TRUE(IsOSYosemiteOrLater());
-      EXPECT_FALSE(IsOSLaterThanYosemite_DontCallThis());
+      EXPECT_FALSE(IsOSElCapitan());
+      EXPECT_FALSE(IsOSElCapitanOrLater());
+      EXPECT_FALSE(IsOSLaterThanElCapitan_DontCallThis());
+    } else if (minor == 11) {
+      EXPECT_FALSE(IsOSSnowLeopard());
+      EXPECT_FALSE(IsOSLion());
+      EXPECT_FALSE(IsOSLionOrEarlier());
+      EXPECT_TRUE(IsOSLionOrLater());
+      EXPECT_FALSE(IsOSMountainLion());
+      EXPECT_FALSE(IsOSMountainLionOrEarlier());
+      EXPECT_TRUE(IsOSMountainLionOrLater());
+      EXPECT_FALSE(IsOSMavericks());
+      EXPECT_FALSE(IsOSMavericksOrEarlier());
+      EXPECT_TRUE(IsOSMavericksOrLater());
+      EXPECT_FALSE(IsOSYosemite());
+      EXPECT_FALSE(IsOSYosemiteOrEarlier());
+      EXPECT_TRUE(IsOSYosemiteOrLater());
+      EXPECT_TRUE(IsOSElCapitan());
+      EXPECT_TRUE(IsOSElCapitanOrLater());
+      EXPECT_FALSE(IsOSLaterThanElCapitan_DontCallThis());
     } else {
-      // Not six, seven, eight, nine, or ten. Ah, ah, ah.
+      // Not six, seven, eight, nine, ten, or eleven. Ah, ah, ah.
       EXPECT_TRUE(false);
     }
   } else {

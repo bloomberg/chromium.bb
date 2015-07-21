@@ -145,6 +145,7 @@ BASE_EXPORT bool IsOSMavericksOrLater();
 
 // Yosemite is Mac OS X 10.10, Darwin 14.
 BASE_EXPORT bool IsOSYosemite();
+BASE_EXPORT bool IsOSYosemiteOrEarlier();
 BASE_EXPORT bool IsOSYosemiteOrLater();
 
 // El Capitan is Mac OS X 10.11, Darwin 15.
@@ -154,7 +155,7 @@ BASE_EXPORT bool IsOSElCapitanOrLater();
 // This should be infrequently used. It only makes sense to use this to avoid
 // codepaths that are very likely to break on future (unreleased, untested,
 // unborn) OS releases, or to log when the OS is newer than any known version.
-BASE_EXPORT bool IsOSLaterThanYosemite_DontCallThis();
+BASE_EXPORT bool IsOSLaterThanElCapitan_DontCallThis();
 
 // Inline functions that are redundant due to version ranges being mutually-
 // exclusive.
@@ -215,7 +216,6 @@ inline bool IsOSYosemiteOrLater() { return true; }
     MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_10
 #define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_10
 inline bool IsOSYosemite() { return false; }
-inline bool IsOSLaterThanYosemite_DontCallThis() { return true; }
 #endif
 
 #if defined(MAC_OS_X_VERSION_10_11) && \
@@ -228,6 +228,7 @@ inline bool IsOSElCapitanOrLater() { return true; }
     MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_11
 #define BASE_MAC_MAC_UTIL_H_INLINED_GT_10_11
 inline bool IsOSElCapitan() { return false; }
+inline bool IsOSLaterThanElCapitan_DontCallThis() { return true; }
 #endif
 
 // Retrieve the system's model identifier string from the IOKit registry:

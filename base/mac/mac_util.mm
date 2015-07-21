@@ -463,7 +463,7 @@ int MacOSXMinorVersionInternal() {
   // immediate death.
   CHECK(darwin_major_version >= 6);
   int mac_os_x_minor_version = darwin_major_version - 4;
-  DLOG_IF(WARNING, darwin_major_version > 14) << "Assuming Darwin "
+  DLOG_IF(WARNING, darwin_major_version > 15) << "Assuming Darwin "
       << base::IntToString(darwin_major_version) << " is Mac OS X 10."
       << base::IntToString(mac_os_x_minor_version);
 
@@ -542,12 +542,6 @@ bool IsOSYosemiteOrLater() {
 }
 #endif
 
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_10)
-bool IsOSLaterThanYosemite_DontCallThis() {
-  return MacOSXMinorVersion() > YOSEMITE_MINOR_VERSION;
-}
-#endif
-
 #if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_11)
 bool IsOSElCapitan() {
   return MacOSXMinorVersion() == EL_CAPITAN_MINOR_VERSION;
@@ -557,6 +551,12 @@ bool IsOSElCapitan() {
 #if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_11)
 bool IsOSElCapitanOrLater() {
   return MacOSXMinorVersion() >= EL_CAPITAN_MINOR_VERSION;
+}
+#endif
+
+#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_11)
+bool IsOSLaterThanElCapitan_DontCallThis() {
+  return MacOSXMinorVersion() > EL_CAPITAN_MINOR_VERSION;
 }
 #endif
 
