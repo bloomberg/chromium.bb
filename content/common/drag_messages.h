@@ -64,6 +64,3 @@ IPC_MESSAGE_ROUTED5(DragHostMsg_StartDragging,
 // |is_drop_target| is true if the mouse is over a valid drop target.
 IPC_MESSAGE_ROUTED1(DragHostMsg_UpdateDragCursor,
                     blink::WebDragOperation /* drag_operation */)
-
-// Notifies the host that the renderer finished a drop operation.
-IPC_MESSAGE_ROUTED0(DragHostMsg_TargetDrop_ACK)

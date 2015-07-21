@@ -363,7 +363,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                        const gfx::Vector2d& bitmap_offset_in_dip,
                        const DragEventSourceInfo& event_info);
   void OnUpdateDragCursor(blink::WebDragOperation drag_operation);
-  void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
   void OnFocusedNodeChanged(bool is_editable_node,
                             const gfx::Rect& node_bounds_in_viewport);

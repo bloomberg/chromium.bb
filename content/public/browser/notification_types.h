@@ -172,13 +172,6 @@ enum NotificationType {
   // painted. The source is the RenderWidgetHost, the details are not used.
   NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
 
-  // This notifies the observer that a HandleInputEventACK was received. The
-  // source is the RenderWidgetHost, the details are the type of event
-  // received.
-  // Note: The RenderWidgetHost may be deallocated at this point.
-  // Used only in testing.
-  NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
-
   // Sent from RenderViewHost::ClosePage.  The hosted RenderView has
   // processed the onbeforeunload handler and is about to be sent a
   // ViewMsg_ClosePage message to complete the tear-down process.  The source
@@ -186,11 +179,6 @@ enum NotificationType {
   // Note:  This message is not sent in response to RenderView closure
   // initiated by window.close().
   NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
-
-  // This notifies the observer that the drag operation ack in a drag and
-  // drop operation was received. The source is the RenderViewHost.
-  // Note: Used only in testing.
-  NOTIFICATION_RENDER_VIEW_HOST_DID_RECEIVE_DRAG_TARGET_DROP_ACK,
 
   // Indicates a RenderWidgetHost has been hidden or restored. The source is
   // the RWH whose visibility changed, the details is a bool set to true if
