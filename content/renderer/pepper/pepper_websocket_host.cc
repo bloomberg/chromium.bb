@@ -7,7 +7,7 @@
 #include <string>
 
 #include "content/public/renderer/renderer_ppapi_host.h"
-#include "net/base/net_util.h"
+#include "net/base/port_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/host/dispatch_host_message.h"

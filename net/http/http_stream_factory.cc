@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/port_util.h"
 #include "net/http/http_network_session.h"
 #include "url/gurl.h"
 

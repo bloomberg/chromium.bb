@@ -69,7 +69,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
-#include "net/base/net_util.h"
+#include "net/base/port_util.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"

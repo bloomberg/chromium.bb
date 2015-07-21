@@ -5,12 +5,10 @@
 #include "net/base/net_util.h"
 
 #include <errno.h>
-#include <string.h>
 
 #include <algorithm>
-#include <iterator>
 #include <limits>
-#include <set>
+#include <string>
 
 #include "build/build_config.h"
 
@@ -35,9 +33,7 @@
 
 #include "base/basictypes.h"
 #include "base/json/string_escape.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -56,7 +52,6 @@
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
-#include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_library.h"
@@ -68,84 +63,6 @@
 namespace net {
 
 namespace {
-
-// The general list of blocked ports. Will be blocked unless a specific
-// protocol overrides it. (Ex: ftp can use ports 20 and 21)
-static const int kRestrictedPorts[] = {
-  1,    // tcpmux
-  7,    // echo
-  9,    // discard
-  11,   // systat
-  13,   // daytime
-  15,   // netstat
-  17,   // qotd
-  19,   // chargen
-  20,   // ftp data
-  21,   // ftp access
-  22,   // ssh
-  23,   // telnet
-  25,   // smtp
-  37,   // time
-  42,   // name
-  43,   // nicname
-  53,   // domain
-  77,   // priv-rjs
-  79,   // finger
-  87,   // ttylink
-  95,   // supdup
-  101,  // hostriame
-  102,  // iso-tsap
-  103,  // gppitnp
-  104,  // acr-nema
-  109,  // pop2
-  110,  // pop3
-  111,  // sunrpc
-  113,  // auth
-  115,  // sftp
-  117,  // uucp-path
-  119,  // nntp
-  123,  // NTP
-  135,  // loc-srv /epmap
-  139,  // netbios
-  143,  // imap2
-  179,  // BGP
-  389,  // ldap
-  465,  // smtp+ssl
-  512,  // print / exec
-  513,  // login
-  514,  // shell
-  515,  // printer
-  526,  // tempo
-  530,  // courier
-  531,  // chat
-  532,  // netnews
-  540,  // uucp
-  556,  // remotefs
-  563,  // nntp+ssl
-  587,  // stmp?
-  601,  // ??
-  636,  // ldap+ssl
-  993,  // ldap+ssl
-  995,  // pop3+ssl
-  2049, // nfs
-  3659, // apple-sasl / PasswordServer
-  4045, // lockd
-  6000, // X11
-  6665, // Alternate IRC [Apple addition]
-  6666, // Alternate IRC [Apple addition]
-  6667, // Standard IRC [Apple addition]
-  6668, // Alternate IRC [Apple addition]
-  6669, // Alternate IRC [Apple addition]
-  0xFFFF, // Used to block all invalid port numbers (see
-          // third_party/WebKit/Source/platform/weborigin/KURL.cpp,
-          // KURL::port())
-};
-
-// FTP overrides the following restricted ports.
-static const int kAllowedFtpPorts[] = {
-  21,   // ftp data
-  22,   // ssh
-};
 
 std::string NormalizeHostname(const std::string& host) {
   std::string result = base::StringToLowerASCII(host);
@@ -170,9 +87,6 @@ bool IsLocal6Hostname(const std::string& host) {
 }
 
 }  // namespace
-
-static base::LazyInstance<std::multiset<int> >::Leaky
-    g_explicitly_allowed_ports = LAZY_INSTANCE_INITIALIZER;
 
 std::string CanonicalizeHost(const std::string& host,
                              url::CanonHostInfo* host_info) {
@@ -255,90 +169,6 @@ base::string16 StripWWW(const base::string16& text) {
 base::string16 StripWWWFromHost(const GURL& url) {
   DCHECK(url.is_valid());
   return StripWWW(base::ASCIIToUTF16(url.host()));
-}
-
-bool IsPortValid(int port) {
-  return port >= 0 && port <= std::numeric_limits<uint16_t>::max();
-}
-
-bool IsWellKnownPort(int port) {
-  return port >= 0 && port < 1024;
-}
-
-bool IsPortAllowedForScheme(int port, const std::string& url_scheme) {
-  // Reject invalid ports.
-  if (!IsPortValid(port))
-    return false;
-
-  // Allow explitly allowed ports for any scheme.
-  if (g_explicitly_allowed_ports.Get().count(port) > 0)
-    return true;
-
-  // FTP requests have an extra set of whitelisted schemes.
-  if (base::LowerCaseEqualsASCII(url_scheme, url::kFtpScheme)) {
-    for (int allowed_ftp_port : kAllowedFtpPorts) {
-      if (allowed_ftp_port == port)
-        return true;
-    }
-  }
-
-  // Finally check against the generic list of restricted ports for all
-  // schemes.
-  for (int restricted_port : kRestrictedPorts) {
-    if (restricted_port == port)
-      return false;
-  }
-
-  return true;
-}
-
-size_t GetCountOfExplicitlyAllowedPorts() {
-  return g_explicitly_allowed_ports.Get().size();
-}
-
-// Specifies a comma separated list of port numbers that should be accepted
-// despite bans. If the string is invalid no allowed ports are stored.
-void SetExplicitlyAllowedPorts(const std::string& allowed_ports) {
-  if (allowed_ports.empty())
-    return;
-
-  std::multiset<int> ports;
-  size_t last = 0;
-  size_t size = allowed_ports.size();
-  // The comma delimiter.
-  const std::string::value_type kComma = ',';
-
-  // Overflow is still possible for evil user inputs.
-  for (size_t i = 0; i <= size; ++i) {
-    // The string should be composed of only digits and commas.
-    if (i != size && !base::IsAsciiDigit(allowed_ports[i]) &&
-        (allowed_ports[i] != kComma))
-      return;
-    if (i == size || allowed_ports[i] == kComma) {
-      if (i > last) {
-        int port;
-        base::StringToInt(base::StringPiece(allowed_ports.begin() + last,
-                                            allowed_ports.begin() + i),
-                          &port);
-        ports.insert(port);
-      }
-      last = i + 1;
-    }
-  }
-  g_explicitly_allowed_ports.Get() = ports;
-}
-
-ScopedPortException::ScopedPortException(int port) : port_(port) {
-  g_explicitly_allowed_ports.Get().insert(port);
-}
-
-ScopedPortException::~ScopedPortException() {
-  std::multiset<int>::iterator it =
-      g_explicitly_allowed_ports.Get().find(port_);
-  if (it != g_explicitly_allowed_ports.Get().end())
-    g_explicitly_allowed_ports.Get().erase(it);
-  else
-    NOTREACHED();
 }
 
 int SetNonBlocking(int fd) {

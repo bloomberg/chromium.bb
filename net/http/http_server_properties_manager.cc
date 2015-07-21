@@ -14,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/ip_address_number.h"
+#include "net/base/port_util.h"
 
 namespace net {
 

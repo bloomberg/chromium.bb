@@ -10,7 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
+#include "net/base/port_util.h"
 #include "url/gurl.h"
 
 namespace net {
