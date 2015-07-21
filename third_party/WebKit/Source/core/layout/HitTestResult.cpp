@@ -457,25 +457,6 @@ bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestLocati
     return !regionFilled;
 }
 
-bool HitTestResult::addNodeToListBasedTestResult(Node* node, const HitTestLocation& locationInContainer, const FloatRect& rect)
-{
-    // If not a list-based test, this function should be a no-op.
-    if (!hitTestRequest().listBased())
-        return false;
-
-    // If node is null, return true so the hit test can continue.
-    if (!node)
-        return true;
-
-    mutableListBasedTestResult().add(node);
-
-    if (hitTestRequest().penetratingList())
-        return true;
-
-    bool regionFilled = rect.contains(locationInContainer.boundingBox());
-    return !regionFilled;
-}
-
 void HitTestResult::append(const HitTestResult& other)
 {
     ASSERT(hitTestRequest().listBased());

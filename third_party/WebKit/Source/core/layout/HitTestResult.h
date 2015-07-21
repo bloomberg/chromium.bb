@@ -140,7 +140,6 @@ public:
 
     // Return true if the test is a list-based test and we should continue testing.
     bool addNodeToListBasedTestResult(Node*, const HitTestLocation& pointInContainer, const LayoutRect& = LayoutRect());
-    bool addNodeToListBasedTestResult(Node*, const HitTestLocation& pointInContainer, const FloatRect&);
     void append(const HitTestResult&);
 
     // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return *m_listBasedTestResult. Lazy allocation makes
