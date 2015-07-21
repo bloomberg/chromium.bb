@@ -417,7 +417,6 @@ source_set("blink_headers") {
     "platform/WebDeviceLightListener.h",
     "platform/WebRTCDTMFSenderHandlerClient.h",
     "platform/WebRTCStatsRequest.h",
-    "platform/WebSerializedOrigin.h",
     "platform/WebReferrerPolicy.h",
     "web/WebDateTimeInputType.h",
     "web/WebSpeechRecognitionParams.h",

@@ -318,7 +318,6 @@
       'exported/WebScrollbarThemeGeometryNative.h',
       'exported/WebScrollbarThemePainter.cpp',
       'exported/WebSecurityOrigin.cpp',
-      'exported/WebSerializedOrigin.cpp',
       'exported/WebServicePortProviderClient.cpp',
       'exported/WebServiceWorkerProviderClient.cpp',
       'exported/WebServiceWorkerProxy.cpp',
