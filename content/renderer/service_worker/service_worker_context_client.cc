@@ -104,7 +104,7 @@ void SendPostMessageToClientOnMainThread(
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   sender->Send(new ServiceWorkerHostMsg_PostMessageToClient(
       routing_id, uuid, message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.release())));
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.Pass())));
 }
 
 void SendCrossOriginMessageToClientOnMainThread(
@@ -113,10 +113,8 @@ void SendCrossOriginMessageToClientOnMainThread(
     const base::string16& message,
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   sender->Send(new MessagePortHostMsg_PostMessage(
-      message_port_id,
-      MessagePortMessage(message),
-                         WebMessagePortChannelImpl::ExtractMessagePortIDs(
-                             channels.release())));
+      message_port_id, MessagePortMessage(message),
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.Pass())));
 }
 
 void StashMessagePortOnMainThread(ThreadSafeSender* sender,

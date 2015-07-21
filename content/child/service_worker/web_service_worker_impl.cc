@@ -66,9 +66,9 @@ blink::WebServiceWorkerState WebServiceWorkerImpl::state() const {
 void WebServiceWorkerImpl::postMessage(const WebString& message,
                                        WebMessagePortChannelArray* channels) {
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
-      handle_ref_->handle_id(),
-      message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels)));
+      handle_ref_->handle_id(), message,
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(
+          make_scoped_ptr(channels))));
 }
 
 void WebServiceWorkerImpl::terminate() {

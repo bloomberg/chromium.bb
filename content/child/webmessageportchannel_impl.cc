@@ -88,13 +88,10 @@ void WebMessagePortChannelImpl::CreatePair(
 // static
 std::vector<TransferredMessagePort>
 WebMessagePortChannelImpl::ExtractMessagePortIDs(
-    WebMessagePortChannelArray* channels) {
+    scoped_ptr<WebMessagePortChannelArray> channels) {
   std::vector<TransferredMessagePort> message_ports;
-  if (channels) {
-    // Extract the port IDs from the source array, then free it.
+  if (channels)
     message_ports = ExtractMessagePortIDs(*channels);
-    delete channels;
-  }
   return message_ports;
 }
 
@@ -177,8 +174,9 @@ void WebMessagePortChannelImpl::destroy() {
 
 void WebMessagePortChannelImpl::postMessage(
     const WebString& message_as_string,
-    WebMessagePortChannelArray* channels) {
+    WebMessagePortChannelArray* channels_ptr) {
   MessagePortMessage message(message_as_string);
+  scoped_ptr<WebMessagePortChannelArray> channels(channels_ptr);
   if (send_messages_as_values_) {
     blink::WebSerializedScriptValue serialized_value =
         blink::WebSerializedScriptValue::fromString(message_as_string);
@@ -193,17 +191,17 @@ void WebMessagePortChannelImpl::postMessage(
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WebMessagePortChannelImpl::PostMessage, this,
-                              message, channels));
+                              message, base::Passed(channels.Pass())));
   } else {
-    PostMessage(message, channels);
+    PostMessage(message, channels.Pass());
   }
 }
 
 void WebMessagePortChannelImpl::PostMessage(
     const MessagePortMessage& message,
-    WebMessagePortChannelArray* channels) {
+    scoped_ptr<WebMessagePortChannelArray> channels) {
   IPC::Message* msg = new MessagePortHostMsg_PostMessage(
-      message_port_id_, message, ExtractMessagePortIDs(channels));
+      message_port_id_, message, ExtractMessagePortIDs(channels.Pass()));
   Send(msg);
 }
 
