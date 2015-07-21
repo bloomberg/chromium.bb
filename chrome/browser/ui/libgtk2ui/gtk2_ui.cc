@@ -45,6 +45,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -1434,6 +1435,8 @@ void Gtk2UI::UpdateDeviceScaleFactor(float device_scale_factor) {
 }
 
 float Gtk2UI::GetDeviceScaleFactor() const {
+  if (gfx::Display::HasForceDeviceScaleFactor())
+    return gfx::Display::GetForcedDeviceScaleFactor();
   float scale = GetFontDPI() / GetBaseDPI();
   // Round to 1 decimal, e.g. to 1.4.
   return roundf(scale * 10) / 10;
