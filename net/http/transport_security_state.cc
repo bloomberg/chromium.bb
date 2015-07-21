@@ -575,7 +575,8 @@ void TransportSecurityState::AddHPKPInternal(const std::string& host,
                                              const base::Time& last_observed,
                                              const base::Time& expiry,
                                              bool include_subdomains,
-                                             const HashValueVector& hashes) {
+                                             const HashValueVector& hashes,
+                                             const GURL& report_uri) {
   DCHECK(CalledOnValidThread());
 
   PKPState pkp_state;
@@ -583,6 +584,7 @@ void TransportSecurityState::AddHPKPInternal(const std::string& host,
   pkp_state.expiry = expiry;
   pkp_state.include_subdomains = include_subdomains;
   pkp_state.spki_hashes = hashes;
+  pkp_state.report_uri = report_uri;
 
   EnablePKPHost(host, pkp_state);
 }
@@ -742,14 +744,17 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
   base::TimeDelta max_age;
   bool include_subdomains;
   HashValueVector spki_hashes;
+  GURL report_uri;
+
   if (!ParseHPKPHeader(value, ssl_info.public_key_hashes, &max_age,
-                       &include_subdomains, &spki_hashes)) {
+                       &include_subdomains, &spki_hashes, &report_uri)) {
     return false;
   }
   // Handle max-age == 0.
   if (max_age.InSeconds() == 0)
     spki_hashes.clear();
-  AddHPKPInternal(host, now, now + max_age, include_subdomains, spki_hashes);
+  AddHPKPInternal(host, now, now + max_age, include_subdomains, spki_hashes,
+                  report_uri);
   return true;
 }
 
@@ -763,9 +768,11 @@ void TransportSecurityState::AddHSTS(const std::string& host,
 void TransportSecurityState::AddHPKP(const std::string& host,
                                      const base::Time& expiry,
                                      bool include_subdomains,
-                                     const HashValueVector& hashes) {
+                                     const HashValueVector& hashes,
+                                     const GURL& report_uri) {
   DCHECK(CalledOnValidThread());
-  AddHPKPInternal(host, base::Time::Now(), expiry, include_subdomains, hashes);
+  AddHPKPInternal(host, base::Time::Now(), expiry, include_subdomains, hashes,
+                  report_uri);
 }
 
 // static

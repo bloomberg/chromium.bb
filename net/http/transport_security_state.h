@@ -17,6 +17,7 @@
 #include "net/base/net_export.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -129,6 +130,10 @@ class NET_EXPORT TransportSecurityState
     // The domain which matched during a search for this DomainState entry.
     // Updated by |GetDynamicPKPState| and |GetStaticDomainState|.
     std::string domain;
+
+    // An optional URI indicating where reports should be sent when this
+    // pin is violated, or empty when omitted.
+    GURL report_uri;
 
     // Takes a set of SubjectPublicKeyInfo |hashes| and returns true if:
     //   1) |bad_static_spki_hashes| does not intersect |hashes|; AND
@@ -268,7 +273,8 @@ class NET_EXPORT TransportSecurityState
   void AddHPKP(const std::string& host,
                const base::Time& expiry,
                bool include_subdomains,
-               const HashValueVector& hashes);
+               const HashValueVector& hashes,
+               const GURL& report_uri);
 
   // Returns true iff we have any static public key pins for the |host| and
   // iff its set of required pins is the set we expect for Google
@@ -325,7 +331,8 @@ class NET_EXPORT TransportSecurityState
                        const base::Time& last_observed,
                        const base::Time& expiry,
                        bool include_subdomains,
-                       const HashValueVector& hashes);
+                       const HashValueVector& hashes,
+                       const GURL& report_uri);
 
   // Enable TransportSecurity for |host|. |state| supercedes any previous
   // state for the |host|, including static entries.

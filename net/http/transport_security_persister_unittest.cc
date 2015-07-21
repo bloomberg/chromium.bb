@@ -19,6 +19,8 @@ namespace net {
 
 namespace {
 
+const char kReportUri[] = "http://www.example.test/report";
+
 class TransportSecurityPersisterTest : public testing::Test {
  public:
   TransportSecurityPersisterTest() {
@@ -86,6 +88,7 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
 }
 
 TEST_F(TransportSecurityPersisterTest, SerializeData3) {
+  const GURL report_uri(kReportUri);
   // Add an entry.
   HashValue fp1(HASH_VALUE_SHA1);
   memset(fp1.data(), 0, fp1.size());
@@ -99,7 +102,7 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   bool include_subdomains = false;
   state_.AddHSTS("www.example.com", expiry, include_subdomains);
   state_.AddHPKP("www.example.com", expiry, include_subdomains,
-                 dynamic_spki_hashes);
+                 dynamic_spki_hashes, report_uri);
 
   // Add another entry.
   memset(fp1.data(), 2, fp1.size());
@@ -110,7 +113,7 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   dynamic_spki_hashes.push_back(fp2);
   state_.AddHSTS("www.example.net", expiry, include_subdomains);
   state_.AddHPKP("www.example.net", expiry, include_subdomains,
-                 dynamic_spki_hashes);
+                 dynamic_spki_hashes, report_uri);
 
   // Save a copy of everything.
   std::set<std::string> sts_saved;
@@ -180,9 +183,11 @@ TEST_F(TransportSecurityPersisterTest, SerializeDataOld) {
   EXPECT_TRUE(dirty);
 }
 
-TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
+TEST_F(TransportSecurityPersisterTest, PublicKeyPins) {
+  const GURL report_uri(kReportUri);
   TransportSecurityState::PKPState pkp_state;
   static const char kTestDomain[] = "example.com";
+
   EXPECT_FALSE(state_.GetDynamicPKPState(kTestDomain, &pkp_state));
   HashValueVector hashes;
   std::string failure_log;
@@ -204,8 +209,8 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   bool include_subdomains = false;
   state_.AddHSTS(kTestDomain, expiry, include_subdomains);
-  state_.AddHPKP(kTestDomain, expiry, include_subdomains,
-                 pkp_state.spki_hashes);
+  state_.AddHPKP(kTestDomain, expiry, include_subdomains, pkp_state.spki_hashes,
+                 report_uri);
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
   bool dirty;
@@ -217,6 +222,7 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   EXPECT_EQ(sha1.tag, new_pkp_state.spki_hashes[0].tag);
   EXPECT_EQ(
       0, memcmp(new_pkp_state.spki_hashes[0].data(), sha1.data(), sha1.size()));
+  EXPECT_EQ(report_uri, new_pkp_state.report_uri);
 }
 
 }  // namespace

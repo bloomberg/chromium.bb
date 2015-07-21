@@ -152,6 +152,7 @@ static void TestBogusPinsHeaders(HashValueTag tag) {
   bool include_subdomains;
   HashValueVector hashes;
   HashValueVector chain_hashes;
+  GURL report_uri;
 
   // Set some fake "chain" hashes
   chain_hashes.push_back(GetTestHashValue(1, tag));
@@ -164,77 +165,103 @@ static void TestBogusPinsHeaders(HashValueTag tag) {
   std::string backup_pin = GetTestPin(4, tag);
 
   EXPECT_FALSE(ParseHPKPHeader(std::string(), chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("    ", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("abc", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("  abc", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("  abc   ", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("max-age", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("  max-age", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("  max-age  ", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("max-age=", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("   max-age=", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("   max-age  =", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("   max-age=   ", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("   max-age  =     ", chain_hashes,
-                               &max_age, &include_subdomains, &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("   max-age  =     xy", chain_hashes,
-                               &max_age, &include_subdomains, &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("   max-age  =     3488a923",
+                               &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("   max-age  =     ", chain_hashes, &max_age,
+                               &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("   max-age  =     xy", chain_hashes, &max_age,
+                               &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("   max-age  =     3488a923", chain_hashes,
+                               &max_age, &include_subdomains, &hashes,
+                               &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("max-age=3488a923  ", chain_hashes, &max_age,
+                               &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader(
+      "max-ag=3488923pins=" + good_pin + "," + backup_pin, chain_hashes,
+      &max_age, &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("max-age=3488923;pins=" + good_pin + "," +
+                                   backup_pin + "report-uri=\"http://foo.com\"",
                                chain_hashes, &max_age, &include_subdomains,
-                               &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("max-age=3488a923  ", chain_hashes,
-                               &max_age, &include_subdomains, &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("max-ag=3488923pins=" + good_pin + "," +
-                               backup_pin,
+                               &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923" + backup_pin, chain_hashes,
+                               &max_age, &include_subdomains, &hashes,
+                               &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923; " + backup_pin, chain_hashes,
+                               &max_age, &include_subdomains, &hashes,
+                               &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader(
+      "max-aged=3488923; " + backup_pin + ";" + backup_pin, chain_hashes,
+      &max_age, &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923; " + good_pin + ";" + good_pin,
                                chain_hashes, &max_age, &include_subdomains,
-                               &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923" + backup_pin,
-                               chain_hashes, &max_age, &include_subdomains,
-                               &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923; " + backup_pin,
-                               chain_hashes, &max_age, &include_subdomains,
-                               &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923; " + backup_pin + ";" +
-                               backup_pin,
-                               chain_hashes, &max_age, &include_subdomains,
-                               &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923; " + good_pin + ";" +
-                               good_pin,
-                               chain_hashes, &max_age, &include_subdomains,
-                               &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923; " + good_pin,
-                               chain_hashes, &max_age, &include_subdomains,
-                               &hashes));
+                               &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("max-aged=3488923; " + good_pin, chain_hashes,
+                               &max_age, &include_subdomains, &hashes,
+                               &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("max-age==3488923", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("amax-age=3488923", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("max-age=-3488923", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("max-age=3488923;", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
-  EXPECT_FALSE(ParseHPKPHeader("max-age=3488923     e", chain_hashes,
-                               &max_age, &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("max-age=3488923     e", chain_hashes, &max_age,
+                               &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("max-age=3488923     includesubdomain",
                                chain_hashes, &max_age, &include_subdomains,
-                               &hashes));
+                               &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader(
+      "max-age=3488923     report-uri=\"http://foo.com\"", chain_hashes,
+      &max_age, &include_subdomains, &hashes, &report_uri));
   EXPECT_FALSE(ParseHPKPHeader("max-age=34889.23", chain_hashes, &max_age,
-                               &include_subdomains, &hashes));
-  EXPECT_FALSE(
-      ParseHPKPHeader("max-age=243; " + good_pin_unquoted + ";" + backup_pin,
-                      chain_hashes, &max_age, &include_subdomains, &hashes));
+                               &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader(
+      "max-age=243; " + good_pin_unquoted + ";" + backup_pin, chain_hashes,
+      &max_age, &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader(
+      "max-age=243; " + good_pin + ";" + backup_pin + ";report-uri=;",
+      chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader("max-age=243; " + good_pin + ";" + backup_pin +
+                                   ";report-uri=http://foo.com;",
+                               chain_hashes, &max_age, &include_subdomains,
+                               &hashes, &report_uri));
+  EXPECT_FALSE(ParseHPKPHeader(
+      "max-age=243; " + good_pin + ";" + backup_pin + ";report-uri=''",
+      chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
+
+  // Test that the parser rejects misquoted strings.
+  EXPECT_FALSE(ParseHPKPHeader("max-age=999; " + backup_pin + "; " + good_pin +
+                                   "; report-uri=\"http://foo;bar\'",
+                               chain_hashes, &max_age, &include_subdomains,
+                               &hashes, &report_uri));
+
+  // Test that the parser rejects invalid report-uris.
+  EXPECT_FALSE(ParseHPKPHeader("max-age=999; " + backup_pin + "; " + good_pin +
+                                   "; report-uri=\"foo;bar\'",
+                               chain_hashes, &max_age, &include_subdomains,
+                               &hashes, &report_uri));
 
   // Check the out args were not updated by checking the default
   // values for its predictable fields.
@@ -405,6 +432,8 @@ static void TestValidPKPHeaders(HashValueTag tag) {
   bool include_subdomains;
   HashValueVector hashes;
   HashValueVector chain_hashes;
+  GURL expect_report_uri;
+  GURL report_uri;
 
   // Set some fake "chain" hashes into chain_hashes
   chain_hashes.push_back(GetTestHashValue(1, tag));
@@ -416,45 +445,59 @@ static void TestValidPKPHeaders(HashValueTag tag) {
   std::string good_pin2 = GetTestPin(3, tag);
   std::string backup_pin = GetTestPin(4, tag);
 
-  EXPECT_TRUE(ParseHPKPHeader(
-      "max-age=243; " + good_pin + ";" + backup_pin,
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+  EXPECT_TRUE(ParseHPKPHeader("max-age=243; " + good_pin + ";" + backup_pin,
+                              chain_hashes, &max_age, &include_subdomains,
+                              &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(243);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
+  EXPECT_TRUE(report_uri.is_empty());
 
-  EXPECT_TRUE(ParseHPKPHeader(
-      "   " + good_pin + "; " + backup_pin + "  ; Max-agE    = 567",
-      chain_hashes, &max_age, &include_subdomains, &hashes));
-  expect_max_age = base::TimeDelta::FromSeconds(567);
+  EXPECT_TRUE(ParseHPKPHeader("max-age=243; " + good_pin + ";" + backup_pin +
+                                  "; report-uri= \"http://example.test/foo\"",
+                              chain_hashes, &max_age, &include_subdomains,
+                              &hashes, &report_uri));
+  expect_max_age = base::TimeDelta::FromSeconds(243);
+  expect_report_uri = GURL("http://example.test/foo");
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
+  EXPECT_EQ(expect_report_uri, report_uri);
 
   EXPECT_TRUE(ParseHPKPHeader(
-      "includeSubDOMAINS;" + good_pin + ";" + backup_pin +
-      "  ; mAx-aGe    = 890      ",
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+      "   " + good_pin + "; " + backup_pin +
+          "  ; Max-agE    = 567; repOrT-URi = \"http://example.test/foo\"",
+      chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
+  expect_max_age = base::TimeDelta::FromSeconds(567);
+  expect_report_uri = GURL("http://example.test/foo");
+  EXPECT_EQ(expect_max_age, max_age);
+  EXPECT_FALSE(include_subdomains);
+  EXPECT_EQ(expect_report_uri, report_uri);
+
+  EXPECT_TRUE(ParseHPKPHeader("includeSubDOMAINS;" + good_pin + ";" +
+                                  backup_pin + "  ; mAx-aGe    = 890      ",
+                              chain_hashes, &max_age, &include_subdomains,
+                              &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(890);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
   EXPECT_TRUE(ParseHPKPHeader(
-      good_pin + ";" + backup_pin + "; max-age=123;IGNORED;",
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+      good_pin + ";" + backup_pin + "; max-age=123;IGNORED;", chain_hashes,
+      &max_age, &include_subdomains, &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(123);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
   EXPECT_TRUE(ParseHPKPHeader(
-      "max-age=394082;" + backup_pin + ";" + good_pin + ";  ",
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+      "max-age=394082;" + backup_pin + ";" + good_pin + ";  ", chain_hashes,
+      &max_age, &include_subdomains, &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(394082);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
   EXPECT_TRUE(ParseHPKPHeader(
-      "max-age=39408299  ;" + backup_pin + ";" + good_pin + ";  ",
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+      "max-age=39408299  ;" + backup_pin + ";" + good_pin + ";  ", chain_hashes,
+      &max_age, &include_subdomains, &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(
       std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(39408299))));
   EXPECT_EQ(expect_max_age, max_age);
@@ -463,22 +506,22 @@ static void TestValidPKPHeaders(HashValueTag tag) {
   EXPECT_TRUE(ParseHPKPHeader(
       "max-age=39408038  ;    cybers=39408038  ;  includeSubdomains; " +
           good_pin + ";" + backup_pin + ";   ",
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+      chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(
       std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
-  EXPECT_TRUE(ParseHPKPHeader(
-      "  max-age=0  ;  " + good_pin + ";" + backup_pin,
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+  EXPECT_TRUE(ParseHPKPHeader("  max-age=0  ;  " + good_pin + ";" + backup_pin,
+                              chain_hashes, &max_age, &include_subdomains,
+                              &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(0);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
   EXPECT_TRUE(ParseHPKPHeader(
       "  max-age=0 ; includeSubdomains;  " + good_pin + ";" + backup_pin,
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+      chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(0);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
@@ -486,22 +529,77 @@ static void TestValidPKPHeaders(HashValueTag tag) {
   EXPECT_TRUE(ParseHPKPHeader(
       "  max-age=999999999999999999999999999999999999999999999  ;  " +
           backup_pin + ";" + good_pin + ";   ",
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+      chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
   expect_max_age = base::TimeDelta::FromSeconds(kMaxHSTSAgeSecs);
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
+  EXPECT_TRUE(ParseHPKPHeader(
+      "  max-age=999999999999999999999999999999999999999999999  ;  " +
+          backup_pin + ";" + good_pin +
+          ";   report-uri=\"http://example.test/foo\"",
+      chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
+  expect_max_age = base::TimeDelta::FromSeconds(kMaxHSTSAgeSecs);
+  expect_report_uri = GURL("http://example.test/foo");
+  EXPECT_EQ(expect_max_age, max_age);
+  EXPECT_FALSE(include_subdomains);
+  EXPECT_EQ(expect_report_uri, report_uri);
+
   // Test that parsing a different header resets the hashes.
   hashes.clear();
   EXPECT_TRUE(ParseHPKPHeader(
-      "  max-age=999;  " +
-          backup_pin + ";" + good_pin + ";   ",
-      chain_hashes, &max_age, &include_subdomains, &hashes));
+      "  max-age=999;  " + backup_pin + ";" + good_pin + ";   ", chain_hashes,
+      &max_age, &include_subdomains, &hashes, &report_uri));
   EXPECT_EQ(2u, hashes.size());
   EXPECT_TRUE(ParseHPKPHeader(
       "  max-age=999;  " + backup_pin + ";" + good_pin2 + ";   ", chain_hashes,
-      &max_age, &include_subdomains, &hashes));
+      &max_age, &include_subdomains, &hashes, &report_uri));
   EXPECT_EQ(2u, hashes.size());
+
+  // Test that the parser correctly parses an unencoded ';' inside a
+  // quoted report-uri.
+  EXPECT_TRUE(ParseHPKPHeader("max-age=999; " + backup_pin + "; " + good_pin +
+                                  "; report-uri=\"http://foo.com/?;bar\"",
+                              chain_hashes, &max_age, &include_subdomains,
+                              &hashes, &report_uri));
+  expect_max_age = base::TimeDelta::FromSeconds(999);
+  expect_report_uri = GURL("http://foo.com/?;bar");
+  EXPECT_EQ(expect_max_age, max_age);
+  EXPECT_FALSE(include_subdomains);
+  EXPECT_EQ(expect_report_uri, report_uri);
+
+  // Test that the parser correctly parses a report-uri with a >0x7f
+  // character.
+  std::string uri = "http://foo.com/";
+  uri += char(0x7f);
+  expect_report_uri = GURL(uri);
+  EXPECT_TRUE(ParseHPKPHeader("max-age=999; " + backup_pin + "; " + good_pin +
+                                  "; report-uri=\"" + uri + "\"",
+                              chain_hashes, &max_age, &include_subdomains,
+                              &hashes, &report_uri));
+  expect_max_age = base::TimeDelta::FromSeconds(999);
+  EXPECT_EQ(expect_max_age, max_age);
+  EXPECT_FALSE(include_subdomains);
+  EXPECT_EQ(expect_report_uri, report_uri);
+
+  // Test that the parser allows quoted max-age values.
+  EXPECT_TRUE(ParseHPKPHeader("max-age='999'; " + backup_pin + "; " + good_pin,
+                              chain_hashes, &max_age, &include_subdomains,
+                              &hashes, &report_uri));
+  expect_max_age = base::TimeDelta::FromSeconds(999);
+  EXPECT_EQ(expect_max_age, max_age);
+  EXPECT_FALSE(include_subdomains);
+
+  // Test that the parser handles escaped values.
+  expect_report_uri = GURL("http://foo.com'a");
+  EXPECT_TRUE(ParseHPKPHeader("max-age=999; " + backup_pin + "; " + good_pin +
+                                  "; report-uri='http://foo.com\\'\\a'",
+                              chain_hashes, &max_age, &include_subdomains,
+                              &hashes, &report_uri));
+  expect_max_age = base::TimeDelta::FromSeconds(999);
+  EXPECT_EQ(expect_max_age, max_age);
+  EXPECT_FALSE(include_subdomains);
+  EXPECT_EQ(expect_report_uri, report_uri);
 }
 
 TEST_F(HttpSecurityHeadersTest, BogusPinsHeadersSHA1) {
@@ -538,7 +636,9 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   HashValue backup_hash = GetTestHashValue(2, HASH_VALUE_SHA1);
   std::string good_pin = GetTestPin(1, HASH_VALUE_SHA1);
   std::string backup_pin = GetTestPin(2, HASH_VALUE_SHA1);
-  std::string header = "max-age = 10000; " + good_pin + "; " + backup_pin;
+  GURL report_uri("http://google.com");
+  std::string header = "max-age = 10000; " + good_pin + "; " + backup_pin +
+                       ";report-uri=\"" + report_uri.spec() + "\"";
 
   // Construct a fake SSLInfo that will pass AddHPKPHeader's checks.
   SSLInfo ssl_info;
@@ -560,6 +660,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   TransportSecurityState::PKPState dynamic_pkp_state;
   EXPECT_TRUE(state.GetDynamicPKPState(domain, &dynamic_pkp_state));
   EXPECT_EQ(2UL, dynamic_pkp_state.spki_hashes.size());
+  EXPECT_EQ(report_uri, dynamic_pkp_state.report_uri);
 
   HashValueVector::const_iterator hash = std::find_if(
       dynamic_pkp_state.spki_hashes.begin(),
@@ -583,6 +684,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   TransportSecurityState::PKPState new_dynamic_pkp_state;
   EXPECT_TRUE(state.GetDynamicPKPState(domain, &new_dynamic_pkp_state));
   EXPECT_EQ(2UL, new_dynamic_pkp_state.spki_hashes.size());
+  EXPECT_EQ(report_uri, new_dynamic_pkp_state.report_uri);
 
   hash = std::find_if(new_dynamic_pkp_state.spki_hashes.begin(),
                       new_dynamic_pkp_state.spki_hashes.end(),

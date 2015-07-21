@@ -43,40 +43,6 @@ static size_t FindStringEnd(const std::string& line, size_t start, char delim) {
 // HttpUtil -------------------------------------------------------------------
 
 // static
-size_t HttpUtil::FindDelimiter(const std::string& line,
-                               size_t search_start,
-                               char delimiter) {
-  do {
-    // search_start points to the spot from which we should start looking
-    // for the delimiter.
-    const char delim_str[] = { delimiter, '"', '\'', '\0' };
-    size_t cur_delim_pos = line.find_first_of(delim_str, search_start);
-    if (cur_delim_pos == std::string::npos)
-      return line.length();
-
-    char ch = line[cur_delim_pos];
-    if (ch == delimiter) {
-      // Found delimiter
-      return cur_delim_pos;
-    }
-
-    // We hit the start of a quoted string.  Look for its end.
-    search_start = FindStringEnd(line, cur_delim_pos, ch);
-    if (search_start == line.length())
-      return search_start;
-
-    ++search_start;
-
-    // search_start now points to the first char after the end of the
-    // string, so just go back to the top of the loop and look for
-    // |delimiter| again.
-  } while (true);
-
-  NOTREACHED();
-  return line.length();
-}
-
-// static
 void HttpUtil::ParseContentType(const std::string& content_type_str,
                                 std::string* mime_type,
                                 std::string* charset,
@@ -889,15 +855,22 @@ bool HttpUtil::ValuesIterator::GetNext() {
 HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
     std::string::const_iterator begin,
     std::string::const_iterator end,
-    char delimiter)
+    char delimiter,
+    OptionalValues optional_values)
     : props_(begin, end, delimiter),
       valid_(true),
       name_begin_(end),
       name_end_(end),
       value_begin_(end),
       value_end_(end),
-      value_is_quoted_(false) {
-}
+      value_is_quoted_(false),
+      values_optional_(optional_values == VALUES_OPTIONAL) {}
+
+HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
+    std::string::const_iterator begin,
+    std::string::const_iterator end,
+    char delimiter)
+    : NameValuePairsIterator(begin, end, delimiter, VALUES_NOT_OPTIONAL) {}
 
 HttpUtil::NameValuePairsIterator::~NameValuePairsIterator() {}
 
@@ -907,7 +880,7 @@ HttpUtil::NameValuePairsIterator::~NameValuePairsIterator() {}
 //   name='\'value\''
 //   name=value
 //   name = value
-//   name=
+//   name (if values_optional_ is true)
 // Due to buggy implementations found in some embedded devices, we also
 // accept values with missing close quotemark (http://crbug.com/39836):
 //   name="value
@@ -922,26 +895,32 @@ bool HttpUtil::NameValuePairsIterator::GetNext() {
 
   // Scan for the equals sign.
   std::string::const_iterator equals = std::find(value_begin_, value_end_, '=');
-  if (equals == value_end_ || equals == value_begin_)
-    return valid_ = false;  // Malformed, no equals sign
+  if (equals == value_begin_)
+    return valid_ = false;  // Malformed, no name
+  if (equals == value_end_ && !values_optional_)
+    return valid_ = false;  // Malformed, no equals sign and values are required
 
-  // Verify that the equals sign we found wasn't inside of quote marks.
-  for (std::string::const_iterator it = value_begin_; it != equals; ++it) {
-    if (HttpUtil::IsQuote(*it))
-      return valid_ = false;  // Malformed, quote appears before equals sign
+  // If an equals sign was found, verify that it wasn't inside of quote marks.
+  if (equals != value_end_) {
+    for (std::string::const_iterator it = value_begin_; it != equals; ++it) {
+      if (HttpUtil::IsQuote(*it))
+        return valid_ = false;  // Malformed, quote appears before equals sign
+    }
   }
 
   name_begin_ = value_begin_;
   name_end_ = equals;
-  value_begin_ = equals + 1;
+  value_begin_ = (equals == value_end_) ? value_end_ : equals + 1;
 
   TrimLWS(&name_begin_, &name_end_);
   TrimLWS(&value_begin_, &value_end_);
   value_is_quoted_ = false;
   unquoted_value_.clear();
 
-  if (value_begin_ == value_end_)
-    return valid_ = false;  // Malformed, value is empty
+  if (equals != value_end_ && value_begin_ == value_end_) {
+    // Malformed; value is empty
+    return valid_ = false;
+  }
 
   if (HttpUtil::IsQuote(*value_begin_)) {
     // Trim surrounding quotemarks off the value
