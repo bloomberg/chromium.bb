@@ -5,7 +5,7 @@
 {
   'variables': {
     'chromium_code': 1,
-   },
+  },
   'targets': [
     {
       'target_name': 'ios_chrome_app',
@@ -141,6 +141,8 @@
         'browser/chrome_url_constants.h',
         'browser/chrome_url_util.h',
         'browser/chrome_url_util.mm',
+        'browser/content_settings/cookie_settings_factory.cc',
+        'browser/content_settings/cookie_settings_factory.h',
         'browser/crash_loop_detection_util.h',
         'browser/crash_loop_detection_util.mm',
         'browser/crash_report/breakpad_helper.h',
@@ -151,8 +153,6 @@
         'browser/crash_report/crash_report_multi_parameter.mm',
         'browser/crash_report/crash_report_user_application_state.h',
         'browser/crash_report/crash_report_user_application_state.mm',
-        'browser/content_settings/cookie_settings_factory.cc',
-        'browser/content_settings/cookie_settings_factory.h',
         'browser/dom_distiller/distiller_viewer.cc',
         'browser/dom_distiller/distiller_viewer.h',
         'browser/dom_distiller/dom_distiller_service_factory.cc',
@@ -254,6 +254,8 @@
         'browser/net/metrics_network_client_manager.mm',
         'browser/net/retryable_url_fetcher.h',
         'browser/net/retryable_url_fetcher.mm',
+        'browser/omnibox/omnibox_event_global_tracker.cc',
+        'browser/omnibox/omnibox_event_global_tracker.h',
         'browser/passwords/password_generation_utils.h',
         'browser/passwords/password_generation_utils.mm',
         'browser/pref_names.cc',
