@@ -18,6 +18,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/ink_drop_animation_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -31,6 +32,18 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
       show_menu_factory_(this) {
+#if defined(OS_CHROMEOS)
+  // The ink drop animation is only targeted at ChromeOS because there is
+  // concern it will conflict with OS level touch feedback in a bad way.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    ink_drop_animation_controller_.reset(
+        new views::InkDropAnimationController(this));
+    layer()->SetFillsBoundsOpaquely(false);
+    image()->SetPaintToLayer(true);
+    image()->SetFillsBoundsOpaquely(false);
+  }
+#endif  // defined(OS_CHROMEOS)
+
   set_context_menu_controller(this);
 }
 
@@ -147,6 +160,21 @@ scoped_ptr<views::LabelButtonBorder>
 ToolbarButton::CreateDefaultBorder() const {
   scoped_ptr<views::LabelButtonBorder> border =
       LabelButton::CreateDefaultBorder();
+
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // The material design spec does not include a visual effect for the
+    // STATE_HOVERED button state so we have to remove the default one added by
+    // LabelButton::CreateDefaultBorder().
+    border->SetPainter(true, Button::STATE_HOVERED, nullptr);
+    border->SetPainter(false, Button::STATE_HOVERED, nullptr);
+
+#if defined(OS_CHROMEOS)
+    // The default STATE_PRESSED painters need to be removed so that they do not
+    // conflict with the ink drop ripple effect.
+    border->SetPainter(true, Button::STATE_PRESSED, nullptr);
+    border->SetPainter(false, Button::STATE_PRESSED, nullptr);
+#endif  // defined(OS_CHROMEOS)
+  }
 
   ui::ThemeProvider* provider = GetThemeProvider();
   if (provider && provider->UsingSystemTheme()) {

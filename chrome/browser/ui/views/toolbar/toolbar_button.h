@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -14,6 +15,7 @@ class MenuModel;
 }
 
 namespace views {
+class InkDropAnimationController;
 class MenuRunner;
 }
 
@@ -80,6 +82,9 @@ class ToolbarButton : public views::LabelButton,
 
   // Menu runner to display drop down menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // Animation controller for the ink drop ripple effect.
+  scoped_ptr<views::InkDropAnimationController> ink_drop_animation_controller_;
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_;
