@@ -41,19 +41,24 @@ struct msm_ringbuffer {
 
 	struct list_head submit_list;
 
-	/* bo's table: */
-	struct drm_msm_gem_submit_bo *bos;
-	uint32_t nr_bos, max_bos;
+	/* submit ioctl related tables: */
+	struct {
+		/* bo's table: */
+		struct drm_msm_gem_submit_bo *bos;
+		uint32_t nr_bos, max_bos;
 
-	/* cmd's table: */
-	struct drm_msm_gem_submit_cmd *cmds;
-	uint32_t nr_cmds, max_cmds;
+		/* cmd's table: */
+		struct drm_msm_gem_submit_cmd *cmds;
+		uint32_t nr_cmds, max_cmds;
+
+		/* reloc's table: */
+		struct drm_msm_gem_submit_reloc *relocs;
+		uint32_t nr_relocs, max_relocs;
+	} submit;
+
+	/* should have matching entries in submit.cmds: */
 	struct fd_ringbuffer **rings;
 	uint32_t nr_rings, max_rings;
-
-	/* reloc's table: */
-	struct drm_msm_gem_submit_reloc *relocs;
-	uint32_t nr_relocs, max_relocs;
 };
 
 static void *grow(void *ptr, uint32_t nr, uint32_t *max, uint32_t sz)
@@ -87,10 +92,10 @@ static uint32_t bo2idx(struct fd_ringbuffer *ring, struct fd_bo *bo, uint32_t fl
 	uint32_t idx;
 	if (!msm_bo->indexp1[id]) {
 		struct list_head *list = &msm_bo->list[id];
-		idx = APPEND(msm_ring, bos);
-		msm_ring->bos[idx].flags = 0;
-		msm_ring->bos[idx].handle = bo->handle;
-		msm_ring->bos[idx].presumed = msm_bo->presumed;
+		idx = APPEND(&msm_ring->submit, bos);
+		msm_ring->submit.bos[idx].flags = 0;
+		msm_ring->submit.bos[idx].handle = bo->handle;
+		msm_ring->submit.bos[idx].presumed = msm_bo->presumed;
 		msm_bo->indexp1[id] = idx + 1;
 
 		assert(LIST_IS_EMPTY(list));
@@ -100,9 +105,9 @@ static uint32_t bo2idx(struct fd_ringbuffer *ring, struct fd_bo *bo, uint32_t fl
 		idx = msm_bo->indexp1[id] - 1;
 	}
 	if (flags & FD_RELOC_READ)
-		msm_ring->bos[idx].flags |= MSM_SUBMIT_BO_READ;
+		msm_ring->submit.bos[idx].flags |= MSM_SUBMIT_BO_READ;
 	if (flags & FD_RELOC_WRITE)
-		msm_ring->bos[idx].flags |= MSM_SUBMIT_BO_WRITE;
+		msm_ring->submit.bos[idx].flags |= MSM_SUBMIT_BO_WRITE;
 	return idx;
 }
 
@@ -110,7 +115,7 @@ static int check_cmd_bo(struct fd_ringbuffer *ring,
 		struct drm_msm_gem_submit_cmd *cmd, struct fd_bo *bo)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
-	return msm_ring->bos[cmd->submit_idx].handle == bo->handle;
+	return msm_ring->submit.bos[cmd->submit_idx].handle == bo->handle;
 }
 
 static uint32_t offset_bytes(void *end, void *start)
@@ -127,8 +132,8 @@ static struct drm_msm_gem_submit_cmd * get_cmd(struct fd_ringbuffer *ring,
 	uint32_t i;
 
 	/* figure out if we already have a cmd buf: */
-	for (i = 0; i < msm_ring->nr_cmds; i++) {
-		cmd = &msm_ring->cmds[i];
+	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
+		cmd = &msm_ring->submit.cmds[i];
 		if ((cmd->submit_offset == submit_offset) &&
 				(cmd->size == size) &&
 				(cmd->type == type) &&
@@ -139,10 +144,10 @@ static struct drm_msm_gem_submit_cmd * get_cmd(struct fd_ringbuffer *ring,
 
 	/* create cmd buf if not: */
 	if (!cmd) {
-		uint32_t idx = APPEND(msm_ring, cmds);
+		uint32_t idx = APPEND(&msm_ring->submit, cmds);
 		APPEND(msm_ring, rings);
 		msm_ring->rings[idx] = target_ring;
-		cmd = &msm_ring->cmds[idx];
+		cmd = &msm_ring->submit.cmds[idx];
 		cmd->type = type;
 		cmd->submit_idx = bo2idx(ring, target_bo, FD_RELOC_READ);
 		cmd->submit_offset = submit_offset;
@@ -165,8 +170,8 @@ static uint32_t find_next_reloc_idx(struct msm_ringbuffer *msm_ring,
 	uint32_t i;
 
 	/* a binary search would be more clever.. */
-	for (i = start; i < msm_ring->nr_relocs; i++) {
-		struct drm_msm_gem_submit_reloc *reloc = &msm_ring->relocs[i];
+	for (i = start; i < msm_ring->submit.nr_relocs; i++) {
+		struct drm_msm_gem_submit_reloc *reloc = &msm_ring->submit.relocs[i];
 		if (reloc->submit_offset >= offset)
 			return i;
 	}
@@ -180,14 +185,14 @@ static void flush_reset(struct fd_ringbuffer *ring)
 	unsigned i;
 
 	/* for each of the cmd buffers, clear their reloc's: */
-	for (i = 0; i < msm_ring->nr_cmds; i++) {
+	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 		struct msm_ringbuffer *target_ring = to_msm_ringbuffer(msm_ring->rings[i]);
-		target_ring->nr_relocs = 0;
+		target_ring->submit.nr_relocs = 0;
 	}
 
-	msm_ring->nr_relocs = 0;
-	msm_ring->nr_cmds = 0;
-	msm_ring->nr_bos = 0;
+	msm_ring->submit.nr_relocs = 0;
+	msm_ring->submit.nr_cmds = 0;
+	msm_ring->submit.nr_bos = 0;
 }
 
 static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start)
@@ -207,18 +212,18 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 	get_cmd(ring, ring, ring_bo, submit_offset, size, MSM_SUBMIT_CMD_BUF);
 
 	/* needs to be after get_cmd() as that could create bos/cmds table: */
-	req.bos = VOID2U64(msm_ring->bos),
-	req.nr_bos = msm_ring->nr_bos;
-	req.cmds = VOID2U64(msm_ring->cmds),
-	req.nr_cmds = msm_ring->nr_cmds;
+	req.bos = VOID2U64(msm_ring->submit.bos),
+	req.nr_bos = msm_ring->submit.nr_bos;
+	req.cmds = VOID2U64(msm_ring->submit.cmds),
+	req.nr_cmds = msm_ring->submit.nr_cmds;
 
 	/* for each of the cmd's fix up their reloc's: */
-	for (i = 0; i < msm_ring->nr_cmds; i++) {
-		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->cmds[i];
+	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
+		struct drm_msm_gem_submit_cmd *cmd = &msm_ring->submit.cmds[i];
 		struct msm_ringbuffer *target_ring = to_msm_ringbuffer(msm_ring->rings[i]);
 		uint32_t a = find_next_reloc_idx(target_ring, 0, cmd->submit_offset);
 		uint32_t b = find_next_reloc_idx(target_ring, a, cmd->submit_offset + cmd->size);
-		cmd->relocs = VOID2U64(&target_ring->relocs[a]);
+		cmd->relocs = VOID2U64(&target_ring->submit.relocs[a]);
 		cmd->nr_relocs = (b > a) ? b - a : 0;
 	}
 
@@ -230,7 +235,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 		ERROR_MSG("submit failed: %d (%s)", ret, strerror(errno));
 	} else {
 		/* update timestamp on all rings associated with submit: */
-		for (i = 0; i < msm_ring->nr_cmds; i++) {
+		for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 			struct fd_ringbuffer *target_ring = msm_ring->rings[i];
 			if (!ret)
 				target_ring->last_timestamp = req.fence;
@@ -261,10 +266,10 @@ static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 	struct fd_ringbuffer *parent = ring->parent ? ring->parent : ring;
 	struct msm_bo *msm_bo = to_msm_bo(r->bo);
 	struct drm_msm_gem_submit_reloc *reloc;
-	uint32_t idx = APPEND(msm_ring, relocs);
+	uint32_t idx = APPEND(&msm_ring->submit, relocs);
 	uint32_t addr;
 
-	reloc = &msm_ring->relocs[idx];
+	reloc = &msm_ring->submit.relocs[idx];
 
 	reloc->reloc_idx = bo2idx(parent, r->bo, r->flags);
 	reloc->reloc_offset = r->offset;
