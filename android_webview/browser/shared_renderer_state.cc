@@ -338,7 +338,6 @@ void SharedRendererState::InitializeHardwareDrawIfNeededOnUI() {
   base::AutoLock lock(lock_);
   if (renderer_manager_key_ == manager->NullKey()) {
     renderer_manager_key_ = manager->PushBack(this);
-    DeferredGpuCommandService::SetInstance();
   }
 }
 

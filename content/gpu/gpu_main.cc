@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -355,12 +356,14 @@ int GpuMain(const MainFunctionParams& parameters) {
   scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory =
       GpuMemoryBufferFactory::Create(
           GpuChildThread::GetGpuMemoryBufferFactoryType());
+  gpu::SyncPointManager sync_point_manager(false);
 
   GpuProcess gpu_process;
 
   GpuChildThread* child_thread = new GpuChildThread(
       watchdog_thread.get(), dead_on_arrival, gpu_info, deferred_messages.Get(),
-      gpu_memory_buffer_factory.get());
+      gpu_memory_buffer_factory.get(),
+      &sync_point_manager);
   while (!deferred_messages.Get().empty())
     deferred_messages.Get().pop();
 

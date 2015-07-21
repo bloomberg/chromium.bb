@@ -69,16 +69,14 @@ void OnscreenContextProvider::CreateAndReturnCommandBuffer() {
   mojo::CommandBufferPtr cb;
   scoped_ptr<gles2::CommandBufferDriver> command_buffer_driver(
       new gles2::CommandBufferDriver(
-          widget_, state_->share_group(), state_->mailbox_manager(),
-          state_->sync_point_manager(),
+          widget_, state_,
           base::Bind(&OnscreenContextProvider::CommandBufferDestroyed,
                      base::Unretained(this))));
   command_buffers_.insert(command_buffer_driver.get());
 
-  command_buffer_impl_ = new gles2::CommandBufferImpl(
-      GetProxy(&cb), pending_listener_.Pass(), state_->control_task_runner(),
-      state_->sync_point_manager(),
-      command_buffer_driver.Pass());
+  command_buffer_impl_ =
+      new gles2::CommandBufferImpl(GetProxy(&cb), pending_listener_.Pass(),
+                                   state_, command_buffer_driver.Pass());
   command_buffer_impl_->set_observer(this);
   pending_create_callback_.Run(cb.Pass());
   pending_create_callback_.reset();

@@ -9,27 +9,19 @@
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "gpu/gpu_export.h"
 
-namespace base {
-class SequenceChecker;
-}
-
 namespace gpu {
 
 // This class manages the sync points, which allow cross-channel
 // synchronization.
-class GPU_EXPORT SyncPointManager
-    : public base::RefCountedThreadSafe<SyncPointManager> {
+class GPU_EXPORT SyncPointManager {
  public:
-  // InProcessCommandBuffer allows threaded calls since it can call into
-  // SyncPointManager from client threads, or from multiple service threads
-  // used in Android WebView.
-  static SyncPointManager* Create(bool allow_threaded_calls_and_wait);
+  explicit SyncPointManager(bool allow_threaded_wait);
+  ~SyncPointManager();
 
   // Generates a sync point, returning its ID. This can me called on any thread.
   // IDs start at a random number. Never return 0.
@@ -49,28 +41,22 @@ class GPU_EXPORT SyncPointManager
 
   // Block and wait until a sync point is signaled. This is only useful when
   // the sync point is signaled on another thread.
-  void ThreadedWaitSyncPoint(uint32 sync_point);
+  void WaitSyncPoint(uint32 sync_point);
 
  private:
-  friend class base::RefCountedThreadSafe<SyncPointManager>;
   typedef std::vector<base::Closure> ClosureList;
   typedef base::hash_map<uint32, ClosureList> SyncPointMap;
 
-  explicit SyncPointManager(bool allow_threaded_calls);
-  ~SyncPointManager();
-  void CheckSequencedThread();
 
-  const bool allow_threaded_calls_and_wait_;
-  scoped_ptr<base::SequenceChecker> sequence_checker_;
+  bool IsSyncPointRetiredLocked(uint32 sync_point);
+
+  const bool allow_threaded_wait_;
 
   // Protects the 2 fields below. Note: callbacks shouldn't be called with this
   // held.
   base::Lock lock_;
   SyncPointMap sync_point_map_;
   uint32 next_sync_point_;
-
-  // Used to handle condition variable based wait.
-  base::Lock retire_lock_;
   base::ConditionVariable retire_cond_var_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointManager);

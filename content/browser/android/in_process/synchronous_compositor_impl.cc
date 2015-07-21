@@ -13,6 +13,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_registry.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input_messages.h"
@@ -43,6 +44,11 @@ int GetInProcessRendererId() {
 
 base::LazyInstance<SynchronousCompositorFactoryImpl>::Leaky g_factory =
     LAZY_INSTANCE_INITIALIZER;
+
+base::Thread* CreateInProcessGpuThreadForSynchronousCompositor(
+    const InProcessChildThreadParams& params) {
+  return g_factory.Get().CreateInProcessGpuThread(params);
+}
 
 }  // namespace
 
@@ -132,6 +138,8 @@ void SynchronousCompositorImpl::RegisterWithClient() {
 void SynchronousCompositor::SetGpuService(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   g_factory.Get().SetDeferredGpuService(service);
+  GpuProcessHost::RegisterGpuMainThreadFactory(
+      CreateInProcessGpuThreadForSynchronousCompositor);
 }
 
 // static

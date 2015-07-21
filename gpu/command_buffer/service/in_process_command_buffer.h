@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/gpu_export.h"
@@ -46,6 +47,7 @@ class StreamTextureManagerInProcess;
 #endif
 
 namespace gpu {
+class SyncPointManager;
 class ValueStateMap;
 
 namespace gles2 {
@@ -142,6 +144,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     virtual bool UseVirtualizedGLContexts() = 0;
     virtual scoped_refptr<gles2::ShaderTranslatorCache>
         shader_translator_cache() = 0;
+    virtual SyncPointManager* sync_point_manager() = 0;
     scoped_refptr<gfx::GLShareGroup> share_group();
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
     scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set();
@@ -259,6 +262,32 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessCommandBuffer);
+};
+
+// Default Service class when a null service is used.
+class GPU_EXPORT GpuInProcessThread
+    : public base::Thread,
+      public NON_EXPORTED_BASE(InProcessCommandBuffer::Service),
+      public base::RefCountedThreadSafe<GpuInProcessThread> {
+ public:
+  explicit GpuInProcessThread(SyncPointManager* sync_point_manager);
+
+  void AddRef() const override;
+  void Release() const override;
+  void ScheduleTask(const base::Closure& task) override;
+  void ScheduleIdleWork(const base::Closure& callback) override;
+  bool UseVirtualizedGLContexts() override;
+  scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache()
+      override;
+  SyncPointManager* sync_point_manager() override;
+
+ private:
+  ~GpuInProcessThread() override;
+  friend class base::RefCountedThreadSafe<GpuInProcessThread>;
+
+  SyncPointManager* sync_point_manager_;  // Non-owning.
+  scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
+  DISALLOW_COPY_AND_ASSIGN(GpuInProcessThread);
 };
 
 }  // namespace gpu

@@ -6,6 +6,7 @@
 #define COMPONENTS_VIEW_MANAGER_GLES2_GPU_STATE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
@@ -42,7 +43,7 @@ class GpuState : public base::RefCounted<GpuState> {
   ~GpuState();
 
   base::Thread control_thread_;
-  scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
+  scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
 };

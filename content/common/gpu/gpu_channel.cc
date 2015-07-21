@@ -82,7 +82,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
  public:
   GpuChannelMessageFilter(
       base::WeakPtr<GpuChannel> gpu_channel,
-      scoped_refptr<gpu::SyncPointManager> sync_point_manager,
+      gpu::SyncPointManager* sync_point_manager,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool future_sync_points)
       : preemption_state_(IDLE),
@@ -367,7 +367,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
 
   static void InsertSyncPointOnMainThread(
       base::WeakPtr<GpuChannel> gpu_channel,
-      scoped_refptr<gpu::SyncPointManager> manager,
+      gpu::SyncPointManager* manager,
       int32 routing_id,
       bool retire,
       uint32 sync_point) {
@@ -396,7 +396,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   // passed through - therefore the WeakPtr assumptions are respected.
   base::WeakPtr<GpuChannel> gpu_channel_;
   IPC::Sender* sender_;
-  scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
+  gpu::SyncPointManager* sync_point_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<gpu::PreemptionFlag> preempting_flag_;
 

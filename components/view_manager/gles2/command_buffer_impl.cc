@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/view_manager/gles2/command_buffer_driver.h"
 #include "components/view_manager/gles2/command_buffer_impl_observer.h"
+#include "components/view_manager/gles2/gpu_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 
 namespace gles2 {
@@ -39,10 +40,9 @@ class CommandBufferImpl::CommandBufferDriverClientImpl
 CommandBufferImpl::CommandBufferImpl(
     mojo::InterfaceRequest<mojo::CommandBuffer> request,
     mojo::ViewportParameterListenerPtr listener,
-    scoped_refptr<base::SingleThreadTaskRunner> control_task_runner,
-    gpu::SyncPointManager* sync_point_manager,
+    scoped_refptr<GpuState> gpu_state,
     scoped_ptr<CommandBufferDriver> driver)
-    : sync_point_manager_(sync_point_manager),
+    : gpu_state_(gpu_state),
       driver_task_runner_(base::MessageLoop::current()->task_runner()),
       driver_(driver.Pass()),
       viewport_parameter_listener_(listener.Pass()),
@@ -50,7 +50,7 @@ CommandBufferImpl::CommandBufferImpl(
       observer_(nullptr) {
   driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(this)));
 
-  control_task_runner->PostTask(
+  gpu_state_->control_task_runner()->PostTask(
       FROM_HERE, base::Bind(&CommandBufferImpl::BindToRequest,
                             base::Unretained(this), base::Passed(&request)));
 }
@@ -104,19 +104,22 @@ void CommandBufferImpl::DestroyTransferBuffer(int32_t id) {
 }
 
 void CommandBufferImpl::InsertSyncPoint(bool retire) {
-  uint32_t sync_point = sync_point_manager_->GenerateSyncPoint();
+  uint32_t sync_point = gpu_state_->sync_point_manager()->GenerateSyncPoint();
   sync_point_client_->DidInsertSyncPoint(sync_point);
   if (retire) {
     driver_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&gpu::SyncPointManager::RetireSyncPoint,
-                              sync_point_manager_, sync_point));
+        FROM_HERE,
+        base::Bind(&gpu::SyncPointManager::RetireSyncPoint,
+                   base::Unretained(gpu_state_->sync_point_manager()),
+                   sync_point));
   }
 }
 
 void CommandBufferImpl::RetireSyncPoint(uint32_t sync_point) {
   driver_task_runner_->PostTask(
       FROM_HERE, base::Bind(&gpu::SyncPointManager::RetireSyncPoint,
-                            sync_point_manager_, sync_point));
+                            base::Unretained(gpu_state_->sync_point_manager()),
+                            sync_point));
 }
 
 void CommandBufferImpl::Echo(const mojo::Callback<void()>& callback) {

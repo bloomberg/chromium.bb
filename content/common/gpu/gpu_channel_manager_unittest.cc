@@ -11,6 +11,7 @@
 #include "content/common/message_router.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ipc/ipc_sync_channel.h"
 
@@ -110,9 +111,10 @@ class SimpleGpuClient : public IPC::SimpleWorker {
 
   void Start() override {
     IPC::SimpleWorker::Start();
-    gpu_channel_manager_.reset(
-        new GpuChannelManager(&router_, NULL, ipc_thread().task_runner().get(),
-                              shutdown_event(), channel(), nullptr, nullptr));
+    sync_point_manager_.reset(new gpu::SyncPointManager(false));
+    gpu_channel_manager_.reset(new GpuChannelManager(
+        &router_, NULL, ipc_thread().task_runner().get(), shutdown_event(),
+        channel(), nullptr, sync_point_manager_.get(), nullptr));
   }
 
   void Shutdown() override {
@@ -139,6 +141,7 @@ class SimpleGpuClient : public IPC::SimpleWorker {
 
   SimpleMessageRouter router_;
 
+  scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_ptr<GpuChannelManager> gpu_channel_manager_;
 };
 

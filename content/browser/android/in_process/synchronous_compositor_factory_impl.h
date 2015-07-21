@@ -12,6 +12,10 @@
 #include "content/renderer/media/android/stream_texture_factory_synchronous_impl.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
 
+namespace base {
+class Thread;
+}
+
 namespace gpu {
 class GLInProcessContext;
 }
@@ -21,6 +25,8 @@ class WebGraphicsContext3DInProcessCommandBufferImpl;
 }
 
 namespace content {
+
+class InProcessChildThreadParams;
 
 class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
  public:
@@ -55,6 +61,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   void SetDeferredGpuService(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
+  base::Thread* CreateInProcessGpuThread(
+      const InProcessChildThreadParams& params);
   void SetRecordFullDocument(bool record_full_document);
   void CompositorInitializedHardwareDraw();
   void CompositorReleasedHardwareDraw();
@@ -66,10 +74,12 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       TryCreateStreamTextureFactory();
   void RestoreContextOnMainThread();
+  scoped_refptr<gpu::InProcessCommandBuffer::Service> GpuThreadService();
 
   SynchronousInputEventFilter synchronous_input_event_filter_;
 
-  scoped_refptr<gpu::InProcessCommandBuffer::Service> service_;
+  scoped_refptr<gpu::InProcessCommandBuffer::Service> android_view_service_;
+  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_thread_service_;
 
   class VideoContextProvider;
   scoped_refptr<VideoContextProvider> video_context_provider_;

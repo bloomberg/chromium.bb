@@ -19,20 +19,19 @@ namespace gpu {
 class CommandBufferService;
 class GpuScheduler;
 class GpuControlService;
-class SyncPointManager;
 namespace gles2 {
 class GLES2Decoder;
-class MailboxManager;
 }
 }
 
 namespace gfx {
 class GLContext;
-class GLShareGroup;
 class GLSurface;
 }
 
 namespace gles2 {
+
+class GpuState;
 
 // This class receives CommandBuffer messages on the same thread as the native
 // viewport.
@@ -46,15 +45,12 @@ class CommandBufferDriver {
     virtual void DidLoseContext() = 0;
   };
   // Offscreen.
-  CommandBufferDriver(gfx::GLShareGroup* share_group,
-                      gpu::gles2::MailboxManager* mailbox_manager,
-                      gpu::SyncPointManager* sync_point_manager);
+  explicit CommandBufferDriver(scoped_refptr<GpuState> gpu_state);
+
   // Onscreen.
   CommandBufferDriver(
       gfx::AcceleratedWidget widget,
-      gfx::GLShareGroup* share_group,
-      gpu::gles2::MailboxManager* mailbox_manager,
-      gpu::SyncPointManager* sync_point_manager,
+      scoped_refptr<GpuState> gpu_state,
       const base::Callback<void(CommandBufferDriver*)>& destruct_callback);
   ~CommandBufferDriver();
 
@@ -104,9 +100,7 @@ class CommandBufferDriver {
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
-  scoped_refptr<gfx::GLShareGroup> share_group_;
-  scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
-  scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
+  scoped_refptr<GpuState> gpu_state_;
 
   scoped_refptr<base::SingleThreadTaskRunner> context_lost_task_runner_;
   base::Callback<void(int32_t)> context_lost_callback_;

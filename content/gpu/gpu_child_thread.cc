@@ -116,9 +116,11 @@ GpuChildThread::GpuChildThread(
     bool dead_on_arrival,
     const gpu::GPUInfo& gpu_info,
     const DeferredMessages& deferred_messages,
-    GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+    GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    gpu::SyncPointManager* sync_point_manager)
     : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
       dead_on_arrival_(dead_on_arrival),
+      sync_point_manager_(sync_point_manager),
       gpu_info_(gpu_info),
       deferred_messages_(deferred_messages),
       in_browser_process_(false),
@@ -132,13 +134,15 @@ GpuChildThread::GpuChildThread(
 
 GpuChildThread::GpuChildThread(
     const InProcessChildThreadParams& params,
-    GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+    GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    gpu::SyncPointManager* sync_point_manager)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
                           .AddStartupFilter(new GpuMemoryBufferMessageFilter(
                               gpu_memory_buffer_factory))
                           .Build()),
       dead_on_arrival_(false),
+      sync_point_manager_(sync_point_manager),
       in_browser_process_(true),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
 #if defined(OS_WIN)
@@ -245,7 +249,8 @@ void GpuChildThread::OnInitialize() {
       GetRouter(), watchdog_thread_.get(),
       ChildProcess::current()->io_task_runner(),
       ChildProcess::current()->GetShutDownEvent(), channel(),
-      GetAttachmentBroker(), gpu_memory_buffer_factory_));
+      GetAttachmentBroker(), sync_point_manager_,
+      gpu_memory_buffer_factory_));
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()

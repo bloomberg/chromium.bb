@@ -15,17 +15,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
-namespace gfx {
-class GLShareGroup;
-}
-
-namespace gpu {
-class SyncPointManager;
-namespace gles2 {
-class MailboxManager;
-}
-}
-
 namespace gles2 {
 
 class GpuImpl : public mojo::Gpu {

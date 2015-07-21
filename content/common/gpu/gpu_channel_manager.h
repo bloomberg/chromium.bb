@@ -68,6 +68,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                     base::WaitableEvent* shutdown_event,
                     IPC::SyncChannel* channel,
                     IPC::AttachmentBroker* broker,
+                    gpu::SyncPointManager* sync_point_manager,
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory);
   ~GpuChannelManager() override;
 
@@ -97,7 +98,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   GpuChannel* LookupChannel(int32 client_id);
 
   gpu::SyncPointManager* sync_point_manager() {
-    return sync_point_manager_.get();
+    return sync_point_manager_;
   }
 
   gfx::GLSurface* GetDefaultOffscreenSurface();
@@ -153,7 +154,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   GpuMemoryManager gpu_memory_manager_;
   GpuWatchdog* watchdog_;
-  scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
+  // SyncPointManager guaranteed to outlive running MessageLoop.
+  gpu::SyncPointManager* sync_point_manager_;
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;

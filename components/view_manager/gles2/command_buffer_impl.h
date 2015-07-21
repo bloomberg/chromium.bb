@@ -11,13 +11,10 @@
 #include "components/view_manager/public/interfaces/viewport_parameter_listener.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
-namespace gpu {
-class SyncPointManager;
-}
-
 namespace gles2 {
 class CommandBufferDriver;
 class CommandBufferImplObserver;
+class GpuState;
 
 // This class listens to the CommandBuffer message pipe on a low-latency thread
 // so that we can insert sync points without blocking on the GL driver. It
@@ -25,12 +22,10 @@ class CommandBufferImplObserver;
 // same thread as the native viewport.
 class CommandBufferImpl : public mojo::CommandBuffer {
  public:
-  CommandBufferImpl(
-      mojo::InterfaceRequest<CommandBuffer> request,
-      mojo::ViewportParameterListenerPtr listener,
-      scoped_refptr<base::SingleThreadTaskRunner> control_task_runner,
-      gpu::SyncPointManager* sync_point_manager,
-      scoped_ptr<CommandBufferDriver> driver);
+  CommandBufferImpl(mojo::InterfaceRequest<CommandBuffer> request,
+                    mojo::ViewportParameterListenerPtr listener,
+                    scoped_refptr<GpuState> gpu_state,
+                    scoped_ptr<CommandBufferDriver> driver);
 
   // mojo::CommandBuffer:
   void Initialize(mojo::CommandBufferSyncClientPtr sync_client,
@@ -75,7 +70,7 @@ class CommandBufferImpl : public mojo::CommandBuffer {
 
   void OnConnectionError();
 
-  scoped_refptr<gpu::SyncPointManager> sync_point_manager_;
+  scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<base::SingleThreadTaskRunner> driver_task_runner_;
   scoped_ptr<CommandBufferDriver> driver_;
   mojo::CommandBufferSyncPointClientPtr sync_point_client_;

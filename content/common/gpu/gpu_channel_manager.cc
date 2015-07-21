@@ -39,6 +39,7 @@ GpuChannelManager::GpuChannelManager(
     base::WaitableEvent* shutdown_event,
     IPC::SyncChannel* channel,
     IPC::AttachmentBroker* broker,
+    gpu::SyncPointManager* sync_point_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : io_task_runner_(io_task_runner),
       shutdown_event_(shutdown_event),
@@ -47,7 +48,7 @@ GpuChannelManager::GpuChannelManager(
           this,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
       watchdog_(watchdog),
-      sync_point_manager_(gpu::SyncPointManager::Create(false)),
+      sync_point_manager_(sync_point_manager),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       channel_(channel),
       relinquish_resources_pending_(false),

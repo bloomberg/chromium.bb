@@ -143,6 +143,15 @@ DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
   return new DevToolsChannelData(res.release());
 }
 
+void RunOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                 const base::Closure& callback) {
+  if (task_runner->BelongsToCurrentThread()) {
+    callback.Run();
+  } else {
+    task_runner->PostTask(FROM_HERE, callback);
+  }
+}
+
 }  // namespace
 
 GpuCommandBufferStub::GpuCommandBufferStub(
@@ -896,8 +905,10 @@ bool GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
   scheduler_->SetScheduled(false);
   ++sync_point_wait_count_;
   manager->sync_point_manager()->AddSyncPointCallback(
-      sync_point, base::Bind(&GpuCommandBufferStub::OnWaitSyncPointCompleted,
-                             this->AsWeakPtr(), sync_point));
+      sync_point,
+      base::Bind(&RunOnThread, base::ThreadTaskRunnerHandle::Get(),
+                 base::Bind(&GpuCommandBufferStub::OnWaitSyncPointCompleted,
+                            this->AsWeakPtr(), sync_point)));
   return scheduler_->IsScheduled();
 }
 
@@ -922,9 +933,9 @@ void GpuCommandBufferStub::OnSignalSyncPoint(uint32 sync_point, uint32 id) {
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   manager->sync_point_manager()->AddSyncPointCallback(
       sync_point,
-      base::Bind(&GpuCommandBufferStub::OnSignalSyncPointAck,
-                 this->AsWeakPtr(),
-                 id));
+      base::Bind(&RunOnThread, base::ThreadTaskRunnerHandle::Get(),
+                 base::Bind(&GpuCommandBufferStub::OnSignalSyncPointAck,
+                            this->AsWeakPtr(), id)));
 }
 
 void GpuCommandBufferStub::OnSignalSyncPointAck(uint32 id) {

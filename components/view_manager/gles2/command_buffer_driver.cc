@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "components/view_manager/gles2/command_buffer_type_conversions.h"
+#include "components/view_manager/gles2/gpu_state.h"
 #include "components/view_manager/gles2/mojo_buffer_backing.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/value_state.h"
@@ -55,28 +56,18 @@ class MemoryTrackerStub : public gpu::gles2::MemoryTracker {
 CommandBufferDriver::Client::~Client() {
 }
 
-CommandBufferDriver::CommandBufferDriver(
-    gfx::GLShareGroup* share_group,
-    gpu::gles2::MailboxManager* mailbox_manager,
-    gpu::SyncPointManager* sync_point_manager)
+CommandBufferDriver::CommandBufferDriver(scoped_refptr<GpuState> gpu_state)
     : CommandBufferDriver(gfx::kNullAcceleratedWidget,
-                          share_group,
-                          mailbox_manager,
-                          sync_point_manager,
-                          base::Callback<void(CommandBufferDriver*)>()) {
-}
+                          gpu_state,
+                          base::Callback<void(CommandBufferDriver*)>()) {}
 
 CommandBufferDriver::CommandBufferDriver(
     gfx::AcceleratedWidget widget,
-    gfx::GLShareGroup* share_group,
-    gpu::gles2::MailboxManager* mailbox_manager,
-    gpu::SyncPointManager* sync_point_manager,
+    scoped_refptr<GpuState> gpu_state,
     const base::Callback<void(CommandBufferDriver*)>& destruct_callback)
     : client_(nullptr),
       widget_(widget),
-      share_group_(share_group),
-      mailbox_manager_(mailbox_manager),
-      sync_point_manager_(sync_point_manager),
+      gpu_state_(gpu_state),
       destruct_callback_(destruct_callback),
       weak_factory_(this) {
 }
@@ -132,8 +123,8 @@ bool CommandBufferDriver::DoInitialize(
     return false;
 
   // TODO(piman): virtual contexts, gpu preference.
-  context_ = gfx::GLContext::CreateGLContext(share_group_.get(), surface_.get(),
-                                             gfx::PreferIntegratedGpu);
+  context_ = gfx::GLContext::CreateGLContext(
+      gpu_state_->share_group(), surface_.get(), gfx::PreferIntegratedGpu);
   if (!context_.get())
     return false;
 
@@ -145,7 +136,7 @@ bool CommandBufferDriver::DoInitialize(
   bool bind_generates_resource = false;
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
       new gpu::gles2::ContextGroup(
-          mailbox_manager_.get(), new MemoryTrackerStub,
+          gpu_state_->mailbox_manager(), new MemoryTrackerStub,
           new gpu::gles2::ShaderTranslatorCache, nullptr, nullptr, nullptr,
           bind_generates_resource);
 
@@ -337,10 +328,10 @@ void CommandBufferDriver::OnResize(gfx::Size size, float scale_factor) {
 bool CommandBufferDriver::OnWaitSyncPoint(uint32_t sync_point) {
   if (!sync_point)
     return true;
-  if (sync_point_manager_->IsSyncPointRetired(sync_point))
+  if (gpu_state_->sync_point_manager()->IsSyncPointRetired(sync_point))
     return true;
   scheduler_->SetScheduled(false);
-  sync_point_manager_->AddSyncPointCallback(
+  gpu_state_->sync_point_manager()->AddSyncPointCallback(
       sync_point, base::Bind(&CommandBufferDriver::OnSyncPointRetired,
                              weak_factory_.GetWeakPtr()));
   return scheduler_->IsScheduled();

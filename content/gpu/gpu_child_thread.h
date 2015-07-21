@@ -22,6 +22,10 @@
 #include "gpu/config/gpu_info.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace gpu {
+class SyncPointManager;
+}
+
 namespace sandbox {
 class TargetServices;
 }
@@ -42,10 +46,12 @@ class GpuChildThread : public ChildThreadImpl {
                  bool dead_on_arrival,
                  const gpu::GPUInfo& gpu_info,
                  const DeferredMessages& deferred_messages,
-                 GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+                 GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+                 gpu::SyncPointManager* sync_point_manager);
 
   GpuChildThread(const InProcessChildThreadParams& params,
-                 GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+                 GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+                 gpu::SyncPointManager* sync_point_manager);
 
   ~GpuChildThread() override;
 
@@ -87,6 +93,9 @@ class GpuChildThread : public ChildThreadImpl {
   // Windows specific client sandbox interface.
   sandbox::TargetServices* target_services_;
 #endif
+
+  // Non-owning.
+  gpu::SyncPointManager* sync_point_manager_;
 
   scoped_ptr<GpuChannelManager> gpu_channel_manager_;
 

@@ -17,7 +17,6 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -60,61 +59,11 @@ static void RunTaskWithResult(base::Callback<T(void)> task,
   completion->Signal();
 }
 
-class GpuInProcessThread
-    : public base::Thread,
-      public InProcessCommandBuffer::Service,
-      public base::RefCountedThreadSafe<GpuInProcessThread> {
- public:
-  GpuInProcessThread();
-
-  void AddRef() const override {
-    base::RefCountedThreadSafe<GpuInProcessThread>::AddRef();
-  }
-  void Release() const override {
-    base::RefCountedThreadSafe<GpuInProcessThread>::Release();
-  }
-
-  void ScheduleTask(const base::Closure& task) override;
-  void ScheduleIdleWork(const base::Closure& callback) override;
-  bool UseVirtualizedGLContexts() override { return false; }
-  scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache()
-      override;
-
- private:
-  ~GpuInProcessThread() override;
-  friend class base::RefCountedThreadSafe<GpuInProcessThread>;
-
-  scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
-  DISALLOW_COPY_AND_ASSIGN(GpuInProcessThread);
-};
-
-GpuInProcessThread::GpuInProcessThread() : base::Thread("GpuThread") {
-  Start();
-}
-
-GpuInProcessThread::~GpuInProcessThread() {
-  Stop();
-}
-
-void GpuInProcessThread::ScheduleTask(const base::Closure& task) {
-  task_runner()->PostTask(FROM_HERE, task);
-}
-
-void GpuInProcessThread::ScheduleIdleWork(const base::Closure& callback) {
-  // Match delay with GpuCommandBufferStub.
-  task_runner()->PostDelayedTask(FROM_HERE, callback,
-                                 base::TimeDelta::FromMilliseconds(2));
-}
-
-scoped_refptr<gles2::ShaderTranslatorCache>
-GpuInProcessThread::shader_translator_cache() {
-  if (!shader_translator_cache_.get())
-    shader_translator_cache_ = new gpu::gles2::ShaderTranslatorCache;
-  return shader_translator_cache_;
-}
-
 struct GpuInProcessThreadHolder {
-  GpuInProcessThreadHolder() : gpu_thread(new GpuInProcessThread) {}
+  GpuInProcessThreadHolder()
+      : sync_point_manager(new SyncPointManager(false)),
+        gpu_thread(new GpuInProcessThread(sync_point_manager.get())) {}
+  scoped_ptr<SyncPointManager> sync_point_manager;
   scoped_refptr<InProcessCommandBuffer::Service> gpu_thread;
 };
 
@@ -129,16 +78,6 @@ class ScopedEvent {
  private:
   base::WaitableEvent* event_;
 };
-
-// This wrapper adds the WaitSyncPoint which allows waiting on a sync point
-// on the service thread, implemented using a condition variable.
-struct SyncPointManagerWrapper {
-  SyncPointManagerWrapper() : manager(SyncPointManager::Create(true)) {}
-  const scoped_refptr<SyncPointManager> manager;
-};
-
-base::LazyInstance<SyncPointManagerWrapper> g_sync_point_manager =
-    LAZY_INSTANCE_INITIALIZER;
 
 base::SharedMemoryHandle ShareToGpuThread(
     base::SharedMemoryHandle source_handle) {
@@ -784,7 +723,7 @@ int32 InProcessCommandBuffer::CreateGpuMemoryBufferImage(
 }
 
 uint32 InProcessCommandBuffer::InsertSyncPoint() {
-  uint32 sync_point = g_sync_point_manager.Get().manager->GenerateSyncPoint();
+  uint32 sync_point = service_->sync_point_manager()->GenerateSyncPoint();
   QueueTask(base::Bind(&InProcessCommandBuffer::RetireSyncPointOnGpuThread,
                        base::Unretained(this),
                        sync_point));
@@ -792,7 +731,7 @@ uint32 InProcessCommandBuffer::InsertSyncPoint() {
 }
 
 uint32 InProcessCommandBuffer::InsertFutureSyncPoint() {
-  return g_sync_point_manager.Get().manager->GenerateSyncPoint();
+  return service_->sync_point_manager()->GenerateSyncPoint();
 }
 
 void InProcessCommandBuffer::RetireSyncPoint(uint32 sync_point) {
@@ -813,7 +752,7 @@ void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
     if (make_current_success)
       mailbox_manager->PushTextureUpdates(sync_point);
   }
-  g_sync_point_manager.Get().manager->RetireSyncPoint(sync_point);
+  service_->sync_point_manager()->RetireSyncPoint(sync_point);
 }
 
 void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
@@ -826,7 +765,7 @@ void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
 }
 
 bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
-  g_sync_point_manager.Get().manager->ThreadedWaitSyncPoint(sync_point);
+  service_->sync_point_manager()->WaitSyncPoint(sync_point);
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();
   mailbox_manager->PullTextureUpdates(sync_point);
@@ -836,8 +775,7 @@ bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
 void InProcessCommandBuffer::SignalSyncPointOnGpuThread(
     unsigned sync_point,
     const base::Closure& callback) {
-  g_sync_point_manager.Get().manager->AddSyncPointCallback(sync_point,
-                                                           callback);
+  service_->sync_point_manager()->AddSyncPointCallback(sync_point, callback);
 }
 
 void InProcessCommandBuffer::SignalQuery(unsigned query_id,
@@ -949,5 +887,46 @@ InProcessCommandBuffer::GetSurfaceTexture(uint32 stream_id) {
   return stream_texture_manager_->GetSurfaceTexture(stream_id);
 }
 #endif
+
+GpuInProcessThread::GpuInProcessThread(SyncPointManager* sync_point_manager)
+    : base::Thread("GpuThread"), sync_point_manager_(sync_point_manager) {
+  Start();
+}
+
+GpuInProcessThread::~GpuInProcessThread() {
+  Stop();
+}
+
+void GpuInProcessThread::AddRef() const {
+  base::RefCountedThreadSafe<GpuInProcessThread>::AddRef();
+}
+void GpuInProcessThread::Release() const {
+  base::RefCountedThreadSafe<GpuInProcessThread>::Release();
+}
+
+void GpuInProcessThread::ScheduleTask(const base::Closure& task) {
+  task_runner()->PostTask(FROM_HERE, task);
+}
+
+void GpuInProcessThread::ScheduleIdleWork(const base::Closure& callback) {
+  // Match delay with GpuCommandBufferStub.
+  task_runner()->PostDelayedTask(FROM_HERE, callback,
+                                 base::TimeDelta::FromMilliseconds(2));
+}
+
+bool GpuInProcessThread::UseVirtualizedGLContexts() {
+  return false;
+}
+
+scoped_refptr<gles2::ShaderTranslatorCache>
+GpuInProcessThread::shader_translator_cache() {
+  if (!shader_translator_cache_.get())
+    shader_translator_cache_ = new gpu::gles2::ShaderTranslatorCache;
+  return shader_translator_cache_;
+}
+
+SyncPointManager* GpuInProcessThread::sync_point_manager() {
+  return sync_point_manager_;
+}
 
 }  // namespace gpu
