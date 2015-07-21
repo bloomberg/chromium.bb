@@ -180,12 +180,16 @@ def BuildScript(status, context):
         bot_path = os.path.join(nacl_tmp, bot)
         print 'Cleaning prior build temp dir: %s' % bot_path
         sys.stdout.flush()
-        for d in os.listdir(bot_path):
-          path = os.path.join(bot_path, d)
-          print 'Removing leftover: %s' % path
-          sys.stdout.flush()
-          RemovePath(path)
-        os.rmdir(bot_path)
+        if os.path.isdir(bot_path):
+          for d in os.listdir(bot_path):
+            path = os.path.join(bot_path, d)
+            print 'Removing leftover: %s' % path
+            sys.stdout.flush()
+            RemovePath(path)
+          os.rmdir(bot_path)
+        else:
+          print 'Removing rogue file: %s' % bot_path
+          RemovePath(bot_path)
       os.rmdir(nacl_tmp)
     # Clean /tmp so we get a list of what's accumulating.
     TryToCleanContents(tmp_dir, file_name_filter)
