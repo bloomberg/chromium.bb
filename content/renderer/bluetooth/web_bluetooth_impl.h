@@ -23,6 +23,7 @@ class CONTENT_EXPORT WebBluetoothImpl
     : NON_EXPORTED_BASE(public blink::WebBluetooth) {
  public:
   explicit WebBluetoothImpl(ThreadSafeSender* thread_safe_sender);
+  WebBluetoothImpl(ThreadSafeSender* thread_safe_sender, int frame_routing_id);
   ~WebBluetoothImpl();
 
   // blink::WebBluetooth interface:
@@ -48,7 +49,8 @@ class CONTENT_EXPORT WebBluetoothImpl
  private:
   BluetoothDispatcher* GetDispatcher();
 
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  const scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  const int frame_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebBluetoothImpl);
 };

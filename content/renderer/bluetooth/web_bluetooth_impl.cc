@@ -6,12 +6,17 @@
 
 #include "content/child/thread_safe_sender.h"
 #include "content/renderer/bluetooth/bluetooth_dispatcher.h"
+#include "ipc/ipc_message.h"
 
 namespace content {
 
 WebBluetoothImpl::WebBluetoothImpl(ThreadSafeSender* thread_safe_sender)
-    : thread_safe_sender_(thread_safe_sender) {
-}
+    : WebBluetoothImpl(thread_safe_sender, MSG_ROUTING_NONE) {}
+
+WebBluetoothImpl::WebBluetoothImpl(ThreadSafeSender* thread_safe_sender,
+                                   int frame_routing_id)
+    : thread_safe_sender_(thread_safe_sender),
+      frame_routing_id_(frame_routing_id) {}
 
 WebBluetoothImpl::~WebBluetoothImpl() {
 }
@@ -19,7 +24,7 @@ WebBluetoothImpl::~WebBluetoothImpl() {
 void WebBluetoothImpl::requestDevice(
     const blink::WebRequestDeviceOptions& options,
     blink::WebBluetoothRequestDeviceCallbacks* callbacks) {
-  GetDispatcher()->requestDevice(options, callbacks);
+  GetDispatcher()->requestDevice(frame_routing_id_, options, callbacks);
 }
 
 void WebBluetoothImpl::connectGATT(const blink::WebString& device_instance_id,

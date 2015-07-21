@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -135,8 +136,9 @@ blink::WebBluetoothError TranslateGATTError(
 
 namespace content {
 
-BluetoothDispatcherHost::BluetoothDispatcherHost()
+BluetoothDispatcherHost::BluetoothDispatcherHost(int render_process_id)
     : BrowserMessageFilter(BluetoothMsgStart),
+      render_process_id_(render_process_id),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   current_delay_time_ = kDelayTime;
@@ -225,9 +227,22 @@ static scoped_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
 void BluetoothDispatcherHost::OnRequestDevice(
     int thread_id,
     int request_id,
+    int frame_routing_id,
     const std::vector<BluetoothScanFilter>& filters,
     const std::vector<BluetoothUUID>& optional_services) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
+
+  if (!render_frame_host) {
+    DLOG(WARNING)
+        << "Got a requestDevice IPC without a matching RenderFrameHost: "
+        << render_process_id_ << ", " << frame_routing_id;
+    Send(new BluetoothMsg_RequestDeviceError(
+        thread_id, request_id, WebBluetoothError::RequestDeviceWithoutFrame));
+  }
+
   // TODO(scheib): Device selection UI: crbug.com/436280
   // TODO(scheib): Utilize BluetoothAdapter::Observer::DeviceAdded/Removed.
   if (adapter_.get()) {

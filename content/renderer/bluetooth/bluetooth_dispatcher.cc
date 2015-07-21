@@ -149,6 +149,7 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void BluetoothDispatcher::requestDevice(
+    int frame_routing_id,
     const WebRequestDeviceOptions& options,
     blink::WebBluetoothRequestDeviceCallbacks* callbacks) {
   int request_id = pending_requests_.Add(callbacks);
@@ -170,7 +171,8 @@ void BluetoothDispatcher::requestDevice(
   }
 
   Send(new BluetoothHostMsg_RequestDevice(CurrentWorkerId(), request_id,
-                                          filters, optional_services));
+                                          frame_routing_id, filters,
+                                          optional_services));
 }
 
 void BluetoothDispatcher::connectGATT(

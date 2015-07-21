@@ -50,7 +50,8 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   void OnMessageReceived(const IPC::Message& msg);
 
   // Corresponding to WebBluetoothImpl methods.
-  void requestDevice(const blink::WebRequestDeviceOptions& options,
+  void requestDevice(int frame_routing_id,
+                     const blink::WebRequestDeviceOptions& options,
                      blink::WebBluetoothRequestDeviceCallbacks* callbacks);
   void connectGATT(const blink::WebString& device_instance_id,
                    blink::WebBluetoothConnectGATTCallbacks* callbacks);

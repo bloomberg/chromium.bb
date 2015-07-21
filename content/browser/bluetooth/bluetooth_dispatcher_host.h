@@ -34,7 +34,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
     : public BrowserMessageFilter,
       public device::BluetoothAdapter::Observer {
  public:
-  BluetoothDispatcherHost();
+  BluetoothDispatcherHost(int render_process_id);
   // BrowserMessageFilter:
   void OnDestruct() const override;
   void OverrideThreadForMessage(const IPC::Message& message,
@@ -61,6 +61,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnRequestDevice(
       int thread_id,
       int request_id,
+      int frame_routing_id,
       const std::vector<content::BluetoothScanFilter>& filters,
       const std::vector<device::BluetoothUUID>& optional_services);
   void OnConnectGATT(int thread_id, int request_id,
@@ -132,6 +133,8 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnWriteValueFailed(int thread_id,
                           int request_id,
                           device::BluetoothGattService::GattErrorCode);
+
+  int render_process_id_;
 
   // Maps a (thread_id,request_id) to information about its requestDevice call,
   // including the chooser dialog.

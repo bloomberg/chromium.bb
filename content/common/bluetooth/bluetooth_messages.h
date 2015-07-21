@@ -186,15 +186,10 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_WriteCharacteristicValueError,
 // Messages sent from the renderer to the browser.
 
 // Requests a bluetooth device from the browser.
-// TODO(scheib): UI to select and permit access to a device crbug.com/436280.
-//   This will include refactoring messages to be associated with an origin
-//   and making this initial requestDevice call with an associated frame.
-//   This work is deferred to simplify initial prototype patches.
-//   The Bluetooth feature, and the BluetoothDispatcherHost are behind
-//   the --enable-experimental-web-platform-features flag.
-IPC_MESSAGE_CONTROL4(BluetoothHostMsg_RequestDevice,
+IPC_MESSAGE_CONTROL5(BluetoothHostMsg_RequestDevice,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* frame_routing_id */,
                      std::vector<content::BluetoothScanFilter>,
                      std::vector<device::BluetoothUUID> /* optional_services */)
 
