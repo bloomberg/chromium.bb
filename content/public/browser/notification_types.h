@@ -121,12 +121,6 @@ enum NotificationType {
   // WebContentsObserver::WebContentsDestroyed()
   NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
 
-  // This notification is sent after WebContents' title is updated. The source
-  // is a Source<WebContents> with a pointer to the WebContents. The details
-  // is a std::pair<NavigationEntry*, bool> that contains more information.
-  // DEPRECATED: Use WebContentsObserver::TitleWasSet()
-  NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-
   // This notification is sent when a WebContents is being destroyed. Any
   // object holding a reference to a WebContents can listen to that
   // notification to properly reset the reference. The source is a

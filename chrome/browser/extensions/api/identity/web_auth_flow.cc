@@ -60,7 +60,7 @@ WebAuthFlow::~WebAuthFlow() {
   // Stop listening to notifications first since some of the code
   // below may generate notifications.
   registrar_.RemoveAll();
-  WebContentsObserver::Observe(NULL);
+  WebContentsObserver::Observe(nullptr);
 
   if (!app_window_key_.empty()) {
     AppWindowRegistry::Get(profile_)->RemoveObserver(this);
@@ -73,7 +73,7 @@ WebAuthFlow::~WebAuthFlow() {
 void WebAuthFlow::Start() {
   AppWindowRegistry::Get(profile_)->AddObserver(this);
 
-  // Attach a random ID string to the window so we can recoginize it
+  // Attach a random ID string to the window so we can recognize it
   // in OnAppWindowAdded.
   std::string random_bytes;
   crypto::RandBytes(base::WriteInto(&random_bytes, 33), 32);
@@ -129,6 +129,7 @@ void WebAuthFlow::OnAppWindowRemoved(AppWindow* app_window) {
       app_window->extension_id() == extension_misc::kIdentityApiUiAppId) {
     app_window_ = NULL;
     registrar_.RemoveAll();
+    WebContentsObserver::Observe(nullptr);
 
     if (delegate_)
       delegate_->OnAuthFlowFailure(WebAuthFlow::WINDOW_CLOSED);
@@ -168,39 +169,9 @@ void WebAuthFlow::Observe(int type,
       WebContentsObserver::Observe(web_contents);
 
       registrar_.RemoveAll();
-      registrar_.Add(this,
-                     content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-                     content::Source<WebContents>(web_contents));
-      registrar_.Add(this,
-                     content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-                     content::Source<WebContents>(web_contents));
     }
-  } else {
-    // embedded_window_created_
-    switch (type) {
-      case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
-        ResourceRedirectDetails* redirect_details =
-            content::Details<ResourceRedirectDetails>(details).ptr();
-        if (redirect_details != NULL)
-          BeforeUrlLoaded(redirect_details->new_url);
-        break;
-      }
-      case content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED: {
-        std::pair<content::NavigationEntry*, bool>* title =
-            content::Details<std::pair<content::NavigationEntry*, bool> >(
-                details).ptr();
-
-        if (title->first) {
-          delegate_->OnAuthFlowTitleChange(
-              base::UTF16ToUTF8(title->first->GetTitle()));
-        }
-        break;
-      }
-      default:
-        NOTREACHED()
-            << "Got a notification that we did not register for: " << type;
-        break;
-    }
+  } else {  // embedded_window_created_
+    NOTREACHED() << "Got a notification that we did not register for: " << type;
   }
 }
 
@@ -232,6 +203,17 @@ void WebAuthFlow::DidFailProvisionalLoad(
                                error_code);
   if (delegate_)
     delegate_->OnAuthFlowFailure(LOAD_FAILED);
+}
+
+void WebAuthFlow::DidGetRedirectForResourceRequest(
+    content::RenderFrameHost* render_frame_host,
+    const content::ResourceRedirectDetails& details) {
+  BeforeUrlLoaded(details.new_url);
+}
+
+void WebAuthFlow::TitleWasSet(content::NavigationEntry* entry,
+                              bool explicit_set) {
+  delegate_->OnAuthFlowTitleChange(base::UTF16ToUTF8(entry->GetTitle()));
 }
 
 void WebAuthFlow::DidStopLoading() {

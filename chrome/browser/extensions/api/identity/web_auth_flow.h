@@ -116,6 +116,10 @@ class WebAuthFlow : public content::NotificationObserver,
                               int error_code,
                               const base::string16& error_description,
                               bool was_ignored_by_handler) override;
+  void DidGetRedirectForResourceRequest(
+      content::RenderFrameHost* render_frame_host,
+      const content::ResourceRedirectDetails& details) override;
+  void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
 
   void BeforeUrlLoaded(const GURL& url);
   void AfterUrlLoaded();
