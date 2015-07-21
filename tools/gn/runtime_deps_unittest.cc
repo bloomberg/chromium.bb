@@ -240,3 +240,29 @@ TEST(RuntimeDeps, ActionOutputs) {
   ASSERT_EQ(1u, result.size());
   EXPECT_TRUE(MakePair("../../dep.data", &dep) == result[0]);
 }
+
+// Tests that a dependency duplicated in regular and data deps is processed
+// as a data dep.
+TEST(RuntimeDeps, Dupe) {
+  TestWithScope setup;
+  Err err;
+
+  Target action(setup.settings(), Label(SourceDir("//"), "action"));
+  InitTargetWithType(setup, &action, Target::ACTION);
+  action.action_values().outputs() =
+      SubstitutionList::MakeForTest("//action.output");
+  ASSERT_TRUE(action.OnResolved(&err));
+
+  Target target(setup.settings(), Label(SourceDir("//"), "foo"));
+  InitTargetWithType(setup, &target, Target::EXECUTABLE);
+  target.private_deps().push_back(LabelTargetPair(&action));
+  target.data_deps().push_back(LabelTargetPair(&action));
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  // The results should be the executable and the copy output.
+  std::vector<std::pair<OutputFile, const Target*>> result =
+      ComputeRuntimeDeps(&target);
+  EXPECT_TRUE(std::find(result.begin(), result.end(),
+                        MakePair("../../action.output", &action)) !=
+              result.end()) << GetVectorDescription(result);
+}
