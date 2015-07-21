@@ -188,7 +188,7 @@ int BrowserNonClientFrameViewAsh::GetTopInset() const {
   }
 
   if (UsePackagedAppHeaderStyle() || UseWebAppHeaderStyle())
-    return header_painter_->GetHeaderHeightForPainting();
+    return header_painter_->GetHeaderHeight();
 
   int caption_buttons_bottom = caption_button_container_->bounds().bottom();
 

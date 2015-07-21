@@ -46,6 +46,7 @@ class BrowserHeaderPainterAsh : public ash::HeaderPainter,
   int GetMinimumHeaderWidth() const override;
   void PaintHeader(gfx::Canvas* canvas, Mode mode) override;
   void LayoutHeader() override;
+  int GetHeaderHeight() const override;
   int GetHeaderHeightForPainting() const override;
   void SetHeaderHeightForPainting(int height) override;
   void SchedulePaintForTitle() override;

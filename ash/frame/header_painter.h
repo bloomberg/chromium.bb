@@ -33,8 +33,12 @@ class ASH_EXPORT HeaderPainter {
   // Performs layout for the header.
   virtual void LayoutHeader() = 0;
 
-  // Gets / sets how much of the header is painted. This allows the tabstrip to
-  // affect the header height. This height does not affect LayoutHeader().
+  // Get the height of the header.
+  virtual int GetHeaderHeight() const = 0;
+
+  // Gets / sets how much of the header is painted. This allows the header to
+  // paint under things (like the tabstrip) which have transparent /
+  // non-painting sections. This height does not affect LayoutHeader().
   virtual int GetHeaderHeightForPainting() const = 0;
   virtual void SetHeaderHeightForPainting(int height_for_painting) = 0;
 

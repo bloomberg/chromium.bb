@@ -43,6 +43,7 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   int GetMinimumHeaderWidth() const override;
   void PaintHeader(gfx::Canvas* canvas, Mode mode) override;
   void LayoutHeader() override;
+  int GetHeaderHeight() const override;
   int GetHeaderHeightForPainting() const override;
   void SetHeaderHeightForPainting(int height) override;
   void SchedulePaintForTitle() override;
@@ -104,8 +105,8 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   SkColor inactive_frame_color_;
   FrameCaptionButtonContainerView* caption_button_container_;
 
-  // The height of the header including the header/content separator.
-  int height_;
+  // The height of the header to paint.
+  int painted_height_;
 
   // Whether the header should be painted as active.
   Mode mode_;

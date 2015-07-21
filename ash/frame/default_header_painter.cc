@@ -82,11 +82,10 @@ DefaultHeaderPainter::DefaultHeaderPainter()
       active_frame_color_(kDefaultFrameColor),
       inactive_frame_color_(kDefaultFrameColor),
       caption_button_container_(NULL),
-      height_(0),
+      painted_height_(0),
       mode_(MODE_INACTIVE),
       initial_paint_(true),
-      activation_animation_(new gfx::SlideAnimation(this)) {
-}
+      activation_animation_(new gfx::SlideAnimation(this)) {}
 
 DefaultHeaderPainter::~DefaultHeaderPainter() {
 }
@@ -172,12 +171,16 @@ void DefaultHeaderPainter::LayoutHeader() {
   SetHeaderHeightForPainting(caption_button_container_->height());
 }
 
+int DefaultHeaderPainter::GetHeaderHeight() const {
+  return caption_button_container_->height();
+}
+
 int DefaultHeaderPainter::GetHeaderHeightForPainting() const {
-  return height_;
+  return painted_height_;
 }
 
 void DefaultHeaderPainter::SetHeaderHeightForPainting(int height) {
-  height_ = height;
+  painted_height_ = height;
 }
 
 void DefaultHeaderPainter::SchedulePaintForTitle() {
@@ -269,7 +272,7 @@ void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
   paint.setStrokeWidth(0);
 
   float thickness = 1 / canvas->image_scale();
-  SkScalar y = SkIntToScalar(height_) - SkFloatToScalar(thickness);
+  SkScalar y = SkIntToScalar(painted_height_) - SkFloatToScalar(thickness);
   canvas->sk_canvas()->drawLine(0, y, SkIntToScalar(view_->width()), y, paint);
 }
 
@@ -342,7 +345,7 @@ void DefaultHeaderPainter::UpdateSizeButtonImages(bool use_light_images) {
 }
 
 gfx::Rect DefaultHeaderPainter::GetLocalBounds() const {
-  return gfx::Rect(view_->width(), height_);
+  return gfx::Rect(view_->width(), painted_height_);
 }
 
 gfx::Rect DefaultHeaderPainter::GetTitleBounds() const {

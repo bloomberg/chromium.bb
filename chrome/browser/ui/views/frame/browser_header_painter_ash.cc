@@ -256,6 +256,10 @@ void BrowserHeaderPainterAsh::LayoutHeader() {
   }
 }
 
+int BrowserHeaderPainterAsh::GetHeaderHeight() const {
+  return caption_button_container_->height();
+}
+
 int BrowserHeaderPainterAsh::GetHeaderHeightForPainting() const {
   return painted_height_;
 }
