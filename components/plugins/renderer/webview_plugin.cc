@@ -112,6 +112,15 @@ WebPluginContainer* WebViewPlugin::container() const { return container_; }
 bool WebViewPlugin::initialize(WebPluginContainer* container) {
   container_ = container;
   if (container_) {
+    // We must call layout again here to ensure that the container is laid
+    // out before we next try to paint it, which is a requirement of the
+    // document life cycle in Blink. In most cases, needsLayout is set by
+    // scheduleAnimation, but due to timers controlling widget update,
+    // scheduleAnimation may be invoked before this initialize call (which
+    // comes through the widget update process). It doesn't hurt to mark
+    // for layout again, and it does help us in the race-condition situation.
+    container_->setNeedsLayout();
+
     old_title_ = container_->element().getAttribute("title");
 
     // Propagate device scale to inner webview to load the correct resource
